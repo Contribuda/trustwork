@@ -1,114 +1,145 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { toSessionView, type Principal, type SessionView } from '../../deps/contracts.js';
-import { auditEvents, auth, authTokens, credentials, emailBindings, outbox, persons, sessions, withPrincipal, type Transaction } from '../../deps/data.js';
+import { assumePrincipal, auditEvents, auth, authTokens, clearOwnLoginFailures, credentials, emailBindings, persons, preIdentity, sessions, withPrincipal, type Transaction } from '../../deps/data.js';
 import { clearSessionCookie } from '../../common/cookies.js';
 import { withoutPrincipal } from '../../common/db.js';
-import { ApiError } from '../../common/errors.js';
+import { ApiError, LocalApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from './context.js';
+import { journal, type AuditEntry, type Intent } from './journal.js';
+import { lockoutPolicy, remainingWaitSeconds, type LockoutPolicy } from './lockout.js';
 import type { PasswordService } from './password.service.js';
 import type { PrincipalService } from './principal.service.js';
 import { toPerson, toSession } from './serializers.js';
 import { randomToken, sha256Hex, subjectHash } from './tokens.js';
 
+interface Subjects { accountSubject: string; ipSubject: string }
+
 /**
- * Classic authentication: signup with verification, login with lockout, logout, recovery, step-up, password and
- * e-mail change, session listing and revocation. Responses of pre-identity commands are identical whether an address
- * exists (enumeration safety); the work performed is identical too (hashing always happens).
+ * Classic authentication: signup with verification, login with a progressive delay, logout, recovery, step-up,
+ * password and e-mail change, session listing and revocation. Responses of pre-identity commands are identical
+ * whether an address exists (enumeration safety); the work performed is identical too (hashing always happens).
+ * Every change commits in one transaction with its audit rows and outbox intents (`journal`); mail still leaves
+ * through the MailPort after COMMIT until MAIL-001 delivers it from the outbox.
  */
 export class AuthService {
-  constructor(private readonly ctx: AppContext, private readonly passwords: PasswordService, private readonly principals: PrincipalService) {}
+  private readonly lockout: LockoutPolicy;
+  constructor(private readonly ctx: AppContext, private readonly passwords: PasswordService, private readonly principals: PrincipalService) {
+    this.lockout = lockoutPolicy(ctx.config.lockout);
+  }
 
   private get now(): Date {
     return this.ctx.clock.now();
   }
 
-  private audit(action: string, objectKind: string, objectId: string, requestId: string, actor: string | null = null, basis?: unknown, reason?: string): Promise<unknown> {
-    return withoutPrincipal(this.ctx.pool, (trx) => auditEvents.append(trx, { actor_person_id: actor, action, object_kind: objectKind, object_id: objectId, request_id: requestId, ...(reason ? { reason } : {}), basis }));
-  }
-
-  /** Same status, body and work for new and already-bound addresses; the difference is only which e-mail goes out. */
+  /**
+   * Same status, body and work for new and already-bound addresses; the difference is only which e-mail goes out.
+   * An address held only by another person's unverified binding is claimable: the new person receives the
+   * verification mail, and the mailbox proof removes the squatting binding (auth_prove_mailbox).
+   */
   async signup(input: { name: string; email: string; password: string; acceptedTermsVersion: string }, requestId: string): Promise<{ status: 'verification_sent' }> {
     const passwordHash = await this.passwords.hash(input.password);
     const token = randomToken();
-    const personId = await auth.registerPerson(this.ctx.pool, {
-      displayName: input.name, emailNormalized: input.email, passwordHash, verifyTokenHashHex: sha256Hex(token), verifyExpiresAt: new Date(this.now.getTime() + this.ctx.config.tokens.verifyEmailMs),
+    const emailRef = sha256Hex(input.email).slice(0, 32);
+    const result = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      const signup = await preIdentity.signup(trx, {
+        displayName: input.name, emailNormalized: input.email, passwordHash, verifyTokenHashHex: sha256Hex(token), verifyExpiresAt: new Date(this.now.getTime() + this.ctx.config.tokens.verifyEmailMs),
+      });
+      if (signup.outcome === 'bound') {
+        await journal(trx, { action: 'auth.signup_duplicate', objectKind: 'email', objectId: emailRef, requestId, basis: { acceptedTermsVersion: input.acceptedTermsVersion, personId: signup.personId } },
+          signup.personId ? [{ personId: signup.personId, type: 'identity.signup_on_bound_address' }] : []);
+      } else {
+        const personId = signup.personId as string;
+        await journal(trx, { action: 'auth.signup', objectKind: 'email', objectId: emailRef, requestId, basis: { acceptedTermsVersion: input.acceptedTermsVersion, personId, claimPending: signup.outcome === 'claim_pending' } },
+          [{ personId, type: 'identity.person_registered', payload: { method: 'password', claimPending: signup.outcome === 'claim_pending' } }]);
+      }
+      return signup;
     });
-    const message = personId
-      ? { to: input.email, template: 'verify_email' as const, params: { token, expiresInHours: String(this.ctx.config.tokens.verifyEmailMs / 3_600_000) } }
-      : { to: input.email, template: 'already_registered' as const, params: {} };
+    const message = result.outcome === 'bound'
+      ? { to: input.email, template: 'already_registered' as const, params: {} }
+      : { to: input.email, template: 'verify_email' as const, params: { token, expiresInHours: String(this.ctx.config.tokens.verifyEmailMs / 3_600_000) } };
     await this.ctx.mail.send(message);
-    await this.audit(personId ? 'auth.signup' : 'auth.signup_duplicate', 'email', sha256Hex(input.email).slice(0, 32), requestId, null, { acceptedTermsVersion: input.acceptedTermsVersion, personId });
     return { status: 'verification_sent' };
   }
 
   /**
-   * Verification POST: consumes the single-use token, marks the binding verified, invalidates everything created for
-   * the address before verification (sessions, tokens, provider links) and issues the first session, or keeps the
-   * acting session of the same person and revokes the others. Also completes e-mail change tokens.
+   * Verification POST (the mailbox proof): consumes the single-use token, binds the address verified (removing a
+   * squatting unverified binding of another person), invalidates everything created for the person before
+   * verification (sessions, tokens, provider links) and issues the first session, or keeps the acting session of the
+   * same person and revokes the others. Also completes e-mail change tokens. One transaction.
    */
   async verifyEmail(token: string, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<{ status: 'verified'; personId: string; email: string }> {
     const hash = sha256Hex(token);
-    let consumed = await auth.consumeToken(this.ctx.pool, hash, 'verify_email');
-    let kind: 'verify_email' | 'email_change' = 'verify_email';
-    if (!consumed) {
-      consumed = await auth.consumeToken(this.ctx.pool, hash, 'email_change');
-      kind = 'email_change';
-    }
-    if (!consumed) throw new ApiError('access.not_found', 'verification token is invalid or expired');
-    const { person_id: personId, authz_epoch: epoch, email_normalized: email } = consumed;
-    const acting = state.session && state.session.personId === personId ? state.session.id : null;
     const now = this.now;
-    await withPrincipal(this.ctx.pool, { personId, authzEpoch: epoch }, async (trx) => {
-      if (kind === 'verify_email') {
-        const binding = await emailBindings.getOwnByEmail(trx, email);
-        if (!binding) throw new ApiError('access.not_found', 'verification token is invalid or expired');
-        if (!binding.verified_at) await emailBindings.markVerified(trx, binding.id, now);
-      } else {
-        const inserted = await emailBindings.insert(trx, personId, email, false);
-        await emailBindings.markVerified(trx, inserted.id, now);
-        await emailBindings.setPrimary(trx, personId, inserted.id);
-      }
+    const result = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      const proof = await preIdentity.proveMailbox(trx, hash);
+      if (!proof) throw new ApiError('access.not_found', 'verification token is invalid or expired');
+      if (proof.outcome === 'taken') throw new LocalApiError('auth.email_taken', 'this e-mail address is already bound to an account');
+      const personId = proof.person_id;
+      const epoch = proof.authz_epoch;
+      await assumePrincipal(trx, { personId, authzEpoch: epoch });
+      const acting = state.session && state.session.personId === personId ? state.session.id : null;
+      if (proof.kind === 'email_change' && proof.binding_id) await emailBindings.setPrimary(trx, personId, proof.binding_id);
       await sessions.revokeCreatedBefore(trx, personId, now, 'suspicious', acting, now);
       // Pre-hijack defence (T02) targets links planted on a password-signup account; a provider-first person's own
       // link is the way they signed in and is kept (as is the acting session's provider).
       const creds = await credentials.listForPerson(trx, personId);
       const actingProvider = acting && state.session && (state.session.authMethod === 'google' || state.session.authMethod === 'apple') ? state.session.authMethod : null;
       if (creds.some((c) => c.kind === 'password' && !c.disabled_at)) await credentials.disableProvidersCreatedBefore(trx, personId, now, now, actingProvider);
-      await authTokens.consumeOutstanding(trx, personId, kind === 'verify_email' ? 'verify_email' : null, now);
-      await auditEvents.append(trx, { actor_person_id: personId, action: kind === 'verify_email' ? 'auth.email_verified' : 'auth.email_changed', object_kind: 'person', object_id: personId, request_id: state.requestId, authz_epoch: epoch });
-      await outbox.append(trx, { aggregate_kind: 'person', aggregate_id: personId, revision: 1, type: kind === 'verify_email' ? 'identity.email_verified' : 'identity.email_changed', payload: {} });
+      await authTokens.consumeOutstanding(trx, personId, proof.kind === 'verify_email' ? 'verify_email' : null, now);
+      const issued = acting ? null : await this.principals.createSession(trx, request, personId, 'password');
+      const entries: AuditEntry[] = [{ action: proof.kind === 'verify_email' ? 'auth.email_verified' : 'auth.email_changed', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { outcome: proof.outcome } }];
+      const intents: Intent[] = [{ personId, type: proof.kind === 'verify_email' ? 'identity.email_verified' : 'identity.email_changed' }];
+      if (proof.displaced_person_id) {
+        entries.push({ action: 'auth.squatting_binding_removed', objectKind: 'person', objectId: proof.displaced_person_id, requestId: state.requestId, actor: personId, basis: { claimedBy: personId } });
+        intents.push({ personId, type: 'identity.binding_claimed' }, { personId: proof.displaced_person_id, type: 'identity.sessions_revoked', payload: { reason: 'binding_claimed' } });
+      }
+      if (issued) intents.push({ personId, type: 'identity.session_started', payload: { sessionId: issued.sessionId, method: 'password' } });
+      await journal(trx, entries, intents);
+      return { personId, email: proof.email_normalized, issued };
     });
-    if (!acting) await this.principals.issueSession(reply, request, personId, epoch, 'password');
-    return { status: 'verified', personId, email };
+    if (result.issued) this.principals.setCookie(reply, result.issued.token);
+    return { status: 'verified', personId: result.personId, email: result.email };
   }
 
-  /** H03 pre-check: per-account and per-IP failure counts inside the window answer auth.throttled before any verification. */
-  private async throttle(email: string, state: RequestState, action: string): Promise<{ accountSubject: string; ipSubject: string }> {
+  /** Pre-check before any verification: a progressive per-account delay and the per-IP threshold answer auth.throttled. */
+  private async throttle(email: string, state: RequestState, action: string): Promise<Subjects> {
     const accountSubject = subjectHash('account', email);
     const ipSubject = subjectHash('ip', state.client.ip);
-    const { lockout } = this.ctx.config;
-    const [accountFailures, ipFailures] = await Promise.all([
-      auth.loginFailureCount(this.ctx.pool, accountSubject, lockout.windowSeconds),
-      auth.loginFailureCount(this.ctx.pool, ipSubject, lockout.windowSeconds),
-    ]);
-    if (accountFailures >= lockout.accountThreshold || ipFailures >= lockout.ipThreshold) {
-      await this.audit(`${action}_throttled`, 'email', accountSubject.slice(0, 32), state.requestId);
-      throw new ApiError('auth.throttled', 'too many failed attempts; try again later', { retryAfterSeconds: lockout.windowSeconds });
-    }
+    const { windowSeconds } = this.lockout;
+    const wait = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      const account = await preIdentity.throttleState(trx, accountSubject, windowSeconds);
+      const ip = await preIdentity.throttleState(trx, ipSubject, windowSeconds);
+      const seconds = remainingWaitSeconds(account, ip, this.lockout);
+      // Audit-only event: nothing changes, so the row commits on its own.
+      if (seconds > 0) await journal(trx, { action: `${action}_throttled`, objectKind: 'email', objectId: accountSubject.slice(0, 32), requestId: state.requestId, basis: { retryAfterSeconds: seconds } });
+      return seconds;
+    });
+    if (wait > 0) throw new ApiError('auth.throttled', 'too many failed attempts; try again later', { retryAfterSeconds: wait });
     return { accountSubject, ipSubject };
   }
 
-  /** Records a failed password proof for the account and the IP; disables the password after the daily threshold. */
-  private async recordFailure(email: string, subjects: { accountSubject: string; ipSubject: string }, state: RequestState, action: string): Promise<void> {
-    const { lockout } = this.ctx.config;
-    const count = await auth.recordLoginFailure(this.ctx.pool, subjects.accountSubject, lockout.windowSeconds, lockout.retentionSeconds);
-    await auth.recordLoginFailure(this.ctx.pool, subjects.ipSubject, lockout.windowSeconds, lockout.retentionSeconds);
-    const daily = await auth.loginFailureCount(this.ctx.pool, subjects.accountSubject, lockout.disableWindowSeconds);
-    if (daily >= lockout.disableThreshold && (await auth.disablePassword(this.ctx.pool, email))) {
-      await this.audit('auth.password_disabled', 'email', subjects.accountSubject.slice(0, 32), state.requestId, null, { failures: daily });
-    }
-    await this.audit(`${action}_failed`, 'email', subjects.accountSubject.slice(0, 32), state.requestId, null, { windowFailures: count });
+  /**
+   * Records a failed password proof for the account and the IP together with its audit row. Reaching the threshold
+   * starts the delay and notifies the owner (audit, outbox intent and security notice); the password is never
+   * disabled by failures.
+   */
+  private async recordFailure(email: string, subjects: Subjects, state: RequestState, action: string, ownerId: string | null): Promise<void> {
+    const { windowSeconds, retentionSeconds, accountThreshold } = this.lockout;
+    const objectId = subjects.accountSubject.slice(0, 32);
+    const count = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      const failures = await preIdentity.recordLoginFailure(trx, subjects.accountSubject, windowSeconds, retentionSeconds);
+      await preIdentity.recordLoginFailure(trx, subjects.ipSubject, windowSeconds, retentionSeconds);
+      const entries: AuditEntry[] = [{ action: `${action}_failed`, objectKind: 'email', objectId, requestId: state.requestId, basis: { windowFailures: failures } }];
+      const intents: Intent[] = [];
+      if (failures === accountThreshold) {
+        entries.push({ action: `${action}_lockout`, objectKind: 'email', objectId, requestId: state.requestId, basis: { failures } });
+        if (ownerId) intents.push({ personId: ownerId, type: 'identity.login_throttled', payload: { action } });
+      }
+      await journal(trx, entries, intents);
+      return failures;
+    });
+    if (count === accountThreshold && ownerId) await this.ctx.mail.send({ to: email, template: 'security_notice', params: { event: 'login_throttled' } });
   }
 
   async login(input: { email: string; password: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<{ status: 'authenticated'; personId: string }> {
@@ -117,17 +148,21 @@ export class AuthService {
     const verified = await this.passwords.verify(lookup.password_hash, input.password);
     const ok = verified && lookup.person_id !== null && lookup.disabled_at === null && lookup.email_verified;
     if (!ok || lookup.person_id === null || lookup.authz_epoch === null) {
-      await this.recordFailure(input.email, subjects, state, 'auth.login');
+      await this.recordFailure(input.email, subjects, state, 'auth.login', lookup.person_id);
       throw new ApiError('auth.invalid_credentials', 'invalid e-mail or password');
     }
     const personId = lookup.person_id;
     const epoch = lookup.authz_epoch;
-    if (this.passwords.needsRehash(lookup.password_hash)) {
-      const rehashed = await this.passwords.hash(input.password);
-      await withPrincipal(this.ctx.pool, { personId, authzEpoch: epoch }, (trx) => credentials.setPasswordHash(trx, personId, rehashed));
-    }
-    const { sessionId } = await this.principals.issueSession(reply, request, personId, epoch, 'password');
-    await this.audit('auth.login', 'person', personId, state.requestId, personId, { sessionId, method: 'password' });
+    const rehashed = this.passwords.needsRehash(lookup.password_hash) ? await this.passwords.hash(input.password) : null;
+    const issued = await withPrincipal(this.ctx.pool, { personId, authzEpoch: epoch }, async (trx) => {
+      if (rehashed) await credentials.setPasswordHash(trx, personId, rehashed);
+      const session = await this.principals.createSession(trx, request, personId, 'password');
+      await clearOwnLoginFailures(trx);
+      await journal(trx, { action: 'auth.login', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { sessionId: session.sessionId, method: 'password' } },
+        [{ personId, type: 'identity.session_started', payload: { sessionId: session.sessionId, method: 'password' } }]);
+      return session;
+    });
+    this.principals.setCookie(reply, issued.token);
     return { status: 'authenticated', personId };
   }
 
@@ -142,28 +177,36 @@ export class AuthService {
     clearSessionCookie(reply, this.ctx.config);
   }
 
-  /** Identical work and response for unknown addresses; the mail decision is taken after the response is prepared. */
+  /**
+   * Identical work and response for unknown addresses. The token, the invalidation of earlier recovery tokens
+   * (RC-03), the audit row and the intent commit together; the mail goes out after COMMIT.
+   */
   async requestRecovery(email: string, requestId: string): Promise<{ status: 'recovery_sent' }> {
     const token = randomToken();
-    const personId = await auth.issueToken(this.ctx.pool, {
-      emailNormalized: email, kind: 'recovery', tokenHashHex: sha256Hex(token), expiresAt: new Date(this.now.getTime() + this.ctx.config.tokens.recoveryMs), requireVerified: true,
+    const tokenHash = sha256Hex(token);
+    const now = this.now;
+    const personId = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      const owner = await preIdentity.issueToken(trx, { emailNormalized: email, kind: 'recovery', tokenHashHex: tokenHash, expiresAt: new Date(now.getTime() + this.ctx.config.tokens.recoveryMs), requireVerified: true });
+      if (owner) {
+        const epoch = await preIdentity.personEpoch(trx, owner);
+        if (epoch === null) throw new ApiError('access.not_found');
+        await assumePrincipal(trx, { personId: owner, authzEpoch: epoch });
+        await authTokens.consumeOutstanding(trx, owner, 'recovery', now, tokenHash);
+      }
+      await journal(trx, { action: 'auth.recovery_requested', objectKind: 'email', objectId: sha256Hex(email).slice(0, 32), requestId, actor: owner }, owner ? [{ personId: owner, type: 'identity.recovery_requested' }] : []);
+      return owner;
     });
-    const response = { status: 'recovery_sent' as const };
-    if (personId) {
-      // A newer request invalidates earlier tokens (RC-03): consume everything created before this issuance.
-      await withPrincipal(this.ctx.pool, await this.epochOf(personId, email), (trx) => authTokens.consumeOutstanding(trx, personId, 'recovery', this.now, sha256Hex(token))).catch(() => undefined);
-      await this.ctx.mail.send({ to: email, template: 'recovery', params: { token, expiresInMinutes: String(this.ctx.config.tokens.recoveryMs / 60_000) } });
-    }
-    await this.audit('auth.recovery_requested', 'email', sha256Hex(email).slice(0, 32), requestId, personId);
-    return response;
+    if (personId) await this.ctx.mail.send({ to: email, template: 'recovery', params: { token, expiresInMinutes: String(this.ctx.config.tokens.recoveryMs / 60_000) } });
+    return { status: 'recovery_sent' };
   }
 
   async completeRecovery(input: { token: string; newPassword: string }, requestId: string): Promise<{ status: 'password_reset' }> {
-    const consumed = await auth.consumeToken(this.ctx.pool, sha256Hex(input.token), 'recovery');
-    if (!consumed) throw new ApiError('access.not_found', 'recovery token is invalid or expired');
     const passwordHash = await this.passwords.hash(input.newPassword);
     const now = this.now;
-    await withPrincipal(this.ctx.pool, { personId: consumed.person_id, authzEpoch: consumed.authz_epoch }, async (trx) => {
+    const email = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      const consumed = await preIdentity.consumeToken(trx, sha256Hex(input.token), 'recovery');
+      if (!consumed) throw new ApiError('access.not_found', 'recovery token is invalid or expired');
+      await assumePrincipal(trx, { personId: consumed.person_id, authzEpoch: consumed.authz_epoch });
       const updated = await credentials.setPasswordHash(trx, consumed.person_id, passwordHash);
       if (updated === 0) await credentials.insertPassword(trx, consumed.person_id, passwordHash);
       const binding = await emailBindings.getOwnByEmail(trx, consumed.email_normalized);
@@ -173,10 +216,12 @@ export class AuthService {
       }
       await sessions.revokeAllForPerson(trx, consumed.person_id, 'recovery', null, now);
       await authTokens.consumeOutstanding(trx, consumed.person_id, null, now);
-      await auditEvents.append(trx, { actor_person_id: consumed.person_id, action: 'auth.recovery_completed', object_kind: 'person', object_id: consumed.person_id, request_id: requestId, authz_epoch: consumed.authz_epoch });
-      await outbox.append(trx, { aggregate_kind: 'person', aggregate_id: consumed.person_id, revision: 1, type: 'identity.sessions_revoked', payload: { reason: 'recovery' } });
+      await clearOwnLoginFailures(trx);
+      await journal(trx, { action: 'auth.recovery_completed', objectKind: 'person', objectId: consumed.person_id, requestId, actor: consumed.person_id, epoch: consumed.authz_epoch },
+        [{ personId: consumed.person_id, type: 'identity.sessions_revoked', payload: { reason: 'recovery' } }]);
+      return consumed.email_normalized;
     });
-    await this.ctx.mail.send({ to: consumed.email_normalized, template: 'security_notice', params: { event: 'password_reset' } });
+    await this.ctx.mail.send({ to: email, template: 'security_notice', params: { event: 'password_reset' } });
     return { status: 'password_reset' };
   }
 
@@ -188,13 +233,14 @@ export class AuthService {
     const lookup = await auth.lookupPasswordCredential(this.ctx.pool, email);
     const verified = await this.passwords.verify(lookup.password_hash, password);
     if (!verified || lookup.person_id !== principal.personId || lookup.disabled_at) {
-      await this.recordFailure(email, subjects, state, 'auth.step_up');
+      await this.recordFailure(email, subjects, state, 'auth.step_up', principal.personId);
       throw new ApiError('auth.invalid_credentials', 'invalid password');
     }
     const now = this.now;
     const sessionId = (state.session as { id: string }).id;
     await this.principals.runAs(state, async (trx, p) => {
       await sessions.reauthenticate(trx, sessionId, now);
+      await clearOwnLoginFailures(trx);
       await auditEvents.append(trx, { actor_person_id: p.personId, action: 'auth.step_up', object_kind: 'session', object_id: sessionId, request_id: state.requestId, authz_epoch: p.authzEpoch });
     });
     if (state.session) state.session.authenticatedAt = now;
@@ -208,7 +254,7 @@ export class AuthService {
     const lookup = await auth.lookupPasswordCredential(this.ctx.pool, email);
     const verified = await this.passwords.verify(lookup.password_hash, input.currentPassword);
     if (!verified || lookup.person_id !== principal.personId || lookup.disabled_at) {
-      await this.recordFailure(email, subjects, state, 'auth.password_change');
+      await this.recordFailure(email, subjects, state, 'auth.password_change', principal.personId);
       throw new ApiError('auth.invalid_credentials', 'current password is invalid');
     }
     const passwordHash = await this.passwords.hash(input.newPassword);
@@ -218,6 +264,7 @@ export class AuthService {
       const updated = await credentials.setPasswordHash(trx, p.personId, passwordHash);
       if (updated === 0) await credentials.insertPassword(trx, p.personId, passwordHash);
       await sessions.revokeAllForPerson(trx, p.personId, 'password_change', sessionId, now);
+      await clearOwnLoginFailures(trx);
       await auditEvents.append(trx, { actor_person_id: p.personId, action: 'auth.password_changed', object_kind: 'person', object_id: p.personId, request_id: state.requestId, authz_epoch: p.authzEpoch });
     });
     await this.ctx.mail.send({ to: email, template: 'security_notice', params: { event: 'password_changed' } });
@@ -274,13 +321,6 @@ export class AuthService {
     const primary = bindings.find((b) => b.is_primary) ?? bindings[0];
     if (!primary) throw new ApiError('auth.email_unverified', 'no e-mail binding');
     return primary.email_normalized;
-  }
-
-  /** Epoch of a person reached through a verified binding (recovery path, no session). */
-  private async epochOf(personId: string, email: string): Promise<{ personId: string; authzEpoch: number }> {
-    const lookup = await auth.lookupPasswordCredential(this.ctx.pool, email);
-    if (lookup.person_id !== personId || lookup.authz_epoch === null) throw new ApiError('access.not_found');
-    return { personId, authzEpoch: lookup.authz_epoch };
   }
 
   /** Dev/test helper: current session row of the acting principal. */

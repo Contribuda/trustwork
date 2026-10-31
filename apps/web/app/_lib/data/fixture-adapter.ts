@@ -45,6 +45,7 @@ import type {
 } from './types';
 import type { DemoContext } from '../persona';
 import { formatMoney } from '../i18n';
+import { personDisplayName } from '../person-name';
 import { currencyCode } from '../country';
 
 function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> {
@@ -194,7 +195,7 @@ function toPersonCard(p: PersonFixture): PersonCard | null {
     id: pub.id,
     handle: p.slug,
     href: `/people/${p.slug}`,
-    displayName: pub.displayName,
+    displayName: personDisplayName(pub.displayName),
     field: p.field,
     independent: !employer,
     signals: profile.signals,
@@ -652,7 +653,7 @@ function getPublicProject(handle: Handle): ProjectDetail | null {
   return {
     ...card,
     story: pub.publishedStory,
-    leader: leaderPublic ? { label: leaderPublic.person.displayName, href: `/people/${leaderPublic.slug}`, portrait: leaderPublic.portraitConsent ? (leaderPublic.portrait ?? null) : null } : null,
+    leader: leaderPublic ? { label: personDisplayName(leaderPublic.person.displayName), href: `/people/${leaderPublic.slug}`, portrait: leaderPublic.portraitConsent ? (leaderPublic.portrait ?? null) : null } : null,
     participants,
     updates: p.updates.filter((u) => u.isPublic).map(({ id, type, title, date, evidence }) => ({ id, type, title, date, evidence })),
     milestones: projectMilestones(p),
@@ -1112,7 +1113,7 @@ function getSettings(principal: Principal): SettingsView {
   const p = requirePerson(principal);
   const pf = personById(p.personId)!;
   return {
-    name: pf.person.displayName,
+    name: personDisplayName(pf.person.displayName),
     email: pf.person.emailBindings.find((b) => b.isPrimary)?.email ?? '',
     providers: { apple: pf.person.providerIdentities.some((x) => x.provider === 'apple'), google: pf.person.providerIdentities.some((x) => x.provider === 'google'), password: true },
     sessions: fixtures.workspace.sessions.filter((s) => s.personId === p.personId).map((s) => omit(s, 'personId')),
@@ -1136,7 +1137,7 @@ function principalFor(demo: DemoContext): AuthenticatedPrincipal | null {
     persona: demo.persona,
     demo,
     personId: pf.person.id,
-    displayName: pf.person.displayName,
+    displayName: personDisplayName(pf.person.displayName),
     handle: pf.slug,
     preferences: pf.person.preferences,
     pinned: entry.pinned,

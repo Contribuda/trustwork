@@ -105,7 +105,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   const reflector = app.get(Reflector);
   app.useGlobalFilters(new ErrorFilter(log));
   app.useGlobalGuards(new CsrfGuard(reflector, config), new AuthGuard(reflector, config, () => clock.now()));
-  if (ctx) app.useGlobalInterceptors(new IdempotencyInterceptor(reflector, ctx.pool, config, log));
+  if (ctx) app.useGlobalInterceptors(new IdempotencyInterceptor(reflector, ctx.pool, config, log, clock));
   app.enableShutdownHooks();
   await app.init();
   await fastify.ready();

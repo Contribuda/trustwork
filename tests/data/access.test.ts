@@ -59,12 +59,14 @@ test('identity and access persistence under the restricted runtime role', { skip
     assert.deepEqual(rows.map((r) => r.proname).sort(), [
       'admission_admit', 'admission_issue', 'admission_revoke', 'admission_settle',
       'apply_ownership_transfer', 'auth_claim_unverified_binding', 'auth_consume_token', 'auth_disable_password', 'auth_issue_token', 'auth_login_failure_count', 'auth_lookup_password_credential', 'auth_lookup_provider_credential', 'auth_lookup_session', 'auth_person_epoch', 'auth_record_login_failure', 'auth_register_person', 'auth_register_provider_person',
+      'auth_clear_login_failures', 'auth_login_throttle', 'auth_prove_mailbox', 'auth_signup',
       'bump_epochs_for_membership', 'bump_epochs_for_participation', 'can_manage_resource', 'current_membership_has', 'end_membership', 'finalize_ownership_transfer', 'lease_jobs', 'owns_resource', 'participates_in_resource', 'public_person_read', 'public_project_read', 'reconcile_job', 'set_principal', 'sweep_expired', 'verify_person_id',
       'ensure_monthly_partitions', 'release_job', 'worker_sweep_expired',
       'directory_create_company', 'directory_public_people', 'directory_public_projects', 'directory_public_resolve', 'directory_set_handle', // BE-003
     ].sort());
-    // REL-001: worker-only entry points (trustwork_worker), never executable by the API role.
-    const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired']);
+    // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
+    // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns.
+    const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired', 'sweep_expired', 'lease_jobs', 'reconcile_job']);
     for (const row of rows) {
       assert.ok(row.proconfig?.some((c) => c === 'search_path=trustwork, pg_temp'), `${row.proname} pins search_path`);
       assert.equal(row.app_exec, !row.proname.startsWith('bump_') && !workerOnly.has(row.proname), `${row.proname} executable by trustwork_app only when allowlisted`);

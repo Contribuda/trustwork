@@ -1,20 +1,20 @@
-import { createPool, databaseConfigFromEnv, maintenance, type DataPool, type SweepOptions, type SweepReport } from '../deps/data.js';
-import { withoutPrincipal } from '../common/db.js';
+import { createPool, databaseConfigFromEnv, maintenance, withMaintenance, type DataPool, type SweepOptions, type SweepReport } from '../deps/data.js';
 
 /**
- * Bounded-table sweeper (worker-callable): expired/consumed auth tokens, expired login failures and idempotency
- * records, settled admission leases past the grace period, old revoked/expired sessions and never-verified signups
- * older than seven days. Runs with the restricted runtime role (`trustwork.sweep_expired` is owner-run).
+ * Manual bounded-table sweep for local stands: expired/consumed auth tokens, expired login failures and idempotency
+ * records, settled admission leases past the grace period, old revoked/expired sessions and never-verified signups.
+ * The scheduled sweep belongs to apps/worker (`trustwork.worker_sweep_expired()`, fixed intervals); the runtime API
+ * role can no longer run `trustwork.sweep_expired` with caller-chosen intervals (BE-002), so this script uses the
+ * migrator connection in a maintenance transaction.
  *
- *   API_DATABASE_URL=... npm run sweep -w @trustwork/api
+ *   DATABASE_URL=<migrator url> npm run sweep -w @trustwork/api
  */
 export function runSweep(pool: DataPool, options: SweepOptions = {}): Promise<SweepReport> {
-  return withoutPrincipal(pool, (trx) => maintenance.sweepExpired(trx, options));
+  return withMaintenance(pool, (trx) => maintenance.sweepExpired(trx, options));
 }
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^.*\//, ''))) {
-  const env = process.env;
-  const pool = createPool(databaseConfigFromEnv({ ...env, DATABASE_URL: env.API_DATABASE_URL ?? env.DATABASE_URL }, 'trustwork-sweep'));
+  const pool = createPool(databaseConfigFromEnv(process.env, 'trustwork-sweep'));
   try {
     console.log(JSON.stringify(await runSweep(pool), null, 2));
   } finally {

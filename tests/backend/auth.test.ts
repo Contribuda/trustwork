@@ -31,8 +31,10 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
       assert.deepEqual(r.body, { status: 'verification_sent' });
       assert.equal(r.cookies.length, 0, 'no Set-Cookie before verification');
     }
-    assert.equal(h.mail.countTo('newcomer@example.invalid', 'verify_email'), 1);
-    assert.equal(h.mail.countTo('newcomer@example.invalid', 'already_registered'), 1);
+    // BE-002: an address held only by an unverified binding stays claimable by mailbox proof, so the second signup
+    // receives its own verification link instead of an "already registered" notice.
+    assert.equal(h.mail.countTo('newcomer@example.invalid', 'verify_email'), 2);
+    assert.equal(h.mail.countTo('newcomer@example.invalid', 'already_registered'), 0);
     assert.equal(h.mail.countTo(EMAILS.anna, 'already_registered'), 1);
     const beforeVerify = await anonymous.post('/v1/auth/login', { email: 'newcomer@example.invalid', password: PASSWORD }, { idempotencyKey: null });
     expectError(beforeVerify, 401, 'auth.invalid_credentials');

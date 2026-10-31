@@ -2,7 +2,7 @@ export { APP_ROLE, OWNER_ROLE, SCHEMA, databaseConfigFromEnv, type DatabaseEnv }
 export { createPool, withPrincipal, withMaintenance, bindTransaction, PrincipalError, type DataPool, type Transaction, type Principal, type PrincipalErrorCode } from './pool.js';
 export * from './schema.js';
 export * as auth from './repositories/auth.js';
-export { persons, emailBindings, credentials, sessions, authTokens } from './repositories/identity.js';
+export { persons, emailBindings, credentials, sessions, authTokens, preIdentity, assumePrincipal, clearOwnLoginFailures, type SignupOutcome, type MailboxProof, type MailboxProofOutcome, type ThrottleState } from './repositories/identity.js';
 export { companies, memberships } from './repositories/company.js';
 export { participations, permissionGrants } from './repositories/access.js';
 export { projects, ownershipTransfers, leadershipAssignments } from './repositories/projects.js';

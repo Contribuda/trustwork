@@ -169,8 +169,9 @@ export const jobs = {
 export interface SweepReport { auth_tokens: number; login_failures: number; idempotency_records: number; admission_leases: number; sessions: number; unverified_persons: number }
 export interface SweepOptions { sessionRetentionSeconds?: number; leaseGraceSeconds?: number; unverifiedSignupAgeSeconds?: number }
 /**
- * Bounded tables and scheduled maintenance. `sweepExpired` keeps the caller-chosen intervals for the existing API dev
- * script; the worker calls `sweepScheduled`, whose intervals are fixed inside the definer function.
+ * Bounded tables and scheduled maintenance. `sweepExpired` takes caller-chosen intervals and needs a maintenance
+ * transaction (owner/migrator connection; BE-002 revoked it from the API role); the worker calls `sweepScheduled`,
+ * whose intervals are fixed inside the definer function.
  */
 export const maintenance = {
   /** Worker role: trustwork.worker_sweep_expired() with fixed intervals (also deletes expired idempotency records). */
