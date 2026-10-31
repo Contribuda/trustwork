@@ -52,7 +52,8 @@ test('identity and access persistence under the restricted runtime role', { skip
     const billing = ['billing_account', 'budget', 'credit_grant', 'entitlement', 'ledger_entry', 'marketplace_fee_version', 'meter', 'meter_rate_version', 'offer', 'price_acceptance', 'price_version', 'reservation', 'subscription', 'subscription_plan_version', 'usage_record']; // BILL-001
     const plans = ['permit_record', 'plan', 'plan_change', 'plan_dependency', 'plan_item', 'plan_item_state', 'plan_share', 'plan_version', 'project_diary_entry', 'project_location']; // PLAN-001
     const commerce = ['bundle_component', 'need', 'need_line', 'offering', 'offering_version', 'offering_version_private', 'rfq', 'rfq_invitation', 'rfq_private_constraint', 'rfq_version']; // COM-001
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce].sort());
+    const files = ['file_artifact_state']; // FILE-001
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -70,10 +71,14 @@ test('identity and access persistence under the restricted runtime role', { skip
       'billing_close_budget', 'billing_grant_budget', 'billing_ledger_balanced', 'billing_release', 'billing_reserve', 'billing_set_budget_limit', 'billing_settle', // BILL-001
       'plan_project_can', 'plan_shared_view', // PLAN-001
       'catalogue_public_offerings', 'catalogue_published_version', 'offering_can', 'rfq_can', 'rfq_flag_stale', 'rfq_invitee', 'rfq_public_read', // COM-001
+      'files_hidden', 'files_register_upload', 'files_complete_upload', 'files_request_deletion', 'files_copy', 'files_move', // FILE-001 (API role)
+      'files_scan_target', 'files_record_scan', 'files_deletion_target', 'files_request_erasure', 'files_finish_deletion', 'files_apply_tombstone', 'files_expired_uploads', 'files_discard_upload', // FILE-001 (worker role)
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
-    // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns.
-    const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired', 'sweep_expired', 'lease_jobs', 'reconcile_job']);
+    // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files
+    // worker entry points.
+    const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired', 'sweep_expired', 'lease_jobs', 'reconcile_job',
+      'files_scan_target', 'files_record_scan', 'files_deletion_target', 'files_request_erasure', 'files_finish_deletion', 'files_apply_tombstone', 'files_expired_uploads', 'files_discard_upload']);
     for (const row of rows) {
       assert.ok(row.proconfig?.some((c) => c === 'search_path=trustwork, pg_temp'), `${row.proname} pins search_path`);
       assert.equal(row.app_exec, !row.proname.startsWith('bump_') && !workerOnly.has(row.proname), `${row.proname} executable by trustwork_app only when allowlisted`);

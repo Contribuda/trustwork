@@ -5,6 +5,8 @@ import { HandlerRegistry } from './handlers.js';
 import { describeError, jsonLogger, type Logger } from './log.js';
 import { assertDictionariesComplete, createMailTransport, mailConfigFromEnv, mailSettleTask, registerMail, type MailConfig, type MailTransport } from './mail/index.js';
 import { Metrics, startMetricsServer, type MetricsServer } from './metrics.js';
+import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntime } from './files/index.js';
+import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
 import { Worker } from './worker.js';
 
@@ -17,10 +19,12 @@ import { Worker } from './worker.js';
  * `mail.deliver`, `mail.feedback`, the `mail.settle` task); search projections and other consumers come later. Events
  * of other types are marked published and counted as `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export interface Domains { pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport }
+export interface Domains { pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
   registerMail(registry, { pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
+  // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
+  if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
   return registry;
 }
 
@@ -33,10 +37,13 @@ async function main(): Promise<void> {
   const login = await assertWorkerRole(pool);
   const metrics = new Metrics();
   const mailTransport = createMailTransport(mail);
-  const registry = buildRegistry({ pool, metrics, log, mail, mailTransport });
+  const storage = blobStoreFromEnv(process.env);
+  const files = storage ? { ...storage, scanner: scannerFromEnv(process.env) } : null;
+  if (files && !files.scanner) log('warn', 'files storage configured without a scanner: uploads stay pending until FILES_SCANNER is set');
+  const registry = buildRegistry({ pool, metrics, log, mail, mailTransport, files });
   const worker = new Worker({
     pool, registry, config, log, metrics,
-    tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps), mailSettleTask({ pool, metrics })],
+    tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps), mailSettleTask({ pool, metrics }), ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : [])],
   });
   log('info', 'mail configured', { transport: mail.transport, locales: mail.render.locales.join(','), defaultLocale: mail.render.defaultLocale });
   let metricsServer: MetricsServer | null = null;

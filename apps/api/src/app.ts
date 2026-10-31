@@ -16,6 +16,7 @@ import { ApiError } from './common/errors.js';
 import { IdempotencyInterceptor } from './common/idempotency.interceptor.js';
 import type { AppContext } from './modules/identity/context.js';
 import { buildIdentityServices, type IdentityServices } from './modules/identity/identity.module.js';
+import { filesOptionsFromEnv, type FilesModuleOptions } from './modules/files/files.module.js';
 import { GoogleOidcProvider } from './modules/identity/providers/google.js';
 import { AppleSignInProvider } from './modules/identity/providers/apple.js';
 import { OutboxMail } from './modules/identity/mail.js';
@@ -47,6 +48,8 @@ export interface CreateAppOptions {
   telemetryExporter?: TelemetryExporter;
   /** `fetch` used by the OTLP exporter (tests pass a fake; the default is the global fetch). */
   telemetryFetch?: typeof fetch;
+  /** Files module (FILE-001): blob store, URL lifetimes and mandate port; default from `FILES_*` (off unless configured). */
+  files?: FilesModuleOptions;
 }
 export interface CreatedApp {
   app: NestFastifyApplication;
@@ -143,7 +146,8 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     trustProxy: trustProxySetting(config),
     bodyLimit: 256 * 1024,
   });
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config), adapter, { logger: new NestJsonLogger(logger) });
+  const files = options.files ?? filesOptionsFromEnv(env);
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files), adapter, { logger: new NestJsonLogger(logger) });
   const fastify = app.getHttpAdapter().getInstance() as unknown as FastifyInstance;
   instrumentHttp(fastify, { config, logger, telemetry });
   // The per-route limit must be attached before @fastify/rate-limit's own onRoute hook reads `config.rateLimit`
