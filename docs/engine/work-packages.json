@@ -2836,7 +2836,7 @@
       "id": "SANC-008",
       "title": "Our own services refuse restricted places: federation admission, update channel, registry, hub directory and support",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SANC-001"
       ],
