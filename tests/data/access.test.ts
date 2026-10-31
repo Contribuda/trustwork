@@ -48,7 +48,8 @@ test('identity and access persistence under the restricted runtime role', { skip
       "SELECT c.relname, c.relrowsecurity, c.relforcerowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'trustwork' AND c.relkind = 'r' ORDER BY relname",
     );
     const forced = rows.filter((r) => r.relrowsecurity && r.relforcerowsecurity).map((r) => r.relname);
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session']);
+    const kernel = ['evidence_artifact', 'exchange_rate_snapshot', 'hub', 'hub_territory', 'jurisdiction', 'restricted_place', 'step_term_relation', 'taxonomy_release', 'taxonomy_term', 'unit', 'unit_conversion_rule']; // DATA-003
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
