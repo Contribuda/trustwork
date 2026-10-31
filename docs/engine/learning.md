@@ -1,5 +1,7 @@
 # Learning and certificates
 
+Normative requirements: [Learning and certificates](modules/learning-and-certificates.md). Participants: [who uses what](participants/README.md).
+
 Requirement R33. Status: courses, reading progress, bookmarks and certificates on "My page" (`me.title`) and the public certificate check (`/certificates/:id`) are **Demo**; authoring, assessments, accreditation and federated verification are **Proposed**.
 
 A practitioner who learns how to accept hidden works properly makes every facade they touch better. Learning is part of raising the quality of construction, and certificates are part of a person's lifelong profile.

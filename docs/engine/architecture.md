@@ -1,5 +1,7 @@
 # Architecture for contributors
 
+Normative requirements: [Security architecture](modules/security-architecture.md), [Operations](modules/operations.md), [API and MCP](modules/api-and-mcp.md). Participants: [who uses what](participants/README.md).
+
 This chapter is the map you need before changing code. The accepted decisions behind it are the [ADRs](../adr/README.md); the detailed references are the [system architecture](../architecture/overview.md), [API conventions](../architecture/api.md), [data dictionary](../data/model.md), [lifecycles](../data/lifecycles.md) and [retrieval design](../architecture/retrieval.md).
 
 ## Shape

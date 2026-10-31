@@ -1,5 +1,7 @@
 # Hubs: the engine for your country or your city
 
+Normative requirements: [Hubs and the hub console](modules/hubs-and-console.md). Participants: [who uses what](participants/README.md).
+
 Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub lifecycle and launch checklist are **Proposed**; the United States reference hub (hosting, operator, demo-only start) is **decided** and not deployed.
 
 The engine is not one website. It is something people run for a place they care about. A **hub** is the platform for one territory: a country, a region, or a city. Whoever runs it is the **hub operator**: an industry association, a trade publisher, a chamber of commerce, a university, an entrepreneur, a community of engineers. The operator brings local knowledge, legal responsibility and people; the engine brings everything else.
@@ -98,10 +100,11 @@ The engine helps; people grow a community. A playbook distilled from the design:
 
 ## The reference hub: United States (decided)
 
-The project's own reference and demo deployment is a **United States hub** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 16; [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decisions 26–28). It is the primary worked example of this handbook; every other country is configured the same way (ADR 012 decision 30).
+The project's own reference and demo deployment is a **United States hub whose home territory is San Diego, California** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 16; [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decisions 26–28 and 31). It is the primary worked example of this handbook; every other country is configured the same way (ADR 012 decision 30).
 
 | Question | Answer | Status |
 |---|---|---|
+| Home territory | San Diego, California; the hosted preview defaults visitors who have not chosen a country to the United States (`TRUSTWORK_DEFAULT_COUNTRY=US`); DEMO-US data is set in San Diego County | Decided (decision 31) |
 | Where it runs | On Railway in a United States region, the same way as the current hosted preview | Decided (decision 26); no reference hub is deployed by any work package |
 | Who operates it | Contribuda (public references keep contribuddha.com until the company completes its move to the new name) | Decided (decision 26) |
 | Recovery targets | Recovery point objective 24 hours, recovery time objective 8 hours for the demo; OPS-003 may tighten them | Decided (decision 26) |

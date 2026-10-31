@@ -1,5 +1,7 @@
 # People and companies
 
+Normative requirements: [Identity and accounts](modules/identity-and-accounts.md), [People and companies](modules/people-and-companies.md). Participants: [who uses what](participants/README.md).
+
 Requirements R01–R03, R15, R21–R24, R28. Status: accounts, sessions, memberships and public reads are **Live**; profiles and directories are **Demo**; claims and verification recipes are **Proposed**.
 
 ## A person is one human for life

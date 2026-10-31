@@ -124,6 +124,7 @@ Try `?persona=mixed` for someone who buys and sells, `?persona=reader` for a rea
 
 - **[How it works for you](docs/guides/README.md)**: short step-by-step guides for homeowners and clients, professionals and contractors, experts and mentors, companies, suppliers and manufacturers, event organizers, authors and editors, and hub operators, with an honest status for every step.
 - **[The engine handbook](docs/engine/README.md)**: every module, implemented and designed.
+- **[The full system specification](docs/engine/modules/README.md)**: numbered requirements for every module, current and future, each with an honest status and its work packages; [participants and their journeys](docs/engine/participants/README.md); [the capability registry](docs/engine/capability-registry.md) that gives your agent and the interface the same powers; [ideas ranked by impact](docs/engine/ideas.md) from a [worldwide study of competitors](docs/research/competitive-landscape-2026-11.md).
 - [Vision and principles](docs/engine/vision.md) · [Concepts](docs/engine/concepts.md) · [Roadmap](docs/engine/roadmap.md)
 - [Hubs](docs/engine/hubs.md) · [Hub administration](docs/engine/hub-administration.md) · [Country specifics](docs/engine/country-specifics.md) · [Federation](docs/engine/federation.md)
 - [Your agent](docs/engine/agents.md) · [Partners and matching](docs/engine/partners-and-matching.md) · [Events](docs/engine/events.md)

@@ -1,5 +1,7 @@
 # Events: attend and host
 
+Normative requirements: [Events](modules/events.md). Participants: [who uses what](participants/README.md).
+
 Requirement R32. Status: event list with filters, event page, registration form, ticket page, demo payment and calendar file are **Demo** (`/events`, `/events/:slug`, `/register`, `/ticket`, `/pay`, `/calendar.ics`); everything below about organizing, check-in, payouts and partner meetings is **Proposed**.
 
 The industry meets in person: exhibitions, conferences, site visits, a supplier's open day, a training for installers, an evening meetup of young engineers. Events turn readers into a community. Every participant can attend events, and anyone the hub allows can host one.

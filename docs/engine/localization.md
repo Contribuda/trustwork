@@ -1,5 +1,7 @@
 # Countries and languages
 
+Normative requirements: [Country packs and localization](modules/country-packs-and-localization.md). Participants: [who uses what](participants/README.md).
+
 Requirements R25, R26 (as amended by ADR 009), R38 and R51. Status: country selection, six languages and localized demo content are **Live** in the web app; the languages and country packs marked *planned* below are work packages, not features.
 
 ## Any country, any language

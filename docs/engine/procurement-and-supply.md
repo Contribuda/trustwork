@@ -1,5 +1,7 @@
 # Procurement and supply
 
+Normative requirements: [Procurement and supply](modules/procurement-and-supply.md). Participants: [who uses what](participants/README.md).
+
 Requirement R53 (with R05–R08, R10, R12, R14, R34, R41, R45, R46). Status: **Proposed** (owner request of 2026-10-31; nothing in this chapter is implemented). It builds on what is already **Contract** or **Designed**: immutable RFQ and quote versions with digests, agreements, orders, obligations, delivery claims and acceptance records, two budget kinds with atomic reservations ([Buying and selling](commerce.md), [Billing](billing.md), [Execution and reputation](execution-and-reputation.md)). Work packages: PRC-000 … PRC-023, WEB-011, WEB-012, HUBC-011 and AGT-024 ([below](#work-packages)).
 
 [Buying and selling](commerce.md) designs one honest deal between two parties. A construction company needs more around it: site staff ask for materials, someone approves, a buyer merges requests and runs a competitive sourcing event, quotes and invoices arrive as PDFs from suppliers who are not on the platform, deliveries arrive in parts at a muddy gate with no signal, materials move between sites, an invoice must match what was ordered and received before anyone pays it, and the project budget must show what is planned, committed and spent. This chapter designs that company-side **procurement and supply suite**, from a plan step and its material takeoff to a payment executed by a licensed provider, plus the marketplace side that connects buyers and suppliers.

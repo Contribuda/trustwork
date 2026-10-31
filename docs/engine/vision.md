@@ -38,7 +38,11 @@ Reputation is not the platform watching people. It is a toolkit every participan
 
 Within the hub's legal basis and each source's licence and robots rules, the editorial office builds **sourced** pages for manufacturers and suppliers from their public sites, and indexes their catalogues, guides, training, technical articles and events. For each step of a plan, the system recommends the materials and products, articles and guides, courses, events, consultants and contacts that fit, and explains why. Sourced pages stay labelled until the company claims them; recommendations are never paid for, and sponsored content, if a hub switches it on at all, is labelled and kept out of ranking. Where it is designed: [Search and knowledge](search-and-knowledge.md#plan-step-recommendations-proposed), [News and articles](publishing.md#manufacturer-and-supplier-sources-proposed), the [autonomous editorial office](hub-console/autonomous-editorial.md#11-manufacturer-and-supplier-knowledge-adr-010-decision-19). Packages: MAT-001, REC-001, AGT-021, SRC-001, EDIT-001.
 
-How each kind of participant meets these journeys, step by step and with honest statuses, is in the guides [How it works for you](../guides/README.md).
+### Your agent has the whole system, and so does the interface
+
+Owner decision of 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 23). Everything revolves around the person's own agent, their representative in the industry. Every participant-facing capability is available through that agent and directly in the interface, from one [capability registry](capability-registry.md) that the agent runtime, the person's own AI chat connected over MCP and the interface all use; a parity report in CI shows any gap. Commitments still need a confirmed mandate, a budget where money is involved and the person's confirmation; chat text never authorizes. Status: the registry contract is **Contract** (AGT-002); everything that uses it is **Proposed**.
+
+How each kind of participant meets these journeys, step by step and with honest statuses, is in the guides [How it works for you](../guides/README.md); the specification of the same journeys, with every capability and its status, is in [Participants and their journeys](participants/README.md) and the [module specifications](modules/README.md).
 
 ## Who it is for
 
