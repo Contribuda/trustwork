@@ -261,7 +261,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
   });
 
   await t.test('P1-2: without AUTH_PROVIDER_MODE provider routes are not found and health says disabled; fake-identity only from loopback', async () => {
-    const disabled = await createApp({ env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test' }, pool: h.pool, mail: h.mail, clock: h.clock, log: () => undefined });
+    const disabled = await createApp({ env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test' }, pool: h.pool, mail: h.mail, clock: h.clock, logSink: () => undefined });
     try {
       const health = await disabled.fastify.inject({ method: 'GET', url: '/health' });
       assert.deepEqual(JSON.parse(health.body), { status: 'ok', mode: 'bootstrap', externalProviders: 'disabled' });

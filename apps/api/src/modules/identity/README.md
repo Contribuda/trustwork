@@ -8,21 +8,23 @@ Nothing is read from `.env` implicitly. `DATABASE_URL` (migrator/superuser) is u
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `API_DATABASE_URL` | falls back to `DATABASE_URL` | Runtime connection (restricted role). Without any URL only `GET /health` is served. |
+| `API_DATABASE_URL` | falls back to `DATABASE_URL` | Runtime connection (restricted role). Without any URL only the health routes are served (`/health/ready` answers 503). |
 | `API_HOST`, `API_PORT` | `127.0.0.1`, `3001` | Bind address. |
-| `PUBLIC_ORIGIN` | `http://<host>:<port>` | Exact origin the browser loads the app from; mutations prove same-origin against it; provider redirect URIs derive from it. |
+| `PUBLIC_ORIGIN` | `http://<host>:<port>` | Exact origin the browser loads the app from; mutations prove same-origin against it; provider redirect URIs derive from it. Required and `https` with `NODE_ENV=production`. |
 | `AUTH_RETURN_PATH` | `/` | Where provider callbacks redirect (`?auth=<outcome>`). |
-| `API_INSECURE_COOKIES` | `false` | Drops `__Host-` and `Secure` for plain-HTTP hosts other than localhost (never in production). |
+| `API_INSECURE_COOKIES` | `false` | Drops `__Host-` and `Secure` for plain-HTTP hosts other than localhost; refused with `NODE_ENV=production`. |
 | `SESSION_IDLE_MINUTES`, `SESSION_ABSOLUTE_HOURS`, `SESSION_STEP_UP_MINUTES` | `30`, `12`, `10` | Session windows (integrator defaults; H02 still open). |
 | `PASSWORD_MIN_LENGTH`, `ARGON2_MEMORY_KIB`, `ARGON2_TIME_COST`, `ARGON2_PARALLELISM` | `15`, `19456`, `2`, `1` | Password policy (H01) and Argon2id parameters; hashes are upgraded on login. |
 | `TOKEN_VERIFY_EMAIL_HOURS`, `TOKEN_RECOVERY_MINUTES`, `TOKEN_EMAIL_CHANGE_HOURS`, `TOKEN_INVITATION_DAYS` | `24`, `30`, `24`, `7` | Single-use token lifetimes. |
 | `AUTH_LOCKOUT_THRESHOLD`, `AUTH_LOCKOUT_WINDOW_MINUTES`, `AUTH_LOCKOUT_IP_THRESHOLD`, `AUTH_DISABLE_THRESHOLD` | `5`, `15`, `50`, `100` | H03: from the account threshold on, each further attempt waits a delay that doubles per failure (30 s base, capped at the window) and the owner is notified once; per-IP failures inside the window answer `auth.throttled`. Failures never disable a password (BE-002); `AUTH_DISABLE_THRESHOLD` is no longer used. |
-| `AUTH_RATE_LIMIT_PER_MINUTE` | `60` | `@fastify/rate-limit` per IP on `/v1/auth/*` (process-local burst protection). |
+| `AUTH_RATE_LIMIT_PER_MINUTE` | `60` | `@fastify/rate-limit` per client address on `/v1/auth/*` (process-local burst protection; answers 429 `auth.throttled`). |
 | `IDEMPOTENCY_RETENTION_HOURS` | `24` | `idempotency_record` retention. |
-| `AUTH_PROVIDER_MODE` | `disabled` | `disabled`: provider routes answer 404 and `/health.externalProviders` says `disabled`; `fake`: scriptable adapters (`POST /v1/auth/:provider/fake-identity`, loopback callers only, refused with `NODE_ENV=production`); `live`: openid-client adapters with `GOOGLE_CLIENT_ID/SECRET`, `APPLE_CLIENT_ID/SECRET` (never used by tests or checks). `/health.externalProviders` reports the mode truthfully (`disabled` \| `fake` \| `live`; contract widening requested). |
-| `AUTH_FLOW_SECRET` | random per process | Hex key (>= 32 bytes) signing the pre-login flow cookie; required for multi-node deployments. |
+| `AUTH_PROVIDER_MODE` | `disabled` | `disabled`: provider routes answer 404 and `/health.externalProviders` says `disabled`; `fake`: scriptable adapters (`POST /v1/auth/:provider/fake-identity`, loopback callers only, refused with `NODE_ENV=production`); `live`: openid-client adapters with `GOOGLE_CLIENT_ID/SECRET`, `APPLE_CLIENT_ID/SECRET` (never used by tests or checks). `/health.externalProviders` reports the mode truthfully (`disabled` \| `fake` \| `live`, `HealthSchema`). |
+| `AUTH_FLOW_SECRET` | random per process (development only) | Hex key (>= 32 bytes) signing the pre-login flow cookie; required with `NODE_ENV=production` (the process refuses to boot without it). |
 | `API_LOG_MAIL` | unset | `1` prints fake outbound mail (verification/recovery tokens) to stdout in fake mode (local only). |
-| `API_TRUST_PROXY` | unset | `1` trusts `X-Forwarded-*` behind the single-origin reverse proxy. |
+| `API_TRUSTED_PROXY_HOPS`, `API_TRUSTED_PROXIES` | `0`, unset | Which `X-Forwarded-For` hops are trusted for the client address (rate limits, lockout, session list): by default none (the socket peer); set the number of proxies in front of the API or their addresses/CIDRs, not both. The former trust-all `API_TRUST_PROXY` is refused. |
+
+Pool limits, structured logs, readiness, telemetry and security headers (`API_DB_*`, `API_LOG_*`, `API_READINESS_*`, `OTEL_*`, `API_HSTS_MAX_AGE_SECONDS`) are listed in the repository `.env.example` (OPS-001).
 
 Sweeper (bounded tables): scheduled by `apps/worker` (`trustwork.worker_sweep_expired()`); the manual `DATABASE_URL=<migrator> npm run sweep -w @trustwork/api` runs in a maintenance transaction (the API role may not run it since BE-002) and deletes expired/consumed tokens, expired login failures and idempotency records, settled admission leases past the grace period, old revoked sessions and never-verified signups older than seven days; `login_failure` is additionally capped at 10,000 rows in the database.
 

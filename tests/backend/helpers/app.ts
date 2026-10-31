@@ -104,7 +104,10 @@ export async function startHarness(label: string, options: Partial<CreateAppOpti
   const created = await createApp({
     env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_PROVIDER_MODE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '1000', AUTH_LOCKOUT_THRESHOLD: '5' },
     pool, mail, clock, mandates, providers: { google, apple }, staffRoles: async (personId) => staff.get(personId) ?? [],
-    log: (message, error) => console.error('[api]', message, error instanceof Error ? error.stack : error),
+    // Structured API log lines: only failures are printed, so a failing test still shows the server-side stack.
+    logSink: (line) => {
+      if (line.includes('"level":"error"')) console.error('[api]', line);
+    },
     ...options,
   });
   return {
