@@ -14,6 +14,7 @@ import { isRestricted } from '@trustwork/country-packs';
 import { canRead, permissionsFor, rolesFor, visibleGroups } from '../../../../apps/web/app/admin/_data/access.js';
 import { APPROVER_PERMISSIONS, approvalBlocker, evaluateCommand, parseTerritory, type CommandContext, type CommandInput } from '../../../../apps/web/app/admin/_data/commands.js';
 import { consolePort } from '../../../../apps/web/app/admin/_data/index.js';
+import { elevationState } from '../../../../apps/web/app/admin/_data/elevation.js';
 import { consoleHref, resolveConsoleRequest, STAFF_PERSONA_IDS } from '../../../../apps/web/app/admin/_data/personas.js';
 import { GROUPS, SECTIONS, sectionByPath } from '../../../../apps/web/app/admin/_data/sections.js';
 import { FIXTURE_NOW, HUB_SAMARKAND_ID, HUB_US_ID, NODE_ID } from '../../../../apps/web/app/admin/_fixtures/ids.js';
@@ -255,4 +256,15 @@ test('every built section has its screen on the console route, and only built se
     assert.equal(has, section.status === 'demo', `${group.id}.${section.id}: a screen exists exactly when the status is demo`);
     if (has) assert.ok(registry.includes(`'../hubs/[hub]${section.path ? `/${section.path}` : ''}/_screen'`), `${group.id}.${section.id} is registered in screens.ts`);
   }
+});
+
+test('the elevation gate follows BE-004 elevated sessions: own, unrevoked, started and unexpired only', () => {
+  const at = new Date('2026-10-31T12:00:00Z');
+  const record = { id: 'el-1', sessionId: 's-1', personId: 'p-hub-owner', factor: 'totp', createdAt: '2026-10-31T11:55:00Z', expiresAt: '2026-10-31T12:10:00Z', revokedAt: null };
+  assert.deepEqual(elevationState(record, 'p-hub-owner', at), { state: 'elevated', until: '2026-10-31T12:10:00Z' });
+  assert.equal(elevationState(record, 'p-editor', at).state, 'required', 'another person\'s elevation');
+  assert.equal(elevationState({ ...record, revokedAt: '2026-10-31T11:58:00Z' }, 'p-hub-owner', at).state, 'required', 'revoked');
+  assert.equal(elevationState(record, 'p-hub-owner', new Date('2026-10-31T12:10:00Z')).state, 'required', 'expired');
+  assert.equal(elevationState({ ...record, expiresAt: '2026-10-31T14:00:00Z' }, 'p-hub-owner', at).state, 'required', 'longer than the contract allows');
+  assert.equal(elevationState(null, 'p-hub-owner', at).state, 'required');
 });

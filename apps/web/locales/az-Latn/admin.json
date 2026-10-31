@@ -254,7 +254,7 @@
     },
     "elevation": {
       "title": "Bunun siz olduğunuzu təsdiqləyin",
-      "body": "Konsol parol və ikinci faktor təsdiqləndikdən sonra açılır. Genişləndirilmiş sessiya 30 dəqiqəlik fəaliyyətsizlikdən sonra və ya brauzer bağlandıqda bitir.",
+      "body": "Konsol ikinci faktor təsdiqləndikdən sonra açılır (autentifikator tətbiqindəki kod və ya bərpa kodu). Genişləndirilmiş sessiya 15 dəqiqə sonra və ya çıxış etdikdə bitir; davam etmək üçün yenidən təsdiqləyin.",
       "action": "Təsdiqlə və davam et",
       "demoNote": "Nümayiş: təsdiq imitasiya olunur."
     },

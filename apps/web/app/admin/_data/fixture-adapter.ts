@@ -1,6 +1,7 @@
 import { isRestricted } from '@trustwork/country-packs';
 import { permissionsFor, rolesFor, rolesGranting } from './access.js';
 import { evaluateCommand, type CommandInput, type CommandOutcome } from './commands.js';
+import { elevationState } from './elevation.js';
 import type { ConsoleRequest } from './personas.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { HubRecord } from './schemas.js';
@@ -22,7 +23,8 @@ import { TAXONOMY } from '../hubs/[hub]/hub/taxonomy/_fixtures.js';
  */
 
 const now = () => new Date(FIXTURE_NOW);
-const ELEVATED_UNTIL = '2026-10-31T12:30:00Z';
+/** The demo viewer's elevated session (BE-004 shape): confirmed with the authenticator app, 15 minutes long. */
+const elevationOf = (personId: string) => ({ id: `el-${personId}`, sessionId: `s-${personId}`, personId, factor: 'totp', createdAt: '2026-10-31T11:55:00Z', expiresAt: '2026-10-31T12:10:00Z', revokedAt: null });
 
 function withScenario(record: HubRecord, request: ConsoleRequest): HubRecord {
   if (!request.demo || request.scenario === 'default') return record;
@@ -36,7 +38,7 @@ async function viewer(request: ConsoleRequest): Promise<StaffViewer | null> {
   const personId = STAFF_PERSONAS[request.persona];
   const person = STAFF.people.find((p) => p.id === personId);
   if (!person) return null;
-  return { person, elevation: request.scenario === 'elevation-required' ? { state: 'required' } : { state: 'elevated', until: ELEVATED_UNTIL } };
+  return { person, elevation: request.scenario === 'elevation-required' ? { state: 'required' } : elevationState(elevationOf(person.id), person.id, now()) };
 }
 
 async function access(v: StaffViewer, target: { nodeId: string; hubId: string | null }): Promise<ConsoleAccess> {

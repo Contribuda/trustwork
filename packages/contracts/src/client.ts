@@ -16,6 +16,7 @@ export * from './common/idempotency.js';
 export * from './common/pagination.js';
 export * from './common/projection.js';
 export * from './identity.js';
+export * from './second-factor.js';
 export * from './company.js';
 export * from './access.js';
 export * from './projects.js';
