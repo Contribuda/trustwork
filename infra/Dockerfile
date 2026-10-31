@@ -34,16 +34,22 @@ RUN npm ci --no-audit --no-fund
 RUN npm run build -w @trustwork/web \
  && test -f apps/web/.next/standalone/apps/web/server.js \
  && rm -rf apps/web/.next/standalone/apps/web/.next/cache
-# Runtime file reads (apps/web/app/_lib/locale-data.ts and app/media/[...path]/route.ts) resolve these from the
-# working directory, so they are copied explicitly instead of relying on output tracing.
-RUN mkdir -p /stage/apps/web /stage/packages/ui/media \
+# Standalone output copies only traced files. Every directory the server reads with fs at run time is copied
+# explicitly instead (paths resolve from the working directory, /app/apps/web; docs/operations/images.md lists them):
+#   apps/web/locales/<tag>/<namespace>.json   language discovery and dictionaries (locale-data.ts, locale-negotiation.ts)
+#   packages/ui/locales/<tag>.json            design-system dictionaries (locale-data.ts)
+#   apps/web/fixtures                         demo content and its per-language overrides, fixtures/i18n (data/fixtures.ts)
+#   packages/ui/media/artworks                /media/* (app/media/[...path]/route.ts)
+# Country packs, the country list and brand messages are JSON imports that webpack bundles; they are copied as well so
+# a later switch to reading them with fs cannot break the image. A deployment's own configuration file and data
+# directory (TRUSTWORK_CONFIG, TRUSTWORK_DATA_DIR) are never baked in: they are mounted at run time.
+RUN mkdir -p /stage/apps/web /stage/packages/ui/media /stage/packages/country-packs \
  && cp -R apps/web/.next/standalone/. /stage/ \
  && cp -R apps/web/.next/static /stage/apps/web/.next/static \
  && cp -R apps/web/public /stage/apps/web/public \
- && rm -rf /stage/apps/web/locales /stage/packages/ui/locales \
- && cp -R apps/web/locales /stage/apps/web/locales \
- && cp -R packages/ui/locales /stage/packages/ui/locales \
- && cp -R packages/ui/media/artworks /stage/packages/ui/media/artworks \
+ && for dir in apps/web/locales apps/web/fixtures packages/ui/locales packages/ui/media/artworks packages/country-packs/packs packages/country-packs/countries; do \
+      rm -rf "/stage/$dir" && cp -R "$dir" "/stage/$dir" || exit 1; \
+    done \
  && find /stage/node_modules -type f \( -iname 'README*' -o -iname 'CHANGELOG*' -o -name '*.map' -o -name '*.d.ts' \) ! -iname 'LICEN[CS]E*' -delete \
  # Output tracing also copies TypeScript sources and notes it never loads (webpack bundled them); none ships.
  && find /stage -path /stage/node_modules -prune -o -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.md' \) -print -delete
