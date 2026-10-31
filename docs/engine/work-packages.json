@@ -1815,7 +1815,7 @@
       "id": "EXE-001",
       "title": "Project execution and fair reputation",
       "area": "execution-trust",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "COM-002",
         "PLAN-001",

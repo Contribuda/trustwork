@@ -2,7 +2,7 @@
 
 Normative requirements: [Reputation builder and passport](modules/reputation-and-passport.md), [Execution and field evidence](modules/execution-and-field-evidence.md). Participants: [who uses what](participants/README.md).
 
-Requirements R12–R14, R44. Status: project updates and published milestones are **Demo**; delivery claims, acceptance records and assertions are **Contract**; disputes, reviews and reputation snapshots are **Designed** (work package EXE-001); the reputation builder toolkit (credentials, evidence portfolio, counterparty confirmations, contributions, timeliness, the portable reputation passport, coaching) is **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 18; REP-001, REP-002, AGT-005, WEB-008).
+Requirements R12–R14, R44. Status: project updates and published milestones are **Demo**; claims, evidence, counterparty decisions, defects, disputes with appeals, fair timing, reviews and explainable reputation snapshots are **Live** in the API without a public score (work package EXE-001, [reputation policy](../product/reputation-policy/README.md)); the reputation builder toolkit (credentials, evidence portfolio, counterparty confirmations, contributions, timeliness, the portable reputation passport, coaching) is **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 18; REP-001, REP-002, AGT-005, WEB-008).
 
 Reputation is the reason the engine exists, and also the easiest thing to get wrong. A star rating that anyone can buy, inflate or weaponise is worse than none. The engine builds reputation from **evidence of what actually happened**, separates opinions from facts, and explains every number.
 
