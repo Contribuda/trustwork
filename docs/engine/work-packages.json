@@ -708,7 +708,7 @@
       "id": "BE-003",
       "title": "Account and directory completeness: company creation, handles, lists with pagination",
       "area": "backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-004"
       ],
