@@ -44,6 +44,13 @@ for (const file of files.filter((p) => p.endsWith('.md') || p.endsWith('.txt')))
   lines.forEach((line, i) => { if (/[\u0400-\u04FF]/.test(line)) errors.push(`Cyrillic text in documentation: ${relative(root, file)}:${i + 1} (docs are English only; quote the English UI label and its locale key)`); });
 }
 
+// Leftover merge-conflict markers in any tracked text file.
+const textFile = (p) => /\.(md|txt|json|ya?ml|ts|tsx|mjs|js|cjs|css|sql|example|toml)$|(^|\/)(Dockerfile|\.env\.example|NOTICE|LICENSE)$/.test(p);
+for (const file of files.filter(textFile)) {
+  const lines = readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, i) => { if (/^(<{7}|>{7})( |$)|^={7}$/.test(line)) errors.push(`Merge-conflict marker: ${relative(root, file)}:${i + 1}`); });
+}
+
 for (const p of files.filter((f) => f.endsWith('.json'))) {
   try { JSON.parse(readFileSync(p, 'utf8')); } catch { errors.push(`Invalid JSON ${relative(root, p)}`); }
 }
