@@ -273,11 +273,12 @@ CREATE TRIGGER connection_confirmation_challenge_guard BEFORE UPDATE ON trustwor
 CREATE TRIGGER connection_call_append_only BEFORE UPDATE OR DELETE ON trustwork.connection_call FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
 
 -- 8. Internal helpers (not definers; called inside the commands) ----------------------------------------------------------
--- A person held by a jurisdiction check or suspended by a confirmed screening match gets no code and no token.
+-- A person held by a jurisdiction check or suspended by a confirmed screening match gets no code and no token. The
+-- suspension is read through the screening module's own gate port (screening_state), never from its tables.
 CREATE FUNCTION trustwork.connections_person_blocked(p_person uuid) RETURNS boolean
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT EXISTS (SELECT 1 FROM trustwork.jurisdiction_hold h WHERE h.person_id = p_person AND h.cleared_at IS NULL)
-      OR EXISTS (SELECT 1 FROM trustwork.screening_subject_state s WHERE s.subject_person_id = p_person AND s.suspended)
+      OR coalesce((SELECT s.suspended FROM trustwork.screening_state('person', p_person) s), false)
 $$;
 
 CREATE FUNCTION trustwork.connections_revoke_families(p_connection uuid, p_reason text) RETURNS integer
