@@ -1,6 +1,5 @@
-import {
-  computeDigest, ENVELOPE_INTENT_ACTION, ENVELOPE_MODULE_KEYS, type ContextRef, type SendEnvelopeCommand,
-} from '../../deps/contracts.js';
+import { computeDigest, type ContextRef } from '../../deps/contracts.js';
+import { ENVELOPE_INTENT_ACTION, ENVELOPE_MODULE_KEYS, type SendEnvelopeCommand } from './contracts.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';

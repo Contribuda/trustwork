@@ -1,10 +1,7 @@
 import { Controller, Get, HttpCode, Inject, Post } from '@nestjs/common';
 import { z } from 'zod';
-import {
-  ConfigureRepresentativeCommandSchema, ConfirmGoalCommandSchema, CreateGoalCommandSchema, CreateJobSubscriptionCommandSchema, GoalEvidenceCommandSchema, GoalStatusCommandSchema,
-  GrantCompanyMandateCommandSchema, IdSchema, JobSubscriptionStatusCommandSchema, ReconfirmCompanyMandateCommandSchema, ResolveEscalationCommandSchema, RevisionCommandSchema,
-  SendEnvelopeCommandSchema, ShareReportCommandSchema,
-} from '../../deps/contracts.js';
+import { IdSchema } from '../../deps/contracts.js';
+import { ConfigureRepresentativeCommandSchema, ConfirmGoalCommandSchema, CreateGoalCommandSchema, CreateJobSubscriptionCommandSchema, GoalEvidenceCommandSchema, GoalStatusCommandSchema, GrantCompanyMandateCommandSchema, JobSubscriptionStatusCommandSchema, ReconfirmCompanyMandateCommandSchema, ResolveEscalationCommandSchema, RevisionCommandSchema, SendEnvelopeCommandSchema, ShareReportCommandSchema } from './contracts.js';
 import { Authenticated, Idempotent, ReqState, type RequestState } from '../../common/request.js';
 import { Body, Params } from '../../common/zod.js';
 import { EnvelopesService } from './envelopes.service.js';
