@@ -2250,7 +2250,7 @@
       "id": "WEB-002",
       "title": "Commercial experiences: procurement and sales on the API",
       "area": "frontend-commerce",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "COM-002",
         "BILL-001",
