@@ -1,3 +1,5 @@
+// Named to sort before communications.ts: CNT-001 releases editorial role definitions at version 1, which the
+// communications case would otherwise have taken for its own `editor` definition.
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { HUB_CONSOLE_CONTRACT_VERSION } from '@trustwork/contracts';
