@@ -9,3 +9,6 @@ export * from './server/commercial.js';
 // Federation mesh protocol trustwork-mesh/1 (FED-000, ADR 011): node-to-node contracts, served by the API and worker only,
 // so the browser bundle never carries them. The module itself stays pure (no node: import).
 export * from './federation.js';
+// Goals, envelopes, negotiation sessions, the company representative and company mandates (AGT-001). Server entry only:
+// no interface reads them yet, so they stay out of the browser bundles until the assistant surface needs them.
+export * from './agents.js';

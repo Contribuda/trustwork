@@ -29,8 +29,6 @@ export * from './content.js';
 export * from './billing.js';
 export * from './assistant.js';
 export * from './agent-catalog.js';
-// Goals, envelopes, negotiation sessions, the company representative and company mandates (AGT-001).
-export * from './agents.js';
 export * from './admin.js';
 export * from './hub.js';
 export * from './api.js';
