@@ -15,7 +15,7 @@
   "dependencies": {
     "@trustwork/contracts": "0.1.0",
     "@trustwork/ui": "0.1.0",
-    "lucide-react": "1.62.0",
+    "lucide-react": "1.63.0",
     "next": "16.4.3",
     "react": "19.3.1",
     "react-aria-components": "1.22.1",
