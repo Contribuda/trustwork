@@ -1,6 +1,6 @@
 # API and MCP
 
-Module code `API`. Status: the first-party HTTP API under `/v1/*` for identity, people, companies, memberships and projects is **Live** (contract-first, strict schemas, idempotency, projections); the OpenAPI document for implemented routes exists but its route list is hand-written; every other route in the [API conventions](../../architecture/api.md) is **Contract** only; the generated API reference, the public API with OAuth clients and webhooks, the MCP server for the person's own AI chat and the A2A gateway are **Proposed**. Packages: BE-001 (done), DOC-002, INTEG-001, AGT-016 (umbrella of the MCP server packages), AGT-017, AGT-019, FED-004. Narrative: [API conventions](../../architecture/api.md), [Connect your own agent](../agent-catalog.md#connect-your-own-agent-mcp-and-a2a), [The capability registry](../capability-registry.md); the MCP server design (ADR 013) is in review at the time of writing.
+Module code `API`. Status: the first-party HTTP API under `/v1/*` for identity, people, companies, memberships and projects is **Live** (contract-first, strict schemas, idempotency, projections); the OpenAPI document for implemented routes exists but its route list is hand-written; every other route in the [API conventions](../../architecture/api.md) is **Contract** only; the generated API reference, the public API with OAuth clients and webhooks, the MCP server for the person's own AI chat and the A2A gateway are **Proposed**. Packages: BE-001 (done), DOC-002, INTEG-001, MCP-001 … MCP-090 with AGT-016 as their umbrella, AGT-017, AGT-019, FED-004. Narrative: [API conventions](../../architecture/api.md), [Connect your own agent](../agent-catalog.md#connect-your-own-agent-mcp-and-a2a), [The capability registry](../capability-registry.md); [The MCP server](../mcp-server.md) and [ADR 013](../../adr/013-mcp-server.md) (merged design, **Proposed**); participant guide: [Connect Trustwork to your AI chat](../../guides/connect-your-ai-chat.md).
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Give every surface of the engine one contract: the first-party web app, a docume
 
 ## Who uses it
 
-The web app (first party); developers and companies integrating their tools (public API, webhooks); every participant who connects their own AI chat or agent (MCP); other participants' agents (A2A); hub staff through an admin MCP surface that a hub may enable (off by default, as the MCP design proposes).
+The web app (first party); developers and companies integrating their tools (public API, webhooks); every participant who connects their own AI chat or agent (MCP); other participants' agents (A2A); hub staff through an admin MCP surface that a hub may enable (off by default; [admin surface](../mcp-server.md#the-admin-surface)).
 
 ## User stories
 
@@ -32,7 +32,7 @@ The web app (first party); developers and companies integrating their tools (pub
 | API-F06 | A generated API reference from the registered routes and the contracts, with a CI drift check | Proposed | DOC-002, CI-001 |
 | API-F07 | Public API scopes map to projections; OAuth clients per participant and per hub; rate limits and metered external costs shown to the hub | Proposed | INTEG-001 |
 | API-F08 | Signed webhooks with replay protection and per-subscriber delivery logs | Proposed | INTEG-001 |
-| API-F09 | Every MCP tool is a projection of exactly one capability registry entry; a participant capability without interface or agent surface is a parity gap and a capability exposed to MCP without exactly one tool is a coverage gap; CI reports both | Proposed | MCP server packages under AGT-016 |
+| API-F09 | Every MCP tool is a projection of exactly one capability registry entry; a participant capability without interface or agent surface is a parity gap and a capability exposed to MCP without exactly one tool is a coverage gap; CI reports both | Proposed | MCP-001, MCP-004 |
 | API-F10 | Three MCP surfaces per hub, each its own protected resource: participants (signed in), public (anonymous, read-only public projections, low rate limits), admin (staff, off by default, no staff commits) | Proposed | AGT-016 |
 | API-F11 | Streamable HTTP transport with pinned protocol versions and a compatibility window; no session identifiers minted; cross-call state in opaque server-side handles | Proposed | AGT-016 |
 | API-F12 | The hub runs its own authorization server: OAuth 2.1 with PKCE (S256), resource indicators equal to one surface's canonical URI, issuer identification, revocation; client ID metadata documents preferred, dynamic registration behind a hub switch | Proposed | AGT-016 |
@@ -51,7 +51,7 @@ The web app (first party); developers and companies integrating their tools (pub
 
 ## Agent capabilities
 
-The API and MCP are doors to the capabilities listed on every module page; they add no capabilities of their own except connection management, which is governance (`core.connect_external_agent`, [agent module](agent.md#agent-capabilities)).
+The API and MCP are doors to the capabilities listed on every module page; they add no capabilities of their own except connection management, which is governance (`core.connect_external_agent`, [agent module](agent.md#agent-capabilities)). Each MCP tool (`<toolset>_<operation>`) projects exactly one registry capability; handoff tools open the first-party page of a governance capability ([tool catalogue](../mcp-server.md#tool-catalogue), [what never executes over MCP](../mcp-server.md#what-never-executes-over-mcp-and-why)).
 
 ## Interface surfaces
 
@@ -118,4 +118,4 @@ sequenceDiagram
 
 ## Open points
 
-The owner questions of the MCP server design (admin surface, public answers, dynamic registration default, listed clients, pre-authorized commits through connections).
+The owner questions in [ADR 013](../../adr/013-mcp-server.md#questions-for-the-owner) (admin surface, public answers, dynamic registration default, listed clients, pre-authorized commits through connections). The full tool catalogue, with every tool mapped to its registry capability and module, is in [the MCP server design](../mcp-server.md#tool-catalogue).
