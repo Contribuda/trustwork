@@ -40,7 +40,12 @@ export class TemplateParameterError extends Error {
 }
 
 export type LinkKind = 'verifyEmail' | 'emailChange' | 'recovery' | 'invitation' | 'signIn' | 'recover';
-export const SECURITY_EVENTS = ['login_throttled', 'password_reset', 'password_changed', 'email_change_requested', 'provider_linked', 'provider_unlinked'] as const;
+export const SECURITY_EVENTS = [
+  'login_throttled', 'password_reset', 'password_changed', 'email_change_requested', 'provider_linked', 'provider_unlinked',
+  // BE-004: second factor, recovery codes and support resets (SECOND_FACTOR_NOTICE_EVENTS in the contracts).
+  'second_factor_enabled', 'second_factor_removed', 'recovery_codes_regenerated', 'recovery_code_used', 'second_factor_throttled',
+  'second_factor_reset_requested', 'second_factor_reset_approved', 'second_factor_reset_cancelled', 'second_factor_reset_completed',
+] as const;
 export type SecurityEvent = (typeof SECURITY_EVENTS)[number];
 const PROVIDER_NAMES: Readonly<Record<string, string>> = { google: 'Google', apple: 'Apple' };
 

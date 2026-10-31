@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
@@ -54,6 +55,19 @@ async function login(page: Page, email: string, password = PASSWORD): Promise<vo
 test.afterEach(async () => {
   await setApiClockOffset(0);
 });
+
+/** RFC 6238 code of a base32 secret at `ms` (what an authenticator app shows); the API clock offset is added by callers. */
+function totpAt(secretBase32: string, ms: number): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = '';
+  for (const ch of secretBase32.replace(/\s/g, '').toUpperCase()) bits += alphabet.indexOf(ch).toString(2).padStart(5, '0');
+  const key = Buffer.from((bits.match(/.{8}/g) ?? []).map((b) => parseInt(b, 2)));
+  const counter = Buffer.alloc(8);
+  counter.writeBigUInt64BE(BigInt(Math.floor(ms / 30_000)));
+  const mac = createHmac('sha1', key).update(counter).digest();
+  const offset = mac[mac.length - 1]! & 0x0f;
+  return String((mac.readUInt32BE(offset) & 0x7fffffff) % 1_000_000).padStart(6, '0');
+}
 
 test('sign-up, verification from the mailbox, onboarding, sign-out and sign-in in the browser', async ({ page }) => {
   const email = uniqueEmail('signup');
@@ -391,5 +405,77 @@ test('with demo mode off, no fixture and no persona reaches any page', async ({ 
     expect(new URL(page.url()).pathname, `${path} stays in the session's workspace`).toBe(path);
     await expect(page.getByText(msg('error.pageTitle')), `${path} renders without the error boundary`).toHaveCount(0);
     for (const name of fixtureNames) await expect(page.getByText(name), `${path}: ${name}`).toHaveCount(0);
+  }
+});
+
+/**
+ * React Aria's pending buttons announce through a live region with `aria-labelledby` pointing at the button; when the
+ * next step replaces the button, that transient node (removed after about seven seconds) references nothing and axe
+ * reports it. Wait until the announcer is empty before scanning the settled page (design-system follow-up).
+ */
+async function announcerSettled(page: Page): Promise<void> {
+  await page.waitForTimeout(300);
+  await expect(page.locator('[data-live-announcer] [role="img"]')).toHaveCount(0, { timeout: 10_000 });
+}
+
+test('two-step verification: set-up in the settings, recovery codes shown once, sign-in with the app and a recovery code', async ({ page, browser }) => {
+  const { email } = await verifiedAccount(page.request, 'Factor Farida');
+  await page.goto('/app/settings');
+  await page.getByRole('button', { name: msg('settings.secondFactor.setUp') }).click();
+  const link = page.getByRole('link', { name: msg('settings.secondFactor.openApp') });
+  await expect(link).toHaveAttribute('href', /^otpauth:\/\/totp\//);
+  await expect(page.getByText(msg('settings.secondFactor.keyLabel'), { exact: true })).toBeVisible();
+  const secret = ((await page.getByTestId('totp-key').textContent()) ?? '').replace(/\s/g, '');
+  expect(secret).toMatch(/^[A-Z2-7]{32}$/);
+  await announcerSettled(page);
+  await expectAccessible(page);
+  await shot(page, '13-second-factor-setup');
+
+  const codeField = page.getByLabel(msg('settings.secondFactor.codeLabel'));
+  const now = totpAt(secret, Date.now());
+  await codeField.fill(now === '000000' ? '111111' : '000000');
+  await page.getByRole('button', { name: msg('settings.secondFactor.confirmSetup') }).click();
+  await expect(page.getByText(msg('settings.secondFactor.invalidCode'))).toBeVisible();
+  await codeField.fill(totpAt(secret, Date.now()));
+  await page.getByRole('button', { name: msg('settings.secondFactor.confirmSetup') }).click();
+
+  const list = page.getByRole('list', { name: msg('settings.secondFactor.codesCaption') });
+  await expect(list.getByRole('listitem')).toHaveCount(10);
+  const codes = (await list.getByRole('listitem').allTextContents()).map((c) => c.trim());
+  await expect(page.getByRole('button', { name: msg('settings.secondFactor.done') })).toBeDisabled();
+  await announcerSettled(page);
+  await expectAccessible(page);
+  await shot(page, '14-recovery-codes');
+  await page.getByText(msg('settings.secondFactor.codesStored')).click();
+  await page.getByRole('button', { name: msg('settings.secondFactor.done') }).click();
+  await expect(page.getByRole('button', { name: msg('settings.secondFactor.regenerate') })).toBeVisible();
+
+  // Another device: the password alone is not enough any more.
+  await setApiClockOffset(30_000);
+  const phone = await browser.newContext();
+  const other = await phone.newPage();
+  await login(other, email);
+  const heading = other.getByRole('heading', { name: msg('auth.secondFactor.title') });
+  await expect(heading).toBeFocused();
+  expect(await sessionCookie(other), 'no session before the second factor').toBeUndefined();
+  await announcerSettled(other);
+  await expectAccessible(other);
+  await shot(other, '15-sign-in-second-factor');
+  await other.getByLabel(msg('auth.secondFactor.codeLabel')).fill(totpAt(secret, Date.now() + 30_000));
+  await other.getByRole('button', { name: msg('auth.secondFactor.submit') }).click();
+  await expect(other).toHaveURL(/\/app$/);
+  await phone.close();
+
+  // A third device with a recovery code; the same code never works twice.
+  for (const [attempt, expected] of [[0, 'ok'], [1, 'used']] as const) {
+    const ctx = await browser.newContext();
+    const third = await ctx.newPage();
+    await login(third, email);
+    await third.getByRole('button', { name: msg('auth.secondFactor.useRecovery') }).click();
+    await third.getByLabel(msg('auth.secondFactor.recoveryLabel')).fill(codes[0]!);
+    await third.getByRole('button', { name: msg('auth.secondFactor.submit') }).click();
+    if (expected === 'ok') await expect(third, `attempt ${attempt}`).toHaveURL(/\/app$/);
+    else await expect(third.getByText(msg('auth.secondFactor.invalidCode'))).toBeVisible();
+    await ctx.close();
   }
 });

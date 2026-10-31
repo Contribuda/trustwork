@@ -12,6 +12,8 @@ export interface AppContext {
   mandates: MandateRevocationPort;
   staffRoles: StaffRoleResolver;
   admission: AdmissionGate;
+  /** `SECOND_FACTOR_SECRET_KEY` (BE-004): seals TOTP secrets and keys recovery-code hashes; held by the API only. */
+  secondFactorKey: Buffer;
   log: (message: string, error?: unknown) => void;
 }
 export const APP_CONTEXT = Symbol('trustwork.app-context');

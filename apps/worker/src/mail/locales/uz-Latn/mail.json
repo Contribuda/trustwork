@@ -58,7 +58,16 @@
       "password_changed": "Hisobingiz paroli o‘zgartirildi va boshqa seanslardan chiqildi.",
       "email_change_requested": "Hisobingiz elektron pochta manzilini o‘zgartirish so‘raldi. O‘zgarish faqat yangi manzil tasdiqlangandan keyin amalga oshadi.",
       "provider_linked": "Hisobingizga {provider} orqali kirish ulandi.",
-      "provider_unlinked": "Hisobingizdan {provider} orqali kirish uzildi."
+      "provider_unlinked": "Hisobingizdan {provider} orqali kirish uzildi.",
+      "second_factor_enabled": "Hisobingiz uchun autentifikator ilovasi bilan ikki bosqichli tasdiqlash yoqildi.",
+      "second_factor_removed": "Hisobingizning ikki bosqichli tasdiqlashidan autentifikator ilovasi olib tashlandi.",
+      "recovery_codes_regenerated": "Hisobingiz uchun yangi zaxira kodlar yaratildi. Avvalgi foydalanilmagan kodlar endi ishlamaydi.",
+      "recovery_code_used": "Zaxira kodlaringizdan biri kirish yoki muhim amalni tasdiqlash uchun ishlatildi. Har bir kod faqat bir marta ishlaydi.",
+      "second_factor_throttled": "Hisobingiz uchun ikki bosqichli tasdiqlash kodi bir necha marta noto‘g‘ri kiritildi. Keyingi urinishlar bir muddat sekinlashtirildi.",
+      "second_factor_reset_requested": "Qo‘llab-quvvatlash xizmatiga hisobingizning ikki bosqichli tasdiqlashini tiklash so‘rovi keldi. Ikkinchi xodim tasdiqlamaguncha va kamida 72 soatlik kutish muddati o‘tmaguncha hech narsa o‘zgarmaydi.",
+      "second_factor_reset_approved": "Hisobingizning ikki bosqichli tasdiqlashini tiklash tasdiqlandi. U kamida 72 soatlik kutish muddatidan keyin kuchga kiradi; shu vaqtgacha uni xavfsizlik sozlamalarida bekor qilishingiz mumkin.",
+      "second_factor_reset_cancelled": "Hisobingizning ikki bosqichli tasdiqlashini tiklash bekor qilindi. Hech narsa o‘zgarmadi.",
+      "second_factor_reset_completed": "Qo‘llab-quvvatlash xizmati hisobingizning ikki bosqichli tasdiqlashini tikladi va barcha seanslardan chiqildi. Tizimga kiring va ikki bosqichli tasdiqlashni qaytadan sozlang."
     },
     "notYou": "Agar bu siz bo‘lmasangiz, hoziroq parolingizni tiklang va faol seanslaringizni tekshiring.",
     "action": "Parolni tiklash"

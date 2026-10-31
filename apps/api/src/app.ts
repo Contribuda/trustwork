@@ -20,6 +20,7 @@ import { filesOptionsFromEnv, type FilesModuleOptions } from './modules/files/fi
 import { GoogleOidcProvider } from './modules/identity/providers/google.js';
 import { AppleSignInProvider } from './modules/identity/providers/apple.js';
 import { OutboxMail } from './modules/identity/mail.js';
+import { secondFactorKeyFromEnv } from './modules/identity/second-factor/secrets.js';
 import { FakeOidcProvider, noStaffRoles, RecordingMandateRevocation, systemClock, type Clock, type MailOutbox, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
 import { createReadinessProbe, discoverMigrationsDir, registerHealthRoutes, type ReadinessProbe } from './observability/health.js';
 import { instrumentHttp, NestJsonLogger } from './observability/http.js';
@@ -48,6 +49,8 @@ export interface CreateAppOptions {
   telemetryExporter?: TelemetryExporter;
   /** `fetch` used by the OTLP exporter (tests pass a fake; the default is the global fetch). */
   telemetryFetch?: typeof fetch;
+  /** Key sealing TOTP secrets and keying recovery-code hashes (BE-004); default from `SECOND_FACTOR_SECRET_KEY`. */
+  secondFactorKey?: Buffer;
   /** Files module (FILE-001): blob store, URL lifetimes and mandate port; default from `FILES_*` (off unless configured). */
   files?: FilesModuleOptions;
 }
@@ -132,6 +135,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     mandates: options.mandates ?? new RecordingMandateRevocation(),
     staffRoles: options.staffRoles ?? noStaffRoles,
     admission: new AdmissionGate(pool),
+    secondFactorKey: options.secondFactorKey ?? secondFactorKeyFromEnv(env),
     log,
   } : null;
   const services = ctx ? buildIdentityServices(ctx) : null;

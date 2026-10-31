@@ -5,6 +5,7 @@ import { LoginCommandSchema } from '@trustwork/contracts/client';
 import NextLink from 'next/link';
 import { Button, Form, FormActions, FormAlert, PasswordField, TextField } from '@trustwork/ui';
 import { ProviderButtons } from './ProviderButtons';
+import { SecondFactorStep } from './SecondFactorStep';
 import { mapFieldErrors, useAuthForm } from './useAuthForm';
 import { t } from '@/app/_lib/i18n';
 import { safeNext } from '@/app/_lib/safe-next';
@@ -21,10 +22,13 @@ const FIELD_MAP = {
  * server component renders for the new session. Invalid credentials clear the password and keep the e-mail; «Forgot
  * the password?» carries the e-mail to `/recover` (WCAG 2.2 3.3.7). The e-mail typed at signup is prefilled once from
  * the browser session, never from other users. Demo deployments validate only and say that nobody signs in there.
+ * A person with a second factor continues with `SecondFactorStep` (BE-004), also when a provider sign-in returns with
+ * `?auth=second_factor_required`.
  */
-export function LoginForm({ next, reason, demoMode }: { next: string | null; reason: string | null; demoMode: boolean }) {
+export function LoginForm({ next, reason, demoMode, secondFactor = false }: { next: string | null; reason: string | null; demoMode: boolean; secondFactor?: boolean }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [stage, setStage] = useState<'password' | 'second_factor'>(secondFactor ? 'second_factor' : 'password');
   const form = useAuthForm();
   const throttled = form.alert?.code === 'auth.throttled';
   useEffect(() => {
@@ -35,6 +39,10 @@ export function LoginForm({ next, reason, demoMode }: { next: string | null; rea
       /* storage unavailable */
     }
   }, []);
+
+  if (stage === 'second_factor') {
+    return <SecondFactorStep onDone={() => window.location.assign(withBase(safeNext(next) ?? '/app'))} onRestart={() => setStage('password')} />;
+  }
 
   return (
     <div className="au-form">
@@ -65,7 +73,10 @@ export function LoginForm({ next, reason, demoMode }: { next: string | null; rea
           event.preventDefault();
           const response = await form.submit({ path: '/v1/auth/login', payload: { email, password }, schema: LoginCommandSchema, demo: demoMode, onError: (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP) });
           if (response.kind === 'demo') form.setAlert({ tone: 'info', text: t('demo.noAccountCreated') });
-          else if (response.kind === 'ok') window.location.assign(withBase(safeNext(next) ?? '/app'));
+          else if (response.kind === 'ok' && response.body.status === 'second_factor_required') {
+            setPassword('');
+            setStage('second_factor');
+          } else if (response.kind === 'ok') window.location.assign(withBase(safeNext(next) ?? '/app'));
           else if (response.kind === 'error' && response.error.code === 'auth.invalid_credentials') setPassword('');
         }}
       >

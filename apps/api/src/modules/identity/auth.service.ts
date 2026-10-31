@@ -11,6 +11,7 @@ import { hoursOf, minutesOf } from './mail.js';
 import { lockoutPolicy, remainingWaitSeconds, type LockoutPolicy } from './lockout.js';
 import type { PasswordService } from './password.service.js';
 import type { PrincipalService } from './principal.service.js';
+import type { SecondFactorService } from './second-factor/second-factor.service.js';
 import { toPerson, toSession } from './serializers.js';
 import { randomToken, sha256Hex, subjectHash } from './tokens.js';
 
@@ -25,7 +26,7 @@ interface Subjects { accountSubject: string; ipSubject: string }
  */
 export class AuthService {
   private readonly lockout: LockoutPolicy;
-  constructor(private readonly ctx: AppContext, private readonly passwords: PasswordService, private readonly principals: PrincipalService) {
+  constructor(private readonly ctx: AppContext, private readonly passwords: PasswordService, private readonly principals: PrincipalService, private readonly secondFactors: SecondFactorService) {
     this.lockout = lockoutPolicy(ctx.config.lockout);
   }
 
@@ -87,7 +88,8 @@ export class AuthService {
       const actingProvider = acting && state.session && (state.session.authMethod === 'google' || state.session.authMethod === 'apple') ? state.session.authMethod : null;
       if (creds.some((c) => c.kind === 'password' && !c.disabled_at)) await credentials.disableProvidersCreatedBefore(trx, personId, now, now, actingProvider);
       await authTokens.consumeOutstanding(trx, personId, proof.kind === 'verify_email' ? 'verify_email' : null, now);
-      const issued = acting ? null : await this.principals.createSession(trx, request, personId, 'password');
+      // A person with an active second factor gets no session from a mailbox proof: they sign in with both factors.
+      const issued = acting || (await this.secondFactors.hasActiveFactor(trx, personId)) ? null : await this.principals.createSession(trx, request, personId, 'password');
       const entries: AuditEntry[] = [{ action: proof.kind === 'verify_email' ? 'auth.email_verified' : 'auth.email_changed', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { outcome: proof.outcome } }];
       const intents: Intent[] = [{ personId, type: proof.kind === 'verify_email' ? 'identity.email_verified' : 'identity.email_changed' }];
       if (proof.displaced_person_id) {
@@ -144,7 +146,11 @@ export class AuthService {
     });
   }
 
-  async login(input: { email: string; password: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<{ status: 'authenticated'; personId: string }> {
+  /**
+   * Password sign-in. A person with an active second factor gets no session yet: the answer is
+   * `second_factor_required` with a short-lived challenge cookie, and `POST /v1/auth/second-factor` issues the session.
+   */
+  async login(input: { email: string; password: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<{ status: 'authenticated'; personId: string } | ReturnType<SecondFactorService['challengeResponse']>> {
     const subjects = await this.throttle(input.email, state, 'auth.login');
     const lookup = await auth.lookupPasswordCredential(this.ctx.pool, input.email);
     const verified = await this.passwords.verify(lookup.password_hash, input.password);
@@ -158,13 +164,22 @@ export class AuthService {
     const rehashed = this.passwords.needsRehash(lookup.password_hash) ? await this.passwords.hash(input.password) : null;
     const issued = await withPrincipal(this.ctx.pool, { personId, authzEpoch: epoch }, async (trx) => {
       if (rehashed) await credentials.setPasswordHash(trx, personId, rehashed);
+      if (await this.secondFactors.hasActiveFactor(trx, personId)) {
+        const challenge = await this.secondFactors.issueChallenge(trx, personId, 'password');
+        await journal(trx, { action: 'auth.login_second_factor_required', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { method: 'password' } });
+        return { challenge } as const;
+      }
       const session = await this.principals.createSession(trx, request, personId, 'password');
       await clearOwnLoginFailures(trx);
       await journal(trx, { action: 'auth.login', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { sessionId: session.sessionId, method: 'password' } },
         [{ personId, type: 'identity.session_started', payload: { sessionId: session.sessionId, method: 'password' } }]);
-      return session;
+      return { session } as const;
     });
-    this.principals.setCookie(reply, issued.token);
+    if ('challenge' in issued) {
+      this.secondFactors.setChallengeCookie(reply, issued.challenge.token);
+      return this.secondFactors.challengeResponse(issued.challenge.expiresAt);
+    }
+    this.principals.setCookie(reply, issued.session.token);
     return { status: 'authenticated', personId };
   }
 
@@ -173,6 +188,7 @@ export class AuthService {
       const sessionId = state.session.id;
       await this.principals.runAs(state, async (trx, principal) => {
         await sessions.revoke(trx, sessionId, 'logout', this.now);
+        await this.secondFactors.endElevationsOfSession(trx, sessionId);
         await auditEvents.append(trx, { actor_person_id: principal.personId, action: 'auth.logout', object_kind: 'session', object_id: sessionId, request_id: state.requestId, authz_epoch: principal.authzEpoch });
       });
     }

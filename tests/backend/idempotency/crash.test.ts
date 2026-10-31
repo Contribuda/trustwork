@@ -13,6 +13,8 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { FilesystemBlobStore } from '../../../packages/data/src/files/index.js';
+import { randomUUID } from 'node:crypto';
+import { elevate, enrol } from '../second-factor/helpers.js';
 
 // FILE-001: the files routes are mounted only with a blob store; the storage fake keeps everything local.
 const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobStore({ root: mkdtempSync(join(tmpdir(), 'trustwork-crash-files-')) }) } });
@@ -466,6 +468,28 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     const bookmark = (await exactlyOnce({ action: 'bookmark.add', client: petr, url: '/v1/me/bookmarks', body: { target: { kind: 'publication', id: publication } }, effects: rows('bookmark') })).body as { id: string };
     await exactlyOnce({ action: 'bookmark.remove', client: petr, url: `/v1/me/bookmarks/${bookmark.id}/remove`, body: {}, effects: rows('bookmark', 'AND removed_at IS NOT NULL') });
     await exactlyOnce({ action: 'reading_progress.record', client: petr, url: '/v1/me/reading-progress', body: { publicationVersionId: publication, progress: '0.5' }, effects: rows('reading_progress') });
+  });
+
+  // BE-004: the support reset routes are staff routes behind an elevated session. Runs last: it enrols and elevates
+  // two staff members, and the subject (`pure`) is used by no other subtest.
+  await t.test('support reset of a second factor: request, cancel, approve, execute', async () => {
+    h.staff.set(seed.people.anna, ['support-agent']);
+    h.staff.set(seed.people.boris, ['support-lead']);
+    const agent = await as('anna');
+    await elevate(h, agent, (await enrol(h, agent)).secret);
+    const lead = await as('boris');
+    await elevate(h, lead, (await enrol(h, lead)).secret);
+    const base = '/v1/admin/support/second-factor-resets';
+    const body = () => ({ subjectPersonId: seed.people.pure, supportCaseId: randomUUID(), evidenceRefs: [randomUUID()], reason: 'Lost authenticator; identity checked on a recorded call' });
+    const first = (await exactlyOnce({ action: 'support.second_factor_reset.request', client: agent, url: base, body: body(), effects: () => auditCount(h.db.admin, 'support.second_factor_reset_requested') })).body as { id: string };
+    await exactlyOnce({ action: 'support.second_factor_reset.cancel', client: agent, url: `${base}/${first.id}/cancel`, body: {}, effects: () => auditCount(h.db.admin, 'support.second_factor_reset_cancelled') });
+    const second = await agent.post(base, body());
+    assert.equal(second.status, 201, JSON.stringify(second.body));
+    const id = (second.body as { id: string }).id;
+    await exactlyOnce({ action: 'support.second_factor_reset.approve', client: lead, url: `${base}/${id}/approve`, body: {}, effects: () => auditCount(h.db.admin, 'support.second_factor_reset_approved') });
+    await h.db.admin.query("UPDATE trustwork.second_factor_reset SET requested_at = requested_at - interval '73 hours', approved_at = approved_at - interval '73 hours', effective_at = effective_at - interval '73 hours' WHERE id = $1", [id]);
+    await exactlyOnce({ action: 'support.second_factor_reset.execute', client: lead, url: `${base}/${id}/execute`, body: {}, effects: () => auditCount(h.db.admin, 'support.second_factor_reset_completed') });
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.outbox_event WHERE type = 'identity.second_factor_reset_completed' AND aggregate_id = $1", [seed.people.pure]), 1, 'one completion intent');
   });
 
   await t.test('every in-transaction route was crash-tested', () => {
