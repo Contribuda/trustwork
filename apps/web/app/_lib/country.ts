@@ -53,27 +53,23 @@ export function currencyCode(): string {
   return activePack().currency.code;
 }
 
-/** Region codes of the active pack in pack order (cities first where the pack lists them so). */
-export function regionCodes(): string[] {
-  return activePack().regions.map((r) => r.code);
-}
-
 /**
- * Region filter options from the records on a page (CFG-001): the distinct regions present, the active pack's
- * regions first in pack order, then the rest by label. Records keep their own regions whatever country the visitor
- * chose, so the options always match the data and no country is assumed.
+ * Region codes of the active pack in pack order (cities first where the pack lists them so). The list is a live
+ * view: every read resolves the active pack of the request reading it, so a list kept in a module-level constant
+ * (evaluated once, outside any request) still follows each visitor's country instead of freezing whichever country
+ * was active, or configured, when the module loaded (CFG-001).
  */
-export function regionOptions(present: readonly (string | null | undefined)[]): string[] {
-  const codes = [...new Set(present.filter((code): code is string => Boolean(code)))];
-  const order = new Map(activePack().regions.map((r, i) => [r.code, i]));
-  const collator = new Intl.Collator(activeLocale());
-  return codes.sort((a, b) => {
-    const ia = order.get(a);
-    const ib = order.get(b);
-    if (ia !== undefined && ib !== undefined) return ia - ib;
-    if (ia !== undefined) return -1;
-    if (ib !== undefined) return 1;
-    return collator.compare(regionLabel(a), regionLabel(b));
+export function regionCodes(): string[] {
+  const current = (): string[] => activePack().regions.map((r) => r.code);
+  return new Proxy<string[]>([], {
+    get(_target, property) {
+      const list = current();
+      const value: unknown = Reflect.get(list, property, list);
+      return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(list) : value;
+    },
+    has(_target, property) {
+      return Reflect.has(current(), property);
+    },
   });
 }
 
