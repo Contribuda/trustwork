@@ -193,6 +193,21 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'trust.review_respond': IN_TRANSACTION,
   'trust.appeal_file': IN_TRANSACTION,
   'trust.snapshot_compute': IN_TRANSACTION,
+  // Assistant (AST-001): every route runs in one PrincipalService.runAs transaction and returns its result unchanged;
+  // queued agent actions leave through the job table in that same commit (the dispatch happens in the worker).
+  'assistant.mandate_create': IN_TRANSACTION,
+  'assistant.mandate_revise': IN_TRANSACTION,
+  'assistant.mandate_suspend': IN_TRANSACTION,
+  'assistant.mandate_revoke': IN_TRANSACTION,
+  'assistant.proposal_confirm': IN_TRANSACTION,
+  'assistant.proposal_decline': IN_TRANSACTION,
+  'assistant.decision_approve': IN_TRANSACTION,
+  'assistant.decision_decline': IN_TRANSACTION,
+  'assistant.run_cancel': IN_TRANSACTION,
+  'assistant.stop_engage': IN_TRANSACTION,
+  'assistant.stop_release': IN_TRANSACTION,
+  'assistant.conversation_turn': IN_TRANSACTION,
+  'assistant.backlog_status': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

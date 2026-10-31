@@ -17,6 +17,8 @@ import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
 import { ExecutionModule } from './modules/execution/execution.module.js';
 import { TrustModule } from './modules/trust/trust.module.js';
+import { AssistantModule, assistantMandateStore } from './modules/assistant/assistant.module.js';
+import { MODULE_KEYS } from './modules/assistant/mandate-store.js';
 
 @Controller()
 export class HealthController {
@@ -27,16 +29,33 @@ export class HealthController {
 
 /**
  * Composition root: health always; identity, projects, directory, plans, catalogue, procurement, sales, transactions,
- * profiles, tasks, execution and trust, and platform administration only when a database is configured; files (FILE-001) additionally only with a configured blob store.
+ * profiles, tasks, execution and trust, platform administration and the assistant only when a database is configured;
+ * files (FILE-001) additionally only with a configured blob store. Every module's agent check goes to the one AST-001
+ * mandate store (confirmed mandates); a caller-supplied mandate port in `files` still wins (tests).
  */
 @Module({})
 export class AppModule {
   static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, files: FilesModuleOptions = { store: null }): DynamicModule {
+    if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
+    const store = assistantMandateStore(ctx);
     return {
       module: AppModule,
       controllers: [HealthController],
       providers: [{ provide: API_CONFIG, useValue: config }],
-      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity), SalesModule.forRoot(ctx, identity), TransactionsModule.forRoot(ctx, identity), ProfilesModule.forRoot(ctx, identity), TasksModule.forRoot(ctx, identity), ExecutionModule.forRoot(ctx, identity), TrustModule.forRoot(ctx, identity), PlatformAdminModule.forRoot(ctx, identity), FilesModule.forRoot(ctx, identity, files)] : [],
+      imports: [
+        IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity),
+        PlansModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.plans) }),
+        CatalogueModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
+        ProcurementModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
+        SalesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
+        TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
+        ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
+        TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks) }),
+        ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity),
+        PlatformAdminModule.forRoot(ctx, identity),
+        AssistantModule.forRoot(ctx, identity),
+        FilesModule.forRoot(ctx, identity, { ...files, mandates: files.mandates ?? store.port(MODULE_KEYS.files) }),
+      ],
     };
   }
 }
