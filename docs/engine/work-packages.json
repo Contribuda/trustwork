@@ -5989,7 +5989,7 @@
       "id": "FED-000",
       "title": "Specify the mesh protocol and federation contracts",
       "area": "federation",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/engine/federation.md",
       "goal": "Freeze the federation protocol of ADR 011 as contracts and conformance vectors before any implementation.",

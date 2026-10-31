@@ -1,0 +1,314 @@
+{
+  "protocol": "trustwork-mesh/1",
+  "algorithm": "Ed25519 (RFC 8032) over UTF-8(\"trustwork-mesh/1\" LF purpose LF JCS(document with signature = {algorithm, keyId}))",
+  "keys": {
+    "note": "RFC 8032 section 7.1 test keys; public test data, never node keys.",
+    "build.example.org#k1": {
+      "publicKey": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+      "rfc8032": "TEST 1"
+    },
+    "build.example.org#k2": {
+      "publicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+      "rfc8032": "TEST 2"
+    },
+    "austin.example.org#a1": {
+      "publicKey": "_FHNjmIYoaONpH7QAjDwWAgW7RO6MwOsXeuRFUiQgCU",
+      "rfc8032": "TEST 3"
+    }
+  },
+  "vectors": [
+    {
+      "name": "key-rotation",
+      "description": "k1 hands over to k2; signed by the previous key k1.",
+      "purpose": "key_rotation",
+      "keyId": "k1",
+      "publicKey": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+      "signingInput": "trustwork-mesh/1\nkey_rotation\n{\"nextKeyId\":\"k2\",\"nextPublicKey\":\"PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw\",\"node\":\"build.example.org\",\"previousKeyId\":\"k1\",\"protocol\":\"trustwork-mesh/1\",\"rotatedAt\":\"2026-10-01T00:00:00.000Z\",\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"k1\"},\"statement\":\"key_rotation\"}",
+      "signingInputSha256": "a6d7d4865385e53cf17366917131ffe4af8982ec06898f9509493341c1c76fb6",
+      "signature": "AeILioCAV6wZkpwDjACft6KG-C0CyUQnrbSh7104u3eZQXN0_aaHMBzZnHbuzF0hL6unf-COSAxfxZVjsXgKCA",
+      "document": {
+        "protocol": "trustwork-mesh/1",
+        "statement": "key_rotation",
+        "node": "build.example.org",
+        "previousKeyId": "k1",
+        "nextKeyId": "k2",
+        "nextPublicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+        "rotatedAt": "2026-10-01T00:00:00.000Z",
+        "signature": {
+          "algorithm": "ed25519",
+          "keyId": "k1",
+          "value": "AeILioCAV6wZkpwDjACft6KG-C0CyUQnrbSh7104u3eZQXN0_aaHMBzZnHbuzF0hL6unf-COSAxfxZVjsXgKCA"
+        }
+      }
+    },
+    {
+      "name": "manifest",
+      "description": "The national node manifest, signed with its current key k2.",
+      "purpose": "manifest",
+      "keyId": "k2",
+      "publicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+      "signingInput": "trustwork-mesh/1\nmanifest\n{\"deploymentAttestation\":{\"attestedAt\":\"2026-06-01T00:00:00.000Z\",\"basis\":\"operator_statement\",\"expiresAt\":\"2027-06-01T00:00:00.000Z\",\"gateMode\":\"ranges_file\",\"hostingCountry\":\"US\",\"hostingRegion\":\"US-VA\",\"id\":\"att-0001\",\"nodeId\":\"node-0001\",\"operatorEntityCountry\":\"US\",\"operatorEntityRegion\":\"US-TX\",\"statementDigest\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"supersedesId\":null},\"engine\":{\"source\":\"https://github.com/Contribuda/trustwork\",\"version\":\"0.1.0\"},\"hubs\":[{\"id\":\"us\",\"languages\":[\"en\",\"es\"],\"territories\":[\"US\"]}],\"issuedAt\":\"2026-11-01T00:00:00.000Z\",\"jurisdiction\":\"US\",\"keys\":{\"chain\":[{\"algorithm\":\"ed25519\",\"keyId\":\"k1\",\"publicKey\":\"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo\",\"retiredAt\":\"2026-10-01T00:00:00.000Z\",\"revocation\":null,\"rotation\":null,\"validFrom\":\"2026-01-01T00:00:00.000Z\"},{\"algorithm\":\"ed25519\",\"keyId\":\"k2\",\"publicKey\":\"PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw\",\"retiredAt\":null,\"revocation\":null,\"rotation\":{\"previousKeyId\":\"k1\",\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"k1\",\"value\":\"AeILioCAV6wZkpwDjACft6KG-C0CyUQnrbSh7104u3eZQXN0_aaHMBzZnHbuzF0hL6unf-COSAxfxZVjsXgKCA\"}},\"validFrom\":\"2026-10-01T00:00:00.000Z\"}],\"current\":\"k2\"},\"licenceConditions\":{\"attributionVisible\":true,\"neverPresentedAsLocal\":true,\"noModelTrainingOutsideGovernedRetrieval\":true,\"noResaleOfPersonalData\":true,\"tombstoneHours\":72},\"licences\":{\"certificates\":\"verification_record\",\"deal_data\":\"parties_only\",\"directory_facts\":\"open_data_with_attribution\",\"editorial_publications\":\"cc_by_4_0\",\"events\":\"redisplay_with_attribution\",\"images\":\"own_licence_only\",\"imported_items\":\"source_licence\",\"magazine_issues\":\"contents_and_links\",\"member_publications\":\"headline_and_link\",\"open_needs\":\"redisplay_with_attribution\",\"person_profiles\":\"mesh_only_redisplay\",\"reputation_snapshots\":\"redisplay_unchanged\",\"reviews\":\"none\"},\"node\":\"build.example.org\",\"operator\":{\"abuseContact\":\"mailto:abuse@build.example.org\",\"country\":\"US\",\"name\":\"Example Builders Cooperative (synthetic)\",\"registration\":{\"kind\":\"us_ein\",\"value\":\"00-0000000\"},\"takedownContact\":\"https://build.example.org/legal/takedown\"},\"packs\":[{\"country\":\"US\",\"version\":\"2026.10.1\"}],\"peeringPolicy\":{\"agentEnvelopesPerHour\":60,\"offered\":[\"syndicate\",\"trust_verifications\",\"deal_routing\"],\"secondApproverFor\":[\"deal_routing\",\"identity\"]},\"protocol\":[\"trustwork-mesh/1\"],\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"k2\"}}",
+      "signingInputSha256": "880ce505e0e5ae16907bea81026e9091819da608550d308f07252d9fda2f592b",
+      "signature": "kf1M3MPGQuUs2_2SGF8tXEaIV-FR63Hz6SAR8AqCVTg1V3ZdJCjE7uYLxIcpKNPIEWtaM_aDJwaojXjoJMPvAQ",
+      "document": {
+        "protocol": [
+          "trustwork-mesh/1"
+        ],
+        "node": "build.example.org",
+        "engine": {
+          "version": "0.1.0",
+          "source": "https://github.com/Contribuda/trustwork"
+        },
+        "operator": {
+          "name": "Example Builders Cooperative (synthetic)",
+          "country": "US",
+          "registration": {
+            "kind": "us_ein",
+            "value": "00-0000000"
+          },
+          "abuseContact": "mailto:abuse@build.example.org",
+          "takedownContact": "https://build.example.org/legal/takedown"
+        },
+        "jurisdiction": "US",
+        "hubs": [
+          {
+            "id": "us",
+            "territories": [
+              "US"
+            ],
+            "languages": [
+              "en",
+              "es"
+            ]
+          }
+        ],
+        "packs": [
+          {
+            "country": "US",
+            "version": "2026.10.1"
+          }
+        ],
+        "licences": {
+          "directory_facts": "open_data_with_attribution",
+          "person_profiles": "mesh_only_redisplay",
+          "editorial_publications": "cc_by_4_0",
+          "member_publications": "headline_and_link",
+          "imported_items": "source_licence",
+          "magazine_issues": "contents_and_links",
+          "events": "redisplay_with_attribution",
+          "open_needs": "redisplay_with_attribution",
+          "reputation_snapshots": "redisplay_unchanged",
+          "reviews": "none",
+          "certificates": "verification_record",
+          "images": "own_licence_only",
+          "deal_data": "parties_only"
+        },
+        "licenceConditions": {
+          "attributionVisible": true,
+          "tombstoneHours": 72,
+          "noResaleOfPersonalData": true,
+          "noModelTrainingOutsideGovernedRetrieval": true,
+          "neverPresentedAsLocal": true
+        },
+        "peeringPolicy": {
+          "offered": [
+            "syndicate",
+            "trust_verifications",
+            "deal_routing"
+          ],
+          "secondApproverFor": [
+            "deal_routing",
+            "identity"
+          ],
+          "agentEnvelopesPerHour": 60
+        },
+        "keys": {
+          "current": "k2",
+          "chain": [
+            {
+              "keyId": "k1",
+              "algorithm": "ed25519",
+              "publicKey": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+              "validFrom": "2026-01-01T00:00:00.000Z",
+              "retiredAt": "2026-10-01T00:00:00.000Z",
+              "revocation": null,
+              "rotation": null
+            },
+            {
+              "keyId": "k2",
+              "algorithm": "ed25519",
+              "publicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+              "validFrom": "2026-10-01T00:00:00.000Z",
+              "retiredAt": null,
+              "revocation": null,
+              "rotation": {
+                "previousKeyId": "k1",
+                "signature": {
+                  "algorithm": "ed25519",
+                  "keyId": "k1",
+                  "value": "AeILioCAV6wZkpwDjACft6KG-C0CyUQnrbSh7104u3eZQXN0_aaHMBzZnHbuzF0hL6unf-COSAxfxZVjsXgKCA"
+                }
+              }
+            }
+          ]
+        },
+        "deploymentAttestation": {
+          "id": "att-0001",
+          "nodeId": "node-0001",
+          "operatorEntityCountry": "US",
+          "operatorEntityRegion": "US-TX",
+          "hostingCountry": "US",
+          "hostingRegion": "US-VA",
+          "gateMode": "ranges_file",
+          "statementDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "attestedAt": "2026-06-01T00:00:00.000Z",
+          "expiresAt": "2027-06-01T00:00:00.000Z",
+          "supersedesId": null,
+          "basis": "operator_statement"
+        },
+        "issuedAt": "2026-11-01T00:00:00.000Z",
+        "signature": {
+          "algorithm": "ed25519",
+          "keyId": "k2",
+          "value": "kf1M3MPGQuUs2_2SGF8tXEaIV-FR63Hz6SAR8AqCVTg1V3ZdJCjE7uYLxIcpKNPIEWtaM_aDJwaojXjoJMPvAQ"
+        }
+      }
+    },
+    {
+      "name": "envelope-public-publication",
+      "description": "A public editorial publication (CC BY 4.0) from the national node.",
+      "purpose": "envelope",
+      "keyId": "k2",
+      "publicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+      "signingInput": "trustwork-mesh/1\nenvelope\n{\"agentGenerated\":false,\"audience\":{\"kind\":\"public\"},\"consent\":null,\"dataClass\":\"editorial_publications\",\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"75e22937c73e9a08960a77b4857e2e1c4e8d44896ce681b68f427d218cbcfe47\"},\"homeNode\":\"build.example.org\",\"id\":\"trustwork://build.example.org/publication/pub-7b0c\",\"issuedAt\":\"2026-11-02T08:00:00.000Z\",\"kind\":\"publication\",\"payload\":{\"authorDisplayName\":\"Editorial team\",\"canonicalUrl\":\"https://build.example.org/news/facade-fire-safety\",\"lede\":\"What changes for cladding on mid-rise buildings.\",\"publishedAt\":\"2026-11-01T09:00:00.000Z\",\"title\":\"Facade fire safety after the 2026 code cycle\",\"topics\":[\"facades\",\"fire-safety\"]},\"projection\":\"public\",\"protocol\":\"trustwork-mesh/1\",\"revision\":3,\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"k2\"},\"subject\":null,\"syndication\":\"cc_by_4_0\"}",
+      "signingInputSha256": "321021a688097740bcee027b97e949e234377d73281f84da86aa45933f15d138",
+      "signature": "7XkrT1hRxTq2YROMIeisTxl1eAH0ZtYC0_XGJmMFFIYuRpn2kEYpRW0R1AoyGNHm7XtrXt5t8IONE1fskas0Aw",
+      "document": {
+        "protocol": "trustwork-mesh/1",
+        "id": "trustwork://build.example.org/publication/pub-7b0c",
+        "kind": "publication",
+        "revision": 3,
+        "homeNode": "build.example.org",
+        "projection": "public",
+        "dataClass": "editorial_publications",
+        "syndication": "cc_by_4_0",
+        "audience": {
+          "kind": "public"
+        },
+        "subject": null,
+        "consent": null,
+        "agentGenerated": false,
+        "payload": {
+          "title": "Facade fire safety after the 2026 code cycle",
+          "lede": "What changes for cladding on mid-rise buildings.",
+          "topics": [
+            "facades",
+            "fire-safety"
+          ],
+          "authorDisplayName": "Editorial team",
+          "publishedAt": "2026-11-01T09:00:00.000Z",
+          "canonicalUrl": "https://build.example.org/news/facade-fire-safety"
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "75e22937c73e9a08960a77b4857e2e1c4e8d44896ce681b68f427d218cbcfe47"
+        },
+        "issuedAt": "2026-11-02T08:00:00.000Z",
+        "signature": {
+          "algorithm": "ed25519",
+          "keyId": "k2",
+          "value": "7XkrT1hRxTq2YROMIeisTxl1eAH0ZtYC0_XGJmMFFIYuRpn2kEYpRW0R1AoyGNHm7XtrXt5t8IONE1fskas0Aw"
+        }
+      }
+    },
+    {
+      "name": "envelope-shared-party-quote",
+      "description": "A shared_party quote version from the city node to the parties' nodes.",
+      "purpose": "envelope",
+      "keyId": "a1",
+      "publicKey": "_FHNjmIYoaONpH7QAjDwWAgW7RO6MwOsXeuRFUiQgCU",
+      "signingInput": "trustwork-mesh/1\nenvelope\n{\"agentGenerated\":false,\"audience\":{\"kind\":\"parties\",\"nodes\":[\"build.example.org\",\"austin.example.org\"],\"parties\":[\"trustwork://build.example.org/company/co-national-builder\",\"trustwork://austin.example.org/company/co-austin-glazing\"]},\"consent\":null,\"dataClass\":\"deal_data\",\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"55676157de06bdb8c90394ecfc7df090d15aa57d8bdbe75f9dc98cb04478210e\"},\"homeNode\":\"austin.example.org\",\"id\":\"trustwork://austin.example.org/quote_version/qv-1\",\"issuedAt\":\"2026-11-02T08:00:00.000Z\",\"kind\":\"quote_version\",\"payload\":{\"currency\":\"USD\",\"rfqVersion\":{\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"},\"id\":\"rfqv-2\",\"version\":2},\"totalMinorUnits\":\"1250000\",\"validUntil\":\"2026-12-01T00:00:00.000Z\"},\"projection\":\"shared_party\",\"protocol\":\"trustwork-mesh/1\",\"revision\":1,\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"a1\"},\"subject\":\"trustwork://austin.example.org/company/co-austin-glazing\",\"syndication\":\"parties_only\"}",
+      "signingInputSha256": "78704ccada3a273533377fc34d5d21128e8a3919ac2e6a13779de2a0fface4b8",
+      "signature": "nRODRMwykaQQuKDsj9TUFaWkM8OmY9cZuMNiZTX2oDpancHXtyvgI5BS1TCsVfkUuP3bYTlWa0m30n1jV265BQ",
+      "document": {
+        "protocol": "trustwork-mesh/1",
+        "id": "trustwork://austin.example.org/quote_version/qv-1",
+        "kind": "quote_version",
+        "revision": 1,
+        "homeNode": "austin.example.org",
+        "projection": "shared_party",
+        "dataClass": "deal_data",
+        "syndication": "parties_only",
+        "audience": {
+          "kind": "parties",
+          "parties": [
+            "trustwork://build.example.org/company/co-national-builder",
+            "trustwork://austin.example.org/company/co-austin-glazing"
+          ],
+          "nodes": [
+            "build.example.org",
+            "austin.example.org"
+          ]
+        },
+        "subject": "trustwork://austin.example.org/company/co-austin-glazing",
+        "consent": null,
+        "agentGenerated": false,
+        "payload": {
+          "rfqVersion": {
+            "id": "rfqv-2",
+            "version": 2,
+            "digest": {
+              "algorithm": "trustwork-digest-1",
+              "value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            }
+          },
+          "currency": "USD",
+          "totalMinorUnits": "1250000",
+          "validUntil": "2026-12-01T00:00:00.000Z"
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "55676157de06bdb8c90394ecfc7df090d15aa57d8bdbe75f9dc98cb04478210e"
+        },
+        "issuedAt": "2026-11-02T08:00:00.000Z",
+        "signature": {
+          "algorithm": "ed25519",
+          "keyId": "a1",
+          "value": "nRODRMwykaQQuKDsj9TUFaWkM8OmY9cZuMNiZTX2oDpancHXtyvgI5BS1TCsVfkUuP3bYTlWa0m30n1jV265BQ"
+        }
+      }
+    },
+    {
+      "name": "tombstone-unpublished",
+      "description": "An unpublication tombstone for the publication, applied within 72 hours.",
+      "purpose": "tombstone",
+      "keyId": "k2",
+      "publicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+      "signingInput": "trustwork-mesh/1\ntombstone\n{\"applyBy\":\"2026-11-05T08:00:00.000Z\",\"homeNode\":\"build.example.org\",\"id\":\"trustwork://build.example.org/tombstone/ts-1\",\"issuedAt\":\"2026-11-02T08:00:00.000Z\",\"protocol\":\"trustwork-mesh/1\",\"purge\":[\"replica\",\"search_index\",\"cache\",\"saved_answers\"],\"reason\":\"unpublished\",\"revision\":3,\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"k2\"},\"target\":\"trustwork://build.example.org/publication/pub-7b0c\",\"targetKind\":\"publication\"}",
+      "signingInputSha256": "571046c87e3316d5a53fd3220827c10a0a8e2f31ed20158f3ebff48fbb746cf1",
+      "signature": "WMLYcp7OWSEw9nEOdVx00jkKoMpYUHomRopFt3ES56mr-N0scTJMsRQaRvwG7KqeW8VoPoPkR81Yoi3JwcSSAg",
+      "document": {
+        "protocol": "trustwork-mesh/1",
+        "id": "trustwork://build.example.org/tombstone/ts-1",
+        "target": "trustwork://build.example.org/publication/pub-7b0c",
+        "targetKind": "publication",
+        "homeNode": "build.example.org",
+        "revision": 3,
+        "reason": "unpublished",
+        "purge": [
+          "replica",
+          "search_index",
+          "cache",
+          "saved_answers"
+        ],
+        "issuedAt": "2026-11-02T08:00:00.000Z",
+        "applyBy": "2026-11-05T08:00:00.000Z",
+        "signature": {
+          "algorithm": "ed25519",
+          "keyId": "k2",
+          "value": "WMLYcp7OWSEw9nEOdVx00jkKoMpYUHomRopFt3ES56mr-N0scTJMsRQaRvwG7KqeW8VoPoPkR81Yoi3JwcSSAg"
+        }
+      }
+    }
+  ]
+}
