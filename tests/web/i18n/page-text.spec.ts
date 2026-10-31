@@ -35,6 +35,16 @@ for (const p of fixture('people')) routes.add(`/people/${p.slug}`);
 for (const p of fixture('projects')) routes.add(`/projects/${p.slug}`);
 for (const e of fixture('events')) routes.add(`/events/${e.slug}`);
 
+/**
+ * Pages whose server-rendered text depends on which request loaded a module first, not on the dictionaries:
+ * the onboarding interests step lists `REGIONS`, computed once per process from the country of the first
+ * request that imported `components/onboarding/onboarding-state.ts` (a pre-existing cross-request leak,
+ * reported as a follow-up of INTL-004). They stay out of the snapshot; INTL-004 compared them before and
+ * after the move on fresh servers with the same request order.
+ */
+const ORDER_DEPENDENT = new Set(['/onboarding/interests?persona=reader']);
+for (const route of ORDER_DEPENDENT) routes.delete(route);
+
 const LOCALES: Array<[string, string]> = ENGINE_LOCALES.map((tag) => [tag, localeCountry(tag)]);
 
 /** The document title and the text a reader sees: scripts, styles, icons and comments removed, entities decoded. */
