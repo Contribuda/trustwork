@@ -11,16 +11,17 @@ Requirements R09–R11, R19, R20, R29, R32–R35. Status: **Proposed** in full (
 3. [Anatomy of a job](#anatomy-of-a-job)
 4. [Flagship journey: from plan to people](#flagship-journey-from-plan-to-people)
 5. [Flagship: build and confirm your own reputation](#flagship-build-and-confirm-your-own-reputation)
-6. [The module system](#the-module-system), including [country-specific configuration](#country-specific-behaviour-is-configuration)
-7. [Metering, quotas and hub pricing](#metering-quotas-and-hub-pricing)
-8. [Catalogue by participant](#catalogue-by-participant)
-9. [How agents meet: interaction patterns](#how-agents-meet-interaction-patterns)
-10. [One assistant surface for every participant](#one-assistant-surface-for-every-participant)
-11. [Connect your own agent: MCP and A2A](#connect-your-own-agent-mcp-and-a2a)
-12. [Data model and contract additions](#data-model-and-contract-additions)
-13. [Safety](#safety)
-14. [Open questions for the owner](#open-questions-for-the-owner)
-15. [Proposed work packages](#proposed-work-packages)
+6. [Procurement and supply](#procurement-and-supply-proposed): every procurement operation as an agent capability
+7. [The module system](#the-module-system), including [country-specific configuration](#country-specific-behaviour-is-configuration)
+8. [Metering, quotas and hub pricing](#metering-quotas-and-hub-pricing)
+9. [Catalogue by participant](#catalogue-by-participant)
+10. [How agents meet: interaction patterns](#how-agents-meet-interaction-patterns)
+11. [One assistant surface for every participant](#one-assistant-surface-for-every-participant)
+12. [Connect your own agent: MCP and A2A](#connect-your-own-agent-mcp-and-a2a)
+13. [Data model and contract additions](#data-model-and-contract-additions)
+14. [Safety](#safety)
+15. [Open questions for the owner](#open-questions-for-the-owner)
+16. [Proposed work packages](#proposed-work-packages)
 
 ## What does not change
 
@@ -104,6 +105,9 @@ The frozen vocabulary (`prepare`, `research`, `communicate`, `send_quote`, `nego
 | `register` | Register for an event or enrol in a course, including colleagues the principal may register | `ask_above(0)` for paid, pre-authorizable for free | transaction |
 | `record_evidence` | Attach execution evidence and submit an assertion (delivered, performed, defect, remediation) | `ask_first(5)` | — |
 | `confirm_execution` | Confirm or dispute a counterparty's assertion | **`human_only`** | — |
+| `approve` | Decide an approval step in a company approval route (requisition, award, order, invoice, payment proposal, document, substitution, budget change, payee change) or clear a payment risk signal ([Procurement and supply](procurement-and-supply.md#approval-routes)) | **`human_only`** | — |
+| `release_payment` | Release approved payment instructions to the hub's licensed payment provider, or record a payment made outside the platform | `ask_each`; a hub may allow `ask_above` for matched, approved invoices to payees unchanged for 90 days; never pre-authorized during a payee's cooling-off period or with an open risk signal | transaction |
+| `maintain_records` | Apply changes to the company's own internal procurement records: supplier base, allocations, cost codes, stock movements, invoice capture, settings drafts | `ask_first(5)`; write-offs and supplier blocks `ask_each` | — |
 
 Confirmation of execution is `human_only` because it feeds reputation ([Execution and reputation](execution-and-reputation.md)); an agent prepares it with the evidence, a person decides. Other `human_only` classes: accepting a price version or legal terms, anything requiring step-up, submitting to an official public procurement portal, and every staff decision listed under [hub staff](#15-hub-operator-staff).
 
@@ -364,6 +368,23 @@ Suggestions are private and limited to legitimate actions: "add the acceptance a
 - Review rings, reciprocal-review patterns and confirmation swaps open a case for a person to review; they never trigger automatic sanctions and never silently change scores.
 - A participant can respond to a fair negative observation and dispute it with evidence; they cannot remove it.
 
+## Procurement and supply (Proposed)
+
+The company-side suite of [Procurement and supply](procurement-and-supply.md) (R53) is part of the one agent through the Supply family of the [module table](#families-and-modules) (AGT-024). By [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 23 **every operation a person can perform in the procurement and supply interface is also an agent capability, and vice versa**: each is defined once with a kind (`read`, `draft`, `commit`), a mandate action and a confirmation policy in the [parity table](procurement-and-supply.md#agent-parity-every-operation-is-an-agent-capability), and PRC-023 registers them in the shared capability registry that the agent runtime, MCP connections and the interface use.
+
+| Job | Module | Trigger | Mandate |
+|---|---|---|---|
+| Requisitions from the plan's takeoff (general contractor) | requisition_desk | event: `plan_version.approved`; schedule: weekly | `prepare` \| project \| lines carry plan items and cost codes; drafts only \| — \| none (drafts) |
+| Chase suppliers who have not answered | sourcing_desk | deadline: RFQ response date minus 2 days | `communicate` \| RFQs of the project \| invitees only, template wording, at most 2 reminders \| — \| `pre_authorized` |
+| Level bids and propose the award | sourcing_desk | event: RFQ deadline passed | `prepare` \| RFQs of the project \| stale quotes non-comparable; adjustments labelled \| — \| proposal `ask_each`; the award itself goes through the approval route (`approve` is `human_only`) |
+| Off-platform quotes and invoices into drafts | document_intake | event: `intake_document.received` | `prepare`, `maintain_records` \| company documents \| drafts only; never approve, pay or change a payee \| platform budget for pages beyond quota \| review stays human for quotes and invoices |
+| Receipts at the gate, offline | receiving_clerk | request (mobile) | `record_evidence` \| orders delivered to the site \| photos with capture time; discrepancies typed \| — \| `ask_first(5)` |
+| Match, exceptions and payment proposal | payables_desk | event: `trade_invoice.received`; schedule: weekly payment run | `maintain_records`, `communicate` \| company invoices \| tolerance policy of the company \| — \| exceptions to suppliers `ask_each` |
+| Release scheduled payments | payables_desk | schedule: payment dates of an approved proposal | `release_payment` \| approved proposals of the project \| matched invoices; payee unchanged 90 days; no open risk signal \| project transaction budget \| `ask_above(USD 10,000)` where the hub allows it, otherwise `ask_each` |
+| Supplier auto-quotes from price lists | quoting (supplier side) | event: `rfq_invitation.received` | `send_quote` \| invitations in categories \| catalogue lines only; never below the private floor \| — \| `ask_above` per mandate |
+
+**Never**: approve anything; clear a payment risk signal; change or accept new payee details from a document, an e-mail or another agent; call a phone number found in a document; reveal one bidder's price or identity to another; rank buyers, approvers or storekeepers; send a buyer's budget, levelling sheet or supplier notes anywhere outside the company.
+
 ## The module system
 
 A **module** is the unit in which the engine ships agent capability, a hub enables it, a payer is entitled to it and a test suite proves it safe. To the participant a module is invisible as a "thing": they see what their agent can do, the jobs it proposes and the mandates it asks for. There is no module store inside the product and no per-module agent.
@@ -405,6 +426,13 @@ Modules are code in the engine, versioned with it. A hub enables, configures and
 | `procurement` | Deal | Compares quotes honestly, proposes terms, places orders within budget, follows up deliveries | `research`, `place_order` | Clients, contractors, developers |
 | `order_desk` | Deal | Accepts orders within limits, confirms schedules, flags capacity conflicts | `accept_order`, `communicate` | Suppliers, manufacturers, subcontractors |
 | `public_tender_desk` | Deal | For public and institutional clients: market sounding, specification drafts, equal-treatment clarifications, anti-splitting guard; never awards | `prepare`, `publish` (notices on the platform), `communicate` | Public clients |
+| `requisition_desk` | Supply | Drafts requisitions from takeoffs, photos, voice notes, spreadsheets and reorder points; allocates and merges approved lines; tracks fulfilment for requesters ([Procurement and supply](procurement-and-supply.md#requisitions)) | `prepare`, `maintain_records` | Contractors, general contractors, developers, site staff |
+| `sourcing_desk` | Supply | Drafts RFQs and invitation lists, chases non-responding suppliers within quotas, answers clarifications from approved facts, levels bids with exclusions and adjustments, proposes awards, sends outcome notices; organizes opt-in demand pools where the hub allows them | `prepare`, `publish`, `communicate`, `place_order` | General contractors, developers, contractors, public clients |
+| `document_intake` | Supply | Extracts quotes, invoices, credit notes, delivery notes and price lists with confidence and locators, matches lines and units, flags discrepancies and duplicates; everything lands in a human review queue | `prepare`, `maintain_records` | Every buying company; suppliers for their own price lists |
+| `receiving_clerk` | Supply | Records goods receipts offline with photos, discrepancies and returns; proposes delivery slots and site-resource bookings; keeps stock movements and transfers | `record_evidence`, `schedule`, `maintain_records`, `communicate` (`confirm_execution` stays human) | Storekeepers, site engineers, foremen |
+| `payables_desk` | Supply | Runs the three-way match, routes exceptions, prepares payment proposals and schedules, watches payee changes and risk signals, releases payments only within mandates | `maintain_records`, `communicate`, `release_payment` (`approve` stays human) | Accounts payable, small-contractor owners |
+| `supply_watch` | Supply | Budget burn and overrun warnings, price-index escalation alerts, lead-time and delivery-date risks, expiring supplier documents, plan-change flags on open purchases, embodied-carbon totals | `research`, `prepare` | Project managers, commercial directors, homeowners with a plan |
+| `surplus_exchange` | Supply | Lists leftover stock as surplus offerings, answers pickup requests, prepares returns to suppliers | `publish`, `communicate`, `accept_order` | Contractors, suppliers |
 | `project_desk` | Delivery | Tracks participants, milestones, changes and dependencies; asks participants for updates through context threads; drafts change records with reasons | `prepare`, `communicate`, `record_evidence` | General contractors, developers, design offices |
 | `execution_clerk` | Delivery | Collects delivery notes, acts and photographs, submits assertions, reminds counterparties to confirm, tracks obligations and due dates | `record_evidence`, `communicate`, `prepare` (`confirm_execution` stays human) | Contractors, subcontractors, suppliers, clients |
 | `content_writer` | Content | Drafts publications, project stories, company announcements, expert answers; checks sources and entity links; labels assistant-assisted writing | `prepare`, `publish` | Editors, authors, experts, companies |
@@ -452,6 +480,11 @@ The engine's free floor, per module:
 | `procurement` | Honest comparison of quotes received | Order placement under standing mandates, delivery follow-up at volume |
 | `order_desk` | Drafts of acceptances | Pre-authorized acceptance within limits |
 | `public_tender_desk` | Specification and clarification drafts | Market sounding at volume, multilingual notices (hubs may make it free for public bodies) |
+| `requisition_desk`, `receiving_clerk`, `payables_desk` | One active project with the full suite (requisitions, receipts, match, payment proposals) | More projects and locations, standing mandates at volume |
+| `sourcing_desk` | Levelling of quotes received and outcome notices | Reminder sequences and award preparation at volume; pools where the hub enables them |
+| `document_intake` | A small monthly page quota | More pages (`document_pages` meter), batch intake |
+| `supply_watch` | Budget and document-expiry warnings for one project | Index alerts and lead-time watch across many projects |
+| `surplus_exchange` | Everything (reuse is never paywalled) | — |
 | `project_desk`, `execution_clerk` | One active project | More projects, scheduled update requests |
 | `content_writer`, `translation` | Short drafts and reading translations | Long-form drafts, linked editions at volume |
 | `event_networking`, `learning_coach` | Full, within event and course rules | — (tickets and courses are bought from their sellers, not from the agent plan) |

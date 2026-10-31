@@ -284,6 +284,70 @@ erDiagram
   AGREEMENT ||--o{ OBLIGATION : obliges
 ```
 
+## Procurement and supply
+
+Proposed ([data dictionary section 18a](model.md#18a-procurement-and-supply), [handbook](../engine/procurement-and-supply.md)). Everything below is private to the buying company except the shared order, receipt, invoice and payment-status records of a supplier's own orders.
+
+```mermaid
+erDiagram
+  PLAN_VERSION ||--o{ TAKEOFF : quantified_by
+  TAKEOFF ||--o{ REQUISITION : drafts
+  REQUISITION ||--|{ REQUISITION_VERSION : versions
+  REQUISITION_VERSION ||--|{ REQUISITION_LINE : lists
+  REQUISITION ||--o{ REQUISITION_ALLOCATION : sourced_by
+  REQUISITION_ALLOCATION }o--o| NEED_LINE : to_need
+  REQUISITION_ALLOCATION }o--o| CALL_OFF : to_call_off
+  REQUISITION_ALLOCATION }o--o| EXTERNAL_ORDER : to_external_order
+  REQUISITION_ALLOCATION }o--o| STOCK_TRANSFER : to_transfer
+  APPROVAL_ROUTE_VERSION ||--o{ APPROVAL_REQUEST : governs
+  APPROVAL_REQUEST ||--o{ APPROVAL_DECISION : decided_by
+  COMPANY ||--o{ SUPPLIER_RECORD : keeps_private
+  SUPPLIER_RECORD o|--o| EXTERNAL_COUNTERPARTY : off_platform
+  SUPPLIER_RECORD ||--o{ SUPPLIER_ASSESSMENT : assessed_in
+  RFQ ||--o| BID_LEVEL_SHEET : levelled_in
+  BID_LEVEL_SHEET ||--|{ BID_LEVEL_SHEET_VERSION : versions
+  BID_LEVEL_SHEET_VERSION }o--o{ QUOTE_VERSION : pins
+  BID_LEVEL_SHEET_VERSION ||--o{ AWARD_DECISION : justifies
+  AWARD_DECISION ||--o{ AGREEMENT : executes_as
+  RFQ ||--o{ BID_OUTCOME_NOTICE : notifies
+  INTAKE_DOCUMENT ||--o{ EXTRACTION_RUN : extracted_by
+  EXTRACTION_RUN ||--o| EXTRACTION_REVIEW : reviewed_by
+  INTAKE_DOCUMENT ||--o{ LINE_MATCH : matched_by
+  EQUIVALENCE_RULE_VERSION ||--o{ LINE_MATCH : justifies
+  SUBSTITUTION_REQUEST }o--|| APPROVAL_REQUEST : decided_through
+  BUDGET ||--o{ BUDGET_LINE : divided_into
+  COST_CODE ||--o{ BUDGET_LINE : codes
+  BUDGET_LINE ||--o{ COST_ENTRY : ledger
+  BUDGET_LINE ||--o{ BUDGET_CHANGE : changed_by
+  AGREEMENT ||--o{ CALL_OFF : framework_for
+  ORDER ||--o{ DISPATCH_NOTICE : announced_by
+  ORDER ||--o{ GOODS_RECEIPT : received_as
+  EXTERNAL_ORDER ||--o{ GOODS_RECEIPT : received_as
+  GOODS_RECEIPT ||--|{ GOODS_RECEIPT_LINE : lists
+  GOODS_RECEIPT o|--o| ACCEPTANCE_RECORD : may_create
+  STOCK_LOCATION ||--o{ GOODS_RECEIPT : at
+  STOCK_LOCATION ||--o{ DELIVERY_SLOT : schedules
+  STOCK_LOCATION ||--o{ SITE_RESOURCE : provides
+  STOCK_ITEM ||--o{ STOCK_MOVEMENT : moves
+  STOCK_LOCATION ||--o{ STOCK_MOVEMENT : holds
+  ORDER ||--o{ TRADE_INVOICE : invoiced_by
+  TRADE_INVOICE ||--|{ TRADE_INVOICE_VERSION : versions
+  TRADE_INVOICE_VERSION ||--|{ TRADE_INVOICE_LINE : lists
+  TRADE_INVOICE_VERSION ||--o{ INVOICE_MATCH : matched_in
+  GOODS_RECEIPT_LINE }o--o{ INVOICE_MATCH : evidences
+  TRADE_INVOICE ||--o{ PAYMENT_RISK_SIGNAL : flagged_by
+  PAYMENT_PROPOSAL ||--|{ PAYMENT_PROPOSAL_VERSION : versions
+  PAYMENT_PROPOSAL_VERSION ||--o{ PAYMENT_INSTRUCTION : instructs
+  PAYMENT_INSTRUCTION }o--|| PAYEE_ACCOUNT : pays_to
+  PAYEE_ACCOUNT ||--o{ PAYEE_CHANGE_REQUEST : changed_by
+  PAYMENT_INSTRUCTION o|--o| PAYMENT : executed_by_provider
+  TRADE_INVOICE o|--o| E_DOCUMENT_EXCHANGE : exchanged_as
+  DOCUMENT_REQUIREMENT_SET ||--o{ DOCUMENT_LINK : requires
+  PRODUCT_ENTRY ||--o{ PRODUCT_EPD : declares
+  GOODS_RECEIPT_LINE ||--o{ WARRANTY_REGISTRATION : registers
+  DEMAND_POOL ||--o{ POOL_COMMITMENT : collects
+```
+
 ## Execution, evidence and reputation
 
 ```mermaid

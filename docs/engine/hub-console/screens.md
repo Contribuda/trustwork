@@ -450,6 +450,14 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **States**: any private field requested without a grant → not found.
 - **Locale**: `admin.modules.commerce.*`
 
+### HC-68 Procurement and supply — `/modules/procurement`
+- **Purpose**: configure the company-side procurement suite for the hub without seeing any company's contents ([Procurement and supply](../procurement-and-supply.md)).
+- **Data**: approval route templates and versions; document types bound from the country pack and requirement-set templates; e-invoicing network, accounting, ERP, project-tool and extraction adapters with their modes (fake, manual, live) and metered costs; AI intake settings (allowed routes per data class, confidence thresholds, file retention, external OCR on or off); default match tolerances; fraud-control defaults (cooling-off, callback, risk-signal rules); benchmark and pooling policy with counsel sign-off; packaging unit conversions with sources; cohort counts (companies using the suite, documents processed, median cycle times across at least ten companies).
+- **Actions**: draft and activate template versions (second person for fraud-control, benchmark and pooling policy); enable adapters (second person for live); switch benchmarks or pooling on only with a recorded counsel sign-off; reconcile unknown payment or e-document outcomes with evidence; request a case grant when a company asks for help.
+- **States**: benchmarks and pooling off by default with an explanation; fraud-control values below the engine minimum rejected with the minimum shown; any company record requested without a grant → not found; demo hub banner "demo: no money moves".
+- **Mobile**: lists and approvals work at 375 px; template editors say "more comfortable on a wide screen".
+- **Locale**: `admin.modules.procurement.*`
+
 ## Trust and safety
 
 ### HC-70 Moderation — `/trust/moderation`

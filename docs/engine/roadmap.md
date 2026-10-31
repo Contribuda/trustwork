@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 182 packages: 19 done, 161 open, 1 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30 and 3 are documentation packages (DOC-001 … DOC-003).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 211 packages: 20 done, 189 open, 1 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004) and 28 are the procurement and supply suite (R53).
 
 ## Rules that keep parallel work safe
 
@@ -105,6 +105,42 @@ Billing with two budget kinds, a provider-neutral payment port that only license
 | WEB-002 | Commercial experiences: procurement and sales on the API | open | COM-002, BILL-001, WEB-004 |
 | FIELD-001 | Field evidence: RFIs, submittals, change orders, daily logs, punch lists and photos | open | EXE-001 |
 | DISP-001 | Dispute evidence packages and mediation referral | open | FIELD-001, PAY-002 |
+
+## Phase 3b: procurement and supply suite
+
+The company-side suite from plan step to payment ([Procurement and supply](procurement-and-supply.md), R53, owner request of 2026-10-31): contracts first (PRC-000), then approval routes, requisitions, the private supplier base, sourcing and bid levelling, AI document intake, cost control, receiving, stock, trade invoices with the three-way match, payment proposals with payee protection, document types and e-invoicing, accounting exports, analytics without surveillance, plan to procurement, and the ideas beyond the checklist (delivery coordination, price indices, warranties, opt-in benchmarks, EPDs, surplus, opt-in demand pooling). Every operation is also an agent capability (PRC-023, AGT-024). It builds on phase 3 commerce and payments and never holds money.
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| PRC-000 | Freeze the procurement and supply contracts | open | CTRY-002 |
+| PRC-001 | Approval routes, decisions and delegation | open | PRC-000, BE-003, DATA-004 |
+| PRC-002 | Requisitions, allocations, call-offs and imports | open | PRC-001, COM-002, DATA-003 |
+| PRC-003 | Company supplier base and external counterparties | open | PRC-000, BE-003, COM-001 |
+| PRC-004 | Sourcing events: bid levelling, award decisions and outcome notices | open | PRC-001, PRC-003, COM-002 |
+| PRC-005 | AI document intake with confidence and human review | open | PRC-000, FILE-001, LLM-001, DATA-003 |
+| PRC-006 | Equivalence rules, approved equals and substitutions | open | PRC-005, PRC-001, MAT-001, PLAN-000 |
+| PRC-007 | Project budgets and cost control | open | PRC-001, BILL-001, COM-002 |
+| PRC-008 | Goods receipts, dispatch notices, discrepancies and offline capture | open | PRC-002, EXE-001, FILE-001 |
+| PRC-009 | Site stock, movements and transfers | open | PRC-008 |
+| PRC-010 | Trade invoices, three-way match and duplicate detection | open | PRC-008, PRC-005, PRC-007, BILL-002 |
+| PRC-011 | Payment proposals, instructions and payee protection | open | PRC-010, PAY-001 |
+| PRC-012 | Document types, completeness and e-invoicing networks | open | PRC-010, KEYS-001 |
+| PRC-013 | Accounting, ERP and project-tool exports and imports | open | PRC-011, PRC-012, INTEG-001 |
+| PRC-014 | Procurement analytics without surveillance | open | PRC-004, PRC-009, PRC-011 |
+| PRC-015 | Plan to procurement: takeoffs, demand schedules and plan-change flags | open | PRC-002, PLAN-001 |
+| PRC-016 | Delivery coordination: site logistics, delivery slots and resource booking | open | PRC-008, PLAN-001 |
+| PRC-017 | Price indices and escalation alerts | open | PRC-007, PIPE-001 |
+| PRC-018 | Warranty registration and handover registers | open | PRC-008, HOME-001, MAT-001 |
+| PRC-019 | Anonymized price benchmarks and lead-time signals (opt-in, off by default) | open | PRC-010, PRC-006, BENCH-001, HUB-001 |
+| PRC-020 | Embodied carbon from product EPDs | open | PRC-004, MAT-001 |
+| PRC-021 | Surplus and returns exchange | open | PRC-009, COM-002 |
+| PRC-022 | Opt-in demand pooling for small contractors | open | PRC-004, MATCH-001, HUB-005 |
+| PRC-023 | Procurement and supply entries in the shared capability registry (agent parity) | open | PRC-000, AGT-002 |
+| WEB-011 | Procurement on the web: requisitions, approvals, supplier base, sourcing and levelling | open | PRC-002, PRC-004, PRC-023, WEB-002, LANG-ES |
+| WEB-012 | Supply on the web: receiving (mobile, offline), stock, invoices, payments, budgets and analytics | open | WEB-011, PRC-007, PRC-009, PRC-011, PRC-014, CHAN-001 |
+| HUBC-011 | Console: procurement and supply settings | open | HUBC-009, PRC-001, PRC-005, PRC-012 |
+| AGT-024 | Supply agent modules: requisition desk, sourcing desk, intake, receiving clerk, payables desk, supply watch, surplus exchange | open | AGT-008, PRC-023, PRC-004, PRC-011 |
+
 
 ## Phase 4: hubs and the hub console
 
@@ -301,6 +337,8 @@ flowchart LR
   P1 --> P2[Phase 2 plan to people, reputation, knowledge]
   P1 --> P3[Phase 3 commerce and payments]
   P2 --> P3
+  P3 --> P3B[Phase 3b procurement and supply]
+  P3B --> P5
   P1 --> P4[Phase 4 hubs and console]
   P2 --> P4
   P3 --> P5[Phase 5 agents]

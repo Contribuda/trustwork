@@ -6333,6 +6333,1016 @@
         "tests/web/docs-screens.spec.ts",
         "scripts/docs-screens.mjs"
       ]
+    },
+    {
+      "id": "PRC-000",
+      "title": "Freeze the procurement and supply contracts",
+      "area": "integrator-contracts",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Add the Zod contracts of the procurement and supply suite in one new directory so that every slice, the web app, the console and the agent modules can proceed independently, without editing frozen v1 shapes.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/data/lifecycles.md",
+        "docs/engine/commerce.md",
+        "docs/adr/003-snapshots-evidence-and-authority.md",
+        "docs/engine/agent-catalog.md"
+      ],
+      "steps": [
+        "Write packages/contracts/src/supply/{approvals,requisitions,suppliers,sourcing,intake,equivalence,cost-control,orders,receiving,stock,invoices,payments,documents,capabilities}.ts from the outline in the chapter.",
+        "Add transition tables (requisition, approval request, trade invoice, payment proposal and instruction, payee change) and pure helpers (sodViolation, threeWayMatch, stockBalance, costSummary) with unit tests.",
+        "List the proposed extensions to frozen contracts (agreement terms_kind framework, payment purpose trade_invoice, mandate actions approve, release_payment and maintain_records, context kinds, hub config domain procurement) as an integrator request; do not edit frozen files.",
+        "Encode the agent parity table as data in capabilities.ts for the shared capability registry of ADR 010 decision 23 (id, kind read, draft or commit, contract-derived input and output, data classes, mandate action, default confirmation, humanOnly, meter)."
+      ],
+      "acceptance": [
+        "PayeeAccountSchema has no account-number field and BidOutcomeNoticeSchema has no price or competitor field (schema tests).",
+        "Every transition table rejects the forbidden transitions named in the lifecycles document (tests).",
+        "threeWayMatch is exact on decimal strings and honours tolerance policies (property tests).",
+        "Every capability declares kind, mandate action and confirmation; approve is humanOnly (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/supply",
+        "tests/contracts/supply"
+      ]
+    },
+    {
+      "id": "PRC-001",
+      "title": "Approval routes, decisions and delegation",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-000",
+        "BE-003",
+        "DATA-004"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Let each company configure versioned approval routes per subject kind with built-in segregation of duties, bind every approval to the exact subject digest and keep approvals human.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/data/lifecycles.md",
+        "docs/engine/people-and-companies.md"
+      ],
+      "steps": [
+        "Migrations for approval_route_version, approval_request, approval_decision and approval_delegation in packages/data/migrations/approval-routes.",
+        "Resolve route steps from conditions and approver selectors (permission holders in the project or company, named person, project leader, quorum); escalate on timeout, never approve by silence.",
+        "Enforce segregation of duties (requester never approves; payee-change verifier never alone approves the first payment) and delegation limits.",
+        "Expose route activation and decisions as use cases; decisions require a person on the first-party surface."
+      ],
+      "acceptance": [
+        "A new subject version supersedes the pending request (test).",
+        "A requester or a delegate above the delegator's rights cannot decide (negative tests).",
+        "No mandate, extension or connection can produce an approval decision (test).",
+        "Concurrent decisions on the same step resolve once (real PostgreSQL test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/approval-routes",
+        "packages/data/migrations/approval-routes",
+        "packages/data/src/schema/approval-routes.ts",
+        "packages/data/src/repositories/approval-routes.ts",
+        "tests/approval-routes"
+      ]
+    },
+    {
+      "id": "PRC-002",
+      "title": "Requisitions, allocations, call-offs and imports",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-001",
+        "COM-002",
+        "DATA-003"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Let site staff and departments raise versioned requisitions, approve them through routes, and let buyers allocate and merge lines into needs, RFQs, call-offs, external orders and stock transfers with progress back to the requester.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/commerce.md",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Migrations for requisition, requisition_version, requisition_line and requisition_allocation; call_off and external_order with the framework terms extension agreed with the integrator.",
+        "CSV and XLSX import against a published template creating drafts only, with row-level errors.",
+        "Allocation commands with a serialized check that allocations never exceed requested quantities; call-offs never exceed the framework.",
+        "External orders reserve the transaction budget like platform orders and are never shown as platform transactions."
+      ],
+      "acceptance": [
+        "Concurrent allocations cannot exceed the requested quantity (test on real PostgreSQL).",
+        "Changing a submitted requisition creates a new version and supersedes approvals (test).",
+        "Requisitions are visible only to the requester, approvers and members with project scope (negative tests).",
+        "External orders produce no reputation records (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/requisitions",
+        "packages/data/migrations/requisitions",
+        "packages/data/src/schema/requisitions.ts",
+        "packages/data/src/repositories/requisitions.ts",
+        "tests/requisitions"
+      ]
+    },
+    {
+      "id": "PRC-003",
+      "title": "Company supplier base and external counterparties",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-000",
+        "BE-003",
+        "COM-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Give each company a private supplier base linked to directory entries without leaking, with external counterparties for suppliers not on the platform, supplier cards from own records and private assessments.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/people-and-companies.md",
+        "docs/engine/partners-and-matching.md"
+      ],
+      "steps": [
+        "Migrations for supplier_record, external_counterparty and supplier_assessment.",
+        "Link records to claimed, verified or sourced companies by reading only their public projection.",
+        "Compute supplier cards from the buyer's own agreements, orders, receipts, matches and documents.",
+        "Import suppliers from CSV or XLSX as private records only."
+      ],
+      "acceptance": [
+        "A supplier never learns it is listed, its status or the notes (forbidden-field tests across projections, search, notifications and federation).",
+        "An import never creates a directory member, claim or public record (test).",
+        "Assessments never enter reputation snapshots (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/supplier-base",
+        "packages/data/migrations/supplier-base",
+        "packages/data/src/schema/supplier-base.ts",
+        "packages/data/src/repositories/supplier-base.ts",
+        "tests/supplier-base"
+      ]
+    },
+    {
+      "id": "PRC-004",
+      "title": "Sourcing events: bid levelling, award decisions and outcome notices",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-001",
+        "PRC-003",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Add buyer-private, versioned bid-levelling sheets over pinned quote versions, award decisions through approval routes, sealed-until-deadline RFQs, prequalification eligibility rules and outcome notices without competitors' prices.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/commerce.md",
+        "docs/engine/hub-administration.md"
+      ],
+      "steps": [
+        "Migrations for bid_level_sheet, bid_level_sheet_version, award_decision and bid_outcome_notice.",
+        "Pin quote versions by id and digest; mark stale versions non-comparable; keep buyer adjustments separate and labelled.",
+        "Execute approved awards only through COM-002 agreement and order commands with authority and budget reservation.",
+        "Read prequalification passport sections shared by consent (PREQ-001) as eligibility evidence where available; unknown stays unknown."
+      ],
+      "acceptance": [
+        "A levelling sheet never reaches a seller (forbidden-field tests).",
+        "Outcome notices carry no other bidder identity or price; bands appear only after award with the buyer's opt-in (tests).",
+        "Supplier invitation order is identical with and without paid entitlements (comparison test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/sourcing",
+        "packages/data/migrations/sourcing",
+        "packages/data/src/schema/sourcing.ts",
+        "packages/data/src/repositories/sourcing.ts",
+        "tests/sourcing"
+      ]
+    },
+    {
+      "id": "PRC-005",
+      "title": "AI document intake with confidence and human review",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-000",
+        "FILE-001",
+        "LLM-001",
+        "DATA-003"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Turn quotes, invoices, credit notes, delivery notes, price lists and takeoffs into reviewed drafts: structured parsing or model extraction with confidence and locators, line and unit matching, discrepancy and duplicate flags, never auto-approval.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/hub-console/providers-and-models.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Migrations for intake_document, extraction_run, extraction_review and line_match.",
+        "Extraction adapter port with a deterministic fake; structured UBL parsing; model routes only through the gateway and the hub egress matrix.",
+        "Normalize units through the unit catalogue and sourced packaging conversions; flag discrepancies against RFQ, quote and order lines.",
+        "Human review queue: accepted reviews create drafts only; meter document pages."
+      ],
+      "acceptance": [
+        "No intake path creates an approved, ordered or paid record (test).",
+        "Text in a document never changes a payee, sends a message or calls a tool (injection suite).",
+        "Every extracted field carries confidence and locator (contract test); egress refused for disallowed data classes (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/document-intake",
+        "packages/data/migrations/document-intake",
+        "packages/data/src/schema/document-intake.ts",
+        "packages/data/src/repositories/document-intake.ts",
+        "tests/document-intake",
+        "apps/worker/src/document-intake"
+      ]
+    },
+    {
+      "id": "PRC-006",
+      "title": "Equivalence rules, approved equals and substitutions",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-005",
+        "PRC-001",
+        "MAT-001",
+        "PLAN-000"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Compare equivalent materials through sourced equivalence rules on plan-step terms and product attributes, and decide substitutions only through people (the designer of record where named).",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/projects.md"
+      ],
+      "steps": [
+        "Migrations for equivalence_rule_version, product_unit_conversion and substitution_request.",
+        "Match lines as equivalent only by a rule that cites its basis; keep equivalent distinct from approved.",
+        "Route substitution requests through the approval route kind substitution; keep approved equals with scope and expiry."
+      ],
+      "acceptance": [
+        "No agent or rule approves a substitution (test).",
+        "A rule without a basis citation cannot be activated (test).",
+        "Conversions without a source stay unconverted and flagged (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/equivalence",
+        "packages/data/migrations/equivalence",
+        "packages/data/src/schema/equivalence.ts",
+        "packages/data/src/repositories/equivalence.ts",
+        "tests/equivalence"
+      ]
+    },
+    {
+      "id": "PRC-007",
+      "title": "Project budgets and cost control",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "PRC-001",
+        "BILL-001",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Show planned, committed, actual, forecast and paid per cost code under each project transaction budget, warn before overruns and route budget changes through approvals.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/billing.md",
+        "docs/engine/projects.md"
+      ],
+      "steps": [
+        "Migrations for cost_code, budget_line, budget_change and the append-only cost_entry ledger.",
+        "Post commitments from accepted orders, call-offs and external orders, releases at order close, actuals from approved trade invoices, idempotently per source.",
+        "Warnings at configurable thresholds as decisions waiting; keep the atomic reservation as the hard stop."
+      ],
+      "acceptance": [
+        "Cost entries are idempotent per source and balance against their sources (tests).",
+        "Budgets and cost codes never reach suppliers, invited experts or staff without a case grant (negative tests).",
+        "A budget increase applies only after approval (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/cost-control",
+        "packages/data/migrations/cost-control",
+        "packages/data/src/schema/cost-control.ts",
+        "packages/data/src/repositories/cost-control.ts",
+        "tests/cost-control"
+      ]
+    },
+    {
+      "id": "PRC-008",
+      "title": "Goods receipts, dispatch notices, discrepancies and offline capture",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "PRC-002",
+        "EXE-001",
+        "FILE-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Record what arrives at a site or warehouse against orders, partial and offline, with photos, typed discrepancies, supplier notices and returns, separate from quality acceptance.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/execution-and-reputation.md",
+        "docs/engine/communications.md"
+      ],
+      "steps": [
+        "Migrations for dispatch_notice, goods_receipt, goods_receipt_line and supplier_return.",
+        "Offline sync API with client ids, device and server times and idempotent replay.",
+        "Order-line balance view (ordered, dispatched, received, accepted, invoiced, returned, open); optional acceptance_record creation for delivery claims.",
+        "Discrepancy notices to platform suppliers and drafted messages for external ones."
+      ],
+      "acceptance": [
+        "A replayed offline receipt never duplicates (test).",
+        "Photo location and faces never appear outside the buyer and that supplier (test).",
+        "A receipt never counts as confirmed acceptance unless a person records it (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/receiving",
+        "packages/data/migrations/receiving",
+        "packages/data/src/schema/receiving.ts",
+        "packages/data/src/repositories/receiving.ts",
+        "tests/receiving"
+      ]
+    },
+    {
+      "id": "PRC-009",
+      "title": "Site stock, movements and transfers",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "PRC-008"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Keep stock per site, warehouse, yard and vehicle as an append-only movement ledger with transfers, issues to work, returns, write-offs and reorder suggestions, without per-person tracking.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Migrations for stock_location, stock_item, stock_movement and stock_transfer.",
+        "Compute balances per item and location; corrections append.",
+        "Reorder points propose requisition drafts only."
+      ],
+      "acceptance": [
+        "No query or report aggregates movements per person (test over the analytics views).",
+        "Concurrent issues cannot drive a balance negative without an explicit flagged adjustment (test).",
+        "Stock locations in a restricted place are refused (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/stock",
+        "packages/data/migrations/stock",
+        "packages/data/src/schema/stock.ts",
+        "packages/data/src/repositories/stock.ts",
+        "tests/stock"
+      ]
+    },
+    {
+      "id": "PRC-010",
+      "title": "Trade invoices, three-way match and duplicate detection",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "PRC-008",
+        "PRC-005",
+        "PRC-007",
+        "BILL-002"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Receive invoices between participants or from external suppliers, match them with orders and receipts within tolerances, detect duplicates, route exceptions and approvals, and show suppliers their invoice status.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/billing.md",
+        "docs/engine/country-specifics.md"
+      ],
+      "steps": [
+        "Migrations for trade_invoice, trade_invoice_version, trade_invoice_line, match_tolerance_policy_version and invoice_match.",
+        "Two-, three- and four-way match with company tolerances; recompute on new receipts, credit notes and versions.",
+        "Duplicate and risk signals (payment_risk_signal) before approval; approval through the route creates actual cost entries.",
+        "Supplier-visible status (received, in review, approved, scheduled, paid, disputed) without internal approvers or notes."
+      ],
+      "acceptance": [
+        "A suspected duplicate cannot be approved until a person clears it (test).",
+        "Issued invoice versions are immutable; corrections reference the corrected version (trigger test).",
+        "Match results and approval records never reach the issuer (forbidden-field tests)."
+      ],
+      "paths": [
+        "apps/api/src/modules/trade-invoices",
+        "packages/data/migrations/trade-invoices",
+        "packages/data/src/schema/trade-invoices.ts",
+        "packages/data/src/repositories/trade-invoices.ts",
+        "tests/trade-invoices"
+      ]
+    },
+    {
+      "id": "PRC-011",
+      "title": "Payment proposals, instructions and payee protection",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "PRC-010",
+        "PAY-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Prepare and approve payment proposals, execute instructions only through the hub's licensed providers or record external payments with evidence, and protect payees against bank-detail and invoice fraud.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/billing.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+      ],
+      "steps": [
+        "Migrations for payment_proposal, payment_proposal_version, payment_instruction, payee_account, payee_change_request and payment_risk_signal.",
+        "Payee accounts as provider tokens with masked display and keyed fingerprint; changes only from the holder company account with a second factor, callback to a contact on file and cooling-off.",
+        "Instructions through the PAY-001 port with stable idempotency keys; unknown outcomes reconciled; external_recorded mode with evidence.",
+        "Business-email-compromise and urgency signals on procurement threads; open signals block approval and release."
+      ],
+      "acceptance": [
+        "No table or log stores an account number (schema and log tests).",
+        "A payee change from a document, e-mail or agent is refused and raises a signal (test).",
+        "Concurrent instructions never exceed an invoice's open amount; a timeout never pays twice (tests on real PostgreSQL with the fake provider).",
+        "Configurations routing funds through an operator account are refused (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/payables",
+        "packages/data/migrations/payables",
+        "packages/data/src/schema/payables.ts",
+        "packages/data/src/repositories/payables.ts",
+        "tests/payables"
+      ]
+    },
+    {
+      "id": "PRC-012",
+      "title": "Document types, completeness and e-invoicing networks",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-010",
+        "KEYS-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Use country-pack document types and company requirement sets to check completeness of supplier onboarding, orders, receipts, invoices and handovers, and exchange e-documents through network adapters with fakes.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md"
+      ],
+      "steps": [
+        "Migrations for document_requirement_set, document_link and e_document_exchange.",
+        "A UBL 2.1 serializer and parser and a fake access point; a network adapter port keyed by pack network codes.",
+        "Completeness as a condition usable in approval routes; document approvals through the route kind document."
+      ],
+      "acceptance": [
+        "Requirement sets referencing a type the bound pack lacks are rejected (test).",
+        "Exchange records are unique per network and external id; unknown outcomes reconcile (test).",
+        "No Russian network or provider can be configured (test against the restricted list)."
+      ],
+      "paths": [
+        "apps/api/src/modules/e-documents",
+        "packages/data/migrations/e-documents",
+        "packages/data/src/schema/e-documents.ts",
+        "packages/data/src/repositories/e-documents.ts",
+        "tests/e-documents"
+      ]
+    },
+    {
+      "id": "PRC-013",
+      "title": "Accounting, ERP and project-tool exports and imports",
+      "area": "backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-011",
+        "PRC-012",
+        "INTEG-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Map suppliers, cost codes, purchase orders, receipts, approved invoices, credit notes and payments to accounting and ERP systems, and import one's own budgets, commitments and vendors from construction project tools, all through adapters with fakes.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/architecture/api.md",
+        "docs/research/market-and-ideas-2026-10.md"
+      ],
+      "steps": [
+        "Object mappings and idempotent export jobs with digests of what was sent.",
+        "Fake adapters first; candidate live adapters for QuickBooks Online, Xero, Sage, NetSuite and SAP Business One, and imports from Procore and Autodesk Construction Cloud, each enabled by the hub.",
+        "Meter external calls and show their cost to the hub."
+      ],
+      "acceptance": [
+        "An unknown export outcome is reconciled, never re-sent blindly (test).",
+        "Imports create private records only (test).",
+        "Exports contain only the exporting company's own data (negative tests)."
+      ],
+      "paths": [
+        "apps/api/src/modules/accounting-exports",
+        "packages/data/migrations/accounting-exports",
+        "packages/data/src/schema/accounting-exports.ts",
+        "packages/data/src/repositories/accounting-exports.ts",
+        "tests/accounting-exports"
+      ]
+    },
+    {
+      "id": "PRC-014",
+      "title": "Procurement analytics without surveillance",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-004",
+        "PRC-009",
+        "PRC-011"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Give companies spend, price history, supplier performance from own records, requisition fulfilment, cycle times and team throughput, with a self-view for each person and no individual rankings.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Read-only views over the procurement ledgers and records the company participates in.",
+        "Team cells below three people collapse into the company total; a personal self-view; consent-based sharing of one's own figures.",
+        "Report drafts for the agent and a scoped export of the company's own data."
+      ],
+      "acceptance": [
+        "No endpoint returns a metric per person to anyone but that person without a recorded consent (negative tests).",
+        "No other company's private data enters any figure (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/procurement-analytics",
+        "tests/procurement-analytics"
+      ]
+    },
+    {
+      "id": "PRC-015",
+      "title": "Plan to procurement: takeoffs, demand schedules and plan-change flags",
+      "area": "projects",
+      "status": "open",
+      "dependsOn": [
+        "PRC-002",
+        "PLAN-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Turn approved plan items into takeoffs, a demand schedule and requisition drafts, and flag linked requisitions, RFQs and orders when a plan change touches their items.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/projects.md",
+        "docs/engine/agent-catalog.md"
+      ],
+      "steps": [
+        "Migration for takeoff; takeoff lines with sources from manual entry, spreadsheets or a takeoff extension.",
+        "Demand schedule from plan dates minus known lead times (own history or offering availability only).",
+        "Flag stale_reason plan_changed on linked records when a plan change is approved; never cancel automatically."
+      ],
+      "acceptance": [
+        "Takeoff quantities stay estimates until a person confirms them (test).",
+        "A plan change flags every linked requisition, RFQ and order (test).",
+        "Lead times never use another company's private data (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/takeoffs",
+        "packages/data/migrations/takeoffs",
+        "packages/data/src/schema/takeoffs.ts",
+        "packages/data/src/repositories/takeoffs.ts",
+        "tests/takeoffs"
+      ]
+    },
+    {
+      "id": "PRC-016",
+      "title": "Delivery coordination: site logistics, delivery slots and resource booking",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "PRC-008",
+        "PLAN-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Coordinate deliveries with site access windows, slot proposals, crane, hoist and loading-bay bookings and just-in-time call-offs from the plan schedule.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/projects.md"
+      ],
+      "steps": [
+        "Migrations for site_logistics_profile, site_resource and delivery_slot with an exclusion constraint against double booking.",
+        "Share logistics profiles only with suppliers holding an accepted order.",
+        "Propose just-in-time call-off dates from plan dates and lead times."
+      ],
+      "acceptance": [
+        "Resource bookings never overlap (concurrency test).",
+        "Site addresses and access instructions reach only suppliers with an accepted order (negative tests)."
+      ],
+      "paths": [
+        "apps/api/src/modules/site-logistics",
+        "packages/data/migrations/site-logistics",
+        "packages/data/src/schema/site-logistics.ts",
+        "packages/data/src/repositories/site-logistics.ts",
+        "tests/site-logistics"
+      ]
+    },
+    {
+      "id": "PRC-017",
+      "title": "Price indices and escalation alerts",
+      "area": "automation",
+      "status": "open",
+      "dependsOn": [
+        "PRC-007",
+        "PIPE-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Import public or licensed price-index series as sourced datasets, support index-linked price adjustment clauses, and alert owners when indices move beyond thresholds for open commitments and budgets.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/hub-console/data-mining.md",
+        "docs/research/market-and-ideas-2026-10.md"
+      ],
+      "steps": [
+        "Migrations for price_index_series, price_index_observation and escalation_watch.",
+        "Pipelines through the source registry with licence flags; revisions append.",
+        "Alerts as decisions waiting with the series, period and computation shown."
+      ],
+      "acceptance": [
+        "Series without a licence allowing display are not shown (test).",
+        "Alerts never reveal one company's commitments to another (negative test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/price-indices",
+        "packages/data/migrations/price-indices",
+        "packages/data/src/schema/price-indices.ts",
+        "packages/data/src/repositories/price-indices.ts",
+        "tests/price-indices"
+      ]
+    },
+    {
+      "id": "PRC-018",
+      "title": "Warranty registration and handover registers",
+      "area": "projects",
+      "status": "open",
+      "dependsOn": [
+        "PRC-008",
+        "HOME-001",
+        "MAT-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Create warranty registrations from receipts, installation acceptance and manufacturer warranty terms, flow them into the homeowner's home passport, and give companies an asset handover register.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/projects.md"
+      ],
+      "steps": [
+        "Migrations for warranty_registration and asset_register_entry.",
+        "Draft registrations from accepted receipts and acceptance records; register with a manufacturer only with the owner's consent.",
+        "Link registrations to home passport installed items (HOME-001) and to the company handover register."
+      ],
+      "acceptance": [
+        "Registrations stay owner-private and never federate (negative tests).",
+        "No manufacturer receives a registration without the owner's consent (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/warranties",
+        "packages/data/migrations/warranties",
+        "packages/data/src/schema/warranties.ts",
+        "packages/data/src/repositories/warranties.ts",
+        "tests/warranties"
+      ]
+    },
+    {
+      "id": "PRC-019",
+      "title": "Anonymized price benchmarks and lead-time signals (opt-in, off by default)",
+      "area": "matching",
+      "status": "open",
+      "dependsOn": [
+        "PRC-010",
+        "PRC-006",
+        "BENCH-001",
+        "HUB-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Publish hub-level price and lead-time aggregates from opted-in companies' accepted historical prices only, with minimum groups, a dominance limit and a time lag, after counsel sign-off per hub.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/partners-and-matching.md",
+        "docs/research/market-and-ideas-2026-10.md"
+      ],
+      "steps": [
+        "Migrations for benchmark_contribution_consent and price_benchmark.",
+        "Compute cells per material class, unit, region and quarter from accepted agreement prices older than the lag; suppress cells below five buyers and five sellers or above the dominance share.",
+        "Refuse activation in a hub without a recorded counsel sign-off; show method, period and group size beside every figure."
+      ],
+      "acceptance": [
+        "Suppression rules hold for every cell (property tests).",
+        "No current RFQ, quote or identity enters any input (test).",
+        "Withdrawing consent excludes the company from future periods (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/price-benchmarks",
+        "packages/data/migrations/price-benchmarks",
+        "packages/data/src/schema/price-benchmarks.ts",
+        "packages/data/src/repositories/price-benchmarks.ts",
+        "tests/price-benchmarks"
+      ]
+    },
+    {
+      "id": "PRC-020",
+      "title": "Embodied carbon from product EPDs",
+      "area": "content-sources",
+      "status": "open",
+      "dependsOn": [
+        "PRC-004",
+        "MAT-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Attach environmental product declaration data to product entries and offerings, show embodied carbon in bid levelling and project totals, and label sources and validity honestly.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/search-and-knowledge.md",
+        "docs/engine/hub-console/autonomous-editorial.md"
+      ],
+      "steps": [
+        "Migration for product_epd with programme operator, standard, declared unit, GWP for modules A1 to A3, validity and licence.",
+        "Collect from manufacturers who claimed their page and from licensed EPD sources; never scrape behind a login.",
+        "Optional carbon column in levelling and project totals with units converted through the unit catalogue."
+      ],
+      "acceptance": [
+        "Expired EPDs are labelled and excluded from totals unless the person includes them (test).",
+        "No carbon figure is shown as verified by the platform (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/epd",
+        "packages/data/migrations/epd",
+        "packages/data/src/schema/epd.ts",
+        "packages/data/src/repositories/epd.ts",
+        "tests/epd"
+      ]
+    },
+    {
+      "id": "PRC-021",
+      "title": "Surplus and returns exchange",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-009",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "List leftover stock as surplus offerings with pickup terms, answer requests through the normal quote and agreement flow, and prepare returns to suppliers, without logistics or held funds.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/commerce.md"
+      ],
+      "steps": [
+        "Offering kind surplus linked to stock movements surplus_listed and surplus_sold (catalogue extension agreed with the integrator).",
+        "Pickup coordination through context threads and delivery slots; payment only through providers or recorded externally.",
+        "Returns to suppliers through supplier_return records."
+      ],
+      "acceptance": [
+        "Surplus listings never reveal the site address before an accepted agreement (negative test).",
+        "Surplus listings rank like any offering, never by payment (comparison test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/surplus",
+        "tests/surplus"
+      ]
+    },
+    {
+      "id": "PRC-022",
+      "title": "Opt-in demand pooling for small contractors",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "PRC-004",
+        "MATCH-001",
+        "HUB-005"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Let a participant organizer pool small contractors' demand for one sourcing event under competition-law guard rails, with each member contracting and paying separately and no member seeing another.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/agents.md",
+        "docs/engine/partners-and-matching.md"
+      ],
+      "steps": [
+        "Migrations for demand_pool and pool_commitment.",
+        "Guard rails: purchasing only, free exit before award, no exchange of members' selling prices or customers, hub maximum share, counsel sign-off before the hub enables pooling.",
+        "Award creates one agreement per member at the pooled terms."
+      ],
+      "acceptance": [
+        "Members never see each other's identities, quantities or terms (negative tests).",
+        "No funds are pooled: each member pays the supplier through its own agreement (test).",
+        "Pooling cannot be enabled without the counsel record (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/demand-pools",
+        "packages/data/migrations/demand-pools",
+        "packages/data/src/schema/demand-pools.ts",
+        "packages/data/src/repositories/demand-pools.ts",
+        "tests/demand-pools"
+      ]
+    },
+    {
+      "id": "PRC-023",
+      "title": "Procurement and supply entries in the shared capability registry (agent parity)",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "PRC-000",
+        "AGT-002"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Apply ADR 010 decision 23 to the suite: every procurement and supply operation is registered once in the shared capability registry that the agent runtime, MCP connections and the interface use, with kind, inputs and outputs, data classes, mandate action, confirmation policy and meter, and the CI parity report shows no gap.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/data/model.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/agents.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+      ],
+      "steps": [
+        "Register the entries of capabilities.ts in the shared capability registry; until an engine-wide registry package exists, serve them from this module behind the same interface.",
+        "Bind each capability to one use case; the web route and the agent tool call the same use case.",
+        "Enforce humanOnly capabilities as decision cards confirmed on the first-party surface; connections can propose but never confirm them."
+      ],
+      "acceptance": [
+        "A parity test fails when a capability lacks a web route or an agent tool, or when a route or tool lacks a capability (test).",
+        "humanOnly capabilities cannot be pre-authorized by any mandate or extension (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/supply-capabilities",
+        "tests/supply-capabilities"
+      ]
+    },
+    {
+      "id": "WEB-011",
+      "title": "Procurement on the web: requisitions, approvals, supplier base, sourcing and levelling",
+      "area": "frontend-commerce",
+      "status": "open",
+      "dependsOn": [
+        "PRC-002",
+        "PRC-004",
+        "PRC-023",
+        "WEB-002",
+        "LANG-ES"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Build the buyer-side procurement screens on the API: requisitions with imports and progress, approvals as decision cards, the private supplier base and cards, sourcing events with levelling sheets, awards and outcome notices.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/design/screen-contracts/workspace/procurement.md",
+        "docs/product/information-architecture.md"
+      ],
+      "steps": [
+        "Reach every screen from the existing Procurement destination and from projects; approvals appear in decisions waiting; no new top-level navigation and no generic inbox.",
+        "Requisition form, CSV and XLSX import with row errors, line progress; levelling sheet with pinned versions, adjustments and exclusions; award and notices.",
+        "Strings in a procurement namespace in every engine language; dates, numbers and money through Intl."
+      ],
+      "acceptance": [
+        "Stale quotes are visibly non-comparable; adjustments are labelled buyer estimates.",
+        "Mobile, keyboard, screen reader, empty, error and denial states verified; levelling usable at 375 px with a wide-screen hint.",
+        "Every screen action maps to a capability of the parity registry (test)."
+      ],
+      "paths": [
+        "apps/web/app/app/requisitions",
+        "apps/web/app/app/approvals",
+        "apps/web/app/app/suppliers",
+        "apps/web/app/app/sourcing",
+        "apps/web/components/procurement",
+        "apps/web/locales/en/procurement.json",
+        "apps/web/locales/ru/procurement.json",
+        "apps/web/locales/uz-Latn/procurement.json",
+        "apps/web/locales/ka/procurement.json",
+        "apps/web/locales/hy/procurement.json",
+        "apps/web/locales/az-Latn/procurement.json",
+        "apps/web/locales/es/procurement.json",
+        "tests/web/procurement"
+      ]
+    },
+    {
+      "id": "WEB-012",
+      "title": "Supply on the web: receiving (mobile, offline), stock, invoices, payments, budgets and analytics",
+      "area": "frontend-commerce",
+      "status": "open",
+      "dependsOn": [
+        "WEB-011",
+        "PRC-007",
+        "PRC-009",
+        "PRC-011",
+        "PRC-014",
+        "CHAN-001"
+      ],
+      "handbook": "docs/engine/procurement-and-supply.md",
+      "goal": "Build the supply screens on the API: offline receiving with photos, stock and transfers, invoices with match exceptions, payment proposals with payee warnings, budgets with planned, committed and actual, and analytics with self-view.",
+      "read": [
+        "docs/engine/procurement-and-supply.md",
+        "docs/design/screen-contracts/workspace/procurement.md",
+        "docs/engine/agents.md"
+      ],
+      "steps": [
+        "Receiving works offline through the mobile web layer of CHAN-001 and shows device and server times.",
+        "Invoice and payment screens show match results, risk signals and payee change warnings prominently; release requires the approval state.",
+        "Analytics shows team-level figures and a personal self-view only; strings in a supply namespace in every engine language."
+      ],
+      "acceptance": [
+        "No screen shows a per-person metric about someone else (test).",
+        "Payee details appear masked only; no screen accepts bank details outside the provider form (test).",
+        "Mobile, keyboard, screen reader, offline, empty, error and denial states verified."
+      ],
+      "paths": [
+        "apps/web/app/app/receiving",
+        "apps/web/app/app/stock",
+        "apps/web/app/app/invoices",
+        "apps/web/app/app/payments",
+        "apps/web/app/app/budgets",
+        "apps/web/app/app/supply-analytics",
+        "apps/web/components/supply",
+        "apps/web/locales/en/supply.json",
+        "apps/web/locales/ru/supply.json",
+        "apps/web/locales/uz-Latn/supply.json",
+        "apps/web/locales/ka/supply.json",
+        "apps/web/locales/hy/supply.json",
+        "apps/web/locales/az-Latn/supply.json",
+        "apps/web/locales/es/supply.json",
+        "tests/web/supply"
+      ]
+    },
+    {
+      "id": "HUBC-011",
+      "title": "Console: procurement and supply settings",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "HUBC-009",
+        "PRC-001",
+        "PRC-005",
+        "PRC-012"
+      ],
+      "handbook": "docs/engine/hub-console/modules.md",
+      "goal": "Add the procurement and supply section of the hub console: approval route templates, document types and requirement-set templates, e-invoicing networks, integrations, AI intake settings, tolerance and fraud-control defaults, benchmark and pooling policy, unit conversions; first on fixtures, then live.",
+      "read": [
+        "docs/engine/hub-console/modules.md",
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/hub-console/data-model.md",
+        "docs/engine/procurement-and-supply.md"
+      ],
+      "steps": [
+        "Screen HC-68 at /modules/procurement on fixtures, then wired to hub configuration domain procurement and provider connections.",
+        "Second-person activation for fraud-control, benchmark and pooling policy and for live adapters; counsel record required for benchmarks and pooling.",
+        "Strings under admin.modules.procurement in every engine language."
+      ],
+      "acceptance": [
+        "No company's routes, suppliers, budgets, invoices, stock or payments are readable without a case grant (negative tests).",
+        "Fraud-control values below the engine minimum are rejected (test).",
+        "Cohort counts below ten companies are suppressed (test)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/modules/procurement",
+        "tests/web/admin/procurement"
+      ]
+    },
+    {
+      "id": "AGT-024",
+      "title": "Supply agent modules: requisition desk, sourcing desk, intake, receiving clerk, payables desk, supply watch, surplus exchange",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "AGT-008",
+        "PRC-023",
+        "PRC-004",
+        "PRC-011"
+      ],
+      "handbook": "docs/engine/agent-catalog.md",
+      "goal": "Ship the Supply family of agent modules so a person's one agent can do every procurement and supply operation within mandates: draft requisitions and RFQs, chase replies, level bids, process documents, record receipts, prepare and release payments, watch budgets, indices and documents.",
+      "read": [
+        "docs/engine/agent-catalog.md",
+        "docs/engine/procurement-and-supply.md",
+        "docs/engine/agents.md"
+      ],
+      "steps": [
+        "Module manifests with jobs, triggers, mandate templates, meters and locale keys for every engine language.",
+        "Use only the parity registry capabilities; approvals, acceptance and risk-signal clearance stay human_only.",
+        "Safety suite: document injection, payee-change attempts through documents and other agents, competitor price disclosure, reminder quotas."
+      ],
+      "acceptance": [
+        "No module can approve, clear a risk signal or change a payee (tests).",
+        "Competing suppliers never receive each other's prices or participation (test).",
+        "release_payment respects the cooling-off period and open risk signals under every approval policy (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/agent-modules/supply",
+        "tests/agent-modules/supply"
+      ]
     }
   ]
 }

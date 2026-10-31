@@ -256,3 +256,55 @@ Case access grant: `requested → approved → expired | revoked`, or `requested
 ### Hubs
 
 `hub.status`: `draft → preparing → soft_launch → public → suspended ⇄ public`, `public | suspended → closing → closed`. `soft_launch → public` requires every launch gate `satisfied`; a gate that becomes `invalidated` after launch raises a compliance alert but does not take the hub offline automatically.
+
+### Procurement and supply
+
+Proposed with the [procurement and supply suite](../engine/procurement-and-supply.md#document-states) (R53, PRC-000 freezes the transition tables). Every frozen version (`requisition_version`, `bid_level_sheet_version`, `trade_invoice_version`, `payment_proposal_version`, route and policy versions) follows the (V) pattern of the [data dictionary](model.md#17-versioned-immutable-records-v); approvals bind its digest.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Submitted: freeze version and digest
+  Submitted --> InApproval: route resolved
+  InApproval --> Approved: every step approved
+  InApproval --> Rejected
+  InApproval --> Returned
+  Returned --> Draft: new version
+  Approved --> Sourcing: first allocation
+  Sourcing --> PartiallyFulfilled: some lines received
+  PartiallyFulfilled --> Fulfilled
+  Sourcing --> Fulfilled
+  Approved --> Cancelled
+  Sourcing --> Cancelled
+```
+
+`requisition.status ∈ {draft, submitted, in_approval, approved, rejected, returned, sourcing, partially_fulfilled, fulfilled, cancelled}`; `stale_reason = plan_changed` is a flag beside the status, set when an approved plan change touches a linked plan item. `approval_request.status`: `pending → approved | rejected | returned | withdrawn | expired | superseded`; a new subject version supersedes a pending request; `expired` escalates, it never approves. `approval_decision` rows are append-only and `human_only`.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Received
+  Received --> InReview: fields reviewed by a person
+  InReview --> DuplicateSuspected
+  DuplicateSuspected --> InReview: cleared by a person
+  DuplicateSuspected --> Rejected: confirmed duplicate
+  InReview --> Exception: outside tolerance
+  Exception --> InReview: credit note or new version
+  InReview --> Matched
+  Matched --> InApproval
+  InApproval --> Approved
+  InApproval --> Rejected
+  Approved --> Scheduled: payment proposal approved
+  Scheduled --> Paid: final evidence or recorded external payment
+  Scheduled --> PartiallyPaid
+  PartiallyPaid --> Paid
+  Scheduled --> PaymentUnknown: provider timeout
+  PaymentUnknown --> Paid: reconciliation
+  PaymentUnknown --> Scheduled: reconciliation found no effect
+  Approved --> Disputed
+  Disputed --> Approved: resolution
+  Paid --> Credited: credit note
+```
+
+`trade_invoice.status ∈ {received, in_review, duplicate_suspected, exception, matched, in_approval, approved, scheduled, partially_paid, paid, payment_unknown, disputed, rejected, credited, cancelled}`. An open `payment_risk_signal` blocks `in_approval → approved` and `approved → scheduled`. `payment_instruction.state`: `scheduled → submitted → pending → succeeded | failed`, `submitted | pending → outcome_unknown → reconciling → succeeded | failed`, or `external_recorded` with evidence; it follows the action-intent rules above and never retries an unknown outcome. `payment_proposal`: `draft → proposed → in_approval → approved → executing → completed | partially_failed`, or `cancelled`. `payee_change_request` and `payee_account`: `pending_verification → cooling_off → active`, `active → superseded | suspended`; a change requested through a document, e-mail or agent goes straight to `rejected` with a risk signal.
+
+Other records: `bid_level_sheet_version` `draft → frozen → superseded`; `award_decision` `proposed → in_approval → approved | rejected`, `approved → executed | cancelled`; `intake_document` `received → extracting → awaiting_review → accepted | discarded`, with `duplicate_suspected` and `extraction_failed`; `substitution_request` `proposed → in_approval → approved | rejected | withdrawn`; `external_order` `draft → sent → acknowledged → partially_received → received → closed`, or `cancelled`; `goods_receipt` `draft → recorded`, corrections append a `corrected` receipt; `stock_transfer` `requested → approved → dispatched → received`, or `cancelled`; `supplier_return` `requested → authorized → shipped → received_by_supplier → credited`, or `rejected`; `e_document_exchange` `queued → sent → delivered → accepted | rejected`, inbound `received`, `outcome_unknown` reconciled; `demand_pool` `forming → open → closed → sourcing → awarded`, or `dissolved`.

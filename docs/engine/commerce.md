@@ -51,6 +51,10 @@ Negotiation rounds propose new versions; private priorities stay private. Agents
 - Changes append jointly accepted versions; history never mutates. Cancellation, refund and compensation depend on what actually happened externally.
 - Party-private agreement records (`AgreementBuyerPrivate` with budget and approval references, `AgreementSellerPrivate` with the fulfilment plan) are never joined into the other side's view.
 
+### Around the deal: the company's procurement suite
+
+Requisitions from site staff, approval routes, the company's private supplier base, bid levelling and awards, AI intake of off-platform quotes and invoices, project budgets, receiving, site stock, the three-way match and payment proposals are designed in [Procurement and supply](procurement-and-supply.md) (Proposed, R53). They reuse the RFQ, quote, agreement and order records above and never change their invariants.
+
 ## The sales journey
 
 ```text
