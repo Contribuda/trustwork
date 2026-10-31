@@ -17,8 +17,10 @@
 --     is ever replayed blindly; acknowledged (`pending`) is not success.
 --
 -- Money: reservations are taken through BILL-001's `billing_reserve` inside the principal's transaction; outcomes
--- settle or release them here with the same rules as `billing_settle`/`billing_release` (evidence required, never above
--- the reservation), because the worker that observes the outcome holds no principal. Trustwork never holds money.
+-- settle or release them through BILL-001's owner-run `billing_close_from_outcome` (same rules as `billing_settle` and
+-- `billing_release`), because the worker that observes the outcome holds no principal. This file reads and writes no
+-- billing table (payment neutrality, tests/billing/policy.test.ts); reservation and budget ids are opaque references.
+-- Trustwork never holds money.
 --
 -- Privacy: every table is under FORCE RLS and readable only by the principal. The worker role holds no table grant;
 -- it reaches the runtime only through the worker entry points below, which return the structured effect (provider,
@@ -271,7 +273,8 @@ CREATE TABLE trustwork.action_intent (
   ask_reasons text[] NOT NULL DEFAULT '{}',
   state text NOT NULL CHECK (state IN ('proposed', 'authorized', 'reserved', 'queued', 'executing', 'pending', 'succeeded', 'failed', 'outcome_unknown', 'reconciling', 'revoked')),
   state_reason text NULL CHECK (state_reason IS NULL OR length(state_reason) BETWEEN 1 AND 200),
-  reservation_id uuid NULL REFERENCES trustwork.reservation (id),
+  -- Opaque reference to the BILL-001 reservation (like commercial_order.reservation_id): this slice reads no billing table.
+  reservation_id uuid NULL,
   attempt_count integer NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
   effect_correlation_key text NOT NULL UNIQUE CHECK (length(effect_correlation_key) BETWEEN 1 AND 200),
   -- The structured effect handed to the provider adapter: {"provider", "operation", "payload"}. Built by the API from
@@ -485,36 +488,6 @@ CREATE INDEX service_backlog_item_person_idx ON trustwork.service_backlog_item (
 CREATE TRIGGER service_backlog_item_touch BEFORE UPDATE ON trustwork.service_backlog_item FOR EACH ROW EXECUTE FUNCTION trustwork.touch_row();
 
 -- 5. Internal helpers (owner-run, never granted) -------------------------------------------------------------------------
--- Settle or release one reservation from outcome evidence, with BILL-001's rules (never above the reservation; release
--- needs evidence; a closed reservation is left alone, so the call is idempotent).
-CREATE FUNCTION trustwork.assistant_close_reservation(p_reservation_id uuid, p_settle boolean, p_actual_minor bigint, p_evidence text) RETURNS void
-LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
-DECLARE
-  v_reservation trustwork.reservation%ROWTYPE;
-  v_budget trustwork.budget%ROWTYPE;
-  v_amount bigint;
-BEGIN
-  IF p_reservation_id IS NULL THEN
-    RETURN;
-  END IF;
-  SELECT * INTO v_reservation FROM trustwork.reservation WHERE id = p_reservation_id;
-  IF NOT FOUND THEN
-    RETURN;
-  END IF;
-  SELECT * INTO v_budget FROM trustwork.budget WHERE id = v_reservation.budget_id FOR UPDATE;
-  SELECT * INTO v_reservation FROM trustwork.reservation WHERE id = p_reservation_id FOR UPDATE;
-  IF v_reservation.state <> 'reserved' THEN
-    RETURN;
-  END IF;
-  IF p_settle THEN
-    v_amount := least(coalesce(p_actual_minor, v_reservation.amount_minor), v_reservation.amount_minor);
-    UPDATE trustwork.reservation SET state = 'settled', settled_minor = v_amount, closed_at = clock_timestamp(), evidence_ref = left(p_evidence, 200) WHERE id = p_reservation_id;
-    PERFORM trustwork.billing_post_budget_movement(v_budget, p_reservation_id, 'settlement', -v_amount, left(p_evidence, 500));
-  ELSE
-    UPDATE trustwork.reservation SET state = 'released', closed_at = clock_timestamp(), evidence_ref = left(p_evidence, 200) WHERE id = p_reservation_id;
-  END IF;
-END $$;
-
 -- Recomputes the state of a run from its intents (never touches a finished run).
 CREATE FUNCTION trustwork.assistant_refresh_run(p_run_id uuid) RETURNS void
 LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
@@ -550,9 +523,9 @@ DECLARE
 BEGIN
   UPDATE trustwork.action_intent SET state = p_state, state_reason = left(p_reason, 200) WHERE id = p_intent_id RETURNING * INTO v_intent;
   IF p_state = 'succeeded' THEN
-    PERFORM trustwork.assistant_close_reservation(v_intent.reservation_id, true, v_intent.amount_minor, coalesce(p_evidence, 'assistant:' || v_intent.id::text));
+    PERFORM trustwork.billing_close_from_outcome(v_intent.reservation_id, true, v_intent.amount_minor, coalesce(p_evidence, 'assistant:' || v_intent.id::text));
   ELSE
-    PERFORM trustwork.assistant_close_reservation(v_intent.reservation_id, false, NULL, coalesce(p_evidence, p_state || ':' || coalesce(p_reason, 'no effect')));
+    PERFORM trustwork.billing_close_from_outcome(v_intent.reservation_id, false, NULL, coalesce(p_evidence, p_state || ':' || coalesce(p_reason, 'no effect')));
     UPDATE trustwork.mandate_use SET voided_at = clock_timestamp() WHERE action_intent_id = p_intent_id AND voided_at IS NULL;
   END IF;
   PERFORM trustwork.assistant_refresh_run(v_intent.run_id);
@@ -690,7 +663,6 @@ DECLARE
   v_on_behalf jsonb;
   v_company uuid;
   v_grantee jsonb;
-  v_budget trustwork.budget%ROWTYPE;
   v_key text;
   v_kind text;
   v_context jsonb;
@@ -730,8 +702,7 @@ BEGIN
   FOREACH v_key IN ARRAY ARRAY['transactionBudgetId', 'platformBudgetId'] LOOP
     IF jsonb_typeof(p_snapshot -> 'limits' -> v_key) = 'string' THEN
       v_kind := CASE v_key WHEN 'transactionBudgetId' THEN 'transaction' ELSE 'platform' END;
-      SELECT * INTO v_budget FROM trustwork.budget WHERE id = (p_snapshot -> 'limits' ->> v_key)::uuid;
-      IF NOT FOUND OR v_budget.status <> 'active' OR v_budget.kind <> v_kind OR NOT trustwork.billing_may_spend(v_budget) THEN
+      IF NOT trustwork.billing_budget_spendable((p_snapshot -> 'limits' ->> v_key)::uuid, v_kind) THEN
         RAISE EXCEPTION 'the mandate names a budget the principal cannot spend from' USING ERRCODE = 'insufficient_privilege', HINT = 'mandate.budget_authority';
       END IF;
     END IF;
@@ -1030,7 +1001,7 @@ DECLARE
   v_mandate trustwork.mandate%ROWTYPE;
   v_kind text;
   v_budget uuid;
-  v_reservation trustwork.reservation%ROWTYPE;
+  v_reservation_id uuid;
 BEGIN
   IF v_person IS NULL THEN
     RAISE EXCEPTION 'principal required' USING ERRCODE = '28000', HINT = 'access.no_principal';
@@ -1049,9 +1020,9 @@ BEGIN
     IF v_budget IS NULL THEN
       RAISE EXCEPTION 'the mandate names no budget for this action' USING ERRCODE = 'check_violation', HINT = 'mandate.limit';
     END IF;
-    v_reservation := trustwork.billing_reserve(v_budget, v_kind, v_intent.amount_minor, v_intent.currency, v_intent.id, v_intent.effect_correlation_key, p_project_id,
-      make_interval(secs => coalesce(p_ttl_seconds, 30 * 86400)));
-    UPDATE trustwork.action_intent SET state = 'reserved', reservation_id = v_reservation.id WHERE id = p_intent_id;
+    SELECT r.id INTO v_reservation_id FROM trustwork.billing_reserve(v_budget, v_kind, v_intent.amount_minor, v_intent.currency, v_intent.id, v_intent.effect_correlation_key, p_project_id,
+      make_interval(secs => coalesce(p_ttl_seconds, 30 * 86400))) r;
+    UPDATE trustwork.action_intent SET state = 'reserved', reservation_id = v_reservation_id WHERE id = p_intent_id;
   END IF;
   UPDATE trustwork.action_intent SET state = 'queued' WHERE id = p_intent_id RETURNING * INTO v_intent;
   PERFORM trustwork.assistant_enqueue('assistant.dispatch', v_intent.id, 0);
@@ -1133,7 +1104,6 @@ DECLARE
   v_job trustwork.job%ROWTYPE;
   v_intent trustwork.action_intent%ROWTYPE;
   v_mandate trustwork.mandate%ROWTYPE;
-  v_reservation trustwork.reservation%ROWTYPE;
   v_attempt trustwork.action_attempt%ROWTYPE;
   v_refusal text;
 BEGIN
@@ -1163,11 +1133,8 @@ BEGIN
   ELSIF cardinality(v_intent.ask_reasons) > 0 AND NOT EXISTS (
       SELECT 1 FROM trustwork.approval WHERE action_intent_id = v_intent.id AND action_digest = v_intent.action_digest AND mandate_revision = v_intent.mandate_revision AND revoked_at IS NULL) THEN
     v_refusal := 'approval_missing';
-  ELSIF v_intent.reservation_id IS NOT NULL THEN
-    SELECT * INTO v_reservation FROM trustwork.reservation WHERE id = v_intent.reservation_id;
-    IF v_reservation.state <> 'reserved' OR v_reservation.expires_at <= clock_timestamp() THEN
-      v_refusal := 'reservation_closed';
-    END IF;
+  ELSIF v_intent.reservation_id IS NOT NULL AND NOT trustwork.billing_reservation_open(v_intent.reservation_id) THEN
+    v_refusal := 'reservation_closed';
   END IF;
   IF v_refusal IS NOT NULL THEN
     PERFORM trustwork.assistant_finish_intent(v_intent.id, 'revoked', 'recheck: ' || v_refusal, 'recheck:' || v_refusal);

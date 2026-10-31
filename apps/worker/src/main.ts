@@ -43,7 +43,8 @@ async function main(): Promise<void> {
   const storage = blobStoreFromEnv(process.env);
   const files = storage ? { ...storage, scanner: scannerFromEnv(process.env) } : null;
   if (files && !files.scanner) log('warn', 'files storage configured without a scanner: uploads stay pending until FILES_SCANNER is set');
-  const hubId = process.env.TRUSTWORK_HUB_ID?.trim() || null;
+  const hubValue = process.env.TRUSTWORK_HUB_ID?.trim() ?? '';
+  const hubId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(hubValue) ? hubValue : null;
   const assistant: AssistantRuntime | null = process.env.ASSISTANT_EFFECTS === 'fake' ? { pool, providers: fakeEffectProviders().all, hubId, log } : null;
   const registry = buildRegistry({ pool, metrics, log, mail, mailTransport, files, assistant });
   const worker = new Worker({
