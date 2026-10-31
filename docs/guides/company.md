@@ -8,7 +8,7 @@ Status labels are explained in the [guides index](README.md#status-labels).
 
 | # | Step | What happens | Status |
 |---|---|---|---|
-| 1 | **Find or create your company page** | Your company may already have a page built from public sources, labelled "from sources". Otherwise you create one. | Company pages with sourced / claimed / verified labels are **Demo**; company creation through the API is **Proposed** (BE-003) |
+| 1 | **Find or create your company page** | Your company may already have a page built from public sources, labelled "from sources". Otherwise you create one. | Company pages with sourced / claimed / verified labels are **Demo**; company creation through the API is **Live** (BE-003: registered, unclaimed, the creator is the only administrator); the web still shows demo data until WEB-004 |
 | 2 | **Claim it** | You assert that you act for the company. The page then says "claimed, awaiting verification". | **Proposed** (CLM-001) |
 | 3 | **Verify it** | The hub runs its verification recipe: for a US hub, for example, a check of your state business registration, EIN evidence, state contractor licence where one exists, insurance, sanctions screening. The page shows which checks passed, when and by which hub. | **Proposed** (HUB-003, CLM-001); sanctions screening has a **Contract** adapter |
 | 4 | **Bring your team** | Invite colleagues; each person has one active employer at a time; company administrators change roles and end memberships. When someone leaves, company-derived access ends at once and their own profile stays theirs. | Memberships are **Live** in the API; the company workspace is **Demo** |

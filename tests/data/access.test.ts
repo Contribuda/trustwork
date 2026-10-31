@@ -48,7 +48,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       "SELECT c.relname, c.relrowsecurity, c.relforcerowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'trustwork' AND c.relkind = 'r' ORDER BY relname",
     );
     const forced = rows.filter((r) => r.relrowsecurity && r.relforcerowsecurity).map((r) => r.relname);
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session']);
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session']);
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -61,6 +61,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       'apply_ownership_transfer', 'auth_claim_unverified_binding', 'auth_consume_token', 'auth_disable_password', 'auth_issue_token', 'auth_login_failure_count', 'auth_lookup_password_credential', 'auth_lookup_provider_credential', 'auth_lookup_session', 'auth_person_epoch', 'auth_record_login_failure', 'auth_register_person', 'auth_register_provider_person',
       'bump_epochs_for_membership', 'bump_epochs_for_participation', 'can_manage_resource', 'current_membership_has', 'end_membership', 'finalize_ownership_transfer', 'lease_jobs', 'owns_resource', 'participates_in_resource', 'public_person_read', 'public_project_read', 'reconcile_job', 'set_principal', 'sweep_expired', 'verify_person_id',
       'ensure_monthly_partitions', 'release_job', 'worker_sweep_expired',
+      'directory_create_company', 'directory_public_people', 'directory_public_projects', 'directory_public_resolve', 'directory_set_handle', // BE-003
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role.
     const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired']);
