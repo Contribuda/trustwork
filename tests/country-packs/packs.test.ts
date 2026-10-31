@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync, readdirSync } from 'node:fs';
-import { ALL_LOCALES, CountryPackSchema, PACKS, RESTRICTED, enabledPacks, formatMoney, getPack, isRestricted, validateIdentifier, validatePack } from '@trustwork/country-packs';
+import { ALL_LOCALES, CountryPackSchema, PACKS, RESTRICTED, enabledPacks, formatMoney, getPack, isRestricted, packProblems, upgradePack, validateIdentifier, validatePack } from '@trustwork/country-packs';
 
 test('every pack file on disk validates and is loaded', () => {
   const files = readdirSync('packages/country-packs/packs').filter((f) => f.endsWith('.json') && f !== 'restricted.json');
@@ -71,4 +71,27 @@ test('money formats in the pack currency without a hard-coded one', () => {
 
 test('schema rejects unknown fields so packs stay data', () => {
   assert.throws(() => CountryPackSchema.parse({ ...getPack('UZ')!, forkedCode: true }));
+});
+
+test('the four existing pack files still validate unchanged (v1) and upgrade to v2 without losing a fact or a source', () => {
+  for (const file of ['uz', 'ge', 'am', 'az']) {
+    const raw = JSON.parse(readFileSync(`packages/country-packs/packs/${file}.json`, 'utf8')) as Record<string, unknown> & { registrationIdentifier: Record<string, unknown>; dataResidency: Record<string, unknown> };
+    assert.equal(raw.schemaVersion, undefined, `${file}.json is still a v1 file`);
+    assert.deepEqual(packProblems(raw).problems, [], file);
+    const pack = upgradePack(CountryPackSchema.parse(raw));
+    assert.equal(pack.schemaVersion, 2);
+    assert.deepEqual(pack.timeZones, [pack.formats.timeZone]);
+    assert.deepEqual(pack.facets, {});
+    for (const level of [pack.verificationLevel, pack.registrationIdentifier.verificationLevel, pack.dataResidency.verificationLevel]) {
+      assert.ok(level === 'secondary' || level === 'pending', `${file}: a v1 fact is never upgraded to ${level}`);
+    }
+    const v1View = structuredClone(pack) as unknown as Record<string, unknown> & { registrationIdentifier: Record<string, unknown>; dataResidency: Record<string, unknown> };
+    for (const key of ['schemaVersion', 'verificationLevel', 'timeZones', 'facets'] as const) delete v1View[key];
+    delete v1View.registrationIdentifier.verificationLevel;
+    delete v1View.dataResidency.verificationLevel;
+    assert.deepEqual(v1View, raw, `${file}: every v1 field and source is kept verbatim`);
+    assert.deepEqual(getPack(file), pack, `${file}: the served pack is the upgraded file`);
+  }
+  assert.equal(getPack('UZ')?.registrationIdentifier.verificationLevel, 'secondary', 'UZ-STIR rests on secondary sources');
+  assert.equal(getPack('UZ')?.dataResidency.verificationLevel, 'pending', 'UZ residency article numbering is pending');
 });
