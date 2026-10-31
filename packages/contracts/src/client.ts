@@ -26,6 +26,7 @@ export * from './execution.js';
 export * from './content.js';
 export * from './billing.js';
 export * from './assistant.js';
+export * from './agent-catalog.js';
 export * from './admin.js';
 export * from './hub.js';
 export * from './api.js';
