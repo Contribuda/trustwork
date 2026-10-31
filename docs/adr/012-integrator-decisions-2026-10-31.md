@@ -74,13 +74,20 @@ Several used the same identifier for different work (PAY-001, PROV-001, OPS-001,
 24. **Decision 22 applies everywhere.** The agent catalogue's earlier rule that hubs "cannot create new action verbs" is superseded: modules are engine code, and administrators add capabilities only through the governed extension registry (AGT-023), which can add actions but never bypass mandates, budgets, kill switches, privacy rules, the restricted-places list or the untrusted-text rule. Jurisdiction settings (HUB-005) and detailed participant agent settings (AGT-022) are packages of their own.
 25. **Per-object public assistants** (audit Q8), proposed default pending owner confirmation: the assistant on a public person, company or project page is the **visitor's own** agent working on public data; a company page may show the company's standing representative as a labelled contact point; there is no per-project agent.
 
+## Owner answers of 2026-10-31
+
+26. **Hosting and operator of the US reference hub** (owner, question 1). The reference/demo hub is hosted on Railway in a United States region, the same way as the current hosted preview, and is operated by Contribuda (public references keep contribuddha.com until the company completes its move to the new name). Initial targets for the demo, decided by the conductor: recovery point objective 24 hours, recovery time objective 8 hours (OPS-003 may tighten them).
+27. **Language** (owner, question 3). English is the default language of the reference hub and of the engine's public URLs. Decided by the conductor on the owner's delegation: English pages have no language prefix; every other language uses a prefix (`/es/...`, `/ru/...`) with `hreflang` alternates and a canonical URL; the country is not part of public URLs, because a hub defines its territory. The language cookie remains a preference that redirects only from unprefixed entry pages. WEB-005 is unblocked.
+28. **Sign-ups on the reference hub** (question 2, decided by the conductor on the owner's delegation). The reference hub starts demo-only with synthetic data (decision 12). Real sign-ups open only after QA-002 passes, counsel has reviewed the US privacy and agreement questions (rows 4, 5, 10 and 11 below) and the owner switches them on; the switch is a hub setting, not a code change.
+29. **Contribution checks** (conductor on the owner's delegation). The "PR description" check is a required status check on `main`, next to `npm run check`, browser tests, DCO sign-off and the secret scan.
+
 ## Questions that remain for the owner or counsel
 
 | # | Question | Why it is not the integrator's | Blocks |
 |---|---|---|---|
-| 1 | Hosting region and the accountable operator entity of the US demo hub; RPO and RTO (audit Q1, O13) | Legal and commercial accountability | OPS-003 targets, MAIL and payment providers, privacy notices, any deployment |
-| 2 | Does the reference deployment accept real sign-ups, or stay demo-only (audit Q2)? | Product and legal exposure | Real-user launch after QA-002 |
-| 3 | Language (and country) in public URLs for caching and search engines (audit Q4) | Product and SEO direction | WEB-005 (blocked) |
+| 1 | ~~Hosting region and the accountable operator entity of the US demo hub; RPO and RTO (audit Q1, O13)~~ Answered: decision 26 | Legal and commercial accountability | OPS-003 targets, MAIL and payment providers, privacy notices, any deployment |
+| 2 | ~~Does the reference deployment accept real sign-ups, or stay demo-only (audit Q2)?~~ Answered: decision 28 | Product and legal exposure | Real-user launch after QA-002 |
+| 3 | ~~Language (and country) in public URLs for caching and search engines (audit Q4)~~ Answered: decision 27 | Product and SEO direction | WEB-005 (blocked) |
 | 4 | Retention periods, legal bases and erasure deadlines per hub (audit Q6, O06) | Counsel per jurisdiction | PRV-001 configuration, OPS-003 retention |
 | 5 | Liability allocation for agent commitments and the agent disclosure wording per jurisdiction (catalogue Q7, O12) | Counsel per jurisdiction | Live use of HUB-005 defaults; commitment modules in any hub |
 | 6 | Per-object public assistants: confirm decision 25 (audit Q8) | Product surface | AGT-018 public placement |
