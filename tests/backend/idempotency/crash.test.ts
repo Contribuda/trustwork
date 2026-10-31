@@ -19,6 +19,7 @@ import { crashAdminRoutes } from '../../admin/crash-routes.js';
 import { artifactOn, buildAgreement, businessDate } from '../../trust/helpers.js';
 import { runs, serviceBacklog } from '../../../packages/data/src/repositories/assistant.js';
 import { assistantService, mandateStore } from '../../assistant/helpers.js';
+import { loadCrashCases } from './cases.js';
 
 // FILE-001: the files routes are mounted only with a blob store; the storage fake keeps everything local.
 const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobStore({ root: mkdtempSync(join(tmpdir(), 'trustwork-crash-files-')) }) } });
@@ -668,6 +669,11 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await exactlyOnce({ action: 'jurisdiction.attestation.attest', client: elevatedAnna, url: '/v1/admin/jurisdiction/attestation', body, effects: () => count(h.db.admin, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'jurisdiction.location_attested'") });
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.deployment_location_attestation'), 1, 'one attestation');
   });
+
+  // Modules added after this file was split register their crash cases in ./cases/*.ts (see cases/README.md).
+  for (const crashCase of await loadCrashCases()) {
+    await t.test(crashCase.name, () => crashCase.run({ h, seed, as, exactlyOnce }));
+  }
 
   await t.test('every in-transaction route was crash-tested', () => {
     const expected = Object.entries(IDEMPOTENT_ROUTES).filter(([, mode]) => mode.kind === 'in_transaction').map(([action]) => action).sort();
