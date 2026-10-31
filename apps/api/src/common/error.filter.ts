@@ -1,12 +1,17 @@
 import { Catch, HttpException, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { REQUEST_ID_HEADER } from '../deps/contracts.js';
+import { recordRequestError } from '../observability/http.js';
 import { ApiError, renderError } from './errors.js';
 
-/** Every failure leaves as the contract error envelope with the request id; nothing else reaches the client. */
+/**
+ * Every failure leaves as the contract error envelope with the request id; nothing else reaches the client.
+ * A server error is attached to the request so its single structured request log line carries the error type,
+ * scrubbed message and stack (see observability/http.ts); the filter itself writes no second line.
+ */
 @Catch()
 export class ErrorFilter implements ExceptionFilter {
-  constructor(private readonly log: (message: string, error: unknown) => void = () => undefined) {}
+  constructor(private readonly report: (request: FastifyRequest, error: unknown) => void = recordRequestError) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const reply = host.switchToHttp().getResponse<FastifyReply>();
@@ -20,7 +25,7 @@ export class ErrorFilter implements ExceptionFilter {
       else if (status === 413) rendered = renderError(new ApiError('validation.payload_too_large'), requestId);
       else if (status < 500) rendered = renderError(new ApiError('validation.schema', exception.message), requestId);
     }
-    if (rendered.status >= 500) this.log(`request ${requestId} failed`, exception);
+    if (rendered.status >= 500) this.report(request, exception);
     reply.header(REQUEST_ID_HEADER, requestId).header('Cache-Control', 'no-store').status(rendered.status).send(rendered.body);
   }
 }

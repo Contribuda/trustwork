@@ -48,6 +48,8 @@ const document = {
   servers: [{ url: '/' }],
   paths: {
     '/health': { get: get('Process liveness', 'Health', 'none', ['health']) },
+    '/health/live': { get: get('Process liveness (never touches the database)', 'Health', 'none', ['health']) },
+    '/health/ready': { get: { summary: 'Readiness: database reachable and migration ledger verified against this build', tags: ['health'], responses: { '200': { description: 'Ready', content: { 'application/json': { schema: ref('Readiness') } } }, '503': { description: 'Not ready', content: { 'application/json': { schema: ref('Readiness') } } } }, 'x-trustwork-auth': 'none' } },
     '/v1/auth/signup': { post: op('Signup (identical response for existing addresses; no session before verification)', { body: 'SignupCommand', status: 202, tags: ['auth'] }) },
     '/v1/auth/verify-email': { post: op('Consume a verification or e-mail change token; issues the first session', { body: 'VerifyEmailCommand', tags: ['auth'] }) },
     '/v1/auth/login': { post: op('Password login with per-account and per-IP lockout', { body: 'LoginCommand', tags: ['auth'] }) },

@@ -52,6 +52,78 @@
         "x-trustwork-auth": "none"
       }
     },
+    "/health/live": {
+      "get": {
+        "summary": "Process liveness (never touches the database)",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "x-trustwork-auth": "none"
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Readiness: database reachable and migration ledger verified against this build",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Readiness"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Readiness"
+                }
+              }
+            }
+          }
+        },
+        "x-trustwork-auth": "none"
+      }
+    },
     "/v1/auth/signup": {
       "post": {
         "summary": "Signup (identical response for existing addresses; no session before verification)",
@@ -3441,13 +3513,92 @@
           },
           "externalProviders": {
             "type": "string",
-            "const": "disabled"
+            "enum": [
+              "disabled",
+              "fake",
+              "live"
+            ]
           }
         },
         "required": [
           "status",
           "mode",
           "externalProviders"
+        ],
+        "additionalProperties": false
+      },
+      "Readiness": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "not_ready"
+            ]
+          },
+          "checks": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "unreachable",
+                  "timeout",
+                  "not_configured"
+                ]
+              },
+              "ledger": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "schema_ahead",
+                  "pending",
+                  "checksum_mismatch",
+                  "missing",
+                  "out_of_order",
+                  "unreadable",
+                  "unverifiable",
+                  "not_checked"
+                ]
+              }
+            },
+            "required": [
+              "database",
+              "ledger"
+            ],
+            "additionalProperties": false
+          },
+          "schemaVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expectedSchemaVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "checks",
+          "schemaVersion",
+          "expectedSchemaVersion"
         ],
         "additionalProperties": false
       },

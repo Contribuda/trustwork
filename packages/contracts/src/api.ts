@@ -26,9 +26,26 @@ export function apiPath(path: `/${string}`): string {
   return `${API_PREFIX}${path}`;
 }
 
-export const HealthSchema = z.strictObject({ status: z.literal('ok'), mode: z.literal('bootstrap'), externalProviders: z.literal('disabled') });
+/** Liveness (`GET /health`, `GET /health/live`); `externalProviders` reports the configured provider mode truthfully. */
+export const HealthSchema = z.strictObject({ status: z.literal('ok'), mode: z.literal('bootstrap'), externalProviders: z.enum(['disabled', 'fake', 'live']) });
 export type Health = z.infer<typeof HealthSchema>;
 export const health: Health = { status: 'ok', mode: 'bootstrap', externalProviders: 'disabled' };
+/**
+ * Readiness (`GET /health/ready`, 200 when `ready`, 503 otherwise): the database answers and the migration ledger
+ * matches the migrations the running build ships. States and migration file names only; never error text.
+ */
+export const ReadinessSchema = z.strictObject({
+  status: z.enum(['ready', 'not_ready']),
+  checks: z.strictObject({
+    database: z.enum(['ok', 'unreachable', 'timeout', 'not_configured']),
+    ledger: z.enum(['ok', 'schema_ahead', 'pending', 'checksum_mismatch', 'missing', 'out_of_order', 'unreadable', 'unverifiable', 'not_checked']),
+  }),
+  /** Latest migration recorded in the ledger. */
+  schemaVersion: z.string().min(1).nullable(),
+  /** Latest migration shipped with the running build. */
+  expectedSchemaVersion: z.string().min(1).nullable(),
+});
+export type Readiness = z.infer<typeof ReadinessSchema>;
 
 /** Every mutation carries an idempotency key; versioned edits add `expectedRevision`. Unknown fields are rejected (strict objects). */
 export const MutationEnvelopeSchema = z.strictObject({ idempotencyKey: IdempotencyKeySchema, expectedRevision: RevisionSchema.optional() });
@@ -43,6 +60,7 @@ export const RevisionedResultSchema = z.strictObject({ id: z.string().min(1), re
 export const CONTRACT_SCHEMAS = {
   ErrorEnvelope: ErrorEnvelopeSchema,
   Health: HealthSchema,
+  Readiness: ReadinessSchema,
   SignupCommand: SignupCommandSchema,
   LoginCommand: LoginCommandSchema,
   SessionView: SessionViewSchema,

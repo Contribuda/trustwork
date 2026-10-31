@@ -594,7 +594,7 @@
       "id": "OPS-001",
       "title": "Production runtime baseline: configuration guard, structured logs, readiness, telemetry, security headers",
       "area": "platform",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/operations/runbook.md",
       "goal": "Make the API and web processes safe and observable to run outside a laptop without changing domain behaviour.",
