@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Pick up a work package
+    url: https://github.com/Contribuda/trustwork/issues?q=is%3Aissue+is%3Aopen+label%3Aready-to-claim+-label%3Aclaimed
+    about: Packages you can claim now. Claim with a /claim comment on the package issue (docs/engine/agent-onboarding.md, section 5); do not open a new issue for them.
+  - name: Ideas, questions and design discussion
+    url: https://github.com/Contribuda/trustwork/discussions
+    about: Explore first in Discussions; conclusions end up in an issue, a work package or an ADR.
+  - name: Report a security problem
+    url: https://github.com/Contribuda/trustwork/security/policy
+    about: Never in a public issue. Follow SECURITY.md.

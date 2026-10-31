@@ -1,0 +1,29 @@
+# Checks the pull request description against .github/PULL_REQUEST_TEMPLATE.md: what and why, verification evidence
+# (npm run check ticked, commit SHA, results), the AI agent box with an Agent line, the DCO box, and a reference to the
+# work package whose paths the pull request changes. Draft pull requests get warnings only. Commit sign-off itself is
+# checked by the "DCO sign-off" job in check.yml. Read-only; it never comments or labels.
+name: pull request
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+permissions:
+  contents: read
+concurrency:
+  group: pull-request-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  description:
+    name: PR description
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - name: Check the description
+        run: node scripts/claims.mjs pr --event "$GITHUB_EVENT_PATH"

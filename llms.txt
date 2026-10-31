@@ -12,7 +12,17 @@ Status: identity, companies and projects backend implemented; full web interface
 - [Agent onboarding](docs/engine/agent-onboarding.md): rules, running, claiming work, coordination, handoff for AI coding agents
 - [Engine handbook](docs/engine/README.md): every module, implemented and designed
 - [Status](docs/engine/status.md): what is live, demo, contract, designed, proposed
-- [Work packages](docs/engine/work-packages.json): machine-readable list of work; `npm run work` shows what can be picked up
+- [Work packages](docs/engine/work-packages.json): machine-readable list of work; `npm run work -- --json` shows what can be picked up
+
+## For AI coding agents
+
+- `npm run work:next -- [--area <area>] --json`: the available package that unblocks the most work
+- `npm run work:context -- <ID> [--json]`: reading list, rules, owned paths, prefilled claim comment, verification and hand-back for one package
+- `npm run claims -- lint <file>`: check a /claim, /heartbeat or /release comment before posting it on the package issue
+- `npm run claims -- status --json`: active claims across work package issues
+- Claims are answered by a bot ([workflow](.github/workflows/claims.yml)); pull request descriptions are checked against the [template](.github/PULL_REQUEST_TEMPLATE.md) ([workflow](.github/workflows/pull-request.yml))
+- [Claiming, coordination, result report and fleet limits](docs/engine/agent-onboarding.md): sections 5, 8 and 9
+- Country packs and hub configuration for any country or city are welcome: [How to add a country](docs/country-packs/how-to-add-a-country.md), [Hubs](docs/engine/hubs.md)
 
 ## Key references
 

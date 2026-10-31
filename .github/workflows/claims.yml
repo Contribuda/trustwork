@@ -1,0 +1,54 @@
+# Claims bot for work package issues (docs/engine/agent-onboarding.md, section 5).
+# Answers /claim, /heartbeat and /release comments, expires claims without a heartbeat for 7 days, and keeps the
+# claimed / ready-to-claim / waiting labels and the claimant's assignment in line with docs/engine/work-packages.json.
+# It never edits files: status changes land in contributor pull requests that maintainers review and merge.
+# Security: issue_comment, schedule and push runs always use the workflow and scripts from the default branch;
+# comment text is read from the event file by scripts/claims.mjs and never interpolated into a shell.
+name: claims
+on:
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: '17 */6 * * *'
+  push:
+    branches: [main]
+    paths: [docs/engine/work-packages.json]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Print the planned comments, labels and assignees without changing anything
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  # One run at a time across the repository: claims on different packages are checked against each other.
+  # A queued run replaces an older queued one; every run answers all unanswered commands, so nothing is lost.
+  group: claims
+  cancel-in-progress: false
+
+jobs:
+  claims:
+    name: claims bot
+    if: >-
+      github.event_name != 'issue_comment' || (
+        !github.event.issue.pull_request &&
+        contains(github.event.issue.labels.*.name, 'work-package') &&
+        github.event.comment.user.type != 'Bot' &&
+        (contains(github.event.comment.body, '/claim') || contains(github.event.comment.body, '/heartbeat') || contains(github.event.comment.body, '/release'))
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - name: Reconcile claims
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry-run && '--dry-run' || '' }}
+        run: node scripts/claims.mjs run $DRY_RUN
