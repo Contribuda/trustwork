@@ -6,6 +6,20 @@
 
 Additional negative tests prove a nested failing test fails the gate, unknown graph states and unsupported acceptance evidence are rejected, and repeatable integration bookkeeping remains usable after foundation acceptance. These prove the Git mechanism under cooperative clients; GitHub branch policy/account access is a separate check.
 
+## Continuous integration gates
+
+`.github/workflows/check.yml` runs on every pull request and on `main` (CI-001):
+
+- **npm run check** against a PostgreSQL service with `TRUSTWORK_REQUIRE_PG=1`: a database suite that cannot reach PostgreSQL fails instead of skipping. Locally the same variable turns skips into failures; without it, `scripts/run-tests.mjs` ends with a summary of every skipped test. Then the OpenAPI drift check (`scripts/ci/openapi-drift.mjs`) and a clean-tree check (`scripts/ci/assert-clean-tree.mjs`): a clean checkout must stay clean after `npm run check`.
+- **browser tests**: the web build, the client bundle-size budget (`scripts/ci/bundle-budget.mjs`, budgets in `scripts/ci/bundle-budget.json`), the Playwright suite with axe checks, and the clean-tree check.
+- **design-system accessibility**: Storybook build, then axe-core over every story plus keyboard, contrast and mobile specs (`npm run test:a11y -w @trustwork/ui`).
+- **dependency audit and licences**: `npm audit --omit=dev --audit-level=high` (runtime dependencies; development tooling advisories stay a separate record) and the licence allowlist (`scripts/ci/licenses.mjs`, policy in `scripts/ci/license-policy.json`).
+- **DCO sign-off** and **secret scan** (gitleaks, download verified against the release checksum).
+
+Dependabot (`.github/dependabot.yml`) proposes weekly npm and GitHub Actions updates as pull requests that pass the same gates.
+
+Database test files share a PostgreSQL cluster safely: each file uses its own database and login role and first takes one of a bounded number of cluster-wide test slots (advisory locks sized from `max_connections`; override with `TRUSTWORK_TEST_PG_SLOTS`), so several checkouts running suites at once queue instead of exhausting connections. Leaked test databases and roles older than six hours are dropped by later runs.
+
 ## Product testing as slices arrive
 
 - Pure domain tests: money rounding/units, snapshot immutability, state transitions, causal reputation attribution, evidence corrections and mandate limits.

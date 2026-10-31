@@ -11,7 +11,7 @@ import { SectionHeader } from '../src/components/SectionHeader/SectionHeader';
 import { StoryCard } from '../src/components/StoryCard/StoryCard';
 import { Heading, Text } from '../src/components/Typography/Typography';
 import { t } from '../src/i18n';
-import { photo } from '../src/media/index';
+import { artwork, artworkFor } from '../src/media/index';
 import { archiveIssues, magazineIssue, newsItems, stories } from './editorial-fixtures';
 
 const meta = { title: 'Editorial/Hero, cards, bands', component: Hero } satisfies Meta<typeof Hero>;
@@ -21,7 +21,7 @@ type Story = StoryObj;
 const lead = stories[0];
 
 export const HeroLead: Story = {
-  render: () => <Hero media={photo('cranes-sky')} kicker="В фокусе" title="Как меняется строительство" dek="Материалы, технологии и решения — в одном обзоре." meta={['Обзор', '8 минут']} href="#lead" />,
+  render: () => <Hero media={artworkFor('cranes-sky')} kicker="В фокусе" title="Как меняется строительство" dek="Материалы, технологии и решения — в одном обзоре." meta={['Обзор', '8 минут']} href="#lead" />,
 };
 
 export const HeroMedium: Story = {
@@ -96,7 +96,7 @@ export const Bands: Story = {
       <Band tone="navy" aria-label="Продолжите в рабочем пространстве">
         <SectionHeader tone="inverse" kicker="О платформе" title="Продолжите в своём рабочем пространстве" description="Сохраняйте полезное, работайте над проектами и поручайте задачи помощнику." action={<ButtonLink href="#" variant="accent">Войти в сервис</ButtonLink>} />
       </Band>
-      <Band tone="navy" backdrop={photo('aerial-site-foundations')} aria-label="У компании есть своя история">
+      <Band tone="navy" backdrop={artwork('glass-night')} aria-label="У компании есть своя история">
         <SectionHeader tone="inverse" title="У компании есть своя история. Покажите её." description="Профиль, проекты и публикации — в одном месте." action={<ButtonLink href="#" variant="accent">Создать страницу компании</ButtonLink>} />
       </Band>
       <Band tone="tint" padding="sm" aria-label="Журнал">
@@ -171,7 +171,7 @@ export const ArticleProse: Story = {
         За ним стоят эстетика, эксплуатация, экономика и, главное, люди, которые будут жить и работать в созданной среде. Современные решения дают архитекторам и девелоперам всё больше возможностей — важно уметь внимательно к ним относиться. Подробнее — в <a href="#">разборе о сравнении предложений</a>.
       </p>
       <figure>
-        <MediaFrame media={photo('wood-planks')} ratio="16/10" />
+        <MediaFrame media={artworkFor('wood-planks')} ratio="16/10" />
         <figcaption>Фактура, которая работает в пространстве. Иллюстрация: артворк дизайн-системы.</figcaption>
       </figure>
       <h2>На что смотреть в деталях</h2>

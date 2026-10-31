@@ -561,7 +561,7 @@
       "id": "CI-001",
       "title": "Harden the pipeline: required database tests, audits, drift and size checks",
       "area": "quality",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/quality/validation.md",
       "goal": "Make CI fail on the gaps found in the audit instead of passing silently.",

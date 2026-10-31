@@ -1,10 +1,28 @@
 import type { Preview } from '@storybook/react-vite';
+import { getLocaleStore, setLocaleStore } from '@trustwork/i18n-runtime';
 import { UiProvider } from '../src/components/UiProvider/UiProvider';
+import { FALLBACK_LOCALE, uiLocales } from '../src/i18n';
+import { uiLayers } from '../src/i18n/dictionaries';
 import '../tokens/tokens.css';
 import '../fonts/fonts.css';
 import '../src/styles/base.css';
 
-if (typeof document !== 'undefined') document.documentElement.lang = 'ru';
+/**
+ * Stories render in the browser's language when the design system has a dictionary for it, else in English.
+ * The Playwright suite (playwright.config.ts) runs Chromium with ru-RU, so its keyboard and axe checks see the
+ * Russian copy they assert on; Storybook opened in an English browser shows English.
+ */
+function storyLocale(): string {
+  const wanted = (typeof navigator === 'undefined' ? FALLBACK_LOCALE : navigator.language).toLowerCase();
+  const tags = uiLocales();
+  return tags.find((tag) => tag.toLowerCase() === wanted) ?? tags.find((tag) => tag.split('-')[0] === wanted.split('-')[0]) ?? FALLBACK_LOCALE;
+}
+
+if (typeof document !== 'undefined') {
+  const tag = storyLocale();
+  setLocaleStore({ ...getLocaleStore(), locale: tag, layers: uiLayers(tag) });
+  document.documentElement.lang = tag;
+}
 
 const preview: Preview = {
   parameters: {

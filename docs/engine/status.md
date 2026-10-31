@@ -42,7 +42,7 @@ We would rather under-promise. The normative requirements of every module, with 
 | Background worker | Outbox relay with SKIP LOCKED, durable jobs (lease, heartbeat, fencing token, backoff, dead letters, `outcome_unknown` parking, reconciliation command), scheduled sweep and monthly audit/outbox partitions, Prometheus metrics, own database role; no domain handlers yet (mail delivery is MAIL-001) | — | Retry policy, action states, reconciliation | Provider adapters per owning package (designed) |
 | Trust guarantees from the [competitive landscape](../research/competitive-landscape-2026-11.md) | — | — | — | Request receipts and the lead-honesty charter, fair subscription controls, review integrity, ranking statements, named-performer confirmation, trust wording guard, EU trader traceability, data-broker readiness, financing referrals (proposed: MATCH-002, BILL-004, REV-001, RANK-001, PERF-001, WORD-001, DSA-001, PRV-002, FIN-001) |
 | Identity wallets, e-signatures, open BIM, mobile, accessibility evidence, analytics | — | Responsive web at phone widths | — | Wallet-based identity, e-signature adapters, IFC exchange, installable offline-first web, manual accessibility audits and statements, privacy-preserving analytics, worker credential cards (proposed: IDV-001, ESIG-001, BIM-001, MOB-001, A11Y-001, ANL-001, CRED-001) |
-| Design system | Accessible React components on React Aria, tokens, brand mark and localized wordmarks, Storybook. Its axe suite (`npm run test:a11y -w @trustwork/ui`) exists but no gate runs it: neither `npm run check` nor CI calls it until CI-001 (the web app's own axe checks do run in the CI browser job) | — | — | — |
+| Design system | Accessible React components on React Aria, tokens, brand mark and localized wordmarks, Storybook. Its axe, keyboard, contrast and mobile suite (`npm run test:a11y -w @trustwork/ui`) is gated by the "design-system accessibility" CI job (CI-001); it is not part of `npm run check`. The axe scan covers every story; nine keyboard, contrast and mobile assertions that had drifted from the components are quarantined in `packages/ui/playwright.config.ts` until they are repaired | — | — | — |
 
 ## What this means if you try it
 
@@ -61,7 +61,7 @@ The statements on this page, in [Architecture](architecture.md), in [API convent
 | Finding | Checked against | Result |
 |---|---|---|
 | E-mail verification listed as Live | `apps/api/src/modules/identity/ports.ts` (only `FakeMailbox`), `auth.service.ts` | Live only through the fake mailbox; stated above |
-| Design-system axe tests | Root `check` script, `.github/workflows/check.yml`, `packages/ui/package.json` | Suite exists, not gated until CI-001; stated above |
+| Design-system axe tests | Root `check` script, `.github/workflows/check.yml`, `packages/ui/package.json` | Gated in CI by CI-001 (separate job, not in `npm run check`); stated above |
 | "Next web work packages" | `work-packages.json` | Named: WEB-006 and WEB-004 |
 | One transaction for change, audit and outbox | `auth.service.ts`, `provider.service.ts`, `membership.service.ts`, `projects.service.ts` | True for memberships, projects and grants; several identity audits and all mail are outside it; [Architecture](architecture.md#data-and-reliability) says so |
 | Outbox feeding the worker | `apps/worker/src/relay.ts`, `apps/worker/src/runner.ts`, `tests/worker` | Since REL-001 the worker relays the outbox and runs jobs; no domain handler exists yet, so provider ports stay designed in the diagram |

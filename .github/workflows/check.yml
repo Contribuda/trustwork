@@ -28,6 +28,8 @@ jobs:
     env:
       TRUSTWORK_TEST_PG_BACKEND: external
       TRUSTWORK_TEST_DATABASE_URL: postgresql://trustwork_dev:local_only_change_me@localhost:5432/trustwork_dev
+      # Database suites fail instead of skipping when PostgreSQL is missing (tests/data/helpers/postgres.ts).
+      TRUSTWORK_REQUIRE_PG: '1'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -37,6 +39,10 @@ jobs:
       - run: npm install --global npm@11.16.0
       - run: npm ci
       - run: npm run check
+      - name: OpenAPI document matches the contracts
+        run: node scripts/ci/openapi-drift.mjs
+      - name: npm run check leaves a clean checkout clean
+        run: node scripts/ci/assert-clean-tree.mjs "npm run check or the OpenAPI generator changed tracked files"
 
   browser:
     name: browser tests
@@ -54,8 +60,48 @@ jobs:
         working-directory: apps/web
       - run: NEXT_DIST_DIR=.next-e2e npx next build --webpack
         working-directory: apps/web
+      - name: Client bundle-size budget
+        run: node scripts/ci/bundle-budget.mjs apps/web/.next-e2e
       - run: NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test
         working-directory: apps/web
+      - name: The browser build leaves a clean checkout clean
+        run: node scripts/ci/assert-clean-tree.mjs "the web build or browser tests changed tracked files"
+
+  design-system:
+    name: design-system accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        working-directory: packages/ui
+      # Storybook build, then axe-core (WCAG A/AA tags) over every story plus keyboard, contrast and mobile specs.
+      - run: npm run test:a11y -w @trustwork/ui
+      - name: The Storybook build leaves a clean checkout clean
+        run: node scripts/ci/assert-clean-tree.mjs "the design-system suite changed tracked files"
+
+  dependencies:
+    name: dependency audit and licences
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm install --global npm@11.16.0
+      # Both read package-lock.json only; no install is needed. Development tooling advisories are reported
+      # separately (docs/quality/validation.md) and do not fail the build.
+      - name: npm audit (runtime dependencies, fail on high)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Licence allowlist (scripts/ci/license-policy.json)
+        run: node scripts/ci/licenses.mjs
 
   dco:
     name: DCO sign-off
@@ -66,9 +112,15 @@ jobs:
         with:
           fetch-depth: 0
       - name: Every commit carries Signed-off-by
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
           missing=0
           for sha in $(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+            # Dependabot's own version-bump commits cannot sign off; a maintainer reviews and merges them.
+            if [ "$PR_AUTHOR" = "dependabot[bot]" ] && [ "$(git log -1 --format=%ae "$sha")" = "49699333+dependabot[bot]@users.noreply.github.com" ]; then
+              continue
+            fi
             if ! git log -1 --format=%B "$sha" | grep -qE '^Signed-off-by: .+ <.+>$'; then
               echo "::error::commit $sha has no Signed-off-by line (git commit -s)"; missing=1
             fi
@@ -80,7 +132,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: gitleaks 8.30.1
+      - name: gitleaks 8.30.1 (download verified against the release checksum)
+        env:
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb # gitleaks_8.30.1_checksums.txt
         run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz gitleaks
-          ./gitleaks dir . --config .gitleaks.toml --redact --no-banner
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tar.gz" https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "$GITLEAKS_SHA256  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check --strict -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" dir . --config .gitleaks.toml --redact --no-banner
