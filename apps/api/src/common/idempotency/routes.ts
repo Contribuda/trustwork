@@ -218,6 +218,32 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // CNT-001: every content route runs in one PrincipalService.runAs transaction (the content command, its staff audit
+  // row, the domain audit row and outbox events included) and returns its result unchanged.
+  'content.publication_create': IN_TRANSACTION,
+  'content.publication_draft': IN_TRANSACTION,
+  'content.publication_submit': IN_TRANSACTION,
+  'content.publication_return': IN_TRANSACTION,
+  'content.publication_publish': IN_TRANSACTION,
+  'content.publication_correct': IN_TRANSACTION,
+  'content.publication_retract': IN_TRANSACTION,
+  'content.publication_links': IN_TRANSACTION,
+  'content.editor_grant': IN_TRANSACTION,
+  'content.editor_revoke': IN_TRANSACTION,
+  'content.edition_link': IN_TRANSACTION,
+  'content.edition_review': IN_TRANSACTION,
+  'content.comment': IN_TRANSACTION,
+  'content.wall_add': IN_TRANSACTION,
+  'content.wall_remove': IN_TRANSACTION,
+  'content.issue_create': IN_TRANSACTION,
+  'content.issue_curate': IN_TRANSACTION,
+  'content.issue_status': IN_TRANSACTION,
+  'content.issue_release': IN_TRANSACTION,
+  'content.issue_correct': IN_TRANSACTION,
+  'content.render_request': IN_TRANSACTION,
+  'content.render_record': IN_TRANSACTION,
+  'content.digest_create': IN_TRANSACTION,
+  'content.digest_release': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

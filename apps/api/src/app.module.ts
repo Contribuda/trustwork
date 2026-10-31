@@ -15,6 +15,9 @@ import { TransactionsModule } from './modules/transactions/transactions.module.j
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
+import { RecordingModerationTargets } from './modules/platform-admin/ports.js';
+import { ContentModule } from './modules/content/content.module.js';
+import { ContentModerationTargets } from './modules/content/moderation.js';
 import { ExecutionModule } from './modules/execution/execution.module.js';
 import { TrustModule } from './modules/trust/trust.module.js';
 import { AssistantModule, assistantMandateStore } from './modules/assistant/assistant.module.js';
@@ -31,7 +34,7 @@ export class HealthController {
 
 /**
  * Composition root: health always; identity, projects, directory, plans, catalogue, procurement, sales, transactions,
- * profiles, tasks, execution and trust, platform administration, the assistant and the deployment-location attestation
+ * profiles, tasks, execution and trust, platform administration, content (CNT-001), the assistant and the deployment-location attestation
  * (SANC-009, told the configured jurisdiction gate mode) only when a database is configured;
  * files (FILE-001) additionally only with a configured blob store. Every module's agent check goes to the one AST-001
  * mandate store (confirmed mandates); a caller-supplied mandate port in `files` still wins (tests).
@@ -55,7 +58,9 @@ export class AppModule {
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks) }),
         ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity),
-        PlatformAdminModule.forRoot(ctx, identity),
+        // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
+        PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
+        ContentModule.forRoot(ctx, identity),
         AssistantModule.forRoot(ctx, identity),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FilesModule.forRoot(ctx, identity, { ...files, mandates: files.mandates ?? store.port(MODULE_KEYS.files) }),
