@@ -2,7 +2,7 @@
 
 Normative requirements: [Country packs and localization](modules/country-packs-and-localization.md). Participants: [who uses what](participants/README.md).
 
-Requirements R25, R26 (as amended by ADR 009), R38 and R51. Status: country selection, six languages and localized demo content are **Live** in the web app; the languages and country packs marked *planned* below are work packages, not features.
+Requirements R25, R26 (as amended by ADR 009), R38 and R51. Status: country selection, seven languages and localized demo content are **Live** in the web app; the languages and country packs marked *planned* below are work packages, not features.
 
 ## Any country, any language
 
@@ -38,7 +38,7 @@ Review status is one of *reference* (English, the source of every key), *machine
 | `ka` | Georgian | Live | Machine draft | INTL-GE | Georgian script; Noto Sans for the wordmark |
 | `hy` | Armenian | Live | Machine draft | INTL-AM | Armenian script; Noto Sans for the wordmark |
 | `az-Latn` | Azerbaijani (Latin script) | Live | Machine draft | INTL-AZ | Default for Azerbaijan |
-| `es` | Spanish | Next | — | LANG-ES | Formats per country (`es-US`, `es-MX`, `es-ES` …) |
+| `es` | Spanish | Live | Machine draft | LANG-ES | Neutral Latin American Spanish with US construction terms; formats per country (`es-US`, `es-MX`, `es-ES` …); native review requested on the LANG-ES pull request |
 | `pt` | Portuguese | Planned | — | LANG-PT | Formats per country (`pt-BR`, `pt-PT`) |
 | `fr` | French | Planned | — | LANG-FR | Formats per country (`fr-FR`, `fr-CA` …) |
 | `de` | German | Planned | — | LANG-DE | Formats per country (`de-DE`, `de-AT`, `de-CH`) |
@@ -52,7 +52,7 @@ Review status is one of *reference* (English, the source of every key), *machine
 | `ja` | Japanese | Planned | — | LANG-JA | CJK typography (INTL-006) |
 | — | Any language you bring | Welcome | — | — | See [Adding a language](#adding-a-language) |
 
-All six live dictionaries are complete. Translations other than English and Russian were produced by the integrator and await native-speaker review; this is one of the most valuable contributions you can make. Shared foundations: right-to-left support (INTL-005), CJK and Devanagari typography (INTL-006) and review-status metadata (INTL-007).
+All seven live dictionaries are complete. Translations other than English and Russian were produced by the integrator or, for Spanish, by an AI agent (Claude Code, LANG-ES) and await native-speaker review; this is one of the most valuable contributions you can make. Shared foundations: right-to-left support (INTL-005), CJK and Devanagari typography (INTL-006) and review-status metadata (INTL-007).
 
 ### Country packs
 
@@ -64,7 +64,7 @@ Every fact in a pack cites a source and states how far it is verified ([Country 
 | `GE` | Georgia | Live (pack v1) | INTL-GE; v2 facets CTRY-003 | Existing example |
 | `AM` | Armenia | Live (pack v1) | INTL-AM; v2 facets CTRY-003 | Existing example |
 | `AZ` | Azerbaijan | Live (pack v1) | INTL-AZ; v2 facets CTRY-003 | Existing example |
-| `US` | United States | Live (pack v2, English) | INTL-US | The reference hub and the model v2 pack: every state, DC and the territories; California and San Diego County in depth; Spanish with LANG-ES |
+| `US` | United States | Live (pack v2, English) | INTL-US | The reference hub and the model v2 pack: every state, DC and the territories; California and San Diego County in depth; Spanish is offered (LANG-ES), English stays the default |
 | `CA` | Canada | Planned | CTRY-CA | English and French |
 | `MX` | Mexico | Planned | CTRY-MX | |
 | `BR` | Brazil | Planned | CTRY-BR | |
@@ -130,7 +130,7 @@ Application strings are split by feature: `apps/web/locales/<tag>/<namespace>.js
 
 ## Adding a language
 
-Adding a language is a data-only change: no TypeScript file changes, in the repository or in a deployment's data directory (CFG-001, `tests/config/restart.test.ts`). Use the BCP 47 tag with a script subtag where the language is written in more than one script (`uz-Latn`, `az-Latn`, `zh-Hans`) and no region (`es`, not `es-US`: formats come from the visitor's country). Spanish (LANG-ES) is the next language and the worked example.
+Adding a language is a data-only change: no TypeScript file changes, in the repository or in a deployment's data directory (CFG-001, `tests/config/restart.test.ts`). Use the BCP 47 tag with a script subtag where the language is written in more than one script (`uz-Latn`, `az-Latn`, `zh-Hans`) and no region (`es`, not `es-US`: formats come from the visitor's country). Spanish (LANG-ES) was added exactly this way and is the worked example: `apps/web/locales/es/`, `packages/ui/locales/es.json`, `apps/web/fixtures/i18n/es.json` and its checks in `tests/web/es/`.
 
 1. **Application dictionary**: copy `apps/web/locales/en/` to `apps/web/locales/<tag>/` (for example `apps/web/locales/es/`) and translate every value of every namespace file. Keep every file, even one you have not translated yet: delete the keys you have not translated (they fall back to English key by key), leaving `{}` at worst. Keep ICU plural forms correct for your language (the categories `Intl.PluralRules` reports for it).
 2. **Design-system dictionary**: copy `packages/ui/locales/en.json` to `packages/ui/locales/<tag>.json` and translate it. The web server registers any design-system dictionary it finds there.

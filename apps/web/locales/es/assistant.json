@@ -1,0 +1,68 @@
+{
+  "assistantPage": {
+    "lede": "Hay un solo asistente: la conversación de esta página y la de la ventana flotante es la misma.",
+    "tabs": {
+      "conversation": "Conversación",
+      "mandates": "Mandatos",
+      "approvals": "Aprobaciones",
+      "runs": "Ejecuciones"
+    },
+    "suggestedStarts": "Por dónde empezar",
+    "suggestion1": "Pregunte qué empresas publicaron materiales sobre fachadas ventiladas.",
+    "suggestion2": "Pida que prepare un borrador de necesidad a partir de una descripción.",
+    "suggestion3": "Averigüe qué hitos del proyecto requieren una decisión esta semana.",
+    "demoReply": "Esto es una demostración: el asistente no está conectado a un modelo. Su mensaje se guarda en la conversación y el mismo estado se ve en la ventana flotante y en la página.",
+    "mandatesSummary": "Mandatos activos",
+    "approvalsWaiting": "Pendientes de decisión",
+    "runsInProgress": "Ejecuciones en curso",
+    "noAuthorityNote": "El texto de la conversación no le da ninguna autorización al asistente. La autorización solo se define mediante un mandato estructurado.",
+    "approvalsDemoNote": "Demostración: las decisiones no se envían y no modifican los mandatos.",
+    "conversationKicker": "Conversación",
+    "statsLabel": "Resumen",
+    "howTitle": "Cómo funciona",
+    "how": {
+      "ask": "Pregunte: el asistente responde con datos de la plataforma y cita las fuentes.",
+      "mandate": "Un mandato define qué puede hacer y dentro de qué límites.",
+      "approve": "Las acciones fuera de los límites esperan su aprobación.",
+      "trace": "Cada ejecución deja un registro: qué se hizo, qué falló y qué se desconoce."
+    }
+  },
+  "mandate": {
+    "create": "Crear un mandato",
+    "empty": "No hay mandatos",
+    "action": "Acción",
+    "context": "Contexto",
+    "limit": "Límite de importe",
+    "validity": "Vigencia",
+    "approvalPolicy": "Aprobación",
+    "approval": {
+      "none": "No se requiere dentro de los límites",
+      "digest": "Cada acción requiere aprobación",
+      "escalate": "Siempre pasarme la decisión"
+    },
+    "version": "Versión {version}",
+    "state": {
+      "active": "Activo",
+      "paused": "En pausa",
+      "revoked": "Revocado",
+      "expired": "Vencido"
+    },
+    "noAuthorityNote": "El texto de la conversación no le da ninguna autorización al asistente. La autorización solo se define aquí.",
+    "formNote": "El formulario de mandatos llega en la próxima etapa."
+  },
+  "approval": {
+    "title": "Aprobación de la acción",
+    "empty": "No se requieren decisiones",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "expiresIn": "Válida hasta el {date}",
+    "bindsDigest": "La aprobación se aplica solo a estas condiciones exactas.",
+    "digest": "Huella de la acción",
+    "invalidated": "Las condiciones cambiaron; solicite una nueva aprobación"
+  },
+  "runs": {
+    "empty": "Aún no hay ejecuciones",
+    "log": "Registro de acciones",
+    "outcomeUnknownExplain": "El sistema externo no respondió. Estamos conciliando el resultado; la acción no se reintenta automáticamente."
+  }
+}

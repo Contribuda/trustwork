@@ -1,0 +1,71 @@
+{
+  "procurement": {
+    "title": "Compras",
+    "lede": "Necesidades, solicitudes a proveedores y cotizaciones, dentro de su autorización.",
+    "createNeed": "Crear una necesidad",
+    "findSupplier": "Buscar un proveedor",
+    "empty": "Aún no hay compras",
+    "emptyHint": "Una necesidad se puede gestionar en nombre de la empresa o a título personal para su propio proyecto.",
+    "list": "Lista de compras",
+    "col": {
+      "title": "Necesidad",
+      "kind": "Composición",
+      "version": "Versión",
+      "quotes": "Cotizaciones",
+      "deadline": "Fecha límite",
+      "operator": "Responsable",
+      "status": "Estado"
+    },
+    "versionShort": "versión {version}",
+    "flowsNote": "La creación de necesidades, la comparación de cotizaciones y los pedidos llegan en la próxima etapa. Esta lista se muestra según sus permisos.",
+    "createDisabled": "La creación de necesidades llega en la próxima etapa.",
+    "stages": "Etapas de compra",
+    "stage": {
+      "draft": "Borradores",
+      "open": "Solicitud abierta",
+      "compare": "Comparación y negociación",
+      "order": "Pedido y ejecución",
+      "done": "Terminadas",
+      "problem": "Disputas y vencidas"
+    },
+    "noProject": "Sin proyecto",
+    "ownerPerson": "Compra personal",
+    "ownerCompany": "En nombre de la empresa",
+    "needsDecision": "Se necesita su decisión: las cotizaciones están reunidas, elija las condiciones.",
+    "deadlineShort": "Vence el {date}",
+    "stats": {
+      "decisions": "pendientes de decisión",
+      "quotes": "cotizaciones recibidas",
+      "open": "solicitudes abiertas",
+      "nearest": "fecha límite más próxima"
+    },
+    "how": {
+      "title": "Cómo funciona una compra",
+      "need": "Describa la necesidad: composición, cantidad, región y fecha límite.",
+      "quotes": "Los proveedores envían cotizaciones para una versión específica de la solicitud.",
+      "compare": "Compare las condiciones, haga preguntas y elija la mejor.",
+      "order": "Haga el pedido; el proveedor confirma la aceptación.",
+      "accept": "Reciba la entrega y deje una reseña del proveedor.",
+      "note": "Los precios y los presupuestos nunca se publican en el sitio."
+    },
+    "findHint": "Empresas verificadas con catálogos, proyectos y reseñas."
+  },
+  "rfqStatus": {
+    "needDraft": "Borrador de necesidad",
+    "clarifying": "En aclaración",
+    "published": "Solicitud publicada",
+    "quotesCollected": "Cotizaciones reunidas",
+    "negotiating": "En negociación",
+    "termsSelected": "Condiciones elegidas",
+    "orderPlaced": "Pedido realizado",
+    "supplierAccepted": "Pedido aceptado por el proveedor",
+    "fulfilling": "En ejecución",
+    "partiallyAccepted": "Recibido parcialmente",
+    "accepted": "Recibido",
+    "reviewed": "Reseña publicada",
+    "disputed": "En disputa",
+    "closed": "Cerrada",
+    "expired": "Vencida",
+    "cancelled": "Cancelada"
+  }
+}

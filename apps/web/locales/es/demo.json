@@ -1,0 +1,19 @@
+{
+  "demo": {
+    "bannerNote": "Las funciones operativas aún están en desarrollo.",
+    "personaLabel": "Participante de demostración",
+    "persona": {
+      "anonymous": "Invitado",
+      "reader": "Lector y autor sin empresa",
+      "mixed": "Empleado de una empresa: compra y vende",
+      "owner": "Propietario de un proyecto personal"
+    },
+    "noEmailSent": "Demostración: no se envían correos y no se crea ninguna cuenta.",
+    "noAccountCreated": "Demostración: no se crea ninguna cuenta ni se inicia sesión.",
+    "scenario": {
+      "error": "Error de carga",
+      "offline": "Sin conexión"
+    },
+    "noPasswordChanged": "Demostración: no se cambia ninguna contraseña."
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "onboarding2": {
+    "accountCreated": "Cuenta creada",
+    "toSite": "Ir al sitio",
+    "capabilities": {
+      "title": "¿Qué le interesa de la plataforma?",
+      "subtitle": "Ajustaremos el espacio de trabajo a sus tareas."
+    },
+    "buy": {
+      "description": "Busco proveedores, comparo cotizaciones y organizo las compras.",
+      "tags": "Proveedores · Compras",
+      "title": "¿Qué suele comprar?",
+      "subtitle": "Elegiremos empresas y materiales según sus intereses."
+    },
+    "sell": {
+      "description": "Ofrezco bienes, obras o servicios y busco clientes.",
+      "tags": "Empresa · Cotizaciones",
+      "title": "¿Qué ofrece?",
+      "subtitle": "Le mostraremos solicitudes y proyectos acordes a su perfil."
+    },
+    "industry": {
+      "description": "Leo, publico artículos y noticias, comparto experiencia y conozco gente.",
+      "tags": "Publicaciones · Comunidad",
+      "title": "¿Qué temas le interesan?",
+      "subtitle": "Reuniremos noticias y artículos sobre sus temas."
+    },
+    "save": "Guardar",
+    "saveError": "No se pudo guardar. Puede continuar y volver a esto más tarde.",
+    "continueWithoutSaving": "Continuar sin guardar",
+    "multiDirectionsHint": "Puede elegir varias áreas.",
+    "directions": "Áreas",
+    "directionsSearch": "Busque un área, un producto o un servicio",
+    "regions": {
+      "buy": "¿Dónde necesita suministros u obras?",
+      "sell": "¿Dónde trabaja?",
+      "industry": "¿Qué regiones le interesan?",
+      "placeholder": "Elija regiones",
+      "hint": "Puede elegir varias regiones o no poner ninguna restricción.",
+      "loading": "Cargando regiones…"
+    },
+    "optional": "Opcional",
+    "changeLater": "Puede cambiar sus intereses más tarde.",
+    "setupLater": "Configurar más tarde",
+    "taxonomyError": "No se pudo cargar la lista. Puede configurarlo más tarde.",
+    "noMatches": "No se encontró nada. Puede continuar sin elegir.",
+    "demoNote": "Demostración: la elección no se guarda en el servidor.",
+    "directionsCount": "{count, plural, one {# área} many {# áreas} other {# áreas}}",
+    "stepCapabilities": "Intereses",
+    "stepInterests": "Áreas",
+    "stepsLabel": "Pasos de configuración"
+  },
+  "onboarding3": {
+    "pageTitle": "Configuración del perfil",
+    "steps": {
+      "who": "Quién es",
+      "goals": "Objetivos",
+      "interests": "Intereses",
+      "profile": "Página"
+    },
+    "completeness": "Perfil completo al {percent} %",
+    "completenessTitle": "Avance del perfil",
+    "completenessHint": "Todos los pasos son opcionales",
+    "who": {
+      "title": "{name}, ¿quién es usted en el sector?",
+      "lede": "Elegiremos materiales, personas y cursos para su trabajo. Puede cambiar las respuestas en cualquier momento.",
+      "field": "Área de trabajo",
+      "fieldHint": "Una opción, la más cercana a su rol.",
+      "employment": "Cómo trabaja ahora",
+      "company": "Nombre de la empresa",
+      "companyHint": "Solo el nombre. En este paso no se piden datos de registro ni confirmaciones.",
+      "companyPlaceholder": "Por ejemplo, “Fachadas del Norte”",
+      "headline": "Quién es usted en una línea",
+      "headlineHint": "Así aparece en la página pública y en las búsquedas.",
+      "headlinePlaceholder": "Por ejemplo: ingeniero de supervisión de obra, fachadas y vidrios"
+    },
+    "employment": {
+      "company": "Trabajo en una empresa",
+      "independent": "Profesional independiente",
+      "seeking": "Busco trabajo o pedidos",
+      "student": "Estudio o estoy empezando"
+    },
+    "employmentHint": {
+      "company": "Empleado, gerente o propietario.",
+      "independent": "Práctica privada, una cuadrilla o consultoría.",
+      "seeking": "Le mostraremos vacantes y proyectos que necesitan personas.",
+      "student": "Elegiremos cursos y materiales para empezar."
+    },
+    "goals": {
+      "title": "¿Qué quiere hacer en la plataforma?",
+      "lede": "Puede elegir varios objetivos. Ellos deciden qué muestra el espacio de trabajo.",
+      "none": "No elegir nada también está bien; lo configuraremos más tarde."
+    },
+    "goal": {
+      "learn": {
+        "title": "Leer y aprender",
+        "desc": "La revista, análisis, minicursos de la Academia y certificados.",
+        "tags": "Revista · Cursos"
+      },
+      "work": {
+        "title": "Encontrar trabajo y pedidos",
+        "desc": "Vacantes de empresas, proyectos con puestos abiertos, el estado “disponible para trabajar”.",
+        "tags": "Vacantes · Proyectos"
+      },
+      "hire": {
+        "title": "Contratar y encontrar socios",
+        "desc": "Personas con experiencia confirmada, cuadrillas, contratistas.",
+        "tags": "Personas · Socios"
+      },
+      "publish": {
+        "title": "Publicar experiencia",
+        "desc": "Artículos, historias de proyectos y notas con su propio nombre.",
+        "tags": "Publicaciones"
+      },
+      "projects": {
+        "title": "Gestionar proyectos",
+        "desc": "Hoja de ruta, participantes, solicitudes y materiales de obra.",
+        "tags": "Proyectos"
+      },
+      "buy": {
+        "title": "Comprar",
+        "desc": "Solicitudes a proveedores, comparación de cotizaciones, compras.",
+        "tags": "Proveedores · Compras"
+      },
+      "sell": {
+        "title": "Suministrar",
+        "desc": "Un catálogo, cotizaciones y clientes para su empresa.",
+        "tags": "Empresa · Cotizaciones"
+      }
+    },
+    "interests": {
+      "title": "Temas, áreas y regiones",
+      "lede": "Así armamos el canal, la revista y las recomendaciones. Todo es opcional.",
+      "topics": "Temas para leer",
+      "topicsHint": "Lo que quiere ver en el canal y en la revista.",
+      "regions": "Regiones",
+      "regionsHint": "Dónde trabaja o de dónde espera ofertas."
+    },
+    "profile": {
+      "title": "Su página pública",
+      "lede": "Decida qué ven los demás participantes. La página está desactivada hasta que usted la active.",
+      "preview": "Vista previa de la página pública",
+      "previewPublic": "Así lo ven los demás",
+      "previewHidden": "La página está oculta",
+      "previewRole": "Participante del sector",
+      "publish": "Mostrar mi página en la sección Personas",
+      "publishHint": "Nombre, rol, temas y estados. Los contactos y el lugar de trabajo, solo si usted lo decide.",
+      "portrait": "Permitir que se muestre mi foto",
+      "portraitHint": "La foto aparece solo después de subirla y con su consentimiento. Hasta entonces se muestran las iniciales.",
+      "employer": "Mostrar mi lugar de trabajo",
+      "employerHint": "El nombre de la empresa que indicó. Sin la confirmación de la empresa, se marca como declarado.",
+      "signals": "Su estado",
+      "signalsHint": "Un estado declarado por usted, como en las redes profesionales. Aparece en la página y en los filtros.",
+      "portraitNote": "Las fotos se muestran solo con consentimiento. Las iniciales siempre son la opción segura.",
+      "later": "Configurar más tarde",
+      "finish": "Terminar"
+    },
+    "done": {
+      "pageTitle": "Perfil configurado",
+      "title": "{name}, todo listo",
+      "ledeGood": "Su perfil está completo y el espacio de trabajo está ajustado a sus objetivos.",
+      "ledeMore": "Puede empezar a trabajar ahora mismo y completar el perfil más tarde en la configuración.",
+      "next": "Por dónde empezar",
+      "open": "Abrir",
+      "recMagazine": "Último número de la revista",
+      "recMagazineBody": "Análisis, práctica y las cifras de la semana, con pruebas.",
+      "recPeople": "Personas del sector",
+      "recPeopleBody": "Profesionales con los estados “disponible para trabajar” y “contratando”.",
+      "recCompanies": "Empresas y proyectos",
+      "recCompaniesBody": "Registros verificados, solicitudes y necesidades abiertas de los proyectos.",
+      "recPublish": "Su primera publicación",
+      "recPublishBody": "Un artículo o la historia de un proyecto con su propio nombre.",
+      "academy": "Cursos sobre sus temas",
+      "academyBody": "Minicursos de la Academia con un certificado de Trustwork al terminar.",
+      "settings": "Cambiar en la configuración",
+      "workspace": "Abrir el espacio de trabajo"
+    }
+  }
+}

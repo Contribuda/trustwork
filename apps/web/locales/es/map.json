@@ -1,0 +1,29 @@
+{
+  "map": {
+    "viewList": "Lista",
+    "viewMap": "Mapa",
+    "listLabel": "Resultados en el mapa",
+    "mapLabel": "Mapa de obras",
+    "inArea": "En esta zona",
+    "ofTotal": "de {total}",
+    "clearArea": "Todo el mapa",
+    "empty": "No hay nada en esta zona. Mueva el mapa o restablezca la zona.",
+    "showOnMap": "Mostrar en el mapa",
+    "loading": "Cargando el mapa…",
+    "failed": "El mapa no se cargó.",
+    "toList": "Abrir la lista",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "autoSearch": "Buscar al mover el mapa",
+    "searchHere": "Buscar en esta zona",
+    "open": "Abrir",
+    "clusterTitle": "{count, plural, one {# obra} many {# obras} other {# obras}}, pulse para acercar",
+    "areaFilter": "Zona en el mapa",
+    "legend": "Leyenda",
+    "legendOther": "Suspendida o cancelada",
+    "onMap": "En el mapa",
+    "talk": "Agente",
+    "readiness": "Avance {percent} %",
+    "participantsCount": "{count, plural, one {# participante} many {# participantes} other {# participantes}}"
+  }
+}

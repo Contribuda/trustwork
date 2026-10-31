@@ -1,0 +1,71 @@
+{
+  "publications": {
+    "title": "Publicaciones",
+    "lede": "Borradores, materiales en revisión y trabajos publicados, suyos o de la empresa.",
+    "write": "Escribir",
+    "empty": "Aún no hay publicaciones",
+    "companyHint": "Para publicar en nombre de la empresa necesita el permiso de publicación en la empresa.",
+    "list": "Lista de publicaciones",
+    "tabs": {
+      "all": "Todas",
+      "drafts": "Borradores",
+      "review": "En revisión",
+      "scheduled": "Programadas",
+      "published": "Publicadas",
+      "corrected": "Corregidas",
+      "retracted": "Retiradas"
+    },
+    "col": {
+      "title": "Título",
+      "format": "Formato",
+      "author": "En nombre de",
+      "state": "Estado",
+      "updated": "Actualizado",
+      "shownIn": "Se muestra en"
+    },
+    "shownIn": {
+      "myWall": "Mi página",
+      "companyWall": "Muro de la empresa",
+      "issue": "Número {number}",
+      "nowhere": "En ningún lugar"
+    },
+    "format": {
+      "news": "Noticia",
+      "article": "Artículo",
+      "magazine_piece": "Material de revista",
+      "company_post": "Publicación de la empresa",
+      "personal_post": "Publicación personal"
+    },
+    "editorNote": "El editor de materiales llega en la próxima etapa.",
+    "createDisabled": "El editor de materiales llega en la próxima etapa.",
+    "emptyHint": "Aquí aparecen los borradores, los materiales en revisión y los trabajos publicados.",
+    "openPublic": "Abrir",
+    "stats": {
+      "published": "publicadas",
+      "pipeline": "en revisión y programadas",
+      "drafts": "borradores",
+      "inIssues": "en números de la revista"
+    },
+    "how": {
+      "title": "El recorrido de un material",
+      "draft": "Solo usted y los coautores ven el borrador.",
+      "review": "La redacción verifica los datos y la edición.",
+      "publish": "La publicación aparece en su página, en el muro de la empresa o en un número.",
+      "correct": "Las correcciones conservan el historial de versiones; un material retirado queda en el archivo."
+    },
+    "companyOk": "Tiene permiso para publicar en nombre de la empresa.",
+    "magazine": {
+      "title": "Escriba para la revista",
+      "hint": "La redacción acepta casos de estudio, análisis y columnas de participantes del sector.",
+      "cta": "Autores de la revista"
+    }
+  },
+  "pubState": {
+    "draft": "Borrador",
+    "in_review": "En revisión",
+    "scheduled": "Programada para el {date}",
+    "published": "Publicada",
+    "corrected": "Corregida",
+    "retracted": "Retirada"
+  }
+}

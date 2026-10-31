@@ -98,7 +98,7 @@ test('a US visitor gets en-US formats, USD and the state list (no hard-coded cou
   assert.equal(countryName('US', 'en'), 'United States');
   assert.equal(countryName('US', 'es'), 'Estados Unidos');
   assert.equal(negotiate(null, us(), true), 'en', 'a visitor who chose the United States gets English');
-  assert.equal(negotiate('es-US,es;q=0.9', us(), true), 'en', 'Spanish is offered once LANG-ES adds it; until then English');
+  assert.equal(negotiate('es-US,es;q=0.9', us(), true), 'es', 'a Spanish browser gets Spanish (LANG-ES)');
 });
 
 test('formats: +1 and ten digits, ZIP or ZIP+4, a second address line, USD with cents', () => {

@@ -57,7 +57,7 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 | CTRY-002 | Country pack v2 schema: facets, subdivisions, several time zones and identifiers, unit catalogue | done |  |
 | CTRY-003 | Sourced v2 facets for Uzbekistan, Georgia, Armenia and Azerbaijan | open | CTRY-002 |
 | CFG-001 | Configuration over code: runtime country packs, languages, defaults and brand | done | CTRY-002, INTL-004, OPS-001, WEB-006 |
-| LANG-ES | Spanish (es) as the seventh engine language | open | CFG-001, INTL-004 |
+| LANG-ES | Spanish (es) as the seventh engine language | done | CFG-001, INTL-004 |
 | INTL-US | United States country pack | open | CTRY-002 |
 | DEMO-US | United States demo hub: defaults and synthetic demo data | open | INTL-US, CFG-001, LANG-ES, WEB-006 |
 | OPS-002 | Container images and a full local stack with same-origin routing | open | OPS-001, REL-001 |
@@ -326,7 +326,7 @@ International by default ([ADR 012 decision 30](../adr/012-integrator-decisions-
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
-| LANG-ES | Spanish (es) as the seventh engine language | open | CFG-001, INTL-004 |
+| LANG-ES | Spanish (es) as the seventh engine language | done | CFG-001, INTL-004 |
 | INTL-007 | Locale review status: per-locale metadata shown in the language picker and the docs | open | CFG-001, INTL-004 |
 | LANG-PT | Portuguese (pt) with formats per country (pt-BR, pt-PT) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
 | LANG-FR | French (fr) with formats per country (fr-FR, fr-CA and others) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
