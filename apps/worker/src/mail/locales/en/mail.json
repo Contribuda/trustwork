@@ -59,7 +59,16 @@
       "password_changed": "The password of your account was changed, and your other sessions were signed out.",
       "email_change_requested": "Someone asked to change the email address of your account. The change happens only after the new address is confirmed.",
       "provider_linked": "Sign-in with {provider} was connected to your account.",
-      "provider_unlinked": "Sign-in with {provider} was disconnected from your account."
+      "provider_unlinked": "Sign-in with {provider} was disconnected from your account.",
+      "second_factor_enabled": "Two-step verification with an authenticator app was turned on for your account.",
+      "second_factor_removed": "An authenticator app was removed from the two-step verification of your account.",
+      "recovery_codes_regenerated": "New recovery codes were created for your account. The previous unused codes no longer work.",
+      "recovery_code_used": "One of your recovery codes was used to confirm a sign-in or a sensitive action. Each code works only once.",
+      "second_factor_throttled": "There were several wrong two-step verification codes for your account. Further attempts are slowed down for a while.",
+      "second_factor_reset_requested": "Support was asked to reset the two-step verification of your account. Nothing changes until a second staff member approves it and a waiting period of at least 72 hours has passed.",
+      "second_factor_reset_approved": "A reset of the two-step verification of your account was approved. It takes effect after a waiting period of at least 72 hours; you can cancel it in the security settings until then.",
+      "second_factor_reset_cancelled": "The reset of the two-step verification of your account was cancelled. Nothing has changed.",
+      "second_factor_reset_completed": "The two-step verification of your account was reset by support, and every session was signed out. Sign in and set up two-step verification again."
     },
     "notYou": "If this was not you, reset your password now and review your active sessions.",
     "action": "Reset password"

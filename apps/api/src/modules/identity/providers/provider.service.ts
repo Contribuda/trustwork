@@ -9,10 +9,11 @@ import type { AppContext } from '../context.js';
 import { journal, type AuditEntry } from '../journal.js';
 import { ProviderUnavailableError, type ProviderIdentity } from '../ports.js';
 import type { PrincipalService } from '../principal.service.js';
+import type { SecondFactorService } from '../second-factor/second-factor.service.js';
 import { hoursOf } from '../mail.js';
 import { constantTimeEqual, randomToken, sha256Hex, signFlow, verifyFlow, type FlowState } from '../tokens.js';
 
-export type CallbackOutcome = 'signed_in' | 'linked' | 'account_exists' | 'verification_pending' | 'email_required' | 'provider_unavailable' | 'already_linked';
+export type CallbackOutcome = 'signed_in' | 'linked' | 'account_exists' | 'verification_pending' | 'email_required' | 'provider_unavailable' | 'already_linked' | 'second_factor_required';
 const FLOW_TTL_SECONDS = 600;
 
 /**
@@ -22,7 +23,7 @@ const FLOW_TTL_SECONDS = 600;
  * verification. Pre-login state (state, nonce, PKCE verifier, link mode) lives in the HMAC-signed flow cookie.
  */
 export class ProviderService {
-  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService) {}
+  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly secondFactors: SecondFactorService) {}
 
   private port(provider: Provider) {
     const port = this.ctx.providers[provider];
@@ -89,12 +90,22 @@ export class ProviderService {
     const linked = await auth.lookupProviderCredential(this.ctx.pool, provider, identity.subject);
     if (linked && !linked.disabled_at) {
       const issued = await withPrincipal(this.ctx.pool, { personId: linked.person_id, authzEpoch: linked.authz_epoch }, async (trx) => {
+        // A person with an active second factor finishes the sign-in with it (BE-004); no session yet.
+        if (await this.secondFactors.hasActiveFactor(trx, linked.person_id)) {
+          const challenge = await this.secondFactors.issueChallenge(trx, linked.person_id, provider);
+          await journal(trx, { action: 'auth.login_second_factor_required', objectKind: 'person', objectId: linked.person_id, requestId: state.requestId, actor: linked.person_id, epoch: linked.authz_epoch, basis: { method: provider } });
+          return { challenge } as const;
+        }
         const session = await this.principals.createSession(trx, request, linked.person_id, provider);
         await journal(trx, { action: 'auth.login', objectKind: 'person', objectId: linked.person_id, requestId: state.requestId, actor: linked.person_id, epoch: linked.authz_epoch, basis: { sessionId: session.sessionId, method: provider } },
           [{ personId: linked.person_id, type: 'identity.session_started', payload: { sessionId: session.sessionId, method: provider } }]);
-        return session;
+        return { session } as const;
       });
-      this.principals.setCookie(reply, issued.token);
+      if ('challenge' in issued) {
+        this.secondFactors.setChallengeCookie(reply, issued.challenge.token);
+        return 'second_factor_required';
+      }
+      this.principals.setCookie(reply, issued.session.token);
       return 'signed_in';
     }
     if (!identity.email) return 'email_required';

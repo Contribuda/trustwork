@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/workspace/parts';
 import { DEFAULT_PASSWORD_POLICY } from '@trustwork/contracts/client';
 import { DATA_SOURCE, data } from '@/app/_lib/data';
 import { SecurityPanel, type LiveSession } from './_components/SecurityPanel';
+import { SecondFactorPanel } from './_components/SecondFactorPanel';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { longDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
@@ -22,7 +23,8 @@ const SECTIONS = ['account', 'security', 'preferences', 'channels', 'billing'] a
 /**
  * Settings entry reached from the avatar menu (never the sidebar): account, security and sessions, preferences, channels, billing state.
  * Live API (WEB-004): the session list, ending sessions and the password change work through `/v1/me/*` (step-up where
- * the API asks for it); the demo shows the example list with disabled controls.
+ * the API asks for it); two-step verification (BE-004) lives next to them; the demo shows the example list with
+ * disabled controls.
  */
 export default async function SettingsPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
@@ -114,6 +116,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
                 </li>
               ))}
             </ul>
+            {live ? (
+              <>
+                <h3 className="ws-head__kicker">{t('settings.secondFactor.title')}</h3>
+                <SecondFactorPanel />
+              </>
+            ) : null}
             <h3 className="ws-head__kicker">{t('settings.security.sessions')}</h3>
             {live ? <SecurityPanel sessions={liveSessions} minPassword={DEFAULT_PASSWORD_POLICY.minLength} /> : null}
             {live ? null : (

@@ -15,7 +15,17 @@ export type IdentityEventType =
   | 'identity.email_changed'
   | 'identity.binding_claimed'
   | 'identity.provider_linked'
-  | 'identity.provider_unlinked';
+  | 'identity.provider_unlinked'
+  | 'identity.second_factor_enabled'
+  | 'identity.second_factor_removed'
+  | 'identity.second_factor_throttled'
+  | 'identity.recovery_codes_regenerated'
+  | 'identity.recovery_code_used'
+  | 'identity.session_elevated'
+  | 'identity.second_factor_reset_requested'
+  | 'identity.second_factor_reset_approved'
+  | 'identity.second_factor_reset_cancelled'
+  | 'identity.second_factor_reset_completed';
 
 export interface AuditEntry {
   action: string;

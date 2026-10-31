@@ -813,7 +813,7 @@
       "id": "BE-004",
       "title": "Second factor, recovery codes and elevated sessions",
       "area": "backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "MAIL-001"
       ],

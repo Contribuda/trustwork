@@ -127,6 +127,14 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'order.cancel': IN_TRANSACTION,
   'order.change_propose': IN_TRANSACTION,
   'order.change_decide': IN_TRANSACTION,
+  // Support reset of a second factor (BE-004): staff routes behind an elevated session; each runs in one
+  // PrincipalService.runAs transaction (the subject's notices, audit and outbox intents included) and returns its result
+  // unchanged. The routes that consume one-time codes or return secrets (enrolment, recovery codes, elevation, sign-in)
+  // are deliberately not idempotent: a code is its own replay guard and a secret must never be stored in a record.
+  'support.second_factor_reset.request': IN_TRANSACTION,
+  'support.second_factor_reset.approve': IN_TRANSACTION,
+  'support.second_factor_reset.cancel': IN_TRANSACTION,
+  'support.second_factor_reset.execute': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

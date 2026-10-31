@@ -58,7 +58,16 @@
       "password_changed": "Hesabınızın şifrəsi dəyişdirildi və digər seanslardan çıxış edildi.",
       "email_change_requested": "Hesabınızın e-poçt ünvanının dəyişdirilməsi istənilib. Dəyişiklik yalnız yeni ünvan təsdiqləndikdən sonra baş verəcək.",
       "provider_linked": "Hesabınıza {provider} ilə giriş qoşuldu.",
-      "provider_unlinked": "Hesabınızdan {provider} ilə giriş ayrıldı."
+      "provider_unlinked": "Hesabınızdan {provider} ilə giriş ayrıldı.",
+      "second_factor_enabled": "Hesabınız üçün autentifikator tətbiqi ilə iki mərhələli yoxlama aktivləşdirildi.",
+      "second_factor_removed": "Hesabınızın iki mərhələli yoxlamasından autentifikator tətbiqi silindi.",
+      "recovery_codes_regenerated": "Hesabınız üçün yeni ehtiyat kodlar yaradıldı. Əvvəlki istifadə olunmamış kodlar artıq işləmir.",
+      "recovery_code_used": "Ehtiyat kodlarınızdan biri girişi və ya vacib əməliyyatı təsdiqləmək üçün istifadə edildi. Hər kod yalnız bir dəfə işləyir.",
+      "second_factor_throttled": "Hesabınız üçün iki mərhələli yoxlama kodu bir neçə dəfə səhv daxil edildi. Növbəti cəhdlər bir müddət yavaşladılıb.",
+      "second_factor_reset_requested": "Dəstək xidmətinə hesabınızın iki mərhələli yoxlamasını sıfırlamaq üçün müraciət edilib. İkinci əməkdaş təsdiqləyənə və ən azı 72 saatlıq gözləmə müddəti keçənə qədər heç nə dəyişməyəcək.",
+      "second_factor_reset_approved": "Hesabınızın iki mərhələli yoxlamasının sıfırlanması təsdiqləndi. O, ən azı 72 saatlıq gözləmə müddətindən sonra qüvvəyə minəcək; o vaxta qədər onu təhlükəsizlik ayarlarında ləğv edə bilərsiniz.",
+      "second_factor_reset_cancelled": "Hesabınızın iki mərhələli yoxlamasının sıfırlanması ləğv edildi. Heç nə dəyişməyib.",
+      "second_factor_reset_completed": "Dəstək xidməti hesabınızın iki mərhələli yoxlamasını sıfırladı və bütün seanslardan çıxış edildi. Daxil olun və iki mərhələli yoxlamanı yenidən qurun."
     },
     "notYou": "Bu siz deyildinizsə, şifrənizi dərhal bərpa edin və aktiv seanslarınızı yoxlayın.",
     "action": "Şifrəni bərpa et"
