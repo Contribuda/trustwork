@@ -11,7 +11,8 @@ import { DeploymentLocationAttestationSummarySchema, deploymentLocationRefusals,
  * Federation mesh protocol `trustwork-mesh/1` (FED-000, ADR 011, R39).
  *
  * The normative text for implementers is docs/engine/federation-protocol.md; conformance vectors live in
- * tests/federation/protocol/vectors. This module is client-safe: no `node:` import and no hashing or signature
+ * tests/federation/protocol/vectors. Exported from the server entry (`@trustwork/contracts`) only, so the browser bundle
+ * never carries it; the module itself stays pure: no `node:` import and no hashing or signature
  * computation. Digests and Ed25519 signatures are computed and verified by the caller (FED-001 adapters, the test
  * suite); the pure functions here build the exact bytes to hash or sign and check everything that needs no crypto.
  *

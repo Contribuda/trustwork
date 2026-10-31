@@ -45,7 +45,7 @@ test('the server entry adds exactly the digest and commercial server modules', (
     .filter((f) => !client.has(f))
     .map((f) => f.slice(root.length + 1))
     .sort();
-  assert.deepEqual(extra, ['packages/contracts/src/common/digest.ts', 'packages/contracts/src/index.ts', 'packages/contracts/src/server/commercial.ts']);
+  assert.deepEqual(extra, ['packages/contracts/src/common/digest.ts', 'packages/contracts/src/federation.ts', 'packages/contracts/src/index.ts', 'packages/contracts/src/server/commercial.ts']);
   assert.ok(server.get(resolve(root, 'packages/contracts/src/common/digest.ts'))!.includes('node:crypto'));
 });
 test('package.json exposes "." (server) and "./client" subpath entries', () => {

@@ -12,7 +12,7 @@ import {
   formatGlobalId,
   parseGlobalId,
   payloadProblems,
-} from '../../../packages/contracts/src/client.js';
+} from '../../../packages/contracts/src/index.js';
 import { CITY, NATIONAL, THIRD, TEST_ADDRESSES, dealEnvelope, envelope, gid } from './fixtures.js';
 
 const issues = (value: unknown) => {
