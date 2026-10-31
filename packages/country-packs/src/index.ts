@@ -7,6 +7,7 @@ import uz from '../packs/uz.json' with { type: 'json' };
 import ge from '../packs/ge.json' with { type: 'json' };
 import am from '../packs/am.json' with { type: 'json' };
 import az from '../packs/az.json' with { type: 'json' };
+import us from '../packs/us.json' with { type: 'json' };
 import countriesJson from '../countries/countries.json' with { type: 'json' };
 
 /**
@@ -26,7 +27,7 @@ export * from './calendar.js';
 
 export type CountryCode = CountryPack['code'];
 
-const RAW_PACKS = [uz, ge, am, az];
+const RAW_PACKS = [uz, ge, am, az, us];
 
 export const PACKS: readonly CountryPack[] = RAW_PACKS.map((raw) => validatePack(raw));
 const BY_CODE = new Map(PACKS.map((p) => [p.code, p]));

@@ -2,7 +2,7 @@
 
 Normative requirements: [Country packs and localization](modules/country-packs-and-localization.md). Participants: [who uses what](participants/README.md).
 
-Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan. The pack v2 schema (facets at country and subdivision level, verification levels, several time zones and identifier kinds, the measurement-unit catalogue) is a **Contract** (CTRY-002); sourced v2 facts for the existing packs (CTRY-003) and the facets' use by engine modules are **Proposed**. The United States pack is next (INTL-US), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
+Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan. The pack v2 schema (facets at country and subdivision level, verification levels, several time zones and identifier kinds, the measurement-unit catalogue) is a **Contract** (CTRY-002); sourced v2 facts for the existing packs (CTRY-003) and the facets' use by engine modules are **Proposed**. The United States pack is the first sourced v2 pack (**Live**, INTL-US: every state, the District of Columbia and the territories, with California and San Diego County in depth; facts at candidate or pending level are labelled), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
 
 Construction is local. What a valid company looks like, who may legally pour concrete for a school, which code a facade must meet, how an invoice must be issued, how a document is signed, what counts as a working day: all of this differs from country to country. The engine handles these differences with two layers and one rule.
 
@@ -148,7 +148,7 @@ Each planned pack has a work package that lists the facets to source for its cou
 
 | Region | Packages |
 |---|---|
-| Americas | INTL-US (next), CTRY-CA, CTRY-MX, CTRY-BR |
+| Americas | INTL-US (live), CTRY-CA, CTRY-MX, CTRY-BR |
 | Europe | CTRY-GB; CTRY-EU, then CTRY-DE, CTRY-FR, CTRY-ES, CTRY-IT, CTRY-PL; CTRY-UA (government-controlled territory only) |
 | Middle East | CTRY-TR, CTRY-AE |
 | Asia-Pacific | CTRY-IN, CTRY-AU |
