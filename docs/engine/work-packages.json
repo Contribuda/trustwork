@@ -1699,7 +1699,7 @@
       "id": "COM-002",
       "title": "Quotes, negotiation, agreements and orders (commerce slice 2)",
       "area": "commerce-backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "COM-001"
       ],

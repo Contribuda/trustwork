@@ -10,9 +10,22 @@ import { VersionRefSchema } from './common/version.js';
 
 type VersionRef = z.infer<typeof VersionRefSchema>;
 
-/** Agreement digest input: exactly the two version refs, computed once at creation; acceptance events are never digest input. Computation: `server/commercial.ts`. */
-export function agreementDigestInput(quoteVersion: VersionRef, rfqVersion: VersionRef) {
-  return { quoteVersion: VersionRefSchema.parse(quoteVersion), rfqVersion: VersionRefSchema.parse(rfqVersion) };
+/**
+ * What an agreement's terms are made of (ADR 012 decision 19): `rfq_quote` pins a quote version and the RFQ version it
+ * answers; `task` pins a task offer and the task request version it answers; `consultation` pins a consultation booking
+ * and the offering version it books. The kind is part of the digest input, so the same pair of refs under another kind
+ * is a different agreement.
+ */
+export const AgreementTermsKindSchema = z.enum(['rfq_quote', 'task', 'consultation']);
+export type AgreementTermsKind = z.infer<typeof AgreementTermsKindSchema>;
+
+/**
+ * Agreement digest input: the terms kind and exactly the two version refs (for `rfq_quote` the quote version and the RFQ
+ * version; for `task` and `consultation` the offer and the request it answers), computed once at creation; acceptance
+ * events are never digest input. Computation: `server/commercial.ts`. Reviewed contract change of ADR 012 decision 19.
+ */
+export function agreementDigestInput(quoteVersion: VersionRef, rfqVersion: VersionRef, termsKind: AgreementTermsKind = 'rfq_quote') {
+  return { termsKind: AgreementTermsKindSchema.parse(termsKind), quoteVersion: VersionRefSchema.parse(quoteVersion), rfqVersion: VersionRefSchema.parse(rfqVersion) };
 }
 
 export const ActorSchema = z.strictObject({
@@ -27,6 +40,8 @@ export const AcceptanceEventRecordSchema = z.strictObject({
   id: IdSchema,
   agreementId: IdSchema,
   kind: AcceptanceEventKindSchema,
+  /** The agreement's terms kind (part of the digest input); records written before ADR 012 decision 19 are `rfq_quote`. */
+  termsKind: AgreementTermsKindSchema.default('rfq_quote'),
   quoteVersion: VersionRefSchema,
   rfqVersion: VersionRefSchema,
   acceptedTermsDigest: DigestSchema,
@@ -43,6 +58,8 @@ export const ObligationSchema = z.strictObject({ party: PartySchema, kind: z.enu
 export const AgreementRecordSchema = z.strictObject({
   id: IdSchema,
   parties: z.strictObject({ buyer: PartySchema, seller: PartySchema }),
+  /** Part of the digest input (ADR 012 decision 19); records written before it are `rfq_quote`. */
+  termsKind: AgreementTermsKindSchema.default('rfq_quote'),
   acceptedTerms: z.strictObject({ quoteVersion: VersionRefSchema, rfqVersion: VersionRefSchema, digest: DigestSchema }),
   acceptanceEventIds: z.array(IdSchema),
   status: AgreementStatusSchema,
@@ -79,6 +96,7 @@ export const AgreementSellerViewSchema = z.strictObject({ agreement: AgreementRe
 export const SharedAgreementSchema = z.strictObject({
   id: IdSchema,
   parties: AgreementRecordSchema.shape.parties,
+  termsKind: AgreementTermsKindSchema.default('rfq_quote'),
   acceptedTerms: AgreementRecordSchema.shape.acceptedTerms,
   acceptanceEventIds: z.array(IdSchema),
   status: AgreementStatusSchema,
@@ -89,7 +107,7 @@ export const SharedAgreementSchema = z.strictObject({
 export type SharedAgreement = z.infer<typeof SharedAgreementSchema>;
 /** shared_party: accepted terms, parties, obligations, status and history; no budgets, approvals or fulfilment internals. */
 export function toSharedAgreement(agreement: Agreement): SharedAgreement {
-  return SharedAgreementSchema.parse(pickFields(agreement, ['id', 'parties', 'acceptedTerms', 'acceptanceEventIds', 'status', 'supersededBy', 'obligations', 'revision']));
+  return SharedAgreementSchema.parse(pickFields(agreement, ['id', 'parties', 'termsKind', 'acceptedTerms', 'acceptanceEventIds', 'status', 'supersededBy', 'obligations', 'revision']));
 }
 export const BuyerAgreementSchema = SharedAgreementSchema.extend({ buyerPrivate: AgreementBuyerPrivateSchema.omit({ agreementId: true, ownerParty: true, revision: true }) });
 export const SellerAgreementSchema = SharedAgreementSchema.extend({ sellerPrivate: AgreementSellerPrivateSchema.omit({ agreementId: true, ownerParty: true, revision: true }) });

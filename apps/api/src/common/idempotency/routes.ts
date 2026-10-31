@@ -87,6 +87,26 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'file.copy': IN_TRANSACTION,
   'file.move': IN_TRANSACTION,
   'file.delete': IN_TRANSACTION,
+  // Quotes, negotiation, agreements, orders and order changes (COM-002): every route runs in one PrincipalService.runAs
+  // transaction (budget reservations and releases, acceptance events and outbox events included) and returns its result
+  // unchanged.
+  'quote.create': IN_TRANSACTION,
+  'quote.version_open': IN_TRANSACTION,
+  'quote.draft_save': IN_TRANSACTION,
+  'quote.private_save': IN_TRANSACTION,
+  'quote.send': IN_TRANSACTION,
+  'quote.withdraw': IN_TRANSACTION,
+  'quote.amendment_request': IN_TRANSACTION,
+  'quote.amendment_request_withdraw': IN_TRANSACTION,
+  'agreement.accept_terms': IN_TRANSACTION,
+  'agreement.seller_accept': IN_TRANSACTION,
+  'agreement.seller_decline': IN_TRANSACTION,
+  'agreement.withdraw': IN_TRANSACTION,
+  'agreement.private_save': IN_TRANSACTION,
+  'order.place': IN_TRANSACTION,
+  'order.cancel': IN_TRANSACTION,
+  'order.change_propose': IN_TRANSACTION,
+  'order.change_decide': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

@@ -89,7 +89,7 @@ Applied to: `rfq_version`, `quote_version`, `offering_version`, `publication_ver
 |---|---|
 | `rfq_version` | `{ payload }` |
 | `quote_version` | `{ rfqVersion, payload }` |
-| `agreement` | `{ quoteVersion, rfqVersion }` (computed once) |
+| `agreement` | `{ termsKind, quoteVersion, rfqVersion }` (computed once; ADR 012 decision 19) |
 | `approval`, `action_intent` | the canonical proposed action (`actionDigest`) |
 | `second_person_approval`, `case_access_grant` | the approved request (`actionDigest`, `approvalDigest`) |
 | `publication_version` | `{ title, body, sourceRefs, eventTime, correctionOf, correctionNote, language }` |
@@ -97,7 +97,7 @@ Applied to: `rfq_version`, `quote_version`, `offering_version`, `publication_ver
 | `course_version`, `plan_version`, `hub_config_version`, `legal_document_version`, `template_version`, recipe and method versions | `{ payload }` of the version |
 | `task_offer` | `{ taskRequestVersion, payload }` (pins the request version like a quote) |
 | `consultation_booking` | `{ offeringVersion, kind, mode, slot }` (`terms_digest`) |
-| `agreement` with `terms_kind = task\|consultation` | `{ termsKind, offerRef, requestRef }` (proposed contract extension) |
+| `agreement` with `terms_kind = task\|consultation` | the same input with the offer and the request it answers in the two ref positions (CONS-001, TASK-001) |
 | `passport_credential` | the credential document without its proof; the proof is an Ed25519 signature by the issuing node key |
 | `screening_list_version` | the normalized entry list |
 | `federation envelope` | `{ payload }` of the projection carried |
@@ -396,13 +396,13 @@ Owner module: `sales`. Contracts: `sales.ts`.
 | Entity | Key fields | Layers | Invariants | Retention | Status |
 |---|---|---|---|---|---|
 | `lead` | party(seller), ref(context), `contact_ref`, `provenance`, `status` | O | contextual; no standalone CRM | commercial | Designed |
-| `quote` | `rfq_id`, party(seller), party(buyer), `status enum(draft\|sent\|superseded\|withdrawn\|expired\|accepted)`, `stale_reason`, `current_version` | S, O | recipient-specific; never public | commercial | Contract |
-| `quote_version` (V) | `quote_id`, `version`, `rfq_version_id`, `rfq_version_digest`, `status`, `payload` (lines, totals, terms, validity), `digest`, `sent_at`, `sent_by`, `sent_by_mandate_id`, `valid_until`, `stale_reason`, `revalidated_from`, `redacted_at NULL` | S (`toSharedQuoteVersion`) | sent only against the current published RFQ version; totals recomputed exactly; frozen columns per invariant 2 | commercial | Contract |
-| `quote_line` | `quote_version_id`, `line_id`, `rfq_line_id`, `kind`, `spec_snapshot`, `offering_version_ref`, qty(quantity), money(unit_price), `tax_determination_id`, money(tax_amount), money(line_total) | S (without catalogue provenance) | a frozen projection of the payload lines written at send for querying; the payload remains authoritative | commercial | Contract |
-| `tax_determination` (A) | ref(subject quote_line\|invoice_line\|ticket), `jurisdiction jur` (for example `US-TX:harris-county:houston`), `rule_ref` (pack fact or adapter rule id), `rate text(decimal)`, `taxability enum(taxable\|exempt\|reverse_charge\|not_applicable)`, `exemption_ref`, `provider enum(pack\|adapter)`, `determined_at` | S (with the line) | reproducible: names the rule and source; never a hard-coded rate | accounting | Proposed |
-| `quote_private_constraint` | `quote_id PK`, party(owner), `floor_prices`, `margin_targets`, `cost_basis`, `negotiation_notes` | PP (seller) | never in buyer views, envelopes or logs visible to others | commercial | Contract |
-| `negotiation_round` | ref(context rfq\|quote\|agreement), `round_no`, `proposal ref(quote_version\|rfq_version\|amendment_request)`, party(proposer), `negotiation_session_id NULL`, `created_at` | S | every proposal is a structured version, never chat prose | commercial | Designed |
-| `amendment_request` | `quote_version_id`, party(requester), `line_refs`, `requested_changes jsonb`, `status enum(open\|answered\|withdrawn)` | S | references exact lines; the answer is a new quote version | commercial | Proposed |
+| `quote` | `rfq_id`, party(seller), party(buyer), `status enum(draft\|sent\|superseded\|withdrawn\|expired\|accepted)`, `stale_reason`, `current_version` | S, O | recipient-specific; never public; one per (RFQ, seller) | commercial | Live (COM-002) |
+| `quote_version` (V) | `quote_id`, `version`, `rfq_version_id`, `rfq_version_digest`, `status`, `payload` (lines, totals, terms, validity), `digest`, `sent_at`, `sent_by`, `sent_by_mandate_id`, `valid_until`, `stale_reason`, `revalidated_from`, `redacted_at NULL` | S (`toSharedQuoteVersion`) | sent only against the current published RFQ version; totals recomputed exactly; frozen columns per invariant 2 | commercial | Live (COM-002) |
+| `quote_line` | `quote_version_id`, `line_id`, `rfq_line_id`, `kind`, `spec_snapshot`, `offering_version_ref`, qty(quantity), money(unit_price), `tax_determination_id`, money(tax_amount), money(line_total) | S (without catalogue provenance) | a frozen projection of the payload lines written at send for querying; the payload remains authoritative | commercial | Live (COM-002) |
+| `tax_determination` (A) | ref(subject quote_line\|invoice_line\|ticket), `jurisdiction jur` (for example `US-TX:harris-county:houston`), `rule_ref` (pack fact or adapter rule id), `rate text(decimal)`, `taxability enum(taxable\|exempt\|reverse_charge\|not_applicable)`, `exemption_ref`, `provider enum(pack\|adapter)`, `determined_at` | S (with the line) | reproducible: names the rule and source; never a hard-coded rate | accounting | Live (COM-002; tax: seller-stated determinations, pack and adapter rules later) |
+| `quote_private_constraint` | `quote_id PK`, party(owner), `floor_prices`, `margin_targets`, `cost_basis`, `negotiation_notes` | PP (seller) | never in buyer views, envelopes or logs visible to others | commercial | Live (COM-002) |
+| `negotiation_round` | ref(context rfq\|quote\|agreement), `round_no`, `proposal ref(quote_version\|rfq_version\|amendment_request)`, party(proposer), `negotiation_session_id NULL`, `created_at` | S | every proposal is a structured version, never chat prose | commercial | Live (COM-002; sessions with AGT-008) |
+| `amendment_request` | `quote_version_id`, party(requester), `line_refs`, `requested_changes jsonb`, `status enum(open\|answered\|withdrawn)` | S | references exact lines; the answer is a new quote version | commercial | Live (COM-002) |
 
 ## 18. Transactions
 
@@ -410,13 +410,13 @@ Owner module: `transactions`. Contracts: `transactions.ts`, `server/commercial.t
 
 | Entity | Key fields | Layers | Invariants | Retention | Status |
 |---|---|---|---|---|---|
-| `agreement` | party(buyer), party(seller), `terms_kind enum(rfq_quote\|task\|consultation)` (proposed; today only `rfq_quote`), `quote_version_id`, `rfq_version_id` \| `task_offer_id`, `task_request_version_id` \| `consultation_booking_id`, `accepted_terms_digest`, `status enum(proposed\|accepted_by_buyer\|accepted_by_both\|declined\|withdrawn\|superseded)`, `superseded_by` | S (`toSharedAgreement`) | digest over `{quoteVersion, rfqVersion}` computed once; never public | commercial | Contract |
-| `agreement_buyer_private` | `agreement_id`, party(owner), `transaction_budget_id`, `approval_refs`, `notes` | PP (buyer) | never joined into shared or seller views | commercial | Contract |
-| `agreement_seller_private` | `agreement_id`, party(owner), `fulfilment_plan jsonb`, `notes` | PP (seller) | never joined into shared or buyer views | commercial | Contract |
-| `acceptance_event` (A) | `agreement_id`, `kind enum(buyer_selects\|buyer_accepts_terms\|seller_accepts_order\|seller_declines\|withdrawn)`, `quote_version_id`, `rfq_version_id`, `accepted_terms_digest`, actor {person, onBehalfOf, mandate, approval}, `authority` {budget ids, reservation}, `occurred_at`, `idempotency_key` | S | trigger: digest equals the agreement digest; buyer and seller acceptance are separate events | commercial | Contract |
-| `order` | `agreement_id`, `accepted_terms_digest`, `status enum(placed\|accepted\|changed\|cancelled\|fulfilled)`, `external_reference`, `reservation_id` | S | no commit without authority and a transaction budget reservation | commercial | Contract |
-| `order_change` | `order_id`, `previous_terms_digest`, `new_terms_digest`, `consents jsonb[]`, `status` | S | appended jointly accepted versions; history never mutates | commercial | Designed |
-| `obligation` | `agreement_id`, party(obligor), `kind enum(deliver\|perform\|pay\|accept)`, `due ts`, money(amount) NULL, qty(scope) NULL, `status enum(open\|fulfilled\|partially\|waived\|disputed)` | S | derived from accepted terms; changes only through order changes | commercial | Contract |
+| `agreement` | party(buyer), party(seller), `terms_kind enum(rfq_quote\|task\|consultation)` (ADR 012 decision 19; COM-002 creates `rfq_quote`), `quote_version_id`, `rfq_version_id` \| `task_offer_id`, `task_request_version_id` \| `consultation_booking_id`, `accepted_terms_digest`, `status enum(proposed\|accepted_by_buyer\|accepted_by_both\|declined\|withdrawn\|superseded)`, `superseded_by` | S (`toSharedAgreement`) | digest over `{termsKind, quoteVersion, rfqVersion}` computed once; one live agreement per RFQ; never public | commercial | Live (COM-002) |
+| `agreement_buyer_private` | `agreement_id`, party(owner), `transaction_budget_id`, `approval_refs`, `notes` | PP (buyer) | never joined into shared or seller views | commercial | Live (COM-002) |
+| `agreement_seller_private` | `agreement_id`, party(owner), `fulfilment_plan jsonb`, `notes` | PP (seller) | never joined into shared or buyer views | commercial | Live (COM-002) |
+| `acceptance_event` (A) | `agreement_id`, `kind enum(buyer_selects\|buyer_accepts_terms\|seller_accepts_order\|seller_declines\|withdrawn)`, `quote_version_id`, `rfq_version_id`, `accepted_terms_digest`, actor {person, onBehalfOf, mandate, approval}, `authority` {budget ids, reservation}, `occurred_at`, `idempotency_key` | S | trigger: digest equals the agreement digest; buyer and seller acceptance are separate events | commercial | Live (COM-002) |
+| `order` | `agreement_id`, `accepted_terms_digest`, `status enum(placed\|accepted\|changed\|cancelled\|fulfilled)`, `external_reference`, `reservation_id` | S | no commit without authority and a transaction budget reservation | commercial | Live (COM-002; table `commercial_order`) |
+| `order_change` | `order_id`, `previous_terms_digest`, `new_terms_digest`, `consents jsonb[]`, `status` | S | appended jointly accepted versions; history never mutates | commercial | Live (COM-002) |
+| `obligation` | `agreement_id`, party(obligor), `kind enum(deliver\|perform\|pay\|accept)`, `due ts`, money(amount) NULL, qty(scope) NULL, `status enum(open\|fulfilled\|partially\|waived\|disputed)` | S | derived from accepted terms; changes only through order changes | commercial | Live (COM-002) |
 
 ## 18a. Procurement and supply
 

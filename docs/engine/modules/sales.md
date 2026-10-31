@@ -1,6 +1,6 @@
 # Sales
 
-Module code `SAL`. Status: the sales list and decisions panel are **Demo** (`/app/sales`); quote versions, digests, staleness, agreements and acceptance are **Contract**; leads, quoting, negotiation and order acceptance flows are **Designed** (COM-001, COM-002); quoting, negotiation and order-desk agent modules, joint requests and the seller side of the procurement suite are **Proposed**. Packages: COM-001, COM-002, WEB-002, AGT-008, MATCH-001, PERF-001, PRC-022. Narrative: [Buying and selling](../commerce.md#the-sales-journey). Data: [§17 Sales and negotiation](../../data/model.md#17-sales-and-negotiation), [§18 Transactions](../../data/model.md#18-transactions).
+Module code `SAL`. Status: the sales list and decisions panel are **Demo** (`/app/sales`); quote versions, digests, staleness, negotiation rounds, amendment requests, agreements, seller acceptance of orders and order changes are **Live** in the API (COM-002); leads and the quoting screens are **Designed** (COM-001, WEB-002); quoting, negotiation and order-desk agent modules, joint requests and the seller side of the procurement suite are **Proposed**. Packages: COM-001, COM-002, WEB-002, AGT-008, MATCH-001, PERF-001, PRC-022. Narrative: [Buying and selling](../commerce.md#the-sales-journey). Data: [§17 Sales and negotiation](../../data/model.md#17-sales-and-negotiation), [§18 Transactions](../../data/model.md#18-transactions).
 
 ## Purpose
 
@@ -16,8 +16,8 @@ Suppliers, distributors, manufacturers, contractors and subcontractors selling w
 |---|---|---|
 | SAL-S1 | As a supplier, I want every RFQ invitation in my categories to arrive with a quote draft built from my catalogue and price list | Proposed |
 | SAL-S2 | As a sales lead, I want my agent to send quotes under USD 50,000 from catalogue lines without asking, and ask me above that | Proposed |
-| SAL-S3 | As a seller, I want my floor price and margin target to stay invisible to the buyer and to the buyer's agent under every circumstance | Contract |
-| SAL-S4 | As a seller, I want to know immediately when the buyer amended the RFQ and which of my quotes became stale | Contract (flag); Designed (flow) |
+| SAL-S3 | As a seller, I want my floor price and margin target to stay invisible to the buyer and to the buyer's agent under every circumstance | Live (API) |
+| SAL-S4 | As a seller, I want to know immediately when the buyer amended the RFQ and which of my quotes became stale | Live (flag, outbox event); Designed (notification screens) |
 | SAL-S5 | As an order desk, I want to accept orders within limits and flag capacity conflicts | Proposed |
 | SAL-S6 | As a manufacturer, I want my standing representative to answer invitations while my team is at a trade show | Proposed |
 
@@ -27,13 +27,13 @@ Suppliers, distributors, manufacturers, contractors and subcontractors selling w
 |---|---|---|---|
 | SAL-F01 | Sales work is contextual: invitations, leads, introductions, contacts and templates live where they are used; there is no standalone CRM navigation or generic inbox | Designed | WEB-002 |
 | SAL-F02 | A lead is created from an accepted introduction, an RFQ invitation, an expressed interest in an open need or a manual entry, with its source recorded | Designed | COM-001 |
-| SAL-F03 | A quote answers one RFQ version; each sent quote version is an immutable, recipient-specific snapshot with lines, specifications, options and substitutions, quantities with unit basis, taxes, currency, milestones, payment terms, validity and attachments | Contract | COM-002 |
-| SAL-F04 | Each quote line may cite the catalogue offering version it came from; later catalogue changes never touch the sent quote | Contract | COM-002 |
-| SAL-F05 | Seller-private constraints (floors, margin targets, cost basis, notes) are a separate record never joined into the buyer's view, search, notifications, envelopes or federation | Contract | COM-002 |
-| SAL-F06 | Quote lifecycle `draft → sent → superseded \| withdrawn \| expired \| accepted`; a quote cannot be sent against an RFQ version that is not current | Contract | COM-002 |
-| SAL-F07 | Tax determination per line comes from the country tax facets and the parties' registrations, recorded as an append-only determination | Designed | COM-002, BILL-002 |
-| SAL-F08 | Negotiation rounds propose new versions or amendment requests referencing exact lines; agents negotiate inside floors with round limits and expiry | Designed (rounds); Proposed (agents) | COM-002, AGT-001 |
-| SAL-F09 | Seller acceptance of an order is a separate event bound to the agreement digest; acceptance checks the seller's authority and, for agents, the mandate and limits | Contract | COM-002, AST-001 |
+| SAL-F03 | A quote answers one RFQ version; each sent quote version is an immutable, recipient-specific snapshot with lines, specifications, options and substitutions, quantities with unit basis, taxes, currency, milestones, payment terms, validity and attachments | Live | COM-002 |
+| SAL-F04 | Each quote line may cite the catalogue offering version it came from; later catalogue changes never touch the sent quote | Live | COM-002 |
+| SAL-F05 | Seller-private constraints (floors, margin targets, cost basis, notes) are a separate record never joined into the buyer's view, search, notifications, envelopes or federation | Live | COM-002 |
+| SAL-F06 | Quote lifecycle `draft → sent → superseded \| withdrawn \| expired \| accepted`; a quote cannot be sent against an RFQ version that is not current | Live | COM-002 |
+| SAL-F07 | Tax determination per line comes from the country tax facets and the parties' registrations, recorded as an append-only determination | Live (seller-stated determinations); Designed (pack and adapter rules) | COM-002, BILL-002 |
+| SAL-F08 | Negotiation rounds propose new versions or amendment requests referencing exact lines; agents negotiate inside floors with round limits and expiry | Live (rounds, requests, agents bounded by mandates and floors); Proposed (round limits, sessions) | COM-002, AGT-001 |
+| SAL-F09 | Seller acceptance of an order is a separate event bound to the agreement digest; acceptance checks the seller's authority and, for agents, the mandate and limits | Live | COM-002, AST-001 |
 | SAL-F10 | Capacity conflicts (overlapping commitments in the same period) are flagged before acceptance | Proposed | AGT-008 |
 | SAL-F11 | Quote templates and price lists are company-level, versioned and private; applying them never changes sent quotes | Designed | COM-001 |
 | SAL-F12 | Replying to an RFQ or a task is always free on the free floor; no plan buys visibility to buyers | Designed | BILL-001 |

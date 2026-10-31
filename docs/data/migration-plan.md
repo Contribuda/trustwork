@@ -36,6 +36,7 @@
 | File | Package | Contents | Note |
 |---|---|---|---|
 | `commerce/20261031180000_commerce_catalogue_procurement.sql` | COM-001 | offering, offering_version, bundle_component, offering_version_private, need, need_line, rfq, rfq_version, rfq_private_constraint, rfq_invitation; ownership helpers for the `rfq` kind (`owns_resource`, `rfq_can`, `rfq_invitee`) | In the COM-001 pull request; supersedes the unmerged draft files of PR #36 (`20261028010000_*`, `20261028020000_*`), which were reviewed and rewritten. The integrator assigns the final timestamp at merge |
+| `transactions/20261101120000_transactions.sql` | COM-002 | quote, quote_version, tax_determination, quote_line, quote_private_constraint, amendment_request, negotiation_round, agreement (with `terms_kind`), agreement_buyer_private, agreement_seller_private, acceptance_event, commercial_order (the model's `order`), order_change, obligation; helpers `quote_side`, `agreement_side`, `order_side`, `transactions_rfq_for_share`, `transactions_quote_for_share`; replaces `rfq_can`, `rfq_guard` (RFQ publication needs `company.deals.manage`, the public projection `company.publish`), `rfq_flag_stale` (amendments flag quotes) and `owns_resource` (adds `quote`) | In the COM-002 pull request; the integrator assigns the final timestamp at merge. `rfq_clarification`, `supplier_candidate` and `evaluation` from A4 stay planned (PRC-004, MATCH-001) |
 
 ## Planned slices
 
@@ -162,5 +163,5 @@ flowchart LR
 - DATA-002 mentions claim tables; this plan delivers claims in C3 because they need recipe versions from HUB-003. Moderation tables stay in A2 as DATA-002 says.
 - `plan_baseline` and `project_milestone` from earlier designs are delivered as `plan_version` and `plan_item(kind = milestone)` in C4; `MilestoneSchema` stays the projection contract.
 - The billing chapter's "plan version" is `subscription_plan_version` in B1 to avoid the project plan name.
-- The agreement `terms_kind` extension needs a contract change (`transactions.ts`, digest input for task and consultation terms) reviewed through an ADR before D4.
+- The agreement `terms_kind` extension was decided in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 19 and delivered by COM-002: the column exists and the digest input is `{ termsKind, quoteVersion, rfqVersion }`; D4 adds the foreign keys and checks for `task` and `consultation` terms (the database refuses those kinds until then).
 - Hub console contracts (`packages/contracts/src/hub.ts`) and the agent catalogue are being designed in parallel; C2 and E5 align their column names with those contracts when they merge.

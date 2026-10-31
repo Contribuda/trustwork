@@ -36,8 +36,12 @@ const VERIFIED_EMAIL_ACTIONS: ReadonlySet<Capability> = new Set(['publish', 'inv
  * A company party is exercised by members holding the matching membership permission (R28): `company.publish` for
  * publishing, `company.deals.manage` for everything else. Reads of a company-owned object need the same permission:
  * "member of the company" alone never reaches private data (acceptance case "own-company member without grant").
+ * Publishing an RFQ version to its invited suppliers is deal work and needs only `company.deals.manage` (integrator
+ * decision after COM-001, applied in COM-002); its public projection still needs `company.publish` (checked by the
+ * procurement module and `trustwork.rfq_can(..., 'publish_projection')`).
  */
-export function companyPermissionFor(action: Capability): CompanyPermission {
+export function companyPermissionFor(action: Capability, resourceKind?: PolicyResource['kind']): CompanyPermission {
+  if (action === 'publish' && resourceKind === 'rfq') return 'company.deals.manage';
   return action === 'publish' ? 'company.publish' : 'company.deals.manage';
 }
 
@@ -90,7 +94,7 @@ export function evaluatePolicy(input: EvaluationInput): PolicyDecision {
     return PolicyDecisionSchema.parse({ effect: 'allow', projection: 'owner_private', side: 'owner', basis: [{ kind: 'owner' }], authzEpoch: epoch, evaluatedAt: at });
   }
   if (ownerVia === 'company' && principal.membership) {
-    const permission = companyPermissionFor(action);
+    const permission = companyPermissionFor(action, resource.kind);
     if (principal.membership.permissions.includes(permission)) {
       return PolicyDecisionSchema.parse({
         effect: 'allow', projection: 'owner_private', side: 'owner',
@@ -109,7 +113,7 @@ export function evaluatePolicy(input: EvaluationInput): PolicyDecision {
     if (!participationActive(row, now)) { seen = seen === 'revoked' ? seen : 'expired'; continue; }
     if (!row.capabilities.includes(action)) { seen ??= 'capability_missing'; continue; }
     if (via === 'company' && principal.membership) {
-      const permission = companyPermissionFor(action);
+      const permission = companyPermissionFor(action, resource.kind);
       if (!principal.membership.permissions.includes(permission)) { seen ??= 'permission_missing'; continue; }
       return PolicyDecisionSchema.parse({
         effect: 'allow', projection: AUDIENCE_LAYER[row.audience], side: row.side,
