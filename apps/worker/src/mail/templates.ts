@@ -6,6 +6,7 @@ import uzLatn from './locales/uz-Latn/mail.json' with { type: 'json' };
 import ka from './locales/ka/mail.json' with { type: 'json' };
 import hy from './locales/hy/mail.json' with { type: 'json' };
 import azLatn from './locales/az-Latn/mail.json' with { type: 'json' };
+import es from './locales/es/mail.json' with { type: 'json' };
 import stroyreputationRu from './brand/stroyreputation-ru.json' with { type: 'json' };
 
 /**
@@ -18,7 +19,7 @@ export type MailDictionary = { readonly [key: string]: string | MailDictionary }
 
 export const REFERENCE_LOCALE = 'en';
 /** Every language with a mail dictionary; tests compare it with the engine languages and the directory listing. */
-export const MAIL_DICTIONARIES: Readonly<Record<string, MailDictionary>> = { en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn };
+export const MAIL_DICTIONARIES: Readonly<Record<string, MailDictionary>> = { en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn, es };
 export const MAIL_LOCALES: readonly string[] = Object.keys(MAIL_DICTIONARIES);
 
 /** Brand overlays (docs/oss/BRAND.md): per-locale names that replace the hub brand in those locales only. */

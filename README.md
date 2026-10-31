@@ -101,7 +101,7 @@ We would rather under-promise:
 | | Status |
 |---|---|
 | Accounts, sign-in, sessions, companies, memberships, projects with transfers and participants | **Implemented** on PostgreSQL with row-level security and tests |
-| Full public site and workspace (news, articles, magazine, events, directories, search, onboarding, assistant, procurement and sales views) | **Demo** on synthetic data, in six languages |
+| Full public site and workspace (news, articles, magazine, events, directories, search, onboarding, assistant, procurement and sales views) | **Demo** on synthetic data, in seven languages |
 | Commerce, agent mandates, billing, administration, retrieval | **Frozen contracts and designs**, ready to implement |
 | Events, learning, matching, agent negotiation, hubs, verification, federation | **Designed** in the handbook, open for contribution |
 | Production deployments, real users, real companies | **None yet.** Demo data is synthetic and labelled. |
