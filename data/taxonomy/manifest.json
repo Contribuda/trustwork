@@ -1,0 +1,38 @@
+{
+  "name": "Trustwork plan-step taxonomy",
+  "version": "1.0.0",
+  "licence": "CC0-1.0",
+  "referenceLocale": "en",
+  "locales": ["en", "es", "ru", "uz-Latn", "ka", "hy", "az-Latn"],
+  "schemes": [
+    { "id": "stage", "prefix": "stage", "file": "terms/stages.json", "sequenced": false },
+    { "id": "project_type", "prefix": "project", "file": "terms/project-types.json", "sequenced": false },
+    { "id": "work_type", "prefix": "work", "file": "terms/work-types.json", "sequenced": true },
+    { "id": "trade", "prefix": "trade", "file": "terms/trades.json", "sequenced": false },
+    { "id": "material", "prefix": "material", "file": "terms/materials.json", "sequenced": false },
+    { "id": "permit_type", "prefix": "permit", "file": "terms/permits.json", "sequenced": true, "questions": true },
+    { "id": "inspection_type", "prefix": "inspection", "file": "terms/inspections.json", "sequenced": true, "questions": true },
+    { "id": "decision", "prefix": "decision", "file": "terms/decisions.json", "sequenced": true, "questions": true }
+  ],
+  "stageStart": "stage.define",
+  "stageEnd": "stage.handover",
+  "sequenceStart": "work.planning.brief",
+  "produces": ["consultation", "task", "rfq", "purchase", "self"],
+  "tradeKinds": ["advisor", "professional", "contractor", "craft"],
+  "exampleStepKinds": {
+    "task": ["work_type"],
+    "self": ["work_type"],
+    "consultation": ["work_type"],
+    "purchase": ["material"],
+    "permit": ["permit_type"],
+    "inspection": ["inspection_type"],
+    "decision": ["decision"]
+  },
+  "facetValues": {
+    "applicability": ["commonly_required", "depends_on_scope", "depends_on_location", "unknown"],
+    "authority": ["local_building_department", "local_planning_office", "local_health_department", "environmental_agency", "public_works_department", "private_association", "unknown"],
+    "licensing": ["varies_by_state", "unknown"],
+    "verification": ["unverified", "secondary", "verified"]
+  },
+  "messages": ["unverified_notice", "synthetic_example_notice", "licensed_crosswalk_notice"]
+}

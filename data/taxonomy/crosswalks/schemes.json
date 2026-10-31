@@ -1,0 +1,29 @@
+{
+  "$comment": "Crosswalk scheme registry. Only schemes with distribution 'shipped' may appear in the term files; mappings to 'hub_licensed' schemes are licensed hub data, stored by a hub outside this repository and validated with validateHubCrosswalk(). The engine works with no licensed crosswalk at all.",
+  "schemes": [
+    {
+      "id": "ifc",
+      "name": "IFC 4.3 (ISO 16739-1:2024) entity and predefined type names",
+      "steward": "buildingSMART International",
+      "distribution": "shipped",
+      "appliesTo": ["work_type", "material"],
+      "codeFormat": "^Ifc[A-Z][A-Za-z0-9]+(\\.[A-Z][A-Z0-9_]*)?$",
+      "mappingStatus": "proposed",
+      "note": "Entity names (optionally Entity.PREDEFINEDTYPE) written by the taxonomy authors from the open schema; not yet reviewed by an IFC expert."
+    },
+    {
+      "id": "etim",
+      "name": "ETIM product classes",
+      "steward": "ETIM International",
+      "distribution": "shipped",
+      "appliesTo": ["material"],
+      "codeFormat": "^EC[0-9]{6}$",
+      "mappingStatus": "open",
+      "note": "Slots only. Class codes are filled from the ETIM classification under its terms of use after review; none are claimed in version 1.0.0."
+    },
+    { "id": "masterformat", "name": "MasterFormat", "steward": "Construction Specifications Institute", "distribution": "hub_licensed", "appliesTo": ["work_type", "material"], "note": "Proprietary. A hub that holds a licence supplies its own mapping; never committed here." },
+    { "id": "uniformat", "name": "UniFormat", "steward": "Construction Specifications Institute", "distribution": "hub_licensed", "appliesTo": ["work_type"], "note": "Proprietary. A hub that holds a licence supplies its own mapping; never committed here." },
+    { "id": "omniclass", "name": "OmniClass", "steward": "Construction Specifications Institute", "distribution": "hub_licensed", "appliesTo": ["work_type", "material", "trade", "stage"], "note": "Licence terms set by its steward. A hub that holds a licence supplies its own mapping; never committed here." },
+    { "id": "uniclass", "name": "Uniclass", "steward": "NBS", "distribution": "hub_licensed", "appliesTo": ["work_type", "material", "trade", "stage"], "note": "Own terms of use; treated as hub data under ADR 012 decision 14. Never committed here." }
+  ]
+}

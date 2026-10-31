@@ -1,0 +1,12 @@
+{
+  "scheme": "decision",
+  "terms": [
+    { "code": "decision" },
+    { "code": "decision.delivery_method", "parent": "decision", "stage": "stage.define", "predecessors": ["work.planning.brief"] },
+    { "code": "decision.go_ahead", "parent": "decision", "stage": "stage.site_and_feasibility", "predecessors": ["work.planning.feasibility", "work.planning.financing", "work.survey.existing_conditions", "work.survey.hazardous_materials"] },
+    { "code": "decision.design_approval", "parent": "decision", "stage": "stage.design", "predecessors": ["work.design.architectural", "work.design.structural", "work.design.mep"] },
+    { "code": "decision.selections", "parent": "decision", "stage": "stage.design", "predecessors": ["work.design.interior"] },
+    { "code": "decision.contractor_selection", "parent": "decision", "stage": "stage.contracting", "predecessors": ["work.planning.bidding", "decision.delivery_method"] },
+    { "code": "decision.final_acceptance", "parent": "decision", "stage": "stage.handover", "predecessors": ["work.closeout.punch_list", "work.closeout.documentation", "permit.occupancy"] }
+  ]
+}
