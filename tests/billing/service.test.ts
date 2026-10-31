@@ -24,7 +24,7 @@ test('billing service: free basic floor for both sides, acceptance and the two b
   if (!db) return;
   await db.migrate();
   await db.createAppLogin();
-  const runtime: DataPool = createPool({ ...db.appConfig, max: 16 });
+  const runtime: DataPool = createPool({ ...db.appConfig, max: 6 });
   t.after(async () => { await runtime.end(); await db.close(); });
   const w: BillingWorld = await buildWorld(db.admin);
   const { principal, as, owner } = actor(db.admin, runtime);
