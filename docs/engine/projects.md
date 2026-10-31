@@ -2,7 +2,7 @@
 
 Normative requirements: [Projects and plans](modules/projects-and-plans.md), [Consultations](modules/consultations.md), [Tasks and mentoring](modules/tasks-and-mentoring.md), [Knowledge sharing](modules/knowledge-sharing.md). Participants: [who uses what](participants/README.md).
 
-Requirements R04, R12, R28, R41–R43. Status: creation, leadership, publication, ownership transfer and participants are **Live** in the API; public pages and the workspace project view (including a plan tab with a baseline and changes) are **Demo**; baselines, plan changes and dependencies are **Designed**; versioned plans, plan items, plan sharing, consultations, tasks and shared knowledge (the flagship journey "from plan to people", [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 17) are **Proposed** (PLAN-000, PLAN-001, CONS-001, TASK-001, KNOW-001).
+Requirements R04, R12, R28, R41–R43. Status: creation, leadership, publication, ownership transfer and participants are **Live** in the API; versioned plans, plan items, dependencies, item states, plan changes, plan sharing, permit records, the diary and the site location are **Live** in the API (PLAN-001, [plans module](../../apps/api/src/modules/plans/README.md)); public pages and the workspace project view (including a plan tab with a baseline and changes) are **Demo**; consultations, tasks and shared knowledge (the flagship journey "from plan to people", [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 17) are **Proposed** (CONS-001, TASK-001, KNOW-001).
 
 A project is where work happens: a school, a facade renovation, a warehouse, someone's own flat. It is a first-class object, not a folder inside a company.
 

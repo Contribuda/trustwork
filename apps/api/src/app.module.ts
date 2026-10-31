@@ -6,6 +6,7 @@ import type { AppContext } from './modules/identity/context.js';
 import { IdentityModule, type IdentityServices } from './modules/identity/identity.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
 import { DirectoryModule } from './modules/directory/directory.module.js';
+import { PlansModule } from './modules/plans/plans.module.js';
 
 @Controller()
 export class HealthController {
@@ -14,7 +15,7 @@ export class HealthController {
   @Get('health') getHealth() { return { ...health, externalProviders: this.config?.providers.mode ?? 'disabled' }; }
 }
 
-/** Composition root: health always; identity, projects and directory only when a database is configured. */
+/** Composition root: health always; identity, projects, directory and plans only when a database is configured. */
 @Module({})
 export class AppModule {
   static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig): DynamicModule {
@@ -22,7 +23,7 @@ export class AppModule {
       module: AppModule,
       controllers: [HealthController],
       providers: [{ provide: API_CONFIG, useValue: config }],
-      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity)] : [],
+      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity)] : [],
     };
   }
 }

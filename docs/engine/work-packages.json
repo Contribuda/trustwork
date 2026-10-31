@@ -1620,7 +1620,7 @@
       "id": "PLAN-001",
       "title": "Project plans: versions, items, dependencies, changes, sharing with invited experts, permits and diaries",
       "area": "projects",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-003",
         "PLAN-000",

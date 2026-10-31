@@ -50,7 +50,8 @@ test('identity and access persistence under the restricted runtime role', { skip
     const forced = rows.filter((r) => r.relrowsecurity && r.relforcerowsecurity).map((r) => r.relname);
     const kernel = ['evidence_artifact', 'exchange_rate_snapshot', 'hub', 'hub_territory', 'jurisdiction', 'restricted_place', 'step_term_relation', 'taxonomy_release', 'taxonomy_term', 'unit', 'unit_conversion_rule']; // DATA-003
     const billing = ['billing_account', 'budget', 'credit_grant', 'entitlement', 'ledger_entry', 'marketplace_fee_version', 'meter', 'meter_rate_version', 'offer', 'price_acceptance', 'price_version', 'reservation', 'subscription', 'subscription_plan_version', 'usage_record']; // BILL-001
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing].sort());
+    const plans = ['permit_record', 'plan', 'plan_change', 'plan_dependency', 'plan_item', 'plan_item_state', 'plan_share', 'plan_version', 'project_diary_entry', 'project_location']; // PLAN-001
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -66,6 +67,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       'ensure_monthly_partitions', 'release_job', 'worker_sweep_expired',
       'directory_create_company', 'directory_public_people', 'directory_public_projects', 'directory_public_resolve', 'directory_set_handle', // BE-003
       'billing_close_budget', 'billing_grant_budget', 'billing_ledger_balanced', 'billing_release', 'billing_reserve', 'billing_set_budget_limit', 'billing_settle', // BILL-001
+      'plan_project_can', 'plan_shared_view', // PLAN-001
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns.
