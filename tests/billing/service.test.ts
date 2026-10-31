@@ -9,7 +9,7 @@ import { seedSyntheticCatalogue, SYNTHETIC_ACCEPTANCE_TEXT_VERSION, type SeededC
 import { FREE_BASIC_FEATURES } from '../../apps/api/src/modules/billing/policy.js';
 import { ApiError } from '../../apps/api/src/common/errors.js';
 import { provisionTestDatabase, SKIP_REASON } from '../data/helpers/postgres.js';
-import { actor, buildWorld, days, inSeconds, settle, sleep, type BillingWorld } from './helpers.js';
+import { actor, buildWorld, days, inSeconds, settle, type BillingWorld } from './helpers.js';
 
 const db = await provisionTestDatabase('billing_service');
 
@@ -32,8 +32,7 @@ test('billing service: free basic floor for both sides, acceptance and the two b
   const service = new BillingService(runtime);
   const window = { periodFrom: days(-1), periodTo: days(30) };
 
-  const seeded: SeededCatalogue = await owner((trx) => seedSyntheticCatalogue(trx, { hubId: w.hubId, currency: 'USD', drafter: p.drafter, activator: p.activator, effectiveFrom: inSeconds(1) }));
-  await sleep(1100);
+  const seeded: SeededCatalogue = await owner((trx) => seedSyntheticCatalogue(trx, { hubId: w.hubId, currency: 'USD', drafter: p.drafter, activator: p.activator, effectiveFrom: inSeconds(5) }));
 
   await t.test('the synthetic catalogue is labelled, activated by a second person and published; drafts never appear', async () => {
     await assert.rejects(owner((trx) => seedSyntheticCatalogue(trx, { hubId: randomUUID(), currency: 'USD', drafter: p.drafter, activator: p.drafter, effectiveFrom: inSeconds(5) })), (e: { hint?: string }) => e.hint === 'billing.activator_is_drafter');
