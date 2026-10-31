@@ -23,7 +23,7 @@ export function hubIdFromEnv(env: NodeJS.ProcessEnv = process.env): string | nul
   return value && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value) ? value : null;
 }
 
-/** Engine default until the hub agent policy (HUB-002) is stored: commitments and payments are never pre-authorized. */
+/** Engine default until the hub agent policy (HUB-002) is stored: releasing a payment is never pre-authorized by a mandate. */
 export const DEFAULT_FORBIDDEN_PRE_AUTHORIZATION: readonly MandateActionV2[] = ['release_payment'];
 
 export function assistantPolicySettings(overrides: Partial<PolicySettings> = {}): PolicySettings {
