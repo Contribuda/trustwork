@@ -1,0 +1,24 @@
+{
+  "//": "Image build only (OPS-002): compiles the API, the worker and the packages they load at runtime into one tree that mirrors the repository layout, so source-relative URLs (migrations, country packs, data/taxonomy) resolve unchanged.",
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "../..",
+    "outDir": "../../.image-build",
+    "sourceMap": false,
+    "declaration": false,
+    "removeComments": true
+  },
+  "include": [
+    "../../apps/api/src/**/*.ts",
+    "../../apps/worker/src/**/*.ts",
+    "../../packages/contracts/src/**/*.ts",
+    "../../packages/data/src/**/*.ts",
+    "../../packages/country-packs/src/**/*.ts"
+  ],
+  "exclude": [
+    "../../apps/api/src/dev/**",
+    "../../apps/api/src/openapi/**",
+    "../../**/*.test.ts"
+  ]
+}

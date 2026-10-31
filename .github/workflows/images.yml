@@ -1,0 +1,105 @@
+name: images
+# Builds every container image (web, API, worker, migrate job, proxy), checks the image policy and size budgets,
+# writes an SBOM per image, and runs the full compose stack smoke on one origin. Nothing is pushed or deployed.
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'data/**'
+      - 'infra/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.dockerignore'
+      - '.github/workflows/images.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'data/**'
+      - 'infra/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.dockerignore'
+      - '.github/workflows/images.yml'
+permissions:
+  contents: read
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMPOSE: docker compose -f infra/compose.yaml --profile stack
+  TRUSTWORK_STACK_PORT: '8080'
+  # Pinned SBOM generator (Syft, Apache-2.0), run as a container against each saved image archive.
+  SYFT_IMAGE: anchore/syft:v1.54.1@sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa
+
+jobs:
+  images:
+    name: build, policy, SBOM and stack smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Build the stack images (local only, no push)
+        run: $COMPOSE build
+
+      - name: Image policy (non-root, no devDependencies, tests, docs or TypeScript sources; size budgets)
+        run: >-
+          node infra/images/check-images.mjs
+          web=trustwork-web:local api=trustwork-api:local worker=trustwork-worker:local
+          migrate=trustwork-migrate:local proxy=trustwork-proxy:local
+
+      - name: The hosted preview build arguments still produce a working image (infra/Dockerfile)
+        run: |
+          docker build -f infra/Dockerfile -t trustwork-web:preview \
+            --build-arg NEXT_PUBLIC_BASE_PATH=/trustwork \
+            --build-arg NEXT_PUBLIC_SITE_URL=https://example.invalid/trustwork \
+            --build-arg TRUSTWORK_ALLOWED_ORIGINS=example.invalid .
+          docker run -d --name preview -p 127.0.0.1:3999:3000 trustwork-web:preview
+          for i in $(seq 1 60); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' preview)
+            [ "$status" = healthy ] && break
+            [ "$status" = unhealthy ] && break
+            sleep 2
+          done
+          docker inspect --format '{{.State.Health.Status}}' preview | grep -qx healthy
+          curl -fsS -o /dev/null http://127.0.0.1:3999/trustwork/
+          docker rm -f preview
+
+      - name: SBOM per image (SPDX JSON)
+        # Syft reads the saved image archive (works with the classic and the containerd image store alike).
+        run: |
+          mkdir -p sbom
+          for image in web api worker migrate proxy; do
+            docker save -o "$RUNNER_TEMP/$image.tar" "trustwork-$image:local"
+            docker run --rm -v "$RUNNER_TEMP:/images:ro" -v "$PWD/sbom:/sbom" "$SYFT_IMAGE" \
+              "/images/$image.tar" -o "spdx-json=/sbom/trustwork-$image.spdx.json"
+            rm "$RUNNER_TEMP/$image.tar"
+            node -e "const s=require('./sbom/trustwork-$image.spdx.json'); if(!s.packages?.length) process.exit(1); console.log('$image', s.packages.length, 'packages')"
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sbom
+          path: sbom/
+          retention-days: 30
+
+      - name: Start the stack (postgres, db-roles, migrate, api, worker, web, storage, proxy)
+        run: $COMPOSE up -d --no-build
+      - name: Stack smoke on one origin (sign-up and login through the proxy)
+        env:
+          TRUSTWORK_STACK_ORIGIN: http://localhost:8080
+        run: node infra/images/stack-smoke.mjs
+      - name: Stack logs on failure
+        if: failure()
+        run: $COMPOSE logs --no-color --timestamps
+      - name: Stop the stack
+        if: always()
+        run: $COMPOSE down -v --remove-orphans

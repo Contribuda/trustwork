@@ -1,6 +1,6 @@
 # Installation
 
-Status: **Proposed** (work package INST-001 in the [console README](README.md#proposed-work-packages)). Today the repository ships a local PostgreSQL compose file (`infra/compose.yaml`) and a web-only container (`infra/Dockerfile`); the installer below does not exist yet. Commands are the design target, not instructions that work today.
+Status: **Proposed** (work package INST-001 in the [console README](README.md#proposed-work-packages)). Today the repository ships non-root images for the web app, API, worker, a one-shot migrate job and a single-origin proxy, and a local compose stack built from them ([container images](../../operations/images.md), OPS-002); the installer below does not exist yet. Commands are the design target, not instructions that work today.
 
 The goal: a person who has never seen the code gets a running node and an open setup wizard in about fifteen minutes, on one server, with one command, and nothing insecure left behind.
 

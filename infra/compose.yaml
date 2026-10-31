@@ -1,4 +1,24 @@
+# Trustwork local services (OPS-002). Two ways to use this file:
+#   npm run infra:up            PostgreSQL only (development and tests; unchanged)
+#   docker compose -f infra/compose.yaml --profile stack up --build --wait
+#                               the full stack that mirrors the production topology on one origin:
+#                               http://localhost:8080 (TRUSTWORK_STACK_PORT), /v1/* -> API, everything else -> web
+# Order: postgres -> db-roles (operations step, local superuser) -> migrate (one-shot, migrator role) -> api, worker
+# -> web -> proxy. Every credential below is a local-only default; nothing here is a production value and no image
+# contains configuration. Images and runtime variables: docs/operations/images.md.
 name: trustwork-local
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp"]
+
+x-stack-db: &stack-db
+  TRUSTWORK_STACK_MIGRATOR_PASSWORD: ${TRUSTWORK_STACK_MIGRATOR_PASSWORD:-local_only_stack_migrator}
+  TRUSTWORK_STACK_API_PASSWORD: ${TRUSTWORK_STACK_API_PASSWORD:-local_only_stack_api}
+  TRUSTWORK_STACK_WORKER_PASSWORD: ${TRUSTWORK_STACK_WORKER_PASSWORD:-local_only_stack_worker}
+
 services:
   postgres:
     image: postgres:18.3
@@ -7,7 +27,7 @@ services:
       POSTGRES_USER: trustwork_dev
       POSTGRES_PASSWORD: local_only_change_me
     ports:
-      - "127.0.0.1:54329:5432"
+      - "127.0.0.1:${TRUSTWORK_PG_PORT:-54329}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
@@ -15,5 +35,114 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
+
+  # Operations step production runs once per cluster: groups, migrator and runtime logins (infra/images/stack-roles.sql).
+  db-roles:
+    profiles: [stack]
+    image: postgres:18.3
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      <<: *stack-db
+      PGHOST: postgres
+      PGUSER: trustwork_dev
+      PGPASSWORD: local_only_change_me
+      PGDATABASE: trustwork_dev
+    volumes:
+      - ./images/stack-roles.sql:/stack-roles.sql:ro
+    # On a fresh volume the postgres image answers pg_isready on its socket during initdb, before it listens on TCP.
+    command: ["sh", "-c", "until pg_isready -q -h postgres; do sleep 1; done; exec psql --no-psqlrc -q -f /stack-roles.sql"]
+    restart: "no"
+
+  # One-shot release job: migrations, then the kernel reference data. Runs as the migrator, never as a runtime role.
+  migrate:
+    profiles: [stack]
+    image: trustwork-migrate:local
+    build: { context: .., dockerfile: infra/images/backend.Dockerfile, target: migrate }
+    <<: *hardening
+    depends_on:
+      db-roles: { condition: service_completed_successfully }
+    environment:
+      DATABASE_URL: postgresql://trustwork_stack_migrator:${TRUSTWORK_STACK_MIGRATOR_PASSWORD:-local_only_stack_migrator}@postgres:5432/trustwork_stack
+    restart: "no"
+
+  api:
+    profiles: [stack]
+    image: trustwork-api:local
+    build: { context: .., dockerfile: infra/images/backend.Dockerfile, target: api }
+    <<: *hardening
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    environment:
+      API_DATABASE_URL: postgresql://trustwork_stack_api:${TRUSTWORK_STACK_API_PASSWORD:-local_only_stack_api}@postgres:5432/trustwork_stack
+      PUBLIC_ORIGIN: http://localhost:${TRUSTWORK_STACK_PORT:-8080}
+      # Local stack only: plain-http localhost origin and the fake mailbox, which prints verification tokens to the
+      # log so sign-up can be completed without a mail provider. The image default is NODE_ENV=production, where the
+      # API refuses all three (OPS-001); production configuration is in docs/operations/images.md.
+      NODE_ENV: development
+      AUTH_PROVIDER_MODE: fake
+      API_LOG_MAIL: "1"
+      # Exactly one proxy (infra/proxy) sits in front of the API.
+      API_TRUSTED_PROXY_HOPS: "1"
+    healthcheck:
+      # Readiness, not only liveness: the database answers and the ledger matches the migrations this image ships.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      start_period: 20s
+      retries: 12
+    restart: unless-stopped
+
+  worker:
+    profiles: [stack]
+    image: trustwork-worker:local
+    build: { context: .., dockerfile: infra/images/backend.Dockerfile, target: worker }
+    <<: *hardening
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    environment:
+      WORKER_DATABASE_URL: postgresql://trustwork_stack_worker:${TRUSTWORK_STACK_WORKER_PASSWORD:-local_only_stack_worker}@postgres:5432/trustwork_stack
+    stop_grace_period: 30s
+    restart: unless-stopped
+
+  web:
+    profiles: [stack]
+    image: trustwork-web:local
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: http://localhost:${TRUSTWORK_STACK_PORT:-8080}
+        TRUSTWORK_ALLOWED_ORIGINS: localhost:${TRUSTWORK_STACK_PORT:-8080}
+    <<: *hardening
+    tmpfs: ["/tmp", "/app/apps/web/.next/cache:uid=1000,gid=1000"]
+    environment:
+      TRUSTWORK_DEFAULT_COUNTRY: US
+    restart: unless-stopped
+
+  # S3-compatible object storage for the storage port (no code uses it yet; the adapter comes with its package).
+  storage:
+    profiles: [stack]
+    image: ${TRUSTWORK_STORAGE_IMAGE:-chrislusf/seaweedfs:4.48}
+    command: ["server", "-dir=/data", "-s3", "-s3.port=8333", "-ip.bind=0.0.0.0", "-master.volumeSizeLimitMB=64"]
+    volumes:
+      - storage_data:/data
+    restart: unless-stopped
+
+  proxy:
+    profiles: [stack]
+    image: trustwork-proxy:local
+    build: { context: .., dockerfile: infra/proxy/Dockerfile }
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp"]
+    depends_on:
+      api: { condition: service_healthy }
+      web: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:${TRUSTWORK_STACK_PORT:-8080}:8080"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  storage_data:

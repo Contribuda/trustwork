@@ -1,0 +1,10 @@
+{
+  "//": "Image size budgets in MiB: size of the root filesystem inside the container (du -skx /), independent of the image store. Checked by infra/images/check-images.mjs in .github/workflows/images.yml. Raise a budget only with a reason in the pull request.",
+  "images": {
+    "web": { "maxMiB": 280, "node": true },
+    "api": { "maxMiB": 200, "node": true },
+    "worker": { "maxMiB": 180, "node": true },
+    "migrate": { "maxMiB": 180, "node": true },
+    "proxy": { "maxMiB": 80, "node": false }
+  }
+}
