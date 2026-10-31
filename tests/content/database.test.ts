@@ -102,6 +102,8 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     const pub = await publicOf(post.id);
     assert.equal(pub?.status, 'published');
     assert.equal((pub?.current as { body: string }).body, 'Synthetic body text for tests.');
+    assert.deepEqual((pub?.authorship as { id: string | null; credit: string }[]).map((a) => [a.id, a.credit]), [[p.writer, 'Synthetic Writer'], [null, 'Synthetic Co-author']],
+      'a credited co-author is identified only with their consent');
     noForbiddenKeys(pub);
   });
 
