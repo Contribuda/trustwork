@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, type Dirent } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-import { APP_ROLE, OWNER_ROLE, SCHEMA } from '../config.js';
+import { APP_ROLE, OWNER_ROLE, SCHEMA, WORKER_ROLE } from '../config.js';
 import { parseDirectives, rowsSatisfy, splitStatements, type MigrationDirectives } from './sql.js';
 
 export interface MigrationFile {
@@ -107,8 +107,8 @@ async function withLock<T>(client: MigrationClient, fn: () => Promise<T>): Promi
 }
 
 /**
- * Idempotent cluster/database preparation executed by the connecting (migrator) role: the NOLOGIN owner
- * and runtime roles, the schema owned by the owner role and the checksum ledger. The migrator must be a
+ * Idempotent cluster/database preparation executed by the connecting (migrator) role: the NOLOGIN owner,
+ * runtime (API) and worker roles, the schema owned by the owner role and the checksum ledger. The migrator must be a
  * superuser or a member of the owner role; it never becomes the runtime role.
  */
 export async function bootstrap(client: MigrationClient): Promise<void> {
@@ -124,6 +124,12 @@ export async function bootstrap(client: MigrationClient): Promise<void> {
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${APP_ROLE}') THEN
       BEGIN
         CREATE ROLE ${APP_ROLE} NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE INHERIT;
+      EXCEPTION WHEN duplicate_object OR unique_violation THEN NULL; -- a concurrent runner on another database won the race
+      END;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${WORKER_ROLE}') THEN
+      BEGIN
+        CREATE ROLE ${WORKER_ROLE} NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE INHERIT;
       EXCEPTION WHEN duplicate_object OR unique_violation THEN NULL; -- a concurrent runner on another database won the race
       END;
     END IF;

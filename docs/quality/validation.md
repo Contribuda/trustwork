@@ -2,7 +2,7 @@
 
 ## Foundation checks
 
-`npm ci` uses the exact lockfile. `npm run check` performs ESLint, strict TypeScript checks, recursive discovery of `.test.ts`, `.test.mjs` and `.test.js` under `tests/`, with meaningful policy tests, local documentation link/image checksum/task DAG validation, production compilation of contracts/API/worker/web, and loopback API/web smoke checks. `npm run worker:demo` must show a denied unauthorized action and zero external effects. API and web smoke checks verify their honest bootstrap responses. `npm audit` is recorded separately; never use blind force-fix.
+`npm ci` uses the exact lockfile. `npm run check` performs ESLint, strict TypeScript checks, recursive discovery of `.test.ts`, `.test.mjs` and `.test.js` under `tests/`, with meaningful policy tests, local documentation link/image checksum/task DAG validation, production compilation of contracts/API/worker/web, and loopback API/web smoke checks. `tests/worker` runs the worker against real PostgreSQL: it consumes outbox rows appended by the API role, runs two workers concurrently, and injects faults (SIGKILL between lease and completion, duplicate delivery, stale fencing tokens, clock skew, shutdown). API and web smoke checks verify their honest bootstrap responses. `npm audit` is recorded separately; never use blind force-fix.
 
 Additional negative tests prove a nested failing test fails the gate, unknown graph states and unsupported acceptance evidence are rejected, and repeatable integration bookkeeping remains usable after foundation acceptance. These prove the Git mechanism under cooperative clients; GitHub branch policy/account access is a separate check.
 

@@ -56,14 +56,17 @@ test('identity and access persistence under the restricted runtime role', { skip
       `SELECT p.proname, p.proconfig, has_function_privilege('trustwork_app', p.oid, 'EXECUTE') AS app_exec, has_function_privilege('${db.appLoginRole}', p.oid, 'EXECUTE') AS public_exec
        FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'trustwork' AND p.prosecdef ORDER BY proname`,
     );
-    assert.deepEqual(rows.map((r) => r.proname), [
+    assert.deepEqual(rows.map((r) => r.proname).sort(), [
       'admission_admit', 'admission_issue', 'admission_revoke', 'admission_settle',
       'apply_ownership_transfer', 'auth_claim_unverified_binding', 'auth_consume_token', 'auth_disable_password', 'auth_issue_token', 'auth_login_failure_count', 'auth_lookup_password_credential', 'auth_lookup_provider_credential', 'auth_lookup_session', 'auth_person_epoch', 'auth_record_login_failure', 'auth_register_person', 'auth_register_provider_person',
       'bump_epochs_for_membership', 'bump_epochs_for_participation', 'can_manage_resource', 'current_membership_has', 'end_membership', 'finalize_ownership_transfer', 'lease_jobs', 'owns_resource', 'participates_in_resource', 'public_person_read', 'public_project_read', 'reconcile_job', 'set_principal', 'sweep_expired', 'verify_person_id',
-    ]);
+      'ensure_monthly_partitions', 'release_job', 'worker_sweep_expired',
+    ].sort());
+    // REL-001: worker-only entry points (trustwork_worker), never executable by the API role.
+    const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired']);
     for (const row of rows) {
       assert.ok(row.proconfig?.some((c) => c === 'search_path=trustwork, pg_temp'), `${row.proname} pins search_path`);
-      assert.equal(row.app_exec, !row.proname.startsWith('bump_'), `${row.proname} executable by trustwork_app only when allowlisted`);
+      assert.equal(row.app_exec, !row.proname.startsWith('bump_') && !workerOnly.has(row.proname), `${row.proname} executable by trustwork_app only when allowlisted`);
     }
     const publicExec = await db.admin.query<{ n: number }>("SELECT count(*)::int AS n FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'trustwork' AND has_function_privilege(0, p.oid, 'EXECUTE')");
     assert.equal(publicExec.rows[0]?.n, 0, 'no function is executable by PUBLIC');
@@ -418,14 +421,18 @@ test('identity and access persistence under the restricted runtime role', { skip
 
   await t.test('audit_event is append-only: the runtime role may only insert; UPDATE/DELETE raise even for the owner', async () => {
     const petr = await principal(seed.people.petr);
-    const event = await withPrincipal(db.app, petr, (trx) => auditEvents.append(trx, { actor_person_id: petr.personId, action: 'project.create', object_kind: 'project', object_id: seed.project, basis: [{ kind: 'owner' }], authz_epoch: petr.authzEpoch }));
+    // The runtime role appends without reading back (REL-001 revoked its SELECT on audit_event); the owner reads the id.
+    const lastAuditId = async () => (await db.admin.query<{ id: string }>('SELECT max(id)::text AS id FROM trustwork.audit_event')).rows[0]!.id;
+    await withPrincipal(db.app, petr, (trx) => auditEvents.append(trx, { actor_person_id: petr.personId, action: 'project.create', object_kind: 'project', object_id: seed.project, basis: [{ kind: 'owner' }], authz_epoch: petr.authzEpoch }));
+    const event = { id: await lastAuditId() };
     assert.ok(Number(event.id) >= 1);
     await rejects(withPrincipal(db.app, petr, (trx) => trx.updateTable('audit_event').set({ reason: 'tamper' }).where('id', '=', event.id).execute()), '42501');
     await rejects(withPrincipal(db.app, petr, (trx) => trx.deleteFrom('audit_event').where('id', '=', event.id).execute()), '42501');
     await rejects(withMaintenance(db.admin, (trx) => trx.updateTable('audit_event').set({ reason: 'tamper' }).where('id', '=', event.id).execute()), '23000', /append-only/);
     await rejects(withMaintenance(db.admin, (trx) => trx.deleteFrom('audit_event').where('id', '=', event.id).execute()), '23000', /append-only/);
     await rejects(db.admin.query('DELETE FROM trustwork.audit_event WHERE id = $1', [event.id]), '23000', /append-only/);
-    const next = await withPrincipal(db.app, petr, (trx) => auditEvents.append(trx, { action: 'project.update', object_kind: 'project', object_id: seed.project }));
+    await withPrincipal(db.app, petr, (trx) => auditEvents.append(trx, { action: 'project.update', object_kind: 'project', object_id: seed.project }));
+    const next = { id: await lastAuditId() };
     assert.ok(Number(next.id) > Number(event.id), 'monotonic sequence');
   });
 

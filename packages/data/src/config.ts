@@ -6,6 +6,11 @@ export const SCHEMA = 'trustwork';
 export const OWNER_ROLE = 'trustwork_owner';
 /** Restricted runtime role (no superuser, no BYPASSRLS, not an owner). Login roles are members of it. */
 export const APP_ROLE = 'trustwork_app';
+/**
+ * Restricted worker role (REL-001): outbox relay, job runner and scheduler. NOLOGIN; the worker logs in with a
+ * member role. Not a member of trustwork_app, so it has no grant on any party table.
+ */
+export const WORKER_ROLE = 'trustwork_worker';
 
 export interface DatabaseEnv {
   DATABASE_URL?: string | undefined;

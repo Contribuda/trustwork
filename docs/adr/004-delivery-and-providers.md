@@ -1,6 +1,6 @@
 # ADR 004 — Durable intent and provider neutrality
 
-Date: 2026-10-26. Status: selected architecture; durable queue not implemented.
+Date: 2026-10-26. Status: selected architecture; durable queue implemented in `apps/worker` by REL-001 (2026-10-31), provider adapters still pending.
 
 Use PostgreSQL transactions for domain mutation plus audit/outbox intent. Lease queued jobs with row locking, TTL and fencing; deduplicate consumer receipts. At-least-once attempts are expected. Operation/attempt identity is persisted before dispatch. Acknowledgement means pending until action-specific final evidence. Expired executing leases and a crash after effect before result persistence enter reconciliation; fencing cannot stop old in-flight external calls. Each adapter documents idempotency scope/retention and lookup guarantees. Unknown external effect after timeout or crash retains reservation and requires provider lookup/manual reconciliation, not a blind second order or payment. Stable effect key survives retries; attempt IDs differ. A stale worker cannot settle a newer fenced lease.
 

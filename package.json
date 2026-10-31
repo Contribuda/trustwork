@@ -16,7 +16,7 @@
   "scripts": {
     "dev:web": "npm run dev -w @trustwork/web",
     "dev:api": "npm run dev -w @trustwork/api",
-    "worker:demo": "npm run demo -w @trustwork/worker",
+    "worker": "npm run start -w @trustwork/worker",
     "build": "npm run build -w @trustwork/contracts && npm run build -w @trustwork/data && npm run build -w @trustwork/api && npm run build -w @trustwork/worker && npm run build -w @trustwork/web",
     "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck -w @trustwork/web && npm run typecheck -w @trustwork/ui",
     "lint": "eslint .",
