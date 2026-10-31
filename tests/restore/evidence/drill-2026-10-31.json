@@ -1,0 +1,343 @@
+{
+  "v": 1,
+  "drill": {
+    "id": "drill-20261031t160323z-50bb",
+    "nodeId": "drill-node",
+    "backupIds": [
+      "objects-20261031T160328Z-548be7",
+      "base-20261031T160328Z-4a57a9",
+      "logical-20261031T160330Z-e651a8"
+    ],
+    "isolatedEnvironment": true,
+    "externalAdaptersDisabled": true,
+    "checks": {
+      "schemaChecksums": true,
+      "digestsVerified": true,
+      "tombstonesReplayed": true,
+      "objectsRestored": true,
+      "permissionsVerified": true
+    },
+    "measuredRecoveryMinutes": 1,
+    "dataLossWindowMinutes": 1,
+    "performedBy": "drill-operator",
+    "witnessedBy": null,
+    "performedAt": "2026-10-31T16:03:35.634Z",
+    "outcome": "passed"
+  },
+  "backups": [
+    {
+      "id": "objects-20261031T160328Z-548be7",
+      "nodeId": "drill-node",
+      "kind": "object_store",
+      "startedAt": "2026-10-31T16:03:28.456Z",
+      "finishedAt": "2026-10-31T16:03:28.480Z",
+      "sizeBytes": 336,
+      "encrypted": true,
+      "offHost": false,
+      "manifestDigest": "dcac21fc02b643860de74b2bf873525a6288ee721418e6a19716efaa831e59cf",
+      "state": "completed"
+    },
+    {
+      "id": "base-20261031T160328Z-4a57a9",
+      "nodeId": "drill-node",
+      "kind": "database_full",
+      "startedAt": "2026-10-31T16:03:28.483Z",
+      "finishedAt": "2026-10-31T16:03:30.201Z",
+      "sizeBytes": 64906752,
+      "encrypted": true,
+      "offHost": false,
+      "manifestDigest": "a43dec29d94e0dcda3d62a83f8adddf9818cfe08a844214214c26dd0c9a1e012",
+      "state": "completed"
+    },
+    {
+      "id": "logical-20261031T160330Z-e651a8",
+      "nodeId": "drill-node",
+      "kind": "database_full",
+      "startedAt": "2026-10-31T16:03:30.202Z",
+      "finishedAt": "2026-10-31T16:03:30.492Z",
+      "sizeBytes": 854647,
+      "encrypted": true,
+      "offHost": false,
+      "manifestDigest": "711d87865e0c16e7b85ee8b8a1556c9052a19aaed9cfe83147c9c2ab1bad8bcd",
+      "state": "completed"
+    }
+  ],
+  "measurements": {
+    "recoverySeconds": 6.033,
+    "dataLossWindowSeconds": 3.372,
+    "lostMarkers": 16,
+    "walShippingStoppedBeforeFailureSeconds": 1.771,
+    "targets": {
+      "rpoSeconds": 86400,
+      "rtoSeconds": 28800
+    },
+    "withinTargets": true,
+    "phases": {
+      "stage": 2.512,
+      "recovery": 3.121,
+      "verify": 0.189,
+      "replay_and_objects": 0.06,
+      "reconcile_and_authorize": 0.586
+    }
+  },
+  "timeline": {
+    "sourceUp": "2026-10-31T16:03:27.661Z",
+    "baseBackupFinished": "2026-10-31T16:03:30.202Z",
+    "walShippingStopped": "2026-10-31T16:03:33.860Z",
+    "failure": "2026-10-31T16:03:35.631Z",
+    "restoreStarted": "2026-10-31T16:03:35.634Z",
+    "authorized": "2026-10-31T16:03:42.102Z"
+  },
+  "checks": [
+    {
+      "name": "source: phase C effects happened on the primary",
+      "ok": true,
+      "detail": {
+        "j2": "succeeded",
+        "j5": "succeeded"
+      }
+    },
+    {
+      "name": "base backup verified against its manifest (pg_verifybackup)",
+      "ok": true,
+      "detail": {
+        "baseBytes": 64906752,
+        "walFiles": 3
+      }
+    },
+    {
+      "name": "restore fence in place before the first start",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "restored worker cannot log in before authorization and contacts no provider",
+      "ok": true,
+      "detail": {
+        "loginRefused": true,
+        "leased": 0,
+        "errors": 2,
+        "providerCalls": 0
+      }
+    },
+    {
+      "name": "schema: migration ledger matches the shipped migrations",
+      "ok": true,
+      "detail": {
+        "applied": 23,
+        "problems": []
+      }
+    },
+    {
+      "name": "data up to the last archived write is present",
+      "ok": true,
+      "detail": {
+        "lastShipped": 5,
+        "lastRestored": 6,
+        "recoveryPoint": "2026-10-31T16:03:31.896Z"
+      }
+    },
+    {
+      "name": "restored job states are those of the recovery point",
+      "ok": true,
+      "detail": {
+        "01a192b3-aa41-7ef1-bdbe-d0a267fcb87f": "succeeded",
+        "01a192b3-aa63-7e0c-9724-47e7e97ce6c5": "queued",
+        "01a192b3-aa6b-732d-8286-7861a639bbb5": "queued",
+        "01a192b3-aa73-7675-add3-fb41c6d621b9": "leased"
+      }
+    },
+    {
+      "name": "tombstones recorded after the backup replayed (deleted and erased files stay gone)",
+      "ok": true,
+      "detail": {
+        "tombstones": 3,
+        "rowsRemoved": 2,
+        "invalid": [],
+        "held": []
+      }
+    },
+    {
+      "name": "stored files restored from the object backup (none of the tombstoned ones)",
+      "ok": true,
+      "detail": {
+        "present": 0,
+        "restored": 3,
+        "missing": []
+      }
+    },
+    {
+      "name": "every stored file matches its recorded SHA-256",
+      "ok": true,
+      "detail": {
+        "checked": 3,
+        "mismatched": []
+      }
+    },
+    {
+      "name": "reconciliation: effect after the recovery point closed by its receipt, never re-sent",
+      "ok": true,
+      "detail": [
+        {
+          "id": "01a192b3-aa63-7e0c-9724-47e7e97ce6c5",
+          "kind": "drill.provider_call",
+          "reference": "rcpt-2"
+        }
+      ]
+    },
+    {
+      "name": "reconciliation: lost lease released, untouched queue kept",
+      "ok": true,
+      "detail": {
+        "released": [
+          {
+            "id": "01a192b3-aa73-7675-add3-fb41c6d621b9",
+            "kind": "drill.provider_call",
+            "mode": "external"
+          }
+        ],
+        "kept": [
+          {
+            "id": "01a192b3-aa6b-732d-8286-7861a639bbb5",
+            "kind": "drill.provider_call",
+            "mode": "external"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reconciliation: receipt of lost work reported, pending event marked ambiguous",
+      "ok": true,
+      "detail": {
+        "orphans": 1,
+        "ambiguous": [
+          "2"
+        ]
+      }
+    },
+    {
+      "name": "authorization refused while an outbox event is undecided",
+      "ok": true,
+      "detail": "restore authorization refused: 1 pending outbox events need a decision (delivered or relay): 2"
+    },
+    {
+      "name": "fence lifted only after authorization",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "permissions: worker login connects after authorization and still cannot read party data",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "restored worker executed approved work exactly once and re-sent nothing",
+      "ok": true,
+      "detail": {
+        "calls": [
+          "job:01a192b3-aa6b-732d-8286-7861a639bbb5",
+          "job:01a192b3-aa73-7675-add3-fb41c6d621b9"
+        ]
+      }
+    },
+    {
+      "name": "the event already delivered before the failure was not relayed again",
+      "ok": true,
+      "detail": {
+        "jobsForEvent": 0
+      }
+    },
+    {
+      "name": "logical dump restores into a scratch database with the seed counts",
+      "ok": true,
+      "detail": {
+        "persons": 3,
+        "artifacts": 6
+      }
+    },
+    {
+      "name": "point-in-time restore stops exactly at the target time",
+      "ok": true,
+      "detail": {
+        "target": "2026-10-31T16:03:31.141Z",
+        "lastMarker": 3,
+        "markersAfterTarget": 0,
+        "recoveryPoint": "2026-10-31T16:03:31.058Z"
+      }
+    },
+    {
+      "name": "measured recovery time and data-loss window within the targets",
+      "ok": true,
+      "detail": {
+        "recoverySeconds": 6.033,
+        "dataLossWindowSeconds": 3.372,
+        "rtoTargetSeconds": 28800,
+        "rpoTargetSeconds": 86400
+      }
+    }
+  ],
+  "reconciliation": {
+    "restoreId": "drill-20261031t160323z-50bb",
+    "recoveryPoint": "2026-10-31T16:03:31.896Z",
+    "journalComplete": true,
+    "jobs": {
+      "closedByReceipt": [
+        {
+          "id": "01a192b3-aa63-7e0c-9724-47e7e97ce6c5",
+          "kind": "drill.provider_call",
+          "reference": "rcpt-2"
+        }
+      ],
+      "releasedToQueue": [
+        {
+          "id": "01a192b3-aa73-7675-add3-fb41c6d621b9",
+          "kind": "drill.provider_call",
+          "mode": "external"
+        }
+      ],
+      "keptQueued": [
+        {
+          "id": "01a192b3-aa6b-732d-8286-7861a639bbb5",
+          "kind": "drill.provider_call",
+          "mode": "external"
+        }
+      ],
+      "parked": [],
+      "alreadyParked": []
+    },
+    "orphanReceipts": [
+      {
+        "effectKey": "job:01a192b3-b769-71da-9e32-ec45dd1e9cdc",
+        "kind": "drill.provider_call",
+        "reference": "rcpt-3",
+        "at": "2026-10-31T16:03:33.873Z"
+      }
+    ],
+    "pendingOutbox": [
+      {
+        "id": "2",
+        "type": "drill.requested",
+        "aggregateKind": "drill",
+        "aggregateId": "drill-3",
+        "createdAt": "2026-10-31T16:03:31.762Z"
+      }
+    ],
+    "ambiguousOutbox": [
+      "2"
+    ]
+  },
+  "providerCalls": {
+    "total": 5,
+    "beforeFailure": 3,
+    "duringFence": 0,
+    "afterAuthorization": 2,
+    "duplicatesAfterRestore": 0
+  },
+  "environment": {
+    "postgresImage": "postgres:18.3",
+    "node": "v24.18.0",
+    "platform": "darwin-arm64",
+    "commit": "70bfa7a71500a7f59b9503ea3957e6bfd980b945",
+    "synthetic": true
+  }
+}
