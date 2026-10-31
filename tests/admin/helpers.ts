@@ -125,7 +125,8 @@ export async function buildHttpWorld(h: Harness): Promise<AdminWorldHttp> {
   }
   return {
     world, people, app, actors: act, clients, secrets,
-    moderationTargets: app.app.get(MODERATION_TARGETS) as RecordingModerationTargets,
+    // CNT-001 wraps the recording fake in the content adapter (apps/api/src/modules/content/moderation.ts), which forwards every effect to it.
+    moderationTargets: ((t: { next?: unknown }) => (t.next ?? t) as RecordingModerationTargets)(app.app.get(MODERATION_TARGETS) as { next?: unknown }),
     sanctions: app.app.get(SANCTION_ENFORCEMENT) as RecordingSanctionEnforcement,
     async elevateAll() {
       h.clock.advance(30_000);
