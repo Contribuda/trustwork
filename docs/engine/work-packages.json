@@ -1777,7 +1777,7 @@
       "id": "TASK-001",
       "title": "Scoped tasks from plan items for contractors and trades",
       "area": "gathering-point",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "PLAN-001",
         "COM-002"

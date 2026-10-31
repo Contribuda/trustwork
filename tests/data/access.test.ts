@@ -56,7 +56,8 @@ test('identity and access persistence under the restricted runtime role', { skip
     const transactions = ['acceptance_event', 'agreement', 'agreement_buyer_private', 'agreement_seller_private', 'amendment_request', 'commercial_order', 'negotiation_round', 'obligation', 'order_change', 'quote', 'quote_line', 'quote_private_constraint', 'quote_version', 'tax_determination']; // COM-002
     const profiles = ['bookmark', 'consent_record', 'experience_entry', 'follow', 'media_licence', 'person_preference', 'person_profile', 'portrait', 'profile_tombstone', 'reading_progress']; // PPL-001
     const secondFactor = ['recovery_code', 'second_factor', 'second_factor_challenge', 'second_factor_reset', 'session_elevation']; // BE-004
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor].sort());
+    const tasks = ['task_assignment', 'task_execution_record', 'task_invitation', 'task_offer', 'task_offer_private', 'task_request', 'task_request_private', 'task_request_version', 'task_review']; // TASK-001
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -80,6 +81,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       'profiles_company_people', 'profiles_consented_mentions', 'profiles_public_profile', 'profiles_public_consent', // PPL-001
       'auth_clear_second_factor_failures', 'auth_lookup_second_factor_challenge', 'second_factor_reset_approve', 'second_factor_reset_cancel', 'second_factor_reset_execute', // BE-004
       'second_factor_reset_subject_addresses', 'second_factor_use_recovery_code', // BE-004
+      'task_assignment_close_request', 'task_assignment_side', 'task_assignment_site', 'task_request_flag_stale', 'task_request_owned', 'task_request_visible', 'tasks_offer_for_share', // TASK-001
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files

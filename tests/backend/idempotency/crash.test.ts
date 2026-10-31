@@ -470,6 +470,66 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await exactlyOnce({ action: 'reading_progress.record', client: petr, url: '/v1/me/reading-progress', body: { publicationVersionId: publication, progress: '0.5' }, effects: rows('reading_progress') });
   });
 
+  await t.test('tasks (TASK-001): requests, offers, agreements, assignment, records and reviews', async () => {
+    await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
+    const person = { via: 'person' };
+    const consent = { consented: true, disclosureKey: 'trustwork.electronic-records.v1' };
+    const usd = (minorUnits: string) => ({ minorUnits, currency: 'USD' });
+    const planItem = (key: string, title: string) => ({ key, parentKey: null, kind: 'task', title, description: null, stepTerms: ['work.envelope.roofing'], requiredSkills: [], quantity: null, estimate: null, duration: null, window: null, riskLevel: null, decisionQuestion: null, sources: [], attachments: [], privateNotes: null });
+    type Ref = { id: string; version: number; digest: { algorithm: string; value: string }; revision: number; status: string };
+    type Request = { request: { id: string; revision: number; currentVersionId: string | null }; versions: Ref[]; privateConstraint: { revision: number }; agreements: { id: string; revision: number; status: string; acceptedTermsDigest: unknown }[] };
+    type Offer = { versions: Ref[]; agreements: { id: string; revision: number; status: string; acceptedTermsDigest: unknown }[] };
+    type Assignment = { assignment: { id: string; revision: number }; milestoneStates: { claimId: string | null }[] };
+    const project = await newProject('Exactly once tasks');
+    const P = `/v1/projects/${project.id}/plan`;
+    const plan = (await created(await petr.post(P, { timeZone: 'America/Los_Angeles', actor: person, content: { summary: null, assumptions: [], budget: null, timeline: null, dependencies: [], items: [planItem('roof', 'Roof'), planItem('fence', 'Fence')] } }))) as unknown as { draft: { id: string; revision: number } };
+    const proposed = (await created(await petr.post(`${P}/versions/${plan.draft.id}/propose`, { expectedRevision: plan.draft.revision, actor: person }))) as unknown as { revision: number; digest: unknown };
+    await created(await petr.post(`${P}/versions/${plan.draft.id}/approve`, { expectedRevision: proposed.revision, digest: proposed.digest }));
+    const terms = (key: string) => ({ title: `Exactly once ${key}`, fields: ['scope'], scopeNote: null, milestoneItemKeys: [key], acceptanceCriteria: [], responseDeadline: '2027-02-15T17:00:00.000Z', currency: 'USD' });
+    const offerPayload = (key: string, price: string) => ({ price: usd(price), start: '2027-03-01', durationDays: 2, exclusions: [], validUntil: '2027-06-01T00:00:00.000Z', note: null, milestones: [{ key: 'all', title: 'Done', planItemKey: key, amount: usd(price), due: '2027-03-03' }] });
+    let request = (await exactlyOnce({ action: 'task.request_create', client: petr, url: '/v1/task-requests', body: { source: { projectId: project.id, itemKey: 'roof' }, audience: 'invited', terms: terms('roof'), privateConstraint: null, actor: person }, effects: () => auditCount(h.db.admin, 'task.request_created') })).body as Request;
+    const R = `/v1/task-requests/${request.request.id}`;
+    request = (await exactlyOnce({ action: 'task.draft_save', client: petr, url: `${R}/draft`, body: { expectedRevision: request.request.revision, terms: { ...terms('roof'), scopeNote: 'saved once' }, actor: person }, effects: () => auditCount(h.db.admin, 'task.draft_saved') })).body as Request;
+    request = (await exactlyOnce({ action: 'task.private_save', client: petr, url: `${R}/private`, body: { expectedRevision: request.privateConstraint.revision, budgetCeiling: usd('900000'), ownerNotes: null }, effects: () => auditCount(h.db.admin, 'task.private_saved') })).body as Request;
+    request = (await exactlyOnce({ action: 'task.version_publish', client: petr, url: `${R}/publish`, body: { version: 1, expectedRevision: request.request.revision, amendmentReason: null, actor: person }, effects: () => auditCount(h.db.admin, 'task.version_published') })).body as Request;
+    await exactlyOnce({ action: 'task.invite', client: petr, url: `${R}/invitations`, body: { party: { kind: 'person', id: seed.people.carl }, actor: person }, effects: () => auditCount(h.db.admin, 'task.invitation_sent') });
+    await created(await petr.post(`${R}/invitations`, { party: { kind: 'person', id: seed.people.xenia }, actor: person }));
+    const offerBody = (offerorId: string, price: string) => ({ taskRequestId: request.request.id, requestVersionId: request.request.currentVersionId, offeror: { kind: 'person', id: offerorId }, payload: offerPayload('roof', price), privateConstraint: null, actor: person });
+    let carlOffer = (await exactlyOnce({ action: 'task.offer_create', client: carl, url: '/v1/task-offers', body: offerBody(seed.people.carl, '500000'), effects: () => auditCount(h.db.admin, 'task.offer_drafted') })).body as Offer;
+    let v = carlOffer.versions.at(-1)!;
+    carlOffer = (await exactlyOnce({ action: 'task.offer_save', client: carl, url: `/v1/task-offers/${v.id}`, body: { expectedRevision: v.revision, payload: offerPayload('roof', '510000'), privateConstraint: null, actor: person }, effects: () => auditCount(h.db.admin, 'task.offer_draft_saved') })).body as Offer;
+    v = carlOffer.versions.at(-1)!;
+    carlOffer = (await exactlyOnce({ action: 'task.offer_send', client: carl, url: `/v1/task-offers/${v.id}/send`, body: { expectedRevision: v.revision, actor: person }, effects: () => auditCount(h.db.admin, 'task.offer_sent') })).body as Offer;
+    const current = () => request.versions.find((x) => x.id === request.request.currentVersionId)!;
+    const acceptBody = (offer: Ref) => ({ offer: { id: offer.id, version: offer.version, digest: offer.digest }, requestVersion: { id: current().id, version: current().version, digest: current().digest }, expectedRevision: request.request.revision, electronicRecords: consent, actor: person });
+    request = (await exactlyOnce({ action: 'task.offer_accept', client: petr, url: `${R}/acceptances`, body: acceptBody(carlOffer.versions.at(-1)!), effects: () => auditCount(h.db.admin, 'task.offer_accepted') })).body as Request;
+    const first = request.agreements[0]!;
+    request = (await exactlyOnce({ action: 'task.agreement_withdraw', client: petr, url: `/v1/task-agreements/${first.id}/withdraw`, body: { expectedRevision: first.revision, reason: 'Exactly-once withdrawal', actor: person }, effects: () => auditCount(h.db.admin, 'task.acceptance_withdrawn') })).body as Request;
+    request = (await created(await petr.post(`${R}/acceptances`, acceptBody(carlOffer.versions.at(-1)!)))) as unknown as Request;
+    const second = request.agreements.find((a) => a.status === 'accepted_by_buyer')!;
+    await exactlyOnce({ action: 'task.agreement_decline', client: carl, url: `/v1/task-agreements/${second.id}/decline`, body: { expectedRevision: second.revision, reason: 'Exactly-once decline', actor: person }, effects: () => auditCount(h.db.admin, 'task.agreement_declined') });
+    let xeniaOffer = (await created(await xenia.post('/v1/task-offers', offerBody(seed.people.xenia, '520000')))) as unknown as Offer;
+    v = xeniaOffer.versions.at(-1)!;
+    xeniaOffer = (await created(await xenia.post(`/v1/task-offers/${v.id}/send`, { expectedRevision: v.revision, actor: person }))) as unknown as Offer;
+    v = xeniaOffer.versions.at(-1)!;
+    await exactlyOnce({ action: 'task.offer_withdraw', client: xenia, url: `/v1/task-offers/${v.id}/withdraw`, body: { expectedRevision: v.revision, reason: 'Exactly-once withdrawal', actor: person }, effects: () => auditCount(h.db.admin, 'task.offer_withdrawn') });
+    xeniaOffer = (await created(await xenia.post('/v1/task-offers', offerBody(seed.people.xenia, '530000')))) as unknown as Offer;
+    v = xeniaOffer.versions.at(-1)!;
+    xeniaOffer = (await created(await xenia.post(`/v1/task-offers/${v.id}/send`, { expectedRevision: v.revision, actor: person }))) as unknown as Offer;
+    request = (await petr.get(R)).body as Request;
+    request = (await created(await petr.post(`${R}/acceptances`, acceptBody(xeniaOffer.versions.at(-1)!)))) as unknown as Request;
+    const third = request.agreements.find((a) => a.status === 'accepted_by_buyer')!;
+    let assignment = (await exactlyOnce({ action: 'task.agreement_confirm', client: xenia, url: `/v1/task-agreements/${third.id}/confirm`, body: { expectedRevision: third.revision, acceptedTermsDigest: third.acceptedTermsDigest, electronicRecords: consent, actor: person }, effects: () => auditCount(h.db.admin, 'task.assigned') })).body as Assignment;
+    assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.task_assignment WHERE task_request_id = $1', [request.request.id]), 1, 'one assignment');
+    const A = `/v1/task-assignments/${assignment.assignment.id}`;
+    const evidence = [{ evidenceArtifactId: 'artifact-demo-once', hash: 'e'.repeat(64), audience: 'shared' }];
+    assignment = (await exactlyOnce({ action: 'task.record', client: xenia, url: `${A}/records`, body: { kind: 'delivery_claim', expectedRevision: assignment.assignment.revision, milestoneKey: 'all', evidence, note: null, actor: person }, effects: () => auditCount(h.db.admin, 'task.delivery_claim') })).body as Assignment;
+    await created(await petr.post(`${A}/records`, { kind: 'acceptance', expectedRevision: assignment.assignment.revision, milestoneKey: 'all', claimId: assignment.milestoneStates[0]!.claimId, note: null }));
+    await exactlyOnce({ action: 'task.review', client: petr, url: `${A}/reviews`, body: { rating: 5, text: 'Exactly once' }, effects: () => auditCount(h.db.admin, 'task.reviewed') });
+    const fence = (await created(await petr.post('/v1/task-requests', { source: { projectId: project.id, itemKey: 'fence' }, audience: 'open', terms: terms('fence'), privateConstraint: null, actor: person }))) as unknown as Request;
+    await exactlyOnce({ action: 'task.request_cancel', client: petr, url: `/v1/task-requests/${fence.request.id}/cancel`, body: { expectedRevision: fence.request.revision, reason: 'Exactly-once cancellation', actor: person }, effects: () => auditCount(h.db.admin, 'task.request_cancelled') });
+  });
+
   // BE-004: the support reset routes are staff routes behind an elevated session. Runs last: it enrols and elevates
   // two staff members, and the subject (`pure`) is used by no other subtest.
   await t.test('support reset of a second factor: request, cancel, approve, execute', async () => {
