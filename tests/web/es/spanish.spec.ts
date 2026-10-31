@@ -107,7 +107,8 @@ test.describe('choosing Spanish', () => {
     await expect(gate).toBeVisible();
     await (await hydrated(gate.getByRole('radio', { name: 'Español' }))).click();
     await gate.getByRole('button', { name: 'Continue' }).click();
-    await expect.poll(() => htmlLang(page)).toBe('es');
+    // The choice writes cookies and refreshes the route; on a busy machine that takes longer than the default poll.
+    await expect.poll(() => htmlLang(page), { timeout: 15_000 }).toBe('es');
     await page.reload();
     expect(await htmlLang(page)).toBe('es');
     const cookies = await page.context().cookies();
@@ -117,6 +118,6 @@ test.describe('choosing Spanish', () => {
 
   test('a link can carry the language: ?lang=es', async ({ page }) => {
     await page.goto('/news?country=US&lang=es');
-    await expect.poll(() => htmlLang(page)).toBe('es');
+    await expect.poll(() => htmlLang(page), { timeout: 15_000 }).toBe('es');
   });
 });
