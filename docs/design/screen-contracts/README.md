@@ -26,7 +26,7 @@ A contract describes what a screen must do before anyone draws or implements it 
 | Interaction states | empty, loading, error, permission-denied, offline, partial/stale, plus screen-specific states |
 | Keyboard order and focus | Tab order, landmarks, focus target after navigation/actions, dialogs |
 | Responsive table behaviour | What happens to each table below tablet width |
-| Locale keys | Locale keys with the English reference copy (`en`; dictionaries in `packages/ui/locales` and `apps/web/app/_lib/locales`, where every key exists in all interface languages; DS-001/WEB owners merge). Keys not yet in a dictionary are proposals. Any key containing `{count}` is a plural group in ICU form, for example `{count, plural, one {# project} other {# projects}}`; languages with more plural categories (Russian uses one/few/many) add their own forms in their dictionary |
+| Locale keys | Locale keys with the English reference copy (`en`; dictionaries in `packages/ui/locales` and the feature namespace files `apps/web/locales/<tag>/<namespace>.json`, where every key exists in all interface languages; DS-001/WEB owners merge). Keys not yet in a dictionary are proposals. Any key containing `{count}` is a plural group in ICU form, for example `{count, plural, one {# project} other {# projects}}`; languages with more plural categories (Russian uses one/few/many) add their own forms in their dictionary |
 | Open questions | What a human or a later task must decide |
 
 ## Status legend
