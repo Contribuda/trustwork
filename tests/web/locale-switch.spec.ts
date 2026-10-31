@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { hydrated } from './helpers.js';
 
 /**
  * The language choice must stick: the first-visit gate and the header switcher write the cookies, the page
@@ -15,7 +16,7 @@ test.describe('first visit', () => {
       await page.goto('/');
       const gate = page.getByRole('dialog', { name: 'Choose your country' });
       await expect(gate).toBeVisible();
-      await gate.getByRole('radio', { name }).click();
+      await (await hydrated(gate.getByRole('radio', { name }))).click();
       await gate.getByRole('button', { name: 'Continue' }).click();
       await expect.poll(() => htmlLang(page)).toBe(tag);
       await page.reload();
@@ -30,6 +31,7 @@ test.describe('first visit', () => {
 test('the header switcher changes the language both ways', async ({ page }) => {
   await page.goto('/news');
   expect(await htmlLang(page)).toBe('ru');
+  await hydrated(page.locator('.lsw'));
   for (const [name, tag] of [['ქართული', 'ka'], ['English', 'en'], ['Русский', 'ru']] as const) {
     await page.locator('.lsw').first().click();
     await page.getByRole('dialog').getByRole('button', { name, exact: true }).click();

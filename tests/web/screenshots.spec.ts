@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from '@playwright/test';
+import { hydrated } from './helpers.js';
 
 /**
  * Evidence screenshots (committed under tests/web/__screenshots__). Written only when
@@ -59,13 +60,9 @@ test.describe('screenshots @screenshots', () => {
         await page.setViewportSize({ width, height: width < 768 ? 812 : 800 });
         await page.goto(shot.path);
         await page.waitForLoadState('networkidle');
-        if (shot.prepare === 'overlay')
-          await page
-            .getByRole('button', { name: /Помощник/ })
-            .last()
-            .click();
-        if (shot.prepare === 'menu') await page.getByRole('button', { name: 'Аккаунт' }).click();
-        if (shot.prepare === 'nav-sheet') await page.getByRole('button', { name: 'Открыть меню' }).click();
+        if (shot.prepare === 'overlay') await (await hydrated(page.getByRole('button', { name: /Помощник/ }).last())).click();
+        if (shot.prepare === 'menu') await (await hydrated(page.getByRole('button', { name: 'Аккаунт' }))).click();
+        if (shot.prepare === 'nav-sheet') await (await hydrated(page.getByRole('button', { name: 'Открыть меню' }))).click();
         await page.waitForTimeout(300);
         await page.screenshot({ path: resolve(dir, `${shot.name}-${width}.png`), fullPage: false, scale: 'css' });
       });

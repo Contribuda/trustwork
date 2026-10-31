@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 export const PUBLIC_NAV = ['Главная', 'Новости', 'Статьи', 'События', 'Компании', 'Люди', 'Проекты', 'Журнал'] as const;
@@ -85,4 +85,19 @@ export async function collectPageErrors(page: Page): Promise<string[]> {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   return errors;
+}
+
+/**
+ * Waits until React has hydrated `locator`'s element: hydration attaches the element's props, event handlers
+ * included, under a `__reactProps$<id>` key (React 17 to 19). A click, check or fill on server-rendered HTML
+ * before that has no listener, and hydration may then reset what it typed or toggled, so every first interaction
+ * after a document load waits here instead of relying on longer timeouts.
+ */
+export async function hydrated(locator: Locator): Promise<Locator> {
+  const target = locator.first();
+  await target.waitFor({ state: 'attached' });
+  await expect
+    .poll(() => target.evaluate((element) => Object.keys(element).some((key) => key.startsWith('__reactProps$'))), { message: 'element hydrated by React', timeout: 15_000 })
+    .toBe(true);
+  return locator;
 }
