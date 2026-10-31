@@ -13,10 +13,11 @@ interface WebProxyModule {
   contentSecurityPolicy(nonce: string, options: { development: boolean; https: boolean }): string;
   configuredHsts(raw?: string): string | null;
   MEDIA_CSP: string;
+  config: { matcher: string[] };
 }
 const PROXY_MODULE: string = '../../apps/web/proxy.ts';
 const NEXT_SERVER: string = 'next/server';
-const { proxy, contentSecurityPolicy, configuredHsts, MEDIA_CSP } = (await import(PROXY_MODULE)) as WebProxyModule;
+const { proxy, contentSecurityPolicy, configuredHsts, MEDIA_CSP, config: proxyConfig } = (await import(PROXY_MODULE)) as WebProxyModule;
 const { NextRequest } = (await import(NEXT_SERVER)) as { NextRequest: new (url: string, init?: { headers?: Record<string, string> }) => unknown };
 
 const API_HEADERS = ['content-security-policy', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy', 'cross-origin-resource-policy'];
@@ -117,4 +118,18 @@ test('web: development relaxes only what the bundler needs', () => {
   assert.match(dev, /'unsafe-eval'/);
   assert.match(dev, /connect-src 'self' ws: wss:/);
   assert.doesNotMatch(contentSecurityPolicy('n0nce', { development: false, https: true }), /unsafe-eval|ws:/);
+});
+
+/** Next's own matcher compiler (the function `next build` uses for the proxy manifest), loaded at runtime. */
+const NEXT_MATCHERS: string = 'next/dist/build/analysis/get-page-static-info.js';
+const { getMiddlewareMatchers } = (await import(NEXT_MATCHERS)) as { getMiddlewareMatchers(matcher: string[], config: { basePath?: string; i18n?: undefined }): { regexp: string }[] };
+
+test('web: the proxy runs on the home page and on every page with and without a base path, never on static files', () => {
+  for (const basePath of ['', '/trustwork']) {
+    const regexps = getMiddlewareMatchers(proxyConfig.matcher, { basePath }).map((m) => new RegExp(m.regexp));
+    const runs = (path: string) => regexps.some((r) => r.test(path));
+    // With a base path the home page is `<base>` without a trailing slash; the catch-all alone does not match it.
+    for (const path of [basePath || '/', `${basePath}/companies`, `${basePath}/companies/acme`, `${basePath}/media/artworks/a.svg`]) assert.ok(runs(path), `${basePath || '(none)'}: runs on ${path}`);
+    for (const path of [`${basePath}/_next/static/chunks/a.js`, `${basePath}/icon.svg`, `${basePath}/favicon.ico`, `${basePath}/icons/a.png`]) assert.ok(!runs(path), `${basePath || '(none)'}: skips ${path}`);
+  }
 });

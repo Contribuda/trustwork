@@ -110,4 +110,10 @@ export function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ['/((?!_next/|icons/|favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest).*)'] };
+/**
+ * `'/'` is listed on its own because, with a base path, Next compiles the second pattern to `^<base>/(...)` with a
+ * mandatory slash, so the home page at `<base>` (Next redirects `<base>/` to it) would get no CSP, no frame and
+ * referrer headers and no `?country=&lang=` handling. Without a base path `'/'` is already covered; listing it is
+ * harmless. Checked by infra/images/web-smoke.mjs against the image with the preview's base path.
+ */
+export const config = { matcher: ['/', '/((?!_next/|icons/|favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest).*)'] };
