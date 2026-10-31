@@ -1,0 +1,23 @@
+# Backups for the compose stack (OPS-003). An override of infra/compose.yaml; use both files together:
+#   docker compose -f infra/compose.yaml -f infra/backup/compose.backup.yaml up -d --wait postgres
+# PostgreSQL archives every completed WAL segment into a spool directory inside its volume (outside PGDATA). The
+# shipper (`infra/backup/cli.ts ship-wal`) compresses, encrypts and uploads each spooled segment to the configured
+# off-host target and removes it from the spool only after the upload is verified. Nothing leaves the host
+# unencrypted; the spool never holds more than the segments not shipped yet. archive_timeout bounds the data-loss
+# window when the database is quiet: a partly filled segment is closed and archived after at most that many seconds.
+# Full procedure, targets and keys: docs/operations/backup-and-restore.md.
+services:
+  postgres:
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_timeout=${TRUSTWORK_BACKUP_ARCHIVE_TIMEOUT:-60}
+      - -c
+      # Idempotent: a segment archived again after a crash is accepted when its bytes are identical, refused otherwise.
+      - "archive_command=f=/var/lib/postgresql/wal-spool/%f; mkdir -p /var/lib/postgresql/wal-spool && if [ -f $$f ]; then cmp -s %p $$f; else cp %p $$f.part && mv $$f.part $$f; fi"
+      - -c
+      - max_wal_senders=4
