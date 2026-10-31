@@ -3940,7 +3940,7 @@
       "id": "AST-001",
       "title": "Durable mandate and action workflow with fakes",
       "area": "assistant",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "COM-002",
         "BILL-001",

@@ -17,6 +17,8 @@ import { randomUUID } from 'node:crypto';
 import { elevate, enrol } from '../second-factor/helpers.js';
 import { crashAdminRoutes } from '../../admin/crash-routes.js';
 import { artifactOn, buildAgreement, businessDate } from '../../trust/helpers.js';
+import { runs, serviceBacklog } from '../../../packages/data/src/repositories/assistant.js';
+import { assistantService, mandateStore } from '../../assistant/helpers.js';
 
 // FILE-001: the files routes are mounted only with a blob store; the storage fake keeps everything local.
 const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobStore({ root: mkdtempSync(join(tmpdir(), 'trustwork-crash-files-')) }) } });
@@ -608,6 +610,52 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await staffActors.assignSensitive({ personId: seed.people.anna, role: 'compliance-officer', scope: { kind: 'node', nodeId: world.nodeId } });
     const holdId = await withMaintenance(h.db.admin, async (trx) => (await trx.insertInto('jurisdiction_hold').values({ person_id: seed.people.pure, place: 'CU', source: 'geolocation', dataset: 'fake' }).returning('id').executeTakeFirstOrThrow()).id);
     await exactlyOnce({ action: 'jurisdiction.hold.clear', client: elevatedAnna, url: `/v1/admin/jurisdiction/holds/${holdId}/clear`, body: { reason: 'Synthetic: confirmed at home by a call', evidence: 'call' }, effects: () => count(h.db.admin, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'jurisdiction.hold_cleared'") });
+  });
+
+  await t.test('assistant (AST-001): mandates, proposals, decisions, runs, stop control, conversation and backlog', async () => {
+    const project = await newProject('Exactly once assistant');
+    const draft = (moduleKey: string, actions: string[]) => ({
+      onBehalfOf: null, grantee: { kind: 'own_agent' }, moduleKeys: [moduleKey], actions, contexts: [{ kind: 'project', id: project.id }],
+      limits: { ceiling: null, perActionCeiling: null, transactionBudgetId: null, platformBudgetId: null, perWindow: null }, conditions: [], approvalPolicy: { mode: 'pre_authorized' },
+      approvers: [], escalation: { kind: 'ask_principal' }, validUntil: '2027-12-31T00:00:00.000Z',
+    });
+    const confirmed = () => auditCount(h.db.admin, 'assistant.mandate_confirmed');
+    const mandate = await created(await exactlyOnce({ action: 'assistant.mandate_create', client: petr, url: '/v1/assistant/mandates', body: { draft: draft('project_planner', ['prepare']) }, effects: confirmed }));
+    await exactlyOnce({ action: 'assistant.mandate_revise', client: petr, url: `/v1/assistant/mandates/${mandate.id}/confirm`, body: { expectedRevision: 1, draft: draft('project_planner', ['prepare', 'communicate']) }, effects: confirmed });
+    await exactlyOnce({ action: 'assistant.mandate_suspend', client: petr, url: `/v1/assistant/mandates/${mandate.id}/suspend`, body: { expectedRevision: 2, reason: 'pause' }, effects: () => auditCount(h.db.admin, 'assistant.mandate_suspended') });
+    await exactlyOnce({ action: 'assistant.mandate_revoke', client: petr, url: `/v1/assistant/mandates/${mandate.id}/revoke`, body: { expectedRevision: 3, reason: 'done' }, effects: () => auditCount(h.db.admin, 'assistant.mandate_revoked') });
+
+    const principal = await principalFor(h.db.admin, seed.people.petr);
+    const { service } = assistantService(h);
+    const propose = () => withPrincipal(h.pool, principal, (trx) => service.proposeMandateChange(trx, { personId: seed.people.petr } as never, { kind: 'agent', runId: randomUUID() }, null, draft('project_planner', ['prepare']) as never));
+    const proposal = await propose();
+    await exactlyOnce({ action: 'assistant.proposal_confirm', client: petr, url: `/v1/assistant/mandate-proposals/${proposal.id}/confirm`, body: { digest: { algorithm: 'trustwork-digest-1', value: proposal.digest } }, effects: confirmed });
+    const declined = await propose();
+    await exactlyOnce({ action: 'assistant.proposal_decline', client: petr, url: `/v1/assistant/mandate-proposals/${declined.id}/decline`, body: {}, effects: () => auditCount(h.db.admin, 'assistant.mandate_proposal_declined') });
+
+    const human = await created(await petr.post('/v1/assistant/mandates', { draft: draft('task_marketplace', ['confirm_execution']) }));
+    const store = mandateStore(h);
+    const decide = async () => {
+      const result = await store.check({ personId: seed.people.petr, mandateId: human.id, action: 'confirm_execution', context: { kind: 'project', id: project.id }, at: new Date() }, ['task_marketplace']);
+      assert.ok(!result.allowed && result.decisionId);
+      const row = await h.db.admin.query<{ action_digest: string }>('SELECT action_digest FROM trustwork.action_intent WHERE id = $1', [result.decisionId]);
+      return { id: result.decisionId, digest: { algorithm: 'trustwork-digest-1', value: row.rows[0]!.action_digest } };
+    };
+    const approve = await decide();
+    await exactlyOnce({ action: 'assistant.decision_approve', client: petr, url: `/v1/assistant/decisions/${approve.id}/approve`, body: { digest: approve.digest }, effects: () => auditCount(h.db.admin, 'assistant.decision_approved') });
+    await store.check({ personId: seed.people.petr, mandateId: human.id, action: 'confirm_execution', context: { kind: 'project', id: project.id }, at: new Date() }, ['task_marketplace']);
+    const decline = await decide();
+    await exactlyOnce({ action: 'assistant.decision_decline', client: petr, url: `/v1/assistant/decisions/${decline.id}/decline`, body: { reason: null }, effects: () => auditCount(h.db.admin, 'assistant.decision_declined') });
+
+    const run = await withPrincipal(h.pool, principal, (trx) => runs.start(trx, { principal_person_id: seed.people.petr, kind: 'crash_test' }));
+    await exactlyOnce({ action: 'assistant.run_cancel', client: petr, url: `/v1/assistant/runs/${run.id}/cancel`, body: { reason: null }, effects: () => auditCount(h.db.admin, 'assistant.run_cancelled') });
+    await exactlyOnce({ action: 'assistant.conversation_turn', client: petr, url: '/v1/assistant/conversation', body: { text: 'What is waiting for me?' },
+      effects: () => count(h.db.admin, "SELECT 1 FROM trustwork.conversation_turn WHERE role = 'person' AND person_id = $1", [seed.people.petr]) });
+    const item = await withPrincipal(h.pool, principal, (trx) => serviceBacklog.propose(trx, { person_id: seed.people.petr, title: 'Ask three roofers for quotes', proposal: { kind: 'synthetic' } }));
+    await exactlyOnce({ action: 'assistant.backlog_status', client: petr, url: `/v1/assistant/backlog/${item.id}/status`, body: { status: 'accepted', expectedRevision: 1 },
+      effects: () => count(h.db.admin, "SELECT 1 FROM trustwork.service_backlog_item WHERE id = $1 AND status = 'accepted'", [item.id]) });
+    await exactlyOnce({ action: 'assistant.stop_engage', client: petr, url: '/v1/assistant/stop', body: {}, effects: () => auditCount(h.db.admin, 'assistant.stop_engaged') });
+    await exactlyOnce({ action: 'assistant.stop_release', client: petr, url: '/v1/assistant/stop/release', body: {}, effects: () => auditCount(h.db.admin, 'assistant.stop_released') });
   });
 
   await t.test('every in-transaction route was crash-tested', () => {

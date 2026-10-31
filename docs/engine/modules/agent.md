@@ -1,6 +1,6 @@
 # The agent and its runtime
 
-Module code `AGN`. Status: the assistant page and floating overlay with mandates, approvals and runs on demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Designed** (AST-001); goals, envelopes, the company representative, modules, metering, detailed settings, extensions, the model gateway, MCP and A2A connections are **Proposed**. Packages: AST-001, AGT-001 … AGT-023, LLM-001, EVAL-001, CHAN-001. Narrative: [Your agent](../agents.md), [Agent catalogue](../agent-catalog.md), [Capability registry](../capability-registry.md). Data: [§21 Assistant and agents](../../data/model.md#21-assistant-and-agents).
+Module code `AGN`. Status: the assistant page and floating overlay with mandates, approvals and runs on demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Live in the API and the worker with fake providers only** (AST-001, [assistant module](../../../apps/api/src/modules/assistant/README.md)); goals, envelopes, the company representative, modules, metering, detailed settings, extensions, the model gateway, MCP and A2A connections are **Proposed**. Packages: AST-001, AGT-001 … AGT-023, LLM-001, EVAL-001, CHAN-001. Narrative: [Your agent](../agents.md), [Agent catalogue](../agent-catalog.md), [Capability registry](../capability-registry.md). Data: [§21 Assistant and agents](../../data/model.md#21-assistant-and-agents).
 
 ## Purpose
 

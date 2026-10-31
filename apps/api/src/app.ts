@@ -22,7 +22,8 @@ import { AppleSignInProvider } from './modules/identity/providers/apple.js';
 import { OutboxMail } from './modules/identity/mail.js';
 import { secondFactorKeyFromEnv } from './modules/identity/second-factor/secrets.js';
 import { assignmentStaffRoles, staffHubFromEnv } from './modules/identity/staff-roles.js';
-import { FakeOidcProvider, RecordingMandateRevocation, systemClock, type Clock, type MailOutbox, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
+import { FakeOidcProvider, systemClock, type Clock, type MailOutbox, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
+import { AssistantMandateRevocation } from './modules/assistant/mandate-store.js';
 import { createReadinessProbe, discoverMigrationsDir, registerHealthRoutes, type ReadinessProbe } from './observability/health.js';
 import { instrumentHttp, NestJsonLogger } from './observability/http.js';
 import { createLogger, messageLogger, type Logger, type LogSink } from './observability/logger.js';
@@ -152,7 +153,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     config, pool, clock,
     mail: options.mail ?? new OutboxMail(mailSecretKeyFromEnv(env)),
     providers: { google: providerFor('google'), apple: providerFor('apple') },
-    mandates: options.mandates ?? new RecordingMandateRevocation(),
+    mandates: options.mandates ?? new AssistantMandateRevocation(pool),
     staffRoles: options.staffRoles ?? assignmentStaffRoles({ hubId: staffHubFromEnv(env) }),
     admission: new AdmissionGate(pool),
     secondFactorKey: options.secondFactorKey ?? secondFactorKeyFromEnv(env),
