@@ -79,7 +79,7 @@ The pattern used by every record whose sent or published form other parties rely
 | Freeze | `trustwork.reject_update_when_frozen(status, 'draft', <frozen columns>)`: once the status leaves draft, frozen columns never change and the status never returns to draft |
 | Pinning | Other records pin by version **id** and verify by **digest**; identity decisions never compare digests |
 
-Applied to: `rfq_version`, `quote_version`, `offering_version`, `publication_version`, `issue_revision`, `course_version`, `plan_version`, `task_request_version`, `task_offer`, `consultation_price_version`, `hub_config_version`, `legal_document_version`, `template_version`, `price_version`, `subscription_plan_version`, `verification_recipe_version`, `screening_list_version`, `staff_role_definition_version`, `reputation_method_version`, `match_method_version`, `mandate_revision`, `agent_module_version`, `pipeline_version`.
+Applied to: `rfq_version`, `quote_version`, `offering_version`, `publication_version`, `issue_revision`, `course_version`, `plan_version`, `task_request_version`, `task_offer`, `hub_config_version`, `legal_document_version`, `template_version`, `price_version`, `subscription_plan_version`, `verification_recipe_version`, `screening_list_version`, `staff_role_definition_version`, `reputation_method_version`, `match_method_version`, `mandate_revision`, `agent_module_version`, `pipeline_version`.
 
 ### 1.8 Digests
 
@@ -96,9 +96,9 @@ Applied to: `rfq_version`, `quote_version`, `offering_version`, `publication_ver
 | `issue_revision` | `{ issueNumber, date, items }` |
 | `course_version`, `plan_version`, `hub_config_version`, `legal_document_version`, `template_version`, recipe and method versions | `{ payload }` of the version |
 | `task_offer` | `{ taskRequestVersion, payload }` (pins the request version like a quote) |
-| `consultation_booking` | `{ offerId, priceVersion, slot, requestId }` (`terms_digest`) |
+| `consultation_booking` | `{ offeringVersion, kind, mode, slot }` (`terms_digest`) |
 | `agreement` with `terms_kind = task\|consultation` | `{ termsKind, offerRef, requestRef }` (proposed contract extension) |
-| `issued_credential` | the credential document without its proof; the proof is an Ed25519 signature by the issuing node key |
+| `passport_credential` | the credential document without its proof; the proof is an Ed25519 signature by the issuing node key |
 | `screening_list_version` | the normalized entry list |
 | `federation envelope` | `{ payload }` of the projection carried |
 | `agent_envelope.mandate_proof` | **keyed** HMAC over the mandate revision with the node key, so a counterparty cannot test guesses about a mandate's content |
@@ -173,8 +173,8 @@ Owner module: `identity` (profiles sub-area). Handbook: [People and companies](.
 | `media_licence` | `asset_id → evidence_artifact`, `licensor`, `licence_kind enum(own_work\|licensed\|cc_by\|cc_by_sa\|public_domain)`, `scope text`, `valid_until`, `recorded_by` | O, SC | an image is shown only while a licence record covers the use | evidence | Proposed |
 | `portrait` | `person_id`, `asset_id`, `media_licence_id`, `consent_record_id`, `status enum(pending\|shown\|withdrawn)` | P when shown, O | requires consent **and** licence (`admin.people.portrait.licence`) | account | Proposed |
 | `experience_entry` | `person_id`, `organisation` party(org) NULL + `organisation_name text`, `role`, `bdate(from)`, `bdate(to) NULL`, `visibility enum(public\|private)`, `confirmed_by_company_at NULL` | P when public, O | belongs to the person, survives employment; company confirmation is a separate label, never required | account | Proposed |
-| `portfolio_entry` | party(holder), `project_id NULL` \| `external_description`, `role`, `period` (bdate from/to), `scope_summary`, `evidence_refs`, `confirmation_request_id NULL`, `owner_consent_record_id NULL`, `visibility enum(public\|private)`, `ended_at` | P when consented and public, O | a platform project appears only with the project owner's consent; "confirmed by client" only with a recorded confirmation; survives the project and employment | evidence | Proposed |
-| `professional_credential` | party(holder), `kind enum(licence\|insurance\|bond\|certificate\|training\|membership\|registration)`, `jurisdiction jur`, `credential_type` (pack type, for example `US-TX-PE`, `US-CA-CSLB-B`, `US-FL-DBPR-CGC`, general liability insurance), `issuer`, `number`, `classification`, money(coverage) NULL, `valid_from`, `valid_until`, `evidence_artifact_id`, `verification_check_id NULL`, `issued_credential_id NULL`, `status enum(self_declared\|checked\|expired\|suspended\|revoked)` | P (kind, type, issuer, status, checked date and hub), O (number, policy details) | the one record for licences, insurance, bonds, external certificates and training of people **and** companies; "checked on date by hub X" only with a passing check; expiry triggers a re-check; platform course certificates (section 13) are never presented as these | verification | Proposed |
+| `portfolio_entry` | party(holder), `project_id NULL` \| `external_description`, `role`, `period` (bdate from/to), `scope_summary`, `evidence_refs`, `confirmation enum(self_reported\|client_confirmed)`, `confirmation_request_id NULL`, `owner_consent_record_id NULL`, `visibility enum(public\|private)`, `ended_at` | P when consented and public, O | a platform project appears only with the project owner's consent; "confirmed by client" only with a recorded confirmation; survives the project and employment | evidence | Proposed |
+| `professional_credential` | party(holder), `kind enum(licence\|insurance\|bond\|certificate\|training\|membership\|registration)`, `jurisdiction jur`, `credential_type` (pack type, for example `US-TX-PE`, `US-CA-CSLB-B`, `US-FL-DBPR-CGC`, general liability insurance), `issuer`, `number`, `classification`, money(coverage) NULL, `valid_from`, `valid_until`, `evidence_artifact_id`, `verification_check_id NULL`, `passport_credential_id NULL`, `status enum(self_declared\|checked\|expired\|suspended\|revoked)` | P (kind, type, issuer, status, checked date and hub), O (number, policy details) | the one record for licences, insurance, bonds, external certificates and training of people **and** companies; "checked on date by hub X" only with a passing check; expiry triggers a re-check; platform course certificates (section 13) are never presented as these | verification | Proposed |
 | `follow` | `follower_person_id`, `target_kind enum(person\|company\|topic\|region\|hub\|event_series)`, `target_id`/`target_code` | O | follower lists are never public; shapes the home feed only | account | Proposed |
 | `bookmark` | `person_id`, ref(target) | O | private | account | Demo → Proposed |
 | `reading_progress` | `person_id`, `publication_version_id`, `progress text(decimal 0..1)`, `updated_at` | O | never visible to employers | account | Demo → Proposed |
@@ -223,11 +223,11 @@ The flagship journey "plan to people" (owner decision 2026-10-31): a person laun
 | `project_location` | `project_id PK`, `address jsonb`, `region_code jur`, `cadastral_ref` (pack format, for example a US county APN), `geo point NULL` | P (region only), S (address only to a party with a booked site visit or an accepted task), O | owner-private by default; public page shows region or city only | commercial | Proposed |
 | `plan` | `project_id` (unique), `current_version`, `current_version_id`, `drafted_by enum(person\|agent)`, `mandate_id NULL`, `template_version_id NULL`, `status enum(drafting\|active\|closed)` | S (through `plan_share`), O | one plan per project; an agent draft is a proposal until the owner approves a version | commercial | Proposed |
 | `plan_version` (V) | `plan_id`, `version`, `status enum(draft\|proposed\|approved\|superseded)`, `payload` (summary, assumptions, budget range, timeline), `digest`, `approved_by`, `approved_at`, `change_id NULL` | S (projection below), O | the approved version is the baseline; original and revised versions both kept; frozen once proposed | commercial | Designed (`plan_baseline`) / Proposed |
-| `plan_item` | `plan_version_id`, `item_key` (stable across versions), `parent_key`, `kind enum(phase\|task\|milestone\|consultation\|material\|permit\|inspection\|decision\|risk)`, `title`, `description`, `step_terms` (plan-step taxonomy: work type, trade, material, stage), `required_skills text[]`, qty(quantity) NULL, money(estimate_low), money(estimate_high), `duration_low_days`, `duration_high_days`, bdate(start), bdate(due), `risk_level NULL`, `decision_question NULL`, `visibility enum(owner_private\|shared_with_invited\|public)`, `budget_visible_to_invited bool` | P (public items, no money), S (shared items; ranges only when the owner allows), O | frozen with its version; estimates are ranges labelled as estimates, never quotes; budgets owner-private unless explicitly shared as ranges | commercial | Proposed |
+| `plan_item` | `plan_version_id`, `item_key` (stable across versions), `parent_key`, `kind enum(phase\|task\|milestone\|consultation\|purchase\|material\|permit\|inspection\|decision\|risk\|self)`, `title`, `description`, `step_terms` (plan-step taxonomy: work type, trade, material, stage), `required_skills text[]`, qty(quantity) NULL, money(estimate_low), money(estimate_high), `duration_low_days`, `duration_high_days`, bdate(start), bdate(due), `risk_level NULL`, `decision_question NULL`, `sources jsonb[]` {kind template\|licensed_source\|own_quote\|lesson\|jurisdiction_facet, ref}, `visibility enum(owner_private\|shared_with_invited\|public)`, `budget_visible_to_invited bool` | P (public items, no money), S (shared items; ranges only when the owner allows), O | frozen with its version; estimates are ranges labelled as estimates, never quotes; budgets owner-private unless explicitly shared as ranges | commercial | Proposed |
 | `plan_dependency` | `plan_version_id`, `predecessor_key`, `successor_key`, `type enum(fs\|ss\|ff\|sf)`, `lag_days int` | S, O | graph acyclic, checked when a version is proposed | commercial | Designed |
 | `plan_item_state` | `plan_id`, `item_key`, `status enum(proposed\|accepted\|requested\|in_progress\|done\|blocked\|cancelled\|skipped)`, `link` ref(rfq\|consultation_request\|task_request\|permit_record\|course\|event) NULL, `actual_start`, `actual_end`, `updated_by` | S (shared items), O | the mutable execution state of a frozen item; linking a request never edits the version | commercial | Proposed |
 | `plan_change` | `plan_id`, `from_version_id`, `to_version_id`, `reason`, party(requested_by), party(accountable), `agreement_id NULL`, `status enum(proposed\|approved\|rejected\|withdrawn)`, `decided_by` | S, O | no retroactive blame rewrite; client-caused changes are attributed so timing reputation excludes them | evidence | Designed |
-| `plan_share` | `plan_id`, party(invitee), `item_keys text[]` \| `scope enum(items\|whole_plan)`, `fields text[]` (allowlist), `share_budget_ranges bool`, `share_location enum(region\|address)`, `valid_until`, `participation_id` | S (exactly what it lists) | materialized as `object_participation` (`resource_kind = plan`, audience `shared_party`); invited experts never see private notes, exact budgets, other experts' offers or other invitees | commercial | Proposed |
+| `plan_share` | `plan_id`, `item_key`, `audience enum(public\|invited\|after_acceptance)`, party(invitee) NULL (for `invited`), `fields text[]` (`scope`, `trade`, `locality`, `address`, `drawings`, `quantities`, `schedule`, `budget_range`, `contact`), `confirmed_by`, `confirmed_at`, `valid_until`, `participation_id` | P (`public` items), S (exactly the listed fields) | per item and audience, reviewed by the owner before sharing (`PlanItemShare` in the agent catalogue); `invited` and `after_acceptance` materialize as `object_participation` (`resource_kind = plan`); invited experts never see private notes, exact budgets, other experts' offers or other invitees | commercial | Proposed |
 | `permit_record` | `project_id`, `plan_item_key`, `jurisdiction jur`, `permit_type` (pack fact), `authority`, `number`, `applied_at`, `issued_at`, `inspection_results jsonb[]`, `evidence_refs`, `status` | S (invited parties when shared), O | permit facts per jurisdiction come from the pack; the engine never files permits | evidence | Proposed |
 | `project_diary_entry` | `project_id`, `author_person_id`, bdate(entry), `text`, `evidence_refs`, `plan_item_key NULL`, `visibility enum(owner_private\|participants)` | S (participants), O | private while the project runs; becomes shared knowledge only through section 9 with consent | account | Proposed |
 | `project_public_participant` | `project_id`, party(participant), `consent_record_id` | P | shown only with the participant's consent | published | Proposed |
@@ -243,11 +243,10 @@ Consultations are expert time (advice sessions, reviews of drawings, documents o
 
 | Entity | Key fields | Layers | Invariants | Retention | Status |
 |---|---|---|---|---|---|
-| `consultation_offer` | party(expert), `expert_person_id`, `kind enum(advice_session\|document_review\|quote_review\|site_visit\|mentoring_session)`, `step_terms`, `regions jur[]`, `languages`, `format enum(online\|offline\|either)`, `duration_minutes`, `deliverable_kind`, `status enum(draft\|active\|paused\|archived)` | P when active | an expert must hold a public profile; credentials shown only when checked | commercial | Proposed |
-| `consultation_price_version` (V) | `offer_id`, `version`, money(price), `pricing enum(fixed\|per_hour\|free)`, `tax_rule_ref`, `effective_from` | P | immutable once booked at | commercial | Proposed |
+| `consultation_offering` | `offering_id PK` (an `offering` of kind `services`), party(expert) (the offering owner), `expert_person_id`, `kind enum(session\|drawing_review\|quote_review\|site_visit\|mentoring)`, `modes text[]` (`video`, `chat`, `phone`, `in_person`, `async`), `step_terms`, `regions jur[]`, `languages`, `duration_minutes`, `deliverable_kind` | P when the offering is active | price, options and terms live in the immutable `offering_version`, which a booking pins by id and digest; credentials shown only when checked | commercial | Proposed |
 | `availability_window` | party(expert), `starts_at`, `ends_at`, `time_zone`, `recurrence`, `capacity` | S (requesters) | bookings serialize against capacity | operational | Proposed |
-| `consultation_request` | party(requester), `project_id NULL`, `plan_item_key NULL`, `kind`, `question`, `shared_material_refs`, `preferred_times jsonb`, money(budget_ceiling) NULL, `target_offer_id NULL` (direct) or open to matching, `status`, `generated_by_mandate_id NULL` | S (addressed or matched experts: question and shared materials), PP (requester: budget ceiling) | materials shared through `plan_share` rules; budget never shown to experts | commercial | Proposed |
-| `consultation_booking` | `request_id`, `offer_id`, `price_version_id`, party(expert), party(client), `slot` (starts/ends), `terms_digest`, `agreement_id`, `payment_id NULL`, `status` | S | the price and slot the client accepted are frozen by digest; no-show and cancellation rules from the expert's terms | commercial | Proposed |
+| `consultation_request` | party(requester), `project_id NULL`, `plan_item_key NULL`, `kind`, `question`, `shared_material_refs`, `preferred_times jsonb`, money(budget_ceiling) NULL, `target_offering_id NULL` (direct) or open to matching, `status`, `generated_by_mandate_id NULL` | S (addressed or matched experts: question and shared materials), PP (requester: budget ceiling) | materials shared through `plan_share` rules; budget never shown to experts | commercial | Proposed |
+| `consultation_booking` | `request_id NULL`, `offering_version_id` + `offering_version_digest`, `kind`, `mode`, party(expert), party(client), `slot` (starts/ends) NULL for async, `recording_consent bool`, `terms_digest`, `agreement_id`, `payment_id NULL`, `status enum(requested\|proposed\|booked\|held\|delivered\|accepted\|cancelled\|disputed)` | S | the price and slot the client accepted are frozen by digest; no-show and cancellation rules from the expert's terms | commercial | Proposed |
 | `consultation_session` | `booking_id`, `started_at`, `ended_at`, `attendance jsonb`, `meeting_link_ref`, `site_address_revealed_at` | S | address revealed only for site visits after booking | commercial | Proposed |
 | `consultation_deliverable` | `booking_id`, `kind enum(written_advice\|marked_up_document\|site_report\|checklist\|recording)`, `artifact_id`, `delivered_at`, `accepted_at`, `acceptance_record_id` | S | delivery and acceptance are separate records; reviews cite the deliverable | evidence | Proposed |
 | `task_request` | party(owner), `project_id NULL`, `plan_item_key NULL`, `status enum(draft\|published\|closed\|cancelled\|expired)`, `audience enum(invited\|open)`, `current_version_id`, money(budget_ceiling) PP | P (open, allowlisted), S (invited), PP | budget ceiling party-private | commercial | Proposed |
@@ -255,7 +254,7 @@ Consultations are expert time (advice sessions, reviews of drawings, documents o
 | `task_offer` (V) | `task_request_version_id`, `request_version_digest`, party(offeror), `version`, `payload` (price, milestones, start, duration, exclusions, validity), `digest`, `sent_at`, `status enum(draft\|sent\|superseded\|withdrawn\|expired\|accepted\|declined)` | S (owner and offeror only) | sent offers frozen; competing offerors never see each other; private floors in `quote_private_constraint`-like `task_offer_private` | commercial | Proposed |
 | `task_offer_private` | `task_offer_id PK`, party(owner), `floor_price`, `notes` | PP (offeror) | never in owner views or envelopes | commercial | Proposed |
 | `task_assignment` | `task_request_id`, `task_offer_id`, `agreement_id`, party(assignee), `milestones → obligation`, `status enum(assigned\|in_progress\|delivered\|accepted\|disputed\|cancelled)` | S | created only by acceptance; payments per milestone through billing; acceptance per milestone through execution records | commercial | Proposed |
-| `mentoring_relationship` | `mentor_person_id`, `mentee_person_id`, `topics`, `terms enum(free\|paid)`, `offer_id NULL`, `started_at`, `status enum(proposed\|active\|paused\|ended)`, `ended_reason` | S (both), P (count only, with both consents) | double opt-in; either side may end; sessions are consultation bookings of kind `mentoring_session` | account | Proposed |
+| `mentoring_relationship` | `mentor_person_id`, `mentee_person_id`, `topics`, `terms enum(free\|paid)`, `offering_id NULL`, `started_at`, `status enum(proposed\|active\|paused\|ended)`, `ended_reason` | S (both), P (count only, with both consents) | double opt-in; either side may end; sessions are consultation bookings of kind `mentoring_session` | account | Proposed |
 
 ## 9. Knowledge sharing
 
@@ -263,7 +262,7 @@ Owner module: `content`. With the owner's consent, completed projects become sha
 
 | Entity | Key fields | Layers | Invariants | Retention | Status |
 |---|---|---|---|---|---|
-| `knowledge_item` | `publication_id`, `kind enum(diary\|lesson\|checklist\|template\|case_study\|qa)`, `source_project_id NULL`, `source_plan_version_id NULL`, `source_refs jsonb[]` (diary entries, plan items, deliverables), `step_terms`, `redaction_review_by`, `redaction_reviewed_at` | P when published | the project owner's `project_knowledge_share` consent is required; every named participant's consent is required or they are anonymized; budgets, prices, addresses and counterparties' private data never carried over | published | Proposed |
+| `knowledge_item` | `publication_id`, `kind enum(diary_entry\|lesson\|checklist\|plan_template\|answer\|case_study)` (`KnowledgeArtefact` in the agent catalogue), `source_project_id NULL`, `source_plan_version_id NULL`, `source_refs jsonb[]` (diary entries, plan items, deliverables), `step_terms`, `redaction_review_by`, `redaction_reviewed_at` | P when published | the project owner's `project_knowledge_share` consent is required; every named participant's consent is required or they are anonymized; budgets, prices, addresses and counterparties' private data never carried over | published | Proposed |
 | `knowledge_consent` | `knowledge_item_id`, `consent_record_id`, `role enum(project_owner\|participant\|author)` | O | withdrawal unpublishes or re-anonymizes the item | consent_proof | Proposed |
 | `template_derivation` | `project_template_id`, `knowledge_item_id`, `generalized_by`, `reviewed_by` | P | templates are generalized; no identifying details | published | Proposed |
 
@@ -337,7 +336,7 @@ Owner module: `learning`. Handbook: [Learning and certificates](../engine/learni
 | `assessment_attempt` | `enrollment_id`, `assessment_id`, `attempt_no`, `answers_ref`, `submitted_at`, `score text(decimal)`, `result enum(pending_review\|passed\|failed)`, `graded_by NULL` | O, SC | grader ≠ learner | account | Proposed |
 | `certificate` | `hub` (issuer), `number` (random, unique per hub), `holder_person_id`, `display_name`, `kind enum(completion\|attendance)`, `course_version_id NULL` \| `event_id NULL`, actor(author org), `issued_at`, `show_score bool`, `score`, `valid_until`, `status enum(valid\|expired\|revoked)`, `revocation_reason_code`, `accreditation_id NULL` | P (check page allowlist) | never changes after issue; revocation is a status with reason; accreditation shown only when recorded with source | published | Proposed |
 | `accreditation` | `hub`, `body_name`, `jurisdiction jur` (for example a US state board for CE credits), `source_url`, `scope` (CPD/CE points), `course_id`, `version_from`, `version_to`, `valid_from`, `valid_until`, `recorded_by`, `evidence_refs` | P | no accreditation claim without a source | verification | Proposed |
-| `learning_resource` | `hub`, actor(provider) (often a sourced manufacturer), `kind enum(course\|guide\|video\|webinar\|technical_article\|manual\|installation_instructions)`, `title`, `language`, `url`, `source_item_id NULL`, `step_terms`, `cost enum(free\|paid\|unknown)`, `labels text[]` (for example `manufacturer_content`), `status enum(sourced\|claimed_managed\|withdrawn)` | P (with provider and "from sources" label) | external resources are linked and summarized within the source licence, never copied beyond it; distinct from platform `course` and never shown as a certificate path | published (source licence bound) | Proposed (delivered by REC-001) |
+| `learning_resource` | `hub`, actor(provider) (often a sourced manufacturer), `kind enum(course\|guide\|video\|webinar\|technical_article\|manual\|installation_instructions)`, `title`, `language`, `url`, `source_item_id NULL`, `step_terms`, `cost enum(free\|paid\|unknown)`, `labels text[]` (for example `manufacturer_content`), `status enum(sourced\|claimed_managed\|withdrawn)` | P (with provider and "from sources" label) | external resources are linked and summarized within the source licence, never copied beyond it; distinct from platform `course` and never shown as a certificate path | published (source licence bound) | Proposed (delivered by MAT-001) |
 
 ## 14. Partners and matching
 
@@ -357,7 +356,7 @@ Owner module: `matching`. Handbook: [Partners and matching](../engine/partners-a
 | `alert_subscription` | `person_id`, `kind enum(open_need\|partner_post\|rfq_invitation)`, `filters jsonb`, `frequency` | O | alerts are notifications with a reason | account | Proposed |
 | `recommendation_method_version` (V) | `version`, `payload` (target kinds, features, step-term matching, region and language rules, diversity rules), `released_by`, `released_at`, `explanation_publication_id` | P | payment-blind like matching; no feature reads sponsorship, entitlements or plans | config | Proposed |
 | `recommendation_set` | `plan_id`, `plan_version_id`, `plan_item_key`, `requester_person_id`, `mandate_id NULL`, `method_version_id`, `generated_at`, `audience enum(owner\|owner_and_invited)` | O (plan owner), S (invited parties when the owner shares it) | built only from data the audience may see; regenerated when the plan item changes | operational | Proposed |
-| `recommendation` | `set_id`, `target` ref(product_entry\|offering\|publication\|learning_resource\|course\|event\|consultation_offer\|capability_profile\|company\|person), `rank`, `explanation jsonb` (matched step terms, region, language, evidence, unknowns), `feedback enum(useful\|not_relevant\|dismissed) NULL` | same as the set | every item explains why it fits the step; people and companies appear only with public profiles; contacting them goes through introductions | operational | Proposed |
+| `recommendation` | `set_id`, `target` ref(product_entry\|offering\|publication\|learning_resource\|course\|event\|consultation_offering\|capability_profile\|company\|person), `rank`, `explanation jsonb` (matched step terms, region, language, evidence, unknowns), `feedback enum(useful\|not_relevant\|dismissed) NULL` | same as the set | every item explains why it fits the step; people and companies appear only with public profiles; contacting them goes through introductions | operational | Proposed |
 | `sponsored_placement` | `hub`, party(sponsor), `target` ref, `step_terms`, `label`, `period`, `price_version_id`, `status` | P (labelled slot) | only where the hub allows sponsorship; shown in a separate labelled slot, never inside or reordering a ranked list; never affects matching, recommendation rank or reputation | commercial | Proposed |
 
 ## 15. Catalogue
@@ -452,7 +451,7 @@ Reputation is something every participant **builds and confirms** with tools (ow
 | `contribution_record` (A) | party(holder), `kind enum(publication\|accepted_answer\|consultation_given\|mentoring\|course_taught\|event_talk\|document_review\|knowledge_item)`, ref(source), `outcome jsonb` (for example deliverable accepted, learners completed count, answer accepted), `occurred_at`, `hub` | P (holder chooses whether to show it in the passport), O | system-derived from canonical records, never self-asserted; counts never sold or boosted | evidence | Proposed |
 | `timeliness_observation` (A) | party(subject), `kind enum(response\|delivery\|payment\|consultation_start\|milestone)`, ref(context), `expected_at`, `actual_at`, `delta_seconds`, `attribution enum(subject\|counterparty\|external\|unknown)`, `plan_change_id NULL`, `excluded_reason NULL` | O (subject sees every observation about them), S (counterparty of that context), P (only aggregated in a snapshot) | only from contexts the subject took part in, never behaviour tracking; client-caused delay excluded; feeds `performance_observation` dimension timing | evidence | Proposed |
 | `reputation_passport` | party(subject), `home_hub_id`, `slug`, `sections jsonb` (identity verification, credentials, portfolio entries, contributions, current snapshot), `visibility enum(private\|link\|public)`, `consent_record_id`, `generated_at` | P or link-only per subject choice, O | the subject curates what is shown but cannot alter evidence; a reputation snapshot is shown whole or not at all; never purchasable | published | Proposed |
-| `issued_credential` | `vc_id` (URI under the issuing node), `issuer_hub_id`, `issuer_key_id`, `subject` party + global id, `type enum(identity_verified\|company_verified\|credential_checked\|course_certificate\|portfolio_confirmed\|reputation_snapshot\|contribution)`, `claims jsonb` (minimal facts, no private data), `issued_at`, `valid_until`, `status enum(valid\|suspended\|revoked\|expired)`, `status_list_id`, `status_index`, `revocation_reason_code`, `proof jsonb` | P (by the holder's choice), O | W3C Verifiable Credentials data model; portable across hubs; verified against the issuing node's key and status list; claims are what the issuing hub checked, nothing more; never sold | verification | Proposed |
+| `passport_credential` | `vc_id` (URI under the issuing node), `issuer_hub_id`, `issuer_key_id`, party(holder) + global id, `kind enum(IdentityVerified\|CompanyVerified\|LicenceChecked\|CertificateEarned\|ProjectContribution\|ConsultationDelivered\|ReputationSnapshot)`, `format enum(vc_2_0\|open_badges_3_0)`, `claims jsonb` (minimal facts, no private data), `payload_digest`, `issued_at`, `valid_until`, `status enum(valid\|suspended\|revoked\|expired)`, `status_list_id`, `status_list_index`, `revocation_reason_code`, `proof jsonb` | P (by the holder's choice), O | `PassportCredential` in the agent catalogue; W3C Verifiable Credentials 2.0 or Open Badges 3.0; portable across hubs; verified against the issuing node's key and status list; claims are what the issuing hub checked, nothing more; never sold | verification | Proposed |
 | `credential_status_list` | `issuer_hub_id`, `list_id`, `purpose enum(revocation\|suspension)`, `encoded_list`, `updated_at` | P | revocation visible to any verifier without revealing the holder list | verification | Proposed |
 
 ## 21. Assistant and agents
@@ -461,8 +460,8 @@ Owner module: `assistant` (AST-001), goals and representation sub-area (AGT-001)
 
 | Entity | Key fields | Layers | Invariants | Retention | Status |
 |---|---|---|---|---|---|
-| `mandate` | `principal_person_id`, `on_behalf` party NULL, `executor_kind enum(person_agent\|company_representative)`, `actions text[]` (8-verb vocabulary), money(ceiling), money(per_action_ceiling) NULL, `transaction_budget_id`, `platform_budget_id`, `conditions jsonb`, `approval_policy jsonb`, `escalation jsonb`, `valid_until`, `status enum(draft\|active\|suspended\|revoked\|expired)`, `revoked_*`, `authority_basis jsonb` (membership, participation ids it relies on) | O (principal), O (company members with permission for company mandates), SC (diagnostic) | never exceeds the principal's current rights; revoked in the transaction that removes the basis; chat never changes it | account | Contract |
-| `mandate_context` | `mandate_id`, `context_kind enum(project\|plan\|rfq\|quote\|agreement\|introduction\|event\|open_need\|goal\|consultation_request\|task_request\|task_assignment)`, `context_id` | O | rows, so revocation of a context cascades by query | account | Contract (`contexts`) |
+| `mandate` | `principal_person_id`, `on_behalf` party NULL, `grantee enum(own_agent\|colleague_agent\|company_representative)` + `grantee_person_id`/`grantee_company_id`, `module_ids text[]`, `actions text[]` (8-verb v1 vocabulary; v2 adds `introduce`, `schedule`, `maintain_profile`, `publish`, `register`, `record_evidence`, `confirm_execution`), money(ceiling), money(per_action_ceiling) NULL, `transaction_budget_id`, `platform_budget_id`, `conditions jsonb` (typed conditions), `approval_policy jsonb` (`ask_each`, `ask_first`, `ask_above`, `pre_authorized`), `approver_rules jsonb`, `escalation jsonb`, `valid_until`, `status enum(draft\|active\|suspended\|revoked\|expired)`, `revoked_*`, `authority_basis jsonb` (membership, participation ids it relies on) | O (principal), O (company members with permission for company mandates), SC (diagnostic) | never exceeds the principal's current rights; revoked in the transaction that removes the basis; chat never changes it; `confirm_execution` is never pre-authorized; v2 fields follow `MandateV2Schema` proposed by the agent catalogue (`docs/engine/agent-catalog.md`, PR #42) | account | Contract (v1) / Proposed (v2) |
+| `mandate_context` | `mandate_id`, `context_kind` (`ContextKindV2`: project, plan_item, rfq, quote, agreement, order, introduction, open_need, partner_post, event, course, publication, profile, catalogue_offering, opportunity, company, consultation, task_request, goal), `context_id` NULL, `selector jsonb NULL` (standing mandates: categories, regions, project) | O | rows, so revocation of a context cascades by query; a standing selector is resolved at action time and the action intent records the concrete context | account | Contract (`contexts`) |
 | `mandate_revision` (A) | `mandate_id`, `revision`, `snapshot jsonb`, `digest`, `changed_by`, `changed_at` | O | approvals and actions bind `(mandate_id, revision)`; history explains what was authorized when | audit_standard | Proposed |
 | `conversation_turn` | `person_id`, `role enum(person\|agent\|system)`, `content`, `created_at`, `expires_at` | O | one conversation per person shared by page and overlay; no chain-of-thought stored; not indexed | conversation | Proposed |
 | `assistant_note` | `person_id`, `text`, `source_dependencies jsonb[]`, `retained_at` | O | deliberately retained notes only; dependencies rechecked on reuse | account | Proposed |
@@ -476,18 +475,20 @@ Owner module: `assistant` (AST-001), goals and representation sub-area (AGT-001)
 | `reconciliation` (A) | `action_intent_id`, `attempt_id`, `operation_id`, `lookup_reference`, `outcome`, `reconciled_by enum(worker\|staff)`, `reconciled_at` | O, SC | required for unknown → final | commercial | Contract |
 | `goal` | `principal_person_id`, `on_behalf` party NULL, `text`, `success_criteria jsonb`, `allowed_actions text[]`, `horizon ts`, `report_cadence`, `status`, `outcome` | O | creating a goal proposes mandate changes; never widens authority by itself | account | Proposed |
 | `goal_progress` (A) | `goal_id`, `event_kind`, `evidence_refs`, `at` | O | evidence-backed progress log | account | Proposed |
+| `job_subscription` | `principal_person_id`, `module_id`, `trigger jsonb` (schedule, domain event or threshold), `mandate_id`, `status enum(active\|paused\|ended)` | O | a trigger only starts a run; authority still comes from the mandate | account | Proposed |
+| `agent_report` | `principal_person_id` \| `company_id`, `period`, `goal_id NULL`, `body_ref`, `evidence_refs`, `shared_with jsonb` | O | a draft the principal may share with colleagues; never sent to counterparties without a mandate | account | Proposed |
 | `agent_envelope` | `direction enum(outbound\|inbound)`, party(from) + `from_person_id`, `actor_kind enum(person_agent\|company_representative)`, `actor_label`, ref(context), `intent enum(request_proposal\|propose\|counter\|clarify\|answer\|accept\|decline\|withdraw\|schedule_meeting\|introduce)`, `refs jsonb[]` {kind, id, version, digest}, `note text` (untrusted), `mandate_proof`, `expires_at`, `negotiation_session_id`, `home_node`, `delivery_status` | S (parties of the context) | only structured parts move state after the receiver's own mandate checks; notes never obeyed; never carries private constraints | commercial | Proposed |
 | `negotiation_session` | ref(context), `parties jsonb`, `max_rounds`, `rounds_used`, `expires_at`, `status` | S | round limit and expiry; deadlock escalates to humans; no pricing relay between competing sellers | commercial | Proposed |
 | `company_representative` | `company_id` (unique), `accountable_person_id`, `status enum(pending_acceptance\|active\|suspended\|disabled)`, `suspension_reason enum(no_accountable_person\|no_confirmed_mandate\|admin_suspended\|hub_kill_switch\|node_kill_switch) NULL`, `enabled_by`, `accepted_at` | P (label: company and accountable person name), O (company members with permission) | at most one per company; accountable person must be a current member with authority; suspends automatically | account | Proposed |
 | `representative_accountability` (A) | `representative_id`, `person_id`, `from`, `to`, `ended_reason` | O, SC | history of who was accountable when each action happened | audit_standard | Proposed |
 | `company_mandate` | `company_id`, `mandate_id`, `granted_by_person_id`, `executor_kind enum(person_agent\|company_representative)`, `executor_person_id NULL`, `reconfirm_due_at NULL`, `reconfirmed_by`, `reconfirmed_at`, `status enum(active\|awaiting_reconfirmation\|suspended\|revoked)` | O (members with permission) | executor's authority end stops it in the same transaction; granter leaves → re-confirm within 7 days or suspend | account | Proposed |
-| `external_agent_client` | `hub` NULL, `name`, party(publisher), `kind enum(api_client\|mcp_client)`, `redirect_uris text[]`, `homepage_url`, `status enum(pending_review\|approved\|suspended\|revoked)`, `reviewed_by`, `screening_result_id` | P (approved clients: name, publisher) | a connection the person authorizes, not a second agent: it acts as the person's agent surface under the person's mandates and labels actions "via <client>"; no multi-agent UI | config | Proposed |
-| `agent_access_token` | `person_id`, `client_id`, `token_hash bytea(32)`, `scopes text[]` (read scopes and `propose`), `mandate_ids uuid[]` (effects allowed only under these), `expires_at`, `last_used_at`, `revoked_at` | O (without hash) | hash only; revoked with the mandate or membership; never grants staff or another person's data | session | Proposed |
-| `agent_module` | `code` (catalogue), `owner enum(engine\|hub)`, `status` | P | catalogue codes from the agent catalogue; modules are capabilities of the single agent | config | Proposed |
-| `agent_module_version` (V) | `module_id`, `version`, `payload` (actions provided, default limits, meters, model routing purpose), `released_by` | P | enabling a module never widens a mandate | config | Proposed |
-| `agent_module_enablement` | `hub`, `module_version_id`, `allowed_actions`, `limits jsonb`, `config_version_id` | P (hub policy summary) | hub agent policy; commitments may require verified companies | config | Proposed |
+| `external_connection` | `owner_kind enum(person\|company_representative)`, `person_id NULL`, `company_id NULL` + `approved_by uuid[]` (two members for a representative), `protocol enum(mcp\|a2a)`, `client_id`, `client_name_self_asserted`, `listed_by_hub bool`, `scopes text[]` (`read.public`, `read.me`, `read.contexts`, `read.private`, `propose`, `act`), `private_data_classes text[]`, `mandate_bindings jsonb[]` {mandateId, revision}, `rate_limit_profile`, `status enum(active\|suspended\|revoked\|expired)`, `last_used_at` | O | a connection of the person's own external agent, not a second agent: it adds no authority, acts only under the bound mandates and labels actions "via <client>"; there is no multi-agent UI; idle connections expire per hub policy | account | Proposed |
+| `connection_token` | `connection_id`, `family uuid`, `kind enum(access\|refresh)`, `token_hash bytea(32)`, `audience`, `expires_at`, `revoked_at` | — | hash only, like sessions; family revoked on reuse or on mandate, membership or connection revocation | session | Proposed |
+| `connection_call` (A) | `connection_id`, `token_family`, `tool`, `args_digest`, `result_code`, `mandate_id`, `mandate_revision`, `action_intent_id NULL`, `at` | O, SC | every call audited by digest, never with arguments | audit_standard | Proposed |
+| `agent_module` | `module_id` (catalogue code, for example `project_planner`, `plan_step_companion`, `consultation`, `task_marketplace`, `knowledge_sharing`, `reputation_builder`, `connections`), `family`, `status` | P | modules are capabilities of the single agent, defined by the agent catalogue (`docs/engine/agent-catalog.md`, PR #42) | config | Proposed |
+| `agent_module_version` (V) | `module_id`, `version`, `payload` (`AgentModuleManifest`: actions, tools, projections read, meters, participant types suited, free floor), `released_by` | P | enabling a module never widens a mandate; hubs cannot remove a module's free floor | config | Proposed |
 
-The agent's planning help (drafting plans, turning items into requests, recommending resources) and the reputation helper (suggesting confirmations to request, credentials to renew, portfolio entries to document, and presenting the passport) are agent modules from the catalogue; they act only under the person's mandates and never contact counterparties outside them. Module entitlements and metering use billing records: an `entitlement` with `module_code`, and `usage_event` rows against `meter` codes that a module version declares (section 23).
+The agent's planning help (drafting plans, turning items into requests, recommending resources) and the reputation helper (suggesting confirmations to request, credentials to renew, portfolio entries to document, and presenting the passport) are agent modules from the catalogue; they act only under the person's mandates and never contact counterparties outside them. Hub enablement of modules, protection limits, forbidden pre-authorizations and module kill states are the hub's agent policy (`HubAgentPolicy`), stored as `hub_config_version` with domain `agents` (section 24), not as a separate table. Module entitlements and metering use billing records: agent plans as `subscription_plan_version`, per-meter prices as `meter_rate_version` and consumption as `usage_record` (section 23).
 
 ## 22. Communications
 
@@ -517,13 +518,15 @@ Owner module: `billing`. Contracts: `billing.ts`. Handbook: [Billing](../engine/
 |---|---|---|---|---|---|
 | `billing_account` | party(owner), `hub`, `currency`, `tax_registration_id NULL`, `billing_address jsonb`, `status` | O (permission `company.billing.view`) | personal and company payers; economic rights distinct from roles | accounting | Designed |
 | `offer` | `hub`, `code`, `name`, `kind enum(plan\|deliverable\|credit_pack\|marketplace_fee\|verification_fee\|agent_module)`, `status` | P | money never buys ranking, matching, reputation or a badge | config | Contract |
-| `subscription_plan_version` (V) | `offer_id`, `version`, `payload` (included modules, limits, meters), `status` | P | what a subscription plan includes is versioned ("plan version" in the billing chapter; renamed to avoid the project plan) | config | Designed |
+| `subscription_plan_version` (V) | `offer_id`, `version`, `payer_kind enum(person\|company)`, `payload` (enabled modules, included quota per module, meter and window, connections, channels, representative included), `price_version_id`, `status` | P | what a subscription or agent plan includes is versioned ("plan version" in the billing chapter, `AgentPlanVersion` in the agent catalogue; renamed to avoid the project plan) | config | Designed / Proposed |
 | `price_version` (V) | `offer_id`, `version`, money(amount), `effective_from`, `effective_to`, `acceptance_text_version`, `status enum(draft\|active\|superseded\|cancelled)`, `drafted_by`, `activated_by`, `activated_at`, `tax_rule_ref` | P | activator ≠ drafter; no back-dating; no overlapping active versions | config | Contract |
 | `price_acceptance` (A) | `price_version_id`, `acceptance_text_version`, party(payer), `accepted_by_person_id`, `accepted_at`, money(amount) | O | immutable; price changes never alter an acceptance | accounting | Contract |
 | `subscription` | `billing_account_id`, `offer_id`, `subscription_plan_version_id`, `price_version_id`, `price_acceptance_id`, `status enum(trial\|active\|past_due\|cancelled\|ended)`, `current_period`, `renews_at` | O | trial parameters open (O03) | accounting | Designed |
 | `entitlement` | `billing_account_id`, `offer_id`, `module_code NULL`, `limits jsonb`, `valid_from`, `valid_until`, `source enum(free_basic\|trial\|subscription\|credit\|sponsorship)` | O | never read by ranking, matching or reputation code | accounting | Contract |
-| `meter` | `code`, `unit`, `module_code NULL`, `description_key` | P | declared by module versions | config | Proposed |
-| `usage_event` (A) | `billing_account_id`, `entitlement_id`, `meter_code`, qty(quantity), `occurred_at`, ref(source run\|action_intent\|render\|verification_check), `idempotency_key` | O | unique idempotency key; corrections are new events | accounting | Designed |
+| `meter` | `code enum(model_tokens\|agent_actions\|checks\|document_pages\|deliverables\|translation_characters\|retrieval_queries\|external_calls)` (`MeterSchema` of the agent catalogue), `unit`, `description_key` | P | declared by module manifests | config | Proposed |
+| `meter_rate_version` (V) | `hub_id`, `version`, `meter`, `provider_class enum(local\|in_country\|hosted_external) NULL`, money(price_per_thousand_units), `pass_through bool`, `effective_from`, `effective_to`, `drafted_by`, `activated_by` | P | activator ≠ drafter; no back-dating; no overlap per meter and provider class | config | Proposed |
+| `marketplace_fee_version` (V) | `hub_id`, `kind enum(consultation\|task\|ticket\|course)`, `category NULL`, `basis_points NULL`, money(fixed) NULL, `price_version_id` | P | fees are published price versions; never affect ranking or matching | config | Proposed |
+| `usage_record` (A) | party(principal), `billing_account_id`, `module_id`, `run_id`, `run_step_id`, `attempt_id`, `connection_id NULL`, `meter`, `provider_class`, `units text(integer)`, `within_included_quota bool`, `meter_rate_version_id`, `reservation_id`, `recorded_at`; non-agent usage uses ref(source render\|verification_check) instead of run fields | O | idempotent per (run_step, attempt, meter); corrections are new records | accounting | Designed / Proposed |
 | `budget` | `kind enum(transaction\|platform)`, party(owner), `project_id`, `employee_person_id`, `period`, money(limit) | O (owner), PP within agreements | two kinds; one never implies the other | accounting | Contract |
 | `reservation` | `budget_id`, `action_intent_id`, money(amount), `state enum(reserved\|settled\|released\|expired)`, money(settled_amount), `effect_correlation_key` | O | atomic reserve under row lock or serializable retry; settle or release only from evidence | accounting | Contract |
 | `ledger_entry` (A) | `batch_id`, `account_kind enum(budget\|billing_account\|payout\|hub_revenue)`, `account_id`, money(amount) (signed), `reservation_id`, `payment_id`, `correcting_entry_of`, `occurred_at` | O, SC (diagnostic totals) | balanced per batch and currency; corrections are new entries | accounting | Designed |
@@ -615,7 +618,7 @@ Owner module: `federation`. Handbook: [Federation](../engine/federation.md); [AD
 | `tombstone_application` | `tombstone_id`, `peer_node_id`, `acknowledged_at`, `applied_at` | SC | missing acknowledgements feed defederation decisions | operational | Proposed |
 | `takedown_notice` | ref(object) \| `global_id`, `reason_category`, `requested_by`, `legal_basis`, `received_at`, `status` | SC | pushed to peers' inboxes | case | Proposed |
 
-Issued credentials (section 20) are verified against the issuing node's manifest key and status list; peers display passports and credentials as replicas with attribution and never re-issue them.
+Passport credentials (section 20) are verified against the issuing node's manifest key and status list; peers display passports and credentials as replicas with attribution and never re-issue them.
 
 ## 27. Administration, support and privacy operations
 
@@ -636,7 +639,7 @@ Owner module: `platform-admin` (privacy operations sub-area). Contracts: `admin.
 | `moderation_report` | `hub_id`, `reporter_person_id`, ref(target), `clause_code`, `text`, `created_at` | O (reporter), SC | reporter identity hidden from the reported party | case | Designed |
 | `moderation_case` | `hub_id`, ref(target), `report_ids`, `clause_codes`, `status`, `assigned_to`, `emergency_hold bool`, `decision`, `decided_by` | SC; S (target owner sees reasons) | the author is notified with reasons; appeal by a different person | case | Designed |
 | `sanction` | party(subject), `level int 1..4`, `scope` (feature), `starts_at`, `ends_at`, `moderation_case_id`, `decided_by`, `second_approval_id` (level 4) | O (subject), SC | durations within engine bounds; level 4 needs two people | case | Designed |
-| `appeal` | ref(subject sanction\|moderation_case\|verification_check\|review\|screening_result\|confirmation_response\|timeliness_observation\|performance_observation\|issued_credential\|recommendation), `appellant`, `status`, `decided_by` (≠ original decider) | O, SC | one appeal path per decision | case | Designed |
+| `appeal` | ref(subject sanction\|moderation_case\|verification_check\|review\|screening_result\|confirmation_response\|timeliness_observation\|performance_observation\|passport_credential\|recommendation), `appellant`, `status`, `decided_by` (≠ original decider) | O, SC | one appeal path per decision | case | Designed |
 | `privacy_request` | `hub_id`, `subject_person_id` \| `subject_identifier_hash` (non-users found in sources), `kind enum(access\|portability\|rectification\|erasure\|restriction\|objection\|opt_out_sale_share\|limit_sensitive_use\|appeal)`, `channel`, `authorized_agent_ref NULL`, `identity_verified_at`, `received_at`, `due_at` (from the pack deadline), `extended_until`, `status`, `decided_by`, `executed_by`, `second_approval_id` | O (requester), SC | deadlines from the country pack (for example 45 days, extendable, under CCPA); erasure executed by two people | case | Designed |
 | `privacy_preference` | `person_id` \| `subject_identifier_hash`, `opt_out_sale_share bool`, `limit_sensitive_use bool`, `gpc_honoured_at`, `marketing_opt_out bool`, `source enum(user\|gpc_signal\|authorized_agent)` | O | the engine never sells personal data; the flags still exist so a hub can honour state opt-out rights and Global Privacy Control signals | consent_proof | Proposed |
 | `privacy_export` | `privacy_request_id`, `manifest jsonb` (modules, digests), `artifact_id`, `expires_at`, `downloaded_at` | O | composed through projection serializers; never counterparties' private fields | ephemeral | Designed |
@@ -645,7 +648,7 @@ Owner module: `platform-admin` (privacy operations sub-area). Contracts: `admin.
 | `retention_policy` | `hub_id`, `class`, `min_period`, `max_period`, `pack_fact_ref`, `disclosure_text_key`, `config_version_id` | P (disclosed periods), SC | hub values stay within pack statutory bounds; disclosed per category where law requires (CPRA) | config | Proposed |
 | `data_broker_registration` | `hub_id`, `jurisdiction jur` (for example `US-CA`, `US-VT`, `US-TX`, `US-OR`), `registered bool`, `registration_number`, `assessment_ref`, `renew_by` | SC | recorded when the operator's counsel decides that importing personal data from sources makes the hub a data broker in that state | config | Proposed |
 | `incident` | `hub_id` \| node, `kind enum(security\|privacy_breach\|provider\|content\|availability)`, `severity`, `opened_at`, `linked_actions jsonb` (kill switches, taints, holds, freezes), `breach_authority`, `notification_deadline`, `notified_at`, `post_review_ref`, `status` | SC | every emergency action requires a post-incident review | audit_long | Designed |
-| `kill_switch` | `scope enum(node\|hub)`, `hub_id`, `target enum(agent_dispatch\|provider\|federation\|payments)`, `target_ref`, `engaged_at`, `engaged_by`, `released_at`, `released_by`, `incident_id` | SC; P (banner state) | release needs an incident note | audit_long | Designed |
+| `kill_switch` | `scope enum(node\|hub\|hub_module\|company_representative\|person_stop\|connection\|provider\|federation\|payments)`, `hub_id`, `module_id`, `company_id`, `person_id`, `connection_id`, `target_ref`, `state enum(engaged\|released)`, `engaged_by`, `reason`, `incident_note`, `at` | SC; P (banner state); O (`person_stop` is the person's own stop control) | release of node or hub switches needs an incident note | audit_long | Designed |
 | `feature_flag` | `key`, `scope enum(node\|hub)`, `hub_id`, `value jsonb`, `changed_by`, `changed_at` | SC | a flag can never widen access or change ranking | config | Designed |
 | `maintenance_window` | `scope`, `starts_at`, `ends_at`, `reason`, `read_only bool` | P (banner) | — | config | Designed |
 
@@ -679,7 +682,7 @@ DATA-001 delivered the first six migrations (identity, access, projects, reliabi
 | Companies | 12 | 3 | 0 | 0 | 2 | 7 |
 | Access | 2 | 2 | 0 | 0 | 0 | 0 |
 | Projects and plans | 15 | 3 | 0 | 0 | 3 | 9 |
-| Consultations, tasks and mentoring | 13 | 0 | 0 | 0 | 0 | 13 |
+| Consultations, tasks and mentoring | 12 | 0 | 0 | 0 | 0 | 12 |
 | Knowledge sharing | 3 | 0 | 0 | 0 | 0 | 3 |
 | Content | 9 | 0 | 0 | 7 | 0 | 2 |
 | Magazine | 5 | 0 | 0 | 4 | 0 | 1 |
@@ -692,20 +695,22 @@ DATA-001 delivered the first six migrations (identity, access, projects, reliabi
 | Transactions | 7 | 0 | 0 | 6 | 1 | 0 |
 | Execution and evidence | 9 | 0 | 0 | 3 | 6 | 0 |
 | Reputation | 13 | 0 | 0 | 0 | 6 | 7 |
-| Assistant and agents | 25 | 0 | 0 | 6 | 4 | 15 |
+| Assistant and agents | 27 | 0 | 0 | 6 | 4 | 17 |
 | Communications | 13 | 0 | 0 | 0 | 10 | 3 |
-| Billing, budgets and payments | 19 | 0 | 0 | 6 | 10 | 3 |
+| Billing, budgets and payments | 21 | 0 | 0 | 6 | 10 | 5 |
 | Hubs, sources and verification | 28 | 0 | 0 | 0 | 1 | 27 |
 | Search and knowledge | 15 | 0 | 0 | 4 | 10 | 1 |
 | Federation | 13 | 0 | 0 | 0 | 0 | 13 |
 | Administration, support and privacy operations | 25 | 0 | 0 | 7 | 13 | 5 |
-| **Total (26 domains)** | **327** | **24** | **10** | **50** | **71** | **172** |
+| **Total (26 domains)** | **330** | **24** | **10** | **50** | **71** | **175** |
 
 The Live count is the 24 tables of `packages/data/src/schema.ts`. "Contract" counts entities whose shape is frozen in Zod but which have no table yet. Counts are recomputed by the integrator when a slice lands; a row counted once here may be split into several SQL tables or folded into a payload by its slice, which the slice records in this file.
 
 ## 31. Proposed work packages
 
-These packages close the gaps between the existing task graph and this model. They are proposals in the exact shape of `docs/engine/work-packages.json`; the integrator adds them (or folds their steps into existing packages) in a separate pull request. Existing packages (DATA-002, COM-001, BILL-001, AST-001, CNT-001, EXE-001, EVT-001, LRN-001, MATCH-001, AGT-001, HUB-001, HUB-003, RAG-201, FED-001…005) keep their scope; the [migration plan](migration-plan.md) maps their slices.
+These packages close the gaps between the existing task graph and this model.
+
+**Relation to the research proposals (PR #41, `docs/research/market-and-ideas-2026-10.md`).** Where the scope is the same, this list uses the same id so the integrator merges the two descriptions into one package: PLAN-001 (plans), CONS-001 (consultations and mentoring; here also scoped tasks), KNOW-001 (shared knowledge), REP-001 (reputation builder; here also portfolio, contributions, timeliness and passport credentials, which overlaps CRED-001 for portable credentials), SRC-001 (source registry; here also datasets, pipelines and crawl policies), MAT-001 (manufacturer knowledge on plan steps; here also recommendations and learning resources) and AGT-002 (agent interoperability; here the connection, token, module and metering storage). The packages below are written from the storage side: their steps name the tables of this dictionary. DATA-003, PPL-001, CLM-001, COMMS-001, BILL-002 and PRV-001 have no counterpart there. They are proposals in the exact shape of `docs/engine/work-packages.json`; the integrator adds them (or folds their steps into existing packages) in a separate pull request. Existing packages (DATA-002, COM-001, BILL-001, AST-001, CNT-001, EXE-001, EVT-001, LRN-001, MATCH-001, AGT-001, HUB-001, HUB-003, RAG-201, FED-001…005) keep their scope; the [migration plan](migration-plan.md) maps their slices.
 
 ```json
 [
@@ -780,7 +785,7 @@ These packages close the gaps between the existing task graph and this model. Th
     "paths": ["apps/api/src/modules/verification/claims", "tests/claims"]
   },
   {
-    "id": "PRJ-001",
+    "id": "PLAN-001",
     "title": "Project plans: versions, items, dependencies, changes, sharing with invited experts, permits and diaries",
     "area": "projects",
     "status": "open",
@@ -826,7 +831,7 @@ These packages close the gaps between the existing task graph and this model. Th
     "paths": ["apps/api/src/modules/channels", "tests/channels"]
   },
   {
-    "id": "HUB-004",
+    "id": "SRC-001",
     "title": "Information sources, datasets, pipelines, schedules, runs and import batches",
     "area": "hubs",
     "status": "open",
@@ -850,7 +855,7 @@ These packages close the gaps between the existing task graph and this model. Th
   },
   {
     "id": "AGT-002",
-    "title": "External agent clients, access tokens, agent modules and metering",
+    "title": "External agent connections (MCP and A2A), tokens, agent modules and metering",
     "area": "assistant",
     "status": "open",
     "dependsOn": ["AST-001", "BILL-001"],
@@ -858,10 +863,10 @@ These packages close the gaps between the existing task graph and this model. Th
     "goal": "Let a person connect an external agent client as their own agent surface under their mandates, and let hubs enable and meter agent modules without widening authority.",
     "read": ["docs/data/model.md", "docs/engine/agents.md", "docs/engine/billing.md"],
     "steps": [
-      "Add external_agent_client, agent_access_token (hash only), agent_module, agent_module_version and agent_module_enablement.",
-      "Bind token effects to named mandates; label every action with the client.",
-      "Declare meters per module version and record usage_event rows idempotently against entitlements.",
-      "Screen client publishers before approval; revoke tokens with mandates and memberships."
+      "Add external_connection, connection_token (hash only), connection_call, agent_module and agent_module_version; hub module enablement is the agents domain of hub_config_version.",
+      "Bind connection effects to named mandate revisions; label every action with the client; audit every call by digest.",
+      "Add meter_rate_version and record usage_record rows idempotently per run step, attempt and meter against entitlements and included quotas.",
+      "Revoke token families with mandates, memberships and connections; expire idle connections per hub policy."
     ],
     "acceptance": [
       "A token can never act outside its mandates or read another person's data.",
@@ -922,12 +927,12 @@ These packages close the gaps between the existing task graph and this model. Th
     "title": "Consultations, scoped tasks and mentoring from plan items",
     "area": "matching",
     "status": "open",
-    "dependsOn": ["PRJ-001", "COM-001", "BILL-002"],
+    "dependsOn": ["PLAN-001", "COM-001", "BILL-002"],
     "handbook": "docs/engine/partners-and-matching.md",
     "goal": "Turn plan items into consultation requests and task requests to platform participants, with immutable offers, bookings, deliverables, assignments and payments, automated by both sides' agents within mandates.",
     "read": ["docs/data/model.md", "docs/data/lifecycles.md", "docs/engine/partners-and-matching.md", "docs/engine/agents.md"],
     "steps": [
-      "Add consultation_offer, consultation_price_version, availability_window, consultation_request, consultation_booking, consultation_session, consultation_deliverable, task_request, task_request_version, task_offer, task_offer_private, task_assignment and mentoring_relationship.",
+      "Add consultation_offering (on catalogue offerings), availability_window, consultation_request, consultation_booking, consultation_session, consultation_deliverable, task_request, task_request_version, task_offer, task_offer_private, task_assignment and mentoring_relationship.",
       "Propose the agreement terms_kind contract extension through an ADR and implement acceptance through transactions.",
       "Serialize bookings against availability capacity; pay through billing adapters with fakes; reconcile unknown outcomes.",
       "Allow agents to request, offer and schedule only under mandates; label agent actions."
@@ -945,7 +950,7 @@ These packages close the gaps between the existing task graph and this model. Th
     "title": "Knowledge sharing from completed projects: diaries, lessons, checklists, templates and Q&A",
     "area": "content-magazine",
     "status": "open",
-    "dependsOn": ["CNT-001", "PRJ-001", "PPL-001"],
+    "dependsOn": ["CNT-001", "PLAN-001", "PPL-001"],
     "handbook": "docs/engine/publishing.md",
     "goal": "With consent, turn completed projects into shared knowledge that others can learn from, with provenance and redaction review.",
     "read": ["docs/data/model.md", "docs/data/retention-and-privacy.md", "docs/engine/publishing.md"],
@@ -972,7 +977,7 @@ These packages close the gaps between the existing task graph and this model. Th
     "goal": "Give every participant tools to build and confirm their reputation from evidence, and a portable passport of verifiable credentials that works across hubs, never for sale.",
     "read": ["docs/data/model.md", "docs/data/lifecycles.md", "docs/engine/execution-and-reputation.md", "docs/engine/federation.md"],
     "steps": [
-      "Add professional_credential (licences, insurance, bonds, certificates, training) for people and companies, portfolio_entry, confirmation_request, confirmation_response, contribution_record, timeliness_observation, reputation_passport, issued_credential and credential_status_list.",
+      "Add professional_credential (licences, insurance, bonds, certificates, training) for people and companies, portfolio_entry, confirmation_request, confirmation_response, contribution_record, timeliness_observation, reputation_passport, passport_credential and credential_status_list.",
       "Create confirmations as assertion confirmations, never as standalone scores; derive contributions and timeliness from canonical records only.",
       "Issue W3C verifiable credentials signed by the node key with a status list for revocation; verify credentials from peer nodes.",
       "Extend appeals to confirmations, timeliness observations and issued credentials."
@@ -986,16 +991,16 @@ These packages close the gaps between the existing task graph and this model. Th
     "paths": ["apps/api/src/modules/trust/passport", "tests/trust-passport"]
   },
   {
-    "id": "REC-001",
+    "id": "MAT-001",
     "title": "Manufacturer and supplier sources, product entries, learning resources and plan-step recommendations",
     "area": "matching",
     "status": "open",
-    "dependsOn": ["HUB-004", "PRJ-001", "RAG-301"],
+    "dependsOn": ["SRC-001", "PLAN-001", "RAG-301"],
     "handbook": "docs/engine/partners-and-matching.md",
     "goal": "Within each source's licence and robots rules, build sourced manufacturer and supplier pages with products, guides, training and events, and recommend for every plan step the materials, reading, training, events, consultants and contacts that fit, with explanations and never for pay.",
     "read": ["docs/data/model.md", "docs/data/retention-and-privacy.md", "docs/engine/hub-administration.md", "docs/engine/partners-and-matching.md"],
     "steps": [
-      "Add product_entry, learning_resource, recommendation_method_version, recommendation_set, recommendation and sponsored_placement (crawl_policy comes from HUB-004, the plan-step taxonomy from DATA-003).",
+      "Add product_entry, learning_resource, recommendation_method_version, recommendation_set, recommendation and sponsored_placement (crawl_policy comes from SRC-001, the plan-step taxonomy from DATA-003).",
       "Crawl only through website_crawl sources whose crawl policy allows it; record per-field provenance; keep sourced labels until a claim.",
       "Match plan items to targets through the shared plan-step taxonomy and governed retrieval; explain every recommendation.",
       "Show sponsored placements, where a hub allows them, only in a separate labelled slot."

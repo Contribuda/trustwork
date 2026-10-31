@@ -158,7 +158,7 @@ Erasure is decided by the privacy officer and **executed by two people** (A+2 ac
 | Caches and decisions | Bump `authz_epoch` of the subject and affected companies; policy caches miss; admission scopes revoked |
 | Notifications and outbox | Pending notifications to or about the subject cancelled; outbox payloads carry ids only |
 | Federation | `federation_tombstone` (reason `erased`) to every peer holding replicas; `tombstone_application` tracks acknowledgement within the agreement period (default 72 hours); `federated_identity_link` revoked |
-| Issued credentials | Revoked in the status list; the holder's copies stop verifying |
+| Passport credentials | Revoked in the status list; the holder's copies stop verifying |
 | Provider-held copies | Deletion request through each adapter that received the data (mail, model, verification providers) under their retention contracts; outcome reconciled |
 | Backups | Not edited. The `erasure_ledger` lives outside the restorable snapshot; every restore replays the ledger (and the retrieval and federation tombstones) **before** serving traffic, as rehearsed in restore drills ([runbook](../operations/runbook.md)) |
 

@@ -33,7 +33,7 @@ erDiagram
   DELIVERY_CLAIM ||--o{ ASSERTION : asserts
   ASSERTION ||--o{ CONFIRMATION : confirmed_by
   ASSERTION ||--o{ REPUTATION_SNAPSHOT : feeds
-  REPUTATION_SNAPSHOT ||--o{ ISSUED_CREDENTIAL : attested_by
+  REPUTATION_SNAPSHOT ||--o{ PASSPORT_CREDENTIAL : attested_by
   PERSON ||--o{ MANDATE : delegates
   MANDATE ||--o{ ACTION_INTENT : authorizes
   ACTION_INTENT ||--o{ RESERVATION : funds
@@ -132,8 +132,8 @@ erDiagram
 
 ```mermaid
 erDiagram
-  CONSULTATION_OFFER ||--o{ CONSULTATION_PRICE_VERSION : priced_by
-  CONSULTATION_OFFER ||--o{ CONSULTATION_BOOKING : booked_through
+  OFFERING ||--o| CONSULTATION_OFFERING : consultation_profile
+  OFFERING_VERSION ||--o{ CONSULTATION_BOOKING : pinned_by
   CONSULTATION_REQUEST ||--o{ CONSULTATION_BOOKING : results_in
   CONSULTATION_BOOKING ||--o{ CONSULTATION_SESSION : held_as
   CONSULTATION_BOOKING ||--o{ CONSULTATION_DELIVERABLE : delivers
@@ -219,7 +219,7 @@ erDiagram
   ASSESSMENT_ATTEMPT o|--o| CERTIFICATE : earns
   EVENT o|--o{ CERTIFICATE : attendance
   CERTIFICATE }o--o| ACCREDITATION : recognized_by
-  CERTIFICATE ||--o| ISSUED_CREDENTIAL : attested_by
+  CERTIFICATE ||--o| PASSPORT_CREDENTIAL : attested_by
   HUB ||--o{ LEARNING_RESOURCE : indexes
   SOURCE ||--o{ LEARNING_RESOURCE : yields
 ```
@@ -245,7 +245,7 @@ erDiagram
   RECOMMENDATION_SET ||--o{ RECOMMENDATION : lists
   RECOMMENDATION }o--o| PRODUCT_ENTRY : may_target
   RECOMMENDATION }o--o| LEARNING_RESOURCE : may_target
-  RECOMMENDATION }o--o| CONSULTATION_OFFER : may_target
+  RECOMMENDATION }o--o| CONSULTATION_OFFERING : may_target
   RECOMMENDATION }o--o| EVENT : may_target
   HUB ||--o{ SPONSORED_PLACEMENT : separate_labelled_slot
   TAXONOMY_TERM ||--o{ STEP_TERM_RELATION : relates
@@ -310,8 +310,8 @@ erDiagram
   PERFORMANCE_OBSERVATION }o--o{ REPUTATION_SNAPSHOT : counted_in
   CONTRIBUTION_RECORD }o--o{ REPUTATION_PASSPORT : shown_in
   REPUTATION_SNAPSHOT ||--o{ REPUTATION_PASSPORT : shown_whole_in
-  REPUTATION_PASSPORT ||--o{ ISSUED_CREDENTIAL : packages
-  ISSUED_CREDENTIAL }o--|| CREDENTIAL_STATUS_LIST : status_in
+  REPUTATION_PASSPORT ||--o{ PASSPORT_CREDENTIAL : packages
+  PASSPORT_CREDENTIAL }o--|| CREDENTIAL_STATUS_LIST : status_in
 ```
 
 ## Assistant and agents
@@ -338,10 +338,14 @@ erDiagram
   COMPANY ||--o{ COMPANY_MANDATE : grants
   COMPANY_MANDATE ||--|| MANDATE : wraps
   NEGOTIATION_SESSION ||--o{ AGENT_ENVELOPE : carries
-  EXTERNAL_AGENT_CLIENT ||--o{ AGENT_ACCESS_TOKEN : authorized_by
-  PERSON ||--o{ AGENT_ACCESS_TOKEN : issues
+  PERSON ||--o{ EXTERNAL_CONNECTION : connects_own_agent
+  EXTERNAL_CONNECTION }o--o{ MANDATE : bound_to
+  EXTERNAL_CONNECTION ||--o{ CONNECTION_TOKEN : authorized_by
+  EXTERNAL_CONNECTION ||--o{ CONNECTION_CALL : audited_by
+  PERSON ||--o{ JOB_SUBSCRIPTION : triggers
+  PERSON ||--o{ AGENT_REPORT : receives
   AGENT_MODULE ||--o{ AGENT_MODULE_VERSION : versions
-  AGENT_MODULE_VERSION ||--o{ AGENT_MODULE_ENABLEMENT : enabled_in_hub
+  AGENT_MODULE_VERSION }o--o{ HUB_CONFIG_VERSION : enabled_by_agent_policy
 ```
 
 ## Communications
@@ -374,8 +378,11 @@ erDiagram
   PRICE_VERSION ||--o{ PRICE_ACCEPTANCE : accepted_as
   SUBSCRIPTION }o--|| PRICE_ACCEPTANCE : binds
   BILLING_ACCOUNT ||--o{ ENTITLEMENT : entitled_to
-  ENTITLEMENT ||--o{ USAGE_EVENT : metered_by
-  METER ||--o{ USAGE_EVENT : counts
+  ENTITLEMENT ||--o{ USAGE_RECORD : metered_by
+  METER ||--o{ USAGE_RECORD : counts
+  METER ||--o{ METER_RATE_VERSION : priced_by
+  METER_RATE_VERSION ||--o{ USAGE_RECORD : rated_by
+  HUB ||--o{ MARKETPLACE_FEE_VERSION : charges
   BUDGET ||--o{ RESERVATION : caps
   RESERVATION ||--o{ LEDGER_ENTRY : settles
   BILLING_ACCOUNT ||--o{ INVOICE : billed_by
