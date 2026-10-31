@@ -54,4 +54,4 @@ Publication: draft -> in_review (if policy) -> scheduled/published -> corrected/
 
 Assertion: claimed -> evidence_attached -> confirmed/disputed -> superseded/reversed. Confirmation is a recorded decision by an authorized actor with supporting evidence, not a source import. Reputation snapshots reference methodology and permitted facts; disputes may exclude/annotate observations until resolution. A corrected baseline must retain reason and responsibility so client changes are not counted as unexplained supplier delay.
 
-Retrieval operations (private repository record, not exported) specifies outbox indexing, current-policy revocation, public-to-private taint, stale RFQ versions, erasure and restore replay. Saved multi-source answers require the intersection of current source permissions.
+[Retrieval operations](../operations/retrieval.md) specifies outbox indexing, current-policy revocation, public-to-private taint, stale RFQ versions, erasure and restore replay. Saved multi-source answers require the intersection of current source permissions.

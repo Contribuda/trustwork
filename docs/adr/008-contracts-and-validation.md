@@ -4,7 +4,7 @@ Date: 2026-10-27. Status: **accepted by integrator 2026-10-27** (FND-002 freeze 
 
 ## Context
 
-Backend (DATA-001, BE-001, COM-001, BILL-001, CNT-001, ADM-001), retrieval (RAG-201, RAG-301) and web lanes must start in parallel from one validated vocabulary. `packages/contracts` previously held hand-written TypeScript types without runtime validation; the research proposed Zod, a canonical digest and an error/idempotency convention (technology recommendations (private repository record, not exported), immutable commercial contracts (private repository record, not exported), contract questions Q01–Q09 (private repository record, not exported)).
+Backend (DATA-001, BE-001, COM-001, BILL-001, CNT-001, ADM-001), retrieval (RAG-201, RAG-301) and web lanes must start in parallel from one validated vocabulary. `packages/contracts` previously held hand-written TypeScript types without runtime validation; the research proposed Zod, a canonical digest and an error/idempotency convention (technology recommendations (kept in the project archive, not in this repository), immutable commercial contracts (kept in the project archive, not in this repository), contract questions Q01–Q09 (kept in the project archive, not in this repository)).
 
 ## Decisions
 
@@ -36,4 +36,4 @@ Backend (DATA-001, BE-001, COM-001, BILL-001, CNT-001, ADM-001), retrieval (RAG-
 
 ## Open (human decisions, not blocking)
 
-Password minimum length (contract default 15, parametrized by `PasswordPolicy`), session lifetimes, lockout thresholds, recovery hold for corporate mailboxes, audit retention, residual read-only access for former employees (contract questions H01–H11 (private repository record, not exported)), measurement-unit catalogue (O11) before `unit` validation can be strict, electronic-agreement requirements (O12).
+Password minimum length (contract default 15, parametrized by `PasswordPolicy`), session lifetimes, lockout thresholds, recovery hold for corporate mailboxes, audit retention, residual read-only access for former employees (contract questions H01–H11 (kept in the project archive, not in this repository)), measurement-unit catalogue (O11) before `unit` validation can be strict, electronic-agreement requirements (O12).

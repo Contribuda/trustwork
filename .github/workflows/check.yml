@@ -1,0 +1,87 @@
+name: check
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: npm run check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18.3
+        env:
+          POSTGRES_DB: trustwork_dev
+          POSTGRES_USER: trustwork_dev
+          POSTGRES_PASSWORD: local_only_change_me
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U trustwork_dev -d trustwork_dev"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      TRUSTWORK_TEST_PG_BACKEND: external
+      TRUSTWORK_TEST_DATABASE_URL: postgresql://trustwork_dev:local_only_change_me@localhost:5432/trustwork_dev
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npm run check
+      - run: npm run worker:demo
+
+  browser:
+    name: browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: NEXT_DIST_DIR=.next-e2e npx next build --webpack
+        working-directory: apps/web
+      - run: NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test
+        working-directory: apps/web
+
+  dco:
+    name: DCO sign-off
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Every commit carries Signed-off-by
+        run: |
+          missing=0
+          for sha in $(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+            if ! git log -1 --format=%B "$sha" | grep -qE '^Signed-off-by: .+ <.+>$'; then
+              echo "::error::commit $sha has no Signed-off-by line (git commit -s)"; missing=1
+            fi
+          done
+          exit $missing
+
+  secrets:
+    name: secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: gitleaks 8.30.1
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks dir . --config .gitleaks.toml --redact --no-banner

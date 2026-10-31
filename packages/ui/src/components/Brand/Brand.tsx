@@ -40,8 +40,8 @@ function Squares({ fill }: { fill: string }) {
 /**
  * Canonical brand lockup rendered inline from the same geometry as `packages/ui/brand/*.svg`.
  * Three blue squares in an L arrangement (top-left slot empty) plus the black stacked wordmark that
- * reads «trustwork» by default; a deployment's brand overlay replaces it per locale (the reference deployment
- * letters «build reputation» in six languages, see apps/web/brand). Unknown locales fall back to the engine lockup.
+ * reads «trust / work» in every language; a brand overlay may replace it for specific locales (the default overlay
+ * shows «строй / репутация» in the Russian interface only, see apps/web/brand). Other locales use the engine lockup.
  */
 export function Brand({ variant = 'full', tone = 'color', height = 40, href, decorative = false, className }: BrandProps) {
   const blue = tone === 'color' ? 'var(--color-brand-blue)' : 'currentColor';

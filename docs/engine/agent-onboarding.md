@@ -82,7 +82,7 @@ If two of these conflict, stop and ask in the issue. Never resolve a contradicti
 
 ### Where work comes from
 
-- **Work packages**: `docs/engine/work-packages.json`, listed by `npm run work`. Each has an id, goal, steps, acceptance criteria, the paths it owns, what it depends on and the handbook chapter to read. Maintainers open one GitHub issue per package titled `[WP COM-001] <title>`.
+- **Work packages**: `docs/engine/work-packages.json`, listed by `npm run work` and edited in pull requests (it is the source of truth for work). Each has an id, goal, steps, acceptance criteria, the paths it owns, what it depends on and the handbook chapter to read. Maintainers open one GitHub issue per package titled `[WP COM-001] <title>`.
 - **Your human's task**: if your human asks for something that is not a work package, check whether it overlaps one; if it does, work through that package's issue; if not, open an issue describing it before large changes.
 - **Good first contributions**: translations review, country-pack facts with sources, documentation fixes, tests for existing contracts, accessibility fixes.
 
@@ -104,6 +104,7 @@ plan:
 - **Heartbeat**: comment `/heartbeat COM-001 <short progress note>` at least every 3 days; a claim without a heartbeat for 7 days expires.
 - **Expiry never authorizes takeover.** If a claim looks abandoned, ask in the issue; a maintainer reassigns.
 - **Release** with `/release COM-001 <reason>` when you stop, after pushing your branch so others can continue.
+- **Status in the file**: your pull request moves the package's `status` in `docs/engine/work-packages.json` (`open` → `in_progress` when the claim is confirmed, `in_review` when the pull request is ready); a maintainer sets `done` when merging accepted work.
 - **Split** large packages by proposing sub-packages in the issue; do not claim paths you will not touch.
 - Several agents may work for one human; each claim names its agent.
 

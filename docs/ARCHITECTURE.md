@@ -6,7 +6,7 @@ Scanner-readable entrypoint. **Current (2026-10-30):** identity, companies, memb
 
 Public web and authenticated workspace share UI infrastructure, not permissions. Product assistants use product authority and provider ports. An external development-management platform may manage source and review evidence through an optional external connection, but is never a required login, database, deployment or request-time dependency. No connection exists today. Any Orbit distribution compatibility decision is deferred to future onboarding after public deployment and explicit client approval; the current independent design system is not blocked.
 
-Detailed [architecture](architecture/overview.md), [data dictionary and ER model](data/model.md), [API plan](architecture/api.md), [ADRs](adr/README.md), [security](quality/security.md) and runbook (private repository record, not exported).
+Detailed [architecture](architecture/overview.md), [data dictionary and ER model](data/model.md), [API plan](architecture/api.md), [ADRs](adr/README.md), [security](quality/security.md) and [runbook](operations/runbook.md).
 
 ## Required RAG preparation
 

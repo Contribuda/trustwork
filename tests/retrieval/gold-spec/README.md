@@ -1,6 +1,6 @@
 # Retrieval gold-set specification (RAG-101)
 
-Status: **DRAFT (RAG-101)**, 2026-10-27. Defines the schema and conventions for retrieval gold items used by the benchmark protocol (private repository record, not exported). Everything in `examples.json` is **synthetic**: entity ids reuse the vocabulary of `tests/retrieval/fixture.ts` (`shared`, `buyer-note`, `seller-floor`, `employer`, `public`, `rfq`; principals `buyer`, `seller`, `employee`, `stranger`, `other`). No real company, person, price or document is represented.
+Status: **DRAFT (RAG-101)**, 2026-10-27. Defines the schema and conventions for retrieval gold items used by the benchmark protocol (kept in the project archive, not in this repository). Everything in `examples.json` is **synthetic**: entity ids reuse the vocabulary of `tests/retrieval/fixture.ts` (`shared`, `buyer-note`, `seller-floor`, `employer`, `public`, `rfq`; principals `buyer`, `seller`, `employee`, `stranger`, `other`). No real company, person, price or document is represented.
 
 ## Files
 
@@ -12,7 +12,7 @@ Status: **DRAFT (RAG-101)**, 2026-10-27. Defines the schema and conventions for 
 ## Item conventions
 
 - `id`: stable, `gold-<stratum>-<nnn>`.
-- `stratum`: exactly one primary stratum from corpus-inventory.md (private repository record, not exported) section 5; `tags` carry secondary aspects.
+- `stratum`: exactly one primary stratum from corpus-inventory.md (kept in the project archive, not in this repository) section 5; `tags` carry secondary aspects.
 - `query.text` is Russian unless the stratum requires otherwise; `query.language` uses BCP-47 (`ru`, `en`, `mul` for mixed).
 - `temporal` mirrors the contract `TemporalMode`: `{kind: "current"}` or `{kind: "versions", versionIds: [...], asOf: ISO-8601}`.
 - `principal` is a fixture principal id plus the role list the adversarial matrix names; it is a test fixture, never a real account.

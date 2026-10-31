@@ -6,7 +6,7 @@ import { Button, IconButton } from '../src/components/Button/Button';
 import { KindBadge, StatusChip, type OfferKind } from '../src/components/Badge/Badge';
 import { DataTable } from '../src/components/DataTable/DataTable';
 import { Menu, MenuTrigger } from '../src/components/Menu/Menu';
-import { t } from '../src/i18n';
+import { intlTag, t } from '../src/i18n';
 
 type Rfq = { id: string; title: string; project: string; kind: OfferKind; status: string; deadline: string; offers: number };
 
@@ -22,7 +22,7 @@ const columns = [
   { id: 'project', header: 'Проект', cell: (r: Rfq) => r.project, sortable: true },
   { id: 'kind', header: 'Вид', cell: (r: Rfq) => <KindBadge kind={r.kind} size="sm" /> },
   { id: 'status', header: 'Статус', cell: (r: Rfq) => <StatusChip size="sm">{r.status}</StatusChip> },
-  { id: 'deadline', header: 'Срок', cell: (r: Rfq) => new Date(r.deadline).toLocaleDateString(), sortable: true },
+  { id: 'deadline', header: 'Срок', cell: (r: Rfq) => new Date(r.deadline).toLocaleDateString(intlTag()), sortable: true },
   { id: 'offers', header: 'Предложения', cell: (r: Rfq) => r.offers, align: 'end' as const, sortable: true },
 ];
 

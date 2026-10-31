@@ -28,4 +28,4 @@ Compare PostgreSQL isolated retrieval replica (with authoritative primary revoca
 
 ## Evidence and consequences
 
-Primary source register (private repository record, not exported) distinguishes upstream facts from this project's choices. [Knowledge model](../data/knowledge-model.md), [API/ports](../architecture/retrieval-api.md), operations (private repository record, not exported) and tasks are mandatory follow-through. Current repository validation uses deterministic fake vectors and policy fixtures; it cannot establish ANN recall, production authorization or real-model answer quality.
+Primary source register (kept in the project archive, not in this repository) distinguishes upstream facts from this project's choices. [Knowledge model](../data/knowledge-model.md), [API/ports](../architecture/retrieval-api.md), [operations](../operations/retrieval.md) and tasks are mandatory follow-through. Current repository validation uses deterministic fake vectors and policy fixtures; it cannot establish ANN recall, production authorization or real-model answer quality.

@@ -1,32 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
-import { EXCLUDES } from '../../scripts/oss-excludes.mjs';
-import { PRIVATE_TASKS, available, buildPackages } from '../../scripts/work-packages.mjs';
+import { available, load, validate } from '../../scripts/work-packages.mjs';
 
-const file = JSON.parse(readFileSync('docs/engine/work-packages.json', 'utf8'));
+const data = load();
 
-test('public work packages match the task graph', { skip: !existsSync('tasks/graph.json') && 'exported tree has no task graph' }, () => {
-  const graph = JSON.parse(readFileSync('tasks/graph.json', 'utf8'));
-  assert.deepEqual(file, buildPackages(graph), 'run node scripts/work-packages.mjs generate');
+test('work packages are valid: fields, statuses, dependencies, no cycles, handbook chapters exist', () => {
+  assert.deepEqual(validate(data), []);
 });
 
-test('public work packages never point into private paths or owner-only tasks', () => {
-  for (const p of file.packages) {
-    assert.ok(!PRIVATE_TASKS.has(p.id), `${p.id} is owner-only`);
-    for (const dep of p.dependsOn) assert.ok(!PRIVATE_TASKS.has(dep), `${p.id} depends on owner-only ${dep}`);
-    for (const path of [...p.read, ...p.paths]) {
-      assert.ok(!/^https?:/.test(path), `${p.id} links outside the repository: ${path}`);
-      assert.ok(!EXCLUDES.some((x) => path === x || path.startsWith(`${x}/`)), `${p.id} points into private ${path}`);
-    }
-    assert.ok(existsSync(p.handbook), `${p.id} handbook chapter ${p.handbook} exists`);
-  }
+test('work packages never point outside the repository', () => {
+  for (const p of data.packages) for (const path of [...p.read, ...p.paths]) assert.ok(!/^https?:/.test(path) && !path.startsWith('/'), `${p.id}: ${path}`);
 });
 
 test('available packages are open and have every dependency done', () => {
-  const byId = new Map(file.packages.map((p) => [p.id, p]));
-  for (const p of available(file)) {
+  const byId = new Map(data.packages.map((p) => [p.id, p]));
+  for (const p of available(data)) {
     assert.equal(p.status, 'open');
     for (const dep of p.dependsOn) assert.equal(byId.get(dep)?.status, 'done', `${p.id} waits for ${dep}`);
   }
+});
+
+test('the validator catches cycles, unknown dependencies and bad statuses', () => {
+  const pkg = (id, dependsOn, status = 'open') => ({ id, title: id, area: 'x', status, dependsOn, handbook: 'docs/engine/README.md', goal: 'g', read: [], steps: ['s'], acceptance: ['a'], paths: ['apps/x'] });
+  const exists = () => true;
+  assert.match(validate({ schemaVersion: 1, packages: [pkg('AAA-001', ['BBB-001']), pkg('BBB-001', ['AAA-001'])] }, { exists }).join('\n'), /cycle/);
+  assert.match(validate({ schemaVersion: 1, packages: [pkg('AAA-001', ['ZZZ-001'])] }, { exists }).join('\n'), /unknown dependency/);
+  assert.match(validate({ schemaVersion: 1, packages: [pkg('AAA-001', [], 'maybe')] }, { exists }).join('\n'), /unknown status/);
+  assert.match(validate({ schemaVersion: 1, packages: [pkg('AAA-001', ['BBB-001'], 'done'), pkg('BBB-001', [])] }, { exists }).join('\n'), /done while dependency/);
 });

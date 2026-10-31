@@ -1,6 +1,6 @@
 # RAG and hybrid search architecture
 
-Status: **required product capability; architecture/contracts and deterministic fixtures only**. No embedding model, pgvector extension, retrieval endpoint, index, paid provider or production RAG runtime is installed by this preparation. The explicit human requirement makes RAG first-class now; it does not require a separate vector database. [ADR 007](../adr/007-hybrid-retrieval.md), [knowledge model](../data/knowledge-model.md), [contract](retrieval-api.md), [evaluation](../quality/retrieval-evaluation.md), operations (private repository record, not exported) and primary evidence (private repository record, not exported) form one implementation contract.
+Status: **required product capability; architecture/contracts and deterministic fixtures only**. No embedding model, pgvector extension, retrieval endpoint, index, paid provider or production RAG runtime is installed by this preparation. The explicit human requirement makes RAG first-class now; it does not require a separate vector database. [ADR 007](../adr/007-hybrid-retrieval.md), [knowledge model](../data/knowledge-model.md), [contract](retrieval-api.md), [evaluation](../quality/retrieval-evaluation.md), [operations](../operations/retrieval.md) and primary evidence (kept in the project archive, not in this repository) form one implementation contract.
 
 ## Two planes, one accountable answer
 
