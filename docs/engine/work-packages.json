@@ -3568,7 +3568,7 @@
       "id": "ADM-002",
       "title": "Hub console shell, overview, approvals, setup wizard and hub settings on fixtures (console M1)",
       "area": "hubs-web",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "HUBC-000",
         "WEB-004"

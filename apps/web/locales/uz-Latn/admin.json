@@ -1,0 +1,1132 @@
+{
+  "admin": {
+    "title": "Boshqaruv",
+    "backToWorkspace": "Ish maydoniga qaytish",
+    "helpLink": "Yordam",
+    "navLabel": "Konsol navigatsiyasi",
+    "bandLinks": "Konsol havolalari",
+    "menu": "Boʻlimlar",
+    "hubBand": {
+      "actsOn": "Bu sahifa quyidagi xabni boshqaradi:",
+      "stage": "Bosqich: {stage}"
+    },
+    "bands": {
+      "demo": "Namunaviy maʼlumotlar: sunʼiy va belgilangan. Ular bu xabdan chiqmaydi, indekslanmaydi va federatsiyaga uzatilmaydi; oʻzgarishlar saqlanmaydi.",
+      "maintenance": "Texnik xizmat: ishtirokchilar uchun xab faqat oʻqish rejimida.",
+      "killSwitch": "Favqulodda oʻchirgich yoqilgan: {scope}. Uni olib tashlash uchun ikkinchi xodim va hodisa yozuvi kerak.",
+      "offline": "Aloqa yoʻq: oʻqish mumkin, oʻzgarishlar aloqa tiklanguncha oʻchirilgan."
+    },
+    "demo": {
+      "current": "Namunaviy xodim roli: {persona}",
+      "choose": "Namunaviy xodim rolini almashtirish",
+      "nobody": "hech kim kirmagan",
+      "personas": {
+        "hub-owner": "Xab egasi (AQSh)",
+        "staff-admin": "Xodimlar administratori",
+        "compliance": "Muvofiqlik mutaxassisi",
+        "editor": "Muharrir (AQShda bosh muharrir, Samarqandda muharrir)",
+        "data-steward": "Maʼlumotlar mutasaddisi",
+        "trust-reviewer": "Ishonch tekshiruvchisi va moderator",
+        "support": "Yordam xizmati (AQShda rahbar, Samarqandda agent)",
+        "commercial": "Tijorat administratori",
+        "ops": "Ekspluatatsiya muhandisi (butun tugun)",
+        "privacy": "Maxfiylik mutaxassisi",
+        "auditor": "Auditor (platforma)",
+        "node-operator": "Tugun operatori va platforma egasi",
+        "staff-none": "Xodim roli boʻlmagan ishtirokchi"
+      }
+    },
+    "status": {
+      "live": "Ishlaydi",
+      "demo": "Namuna",
+      "contract": "Shartnoma",
+      "designed": "Loyihalangan",
+      "proposed": "Taklif qilingan"
+    },
+    "providerMode": {
+      "fake": "Taqlid",
+      "manual": "Qoʻlda",
+      "live": "Haqiqiy"
+    },
+    "roles": {
+      "platform-owner": "Platforma egasi",
+      "staff-admin": "Xodimlar administratori",
+      "editor-in-chief": "Bosh muharrir",
+      "editor": "Muharrir",
+      "moderator": "Moderator",
+      "trust-reviewer": "Ishonch tekshiruvchisi",
+      "support-agent": "Yordam agenti",
+      "support-lead": "Yordam xizmati rahbari",
+      "commercial-admin": "Tijorat administratori",
+      "data-steward": "Maʼlumotlar mutasaddisi",
+      "ops-engineer": "Ekspluatatsiya muhandisi",
+      "privacy-officer": "Maxfiylik mutaxassisi",
+      "auditor": "Auditor",
+      "hub-owner": "Xab egasi",
+      "compliance-officer": "Muvofiqlik mutaxassisi",
+      "node-operator": "Tugun operatori"
+    },
+    "lifecycle": {
+      "draft": "Qoralama",
+      "preparing": "Tayyorlanmoqda",
+      "soft_launch": "Yumshoq ishga tushirish",
+      "public": "Ommaviy",
+      "suspended": "Toʻxtatilgan",
+      "closing": "Yopilmoqda",
+      "closed": "Yopilgan"
+    },
+    "nav": {
+      "home": "Asosiy",
+      "hub": "Xab",
+      "participants": "Ishtirokchilar",
+      "support": "Yordam xizmati",
+      "editorial": "Tahririyat",
+      "data": "Maʼlumotlar",
+      "modules": "Modullar",
+      "trust": "Ishonch va xavfsizlik",
+      "agents": "Agentlar",
+      "billing": "Tariflar va toʻlovlar",
+      "integrations": "Kalitlar va modellar",
+      "automation": "Avtomatlashtirish",
+      "communications": "Kommunikatsiyalar",
+      "federation": "Federatsiya",
+      "privacy": "Maxfiylik",
+      "staff": "Xodimlar va audit",
+      "ops": "Ekspluatatsiya"
+    },
+    "sections": {
+      "home": {
+        "overview": "Umumiy koʻrinish",
+        "approvals": "Tasdiqlashlar",
+        "help": "Yordam"
+      },
+      "hub": {
+        "identity": "Profil va hudud",
+        "modes": "Tizim rejimlari",
+        "modules": "Modullar",
+        "legal": "Huquqiy va operator",
+        "residency": "Maʼlumotlar joylashuvi va subpudratchilar",
+        "country": "Mamlakat bazasi",
+        "taxonomy": "Tasniflagichlar va birliklar",
+        "launch": "Ishga tushirish roʻyxati"
+      },
+      "participants": {
+        "people": "Odamlar",
+        "companies": "Kompaniyalar",
+        "claims": "Egalik arizalari",
+        "verification": "Tekshiruv",
+        "credentials": "Guvohnomalar",
+        "consents": "Roziliklar"
+      },
+      "support": {
+        "lookup": "Qidiruv",
+        "cases": "Murojaatlar",
+        "recovery": "Kirishni tiklash",
+        "explain": "Kirishni tushuntirish"
+      },
+      "editorial": {
+        "desk": "Tahririyat stoli",
+        "sources": "Manbalar",
+        "discovery": "Manbalarni topish",
+        "pipelines": "Konveyerlar",
+        "review": "Koʻrib chiqish",
+        "calendar": "Taqvim",
+        "publications": "Nashrlar",
+        "magazine": "Jurnal",
+        "translations": "Tarjimalar",
+        "policy": "Tahririyat siyosati"
+      },
+      "data": {
+        "datasets": "Maʼlumotlar toʻplamlari",
+        "batches": "Import paketlari",
+        "links": "Bogʻlanishlar",
+        "knowledge": "Bilimlar",
+        "recommendations": "Tavsiyalar"
+      },
+      "modules": {
+        "projects": "Loyihalar",
+        "planner": "Rejalashtiruvchi",
+        "marketplace": "Bozor",
+        "knowledgeSharing": "Umumiy bilimlar",
+        "events": "Tadbirlar",
+        "learning": "Taʼlim",
+        "matching": "Moslashtirish",
+        "commerce": "Savdo",
+        "procurement": "Xaridlar va taʼminot"
+      },
+      "trust": {
+        "moderation": "Moderatsiya",
+        "disputes": "Nizolar",
+        "reputation": "Obroʻ usullari",
+        "appeals": "Apellyatsiyalar",
+        "screening": "Sanksiya tekshiruvlari",
+        "confirmations": "Tasdiqlar"
+      },
+      "agents": {
+        "modules": "Agent modullari",
+        "policy": "Agentlar siyosati",
+        "extensions": "Kengaytmalar",
+        "external": "Tashqi agentlar",
+        "usage": "Foydalanish",
+        "abuse": "Suiisteʼmol"
+      },
+      "billing": {
+        "offers": "Takliflar va tariflar",
+        "prices": "Narxlar",
+        "invoices": "Hisob-fakturalar",
+        "payouts": "Toʻlab berishlar",
+        "credits": "Kreditlar va qaytarishlar",
+        "tax": "Soliq"
+      },
+      "integrations": {
+        "providers": "Provayderlar",
+        "routing": "Yoʻnaltirish",
+        "egress": "Maʼlumot uzatish",
+        "budgets": "Xarajat chegaralari",
+        "usage": "Foydalanish va xarajatlar",
+        "killSwitches": "Favqulodda oʻchirgichlar"
+      },
+      "automation": {
+        "schedules": "Jadvallar",
+        "runs": "Ishga tushirishlar",
+        "alerts": "Ogohlantirishlar"
+      },
+      "communications": {
+        "senders": "Joʻnatuvchilar",
+        "templates": "Shablonlar",
+        "deliverability": "Yetkazib berish",
+        "announcements": "Eʼlonlar"
+      },
+      "federation": {
+        "peers": "Hamkorlar",
+        "licences": "Litsenziyalar",
+        "tombstones": "Oʻchirish belgilari",
+        "links": "Kiruvchi bogʻlanishlar"
+      },
+      "privacy": {
+        "requests": "Soʻrovlar",
+        "retention": "Saqlash va ushlab turish",
+        "settings": "Maxfiylik sozlamalari",
+        "breaches": "Maʼlumotlar hodisalari"
+      },
+      "staff": {
+        "staff": "Xodimlar",
+        "audit": "Audit"
+      },
+      "ops": {
+        "health": "Holat",
+        "jobs": "Vazifalar",
+        "flags": "Funksiya bayroqlari",
+        "maintenance": "Texnik xizmat",
+        "incidents": "Hodisalar",
+        "locales": "Tillar",
+        "accessibility": "Qulaylik"
+      }
+    },
+    "common": {
+      "demoNotSaved": "Namuna: oʻzgarishlar saqlanmaydi.",
+      "demoSecondPerson": "Namuna: bu yerda «{action}» uchun ikkinchi xodimga soʻrov yaratilardi; hech narsa saqlanmadi.",
+      "reason": "Sabab",
+      "reasonHelp": "Majburiy. Oʻzgarish bilan birga saqlanadi.",
+      "auditNote": "Bu amal audit jurnaliga yoziladi.",
+      "secondPersonNote": "Bu oʻzgarish uchun ikkinchi xodim kerak: boshqa xodim tasdiqlaydigan soʻrov yaratiladi.",
+      "readOnly": "Faqat oʻqish: rollaringiz buni oʻzgartirishga ruxsat bermaydi.",
+      "offlineDisabled": "Aloqa yoʻq: oʻzgarishlar aloqa tiklanguncha oʻchirilgan.",
+      "saveVersion": "Yangi versiya sifatida saqlash",
+      "updated": "Yangilangan: {time}",
+      "loading": "Yuklanmoqda",
+      "none": "Yoʻq",
+      "notRecorded": "Qayd etilmagan",
+      "yes": "Ha",
+      "no": "Yoʻq",
+      "on": "Yoqilgan",
+      "off": "Oʻchirilgan",
+      "version": "{version}-versiya",
+      "unknownPerson": "Bu xabdan tashqaridagi odam",
+      "opensNewTab": "(yangi varaqda ochiladi)"
+    },
+    "denied": {
+      "title": "Bu boʻlimga kirish huquqingiz yoʻq",
+      "rolesGrant": "Kirishni beradigan rollar: {roles}.",
+      "noStaffTitle": "Bu xabda xodim rolingiz yoʻq",
+      "noStaffBody": "Konsol faqat xodim roliga ega odamlar uchun ochiladi. Kerak boʻlsa, xabning xodimlar administratoriga murojaat qiling.",
+      "hubNotCovered": "Xodim rollaringiz bu xabga emas, boshqa xabga tegishli."
+    },
+    "elevation": {
+      "title": "Bu siz ekaningizni tasdiqlang",
+      "body": "Konsol parol va ikkinchi omil tasdiqlangandan keyin ochiladi. Kengaytirilgan seans 30 daqiqa harakatsizlikdan keyin yoki brauzer yopilganda tugaydi.",
+      "action": "Tasdiqlash va davom etish",
+      "demoNote": "Namuna: tasdiqlash taqlid qilinadi."
+    },
+    "designed": {
+      "title": "Loyihalangan, hali qurilmagan",
+      "body": "Bu boʻlim qoʻllanmada tasvirlangan ({screen} ekrani), lekin ekrani hali yoʻq. Bu yerda hech narsa ishlayotgandek koʻrsatilmaydi.",
+      "handbook": "Ekran tavsifini ochish"
+    },
+    "errors": {
+      "denied": "Rollaringiz bu amalga ruxsat bermaydi.",
+      "elevation_required": "Avval parol va ikkinchi omilni tasdiqlang.",
+      "offline": "Aloqa yoʻq; hech narsa yuborilmadi.",
+      "reason_required": "Sababni yozing; u oʻzgarish bilan birga saqlanadi.",
+      "stale": "Boshqa xodim oʻzgartirdi; sahifani yangilab, qayta urinib koʻring. Kiritganlaringiz saqlangan.",
+      "invalid": "Qiymatlarni tekshirib, qayta urinib koʻring.",
+      "territory_restricted": "Bu hudud mavjud emas.",
+      "transition_not_allowed": "Xab joriy bosqichdan bu bosqichga oʻta olmaydi.",
+      "gates_open": "Yopilmagan ishga tushirish shartlari toʻsqinlik qilmoqda: {items}.",
+      "modes_violation": "Bu sozlamalar bir-biriga zid: {items}.",
+      "module_requires": "Avval quyidagi modullarni yoqing: {items}.",
+      "module_required_by": "Bu modulga bogʻliq modullar: {items}.",
+      "counsel_missing": "Faollashtirishdan oldin yurist tasdigʻini qayd eting.",
+      "language_missing": "Xab tili yetishmaydi: {items}.",
+      "own_request": "Oʻz soʻrovingizni tasdiqlay olmaysiz.",
+      "not_own_request": "Soʻrovni faqat uni yuborgan odam qaytarib olishi mumkin.",
+      "request_void": "Amal oʻzgardi; yangi soʻrov kerak.",
+      "request_expired": "Bu soʻrovning muddati tugagan.",
+      "digest_mismatch": "Siz koʻrib chiqqan amal kutilayotgan amal emas; soʻrovni qayta yuklang.",
+      "setup_blocked": "Avval oldingi qadamlarni yakunlang: {items}.",
+      "second_factor_required": "Ikkinchi omilni tanlang va tiklash kodlarini saqlaganingizni tasdiqlang.",
+      "not_found": "Topilmadi."
+    },
+    "details": {
+      "demo_data_only_before_soft_launch": "namunaviy maʼlumotlarga faqat yumshoq ishga tushirishgacha ruxsat beriladi",
+      "demo_data_never_indexed": "namunaviy maʼlumotlar hech qachon indekslanmaydi",
+      "demo_data_never_federated": "namunaviy maʼlumotlar hech qachon federatsiyaga uzatilmaydi",
+      "open_registration_only_when_public": "ochiq roʻyxatdan oʻtish faqat ommaviy xab uchun",
+      "registration_closed_before_soft_launch": "yumshoq ishga tushirishgacha roʻyxatdan oʻtish yopiq",
+      "indexing_only_after_launch": "qidiruv tizimlari indeksatsiyasi faqat ishga tushirilgandan keyin",
+      "moduleRequires": "«{module}» moduliga «{dependency}» moduli kerak"
+    },
+    "landing": {
+      "title": "Bu tugundagi xablar",
+      "lede": "Boshqarish uchun xabni tanlang. Har bir xabning oʻz konsoli bor; ular orasida almashtirgich yoʻq.",
+      "node": "Tugun:",
+      "stage": "Bosqich",
+      "country": "Mamlakat",
+      "data": "Maʼlumotlar",
+      "yourRoles": "Bu yerdagi rollaringiz",
+      "open": "Konsolni ochish",
+      "nodeConsole": "Tugun konsoli",
+      "nodeConsoleStatus": "Xablar, tugun xodimlari, yangilanishlar, zaxira nusxalar, kalitlar va tugun favqulodda oʻchirgichlari keyingi paketlardan birida alohida konsolga ega boʻladi."
+    },
+    "capabilities": {
+      "llm": "Til modellari",
+      "embeddings": "Vektor tasvirlar",
+      "rerank": "Qayta tartiblash",
+      "image_generation": "Rasm yaratish",
+      "translation": "Tarjima",
+      "speech_to_text": "Nutqni matnga aylantirish",
+      "text_to_speech": "Matnni nutqqa aylantirish",
+      "ocr": "Matnni aniqlash",
+      "web_search": "Veb-qidiruv",
+      "web_fetch": "Veb-sahifalarni yuklash",
+      "email": "Elektron pochta",
+      "sms": "SMS",
+      "messenger": "Messenjerlar",
+      "payments": "Toʻlovlar",
+      "payouts": "Toʻlab berishlar",
+      "e_invoicing": "Elektron hisob-fakturalar",
+      "e_signature": "Elektron imzo",
+      "register_lookup": "Reestrlarga soʻrovlar",
+      "sanctions_list": "Sanksiya roʻyxatlari",
+      "maps_geocoding": "Xaritalar va geokodlash",
+      "object_storage": "Obyekt ombori",
+      "tax_calculation": "Soliqni hisoblash"
+    },
+    "killSwitch": {
+      "engage": "Favqulodda oʻchirgichni yoqish",
+      "engageSubmit": "Hozir yoqish",
+      "scope": "Nimani toʻxtatish",
+      "releaseNote": "Yoqish darhol kuchga kiradi va bitta odam yetarli. Olib tashlash uchun ikkinchi xodim va hodisa yozuvi kerak.",
+      "scopes": {
+        "outbound_messages": "barcha chiquvchi xabarlar",
+        "hub_agent_dispatch": "bu xabdagi barcha agent amallari",
+        "external_agent_api": "tashqi agentlar kirishi"
+      }
+    },
+    "overview": {
+      "title": "Umumiy koʻrinish",
+      "lede": "Bugun nimaga odam qarori kerak va xab ishi hamda qonun nuqtai nazaridan sogʻlommi.",
+      "reducedSod": "Xabda beshtadan kam xodim bor, shuning uchun faqat «bajaruvchi oʻzini tasdiqlamaydi» qoidasi qoʻllanadi. Yumshoq ishga tushirishdan oldin boshqa rolli ikkinchi xodim qoʻshing.",
+      "queues": "Siz harakat qila oladigan navbatlar",
+      "nothingWaiting": "Bugun hech narsa qaroringizni kutmayapti.",
+      "noQueues": "Hozir hech bir navbat sizni kutmayapti.",
+      "nearestDeadline": "eng yaqin muddat: {date}",
+      "queue": {
+        "claims": "Egalik arizalari",
+        "review_items": "Muharrirni kutayotgan materiallar",
+        "link_proposals": "Bogʻlanish takliflari",
+        "reports": "Shikoyatlar",
+        "support_cases": "Yordam murojaatlari",
+        "grant_requests": "Murojaat boʻyicha kirish soʻrovlari",
+        "privacy_requests": "Maʼlumotlar boʻyicha soʻrovlar",
+        "unknown_outcomes": "Solishtirish kerak boʻlgan nomaʼlum natijalar",
+        "alerts": "Avtomatlashtirish ogohlantirishlari"
+      },
+      "approvals": "Tasdiqlashlar",
+      "approvalsWaiting": "{count, plural, one {# ta soʻrov qaroringizni kutmoqda.} other {# ta soʻrov qaroringizni kutmoqda.}}",
+      "approvalsNone": "Hech bir soʻrov sizni kutmayapti.",
+      "openApprovals": "Tasdiqlashlarni ochish",
+      "launch": "Ishga tushirish roʻyxati",
+      "gatesPassed": "Bajarilgan shartlar",
+      "softLaunchOpen": "Yumshoq ishga tushirishning bajarilgan shartlari",
+      "gatesOf": "{total} tadan {passed} ta",
+      "openLaunch": "Ishga tushirish roʻyxatini ochish",
+      "compliance": "Talablarga muvofiqlik",
+      "legalDue": "Harakat talab qiladigan huquqiy hujjatlar",
+      "screeningAge": "Sanksiya roʻyxatining yoshi",
+      "days": "{count, plural, one {# kun} other {# kun}}",
+      "licencesExpiring": "Muddati tugayotgan manba litsenziyalari",
+      "fakeProviders": "Ishlatilayotgan taqlid provayderlar",
+      "health": "Holat",
+      "healthCheck": {
+        "readiness": "Tayyorlik",
+        "outbox_age": "Chiquvchi navbat yoshi",
+        "dead_letters": "Yuborilmagan hodisalar",
+        "unknown_outcomes": "Nomaʼlum natijalar",
+        "backup_age": "Oxirgi zaxira nusxa"
+      },
+      "healthState": {
+        "ok": "Joyida",
+        "warning": "Eʼtibor talab qiladi",
+        "failing": "Nosozlik",
+        "unknown": "Hali oʻlchanmagan"
+      },
+      "minutes": "{count, plural, one {# daqiqa} other {# daqiqa}}",
+      "spend": "Chegaralarga nisbatan xarajatlar",
+      "spentOf": "{limit} dan {spent}",
+      "budgetScope": {
+        "hub": "Butun xab",
+        "job": "Vazifa",
+        "pipeline": "Konveyer",
+        "agent_module": "Agent moduli",
+        "connection": "Ulanish"
+      },
+      "budgetJob": {
+        "translation": "Tarjima vazifalari",
+        "editorial_rewrite": "Tahririy qayta ishlash",
+        "summarisation": "Qisqa bayonlar",
+        "embeddings": "Vektor tasvirlar"
+      },
+      "budgetState": {
+        "ok": "Chegara ichida",
+        "alert": "Ogohlantirish chegarasiga yetdi",
+        "exhausted": "Chegara tugadi: yangi pullik chaqiruvlar bloklanadi"
+      },
+      "period": {
+        "day": "kuniga",
+        "month": "oyiga"
+      },
+      "nextFive": "Keyingi beshta qadam",
+      "next": {
+        "inviteStaff": "Boshqa rolli ikkinchi xodimni taklif qiling.",
+        "legalDocuments": "Huquqiy hujjatlarni xabning barcha tillarida yurist tasdigʻi bilan qayd eting.",
+        "firstSource": "Birinchi axborot manbasini huquqiy tekshiruvlari bilan roʻyxatdan oʻtkazing.",
+        "verificationRecipe": "Kompaniyalarni tekshirish ssenariysini tanlang.",
+        "backupDrill": "Zaxira nusxalashni sozlang va oʻquv tiklashni oʻtkazing."
+      }
+    },
+    "approvals": {
+      "title": "Tasdiqlashlar",
+      "lede": "Ikkinchi xodim qarorlari. Har bir tasdiq bitta amalga, bitta sohaga va oʻzgarishning aniq iziga bogʻlanadi va muddatga ega.",
+      "reducedSod": "Soddalashtirilgan vazifalar taqsimoti: xabda beshtadan kam xodim boʻlsa, faqat «bajaruvchi oʻzini tasdiqlamaydi» qoidasi qoʻllanadi.",
+      "forMe": "Siz hal qila oladigan soʻrovlar",
+      "forMeEmpty": "Hech narsa qaroringizni kutmayapti.",
+      "mine": "Sizning soʻrovlaringiz",
+      "mineEmpty": "Ochiq soʻrovlaringiz yoʻq.",
+      "decisions": "Soʻnggi qarorlar",
+      "decisionsEmpty": "Hozircha qarorlar yoʻq.",
+      "requestedBy": "Soʻragan",
+      "reason": "Sabab",
+      "requestedAt": "Soʻralgan",
+      "expiresAt": "Muddati tugaydi",
+      "digest": "Amal izi",
+      "changes": "Nima oʻzgaradi",
+      "before": "Oldin:",
+      "after": "Keyin:",
+      "decision": "Qaror",
+      "approve": "Tasdiqlash",
+      "decline": "Rad etish",
+      "approved": "Tasdiqlangan",
+      "declined": "Rad etilgan",
+      "decide": "Qarorni qayd etish",
+      "bindsDigest": "Qaroringiz yuqorida koʻrsatilgan izga bogʻlanadi; amal oʻzgarsa, soʻrov bekor boʻladi.",
+      "withdraw": "Soʻrovni qaytarib olish",
+      "ownRequest": "Oʻz soʻrovingizni tasdiqlay olmaysiz.",
+      "actionChanged": "Amal oʻzgardi; yangi soʻrov kerak.",
+      "expired": "Bu soʻrovning muddati tugagan; hali kerak boʻlsa, qayta soʻrang.",
+      "askQuestion": "Soʻrov muhokamasidagi savollar:",
+      "action": "Amal",
+      "decidedBy": "Qaror qilgan",
+      "decidedAt": "Qaror qilingan",
+      "state": {
+        "pending": "Kutilmoqda",
+        "void": "Bekor",
+        "expired": "Muddati tugagan"
+      },
+      "fields": {
+        "documentVersion": "Hujjat versiyasi",
+        "languages": "Tillar",
+        "providerMode": "Provayder rejimi",
+        "automationLevel": "Avtomatlashtirish darajasi",
+        "feeVersion": "Komissiya versiyasi",
+        "role": "Rol"
+      },
+      "actions": {
+        "staff": {
+          "assign_sensitive_role": "Nozik xodim rolini tayinlash",
+          "switch_sod_mode": "Vazifalar taqsimoti rejimini almashtirish",
+          "grant_breakglass": "Favqulodda kirish berish"
+        },
+        "commerce": {
+          "activate_price_version": "Narx versiyasini faollashtirish"
+        },
+        "privacy": {
+          "execute_erasure": "Maʼlumotlarni oʻchirishni bajarish"
+        },
+        "moderation": {
+          "apply_sanction_l4": "4-darajali sanksiyani qoʻllash"
+        },
+        "providers": {
+          "enable_non_fake": "Haqiqiy provayderni yoqish"
+        },
+        "hub": {
+          "transition_soft_launch": "Xabni yumshoq ishga tushirishga oʻtkazish",
+          "transition_public": "Xabni ommaviy qilish",
+          "change_residency": "Maʼlumotlar joylashuvini oʻzgartirish"
+        },
+        "legal": {
+          "activate_document_version": "Huquqiy hujjat versiyasini faollashtirish"
+        },
+        "federation": {
+          "raise_peering_level": "Hamkorlik darajasini oshirish"
+        },
+        "models": {
+          "activate_private_route": "Ochiq boʻlmagan maʼlumotlar uchun model yoʻnalishini faollashtirish"
+        },
+        "egress": {
+          "allow_private_class": "Ochiq boʻlmagan maʼlumotlar sinfini uzatishga ruxsat berish"
+        },
+        "pipelines": {
+          "activate_personal_data_dataset": "Shaxsiy maʼlumotli toʻplamni faollashtirish"
+        },
+        "datasets": {
+          "activate_court_or_debt": "Sud yoki qarz maʼlumotlari toʻplamini faollashtirish"
+        },
+        "automation": {
+          "raise_to_supervised_autonomous": "Sohani nazorat ostidagi avtonomiyaga oʻtkazish"
+        },
+        "agents": {
+          "enable_commitment_module": "Majburiyatli agent modulini yoqish",
+          "activate_extension": "Agent kengaytmasini faollashtirish"
+        },
+        "jurisdiction": {
+          "activate_settings": "Yurisdiksiya sozlamalarini faollashtirish"
+        },
+        "billing": {
+          "activate_fee_version": "Komissiya versiyasini faollashtirish",
+          "release_payout_batch": "Toʻlab berish paketini chiqarish"
+        },
+        "payments": {
+          "change_settings": "Toʻlov sozlamalarini oʻzgartirish"
+        },
+        "sponsored": {
+          "enable": "Homiylik materiallarini yoqish"
+        },
+        "support": {
+          "reset_second_factor": "Ikkinchi omilni tiklash",
+          "rebind_recovery_email": "Tiklash pochtasini almashtirish"
+        },
+        "ops": {
+          "execute_restore": "Tiklashni bajarish",
+          "apply_production_migration": "Ishchi muhitda migratsiyani qoʻllash",
+          "rotate_node_key": "Tugun kalitini almashtirish"
+        },
+        "kill_switch": {
+          "release": "Favqulodda oʻchirgichni olib tashlash"
+        }
+      }
+    },
+    "values": {
+      "languages": {
+        "en": "ingliz tili",
+        "enEs": "ingliz va ispan tillari"
+      },
+      "mode": {
+        "fake": "Taqlid",
+        "manual": "Qoʻlda",
+        "live": "Haqiqiy"
+      },
+      "automation": {
+        "manual": "Qoʻlda",
+        "assisted": "Yordamchi bilan",
+        "supervised_autonomous": "Nazorat ostidagi avtonomiya"
+      }
+    },
+    "help": {
+      "title": "Yordam",
+      "lede": "Konsolda qanday ishlash kerak: rollaringiz uchun roʻyxatlar, qoʻllanma, belgilar maʼnosi va klaviatura.",
+      "checklists": "Nazorat roʻyxatlari",
+      "checklistNote": "Belgilar faqat shu brauzerda saqlanadi.",
+      "checklistFor": "Birinchi hafta: {role}",
+      "checklist": {
+        "everyone": "Har bir xodim uchun"
+      },
+      "items": {
+        "secondFactor": "Ikkinchi omil va tiklash kodlarini xavfsiz saqlang.",
+        "readGuardRails": "Hech bir konsol oʻchira olmaydigan cheklovlarni oʻqing.",
+        "statusLabels": "«Ishlaydi», «Namuna», «Shartnoma», «Loyihalangan» va «Taklif qilingan» belgilari maʼnosini bilib oling.",
+        "secondStaff": "Tasdiqlashlar ishlashi uchun ikkinchi xodimni taklif qiling.",
+        "launchGates": "Ishga tushirish roʻyxatini muvofiqlik mutaxassisi bilan birga koʻrib chiqing.",
+        "legal": "Har bir huquqiy hujjat barcha tillarda yurist tomonidan tasdiqlanganiga ishonch hosil qiling.",
+        "approvals": "Tasdiqlashlar sahifasini har kuni tekshiring.",
+        "policy": "Tahririyat siyosati va sunʼiy intellekt belgilash qoidalarini yozing.",
+        "sources": "Qaysi manbalardan va qanday foydalanish mumkinligini koʻrib chiqing.",
+        "reviewRules": "Format va muallif turi boʻyicha koʻrib chiqish qoidalarini belgilang.",
+        "countryBase": "Mamlakat bazasini tekshiring va mahalliy qoʻshimchalarni manbalari bilan qayd eting.",
+        "taxonomy": "Tasniflagichlarni shakllantiring va versiyani chiqaring.",
+        "firstSource": "Birinchi manbani litsenziya, robotlar qoidalari va shartlar tekshiruvlari bilan roʻyxatdan oʻtkazing.",
+        "caseGrants": "Murojaat boʻyicha kirish qanday ishlashini bilib oling: cheklangan hajm, 72 soatdan oshmaydi, ikkinchi xodim tasdiqlaydi.",
+        "recovery": "Kirishni tiklash eskalatsiyalarini dalillar va kutish davri bilan koʻrib chiqing.",
+        "noImpersonation": "Esda tuting: «foydalanuvchi nomidan kirish» yoʻq; kirishni sabab kodlari bilan tushuntiring."
+      },
+      "handbook": "Qoʻllanma",
+      "docs": {
+        "console": "Xab konsoli",
+        "screens": "Konsol ekranlari",
+        "setup": "Sozlash ustasi",
+        "guardRails": "Xabni boshqarish va uning cheklovlari"
+      },
+      "statuses": "Belgilar nimani anglatadi",
+      "status": {
+        "live": "Toʻliq amalga oshirilgan va avtomatik testlar bilan qoplangan. Hali hech qayerda ishchi muhitda joylashtirilmagan.",
+        "demo": "Ekran bor va sinovdan oʻtgan, lekin sunʼiy maʼlumotlarda ishlaydi va hech narsa saqlanmaydi.",
+        "contract": "Maʼlumotlar tuzilmalari va qoidalari shartnomalar sifatida qatʼiy belgilangan; ombor va ekran hali yoʻq.",
+        "designed": "Qabul qilingan loyiha bilan tasvirlangan; kod hali yoʻq.",
+        "proposed": "Ilk bor loyihalangan va muhokama uchun ochiq."
+      },
+      "mode": {
+        "fake": "Xab bilan tanishish uchun oʻrnatilgan taqlid: hech narsa haqiqiy provayderga yetmaydi.",
+        "manual": "Ishni dvigateldan tashqarida odam bajaradi, masalan, reestrga soʻrov.",
+        "live": "Sunʼiy sinovdan keyin ikkinchi xodim yoqgan haqiqiy provayder."
+      },
+      "glossary": "Lugʻat",
+      "terms": {
+        "hub": {
+          "term": "Xab",
+          "definition": "Mamlakat yoki shahar uchun oʻz xodimlari, sozlamalari va ishga tushirish shartlariga ega bitta yigʻilish nuqtasi."
+        },
+        "node": {
+          "term": "Tugun",
+          "definition": "Dvigatelning bitta oʻrnatilishi; unda bir nechta xab ishlashi mumkin."
+        },
+        "lifecycle": {
+          "term": "Hayot sikli bosqichi",
+          "definition": "Qoralama, tayyorlanmoqda, yumshoq ishga tushirish, ommaviy, toʻxtatilgan, yopilmoqda yoki yopilgan; oldinga oʻtish uchun bajarilgan shartlar va ikkinchi xodim kerak."
+        },
+        "elevation": {
+          "term": "Kengaytirilgan seans",
+          "definition": "Parol va ikkinchi omildan keyin ochilgan konsol seansi; harakatsizlikda tugaydi."
+        },
+        "secondPerson": {
+          "term": "Ikkinchi xodim tasdigʻi",
+          "definition": "Nozik oʻzgarishni bir xodim soʻraydi, boshqasi tasdiqlaydi; hech kim oʻz soʻrovini tasdiqlamaydi."
+        },
+        "digest": {
+          "term": "Amal izi",
+          "definition": "Aniq oʻzgarishning izi; tasdiq unga bogʻlanadi, shuning uchun keyingi har qanday oʻzgarish tasdiqni bekor qiladi."
+        },
+        "killSwitch": {
+          "term": "Favqulodda oʻchirgich",
+          "definition": "Imkoniyatni darhol toʻxtatadi; bitta odam yoqadi, olib tashlash uchun ikkinchi xodim va hodisa yozuvi kerak."
+        },
+        "launchGate": {
+          "term": "Ishga tushirish sharti",
+          "definition": "Yumshoq ishga tushirish yoki ommaviy rejimdan oldin bajarilishi kerak boʻlgan dalilli shart; istisno yoʻq."
+        },
+        "configVersion": {
+          "term": "Konfiguratsiya versiyasi",
+          "definition": "Sozlamalar hech qachon joyida tahrirlanmaydi: har bir oʻzgarish faollashtiriladigan va keyinroq almashtiriladigan versiya."
+        },
+        "demoData": {
+          "term": "Namunaviy maʼlumotlar",
+          "definition": "Sunʼiy, belgilangan yozuvlar; indekslanmaydi, federatsiyaga uzatilmaydi va yumshoq ishga tushirishdan oldin oʻchiriladi."
+        },
+        "caseGrant": {
+          "term": "Murojaat boʻyicha kirish",
+          "definition": "Xodim maxfiy maʼlumotlarni koʻrishining yagona yoʻli: murojaat doirasida, 72 soatdan oshmaydi, ikkinchi xodim tasdiqlaydi, har bir koʻrish qayd etiladi."
+        }
+      },
+      "keyboard": "Klaviatura",
+      "keys": {
+        "skip": "Tab tugmasini birinchi bosish «Tarkibga oʻtish» havolasiga olib boradi.",
+        "order": "Keyin tartib bilan: yuqori chiziq, navigatsiya, sahifa sarlavhasi va tarkib.",
+        "menu": "Telefonda boʻlimlar «Boʻlimlar» tugmasi bilan butun ekranda ochiladi; Escape ularni yopadi.",
+        "forms": "Har bir oʻzgarish uchun sabab kerak; natija ovoz bilan eʼlon qilinadi va bildirishnoma sifatida koʻrsatiladi."
+      }
+    },
+    "hub": {
+      "identity": {
+        "title": "Profil va hudud",
+        "lede": "Bu xab kim va qayerda: xabning barcha tillaridagi nomlari, hududlar, tillar, valyuta va vaqt mintaqasi.",
+        "names": "Xabning barcha tillardagi nomi",
+        "language": "Til",
+        "name": "Nom",
+        "territories": "Hududlar",
+        "level": "Daraja",
+        "code": "Kod",
+        "territoryName": "Nom",
+        "levels": {
+          "country": "Mamlakat",
+          "region": "Viloyat",
+          "place": "Aholi punkti"
+        },
+        "territoriesNote": "Hududlar xab qayerda ishlashini tavsiflaydi; ular hech qachon eksklyuziv emas, cheklangan joylar esa har qanday darajada rad etiladi.",
+        "languages": "Tillar",
+        "completeness": "Interfeys toʻliqligi",
+        "default": "asosiy",
+        "percent": "{percent} %",
+        "notEngineLanguage": "Hali dvigatel tili emas",
+        "basics": "Valyuta, vaqt va manzil",
+        "currency": "Valyuta",
+        "timeZone": "Vaqt mintaqasi",
+        "domain": "Domen",
+        "brand": "Brend bezagi",
+        "noBrand": "Yoʻq (dvigatelning neytral brendi)",
+        "revision": "Konfiguratsiya",
+        "contrast": "Tillar boʻyicha brend kontrasti",
+        "ratio": "kontrast {ratio}:1",
+        "contrastPass": "mos keladi",
+        "contrastFail": "mos kelmaydi",
+        "change": "Profilni oʻzgartirish",
+        "addTerritory": "Hudud qoʻshish",
+        "addTerritoryHelp": "Mamlakat (US), viloyat (US-TX) yoki aholi punkti (US-TX:austin).",
+        "defaultLanguage": "Asosiy til",
+        "versionsNote": "Saqlash konfiguratsiyaning yangi versiyasini yaratadi; yangisi faollashtirilguncha amaldagi versiya qoladi."
+      },
+      "modes": {
+        "title": "Tizim rejimlari",
+        "lede": "Xab qanday ishlaydi: bosqich, maʼlumotlar, roʻyxatdan oʻtish, moderatsiya, avtomatlashtirish, indeksatsiya va texnik xizmat.",
+        "lifecycle": "Hayot sikli",
+        "stage": "Joriy bosqich",
+        "nextStages": "Ruxsat etilgan keyingi bosqichlar",
+        "blockedBy": "Yumshoq ishga tushirishga yopilmagan shartlar toʻsqinlik qilmoqda: {items}.",
+        "openLaunch": "Ishga tushirish roʻyxatini ochish",
+        "requestTransition": "Oʻtishni soʻrash",
+        "to": "Qaysi bosqichga oʻtish",
+        "behaviour": "Xatti-harakat",
+        "data": "Maʼlumotlar",
+        "dataMode": {
+          "demo": "Namunaviy maʼlumotlar",
+          "live": "Haqiqiy maʼlumotlar"
+        },
+        "registration": "Roʻyxatdan oʻtish",
+        "registrationMode": {
+          "closed": "Yopiq",
+          "invite_only": "Faqat taklif bilan",
+          "open": "Ochiq"
+        },
+        "moderation": "Moderatsiya",
+        "moderationMode": {
+          "pre_moderate_all": "Hammasini nashrdan oldin tekshirish",
+          "pre_moderate_new_authors": "Yangi mualliflarni nashrdan oldin tekshirish",
+          "post_moderate": "Nashrdan keyin tekshirish"
+        },
+        "indexing": "Qidiruv tizimlari indeksatsiyasi",
+        "maintenance": "Texnik xizmat",
+        "demoRule": "Namunaviy maʼlumotlar xabdan chiqmaydi, indekslanmaydi va federatsiyaga uzatilmaydi; ularni yumshoq ishga tushirishdan oldin oʻchirish kerak.",
+        "automation": "Avtomatlashtirish",
+        "domain": "Soha",
+        "level": "Daraja",
+        "domains": {
+          "editorial": "Tahririyat",
+          "translation": "Tarjima",
+          "magazine_assembly": "Jurnalni yigʻish",
+          "data_mining": "Maʼlumot yigʻish",
+          "entity_resolution": "Yozuvlarni moslashtirish",
+          "verification_rechecks": "Qayta tekshiruvlar",
+          "moderation_triage": "Moderatsiyani saralash"
+        },
+        "humanGates": "Har doim odam qabul qiladigan qarorlar",
+        "humanGatesNote": "Hech bir avtomatlashtirish darajasi ularni bekor qilmaydi.",
+        "gates": {
+          "source_activation": "Manbani faollashtirish",
+          "dataset_activation": "Maʼlumotlar toʻplamini faollashtirish",
+          "publication": "Nashr qilish",
+          "magazine_release": "Jurnal sonini chiqarish",
+          "claim_decision": "Ariza boʻyicha qaror",
+          "link_decision": "Bogʻlanish boʻyicha qaror",
+          "moderation_sanction": "Sanksiya qoʻllash",
+          "price_activation": "Narxni faollashtirish"
+        },
+        "change": "Rejimlarni oʻzgartirish",
+        "supervisedNote": "Sohani nazorat ostidagi avtonomiyaga oʻtkazish uchun ikkinchi xodim va amaldagi xarajat chegaralari kerak.",
+        "violationsFound": "Joriy rejimlar bosqichga zid: {items}."
+      },
+      "modules": {
+        "title": "Modullar",
+        "lede": "Bu xabda qaysi mahsulot modullari yoqilgan, har biri nimaga tayanadi va dvigatelda qay darajada qurilgan.",
+        "list": "Mahsulot modullari",
+        "engine": "Dvigatelda:",
+        "dependsOn": "Tayanadi: {items}.",
+        "needsFirst": "Avval yoqing: {items}.",
+        "change": "Modulni almashtirish",
+        "module": "Modul",
+        "action": "Amal",
+        "enable": "Yoqish",
+        "disable": "Oʻchirish",
+        "disableNote": "Oʻchirilgan modul ishtirokchilardan yashiriladi; mavjud yozuvlar saqlanadi va qayta yoqilganda qaytadi.",
+        "names": {
+          "publications": "Nashrlar",
+          "magazine": "Jurnal",
+          "events": "Tadbirlar",
+          "learning": "Taʼlim",
+          "matching": "Moslashtirish",
+          "catalogue": "Katalog",
+          "procurement": "Xaridlar",
+          "sales": "Sotuvlar",
+          "execution_reputation": "Bajarish va obroʻ",
+          "agents": "Agentlar",
+          "external_agent_api": "Tashqi agentlar kirishi",
+          "search": "Qidiruv",
+          "knowledge_answers": "Bilimlar boʻyicha javoblar",
+          "communications": "Kommunikatsiyalar",
+          "billing": "Toʻlov",
+          "federation": "Federatsiya",
+          "editorial_automation": "Tahririyatni avtomatlashtirish",
+          "data_mining": "Maʼlumot yigʻish",
+          "project_planner": "Loyiha rejalashtiruvchisi",
+          "expert_marketplace": "Maslahatlar va vazifalar bozori",
+          "shared_knowledge": "Umumiy bilimlar",
+          "reputation_passport": "Obroʻ pasporti",
+          "plan_recommendations": "Reja qadamlariga tavsiyalar"
+        }
+      },
+      "legal": {
+        "title": "Huquqiy va operator",
+        "lede": "Xab operatori va ishtirokchilar qabul qiladigan hujjatlar; versiya faqat xabning barcha tillarida yurist tasdigʻi bilan amalga kiradi.",
+        "operator": "Operator",
+        "legalName": "Yuridik nomi",
+        "form": "Tashkiliy-huquqiy shakl",
+        "forms": {
+          "llc": "Masʼuliyati cheklangan jamiyat",
+          "corporation": "Korporatsiya",
+          "nonprofit_association": "Notijorat uyushma",
+          "sole_proprietor": "Yakka tartibdagi tadbirkor",
+          "limited_company": "Masʼuliyati cheklangan kompaniya"
+        },
+        "identifier": "Roʻyxatdan oʻtish raqami",
+        "address": "Manzil",
+        "legalContact": "Huquqiy xabarnomalar uchun aloqa",
+        "abuseContact": "Shikoyatlar va oʻchirish talablari uchun aloqa",
+        "screening": "Sanksiya tekshiruvi",
+        "screeningResult": {
+          "not_run": "Hali oʻtkazilmagan",
+          "no_match": "Mos kelish yoʻq",
+          "potential_match": "Ehtimoliy mos kelish: tekshiruv kerak"
+        },
+        "fakeScreening": "taqlid, haqiqiy tekshiruv emas",
+        "noOperator": "Operator hali qayd etilmagan.",
+        "documents": "Hujjatlar",
+        "kind": "Hujjat",
+        "kinds": {
+          "terms": "Foydalanish shartlari",
+          "privacy_notice": "Maxfiylik bildirishnomasi",
+          "community_rules": "Hamjamiyat qoidalari",
+          "imprint": "Chiqish maʼlumotlari",
+          "cookie_policy": "Kuki fayllar siyosati"
+        },
+        "version": "Versiya",
+        "status": "Holat",
+        "statuses": {
+          "draft": "Qoralama",
+          "counsel_approved": "Yurist tasdiqlagan",
+          "active": "Amalda",
+          "superseded": "Almashtirilgan"
+        },
+        "effective": "{date} dan amalda",
+        "languages": "Tillar",
+        "missing": "yetishmaydi: {items}",
+        "counsel": "Yurist tasdigʻi",
+        "noCounsel": "Hali tasdiqlanmagan",
+        "noDocuments": "Hozircha huquqiy hujjatlar yoʻq.",
+        "requestActivation": "Faollashtirishni soʻrash",
+        "document": "Hujjat versiyasi",
+        "nothingToActivate": "Yurist tasdiqlagan va faollashtirishni kutayotgan versiya yoʻq.",
+        "draft": "Yangi versiya tayyorlash",
+        "templatesNote": "Yangi versiya dvigatel shablonlaridan boshlanadi; faollashtirishdan oldin uni yurist tekshiradi."
+      },
+      "residency": {
+        "title": "Maʼlumotlar joylashuvi va subpudratchilar",
+        "lede": "Shaxsiy maʼlumotlar qayerda saqlanadi va qayta ishlanadi hamda ularni xab uchun kim qayta ishlaydi.",
+        "none": "Maʼlumotlar joylashuvi boʻyicha qaror hali qayd etilmagan.",
+        "contradiction": "{services} joylashuv mamlakatidan ({country}) tashqarida ishlaydi. U yerga shaxsiy maʼlumotlar tushishini tekshiring.",
+        "privateOutside": "Joylashuv mamlakatidan tashqaridagi subpudratchi maxfiy maʼlumotlarni oladi; maʼlumot uzatish qoidalarini tekshiring.",
+        "decision": "Joylashuv qarori",
+        "country": "Mamlakat",
+        "regime": "Maʼlumotlarni himoya qilish rejimi",
+        "regimes": {
+          "us_state_privacy": "AQSh shtatlarining maʼlumotlarni himoya qilish qonunlari",
+          "uz_personal_data": "Oʻzbekistonning shaxsiy maʼlumotlar toʻgʻrisidagi qonuni",
+          "not_recorded": "Hali qayd etilmagan"
+        },
+        "version": "Versiya",
+        "servicesTitle": "Xizmatlar va mintaqalar",
+        "service": "Xizmat",
+        "services": {
+          "database": "Maʼlumotlar bazasi",
+          "object_storage": "Obyekt ombori",
+          "backups": "Zaxira nusxalar",
+          "worker": "Fon ishlovchisi",
+          "email_relay": "Pochta retranslyatori"
+        },
+        "region": "Mintaqa",
+        "outside": "joylashuv mamlakatidan tashqarida",
+        "subProcessors": "Subpudratchilar",
+        "subProcessorsNote": "Roʻyxat xab ulanishlaridan tuziladi; bu namunada har bir ulanish taqlid yoki qoʻlda rejimda.",
+        "processor": "Subpudratchi",
+        "capability": "Imkoniyat",
+        "mode": "Rejim",
+        "privateData": "Maxfiy maʼlumotlar",
+        "change": "Maʼlumotlar joylashuvini oʻzgartirish",
+        "requestChange": "Oʻzgartirishni soʻrash",
+        "newCountry": "Yangi joylashuv mamlakati",
+        "newCountryHelp": "Ikki harfli mamlakat kodi, masalan US."
+      },
+      "country": {
+        "title": "Mamlakat bazasi",
+        "lede": "Xab tayanadigan mamlakat maʼlumotlari: bogʻlangan mamlakat paketi yoki umumiy profil hamda xabning mahalliy qoʻshimchalari.",
+        "binding": "Mamlakat paketi",
+        "pack": "Paket",
+        "packVersion": "{country}, {version}-versiya",
+        "packStatus": "Paket holati",
+        "packStatuses": {
+          "complete": "Toʻliq",
+          "partial": "Qisman",
+          "draft": "Qoralama"
+        },
+        "identifier": "Kompaniya identifikatori",
+        "identifierKind": "Identifikator kodi",
+        "currency": "Valyuta",
+        "regions": "Viloyatlar",
+        "entityTypes": "Tashkiliy-huquqiy shakllar",
+        "residencyRequired": "Mamlakat ichida saqlash talab qilinadi",
+        "generic": "Umumiy profil: faqat ISO maʼlumotlari; identifikatorlar, reestrlar va boshqa maʼlumotlar mahalliy qoʻshimchalar sifatida qoʻshiladi.",
+        "sourcesNote": "Paketdagi har bir maʼlumot manbaga havola beradi va qay darajada tekshirilganini koʻrsatadi.",
+        "additions": "Mahalliy qoʻshimchalar",
+        "kind": "Tur",
+        "kinds": {
+          "identifier": "Identifikator",
+          "register": "Reestr",
+          "licence_category": "Litsenziya toifasi",
+          "holiday": "Bayram",
+          "tax_fact": "Soliq maʼlumoti",
+          "unit": "Birlik"
+        },
+        "label": "Nom",
+        "verification": "Tekshiruv",
+        "levels": {
+          "candidate": "Nomzod",
+          "confirmed": "Tasdiqlangan"
+        },
+        "noAdditions": "Hozircha mahalliy qoʻshimchalar yoʻq.",
+        "export": "Qoʻshimchalarni mamlakat paketi oʻzgarishi sifatida eksport qilish:",
+        "add": "Mahalliy qoʻshimcha qoʻshish",
+        "key": "Kalit",
+        "keyHelp": "Doimiy kalit, masalan US-CA:cslb.",
+        "candidateNote": "Yangi qoʻshimcha muvofiqlik mutaxassisi uni manba bilan tasdiqlagunga qadar nomzod boʻlib qoladi."
+      },
+      "taxonomy": {
+        "title": "Tasniflagichlar va birliklar",
+        "lede": "Mavzular, toifalar, reja qadamlari toifalari va birliklar xabning barcha tillaridagi nomlari bilan, versiyalar sifatida chiqariladi.",
+        "kinds": {
+          "topics": "Mavzular",
+          "categories": "Toifalar",
+          "plan_steps": "Reja qadamlari toifalari",
+          "units": "Birliklar"
+        },
+        "released": "{date} da chiqarilgan",
+        "unreleased": "hali chiqarilmagan",
+        "terms": "{count, plural, one {# ta atama} other {# ta atama}}",
+        "usage": "{count, plural, one {# marta ishlatilgan} other {# marta ishlatilgan}}",
+        "deprecated": "eskirgan",
+        "empty": "Hozircha tasniflagichlar yoʻq. Mavzular va reja qadamlari toifalaridan boshlang; dvigatelning ochiq reja qadamlari tasniflagichini import qilish mumkin.",
+        "deprecateNote": "Ishlatilayotgan atamani eskirgan deb belgilashdan oldin uni boshqa atamaga moslashtiring.",
+        "add": "Atama qoʻshish",
+        "kind": "Tasniflagich",
+        "key": "Kalit",
+        "keyHelp": "Kichik lotin harflari bilan, masalan materials.steel.",
+        "label": "Nom"
+      },
+      "launch": {
+        "title": "Ishga tushirish roʻyxati",
+        "lede": "Xabni yumshoq ishga tushirish yoki ommaviy rejimdan nima ajratib turadi. Har bir shart uchun dalil kerak; istisno yoʻq.",
+        "progress": "{total} ta shartdan {passed} tasi bajarilgan",
+        "progressLabel": "Bajarilgan shartlar",
+        "gatesTitle": "Shartlar",
+        "gate": "Shart",
+        "state": "Holat",
+        "states": {
+          "open": "Ochiq",
+          "passed": "Bajarilgan",
+          "invalidated": "Bekor qilingan"
+        },
+        "evidence": "Dalil",
+        "checked": "Tekshirilgan",
+        "softLaunchGate": "yumshoq ishga tushirish uchun kerak",
+        "noWaiver": "Hech bir boshqaruv elementi shartni bekor qilmaydi; bekor qilingan shart qayta tekshirilgunga qadar ochiq shart kabi toʻsadi.",
+        "gates": {
+          "operator_recorded_and_screened": "Operator qayd etilgan va tekshirilgan",
+          "legal_documents_counsel_approved": "Huquqiy hujjatlar yurist tomonidan tasdiqlangan",
+          "data_residency_configured": "Maʼlumotlar joylashuvi sozlangan",
+          "two_staff_with_second_factor": "Ikkinchi omilli ikki xodim",
+          "editorial_team_and_policy": "Tahririyat va tahririyat siyosati",
+          "community_rules_all_languages": "Hamjamiyat qoidalari barcha tillarda",
+          "information_source_registered": "Axborot manbasi roʻyxatdan oʻtgan",
+          "verification_recipe_enabled": "Tekshiruv ssenariysi yoqilgan",
+          "sanctions_screening_configured": "Sanksiya tekshiruvlari sozlangan",
+          "i18n_complete": "Interfeys xabning barcha tillarida toʻliq",
+          "backup_restore_exercised": "Zaxira nusxa oʻquvda tiklangan",
+          "brand_accessibility_checked": "Brend qulayligi tekshirilgan",
+          "demo_data_purged": "Namunaviy maʼlumotlar oʻchirilgan",
+          "ai_egress_policy_reviewed": "Sunʼiy intellektga maʼlumot uzatish siyosati koʻrib chiqilgan"
+        },
+        "mark": "Shartni bajarilgan deb belgilash",
+        "evidenceRef": "Dalil havolasi",
+        "evidenceHelp": "Saqlangan dalil identifikatori, masalan ev-counsel-letter-2.",
+        "request": "Yumshoq ishga tushirish yoki ommaviy rejimni soʻrash",
+        "softBlocked": "Yumshoq ishga tushirishga toʻsqinlik qilmoqda: {items}.",
+        "softReady": "Yumshoq ishga tushirishning barcha shartlari bajarilgan.",
+        "publicBlocked": "{count, plural, one {Ommaviy rejimga hali # ta shart toʻsqinlik qilmoqda.} other {Ommaviy rejimga hali # ta shart toʻsqinlik qilmoqda.}}",
+        "publicReady": "Barcha shartlar bajarilgan."
+      }
+    },
+    "setup": {
+      "title": "Sozlash",
+      "stepsLabel": "Sozlash qadamlari",
+      "resume": "Javoblar serverda saqlanadi, shuning uchun toʻxtab, xuddi shu havola orqali davom ettirish mumkin. Bu namunada hech narsa saqlanmaydi.",
+      "answers": "Javoblaringiz",
+      "continue": "Saqlash va davom etish",
+      "finish": "Sozlashni yakunlash",
+      "chooseCountry": "Mamlakatni tanlang",
+      "check": {
+        "title": "Oʻrnatishni tekshirish",
+        "purpose": "Dvigatel avvalo manzil, maʼlumotlar bazasi, obyekt ombori, fon ishlovchisi, soat va maxfiy kalitlar omborini tekshiradi.",
+        "items": {
+          "address": "Ommaviy manzil",
+          "database": "Maʼlumotlar bazasi",
+          "object_storage": "Obyekt ombori",
+          "worker": "Fon ishlovchisi",
+          "clock": "Soat",
+          "secret_store": "Maxfiy kalitlar ombori"
+        },
+        "states": {
+          "pass": "Oʻtdi",
+          "warn": "Ogohlantirish",
+          "fail": "Oʻtmadi"
+        },
+        "help": {
+          "address": "Ommaviy manzilni HTTPS bilan koʻrsating (yoki sinov uchun localhost).",
+          "database": "Migratsiyalarni bajaring; ishchi rol satr darajasidagi himoyani chetlab oʻtmasligi kerak.",
+          "object_storage": "Ombor yozish, oʻqish va oʻchirishga ruxsat berishi va ommaviy boʻlmasligi kerak.",
+          "worker": "Fon ishlovchisini ishga tushiring; oxirgi daqiqada undan signal kelmadi.",
+          "clock": "Server soati brauzer soatidan 30 soniyadan koʻproq farq qiladi; imzolar va jadvallar bunga bogʻliq.",
+          "secret_store": "Haqiqiy kalit shifrlash kalitini belgilang; vaqtinchalik qiymatlar rad etiladi."
+        },
+        "blocking": "Bloklovchi tekshiruv oʻtmadi, shuning uchun sozlashni davom ettirib boʻlmaydi.",
+        "guide": "Oʻrnatish qoʻllanmasini ochish",
+        "cannotContinue": "Barcha bloklovchi tekshiruvlar oʻtmaguncha sozlashni davom ettirib boʻlmaydi."
+      },
+      "node": {
+        "title": "Tugun profili",
+        "purpose": "Oʻrnatishning nomi, domeni va yurisdiksiyasi hamda uning imzo kaliti.",
+        "name": "Tugun nomi",
+        "domain": "Domen",
+        "domainHelp": "Masalan, build.example.org.",
+        "jurisdiction": "Tugun yurisdiksiyasi",
+        "jurisdictionHelp": "Tugun operatori qonunlariga amal qiladigan mamlakat. Cheklangan joylar taklif qilinmaydi.",
+        "key": "Imzo kaliti davom etganingizda yaratiladi. Faqat ochiq kalit va uning izi koʻrsatiladi; yopiq kalit hech qachon koʻrsatilmaydi."
+      },
+      "hub": {
+        "title": "Xab profili",
+        "purpose": "Mamlakatingiz yoki shahringizni kodsiz sozlang: boshlangʻich nuqta, hudud, har bir tildagi nom, tillar, valyuta va vaqt mintaqasi.",
+        "examples": "Namunadan boshlash:",
+        "exampleUs": "AQSh (San-Diego)",
+        "exampleSamarkand": "Samarqand, Oʻzbekiston",
+        "exampleNote": "Namuna qiymatlari sunʼiy; ularni oʻzingiznikiga almashtiring.",
+        "start": "Boshlangʻich nuqta",
+        "startHelp": "Mamlakat paketi viloyatlar, identifikator formatlari, valyuta va huquqiy maʼlumotlarni olib keladi; umumiy profil faqat ISO maʼlumotlarini.",
+        "pack": "Mamlakat paketi: {country}",
+        "generic": "Umumiy profil (hali paket yoʻq)",
+        "territory": "Hudud",
+        "territoryHelp": "Mamlakat, viloyat yoki aholi punkti kodi, masalan US-CA:san-diego.",
+        "name": "Xab nomi",
+        "nameHelp": "Xabning har bir tilida majburiy; qolgan tillarni konsolda qoʻshish mumkin.",
+        "languages": "Xab tillari",
+        "languagesHelp": "Til kodlari, asosiysi birinchi, masalan en, es.",
+        "currency": "Valyuta",
+        "timeZone": "Vaqt mintaqasi"
+      },
+      "operator": {
+        "title": "Operator",
+        "purpose": "Xabni boshqaradigan yuridik shaxs, uning aloqalari, mulk deklaratsiyasi va sanksiya tekshiruvi.",
+        "legalName": "Yuridik nomi",
+        "form": "Tashkiliy-huquqiy shakl",
+        "identifier": "Roʻyxatdan oʻtish raqami",
+        "address": "Manzil",
+        "legalContact": "Huquqiy xabarnomalar uchun aloqa",
+        "abuseContact": "Shikoyatlar va oʻchirish talablari uchun aloqa",
+        "ownership": "Men operatorning mulkchilik tuzilmasini rostgoʻylik bilan deklaratsiya qilaman.",
+        "screening": "Tekshiruv dvigatelning asosiy roʻyxati boʻyicha oʻtadi. Taqlid bilan natija «taqlid, haqiqiy tekshiruv emas» deb belgilanadi; ehtimoliy mos kelish operator oʻzi yopa olmaydigan tekshiruvni ochadi."
+      },
+      "admin": {
+        "title": "Birinchi administrator",
+        "purpose": "Majburiy ikkinchi omil va bir marta koʻrsatiladigan tiklash kodlariga ega birinchi xodim.",
+        "name": "Ism",
+        "email": "Elektron pochta",
+        "password": "Parol",
+        "passwordHelp": "Bu namunada ism, pochta va parol bu sahifadan chiqmaydi.",
+        "secondFactor": "Ikkinchi omil",
+        "secondFactorHelp": "Ikkinchi omil majburiy; usiz sozlashni yakunlab boʻlmaydi.",
+        "chooseFactor": "Ikkinchi omilni tanlang",
+        "passkey": "Kirish kaliti",
+        "totp": "Autentifikator ilovasi",
+        "recoveryCodes": "Oʻnta bir martalik tiklash kodi ikkinchi omil ulangandan keyin bu yerda bir marta paydo boʻladi. Bu namunada kodlar yaratilmaydi.",
+        "stored": "Tiklash kodlarini saqladim.",
+        "reducedSod": "Xodim bitta boʻlsa, xab soddalashtirilgan vazifalar taqsimoti rejimida ishlaydi; ikki kishilik amallar ikkinchi xodim qoʻshilishini kutadi."
+      },
+      "residency": {
+        "title": "Saqlash va joylashuv",
+        "purpose": "Shaxsiy maʼlumotlar qayerda saqlanadi va qayta ishlanadi hamda bildirishnomalar qaysi himoya rejimiga amal qiladi.",
+        "country": "Joylashuv mamlakati",
+        "countryHelp": "Maʼlumotlar bazasi, obyekt ombori va zaxira nusxalar oʻsha yerda boʻlishi kerak.",
+        "regime": "Maʼlumotlarni himoya qilish rejimi",
+        "egress": "Sukut boʻyicha ochiq boʻlmagan maʼlumotlar joylashuv mamlakatidan chiqmaydi va siz ruxsat bermaguningizcha tashqi model provayderiga yuborilmaydi."
+      },
+      "providers": {
+        "title": "Provayderlar",
+        "purpose": "Har bir imkoniyat taqliddan boshlanadi, shuning uchun xabni hisobsiz va xarajatsiz oʻrganish mumkin.",
+        "options": {
+          "fake": "Hozircha taqlidni qoldirish",
+          "manual": "Qoʻlda (odam bajaradi)",
+          "later": "Keyinroq konsolda ulash"
+        },
+        "liveLater": "Haqiqiy ulanishlar bu yerda yaratilmaydi: ular uchun muvaffaqiyatli sunʼiy sinov, maʼlumot uzatish qarori va ikkinchi xodim kerak.",
+        "models": "Til modellarini keyinroq provayderdan toʻgʻridan-toʻgʻri yoki ixtiyoriy yoʻnaltiruvchi OpenRouter orqali ulash mumkin.",
+        "invite": "Pochta ishga tushgunga qadar ikkinchi xodimni taklif qilish uchun konsol 72 soat amal qiladigan bir martalik taklif havolasini koʻrsatadi."
+      },
+      "modes": {
+        "title": "Rejimlar",
+        "purpose": "Xab nimadan boshlanadi: maʼlumotlar rejimi, roʻyxatdan oʻtish, modullar, moderatsiya va avtomatlashtirish.",
+        "defaults": "Roʻyxatdan oʻtish dastlab yopiq, avtomatlashtirishning barcha sohalari qoʻlda, indeksatsiya oʻchirilgan; nashrlar, jurnal, tadbirlar, qidiruv va kommunikatsiyalar yoqilgan. Bularning hammasi keyinroq konsolda oʻzgartiriladi."
+      },
+      "review": {
+        "title": "Tekshirish",
+        "purpose": "Yakunlashdan oldin barcha qadamlar xulosasi. Yakunlash konfiguratsiyani yozadi, ishga tushirish shartlarini yaratadi va sozlash tokenini bekor qiladi.",
+        "done": "Tayyor",
+        "notDone": "Tayyor emas",
+        "edit": "Oʻzgartirish",
+        "afterFinish": "Yakunlangandan keyin xab qoralama boʻlib qoladi: roʻyxatdan oʻtish yopiq, barcha provayderlar taqlid, indeksatsiya oʻchirilgan."
+      }
+    }
+  }
+}

@@ -1,0 +1,1132 @@
+{
+  "admin": {
+    "title": "Administration",
+    "backToWorkspace": "Back to the workspace",
+    "helpLink": "Help",
+    "navLabel": "Console navigation",
+    "bandLinks": "Console links",
+    "menu": "Sections",
+    "hubBand": {
+      "actsOn": "This page acts on",
+      "stage": "Stage: {stage}"
+    },
+    "bands": {
+      "demo": "Demo data: synthetic and labelled. It never leaves this hub, is never indexed and never federated; changes are not saved.",
+      "maintenance": "Maintenance: the hub is read-only for participants.",
+      "killSwitch": "Kill switch engaged: {scope}. Releasing it needs a second person and an incident note.",
+      "offline": "Offline: you can read, but changes are disabled until the connection returns."
+    },
+    "demo": {
+      "current": "Demo staff persona: {persona}",
+      "choose": "Switch the demo staff persona",
+      "nobody": "nobody signed in",
+      "personas": {
+        "hub-owner": "Hub owner (United States)",
+        "staff-admin": "Staff administrator",
+        "compliance": "Compliance officer",
+        "editor": "Editor (editor-in-chief in the United States, editor in Samarkand)",
+        "data-steward": "Data steward",
+        "trust-reviewer": "Trust reviewer and moderator",
+        "support": "Support (lead in the United States, agent in Samarkand)",
+        "commercial": "Commercial administrator",
+        "ops": "Operations engineer (whole node)",
+        "privacy": "Privacy officer",
+        "auditor": "Auditor (platform)",
+        "node-operator": "Node operator and platform owner",
+        "staff-none": "Participant without a staff role"
+      }
+    },
+    "status": {
+      "live": "Live",
+      "demo": "Demo",
+      "contract": "Contract",
+      "designed": "Designed",
+      "proposed": "Proposed"
+    },
+    "providerMode": {
+      "fake": "Fake",
+      "manual": "Manual",
+      "live": "Live"
+    },
+    "roles": {
+      "platform-owner": "Platform owner",
+      "staff-admin": "Staff administrator",
+      "editor-in-chief": "Editor-in-chief",
+      "editor": "Editor",
+      "moderator": "Moderator",
+      "trust-reviewer": "Trust reviewer",
+      "support-agent": "Support agent",
+      "support-lead": "Support lead",
+      "commercial-admin": "Commercial administrator",
+      "data-steward": "Data steward",
+      "ops-engineer": "Operations engineer",
+      "privacy-officer": "Privacy officer",
+      "auditor": "Auditor",
+      "hub-owner": "Hub owner",
+      "compliance-officer": "Compliance officer",
+      "node-operator": "Node operator"
+    },
+    "lifecycle": {
+      "draft": "Draft",
+      "preparing": "Preparing",
+      "soft_launch": "Soft launch",
+      "public": "Public",
+      "suspended": "Suspended",
+      "closing": "Closing",
+      "closed": "Closed"
+    },
+    "nav": {
+      "home": "Home",
+      "hub": "Hub",
+      "participants": "Participants",
+      "support": "Support",
+      "editorial": "Editorial office",
+      "data": "Data",
+      "modules": "Modules",
+      "trust": "Trust and safety",
+      "agents": "Agents",
+      "billing": "Plans and payments",
+      "integrations": "Keys and models",
+      "automation": "Automation",
+      "communications": "Communications",
+      "federation": "Federation",
+      "privacy": "Privacy",
+      "staff": "Staff and audit",
+      "ops": "Operations"
+    },
+    "sections": {
+      "home": {
+        "overview": "Overview",
+        "approvals": "Approvals",
+        "help": "Help"
+      },
+      "hub": {
+        "identity": "Identity and territory",
+        "modes": "System modes",
+        "modules": "Modules",
+        "legal": "Legal and operator",
+        "residency": "Residency and sub-processors",
+        "country": "Country base",
+        "taxonomy": "Taxonomy and units",
+        "launch": "Launch checklist"
+      },
+      "participants": {
+        "people": "People",
+        "companies": "Companies",
+        "claims": "Claims",
+        "verification": "Verification",
+        "credentials": "Credentials",
+        "consents": "Consents"
+      },
+      "support": {
+        "lookup": "Lookup",
+        "cases": "Cases",
+        "recovery": "Recovery",
+        "explain": "Access explainer"
+      },
+      "editorial": {
+        "desk": "Desk",
+        "sources": "Sources",
+        "discovery": "Discovery",
+        "pipelines": "Pipelines",
+        "review": "Review",
+        "calendar": "Calendar",
+        "publications": "Publications",
+        "magazine": "Magazine",
+        "translations": "Translations",
+        "policy": "Editorial policy"
+      },
+      "data": {
+        "datasets": "Datasets",
+        "batches": "Import batches",
+        "links": "Links",
+        "knowledge": "Knowledge",
+        "recommendations": "Recommendations"
+      },
+      "modules": {
+        "projects": "Projects",
+        "planner": "Planner",
+        "marketplace": "Marketplace",
+        "knowledgeSharing": "Shared knowledge",
+        "events": "Events",
+        "learning": "Learning",
+        "matching": "Matching",
+        "commerce": "Commerce",
+        "procurement": "Procurement and supply"
+      },
+      "trust": {
+        "moderation": "Moderation",
+        "disputes": "Disputes",
+        "reputation": "Reputation methods",
+        "appeals": "Appeals",
+        "screening": "Screening",
+        "confirmations": "Confirmations"
+      },
+      "agents": {
+        "modules": "Agent modules",
+        "policy": "Agent policy",
+        "extensions": "Extensions",
+        "external": "External agents",
+        "usage": "Usage",
+        "abuse": "Abuse"
+      },
+      "billing": {
+        "offers": "Offers and plans",
+        "prices": "Prices",
+        "invoices": "Invoices",
+        "payouts": "Payouts",
+        "credits": "Credits and refunds",
+        "tax": "Tax"
+      },
+      "integrations": {
+        "providers": "Providers",
+        "routing": "Routing",
+        "egress": "Egress",
+        "budgets": "Spending caps",
+        "usage": "Usage and costs",
+        "killSwitches": "Kill switches"
+      },
+      "automation": {
+        "schedules": "Schedules",
+        "runs": "Runs",
+        "alerts": "Alerts"
+      },
+      "communications": {
+        "senders": "Senders",
+        "templates": "Templates",
+        "deliverability": "Deliverability",
+        "announcements": "Announcements"
+      },
+      "federation": {
+        "peers": "Peers",
+        "licences": "Licences",
+        "tombstones": "Tombstones",
+        "links": "Incoming links"
+      },
+      "privacy": {
+        "requests": "Requests",
+        "retention": "Retention and holds",
+        "settings": "Privacy settings",
+        "breaches": "Breaches"
+      },
+      "staff": {
+        "staff": "Staff",
+        "audit": "Audit"
+      },
+      "ops": {
+        "health": "Health",
+        "jobs": "Jobs",
+        "flags": "Feature flags",
+        "maintenance": "Maintenance",
+        "incidents": "Incidents",
+        "locales": "Locales",
+        "accessibility": "Accessibility"
+      }
+    },
+    "common": {
+      "demoNotSaved": "Demo: changes are not saved.",
+      "demoSecondPerson": "Demo: this would create a second-person request to “{action}”; nothing is saved.",
+      "reason": "Reason",
+      "reasonHelp": "Required. It is recorded with the change.",
+      "auditNote": "This action is recorded in the audit log.",
+      "secondPersonNote": "This change needs a second person: it creates a request that another staff member approves.",
+      "readOnly": "Read only: your roles do not include changing this.",
+      "offlineDisabled": "Offline: changes are disabled until the connection returns.",
+      "saveVersion": "Save as a new version",
+      "updated": "Updated {time}",
+      "loading": "Loading",
+      "none": "None",
+      "notRecorded": "Not recorded",
+      "yes": "Yes",
+      "no": "No",
+      "on": "On",
+      "off": "Off",
+      "version": "Version {version}",
+      "unknownPerson": "Someone outside this hub",
+      "opensNewTab": "(opens in a new tab)"
+    },
+    "denied": {
+      "title": "You do not have access to this section",
+      "rolesGrant": "Roles that grant it: {roles}.",
+      "noStaffTitle": "You have no staff role for this hub",
+      "noStaffBody": "The console opens only for people who hold a staff role. Ask the hub's staff administrator if you need one.",
+      "hubNotCovered": "Your staff roles cover another hub, not this one."
+    },
+    "elevation": {
+      "title": "Confirm it is you",
+      "body": "The console opens after you confirm your password and your second factor. The elevated session ends after 30 minutes without activity or when you close the browser.",
+      "action": "Confirm and continue",
+      "demoNote": "Demo: the confirmation is simulated."
+    },
+    "designed": {
+      "title": "Designed, not built yet",
+      "body": "This section is designed in the handbook (screen {screen}) and has no screen yet. Nothing here pretends to work.",
+      "handbook": "Read the screen contract"
+    },
+    "errors": {
+      "denied": "Your roles do not allow this action.",
+      "elevation_required": "Confirm your password and second factor first.",
+      "offline": "You are offline; nothing was sent.",
+      "reason_required": "Write a reason; it is recorded with the change.",
+      "stale": "Changed by another staff member; refresh and try again. Your input is kept.",
+      "invalid": "Check the highlighted values and try again.",
+      "territory_restricted": "This territory is not available.",
+      "transition_not_allowed": "The hub cannot move to this stage from its current stage.",
+      "gates_open": "Open launch gates block this: {items}.",
+      "modes_violation": "These settings contradict each other: {items}.",
+      "module_requires": "Switch these modules on first: {items}.",
+      "module_required_by": "These modules depend on it: {items}.",
+      "counsel_missing": "Record counsel approval before activation.",
+      "language_missing": "A hub language is missing: {items}.",
+      "own_request": "You cannot approve your own request.",
+      "not_own_request": "Only the person who asked can withdraw a request.",
+      "request_void": "The action changed; a new request is required.",
+      "request_expired": "This request has expired.",
+      "digest_mismatch": "The action you reviewed is not the one waiting; reload the request.",
+      "setup_blocked": "Finish the earlier steps first: {items}.",
+      "second_factor_required": "Choose a second factor and confirm that you stored the recovery codes.",
+      "not_found": "Not found."
+    },
+    "details": {
+      "demo_data_only_before_soft_launch": "demo data is allowed only before soft launch",
+      "demo_data_never_indexed": "demo data is never indexed",
+      "demo_data_never_federated": "demo data is never federated",
+      "open_registration_only_when_public": "open registration only when public",
+      "registration_closed_before_soft_launch": "registration stays closed before soft launch",
+      "indexing_only_after_launch": "search-engine indexing only after launch",
+      "moduleRequires": "{module} needs {dependency}"
+    },
+    "landing": {
+      "title": "Hubs on this node",
+      "lede": "Choose the hub to administer. Each hub has its own console; there is no switcher between them.",
+      "node": "Node:",
+      "stage": "Stage",
+      "country": "Country",
+      "data": "Data",
+      "yourRoles": "Your roles here",
+      "open": "Open the console",
+      "nodeConsole": "Node console",
+      "nodeConsoleStatus": "Hubs, node staff, updates, backups, keys and node-wide kill switches get their own console in a later package."
+    },
+    "capabilities": {
+      "llm": "Language models",
+      "embeddings": "Embeddings",
+      "rerank": "Reranking",
+      "image_generation": "Image generation",
+      "translation": "Translation",
+      "speech_to_text": "Speech to text",
+      "text_to_speech": "Text to speech",
+      "ocr": "Text recognition",
+      "web_search": "Web search",
+      "web_fetch": "Web fetching",
+      "email": "E-mail",
+      "sms": "SMS",
+      "messenger": "Messengers",
+      "payments": "Payments",
+      "payouts": "Payouts",
+      "e_invoicing": "E-invoicing",
+      "e_signature": "E-signature",
+      "register_lookup": "Register look-ups",
+      "sanctions_list": "Sanctions lists",
+      "maps_geocoding": "Maps and geocoding",
+      "object_storage": "Object storage",
+      "tax_calculation": "Tax calculation"
+    },
+    "killSwitch": {
+      "engage": "Engage a kill switch",
+      "engageSubmit": "Engage now",
+      "scope": "What to stop",
+      "releaseNote": "Engaging takes effect at once and needs one person. Releasing needs a second person and an incident note.",
+      "scopes": {
+        "outbound_messages": "all outbound messages",
+        "hub_agent_dispatch": "all agent actions in this hub",
+        "external_agent_api": "external agent access"
+      }
+    },
+    "overview": {
+      "title": "Overview",
+      "lede": "What needs a person today, and whether the hub is healthy and lawful.",
+      "reducedSod": "This hub has fewer than five staff members, so only “the actor is not the approver” is enforced. Add a second staff member with a different role before soft launch.",
+      "queues": "Queues you can act on",
+      "nothingWaiting": "Nothing needs your decision today.",
+      "noQueues": "No queue needs you right now.",
+      "nearestDeadline": "nearest deadline {date}",
+      "queue": {
+        "claims": "Claims",
+        "review_items": "Items waiting for an editor",
+        "link_proposals": "Link proposals",
+        "reports": "Reports",
+        "support_cases": "Support cases",
+        "grant_requests": "Case-grant requests",
+        "privacy_requests": "Privacy requests",
+        "unknown_outcomes": "Unknown outcomes to reconcile",
+        "alerts": "Automation alerts"
+      },
+      "approvals": "Approvals",
+      "approvalsWaiting": "{count, plural, one {# request is waiting for your decision.} other {# requests are waiting for your decision.}}",
+      "approvalsNone": "No request is waiting for you.",
+      "openApprovals": "Open approvals",
+      "launch": "Launch checklist",
+      "gatesPassed": "Gates passed",
+      "softLaunchOpen": "Soft-launch gates passed",
+      "gatesOf": "{passed} of {total}",
+      "openLaunch": "Open the launch checklist",
+      "compliance": "Compliance",
+      "legalDue": "Legal documents to act on",
+      "screeningAge": "Sanctions list age",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "licencesExpiring": "Source licences expiring",
+      "fakeProviders": "Fake providers in use",
+      "health": "Health",
+      "healthCheck": {
+        "readiness": "Readiness",
+        "outbox_age": "Outbox age",
+        "dead_letters": "Dead letters",
+        "unknown_outcomes": "Unknown outcomes",
+        "backup_age": "Last backup"
+      },
+      "healthState": {
+        "ok": "OK",
+        "warning": "Needs attention",
+        "failing": "Failing",
+        "unknown": "Not measured yet"
+      },
+      "minutes": "{count, plural, one {# minute} other {# minutes}}",
+      "spend": "Spending against caps",
+      "spentOf": "{spent} of {limit}",
+      "budgetScope": {
+        "hub": "Whole hub",
+        "job": "Job",
+        "pipeline": "Pipeline",
+        "agent_module": "Agent module",
+        "connection": "Connection"
+      },
+      "budgetJob": {
+        "translation": "Translation jobs",
+        "editorial_rewrite": "Editorial rewriting",
+        "summarisation": "Summaries",
+        "embeddings": "Embeddings"
+      },
+      "budgetState": {
+        "ok": "Within the cap",
+        "alert": "Alert threshold reached",
+        "exhausted": "Cap reached: new paid calls are blocked"
+      },
+      "period": {
+        "day": "per day",
+        "month": "per month"
+      },
+      "nextFive": "Next five things",
+      "next": {
+        "inviteStaff": "Invite a second staff member with a different role.",
+        "legalDocuments": "Record the legal documents with counsel approval in every hub language.",
+        "firstSource": "Register the first information source with its legal checks.",
+        "verificationRecipe": "Choose a verification recipe for companies.",
+        "backupDrill": "Schedule a backup and run a restore drill."
+      }
+    },
+    "approvals": {
+      "title": "Approvals",
+      "lede": "Second-person decisions. Each approval binds one action, one scope and the exact digest of the change, and expires.",
+      "reducedSod": "Reduced separation of duties: only “the actor is not the approver” is enforced while the hub has fewer than five staff members.",
+      "forMe": "Requests you may decide",
+      "forMeEmpty": "Nothing needs your decision.",
+      "mine": "Your requests",
+      "mineEmpty": "You have no open requests.",
+      "decisions": "Recent decisions",
+      "decisionsEmpty": "No decisions yet.",
+      "requestedBy": "Requested by",
+      "reason": "Reason",
+      "requestedAt": "Requested",
+      "expiresAt": "Expires",
+      "digest": "Action digest",
+      "changes": "What changes",
+      "before": "Before:",
+      "after": "After:",
+      "decision": "Decision",
+      "approve": "Approve",
+      "decline": "Decline",
+      "approved": "Approved",
+      "declined": "Declined",
+      "decide": "Record the decision",
+      "bindsDigest": "Your decision binds the digest shown above; if the action changes, the request becomes void.",
+      "withdraw": "Withdraw the request",
+      "ownRequest": "You cannot approve your own request.",
+      "actionChanged": "The action changed; a new request is required.",
+      "expired": "This request has expired; ask again if it is still needed.",
+      "askQuestion": "Questions in the request thread:",
+      "action": "Action",
+      "decidedBy": "Decided by",
+      "decidedAt": "Decided",
+      "state": {
+        "pending": "Waiting",
+        "void": "Void",
+        "expired": "Expired"
+      },
+      "fields": {
+        "documentVersion": "Document version",
+        "languages": "Languages",
+        "providerMode": "Provider mode",
+        "automationLevel": "Automation level",
+        "feeVersion": "Fee version",
+        "role": "Role"
+      },
+      "actions": {
+        "staff": {
+          "assign_sensitive_role": "Assign a sensitive staff role",
+          "switch_sod_mode": "Switch the separation-of-duties mode",
+          "grant_breakglass": "Grant break-glass access"
+        },
+        "commerce": {
+          "activate_price_version": "Activate a price version"
+        },
+        "privacy": {
+          "execute_erasure": "Execute an erasure"
+        },
+        "moderation": {
+          "apply_sanction_l4": "Apply a level 4 sanction"
+        },
+        "providers": {
+          "enable_non_fake": "Enable a non-fake provider"
+        },
+        "hub": {
+          "transition_soft_launch": "Move the hub to soft launch",
+          "transition_public": "Make the hub public",
+          "change_residency": "Change data residency"
+        },
+        "legal": {
+          "activate_document_version": "Activate a legal document version"
+        },
+        "federation": {
+          "raise_peering_level": "Raise a peering level"
+        },
+        "models": {
+          "activate_private_route": "Activate a model route for non-public data"
+        },
+        "egress": {
+          "allow_private_class": "Allow a non-public data class to leave"
+        },
+        "pipelines": {
+          "activate_personal_data_dataset": "Activate a dataset with personal data"
+        },
+        "datasets": {
+          "activate_court_or_debt": "Activate a court or debt dataset"
+        },
+        "automation": {
+          "raise_to_supervised_autonomous": "Raise a domain to supervised autonomy"
+        },
+        "agents": {
+          "enable_commitment_module": "Enable an agent module with commitments",
+          "activate_extension": "Activate an agent extension"
+        },
+        "jurisdiction": {
+          "activate_settings": "Activate jurisdiction settings"
+        },
+        "billing": {
+          "activate_fee_version": "Activate a fee version",
+          "release_payout_batch": "Release a payout batch"
+        },
+        "payments": {
+          "change_settings": "Change payment settings"
+        },
+        "sponsored": {
+          "enable": "Enable sponsored content"
+        },
+        "support": {
+          "reset_second_factor": "Reset a second factor",
+          "rebind_recovery_email": "Rebind a recovery e-mail"
+        },
+        "ops": {
+          "execute_restore": "Execute a restore",
+          "apply_production_migration": "Apply a production migration",
+          "rotate_node_key": "Rotate the node key"
+        },
+        "kill_switch": {
+          "release": "Release a kill switch"
+        }
+      }
+    },
+    "values": {
+      "languages": {
+        "en": "English",
+        "enEs": "English and Spanish"
+      },
+      "mode": {
+        "fake": "Fake",
+        "manual": "Manual",
+        "live": "Live"
+      },
+      "automation": {
+        "manual": "Manual",
+        "assisted": "Assisted",
+        "supervised_autonomous": "Supervised autonomy"
+      }
+    },
+    "help": {
+      "title": "Help",
+      "lede": "How to work in the console: checklists for your roles, the handbook, what each label means, and the keyboard.",
+      "checklists": "Checklists",
+      "checklistNote": "Ticks are kept in this browser only.",
+      "checklistFor": "First week as {role}",
+      "checklist": {
+        "everyone": "For every staff member"
+      },
+      "items": {
+        "secondFactor": "Keep your second factor and recovery codes safe.",
+        "readGuardRails": "Read the guard rails no console can switch off.",
+        "statusLabels": "Learn what Live, Demo, Contract, Designed and Proposed mean.",
+        "secondStaff": "Invite a second staff member so approvals can work.",
+        "launchGates": "Walk through the launch checklist with the compliance officer.",
+        "legal": "Make sure every legal document has counsel approval in every language.",
+        "approvals": "Check the approvals page every day.",
+        "policy": "Write the editorial policy and the AI-labelling rules.",
+        "sources": "Review which sources may be used, and how.",
+        "reviewRules": "Set review rules per format and author type.",
+        "countryBase": "Check the country base and record local additions with sources.",
+        "taxonomy": "Shape the taxonomy and release a version.",
+        "firstSource": "Register the first source with its licence, robots and terms checks.",
+        "caseGrants": "Learn how case grants work: scoped, at most 72 hours, approved by a second person.",
+        "recovery": "Handle recovery escalations with evidence and the cooling-off period.",
+        "noImpersonation": "Remember: there is no “log in as”; explain access with reason codes instead."
+      },
+      "handbook": "Handbook",
+      "docs": {
+        "console": "The hub console",
+        "screens": "Console screens",
+        "setup": "The setup wizard",
+        "guardRails": "Hub administration and its guard rails"
+      },
+      "statuses": "What the labels mean",
+      "status": {
+        "live": "Implemented end to end with automated tests. Not yet deployed to production anywhere.",
+        "demo": "The screen exists and is tested, but it runs on synthetic data and nothing is saved.",
+        "contract": "The data shapes and rules are frozen as contracts; no storage or screen yet.",
+        "designed": "An accepted design describes it; no code yet.",
+        "proposed": "Designed for the first time and open for review."
+      },
+      "mode": {
+        "fake": "A built-in imitation for trying the hub: nothing reaches a real provider.",
+        "manual": "A person does the work outside the engine, for example a register look-up.",
+        "live": "A real provider, enabled by a second person after a synthetic test."
+      },
+      "glossary": "Glossary",
+      "terms": {
+        "hub": {
+          "term": "Hub",
+          "definition": "One gathering point for a country or a city, with its own staff, settings and launch gates."
+        },
+        "node": {
+          "term": "Node",
+          "definition": "One installation of the engine; it can host several hubs."
+        },
+        "lifecycle": {
+          "term": "Lifecycle stage",
+          "definition": "Draft, preparing, soft launch, public, suspended, closing or closed; moving forward needs passed gates and a second person."
+        },
+        "elevation": {
+          "term": "Elevated session",
+          "definition": "A console session opened after your password and second factor; it ends after inactivity."
+        },
+        "secondPerson": {
+          "term": "Second-person approval",
+          "definition": "A sensitive change is asked by one staff member and approved by another; nobody approves their own request."
+        },
+        "digest": {
+          "term": "Action digest",
+          "definition": "A fingerprint of the exact change; an approval binds it, so any later change voids the approval."
+        },
+        "killSwitch": {
+          "term": "Kill switch",
+          "definition": "Stops a capability at once; one person engages it, releasing needs a second person and an incident note."
+        },
+        "launchGate": {
+          "term": "Launch gate",
+          "definition": "A condition with evidence that must pass before soft launch or public; there is no waiver."
+        },
+        "configVersion": {
+          "term": "Configuration version",
+          "definition": "Settings are never edited in place: each change is a version that is activated and later superseded."
+        },
+        "demoData": {
+          "term": "Demo data",
+          "definition": "Synthetic, labelled records; never indexed, never federated, purged before soft launch."
+        },
+        "caseGrant": {
+          "term": "Case grant",
+          "definition": "The only way staff see private data: scoped to a case, at most 72 hours, approved by a second person, every read logged."
+        }
+      },
+      "keyboard": "Keyboard",
+      "keys": {
+        "skip": "The first Tab reaches “Skip to content”.",
+        "order": "Then the band, the navigation, the page heading and the content, in that order.",
+        "menu": "On a phone the sections open from the “Sections” button as a full-height sheet; Escape closes it.",
+        "forms": "Every change needs a reason; the result is announced and shown as a notification."
+      }
+    },
+    "hub": {
+      "identity": {
+        "title": "Identity and territory",
+        "lede": "Who and where the hub is: names in every hub language, territories, languages, currency and time zone.",
+        "names": "Hub name in every language",
+        "language": "Language",
+        "name": "Name",
+        "territories": "Territories",
+        "level": "Level",
+        "code": "Code",
+        "territoryName": "Name",
+        "levels": {
+          "country": "Country",
+          "region": "Region",
+          "place": "Place"
+        },
+        "territoriesNote": "Territories describe where the hub works; they are never exclusive, and restricted places are refused at every level.",
+        "languages": "Languages",
+        "completeness": "Interface completeness",
+        "default": "default",
+        "percent": "{percent}%",
+        "notEngineLanguage": "Not an engine language yet",
+        "basics": "Currency, time and address",
+        "currency": "Currency",
+        "timeZone": "Time zone",
+        "domain": "Domain",
+        "brand": "Brand overlay",
+        "noBrand": "None (neutral engine brand)",
+        "revision": "Configuration",
+        "contrast": "Brand contrast per language",
+        "ratio": "contrast {ratio}:1",
+        "contrastPass": "passes",
+        "contrastFail": "fails",
+        "change": "Change identity",
+        "addTerritory": "Add a territory",
+        "addTerritoryHelp": "A country (US), region (US-TX) or place (US-TX:austin).",
+        "defaultLanguage": "Default language",
+        "versionsNote": "Saving creates a new configuration version; the active one stays until the new version is activated."
+      },
+      "modes": {
+        "title": "System modes",
+        "lede": "How the hub behaves: lifecycle stage, data, registration, moderation, automation, indexing and maintenance.",
+        "lifecycle": "Lifecycle",
+        "stage": "Current stage",
+        "nextStages": "Allowed next stages",
+        "blockedBy": "Soft launch is blocked by open gates: {items}.",
+        "openLaunch": "Open the launch checklist",
+        "requestTransition": "Request the transition",
+        "to": "Move to",
+        "behaviour": "Behaviour",
+        "data": "Data",
+        "dataMode": {
+          "demo": "Demo data",
+          "live": "Live data"
+        },
+        "registration": "Registration",
+        "registrationMode": {
+          "closed": "Closed",
+          "invite_only": "Invitation only",
+          "open": "Open"
+        },
+        "moderation": "Moderation",
+        "moderationMode": {
+          "pre_moderate_all": "Review everything before publication",
+          "pre_moderate_new_authors": "Review new authors before publication",
+          "post_moderate": "Review after publication"
+        },
+        "indexing": "Search-engine indexing",
+        "maintenance": "Maintenance",
+        "demoRule": "Demo data never leaves the hub, is never indexed or federated, and must be purged before soft launch.",
+        "automation": "Automation",
+        "domain": "Domain",
+        "level": "Level",
+        "domains": {
+          "editorial": "Editorial",
+          "translation": "Translation",
+          "magazine_assembly": "Magazine assembly",
+          "data_mining": "Data mining",
+          "entity_resolution": "Entity resolution",
+          "verification_rechecks": "Verification re-checks",
+          "moderation_triage": "Moderation triage"
+        },
+        "humanGates": "Decisions that always belong to a person",
+        "humanGatesNote": "No automation level removes these.",
+        "gates": {
+          "source_activation": "Activating a source",
+          "dataset_activation": "Activating a dataset",
+          "publication": "Publishing",
+          "magazine_release": "Releasing a magazine issue",
+          "claim_decision": "Deciding a claim",
+          "link_decision": "Deciding a link",
+          "moderation_sanction": "Applying a sanction",
+          "price_activation": "Activating a price"
+        },
+        "change": "Change modes",
+        "supervisedNote": "Raising a domain to supervised autonomy needs a second person and active spending caps.",
+        "violationsFound": "The current modes contradict the lifecycle: {items}."
+      },
+      "modules": {
+        "title": "Modules",
+        "lede": "Which product modules are on in this hub, what each builds on, and how far the engine has built it.",
+        "list": "Product modules",
+        "engine": "In the engine:",
+        "dependsOn": "Builds on: {items}.",
+        "needsFirst": "Switch on first: {items}.",
+        "change": "Switch a module",
+        "module": "Module",
+        "action": "Action",
+        "enable": "Switch on",
+        "disable": "Switch off",
+        "disableNote": "Switching a module off hides it from participants; existing records stay and come back when it is switched on again.",
+        "names": {
+          "publications": "Publications",
+          "magazine": "Magazine",
+          "events": "Events",
+          "learning": "Learning",
+          "matching": "Matching",
+          "catalogue": "Catalogue",
+          "procurement": "Procurement",
+          "sales": "Sales",
+          "execution_reputation": "Execution and reputation",
+          "agents": "Agents",
+          "external_agent_api": "External agent access",
+          "search": "Search",
+          "knowledge_answers": "Knowledge answers",
+          "communications": "Communications",
+          "billing": "Billing",
+          "federation": "Federation",
+          "editorial_automation": "Editorial automation",
+          "data_mining": "Data mining",
+          "project_planner": "Project planner",
+          "expert_marketplace": "Consultation and task marketplace",
+          "shared_knowledge": "Shared knowledge",
+          "reputation_passport": "Reputation passport",
+          "plan_recommendations": "Recommendations for plan steps"
+        }
+      },
+      "legal": {
+        "title": "Legal and operator",
+        "lede": "The operator of the hub and the documents participants accept; a version becomes active only with counsel approval in every hub language.",
+        "operator": "Operator",
+        "legalName": "Legal name",
+        "form": "Legal form",
+        "forms": {
+          "llc": "Limited liability company",
+          "corporation": "Corporation",
+          "nonprofit_association": "Nonprofit association",
+          "sole_proprietor": "Sole proprietor",
+          "limited_company": "Limited company"
+        },
+        "identifier": "Registration identifier",
+        "address": "Address",
+        "legalContact": "Contact for legal notices",
+        "abuseContact": "Contact for abuse and takedowns",
+        "screening": "Sanctions screening",
+        "screeningResult": {
+          "not_run": "Not run yet",
+          "no_match": "No match",
+          "potential_match": "Potential match: review required"
+        },
+        "fakeScreening": "fake adapter, not a real screening",
+        "noOperator": "No operator recorded yet.",
+        "documents": "Documents",
+        "kind": "Document",
+        "kinds": {
+          "terms": "Terms of use",
+          "privacy_notice": "Privacy notice",
+          "community_rules": "Community rules",
+          "imprint": "Imprint",
+          "cookie_policy": "Cookie policy"
+        },
+        "version": "Version",
+        "status": "Status",
+        "statuses": {
+          "draft": "Draft",
+          "counsel_approved": "Approved by counsel",
+          "active": "Active",
+          "superseded": "Superseded"
+        },
+        "effective": "effective {date}",
+        "languages": "Languages",
+        "missing": "missing: {items}",
+        "counsel": "Counsel approval",
+        "noCounsel": "Not approved yet",
+        "noDocuments": "No legal documents yet.",
+        "requestActivation": "Request activation",
+        "document": "Document version",
+        "nothingToActivate": "No version is approved by counsel and waiting for activation.",
+        "draft": "Draft a new version",
+        "templatesNote": "A new version starts from the engine's templates; counsel reviews it before activation."
+      },
+      "residency": {
+        "title": "Residency and sub-processors",
+        "lede": "Where personal data is stored and processed, and who processes it for the hub.",
+        "none": "No residency decision recorded yet.",
+        "contradiction": "{services} run outside {country}, the residency country. Check whether personal data reaches them.",
+        "privateOutside": "A sub-processor outside the residency country receives private data; review the egress rules.",
+        "decision": "Residency decision",
+        "country": "Country",
+        "regime": "Privacy regime",
+        "regimes": {
+          "us_state_privacy": "United States state privacy laws",
+          "uz_personal_data": "Uzbekistan personal data law",
+          "not_recorded": "Not recorded yet"
+        },
+        "version": "Version",
+        "servicesTitle": "Services and regions",
+        "service": "Service",
+        "services": {
+          "database": "Database",
+          "object_storage": "Object storage",
+          "backups": "Backups",
+          "worker": "Background worker",
+          "email_relay": "E-mail relay"
+        },
+        "region": "Region",
+        "outside": "outside the residency country",
+        "subProcessors": "Sub-processors",
+        "subProcessorsNote": "Generated from the hub's connections; every connection in this demo is a fake or manual adapter.",
+        "processor": "Sub-processor",
+        "capability": "Capability",
+        "mode": "Mode",
+        "privateData": "Private data",
+        "change": "Change residency",
+        "requestChange": "Request the change",
+        "newCountry": "New residency country",
+        "newCountryHelp": "Two-letter country code, for example US."
+      },
+      "country": {
+        "title": "Country base",
+        "lede": "The country facts the hub relies on: the bound country pack or the generic profile, and the hub's local additions.",
+        "binding": "Country pack",
+        "pack": "Pack",
+        "packVersion": "{country}, version {version}",
+        "packStatus": "Pack status",
+        "packStatuses": {
+          "complete": "Complete",
+          "partial": "Partial",
+          "draft": "Draft"
+        },
+        "identifier": "Company identifier",
+        "identifierKind": "Identifier code",
+        "currency": "Currency",
+        "regions": "Regions",
+        "entityTypes": "Legal entity types",
+        "residencyRequired": "In-country storage required",
+        "generic": "Generic profile: ISO data only; add identifiers, registers and other facts as local additions.",
+        "sourcesNote": "Every fact in a pack cites its source and states how far it is verified.",
+        "additions": "Local additions",
+        "kind": "Kind",
+        "kinds": {
+          "identifier": "Identifier",
+          "register": "Register",
+          "licence_category": "Licence category",
+          "holiday": "Holiday",
+          "tax_fact": "Tax fact",
+          "unit": "Unit"
+        },
+        "label": "Name",
+        "verification": "Verification",
+        "levels": {
+          "candidate": "Candidate",
+          "confirmed": "Confirmed"
+        },
+        "noAdditions": "No local additions yet.",
+        "export": "Export the additions as a country-pack change:",
+        "add": "Add a local addition",
+        "key": "Key",
+        "keyHelp": "A stable key, for example US-CA:cslb.",
+        "candidateNote": "A new addition stays a candidate until the compliance officer confirms it with a source."
+      },
+      "taxonomy": {
+        "title": "Taxonomy and units",
+        "lede": "Topics, categories, plan-step categories and units with their names in every hub language, released as versions.",
+        "kinds": {
+          "topics": "Topics",
+          "categories": "Categories",
+          "plan_steps": "Plan-step categories",
+          "units": "Units"
+        },
+        "released": "released {date}",
+        "unreleased": "not released yet",
+        "terms": "{count, plural, one {# term} other {# terms}}",
+        "usage": "{count, plural, one {used once} other {used # times}}",
+        "deprecated": "deprecated",
+        "empty": "No taxonomy yet. Start with topics and plan-step categories; the engine's open plan-step taxonomy can be imported.",
+        "deprecateNote": "Deprecating a term that is in use requires mapping it to another term first.",
+        "add": "Add a term",
+        "kind": "Tree",
+        "key": "Key",
+        "keyHelp": "Lower case, for example materials.steel.",
+        "label": "Name"
+      },
+      "launch": {
+        "title": "Launch checklist",
+        "lede": "What stands between the hub and soft launch or public. Every gate needs evidence; there is no waiver.",
+        "progress": "{passed} of {total} gates passed",
+        "progressLabel": "Gates passed",
+        "gatesTitle": "Gates",
+        "gate": "Gate",
+        "state": "State",
+        "states": {
+          "open": "Open",
+          "passed": "Passed",
+          "invalidated": "Invalidated"
+        },
+        "evidence": "Evidence",
+        "checked": "Checked",
+        "softLaunchGate": "needed for soft launch",
+        "noWaiver": "No control waives a gate; an invalidated gate blocks like an open one until it is checked again.",
+        "gates": {
+          "operator_recorded_and_screened": "Operator recorded and screened",
+          "legal_documents_counsel_approved": "Legal documents approved by counsel",
+          "data_residency_configured": "Data residency configured",
+          "two_staff_with_second_factor": "Two staff members with a second factor",
+          "editorial_team_and_policy": "Editorial team and policy",
+          "community_rules_all_languages": "Community rules in every language",
+          "information_source_registered": "An information source registered",
+          "verification_recipe_enabled": "A verification recipe enabled",
+          "sanctions_screening_configured": "Sanctions screening configured",
+          "i18n_complete": "Interface complete in every hub language",
+          "backup_restore_exercised": "Backup restored in a drill",
+          "brand_accessibility_checked": "Brand accessibility checked",
+          "demo_data_purged": "Demo data purged",
+          "ai_egress_policy_reviewed": "AI egress policy reviewed"
+        },
+        "mark": "Mark a gate as passed",
+        "evidenceRef": "Evidence reference",
+        "evidenceHelp": "The identifier of the stored evidence, for example ev-counsel-letter-2.",
+        "request": "Request soft launch or public",
+        "softBlocked": "Soft launch is blocked by: {items}.",
+        "softReady": "Every soft-launch gate has passed.",
+        "publicBlocked": "{count, plural, one {# gate still blocks going public.} other {# gates still block going public.}}",
+        "publicReady": "Every gate has passed."
+      }
+    },
+    "setup": {
+      "title": "Setup",
+      "stepsLabel": "Setup steps",
+      "resume": "Your answers are stored on the server, so you can stop and resume with the same link. In this demo nothing is stored.",
+      "answers": "Your answers",
+      "continue": "Save and continue",
+      "finish": "Finish setup",
+      "chooseCountry": "Choose a country",
+      "check": {
+        "title": "Install check",
+        "purpose": "The engine checks the address, database, object storage, worker, clock and secret store before anything else.",
+        "items": {
+          "address": "Public address",
+          "database": "Database",
+          "object_storage": "Object storage",
+          "worker": "Background worker",
+          "clock": "Clock",
+          "secret_store": "Secret store"
+        },
+        "states": {
+          "pass": "Passed",
+          "warn": "Warning",
+          "fail": "Failed"
+        },
+        "help": {
+          "address": "Set the public address to HTTPS (or localhost for a trial).",
+          "database": "Run the migrations; the runtime role must not bypass row-level security.",
+          "object_storage": "The bucket must allow write, read and delete, and must not be public.",
+          "worker": "Start the background worker; no heartbeat was seen in the last minute.",
+          "clock": "The server clock differs from your browser's by more than 30 seconds; signatures and schedules depend on it.",
+          "secret_store": "Set a real key-encryption key; placeholders are refused."
+        },
+        "blocking": "A blocking check failed, so setup cannot continue.",
+        "guide": "Read the installation guide",
+        "cannotContinue": "Setup cannot continue until every blocking check passes."
+      },
+      "node": {
+        "title": "Node identity",
+        "purpose": "The installation's name, domain and jurisdiction, and its signing key.",
+        "name": "Node name",
+        "domain": "Domain",
+        "domainHelp": "For example build.example.org.",
+        "jurisdiction": "Node jurisdiction",
+        "jurisdictionHelp": "The country whose law the node operator follows. Restricted places are never offered.",
+        "key": "A signing key is generated when you continue. Only its public key and fingerprint are ever shown; the private key never is."
+      },
+      "hub": {
+        "title": "Hub identity",
+        "purpose": "Configure your country or city without code: starting point, territory, name in every language, languages, currency and time zone.",
+        "examples": "Start from an example:",
+        "exampleUs": "United States (San Diego)",
+        "exampleSamarkand": "Samarkand, Uzbekistan",
+        "exampleNote": "Example values are synthetic; replace them with yours.",
+        "start": "Starting point",
+        "startHelp": "A country pack brings regions, identifier formats, currency and legal facts; the generic profile brings ISO data only.",
+        "pack": "Country pack: {country}",
+        "generic": "Generic profile (no pack yet)",
+        "territory": "Territory",
+        "territoryHelp": "A country, region or place code, for example US-CA:san-diego.",
+        "name": "Hub name",
+        "nameHelp": "Required in every hub language; you can add the other languages in the console.",
+        "languages": "Hub languages",
+        "languagesHelp": "Language tags, the default first, for example en, es.",
+        "currency": "Currency",
+        "timeZone": "Time zone"
+      },
+      "operator": {
+        "title": "Operator",
+        "purpose": "The legal entity that operates the hub, its contacts, its ownership declaration and its sanctions screening.",
+        "legalName": "Legal name",
+        "form": "Legal form",
+        "identifier": "Registration identifier",
+        "address": "Address",
+        "legalContact": "Contact for legal notices",
+        "abuseContact": "Contact for abuse and takedowns",
+        "ownership": "I declare the operator's ownership truthfully.",
+        "screening": "Screening runs on the engine's baseline list. With the fake adapter the result is labelled “fake: not a real screening”; a potential match opens a review that the operator cannot close."
+      },
+      "admin": {
+        "title": "First administrator",
+        "purpose": "The first staff member, with a mandatory second factor and recovery codes shown once.",
+        "name": "Name",
+        "email": "E-mail",
+        "password": "Password",
+        "passwordHelp": "In this demo the name, e-mail and password never leave this page.",
+        "secondFactor": "Second factor",
+        "secondFactorHelp": "A second factor is mandatory; setup cannot finish without it.",
+        "chooseFactor": "Choose a second factor",
+        "passkey": "Passkey",
+        "totp": "Authenticator app",
+        "recoveryCodes": "Ten single-use recovery codes appear here once, after the second factor is enrolled. In this demo none are generated.",
+        "stored": "I have stored the recovery codes.",
+        "reducedSod": "With one staff member the hub runs in reduced separation of duties; two-person actions wait until a second staff member joins."
+      },
+      "residency": {
+        "title": "Storage and residency",
+        "purpose": "Where personal data is stored and processed, and which privacy regime the notices follow.",
+        "country": "Residency country",
+        "countryHelp": "Database, object storage and backups should be located there.",
+        "regime": "Privacy regime",
+        "egress": "By default no non-public data leaves the residency country and nothing non-public goes to an external model provider until you allow it."
+      },
+      "providers": {
+        "title": "Providers",
+        "purpose": "Every capability starts on its fake adapter, so the hub can be explored without accounts or costs.",
+        "options": {
+          "fake": "Keep fake for now",
+          "manual": "Manual (a person does it)",
+          "later": "Connect later in the console"
+        },
+        "liveLater": "Live connections are never made here: they need a passing synthetic test, an egress decision and a second person.",
+        "models": "For language models you can later connect a provider directly or through OpenRouter, an optional router.",
+        "invite": "To invite the second staff member before e-mail is live, the console shows a one-time invitation link that expires in 72 hours."
+      },
+      "modes": {
+        "title": "Modes",
+        "purpose": "How the hub starts: data mode, registration, modules, moderation and automation.",
+        "defaults": "Registration starts closed, every automation domain manual, indexing off; publications, magazine, events, search and communications are on. Change them later in the console."
+      },
+      "review": {
+        "title": "Review",
+        "purpose": "A summary of every step before you finish. Finishing records the configuration, creates the launch gates and invalidates the setup token.",
+        "done": "Done",
+        "notDone": "Not done",
+        "edit": "Edit",
+        "afterFinish": "After finishing, the hub is a draft: registration closed, every provider fake, indexing off."
+      }
+    }
+  }
+}

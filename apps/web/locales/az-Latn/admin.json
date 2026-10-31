@@ -1,0 +1,1132 @@
+{
+  "admin": {
+    "title": "İdarəetmə",
+    "backToWorkspace": "İş sahəsinə qayıt",
+    "helpLink": "Kömək",
+    "navLabel": "Konsol naviqasiyası",
+    "bandLinks": "Konsol keçidləri",
+    "menu": "Bölmələr",
+    "hubBand": {
+      "actsOn": "Bu səhifə bu habı idarə edir:",
+      "stage": "Mərhələ: {stage}"
+    },
+    "bands": {
+      "demo": "Nümayiş məlumatları: süni və işarələnmiş. Onlar bu habı tərk etmir, indekslənmir və federasiyaya ötürülmür; dəyişikliklər saxlanmır.",
+      "maintenance": "Texniki xidmət: iştirakçılar üçün hab yalnız oxumaq üçündür.",
+      "killSwitch": "Qəza açarı işə salınıb: {scope}. Onu götürmək üçün ikinci əməkdaş və insident qeydi lazımdır.",
+      "offline": "Bağlantı yoxdur: oxumaq olar, dəyişikliklər bağlantı bərpa olunana qədər söndürülüb."
+    },
+    "demo": {
+      "current": "Əməkdaşın nümayiş rolu: {persona}",
+      "choose": "Əməkdaşın nümayiş rolunu dəyiş",
+      "nobody": "heç kim daxil olmayıb",
+      "personas": {
+        "hub-owner": "Hab sahibi (ABŞ)",
+        "staff-admin": "Kadr inzibatçısı",
+        "compliance": "Uyğunluq mütəxəssisi",
+        "editor": "Redaktor (ABŞ-da baş redaktor, Səmərqənddə redaktor)",
+        "data-steward": "Məlumat məsulu",
+        "trust-reviewer": "Etibar yoxlayıcısı və moderator",
+        "support": "Dəstək (ABŞ-da rəhbər, Səmərqənddə agent)",
+        "commercial": "Kommersiya inzibatçısı",
+        "ops": "İstismar mühəndisi (bütün qovşaq)",
+        "privacy": "Məxfilik mütəxəssisi",
+        "auditor": "Auditor (platforma)",
+        "node-operator": "Qovşaq operatoru və platforma sahibi",
+        "staff-none": "Əməkdaş rolu olmayan iştirakçı"
+      }
+    },
+    "status": {
+      "live": "İşləyir",
+      "demo": "Nümayiş",
+      "contract": "Müqavilə",
+      "designed": "Layihələndirilib",
+      "proposed": "Təklif olunub"
+    },
+    "providerMode": {
+      "fake": "İmitasiya",
+      "manual": "Əllə",
+      "live": "Real"
+    },
+    "roles": {
+      "platform-owner": "Platforma sahibi",
+      "staff-admin": "Kadr inzibatçısı",
+      "editor-in-chief": "Baş redaktor",
+      "editor": "Redaktor",
+      "moderator": "Moderator",
+      "trust-reviewer": "Etibar yoxlayıcısı",
+      "support-agent": "Dəstək agenti",
+      "support-lead": "Dəstək rəhbəri",
+      "commercial-admin": "Kommersiya inzibatçısı",
+      "data-steward": "Məlumat məsulu",
+      "ops-engineer": "İstismar mühəndisi",
+      "privacy-officer": "Məxfilik mütəxəssisi",
+      "auditor": "Auditor",
+      "hub-owner": "Hab sahibi",
+      "compliance-officer": "Uyğunluq mütəxəssisi",
+      "node-operator": "Qovşaq operatoru"
+    },
+    "lifecycle": {
+      "draft": "Qaralama",
+      "preparing": "Hazırlıq",
+      "soft_launch": "Yumşaq başlanğıc",
+      "public": "İctimai",
+      "suspended": "Dayandırılıb",
+      "closing": "Bağlanır",
+      "closed": "Bağlanıb"
+    },
+    "nav": {
+      "home": "Əsas",
+      "hub": "Hab",
+      "participants": "İştirakçılar",
+      "support": "Dəstək",
+      "editorial": "Redaksiya",
+      "data": "Məlumatlar",
+      "modules": "Modullar",
+      "trust": "Etibar və təhlükəsizlik",
+      "agents": "Agentlər",
+      "billing": "Tariflər və ödənişlər",
+      "integrations": "Açarlar və modellər",
+      "automation": "Avtomatlaşdırma",
+      "communications": "Kommunikasiyalar",
+      "federation": "Federasiya",
+      "privacy": "Məxfilik",
+      "staff": "Kadrlar və audit",
+      "ops": "İstismar"
+    },
+    "sections": {
+      "home": {
+        "overview": "İcmal",
+        "approvals": "Təsdiqlər",
+        "help": "Kömək"
+      },
+      "hub": {
+        "identity": "Profil və ərazi",
+        "modes": "Sistem rejimləri",
+        "modules": "Modullar",
+        "legal": "Hüquqi və operator",
+        "residency": "Məlumatların yerləşməsi və subpodratçılar",
+        "country": "Ölkə bazası",
+        "taxonomy": "Təsnifatlar və vahidlər",
+        "launch": "Başlanğıc yoxlama siyahısı"
+      },
+      "participants": {
+        "people": "İnsanlar",
+        "companies": "Şirkətlər",
+        "claims": "Sahiblik müraciətləri",
+        "verification": "Yoxlama",
+        "credentials": "Vəsiqələr",
+        "consents": "Razılıqlar"
+      },
+      "support": {
+        "lookup": "Axtarış",
+        "cases": "Müraciətlər",
+        "recovery": "Girişin bərpası",
+        "explain": "Girişin izahı"
+      },
+      "editorial": {
+        "desk": "Redaksiya masası",
+        "sources": "Mənbələr",
+        "discovery": "Mənbələrin axtarışı",
+        "pipelines": "Konveyerlər",
+        "review": "Baxış",
+        "calendar": "Təqvim",
+        "publications": "Nəşrlər",
+        "magazine": "Jurnal",
+        "translations": "Tərcümələr",
+        "policy": "Redaksiya siyasəti"
+      },
+      "data": {
+        "datasets": "Məlumat dəstləri",
+        "batches": "İdxal paketləri",
+        "links": "Əlaqələr",
+        "knowledge": "Biliklər",
+        "recommendations": "Tövsiyələr"
+      },
+      "modules": {
+        "projects": "Layihələr",
+        "planner": "Planlaşdırıcı",
+        "marketplace": "Bazar",
+        "knowledgeSharing": "Ümumi biliklər",
+        "events": "Tədbirlər",
+        "learning": "Təhsil",
+        "matching": "Uyğunlaşdırma",
+        "commerce": "Ticarət",
+        "procurement": "Satınalma və təchizat"
+      },
+      "trust": {
+        "moderation": "Moderasiya",
+        "disputes": "Mübahisələr",
+        "reputation": "Reputasiya metodları",
+        "appeals": "Apellyasiyalar",
+        "screening": "Sanksiya yoxlamaları",
+        "confirmations": "Təsdiqləmələr"
+      },
+      "agents": {
+        "modules": "Agent modulları",
+        "policy": "Agent siyasəti",
+        "extensions": "Genişləndirmələr",
+        "external": "Xarici agentlər",
+        "usage": "İstifadə",
+        "abuse": "Sui-istifadə"
+      },
+      "billing": {
+        "offers": "Təkliflər və tariflər",
+        "prices": "Qiymətlər",
+        "invoices": "Hesab-fakturalar",
+        "payouts": "Ödəmələr",
+        "credits": "Kreditlər və geri qaytarmalar",
+        "tax": "Vergi"
+      },
+      "integrations": {
+        "providers": "Provayderlər",
+        "routing": "Marşrutlaşdırma",
+        "egress": "Məlumat ötürülməsi",
+        "budgets": "Xərc limitləri",
+        "usage": "İstifadə və xərclər",
+        "killSwitches": "Qəza açarları"
+      },
+      "automation": {
+        "schedules": "Cədvəllər",
+        "runs": "İşə salmalar",
+        "alerts": "Xəbərdarlıqlar"
+      },
+      "communications": {
+        "senders": "Göndərənlər",
+        "templates": "Şablonlar",
+        "deliverability": "Çatdırılma",
+        "announcements": "Elanlar"
+      },
+      "federation": {
+        "peers": "Tərəfdaşlar",
+        "licences": "Lisenziyalar",
+        "tombstones": "Silinmə nişanları",
+        "links": "Daxil olan əlaqələr"
+      },
+      "privacy": {
+        "requests": "Sorğular",
+        "retention": "Saxlama və tutma",
+        "settings": "Məxfilik parametrləri",
+        "breaches": "Məlumat insidentləri"
+      },
+      "staff": {
+        "staff": "Kadrlar",
+        "audit": "Audit"
+      },
+      "ops": {
+        "health": "Vəziyyət",
+        "jobs": "Tapşırıqlar",
+        "flags": "Funksiya bayraqları",
+        "maintenance": "Texniki xidmət",
+        "incidents": "İnsidentlər",
+        "locales": "Dillər",
+        "accessibility": "Əlçatanlıq"
+      }
+    },
+    "common": {
+      "demoNotSaved": "Nümayiş: dəyişikliklər saxlanmır.",
+      "demoSecondPerson": "Nümayiş: burada ikinci əməkdaşa «{action}» sorğusu yaradılardı; heç nə saxlanmadı.",
+      "reason": "Səbəb",
+      "reasonHelp": "Məcburidir. Dəyişikliklə birlikdə saxlanılır.",
+      "auditNote": "Bu əməliyyat audit jurnalına yazılır.",
+      "secondPersonNote": "Bu dəyişiklik ikinci əməkdaş tələb edir: başqa bir şəxsin təsdiqlədiyi sorğu yaradılır.",
+      "readOnly": "Yalnız oxumaq: rollarınız bunu dəyişməyə icazə vermir.",
+      "offlineDisabled": "Bağlantı yoxdur: dəyişikliklər bağlantı bərpa olunana qədər söndürülüb.",
+      "saveVersion": "Yeni versiya kimi saxla",
+      "updated": "Yeniləndi: {time}",
+      "loading": "Yüklənir",
+      "none": "Yoxdur",
+      "notRecorded": "Qeyd olunmayıb",
+      "yes": "Bəli",
+      "no": "Xeyr",
+      "on": "Açıqdır",
+      "off": "Bağlıdır",
+      "version": "Versiya {version}",
+      "unknownPerson": "Bu habdan kənar şəxs",
+      "opensNewTab": "(yeni tabda açılır)"
+    },
+    "denied": {
+      "title": "Bu bölməyə girişiniz yoxdur",
+      "rolesGrant": "Girişi verən rollar: {roles}.",
+      "noStaffTitle": "Bu habda əməkdaş rolunuz yoxdur",
+      "noStaffBody": "Konsol yalnız əməkdaş rolu olan şəxslər üçün açılır. Lazımdırsa, habın kadr inzibatçısına müraciət edin.",
+      "hubNotCovered": "Əməkdaş rollarınız bu habı deyil, başqa habı əhatə edir."
+    },
+    "elevation": {
+      "title": "Bunun siz olduğunuzu təsdiqləyin",
+      "body": "Konsol parol və ikinci faktor təsdiqləndikdən sonra açılır. Genişləndirilmiş sessiya 30 dəqiqəlik fəaliyyətsizlikdən sonra və ya brauzer bağlandıqda bitir.",
+      "action": "Təsdiqlə və davam et",
+      "demoNote": "Nümayiş: təsdiq imitasiya olunur."
+    },
+    "designed": {
+      "title": "Layihələndirilib, hələ qurulmayıb",
+      "body": "Bu bölmə bələdçidə təsvir olunub ({screen} ekranı), lakin ekranı hələ yoxdur. Burada heç nə işləyirmiş kimi görünmür.",
+      "handbook": "Ekran təsvirini aç"
+    },
+    "errors": {
+      "denied": "Rollarınız bu əməliyyata icazə vermir.",
+      "elevation_required": "Əvvəlcə parol və ikinci faktoru təsdiqləyin.",
+      "offline": "Bağlantı yoxdur; heç nə göndərilmədi.",
+      "reason_required": "Səbəbi yazın; o, dəyişikliklə birlikdə saxlanılır.",
+      "stale": "Başqa əməkdaş dəyişdi; səhifəni yeniləyin və yenidən cəhd edin. Daxil etdikləriniz saxlanılıb.",
+      "invalid": "Dəyərləri yoxlayın və yenidən cəhd edin.",
+      "territory_restricted": "Bu ərazi mövcud deyil.",
+      "transition_not_allowed": "Hab cari mərhələdən bu mərhələyə keçə bilməz.",
+      "gates_open": "Bağlanmamış başlanğıc şərtləri mane olur: {items}.",
+      "modes_violation": "Bu parametrlər bir-birinə ziddir: {items}.",
+      "module_requires": "Əvvəlcə bu modulları açın: {items}.",
+      "module_required_by": "Bu modullar ondan asılıdır: {items}.",
+      "counsel_missing": "Aktivləşdirmədən əvvəl hüquqşünasın təsdiqini qeyd edin.",
+      "language_missing": "Habın dili çatışmır: {items}.",
+      "own_request": "Öz sorğunuzu təsdiqləyə bilməzsiniz.",
+      "not_own_request": "Sorğunu yalnız onu göndərən geri götürə bilər.",
+      "request_void": "Əməliyyat dəyişdi; yeni sorğu lazımdır.",
+      "request_expired": "Bu sorğunun müddəti bitib.",
+      "digest_mismatch": "Baxdığınız əməliyyat gözləyən əməliyyat deyil; sorğunu yenidən yükləyin.",
+      "setup_blocked": "Əvvəlcə əvvəlki addımları tamamlayın: {items}.",
+      "second_factor_required": "İkinci faktoru seçin və bərpa kodlarını saxladığınızı təsdiqləyin.",
+      "not_found": "Tapılmadı."
+    },
+    "details": {
+      "demo_data_only_before_soft_launch": "nümayiş məlumatlarına yalnız yumşaq başlanğıca qədər icazə verilir",
+      "demo_data_never_indexed": "nümayiş məlumatları heç vaxt indekslənmir",
+      "demo_data_never_federated": "nümayiş məlumatları heç vaxt federasiyaya ötürülmür",
+      "open_registration_only_when_public": "açıq qeydiyyat yalnız ictimai hab üçün",
+      "registration_closed_before_soft_launch": "yumşaq başlanğıca qədər qeydiyyat bağlıdır",
+      "indexing_only_after_launch": "axtarış sistemlərinin indeksləşdirməsi yalnız başlanğıcdan sonra",
+      "moduleRequires": "«{module}» moduluna «{dependency}» modulu lazımdır"
+    },
+    "landing": {
+      "title": "Bu qovşaqdakı hablar",
+      "lede": "İdarə etmək üçün habı seçin. Hər habın öz konsolu var; onlar arasında keçid açarı yoxdur.",
+      "node": "Qovşaq:",
+      "stage": "Mərhələ",
+      "country": "Ölkə",
+      "data": "Məlumatlar",
+      "yourRoles": "Buradakı rollarınız",
+      "open": "Konsolu aç",
+      "nodeConsole": "Qovşaq konsolu",
+      "nodeConsoleStatus": "Hablar, qovşaq kadrları, yeniləmələr, ehtiyat nüsxələr, açarlar və qovşağın qəza açarları növbəti paketlərdən birində ayrıca konsol alacaq."
+    },
+    "capabilities": {
+      "llm": "Dil modelləri",
+      "embeddings": "Vektor təsvirləri",
+      "rerank": "Yenidən sıralama",
+      "image_generation": "Şəkil yaradılması",
+      "translation": "Tərcümə",
+      "speech_to_text": "Nitqdən mətnə",
+      "text_to_speech": "Mətndən nitqə",
+      "ocr": "Mətnin tanınması",
+      "web_search": "Veb axtarış",
+      "web_fetch": "Veb səhifələrin yüklənməsi",
+      "email": "E-poçt",
+      "sms": "SMS",
+      "messenger": "Messencerlər",
+      "payments": "Ödənişlər",
+      "payouts": "Ödəmələr",
+      "e_invoicing": "Elektron hesab-fakturalar",
+      "e_signature": "Elektron imza",
+      "register_lookup": "Reyestr sorğuları",
+      "sanctions_list": "Sanksiya siyahıları",
+      "maps_geocoding": "Xəritələr və geokodlaşdırma",
+      "object_storage": "Obyekt anbarı",
+      "tax_calculation": "Vergi hesablanması"
+    },
+    "killSwitch": {
+      "engage": "Qəza açarını işə sal",
+      "engageSubmit": "İndi işə sal",
+      "scope": "Nəyi dayandırmaq",
+      "releaseNote": "İşə salma dərhal qüvvəyə minir və bir nəfər tələb edir. Götürmək üçün ikinci əməkdaş və insident qeydi lazımdır.",
+      "scopes": {
+        "outbound_messages": "bütün gedən mesajlar",
+        "hub_agent_dispatch": "bu habdakı bütün agent əməliyyatları",
+        "external_agent_api": "xarici agentlərin girişi"
+      }
+    },
+    "overview": {
+      "title": "İcmal",
+      "lede": "Bu gün nə insan qərarı tələb edir və hab iş və qanun baxımından sağlamdırmı.",
+      "reducedSod": "Habda beşdən az əməkdaş var, buna görə yalnız «icraçı özünü təsdiqləmir» qaydası tətbiq olunur. Yumşaq başlanğıcdan əvvəl başqa rolu olan ikinci əməkdaş əlavə edin.",
+      "queues": "Fəaliyyət göstərə biləcəyiniz növbələr",
+      "nothingWaiting": "Bu gün heç nə qərarınızı gözləmir.",
+      "noQueues": "Hazırda heç bir növbə sizi gözləmir.",
+      "nearestDeadline": "ən yaxın müddət: {date}",
+      "queue": {
+        "claims": "Sahiblik müraciətləri",
+        "review_items": "Redaktoru gözləyən materiallar",
+        "link_proposals": "Əlaqə təklifləri",
+        "reports": "Şikayətlər",
+        "support_cases": "Dəstək müraciətləri",
+        "grant_requests": "Müraciət üzrə giriş sorğuları",
+        "privacy_requests": "Məlumatlarla bağlı sorğular",
+        "unknown_outcomes": "Uzlaşdırılmalı naməlum nəticələr",
+        "alerts": "Avtomatlaşdırma xəbərdarlıqları"
+      },
+      "approvals": "Təsdiqlər",
+      "approvalsWaiting": "{count, plural, one {# sorğu qərarınızı gözləyir.} other {# sorğu qərarınızı gözləyir.}}",
+      "approvalsNone": "Heç bir sorğu sizi gözləmir.",
+      "openApprovals": "Təsdiqləri aç",
+      "launch": "Başlanğıc yoxlama siyahısı",
+      "gatesPassed": "Yerinə yetirilmiş şərtlər",
+      "softLaunchOpen": "Yumşaq başlanğıcın yerinə yetirilmiş şərtləri",
+      "gatesOf": "{total} şərtdən {passed}",
+      "openLaunch": "Başlanğıc yoxlama siyahısını aç",
+      "compliance": "Tələblərə uyğunluq",
+      "legalDue": "Əməliyyat tələb edən hüquqi sənədlər",
+      "screeningAge": "Sanksiya siyahısının yaşı",
+      "days": "{count, plural, one {# gün} other {# gün}}",
+      "licencesExpiring": "Müddəti bitən mənbə lisenziyaları",
+      "fakeProviders": "İstifadə olunan imitasiya provayderləri",
+      "health": "Vəziyyət",
+      "healthCheck": {
+        "readiness": "Hazırlıq",
+        "outbox_age": "Gedən növbənin yaşı",
+        "dead_letters": "Göndərilməmiş hadisələr",
+        "unknown_outcomes": "Naməlum nəticələr",
+        "backup_age": "Son ehtiyat nüsxə"
+      },
+      "healthState": {
+        "ok": "Qaydasındadır",
+        "warning": "Diqqət tələb edir",
+        "failing": "Nasazlıq",
+        "unknown": "Hələ ölçülməyib"
+      },
+      "minutes": "{count, plural, one {# dəqiqə} other {# dəqiqə}}",
+      "spend": "Limitlərə nisbətən xərclər",
+      "spentOf": "{limit} limitdən {spent}",
+      "budgetScope": {
+        "hub": "Bütün hab",
+        "job": "Tapşırıq",
+        "pipeline": "Konveyer",
+        "agent_module": "Agent modulu",
+        "connection": "Bağlantı"
+      },
+      "budgetJob": {
+        "translation": "Tərcümə tapşırıqları",
+        "editorial_rewrite": "Redaksiya emalı",
+        "summarisation": "Qısa xülasələr",
+        "embeddings": "Vektor təsvirləri"
+      },
+      "budgetState": {
+        "ok": "Limit daxilində",
+        "alert": "Xəbərdarlıq həddinə çatılıb",
+        "exhausted": "Limit bitib: yeni ödənişli çağırışlar bloklanır"
+      },
+      "period": {
+        "day": "gündə",
+        "month": "ayda"
+      },
+      "nextFive": "Növbəti beş addım",
+      "next": {
+        "inviteStaff": "Başqa rolu olan ikinci əməkdaşı dəvət edin.",
+        "legalDocuments": "Hüquqi sənədləri habın bütün dillərində hüquqşünas təsdiqi ilə qeyd edin.",
+        "firstSource": "İlk məlumat mənbəyini hüquqi yoxlamaları ilə qeydiyyatdan keçirin.",
+        "verificationRecipe": "Şirkətlərin yoxlanması ssenarisini seçin.",
+        "backupDrill": "Ehtiyat nüsxələməni qurun və təlim bərpası keçirin."
+      }
+    },
+    "approvals": {
+      "title": "Təsdiqlər",
+      "lede": "İkinci əməkdaşın qərarları. Hər təsdiq bir əməliyyata, bir sahəyə və dəyişikliyin dəqiq izinə bağlıdır və müddətlidir.",
+      "reducedSod": "Sadələşdirilmiş vəzifə bölgüsü: habda beşdən az əməkdaş olduqca yalnız «icraçı özünü təsdiqləmir» qaydası tətbiq olunur.",
+      "forMe": "Həll edə biləcəyiniz sorğular",
+      "forMeEmpty": "Heç nə qərarınızı gözləmir.",
+      "mine": "Sizin sorğularınız",
+      "mineEmpty": "Açıq sorğunuz yoxdur.",
+      "decisions": "Son qərarlar",
+      "decisionsEmpty": "Hələ qərar yoxdur.",
+      "requestedBy": "Sorğu edən",
+      "reason": "Səbəb",
+      "requestedAt": "Sorğu vaxtı",
+      "expiresAt": "Bitmə vaxtı",
+      "digest": "Əməliyyat izi",
+      "changes": "Nə dəyişir",
+      "before": "Əvvəl:",
+      "after": "Sonra:",
+      "decision": "Qərar",
+      "approve": "Təsdiqlə",
+      "decline": "Rədd et",
+      "approved": "Təsdiqlənib",
+      "declined": "Rədd edilib",
+      "decide": "Qərarı qeyd et",
+      "bindsDigest": "Qərarınız yuxarıda göstərilən izə bağlanır; əməliyyat dəyişsə, sorğu etibarsız olur.",
+      "withdraw": "Sorğunu geri götür",
+      "ownRequest": "Öz sorğunuzu təsdiqləyə bilməzsiniz.",
+      "actionChanged": "Əməliyyat dəyişdi; yeni sorğu lazımdır.",
+      "expired": "Bu sorğunun müddəti bitib; hələ lazımdırsa, yenidən sorğu edin.",
+      "askQuestion": "Sorğu müzakirəsindəki suallar:",
+      "action": "Əməliyyat",
+      "decidedBy": "Qərar verən",
+      "decidedAt": "Qərar vaxtı",
+      "state": {
+        "pending": "Gözləyir",
+        "void": "Etibarsız",
+        "expired": "Müddəti bitib"
+      },
+      "fields": {
+        "documentVersion": "Sənəd versiyası",
+        "languages": "Dillər",
+        "providerMode": "Provayder rejimi",
+        "automationLevel": "Avtomatlaşdırma səviyyəsi",
+        "feeVersion": "Komissiya versiyası",
+        "role": "Rol"
+      },
+      "actions": {
+        "staff": {
+          "assign_sensitive_role": "Həssas əməkdaş rolu təyin et",
+          "switch_sod_mode": "Vəzifə bölgüsü rejimini dəyiş",
+          "grant_breakglass": "Qəza girişi ver"
+        },
+        "commerce": {
+          "activate_price_version": "Qiymət versiyasını aktivləşdir"
+        },
+        "privacy": {
+          "execute_erasure": "Məlumatların silinməsini icra et"
+        },
+        "moderation": {
+          "apply_sanction_l4": "4-cü səviyyəli sanksiya tətbiq et"
+        },
+        "providers": {
+          "enable_non_fake": "Real provayderi aç"
+        },
+        "hub": {
+          "transition_soft_launch": "Habı yumşaq başlanğıca keçir",
+          "transition_public": "Habı ictimai et",
+          "change_residency": "Məlumatların yerləşməsini dəyiş"
+        },
+        "legal": {
+          "activate_document_version": "Hüquqi sənəd versiyasını aktivləşdir"
+        },
+        "federation": {
+          "raise_peering_level": "Tərəfdaşlıq səviyyəsini artır"
+        },
+        "models": {
+          "activate_private_route": "Qeyri-ictimai məlumatlar üçün model marşrutunu aktivləşdir"
+        },
+        "egress": {
+          "allow_private_class": "Qeyri-ictimai məlumat sinfinin ötürülməsinə icazə ver"
+        },
+        "pipelines": {
+          "activate_personal_data_dataset": "Şəxsi məlumatlı dəsti aktivləşdir"
+        },
+        "datasets": {
+          "activate_court_or_debt": "Məhkəmə və ya borc məlumatları dəstini aktivləşdir"
+        },
+        "automation": {
+          "raise_to_supervised_autonomous": "Sahəni nəzarət altında muxtariyyətə keçir"
+        },
+        "agents": {
+          "enable_commitment_module": "Öhdəlikli agent modulunu aç",
+          "activate_extension": "Agent genişləndirməsini aktivləşdir"
+        },
+        "jurisdiction": {
+          "activate_settings": "Yurisdiksiya parametrlərini aktivləşdir"
+        },
+        "billing": {
+          "activate_fee_version": "Komissiya versiyasını aktivləşdir",
+          "release_payout_batch": "Ödəmə paketini burax"
+        },
+        "payments": {
+          "change_settings": "Ödəniş parametrlərini dəyiş"
+        },
+        "sponsored": {
+          "enable": "Sponsor materiallarını aç"
+        },
+        "support": {
+          "reset_second_factor": "İkinci faktoru sıfırla",
+          "rebind_recovery_email": "Bərpa e-poçtunu dəyiş"
+        },
+        "ops": {
+          "execute_restore": "Bərpanı icra et",
+          "apply_production_migration": "İş mühitində miqrasiyanı tətbiq et",
+          "rotate_node_key": "Qovşaq açarını dəyiş"
+        },
+        "kill_switch": {
+          "release": "Qəza açarını götür"
+        }
+      }
+    },
+    "values": {
+      "languages": {
+        "en": "ingilis dili",
+        "enEs": "ingilis və ispan dilləri"
+      },
+      "mode": {
+        "fake": "İmitasiya",
+        "manual": "Əllə",
+        "live": "Real"
+      },
+      "automation": {
+        "manual": "Əllə",
+        "assisted": "Köməkçi ilə",
+        "supervised_autonomous": "Nəzarət altında muxtariyyət"
+      }
+    },
+    "help": {
+      "title": "Kömək",
+      "lede": "Konsolda necə işləmək: rollarınız üçün yoxlama siyahıları, bələdçi, nişanların mənası və klaviatura.",
+      "checklists": "Yoxlama siyahıları",
+      "checklistNote": "İşarələr yalnız bu brauzerdə saxlanılır.",
+      "checklistFor": "İlk həftə: {role}",
+      "checklist": {
+        "everyone": "Hər əməkdaş üçün"
+      },
+      "items": {
+        "secondFactor": "İkinci faktoru və bərpa kodlarını təhlükəsiz saxlayın.",
+        "readGuardRails": "Heç bir konsolun söndürə bilmədiyi məhdudiyyətləri oxuyun.",
+        "statusLabels": "«İşləyir», «Nümayiş», «Müqavilə», «Layihələndirilib» və «Təklif olunub» nişanlarının mənasını öyrənin.",
+        "secondStaff": "Təsdiqlərin işləməsi üçün ikinci əməkdaşı dəvət edin.",
+        "launchGates": "Başlanğıc yoxlama siyahısını uyğunluq mütəxəssisi ilə birlikdə keçin.",
+        "legal": "Hər hüquqi sənədin bütün dillərdə hüquqşünas tərəfindən təsdiqləndiyinə əmin olun.",
+        "approvals": "Təsdiqlər səhifəsini hər gün yoxlayın.",
+        "policy": "Redaksiya siyasətini və süni intellekt işarələmə qaydalarını yazın.",
+        "sources": "Hansı mənbələrdən və necə istifadə etmək olacağına baxın.",
+        "reviewRules": "Format və müəllif növünə görə baxış qaydalarını təyin edin.",
+        "countryBase": "Ölkə bazasını yoxlayın və yerli əlavələri mənbələri ilə qeyd edin.",
+        "taxonomy": "Təsnifatları formalaşdırın və versiya buraxın.",
+        "firstSource": "İlk mənbəni lisenziya, robot qaydaları və şərtlər yoxlamaları ilə qeydiyyatdan keçirin.",
+        "caseGrants": "Müraciət üzrə girişin necə işlədiyini öyrənin: məhdud həcm, 72 saatdan çox deyil, ikinci əməkdaşın təsdiqi ilə.",
+        "recovery": "Girişin bərpası eskalasiyalarını sübutlarla və gözləmə dövrü ilə həll edin.",
+        "noImpersonation": "Unutmayın: «istifadəçi adından giriş» yoxdur; girişi səbəb kodları ilə izah edin."
+      },
+      "handbook": "Bələdçi",
+      "docs": {
+        "console": "Hab konsolu",
+        "screens": "Konsol ekranları",
+        "setup": "Quraşdırma ustası",
+        "guardRails": "Habın idarə edilməsi və məhdudiyyətləri"
+      },
+      "statuses": "Nişanlar nə deməkdir",
+      "status": {
+        "live": "Tam həyata keçirilib və avtomatik testlərlə əhatə olunub. Hələ heç yerdə iş mühitində yerləşdirilməyib.",
+        "demo": "Ekran var və sınaqdan keçirilib, lakin süni məlumatlarla işləyir və heç nə saxlanmır.",
+        "contract": "Məlumat strukturları və qaydalar müqavilələr kimi təsbit olunub; anbar və ekran hələ yoxdur.",
+        "designed": "Qəbul olunmuş layihə ilə təsvir olunub; kod hələ yoxdur.",
+        "proposed": "İlk dəfə layihələndirilib və müzakirə üçün açıqdır."
+      },
+      "mode": {
+        "fake": "Habla tanışlıq üçün daxili imitasiya: heç nə real provayderə çatmır.",
+        "manual": "İşi mühərrikdən kənarda insan görür, məsələn, reyestrə sorğu.",
+        "live": "Süni yoxlamadan sonra ikinci əməkdaşın açdığı real provayder."
+      },
+      "glossary": "Lüğət",
+      "terms": {
+        "hub": {
+          "term": "Hab",
+          "definition": "Ölkə və ya şəhər üçün öz kadrları, parametrləri və başlanğıc şərtləri olan sahənin bir toplanma nöqtəsi."
+        },
+        "node": {
+          "term": "Qovşaq",
+          "definition": "Mühərrikin bir quraşdırılması; onda bir neçə hab işləyə bilər."
+        },
+        "lifecycle": {
+          "term": "Həyat dövrü mərhələsi",
+          "definition": "Qaralama, hazırlıq, yumşaq başlanğıc, ictimai, dayandırılıb, bağlanır və ya bağlanıb; irəli keçid yerinə yetirilmiş şərtlər və ikinci əməkdaş tələb edir."
+        },
+        "elevation": {
+          "term": "Genişləndirilmiş sessiya",
+          "definition": "Parol və ikinci faktordan sonra açılan konsol sessiyası; fəaliyyətsizlikdə bitir."
+        },
+        "secondPerson": {
+          "term": "İkinci əməkdaşın təsdiqi",
+          "definition": "Həssas dəyişikliyi bir əməkdaş istəyir, digəri təsdiqləyir; heç kim öz sorğusunu təsdiqləmir."
+        },
+        "digest": {
+          "term": "Əməliyyat izi",
+          "definition": "Dəqiq dəyişikliyin izi; təsdiq ona bağlanır, buna görə sonrakı istənilən dəyişiklik təsdiqi etibarsız edir."
+        },
+        "killSwitch": {
+          "term": "Qəza açarı",
+          "definition": "İmkanı dərhal dayandırır; bir nəfər işə salır, götürmək üçün ikinci əməkdaş və insident qeydi lazımdır."
+        },
+        "launchGate": {
+          "term": "Başlanğıc şərti",
+          "definition": "Yumşaq başlanğıcdan və ya ictimai rejimdən əvvəl yerinə yetirilməli olan sübutlu şərt; istisna yoxdur."
+        },
+        "configVersion": {
+          "term": "Konfiqurasiya versiyası",
+          "definition": "Parametrlər heç vaxt yerində redaktə olunmur: hər dəyişiklik aktivləşdirilən və sonra əvəz olunan versiyadır."
+        },
+        "demoData": {
+          "term": "Nümayiş məlumatları",
+          "definition": "Süni, işarələnmiş qeydlər; indekslənmir, federasiyaya ötürülmür və yumşaq başlanğıcdan əvvəl silinir."
+        },
+        "caseGrant": {
+          "term": "Müraciət üzrə giriş",
+          "definition": "Əməkdaşın şəxsi məlumatları görməsinin yeganə yolu: müraciət çərçivəsində, 72 saatdan çox deyil, ikinci əməkdaşın təsdiqi ilə, hər baxış qeyd olunur."
+        }
+      },
+      "keyboard": "Klaviatura",
+      "keys": {
+        "skip": "Tab düyməsinin ilk basılması «Məzmuna keç» keçidinə aparır.",
+        "order": "Sonra ardıcıllıqla: yuxarı zolaq, naviqasiya, səhifə başlığı və məzmun.",
+        "menu": "Telefonda bölmələr «Bölmələr» düyməsi ilə bütün ekranda açılır; Escape onları bağlayır.",
+        "forms": "Hər dəyişiklik səbəb tələb edir; nəticə səsləndirilir və bildiriş kimi göstərilir."
+      }
+    },
+    "hub": {
+      "identity": {
+        "title": "Profil və ərazi",
+        "lede": "Bu hab kimdir və haradadır: habın bütün dillərindəki adları, ərazilər, dillər, valyuta və saat qurşağı.",
+        "names": "Habın bütün dillərdəki adı",
+        "language": "Dil",
+        "name": "Ad",
+        "territories": "Ərazilər",
+        "level": "Səviyyə",
+        "code": "Kod",
+        "territoryName": "Ad",
+        "levels": {
+          "country": "Ölkə",
+          "region": "Region",
+          "place": "Yaşayış məntəqəsi"
+        },
+        "territoriesNote": "Ərazilər habın harada işlədiyini təsvir edir; onlar heç vaxt eksklüziv deyil, məhdudlaşdırılmış yerlər isə istənilən səviyyədə rədd edilir.",
+        "languages": "Dillər",
+        "completeness": "İnterfeysin tamlığı",
+        "default": "əsas",
+        "percent": "{percent}%",
+        "notEngineLanguage": "Hələ mühərrik dili deyil",
+        "basics": "Valyuta, vaxt və ünvan",
+        "currency": "Valyuta",
+        "timeZone": "Saat qurşağı",
+        "domain": "Domen",
+        "brand": "Brend tərtibatı",
+        "noBrand": "Yoxdur (mühərrikin neytral brendi)",
+        "revision": "Konfiqurasiya",
+        "contrast": "Dillərə görə brend kontrastı",
+        "ratio": "kontrast {ratio}:1",
+        "contrastPass": "uyğundur",
+        "contrastFail": "uyğun deyil",
+        "change": "Profili dəyiş",
+        "addTerritory": "Ərazi əlavə et",
+        "addTerritoryHelp": "Ölkə (US), region (US-TX) və ya yaşayış məntəqəsi (US-TX:austin).",
+        "defaultLanguage": "Əsas dil",
+        "versionsNote": "Saxlama konfiqurasiyanın yeni versiyasını yaradır; yenisi aktivləşdirilənə qədər mövcud versiya qalır."
+      },
+      "modes": {
+        "title": "Sistem rejimləri",
+        "lede": "Hab necə davranır: mərhələ, məlumatlar, qeydiyyat, moderasiya, avtomatlaşdırma, indeksləşdirmə və texniki xidmət.",
+        "lifecycle": "Həyat dövrü",
+        "stage": "Cari mərhələ",
+        "nextStages": "İcazə verilən növbəti mərhələlər",
+        "blockedBy": "Yumşaq başlanğıca bağlanmamış şərtlər mane olur: {items}.",
+        "openLaunch": "Başlanğıc yoxlama siyahısını aç",
+        "requestTransition": "Keçidi sorğu et",
+        "to": "Hansı mərhələyə keçmək",
+        "behaviour": "Davranış",
+        "data": "Məlumatlar",
+        "dataMode": {
+          "demo": "Nümayiş məlumatları",
+          "live": "Real məlumatlar"
+        },
+        "registration": "Qeydiyyat",
+        "registrationMode": {
+          "closed": "Bağlı",
+          "invite_only": "Yalnız dəvətlə",
+          "open": "Açıq"
+        },
+        "moderation": "Moderasiya",
+        "moderationMode": {
+          "pre_moderate_all": "Hər şeyi dərcdən əvvəl yoxla",
+          "pre_moderate_new_authors": "Yeni müəllifləri dərcdən əvvəl yoxla",
+          "post_moderate": "Dərcdən sonra yoxla"
+        },
+        "indexing": "Axtarış sistemlərinin indeksləşdirməsi",
+        "maintenance": "Texniki xidmət",
+        "demoRule": "Nümayiş məlumatları habı tərk etmir, indekslənmir və federasiyaya ötürülmür; onlar yumşaq başlanğıcdan əvvəl silinməlidir.",
+        "automation": "Avtomatlaşdırma",
+        "domain": "Sahə",
+        "level": "Səviyyə",
+        "domains": {
+          "editorial": "Redaksiya",
+          "translation": "Tərcümə",
+          "magazine_assembly": "Jurnalın yığılması",
+          "data_mining": "Məlumat toplanması",
+          "entity_resolution": "Qeydlərin uyğunlaşdırılması",
+          "verification_rechecks": "Təkrar yoxlamalar",
+          "moderation_triage": "Moderasiya çeşidlənməsi"
+        },
+        "humanGates": "Həmişə insanın qəbul etdiyi qərarlar",
+        "humanGatesNote": "Heç bir avtomatlaşdırma səviyyəsi onları ləğv etmir.",
+        "gates": {
+          "source_activation": "Mənbənin aktivləşdirilməsi",
+          "dataset_activation": "Məlumat dəstinin aktivləşdirilməsi",
+          "publication": "Dərc",
+          "magazine_release": "Jurnal nömrəsinin buraxılışı",
+          "claim_decision": "Müraciət üzrə qərar",
+          "link_decision": "Əlaqə üzrə qərar",
+          "moderation_sanction": "Sanksiyanın tətbiqi",
+          "price_activation": "Qiymətin aktivləşdirilməsi"
+        },
+        "change": "Rejimləri dəyiş",
+        "supervisedNote": "Sahəni nəzarət altında muxtariyyətə keçirmək üçün ikinci əməkdaş və qüvvədə olan xərc limitləri lazımdır.",
+        "violationsFound": "Cari rejimlər mərhələyə ziddir: {items}."
+      },
+      "modules": {
+        "title": "Modullar",
+        "lede": "Bu habda hansı məhsul modulları açıqdır, hər biri nəyə əsaslanır və mühərrikdə nə dərəcədə qurulub.",
+        "list": "Məhsul modulları",
+        "engine": "Mühərrikdə:",
+        "dependsOn": "Əsaslanır: {items}.",
+        "needsFirst": "Əvvəlcə açın: {items}.",
+        "change": "Modulu dəyiş",
+        "module": "Modul",
+        "action": "Əməliyyat",
+        "enable": "Aç",
+        "disable": "Bağla",
+        "disableNote": "Bağlanmış modul iştirakçılardan gizlədilir; mövcud qeydlər qalır və yenidən açıldıqda qayıdır.",
+        "names": {
+          "publications": "Nəşrlər",
+          "magazine": "Jurnal",
+          "events": "Tədbirlər",
+          "learning": "Təhsil",
+          "matching": "Uyğunlaşdırma",
+          "catalogue": "Kataloq",
+          "procurement": "Satınalma",
+          "sales": "Satış",
+          "execution_reputation": "İcra və reputasiya",
+          "agents": "Agentlər",
+          "external_agent_api": "Xarici agentlərin girişi",
+          "search": "Axtarış",
+          "knowledge_answers": "Biliklərdən cavablar",
+          "communications": "Kommunikasiyalar",
+          "billing": "Ödəniş",
+          "federation": "Federasiya",
+          "editorial_automation": "Redaksiyanın avtomatlaşdırılması",
+          "data_mining": "Məlumat toplanması",
+          "project_planner": "Layihə planlaşdırıcısı",
+          "expert_marketplace": "Məsləhət və tapşırıq bazarı",
+          "shared_knowledge": "Ümumi biliklər",
+          "reputation_passport": "Reputasiya pasportu",
+          "plan_recommendations": "Plan addımları üçün tövsiyələr"
+        }
+      },
+      "legal": {
+        "title": "Hüquqi və operator",
+        "lede": "Habın operatoru və iştirakçıların qəbul etdiyi sənədlər; versiya yalnız habın bütün dillərində hüquqşünas təsdiqi ilə qüvvəyə minir.",
+        "operator": "Operator",
+        "legalName": "Hüquqi ad",
+        "form": "Təşkilati-hüquqi forma",
+        "forms": {
+          "llc": "Məhdud məsuliyyətli cəmiyyət",
+          "corporation": "Korporasiya",
+          "nonprofit_association": "Qeyri-kommersiya assosiasiyası",
+          "sole_proprietor": "Fərdi sahibkar",
+          "limited_company": "Məhdud məsuliyyətli şirkət"
+        },
+        "identifier": "Qeydiyyat nömrəsi",
+        "address": "Ünvan",
+        "legalContact": "Hüquqi bildirişlər üçün əlaqə",
+        "abuseContact": "Şikayətlər və silinmə tələbləri üçün əlaqə",
+        "screening": "Sanksiya yoxlaması",
+        "screeningResult": {
+          "not_run": "Hələ aparılmayıb",
+          "no_match": "Uyğunluq yoxdur",
+          "potential_match": "Mümkün uyğunluq: yoxlama lazımdır"
+        },
+        "fakeScreening": "imitasiya, real yoxlama deyil",
+        "noOperator": "Operator hələ qeyd olunmayıb.",
+        "documents": "Sənədlər",
+        "kind": "Sənəd",
+        "kinds": {
+          "terms": "İstifadə şərtləri",
+          "privacy_notice": "Məxfilik bildirişi",
+          "community_rules": "İcma qaydaları",
+          "imprint": "Nəşriyyat məlumatları",
+          "cookie_policy": "Kuki faylları siyasəti"
+        },
+        "version": "Versiya",
+        "status": "Status",
+        "statuses": {
+          "draft": "Qaralama",
+          "counsel_approved": "Hüquqşünas təsdiqləyib",
+          "active": "Qüvvədədir",
+          "superseded": "Əvəz olunub"
+        },
+        "effective": "{date} tarixindən qüvvədədir",
+        "languages": "Dillər",
+        "missing": "çatışmır: {items}",
+        "counsel": "Hüquqşünas təsdiqi",
+        "noCounsel": "Hələ təsdiqlənməyib",
+        "noDocuments": "Hələ hüquqi sənəd yoxdur.",
+        "requestActivation": "Aktivləşdirməni sorğu et",
+        "document": "Sənəd versiyası",
+        "nothingToActivate": "Hüquqşünasın təsdiqlədiyi və aktivləşdirməni gözləyən versiya yoxdur.",
+        "draft": "Yeni versiya hazırla",
+        "templatesNote": "Yeni versiya mühərrikin şablonlarından başlayır; aktivləşdirmədən əvvəl onu hüquqşünas yoxlayır."
+      },
+      "residency": {
+        "title": "Məlumatların yerləşməsi və subpodratçılar",
+        "lede": "Şəxsi məlumatlar harada saxlanılır və emal olunur və onları hab üçün kim emal edir.",
+        "none": "Məlumatların yerləşməsi barədə qərar hələ qeyd olunmayıb.",
+        "contradiction": "{services} yerləşmə ölkəsindən ({country}) kənarda işləyir. Ora şəxsi məlumatların düşüb-düşmədiyini yoxlayın.",
+        "privateOutside": "Yerləşmə ölkəsindən kənardakı subpodratçı şəxsi məlumatları alır; məlumat ötürülməsi qaydalarını yoxlayın.",
+        "decision": "Yerləşmə qərarı",
+        "country": "Ölkə",
+        "regime": "Məlumatların qorunması rejimi",
+        "regimes": {
+          "us_state_privacy": "ABŞ ştatlarının məlumatların qorunması qanunları",
+          "uz_personal_data": "Özbəkistanın şəxsi məlumatlar haqqında qanunu",
+          "not_recorded": "Hələ qeyd olunmayıb"
+        },
+        "version": "Versiya",
+        "servicesTitle": "Xidmətlər və regionlar",
+        "service": "Xidmət",
+        "services": {
+          "database": "Verilənlər bazası",
+          "object_storage": "Obyekt anbarı",
+          "backups": "Ehtiyat nüsxələr",
+          "worker": "Fon emalçısı",
+          "email_relay": "Poçt retranslyatoru"
+        },
+        "region": "Region",
+        "outside": "yerləşmə ölkəsindən kənarda",
+        "subProcessors": "Subpodratçılar",
+        "subProcessorsNote": "Siyahı habın bağlantılarından qurulur; bu nümayişdə hər bağlantı imitasiyadır və ya əl rejimindədir.",
+        "processor": "Subpodratçı",
+        "capability": "İmkan",
+        "mode": "Rejim",
+        "privateData": "Şəxsi məlumatlar",
+        "change": "Məlumatların yerləşməsini dəyiş",
+        "requestChange": "Dəyişikliyi sorğu et",
+        "newCountry": "Yeni yerləşmə ölkəsi",
+        "newCountryHelp": "İkihərfli ölkə kodu, məsələn US."
+      },
+      "country": {
+        "title": "Ölkə bazası",
+        "lede": "Habın əsaslandığı ölkə məlumatları: bağlı ölkə paketi və ya ümumi profil və habın yerli əlavələri.",
+        "binding": "Ölkə paketi",
+        "pack": "Paket",
+        "packVersion": "{country}, versiya {version}",
+        "packStatus": "Paketin statusu",
+        "packStatuses": {
+          "complete": "Tam",
+          "partial": "Qismən",
+          "draft": "Qaralama"
+        },
+        "identifier": "Şirkət identifikatoru",
+        "identifierKind": "İdentifikator kodu",
+        "currency": "Valyuta",
+        "regions": "Regionlar",
+        "entityTypes": "Təşkilati-hüquqi formalar",
+        "residencyRequired": "Ölkə daxilində saxlama tələb olunur",
+        "generic": "Ümumi profil: yalnız ISO məlumatları; identifikatorlar, reyestrlər və digər məlumatlar yerli əlavələr kimi əlavə olunur.",
+        "sourcesNote": "Paketdəki hər məlumat mənbəyə istinad edir və nə dərəcədə yoxlandığını göstərir.",
+        "additions": "Yerli əlavələr",
+        "kind": "Növ",
+        "kinds": {
+          "identifier": "İdentifikator",
+          "register": "Reyestr",
+          "licence_category": "Lisenziya kateqoriyası",
+          "holiday": "Bayram",
+          "tax_fact": "Vergi məlumatı",
+          "unit": "Vahid"
+        },
+        "label": "Ad",
+        "verification": "Yoxlama",
+        "levels": {
+          "candidate": "Namizəd",
+          "confirmed": "Təsdiqlənib"
+        },
+        "noAdditions": "Hələ yerli əlavə yoxdur.",
+        "export": "Əlavələri ölkə paketinin dəyişikliyi kimi ixrac et:",
+        "add": "Yerli əlavə əlavə et",
+        "key": "Açar",
+        "keyHelp": "Daimi açar, məsələn US-CA:cslb.",
+        "candidateNote": "Yeni əlavə uyğunluq mütəxəssisi onu mənbə ilə təsdiqləyənə qədər namizəd qalır."
+      },
+      "taxonomy": {
+        "title": "Təsnifatlar və vahidlər",
+        "lede": "Mövzular, kateqoriyalar, plan addımı kateqoriyaları və vahidlər habın bütün dillərindəki adları ilə, versiyalar şəklində buraxılır.",
+        "kinds": {
+          "topics": "Mövzular",
+          "categories": "Kateqoriyalar",
+          "plan_steps": "Plan addımı kateqoriyaları",
+          "units": "Vahidlər"
+        },
+        "released": "{date} tarixində buraxılıb",
+        "unreleased": "hələ buraxılmayıb",
+        "terms": "{count, plural, one {# termin} other {# termin}}",
+        "usage": "{count, plural, one {# dəfə istifadə olunub} other {# dəfə istifadə olunub}}",
+        "deprecated": "köhnəlib",
+        "empty": "Hələ təsnifat yoxdur. Mövzular və plan addımı kateqoriyaları ilə başlayın; mühərrikin açıq plan addımları təsnifatını idxal etmək olar.",
+        "deprecateNote": "İstifadə olunan termini köhnəlmiş kimi işarələməzdən əvvəl onu başqa terminə uyğunlaşdırın.",
+        "add": "Termin əlavə et",
+        "kind": "Təsnifat",
+        "key": "Açar",
+        "keyHelp": "Kiçik latın hərfləri ilə, məsələn materials.steel.",
+        "label": "Ad"
+      },
+      "launch": {
+        "title": "Başlanğıc yoxlama siyahısı",
+        "lede": "Habı yumşaq başlanğıcdan və ya ictimai rejimdən nə ayırır. Hər şərt sübut tələb edir; istisna yoxdur.",
+        "progress": "{total} şərtdən {passed} yerinə yetirilib",
+        "progressLabel": "Yerinə yetirilmiş şərtlər",
+        "gatesTitle": "Şərtlər",
+        "gate": "Şərt",
+        "state": "Vəziyyət",
+        "states": {
+          "open": "Açıq",
+          "passed": "Yerinə yetirilib",
+          "invalidated": "Ləğv olunub"
+        },
+        "evidence": "Sübut",
+        "checked": "Yoxlanılıb",
+        "softLaunchGate": "yumşaq başlanğıc üçün lazımdır",
+        "noWaiver": "Heç bir idarəetmə elementi şərti ləğv etmir; ləğv olunmuş şərt yenidən yoxlanılana qədər açıq şərt kimi bloklayır.",
+        "gates": {
+          "operator_recorded_and_screened": "Operator qeyd olunub və yoxlanılıb",
+          "legal_documents_counsel_approved": "Hüquqi sənədlər hüquqşünas tərəfindən təsdiqlənib",
+          "data_residency_configured": "Məlumatların yerləşməsi qurulub",
+          "two_staff_with_second_factor": "İkinci faktorlu iki əməkdaş",
+          "editorial_team_and_policy": "Redaksiya və redaksiya siyasəti",
+          "community_rules_all_languages": "İcma qaydaları bütün dillərdə",
+          "information_source_registered": "Məlumat mənbəyi qeydiyyatdan keçib",
+          "verification_recipe_enabled": "Yoxlama ssenarisi açılıb",
+          "sanctions_screening_configured": "Sanksiya yoxlamaları qurulub",
+          "i18n_complete": "İnterfeys habın bütün dillərində tamdır",
+          "backup_restore_exercised": "Ehtiyat nüsxə təlimdə bərpa olunub",
+          "brand_accessibility_checked": "Brendin əlçatanlığı yoxlanılıb",
+          "demo_data_purged": "Nümayiş məlumatları silinib",
+          "ai_egress_policy_reviewed": "Süni intellektə məlumat ötürülməsi siyasətinə baxılıb"
+        },
+        "mark": "Şərti yerinə yetirilmiş kimi işarələ",
+        "evidenceRef": "Sübut istinadı",
+        "evidenceHelp": "Saxlanılmış sübutun identifikatoru, məsələn ev-counsel-letter-2.",
+        "request": "Yumşaq başlanğıc və ya ictimai rejimi sorğu et",
+        "softBlocked": "Yumşaq başlanğıca mane olur: {items}.",
+        "softReady": "Yumşaq başlanğıcın bütün şərtləri yerinə yetirilib.",
+        "publicBlocked": "{count, plural, one {İctimai rejimə hələ # şərt mane olur.} other {İctimai rejimə hələ # şərt mane olur.}}",
+        "publicReady": "Bütün şərtlər yerinə yetirilib."
+      }
+    },
+    "setup": {
+      "title": "Quraşdırma",
+      "stepsLabel": "Quraşdırma addımları",
+      "resume": "Cavablar serverdə saxlanılır, ona görə dayana və eyni keçidlə davam edə bilərsiniz. Bu nümayişdə heç nə saxlanmır.",
+      "answers": "Cavablarınız",
+      "continue": "Saxla və davam et",
+      "finish": "Quraşdırmanı bitir",
+      "chooseCountry": "Ölkəni seçin",
+      "check": {
+        "title": "Quraşdırmanın yoxlanması",
+        "purpose": "Mühərrik hər şeydən əvvəl ünvanı, verilənlər bazasını, obyekt anbarını, fon emalçısını, saatı və gizli açarlar anbarını yoxlayır.",
+        "items": {
+          "address": "İctimai ünvan",
+          "database": "Verilənlər bazası",
+          "object_storage": "Obyekt anbarı",
+          "worker": "Fon emalçısı",
+          "clock": "Saat",
+          "secret_store": "Gizli açarlar anbarı"
+        },
+        "states": {
+          "pass": "Keçdi",
+          "warn": "Xəbərdarlıq",
+          "fail": "Keçmədi"
+        },
+        "help": {
+          "address": "İctimai ünvanı HTTPS ilə göstərin (və ya sınaq üçün localhost).",
+          "database": "Miqrasiyaları icra edin; iş rolu sətir səviyyəli qorumadan yan keçməməlidir.",
+          "object_storage": "Anbar yazmağa, oxumağa və silməyə icazə verməli və ictimai olmamalıdır.",
+          "worker": "Fon emalçısını işə salın; son dəqiqədə ondan siqnal gəlməyib.",
+          "clock": "Server saatı brauzer saatından 30 saniyədən çox fərqlənir; imzalar və cədvəllər bundan asılıdır.",
+          "secret_store": "Açarların şifrələnməsi üçün real açar təyin edin; yer tutucular rədd edilir."
+        },
+        "blocking": "Bloklayıcı yoxlama keçmədi, buna görə quraşdırmanı davam etdirmək olmaz.",
+        "guide": "Quraşdırma bələdçisini aç",
+        "cannotContinue": "Bütün bloklayıcı yoxlamalar keçənə qədər quraşdırmanı davam etdirmək olmaz."
+      },
+      "node": {
+        "title": "Qovşaq profili",
+        "purpose": "Quraşdırmanın adı, domeni və yurisdiksiyası, həmçinin onun imza açarı.",
+        "name": "Qovşağın adı",
+        "domain": "Domen",
+        "domainHelp": "Məsələn, build.example.org.",
+        "jurisdiction": "Qovşağın yurisdiksiyası",
+        "jurisdictionHelp": "Qovşaq operatorunun qanunlarına əməl etdiyi ölkə. Məhdudlaşdırılmış yerlər təklif olunmur.",
+        "key": "İmza açarı davam etdikdə yaradılır. Yalnız açıq açar və onun izi göstərilir; gizli açar heç vaxt göstərilmir."
+      },
+      "hub": {
+        "title": "Hab profili",
+        "purpose": "Ölkənizi və ya şəhərinizi kodsuz qurun: başlanğıc nöqtəsi, ərazi, hər dildə ad, dillər, valyuta və saat qurşağı.",
+        "examples": "Nümunədən başla:",
+        "exampleUs": "ABŞ (San-Dieqo)",
+        "exampleSamarkand": "Səmərqənd, Özbəkistan",
+        "exampleNote": "Nümunə dəyərləri süni olur; onları özünüzünkü ilə əvəz edin.",
+        "start": "Başlanğıc nöqtəsi",
+        "startHelp": "Ölkə paketi regionlar, identifikator formatları, valyuta və hüquqi məlumatlar gətirir; ümumi profil isə yalnız ISO məlumatlarını.",
+        "pack": "Ölkə paketi: {country}",
+        "generic": "Ümumi profil (hələ paket yoxdur)",
+        "territory": "Ərazi",
+        "territoryHelp": "Ölkə, region və ya yaşayış məntəqəsi kodu, məsələn US-CA:san-diego.",
+        "name": "Habın adı",
+        "nameHelp": "Habın hər dilində məcburidir; qalan dilləri konsolda əlavə etmək olar.",
+        "languages": "Habın dilləri",
+        "languagesHelp": "Dil kodları, əsası birinci, məsələn en, es.",
+        "currency": "Valyuta",
+        "timeZone": "Saat qurşağı"
+      },
+      "operator": {
+        "title": "Operator",
+        "purpose": "Habı idarə edən hüquqi şəxs, onun əlaqələri, mülkiyyət bəyannaməsi və sanksiya yoxlaması.",
+        "legalName": "Hüquqi ad",
+        "form": "Təşkilati-hüquqi forma",
+        "identifier": "Qeydiyyat nömrəsi",
+        "address": "Ünvan",
+        "legalContact": "Hüquqi bildirişlər üçün əlaqə",
+        "abuseContact": "Şikayətlər və silinmə tələbləri üçün əlaqə",
+        "ownership": "Operatorun mülkiyyət strukturunu düzgün bəyan edirəm.",
+        "screening": "Yoxlama mühərrikin əsas siyahısı üzrə aparılır. İmitasiya ilə nəticə «imitasiya, real yoxlama deyil» kimi işarələnir; mümkün uyğunluq operatorun özünün bağlaya bilmədiyi yoxlama açır."
+      },
+      "admin": {
+        "title": "İlk inzibatçı",
+        "purpose": "Məcburi ikinci faktoru və bir dəfə göstərilən bərpa kodları olan ilk əməkdaş.",
+        "name": "Ad",
+        "email": "E-poçt",
+        "password": "Parol",
+        "passwordHelp": "Bu nümayişdə ad, e-poçt və parol bu səhifəni tərk etmir.",
+        "secondFactor": "İkinci faktor",
+        "secondFactorHelp": "İkinci faktor məcburidir; onsuz quraşdırmanı bitirmək olmaz.",
+        "chooseFactor": "İkinci faktoru seçin",
+        "passkey": "Giriş açarı",
+        "totp": "Autentifikator tətbiqi",
+        "recoveryCodes": "On birdəfəlik bərpa kodu ikinci faktor qoşulduqdan sonra burada bir dəfə görünəcək. Bu nümayişdə kodlar yaradılmır.",
+        "stored": "Bərpa kodlarını saxladım.",
+        "reducedSod": "Əməkdaş bir nəfər olduqca hab sadələşdirilmiş vəzifə bölgüsü rejimində işləyir; iki şəxsli əməliyyatlar ikinci əməkdaşın gəlməsini gözləyir."
+      },
+      "residency": {
+        "title": "Saxlama və yerləşmə",
+        "purpose": "Şəxsi məlumatlar harada saxlanılır və emal olunur və bildirişlər hansı qoruma rejiminə əməl edir.",
+        "country": "Yerləşmə ölkəsi",
+        "countryHelp": "Verilənlər bazası, obyekt anbarı və ehtiyat nüsxələr orada olmalıdır.",
+        "regime": "Məlumatların qorunması rejimi",
+        "egress": "Standart olaraq qeyri-ictimai məlumatlar yerləşmə ölkəsini tərk etmir və siz icazə verənə qədər xarici model provayderinə göndərilmir."
+      },
+      "providers": {
+        "title": "Provayderlər",
+        "purpose": "Hər imkan imitasiyadan başlayır, buna görə habı hesab və xərc olmadan öyrənmək olar.",
+        "options": {
+          "fake": "Hələlik imitasiyanı saxla",
+          "manual": "Əllə (insan görür)",
+          "later": "Sonra konsolda qoş"
+        },
+        "liveLater": "Real bağlantılar burada yaradılmır: onlar uğurlu süni yoxlama, məlumat ötürülməsi qərarı və ikinci əməkdaş tələb edir.",
+        "models": "Dil modellərini sonra birbaşa provayderdən və ya isteğe bağlı OpenRouter marşrutlaşdırıcısı vasitəsilə qoşmaq olar.",
+        "invite": "Poçt işə düşənə qədər ikinci əməkdaşı dəvət etmək üçün konsol 72 saat qüvvədə olan birdəfəlik dəvət keçidi göstərir."
+      },
+      "modes": {
+        "title": "Rejimlər",
+        "purpose": "Hab nə ilə başlayır: məlumat rejimi, qeydiyyat, modullar, moderasiya və avtomatlaşdırma.",
+        "defaults": "Qeydiyyat əvvəlcə bağlıdır, avtomatlaşdırmanın bütün sahələri əllədir, indeksləşdirmə bağlıdır; nəşrlər, jurnal, tədbirlər, axtarış və kommunikasiyalar açıqdır. Bütün bunlar sonra konsolda dəyişdirilir."
+      },
+      "review": {
+        "title": "Baxış",
+        "purpose": "Bitirmədən əvvəl bütün addımların xülasəsi. Bitirmə konfiqurasiyanı yazır, başlanğıc şərtlərini yaradır və quraşdırma tokenini ləğv edir.",
+        "done": "Hazırdır",
+        "notDone": "Hazır deyil",
+        "edit": "Dəyiş",
+        "afterFinish": "Bitirdikdən sonra hab qaralama qalır: qeydiyyat bağlıdır, bütün provayderlər imitasiyadır, indeksləşdirmə bağlıdır."
+      }
+    }
+  }
+}

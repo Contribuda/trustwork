@@ -3,7 +3,8 @@
  * `apps/web/locales/en/<feature>.json` adds one line here; `tests/web/locales.test.ts` checks the list.
  */
 export type AppMessages =
-  typeof import('./en/assistant.json')
+  typeof import('./en/admin.json')
+  & typeof import('./en/assistant.json')
   & typeof import('./en/auth.json')
   & typeof import('./en/commerce.json')
   & typeof import('./en/companies.json')
