@@ -82,13 +82,14 @@ await step('sign-up through the proxy is accepted without creating a session', a
 });
 
 let token = null;
-await step('the verification token arrives in the fake mailbox (API log)', async () => {
-  const deadline = Date.now() + 15_000;
+await step('the verification mail leaves through the outbox and the worker (worker log transport)', async () => {
+  const deadline = Date.now() + 30_000;
   while (!token) {
-    const logs = run(['logs', '--no-color', '--no-log-prefix', 'api']).stdout ?? '';
-    const line = logs.split('\n').reverse().find((l) => l.includes('[mail:verify_email]') && l.includes(`to=${email} `));
-    if (line) token = JSON.parse(line.slice(line.indexOf('{'))).token;
-    else if (Date.now() > deadline) throw new Error('no verification mail for the smoke address in the API log');
+    const logs = run(['logs', '--no-color', '--no-log-prefix', 'worker']).stdout ?? '';
+    const start = logs.lastIndexOf(`[mail] to=${email} `);
+    const link = start === -1 ? null : /\/verify-email\/([A-Za-z0-9_%.~-]+)/.exec(logs.slice(start));
+    if (link) token = decodeURIComponent(link[1]);
+    else if (Date.now() > deadline) throw new Error('no verification mail for the smoke address in the worker log');
     else await new Promise((resolve) => setTimeout(resolve, 500));
   }
   assert.ok(typeof token === 'string' && token.length > 10);

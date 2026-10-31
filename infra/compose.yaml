@@ -18,6 +18,9 @@ x-stack-db: &stack-db
   TRUSTWORK_STACK_MIGRATOR_PASSWORD: ${TRUSTWORK_STACK_MIGRATOR_PASSWORD:-local_only_stack_migrator}
   TRUSTWORK_STACK_API_PASSWORD: ${TRUSTWORK_STACK_API_PASSWORD:-local_only_stack_api}
   TRUSTWORK_STACK_WORKER_PASSWORD: ${TRUSTWORK_STACK_WORKER_PASSWORD:-local_only_stack_worker}
+# Local-only key shared by the API and the worker: seals the one-time token of each mail intent (MAIL-001). Never a
+# production value; production sets its own MAIL_SECRET_KEY (docs/operations/images.md).
+x-mail-key: &mail-key ${TRUSTWORK_STACK_MAIL_SECRET_KEY:-6c6f63616c2d6f6e6c792d737461636b2d6d61696c2d6b65792d6e6f742d70726f64}
 
 services:
   postgres:
@@ -76,12 +79,13 @@ services:
     environment:
       API_DATABASE_URL: postgresql://trustwork_stack_api:${TRUSTWORK_STACK_API_PASSWORD:-local_only_stack_api}@postgres:5432/trustwork_stack
       PUBLIC_ORIGIN: http://localhost:${TRUSTWORK_STACK_PORT:-8080}
-      # Local stack only: plain-http localhost origin and the fake mailbox, which prints verification tokens to the
-      # log so sign-up can be completed without a mail provider. The image default is NODE_ENV=production, where the
-      # API refuses all three (OPS-001); production configuration is in docs/operations/images.md.
+      # Local stack only: plain-http localhost origin and fake providers. The API records mail intents in the outbox;
+      # the worker below prints them to its log (MAIL_TRANSPORT=log) so sign-up can be completed without a mail
+      # server. The image default is NODE_ENV=production, where these settings are refused (OPS-001, MAIL-001);
+      # production configuration is in docs/operations/images.md.
       NODE_ENV: development
       AUTH_PROVIDER_MODE: fake
-      API_LOG_MAIL: "1"
+      MAIL_SECRET_KEY: *mail-key
       # Exactly one proxy (infra/proxy) sits in front of the API.
       API_TRUSTED_PROXY_HOPS: "1"
     healthcheck:
@@ -102,6 +106,12 @@ services:
       migrate: { condition: service_completed_successfully }
     environment:
       WORKER_DATABASE_URL: postgresql://trustwork_stack_worker:${TRUSTWORK_STACK_WORKER_PASSWORD:-local_only_stack_worker}@postgres:5432/trustwork_stack
+      # Local stack only: mail is rendered and printed to the worker log (links included) instead of being sent;
+      # production uses MAIL_TRANSPORT=smtp with the operator's relay (apps/worker/src/mail/README.md).
+      NODE_ENV: development
+      MAIL_TRANSPORT: log
+      MAIL_SECRET_KEY: *mail-key
+      MAIL_PUBLIC_ORIGIN: http://localhost:${TRUSTWORK_STACK_PORT:-8080}
     stop_grace_period: 30s
     restart: unless-stopped
 
