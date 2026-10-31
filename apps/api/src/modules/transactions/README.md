@@ -36,4 +36,4 @@ Trustwork never holds participants' money (ADR 010 decision 20). An order is an 
 
 ## Kinds of terms
 
-`terms_kind` (`rfq_quote`, `task`, `consultation`, ADR 012 decision 19) is a column of the agreement and part of its digest. This slice creates `rfq_quote` agreements; task and consultation agreements are created by TASK-001 and CONS-001, which add their foreign keys and checks (the database refuses them until then, `details.reason = terms_kind_unavailable`).
+`terms_kind` (`rfq_quote`, `task`, `consultation`, ADR 012 decision 19) is a column of the agreement and part of its digest. This slice creates `rfq_quote` agreements and its routes read only those. Task agreements are created and read by the [tasks module](../tasks/README.md) (TASK-001, which added their checks to the agreement guard); consultation agreements arrive with CONS-001 (the database refuses them until then, `details.reason = terms_kind_unavailable`).

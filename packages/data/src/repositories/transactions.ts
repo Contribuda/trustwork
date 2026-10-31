@@ -189,18 +189,19 @@ export const agreements = {
   insert(trx: Transaction, row: AgreementInsert): Promise<AgreementRow> {
     return trx.insertInto('agreement').values({ ...row, terms_kind: 'rfq_quote' }).returningAll().executeTakeFirstOrThrow();
   },
+  // RFQ-quote agreements only: task agreements (TASK-001) are read and moved through the tasks module.
   get(trx: Transaction, id: string): Promise<AgreementRow | undefined> {
-    return trx.selectFrom('agreement').selectAll().where('id', '=', id).executeTakeFirst();
+    return trx.selectFrom('agreement').selectAll().where('id', '=', id).where('terms_kind', '=', 'rfq_quote').executeTakeFirst();
   },
   lock(trx: Transaction, id: string): Promise<AgreementRow | undefined> {
-    return trx.selectFrom('agreement').selectAll().where('id', '=', id).forUpdate().executeTakeFirst();
+    return trx.selectFrom('agreement').selectAll().where('id', '=', id).where('terms_kind', '=', 'rfq_quote').forUpdate().executeTakeFirst();
   },
   liveForRfq(trx: Transaction, rfqId: string): Promise<AgreementRow | undefined> {
     return trx.selectFrom('agreement').selectAll().where('rfq_id', '=', rfqId).where('status', 'in', ['proposed', 'accepted_by_buyer', 'accepted_by_both']).executeTakeFirst();
   },
-  /** Agreements where the principal (or the company it acts for) is a party, newest first. */
+  /** RFQ-quote agreements where the principal (or the company it acts for) is a party, newest first. */
   listForParties(trx: Transaction, scope: PartyScope): Promise<AgreementRow[]> {
-    return trx.selectFrom('agreement').selectAll()
+    return trx.selectFrom('agreement').selectAll().where('terms_kind', '=', 'rfq_quote')
       .where((eb) => {
         const clauses = [eb('buyer_person_id', '=', scope.personId), eb('seller_person_id', '=', scope.personId)];
         if (scope.companyId) clauses.push(eb('buyer_company_id', '=', scope.companyId), eb('seller_company_id', '=', scope.companyId));

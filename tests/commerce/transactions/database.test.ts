@@ -219,8 +219,11 @@ test('transactions database: RLS, frozen quotes, staleness, digests, one live ag
     await fails(as(boris, (trx) => agreements.insert(trx, { ...agreementRow(borisQuote, bv2, rv2), created_by_person_id: boris })), '42501');
     await fails(as(petr, (trx) => agreements.insert(trx, agreementRow(borisQuote, bv2, rv2, { offer_digest: 'a'.repeat(64) }))), 'commercial.digest_mismatch');
     await fails(as(petr, (trx) => agreements.insert(trx, agreementRow(borisQuote, bv2, rv2, { seller_person_id: carl, seller_company_id: null }))), 'commerce.not_authorised');
+    // Consultation agreements wait for CONS-001; task agreements (TASK-001) need a sent offer on the owner's request.
     await fails(as(petr, (trx) => sql`INSERT INTO trustwork.agreement (terms_kind, buyer_person_id, seller_person_id, offer_ref_id, request_ref_id, offer_version, offer_digest, request_version, request_digest, accepted_terms_digest, status, created_by_person_id)
-      VALUES ('task', ${petr}, ${carl}, gen_random_uuid(), gen_random_uuid(), 1, ${'a'.repeat(64)}, 1, ${'b'.repeat(64)}, ${'c'.repeat(64)}, 'proposed', ${petr})`.execute(trx)), 'transactions.terms_kind_unavailable');
+      VALUES ('consultation', ${petr}, ${carl}, gen_random_uuid(), gen_random_uuid(), 1, ${'a'.repeat(64)}, 1, ${'b'.repeat(64)}, ${'c'.repeat(64)}, 'proposed', ${petr})`.execute(trx)), 'transactions.terms_kind_unavailable');
+    await fails(as(petr, (trx) => sql`INSERT INTO trustwork.agreement (terms_kind, buyer_person_id, seller_person_id, offer_ref_id, request_ref_id, offer_version, offer_digest, request_version, request_digest, accepted_terms_digest, status, created_by_person_id)
+      VALUES ('task', ${petr}, ${carl}, gen_random_uuid(), gen_random_uuid(), 1, ${'a'.repeat(64)}, 1, ${'b'.repeat(64)}, ${'c'.repeat(64)}, 'accepted_by_buyer', ${petr})`.execute(trx)), 'commerce.not_authorised');
     // An acceptance status without its event is refused at commit.
     await fails(as(petr, (trx) => agreements.insert(trx, agreementRow(borisQuote, bv2, rv2))), 'transactions.event_missing');
     await fails(as(petr, async (trx) => {

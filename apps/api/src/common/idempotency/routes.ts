@@ -135,6 +135,25 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'support.second_factor_reset.approve': IN_TRANSACTION,
   'support.second_factor_reset.cancel': IN_TRANSACTION,
   'support.second_factor_reset.execute': IN_TRANSACTION,
+  // Scoped tasks from plan items (TASK-001): every route runs in one PrincipalService.runAs transaction (acceptance
+  // events, the assignment, obligations, the request closing trigger and outbox events included) and returns its result
+  // unchanged.
+  'task.request_create': IN_TRANSACTION,
+  'task.draft_save': IN_TRANSACTION,
+  'task.version_publish': IN_TRANSACTION,
+  'task.private_save': IN_TRANSACTION,
+  'task.invite': IN_TRANSACTION,
+  'task.request_cancel': IN_TRANSACTION,
+  'task.offer_create': IN_TRANSACTION,
+  'task.offer_save': IN_TRANSACTION,
+  'task.offer_send': IN_TRANSACTION,
+  'task.offer_withdraw': IN_TRANSACTION,
+  'task.offer_accept': IN_TRANSACTION,
+  'task.agreement_confirm': IN_TRANSACTION,
+  'task.agreement_decline': IN_TRANSACTION,
+  'task.agreement_withdraw': IN_TRANSACTION,
+  'task.record': IN_TRANSACTION,
+  'task.review': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
