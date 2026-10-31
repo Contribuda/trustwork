@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AssistantPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/assistant');
-  const view = data.getAssistant(principal);
+  const view = await data.getAssistant(principal);
   return (
     <>
       <PageHeader title={t('assistant.title')} lede={t('assistantPage.lede')} />

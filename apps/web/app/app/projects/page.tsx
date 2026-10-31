@@ -26,7 +26,7 @@ export default async function WorkspaceProjectsPage({ searchParams }: { searchPa
   const sp = await searchParams;
   const status = typeof sp.status === 'string' && (STATUSES as readonly string[]).includes(sp.status) ? sp.status : 'all';
   const role = typeof sp.role === 'string' && (ROLES as readonly string[]).includes(sp.role) ? sp.role : 'all';
-  const all = data.listWorkspaceProjects(principal);
+  const all = await data.listWorkspaceProjects(principal);
   const rows = all.filter((r) => (status === 'all' || r.status === status) && (role === 'all' || r.myRole === role));
   const link = (s: string, r: string) => {
     const q = [s !== 'all' ? `status=${s}` : '', r !== 'all' ? `role=${r}` : ''].filter(Boolean).join('&');

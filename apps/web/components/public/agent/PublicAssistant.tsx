@@ -1,211 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { Dialog } from '@trustwork/ui';
 import { ArrowRight, ArrowUpRight, Check, Copy, FileText, Paperclip, RotateCcw, SendHorizonal, Sparkles, X } from 'lucide-react';
+import { intlTag } from '@trustwork/ui/i18n';
 import { t } from '@/app/_lib/i18n';
+import { openEventOf, type AgentAttachment, type AgentKind, type AgentMessage, type AgentProfile, type BaseBrief } from './types';
 
-/** Serialisable public summary of a person; the only knowledge the agent may use. */
-export type PersonBrief = {
-  name: string;
-  slug: string;
-  role: string;
-  field: string;
-  independent: boolean;
-  employer: { name: string; href: string } | null;
-  about: string | null;
-  expertise: string[];
-  geography: string[];
-  signals: Array<{ label: string; note: string | null }>;
-  services: Array<{ name: string; description: string | null; format: string }>;
-  portfolio: Array<{ title: string; kind: string; year: number | null; href: string | null }>;
-  career: Array<{ role: string; company: string; years: string; href: string | null }>;
-  certificates: Array<{ name: string; evidence: string }>;
-  projects: Array<{ name: string; status: string; href: string }>;
-  publications: Array<{ title: string; href: string; date: string }>;
-  contacts: Array<{ label: string; value: string; href: string | null }>;
-  documents: string[];
-  faq: Array<{ q: string; a: string }>;
-  messageHref: string;
-};
-
-type Item = { label: string; meta?: string | undefined; href?: string | null | undefined };
-type Action = { label: string; href: string; primary?: boolean };
-type Purpose = 'projectOffer' | 'jobOffer' | 'request' | 'other';
-type Attachment = { name: string; size: number; purpose: Purpose };
-type Message = { id: number; role: 'user' | 'agent'; text: string; items?: Item[]; chips?: string[]; sources?: Array<{ id: string; label: string }>; actions?: Action[]; followups?: string[]; attachments?: Attachment[] };
-type Topic = 'about' | 'services' | 'portfolio' | 'status' | 'experience' | 'contacts' | 'projects' | 'publications' | 'documents';
-
-const PURPOSES: Purpose[] = ['projectOffer', 'jobOffer', 'request', 'other'];
 const ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,application/pdf,image/*';
 const MAX_SIZE = 10 * 1024 * 1024;
-const fmtSize = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1).replace('.', ',')} МБ` : `${Math.max(1, Math.round(n / 1024))} КБ`);
-const norm = (s: string) => s.toLowerCase().replace(/ё/g, 'е');
+const MAX_FILES = 3;
+const fmtSize = (n: number) =>
+  n >= 1024 * 1024
+    ? new Intl.NumberFormat(intlTag(), { style: 'unit', unit: 'megabyte', maximumFractionDigits: 1 }).format(n / 1024 / 1024)
+    : new Intl.NumberFormat(intlTag(), { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 0 }).format(Math.max(1, n / 1024));
 
-const INTENTS: Array<{ id: Topic; words: string[] }> = [
-  { id: 'status', words: ['свободн', 'доступ', 'статус', 'готов', 'занят', 'ищет', 'ищешь', 'нанима', 'открыт к', 'когда может'] },
-  { id: 'services', words: ['услуг', 'предлага', 'цена', 'стоим', 'сколько', 'заказать', 'консультац', 'что делает за деньги'] },
-  { id: 'portfolio', words: ['портфолио', 'работы', 'примеры', 'что сделал', 'что сделала', 'объекты', 'кейс'] },
-  { id: 'experience', words: ['опыт', 'карьер', 'где работал', 'где работала', 'стаж', 'образован', 'учил', 'биограф'] },
-  { id: 'contacts', words: ['контакт', 'связ', 'телефон', 'почт', 'email', 'telegram', 'написать', 'позвонить'] },
-  { id: 'projects', words: ['проект', 'участву'] },
-  { id: 'publications', words: ['публикац', 'стать', 'пишет', 'написал', 'написала', 'материал'] },
-  { id: 'documents', words: ['подтвержд', 'допуск', 'удостовер', 'сертификат', 'довер', 'провер', 'согласи'] },
-  { id: 'about', words: ['чем занима', 'кто', 'расскаж', 'о себе', 'специализ', 'направлен', 'регион', 'географ', 'привет', 'здравств'] },
-];
-const SECTION: Record<Topic, string> = {
-  about: 'overview',
-  services: 'services',
-  portfolio: 'portfolio',
-  status: 'overview',
-  experience: 'experience',
-  contacts: 'contacts',
-  projects: 'projects',
-  publications: 'publications',
-  documents: 'documents',
-};
-const FOLLOW: Record<Topic, number[]> = {
-  about: [3, 1, 5],
-  services: [3, 2, 5],
-  portfolio: [1, 4, 5],
-  status: [1, 5, 4],
-  experience: [2, 7, 5],
-  contacts: [1, 3, 0],
-  projects: [2, 4, 5],
-  publications: [0, 4, 5],
-  documents: [4, 3, 5],
-};
-
-function detect(q: string): Topic | null {
-  const text = norm(q);
-  for (const i of INTENTS) if (i.words.some((w) => text.includes(w))) return i.id;
-  return null;
-}
-
-function answer(brief: PersonBrief, q: string, id: number): Message {
-  const questions = Array.from({ length: 8 }, (_, i) => t(`personPage.agentQuestions.${i}` as 'personPage.agentQuestions.0'));
-  const follow = (topic: Topic) => FOLLOW[topic].map((i) => questions[i]!).filter((fq) => norm(fq) !== norm(q));
-  const src = (topic: Topic) => [{ id: SECTION[topic], label: t(`personPage.nav.${SECTION[topic]}` as 'personPage.nav.overview') }];
-  const write: Action = { label: t('personPage.writeLogin'), href: brief.messageHref, primary: true };
-  const standard = questions.some((sq) => norm(sq) === norm(q));
-  const faq = standard
-    ? undefined
-    : brief.faq.find((f) => {
-        const a = norm(f.q);
-        const words = norm(q)
-          .split(/\s+/)
-          .filter((w) => w.length > 3);
-        return words.length > 0 && words.filter((w) => a.includes(w.slice(0, 5))).length >= Math.min(2, words.length);
-      });
-  if (faq) return { id, role: 'agent', text: faq.a, sources: [{ id: 'overview', label: t('personPage.faqTitle') }], followups: follow('about') };
-  const topic = detect(q);
-  switch (topic) {
-    case 'about':
-      return {
-        id,
-        role: 'agent',
-        text:
-          t('personPage.agent.about', {
-            name: brief.name,
-            role: brief.role,
-            field: brief.independent ? t('personPage.independent') : `${t('personPage.worksAt')} ${brief.employer?.name ?? ''}`,
-            geo: brief.geography.join(', '),
-          }) + (brief.about ? ` ${brief.about.split('\n')[0]}` : ''),
-        chips: brief.expertise,
-        sources: src('about'),
-        followups: follow('about'),
-      };
-    case 'services':
-      return brief.services.length
-        ? {
-            id,
-            role: 'agent',
-            text: t('personPage.agent.services', { count: brief.services.length }),
-            items: brief.services.map((s) => ({ label: s.name, meta: s.format, href: '#services' })),
-            sources: src('services'),
-            actions: [write],
-            followups: follow('services'),
-          }
-        : { id, role: 'agent', text: t('personPage.agent.servicesNone'), actions: [write], followups: follow('services') };
-    case 'portfolio':
-      return brief.portfolio.length
-        ? {
-            id,
-            role: 'agent',
-            text: t('personPage.agent.portfolio', { count: brief.portfolio.length }),
-            items: brief.portfolio.map((w) => ({ label: w.title, meta: [w.kind, w.year].filter(Boolean).join(' · '), href: w.href ?? '#portfolio' })),
-            sources: src('portfolio'),
-            followups: follow('portfolio'),
-          }
-        : { id, role: 'agent', text: t('personPage.agent.portfolioNone'), followups: follow('portfolio') };
-    case 'status':
-      return brief.signals.length
-        ? { id, role: 'agent', text: t('personPage.agent.status'), items: brief.signals.map((s) => ({ label: s.label, meta: s.note ?? undefined })), sources: src('status'), actions: [write], followups: follow('status') }
-        : { id, role: 'agent', text: t('personPage.agent.statusNone'), actions: [write], followups: follow('status') };
-    case 'experience':
-      return brief.career.length
-        ? {
-            id,
-            role: 'agent',
-            text: t('personPage.agent.experience'),
-            items: brief.career.map((c) => ({ label: `${c.role} — ${c.company}`, meta: c.years, href: c.href })),
-            sources: src('experience'),
-            followups: follow('experience'),
-          }
-        : { id, role: 'agent', text: t('personPage.agent.experienceNone'), followups: follow('experience') };
-    case 'contacts':
-      return brief.contacts.length
-        ? {
-            id,
-            role: 'agent',
-            text: t('personPage.agent.contacts'),
-            items: brief.contacts.map((c) => ({ label: c.value, meta: c.label, href: c.href })),
-            sources: src('contacts'),
-            actions: [write],
-            followups: follow('contacts'),
-          }
-        : { id, role: 'agent', text: t('personPage.agent.contactsNone'), actions: [write], followups: follow('contacts') };
-    case 'projects':
-      return brief.projects.length
-        ? {
-            id,
-            role: 'agent',
-            text: t('personPage.agent.projects', { count: brief.projects.length }),
-            items: brief.projects.map((p) => ({ label: p.name, meta: p.status, href: p.href })),
-            sources: src('projects'),
-            followups: follow('projects'),
-          }
-        : { id, role: 'agent', text: t('personPage.agent.projectsNone'), followups: follow('projects') };
-    case 'publications':
-      return brief.publications.length
-        ? {
-            id,
-            role: 'agent',
-            text: t('personPage.agent.publications'),
-            items: brief.publications.slice(0, 5).map((p) => ({ label: p.title, meta: p.date, href: p.href })),
-            sources: src('publications'),
-            followups: follow('publications'),
-          }
-        : { id, role: 'agent', text: t('personPage.agent.publicationsNone'), followups: follow('publications') };
-    case 'documents':
-      return {
-        id,
-        role: 'agent',
-        text: t('personPage.agent.documents'),
-        items: [...brief.documents.map((d) => ({ label: d })), ...brief.certificates.map((c) => ({ label: c.name, meta: c.evidence, href: '#documents' }))],
-        sources: src('documents'),
-        followups: follow('documents'),
-      };
-    default:
-      return { id, role: 'agent', text: t('personPage.agent.fallback'), actions: [write], followups: [questions[0]!, questions[3]!, questions[5]!] };
-  }
-}
-
-const OPEN_EVENT = 'person-agent:open';
-
-export function PersonAgentTrigger({ question, className, children }: { question?: string | undefined; className?: string | undefined; children: React.ReactNode }) {
+/** Button that opens the agent dialog of `kind` (optionally with a prefilled question); usable from server markup. */
+export function AgentTrigger({ kind, question, className, children }: { kind: AgentKind; question?: string | undefined; className?: string | undefined; children: ReactNode }) {
   return (
-    <button type="button" className={className} onClick={() => window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: { question } }))}>
+    <button type="button" className={className} onClick={() => window.dispatchEvent(new CustomEvent(openEventOf(kind), { detail: { question } }))}>
       {children}
     </button>
   );
@@ -231,7 +44,7 @@ function useTypewriter(text: string, enabled: boolean): string {
   return shown;
 }
 
-function AgentBubble({ message, animate, onFollow, onClose }: { message: Message; animate: boolean; onFollow: (q: string) => void; onClose: () => void }) {
+function AgentBubble({ message, animate, onFollow, onClose, onPick }: { message: AgentMessage; animate: boolean; onFollow: (q: string) => void; onClose: () => void; onPick: (value: string) => void }) {
   const text = useTypewriter(message.text, animate);
   const done = text === message.text;
   const [copied, setCopied] = useState(false);
@@ -241,7 +54,7 @@ function AgentBubble({ message, animate, onFollow, onClose }: { message: Message
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* clipboard unavailable */
+      /* clipboard unavailable: nothing to do */
     }
   };
   return (
@@ -305,11 +118,20 @@ function AgentBubble({ message, animate, onFollow, onClose }: { message: Message
             </div>
           ) : null}
         </div>
+        {done && message.pick?.length ? (
+          <div className="cp-msg__follow">
+            {message.pick.map((p) => (
+              <button key={p.value} type="button" className="cp-chip cp-chip--accent" onClick={() => onPick(p.value)}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
         {done && message.followups?.length ? (
           <div className="cp-msg__follow">
-            {message.followups.map((fq) => (
-              <button key={fq} type="button" className="cp-chip" onClick={() => onFollow(fq)}>
-                {fq}
+            {message.followups.map((q) => (
+              <button key={q} type="button" className="cp-chip" onClick={() => onFollow(q)}>
+                {q}
               </button>
             ))}
           </div>
@@ -319,24 +141,33 @@ function AgentBubble({ message, animate, onFollow, onClose }: { message: Message
   );
 }
 
-/** Person's agent (demo): answers from the public brief, accepts attachments (project or job offers, requests) handed over after sign-in. */
-export function PersonAssistant({ brief }: { brief: PersonBrief }) {
-  const storageKey = `sr-person-agent:${brief.slug}`;
-  const hello: Message = { id: 0, role: 'agent', text: t('personPage.agentHello', { name: brief.name }) };
+/**
+ * Public entity agent (demo) for a company, person or project page: one dialog parameterized by an
+ * `AgentProfile`. It answers from the public brief only (structured lists with links, the section each answer
+ * comes from, quick actions and follow-up questions), accepts up to three attachments with a purpose that are
+ * handed over after sign-in, and keeps the conversation per entity in sessionStorage. Opens from any
+ * `AgentTrigger` of the same kind; never docked.
+ */
+export function PublicAssistant<B extends BaseBrief, P extends string>({ profile, brief }: { profile: AgentProfile<B, P>; brief: B }) {
+  type Message = AgentMessage<P>;
+  const storageKey = `${profile.storagePrefix}${brief.handle}`;
+  const hello: Message = { id: 0, role: 'agent', text: profile.hello(brief) };
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([hello]);
   const [draft, setDraft] = useState('');
   const [thinking, setThinking] = useState(false);
   const [animateId, setAnimateId] = useState<number | null>(null);
   const [files, setFiles] = useState<File[]>([]);
-  const [purpose, setPurpose] = useState<Purpose | null>(null);
+  const [purpose, setPurpose] = useState<P | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const pending = useRef<AgentAttachment<P>[] | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const seq = useRef(1);
-  const questions = Array.from({ length: 8 }, (_, i) => t(`personPage.agentQuestions.${i}` as 'personPage.agentQuestions.0'));
+  const nextId = () => seq.current++;
+  const questions = profile.questions();
 
   useEffect(() => {
     try {
@@ -349,28 +180,29 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
         }
       }
     } catch {
-      /* ignore */
+      /* ignore storage */
     }
   }, [storageKey]);
+
   useEffect(() => {
     try {
       if (messages.length > 1) window.sessionStorage.setItem(storageKey, JSON.stringify(messages));
       else window.sessionStorage.removeItem(storageKey);
     } catch {
-      /* ignore */
+      /* ignore storage */
     }
   }, [messages, storageKey]);
 
   const ask = (q: string) => {
     const text = q.trim();
     if (!text || thinking) return;
-    setMessages((m) => [...m, { id: seq.current++, role: 'user', text }]);
+    setMessages((m) => [...m, { id: nextId(), role: 'user', text }]);
     setDraft('');
     setThinking(true);
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.setTimeout(
       () => {
-        const reply = answer(brief, text, seq.current++);
+        const reply = profile.answer(brief, text, nextId());
         setAnimateId(reduce ? null : reply.id);
         setMessages((m) => [...m, reply]);
         setThinking(false);
@@ -380,15 +212,17 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
   };
 
   useEffect(() => {
+    const event = openEventOf(profile.kind);
     const onOpen = (e: Event) => {
       setOpen(true);
       const q = (e as CustomEvent<{ question?: string }>).detail?.question;
       if (q) window.setTimeout(() => ask(q), 80);
     };
-    window.addEventListener(OPEN_EVENT, onOpen);
-    return () => window.removeEventListener(OPEN_EVENT, onOpen);
-  }, [brief]);
-  // Keep the newest message in view: the content grows while the agent «types», so follow any size change.
+    window.addEventListener(event, onOpen);
+    return () => window.removeEventListener(event, onOpen);
+  }, [brief, profile]);
+
+  // Keep the newest message in view: the content grows while the agent types, so follow any size change.
   useEffect(() => {
     const list = listRef.current;
     const inner = innerRef.current;
@@ -401,6 +235,7 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
     observer.observe(inner);
     return () => observer.disconnect();
   }, [open, messages, thinking]);
+
   useEffect(() => {
     if (open) window.setTimeout(() => inputRef.current?.focus(), 60);
   }, [open]);
@@ -409,7 +244,7 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
     if (!list) return;
     const next = [...files];
     for (const f of Array.from(list)) {
-      if (next.length >= 3) {
+      if (next.length >= MAX_FILES) {
         setError(t('companyPage.attachTooMany'));
         break;
       }
@@ -427,28 +262,41 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
     setFiles(next);
     if (fileRef.current) fileRef.current.value = '';
   };
+
+  const pick = (value: string) => {
+    const waiting = pending.current;
+    if (!waiting || !profile.pick) return;
+    pending.current = null;
+    const step = profile.pick(brief, waiting, value, nextId, questions);
+    setMessages((m) => [...m, { id: nextId(), role: 'user', text: step.label }]);
+    setThinking(true);
+    window.setTimeout(() => {
+      const reply = step.reply();
+      setAnimateId(reply.id);
+      setMessages((m) => [...m, reply]);
+      setThinking(false);
+    }, 400);
+  };
+
   const sendWithFiles = () => {
     if (!files.length || !purpose) return;
-    const atts: Attachment[] = files.map((f) => ({ name: f.name, size: f.size, purpose }));
-    setMessages((m) => [...m, { id: seq.current++, role: 'user', text: draft.trim(), attachments: atts }]);
+    const chosen = purpose;
+    const atts: AgentAttachment<P>[] = files.map((f) => ({ name: f.name, size: f.size, purpose: chosen }));
+    setMessages((m) => [...m, { id: nextId(), role: 'user', text: draft.trim(), attachments: atts }]);
     setFiles([]);
     setPurpose(null);
     setDraft('');
     setError(null);
     setThinking(true);
     window.setTimeout(() => {
-      const reply: Message = {
-        id: seq.current++,
-        role: 'agent',
-        text: `${t('personPage.attachReceived', { count: atts.length, purpose: t(`personPage.purposeFor.${purpose}`), name: brief.name })} ${t('personPage.attachNext')}`,
-        actions: [{ label: t('personPage.attachLogin'), href: `${brief.messageHref}&kind=${purpose}`, primary: true }],
-        followups: [questions[3]!, questions[5]!],
-      };
-      setAnimateId(reply.id);
-      setMessages((m) => [...m, reply]);
+      const step = profile.handoff(brief, atts, chosen, nextId, questions);
+      if (step.pending) pending.current = step.pending;
+      setAnimateId(step.reply.id);
+      setMessages((m) => [...m, step.reply]);
       setThinking(false);
     }, 450);
   };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (files.length) sendWithFiles();
@@ -467,16 +315,17 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
     setFiles([]);
     setPurpose(null);
     setError(null);
+    pending.current = null;
     inputRef.current?.focus();
   };
   const fresh = messages.length === 1;
 
   return (
-    <Dialog title={t('personPage.agentTitle', { name: brief.name })} isOpen={open} onOpenChange={setOpen} size="md" className="cp-agent-dialog">
+    <Dialog title={profile.title(brief)} isOpen={open} onOpenChange={setOpen} size="md" className="cp-agent-dialog">
       <div className="cp-chat">
         <div className="cp-chat__status">
           <span className="cp-chat__dot" aria-hidden="true" />
-          {t('personPage.agentStatus')}
+          {profile.status()}
           <button type="button" className="cp-chat__reset" onClick={reset} disabled={fresh}>
             <RotateCcw size={13} strokeWidth={2} aria-hidden="true" />
             {t('companyPage.agentReset')}
@@ -497,7 +346,8 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
                             <span className="cp-file__text">
                               <span className="cp-file__name">{f.name}</span>
                               <span className="cp-file__meta">
-                                {fmtSize(f.size)} · {t(`personPage.purpose.${f.purpose}`)} · {t('companyPage.attachDraft')}
+                                {fmtSize(f.size)} · {profile.purposeLabel(f.purpose)}
+                                {f.vacancy ? ` · ${f.vacancy}` : ''} · {t('companyPage.attachDraft')}
                               </span>
                             </span>
                           </li>
@@ -507,7 +357,7 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
                   </div>
                 </div>
               ) : (
-                <AgentBubble key={m.id} message={m} animate={animateId === m.id} onFollow={ask} onClose={() => setOpen(false)} />
+                <AgentBubble key={m.id} message={m} animate={animateId === m.id} onFollow={ask} onClose={() => setOpen(false)} onPick={pick} />
               ),
             )}
             {thinking ? (
@@ -536,7 +386,7 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
             ) : null}
           </div>
         </div>
-        <form className="cp-chat__form" onSubmit={submit}>
+        <form className={files.length ? 'cp-chat__form cp-chat__form--files' : 'cp-chat__form'} onSubmit={submit}>
           {files.length ? (
             <div className="cp-chat__attach">
               <ul className="cp-files">
@@ -555,9 +405,9 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
               </ul>
               <div className="cp-chat__purpose" role="radiogroup" aria-label={t('companyPage.attachPurpose')}>
                 <span className="cp-chat__purpose-label">{t('companyPage.attachPurpose')}</span>
-                {PURPOSES.map((p) => (
+                {profile.purposes.map((p) => (
                   <button key={p} type="button" role="radio" aria-checked={purpose === p} className={purpose === p ? 'cp-chip cp-chip--on' : 'cp-chip'} onClick={() => setPurpose(p)}>
-                    {t(`personPage.purpose.${p}`)}
+                    {profile.purposeLabel(p)}
                   </button>
                 ))}
               </div>
@@ -584,7 +434,7 @@ export function PersonAssistant({ brief }: { brief: PersonBrief }) {
               autoComplete="off"
               enterKeyHint="send"
             />
-            <button type="submit" className="cp-chat__send" disabled={thinking || (files.length ? !purpose : !draft.trim())} aria-label={t('companyPage.repSend')}>
+            <button type="submit" className="cp-chat__send" disabled={thinking || (files.length ? !purpose : !draft.trim())} aria-label={files.length ? t('companyPage.attachSend') : t('companyPage.repSend')}>
               <SendHorizonal size={18} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>

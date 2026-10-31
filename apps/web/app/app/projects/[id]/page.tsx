@@ -23,7 +23,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   await primeLocale();
   const { id } = await params;
   const principal = await requirePrincipal(searchParams, `/app/projects/${id}`);
-  const project = data.getWorkspaceProject(principal, id);
+  const project = await data.getWorkspaceProject(principal, id);
   return { title: project ? project.name : t('ws.notFoundTitle') };
 }
 
@@ -45,9 +45,9 @@ export default async function WorkspaceProjectPage({ params, searchParams }: Par
   await primeLocale();
   const { id } = await params;
   const principal = await requirePrincipal(searchParams, `/app/projects/${id}`);
-  const project = data.getWorkspaceProject(principal, id);
+  const project = await data.getWorkspaceProject(principal, id);
   if (!project) notFound();
-  const cover = projectCover(project.slug);
+  const cover = projectCover(project.handle);
   const current = project.milestones.find((m) => m.state === 'current') ?? null;
   const upcoming = project.milestones.filter((m) => m.state === 'upcoming').slice(0, 2);
   const events: TimelineEvent[] = project.milestones.map((m) => ({

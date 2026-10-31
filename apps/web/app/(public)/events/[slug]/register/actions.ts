@@ -16,7 +16,7 @@ export async function registerAction(formData: FormData): Promise<void> {
   const company = String(formData.get('company') ?? '').trim();
   const qty = Math.min(10, Math.max(1, Number.parseInt(String(formData.get('qty') ?? '1'), 10) || 1));
   const agree = formData.get('agree') === 'on';
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   const ticket = event?.tickets.find((tk) => tk.id === ticketId);
   const back = (error: string) =>
     redirect(`/events/${slug}/register?ticket=${encodeURIComponent(ticketId)}&error=${error}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&company=${encodeURIComponent(company)}&qty=${qty}`);

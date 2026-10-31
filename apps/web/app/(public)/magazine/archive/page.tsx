@@ -37,7 +37,7 @@ export default async function MagazineArchivePage({ searchParams }: { searchPara
   await primeLocale();
   const sp = await searchParams;
   const str = (k: string) => (typeof sp[k] === 'string' ? (sp[k] as string) : undefined);
-  const { current, archive } = data.getMagazine();
+  const { current, archive } = await data.getMagazine();
   const years = [...new Set(archive.map((i) => Number(i.releasedAt.slice(0, 4))))].sort((a, b) => b - a);
   const filters: Filters = {
     year: years.find((y) => String(y) === str('year')),

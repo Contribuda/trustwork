@@ -136,7 +136,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
     has: (['projects', 'publications', 'catalogue'] as const).find((h) => h === str('has')),
     show: Math.min(60, Math.max(PAGE, Number.parseInt(str('show') ?? '', 10) || PAGE)),
   };
-  const all = data.listCompanies();
+  const all = await data.listCompanies();
   const bbox = filters.view === 'map' && filters.bbox ? (filters.bbox.split(',').map(Number) as [number, number, number, number]) : null;
   const inBox = (c: CompanyCard) => !bbox || (c.location !== null && c.location.lng >= bbox[0] && c.location.lng <= bbox[2] && c.location.lat >= bbox[1] && c.location.lat <= bbox[3]);
   const since = (c: CompanyCard) => Date.parse(c.claimedAt ?? c.provenance?.observedAt ?? '') || 0;
@@ -153,15 +153,15 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
   const specs = [...new Set(all.flatMap((c) => c.directions))].sort((a, b) => a.localeCompare(b, 'ru'));
   const shown = items.slice(0, filters.show);
   const count = (except: Facet, pred: (c: CompanyCard) => boolean) => apply(all, filters, except).filter(pred).length;
-  const details = new Map(shown.map((c) => [c.id, data.getCompany(c.slug)]));
-  const articles = data.listArticles();
-  const linked = new Set(all.flatMap((c) => data.getCompany(c.slug)?.publications.map((p) => p.id) ?? []));
+  // One detail lookup per company, in parallel (the list projection does not carry publications or projects).
+  const details = new Map(await Promise.all(all.map(async (c) => [c.id, await data.getCompany(c.handle)] as const)));
+  const articles = await data.listArticles();
+  const linked = new Set(all.flatMap((c) => details.get(c.id)?.publications.map((p) => p.id) ?? []));
   const sharing = [
     ...articles.filter((card) => card.authorKind === 'company' || linked.has(card.id)),
     ...articles.filter((card) => card.authorKind !== 'company' && !linked.has(card.id) && (card.articleFormat === 'experience' || card.articleFormat === 'practice' || card.articleFormat === 'projectStory')),
   ].slice(0, 3);
-  const projects = data
-    .listPublicProjects()
+  const projects = (await data.listPublicProjects())
     .filter((p) => p.publicParticipants.length > 0)
     .slice(0, 2);
   const companyByHref = new Map(all.map((c) => [c.href, c]));
@@ -201,10 +201,10 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
       pin: initials(c.name),
       pinTone: c.verified ? 'blue' : c.status === 'claimed' ? 'navy' : 'grey',
       cover: (() => {
-        const first = data.getCompany(c.slug)?.projects[0];
-        return first ? projectCover(first.slug).src : null;
+        const first = details.get(c.id)?.projects[0];
+        return first ? projectCover(first.handle).src : null;
       })(),
-      mark: { name: c.name, seed: c.slug },
+      mark: { name: c.name, seed: c.handle },
       status: c.verified ? { label: t('sr.markShort'), tone: 'sr' } : { label: t(`status.${c.status}`), tone: c.status === 'claimed' ? 'free' : 'muted' },
       signals: c.signals.slice(0, 3).map((sg) => signalLabel('company', sg.kind)),
       facts: [
@@ -449,7 +449,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
                     <article key={c.id} className="co-row">
                       <div className="co-row__main">
                         <div className="co-row__head">
-                          <CompanyMark name={c.name} seed={c.slug} size={52} />
+                          <CompanyMark name={c.name} seed={c.handle} size={52} />
                           <div className="co-row__who">
                             <h3 className="co-row__name">
                               <NextLink href={c.href} className="co-row__link">
@@ -526,7 +526,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
                           <div className="co-row__thumbs">
                             {projects.slice(0, 3).map((p) => (
                               <NextLink key={p.id} href={p.href} className="co-row__thumb" title={t('companies.openProjectTitle', { name: p.name })} aria-label={t('companies.openProjectTitle', { name: p.name })}>
-                                <MediaFrame media={projectCover(p.slug)} ratio="fill" radius="none" sizes="120px" />
+                                <MediaFrame media={projectCover(p.handle)} ratio="fill" radius="none" sizes="120px" />
                                 <span className="co-row__thumb-cap">{p.name}</span>
                               </NextLink>
                             ))}
@@ -549,7 +549,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
                           <NextLink href={c.href} className="pub-btn pub-btn--dark">
                             {t('companies.profile')}
                           </NextLink>
-                          <NextLink href={`/login?next=${encodeURIComponent(`/app/rfq/new?company=${c.slug}`)}`} className="pub-btn">
+                          <NextLink href={`/login?next=${encodeURIComponent(`/app/rfq/new?company=${c.handle}`)}`} className="pub-btn">
                             {t('companies.requestQuote')}
                           </NextLink>
                         </div>
@@ -650,7 +650,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
                     </h3>
                     <p className="story-card__dek">{typo(card.lede)}</p>
                     <p className="co-story__by">
-                      {company ? <CompanyMark name={company.name} seed={company.slug} size={20} /> : null}
+                      {company ? <CompanyMark name={company.name} seed={company.handle} size={20} /> : null}
                       {card.authorHref ? <NextLink href={card.authorHref}>{card.authorLabel}</NextLink> : <span>{card.authorLabel}</span>}
                       {card.readMinutes ? <span className="co-story__sep">· {t('articles.readTime', { minutes: card.readMinutes })}</span> : null}
                     </p>
@@ -676,7 +676,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
               {projects.map((p) => (
                 <article key={p.id} className="co-project">
                   <NextLink href={p.href} className="co-project__media" aria-hidden="true" tabIndex={-1}>
-                    <MediaFrame media={projectCover(p.slug)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 320px" />
+                    <MediaFrame media={projectCover(p.handle)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 320px" />
                   </NextLink>
                   <div className="co-project__body">
                     <span className="pub-kicker">

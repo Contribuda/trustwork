@@ -3,7 +3,8 @@ import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, ArrowUpRight, Briefcase, Building2, ChevronDown, Clock, FileCheck2, FileText, FolderOpen, Globe, Mail, MapPin, MessageSquareText, Package, Phone, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { Breadcrumb, ButtonLink, KindBadge, MediaFrame, RecordStatusChip } from '@/components/ui';
-import { AssistantTrigger, CompanyAssistant, type CompanyBrief } from '@/components/public/CompanyAssistant';
+import { CompanyAssistant, type CompanyBrief } from '@/components/public/agent/company';
+import { AgentTrigger } from '@/components/public/agent/PublicAssistant';
 import { CompanyMark } from '@/components/public/CompanyMark';
 import { SignalBadge, signalLabel } from '@/components/public/SignalBadge';
 import { SRLogo, SRMark } from '@/components/public/SRMark';
@@ -20,12 +21,12 @@ import { currencyCode, identifierLabel } from '@/app/_lib/country';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
 
-type Params = { params: Promise<{ slug: string }>; searchParams: PageSearchParams };
+type Params = { params: Promise<{ handle: string }>; searchParams: PageSearchParams };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
-  const { slug } = await params;
-  const company = data.getCompany(slug);
+  const { handle } = await params;
+  const company = await data.getCompany(handle);
   return { title: company ? company.name : t('error.notFoundTitle'), description: company?.profile.tagline ?? company?.description ?? undefined };
 }
 
@@ -39,14 +40,14 @@ const UPDATE_ICON = { news: FileText, project: FolderOpen, catalogue: Package, c
  */
 export default async function CompanyPage({ params, searchParams }: Params) {
   await primeLocale();
-  const { slug } = await params;
-  const company = data.getCompany(slug);
+  const { handle } = await params;
+  const company = await data.getCompany(handle);
   if (!company) notFound();
   const principal = await getPrincipal(searchParams);
   const isMember = principal.kind === 'person' && principal.company?.id === company.id;
   const profile = company.profile;
   const catalogue = company.catalogue;
-  const quoteHref = `/login?next=${encodeURIComponent(`/app/rfq/new?company=${company.slug}`)}`;
+  const quoteHref = `/login?next=${encodeURIComponent(`/app/rfq/new?company=${company.handle}`)}`;
   const statusHint = t(`companies.statusHint${company.status.charAt(0).toUpperCase()}${company.status.slice(1)}` as 'companies.statusHintSourced');
   const sourceLine = company.provenance
     ? t('companies.sourceLine', { source: company.provenance.source, date: shortDate(company.provenance.observedAt) })
@@ -65,8 +66,7 @@ export default async function CompanyPage({ params, searchParams }: Params) {
       : []),
   ].sort((a, b) => b.date.localeCompare(a.date));
 
-  const similar = data
-    .listCompanies()
+  const similar = (await data.listCompanies())
     .filter((c) => c.id !== company.id)
     .map((c) => ({ c, score: c.kinds.filter((k) => company.kinds.includes(k)).length * 2 + (c.region === company.region ? 1 : 0) }))
     .filter((x) => x.score > 0)
@@ -82,7 +82,7 @@ export default async function CompanyPage({ params, searchParams }: Params) {
         : t('companyPage.salaryHidden');
   const brief: CompanyBrief = {
     name: company.name,
-    slug: company.slug,
+    handle: company.handle,
     description: company.description,
     roles: company.kinds.map((k) => t(`companies.kindOne.${k}`)),
     directions: company.directions,
@@ -136,11 +136,11 @@ export default async function CompanyPage({ params, searchParams }: Params) {
       <div className="pub-wrap">
         <header className="cp-hero">
           <div className="cp-cover" aria-hidden="true">
-            {coverProject ? <MediaFrame media={projectCover(coverProject.slug)} ratio="fill" radius="none" loading="eager" sizes="(max-width: 767px) 100vw, 1480px" /> : <div className="cp-cover__pattern" />}
+            {coverProject ? <MediaFrame media={projectCover(coverProject.handle)} ratio="fill" radius="none" loading="eager" sizes="(max-width: 767px) 100vw, 1480px" /> : <div className="cp-cover__pattern" />}
           </div>
           <div className="cp-identity">
             <div className="cp-identity__mark">
-              <CompanyMark name={company.name} seed={company.slug} size={96} />
+              <CompanyMark name={company.name} seed={company.handle} size={96} />
             </div>
             <div className="cp-identity__text">
               <p className="co-row__tags">
@@ -207,10 +207,10 @@ export default async function CompanyPage({ params, searchParams }: Params) {
               <NextLink href={quoteHref} className="pub-btn pub-btn--dark">
                 {t('companyPage.requestQuote')}
               </NextLink>
-              <AssistantTrigger className="pub-btn cp-ask">
+              <AgentTrigger kind="company" className="pub-btn cp-ask">
                 <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
                 {t('companyPage.askRep')}
-              </AssistantTrigger>
+              </AgentTrigger>
             </div>
           </div>
         </header>
@@ -351,7 +351,7 @@ export default async function CompanyPage({ params, searchParams }: Params) {
                     return (
                       <article key={p.id} className="cp-project">
                         <NextLink href={p.href} className="cp-project__media" aria-hidden="true" tabIndex={-1}>
-                          <MediaFrame media={projectCover(p.slug)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 420px" />
+                          <MediaFrame media={projectCover(p.handle)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 420px" />
                         </NextLink>
                         <div className="cp-project__body">
                           <p className="co-row__tags">
@@ -547,10 +547,10 @@ export default async function CompanyPage({ params, searchParams }: Params) {
                             <NextLink href={`/login?next=${encodeURIComponent(`/app/jobs/${v.id}`)}`} className="pub-btn pub-btn--dark">
                               {t('companyPage.apply')}
                             </NextLink>
-                            <AssistantTrigger className="pub-btn cp-ask" question={`${t('companyPage.vacAskAgent')}: ${v.title}`}>
+                            <AgentTrigger kind="company" className="pub-btn cp-ask" question={`${t('companyPage.vacAskAgent')}: ${v.title}`}>
                               <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
                               {t('companyPage.vacAskAgent')}
-                            </AssistantTrigger>
+                            </AgentTrigger>
                           </div>
                         </div>
                       </details>
@@ -735,10 +735,10 @@ export default async function CompanyPage({ params, searchParams }: Params) {
                 <NextLink href={quoteHref} className="pub-btn pub-btn--dark">
                   {t('companyPage.requestQuote')}
                 </NextLink>
-                <AssistantTrigger className="pub-btn cp-ask">
+                <AgentTrigger kind="company" className="pub-btn cp-ask">
                   <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
                   {t('companyPage.askRep')}
-                </AssistantTrigger>
+                </AgentTrigger>
               </div>
             </section>
           </div>
@@ -756,13 +756,13 @@ export default async function CompanyPage({ params, searchParams }: Params) {
               <p className="pub-note__body">{typo(t('companyPage.repLede'))}</p>
               <div className="cp-rep__chips">
                 {[0, 1, 2, 3].map((i) => (
-                  <AssistantTrigger key={i} className="cp-rep__q" question={t(`companyPage.repQuestions.${i}` as 'companyPage.repQuestions.0')}>
+                  <AgentTrigger kind="company" key={i} className="cp-rep__q" question={t(`companyPage.repQuestions.${i}` as 'companyPage.repQuestions.0')}>
                     {t(`companyPage.repQuestions.${i}` as 'companyPage.repQuestions.0')}
                     <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
-                  </AssistantTrigger>
+                  </AgentTrigger>
                 ))}
               </div>
-              <AssistantTrigger className="pub-btn pub-btn--dark cp-rep__open">{t('companyPage.askRep')}</AssistantTrigger>
+              <AgentTrigger kind="company" className="pub-btn pub-btn--dark cp-rep__open">{t('companyPage.askRep')}</AgentTrigger>
             </section>
             <section className="pub-note" aria-labelledby="share-title">
               <h2 className="pub-note__title" id="share-title">
@@ -779,7 +779,7 @@ export default async function CompanyPage({ params, searchParams }: Params) {
                   {similar.map((c) => (
                     <li key={c.id}>
                       <NextLink href={c.href} className="cp-similar__item">
-                        <CompanyMark name={c.name} seed={c.slug} size={36} />
+                        <CompanyMark name={c.name} seed={c.handle} size={36} />
                         <span className="cp-similar__text">
                           <span className="cp-similar__name">{c.name}</span>
                           <span className="cp-similar__meta">
@@ -826,10 +826,10 @@ export default async function CompanyPage({ params, searchParams }: Params) {
         </div>
       </div>
 
-      <AssistantTrigger className="cp-fab">
+      <AgentTrigger kind="company" className="cp-fab">
         <Sparkles size={18} strokeWidth={2} aria-hidden="true" />
         <span>{t('companyPage.askRepShort')}</span>
-      </AssistantTrigger>
+      </AgentTrigger>
       <CompanyAssistant brief={brief} />
     </div>
   );

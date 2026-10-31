@@ -16,7 +16,7 @@ type Props = { params: Promise<{ slug: string }>; searchParams: PageSearchParams
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await primeLocale();
   const { slug } = await params;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   return { title: event ? `${t('events.regTitle')} — ${event.title}` : t('error.notFoundTitle') };
 }
 
@@ -27,7 +27,7 @@ export default async function RegisterPage({ params, searchParams }: Props) {
   await primeLocale();
   const { slug } = await params;
   const sp = await searchParams;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   if (!event) notFound();
   const wanted = typeof sp.ticket === 'string' ? sp.ticket : undefined;
   const ticket = event.tickets.find((tk) => tk.id === wanted && tk.available) ?? event.tickets.find((tk) => tk.available);

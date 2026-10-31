@@ -22,7 +22,7 @@ export default async function ProcurementPage({ searchParams }: { searchParams: 
   const principal = await requirePrincipal(searchParams, '/app/procurement');
   const sp = await searchParams;
   const stage = typeof sp.stage === 'string' && (STAGES as string[]).includes(sp.stage) ? (sp.stage as RfqStage) : 'all';
-  const all = data.listRfqs(principal);
+  const all = await data.listRfqs(principal);
   const rows = stage === 'all' ? all : all.filter((r) => rfqStage(r.status) === stage);
   const counts = Object.fromEntries(STAGES.map((s) => [s, all.filter((r) => rfqStage(r.status) === s).length])) as Record<RfqStage, number>;
   const decisions = all.filter((r) => r.needsDecision).length;

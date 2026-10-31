@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import { Breadcrumb, ButtonLink, MediaFrame } from '@/components/ui';
 import { CompanyMark } from '@/components/public/CompanyMark';
-import { PersonAgentTrigger, PersonAssistant, type PersonBrief } from '@/components/public/PersonAssistant';
+import { PersonAssistant, type PersonBrief } from '@/components/public/agent/person';
+import { AgentTrigger } from '@/components/public/agent/PublicAssistant';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
 import { SectionNav } from '@/components/public/SectionNav';
 import { ShareRow } from '@/components/public/ShareRow';
@@ -37,12 +38,12 @@ import { longDate, shortDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
 
-type Params = { params: Promise<{ slug: string }>; searchParams: PageSearchParams };
+type Params = { params: Promise<{ handle: string }>; searchParams: PageSearchParams };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
-  const { slug } = await params;
-  const person = data.getPerson(slug);
+  const { handle } = await params;
+  const person = await data.getPerson(handle);
   return { title: person ? person.displayName : t('error.notFoundTitle'), description: person?.headline ?? undefined };
 }
 
@@ -54,22 +55,21 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
  */
 export default async function PersonPage({ params, searchParams }: Params) {
   await primeLocale();
-  const { slug } = await params;
-  const person = data.getPerson(slug);
+  const { handle } = await params;
+  const person = await data.getPerson(handle);
   if (!person) notFound();
   const principal = await getPrincipal(searchParams);
   const isMe = principal.kind === 'person' && principal.personId === person.id;
   const pr = person.profile;
-  const messageHref = `/login?next=${encodeURIComponent(`/app/messages/new?person=${person.slug}`)}`;
-  const inviteHref = `/login?next=${encodeURIComponent(`/app/projects?invite=${person.slug}`)}`;
+  const messageHref = `/login?next=${encodeURIComponent(`/app/messages/new?person=${person.handle}`)}`;
+  const inviteHref = `/login?next=${encodeURIComponent(`/app/projects?invite=${person.handle}`)}`;
   const years = pr.since ? new Date().getFullYear() - pr.since : null;
   const coverWork = pr.portfolio.find((w) => w.cover) ?? null;
   const coverProject = person.projects[0];
-  const cover = coverWork?.cover ? fixtureMedia(coverWork.cover, 'project') : coverProject ? projectCover(coverProject.slug) : null;
+  const cover = coverWork?.cover ? fixtureMedia(coverWork.cover, 'project') : coverProject ? projectCover(coverProject.handle) : null;
   const geography = pr.geography.length ? pr.geography : [regionLabel(person.region)];
 
-  const similar = data
-    .listPeople()
+  const similar = (await data.listPeople())
     .filter((p) => p.id !== person.id)
     .map((p) => ({ p, score: (p.field === person.field ? 3 : 0) + (p.region === person.region ? 1 : 0) + p.expertise.filter((e) => person.expertise.includes(e)).length }))
     .filter((x) => x.score > 0)
@@ -86,7 +86,7 @@ export default async function PersonPage({ params, searchParams }: Params) {
   ];
   const brief: PersonBrief = {
     name: person.displayName,
-    slug: person.slug,
+    handle: person.handle,
     role: person.roleLine,
     field: t(`people.fields.${person.field}`),
     independent: person.independent,
@@ -207,10 +207,10 @@ export default async function PersonPage({ params, searchParams }: Params) {
                   ) : null}
                 </>
               )}
-              <PersonAgentTrigger className="pub-btn cp-ask">
+              <AgentTrigger kind="person" className="pub-btn cp-ask">
                 <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
                 {t('personPage.askAgent')}
-              </PersonAgentTrigger>
+              </AgentTrigger>
             </div>
           </div>
         </header>
@@ -500,7 +500,7 @@ export default async function PersonPage({ params, searchParams }: Params) {
                     return (
                       <article key={p.id} className="cp-project">
                         <NextLink href={p.href} className="cp-project__media" aria-hidden="true" tabIndex={-1}>
-                          <MediaFrame media={projectCover(p.slug)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 420px" />
+                          <MediaFrame media={projectCover(p.handle)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 420px" />
                         </NextLink>
                         <div className="cp-project__body">
                           <p className="co-row__tags">
@@ -698,10 +698,10 @@ export default async function PersonPage({ params, searchParams }: Params) {
                   <Send size={16} strokeWidth={2} aria-hidden="true" />
                   {t('personPage.write')}
                 </NextLink>
-                <PersonAgentTrigger className="pub-btn cp-ask">
+                <AgentTrigger kind="person" className="pub-btn cp-ask">
                   <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
                   {t('personPage.askAgent')}
-                </PersonAgentTrigger>
+                </AgentTrigger>
               </div>
             </section>
           </div>
@@ -719,13 +719,13 @@ export default async function PersonPage({ params, searchParams }: Params) {
               <p className="pub-note__body">{typo(t('personPage.agentStatus'))}</p>
               <div className="cp-rep__chips">
                 {[0, 3, 1, 5].map((i) => (
-                  <PersonAgentTrigger key={i} className="cp-rep__q" question={t(`personPage.agentQuestions.${i}` as 'personPage.agentQuestions.0')}>
+                  <AgentTrigger kind="person" key={i} className="cp-rep__q" question={t(`personPage.agentQuestions.${i}` as 'personPage.agentQuestions.0')}>
                     {t(`personPage.agentQuestions.${i}` as 'personPage.agentQuestions.0')}
                     <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
-                  </PersonAgentTrigger>
+                  </AgentTrigger>
                 ))}
               </div>
-              <PersonAgentTrigger className="pub-btn pub-btn--dark cp-rep__open">{t('personPage.askAgent')}</PersonAgentTrigger>
+              <AgentTrigger kind="person" className="pub-btn pub-btn--dark cp-rep__open">{t('personPage.askAgent')}</AgentTrigger>
             </section>
             <section className="pub-note" aria-labelledby="share-title">
               <h2 className="pub-note__title" id="share-title">
@@ -787,10 +787,10 @@ export default async function PersonPage({ params, searchParams }: Params) {
         </div>
       </div>
 
-      <PersonAgentTrigger className="cp-fab">
+      <AgentTrigger kind="person" className="cp-fab">
         <Sparkles size={18} strokeWidth={2} aria-hidden="true" />
         <span>{t('personPage.agentShort')}</span>
-      </PersonAgentTrigger>
+      </AgentTrigger>
       <PersonAssistant brief={brief} />
       <span hidden>
         <Wrench size={1} />

@@ -8,7 +8,7 @@ export type PageSearchParams = Promise<Record<string, string | string[] | undefi
 export async function getPrincipal(searchParams: PageSearchParams | SearchParamsInput | undefined): Promise<Principal> {
   const params = searchParams instanceof Promise ? await searchParams : searchParams;
   const demo = resolveDemoContext(params);
-  const person = data.principalFor(demo);
+  const person = await data.principalFor(demo);
   return person ?? { kind: 'anonymous', persona: 'anonymous', demo: { ...demo, persona: 'anonymous' } };
 }
 

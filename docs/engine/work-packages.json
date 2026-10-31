@@ -895,7 +895,7 @@
       "id": "WEB-006",
       "title": "Asynchronous data boundary in the web app",
       "area": "frontend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "INTL-003"
       ],

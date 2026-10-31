@@ -162,11 +162,11 @@ export default async function EventsPage({ searchParams }: { searchParams: PageS
   };
   const nowParts = zonedParts(new Date().toISOString(), ZONE);
   const nowDay = dayNumber(nowParts);
-  const scoped = data.listEvents(filters.scope);
+  const scoped = await data.listEvents(filters.scope);
   const items = apply(scoped, filters, nowDay);
   const timeless = apply(scoped, filters, nowDay, 'time');
   const active = Boolean(filters.q || filters.type || filters.format || filters.price || filters.city || filters.date || filters.month || filters.day);
-  const upcoming = filters.scope === 'upcoming' ? scoped : data.listEvents('upcoming');
+  const upcoming = filters.scope === 'upcoming' ? scoped : await data.listEvents('upcoming');
   const lead = upcoming.find((e) => e.featured && e.status === 'open') ?? upcoming[0];
   const rows = lead && !active && filters.scope === 'upcoming' ? items.filter((e) => e.id !== lead.id) : items;
   const cities = [...new Set(scoped.map((e) => e.city).filter((c): c is string => Boolean(c)))].sort((a, b) => a.localeCompare(b, 'ru'));
@@ -190,7 +190,7 @@ export default async function EventsPage({ searchParams }: { searchParams: PageS
   const calYear = Number(calKey.slice(0, 4));
   const calMonth = Number(calKey.slice(5, 7)) - 1;
   const leadBadge = lead ? eventBadge(lead) : null;
-  const past = data.listEvents('past').slice(0, 3);
+  const past = (await data.listEvents('past')).slice(0, 3);
   const dayLabel = (iso: string) => fullDate(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
   const monthLabel = (key: string) => monthYear(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1);
   const chips: Array<{ label: string; to: string }> = [];

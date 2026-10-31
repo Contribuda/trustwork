@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
   const { issue } = await params;
   const number = parseNumber(issue);
-  const found = number === null ? null : data.getIssue(number);
+  const found = number === null ? null : await data.getIssue(number);
   if (!found) return { title: t('error.notFoundTitle') };
   const title = `${t('magazine.issueTitle', { number: found.issue.number })} — ${found.issue.title}`;
   return { title, description: found.issue.lede, openGraph: { title, description: found.issue.lede, type: 'article', images: [{ url: issueCover(found.issue.number).src, alt: t('magazine.coverAlt') }] } };
@@ -33,13 +33,11 @@ export default async function IssuePage({ params }: Params) {
   await primeLocale();
   const { issue: raw } = await params;
   const number = parseNumber(raw);
-  const found = number === null ? null : data.getIssue(number);
+  const found = number === null ? null : await data.getIssue(number);
   if (!found) notFound();
   const { issue, previous, next } = found;
-  const others = data
-    .getMagazine()
-    .archive.filter((i) => i.number !== issue.number)
-    .slice(0, 3);
+  const magazine = await data.getMagazine();
+  const others = magazine.archive.filter((i) => i.number !== issue.number).slice(0, 3);
   return (
     <div className="pub pub-page mg">
       <div className="pub-wrap">
@@ -142,7 +140,7 @@ export default async function IssuePage({ params }: Params) {
             </div>
             <div className="mg-grid">
               {others.map((i) => (
-                <IssueCard key={i.id} issue={i} isCurrent={data.getMagazine().current?.number === i.number} />
+                <IssueCard key={i.id} issue={i} isCurrent={magazine.current?.number === i.number} />
               ))}
             </div>
           </section>

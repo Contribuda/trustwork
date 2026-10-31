@@ -20,7 +20,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
   const { slug } = await params;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   return { title: event ? event.title : t('error.notFoundTitle'), description: event?.lede };
 }
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function EventPage({ params }: Params) {
   await primeLocale();
   const { slug } = await params;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   if (!event) notFound();
   const badge = eventBadge(event);
   const { nodes } = renderBody(event.body);

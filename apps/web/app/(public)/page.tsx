@@ -60,16 +60,16 @@ function isTopic(value: string | undefined): value is TopicKey {
  */
 export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await primeLocale();
-  const upcomingEvents = data.listEvents('upcoming');
+  const upcomingEvents = await data.listEvents('upcoming');
   const evLead = upcomingEvents.find((e) => e.featured && e.status === 'open') ?? upcomingEvents[0];
   const evNext = upcomingEvents.filter((e) => e.id !== evLead?.id).slice(0, 4);
   const params = await searchParams;
   const topicParam = Array.isArray(params.topic) ? params.topic[0] : params.topic;
   const topic = isTopic(topicParam) ? topicParam : null;
 
-  const home = data.getHome();
-  const articles = data.listArticles();
-  const news = data.listNews();
+  const home = await data.getHome();
+  const articles = await data.listArticles();
+  const news = await data.listNews();
   const all = [...articles, ...news];
   const used = new Set<string>();
   const claim = (cards: PublicationCard[]): PublicationCard[] => {

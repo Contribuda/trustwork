@@ -21,7 +21,7 @@ const SECTIONS = ['account', 'security', 'preferences', 'channels', 'billing'] a
 export default async function SettingsPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/settings');
-  const s = data.getSettings(principal);
+  const s = await data.getSettings(principal);
   return (
     <>
       <PageHeader title={t('settings.title')} lede={t('settings.lede')} />

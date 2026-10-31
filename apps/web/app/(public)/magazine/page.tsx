@@ -19,8 +19,8 @@ import { withBase } from '@/app/_lib/base-path';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
 
-export function generateMetadata(): Metadata {
-  const { current } = data.getMagazine();
+export async function generateMetadata(): Promise<Metadata> {
+  const { current } = await data.getMagazine();
   return {
     title: t('magazine.pageTitle'),
     description: t('magazine.lede'),
@@ -39,11 +39,11 @@ export function generateMetadata(): Metadata {
  */
 export default async function MagazinePage() {
   await primeLocale();
-  const { current, archive } = data.getMagazine();
-  const rubrics = data.listRubrics().filter((r) => r.count > 0);
-  const authors = data.listMagazineAuthors().slice(0, 8);
+  const { current, archive } = await data.getMagazine();
+  const rubrics = (await data.listRubrics()).filter((r) => r.count > 0);
+  const authors = (await data.listMagazineAuthors()).slice(0, 8);
   const previous = archive.filter((i) => !current || i.number !== current.number).slice(0, 3);
-  const courses = data.listCourses().slice(0, 4);
+  const courses = (await data.listCourses()).slice(0, 4);
   return (
     <div className="pub pub-page mg">
       <div className="pub-wrap">

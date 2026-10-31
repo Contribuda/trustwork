@@ -30,7 +30,8 @@ import {
 import { Breadcrumb, ButtonLink, MediaFrame } from '@/components/ui';
 import { CompanyMark } from '@/components/public/CompanyMark';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
-import { ProjectAgentTrigger, ProjectAssistant, type ProjectBrief } from '@/components/public/ProjectAssistant';
+import { ProjectAssistant, type ProjectBrief } from '@/components/public/agent/project';
+import { AgentTrigger } from '@/components/public/agent/PublicAssistant';
 import { SectionNav } from '@/components/public/SectionNav';
 import { ShareRow } from '@/components/public/ShareRow';
 import { EvidenceChip, ProjectStatusChip, formatLabel, regionLabel } from '@/components/public/parts';
@@ -42,12 +43,12 @@ import { longDate, shortDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
 
-type Params = { params: Promise<{ slug: string }>; searchParams: PageSearchParams };
+type Params = { params: Promise<{ handle: string }>; searchParams: PageSearchParams };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
-  const { slug } = await params;
-  const project = data.getPublicProject(slug);
+  const { handle } = await params;
+  const project = await data.getPublicProject(handle);
   return { title: project ? project.name : t('error.notFoundTitle'), description: project?.summary ?? undefined };
 }
 
@@ -66,24 +67,23 @@ function PartyMark({ p, size = 48 }: { p: ProjectParticipant; size?: 32 | 36 | 4
  */
 export default async function ProjectPage({ params, searchParams }: Params) {
   await primeLocale();
-  const { slug } = await params;
-  const project = data.getPublicProject(slug);
+  const { handle } = await params;
+  const project = await data.getPublicProject(handle);
   if (!project) notFound();
   const principal = await getPrincipal(searchParams);
   const isOwner = principal.kind === 'person' && (principal.company?.id === project.owner.href?.split('/').pop() || principal.personId === project.owner.href?.split('/').pop());
   const show = project.showcase;
-  const gallery = show.gallery.length ? show.gallery.map((g) => ({ id: g.id, media: fixtureMedia(g.photo, 'project'), caption: g.caption })) : [{ id: 'cover', media: projectCover(project.slug), caption: null }];
+  const gallery = show.gallery.length ? show.gallery.map((g) => ({ id: g.id, media: fixtureMedia(g.photo, 'project'), caption: g.caption })) : [{ id: 'cover', media: projectCover(project.handle), caption: null }];
   const main = gallery[0]!;
   const thumbs = gallery.slice(1, 4);
-  const respondHref = `/login?next=${encodeURIComponent(`/app/rfq?project=${project.slug}`)}`;
-  const writeHref = `/login?next=${encodeURIComponent(`/app/messages/new?project=${project.slug}`)}`;
-  const joinHref = `/login?next=${encodeURIComponent(`/app/projects/join?project=${project.slug}`)}`;
+  const respondHref = `/login?next=${encodeURIComponent(`/app/rfq?project=${project.handle}`)}`;
+  const writeHref = `/login?next=${encodeURIComponent(`/app/messages/new?project=${project.handle}`)}`;
+  const joinHref = `/login?next=${encodeURIComponent(`/app/projects/join?project=${project.handle}`)}`;
   const owner = project.participants.find((p) => p.role === 'owner') ?? null;
   const nextDue = project.progress.current ? (project.progress.current.changedDue ?? project.progress.current.baselineDue) : null;
   const lastMs = project.milestones[project.milestones.length - 1];
   const stateKey = project.status === 'completed' ? 'stateDone' : project.milestones.length === 0 ? 'statePlanned' : project.progress.delayed ? 'stateDelayed' : 'stateOnTrack';
-  const similar = data
-    .listPublicProjects()
+  const similar = (await data.listPublicProjects())
     .filter((p) => p.id !== project.id)
     .map((p) => ({ p, score: (p.category === project.category ? 2 : 0) + (p.region === project.region ? 1 : 0) + (p.status === project.status ? 1 : 0) }))
     .sort((a, b) => b.score - a.score)
@@ -92,7 +92,7 @@ export default async function ProjectPage({ params, searchParams }: Params) {
 
   const brief: ProjectBrief = {
     name: project.name,
-    slug: project.slug,
+    handle: project.handle,
     category: t(`projects.category.${project.category}`),
     region: regionLabel(project.region),
     status: t(`projectStatus.${project.status}`),
@@ -262,10 +262,10 @@ export default async function ProjectPage({ params, searchParams }: Params) {
                   {t('projectPage.write')}
                 </NextLink>
               )}
-              <ProjectAgentTrigger className="pub-btn cp-ask">
+              <AgentTrigger kind="project" className="pub-btn cp-ask">
                 <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
                 {t('projectPage.askAgent')}
-              </ProjectAgentTrigger>
+              </AgentTrigger>
             </div>
           </div>
         </header>
@@ -946,13 +946,13 @@ export default async function ProjectPage({ params, searchParams }: Params) {
               <p className="pub-note__body">{typo(t('projectPage.agentStatus'))}</p>
               <div className="cp-rep__chips">
                 {[1, 3, 5, 9].map((i) => (
-                  <ProjectAgentTrigger key={i} className="cp-rep__q" question={t(`projectPage.agentQuestions.${i}` as 'projectPage.agentQuestions.0')}>
+                  <AgentTrigger kind="project" key={i} className="cp-rep__q" question={t(`projectPage.agentQuestions.${i}` as 'projectPage.agentQuestions.0')}>
                     {t(`projectPage.agentQuestions.${i}` as 'projectPage.agentQuestions.0')}
                     <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
-                  </ProjectAgentTrigger>
+                  </AgentTrigger>
                 ))}
               </div>
-              <ProjectAgentTrigger className="pub-btn pub-btn--dark cp-rep__open">{t('projectPage.askAgent')}</ProjectAgentTrigger>
+              <AgentTrigger kind="project" className="pub-btn pub-btn--dark cp-rep__open">{t('projectPage.askAgent')}</AgentTrigger>
             </section>
             <section className="pub-note" aria-labelledby="share-title">
               <h2 className="pub-note__title" id="share-title">
@@ -970,7 +970,7 @@ export default async function ProjectPage({ params, searchParams }: Params) {
                     <li key={p.id}>
                       <NextLink href={p.href} className="cp-similar__item">
                         <span className="pj-move__thumb" aria-hidden="true" style={{ width: 36, height: 36 }}>
-                          <MediaFrame media={p.cover ? fixtureMedia(p.cover, 'project') : projectCover(p.slug)} ratio="fill" radius="none" sizes="36px" />
+                          <MediaFrame media={p.cover ? fixtureMedia(p.cover, 'project') : projectCover(p.handle)} ratio="fill" radius="none" sizes="36px" />
                         </span>
                         <span className="cp-similar__text">
                           <span className="cp-similar__name">{p.name}</span>
@@ -1019,10 +1019,10 @@ export default async function ProjectPage({ params, searchParams }: Params) {
         </div>
       </div>
 
-      <ProjectAgentTrigger className="cp-fab">
+      <AgentTrigger kind="project" className="cp-fab">
         <Sparkles size={18} strokeWidth={2} aria-hidden="true" />
         <span>{t('projectPage.agentShort')}</span>
-      </ProjectAgentTrigger>
+      </AgentTrigger>
       <ProjectAssistant brief={brief} />
     </div>
   );
