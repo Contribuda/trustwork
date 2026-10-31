@@ -2,7 +2,7 @@
 
 Normative requirements: [The agent and its runtime](modules/agent.md), [The capability registry](capability-registry.md). Participants: [who uses what](participants/README.md).
 
-Requirements R09–R11, R29, R35. Status: the assistant page and the floating overlay with mandates, approvals and runs from demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime (first-party mandate confirmation, the one mandate store behind every module's agent check, decisions bound to digests, the stop control, runs with budget reservations, dispatch through fake providers and reconciliation of unknown outcomes) is **Live in the API and the worker with fake providers only** (AST-001, [assistant module](../../apps/api/src/modules/assistant/README.md)); goals, agent-to-agent negotiation, company mandates, the standing company representative, detailed participant agent settings, the governed extension registry and per-jurisdiction disclosure and liability settings are **Proposed** (AGT-001, AGT-022, AGT-023, HUB-005; [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 22; requirements R48–R50).
+Requirements R09–R11, R29, R35. Status: the assistant page and the floating overlay with mandates, approvals and runs from demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime (first-party mandate confirmation, the one mandate store behind every module's agent check, decisions bound to digests, the stop control, runs with budget reservations, dispatch through fake providers and reconciliation of unknown outcomes) is **Live in the API and the worker with fake providers only** (AST-001, [assistant module](../../apps/api/src/modules/assistant/README.md)); goals, job subscriptions, report drafts, agent-to-agent envelopes, negotiation sessions, company mandates and the standing company representative are **Live in the API with fake providers only** (AGT-001, [assistant-goals module](../../apps/api/src/modules/assistant-goals/README.md); no model, no company page interface yet); detailed participant agent settings, the governed extension registry and per-jurisdiction disclosure and liability settings are **Proposed** (AGT-022, AGT-023, HUB-005; [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 22; requirements R48–R50).
 
 Every participant keeps an agent that represents them in the industry. It looks for partners, presents their services, negotiates and pursues their goals, **under their direction and within limits they can read, change and revoke at any moment**. This chapter describes what the agent does, how its authority works, how agents of different participants deal with each other, and what keeps the whole thing safe.
 
@@ -38,7 +38,7 @@ Owner decision 2026-10-31 (ADR 010 decision 22; AGT-022, shown on the assistant 
 
 | Setting | What you decide |
 |---|---|
-| Goals | What the agent pursues, with success criteria and horizon ([Goals](#goals-proposed)) |
+| Goals | What the agent pursues, with success criteria and horizon ([Goals](#goals)) |
 | Modules | Which abilities of the agent are on (for example `project_planner`, `consultation`, `reputation_builder`), within what the hub offers ([modules](agent-catalog.md#the-module-system)) |
 | Behaviour and tone | How it writes and how proactive it is; it never claims to be a human |
 | Mandates and limits per action | Which actions, in which contexts, up to which amounts, with which counterparties ([mandates](#authority-mandates)) |
@@ -75,7 +75,7 @@ Rules that never bend:
 4. **Everything is rechecked just before the effect**: your current rights, the mandate revision, participant access, limits and both applicable budgets.
 5. **No mandatory confirmation clicks when a sufficient mandate exists.** If you pre-authorized "accept orders under USD 5,000 from verified buyers for catalogue items", the agent does not interrupt you for each one.
 
-## Goals (Proposed)
+## Goals
 
 A **goal** tells your agent what to achieve rather than what to click:
 
@@ -106,7 +106,7 @@ Negotiation between participants, whether people or agents, always moves through
 
 Your agent negotiates inside your private constraints: a seller's floor, a buyer's ceiling and private priorities live in party-private records and **never** enter the counterparty projection, the shared thread, logs visible to others or federation envelopes. The agent never misrepresents facts, never claims to be a human, and never invents competing offers.
 
-### Agents talking to agents (Proposed)
+### Agents talking to agents
 
 When your agent deals with someone else's agent, each message is an **agent envelope**:
 
@@ -138,7 +138,7 @@ A company is represented in two ways, and both keep the rule "authority comes on
 
 Someone with company authority grants a **company mandate** to a colleague's agent (for example a sales lead grants "answer RFQ invitations in category Facade works with draft quotes; send quotes under EUR 10,000 from the catalogue price list"). Such a mandate is visible on the company page to members with the right to see it, names the person whose agent executes it, and stops automatically when that person's authority or membership ends.
 
-### Through the company representative (Proposed, owner decision 2026-10-30)
+### Through the company representative (owner decision 2026-10-30)
 
 A company may enable **one standing representative** that keeps answering when people go on holiday, change roles or leave. It is designed so that continuity never costs accountability:
 
@@ -154,6 +154,8 @@ A company may enable **one standing representative** that keeps answering when p
 | Decisions go to people | Actions outside its mandates, or marked "needs approval", appear in the "Your decision is needed" list (`decision.kicker`) of the members named as approvers, in their own assistant |
 
 Typical jobs: keep the capability profile and catalogue presentation current, answer RFQ invitations and introduction requests, propose and schedule meetings at events, negotiate within the company's floors, accept orders within limits, and send a weekly report to the accountable person.
+
+Implementation note (AGT-001): when the granting member leaves or loses `company.deals.manage`, the company mandate stops in the same transaction (rule 1 above and the package acceptance) and waits for re-confirmation: another member holding `company.deals.manage` re-confirms exactly the same terms (digest) within 7 days, which restores it under their name; otherwise it stays suspended. The catalogue wording "suspends unless re-confirmed" would let the representative keep acting under a departed member's authority for up to 7 days; that reading is an open question for the owner. The representative is run inside its accountable person's principal transaction, so their membership and authority are rechecked on every dispatch.
 
 Contract additions: a principal kind `company_representative` acting for the company; `representative(company, accountable_person, status, revision)`; company mandates whose grantee is the representative; re-confirmation records; suspension reasons.
 
@@ -201,7 +203,7 @@ Agents use model providers through adapters with **egress policies per data clas
 - Hub operators have a **kill switch** for all agent dispatch in their hub; the instance operator has one for all hubs. The catalogue adds switches per hub module, for external connections, for the company representative and per connection ([Kill switches](agent-catalog.md#kill-switches)).
 - Every action has an audit record and an idempotency key.
 
-## Data model additions (Proposed)
+## Data model additions
 
 Zod-shaped proposals for these and the catalogue additions (mandate v2, modules, plans and metering, plans of projects, consultations, reputation passport, external connections, kill switches) are in the [catalogue](agent-catalog.md#data-model-and-contract-additions).
 

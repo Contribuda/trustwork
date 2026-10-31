@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "Агент: {person}",
+      "personAgentForCompany": "Агент: {person}, от имени {company}",
+      "representative": "Представитель {company} (ответственный: {person})"
+    },
+    "session": {
+      "open": "Переговоры идут",
+      "agreedPendingConfirmation": "Согласовано, ждёт подтверждения людьми",
+      "escalated": "Передано людям",
+      "declined": "Отклонено",
+      "withdrawn": "Отозвано",
+      "expired": "Срок истёк"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "Сообщение от другого агента требует вашего решения",
+      "outboundOutsideMandate": "Ваш агент просит выйти за пределы поручения",
+      "roundsExhausted": "Переговоры исчерпали лимит раундов",
+      "sessionExpired": "Срок переговоров истёк",
+      "agreementNeedsConfirmation": "Соглашение ждёт вашего подтверждения",
+      "confirmationRequested": "Запрошено подтверждение"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "Ждёт ответственного",
+        "active": "Активен",
+        "suspended": "Приостановлен",
+        "disabled": "Выключен"
+      },
+      "suspension": {
+        "noAccountablePerson": "Нет ответственного",
+        "noConfirmedMandate": "Нет подтверждённого поручения",
+        "adminSuspended": "Приостановлен администратором",
+        "hubKillSwitch": "Остановлен для всего хаба",
+        "nodeKillSwitch": "Остановлен для всего узла"
+      }
+    },
+    "report": {
+      "goalProgress": "Ход достижения цели",
+      "event": {
+        "created": "Цель создана",
+        "mandate_proposed": "Предложены изменения поручений",
+        "confirmed": "Цель подтверждена",
+        "mandate_confirmed": "Поручение подтверждено",
+        "paused": "Приостановлено",
+        "resumed": "Возобновлено",
+        "closed": "Закрыто",
+        "evidence": "Записано подтверждение",
+        "report": "Подготовлен отчёт",
+        "escalated": "Передано людям"
+      }
+    }
+  }
+}

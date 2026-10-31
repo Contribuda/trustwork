@@ -239,6 +239,25 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'hub.credential_register': IN_TRANSACTION,
   'hub.credential_activate': IN_TRANSACTION,
   'hub.credential_retire': IN_TRANSACTION,
+  // AGT-001: goals, reports, job subscriptions, envelopes, escalations, the company representative and company mandates
+  'agents.goal_create': IN_TRANSACTION,
+  'agents.goal_confirm': IN_TRANSACTION,
+  'agents.goal_status': IN_TRANSACTION,
+  'agents.goal_evidence': IN_TRANSACTION,
+  'agents.goal_report': IN_TRANSACTION,
+  'agents.report_share': IN_TRANSACTION,
+  'agents.job_subscription_create': IN_TRANSACTION,
+  'agents.job_subscription_status': IN_TRANSACTION,
+  'agents.envelope_send': IN_TRANSACTION,
+  'agents.escalation_resolve': IN_TRANSACTION,
+  'agents.representative_configure': IN_TRANSACTION,
+  'agents.representative_accept': IN_TRANSACTION,
+  'agents.representative_suspend': IN_TRANSACTION,
+  'agents.representative_resume': IN_TRANSACTION,
+  'agents.representative_disable': IN_TRANSACTION,
+  'agents.company_mandate_grant': IN_TRANSACTION,
+  'agents.company_mandate_reconfirm': IN_TRANSACTION,
+  'agents.company_mandate_revoke': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
