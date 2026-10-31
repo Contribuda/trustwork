@@ -21,6 +21,8 @@ import { load as loadWorkPackages, validPath } from './work-packages.mjs';
 export const CLAIM_TTL_DAYS = 7;
 export const HEARTBEAT_DAYS = 3;
 export const MAX_ACTIVE_CLAIMS_PER_HUMAN = 3;
+/** A maintainer claiming for themselves (for example while conducting a coordinated wave of agents) may hold more. */
+export const MAX_ACTIVE_CLAIMS_PER_MAINTAINER = 10;
 export const BOT_LOGIN = 'github-actions[bot]';
 export const LABELS = {
   claimed: { name: 'claimed', color: 'FBCA04', description: 'A valid claim is active; see the latest claims bot comment' },
@@ -154,7 +156,8 @@ export function decide({ parsed, issuePackageId, author, association, at, packag
     const placeholders = [f.human, f.agent, f.until, ...f.scope, ...f.plan].filter((v) => /<[^>]*>/.test(v));
     if (placeholders.length) reasons.push(`replace the template placeholders: ${placeholders.map(code).join(', ')}`);
     const mine = [...active.values()].filter((c) => lower(c.human) === lower(human) && c.package !== id);
-    if (human && mine.length >= MAX_ACTIVE_CLAIMS_PER_HUMAN) reasons.push(`${code(human)} already holds ${mine.length} active claims (${mine.map((c) => code(c.package)).join(', ')}); the limit is ${MAX_ACTIVE_CLAIMS_PER_HUMAN} per person`);
+    const limit = human && lower(author) === lower(human) && MAINTAINER_ASSOCIATIONS.has(association) ? MAX_ACTIVE_CLAIMS_PER_MAINTAINER : MAX_ACTIVE_CLAIMS_PER_HUMAN;
+    if (human && mine.length >= limit) reasons.push(`${code(human)} already holds ${mine.length} active claims (${mine.map((c) => code(c.package)).join(', ')}); the limit is ${limit} per ${limit === MAX_ACTIVE_CLAIMS_PER_HUMAN ? 'person' : 'maintainer'}`);
     for (const other of active.values()) {
       if (other.package === id) continue;
       const clash = f.scope.find((path) => other.scope.some((theirs) => overlaps(path, theirs)));
