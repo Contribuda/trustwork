@@ -1,0 +1,25 @@
+{
+  "screening": {
+    "pageTitle": "Muvofiqlik",
+    "status": {
+      "clear": "Ushbu hisob uchun kutilayotgan muvofiqlik tekshiruvlari yoʻq.",
+      "checking": "Muntazam muvofiqlik tekshiruvi oʻtkazilmoqda.",
+      "nameNeeded": "Muvofiqlik tekshiruvini yakunlash uchun toʻliq rasmiy ismingiz kerak. Iltimos, uni hisobingizga qoʻshing.",
+      "review": "Muvofiqlik tekshiruvi xodim tomonidan koʻrib chiqilishi kerak. Bu odatda taxminan bir ish kuni davom etadi.",
+      "suspended": "Ushbu hisob huquqiy sabablarga koʻra toʻxtatilgan.",
+      "appealPending": "Ushbu hisob huquqiy sabablarga koʻra toʻxtatilgan. Shikoyatingizni dastlabki qarorni qabul qilmagan xodim koʻrib chiqmoqda."
+    },
+    "paymentsPaused": "Tekshiruv tugaguncha toʻlovlar, pul oʻtkazmalari, sotuvlar va tijorat majburiyatlari toʻxtatib turiladi. Hisobingizdagi hech narsa oʻchirilmaydi.",
+    "contact": "Savollaringiz boʻlsa, ushbu sayt operatoriga uning foydalanish shartlarida koʻrsatilgan aloqa maʼlumotlari orqali murojaat qiling.",
+    "appeal": {
+      "available": "Siz bu qarordan shikoyat qilishingiz mumkin. Dastlabki qarorni qabul qilmagan xodim javob beradi.",
+      "title": "Qarordan shikoyat qilish",
+      "reasonLabel": "Nima uchun qaror notoʻgʻri deb hisoblaysiz?",
+      "submit": "Shikoyatni yuborish",
+      "submitted": "Shikoyatingiz yuborildi. Natija haqida sizga xabar beramiz."
+    },
+    "refusal": {
+      "suspended": "Ushbu hisob huquqiy sabablarga koʻra toʻxtatilgan. Muvofiqlik holatingizni koʻrishingiz va shikoyat qilishingiz mumkin."
+    }
+  }
+}

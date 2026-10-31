@@ -34,3 +34,7 @@ Lower-case ASCII letters and digits in hyphen-separated groups, 3 to 40 characte
 - Anonymous callers have no identity: people and projects come from the owner-run `directory_public_people`, `directory_public_projects` and `directory_public_resolve` (public columns of public rows only); companies are public rows read by the runtime role without identity.
 
 Tests: `tests/contracts/directory.test.ts`, `tests/directory/api.test.ts` (HTTP, negative authorization per projection), `tests/directory/database.test.ts` (permanence, definer authority, RLS, concurrency, pagination under concurrent inserts) and `tests/directory/plans.test.ts` (index scans on 100,000 synthetic rows under the runtime role).
+
+## Screening of companies (SANC-003)
+
+`company.created` (appended by `POST /v1/companies`) and `company.renamed` start a screening of the company in the worker ([`apps/worker/src/screening`](../../../../worker/src/screening/README.md)). The database appends `company.renamed` itself whenever `company.display_name` changes, through any path (migration `packages/data/migrations/screening`), so no rename skips screening; the payload carries the company id only. `company.ownership_declaration_changed` is consumed by the worker and is emitted once the ownership declaration (INTL-SAN) is persisted. Screening outcomes never reach the directory, its public reads or its handles.

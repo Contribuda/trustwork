@@ -1,0 +1,25 @@
+{
+  "screening": {
+    "pageTitle": "Cumplimiento",
+    "status": {
+      "clear": "No hay verificaciones de cumplimiento pendientes para esta cuenta.",
+      "checking": "Se está realizando una verificación de cumplimiento de rutina.",
+      "nameNeeded": "Necesitamos su nombre legal completo para terminar una verificación de cumplimiento. Agréguelo a su cuenta.",
+      "review": "Una verificación de cumplimiento necesita la revisión de una persona. Esto suele tardar alrededor de un día hábil.",
+      "suspended": "Esta cuenta está suspendida por motivos legales.",
+      "appealPending": "Esta cuenta está suspendida por motivos legales. Su apelación la revisa una persona que no tomó la decisión original."
+    },
+    "paymentsPaused": "Hasta que termine, los pagos, los cobros, las ventas y los compromisos comerciales quedan en pausa. No se elimina nada de su cuenta.",
+    "contact": "Si tiene preguntas, comuníquese con el operador de este sitio mediante los datos de contacto de sus condiciones de servicio.",
+    "appeal": {
+      "available": "Puede apelar esta decisión. Responderá una persona que no tomó la decisión original.",
+      "title": "Apelar la decisión",
+      "reasonLabel": "¿Por qué cree que la decisión es incorrecta?",
+      "submit": "Enviar la apelación",
+      "submitted": "Su apelación se envió. Le informaremos el resultado."
+    },
+    "refusal": {
+      "suspended": "Esta cuenta está suspendida por motivos legales. Puede consultar su estado de cumplimiento y apelar."
+    }
+  }
+}

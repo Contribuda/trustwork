@@ -211,6 +211,13 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'assistant.stop_release': IN_TRANSACTION,
   'assistant.conversation_turn': IN_TRANSACTION,
   'assistant.backlog_status': IN_TRANSACTION,
+  // SANC-003: screening review cases. Every decision, its second-person approval, the suspension, the report draft, the
+  // audit row and the outbox events commit in the request transaction; the subject's appeal likewise.
+  'screening.appeal_file': IN_TRANSACTION,
+  'screening.match_confirm': IN_TRANSACTION,
+  'screening.match_propose': IN_TRANSACTION,
+  'screening.proposal_decide': IN_TRANSACTION,
+  'screening.appeal_decide': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

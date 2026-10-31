@@ -1,0 +1,25 @@
+{
+  "screening": {
+    "pageTitle": "Compliance",
+    "status": {
+      "clear": "No compliance checks are pending for this account.",
+      "checking": "A routine compliance check is in progress.",
+      "nameNeeded": "We need your full legal name to complete a compliance check. Please add it to your account.",
+      "review": "A compliance check needs a person's review. This usually takes about one business day.",
+      "suspended": "This account is suspended for legal reasons.",
+      "appealPending": "This account is suspended for legal reasons. Your appeal is with a reviewer who did not take the original decision."
+    },
+    "paymentsPaused": "Until it is complete, payments, payouts, sales and commercial commitments are paused. Nothing in your account is deleted.",
+    "contact": "If you have questions, contact the operator of this site through the contact details in its terms of service.",
+    "appeal": {
+      "available": "You can appeal this decision. A reviewer who did not take the original decision will answer.",
+      "title": "Appeal the decision",
+      "reasonLabel": "Why do you think the decision is wrong?",
+      "submit": "Send the appeal",
+      "submitted": "Your appeal was sent. We will tell you the outcome."
+    },
+    "refusal": {
+      "suspended": "This account is suspended for legal reasons. You can read your compliance status and appeal."
+    }
+  }
+}

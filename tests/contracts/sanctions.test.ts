@@ -7,6 +7,8 @@ import {
   JurisdictionHoldSchema, JurisdictionStatusSchema, loadRangeTable, parseAddress, RANGE_TABLE_FORMAT, rangeTableAgeInMonths, RangeTableError, restrictedPlaces, upstreamGate,
 } from '../../packages/contracts/src/sanctions.js';
 import { RESTRICTED } from '../../packages/country-packs/src/restricted.js';
+import * as screening from '../../packages/contracts/src/sanctions.js';
+import { CONSOLE_SECOND_PERSON_ACTIONS } from '../../packages/contracts/src/hub.js';
 
 // The authoritative list, exactly as the web and the API receive it.
 const restricted = restrictedPlaces(RESTRICTED.places.map((p) => p.code));
@@ -159,4 +161,70 @@ test('screening list versions, entries and the activation event', async () => {
   for (const bad of ['Anna Testova', 'anna  testova', ' anna', 'anna,testova', '']) assert.ok(!NameKeySchema.safeParse(bad).success, bad);
   assert.ok(NameKeySchema.safeParse('7 synthetic voyager').success);
   assert.ok(ScreeningListVersionActivatedEventSchema.safeParse({ listId: 'list-1', listCode: 'ofac-sdn', hubId: null, baseline: true, versionId: 'v-1', version: 1, previousVersionId: null, entryCount: 6, digest: 'b'.repeat(64), publishedOn: '2026-10-28', confirmedBy: null }).success);
+});
+
+/* ---------- SANC-003: screening contracts ---------- */
+
+const ID = '11111111-1111-4111-8111-111111111111';
+const at = '2026-10-31T12:00:00.000Z';
+const stateWith = (moneyHeld: boolean, suspended: boolean, reasons: screening.ScreeningHoldReason[]): screening.ScreeningState =>
+  screening.ScreeningStateSchema.parse({ subject: { kind: 'person', id: ID }, moneyHeld, suspended, reasons, lastOutcome: null, lastScreenedAt: null, checkedAt: at });
+
+test('screening state: money is held exactly when there is a reason; a suspension comes from a confirmed match', () => {
+  assert.equal(stateWith(false, false, []).moneyHeld, false);
+  assert.throws(() => stateWith(false, false, ['review_pending']), /reason/);
+  assert.throws(() => stateWith(true, false, []), /reason/);
+  assert.throws(() => stateWith(true, true, ['review_pending']), /suspension/);
+  assert.equal(stateWith(true, true, ['confirmed']).suspended, true);
+});
+
+test('own status: words only, mapped from the effective state; never a list, an entry or a reviewer', () => {
+  const words = (s: screening.ScreeningState, appealable = false) => screening.ownComplianceStatus(s, appealable);
+  assert.deepEqual([words(stateWith(false, false, [])).status, words(stateWith(false, false, [])).paymentsPaused], ['clear', false]);
+  assert.equal(words(stateWith(true, false, ['not_screened'])).status, 'checking');
+  assert.equal(words(stateWith(true, false, ['lists_unavailable'])).status, 'checking');
+  assert.equal(words(stateWith(true, false, ['rescreen_due'])).status, 'checking');
+  assert.equal(words(stateWith(true, false, ['insufficient_name'])).status, 'name_needed');
+  assert.equal(words(stateWith(true, false, ['review_pending', 'insufficient_name'])).status, 'review');
+  const suspended = words(stateWith(true, true, ['confirmed']), true);
+  assert.deepEqual([suspended.status, suspended.canAppeal, suspended.paymentsPaused], ['suspended', true, true]);
+  assert.deepEqual([words(stateWith(true, true, ['confirmed']), false).status, words(stateWith(true, true, ['confirmed']), false).canAppeal], ['appeal_pending', false]);
+  for (const status of [words(stateWith(true, false, ['review_pending'])), suspended]) {
+    assert.deepEqual(Object.keys(status).sort(), ['canAppeal', 'messageKeys', 'paymentsPaused', 'status', 'subject']);
+    assert.ok(status.messageKeys.every((k) => k.startsWith('screening.')));
+  }
+  assert.equal(screening.OwnComplianceStatusSchema.safeParse({ ...suspended, listCode: 'ofac-sdn' }).success, false, 'strict: no list can be added');
+});
+
+test('review service level: business days, bounded one to five', () => {
+  // Friday 2026-10-30 12:00 UTC + one business day = Monday 2026-11-02 12:00 UTC.
+  assert.equal(screening.reviewDueAt(new Date('2026-10-30T12:00:00Z'), 1).toISOString(), '2026-11-02T12:00:00.000Z');
+  assert.equal(screening.reviewDueAt(new Date('2026-10-26T09:00:00Z'), 5).toISOString(), '2026-11-02T09:00:00.000Z');
+  assert.throws(() => screening.reviewDueAt(new Date(at), 0));
+  assert.throws(() => screening.reviewDueAt(new Date(at), 6));
+  assert.deepEqual(screening.REVIEW_SERVICE_LEVEL_BOUNDS, { min: 1, max: 5, default: 1 });
+});
+
+test('second-person actions: exactly the two screening actions, outside the frozen console vocabulary', () => {
+  assert.deepEqual([...screening.SCREENING_SECOND_PERSON_ACTIONS], ['screening.clear_match', 'screening.reverse_confirmation']);
+  for (const action of screening.SCREENING_SECOND_PERSON_ACTIONS) assert.ok(!(CONSOLE_SECOND_PERSON_ACTIONS as readonly string[]).includes(action));
+});
+
+test('commands: reasons and evidence are required; the second person restates a digest', () => {
+  assert.ok(screening.ConfirmScreeningMatchCommandSchema.safeParse({ reason: 'Synthetic', evidence: 'identity_document' }).success);
+  assert.equal(screening.ConfirmScreeningMatchCommandSchema.safeParse({ reason: ' ', evidence: 'identity_document' }).success, false);
+  assert.equal(screening.ConfirmScreeningMatchCommandSchema.safeParse({ reason: 'x', evidence: 'score' }).success, false);
+  assert.equal(screening.DecideScreeningProposalCommandSchema.safeParse({ decision: 'approve', actionDigest: 'nope', reason: 'x' }).success, false);
+  assert.ok(screening.DecideScreeningProposalCommandSchema.safeParse({ decision: 'reject', actionDigest: 'a'.repeat(64), reason: 'x' }).success);
+  assert.equal(screening.AppealComplianceDecisionCommandSchema.safeParse({ companyId: null, reason: 'x', listCode: 'ofac-sdn' }).success, false);
+  assert.equal(screening.FuzzyThresholdSchema.safeParse(0.8).success, false);
+  assert.ok(screening.FuzzyThresholdSchema.safeParse(0.9).success);
+});
+
+test('trigger events map to triggers; event payload schemas carry identifiers and flags only', () => {
+  for (const trigger of Object.values(screening.SCREENING_TRIGGER_EVENTS)) assert.ok(screening.ScreeningTriggerSchema.safeParse(trigger).success);
+  assert.deepEqual(Object.keys(screening.ScreeningReviewRequestedEventSchema.shape).sort(), ['mutable', 'queueItemId']);
+  assert.deepEqual(Object.keys(screening.ScreeningSubjectStatusChangedEventSchema.shape).sort(), ['moneyHeld', 'subject', 'suspended']);
+  assert.equal(screening.ScreeningReviewRequestedEventSchema.safeParse({ queueItemId: ID, mutable: true }).success, false, 'a staff notification cannot be muted');
+  assert.equal(screening.SCREENING_ERROR_STATUS['auth.compliance_suspended'], 403);
 });

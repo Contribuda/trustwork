@@ -29,6 +29,7 @@ import { instrumentHttp, NestJsonLogger } from './observability/http.js';
 import { createLogger, messageLogger, type Logger, type LogSink } from './observability/logger.js';
 import { createTelemetry, type Telemetry, type TelemetryExporter } from './observability/telemetry.js';
 import { jurisdictionGateFor, jurisdictionHook, loadRestrictedPlaces } from './modules/jurisdiction/gate.js';
+import { suspensionHook } from './modules/screening/suspension.js';
 import type { JurisdictionGate } from './modules/jurisdiction/deps.js';
 
 export interface CreateAppOptions {
@@ -204,6 +205,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   // SANC-001: refuse restricted places and held people before any route runs (after the identity hook attached the
   // session, which a sighting needs to hold its person).
   if (pool && jurisdictionGate) fastify.addHook('onRequest', jurisdictionHook({ gate: jurisdictionGate, pool, log: logger }));
+  // SANC-003: a person suspended by a confirmed screening match reaches only their own compliance status, the appeal
+  // and sign-out (after the jurisdiction gate, so a restricted place is refused first).
+  if (pool) fastify.addHook('onRequest', suspensionHook({ pool, log: logger }));
   const reflector = app.get(Reflector);
   app.useGlobalFilters(new ErrorFilter());
   app.useGlobalGuards(new CsrfGuard(reflector, config), new AuthGuard(reflector, config, () => clock.now()));

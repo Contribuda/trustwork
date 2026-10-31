@@ -2,10 +2,13 @@ import { auditEvents, outbox, type Transaction } from '../../deps/data.js';
 
 /**
  * Outbox event types emitted by the identity module. They are intents for the worker (notifications and mail in
- * MAIL-001, projections later) and carry identifiers only: never an address, a token, a hash or a password.
+ * MAIL-001, screening in SANC-003, projections later) and carry identifiers only: never an address, a token, a hash, a
+ * password or a name. `identity.name_changed` is appended by the database itself whenever a person's display name
+ * changes, whatever path changed it (migration packages/data/migrations/screening), so no rename can skip screening.
  */
 export type IdentityEventType =
   | 'identity.person_registered'
+  | 'identity.name_changed'
   | 'identity.signup_on_bound_address'
   | 'identity.session_started'
   | 'identity.login_throttled'

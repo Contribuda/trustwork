@@ -769,3 +769,255 @@ export type SetScreeningListStatusCommand = z.infer<typeof SetScreeningListStatu
 /** Staff command (console): activate a staged version whose entry count dropped beyond the share, after checking it. */
 export const ConfirmScreeningListVersionCommandSchema = z.strictObject({ reason: z.string().trim().min(1).max(500) });
 export type ConfirmScreeningListVersionCommand = z.infer<typeof ConfirmScreeningListVersionCommandSchema>;
+
+/* ---------- Screening: subjects, results, matches, decisions and review cases (SANC-003) ---------- */
+
+/**
+ * The screening engine (SANC-003, ADR 014 decisions 11 to 17; data model section 24a).
+ *
+ * - **Subjects** are persons (screened against individual entries) and companies (against entity entries; vessels and
+ *   aircraft only when a hub enables them). Their names come from the database, never from a caller.
+ * - **Outcomes are honest**: `clear` (screened against named active list versions, no unresolved possible match),
+ *   `possible_match`, `insufficient_name` (a one-token name is never reported as clear) or `not_screened` (no active
+ *   version, stale baseline, adapter error). No score ever clears.
+ * - **Money is held** (`moneyHeld`) unless the latest result is `clear` against the active baseline versions, or every
+ *   possible match was decided `not_same_person`, and the baseline is fresh. A possible match never blocks sign-in; a
+ *   confirmed match suspends the subject.
+ * - **Review cases** with separation of duties: confirmed by one compliance reviewer; "not the same person" and the
+ *   reversal of a confirmation need a second person (`SCREENING_SECOND_PERSON_ACTIONS`); an appeal is decided by a
+ *   reviewer other than the one who confirmed. Nobody decides about themselves, a company they belong to, or a party
+ *   they declared a conflict with.
+ * - **Nothing here is public**: screening records are staff-only (`SC`); the subject sees status words only
+ *   (`OwnComplianceStatusSchema`); a counterparty learns only that the other side cannot transact now (SANC-004).
+ *   No screening field may appear in a public, counterparty, search, federation or agent projection
+ *   (`SCREENING_PRIVATE_FIELDS`, checked by tests/screening/projections.test.ts).
+ */
+
+/** A suspended person reaches only their own compliance status, the appeal and sign-out (HTTP 403). */
+export const SCREENING_ERROR_CODES = ['auth.compliance_suspended'] as const;
+export const SCREENING_ERROR_STATUS: Readonly<Record<(typeof SCREENING_ERROR_CODES)[number], number>> = { 'auth.compliance_suspended': 403 };
+
+export const SCREENING_SUBJECT_KINDS = ['person', 'company'] as const;
+export const ScreeningSubjectRefSchema = z.strictObject({ kind: z.enum(SCREENING_SUBJECT_KINDS), id: IdSchema });
+export type ScreeningSubjectRef = z.infer<typeof ScreeningSubjectRefSchema>;
+
+export const SCREENING_OUTCOMES = ['clear', 'possible_match', 'insufficient_name', 'not_screened'] as const;
+export const ScreeningOutcomeSchema = z.enum(SCREENING_OUTCOMES);
+export type ScreeningOutcome = z.infer<typeof ScreeningOutcomeSchema>;
+
+export const SCREENING_TRIGGERS = ['registration', 'sign_in', 'name_change', 'company_change', 'claim', 'seller', 'counterparty', 'payee', 'organizer', 'peer', 'operator', 'list_update', 'scheduled'] as const;
+export const ScreeningTriggerSchema = z.enum(SCREENING_TRIGGERS);
+export type ScreeningTrigger = z.infer<typeof ScreeningTriggerSchema>;
+
+export const SCREENING_MATCH_RULES = ['engine', 'fuzzy'] as const;
+export const ScreeningMatchRuleSchema = z.enum(SCREENING_MATCH_RULES);
+export type ScreeningMatchRule = z.infer<typeof ScreeningMatchRuleSchema>;
+
+/** Review states of one (subject, list, entry) pair. Only the screening decisions move them. */
+export const SCREENING_MATCH_STATES = ['open', 'pending_second', 'not_same_person', 'confirmed', 'appeal', 'pending_reversal'] as const;
+export const ScreeningMatchStateSchema = z.enum(SCREENING_MATCH_STATES);
+export type ScreeningMatchState = z.infer<typeof ScreeningMatchStateSchema>;
+/** States that keep money held. `not_same_person` is the only resolved state. */
+export const UNRESOLVED_MATCH_STATES: readonly ScreeningMatchState[] = ['open', 'pending_second', 'confirmed', 'appeal', 'pending_reversal'];
+/** States that suspend the subject (a confirmed match, also while an appeal or a reversal is pending). */
+export const SUSPENDING_MATCH_STATES: readonly ScreeningMatchState[] = ['confirmed', 'appeal', 'pending_reversal'];
+/** States a staff review queue shows as waiting for a reviewer. */
+export const QUEUED_MATCH_STATES: readonly ScreeningMatchState[] = ['open', 'pending_second', 'appeal', 'pending_reversal'];
+
+export const SCREENING_DECISION_KINDS = ['confirm', 'propose_not_same_person', 'approve', 'reject', 'appeal', 'uphold', 'propose_reversal'] as const;
+export const ScreeningDecisionKindSchema = z.enum(SCREENING_DECISION_KINDS);
+export type ScreeningDecisionKind = z.infer<typeof ScreeningDecisionKindSchema>;
+
+/** What a reviewer relied on. Secondary attributes are shown to reviewers and never used to clear automatically. */
+export const SCREENING_EVIDENCE_CATEGORIES = ['identity_document', 'date_of_birth', 'nationality', 'address', 'registration_identifier', 'other'] as const;
+export const ScreeningEvidenceCategorySchema = z.enum(SCREENING_EVIDENCE_CATEGORIES);
+export type ScreeningEvidenceCategory = z.infer<typeof ScreeningEvidenceCategorySchema>;
+
+/**
+ * Second-person actions of the screening engine, registered in the data layer's approval vocabulary
+ * (`trustwork.admin_second_person_actions()`) with the data integrator's agreement. They extend the frozen console
+ * vocabulary (`CONSOLE_SECOND_PERSON_ACTIONS`, HUBC-000) only in the database: they are requested, approved and
+ * consumed through the screening commands, which apply the screening guards, never through the generic approval routes.
+ */
+export const SCREENING_SECOND_PERSON_ACTIONS = ['screening.clear_match', 'screening.reverse_confirmation'] as const;
+export type ScreeningSecondPersonAction = (typeof SCREENING_SECOND_PERSON_ACTIONS)[number];
+
+/**
+ * The fuzzy layer (ADR 014 decision 11): token similarity (Jaro-Winkler) with a threshold inside engine bounds. It only
+ * adds possible matches; it is off unless a hub sets a threshold (the owner has not chosen one, ADR 014 open question 3).
+ */
+export const FUZZY_THRESHOLD_BOUNDS = { min: 0.85, max: 0.99 } as const;
+export const FuzzyThresholdSchema = z.number().min(FUZZY_THRESHOLD_BOUNDS.min).max(FUZZY_THRESHOLD_BOUNDS.max);
+
+/** Review service level (hub setting, engine bounds one to five business days; default one). */
+export const REVIEW_SERVICE_LEVEL_BOUNDS = { min: 1, max: 5, default: 1 } as const;
+export const ReviewServiceLevelSchema = z.int().min(REVIEW_SERVICE_LEVEL_BOUNDS.min).max(REVIEW_SERVICE_LEVEL_BOUNDS.max);
+
+/**
+ * When a queue item opened at `openedAt` becomes late: after `businessDays` whole business days (Monday to Friday,
+ * UTC). Hub holidays are not counted yet (they come with the hub calendar).
+ */
+export function reviewDueAt(openedAt: Date, businessDays: number): Date {
+  const days = ReviewServiceLevelSchema.parse(businessDays);
+  const due = new Date(openedAt.getTime());
+  let added = 0;
+  while (added < days) {
+    due.setUTCDate(due.getUTCDate() + 1);
+    const weekday = due.getUTCDay();
+    if (weekday !== 0 && weekday !== 6) added += 1;
+  }
+  return due;
+}
+
+/** Ten business days for the operator's blocked-property or rejected-transaction report (US: 31 CFR 501.603, 501.604). */
+export const REPORT_DRAFT_BUSINESS_DAYS = 10;
+
+/** Why the effective state holds money. Order is not meaningful. */
+export const SCREENING_HOLD_REASONS = ['not_screened', 'insufficient_name', 'review_pending', 'confirmed', 'lists_unavailable', 'rescreen_due'] as const;
+export const ScreeningHoldReasonSchema = z.enum(SCREENING_HOLD_REASONS);
+export type ScreeningHoldReason = z.infer<typeof ScreeningHoldReasonSchema>;
+
+/**
+ * The internal `screeningState(subject)` port for the gates (SANC-004). Never shown to anyone but the gate's own code:
+ * a counterparty is told only that the other side cannot transact now. A gate that cannot read it refuses.
+ */
+export const ScreeningStateSchema = z
+  .strictObject({
+    subject: ScreeningSubjectRefSchema,
+    moneyHeld: z.boolean(),
+    suspended: z.boolean(),
+    reasons: z.array(ScreeningHoldReasonSchema),
+    lastOutcome: ScreeningOutcomeSchema.nullable(),
+    lastScreenedAt: TimestampSchema.nullable(),
+    checkedAt: TimestampSchema,
+  })
+  .refine((s) => s.moneyHeld === s.reasons.length > 0, { message: 'money is held exactly when there is a reason' })
+  .refine((s) => !s.suspended || s.reasons.includes('confirmed'), { message: 'a suspension comes from a confirmed match' });
+export type ScreeningState = z.infer<typeof ScreeningStateSchema>;
+
+/** Status words a subject sees about themselves (`core.compliance_status`); never a list, an entry or a reviewer. */
+export const OWN_COMPLIANCE_STATUSES = ['clear', 'checking', 'name_needed', 'review', 'suspended', 'appeal_pending'] as const;
+export const OwnComplianceStatusSchema = z.strictObject({
+  subject: ScreeningSubjectRefSchema,
+  status: z.enum(OWN_COMPLIANCE_STATUSES),
+  /** Payments, payouts, sales and commercial commitments are paused. */
+  paymentsPaused: z.boolean(),
+  /** A confirmed decision can be appealed (once per decision; a reviewer other than the decider answers). */
+  canAppeal: z.boolean(),
+  /** Locale keys of the words to show (namespace `screening`). */
+  messageKeys: z.array(z.string().regex(/^screening\.[a-zA-Z.]+$/)).min(1),
+});
+export type OwnComplianceStatus = z.infer<typeof OwnComplianceStatusSchema>;
+
+/** The status words of an effective state, for the subject (pure; the API and the tests share it). */
+export function ownComplianceStatus(state: ScreeningState, appealable: boolean): OwnComplianceStatus {
+  const r = new Set(state.reasons);
+  let status: OwnComplianceStatus['status'];
+  if (!state.moneyHeld) status = 'clear';
+  else if (state.suspended) status = appealable ? 'suspended' : 'appeal_pending';
+  else if (r.has('review_pending')) status = 'review';
+  else if (r.has('insufficient_name')) status = 'name_needed';
+  else status = 'checking';
+  const keys: Record<OwnComplianceStatus['status'], string[]> = {
+    clear: ['screening.status.clear'],
+    checking: ['screening.status.checking', 'screening.paymentsPaused'],
+    name_needed: ['screening.status.nameNeeded', 'screening.paymentsPaused'],
+    review: ['screening.status.review', 'screening.paymentsPaused', 'screening.contact'],
+    suspended: ['screening.status.suspended', 'screening.contact', 'screening.appeal.available'],
+    appeal_pending: ['screening.status.appealPending', 'screening.contact'],
+  };
+  return { subject: state.subject, status, paymentsPaused: state.moneyHeld, canAppeal: status === 'suspended', messageKeys: keys[status] };
+}
+
+/** Subject command (`core.appeal_compliance_decision`, fresh step-up): appeal a confirmed decision. */
+export const AppealComplianceDecisionCommandSchema = z.strictObject({
+  /** Null for the caller's own account; a company the caller administers otherwise. */
+  companyId: IdSchema.nullable(),
+  reason: z.string().trim().min(1).max(2000),
+});
+export type AppealComplianceDecisionCommand = z.infer<typeof AppealComplianceDecisionCommandSchema>;
+
+const ReasonSchema = z.string().trim().min(1).max(500);
+/** Staff commands on one match (compliance officer of the node, elevated session). */
+export const ConfirmScreeningMatchCommandSchema = z.strictObject({ reason: ReasonSchema, evidence: ScreeningEvidenceCategorySchema });
+export const ProposeNotSamePersonCommandSchema = z.strictObject({ reason: ReasonSchema, evidence: ScreeningEvidenceCategorySchema });
+/** The second person restates the digest of the proposal they reviewed (the `pendingApproval.actionDigest` of the match). */
+export const DecideScreeningProposalCommandSchema = z.strictObject({ decision: z.enum(['approve', 'reject']), actionDigest: Sha256HexSchema, reason: ReasonSchema });
+export const DecideScreeningAppealCommandSchema = z.strictObject({ decision: z.enum(['uphold', 'propose_reversal']), reason: ReasonSchema, evidence: ScreeningEvidenceCategorySchema });
+export type ConfirmScreeningMatchCommand = z.infer<typeof ConfirmScreeningMatchCommandSchema>;
+export type ProposeNotSamePersonCommand = z.infer<typeof ProposeNotSamePersonCommandSchema>;
+export type DecideScreeningProposalCommand = z.infer<typeof DecideScreeningProposalCommandSchema>;
+export type DecideScreeningAppealCommand = z.infer<typeof DecideScreeningAppealCommandSchema>;
+
+/** A match as compliance staff see it under the case (`SC`): the entry and the screened name side by side. */
+export const ScreeningMatchSchema = z.strictObject({
+  id: IdSchema,
+  subject: ScreeningSubjectRefSchema,
+  listCode: ScreeningListCodeSchema,
+  listVersionId: IdSchema,
+  entryUid: ScreeningEntryUidSchema,
+  entryType: ScreeningEntryTypeSchema,
+  entryName: z.string().min(1).max(1000),
+  programs: z.array(z.string().min(1).max(100)).max(100),
+  matchedKey: NameKeySchema,
+  screenedName: z.string().min(1).max(1000),
+  rule: ScreeningMatchRuleSchema,
+  /** The fuzzy layer's similarity; null for the engine rule. Shown to reviewers, never used to decide. */
+  score: z.number().min(0).max(1).nullable(),
+  state: ScreeningMatchStateSchema,
+  openedAt: TimestampSchema,
+  decidedAt: TimestampSchema.nullable(),
+  revision: z.int().min(1),
+  /** The open second-person request of a proposal (approve with this digest), when one waits. */
+  pendingApproval: z.strictObject({ id: IdSchema, action: z.enum(SCREENING_SECOND_PERSON_ACTIONS), actionDigest: Sha256HexSchema, requestedBy: IdSchema, requestExpiresAt: TimestampSchema }).nullable(),
+});
+export type ScreeningMatchView = z.infer<typeof ScreeningMatchSchema>;
+
+/** One review queue item per subject with matches waiting for a reviewer; names nobody in notifications. */
+export const ScreeningQueueItemSchema = z.strictObject({
+  subjectStateId: IdSchema,
+  subject: ScreeningSubjectRefSchema,
+  openedAt: TimestampSchema,
+  dueAt: TimestampSchema,
+  late: z.boolean(),
+  waiting: z.int().min(1),
+  states: z.array(ScreeningMatchStateSchema).min(1),
+});
+export type ScreeningQueueItem = z.infer<typeof ScreeningQueueItemSchema>;
+
+/** Outbox events of the screening engine. Payloads carry identifiers only: never a name, a list, an entry or a reviewer. */
+export const SCREENING_EVENTS = {
+  /** Compliance staff notification: a subject needs a reviewer. Cannot be muted; names nobody (the queue item only). */
+  reviewRequested: 'screening.review_requested',
+  /** The subject's effective standing changed (their notice, SANC-007; gates). */
+  subjectStatusChanged: 'screening.subject_status_changed',
+  /** A confirmed match prepared a report draft for the operator. */
+  reportDraftPrepared: 'screening.report_draft_prepared',
+} as const;
+export const ScreeningReviewRequestedEventSchema = z.strictObject({ queueItemId: IdSchema, mutable: z.literal(false) });
+export const ScreeningSubjectStatusChangedEventSchema = z.strictObject({ subject: ScreeningSubjectRefSchema, moneyHeld: z.boolean(), suspended: z.boolean() });
+
+/**
+ * Events that start a screening (ADR 014 decision 12). `identity.name_changed` and `company.renamed` are emitted by the
+ * database whenever a display name changes, whatever path changed it, so no rename can skip screening;
+ * `company.ownership_declaration_changed` is consumed here and emitted once the ownership declaration is persisted.
+ */
+export const SCREENING_TRIGGER_EVENTS = {
+  'identity.person_registered': 'registration',
+  'identity.session_started': 'sign_in',
+  'identity.name_changed': 'name_change',
+  'company.created': 'company_change',
+  'company.renamed': 'company_change',
+  'company.ownership_declaration_changed': 'company_change',
+} as const satisfies Record<string, ScreeningTrigger>;
+export type ScreeningTriggerEvent = keyof typeof SCREENING_TRIGGER_EVENTS;
+
+/**
+ * Field names that belong to screening and must never appear in a public, counterparty, search, federation or agent
+ * projection (ADR 014 decision 16). The projection tests walk every such schema and every public database read.
+ */
+export const SCREENING_PRIVATE_FIELDS = [
+  'moneyHeld', 'money_held', 'screeningState', 'screening_state', 'screeningOutcome', 'complianceStatus', 'compliance_status', 'possibleMatch', 'possible_match',
+  'matchedKey', 'matched_key', 'screenedName', 'screened_name', 'entryUid', 'entry_uid', 'listCode', 'list_code', 'sanctionsMatch', 'screenedVersions', 'screened_versions',
+  'namesDigest', 'names_digest', 'suspendedForCompliance',
+] as const;
