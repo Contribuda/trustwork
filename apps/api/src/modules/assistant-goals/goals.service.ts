@@ -1,10 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { z } from 'zod';
-import {
-  computeDigest, mandateChangeAllowed, MandateV2Schema, type CreateGoalCommand, type GoalConfirmation, type GoalNeed, type MandateContext, type MandateV2,
-  type ConfirmGoalCommandSchema, type CreateJobSubscriptionCommandSchema, type GoalEvidenceCommandSchema, type GoalStatusCommandSchema, type JobSubscriptionStatusCommandSchema,
-  type ShareReportCommandSchema, type ResolveEscalationCommandSchema,
-} from '../../deps/contracts.js';
+import { computeDigest, mandateChangeAllowed, MandateV2Schema, type MandateContext, type MandateV2 } from '../../deps/contracts.js';
+import { type CreateGoalCommand, type GoalConfirmation, type GoalNeed, type ConfirmGoalCommandSchema, type CreateJobSubscriptionCommandSchema, type GoalEvidenceCommandSchema, type GoalStatusCommandSchema, type JobSubscriptionStatusCommandSchema, type ShareReportCommandSchema, type ResolveEscalationCommandSchema } from './contracts.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
