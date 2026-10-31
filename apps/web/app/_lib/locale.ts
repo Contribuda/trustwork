@@ -5,16 +5,19 @@ import type { Messages } from '@trustwork/i18n-runtime/types';
 import { uiLayers } from '@trustwork/ui/i18n/dictionaries';
 import { BUILT_IN_PACKS, getCountryPack, getPack, type CountryPack } from '@trustwork/country-packs';
 import { appLayers, brandLayers, brandWordmark } from './locale-data';
-import { defaultCountryCode, localesFor, negotiate, offeredCountryPack } from './locale-negotiation';
+import { currentDeployment } from '@trustwork/config/server';
+import { defaultCountryCode, localesFor, negotiate, offeredCountryPack, offeredLanguages } from './locale-negotiation';
 import { neutralPack, setDefaultCountryReader } from './country';
 import CLIENT_NAMESPACES from '@/locales/client-namespaces.json';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeCookiePath } from './locale-names';
 import { BASE_PATH } from './base-path';
+import { setDefaultLanguage } from './localize';
 
 export { COUNTRY_COOKIE, LOCALE_COOKIE };
 
 setDefaultCountryReader(() => defaultCountryCode());
+setDefaultLanguage(() => currentDeployment().languages.default);
 export { localesFor };
 
 /** `country` is empty when the visitor has not chosen one and the deployment configures none (ADR 012 decision 11). */
@@ -42,6 +45,20 @@ export function localeLayers(tag: string): Messages[] {
   return [...brandLayers(tag), ...appLayers(tag), ...uiLayers(tag)];
 }
 
+/**
+ * One message in a given language without touching the request's locale store: for the few server components that
+ * render inside every page's tree in a language of their own (the last-resort 404), where priming would switch the
+ * language of the page rendering next to them.
+ */
+export function messageIn(tag: string, key: string): string {
+  for (const layer of [...localeLayers(tag), ...localeLayers('en')]) {
+    let node: unknown = layer;
+    for (const part of key.split('.')) node = node && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined;
+    if (typeof node === 'string') return node;
+  }
+  return key;
+}
+
 /** Route groups with their own client namespaces (`apps/web/locales/client-namespaces.json`). */
 export type RouteGroup = Exclude<keyof typeof CLIENT_NAMESPACES, '$comment'>;
 
@@ -52,7 +69,7 @@ export function clientNamespaces(group: RouteGroup): string[] {
 
 /**
  * What the browser receives for one route group (INTL-004): the application layers of exactly the
- * namespaces that group's client components use. The root layout adds the brand overlay and the design
+ * namespaces that group's client components use. The document (`components/RootDocument.tsx`) adds the brand overlay and the design
  * system's dictionary once (`rootClientLocale`); a page therefore carries one language and only the
  * namespaces its route needs.
  */
@@ -71,7 +88,7 @@ function deploymentPackForBrowser(): CountryPack | null {
   return pack && !BUILT_IN_PACKS.includes(pack) ? pack : null;
 }
 
-/** The root layout's client locale: brand overlay (messages and this language's wordmark), a data-directory pack, the root namespaces and the design system's dictionary. */
+/** The document's client locale (`components/RootDocument.tsx`): brand overlay (messages and this language's wordmark), a data-directory pack, the root namespaces and the design system's dictionary. */
 export function rootClientLocale(tag: string): { brand: Messages[]; wordmark: ReturnType<typeof brandWordmark>; pack: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
   return { brand: brandLayers(tag), wordmark: brandWordmark(tag), pack: deploymentPackForBrowser(), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
 }
@@ -88,6 +105,55 @@ export const primeLocale = cache(async (): Promise<ActiveLocale> => {
   setLocaleStore({ locale: active.locale, country: active.country, layers: localeLayers(active.locale) });
   return active;
 });
+
+/** Languages that appear as a URL prefix: every offered language except the deployment's default (decision 27). */
+export function prefixedLanguages(): string[] {
+  const fallback = currentDeployment().languages.default;
+  return offeredLanguages().filter((tag) => tag !== fallback);
+}
+
+/** Whether `/<lang>/...` is a public address of this deployment (the default language is never prefixed). */
+export function isPrefixedLanguage(lang: string): boolean {
+  return prefixedLanguages().includes(lang);
+}
+
+/**
+ * The locale of a public page (WEB-005): the language comes from the URL (`app/(public)/[lang]`, the proxy maps an
+ * unprefixed address to the default language), never from the cookie, so a shared `/es/...` link always opens in
+ * Spanish (decision 27). The country is the visitor's chosen one (the `trustwork.country` cookie, which also selects the
+ * demo dataset, DEMO-US), else the deployment's default; a public page reads nothing else of the visitor, never the
+ * session. Every public layout, page, metadata function and route handler awaits this first (they render in parallel);
+ * React `cache` makes it one resolution per request and language.
+ */
+export const primePublicLocale = cache(async (lang: string): Promise<ActiveLocale> => {
+  const jar = await cookies();
+  const wanted = offeredCountryPack(jar.get(COUNTRY_COOKIE)?.value);
+  const fallback = defaultCountryCode();
+  const pack = wanted ?? (fallback ? getCountryPack(fallback) : null) ?? neutralPack();
+  const locale = lang === currentDeployment().languages.default || isPrefixedLanguage(lang) ? lang : currentDeployment().languages.default;
+  const active: ActiveLocale = { country: pack === neutralPack() ? '' : pack.code, locale, chosen: wanted !== null, pack };
+  setLocaleStore({ locale: active.locale, country: active.country, layers: localeLayers(active.locale) });
+  return active;
+});
+
+/** Route params of every public page carry the language segment. */
+export type LangParams = Promise<{ lang: string }>;
+
+/** `primePublicLocale` from a page's or layout's params. */
+export async function primeFromParams(params: Promise<{ lang: string }>): Promise<ActiveLocale> {
+  return primePublicLocale((await params).lang);
+}
+
+/** Route handlers under a language segment: runs the handler in its own locale scope for that language. */
+export function withPublicLocale<P extends { lang: string }, R>(
+  handler: (request: Request, context: { params: Promise<P> }) => R | Promise<R>,
+): (request: Request, context: { params: Promise<P> }) => Promise<R> {
+  return (request, context) =>
+    runWithLocaleScope(async () => {
+      await primePublicLocale((await context.params).lang);
+      return handler(request, context);
+    });
+}
 
 /**
  * Route handlers (feeds, calendar files, the manifest): runs the handler in its own locale scope primed

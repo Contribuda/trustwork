@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, Users } from 'lucide-react';
 import { MediaFrame } from '@/components/ui';
 import { ProjectStatusChip, regionLabel } from '@/components/public/parts';

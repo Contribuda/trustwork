@@ -1,0 +1,40 @@
+/* Route stylesheet of the public search pages (WEB-005): rules only these pages use, split out of ../public.css (the shell and shared rules) in their original order. */
+.srch__form {
+  margin: var(--space-2) 0 var(--space-5);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.srch__tabs {
+  margin-bottom: var(--space-2);
+}
+
+.srch__groups {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.srch-row--plain {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.srch-row--person {
+  grid-template-columns: 48px minmax(0, 1fr);
+}
+
+.srch__empty {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.srch__note {
+  margin-top: var(--space-8);
+  font-size: var(--text-caption-size);
+}

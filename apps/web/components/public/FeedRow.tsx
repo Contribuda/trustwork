@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowUpRight, Clock } from 'lucide-react';
 import { MediaFrame } from '@/components/ui';
 import type { PublicationCard } from '@/app/_lib/data/types';

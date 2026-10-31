@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Check, ChevronLeft, ChevronRight, Columns2, Link2, List, Minus, Plus, X } from 'lucide-react';
 import { Dialog, useIsMobile } from '@trustwork/ui';
 import { Prose } from '@/components/ui';

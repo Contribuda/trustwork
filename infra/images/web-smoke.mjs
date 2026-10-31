@@ -3,9 +3,11 @@
 // With a container name it also reads the container log for the start-up line of the deployment configuration and
 // requires the default country it reports to be TRUSTWORK_EXPECT_COUNTRY (default US). Checks: English by default
 // with the engine title; the Russian interface by cookie with the Russian brand overlay's title; Georgian by the
-// country cookie; the companies directory renders; static chunks and repository artworks are served; the proxy
-// (apps/web/proxy.ts) runs on the home page and on other pages: a nonce-based Content-Security-Policy whose nonce the
-// page's scripts carry, X-Frame-Options DENY, and `?country=&lang=` answered with a redirect that sets both cookies.
+// country cookie (both redirect an entry to the language's prefix, ADR 012 decision 27); the companies directory
+// renders; static chunks and repository artworks are served; the proxy (apps/web/proxy.ts) runs on the home page and on
+// other pages: a nonce-based Content-Security-Policy whose nonce the page's scripts carry on every page, public ones
+// included (WEB-005), X-Frame-Options DENY, and `?country=&lang=` answered with a redirect to the page in that language
+// that sets both cookies.
 // Exit 0 when everything passed.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -78,24 +80,28 @@ const assertDocumentHeaders = async (path) => {
   assert.equal(response.status, 200, `${path || '/'} status`);
   const csp = response.headers.get('content-security-policy') ?? '';
   const nonce = /'nonce-([^']+)'/.exec(csp)?.[1];
-  assert.ok(nonce, `${path || '/'}: Content-Security-Policy with a script nonce (got "${csp}")`);
   assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /object-src 'none'/);
   assert.equal(response.headers.get('x-frame-options'), 'DENY', `${path || '/'}: X-Frame-Options`);
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   const html = await response.text();
+  assert.ok(nonce, `${path || '/'}: Content-Security-Policy with a script nonce (got "${csp}")`);
+  assert.doesNotMatch(csp, /script-src[^;]*'unsafe-inline'/, `${path || '/'}: no inline-script allowance`);
   assert.ok(html.includes(`nonce="${nonce}"`), `${path || '/'}: the page's scripts carry the header's nonce`);
 };
 
-await step('the home page and the companies page carry the nonce CSP and X-Frame-Options', async () => {
+await step('the home page, a public page in another language, the companies page and the sign-in page carry the nonce CSP and X-Frame-Options', async () => {
   await assertDocumentHeaders('');
+  await assertDocumentHeaders('/ka/news');
   await assertDocumentHeaders('/companies');
+  await assertDocumentHeaders('/login');
 });
 
 for (const path of ['', '/companies']) {
-  await step(`?country=GE&lang=ka on ${path || 'the home page'} redirects without the parameters and sets both cookies`, async () => {
+  await step(`?country=GE&lang=ka on ${path || 'the home page'} redirects to the Georgian page without the parameters and sets both cookies`, async () => {
     const response = await fetch(`${base}${path}?country=GE&lang=ka`, { redirect: 'manual', signal: AbortSignal.timeout(20_000) });
     assert.equal(response.status, 307);
-    assert.equal(new URL(response.headers.get('location') ?? '', base).pathname, `${basePath}${path}` || '/');
+    assert.equal(new URL(response.headers.get('location') ?? '', base).pathname, `${basePath}/ka${path}`);
     assert.equal(new URL(response.headers.get('location') ?? '', base).search, '');
     const cookies = response.headers.getSetCookie();
     const cookiePath = basePath || '/';
@@ -104,7 +110,7 @@ for (const path of ['', '/companies']) {
       assert.ok(cookie, `Set-Cookie ${expected} (got ${JSON.stringify(cookies)})`);
       assert.ok(cookie.split(';').map((part) => part.trim()).includes(`Path=${cookiePath}`), `${expected} has Path=${cookiePath}`);
     }
-    const followed = await page(path, cookies.map((c) => c.split(';')[0]).join('; '));
+    const followed = await page(`/ka${path}`, cookies.map((c) => c.split(';')[0]).join('; '));
     assert.equal(followed.status, 200);
     assert.equal(lang(followed.html), 'ka');
   });

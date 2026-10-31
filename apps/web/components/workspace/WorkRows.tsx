@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { AlertCircle, ArrowUpRight } from 'lucide-react';
 import { KindBadge, StatusChip } from '@/components/ui';
 import { DateTile } from '@/components/workspace/ProjectRow';

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { SignupCommandSchema } from '@trustwork/contracts/client';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, CheckCircle2, MailCheck } from 'lucide-react';
 import { Button, Checkbox, Form, FormActions, FormAlert, PasswordField, TextField } from '@trustwork/ui';
 import { PasswordStrength } from './PasswordStrength';

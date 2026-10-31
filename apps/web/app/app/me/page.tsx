@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { StatusChip } from '@/components/ui';
 import { CompanyTabs } from '@/components/public/CompanyTabs';

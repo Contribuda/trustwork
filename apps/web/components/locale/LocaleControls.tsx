@@ -1,9 +1,9 @@
-import { headers } from 'next/headers';
+import { cache } from 'react';
 import { COUNTRIES, countryName, enabledPacks, getPack, pick, type CountryPack } from '@trustwork/country-packs';
 import { isCountryOffered } from '@trustwork/config';
 import { currentDeployment } from '@trustwork/config/server';
 import { coverage } from '@/app/_lib/locale-data';
-import { localesFor, primeLocale } from '@/app/_lib/locale';
+import { localesFor, type ActiveLocale } from '@/app/_lib/locale';
 import { defaultLanguageFor } from '@/app/_lib/locale-negotiation';
 import { CountryGate } from './CountryGate';
 import { LocaleSwitcher, type SwitcherCountry, type SwitcherLanguage } from './LocaleSwitcher';
@@ -14,8 +14,7 @@ import { LocaleSwitcher, type SwitcherCountry, type SwitcherLanguage } from './L
  * offered languages with their translation coverage. Any offered country may be combined with any offered
  * language (owner decision 2026-10-29); restricted places are never offered.
  */
-export async function switcherCountries(): Promise<SwitcherCountry[]> {
-  const active = await primeLocale();
+export const switcherCountries = cache(function switcherCountries(active: ActiveLocale): SwitcherCountry[] {
   const deployment = currentDeployment();
   const featuredPacks = deployment.countries.featured ? deployment.countries.featured.map((code) => getPack(code)).filter((p): p is CountryPack => p !== null) : enabledPacks();
   const featured = featuredPacks
@@ -27,26 +26,26 @@ export async function switcherCountries(): Promise<SwitcherCountry[]> {
     .map((c) => ({ code: c.code, name: countryName(c.code, active.locale), featured: false, defaultLocale: deployment.languages.byCountry[c.code] ?? deployment.languages.default }))
     .sort((a, b) => collator.compare(a.name, b.name));
   return [...featured, ...others];
-}
+});
 
-export async function switcherLanguages(): Promise<SwitcherLanguage[]> {
-  const active = await primeLocale();
+/**
+ * Both lists are computed once per request and locale (React `cache`): the header switcher and the first-visit window
+ * then hand the same arrays to the browser, and the page payload carries them once instead of twice.
+ */
+export const switcherLanguages = cache(function switcherLanguages(active: ActiveLocale): SwitcherLanguage[] {
   return localesFor(active.pack).map((tag) => {
     const c = coverage(tag);
     return { tag, partial: c.translated < c.total };
   });
-}
+});
 
-export async function HeaderLocaleSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
-  const active = await primeLocale();
-  return <LocaleSwitcher countries={await switcherCountries()} languages={await switcherLanguages()} country={active.country} locale={active.locale} tone={tone} />;
+/** `active` is the locale the page renders in (public pages: the URL language and the visitor's country). */
+export function HeaderLocaleSwitcher({ active, tone = 'light' }: { active: ActiveLocale; tone?: 'light' | 'dark' }) {
+  return <LocaleSwitcher countries={switcherCountries(active)} languages={switcherLanguages(active)} country={active.country} locale={active.locale} tone={tone} />;
 }
 
 /** Shown until a country cookie exists; with no default country configured, nothing is preselected (ADR 012 decision 11). */
-export async function FirstVisitGate() {
-  const active = await primeLocale();
+export function FirstVisitGate({ active }: { active: ActiveLocale }) {
   if (active.chosen) return null;
-  // Not over the jurisdiction refusal page (SANC-001): there is nothing to choose a country for.
-  if ((await headers()).get('x-trustwork-refusal') === 'jurisdiction') return null;
-  return <CountryGate countries={await switcherCountries()} languages={await switcherLanguages()} suggested={active.country} suggestedLocale={active.locale} />;
+  return <CountryGate countries={switcherCountries(active)} languages={switcherLanguages(active)} suggested={active.country} suggestedLocale={active.locale} />;
 }

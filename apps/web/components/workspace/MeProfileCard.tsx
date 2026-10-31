@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowUpRight, Pencil } from 'lucide-react';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
 import { EMPTY_STATE, completeness, loadOnboardingWith, type OnboardingState } from '@/components/onboarding/onboarding-state';

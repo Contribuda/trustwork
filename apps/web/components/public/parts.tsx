@@ -4,7 +4,7 @@ import type { CompanyCard, PersonCard, ProjectCard, PublicationCard, TopicKey } 
 import { entityCover, storyCover, type MediaRef } from '@/app/_lib/media';
 import { longDate, shortDate, t, tDynamic } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
-import { withBase } from '@/app/_lib/base-path';
+import { localHref } from '@/app/_lib/localize';
 
 /**
  * Server-safe building blocks for public pages: view-model → design-system component mappings
@@ -360,7 +360,7 @@ export function RecordChip({ status, size }: { status: CompanyCard['status']; si
 /** GET search form built from design-system controls; works without JavaScript (native submit to the list route). */
 export function SearchForm({ placeholder, action, label }: { placeholder: string; action: string; label: string }) {
   return (
-    <form className="search-row" action={withBase(action)} method="get" role="search" aria-label={label}>
+    <form className="search-row" action={localHref(action)} method="get" role="search" aria-label={label}>
       <TextField name="q" label={label} placeholder={placeholder} inputMode="search" autoComplete="off" />
       <Button type="submit" variant="primary">
         {t('publicPages.find')}

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { notFound, redirect } from 'next/navigation';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';

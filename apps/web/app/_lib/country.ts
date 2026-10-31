@@ -1,4 +1,4 @@
-import { formatMoney as packMoney, genericPack, getCountryPack, getPack, pick, regionName, type CountryPack } from '@trustwork/country-packs';
+import { formatMoney as packMoney, genericPack, getCountryPack, getPack, packs, pick, regionName, type CountryPack } from '@trustwork/country-packs';
 import { localeTag } from '@trustwork/ui/i18n';
 import { getLocaleStore } from '@trustwork/i18n-runtime';
 
@@ -82,10 +82,15 @@ export function regionLabel(code: string | null | undefined): string {
   return owner ? regionName(owner, code, activeLocale()) : code;
 }
 
-/** Label of a legal identifier kind: the pack's registration identifier, or the generic «other». */
+/**
+ * Label of a legal identifier kind: the active pack's registration identifier, else the pack that defines that kind (a
+ * company from another country on a hub's public page, WEB-005), else the kind itself.
+ */
 export function identifierLabel(kind: string): string {
   const pack = activePack();
-  return kind === pack.registrationIdentifier.kind ? pick(pack.registrationIdentifier.label, activeLocale()) : kind;
+  if (kind === pack.registrationIdentifier.kind) return pick(pack.registrationIdentifier.label, activeLocale());
+  const owner = packs().find((p) => p.registrationIdentifier.kind === kind);
+  return owner ? pick(owner.registrationIdentifier.label, activeLocale()) : kind;
 }
 
 export function formatMoney(minorUnits: string | number, currency: string = currencyCode()): string {

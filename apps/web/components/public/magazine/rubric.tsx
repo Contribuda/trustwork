@@ -1,6 +1,7 @@
 import { Boxes, Building2, Camera, ClipboardCheck, Hash, Layers, MessageCircleQuestion, MessageSquareText, Newspaper, PenLine, Users, type LucideIcon } from 'lucide-react';
 import type { RubricKey } from '@/app/_lib/data/types';
 import { t } from '@/app/_lib/i18n';
+import { localHref } from '@/app/_lib/localize';
 
 export const RUBRIC_ICONS: Record<RubricKey, LucideIcon> = {
   analysis: Layers,
@@ -35,7 +36,7 @@ export function RubricChip({ rubric, link = false, size = 'sm' }: { rubric: Rubr
     </>
   );
   return link ? (
-    <a href={`/magazine/rubric/${rubric}`} className={cls}>
+    <a href={localHref(`/magazine/rubric/${rubric}`)} className={cls}>
       {inner}
     </a>
   ) : (

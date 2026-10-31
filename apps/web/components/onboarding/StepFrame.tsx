@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';

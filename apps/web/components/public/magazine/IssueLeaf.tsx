@@ -5,6 +5,7 @@ import { ArrowUpRight, ChevronLeft, ChevronRight, List, Maximize2, Minimize2 } f
 import { t } from '@/app/_lib/i18n';
 import type { LeafPage as LeafPageModel } from './leaf-pages';
 import { LeafPage } from './LeafPage';
+import { localHref } from '@/app/_lib/localize';
 
 const FLIP_MS = 720;
 
@@ -248,7 +249,7 @@ export function IssueLeaf({ pages, number, readerHref }: { pages: LeafPageModel[
           <ChevronLeft size={16} strokeWidth={2} aria-hidden="true" />
           {t('magazine.leafPrev')}
         </button>
-        <a href={readerHref} className="leaf__open">
+        <a href={localHref(readerHref)} className="leaf__open">
           {t('magazine.leafOpen')}
           <ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" />
         </a>

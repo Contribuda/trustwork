@@ -59,9 +59,9 @@ test('API: TRUSTWORK_HSTS must be a valid header value', () => {
 const cspOf = (response: Response) => response.headers.get('content-security-policy') ?? '';
 const nonceOf = (csp: string) => /'nonce-([^']+)'/.exec(csp)?.[1];
 
-test('web: every page gets a fresh nonce-based CSP that Next can read from the request', () => {
-  const first = proxy(new NextRequest('http://127.0.0.1:3000/companies'));
-  const second = proxy(new NextRequest('http://127.0.0.1:3000/companies'));
+test('web: every private page gets a fresh nonce-based CSP that Next can read from the request', () => {
+  const first = proxy(new NextRequest('http://127.0.0.1:3000/login'));
+  const second = proxy(new NextRequest('http://127.0.0.1:3000/login'));
   const csp = cspOf(first);
   const nonce = nonceOf(csp);
   assert.ok(nonce && nonce.length >= 22, csp);
@@ -79,6 +79,18 @@ test('web: every page gets a fresh nonce-based CSP that Next can read from the r
   assert.equal(first.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
   assert.match(first.headers.get('permissions-policy') ?? '', /camera=\(\)/);
   assert.equal(first.headers.get('strict-transport-security'), null, 'default: no HSTS (the hosted preview lives under a path of another domain)');
+});
+
+test('web: public pages, in every language and with filters, get the same nonce-based CSP as private pages (WEB-005)', () => {
+  for (const path of ['/', '/companies', '/ru/news/some-story', '/news?topic=markets', '/events/forum/register', '/ru/events/forum/pay']) {
+    const response = proxy(new NextRequest(`http://127.0.0.1:3000${path}`));
+    const csp = cspOf(response);
+    assert.ok(nonceOf(csp), `${path}: a script nonce`);
+    assert.match(csp, /script-src 'self' 'nonce-[^']+' 'strict-dynamic'/, path);
+    assert.doesNotMatch(csp, /script-src[^;]*'unsafe-inline'/, path);
+    assert.equal(response.headers.get('x-middleware-request-content-security-policy'), csp, `${path}: Next reads the nonce from the request`);
+    assert.equal(response.headers.get('x-frame-options'), 'DENY');
+  }
 });
 
 test('web: HSTS only when TRUSTWORK_HSTS is set, with exactly the configured value', () => {

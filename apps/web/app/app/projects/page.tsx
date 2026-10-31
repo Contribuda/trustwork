@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { Button } from '@/components/ui';
 import { PageHeader } from '@/components/workspace/parts';
 import { ProjectRow } from '@/components/workspace/ProjectRow';

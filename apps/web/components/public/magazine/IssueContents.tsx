@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { RubricChip } from './rubric';
 import type { IssueView } from '@/app/_lib/data/types';
 import { t } from '@/app/_lib/i18n';

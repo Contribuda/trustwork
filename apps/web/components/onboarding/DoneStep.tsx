@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, BookOpenCheck, Building2, GraduationCap, PenLine, Settings2, Users } from 'lucide-react';
 import type { Course } from '@/app/_lib/data/types';
 import { t } from '@/app/_lib/i18n';

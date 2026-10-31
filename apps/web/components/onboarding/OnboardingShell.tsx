@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowUpRight } from 'lucide-react';
 import { Avatar, Brand } from '@trustwork/ui';
 import { t } from '@/app/_lib/i18n';

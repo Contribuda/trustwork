@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Clock } from 'lucide-react';
 import { MagazineCover, MediaFrame, Prose } from '@/components/ui';
 import { ShareRow } from '@/components/public/ShareRow';

@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowDown, ArrowUpRight, BookOpen, Clock, FileText } from 'lucide-react';
 import { MagazineCover } from '@/components/ui';
 import { PdfButton } from '@/components/public/PdfButton';

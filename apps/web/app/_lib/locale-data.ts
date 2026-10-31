@@ -148,7 +148,7 @@ export function brandLayers(tag: string): Messages[] {
   return brand ? [brand] : [];
 }
 
-/** The overlay's stacked wordmark for a language, handed to the browser with the root layout's locale (or null). */
+/** The overlay's stacked wordmark for a language, handed to the browser with the document's locale (or null). */
 export function brandWordmark(tag: string) {
   return brandOverlay?.wordmarks[tag] ?? null;
 }

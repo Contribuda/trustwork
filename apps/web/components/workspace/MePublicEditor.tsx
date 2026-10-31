@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { useRouter } from 'next/navigation';
 import { Check, Eye, EyeOff, MapPin } from 'lucide-react';
 import { Button, Switch, TagSelect, TextField } from '@trustwork/ui';

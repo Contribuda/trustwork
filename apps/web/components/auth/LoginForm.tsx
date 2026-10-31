@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { LoginCommandSchema } from '@trustwork/contracts/client';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { Button, Form, FormActions, FormAlert, PasswordField, TextField } from '@trustwork/ui';
 import { ProviderButtons } from './ProviderButtons';
 import { SecondFactorStep } from './SecondFactorStep';

@@ -30,6 +30,8 @@ test.describe('public resource', () => {
   for (const route of ROUTES.filter((r) => !r.path.startsWith('/app') && !r.path.startsWith('/onboarding'))) {
     test(`${route.name}: Russian copy only`, async ({ page }) => {
       await page.goto(route.path);
+      // A 404 (Next's notFound()) is completed in the browser from the page data: wait for its heading.
+      await page.getByRole('heading', { level: 1 }).first().waitFor();
       await expectRussianOnly(page);
     });
   }

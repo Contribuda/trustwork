@@ -6,6 +6,7 @@ import { ArrowRight, ArrowUpRight, Check, Copy, FileText, Paperclip, RotateCcw, 
 import { intlTag } from '@trustwork/ui/i18n';
 import { t } from '@/app/_lib/i18n';
 import { openEventOf, type AgentAttachment, type AgentKind, type AgentMessage, type AgentProfile, type BaseBrief } from './types';
+import { localHref } from '@/app/_lib/localize';
 
 const ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,application/pdf,image/*';
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -108,7 +109,7 @@ function AgentBubble({ message, animate, onFollow, onClose, onPick }: { message:
                 </a>
               ))}
               {message.actions?.map((a) => (
-                <a key={a.href + a.label} href={a.href} className={a.primary ? 'cp-msg__action cp-msg__action--primary' : 'cp-msg__action'}>
+                <a key={a.href + a.label} href={localHref(a.href)} className={a.primary ? 'cp-msg__action cp-msg__action--primary' : 'cp-msg__action'}>
                   {a.label}
                 </a>
               ))}
