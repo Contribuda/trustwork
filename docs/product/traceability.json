@@ -689,6 +689,164 @@
       "spec": "docs/product/specification.md",
       "verification": "tests/contracts/mcp.test.ts (contract invariants) plus task acceptance, the CI parity report and the MCP conformance and red-team suites; designs in docs/engine are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R55",
+      "tasks": [
+        "DOC-004"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "npm run validate:docs (links, no Cyrillic, packages and requirements traced) plus review of each module specification",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R56",
+      "tasks": [
+        "MATCH-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R57",
+      "tasks": [
+        "BILL-004"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R58",
+      "tasks": [
+        "REV-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R59",
+      "tasks": [
+        "RANK-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R60",
+      "tasks": [
+        "PERF-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R61",
+      "tasks": [
+        "WORD-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R62",
+      "tasks": [
+        "CRED-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R63",
+      "tasks": [
+        "DSA-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R64",
+      "tasks": [
+        "IDV-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R65",
+      "tasks": [
+        "PROC-002",
+        "PROC-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R66",
+      "tasks": [
+        "ESIG-001",
+        "BIM-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R67",
+      "tasks": [
+        "MOB-001",
+        "CHAN-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R68",
+      "tasks": [
+        "A11Y-001",
+        "CI-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R69",
+      "tasks": [
+        "ANL-001",
+        "BENCH-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R70",
+      "tasks": [
+        "PRV-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R71",
+      "tasks": [
+        "FIN-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }

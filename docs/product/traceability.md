@@ -1,6 +1,6 @@
 # Requirement traceability
 
-All 53 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
+All 71 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
 
 | Requirements | Modules | Primary decisions |
 |---|---|---|
@@ -24,5 +24,10 @@ All 53 accepted requirements are specified, not implemented end to end (R01–R0
 | R51 | International by default: languages and country packs | ADR 012 decision 30; [countries and languages](../engine/localization.md) |
 | R52 | Complete, accurate and visual documentation in English | Owner rule of 2026-10-31; `npm run validate:docs` |
 | R53 | Procurement and supply suite with agent parity | Owner request of 2026-10-31; ADR 010 decision 23 (agent and interface parity); [procurement and supply](../engine/procurement-and-supply.md) |
+| R55 | Normative module specifications | Owner request of 2026-10-31; [module specifications](../engine/modules/README.md), [conflicts to resolve](../engine/conflicts-to-resolve.md) |
+| R56–R61 | Lead honesty, fair subscriptions, review integrity, ranking transparency, named performers, trust wording | [Competitive landscape](../research/competitive-landscape-2026-11.md), [ideas](../engine/ideas.md); modules [matching](../engine/modules/matching-and-partners.md), [billing](../engine/modules/billing-and-commissions.md), [reputation](../engine/modules/reputation-and-passport.md), [trust and safety](../engine/modules/trust-safety-privacy-compliance.md) |
+| R62–R64 | Worker credential card, EU trader traceability, wallet-based identity | Modules [reputation](../engine/modules/reputation-and-passport.md), [trust and safety](../engine/modules/trust-safety-privacy-compliance.md), [identity](../engine/modules/identity-and-accounts.md) |
+| R65–R67 | Public tenders worldwide, e-signatures and open BIM, mobile and offline | Modules [matching](../engine/modules/matching-and-partners.md), [integrations](../engine/modules/integrations.md), [mobile and offline](../engine/modules/mobile-and-offline.md) |
+| R68–R71 | Accessibility evidence, analytics without surveillance, data-broker readiness, financing referrals | Modules [accessibility](../engine/modules/accessibility.md), [analytics](../engine/modules/analytics.md), [trust and safety](../engine/modules/trust-safety-privacy-compliance.md), [getting paid](../engine/modules/getting-paid.md) |
 
 R31 maps to RAG-000, RAG-101, FND-002, DATA-001, BE-001, RAG-201, RAG-301, AST-001, WEB-003, RAG-401 and QA-001. See [retrieval evaluation](../quality/retrieval-evaluation.md). Fake-vector checks are not semantic-model or database evidence.
