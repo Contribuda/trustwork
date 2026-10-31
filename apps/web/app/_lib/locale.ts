@@ -1,27 +1,36 @@
 import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
-import { runWithLocaleScope, setLocaleStore } from '@trustwork/i18n-runtime';
+import { getLocaleStore, runWithLocaleScope, setLocaleStore } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
 import { uiLayers } from '@trustwork/ui/i18n/dictionaries';
-import { getCountryPack, type CountryPack } from '@trustwork/country-packs';
-import { appLayers, brandLayers } from './locale-data';
-import { defaultCountryCode, localesFor, negotiate } from './locale-negotiation';
+import { BUILT_IN_PACKS, getCountryPack, getPack, type CountryPack } from '@trustwork/country-packs';
+import { appLayers, brandLayers, brandWordmark } from './locale-data';
+import { defaultCountryCode, localesFor, negotiate, offeredCountryPack } from './locale-negotiation';
+import { neutralPack, setDefaultCountryReader } from './country';
 import CLIENT_NAMESPACES from '@/locales/client-namespaces.json';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeCookiePath } from './locale-names';
 import { BASE_PATH } from './base-path';
 
 export { COUNTRY_COOKIE, LOCALE_COOKIE };
+
+setDefaultCountryReader(() => defaultCountryCode());
 export { localesFor };
 
+/** `country` is empty when the visitor has not chosen one and the deployment configures none (ADR 012 decision 11). */
 export type ActiveLocale = { country: string; locale: string; chosen: boolean; pack: CountryPack };
 
+/**
+ * The visitor's country and language: the cookies when they name a country and a language this deployment offers;
+ * otherwise the deployment's default country, or none at all (a neutral profile until the visitor chooses).
+ */
 export function resolveActive(countryCookie: string | undefined, localeCookie: string | undefined, acceptLanguage: string | null): ActiveLocale {
-  const wanted = countryCookie ? getCountryPack(countryCookie) : null;
-  const pack = wanted ?? getCountryPack(defaultCountryCode())!;
+  const wanted = offeredCountryPack(countryCookie);
+  const fallback = defaultCountryCode();
+  const pack = wanted ?? (fallback ? getCountryPack(fallback) : null) ?? neutralPack();
   const chosen = wanted !== null;
   const locale = localeCookie && localesFor(pack).includes(localeCookie) ? localeCookie : negotiate(acceptLanguage, pack, chosen);
-  return { country: pack.code, locale, chosen, pack };
+  return { country: pack === neutralPack() ? '' : pack.code, locale, chosen, pack };
 }
 
 /**
@@ -52,9 +61,19 @@ export function clientLayers(tag: string, group: RouteGroup): { namespaces: stri
   return { namespaces, layers: appLayers(tag, namespaces) };
 }
 
-/** The root layout's client locale: brand overlay, the root namespaces and the design system's dictionary. */
-export function rootClientLocale(tag: string): { brand: Messages[]; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
-  return { brand: brandLayers(tag), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
+/**
+ * The active country's pack when it came from the deployment's data directory (CFG-001): built-in packs ship in the
+ * browser bundle, a data-directory pack reaches the browser this way, and only for visitors in that country.
+ */
+function deploymentPackForBrowser(): CountryPack | null {
+  const country = getLocaleStore().country;
+  const pack = country ? getPack(country) : null;
+  return pack && !BUILT_IN_PACKS.includes(pack) ? pack : null;
+}
+
+/** The root layout's client locale: brand overlay (messages and this language's wordmark), a data-directory pack, the root namespaces and the design system's dictionary. */
+export function rootClientLocale(tag: string): { brand: Messages[]; wordmark: ReturnType<typeof brandWordmark>; pack: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
+  return { brand: brandLayers(tag), wordmark: brandWordmark(tag), pack: deploymentPackForBrowser(), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
 }
 
 /**

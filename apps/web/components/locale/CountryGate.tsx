@@ -9,9 +9,11 @@ import { t } from '@/app/_lib/i18n';
 
 /**
  * First visit: the country is chosen before anything else, then the language, independently of each
- * other (owner decision 2026-10-29). The platform's own packs are cards; every other country that is not
- * a restricted place is in the select. Closing without a choice keeps the engine default and shows the
- * gate again on the next visit; the header switcher is always available afterwards.
+ * other (owner decision 2026-10-29). The deployment's featured packs are cards; every other country it offers
+ * (never a restricted place) is in the select. `suggested` is the deployment's default country, or empty when it
+ * configures none: then nothing is preselected and the visitor must choose (ADR 012 decision 11). Closing without
+ * a choice keeps the default (or no country) and shows the gate again on the next visit; the header switcher is
+ * always available afterwards.
  */
 export function CountryGate({ countries, languages, suggested, suggestedLocale }: { countries: SwitcherCountry[]; languages: SwitcherLanguage[]; suggested: string; suggestedLocale: string }) {
   const router = useRouter();
@@ -19,7 +21,7 @@ export function CountryGate({ countries, languages, suggested, suggestedLocale }
   const [locale, setLocale] = useState(suggestedLocale);
   const [open, setOpen] = useState(true);
   const [pending, startTransition] = useTransition();
-  const current = countries.find((c) => c.code === country) ?? countries[0];
+  const current = countries.find((c) => c.code === country);
   const featured = countries.filter((c) => c.featured);
   const confirm = () => {
     if (!current) return;
@@ -63,7 +65,7 @@ export function CountryGate({ countries, languages, suggested, suggestedLocale }
             ))}
           </div>
           <div className="cg__actions">
-            <button type="button" className="pub-btn pub-btn--accent" onClick={confirm} disabled={pending}>
+            <button type="button" className="pub-btn pub-btn--accent" onClick={confirm} disabled={pending || !current}>
               {t('locale.gateConfirm')}
             </button>
             <span className="cg__note">{t('locale.gateNote')}</span>

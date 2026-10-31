@@ -8,11 +8,9 @@ import issuesJson from '@/fixtures/issues.json';
 import workspaceJson from '@/fixtures/workspace.json';
 import eventsJson from '@/fixtures/events.json';
 import coursesJson from '@/fixtures/courses.json';
-import overridesEn from '@/fixtures/i18n/en.json';
-import overridesUz from '@/fixtures/i18n/uz-Latn.json';
-import overridesKa from '@/fixtures/i18n/ka.json';
-import overridesHy from '@/fixtures/i18n/hy.json';
-import overridesAz from '@/fixtures/i18n/az-Latn.json';
+import { readFileSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
+import { currentDeployment, dataPath, languageFiles } from '@trustwork/config/server';
 
 /**
  * Fixture store: every file is parsed with its Zod envelope at module load, so an invalid fixture
@@ -24,15 +22,17 @@ import overridesAz from '@/fixtures/i18n/az-Latn.json';
  * the locale's own override, then the English override, then the base text. English must cover every
  * base string (tests/web/fixtures.test.ts), so a reader outside the Russian locale never sees Russian
  * demo content (owner decision 2026-10-29, ADR-009 owner decision 10).
+ *
+ * Override files are data, discovered by name (CFG-001): every `fixtures/i18n/<tag>.json`, plus the deployment's
+ * `<dataDir>/fixtures/i18n/<tag>.json` (which replaces a built-in file of the same language). A language with demo
+ * content therefore needs no code change; the files are read once per process.
  */
 type Overrides = Record<string, Record<string, string>>;
-const OVERRIDES: Record<string, Overrides> = {
-  en: overridesEn as Overrides,
-  'uz-Latn': overridesUz as Overrides,
-  ka: overridesKa as Overrides,
-  hy: overridesHy as Overrides,
-  'az-Latn': overridesAz as Overrides,
-};
+const fromApp = process.cwd().endsWith(`${sep}apps${sep}web`);
+const FIXTURE_I18N_DIR = resolve(process.cwd(), fromApp ? 'fixtures/i18n' : 'apps/web/fixtures/i18n');
+const OVERRIDES: Record<string, Overrides> = Object.fromEntries(
+  [...languageFiles(FIXTURE_I18N_DIR), ...languageFiles(dataPath(currentDeployment(), 'fixtures'))].map(([tag, path]) => [tag, JSON.parse(readFileSync(path, 'utf8')) as Overrides]),
+);
 
 const BASE_FILES = {
   people: peopleJson,

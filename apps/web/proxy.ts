@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getCountryPack, isLocale } from '@trustwork/country-packs';
+import { isOfferedLanguage, offeredCountryPack } from './app/_lib/locale-negotiation';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE as MAX_AGE, localeCookiePath } from './app/_lib/locale-names';
 import { BASE_PATH } from './app/_lib/base-path';
@@ -78,9 +78,10 @@ function withHeaders(response: NextResponse, headers: Record<string, string>): N
 
 /**
  * Security headers for every page (nonce-based CSP; Next reads the nonce from the request's CSP header and stamps
- * its own scripts) and, for `?country=UZ&lang=uz-Latn` on any address, sets the cookies and redirects to the same
- * address without the parameters, so links can carry a country and a language. Any selectable country works (a
- * restricted place is never selectable, so it cannot be set); unknown values are ignored.
+ * its own scripts) and, for `?country=<code>&lang=<tag>` on any address, sets the cookies and redirects to the same
+ * address without the parameters, so links can carry a country and a language. Any country and language the
+ * deployment offers works (its configuration, CFG-001; a restricted place is never offered, so it cannot be set);
+ * other values are ignored.
  */
 export function proxy(request: NextRequest) {
   const development = process.env.NODE_ENV === 'development';
@@ -103,9 +104,9 @@ export function proxy(request: NextRequest) {
   clean.searchParams.delete('country');
   clean.searchParams.delete('lang');
   const response = withHeaders(NextResponse.redirect(clean), headers);
-  const pack = country ? getCountryPack(country) : null;
+  const pack = offeredCountryPack(country);
   if (pack) response.cookies.set(COUNTRY_COOKIE, pack.code, { path: localeCookiePath(BASE_PATH), maxAge: MAX_AGE, sameSite: 'lax' });
-  if (lang && isLocale(lang)) response.cookies.set(LOCALE_COOKIE, lang, { path: localeCookiePath(BASE_PATH), maxAge: MAX_AGE, sameSite: 'lax' });
+  if (lang && isOfferedLanguage(lang)) response.cookies.set(LOCALE_COOKIE, lang, { path: localeCookiePath(BASE_PATH), maxAge: MAX_AGE, sameSite: 'lax' });
   return response;
 }
 

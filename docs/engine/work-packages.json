@@ -1075,7 +1075,7 @@
       "id": "CFG-001",
       "title": "Configuration over code: runtime country packs, languages, defaults and brand",
       "area": "international",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CTRY-002",
         "INTL-004",
