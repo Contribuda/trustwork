@@ -173,6 +173,15 @@ test('claims on overlapping paths across packages and more than three active cla
   assert.match(lastBot(many[3]).body, /already holds 3 active claims[\s\S]*limit is 3 per person/);
 });
 
+test('a maintainer claiming for themselves may hold more active claims; a claim posted for someone else keeps the per-person limit', () => {
+  const own = ['BBB-001', 'FFF-001', 'GGG-001', 'HHH-001'].map((id, n) => issue(20 + n, id, [comment('mona', claimBody(id, 'mona'), n / 100, 'OWNER')]));
+  assert.equal(step(own, T0 + DAY).claims.length, 4);
+  const forOthers = ['BBB-001', 'FFF-001', 'GGG-001', 'HHH-001'].map((id, n) => issue(30 + n, id, [comment('mona', claimBody(id, 'dave'), n / 100, 'OWNER')]));
+  const result = step(forOthers, T0 + DAY);
+  assert.equal(result.claims.length, 3);
+  assert.match(lastBot(forOthers[3]).body, /limit is 3 per person/);
+});
+
 test('labels follow work-packages.json: ready-to-claim when available, waiting otherwise, none when done', () => {
   const issues = [issue(1, 'AAA-001', [], { labels: ['work-package', 'ready-to-claim'] }), issue(4, 'DDD-001', [], { labels: ['work-package', 'ready-to-claim'] }), issue(3, 'CCC-001', [], { labels: ['work-package', 'waiting', 'claimed'] })];
   const { actions } = reconcile({ issues, packages, now: T0 });

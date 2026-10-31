@@ -130,7 +130,7 @@ The bot accepts a claim only when every rule holds, and otherwise answers with t
 | `agent:` is present (`none` for no agent) and agrees with the `Agent: … for <handle>` line | the comment |
 | Every `scope:` path is inside the package's `paths` and does not overlap another package's active claim | `work-packages.json`, other issues |
 | `until:` is a real date from today up to 7 days ahead; `plan:` has at least one step; no `<placeholder>` is left | the comment |
-| The person holds fewer than 3 active claims | all work package issues |
+| The person holds fewer than 3 active claims (10 for a maintainer claiming for themselves) | all work package issues |
 
 On acceptance it comments a summary, adds the `claimed` label (removing `ready-to-claim`) and assigns the accountable person. A heartbeat or claim keeps the claim alive for **7 days**; heartbeat at least every **3 days**. Heartbeats and releases are accepted from the accountable person, the claim's author or a maintainer. Every 6 hours the bot expires claims without a heartbeat for 7 days, comments, unassigns the person and restores `ready-to-claim`; it also keeps `ready-to-claim` and `waiting` in line with `work-packages.json` after every change to that file.
 
@@ -219,7 +219,7 @@ Never report a command you did not run, and never round "most tests pass" up to 
 Running several agents in parallel is welcome when one person can still review everything they produce. The rules:
 
 - **One accountable person per claim.** Every claim, pull request and commit names the person who reviews and signs off. Agents never sign off, never approve each other's work and never merge.
-- **At most 3 active claims per person**, enforced by the bot, however many agents you run. Finish or release before claiming more.
+- **At most 3 active claims per person**, enforced by the bot, however many agents you run. A maintainer who claims for themselves (for example to conduct a coordinated wave of agents) may hold up to 10. Finish or release before claiming more.
 - **No parallel claims on overlapping paths.** The bot refuses a claim whose scope overlaps another active claim, yours included. Do not run two agents in the same paths under one claim either; split the package in the issue first.
 - **One branch and worktree per agent** (`work/<package>/<handle>`), so agents never overwrite each other's changes.
 - **Review capacity sets the pace.** Open no more pull requests than you can read line by line within a few days; stale or unreviewed pull requests may be closed.
