@@ -37,7 +37,7 @@ Facts must cite primary sources (the registry, the statistics office, the centra
 
 - `packages/ui/locales/<tag>.json`: the design-system dictionary; copy `en.json` and translate every key (plural forms follow CLDR for your language).
 - `apps/web/app/_lib/locales/<tag>.json`: the application dictionary. A `complete` pack translates every key of `en.json`; a `partial` pack translates at least the sections `locale`, `error`, `demo`, `search`, `shell2`, `publicPages`, `taxonomy`, `signals` and the status enums, and the rest falls back to English.
-- Register the tag in `packages/ui/src/i18n/index.ts` (`dictionaries`), `apps/web/app/_lib/locale-data.ts` (`DICTIONARIES`), `INTL_TAGS` (BCP 47 tag with region for `Intl`) and `LOCALE_NAMES` in `apps/web/components/locale/LocaleSwitcher.tsx`.
+- Register the tag in `packages/ui/src/i18n/dictionaries.ts` (`ENGINE_DICTIONARIES`), `apps/web/app/_lib/locale-data.ts` (`DICTIONARIES`) and `LOCALE_NAMES` in `apps/web/components/locale/LocaleSwitcher.tsx`. Both dictionary registries are server-side; a browser receives only the active language. Formats need no registration: the `Intl` tag is derived from the language and the visitor's country.
 - If your script is not covered by Golos Text (Latin, Cyrillic), add an OFL font subset with `unicode-range` as done for Georgian and Armenian (`packages/ui/fonts/PROVENANCE.md`, `apps/web/app/layout.tsx`) and regenerate the wordmark with `packages/ui/brand/tools/build-logo.py` if the deployment brand is localized.
 
 ## 4. Localize the demo content (optional)

@@ -75,14 +75,16 @@ Russia is not a market and is never offered; Russian remains available as a lang
 - **Interface**: `apps/web/app/_lib/locales/<tag>.json` and `packages/ui/locales/<tag>.json`; English is the reference; tests fail on missing keys and on placeholder words.
 - **Demo content**: base fixtures plus `apps/web/fixtures/i18n/<tag>.json` overrides addressed by JSON pointer; resolution per string is the locale, then English, then base. Tests require English to cover every base string and every other language to cover every English override.
 - **Real content**: publications have an original language and linked translations ([Publishing](publishing.md#multilingual-publishing-proposed)).
-- **Formats**: dates, times, months, weekdays, time-zone names, numbers, currencies and units come from `Intl`.
+- **Formats**: dates, times, months, weekdays, time-zone names, numbers, currencies and units come from `Intl`, with a tag derived from the language and the country: English with the United States gives `en-US` (month before day, `$1,234.50`), English with the United Kingdom `en-GB`, Spanish with the United States `es-US`, Uzbek with Uzbekistan `uz-Latn-UZ`. A pair `Intl` has no data for uses the language's own formats; for English that is international English (`en-001`, day before month). See `intlTagFor` in `packages/ui/src/i18n/index.ts`.
+- **Plurals**: a counted word is one ICU message, `{count, plural, one {# project} other {# projects}}`; the category comes from `Intl.PluralRules` for the active language (English one/other, Russian one/few/many/other). Never write a plural helper or split a word into `…One`/`…Few`/`…Many` keys; `tests/web/i18n/plural-lint.test.ts` rejects both.
+- **One language per request**: the server resolves the request's message layers (brand overlay, the app dictionary, the English keys it lacks, the design-system dictionary) and the root layout hands exactly those to client components. During server rendering they live in a React context (`LocaleScope` in `packages/i18n-runtime`), on the server-component side in a per-request scope, and route handlers wrap themselves in `withRequestLocale`; no store is shared between requests (`tests/web/i18n/concurrent-render.test.ts`, `concurrent-locales.spec.ts`). Client bundles import no dictionary except the design system's English reference (`locale-weight.spec.ts`).
 - **Brand**: Trustwork in every language; only the Russian interface shows «Строй Репутация» (ADR 010 decision 14). The three-squares mark is shared.
 
 Right-to-left scripts are not supported yet (planned: INTL-005), and Chinese, Japanese and Devanagari typography needs INTL-006 before LANG-ZH, LANG-JA and LANG-HI.
 
 ## Adding a language
 
-1. Copy `en.json` in both dictionary folders to `<tag>.json` and translate every value. Keep ICU plural forms correct for your language.
+1. Copy `en.json` in both dictionary folders to `<tag>.json` and translate every value. Keep ICU plural forms correct for your language (the categories `Intl.PluralRules` reports for it).
 2. Add demo content overrides in `apps/web/fixtures/i18n/<tag>.json` (optional but recommended).
 3. Add the tag to the relevant country pack's `locales`, or to a new pack.
 4. Add the language name to the switcher and, if you want a localized wordmark, the lettering to the brand generator.

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { setLocaleStore } from '@trustwork/i18n-runtime';
+// Registers every engine language's design-system dictionary (only English is built into the bundle).
+import '../../src/i18n/dictionaries';
 import { formatDate, formatMessage, formatNumber, message, t } from '../../src/i18n/index';
 
 // These tests describe the Russian dictionary and rules; the reference locale is English.

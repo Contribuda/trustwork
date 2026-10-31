@@ -23,14 +23,6 @@ export async function generateMetadata(): Promise<Metadata> {
 type Group = 'news' | 'articles' | 'magazine' | 'events' | 'companies' | 'people' | 'projects';
 const GROUPS: Group[] = ['news', 'articles', 'magazine', 'events', 'companies', 'people', 'projects'];
 
-function plural(n: number, one: string, few: string, many: string): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
-  return many;
-}
-
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, 'е');
 
 /** Every word of the query must occur in the haystack (title, lede, labels). */
@@ -163,7 +155,7 @@ export default async function SearchPage({ searchParams }: { searchParams: PageS
             </nav>
             <p className="ev-results" role="status">
               <span className="ev-results__count">
-                {t('search.found')}: <strong>{total}</strong> {plural(total, t('search.resultOne'), t('search.resultFew'), t('search.resultMany'))}
+                {t('search.found')}: <strong>{total}</strong> {t('search.resultNoun', { count: total })}
               </span>
             </p>
             <div className="srch__groups">

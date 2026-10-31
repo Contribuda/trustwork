@@ -1,15 +1,12 @@
 import { getLocaleStore } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
-import en from '../../locales/en.json';
-import ru from '../../locales/ru.json';
-import uzLatn from '../../locales/uz-Latn.json';
-import ka from '../../locales/ka.json';
-import hy from '../../locales/hy.json';
-import azLatn from '../../locales/az-Latn.json';
+import en from '../../locales/en.json' with { type: 'json' };
 
 /**
- * Typed i18n for the design system (ADR-009). English is the reference dictionary and the fallback for
- * every other locale; the active locale comes from the request-scoped store that the application primes.
+ * Typed i18n for the design system (ADR-009). English is the reference dictionary, the fallback for every
+ * other locale and the only dictionary this module bundles: the other languages reach a page as message
+ * layers of the request-scoped store (the application puts the active locale's design-system dictionary
+ * there; `./dictionaries` holds them all for servers, tests and tools), so a browser downloads one language.
  * Keys are dot paths into `locales/en.json` (`shell.collapse`, `publicNav.0`). Messages support `{name}`
  * interpolation and the ICU plural subset `{count, plural, one {...} few {...} many {...} other {...}}`
  * with `#` as the number; the plural category comes from `Intl.PluralRules` for the active locale.
@@ -36,9 +33,9 @@ export type LocaleParams = Record<string, Primitive>;
 export const locale = en;
 export const FALLBACK_LOCALE = 'en';
 
-const dictionaries: Record<string, Messages> = { en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn };
+const dictionaries: Record<string, Messages> = { en };
 
-/** Registers or replaces a design-system dictionary for a locale (country packs add theirs at start-up). */
+/** Registers or replaces a design-system dictionary for a locale (`./dictionaries` registers the engine languages). */
 export function registerUiLocale(tag: string, messages: Messages): void {
   dictionaries[tag] = messages;
 }
@@ -56,10 +53,58 @@ export function localeTag(): string {
   return getLocaleStore().locale || FALLBACK_LOCALE;
 }
 
-/** BCP 47 tag with region for `Intl` (number, date and plural rules). */
-const INTL_TAGS: Record<string, string> = { en: 'en-GB', ru: 'ru-RU', 'uz-Latn': 'uz-Latn-UZ', ka: 'ka-GE', hy: 'hy-AM', 'az-Latn': 'az-Latn-AZ' };
-export function intlTag(tag: string = localeTag()): string {
-  return INTL_TAGS[tag] ?? tag;
+/** The active country code (ISO 3166-1 alpha-2) that, with the language, selects `Intl` formats. */
+export function countryCode(): string {
+  return getLocaleStore().country;
+}
+
+/**
+ * When `Intl` has no data for language + country, the language's own formats apply; English then uses
+ * international English (`en-001`, day before month), not the United States default.
+ */
+const LANGUAGE_FALLBACK: Record<string, string> = { en: 'en-001' };
+const intlTagCache = new Map<string, string>();
+
+function supportsExactly(tag: string): boolean {
+  try {
+    return new Intl.DateTimeFormat(tag).resolvedOptions().locale === tag;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * BCP 47 tag for `Intl` (number, date and plural rules) derived from the language and the country:
+ * `en` + `US` gives `en-US` (month before day), `en` + `GB` gives `en-GB`, `es` + `US` gives `es-US`,
+ * `uz-Latn` + `UZ` gives `uz-Latn-UZ`. A pair `Intl` has no data for (English in Uzbekistan) uses the
+ * language's fallback. Each runtime (server, browser) only picks a tag its own `Intl` data covers, so a
+ * pair one side lacks degrades to the same language-level formats instead of a different country's.
+ */
+export function intlTagFor(language: string, country?: string | null): string {
+  const key = `${language}|${country ?? ''}`;
+  const cached = intlTagCache.get(key);
+  if (cached) return cached;
+  let tag = LANGUAGE_FALLBACK[language] ?? language;
+  if (country && /^[A-Z]{2}$/.test(country)) {
+    try {
+      const candidate = Intl.getCanonicalLocales(`${language}-${country}`)[0];
+      if (candidate && supportsExactly(candidate)) tag = candidate;
+    } catch {
+      // not a valid tag: keep the language fallback
+    }
+  }
+  try {
+    Intl.getCanonicalLocales(tag);
+  } catch {
+    tag = LANGUAGE_FALLBACK[FALLBACK_LOCALE] ?? FALLBACK_LOCALE;
+  }
+  intlTagCache.set(key, tag);
+  return tag;
+}
+
+/** The `Intl` tag of the active language and country (`intlTag('ru')` keeps the active country). */
+export function intlTag(tag: string = localeTag(), country: string = countryCode()): string {
+  return intlTagFor(tag, country);
 }
 
 const pluralRulesCache = new Map<string, Intl.PluralRules>();
@@ -204,7 +249,7 @@ export function formatDate(value: Date | string, style: 'long' | 'short' = 'long
   const zone = isDateOnly ? { timeZone: 'UTC' } : {};
   const tag = intlTag();
   if (style === 'short') return new Intl.DateTimeFormat(tag, { day: '2-digit', month: '2-digit', year: 'numeric', ...zone }).format(date);
-  if (tag === 'ru-RU') {
+  if (tag === 'ru' || tag.startsWith('ru-')) {
     const parts = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric', ...zone }).formatToParts(date);
     const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
     return `${pick('day')} ${pick('month')} ${pick('year')}`;

@@ -83,14 +83,6 @@ type Filters = {
 };
 type Facet = 'kind' | 'spec' | 'region' | 'status' | 'signal' | 'has' | 'verified';
 
-function plural(n: number, one: string, few: string, many: string): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
-  return many;
-}
-
 function href(f: Partial<Filters>): string {
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(f)) if (v && !(k === 'show' && v === PAGE) && !(k === 'sort' && v === 'trust')) params.set(k, String(v));
@@ -400,7 +392,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
             </div>
             <div className="ev-results" role="status">
               <span className="ev-results__count">
-                {t('companies.found')}: <strong>{items.length}</strong> {plural(items.length, t('companies.foundOne'), t('companies.foundFew'), t('companies.foundMany'))}
+                {t('companies.found')}: <strong>{items.length}</strong> {t('companies.foundNoun', { count: items.length })}
               </span>
               <span className="ms-toggle" role="group" aria-label={t('map.viewMap')}>
                 <NextLink href={href({ ...filters, view: undefined, bbox: undefined, show: undefined })} className="ms-toggle__btn" aria-current={filters.view ? undefined : 'true'} scroll={false}>
