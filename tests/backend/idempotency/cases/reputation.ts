@@ -1,3 +1,4 @@
+import { hash } from '@node-rs/argon2';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import type { CrashCase } from '../cases.js';
 import { buildAgreement, businessDate, type Fixture } from '../../../trust/helpers.js';
@@ -15,12 +16,22 @@ export default {
     try {
       await withMaintenance(h.db.admin, (trx) => trx.insertInto('hub').values({ id: hubId, slug: 'synthetic-rep-crash', lifecycle: 'public' }).execute());
       const f: Fixture = { admin: h.db.admin, app: h.db.app, people: { petr: seed.people.petr, boris: seed.people.boris, carl: seed.people.carl, xenia: seed.people.xenia, anna: seed.people.anna }, supplier: seed.companies.supplier, project: seed.project };
-      // Boris enrolled a second factor in the support-reset block, so a fresh password login is no longer a full
-      // session; xenia (no active employer) joins the synthetic supplier with company.deals.manage instead.
-      await withMaintenance(h.db.admin, (trx) => trx.insertInto('membership').values({
-        person_id: seed.people.xenia, company_id: seed.companies.supplier, role: 'member', permissions: ['company.deals.manage'], status: 'active', valid_from: new Date(),
-      }).execute());
-      const [member, petr] = [await as('xenia'), await as('petr')];
+      // Earlier blocks enrol Boris in a second factor and give the other personas employers, so this case seeds its own
+      // synthetic member of the supplier with company.deals.manage and a password.
+      const email = 'rep-crash-member@example.invalid';
+      const password = 'fixture-password-rep-crash-01';
+      const passwordHash = await hash(password, { memoryCost: 19456, timeCost: 2, parallelism: 1 });
+      const memberId = await withMaintenance(h.db.admin, async (trx) => {
+        const person = await trx.insertInto('person').values({ display_name: 'Synthetic Supplier Member' }).returning('id').executeTakeFirstOrThrow();
+        await trx.insertInto('email_binding').values({ person_id: person.id, email_normalized: email, is_primary: true, verified_at: new Date('2026-10-01T09:00:00Z') }).execute();
+        await trx.insertInto('credential').values({ person_id: person.id, kind: 'password', password_hash: passwordHash }).execute();
+        await trx.insertInto('membership').values({ person_id: person.id, company_id: seed.companies.supplier, role: 'member', permissions: ['company.deals.manage'], status: 'active', valid_from: new Date() }).execute();
+        return person.id;
+      });
+      const member = h.client();
+      const signedIn = await member.post('/v1/auth/login', { email, password }, { idempotencyKey: null });
+      if (signedIn.status !== 200) throw new Error(`login failed: ${signedIn.status} ${JSON.stringify(signedIn.body)}`);
+      const petr = await as('petr');
       const supplierParty = { kind: 'company', id: seed.companies.supplier };
       const petrParty = { kind: 'person', id: seed.people.petr };
       const A = await buildAgreement(f, businessDate(-2), 'Synthetic reputation exactly once');
@@ -44,7 +55,7 @@ export default {
       // A request old enough for its single reminder (seeded as three days old by the maintenance role).
       const old = await withMaintenance(h.db.admin, (trx) => trx.insertInto('confirmation_request').values({
         requester_person_id: null, requester_company_id: seed.companies.supplier, addressed_person_id: seed.people.petr, addressed_company_id: null, context_kind: 'agreement', context_id: A.agreement.id,
-        portfolio_entry_id: null, statement_kind: 'on_time', statement: 'Synthetic statement', no_incentive: true, no_conflict: true, requested_by_person_id: seed.people.xenia,
+        portfolio_entry_id: null, statement_kind: 'on_time', statement: 'Synthetic statement', no_incentive: true, no_conflict: true, requested_by_person_id: memberId,
         requested_at: new Date(Date.now() - 4 * 86_400_000), due_at: new Date(Date.now() + 26 * 86_400_000),
       }).returning('id').executeTakeFirstOrThrow());
       await exactlyOnce({ action: 'reputation.confirmation_remind', client: member, url: `/v1/reputation-builder/confirmations/${old.id}/reminder`, body: {}, effects: () => auditCount(h.db.admin, 'reputation.confirmation_reminded') });
