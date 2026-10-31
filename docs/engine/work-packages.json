@@ -1854,7 +1854,7 @@
       "id": "REP-001",
       "title": "Reputation builder: credentials, portfolio, confirmations, contributions and timeliness",
       "area": "execution-trust",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "EXE-001",
         "PPL-001"
