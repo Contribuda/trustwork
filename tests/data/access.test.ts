@@ -6,6 +6,7 @@ import { CAPABILITIES } from '@trustwork/contracts';
 import { auth, auditEvents, companies, memberships, ownershipTransfers, participations, permissionGrants, projects, PrincipalError, sessions, withMaintenance, withPrincipal, type Principal } from '@trustwork/data';
 import { provisionTestDatabase, SKIP_REASON, sqlState } from './helpers/postgres.js';
 import { principalFor, seedFixtures, type Seed } from './helpers/seed.js';
+import { loadAccessInventory } from './access/inventory.js';
 
 // DATA-002 (packages/data/migrations/admin): staff commands and policy helpers executable by the runtime role, and
 // SECURITY DEFINER trigger functions (gap-free audit sequence, audit and access-log consistency) nobody may call.
@@ -20,6 +21,9 @@ const ADMIN_TRIGGER_DEFINERS = ['admin_access_log_guard', 'admin_audit_guard', '
 const ASSISTANT_WORKER_DEFINERS = ['assistant_begin_attempt', 'assistant_begin_reconciliation', 'assistant_park_stale_attempts', 'assistant_record_outcome', 'assistant_record_receipt', 'assistant_record_reconciliation'];
 /** SANC-002: the worker's screening list entry points (never executable by the API role). */
 const SCREENING_LIST_WORKER = ['screening_list_due', 'screening_list_lock', 'screening_list_record_attempt', 'screening_list_stage', 'screening_list_add_entries', 'screening_list_activate', 'screening_list_reject'];
+
+// Modules added after this list was split declare their tables and functions in tests/data/access/modules/*.ts.
+const inventory = await loadAccessInventory();
 
 const db = await provisionTestDatabase('access');
 
@@ -79,7 +83,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       'mandate_use', 'participant_stop', 'reconciliation', 'run', 'run_step', 'service_backlog_item']; // AST-001
     const screeningLists = ['screening_list', 'screening_list_entry', 'screening_list_version']; // SANC-002
     const attestation = ['deployment_location_attestation']; // SANC-009
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin, ...execution, ...jurisdiction, ...assistant, ...screeningLists, ...attestation].sort());
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin, ...execution, ...jurisdiction, ...assistant, ...screeningLists, ...attestation, ...inventory.forcedTables].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -114,6 +118,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       'screening_list_set_status', 'screening_list_confirm_version', 'screening_list_freshness', 'screening_available', // SANC-002 (API role)
       ...SCREENING_LIST_WORKER, // SANC-002 (worker role)
       'attestation_attest', 'attestation_record_refusal', 'attestation_current', 'attestation_in_force', 'attestation_reader', // SANC-009
+      ...inventory.apiDefiners, ...inventory.workerDefiners, ...inventory.internalDefiners, // tests/data/access/modules
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files
@@ -121,7 +126,8 @@ test('identity and access persistence under the restricted runtime role', { skip
     const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired', 'sweep_expired', 'lease_jobs', 'reconcile_job',
       'files_scan_target', 'files_record_scan', 'files_deletion_target', 'files_request_erasure', 'files_finish_deletion', 'files_apply_tombstone', 'files_expired_uploads', 'files_discard_upload', ...ADMIN_TRIGGER_DEFINERS,
       ...ASSISTANT_WORKER_DEFINERS,
-      ...SCREENING_LIST_WORKER]);
+      ...SCREENING_LIST_WORKER,
+      ...inventory.workerDefiners, ...inventory.internalDefiners]);
     for (const row of rows) {
       assert.ok(row.proconfig?.some((c) => c === 'search_path=trustwork, pg_temp'), `${row.proname} pins search_path`);
       assert.equal(row.app_exec, !row.proname.startsWith('bump_') && !workerOnly.has(row.proname), `${row.proname} executable by trustwork_app only when allowlisted`);
