@@ -254,7 +254,7 @@
     },
     "elevation": {
       "title": "Bu siz ekaningizni tasdiqlang",
-      "body": "Konsol parol va ikkinchi omil tasdiqlangandan keyin ochiladi. Kengaytirilgan seans 30 daqiqa harakatsizlikdan keyin yoki brauzer yopilganda tugaydi.",
+      "body": "Konsol ikkinchi omil tasdiqlangandan keyin ochiladi (autentifikator ilovasidagi kod yoki tiklash kodi). Kengaytirilgan seans 15 daqiqadan keyin yoki tizimdan chiqqaningizda tugaydi; davom etish uchun qayta tasdiqlang.",
       "action": "Tasdiqlash va davom etish",
       "demoNote": "Namuna: tasdiqlash taqlid qilinadi."
     },

@@ -254,7 +254,7 @@
     },
     "elevation": {
       "title": "Confirm it is you",
-      "body": "The console opens after you confirm your password and your second factor. The elevated session ends after 30 minutes without activity or when you close the browser.",
+      "body": "The console opens after you confirm your second factor (an authenticator code or a recovery code). The elevated session ends 15 minutes later or when you sign out; confirm again to continue.",
       "action": "Confirm and continue",
       "demoNote": "Demo: the confirmation is simulated."
     },
