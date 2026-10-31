@@ -18,8 +18,10 @@ import {
   handleLookupSchema,
   ParticipantProjectSchema,
   SessionViewSchema,
+  NotificationPageSchema,
   type MyProject,
 } from '@trustwork/contracts/client';
+import { notificationView } from '@/app/app/notifications/_lib/view';
 import { z } from 'zod';
 import type { DataPort, Handle } from '../port';
 import type { AuthenticatedPrincipal, CompanyWorkspaceView, HomeView, MeView, OverviewView, Principal, SettingsView, TopicKey, WorkspaceProjectDetail, WorkspaceProjectRow } from '../types';
@@ -50,6 +52,7 @@ import {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LIST_LIMIT = 100;
+const NOTIFICATION_LIMIT = 50;
 /**
  * `GET /v1/companies/:id` reports neither the origin nor the handle (its contract status says `sourced` for every
  * unclaimed company, registered ones included). Until the API returns them (follow-up requested in WEB-004), the
@@ -128,7 +131,14 @@ export function createHttpDataPort(transport: Transport): DataPort {
     if (!session) return null;
     const employer = session.principal.membership ? await companyRead(session.principal.membership.companyId) : null;
     const resolved = employer ? await companyById(employer.company) : null;
-    return toPrincipal(session, employer && resolved ? { company: resolved, membership: employer.membership } : null);
+    const principal = toPrincipal(session, employer && resolved ? { company: resolved, membership: employer.membership } : null);
+    return { ...principal, notifications: await notificationFeed() };
+  });
+
+  /** The person's latest notifications (COMMS-001) for the bell and the notifications page; empty if the API has none. */
+  const notificationFeed = cache(async () => {
+    const body = await transport.get(`/v1/notifications?limit=${NOTIFICATION_LIMIT}`).catch(() => null);
+    return body === null ? [] : NotificationPageSchema.parse(body).items.map(notificationView);
   });
 
   async function publicGet(path: `/v1/${string}`): Promise<unknown | null> {

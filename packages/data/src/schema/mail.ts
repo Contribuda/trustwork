@@ -6,8 +6,9 @@ import type { GeneratedTimestamp, Timestamp } from './foundation.js';
  * Mail module (MAIL-001, packages/data/migrations/mail): transactional mail deliveries recorded by the API in the
  * transaction of the change and delivered by apps/worker, plus the suppression list fed by bounce and complaint
  * receipts. The recipient address and the sealed one-time secret are cleared when a delivery reaches a final state.
+ * `notification` (COMMS-001) carries a subject and body already rendered from the hub's active template version.
  */
-export const MAIL_TEMPLATES = ['verify_email', 'already_registered', 'recovery', 'email_change', 'membership_invitation', 'security_notice'] as const;
+export const MAIL_TEMPLATES = ['verify_email', 'already_registered', 'recovery', 'email_change', 'membership_invitation', 'security_notice', 'notification'] as const;
 export type MailTemplateName = (typeof MAIL_TEMPLATES)[number];
 export const MAIL_DELIVERY_STATES = ['pending', 'sending', 'sent', 'suppressed', 'rate_limited', 'expired', 'failed'] as const;
 export type MailDeliveryState = (typeof MAIL_DELIVERY_STATES)[number];

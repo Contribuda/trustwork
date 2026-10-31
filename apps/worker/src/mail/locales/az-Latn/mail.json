@@ -71,5 +71,9 @@
     },
     "notYou": "Bu siz deyildinizsə, şifrənizi dərhal bərpa edin və aktiv seanslarınızı yoxlayın.",
     "action": "Şifrəni bərpa et"
+  },
+  "notification": {
+    "action": "{brand} platformasında aç",
+    "footer": "Bu məktubu {brand} platformasında bu işdə iştirak etdiyiniz üçün aldınız. Hansı bildirişlərin e-poçtla gələcəyini bildiriş ayarlarında seçə bilərsiniz."
   }
 }

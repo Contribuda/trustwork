@@ -392,7 +392,8 @@ export type MembershipView = {
   companyHandle: string;
 };
 
-export type NotificationView = { id: string; kind: 'decision' | 'quote' | 'project' | 'publication' | 'assistant' | 'magazine'; title: string; at: string; href: string; unread: boolean };
+/** `live` notifications come from `GET /v1/notifications` (COMMS-001) and can be marked read; fixture ones cannot. */
+export type NotificationView = { id: string; kind: 'decision' | 'quote' | 'project' | 'publication' | 'assistant' | 'magazine' | 'message' | 'account'; title: string; at: string; href: string; unread: boolean; live?: boolean };
 
 export type AssistantSummary = { running: number; approvals: number; unknown: number; unread: number };
 

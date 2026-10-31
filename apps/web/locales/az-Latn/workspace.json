@@ -11,7 +11,9 @@
       "project": "Layihə",
       "publication": "Nəşr",
       "assistant": "Köməkçi",
-      "magazine": "Jurnal"
+      "magazine": "Jurnal",
+      "message": "Mesaj",
+      "account": "Hesab"
     },
     "unread": "Oxunmamış",
     "unreadOne": "yeni",
@@ -27,7 +29,14 @@
     },
     "settingsTitle": "Nə barədə bildirmək",
     "settingsHint": "Qərarlar, köməkçinin işləri, nəşrlər və jurnalın yeni buraxılışları üstünlüklərdə tənzimlənir.",
-    "demoNote": "Demo: oxunma işarələri saxlanılmır."
+    "demoNote": "Demo: oxunma işarələri saxlanılmır.",
+    "template": {
+      "threadOpened": "{authorName} yazışmaya başladı: {threadSubject}",
+      "threadMessage": "{authorName} “{threadSubject}” mövzusunda yazdı",
+      "securityNotice": "Hesabınızın təhlükəsizliyi barədə bildiriş"
+    },
+    "markAllRead": "Hamısını oxunmuş kimi qeyd et",
+    "markFailed": "Oxunma qeydi saxlanmadı. Yenidən cəhd edin."
   },
   "overview": {
     "title": "İcmal",

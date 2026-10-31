@@ -150,7 +150,11 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
       await mailDeliveries.markFinal(trx, id, 'expired');
       return { kind: 'skip', result: 'expired' };
     }
-    if (await suppressions.isSuppressed(trx, row.recipient_hash)) {
+    // An unsubscribe (COMMS-001) stops non-transactional notification mail only; identity mail and transactional
+    // notices still go. Bounces, complaints and legal entries stop everything.
+    const suppressed = await suppressions.isSuppressed(trx, row.recipient_hash);
+    const transactional = row.template !== 'notification' || row.params.transactional === 'true';
+    if (suppressed && !(suppressed === 'unsubscribe' && transactional)) {
       await mailDeliveries.markFinal(trx, id, 'suppressed');
       return { kind: 'skip', result: 'suppressed' };
     }

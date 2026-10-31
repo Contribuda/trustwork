@@ -17,6 +17,7 @@ import { IdempotencyInterceptor } from './common/idempotency.interceptor.js';
 import type { AppContext } from './modules/identity/context.js';
 import { buildIdentityServices, type IdentityServices } from './modules/identity/identity.module.js';
 import { filesOptionsFromEnv, type FilesModuleOptions } from './modules/files/files.module.js';
+import type { CommunicationsModuleOptions } from './modules/communications/communications.module.js';
 import { GoogleOidcProvider } from './modules/identity/providers/google.js';
 import { AppleSignInProvider } from './modules/identity/providers/apple.js';
 import { OutboxMail } from './modules/identity/mail.js';
@@ -64,6 +65,8 @@ export interface CreateAppOptions {
    * database, production refuses to start without an explicit mode (exit 78).
    */
   jurisdictionGate?: JurisdictionGate;
+  /** Communications (COMMS-001): channel adapter (fake by default), mandate port and settings overrides; settings default from the environment. */
+  communications?: CommunicationsModuleOptions;
 }
 export interface CreatedApp {
   app: NestFastifyApplication;
@@ -173,7 +176,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     bodyLimit: 256 * 1024,
   });
   const files = options.files ?? filesOptionsFromEnv(env);
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured'), adapter, { logger: new NestJsonLogger(logger) });
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }), adapter, { logger: new NestJsonLogger(logger) });
   const fastify = app.getHttpAdapter().getInstance() as unknown as FastifyInstance;
   instrumentHttp(fastify, { config, logger, telemetry });
   // The per-route limit must be attached before @fastify/rate-limit's own onRoute hook reads `config.rateLimit`

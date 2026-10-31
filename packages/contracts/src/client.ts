@@ -56,3 +56,5 @@ export * from './profiles.js';
 export * from './sanctions.js';
 // Deployment-location attestation: command, record, refusal rule and status (SANC-009, ADR 014 decisions 3 to 5).
 export * from './sanctions-attestation.js';
+// Context threads, messages, notifications, preferences, channel grants and templates (COMMS-001).
+export * from './communications.js';
