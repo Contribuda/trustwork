@@ -1,5 +1,5 @@
 import { toPublicCompany, wouldRemoveLastAdministrator, type Company, type Membership, type Principal, type PublicCompany } from '../../deps/contracts.js';
-import { auditEvents, auth, companies, memberships, outbox } from '../../deps/data.js';
+import { auditEvents, auth, companies, memberships, outbox, preIdentity } from '../../deps/data.js';
 import { withoutPrincipal } from '../../common/db.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
@@ -87,9 +87,11 @@ export class MembershipService {
   async accept(companyId: string, input: { membershipId: string; invitationToken: string }, state: RequestState): Promise<Membership> {
     const principal = state.principal as Principal;
     if (!principal.emailVerified) throw new ApiError('auth.email_unverified');
-    const consumed = await auth.consumeToken(this.ctx.pool, sha256Hex(input.invitationToken), 'membership_invitation');
-    if (!consumed || consumed.person_id !== principal.personId) throw new ApiError('access.not_found', 'invitation is invalid or expired');
     return this.principals.runAs(state, async (trx, p) => {
+      // The mailbox proof is consumed in the same transaction as the activation (and its idempotency completion), so a
+      // crash before COMMIT leaves the invitation usable for the retry instead of burning it without an effect.
+      const consumed = await preIdentity.consumeToken(trx, sha256Hex(input.invitationToken), 'membership_invitation');
+      if (!consumed || consumed.person_id !== p.personId) throw new ApiError('access.not_found', 'invitation is invalid or expired');
       const row = await memberships.getById(trx, input.membershipId);
       if (!row || row.person_id !== p.personId || row.company_id !== companyId) throw new ApiError('access.not_found');
       if (row.status !== 'invited') throw new ApiError('membership.invitation_expired');

@@ -3,6 +3,7 @@ import { PrincipalSchema, type Principal } from '../../deps/contracts.js';
 import { auth, companies, emailBindings, memberships, persons, PrincipalError, sessions, withPrincipal, type Transaction } from '../../deps/data.js';
 import { clearSessionCookie, readCookie, sessionCookieName, setSessionCookie } from '../../common/cookies.js';
 import { ApiError } from '../../common/errors.js';
+import { completeInTransaction } from '../../common/idempotency/completion.js';
 import type { RequestState, SessionState, TrustworkRequest } from '../../common/request.js';
 import type { AppContext } from './context.js';
 import { ipPrefix, randomToken, sha256Hex, userAgentFamily } from './tokens.js';
@@ -110,12 +111,18 @@ export class PrincipalService {
   async runAs<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>): Promise<T> {
     if (!state.principal || !state.session) throw new ApiError('auth.session_invalid', 'authentication required');
     const principal = state.principal;
+    // An idempotent request completes its idempotency record in this same transaction (BE-005, ADR 012 decision 39).
+    const run = async (trx: Transaction, p: Principal): Promise<T> => {
+      const result = await fn(trx, p);
+      await completeInTransaction(state, trx, result);
+      return result;
+    };
     try {
-      return await withPrincipal(this.ctx.pool, { personId: principal.personId, authzEpoch: principal.authzEpoch }, (trx) => fn(trx, principal));
+      return await withPrincipal(this.ctx.pool, { personId: principal.personId, authzEpoch: principal.authzEpoch }, (trx) => run(trx, principal));
     } catch (error) {
       if (!(error instanceof PrincipalError) || error.code !== 'access.stale_epoch') throw error;
       const fresh = await this.refresh(state);
-      return withPrincipal(this.ctx.pool, { personId: fresh.personId, authzEpoch: fresh.authzEpoch }, (trx) => fn(trx, fresh));
+      return withPrincipal(this.ctx.pool, { personId: fresh.personId, authzEpoch: fresh.authzEpoch }, (trx) => run(trx, fresh));
     }
   }
 
