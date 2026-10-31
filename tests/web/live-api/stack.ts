@@ -2,7 +2,10 @@ import { randomBytes } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createApp } from '../../../apps/api/src/app.js';
 import type { Clock } from '../../../apps/api/src/modules/identity/ports.js';
-import { createPool } from '@trustwork/data';
+import { createPool, withMaintenance, withPrincipal } from '@trustwork/data';
+import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
+import { budgets } from '../../../packages/data/src/repositories/billing.js';
+import { principalFor } from '../../data/helpers/seed.js';
 import { endPool, provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
 import { CommittedMailbox } from '../../worker/mail/helpers/committed-mailbox.js';
 import { API_PORT, CONTROL_PORT, WEB_ORIGIN } from './ports.js';
@@ -12,8 +15,8 @@ import { API_PORT, CONTROL_PORT, WEB_ORIGIN } from './ports.js';
  * root: a fresh PostgreSQL database with every migration (the same backends as the database tests: an external URL,
  * Docker or embedded-postgres), the API on a restricted runtime role, and a mailbox that reads the mail intents the API
  * committed (MAIL-001: mail leaves through the outbox; the tokens are opened with the shared `MAIL_SECRET_KEY`, exactly
- * what the worker would mail). A loopback-only control server lets the tests read that mailbox and move the API clock forward to reach
- * the step-up window. None of this is product code; nothing leaves the machine. The database is dropped on exit.
+ * what the worker would mail). A loopback-only control server lets the tests read that mailbox, move the API clock forward to reach
+ * the step-up window and grant a person a transaction budget (WEB-002; no budget route exists yet). None of this is product code; nothing leaves the machine. The database is dropped on exit.
  */
 class MovableClock implements Clock {
   offsetMs = 0;
@@ -54,6 +57,15 @@ const control = createServer((req, res) => {
       clock.offsetMs = typeof body.offsetMs === 'number' ? body.offsetMs : 0;
       return send(res, 200, { offsetMs: clock.offsetMs });
     }
+    if (req.method === 'POST' && url.pathname === '/budget') {
+      // WEB-002: no budget route exists yet (BILL-001 exposes none); the commerce journey needs a transaction budget the
+      // buyer grants itself, exactly as the runtime function would through the future billing screens.
+      const body = await readJson(req);
+      if (!pool || !db || typeof body.personId !== 'string' || typeof body.limitMinor !== 'string' || typeof body.currency !== 'string') return send(res, 400, { error: 'bad request' });
+      const principal = await principalFor(db.admin, body.personId);
+      const id = await withPrincipal(pool, principal, (trx) => budgets.grant(trx, { kind: 'transaction', owner: 'person', projectId: null, employeePersonId: null, periodFrom: '2026-01-01T00:00:00Z', periodTo: '2030-01-01T00:00:00Z', limitMinor: body.limitMinor as string, currency: body.currency as string }));
+      return send(res, 200, { id });
+    }
     return send(res, 404, { error: 'not found' });
   })();
 });
@@ -87,6 +99,8 @@ process.on('SIGINT', () => void shutdown());
 
 try {
   await db.migrate();
+  // Reference data (units, restricted places) as a deployment loads it; without it every place code is refused (fail closed).
+  await withMaintenance(db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   await db.createAppLogin();
   pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
   mailbox = new CommittedMailbox(db.admin, Buffer.from(mailKeyHex, 'hex'));

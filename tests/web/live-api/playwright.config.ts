@@ -15,8 +15,9 @@ const distDir = process.env.NEXT_DIST_DIR ?? '.next-live';
  * One worker: the suite moves the API clock (step-up) and the mailbox is shared.
  */
 export default defineConfig({
-  testDir: '.',
-  testMatch: /.*\.e2e\.ts/,
+  // WEB-002 adds the commerce journeys in tests/web/commerce next to this suite (same stack, same build).
+  testDir: '..',
+  testMatch: /(?:live-api|commerce)\/.*\.e2e\.ts$/,
   outputDir: resolve(repo, 'apps/web/dist/live-results'),
   fullyParallel: false,
   forbidOnly: true,

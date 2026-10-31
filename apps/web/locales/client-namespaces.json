@@ -3,6 +3,6 @@
   "root": ["core", "demo"],
   "public": ["companies", "editorial", "home", "magazine", "map", "people", "projects", "public"],
   "auth": ["auth", "settings"],
-  "workspace": ["assistant", "companies", "editorial", "magazine", "onboarding", "people", "projects", "public", "publishing", "settings", "workspace"],
+  "workspace": ["assistant", "commerce", "companies", "editorial", "magazine", "onboarding", "people", "projects", "public", "publishing", "settings", "workspace"],
   "onboarding": ["magazine", "onboarding", "people"]
 }

@@ -5,6 +5,7 @@
 export type AppMessages =
   typeof import('./en/assistant.json')
   & typeof import('./en/auth.json')
+  & typeof import('./en/commerce.json')
   & typeof import('./en/companies.json')
   & typeof import('./en/core.json')
   & typeof import('./en/demo.json')
