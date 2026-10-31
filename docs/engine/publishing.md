@@ -96,7 +96,7 @@ A hub may serve several languages (a US hub: English and Spanish; a Canadian hub
 | **Save and reading progress** | Already shown on "My page" (`me.title`) in the demo |
 | **Comments** | Off by default per hub; when on, signed-in people only, under the hub's community rules, with reports, moderation cases and the same sanction ladder as other content |
 | **Expert answers** | A question format where verified practitioners answer; answers are publications with authorship and corrections |
-| **Share** | Plain links and Telegram share; no tracking pixels |
+| **Share** | Plain links and the share targets the hub enables; no tracking pixels |
 
 ## Invariants
 

@@ -41,6 +41,9 @@ Third-party components
 - Country dataset (packages/country-packs/countries/countries.json): derived from
   https://github.com/mledoze/countries, Open Data Commons Open Database License
   1.0 (packages/country-packs/countries/LICENSE-ODbL.txt).
+- Plan-step taxonomy (data/taxonomy): original work dedicated to the public domain
+  under CC0 1.0 (data/taxonomy/LICENSE); proprietary classifications are never
+  shipped and are only referenced as licensed hub data.
 - npm dependencies: each under its own licence as recorded in package-lock.json.
 
 Marks: the name "Trustwork" and the three-squares mark are the owner's marks and

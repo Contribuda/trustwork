@@ -44,7 +44,7 @@ Operators of overlapping hubs are encouraged to sign a short **cooperation agree
 
 | Area | Configured in the [hub console](hub-administration.md) |
 |---|---|
-| Identity | Name, brand overlay with localized lettering, domain, languages, default language |
+| Identity | Name, optional brand overlay (Trustwork in every language unless the hub registers its own overlay, ADR 010 decision 14), typography per script, domain, languages, default language |
 | Legal | Operator legal entity, terms, privacy notice, sanctions section, imprint, data-residency choice; jurisdiction settings for agent disclosure, liability, consent, record-keeping and per-action limits (HUB-005) |
 | People | Hub staff roles, editorial team, trust reviewers, moderators, support |
 | Country base | Country pack version, hub taxonomy extensions, units, holidays |

@@ -37,7 +37,7 @@ Basic participation exists for both commercial sides and for non-commercial read
 | R23 | Daily overview and stable sidebar; simultaneous buying and selling when relevant | No endless welcome screen, role-focus dropdown, generic charts, AI reshuffling or primary menu-setup button |
 | R24 | Account only circular top-right avatar; sidebar collapse inside brand row | No avatar chevron/name, bottom-left duplicate account block, company selector; contextual settings |
 | R25 | Three blue squares in L arrangement plus a black stacked wordmark reading "trust / work" in every language, and a stacked Russian-language wordmark only in the Russian interface (ADR 010 decision 14); light restrained design | Canonical editable logo not yet created; latest workspace proposal not approved; mobile/accessibility required |
-| R26 | Russian UI through i18n, English engineering artifacts | Reference image content synthetic; never seed real claims |
+| R26 | Multilingual UI through i18n with English as the default language (Russian is one interface language), English engineering artifacts | Reference image content synthetic; never seed real claims |
 | R27 | Independent runtime, optional external development-management adapter with explicit export/detach | No external DB/login/deployment dependency; unsupported manifests forbidden |
 | R28 | Multi-party private/shared/public data projections and auditable access | Single-employer UI does not reduce data access to current_company_id; each object checks participation |
 | R29 | Durable, structured assistant run/action/approval/outcome records | External timeout -> outcome_unknown -> reconciliation; no blind duplicate order/payment |
@@ -149,6 +149,6 @@ Research personal relief, perceived control, confidence, useful completion, inte
 
 | ID | Requirement | Boundary / acceptance |
 |---|---|---|
-| R31 | First-class Russian/multilingual hybrid RAG over permitted companies, people, projects, needs, quotes, publications and files | Source truth vs versioned derived projections; current field and party rights re-checked at candidacy, hydration and egress and delivery gates; exact structured facts and complete-domain calculations; reproducible lineage/citations; revocation/deletion/reindexing; evaluated semantic quality and bounded cost. Architecture/contracts/fixtures prepared, runtime not implemented. |
+| R31 | First-class multilingual hybrid RAG over permitted companies, people, projects, needs, quotes, publications and files | Source truth vs versioned derived projections; current field and party rights re-checked at candidacy, hydration and egress and delivery gates; exact structured facts and complete-domain calculations; reproducible lineage/citations; revocation/deletion/reindexing; evaluated semantic quality and bounded cost. Architecture/contracts/fixtures prepared, runtime not implemented. |
 
 See [retrieval design](../architecture/retrieval.md), [knowledge schema](../data/knowledge-model.md) and [evaluation gates](../quality/retrieval-evaluation.md). RAG is required now; only a separate external vector database remains conditional on evidence.

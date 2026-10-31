@@ -705,6 +705,37 @@
       ]
     },
     {
+      "id": "BE-005",
+      "title": "Exactly-once completion for idempotent requests",
+      "area": "backend",
+      "status": "open",
+      "dependsOn": [
+        "BE-002"
+      ],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Record idempotency completion inside each handler's own transaction so a retry after a crash never repeats an effect (ADR 012 decision 39).",
+      "read": [
+        "docs/engine/architecture.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "apps/api/src/common"
+      ],
+      "steps": [
+        "Pass the idempotency record into the handler transaction and mark it completed in the same commit as the change, audit and outbox intents.",
+        "Make the takeover path detect a committed completion and return the stored response instead of re-running the handler.",
+        "Remove the lease-based re-run for handlers that use the in-transaction completion; keep the lease only for handlers that cannot (documented).",
+        "Add crash-injection tests (database trigger after commit, before bookkeeping) for every mutating route family."
+      ],
+      "acceptance": [
+        "A crash after the handler commits never repeats the effect on retry; the retry returns the stored response (tested on real PostgreSQL).",
+        "Concurrent retries of the same key produce exactly one effect (tested).",
+        "Every mutating route uses in-transaction completion or is listed with a reason."
+      ],
+      "paths": [
+        "apps/api/src/common/idempotency",
+        "tests/backend/idempotency"
+      ]
+    },
+    {
       "id": "BE-003",
       "title": "Account and directory completeness: company creation, handles, lists with pagination",
       "area": "backend",
