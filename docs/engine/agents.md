@@ -4,11 +4,15 @@ Requirements R09–R11, R29, R35. Status: the assistant page and the floating ov
 
 Every participant keeps an agent that represents them in the industry. It looks for partners, presents their services, negotiates and pursues their goals, **under their direction and within limits they can read, change and revoke at any moment**. This chapter describes what the agent does, how its authority works, how agents of different participants deal with each other, and what keeps the whole thing safe.
 
+The [agent catalogue](agent-catalog.md) (Proposed) details what the agent does for each kind of participant: jobs, mandates, triggers and reports per participant type; capability packaged as **modules** that a hub enables and prices; metering and quotas; the flagship journeys [from plan to people](agent-catalog.md#flagship-journey-from-plan-to-people) and [build and confirm your own reputation](agent-catalog.md#flagship-build-and-confirm-your-own-reputation); and how a participant connects their own external agent over [MCP and A2A](agent-catalog.md#connect-your-own-agent-mcp-and-a2a). Everything in this chapter applies to every job in the catalogue.
+
 ## One agent, one surface
 
 - Each person has **one** agent, the same thing the interface calls «Помощник» (the assistant). A company may additionally enable **one** standing representative ([below](#company-representation)). There is no list of bots to manage and no agent marketplace inside the product.
 - It lives on a full page and in an icon-only launcher in the bottom-right corner that opens a floating overlay. The overlay never shrinks or reflows the page; the full page and the overlay share one conversation and one state.
 - Internally the agent may use specialised workers (research, drafting, comparison, negotiation). Those are implementation details and stay invisible.
+- What the agent can do is packaged as **modules** ([catalogue](agent-catalog.md#the-module-system)). Modules are abilities of the one agent, never separate agents; the person sees them as jobs the agent offers and the mandates those jobs need.
+- A participant may connect their own external agent (for example Claude, ChatGPT or a custom agent). A **connection** is another hand of the same agent, acting under the same mandates, labels and kill switches; it can propose and act only inside mandates confirmed on the first-party surface, and never approve ([Connect your own agent](agent-catalog.md#connect-your-own-agent-mcp-and-a2a)).
 
 ## What your agent can do for you
 
@@ -24,7 +28,7 @@ Every participant keeps an agent that represents them in the industry. It looks 
 | **Deliver work products** | Generate a catalogue, a presentation or a report the platform bills for | `generate_deliverable` + platform budget |
 | **Report and propose** | Weekly summary of what it did; proposals of useful next steps for your backlog | Always allowed; proposals become drafts |
 
-The action vocabulary in the contracts is: `prepare`, `research`, `communicate`, `send_quote`, `negotiate`, `place_order`, `accept_order`, `generate_deliverable`.
+The action vocabulary in the contracts is: `prepare`, `research`, `communicate`, `send_quote`, `negotiate`, `place_order`, `accept_order`, `generate_deliverable`. The catalogue proposes a v2 vocabulary that adds `introduce`, `schedule`, `maintain_profile`, `publish`, `register`, `record_evidence` and `confirm_execution` (never pre-authorizable), plus standing mandates over context selectors, structured conditions and approval policies ([Action vocabulary v2](agent-catalog.md#action-vocabulary-v2-proposed)).
 
 ## Authority: mandates
 
@@ -90,7 +94,7 @@ When your agent deals with someone else's agent, each message is an **agent enve
 | `from` | The principal (person, and company when acting for it) |
 | `actor` | `agent` and a stable label "Anna's agent" |
 | `context` | The RFQ, quote, agreement, introduction or event it belongs to |
-| `intent` | `request_proposal`, `propose`, `counter`, `clarify`, `answer`, `accept`, `decline`, `withdraw`, `schedule_meeting`, `introduce` |
+| `intent` | `request_proposal`, `propose`, `counter`, `clarify`, `answer`, `accept`, `decline`, `withdraw`, `schedule_meeting`, `introduce`; the catalogue proposes `propose_slots`, `request_confirmation`, `express_interest` and `step_question` ([interaction patterns](agent-catalog.md#how-agents-meet-interaction-patterns)) |
 | `refs` | Exact object versions with digests |
 | `note` | Optional human-readable text, **untrusted for the receiver** |
 | `mandate_digest` | A digest that proves a mandate exists without revealing its content |
@@ -150,7 +154,7 @@ Connecting e-mail or messengers is **per channel, per scope, revocable**: for ex
 
 ## Models and data
 
-Agents use model providers through adapters with **egress policies per data class**. A hub decides which providers are allowed in its territory (for example only models hosted in-country when personal data is involved, or local models only). Private chain-of-thought is never shown or stored as a log; the activity log shows actions, evidence and results. Model costs are platform usage and follow the platform budget rules.
+Agents use model providers through adapters with **egress policies per data class**. A hub decides which providers are allowed in its territory (for example only models hosted in-country when personal data is involved, or local models only). Private chain-of-thought is never shown or stored as a log; the activity log shows actions, evidence and results. Model costs are platform usage and follow the platform budget rules. Metering, quotas and how a hub prices modules are in the [catalogue](agent-catalog.md#metering-quotas-and-hub-pricing); payment buys capacity for the payer's own work, never reach, rank, earlier alerts, introductions or badges.
 
 ## What you see
 
@@ -158,16 +162,19 @@ Agents use model providers through adapters with **egress policies per data clas
 - **Decisions waiting for you**, each with the exact action and what will happen.
 - **Goals**, **mandates** and **runs** with their states (`proposed, authorized, reserved, queued, executing, pending, succeeded, failed, outcome_unknown, reconciling, revoked`).
 - **Backlog** of proposed work, separate from any software development backlog.
-- A **stop** control: suspend all mandates at once.
+- A **stop** control: suspend all mandates and all external connections at once.
+- What the agent can do (modules as abilities), plans of the person's projects, reputation building and connections; per-participant first cards are in the [catalogue](agent-catalog.md#one-assistant-surface-for-every-participant).
 
 ## Safety engineering
 
 - Tool access is an allowlist per action type; the model never gets a raw database or superuser channel.
 - Inputs from files, e-mails, web pages and other agents are marked untrusted; injection tests are part of the acceptance suite.
-- Hub operators have a **kill switch** for all agent dispatch in their hub; the instance operator has one for all hubs.
+- Hub operators have a **kill switch** for all agent dispatch in their hub; the instance operator has one for all hubs. The catalogue adds switches per hub module, for external connections, for the company representative and per connection ([Kill switches](agent-catalog.md#kill-switches)).
 - Every action has an audit record and an idempotency key.
 
 ## Data model additions (Proposed)
+
+Zod-shaped proposals for these and the catalogue additions (mandate v2, modules, plans and metering, plans of projects, consultations, reputation passport, external connections, kill switches) are in the [catalogue](agent-catalog.md#data-model-and-contract-additions).
 
 | Entity | Key fields |
 |---|---|

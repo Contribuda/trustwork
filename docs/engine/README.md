@@ -29,6 +29,7 @@ Everything the engine does and is designed to do, in one place. Every chapter st
 | [Buying and selling](commerce.md) | Needs, RFQs, quotes, comparison, negotiation, agreements, orders, catalogue |
 | [Execution, evidence and reputation](execution-and-reputation.md) | Claims and evidence, fair timing, explainable reputation |
 | [Your agent](agents.md) | Representation under mandates, goals, negotiation between agents, company representation, safety |
+| [Agent catalogue](agent-catalog.md) | What the agent does for every participant type; modules, metering and hub pricing; flagship journeys "from plan to people" and "build and confirm your own reputation"; connecting your own agent over MCP and A2A |
 | [Search and knowledge](search-and-knowledge.md) | Keyword search, structured filters, cited answers, governed retrieval |
 | [Communications](communications.md) | Context threads, external channels, notifications, templates |
 | [Billing, plans and budgets](billing.md) | Free participation, two budget kinds, versioned prices, payments |
