@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type pg from 'pg';
 import { sql } from 'kysely';
 import { admission, admissionScopes, bindTransaction, createPool, jobs, participations, withMaintenance, withPrincipal, type Principal } from '@trustwork/data';
-import { provisionTestDatabase, SKIP_REASON, sqlState } from '../../data/helpers/postgres.js';
+import { endPool, provisionTestDatabase, SKIP_REASON, sqlState } from '../../data/helpers/postgres.js';
 import { principalFor, seedFixtures } from '../../data/helpers/seed.js';
 
 const db = await provisionTestDatabase('hardening_priv');
@@ -18,8 +18,8 @@ test('runtime-role privileges after BE-002', { skip: db ? false : SKIP_REASON },
   await db.migrate();
   await db.createAppLogin();
   const seed = await seedFixtures(db.admin);
-  const runtime = createPool({ ...db.appConfig, max: 4 });
-  t.after(async () => { await runtime.end(); await db.close(); });
+  const runtime = db.teardown.watch(createPool({ ...db.appConfig, max: 4 }));
+  t.after(async () => { await endPool(runtime); await db.close(); });
   const principal = (id: string): Promise<Principal> => principalFor(db.admin, id);
   const code = async (promise: Promise<unknown>): Promise<string | null> => promise.then(() => 'ok', (e: unknown) => sqlState(e) ?? String(e));
   const revokeAs = async (personId: string, scope: string) => code(withPrincipal(runtime, await principal(personId), (trx) => admission.revoke(trx, scope, 'probe')));
