@@ -133,9 +133,7 @@ services:
     profiles: [stack]
     image: trustwork-proxy:local
     build: { context: .., dockerfile: infra/proxy/Dockerfile }
-    read_only: true
-    security_opt: ["no-new-privileges:true"]
-    tmpfs: ["/tmp"]
+    <<: *hardening
     depends_on:
       api: { condition: service_healthy }
       web: { condition: service_healthy }

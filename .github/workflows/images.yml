@@ -71,7 +71,7 @@ jobs:
             sleep 2
           done
           docker inspect --format '{{.State.Health.Status}}' preview | grep -qx healthy
-          curl -fsS -o /dev/null http://127.0.0.1:3999/trustwork/
+          curl -fsS -o /dev/null http://127.0.0.1:3999/trustwork
           docker rm -f preview
 
       - name: SBOM per image (SPDX JSON)
