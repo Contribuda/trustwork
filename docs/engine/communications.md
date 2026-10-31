@@ -2,7 +2,7 @@
 
 Normative requirements: [Communications and notifications](modules/communications-and-notifications.md), [Mobile and offline](modules/mobile-and-offline.md). Participants: [who uses what](participants/README.md).
 
-Requirement R08. Status: notifications page and bell are **Demo**; context threads, channel grants and templates are **Designed**; messenger channels and hub sender identities are **Proposed**.
+Requirement R08. Status: context threads, messages, notifications (page and bell), preferences, channel grants, templates and e-mail delivery through MAIL-001 are **Live** in code and tests (COMMS-001, not deployed; [module README](../../apps/api/src/modules/communications/README.md)); messenger and SMS channels exist as **fake** adapters only; hub sender identities are **Proposed**.
 
 ## Conversations belong to the work
 

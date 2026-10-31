@@ -61,11 +61,9 @@ function mapCommsError(error: unknown): never {
   if (error instanceof ApiError || error instanceof PrincipalError) throw error;
   const pg = error as { code?: string; hint?: string; detail?: string; constraint?: string };
   if (pg && typeof pg.code === 'string') {
-    if (process.env.COMMS_DEBUG) console.error('COMMS_DEBUG', error, pg.hint);
     const mapped = pg.hint ? HINTS[pg.hint] : undefined;
     if (mapped) throw new ApiError(mapped.code, mapped.reason, { reason: mapped.reason, ...(pg.hint === 'comms.template_incomplete' && pg.detail ? { missing: pg.detail.split(',') } : {}) });
     // Row security refusing an insert means the caller is not a party: answer as if the object did not exist.
-    if (process.env.COMMS_DEBUG) console.error('COMMS_DEBUG', error, pg.hint);
     if (pg.code === '42501') throw new ApiError('access.not_found', 'not found', { reason: 'not_found' });
     if (pg.code === '23505') throw new ApiError('validation.revision_conflict', 'a conflicting record already exists', { constraint: pg.constraint ?? null });
     if (pg.code === '22P02') throw new ApiError('access.not_found', 'not found', { reason: 'not_found' });
@@ -461,22 +459,22 @@ export class CommunicationsService {
 
   /* ---------- Templates (hub staff) ---------- */
 
-  private hub(): string {
-    if (!this.settings.hubId) throw new ApiError('access.not_found', 'this API serves no hub');
-    return this.settings.hubId;
+  private hub(hubId: string): string {
+    if (!isUuid(hubId)) throw new ApiError('access.not_found', 'not found');
+    return hubId;
   }
 
-  listTemplateVersions(key: NotificationTemplateKey, state: RequestState) {
+  listTemplateVersions(hub: string, key: NotificationTemplateKey, state: RequestState) {
     return this.run(state, async (trx) => {
-      const hubId = this.hub();
+      const hubId = this.hub(hub);
       const rows = await messageTemplates.versions(trx, hubId, key);
       return TemplateVersionListSchema.parse({ templateKey: key, hubId, hubLanguages: [...this.settings.hubLanguages], items: rows.map((r) => templateContract(r, key, hubId)) });
     });
   }
 
-  draftTemplate(key: NotificationTemplateKey, command: DraftTemplateVersionCommand, state: RequestState) {
+  draftTemplate(hub: string, key: NotificationTemplateKey, command: DraftTemplateVersionCommand, state: RequestState) {
     return this.run(state, async (trx) => {
-      const hubId = this.hub();
+      const hubId = this.hub(hub);
       if (!this.settings.hubLanguages.includes(command.locale)) throw new ApiError('validation.schema', 'the hub does not serve this language', { reason: 'locale_not_served' });
       const problems = [...templatePlaceholderProblems(key, command.subject), ...templatePlaceholderProblems(key, command.body)];
       if (problems.length) throw new ApiError('validation.schema', 'unknown placeholders', { reason: 'placeholders', problems });
@@ -484,16 +482,16 @@ export class CommunicationsService {
     });
   }
 
-  activateTemplate(key: NotificationTemplateKey, version: number, command: ActivateTemplateVersionCommand, state: RequestState) {
+  activateTemplate(hub: string, key: NotificationTemplateKey, version: number, command: ActivateTemplateVersionCommand, state: RequestState) {
     return this.run(state, async (trx) => {
-      const hubId = this.hub();
+      const hubId = this.hub(hub);
       const rows = await messageTemplates.activate(trx, { hubId, key, version, requiredLocales: this.settings.hubLanguages, reason: command.reason });
       return TemplateVersionListSchema.parse({ templateKey: key, hubId, hubLanguages: [...this.settings.hubLanguages], items: rows.map((r) => templateContract(r, key, hubId)) });
     });
   }
 
-  deliveryCounts(state: RequestState) {
-    return this.run(state, async (trx) => DeliveryCountsSchema.parse({ items: (await deliveries.counts(trx, this.hub())).map((r) => ({ channel: r.channel, state: r.state, count: r.n })) }));
+  deliveryCounts(hub: string, state: RequestState) {
+    return this.run(state, async (trx) => DeliveryCountsSchema.parse({ items: (await deliveries.counts(trx, this.hub(hub))).map((r) => ({ channel: r.channel, state: r.state, count: r.n })) }));
   }
 }
 

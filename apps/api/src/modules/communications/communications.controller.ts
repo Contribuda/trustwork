@@ -9,8 +9,9 @@ import { Body, Params, Query } from '../../common/zod.js';
 import { CommunicationsService } from './communications.service.js';
 
 const IdParams = z.strictObject({ id: IdSchema });
-const KeyParams = z.strictObject({ key: NotificationTemplateKeySchema });
-const VersionParams = z.strictObject({ key: NotificationTemplateKeySchema, version: z.coerce.number().int().min(1).max(10_000) });
+const HubParams = z.strictObject({ hubId: IdSchema });
+const KeyParams = z.strictObject({ hubId: IdSchema, key: NotificationTemplateKeySchema });
+const VersionParams = z.strictObject({ hubId: IdSchema, key: NotificationTemplateKeySchema, version: z.coerce.number().int().min(1).max(10_000) });
 type P<T extends z.ZodType> = z.infer<T>;
 
 /**
@@ -99,28 +100,31 @@ export class MeCommunicationsController {
   }
 }
 
-/** Hub staff: versioned notification templates (editors draft, operations activate) and delivery counts. */
-@Controller('v1/hub')
+/**
+ * Hub staff: versioned notification templates (editors with `admin.notifications.template.edit` draft, operations with
+ * `admin.config.edit` activate) and delivery counts. The database checks the staff permission at the hub.
+ */
+@Controller('v1/hubs/:hubId')
 export class HubCommunicationsController {
   constructor(@Inject(CommunicationsService) private readonly comms: CommunicationsService) {}
 
   @Get('message-templates/:key') @Authenticated()
   versions(@Params(KeyParams) params: P<typeof KeyParams>, @ReqState() state: RequestState) {
-    return this.comms.listTemplateVersions(params.key, state);
+    return this.comms.listTemplateVersions(params.hubId, params.key, state);
   }
 
   @Post('message-templates/:key/drafts') @HttpCode(200) @Authenticated() @Idempotent('comms.template_draft', 'key')
   draft(@Params(KeyParams) params: P<typeof KeyParams>, @Body(DraftTemplateVersionCommandSchema) body: P<typeof DraftTemplateVersionCommandSchema>, @ReqState() state: RequestState) {
-    return this.comms.draftTemplate(params.key, body, state);
+    return this.comms.draftTemplate(params.hubId, params.key, body, state);
   }
 
   @Post('message-templates/:key/versions/:version/activate') @HttpCode(200) @Authenticated() @Idempotent('comms.template_activate', 'key')
   activate(@Params(VersionParams) params: P<typeof VersionParams>, @Body(ActivateTemplateVersionCommandSchema) body: P<typeof ActivateTemplateVersionCommandSchema>, @ReqState() state: RequestState) {
-    return this.comms.activateTemplate(params.key, params.version, body, state);
+    return this.comms.activateTemplate(params.hubId, params.key, params.version, body, state);
   }
 
   @Get('deliveries/counts') @Authenticated()
-  counts(@ReqState() state: RequestState) {
-    return this.comms.deliveryCounts(state);
+  counts(@Params(HubParams) params: P<typeof HubParams>, @ReqState() state: RequestState) {
+    return this.comms.deliveryCounts(params.hubId, state);
   }
 }

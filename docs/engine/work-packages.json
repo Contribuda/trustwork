@@ -1475,7 +1475,7 @@
       "id": "COMMS-001",
       "title": "Context threads, messages, notifications, channel grants and templates",
       "area": "communications",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "MAIL-001",
         "DATA-003",
