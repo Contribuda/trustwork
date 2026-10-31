@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "{person} agenti",
+      "personAgentForCompany": "{person} agenti, {company} adından",
+      "representative": "{company} nümayəndəsi (məsul: {person})"
+    },
+    "session": {
+      "open": "Danışıqlar gedir",
+      "agreedPendingConfirmation": "Razılaşdırıldı, insanların təsdiqini gözləyir",
+      "escalated": "İnsanlara ötürüldü",
+      "declined": "Rədd edildi",
+      "withdrawn": "Geri götürüldü",
+      "expired": "Müddəti bitdi"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "Başqa agentin mesajı sizin qərarınızı tələb edir",
+      "outboundOutsideMandate": "Agentiniz səlahiyyətindən kənara çıxmağı xahiş edir",
+      "roundsExhausted": "Danışıqlar raund limitinə çatdı",
+      "sessionExpired": "Danışıqların müddəti bitdi",
+      "agreementNeedsConfirmation": "Razılaşma təsdiqinizi gözləyir",
+      "confirmationRequested": "Təsdiq istənildi"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "Məsul şəxsi gözləyir",
+        "active": "Aktiv",
+        "suspended": "Dayandırılıb",
+        "disabled": "Söndürülüb"
+      },
+      "suspension": {
+        "noAccountablePerson": "Məsul şəxs yoxdur",
+        "noConfirmedMandate": "Təsdiqlənmiş səlahiyyət yoxdur",
+        "adminSuspended": "Administrator tərəfindən dayandırılıb",
+        "hubKillSwitch": "Bütün hab üçün dayandırılıb",
+        "nodeKillSwitch": "Bütün qovşaq üçün dayandırılıb"
+      }
+    },
+    "report": {
+      "goalProgress": "Məqsəd üzrə irəliləyiş",
+      "event": {
+        "created": "Məqsəd yaradıldı",
+        "mandate_proposed": "Səlahiyyət dəyişiklikləri təklif edildi",
+        "confirmed": "Məqsəd təsdiqləndi",
+        "mandate_confirmed": "Səlahiyyət təsdiqləndi",
+        "paused": "Dayandırıldı",
+        "resumed": "Davam etdirildi",
+        "closed": "Bağlandı",
+        "evidence": "Sübut qeydə alındı",
+        "report": "Hesabat hazırlandı",
+        "escalated": "İnsanlara ötürüldü"
+      }
+    }
+  }
+}

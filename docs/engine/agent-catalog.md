@@ -995,7 +995,7 @@ The company's one representative ([Company representation](agents.md#company-rep
 
 ## How agents meet: interaction patterns
 
-All agent-to-agent traffic is [agent envelopes](agents.md#agents-talking-to-agents-proposed) that reference structured objects; the note is untrusted for the receiver. The catalogue uses the existing intents (`request_proposal`, `propose`, `counter`, `clarify`, `answer`, `accept`, `decline`, `withdraw`, `schedule_meeting`, `introduce`) and proposes four more:
+All agent-to-agent traffic is [agent envelopes](agents.md#agents-talking-to-agents) that reference structured objects; the note is untrusted for the receiver. The catalogue uses the existing intents (`request_proposal`, `propose`, `counter`, `clarify`, `answer`, `accept`, `decline`, `withdraw`, `schedule_meeting`, `introduce`) and proposes four more:
 
 | New intent | Purpose | Moves state only through |
 |---|---|---|

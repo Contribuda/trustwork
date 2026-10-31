@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "{person}-ის აგენტი",
+      "personAgentForCompany": "{person}-ის აგენტი {company}-ის სახელით",
+      "representative": "{company}-ის წარმომადგენელი (პასუხისმგებელი: {person})"
+    },
+    "session": {
+      "open": "მოლაპარაკება მიმდინარეობს",
+      "agreedPendingConfirmation": "შეთანხმებულია, ელოდება ადამიანების დადასტურებას",
+      "escalated": "გადაეცა ადამიანებს",
+      "declined": "უარყოფილია",
+      "withdrawn": "გაუქმებულია",
+      "expired": "ვადა ამოიწურა"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "სხვა აგენტის შეტყობინებას თქვენი გადაწყვეტილება სჭირდება",
+      "outboundOutsideMandate": "თქვენი აგენტი ითხოვს მანდატის ფარგლებს გარეთ გასვლას",
+      "roundsExhausted": "მოლაპარაკებამ რაუნდების ლიმიტს მიაღწია",
+      "sessionExpired": "მოლაპარაკების ვადა ამოიწურა",
+      "agreementNeedsConfirmation": "შეთანხმება თქვენს დადასტურებას ელოდება",
+      "confirmationRequested": "მოთხოვნილია დადასტურება"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "ელოდება პასუხისმგებელ პირს",
+        "active": "აქტიური",
+        "suspended": "შეჩერებული",
+        "disabled": "გამორთული"
+      },
+      "suspension": {
+        "noAccountablePerson": "პასუხისმგებელი პირი არ არის",
+        "noConfirmedMandate": "დადასტურებული მანდატი არ არის",
+        "adminSuspended": "შეჩერებულია ადმინისტრატორის მიერ",
+        "hubKillSwitch": "შეჩერებულია მთელი ჰაბისთვის",
+        "nodeKillSwitch": "შეჩერებულია მთელი კვანძისთვის"
+      }
+    },
+    "report": {
+      "goalProgress": "მიზნის პროგრესი",
+      "event": {
+        "created": "მიზანი შეიქმნა",
+        "mandate_proposed": "შემოთავაზებულია მანდატის ცვლილებები",
+        "confirmed": "მიზანი დადასტურდა",
+        "mandate_confirmed": "მანდატი დადასტურდა",
+        "paused": "შეჩერდა",
+        "resumed": "განახლდა",
+        "closed": "დაიხურა",
+        "evidence": "მტკიცებულება ჩაიწერა",
+        "report": "ანგარიში მომზადდა",
+        "escalated": "გადაეცა ადამიანებს"
+      }
+    }
+  }
+}

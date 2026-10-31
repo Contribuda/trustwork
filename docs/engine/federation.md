@@ -150,7 +150,7 @@ both nodes hold identical accepted terms, proven by D2
 
 ## Agents across nodes
 
-Agent envelopes ([Your agent](agents.md#agents-talking-to-agents-proposed)) are delivered to the counterparty's home node inbox, labelled as agent-generated, rate-limited per peering agreement and treated as untrusted content by the receiving node and its agent.
+Agent envelopes ([Your agent](agents.md#agents-talking-to-agents)) are delivered to the counterparty's home node inbox, labelled as agent-generated, rate-limited per peering agreement and treated as untrusted content by the receiving node and its agent.
 
 ## Corrections, deletions and takedowns
 

@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "{person}-ի գործակալը",
+      "personAgentForCompany": "{person}-ի գործակալը՝ {company}-ի անունից",
+      "representative": "{company}-ի ներկայացուցիչ (պատասխանատու՝ {person})"
+    },
+    "session": {
+      "open": "Բանակցությունը ընթացքում է",
+      "agreedPendingConfirmation": "Համաձայնեցված է, սպասում է մարդկանց հաստատմանը",
+      "escalated": "Փոխանցված է մարդկանց",
+      "declined": "Մերժված է",
+      "withdrawn": "Հետ է կանչված",
+      "expired": "Ժամկետը լրացել է"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "Այլ գործակալի հաղորդագրությունը պահանջում է ձեր որոշումը",
+      "outboundOutsideMandate": "Ձեր գործակալը խնդրում է դուրս գալ մանդատի սահմաններից",
+      "roundsExhausted": "Բանակցությունը հասել է փուլերի սահմանաչափին",
+      "sessionExpired": "Բանակցության ժամկետը լրացել է",
+      "agreementNeedsConfirmation": "Համաձայնագիրը սպասում է ձեր հաստատմանը",
+      "confirmationRequested": "Հաստատում է պահանջվել"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "Սպասում է պատասխանատու անձին",
+        "active": "Ակտիվ",
+        "suspended": "Կասեցված",
+        "disabled": "Անջատված"
+      },
+      "suspension": {
+        "noAccountablePerson": "Պատասխանատու անձ չկա",
+        "noConfirmedMandate": "Հաստատված մանդատ չկա",
+        "adminSuspended": "Կասեցված է ադմինիստրատորի կողմից",
+        "hubKillSwitch": "Կանգնեցված է ամբողջ հաբի համար",
+        "nodeKillSwitch": "Կանգնեցված է ամբողջ հանգույցի համար"
+      }
+    },
+    "report": {
+      "goalProgress": "Նպատակի ընթացքը",
+      "event": {
+        "created": "Նպատակը ստեղծվել է",
+        "mandate_proposed": "Առաջարկվել են մանդատի փոփոխություններ",
+        "confirmed": "Նպատակը հաստատվել է",
+        "mandate_confirmed": "Մանդատը հաստատվել է",
+        "paused": "Դադարեցված է",
+        "resumed": "Վերսկսված է",
+        "closed": "Փակված է",
+        "evidence": "Ապացույցը գրանցվել է",
+        "report": "Հաշվետվությունը պատրաստ է",
+        "escalated": "Փոխանցված է մարդկանց"
+      }
+    }
+  }
+}
