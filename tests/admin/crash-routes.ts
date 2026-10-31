@@ -19,7 +19,8 @@ const count = async (admin: pg.Pool, query: string, params: unknown[] = []): Pro
  * DATA-002's founding administrators fill here). `exactlyOnce` posts the same body with the key `crash-<action>`, so
  * each console command carries that key in its body too. Effects are counted in the administration tables.
  */
-export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Promise<void> {
+/** Returns the administration world and its actors, so a later subtest can assign staff through the second-person path. */
+export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Promise<{ world: Awaited<ReturnType<typeof buildAdminWorld>>; actors: ReturnType<typeof actors> }> {
   const admin = h.db.admin;
   const flagExpiry = new Date(Date.now() + 30 * 86_400_000).toISOString();
   const world = await buildAdminWorld(admin);
@@ -110,4 +111,5 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   // Feature flags.
   await run('admin.flag.set', c.owner, '/v1/admin/flags', { scope: hub, key: 'ui.crash_toggle', value: true, description: 'Synthetic crash flag', declaredEffect: 'ui', expiresAt: flagExpiry },
     () => count(admin, 'SELECT 1 FROM trustwork.feature_flag'));
+  return { world, actors: a };
 }
