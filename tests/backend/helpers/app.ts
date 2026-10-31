@@ -4,7 +4,7 @@ import type { IdentityServices } from '../../../apps/api/src/modules/identity/id
 import { CSRF_HEADER, SESSION_COOKIE } from '@trustwork/contracts';
 import { createPool, type DataPool } from '@trustwork/data';
 import { FakeMailbox, FakeOidcProvider, RecordingMandateRevocation, type Clock } from '../../../apps/api/src/modules/identity/ports.js';
-import { provisionTestDatabase, SKIP_REASON, type TestDatabase } from '../../data/helpers/postgres.js';
+import { endPool, provisionTestDatabase, SKIP_REASON, type TestDatabase } from '../../data/helpers/postgres.js';
 
 export { SKIP_REASON, createApp };
 
@@ -94,7 +94,7 @@ export async function startHarness(label: string, options: Partial<CreateAppOpti
   if (!db) return null;
   await db.migrate();
   await db.createAppLogin();
-  const pool = createPool({ ...db.appConfig, max: 8 });
+  const pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
   const mail = new FakeMailbox();
   const google = new FakeOidcProvider('google');
   const apple = new FakeOidcProvider('apple');
@@ -114,9 +114,10 @@ export async function startHarness(label: string, options: Partial<CreateAppOpti
     db, pool, created, mail, google, apple, mandates, clock, staff,
     client: () => new Client(created),
     services: () => created.services as IdentityServices,
+    /** Call after every request of the file has settled: the app stops first, then its pool closes every connection, then the database is dropped. */
     async close() {
       await created.close();
-      await pool.end().catch(() => undefined);
+      await endPool(pool).catch(() => undefined);
       await db.close();
     },
   };

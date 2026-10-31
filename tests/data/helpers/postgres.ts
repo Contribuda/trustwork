@@ -108,6 +108,9 @@ export interface TestDatabase {
   migrate(directory?: string): Promise<string[]>;
   /** Creates the app login role; call after the first migrate() (the bootstrap creates trustwork_app). */
   createAppLogin(): Promise<void>;
+  /** Pools of this file watched for teardown: connection terminations are ignored only once close() has begun. */
+  teardown: TeardownGuard;
+  /** Ends the file's own pools, waits until no session is connected, then drops the database and the login role. */
   close(): Promise<void>;
 }
 
@@ -301,6 +304,83 @@ export function databaseLabel(label: string): string {
  * Returns null when no PostgreSQL backend is available (the caller must skip explicitly), or throws when
  * TRUSTWORK_REQUIRE_PG=1 so CI cannot pass with skipped database suites.
  */
+/** SQLSTATE 57P01 (admin_shutdown): the server terminated the connection, as DROP DATABASE ... WITH (FORCE) does. */
+const ADMIN_SHUTDOWN = '57P01';
+
+/** True for the errors a pooled connection raises when the server terminates it or its socket closes under it. */
+export function isConnectionTermination(error: unknown): boolean {
+  if (sqlState(error) === ADMIN_SHUTDOWN) return true;
+  const message = error instanceof Error ? error.message : '';
+  return message === 'Connection terminated unexpectedly' || message === 'Connection terminated';
+}
+
+/**
+ * Teardown guard for pools owned by a test file. An idle pooled client that loses its connection makes the pool
+ * emit 'error'; without a listener that is an uncaughtException. Watched pools ignore connection terminations only
+ * after `begin()` (teardown); before that every pool error is rethrown, so a termination during the test still fails
+ * the file exactly as it would without the guard.
+ */
+export class TeardownGuard {
+  private closing = false;
+  /** `surface` receives every error that is not tolerated (default: rethrown as an uncaught exception). */
+  constructor(private readonly surface: (error: Error) => void = (error) => process.nextTick(() => {
+    throw error;
+  })) {}
+  watch<P extends pg.Pool>(pool: P): P {
+    pool.on('error', (error: Error) => {
+      if (this.closing && isConnectionTermination(error)) return;
+      this.surface(error);
+    });
+    return pool;
+  }
+  begin(): void {
+    this.closing = true;
+  }
+  get active(): boolean {
+    return this.closing;
+  }
+}
+
+/**
+ * Ends a pool and resolves only once every client connection is closed. pg-pool's end() resolves as soon as it has
+ * asked its clients to end, while their sockets are still open; dropping the database in that window terminates
+ * them and surfaces as "terminating connection due to administrator command" after the test ended. Checked-out
+ * clients end when released, so the caller first awaits every in-flight request. Safe to call twice.
+ */
+export async function endPool(pool: pg.Pool, timeoutMs = 10_000): Promise<void> {
+  const state = pool as pg.Pool & { ending?: boolean };
+  if (state.ending) return;
+  let pending = pool.totalCount;
+  const closed = new Promise<void>((resolveClosed) => {
+    if (pending === 0) return resolveClosed();
+    pool.on('remove', () => {
+      pending -= 1;
+      if (pending <= 0) resolveClosed();
+    });
+  });
+  await pool.end();
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<'timeout'>((resolveTimeout) => { timer = setTimeout(() => resolveTimeout('timeout'), timeoutMs); });
+  const outcome = await Promise.race([closed.then(() => 'closed' as const), timeout]);
+  clearTimeout(timer);
+  if (outcome === 'timeout') console.warn(`[trustwork-data] a pool still had ${pending} open connection(s) ${timeoutMs} ms after end()`);
+}
+
+/**
+ * Waits until no other session is connected to `database` (pools that ended are still closing their sockets), so
+ * that the final DROP DATABASE ... WITH (FORCE) terminates nothing in the normal case. Returns the number of
+ * sessions still connected when the wait gave up (a leaked pool or an unfinished request; FORCE then ends them).
+ */
+export async function waitForDatabaseIdle(client: pg.Client, database: string, timeoutMs = 10_000): Promise<number> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const { rows } = await client.query<{ n: number }>('SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()', [database]);
+    const remaining = rows[0]?.n ?? 0;
+    if (remaining === 0 || Date.now() >= deadline) return remaining;
+    await sleep(25);
+  }
+}
+
 export async function provisionTestDatabase(label: string, provision: { weight?: number } = {}): Promise<TestDatabase | null> {
   const server = await startServer();
   if (!server) {
@@ -334,10 +414,11 @@ export async function provisionTestDatabase(label: string, provision: { weight?:
   const adminUrl = withDatabase(server.adminUrl, databaseName);
   const options = '-c search_path=trustwork,pg_temp';
   const adminConfig: pg.PoolConfig = { connectionString: adminUrl, options, max: 4 };
-  const admin = new pg.Pool(adminConfig);
+  const guard = new TeardownGuard();
+  const admin = guard.watch(new pg.Pool(adminConfig));
   const parsed = new URL(adminUrl);
   const appConfig: pg.PoolConfig = { host: parsed.hostname, port: Number(parsed.port || 5432), database: databaseName, user: appLoginRole, password: appPassword, options, max: 6 };
-  const app = new pg.Pool(appConfig);
+  const app = guard.watch(new pg.Pool(appConfig));
   let loginCreated = false;
   const slotNote = slot ? ` slots=${slot.held.map((n) => n + 1).join('+')}/${slot.slots}${slot.waitedMs > 1_000 ? ` waited_ms=${slot.waitedMs}` : ''}` : '';
   console.log(`[trustwork-data] backend=${server.backend} server_version=${serverVersion} database=${databaseName}${slotNote} clock_skew_ms=${skew}`);
@@ -354,6 +435,7 @@ export async function provisionTestDatabase(label: string, provision: { weight?:
     app,
     appConfig,
     appLoginRole,
+    teardown: guard,
     async migrate(directory = DEFAULT_MIGRATIONS_DIR) {
       const client = await admin.connect();
       try {
@@ -367,11 +449,14 @@ export async function provisionTestDatabase(label: string, provision: { weight?:
       loginCreated = true;
     },
     async close() {
-      await app.end().catch(() => undefined);
-      await admin.end().catch(() => undefined);
+      guard.begin();
+      await endPool(app).catch(() => undefined);
+      await endPool(admin).catch(() => undefined);
       try {
         const cleanup = await connectWithRetry(server.adminUrl);
         try {
+          const lingering = await waitForDatabaseIdle(cleanup, databaseName);
+          if (lingering > 0) console.warn(`[trustwork-data] ${label}: ${lingering} session(s) still connected at teardown (a pool was not ended); DROP ... WITH (FORCE) terminates them`);
           await cleanup.query(`DROP DATABASE IF EXISTS ${databaseName} WITH (FORCE)`);
           if (loginCreated) await cleanup.query(`DROP ROLE IF EXISTS ${appLoginRole}`);
         } finally {
