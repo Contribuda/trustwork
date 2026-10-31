@@ -45,6 +45,11 @@ test('directory projections are allowlists: private fields never pass, private s
   absent(entry, ['emailBindings', 'providerIdentities', 'preferences', 'revision', 'email', 'createdAt']);
   assert.equal(entry.handle, 'pure-participant');
   assert.equal(d.toPersonDirectoryEntry({ ...person, profileVisibility: 'private' }, 'pure-participant'), null, 'a private profile is never a directory entry');
+  // BE-002: a provider sign-up without a name stores none; the entry keeps the same allowlist with displayName null.
+  const nameless = d.toPersonDirectoryEntry({ ...person, displayName: null, profileVisibility: 'public' }, null)!;
+  assert.equal(nameless.displayName, null);
+  assert.deepEqual(Object.keys(nameless).sort(), Object.keys(entry).sort());
+  absent(nameless, ['emailBindings', 'providerIdentities', 'preferences', 'revision', 'email', 'createdAt']);
 
   const company = c.CompanySchema.parse(load('mixed-company').records.Company[0]);
   const wide = { ...company, handle: 'mixed', origin: 'registered' as const, claimStatus: 'claimed' as const };
