@@ -1,0 +1,21 @@
+import { Module, type DynamicModule } from '@nestjs/common';
+import type { AppContext } from '../identity/context.js';
+import type { IdentityServices } from '../identity/identity.module.js';
+import { ElevationGuard } from '../identity/second-factor/elevation.guard.js';
+import { SecondFactorService } from '../identity/second-factor/second-factor.service.js';
+import { AdminHubsController, HubsParticipantController } from './hubs.controller.js';
+import { HubsService } from './hubs.service.js';
+
+/** Hubs, territories, versioned hub configuration, launch gates and the lifecycle (HUB-001). `HubsService` is exported for the setup wizard and the runtime loader. */
+@Module({})
+export class HubsModule {
+  static forRoot(ctx: AppContext, identity: IdentityServices): DynamicModule {
+    const service = new HubsService(ctx, identity.principals);
+    return {
+      module: HubsModule,
+      controllers: [AdminHubsController, HubsParticipantController],
+      providers: [{ provide: HubsService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
+      exports: [HubsService],
+    };
+  }
+}
