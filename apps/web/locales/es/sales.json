@@ -1,0 +1,49 @@
+{
+  "sales": {
+    "title": "Ventas",
+    "lede": "Solicitudes de compradores, sus cotizaciones y el catálogo de la empresa.",
+    "catalogue": "Catálogo de bienes, obras y servicios",
+    "leads": "Solicitudes",
+    "empty": "Aún no hay solicitudes",
+    "emptyHint": "Las necesidades publicadas por las empresas están disponibles en la sección Proyectos del sitio.",
+    "fillCatalogue": "Completar el catálogo",
+    "list": "Lista de solicitudes",
+    "col": {
+      "buyer": "Comprador",
+      "request": "Solicitud",
+      "source": "Origen",
+      "deadline": "Fecha límite",
+      "status": "Estado",
+      "version": "Versión de la cotización"
+    },
+    "noCompanyTitle": "Las ventas se hacen en nombre de una empresa",
+    "noCompanyBody": "Para responder solicitudes y mantener un catálogo necesita una empresa y el permiso de negocios. Un catálogo personal no forma parte de esta etapa.",
+    "flowsNote": "El editor de cotizaciones, las versiones y la aceptación de pedidos llegan en la próxima etapa.",
+    "quoteVersion": "Cotización, versión {version}",
+    "noQuote": "La cotización aún no se ha enviado",
+    "needsDecision": "Se necesita su decisión: el comprador eligió las condiciones; acepte o rechace el pedido.",
+    "stats": {
+      "decisions": "pendientes de decisión",
+      "active": "en curso",
+      "won": "pedidos aceptados"
+    },
+    "catalogueHint": "Un catálogo completo de bienes, obras y servicios atrae solicitudes de compradores.",
+    "openNeeds": "Necesidades abiertas",
+    "openNeedsHint": "Las empresas publican necesidades en los proyectos: puede responder con una cotización de su empresa."
+  },
+  "leadStatus": {
+    "new": "Nueva",
+    "drafting": "Preparando la cotización",
+    "sent": "Enviada",
+    "negotiating": "En negociación",
+    "won": "Pedido aceptado",
+    "lost": "El comprador eligió a otro proveedor",
+    "expired": "Vencida"
+  },
+  "leadSource": {
+    "invitation": "Invitación",
+    "openNeed": "Necesidad abierta",
+    "direct": "Solicitud directa",
+    "email": "Desde un correo electrónico"
+  }
+}

@@ -1,0 +1,513 @@
+{
+  "notifications": {
+    "title": "Notificaciones",
+    "lede": "Las notificaciones están vinculadas a objetos: decisiones, solicitudes, proyectos y publicaciones. No es una bandeja de entrada.",
+    "empty": "No hay notificaciones nuevas",
+    "markRead": "Marcar como leída",
+    "open": "Abrir",
+    "kind": {
+      "decision": "Se requiere una decisión",
+      "quote": "Cotización",
+      "project": "Proyecto",
+      "publication": "Publicación",
+      "assistant": "Asistente",
+      "magazine": "Revista"
+    },
+    "unread": "No leídas",
+    "unreadOne": "nueva",
+    "noUnread": "No hay notificaciones sin leer",
+    "group": {
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "earlier": "Anteriores"
+    },
+    "stats": {
+      "unread": "sin leer",
+      "decisions": "requieren una decisión"
+    },
+    "settingsTitle": "Sobre qué avisar",
+    "settingsHint": "Las decisiones, las ejecuciones del asistente, las publicaciones y los nuevos números de la revista se configuran en las preferencias.",
+    "demoNote": "Demostración: las marcas de lectura no se guardan."
+  },
+  "overview": {
+    "title": "Resumen",
+    "subtitle": {
+      "mixed": "Compras, ventas y sus proyectos",
+      "buyer": "Compras y sus proyectos",
+      "seller": "Ventas y sus proyectos",
+      "personal": "Sus proyectos y publicaciones"
+    },
+    "create": "Crear",
+    "createItems": {
+      "need": "Necesidad",
+      "quote": "Cotización",
+      "project": "Proyecto",
+      "publication": "Publicación"
+    },
+    "decisions": "Se necesita su decisión",
+    "decisionsEmpty": "No se requieren decisiones",
+    "inProgress": "{count, plural, one {# tarea en curso} many {# tareas en curso} other {# tareas en curso}}",
+    "all": "Todo",
+    "procurement": {
+      "title": "Compras",
+      "findSupplier": "Buscar un proveedor",
+      "empty": "Aún no hay compras",
+      "createNeed": "Crear una necesidad",
+      "all": "Todas las compras"
+    },
+    "sales": {
+      "title": "Ventas",
+      "allQuotes": "Todas las cotizaciones",
+      "catalogue": "Catálogo de bienes, obras y servicios",
+      "empty": "Aún no hay cotizaciones",
+      "fillCatalogue": "Completar el catálogo"
+    },
+    "projects": {
+      "title": "Mis proyectos",
+      "all": "Todos los proyectos",
+      "next": "Próximo hito: {name}",
+      "empty": "Aún no hay proyectos",
+      "create": "Crear un proyecto"
+    },
+    "events": {
+      "title": "Próximos eventos",
+      "empty": "No hay eventos"
+    },
+    "publications": {
+      "title": "Publicaciones",
+      "empty": "No hay borradores",
+      "write": "Escribir un artículo",
+      "all": "Todas las publicaciones"
+    },
+    "assistant": {
+      "title": "Asistente",
+      "summary": "Asistente: en ejecución: {running}; pendientes de su decisión: {approvals}; en conciliación: {unknown}",
+      "open": "Abrir la página del asistente"
+    },
+    "digestChanged": "Las condiciones cambiaron; revíselas de nuevo",
+    "accessChanged": "El acceso cambió",
+    "industryPicks": "En el sector",
+    "due": "Vence: {date}",
+    "cardError": "No se pudo cargar la tarjeta",
+    "industryKicker": "De las secciones públicas"
+  },
+  "me": {
+    "title": "Mi página",
+    "publicPage": "Página pública",
+    "accountSettings": "Configuración de la cuenta",
+    "tabs": {
+      "work": "Trabajo",
+      "publications": "Publicaciones",
+      "interests": "Intereses",
+      "history": "Historial",
+      "publicProfile": "Perfil público",
+      "learning": "Aprendizaje"
+    },
+    "membership": {
+      "active": "Lugar de trabajo actual",
+      "invited": "Invitación",
+      "ended": "Terminó el {date}",
+      "none": "Sin empresa"
+    },
+    "mandates": "Mandatos para el asistente",
+    "mandatesCount": "{count, plural, one {# mandato} many {# mandatos} other {# mandatos}}",
+    "saved": "Guardados",
+    "savedEmpty": "No hay materiales guardados",
+    "decisions": "Mis decisiones",
+    "projectsByRole": "Proyectos por rol",
+    "startHint": "Empiece con un proyecto o una publicación",
+    "interestsHint": "Los intereses solo influyen en las tarjetas que muestra el resumen. No otorgan ningún permiso en una empresa.",
+    "editInterests": "Cambiar intereses",
+    "public": {
+      "published": "La página está publicada",
+      "unpublished": "La página no está publicada",
+      "portraitConsent": "Permitir que se muestre mi foto en la página pública",
+      "portraitLicence": "Confirmo que tengo derecho a usar esta imagen.",
+      "showEmployer": "Mostrar mi lugar de trabajo actual",
+      "bio": "Sobre mí",
+      "topics": "Temas",
+      "show": "Mostrar",
+      "contact": "Permitir que me escriban a través de la plataforma",
+      "preview": "Vista previa",
+      "previewTitle": "Así ven los demás su página",
+      "portraitHidden": "La foto está oculta en la página pública",
+      "demoNote": "Demostración: los cambios no se guardan en el servidor.",
+      "portraitPending": "La foto aparece después de subir una imagen."
+    },
+    "history": {
+      "org": "Organización",
+      "role": "Rol",
+      "from": "Inicio",
+      "to": "Fin",
+      "status": "Estado",
+      "empty": "No hay registros de pertenencia a empresas",
+      "terms": "Términos aceptados: versión {version}, {date}"
+    },
+    "editProfile": "Editar el perfil",
+    "profileGood": "Bien completado",
+    "profileMore": "Se puede completar",
+    "tabsLearning": "Aprendizaje",
+    "learning": {
+      "readCount": "materiales leídos",
+      "quizCount": "respuestas correctas",
+      "bookmarksCount": "en marcadores",
+      "certCount": "certificados",
+      "issues": "Números de la revista",
+      "emptyTitle": "Aún no ha empezado a leer la revista",
+      "emptyBody": "El avance, las pruebas y los marcadores aparecen aquí en cuanto abra un número.",
+      "bookmarksEmpty": "Aún no hay marcadores: marque materiales en el lector.",
+      "certificates": "Certificados de Trustwork",
+      "certEmpty": "Aún no hay certificados. Se emiten al completar los minicursos de la Academia.",
+      "check": "verificar",
+      "courses": "Cursos de la Academia",
+      "coursesNote": "La inscripción a cursos y la emisión de certificados se abren después del lanzamiento del servicio."
+    },
+    "workIntro": "Decisiones, proyectos y mandatos que le esperan hoy."
+  },
+  "company": {
+    "title": "Empresa",
+    "publicPage": "Página pública",
+    "settings": "Configuración de la empresa",
+    "tabs": {
+      "overview": "Resumen",
+      "wall": "Muro",
+      "people": "Personas",
+      "catalogue": "Catálogo",
+      "projects": "Proyectos",
+      "reputation": "Reputación"
+    },
+    "empty": {
+      "title": "Aún no está vinculado a una empresa",
+      "body": "Puede trabajar sin empresa: leer, publicar y gestionar proyectos personales. Si representa a una empresa, únase por invitación o cree su página.",
+      "join": "Unirse por invitación",
+      "create": "Crear la página de una empresa",
+      "find": "Buscar una empresa en el directorio",
+      "policyNote": "La empresa confirma la incorporación.",
+      "findHint": "Empresas con páginas verificadas, catálogos y proyectos.",
+      "lede": "El espacio de trabajo también funciona sin empresa; puede unirse o crear una página en cualquier momento.",
+      "invitationByEmail": "Las invitaciones de una empresa llegan por correo electrónico."
+    },
+    "join": {
+      "code": "Código o enlace de invitación",
+      "pending": "La solicitud se envió y espera confirmación",
+      "cancel": "Cancelar la solicitud"
+    },
+    "membershipEnded": "Su membresía terminó el {date}",
+    "invite": "Invitar",
+    "member": {
+      "name": "Nombre",
+      "role": "Rol",
+      "status": "Estado",
+      "since": "Inicio",
+      "actions": "Acciones",
+      "end": "Terminar la participación",
+      "status_active": "Activo",
+      "status_invited": "Invitado",
+      "status_ended": "Terminado",
+      "sinceDate": "desde el {date}",
+      "hidden": "No se muestra en la página pública",
+      "inviteNote": "Las invitaciones y la terminación de la participación llegan en la próxima etapa.",
+      "privateName": "Perfil privado"
+    },
+    "membersEmpty": "Aún no hay empleados",
+    "wallEmpty": "Aún no hay publicaciones de la empresa",
+    "catalogue": {
+      "empty": "El catálogo está vacío",
+      "newVersion": "Nueva versión",
+      "publish": "Publicar la versión",
+      "version": "Versión {version} del {date}",
+      "name": "Nombre",
+      "kind": "Tipo",
+      "unit": "Unidad",
+      "price": "Precio",
+      "priceOnRequest": "A solicitud",
+      "public": "Público",
+      "privateFloor": "Precio mínimo (no se publica)",
+      "yes": "Sí",
+      "no": "No",
+      "count": "{count, plural, one {# artículo} many {# artículos} other {# artículos}}",
+      "floorNote": "Los precios mínimos solo se ven con el permiso de negocios y nunca se publican.",
+      "publicNote": "Los artículos públicos aparecen en la página de la empresa con el precio “a solicitud”.",
+      "emptyHint": "Un catálogo de bienes, obras y servicios atrae solicitudes de compradores."
+    },
+    "claim": {
+      "title": "Estado de la página",
+      "sourced": "Creada a partir de una fuente abierta",
+      "claimed": "Reclamada, pendiente de verificación",
+      "verified": "Verificada",
+      "pendingRequests": "{count, plural, one {# solicitud de incorporación} many {# solicitudes de incorporación} other {# solicitudes de incorporación}}",
+      "registered": "Registrada en la plataforma, aún no reclamada ni verificada"
+    },
+    "projectsEmpty": "Aún no hay proyectos de la empresa disponibles para usted",
+    "reputationNote": "La evidencia interna sobre operaciones aparece después de los primeros pedidos cumplidos.",
+    "decisions": "Decisiones de la empresa",
+    "noAccess": "Sin acceso a esta sección",
+    "lede": "La página compartida de su empresa: decisiones, muro, personas, catálogo y proyectos.",
+    "stats": {
+      "members": "empleados",
+      "catalogue": "artículos del catálogo",
+      "projects": "proyectos",
+      "wall": "publicaciones"
+    },
+    "evidence": {
+      "title": "Confirmaciones",
+      "identifier": "Datos de registro",
+      "none": "No indicados",
+      "domain": "Dominio del sitio web",
+      "domainYes": "Confirmado",
+      "domainNo": "No confirmado",
+      "publicMembers": "Empleados públicos",
+      "note": "Estos son hechos que todos ven. En la plataforma no hay puntuaciones ni clasificaciones.",
+      "kind": {
+        "other": "Otro identificador"
+      }
+    },
+    "peopleHint": "Los empleados de la empresa y sus roles. Ser público es una decisión de cada persona.",
+    "website": "Sitio web de la empresa",
+    "create": {
+      "title": "Crear la página de una empresa",
+      "body": "Usted será su administrador. La página empieza como registrada: el reclamo y la verificación son pasos aparte.",
+      "name": "Nombre de la empresa",
+      "handle": "Dirección de la página (opcional)",
+      "handleHint": "De 3 a 40 letras latinas minúsculas, dígitos y guiones, por ejemplo acme-build.",
+      "description": "Descripción pública (opcional)",
+      "descriptionHint": "Se muestra en la página pública de la empresa.",
+      "submit": "Crear la página",
+      "pending": "Creando…",
+      "statusNote": "Una persona trabaja para una sola empresa a la vez: para crear una página no debe tener un empleador activo.",
+      "error": {
+        "nameRequired": "Escriba el nombre de la empresa",
+        "nameTooLong": "El nombre es demasiado largo",
+        "handleInvalid": "Use de 3 a 40 letras latinas minúsculas, dígitos y guiones; no solo dígitos.",
+        "handleTaken": "Esta dirección ya está en uso. Elija otra.",
+        "handleLimit": "La dirección de la página se cambió demasiadas veces.",
+        "descriptionTooLong": "La descripción es demasiado larga"
+      }
+    },
+    "inviteForm": {
+      "title": "Invitar a un colega",
+      "body": "La invitación se envía al correo electrónico. No mostramos si la dirección tiene una cuenta.",
+      "permissions": "Permisos",
+      "submit": "Enviar la invitación",
+      "pending": "Enviando…",
+      "sent": "Si la dirección pertenece a una cuenta verificada, la invitación va en camino."
+    },
+    "permissionLabel": {
+      "pageEdit": "Editar la página de la empresa",
+      "publish": "Publicar en nombre de la empresa",
+      "membersManage": "Administrar miembros",
+      "dealsManage": "Administrar proyectos y operaciones",
+      "catalogueEdit": "Editar el catálogo",
+      "billingView": "Ver la facturación",
+      "billingManage": "Administrar la facturación"
+    }
+  },
+  "projectsWs": {
+    "title": "Proyectos",
+    "create": "Crear un proyecto",
+    "empty": "Aún no hay proyectos",
+    "emptyHint": "Un proyecto personal puede gestionarse sin empresa.",
+    "filter": {
+      "role": "Mi rol",
+      "status": "Estado",
+      "owner": "Propietario",
+      "all": "Todos"
+    },
+    "owner": {
+      "me": "Yo",
+      "company": "Empresa"
+    },
+    "col": {
+      "title": "Proyecto",
+      "owner": "Propietario",
+      "role": "Mi rol",
+      "status": "Estado",
+      "nextMilestone": "Próximo hito",
+      "updated": "Actualizado"
+    },
+    "list": "Lista de proyectos",
+    "tabs": {
+      "overview": "Resumen",
+      "plan": "Plan",
+      "execution": "Ejecución",
+      "acceptance": "Recepción",
+      "disputes": "Disputas",
+      "purchases": "Compras",
+      "participants": "Participantes",
+      "files": "Archivos",
+      "correspondence": "Correspondencia",
+      "budget": "Presupuesto",
+      "publication": "Publicación"
+    },
+    "notPublished": "No publicado",
+    "publishedProjection": "Publicado: {fields}",
+    "leader": "Líder",
+    "noLeader": "Sin líder asignado",
+    "actions": {
+      "menu": "Acciones del proyecto",
+      "transfer": "Transferir la propiedad",
+      "assignLeader": "Asignar un líder",
+      "publish": "Configurar la publicación"
+    },
+    "plan": {
+      "baseline": "Plan base",
+      "change": "Cambio {index} del {date}",
+      "viewingVersion": "Está viendo la versión del {date}",
+      "toCurrent": "A la versión actual",
+      "reason": "Motivo del cambio",
+      "responsible": "Responsable",
+      "dependsOn": "Depende de",
+      "empty": "Aún no se agregaron hitos",
+      "sharedOnly": "Los participantes solo ven los hitos compartidos, sin presupuestos.",
+      "timeline": "Hitos del proyecto",
+      "done": "terminado",
+      "current": "actual",
+      "upcoming": "pendiente",
+      "actual": "Real: {date}",
+      "changedFrom": "Planificado para el {date}",
+      "privateMilestone": "No se muestra a los participantes",
+      "budgetsVisible": "Los importes de los hitos solo los ve usted como propietario.",
+      "budgetHidden": "Los importes de los hitos los ve el propietario del proyecto.",
+      "currentChip": "Hito actual"
+    },
+    "execution": {
+      "empty": "Aún no hay registros de ejecución",
+      "addRecord": "Agregar un registro",
+      "hint": "Aquí aparecen los resultados, los mensajes del equipo y las discusiones, con marcas de confirmación."
+    },
+    "acceptance": {
+      "empty": "Aún no hay registros de recepción",
+      "hint": "En esta sección se guardarán las actas de recepción y las inspecciones de obra oculta."
+    },
+    "disputes": {
+      "empty": "No hay disputas",
+      "claimNotFact": "La afirmación de una parte no es un hecho confirmado"
+    },
+    "purchases": {
+      "empty": "No hay compras relacionadas",
+      "participantNote": "Las compras del proyecto las ven el propietario y el líder."
+    },
+    "participants": {
+      "party": "Participante",
+      "role": "Rol",
+      "grant": "Acceso",
+      "empty": "Aún no hay participantes",
+      "count": "{count, plural, one {# participante} many {# participantes} other {# participantes}}",
+      "grantLabel": {
+        "owner_private": "acceso completo",
+        "shared_party": "materiales compartidos"
+      },
+      "hidden": "Oculto en la página pública"
+    },
+    "files": {
+      "empty": "No hay archivos",
+      "audience": {
+        "private": "Privado",
+        "participants": "Para participantes",
+        "public": "Publicado"
+      }
+    },
+    "correspondence": {
+      "empty": "Aún no hay correspondencia del proyecto",
+      "hint": "Las cartas y los mensajes sobre el proyecto se guardan en un solo lugar y nunca se publican."
+    },
+    "budget": {
+      "limit": "Límite",
+      "reserved": "Reservado",
+      "settled": "Pagado",
+      "ownerOnly": "El presupuesto solo lo ve el propietario del proyecto.",
+      "share": "{percent} % del límite",
+      "note": "Los importes solo los ve el propietario del proyecto y nunca se publican."
+    },
+    "publication": {
+      "preview": "Vista previa de la página pública",
+      "note": "La publicación es una lista explícita de campos. Los archivos, los presupuestos y la correspondencia nunca se publican.",
+      "fields": "Qué se publica",
+      "field": {
+        "story": "Historia del proyecto",
+        "milestones": "Hitos compartidos",
+        "participants": "Participantes públicos"
+      },
+      "on": "publicado",
+      "off": "oculto"
+    },
+    "transfer": {
+      "pending": "Pendiente del consentimiento del destinatario",
+      "title": "Transferencia de propiedad"
+    },
+    "nextMilestone": "Próximo hito",
+    "noMilestone": "Sin hitos",
+    "ownerPerson": "Proyecto personal",
+    "ownerCompany": "Proyecto de la empresa",
+    "createDisabled": "La creación de proyectos llega en la próxima etapa.",
+    "lede": "Proyectos en los que usted es propietario, líder o participante. Un proyecto personal puede gestionarse sin empresa.",
+    "stats": {
+      "total": "proyectos en total",
+      "active": "en curso",
+      "delayed": "con plazo modificado",
+      "published": "publicados"
+    },
+    "noMatch": "Ningún proyecto coincide con estos filtros",
+    "resetFilters": "Restablecer filtros",
+    "open": "Abrir",
+    "progressOf": "{done} de {total, plural, one {# hito} many {# hitos} other {# hitos}}",
+    "delayed": "Plazo modificado",
+    "hero": {
+      "region": "Región",
+      "publicPage": "Página pública",
+      "onTrack": "Según el cronograma"
+    },
+    "overview": {
+      "nextSteps": "Próximos pasos",
+      "noCurrent": "Todos los hitos están terminados",
+      "recent": "Últimos registros",
+      "team": "Equipo",
+      "filesCount": "{count, plural, one {# archivo} many {# archivos} other {# archivos}}",
+      "privateCount": "{count, plural, one {# privado} many {# privados} other {# privados}}",
+      "purchases": "Compras del proyecto",
+      "purchasesCount": "{count, plural, =0 {sin solicitudes} one {# solicitud} many {# solicitudes} other {# solicitudes}}"
+    },
+    "createForm": {
+      "title": "Nuevo proyecto",
+      "body": "El proyecto permanece privado hasta que usted lo publique.",
+      "name": "Nombre del proyecto",
+      "summary": "Descripción breve (opcional)",
+      "owner": "Propietario",
+      "ownerMe": "Yo (un proyecto personal)",
+      "ownerCompany": "Empresa: {name}",
+      "submit": "Crear el proyecto",
+      "pending": "Creando…",
+      "cancel": "Cancelar",
+      "error": {
+        "nameRequired": "Escriba el nombre del proyecto",
+        "nameTooLong": "El nombre es demasiado largo",
+        "summaryTooLong": "La descripción es demasiado larga"
+      }
+    },
+    "publish": {
+      "title": "Publicar el proyecto",
+      "body": "Todos verán el nombre, la descripción breve, el estado y la historia que escriba a continuación. Los presupuestos, los archivos, las notas y los participantes siguen siendo privados.",
+      "story": "Historia del proyecto",
+      "storyHint": "Qué construye, por qué y cómo avanza.",
+      "submit": "Publicar",
+      "pending": "Publicando…",
+      "notAllowed": "Solo el propietario del proyecto puede publicarlo.",
+      "error": {
+        "storyRequired": "Escriba unas palabras sobre el proyecto",
+        "storyTooLong": "La historia es demasiado larga"
+      }
+    }
+  },
+  "ws": {
+    "loading": "Cargando la sección…",
+    "pageError": "No se pudo cargar la sección",
+    "retry": "Reintentar",
+    "backToOverview": "Al resumen",
+    "offlineReadOnly": "Sin conexión: la sección se muestra en modo de solo lectura.",
+    "notFoundTitle": "Sección no encontrada",
+    "notFoundBody": "Revise la dirección o vuelva al resumen.",
+    "tabsScrollHint": "Las pestañas se desplazan horizontalmente y se cambian con las flechas del teclado.",
+    "coverKicker": "Proyecto",
+    "factsLabel": "Datos clave"
+  }
+}

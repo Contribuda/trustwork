@@ -166,7 +166,7 @@ for (const [name, tags, read] of [
       for (const [key, value] of Object.entries(dict)) {
         assert.ok(key in en, `${tag}: ${key} is not a reference key`);
         assert.ok(value.trim().length > 0, `${tag}: ${key} is empty`);
-        assert.ok(!/TODO|TBD|lorem|XXX/i.test(value), `${tag}: ${key} has a placeholder`);
+        assert.ok(!/\bTODO\b|\bTBD\b|XXX|[Ll]orem/.test(value), `${tag}: ${key} has a placeholder`); // case-sensitive: Spanish "todo" is a word (LANG-ES)
       }
     }
   });

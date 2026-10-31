@@ -1,0 +1,159 @@
+{
+  "error": {
+    "generic": "Algo salió mal. Vuelva a intentarlo.",
+    "pageTitle": "No se pudo cargar la página",
+    "notFoundTitle": "Página no encontrada",
+    "notFoundBody": "Esta página no existe o usted no tiene acceso a ella.",
+    "auth": {
+      "invalid_credentials": "Correo electrónico o contraseña incorrectos",
+      "throttled": "Demasiados intentos. Vuelva a intentarlo en {minutes, plural, one {# minuto} many {# minutos} other {# minutos}}.",
+      "step_up_required": "Confirme de nuevo su inicio de sesión para continuar.",
+      "email_unverified": "El correo electrónico aún no está confirmado.",
+      "session_invalid": "Su sesión terminó. Inicie sesión de nuevo.",
+      "csrf_rejected": "La solicitud fue rechazada. Recargue la página y vuelva a intentarlo.",
+      "password": {
+        "rejected": "La contraseña no cumple con los requisitos."
+      },
+      "recovery": {
+        "on_hold": "Recibimos la solicitud de recuperación y quedó en espera de revisión conforme a la política de correo corporativo. Le informaremos la decisión."
+      },
+      "provider": {
+        "already_linked": "Este método de inicio de sesión ya está vinculado a una cuenta.",
+        "state_mismatch": "El inicio de sesión tardó demasiado o se interrumpió. Empiece de nuevo."
+      },
+      "email_taken": "Este correo electrónico ya lo usa otra cuenta."
+    },
+    "access": {
+      "not_found": "Página no encontrada",
+      "forbidden": "Sin acceso",
+      "participation_expired": "Su acceso a este objeto terminó.",
+      "mandate_revoked": "Se revocó la autorización del asistente para esta acción.",
+      "mandate_scope": "Esta acción está fuera de la autorización del asistente.",
+      "staff_no_case": "El acceso del personal requiere un caso abierto.",
+      "approval_required": "Esta acción requiere una aprobación previa.",
+      "approval_digest_mismatch": "La aprobación se dio para otra versión. Apruebe la versión actual.",
+      "second_approver_required": "Una segunda persona debe aprobar esta acción."
+    },
+    "validation": {
+      "schema": "Revise los campos",
+      "unknown_field": "La solicitud contiene campos desconocidos",
+      "revision_conflict": "Alguien hizo cambios mientras tanto. Recargue la página y vuelva a intentarlo.",
+      "idempotency_conflict": "Esta solicitud ya se envió con otros datos. Recargue la página y vuelva a intentarlo.",
+      "idempotency_in_progress": "La solicitud anterior aún se está procesando. Espere un momento y vuelva a intentarlo.",
+      "unit_mismatch": "No se pueden combinar cantidades en unidades distintas.",
+      "not_canonicalizable": "Los datos no se pueden registrar de esta forma. Revise los campos.",
+      "payload_too_large": "La solicitud es demasiado grande."
+    },
+    "network": "Sin conexión. Revise la red y vuelva a intentarlo.",
+    "commercial": {
+      "version_immutable": "Esta versión es definitiva y no se puede modificar.",
+      "rfq_version_not_current": "La solicitud tiene una versión más reciente. Prepare la cotización para la versión actual.",
+      "rfq_version_mismatch": "La cotización corresponde a otra versión de la solicitud.",
+      "stale_version": "Esta versión está desactualizada. Abra la versión actual.",
+      "digest_mismatch": "El documento no coincide con su versión registrada. Recárguelo y revíselo.",
+      "totals_mismatch": "Los totales no cuadran. Revise los importes.",
+      "currency_mismatch": "No se pueden combinar importes en monedas distintas.",
+      "quote_not_acceptable": "Esta cotización no se puede aceptar en su estado actual.",
+      "quote_expired": "La cotización venció.",
+      "budget_insufficient": "El presupuesto no alcanza para esta acción.",
+      "authority_missing": "Usted no tiene autorización para asumir este compromiso.",
+      "outcome_unknown": "Aún no se conoce el resultado. Lo estamos verificando; no repita la acción.",
+      "transfer_consent_pending": "El destinatario aún no aceptó la transferencia."
+    },
+    "membership": {
+      "already_employed": "Usted ya trabaja para una empresa. Cada persona tiene un solo empleador activo a la vez.",
+      "last_administrator": "Una empresa necesita al menos un administrador.",
+      "invitation_expired": "La invitación venció. Solicite una nueva.",
+      "ended": "Esta membresía terminó.",
+      "permission_missing": "Su rol en la empresa no permite esto."
+    },
+    "internal": {
+      "error": "Algo salió mal de nuestro lado. Vuelva a intentarlo más tarde."
+    }
+  },
+  "taxonomy": {
+    "materials": "Materiales de construcción",
+    "equipment": "Equipos",
+    "engineering": "Instalaciones (MEP)",
+    "rawMaterials": "Materias primas y componentes",
+    "works": "Obras de construcción",
+    "designServices": "Diseño y servicios",
+    "topics": {
+      "materials": "Materiales",
+      "technologies": "Tecnologías",
+      "markets": "Mercados",
+      "regulation": "Normativa",
+      "projects": "Proyectos",
+      "people": "Personas",
+      "events": "Eventos"
+    }
+  },
+  "shell2": {
+    "notificationsTitle": "Notificaciones",
+    "notificationsError": "No se pudieron cargar las notificaciones",
+    "navSheetTitle": "Menú",
+    "searchTitle": "Buscar",
+    "searchLabel": "Consulta",
+    "searchHint": "Busque empresas, personas, proyectos y publicaciones.",
+    "updatedAt": "Actualizado {time}",
+    "menuName": "Nombre en el menú de la cuenta",
+    "demoSwitch": "Cambiar de participante de demostración",
+    "signOutDemo": "Demostración: al cerrar sesión vuelve a la página de inicio sin terminar ninguna sesión."
+  },
+  "role": {
+    "owner": "Propietario",
+    "leader": "Líder",
+    "participant": "Participante",
+    "member": "Empleado",
+    "administrator": "Administrador"
+  },
+  "unitLabel": {
+    "t": "t",
+    "m2": "m²",
+    "m3": "m³",
+    "pcs": "pzas",
+    "set": "juego"
+  },
+  "signals": {
+    "person": {
+      "openToWork": "Disponible para trabajar",
+      "openToProjects": "Acepta proyectos",
+      "hiring": "Contrata para su equipo",
+      "lookingForPartners": "Busca socios",
+      "consulting": "Ofrece consultoría",
+      "busy": "Ocupado"
+    },
+    "company": {
+      "hiring": "Contratando",
+      "acceptingOrders": "Acepta pedidos",
+      "lookingForSubcontractors": "Busca subcontratistas",
+      "lookingForSuppliers": "Busca proveedores",
+      "lookingForPartners": "Busca socios",
+      "lookingForProjects": "Busca obras",
+      "paused": "No acepta pedidos nuevos"
+    },
+    "until": "hasta el {date}",
+    "label": "Estado",
+    "declared": "Estado declarado por el participante",
+    "all": "Cualquier estado",
+    "none": "Sin estado"
+  },
+  "locale": {
+    "switcherLabel": "País e idioma: {country}, {language}",
+    "dialogLabel": "País e idioma",
+    "dialogTitle": "País e idioma",
+    "partial": "Traducción en curso; el texto que falta se muestra en inglés",
+    "partialShort": "parcial",
+    "note": "Cualquier país, salvo los lugares cerrados por las sanciones de EE. UU., con cualquiera de los idiomas del motor; primero aparecen los paquetes de país propios de la plataforma. La elección se guarda en este navegador.",
+    "gateKicker": "Bienvenido",
+    "gateTitle": "Elija su país",
+    "gateLede": "La plataforma funciona por país: su idioma, su moneda, los datos de registro de empresas y sus regiones. Puede cambiar la elección en cualquier momento desde el encabezado.",
+    "country": "País",
+    "language": "Idioma",
+    "gateConfirm": "Continuar",
+    "gateNote": "Los idiomas marcados como “parcial” muestran el texto en inglés donde falta la traducción.",
+    "otherCountry": "Otro país",
+    "chooseCountry": "Elija un país…",
+    "featured": "Países de la plataforma"
+  }
+}

@@ -1,0 +1,440 @@
+{
+  "bootstrap": {
+    "title": "Trustwork",
+    "message": "La base del proyecto está lista. Las funciones para usuarios aún están en construcción."
+  },
+  "publicNav": [
+    "Inicio",
+    "Noticias",
+    "Artículos",
+    "Eventos",
+    "Empresas",
+    "Personas",
+    "Proyectos",
+    "Revista"
+  ],
+  "workspaceNav": [
+    "Resumen",
+    "Mi página",
+    "Empresa",
+    "Proyectos",
+    "Compras",
+    "Ventas",
+    "Publicaciones",
+    "Asistente"
+  ],
+  "publicExit": "Al sector",
+  "onboarding": [
+    "Compro",
+    "Suministro",
+    "Participo en el sector"
+  ],
+  "auth": {
+    "name": "Su nombre",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Qué bueno verle de nuevo"
+    },
+    "emailPlaceholder": "Escriba su correo electrónico",
+    "passwordPlaceholder": "Escriba su contraseña",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "forgot": "¿Olvidó su contraseña?",
+    "submitLogin": "Iniciar sesión",
+    "submitting": "Iniciando sesión…",
+    "or": "o",
+    "apple": "Continuar con Apple",
+    "google": "Continuar con Google",
+    "noAccount": "¿Aún no tiene una cuenta?",
+    "register": "Crear una cuenta",
+    "backHome": "Volver al inicio",
+    "sessionExpired": "Su sesión terminó. Inicie sesión de nuevo.",
+    "error": {
+      "invalidCredentials": "Correo electrónico o contraseña incorrectos",
+      "rateLimited": "Demasiados intentos. Vuelva a intentarlo en {minutes, plural, one {# minuto} many {# minutos} other {# minutos}}.",
+      "provider": "No se pudo iniciar sesión con {provider}. Vuelva a intentarlo o use su correo electrónico.",
+      "emailRequired": "Escriba su correo electrónico",
+      "emailFormat": "Revise la dirección de correo electrónico",
+      "passwordRequired": "Escriba su contraseña"
+    },
+    "visual": {
+      "loginHeadline": "Buenas decisiones. Socios confiables.",
+      "loginSub": "Encuentre personas y empresas, comparta experiencia y trabaje en proyectos en equipo."
+    }
+  },
+  "brand": {
+    "name": "Trustwork",
+    "wordmarkLine1": "trust",
+    "wordmarkLine2": "work",
+    "logoLabel": "Trustwork: inicio"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "more": "Más",
+    "retry": "Reintentar",
+    "loading": "Cargando…",
+    "offline": "Sin conexión",
+    "corrected": "Corregido",
+    "sectionLoadError": "No se pudo cargar esta sección",
+    "noAccessTitle": "Sin acceso",
+    "noAccessBody": "No tiene permisos para esta sección. Si es un error, comuníquese con el administrador de su empresa.",
+    "externalLink": "enlace externo",
+    "required": "obligatorio",
+    "optional": "opcional",
+    "selected": "Seleccionado",
+    "remove": "Quitar",
+    "removeItem": "Quitar “{label}”",
+    "clear": "Borrar",
+    "noResults": "No se encontró nada",
+    "filters": "Filtros",
+    "pagination": "Páginas",
+    "page": "Página {page}",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "currentPage": "Página {page}, actual",
+    "tableScrollHint": "La tabla se desplaza horizontalmente",
+    "sortAscending": "orden ascendente",
+    "sortDescending": "orden descendente",
+    "sortNone": "sin ordenar, pulse para ordenar",
+    "openMenu": "Abrir menú",
+    "notifications": "Notificaciones",
+    "breadcrumbs": "Ruta de navegación",
+    "stepOf": "Paso {index} de {total}",
+    "stepDone": "terminado",
+    "stepCurrent": "actual",
+    "showMore": "Mostrar más",
+    "characters": "{count, plural, one {# carácter} many {# caracteres} other {# caracteres}}",
+    "charactersLeft": "{count, plural, one {Queda # carácter} many {Quedan # caracteres} other {Quedan # caracteres}}",
+    "items": "{count, plural, one {# elemento} many {# elementos} other {# elementos}}",
+    "on": "Activado",
+    "off": "Desactivado",
+    "updated": "Actualizado el {date}"
+  },
+  "form": {
+    "errorSummaryTitle": "Corrija los errores del formulario",
+    "errorCount": "{count, plural, one {# error} many {# errores} other {# errores}}",
+    "requiredMark": "campo obligatorio",
+    "help": "Ayuda para este campo"
+  },
+  "status": {
+    "sourced": "De fuentes abiertas",
+    "claimed": "Reclamado por la empresa",
+    "verified": "Verificado"
+  },
+  "evidence": {
+    "asserted": "Declarado",
+    "confirmed": "Confirmado",
+    "disputed": "En disputa",
+    "superseded": "Reemplazado por una versión más reciente"
+  },
+  "kind": {
+    "goods": "Bienes",
+    "works": "Obras",
+    "services": "Servicio",
+    "bundle": "Paquete"
+  },
+  "lifecycle": {
+    "draft": "Borrador",
+    "inReview": "En revisión",
+    "published": "Publicado",
+    "active": "Activo",
+    "paused": "En pausa",
+    "closed": "Cerrado",
+    "cancelled": "Cancelado",
+    "expired": "Vencido",
+    "archived": "Archivado"
+  },
+  "run": {
+    "state": {
+      "proposed": "Propuesta",
+      "authorized": "Autorizada",
+      "reserved": "Presupuesto reservado",
+      "queued": "En cola",
+      "executing": "En ejecución",
+      "pending": "Pendiente de confirmación",
+      "succeeded": "Terminada",
+      "failed": "Falló",
+      "outcomeUnknown": "Resultado desconocido",
+      "reconciling": "En conciliación",
+      "revoked": "Revocada"
+    }
+  },
+  "publicShell": {
+    "tagline": "Sector. Personas. Práctica.",
+    "about": "Sobre la plataforma",
+    "signIn": "Iniciar sesión",
+    "search": "Buscar",
+    "menu": "Menú",
+    "skipToContent": "Saltar al contenido",
+    "navLabel": "Secciones",
+    "toWorkspace": "Al espacio de trabajo",
+    "closeMenu": "Cerrar menú",
+    "closeSearch": "Cerrar búsqueda"
+  },
+  "footer": {
+    "sections": "Secciones",
+    "editorial": "Redacción",
+    "platform": "Plataforma",
+    "legal": "Aviso legal",
+    "privacy": "Privacidad",
+    "terms": "Términos de uso",
+    "help": "Ayuda",
+    "copyright": "© Trustwork. Todos los derechos reservados.",
+    "tagline": "Útil para quienes hacen que las obras se construyan.",
+    "topics": "Temas",
+    "social": "Redes sociales",
+    "aboutMagazine": "Sobre la revista",
+    "aboutService": "Sobre el servicio",
+    "signIn": "Iniciar sesión"
+  },
+  "shell": {
+    "navLabel": "Espacio de trabajo",
+    "collapse": "Contraer menú",
+    "expand": "Expandir menú",
+    "more": "Más",
+    "skipToContent": "Saltar al contenido",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "search": "Buscar",
+    "notifications": "Notificaciones",
+    "notificationsCount": "Notificaciones, {count, plural, one {# nueva} many {# nuevas} other {# nuevas}}",
+    "notificationsUnknown": "Notificaciones, hay nuevas",
+    "noNotifications": "No hay notificaciones nuevas",
+    "allNotifications": "Todas las notificaciones",
+    "account": "Cuenta",
+    "menu": {
+      "myPage": "Mi página",
+      "accountSettings": "Configuración de la cuenta",
+      "security": "Seguridad y sesiones",
+      "billing": "Facturación y planes",
+      "admin": "Administración",
+      "help": "Ayuda",
+      "signOut": "Cerrar sesión"
+    },
+    "offline": "Sin conexión. Se muestran los datos guardados.",
+    "attention": "{count, plural, one {# requiere una decisión} many {# requieren una decisión} other {# requieren una decisión}}",
+    "headerLabel": "Encabezado del espacio de trabajo"
+  },
+  "assistant": {
+    "title": "Asistente",
+    "launcher": "Asistente",
+    "launcherUnread": "Asistente, {count, plural, one {# sin leer} many {# sin leer} other {# sin leer}}",
+    "launcherAction": "Asistente, se necesita su decisión",
+    "launcherOpen": "Asistente, ventana abierta: cerrar",
+    "overlay": {
+      "label": "Ventana del asistente",
+      "openPage": "Abrir página",
+      "minimize": "Minimizar",
+      "close": "Cerrar",
+      "newMessages": "{count, plural, one {# mensaje nuevo} many {# mensajes nuevos} other {# mensajes nuevos}}",
+      "conversation": "Conversación con el asistente",
+      "stateOnline": "En línea",
+      "stateOffline": "Sin conexión. Puede leer el historial.",
+      "stateUnavailable": "El asistente no está disponible temporalmente. La búsqueda exacta de datos sigue funcionando."
+    },
+    "attention": "{count, plural, one {# decisión le espera} many {# decisiones le esperan} other {# decisiones le esperan}}",
+    "attentionOpen": "Abrir",
+    "composer": {
+      "label": "Mensaje para el asistente",
+      "placeholder": "Haga una pregunta o describa una tarea",
+      "send": "Enviar",
+      "attach": "Adjuntar un archivo",
+      "hint": "Intro: enviar; Mayús+Intro: nueva línea"
+    },
+    "notSent": "No enviado",
+    "intro": "El asistente responde con fuentes, prepara borradores y ejecuta mandatos solo dentro de la autorización que usted define.",
+    "messageFromUser": "Usted",
+    "messageFromAssistant": "Asistente"
+  },
+  "search": {
+    "placeholder": "Buscar en el sector",
+    "title": "Resultados de búsqueda",
+    "removeConstraint": "Quitar la condición “{label}”",
+    "temporal": {
+      "label": "Periodo de los datos",
+      "current": "Datos actuales",
+      "asOf": "Versión a una fecha"
+    },
+    "historicalLabel": "Versión histórica del {date}",
+    "backToCurrent": "Volver a los datos actuales",
+    "status": {
+      "complete": "Se muestran todos los resultados disponibles",
+      "partial": "No se muestran todos los resultados: {reason}",
+      "noAnswer": "Ningún material disponible coincide con su consulta",
+      "unavailable": "La búsqueda no está disponible temporalmente",
+      "stale": "Los datos se están actualizando; los resultados pueden estar incompletos",
+      "previousShown": "Se muestran los resultados anteriores"
+    },
+    "reason": {
+      "budget": "se alcanzó el límite de tamaño de la consulta",
+      "sourcesUnavailable": "algunas fuentes no están disponibles temporalmente",
+      "semanticOff": "la búsqueda semántica está desactivada; se muestran las coincidencias exactas"
+    },
+    "emptyQuery": "Escriba una consulta o abra una sección",
+    "freshness": "Fuente: {source}, datos del {observedAt}"
+  },
+  "answer": {
+    "facts": "Datos de la plataforma",
+    "claims": "De las fuentes",
+    "supported": "Respaldado por fuentes",
+    "qualified": "Con reservas: {reason}",
+    "abstain": "No hay suficientes datos confirmados para responder. A continuación, el material encontrado.",
+    "scopeIncomplete": "Alcance de datos incompleto",
+    "statusLabel": "Estado de la respuesta"
+  },
+  "citation": {
+    "open": "Fuente {index}",
+    "title": "Fuente",
+    "version": "Versión {version} del {date}",
+    "locator": {
+      "page": "Página {page}",
+      "table": "Página {page}, tabla {table}, fila {row}",
+      "text": "Fragmento de texto"
+    },
+    "openSource": "Abrir la fuente",
+    "unavailable": "Fuente no disponible",
+    "unavailableShort": "no disponible",
+    "historicalShort": "versión histórica",
+    "unavailableReason": {
+      "revoked": "Acceso revocado",
+      "deleted": "Material eliminado",
+      "consent": "Se retiró el consentimiento para publicar",
+      "scope": "El acceso a la fuente está restringido"
+    },
+    "close": "Cerrar la fuente",
+    "locatorLabel": "Lugar en la fuente",
+    "evidenceLabel": "Estado de la evidencia",
+    "projectionLabel": "Proyección"
+  },
+  "version": {
+    "label": "Versión",
+    "pickerLabel": "Elija una versión",
+    "item": "Versión {version}",
+    "current": "Versión {version} (actual)",
+    "historical": "Versión {version} del {date}",
+    "stale": "Versión {version} (desactualizada)",
+    "selected": "Se muestra la versión {version}"
+  },
+  "compare": {
+    "title": "Comparación de cotizaciones",
+    "line": "Partida",
+    "supplier": "Proveedor",
+    "notComparable": "No comparable",
+    "whyNotComparable": "Por qué no es comparable",
+    "stale": "Cotización desactualizada",
+    "excluded": "Excluida de la comparación",
+    "total": "Total",
+    "totalIncomplete": "Total no calculado: no todas las partidas son comparables",
+    "select": "Elegir",
+    "selectSupplier": "Elegir al proveedor “{supplier}”",
+    "reason": {
+      "unit": "Unidad de medida distinta",
+      "scope": "Alcance distinto",
+      "substitution": "Se ofrece un sustituto",
+      "missingLine": "Falta la partida"
+    },
+    "mobileSupplierSwitch": "Proveedor para comparar",
+    "noOffer": "Sin oferta"
+  },
+  "timeline": {
+    "label": "Historial de eventos",
+    "baseline": "Plan base",
+    "changed": "Cambio",
+    "disputed": "En disputa",
+    "outcomeUnknown": "Resultado desconocido",
+    "done": "Terminado",
+    "pending": "Pendiente"
+  },
+  "onboardingFlow": {
+    "step": "Paso {index} de {total}",
+    "stepsLabel": "Pasos de registro",
+    "continue": "Continuar",
+    "skip": "Primero quiero explorar",
+    "back": "Atrás",
+    "multiHint": "Puede elegir varias opciones.",
+    "changeAnytime": "Puede cambiarlo en cualquier momento.",
+    "noAuthorityNote": "Son solo preferencias de intereses. No otorgan permisos en una empresa ni generan obligaciones.",
+    "selectionLabel": "¿Qué le interesa de la plataforma?",
+    "selectedCount": "{count, plural, one {# opción seleccionada} many {# opciones seleccionadas} other {# opciones seleccionadas}}"
+  },
+  "toast": {
+    "regionLabel": "Notificaciones de acciones",
+    "dismiss": "Descartar notificación"
+  },
+  "dialog": {
+    "close": "Cerrar ventana",
+    "loading": "Espere, por favor…"
+  },
+  "table": {
+    "regionLabel": "Tabla “{caption}”",
+    "empty": "Aún no hay datos",
+    "error": "No se pudo cargar la tabla",
+    "loading": "Cargando la tabla…",
+    "rowActions": "Acciones de la fila"
+  },
+  "avatar": {
+    "noPhoto": "Sin foto"
+  },
+  "emptyState": {
+    "defaultTitle": "Aún no hay nada aquí"
+  },
+  "demo": {
+    "banner": "Demostración: datos sintéticos, sin servidor conectado.",
+    "persona": "Participante de demostración"
+  },
+  "magazine": {
+    "issue": "Número {number}",
+    "issueShort": "N.º {number}",
+    "read": "Leer el número",
+    "archive": "Archivo de la revista",
+    "fresh": "Último número",
+    "coverPrefix": "Portada del número"
+  },
+  "decision": {
+    "kicker": "Se necesita su decisión",
+    "review": "Revisar",
+    "assistant": "El asistente espera una decisión",
+    "deadline": "Vence: {date}"
+  },
+  "entity": {
+    "company": "Empresa",
+    "person": "Profesional",
+    "project": "Proyecto",
+    "open": "Abrir",
+    "openNamed": "Abrir: {name}"
+  },
+  "events": {
+    "upcoming": "Próximos eventos"
+  },
+  "media": {
+    "coverDecorative": "Ilustración del material",
+    "artworks": {
+      "concrete-grain": "Concreto: textura y separadores de cimbra",
+      "wood-lamellae": "Madera: láminas",
+      "glass-grid": "Vidrio: retícula de fachada",
+      "steel-profile": "Acero: vigas I",
+      "brick-bond": "Ladrillo: aparejo a soga",
+      "mineral-wool": "Lana mineral: fibra y capas",
+      "facade-cassettes": "Fachada: ritmo de casetes",
+      "blueprint-lines": "Plano: planta y líneas de cota",
+      "iso-blocks": "Isometría: ensamble de bloques",
+      "rebar-mesh": "Varilla: malla y amarre",
+      "corrugated-sheet": "Lámina acanalada: onda y sombra",
+      "terrazzo": "Terrazo: granos en la matriz",
+      "wall-layers": "Corte de muro: capas de la envolvente",
+      "timber-frame": "Estructura de madera: montantes, soleras, cabios",
+      "glass-night": "Fachada de vidrio al anochecer",
+      "formwork": "Cimbra: paneles y separadores"
+    }
+  }
+}

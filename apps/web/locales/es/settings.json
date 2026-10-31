@@ -1,0 +1,101 @@
+{
+  "settings": {
+    "title": "Configuración",
+    "lede": "La configuración personal va con la cuenta; la de la empresa está en la sección Empresa.",
+    "nav": {
+      "label": "Configuración",
+      "account": "Cuenta",
+      "security": "Seguridad y sesiones",
+      "preferences": "Preferencias",
+      "channels": "Conexiones",
+      "billing": "Facturación y planes"
+    },
+    "account": {
+      "name": "Nombre",
+      "email": "Correo de inicio de sesión",
+      "changeEmail": "Cambiar el correo electrónico",
+      "deleteAccount": "Eliminar la cuenta",
+      "language": "Idioma de la interfaz",
+      "languageLabel": "Idioma de la interfaz",
+      "languageValue": "Español",
+      "demoNote": "Demostración: el cambio de correo y la eliminación de la cuenta llegan con el servidor.",
+      "liveNote": "El cambio de correo y la eliminación de la cuenta llegan en una etapa posterior."
+    },
+    "security": {
+      "changePassword": "Cambiar la contraseña",
+      "providers": "Formas de iniciar sesión",
+      "password": "Contraseña",
+      "link": "Vincular",
+      "unlink": "Desvincular",
+      "notLinked": "No vinculado",
+      "sessions": "Sesiones activas",
+      "currentSession": "Sesión actual",
+      "endSession": "Cerrar",
+      "endOthers": "Cerrar todas las demás sesiones",
+      "col": {
+        "device": "Dispositivo",
+        "location": "Ubicación",
+        "lastSeen": "Última actividad"
+      },
+      "demoSession": "Demostración: no hay ninguna sesión; la lista se muestra como ejemplo.",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Contraseña nueva",
+      "sessionsCaption": "Lista de sesiones",
+      "google": "Google",
+      "lastSeenAt": "Actividad: {date}",
+      "apple": "Apple",
+      "unknownDevice": "Dispositivo desconocido",
+      "endPending": "Cerrando…",
+      "ended": "La sesión se cerró.",
+      "othersEnded": "{count, plural, =0 {No había otras sesiones activas.} one {Se cerró # sesión más.} many {Se cerraron # sesiones más.} other {Se cerraron # sesiones más.}}",
+      "passwordChanged": "La contraseña se cambió. Sus demás sesiones se cerraron.",
+      "passwordHint": "Al menos {min} caracteres. Puede pegar una contraseña desde un administrador de contraseñas.",
+      "passwordTooShort": "La contraseña es demasiado corta",
+      "passwordTooLong": "La contraseña es demasiado larga",
+      "saving": "Guardando…"
+    },
+    "preferences": {
+      "interests": "Intereses",
+      "sections": "Secciones del menú",
+      "pinProcurement": "Mostrar Compras en el menú",
+      "pinSales": "Mostrar Ventas en el menú",
+      "pinNote": "Una sección oculta pasa a “Más” y sigue disponible.",
+      "notifications": "Notificaciones",
+      "notify": {
+        "decisions": "Decisiones y aprobaciones",
+        "runs": "Ejecuciones del asistente",
+        "publications": "Publicaciones",
+        "magazine": "Un nuevo número de la revista"
+      },
+      "assistantFocus": "Al abrir la ventana del asistente, ir al último mensaje",
+      "demoNote": "Demostración: la configuración se aplica solo en esta ventana del navegador.",
+      "interestsHint": "Los temas, los objetivos y las regiones se pueden cambiar en el cuestionario."
+    },
+    "channels": {
+      "empty": "No hay conexiones",
+      "connect": "Conectar",
+      "scopes": "Permisos",
+      "revoke": "Revocar",
+      "untrustedNote": "Los correos y archivos de las conexiones se consideran datos no confiables y no le dan ninguna autorización al asistente."
+    },
+    "billing": {
+      "noOffers": "Los planes aún no están publicados.",
+      "currentPlan": "Plan actual",
+      "free": "Sin seleccionar",
+      "platformBudget": "Presupuesto para servicios de pago",
+      "acceptedOffers": "Condiciones aceptadas",
+      "noneAccepted": "No hay condiciones aceptadas",
+      "companyBilling": "Facturación y planes de la empresa",
+      "invoices": "Facturas",
+      "noInvoices": "No hay facturas"
+    },
+    "profileLink": "Perfil y página pública",
+    "stepUp": {
+      "title": "Confirme que es usted",
+      "body": "Escriba su contraseña para continuar. Los cambios delicados requieren un inicio de sesión reciente.",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "pending": "Verificando…"
+    }
+  }
+}

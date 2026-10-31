@@ -1119,7 +1119,7 @@
       "id": "LANG-ES",
       "title": "Spanish (es) as the seventh engine language",
       "area": "international",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CFG-001",
         "INTL-004"
