@@ -101,7 +101,7 @@ test('authenticated requests carry a stable keyed pseudonym, never the person id
   const seed = await seedPersonas(h);
   const logs = new LogCapture();
   // A second app on the same database with captured logs (the harness app prints only failures).
-  const created = await createApp({ env: { PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_FLOW_SECRET: FLOW_SECRET, AUTH_RATE_LIMIT_PER_MINUTE: '1000' }, pool: h.pool, mail: h.mail, clock: h.clock, logSink: logs.sink });
+  const created = await createApp({ env: { PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_FLOW_SECRET: FLOW_SECRET, AUTH_RATE_LIMIT_PER_MINUTE: '1000' }, pool: h.pool, clock: h.clock, logSink: logs.sink });
   t.after(() => created.close());
   const { Client } = await import('../backend/helpers/app.js');
   const client = new Client(created);

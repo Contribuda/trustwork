@@ -1,0 +1,66 @@
+{
+  "brand": {
+    "name": "Trustwork"
+  },
+  "layout": {
+    "greeting": "Salam,",
+    "linkFallback": "Düymə işləməsə, bu ünvanı brauzerinizə köçürün:",
+    "automated": "Bu məktub hesabınızda edilən əməliyyata görə {brand} tərəfindən avtomatik göndərilib. Bu ünvana göndərilən cavablar oxunmur.",
+    "signature": "{brand} komandası"
+  },
+  "verifyEmail": {
+    "subject": "{brand} üçün e-poçt ünvanınızı təsdiqləyin",
+    "heading": "E-poçt ünvanınızı təsdiqləyin",
+    "intro": "Kimsə, ümid edirik ki, siz, bu ünvanla {brand} hesabı yaradıb. Qeydiyyatı başa çatdırmaq üçün ünvanı təsdiqləyin.",
+    "action": "Ünvanı təsdiqlə",
+    "expiry": "Keçid yalnız bir dəfə işləyir və {hours, plural, one {# saatdan} other {# saatdan}} sonra etibarsız olur.",
+    "ignore": "Hesab yaratmamısınızsa, bu məktubu nəzərə almayın. Təsdiq olmadan heç nə baş verməyəcək."
+  },
+  "alreadyRegistered": {
+    "subject": "{brand} hesabınız artıq mövcuddur",
+    "heading": "Artıq hesabınız var",
+    "intro": "Kimsə bu ünvanla {brand} hesabı yaratmağa cəhd etdi, lakin bu ünvanla hesab artıq mövcuddur.",
+    "action": "Daxil ol",
+    "recoverHint": "Şifrənizi unutmusunuz? Yenisini təyin edə bilərsiniz:",
+    "recoverAction": "Şifrəni bərpa et",
+    "ignore": "Bu siz deyildinizsə, bu məktubu nəzərə almayın. Hesabınızda heç nə dəyişməyib."
+  },
+  "recovery": {
+    "subject": "{brand} şifrəsinin bərpası",
+    "heading": "Şifrənin bərpası",
+    "intro": "{brand} hesabınızın şifrəsini bərpa etmək üçün sorğu aldıq.",
+    "action": "Yeni şifrə seç",
+    "expiry": "Keçid yalnız bir dəfə işləyir və {minutes, plural, one {# dəqiqədən} other {# dəqiqədən}} sonra etibarsız olur. Bərpadan sonra bütün seanslardan çıxış ediləcək.",
+    "ignore": "Bunu siz istəməmisinizsə, bu məktubu nəzərə almayın. Şifrəniz dəyişməyəcək."
+  },
+  "emailChange": {
+    "subject": "{brand} üçün yeni e-poçt ünvanınızı təsdiqləyin",
+    "heading": "Yeni ünvanınızı təsdiqləyin",
+    "intro": "Bu ünvanı {brand} hesabınız üçün istifadə etməyi xahiş etdiniz. Dəyişikliyi başa çatdırmaq üçün onu təsdiqləyin.",
+    "action": "Yeni ünvanı təsdiqlə",
+    "expiry": "Keçid yalnız bir dəfə işləyir və {hours, plural, one {# saatdan} other {# saatdan}} sonra etibarsız olur.",
+    "ignore": "Bunu siz istəməmisinizsə, bu məktubu nəzərə almayın. Hesab hazırkı ünvanını saxlayacaq."
+  },
+  "membershipInvitation": {
+    "subject": "{company} sizi {brand} platformasında komandasına dəvət edir",
+    "heading": "{company} komandasına dəvət",
+    "intro": "Həmkarınız sizi {brand} platformasında {company} komandasına qoşulmağa dəvət etdi. Üzv olmaq üçün bu ünvanla daxil olun və dəvəti qəbul edin.",
+    "action": "Dəvətə bax",
+    "expiry": "Dəvət {days, plural, one {# gündən} other {# gündən}} sonra etibarsız olur.",
+    "ignore": "Bu dəvəti gözləmirdinizsə, bu məktubu nəzərə almayın. Qəbul etməyincə heç nə dəyişməyəcək."
+  },
+  "securityNotice": {
+    "subject": "{brand} hesabınızın təhlükəsizliyi barədə bildiriş",
+    "heading": "Təhlükəsizlik bildirişi",
+    "events": {
+      "login_throttled": "Hesabınıza daxil olmaq üçün bir neçə uğursuz cəhd olub. Növbəti cəhdlər bir müddət yavaşladılıb. Şifrəniz söndürülməyib.",
+      "password_reset": "Hesabınızın şifrəsi bərpa keçidi ilə bərpa edildi və bütün seanslardan çıxış edildi.",
+      "password_changed": "Hesabınızın şifrəsi dəyişdirildi və digər seanslardan çıxış edildi.",
+      "email_change_requested": "Hesabınızın e-poçt ünvanının dəyişdirilməsi istənilib. Dəyişiklik yalnız yeni ünvan təsdiqləndikdən sonra baş verəcək.",
+      "provider_linked": "Hesabınıza {provider} ilə giriş qoşuldu.",
+      "provider_unlinked": "Hesabınızdan {provider} ilə giriş ayrıldı."
+    },
+    "notYou": "Bu siz deyildinizsə, şifrənizi dərhal bərpa edin və aktiv seanslarınızı yoxlayın.",
+    "action": "Şifrəni bərpa et"
+  }
+}

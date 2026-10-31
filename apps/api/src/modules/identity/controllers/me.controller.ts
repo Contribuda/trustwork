@@ -4,6 +4,7 @@ import { ChangeEmailCommandSchema, RevokeSessionCommandSchema } from '../../../d
 import { Authenticated, ReqState, type RequestState } from '../../../common/request.js';
 import { Body } from '../../../common/zod.js';
 import { AuthService } from '../auth.service.js';
+import { ReqLocales } from '../mail.js';
 import { ChangePasswordCommandSchema } from './auth.controller.js';
 
 @Controller('v1/me')
@@ -32,12 +33,12 @@ export class MeController {
   }
 
   @Post('password') @HttpCode(204) @Authenticated('step_up')
-  async password(@Body(ChangePasswordCommandSchema) body: z.infer<typeof ChangePasswordCommandSchema>, @ReqState() state: RequestState) {
-    await this.auth.changePassword(body, state);
+  async password(@Body(ChangePasswordCommandSchema) body: z.infer<typeof ChangePasswordCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    await this.auth.changePassword(body, state, locales);
   }
 
   @Post('email') @HttpCode(202) @Authenticated('step_up')
-  email(@Body(ChangeEmailCommandSchema) body: z.infer<typeof ChangeEmailCommandSchema>, @ReqState() state: RequestState) {
-    return this.auth.changeEmail(body.newEmail, state);
+  email(@Body(ChangeEmailCommandSchema) body: z.infer<typeof ChangeEmailCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    return this.auth.changeEmail(body.newEmail, state, locales);
   }
 }

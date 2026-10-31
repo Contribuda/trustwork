@@ -1,29 +1,24 @@
-import type { Provider } from '../../deps/data.js';
+import type { Provider, Transaction } from '../../deps/data.js';
 
 /** Time source; tests substitute it to exercise expiry windows without sleeping. */
 export interface Clock { now(): Date }
 export const systemClock: Clock = { now: () => new Date() };
 
 export type MailTemplate = 'verify_email' | 'already_registered' | 'recovery' | 'email_change' | 'membership_invitation' | 'security_notice';
-export interface MailMessage { to: string; template: MailTemplate; params: Record<string, string> }
-/** Outbound mail port. No live transport exists in this slice; the fake records messages (dev mode also logs). */
-export interface MailPort { send(message: MailMessage): Promise<void> }
-
-export class FakeMailbox implements MailPort {
-  readonly sent: MailMessage[] = [];
-  constructor(private readonly echo: ((message: MailMessage) => void) | null = null) {}
-  async send(message: MailMessage): Promise<void> {
-    this.sent.push(message);
-    this.echo?.(message);
-  }
-  /** Last message to an address (tests read the token from `params`). */
-  lastTo(address: string, template?: MailTemplate): MailMessage | undefined {
-    return [...this.sent].reverse().find((m) => m.to === address && (!template || m.template === template));
-  }
-  countTo(address: string, template?: MailTemplate): number {
-    return this.sent.filter((m) => m.to === address && (!template || m.template === template)).length;
-  }
+/**
+ * One transactional mail, recorded in the caller's transaction. `params` are non-secret template values (durations,
+ * ids, public names); `secret` is the one-time token the link embeds (sealed before it is stored); `locales` are the
+ * causing request's language preferences, empty when someone else caused the mail.
+ */
+export interface MailIntent {
+  to: string;
+  template: MailTemplate;
+  params?: Record<string, string>;
+  secret?: { token: string; expiresAt: Date };
+  locales?: readonly string[];
 }
+/** Outbound mail port of the identity module: records intents for the worker (MAIL-001); it never sends. */
+export interface MailOutbox { record(trx: Transaction, intent: MailIntent): Promise<void> }
 
 /** Identity asserted by a provider after a completed authorization-code exchange. */
 export interface ProviderIdentity { subject: string; email: string | null; emailVerified: boolean; name: string | null }

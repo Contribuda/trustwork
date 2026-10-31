@@ -1,15 +1,18 @@
+import { randomBytes } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createApp } from '../../../apps/api/src/app.js';
-import { FakeMailbox, type Clock } from '../../../apps/api/src/modules/identity/ports.js';
+import type { Clock } from '../../../apps/api/src/modules/identity/ports.js';
 import { createPool } from '@trustwork/data';
-import { provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
+import { endPool, provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
+import { CommittedMailbox } from '../../worker/mail/helpers/committed-mailbox.js';
 import { API_PORT, CONTROL_PORT, WEB_ORIGIN } from './ports.js';
 
 /**
  * Real backend for the live API browser suite (WEB-004), started by Playwright as a web server from the repository
  * root: a fresh PostgreSQL database with every migration (the same backends as the database tests: an external URL,
- * Docker or embedded-postgres), the API on a restricted runtime role, and a fake mailbox. A loopback-only control
- * server lets the tests read the mailbox (verification and recovery tokens) and move the API clock forward to reach
+ * Docker or embedded-postgres), the API on a restricted runtime role, and a mailbox that reads the mail intents the API
+ * committed (MAIL-001: mail leaves through the outbox; the tokens are opened with the shared `MAIL_SECRET_KEY`, exactly
+ * what the worker would mail). A loopback-only control server lets the tests read that mailbox and move the API clock forward to reach
  * the step-up window. None of this is product code; nothing leaves the machine. The database is dropped on exit.
  */
 class MovableClock implements Clock {
@@ -19,7 +22,8 @@ class MovableClock implements Clock {
   }
 }
 
-const mail = new FakeMailbox();
+const mailKeyHex = randomBytes(32).toString('hex');
+let mailbox: CommittedMailbox | null = null;
 const clock = new MovableClock();
 
 function send(res: ServerResponse, status: number, body: unknown): void {
@@ -42,7 +46,8 @@ const control = createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     if (req.method === 'GET' && url.pathname === '/mail') {
       const to = url.searchParams.get('to') ?? '';
-      return send(res, 200, { items: mail.sent.filter((m) => m.to === to).reverse() });
+      const items = mailbox ? (await mailbox.to(to)).reverse().map((m) => ({ to, template: m.template, params: m.params })) : [];
+      return send(res, 200, { items });
     }
     if (req.method === 'POST' && url.pathname === '/clock') {
       const body = await readJson(req);
@@ -72,7 +77,8 @@ async function shutdown(code = 0): Promise<void> {
   closing = true;
   control.close();
   await created?.close().catch(() => undefined);
-  await pool?.end().catch(() => undefined);
+  db!.teardown.begin();
+  if (pool) await endPool(pool).catch(() => undefined);
   await db!.close().catch(() => undefined);
   process.exit(code);
 }
@@ -82,7 +88,8 @@ process.on('SIGINT', () => void shutdown());
 try {
   await db.migrate();
   await db.createAppLogin();
-  pool = createPool({ ...db.appConfig, max: 8 });
+  pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
+  mailbox = new CommittedMailbox(db.admin, Buffer.from(mailKeyHex, 'hex'));
   created = await createApp({
     env: {
       API_HOST: '127.0.0.1',
@@ -95,9 +102,9 @@ try {
       AUTH_RATE_LIMIT_PER_MINUTE: '10000',
       AUTH_LOCKOUT_THRESHOLD: '50',
       API_LOG_LEVEL: 'error',
+      MAIL_SECRET_KEY: mailKeyHex,
     },
     pool,
-    mail,
     clock,
     logSink: (line) => {
       if (line.includes('"level":"error"')) console.error('[api]', line);

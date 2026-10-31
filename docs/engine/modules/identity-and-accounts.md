@@ -1,6 +1,6 @@
 # Identity and accounts
 
-Module code `IDN`. Status: sign-up with e-mail verification, login, logout, recovery, step-up, sessions, password and e-mail change, Google and Apple linking are **Live** in the API (mail only through an in-memory fake until MAIL-001); the screens are **Demo**; Microsoft and generic OIDC are **Designed**; public handles with redirects are **Live** (BE-003); second factor, recovery codes, elevated sessions, passkeys and wallet-based identity are **Proposed**. Packages: BE-001 (done), BE-003 (done), BE-002, BE-004, MAIL-001, FED-005, IDV-001. Narrative: [People and companies](../people-and-companies.md#a-person-is-one-human-for-life), [ADR 002](../../adr/002-identity-and-access.md). Data: [§3 Identity and sessions](../../data/model.md#3-identity-and-sessions).
+Module code `IDN`. Status: sign-up with e-mail verification, login, logout, recovery, step-up, sessions, password and e-mail change, Google and Apple linking are **Live** in the API (mail through the outbox and the worker, MAIL-001; no deployment has a mail server configured yet); the screens are **Demo**; Microsoft and generic OIDC are **Designed**; public handles with redirects are **Live** (BE-003); second factor, recovery codes, elevated sessions, passkeys and wallet-based identity are **Proposed**. Packages: BE-001 (done), BE-003 (done), BE-002, BE-004, MAIL-001, FED-005, IDV-001. Narrative: [People and companies](../people-and-companies.md#a-person-is-one-human-for-life), [ADR 002](../../adr/002-identity-and-access.md). Data: [§3 Identity and sessions](../../data/model.md#3-identity-and-sessions).
 
 ## Purpose
 
@@ -34,7 +34,7 @@ Everyone. Support staff service accounts without impersonation ([support workspa
 | IDN-F07 | Provider identities are `(provider, subject)` pairs; linking needs a recently re-authenticated session or mailbox proof; nothing is auto-linked by e-mail | Live (Google, Apple with fake) | BE-001 |
 | IDN-F08 | Microsoft and generic OIDC providers plug into the same adapter | Designed | BE-002 |
 | IDN-F09 | Recovery to a corporate address can be held for review; support-assisted rebinding requires evidence and a cooling period | Live (hold); Proposed (support flow) | BE-001, SUP-001 |
-| IDN-F10 | Transactional mail (verification, recovery, invitations, security notices) is sent through the outbox by the worker with localized templates | Proposed | MAIL-001 |
+| IDN-F10 | Transactional mail (verification, recovery, invitations, security notices) is sent through the outbox by the worker with localized templates | Live | MAIL-001 |
 | IDN-F11 | A second factor (TOTP and passkeys), single-use recovery codes and elevated sessions for staff and setup | Proposed | BE-004 |
 | IDN-F12 | Password change, account recovery and a "sign out everywhere" revoke all sessions, agent connections and connection tokens | Live (sessions); Proposed (connections) | BE-001, AGT-016 |
 | IDN-F13 | People, companies and projects receive public handles; a changed handle leaves a redirect and is never reused for another subject | Live (API) | BE-003 (done) |

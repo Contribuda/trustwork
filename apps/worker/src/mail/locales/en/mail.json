@@ -1,0 +1,67 @@
+{
+  "$comment": "Mail namespace (MAIL-001). English is the reference: every other language defines exactly these keys. {brand} is the hub brand from configuration; never write a brand name into a message.",
+  "brand": {
+    "name": "Trustwork"
+  },
+  "layout": {
+    "greeting": "Hello,",
+    "linkFallback": "If the button does not work, copy this address into your browser:",
+    "automated": "This message was sent automatically by {brand} because of an action on your account. Replies to this address are not read.",
+    "signature": "The {brand} team"
+  },
+  "verifyEmail": {
+    "subject": "Confirm your email address for {brand}",
+    "heading": "Confirm your email address",
+    "intro": "Someone, hopefully you, created a {brand} account with this email address. Confirm the address to finish signing up.",
+    "action": "Confirm email address",
+    "expiry": "The link works once and expires in {hours, plural, one {# hour} other {# hours}}.",
+    "ignore": "If you did not create an account, ignore this message. Nothing will happen without the confirmation."
+  },
+  "alreadyRegistered": {
+    "subject": "Your {brand} account already exists",
+    "heading": "You already have an account",
+    "intro": "Someone tried to create a {brand} account with this email address, but an account with it already exists.",
+    "action": "Sign in",
+    "recoverHint": "Forgot your password? You can set a new one:",
+    "recoverAction": "Reset password",
+    "ignore": "If this was not you, ignore this message. Your account has not changed."
+  },
+  "recovery": {
+    "subject": "Reset your {brand} password",
+    "heading": "Reset your password",
+    "intro": "We received a request to reset the password of your {brand} account.",
+    "action": "Choose a new password",
+    "expiry": "The link works once and expires in {minutes, plural, one {# minute} other {# minutes}}. Every session will be signed out after the reset.",
+    "ignore": "If you did not ask for this, ignore this message. Your password stays the same."
+  },
+  "emailChange": {
+    "subject": "Confirm your new email address for {brand}",
+    "heading": "Confirm your new email address",
+    "intro": "You asked to use this address for your {brand} account. Confirm it to finish the change.",
+    "action": "Confirm new address",
+    "expiry": "The link works once and expires in {hours, plural, one {# hour} other {# hours}}.",
+    "ignore": "If you did not ask for this, ignore this message. The account keeps its current address."
+  },
+  "membershipInvitation": {
+    "subject": "{company} invites you to join the team on {brand}",
+    "heading": "Invitation to join {company}",
+    "intro": "A colleague invited you to join {company} on {brand}. Sign in with this email address and accept the invitation to become a member.",
+    "action": "View invitation",
+    "expiry": "The invitation expires in {days, plural, one {# day} other {# days}}.",
+    "ignore": "If you do not expect this invitation, ignore this message. Nothing changes unless you accept it."
+  },
+  "securityNotice": {
+    "subject": "Security notice for your {brand} account",
+    "heading": "Security notice",
+    "events": {
+      "login_throttled": "There were several failed attempts to sign in to your account. Further attempts are slowed down for a while. Your password has not been disabled.",
+      "password_reset": "The password of your account was reset with a recovery link, and every session was signed out.",
+      "password_changed": "The password of your account was changed, and your other sessions were signed out.",
+      "email_change_requested": "Someone asked to change the email address of your account. The change happens only after the new address is confirmed.",
+      "provider_linked": "Sign-in with {provider} was connected to your account.",
+      "provider_unlinked": "Sign-in with {provider} was disconnected from your account."
+    },
+    "notYou": "If this was not you, reset your password now and review your active sessions.",
+    "action": "Reset password"
+  }
+}

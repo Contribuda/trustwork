@@ -12,7 +12,7 @@ const h = await startHarness('ops_proxy');
 async function appWith(harness: Harness, env: Record<string, string>) {
   return createApp({
     env: { PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_RATE_LIMIT_PER_MINUTE: '3', AUTH_LOCKOUT_IP_THRESHOLD: '1000', AUTH_LOCKOUT_THRESHOLD: '1000', ...env },
-    pool: harness.pool, mail: harness.mail, clock: harness.clock, logSink: () => undefined,
+    pool: harness.pool, clock: harness.clock, logSink: () => undefined,
   });
 }
 const attempt = (client: Client, remoteAddress: string, forwardedFor: string | null, n: number) =>

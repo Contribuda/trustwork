@@ -19,11 +19,11 @@ flowchart LR
   API -. future .-> Mesh[federation: manifest, feeds, inbox]
 ```
 
-Solid arrows exist today; dotted arrows are designed. The API writes outbox rows and the worker relays them (REL-001), but no domain handler is registered yet, so no provider effect leaves the request path: the only provider port in code (mail) is an in-memory fake still called directly from the request until MAIL-001 ([Data and reliability](#data-and-reliability)).
+Solid arrows exist today; dotted arrows are designed. The API writes outbox rows and the worker relays them (REL-001); no provider effect happens on the request path. Mail is the first domain handler (MAIL-001): the request records the intent, the worker renders and sends it ([Data and reliability](#data-and-reliability)).
 
 - **apps/web**: public site (server-rendered for discovery) and the workspace; country and language selection; the brand overlay.
 - **apps/api**: domain modules with in-process authorization; today `identity` (accounts, sessions, providers, companies, memberships) and `projects`.
-- **apps/worker**: outbox relay, durable jobs and scheduled maintenance on its own restricted database role (REL-001); provider calls arrive with the packages that own them (MAIL-001 first).
+- **apps/worker**: outbox relay, durable jobs and scheduled maintenance on its own restricted database role (REL-001); provider calls arrive with the packages that own them; transactional mail (MAIL-001) is the first.
 - Microservices, a message broker, an external vector database and an external policy service are deliberately **not** used until measured need (ADR 001, 004, 007).
 
 ## Repository layout
@@ -57,7 +57,7 @@ Each module owns its tables and exposes use cases; others call those use cases, 
 - **Where the code is today** (checked 2026-10-31):
   - Memberships, projects and participation grants write the aggregate, the audit event and the outbox row in one transaction. E-mail verification, recovery completion, step-up, password and e-mail changes, logout, session revocation and provider unlinking write the change and its audit event (and an outbox row where one is emitted) in one transaction.
   - Sign-up, login, failed-login and lockout bookkeeping, recovery requests and provider sign-in events write their audit event in a **separate** transaction after the change (`auth.service.ts`, `provider.service.ts`); no work package folds them in yet, so this is an open follow-up.
-  - Mail (verification, recovery, invitations, security notices) is sent from the request handler after commit through the in-memory `FakeMailbox`, not through the outbox; MAIL-001 moves it to outbox and worker.
+  - Mail (verification, recovery, invitations, security notices) is recorded as a `mail_delivery` row plus a `mail.requested` outbox event in the transaction of the identity change; the worker renders it in the recipient's language and sends it through the configured transport (MAIL-001, [mail module](../../apps/worker/src/mail/README.md)).
   - REL-001: `apps/worker` claims outbox rows with `FOR UPDATE SKIP LOCKED` and runs leased jobs with heartbeats, fencing tokens, backoff, dead letters and `outcome_unknown` parking, plus scheduled maintenance, under its own restricted role; the API role only appends audit and outbox rows. No domain handler is registered yet ([apps/worker](../../apps/worker/README.md)).
 
 ## Contracts first

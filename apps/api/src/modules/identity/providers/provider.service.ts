@@ -9,6 +9,7 @@ import type { AppContext } from '../context.js';
 import { journal, type AuditEntry } from '../journal.js';
 import { ProviderUnavailableError, type ProviderIdentity } from '../ports.js';
 import type { PrincipalService } from '../principal.service.js';
+import { hoursOf } from '../mail.js';
 import { constantTimeEqual, randomToken, sha256Hex, signFlow, verifyFlow, type FlowState } from '../tokens.js';
 
 export type CallbackOutcome = 'signed_in' | 'linked' | 'account_exists' | 'verification_pending' | 'email_required' | 'provider_unavailable' | 'already_linked';
@@ -46,7 +47,7 @@ export class ProviderService {
   }
 
   /** Provider redirect target. Returns the outcome; the controller redirects to the return path with it. */
-  async callback(provider: Provider, query: { code: string; state: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<CallbackOutcome> {
+  async callback(provider: Provider, query: { code: string; state: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply, locales: readonly string[] = []): Promise<CallbackOutcome> {
     // Disabled or unconfigured providers answer 404 before any flow state is inspected (same as start).
     const port = this.port(provider);
     const cookie = readCookie(request, flowCookieName(this.ctx.config));
@@ -60,10 +61,10 @@ export class ProviderService {
       if (error instanceof ProviderUnavailableError) return 'provider_unavailable';
       throw error;
     }
-    return flow.mode === 'link' ? this.link(provider, identity, flow, state) : this.login(provider, identity, state, request, reply);
+    return flow.mode === 'link' ? this.link(provider, identity, flow, state, locales) : this.login(provider, identity, state, request, reply, locales);
   }
 
-  private async link(provider: Provider, identity: ProviderIdentity, flow: FlowState, state: RequestState): Promise<CallbackOutcome> {
+  private async link(provider: Provider, identity: ProviderIdentity, flow: FlowState, state: RequestState, locales: readonly string[]): Promise<CallbackOutcome> {
     if (!state.principal || !state.session || state.session.id !== flow.sessionId || state.principal.personId !== flow.personId) throw new ApiError('auth.session_invalid', 'the link flow belongs to another session');
     if (this.ctx.clock.now().getTime() - state.session.authenticatedAt.getTime() > this.ctx.config.session.stepUpMs) throw new ApiError('auth.step_up_required');
     if (!state.principal.emailVerified) throw new ApiError('auth.email_unverified', 'verify the primary address before linking providers');
@@ -74,8 +75,8 @@ export class ProviderService {
       await credentials.insertProvider(trx, p.personId, provider, identity.subject);
       await journal(trx, { action: 'auth.provider_linked', objectKind: 'person', objectId: p.personId, requestId: state.requestId, actor: p.personId, epoch: p.authzEpoch, basis: { provider } },
         [{ personId: p.personId, type: 'identity.provider_linked', payload: { provider } }]);
+      await this.notify(trx, p.personId, 'provider_linked', provider, locales);
     });
-    await this.notify(state, 'provider_linked');
     return 'linked';
   }
 
@@ -84,7 +85,7 @@ export class ProviderService {
    * verification token, the audit rows and the outbox intents commit in one transaction. A provider that supplies no
    * name stores none: clients render a localized placeholder.
    */
-  private async login(provider: Provider, identity: ProviderIdentity, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<CallbackOutcome> {
+  private async login(provider: Provider, identity: ProviderIdentity, state: RequestState, request: FastifyRequest, reply: FastifyReply, locales: readonly string[]): Promise<CallbackOutcome> {
     const linked = await auth.lookupProviderCredential(this.ctx.pool, provider, identity.subject);
     if (linked && !linked.disabled_at) {
       const issued = await withPrincipal(this.ctx.pool, { personId: linked.person_id, authzEpoch: linked.authz_epoch }, async (trx) => {
@@ -115,7 +116,9 @@ export class ProviderService {
       const epoch = await preIdentity.personEpoch(trx, personId);
       if (epoch === null) throw new ApiError('auth.session_invalid', 'provider registration did not produce a person');
       if (verifyToken) {
-        await preIdentity.issueToken(trx, { emailNormalized: email, kind: 'verify_email', tokenHashHex: sha256Hex(verifyToken), expiresAt: new Date(this.ctx.clock.now().getTime() + this.ctx.config.tokens.verifyEmailMs), requireVerified: false });
+        const expiresAt = new Date(this.ctx.clock.now().getTime() + this.ctx.config.tokens.verifyEmailMs);
+        await preIdentity.issueToken(trx, { emailNormalized: email, kind: 'verify_email', tokenHashHex: sha256Hex(verifyToken), expiresAt, requireVerified: false });
+        await this.ctx.mail.record(trx, { to: email, template: 'verify_email', params: { hours: hoursOf(this.ctx.config.tokens.verifyEmailMs) }, secret: { token: verifyToken, expiresAt }, locales });
       }
       await assumePrincipal(trx, { personId, authzEpoch: epoch });
       const session = await this.principals.createSession(trx, request, personId, provider);
@@ -130,12 +133,11 @@ export class ProviderService {
     });
     if (!outcome) return 'account_exists';
     this.principals.setCookie(reply, outcome.token);
-    if (verifyToken) await this.ctx.mail.send({ to: email, template: 'verify_email', params: { token: verifyToken, expiresInHours: String(this.ctx.config.tokens.verifyEmailMs / 3_600_000) } });
     return verifiedByGoogle ? 'signed_in' : 'verification_pending';
   }
 
   /** Unlink refuses to leave the person without a password and without another active provider. */
-  async unlink(provider: Provider, state: RequestState): Promise<void> {
+  async unlink(provider: Provider, state: RequestState, locales: readonly string[] = []): Promise<void> {
     await this.principals.runAs(state, async (trx, p) => {
       const rows = await credentials.listForPerson(trx, p.personId);
       const active = rows.filter((c) => !c.disabled_at);
@@ -146,13 +148,13 @@ export class ProviderService {
       if (disabled === 0) throw new ApiError('access.not_found', 'provider is not linked');
       await journal(trx, { action: 'auth.provider_unlinked', objectKind: 'person', objectId: p.personId, requestId: state.requestId, actor: p.personId, epoch: p.authzEpoch, basis: { provider } },
         [{ personId: p.personId, type: 'identity.provider_unlinked', payload: { provider } }]);
+      await this.notify(trx, p.personId, 'provider_unlinked', provider, locales);
     });
-    await this.notify(state, 'provider_unlinked');
   }
 
-  private async notify(state: RequestState, event: string): Promise<void> {
-    const bindings = await this.principals.runAs(state, (trx, p) => withPrincipalBindings(trx, p.personId));
-    for (const email of bindings) await this.ctx.mail.send({ to: email, template: 'security_notice', params: { event } });
+  /** Security notice to every verified address of the person, recorded in the transaction of the change. */
+  private async notify(trx: Parameters<typeof credentials.listForPerson>[0], personId: string, event: 'provider_linked' | 'provider_unlinked', provider: Provider, locales: readonly string[]): Promise<void> {
+    for (const email of await withPrincipalBindings(trx, personId)) await this.ctx.mail.record(trx, { to: email, template: 'security_notice', params: { event, provider }, locales });
   }
 }
 

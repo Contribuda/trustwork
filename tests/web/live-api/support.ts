@@ -43,7 +43,7 @@ export function uniqueEmail(label: string): string {
 }
 export const PASSWORD = 'correct horse battery staple 42';
 
-/** The newest message of a template to an address from the fake mailbox (waits briefly: mail leaves after commit). */
+/** The newest mail intent of a template to an address, with its opened token (waits briefly for the commit). */
 export async function mailToken(to: string, template: 'verify_email' | 'recovery' | 'membership_invitation'): Promise<string> {
   for (let attempt = 0; attempt < 50; attempt++) {
     const response = await fetch(`${CONTROL_ORIGIN}/mail?to=${encodeURIComponent(to)}`);

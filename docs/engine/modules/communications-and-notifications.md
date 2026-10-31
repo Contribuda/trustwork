@@ -1,6 +1,6 @@
 # Communications and notifications
 
-Module code `MSG`. Status: the notifications page and bell are **Demo** (`/app/notifications`); transactional mail is **Live** only through an in-memory fake until MAIL-001; context threads, channel grants and templates are **Designed** (COMMS-001); messenger and SMS channels, voice notes, hub sender identities and digests are **Proposed** (R08). Packages: MAIL-001, COMMS-001, CHAN-001, OPS-001. Narrative: [Communications](../communications.md). Data: [§22 Communications](../../data/model.md#22-communications).
+Module code `MSG`. Status: the notifications page and bell are **Demo** (`/app/notifications`); transactional mail is **Live** through the outbox and the worker (MAIL-001: localized templates, SMTP adapter and fake, suppression, receipts; not connected to a mail server in any deployment yet); context threads, channel grants and templates are **Designed** (COMMS-001); messenger and SMS channels, voice notes, hub sender identities and digests are **Proposed** (R08). Packages: MAIL-001, COMMS-001, CHAN-001, OPS-001. Narrative: [Communications](../communications.md). Data: [§22 Communications](../../data/model.md#22-communications).
 
 ## Purpose
 
@@ -31,7 +31,7 @@ Everyone; hub editors who edit templates; operations staff who activate them and
 | MSG-F05 | Inbound content is untrusted: it informs drafts and never authorizes an action or sends to extracted addresses | Designed | COMMS-001, AST-001 |
 | MSG-F06 | Notifications are short, actionable signals with a link and carry no private content beyond what the recipient may see; frequency per category; security and legal notices cannot be turned off | Demo (bell); Designed | COMMS-001 |
 | MSG-F07 | Templates are versioned per language, edited by editors, activated by operations staff, previewed with synthetic data; a missing translation blocks activation | Designed | COMMS-001, MAIL-001 |
-| MSG-F08 | Transactional mail goes through the outbox and the worker with localized templates and an SMTP adapter with a fake | Proposed | MAIL-001 |
+| MSG-F08 | Transactional mail goes through the outbox and the worker with localized templates and an SMTP adapter with a fake | Live | MAIL-001 |
 | MSG-F09 | A hub configures sending domains (SPF, DKIM, DMARC), reply-to addresses and registered SMS sender IDs; deliverability and bounces are counts, never per-person tracking | Proposed | COMMS-001, CHAN-001 |
 | MSG-F10 | SMS, WhatsApp and other messengers popular in the territory are channels where their terms allow business use and registration rules are met (for example 10DLC and consent rules in the US) | Proposed | CHAN-001 |
 | MSG-F11 | Voice notes are transcribed through a provider allowed for the data class; transcripts are untrusted input | Proposed | CHAN-001 |

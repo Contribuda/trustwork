@@ -38,7 +38,7 @@ test('failed attempts slow an account down but never disable its password', { sk
     expectError(throttled, 429, 'auth.throttled');
     const retryAfter = (throttled.body as { details?: { retryAfterSeconds?: number } }).details?.retryAfterSeconds ?? 0;
     assert.ok(retryAfter > 0 && retryAfter <= 30, `retry after ${retryAfter}s`);
-    assert.equal(h.mail.countTo(EMAILS.xenia, 'security_notice'), 1);
+    assert.equal(await h.mail.countTo(EMAILS.xenia, 'security_notice'), 1);
     assert.equal(await outboxCount(h.db.admin, 'identity.login_throttled', seed.people.xenia), 1);
     assert.equal(await auditCount(h.db.admin, 'auth.login_lockout'), 1);
     assert.equal(await failures(), 5, 'a throttled attempt is not counted');
@@ -58,7 +58,7 @@ test('failed attempts slow an account down but never disable its password', { sk
     const retryAfter = (throttled.body as { details: { retryAfterSeconds: number } }).details.retryAfterSeconds;
     assert.ok(retryAfter <= h.created.config.lockout.windowSeconds, `capped at the window (${retryAfter}s)`);
     assert.equal(await disabled(seed.people.xenia), 0, 'the password is still enabled');
-    assert.equal(h.mail.countTo(EMAILS.xenia, 'security_notice'), 1, 'no notification storm');
+    assert.equal(await h.mail.countTo(EMAILS.xenia, 'security_notice'), 1, 'no notification storm');
   });
 
   await t.test('the owner signs in once the delay has passed, and the sign-in clears the counter', async () => {
@@ -78,7 +78,7 @@ test('failed attempts slow an account down but never disable its password', { sk
     expectError(await attempt(EMAILS.xenia, PASSWORDS.xenia, OWNER), 429, 'auth.throttled');
     // Recovery is never throttled by the account counter and clears it.
     assert.equal((await anonymous.post('/v1/auth/recovery', { email: EMAILS.xenia }, { idempotencyKey: null })).status, 202);
-    const token = h.mail.lastTo(EMAILS.xenia, 'recovery')?.params.token as string;
+    const token = (await h.mail.lastTo(EMAILS.xenia, 'recovery'))?.params.token as string;
     assert.equal((await anonymous.post('/v1/auth/recovery/complete', { token, newPassword: 'recovered password for xenia 1' }, { idempotencyKey: null })).status, 200);
     assert.equal(await failures(), 0, 'recovery clears the account counter');
     assert.equal((await attempt(EMAILS.xenia, 'recovered password for xenia 1', OWNER)).status, 200);

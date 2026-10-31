@@ -83,7 +83,7 @@ test('provider identities without a name store none; disabled providers answer 4
   });
 
   await t.test('with providers disabled, start, callback and link answer 404 before any flow state is read', async () => {
-    const disabled = await createApp({ env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test' }, pool: h.pool, mail: h.mail, clock: h.clock, log: () => undefined });
+    const disabled = await createApp({ env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test' }, pool: h.pool, clock: h.clock, log: () => undefined });
     try {
       for (const provider of ['google', 'apple']) {
         const callback = await disabled.fastify.inject({ method: 'GET', url: `/v1/auth/${provider}/callback?code=x&state=y` });

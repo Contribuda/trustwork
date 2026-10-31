@@ -7,7 +7,7 @@ import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fa
 import type { FastifyInstance, FastifyRequest, RouteOptions } from 'fastify';
 import { apiConfigFromEnv, trustProxySetting, type ApiConfig } from './config.js';
 import { health, IdSchema, REQUEST_ID_HEADER } from './deps/contracts.js';
-import { AdmissionGate, createPool, databaseConfigFromEnv, type DataPool } from './deps/data.js';
+import { AdmissionGate, createPool, databaseConfigFromEnv, mailSecretKeyFromEnv, type DataPool } from './deps/data.js';
 import { AppModule } from './app.module.js';
 import { AuthGuard } from './common/auth.guard.js';
 import { CsrfGuard } from './common/csrf.guard.js';
@@ -18,7 +18,8 @@ import type { AppContext } from './modules/identity/context.js';
 import { buildIdentityServices, type IdentityServices } from './modules/identity/identity.module.js';
 import { GoogleOidcProvider } from './modules/identity/providers/google.js';
 import { AppleSignInProvider } from './modules/identity/providers/apple.js';
-import { FakeMailbox, FakeOidcProvider, noStaffRoles, RecordingMandateRevocation, systemClock, type Clock, type MailPort, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
+import { OutboxMail } from './modules/identity/mail.js';
+import { FakeOidcProvider, noStaffRoles, RecordingMandateRevocation, systemClock, type Clock, type MailOutbox, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
 import { createReadinessProbe, discoverMigrationsDir, registerHealthRoutes, type ReadinessProbe } from './observability/health.js';
 import { instrumentHttp, NestJsonLogger } from './observability/http.js';
 import { createLogger, messageLogger, type Logger, type LogSink } from './observability/logger.js';
@@ -30,7 +31,8 @@ export interface CreateAppOptions {
   /** Runtime pool (a login role that is a member of trustwork_app). Without it only /health is served. */
   pool?: DataPool | null;
   clock?: Clock;
-  mail?: MailPort;
+  /** Mail intents recorder; defaults to the outbox with `MAIL_SECRET_KEY` (MAIL-001). */
+  mail?: MailOutbox;
   providers?: Partial<Record<'google' | 'apple', OidcProviderPort | null>>;
   mandates?: MandateRevocationPort;
   staffRoles?: StaffRoleResolver;
@@ -122,7 +124,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   };
   const ctx: AppContext | null = pool ? {
     config, pool, clock,
-    mail: options.mail ?? new FakeMailbox(config.providers.mode === 'fake' && env.API_LOG_MAIL === '1' ? (m) => console.log(`[mail:${m.template}] to=${m.to} ${JSON.stringify(m.params)}`) : null),
+    mail: options.mail ?? new OutboxMail(mailSecretKeyFromEnv(env)),
     providers: { google: providerFor('google'), apple: providerFor('apple') },
     mandates: options.mandates ?? new RecordingMandateRevocation(),
     staffRoles: options.staffRoles ?? noStaffRoles,
