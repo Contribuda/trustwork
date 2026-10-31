@@ -21,7 +21,8 @@ import { GoogleOidcProvider } from './modules/identity/providers/google.js';
 import { AppleSignInProvider } from './modules/identity/providers/apple.js';
 import { OutboxMail } from './modules/identity/mail.js';
 import { secondFactorKeyFromEnv } from './modules/identity/second-factor/secrets.js';
-import { FakeOidcProvider, noStaffRoles, RecordingMandateRevocation, systemClock, type Clock, type MailOutbox, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
+import { assignmentStaffRoles, staffHubFromEnv } from './modules/identity/staff-roles.js';
+import { FakeOidcProvider, RecordingMandateRevocation, systemClock, type Clock, type MailOutbox, type MandateRevocationPort, type OidcProviderPort, type StaffRoleResolver } from './modules/identity/ports.js';
 import { createReadinessProbe, discoverMigrationsDir, registerHealthRoutes, type ReadinessProbe } from './observability/health.js';
 import { instrumentHttp, NestJsonLogger } from './observability/http.js';
 import { createLogger, messageLogger, type Logger, type LogSink } from './observability/logger.js';
@@ -37,6 +38,7 @@ export interface CreateAppOptions {
   mail?: MailOutbox;
   providers?: Partial<Record<'google' | 'apple', OidcProviderPort | null>>;
   mandates?: MandateRevocationPort;
+  /** Staff roles per request; default: active `staff_role_assignment` rows covering this node or `TRUSTWORK_HUB_ID`. */
   staffRoles?: StaffRoleResolver;
   /** Destination of the structured JSON log lines (default: stdout). */
   logSink?: LogSink;
@@ -133,7 +135,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     mail: options.mail ?? new OutboxMail(mailSecretKeyFromEnv(env)),
     providers: { google: providerFor('google'), apple: providerFor('apple') },
     mandates: options.mandates ?? new RecordingMandateRevocation(),
-    staffRoles: options.staffRoles ?? noStaffRoles,
+    staffRoles: options.staffRoles ?? assignmentStaffRoles({ hubId: staffHubFromEnv(env) }),
     admission: new AdmissionGate(pool),
     secondFactorKey: options.secondFactorKey ?? secondFactorKeyFromEnv(env),
     log,

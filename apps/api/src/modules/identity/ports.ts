@@ -79,6 +79,10 @@ export class RecordingMandateRevocation implements MandateRevocationPort {
   }
 }
 
-/** Staff roles come from ADM-001's staff_role_assignment; until then the resolver answers "no staff role". */
-export type StaffRoleResolver = (personId: string) => Promise<readonly string[]>;
+/**
+ * Staff roles of a person for this deployment, resolved per request inside the principal transaction (`trx`, the
+ * person's own identity set). The default reads DATA-002's `staff_role_assignment` (`staff-roles.ts`); tests may
+ * inject a fixed map. `noStaffRoles` answers "no staff role" (an API without a database).
+ */
+export type StaffRoleResolver = (personId: string, trx?: Transaction) => Promise<readonly string[]>;
 export const noStaffRoles: StaffRoleResolver = async () => [];
