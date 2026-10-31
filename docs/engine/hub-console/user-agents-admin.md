@@ -38,6 +38,25 @@ Hub-wide rules on top of modules, from [Hub administration](../hub-administratio
 
 For the plan-to-people flows ([modules](modules.md#plan-to-people)) the policy also sets how far agents may automate consultation and task requests: whether they may draft requests and offers, accept within a mandate (only with verified counterparties), and how many requests per week a participant's agent may send.
 
+## Jurisdiction settings
+
+ADR 010 decision 22: agent disclosure wording, liability allocation for agent commitments, consent and record-keeping rules, limits per action type and the legal texts are per-hub and, inside a hub, per-jurisdiction settings (the `jurisdiction` domain of the hub configuration, HUB-005). Each setting starts from the country pack's sourced default and shows it beside the hub's value; a hub may be stricter than a mandatory pack rule, never weaker; changes are versions activated by a second person, and the disclosure text must exist in every hub language. When two jurisdictions apply (for example a buyer in one state and a seller in another), the most protective setting wins. The wording itself is reviewed by the hub's counsel; the console never presents a default as legal advice.
+
+## Extensions: adding capabilities to agents
+
+Modules ship with the engine. ADR 010 decision 22 lets a hub administrator **add** functions, tools, integrations and other capabilities through a governed extension registry (`/agents/extensions`, AGT-023):
+
+| Declared in the manifest | Why |
+|---|---|
+| Actions, each mapped to a mandate kind | An extension action runs only under a mandate of that kind, like a built-in action |
+| Inputs and the data classes it reads and sends | Checked against the egress matrix (`/integrations/egress`) before every call |
+| Side effects and external endpoints | Endpoints in restricted places are refused at registration; effects follow outbox, idempotency and reconciliation rules |
+| Cost model | Reserved from the platform budget like any metered step |
+| Adapter and fake | Tests and dry runs never call the real endpoint |
+| Safety suite | Must pass on the fake adapter (EVAL-001 harness) before activation and after every engine update |
+
+Lifecycle `draft → tested → active → suspended → retired`; activation needs a second person and is a hub configuration version. An extension can add actions; it can never bypass mandates, budgets, approvals, kill switches, privacy rules, the restricted-places list or the rule that untrusted text never issues commands, and it never becomes a separate agent: participants see it as one more ability of their one agent, which they configure in their own detailed agent settings (AGT-022).
+
 ## Cost price and sale price
 
 Every paid unit has two numbers the console always shows side by side:

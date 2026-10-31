@@ -564,6 +564,8 @@ Licensing note: the engine is AGPL-3.0-only with DCO sign-off and no contributor
 
 ## Proposed work packages
 
+**Merged on 2026-10-31** into [work-packages.json](../engine/work-packages.json) by [ADR 012](../adr/012-integrator-decisions-2026-10-31.md): this section's PAY-001 became PAY-002, AGT-002 became AGT-016 and AGT-017, I18N-001 became LANG-ES, CNT-002 was folded into EDIT-001 and CRED-001 into REP-002; the others kept their identifiers. The text below is kept as the original proposal.
+
 These are proposals in the exact shape of [work-packages.json](../engine/work-packages.json); they are **not** added to the task graph. A maintainer decides whether to add, merge into existing packages (for example HUB-003, MATCH-001 or EXE-001) or reject each one. Dependencies refer to existing package IDs or to other proposals in this list; the list was checked with the repository's own validator (schema, dependencies, cycles, handbook links) merged into a copy of the task graph. A US country pack is expected from separate work and is not proposed here.
 
 ```json

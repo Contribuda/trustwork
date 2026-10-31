@@ -110,7 +110,8 @@ The console lives at `/admin` on the hub's origin, entered from the avatar menu 
 | | Screening `/trust/screening` | Sanctions lists, potential matches, re-screening |
 | | Confirmations `/trust/confirmations` | Abuse controls for confirmation requests |
 | **Agents** | Modules `/agents/modules` | Agent module catalogue: actions, eligibility, models, limits, metering, prices |
-| | Policy `/agents/policy` | Allowed actions in the hub, outreach quotas, channels, disclosure text |
+| | Policy `/agents/policy` | Allowed actions in the hub, outreach quotas, channels, disclosure text; per-jurisdiction disclosure wording, liability allocation, consent, record-keeping and per-action limits with country-pack defaults (ADR 010 decision 22, HUB-005) |
+| | Extensions `/agents/extensions` | Governed extension registry (ADR 010 decision 22, AGT-023): functions, tools and integrations the administrator adds to agents, each with declared actions, inputs, data classes, side effects, endpoints, costs, mandate kinds, safety-suite result and second-person activation |
 | | External agents `/agents/external` | MCP and A2A access policy, registered client counts, rate limits |
 | | Usage `/agents/usage` | Cohort statistics, cost and revenue per module |
 | | Abuse `/agents/abuse` | Abuse signals opening cases; throttles |
@@ -240,7 +241,7 @@ apps/web/app/admin/
     data/{datasets,datasets/[dataset],batches,links,knowledge,recommendations}/
     modules/{projects,planner,marketplace,knowledge-sharing,events,learning,matching,commerce}/
     trust/{moderation,disputes,reputation,appeals,screening,confirmations}/
-    agents/{modules,modules/[module],policy,external,usage,abuse}/
+    agents/{modules,modules/[module],policy,extensions,extensions/[extension],external,usage,abuse}/
     billing/{offers,prices,invoices,payouts,credits,tax}/
     integrations/{providers,providers/[connection],routing,egress,budgets,usage,kill-switches}/
     automation/{schedules,runs,runs/[run],alerts}/
@@ -306,7 +307,7 @@ Reuse `@trustwork/ui` (`DataTable`, `Tabs`, `Stepper`, `Dialog`/`ConfirmDialog`,
 
 ## Proposed work packages
 
-Proposals only; `docs/engine/work-packages.json` is not edited by this design. The existing HUB-002 ("Build the hub operator console") can be replaced by HUBC-001…HUBC-007 or kept as their umbrella; that is the integrator's decision.
+**Merged on 2026-10-31** ([ADR 012](../../adr/012-integrator-decisions-2026-10-31.md)): HUB-002 is the umbrella of the console packages; HUBC-001 became ADM-002 (the console shell), the console's OPS-001 became OPS-004 and its PROV-001 became KEYS-001, PLAN-002 became PLAN-003 with commissions in BILL-003, REP-002 and REC-001 were merged with the research proposals, INTL-US was split into INTL-US and LANG-ES, and live wiring is HUBC-007 to HUBC-010 instead of one package. The block below is kept as the original proposal.
 
 ```json
 [
@@ -587,6 +588,8 @@ Proposals only; `docs/engine/work-packages.json` is not edited by this design. T
 ```
 
 ## Open questions for the owner
+
+Answered on 2026-10-31 by the conductor and the integrator ([ADR 012](../../adr/012-integrator-decisions-2026-10-31.md)): staff roles may be scoped to a node or a hub; the setup wizard offers OpenRouter as one optional choice next to direct providers; sponsored content is a per-hub option, off by default, always labelled and never used for ranking, matching or recommendations; court and debt datasets are off by default in every hub; Spanish is the seventh engine language (`es`, with US formats in a US hub); the passport uses W3C Verifiable Credentials 2.0 compatible with Open Badges 3.0, signed with node keys. The original questions follow.
 
 1. **Hub-scoped roles vs platform roles.** `admin.ts` freezes `scope: 'platform'`; this design proposes hub and node scopes. Accept, or keep one platform scope per node?
 2. **OpenRouter by default?** The design treats a broker as an ordinary provider whose egress is limited to public data unless its routed vendors' retention terms are recorded. Should the setup wizard suggest it at all?

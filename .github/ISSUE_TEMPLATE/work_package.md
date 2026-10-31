@@ -5,15 +5,30 @@ title: "[WP <ID>] <title>"
 labels: work-package
 ---
 
+<!-- Maintainers: render this body with `node scripts/work-packages.mjs issue <ID>` (add --json for title, body and labels) instead of copying by hand. -->
+
 **Package:** `<ID>` (see `node scripts/work-packages.mjs show <ID>`)
+**Area:** `<area>` · **Status:** `<status>`
 **Handbook chapter:** `docs/engine/<chapter>.md`
-**Depends on:** <IDs, all must be done before claiming>
+**Depends on:** <IDs with their status; all must be done before claiming>
 
 ### Goal
 
 <copied from the package>
 
+### Read first
+
+<the package's reading list>
+
+### Steps
+
+<copied from the package>
+
 ### Acceptance
+
+<copied from the package>
+
+### Paths this package owns
 
 <copied from the package>
 

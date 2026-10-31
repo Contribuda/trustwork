@@ -325,6 +325,8 @@ FED-000…FED-005; QA-001 release candidate; OPS-003 backup/restore drill.
 
 ## 8. Proposed new and amended work packages
 
+**Merged on 2026-10-31** into [work-packages.json](../engine/work-packages.json) by [ADR 012](../adr/012-integrator-decisions-2026-10-31.md), which also answers Q1–Q9 where the integrator could (INTL-ES and DEMO-001 became LANG-ES and DEMO-US; PAY-001 kept its identifier as the provider port; CTRY-002 was split into CTRY-002 and CTRY-003). The block below is kept as the original proposal.
+
 Shape identical to `docs/engine/work-packages.json` entries. **New** packages have new ids; **amended** packages (BE-002, DATA-002, CTRY-002) repeat the full entry with changes. This block is a proposal; the conductor or a maintainer decides what to merge into `work-packages.json`. The block was checked with `validate()` from `scripts/work-packages.mjs` after merging it into the current list in memory (no errors).
 
 ```json

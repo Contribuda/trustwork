@@ -380,7 +380,7 @@ A **module** is the unit in which the engine ships agent capability, a hub enabl
 | Safety suite | Injection, disclosure, competition-law and quota tests that must pass before a hub can enable it |
 | Locale keys | Every label, job name, decision text and report heading in all six languages |
 
-Modules are code in the engine, versioned with it. A hub enables, configures and prices them; it cannot create new action verbs, widen data classes or switch off a safety rule.
+Modules are code in the engine, versioned with it. A hub enables, configures and prices them. Since ADR 010 decision 22 a hub administrator can also **add** functions, tools, integrations and other capabilities through the **governed extension registry** (AGT-023): each extension declares its actions (mapped to mandate kinds), inputs, data classes, side effects, external endpoints and costs, ships with a safety suite and an adapter with a fake, and is activated only after review by a second person. Extensions may add actions; neither a module setting nor an extension can widen a mandate or a data class beyond what the principal confirmed, or bypass budgets, kill switches, privacy rules, the restricted-places list or the rule that untrusted text never issues commands. Agent disclosure wording, liability allocation, consent, record-keeping and per-action limits are per-hub and per-jurisdiction settings with country-pack defaults (HUB-005).
 
 ### Families and modules
 
@@ -1016,6 +1016,7 @@ The agent keeps one surface: the full assistant page and the floating overlay, o
 | Reputation | What the person has built and what would strengthen it, with the passport | Private coaching; the public profile shows only what the method and the person allow |
 | What my agent can do | The modules enabled in the hub and entitled to the payer, shown as abilities with the jobs they offer | Turning a job on opens a mandate proposal; there are no per-module agents to configure |
 | Connections | External agents and channels connected to this agent | In settings, next to sessions; revoke one or all |
+| Settings | The person's detailed agent settings (ADR 010 decision 22): goals, modules, behaviour and tone, mandates and limits per action, budgets, schedules, channels, approval rules, what to share with whom, external connections | Each setting has a preview of what the agent would do and a plain-language explanation; settings compile into mandate proposals and never authorize by themselves (AGT-022) |
 | Stop | Suspends all mandates and all connections at once | Always visible, never paid, never hidden |
 
 ### What each participant sees first
@@ -1243,7 +1244,7 @@ export const ParticipantTypeSchema = z.enum([
   'event_organizer', 'course_author', 'hub_staff', 'company_representative',
 ]);
 
-/** Engine-defined, code-shipped; hubs cannot create or widen these. */
+/** Engine-defined, code-shipped; hubs cannot widen these. Hubs add capabilities only as governed extensions (ADR 010 decision 22, AGT-023). */
 export const AgentModuleManifestSchema = z.strictObject({
   id: z.string().regex(/^[a-z][a-z0-9_]{1,59}$/),
   version: z.string().min(1).max(40),
@@ -1461,6 +1462,8 @@ Every switch is effective before the next action check (authorization epoch), ne
 
 ## Open questions for the owner
 
+On 2026-10-31 [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) (decision 23) adopted the proposals for Q1–Q6, Q8 and Q9 as defaults; Q7 became configuration (HUB-005) whose wording still needs counsel.
+
 | # | Question | Proposal in this chapter |
 |---|---|---|
 | Q1 | May a hub reduce the engine's free floor for agent modules? | No; a hub can only be more generous |
@@ -1469,11 +1472,13 @@ Every switch is effective before the next action check (authorization epoch), ne
 | Q4 | Are tickets, courses and consultations bought from the transaction budget? | Yes: they are purchases from participants; the platform budget is only for platform usage |
 | Q5 | Default for `read.private` data classes to external agents | Off, opt-in per class with a residency warning |
 | Q6 | Anonymous A2A public read skills | Allowed at low rate limits, public data only |
-| Q7 | Liability for agent commitments and consultations, and wording of agent disclosure per jurisdiction | Open (O12); legal review per hub |
+| Q7 | Liability for agent commitments and consultations, and wording of agent disclosure per jurisdiction | Configurable per hub and jurisdiction (ADR 010 decision 22, HUB-005); the wording itself stays open for counsel (O12, ADR 012) |
 | Q8 | Which reputation passport formats and issuer identifiers to pin | VC data model 2.0 and Open Badges 3.0 issued by the home hub; versions pinned at implementation |
 | Q9 | Whether budget ranges in plans may use any commercial cost dataset | Only datasets the hub licensed for display and model use |
 
 ## Proposed work packages
+
+**Merged on 2026-10-31.** These proposals are now part of [work-packages.json](work-packages.json) ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md)): AGT-006 became REP-002, AGT-011 became CONS-001 and TASK-001, AGT-012 became KNOW-001 and MAT-001, the plan-step companion part of AGT-010 became AGT-021, and AGT-022 (detailed agent settings) and AGT-023 (governed extension registry) were added for ADR 010 decision 22. The block below is kept as the original proposal.
 
 These packages are a proposal for the conductor and maintainers; they are **not** in `work-packages.json` until a maintainer adds them (identifiers may be renumbered on merge). They extend AGT-001 and depend on the existing graph. The JSON uses the exact shape of [work-packages.json](work-packages.json) and passes `validate()` from `scripts/work-packages.mjs` when appended to the current list.
 
