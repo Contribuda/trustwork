@@ -401,6 +401,9 @@ export async function provisionTestDatabase(label: string, provision: { weight?:
     try {
       await reapStale(maintenance);
       await createDatabase(maintenance, databaseName);
+      // Interval arithmetic on timestamptz follows the session time zone: in a zone with daylight saving time
+      // "3 days" across a clock change is 71 or 73 hours. Production runs in UTC; so does every test database.
+      await maintenance.query(`ALTER DATABASE ${databaseName} SET timezone TO 'UTC'`);
       serverVersion = (await maintenance.query<{ v: string }>("SELECT current_setting('server_version') AS v")).rows[0]?.v ?? 'unknown';
       skew = await clockSkewMs(maintenance);
     } finally {
