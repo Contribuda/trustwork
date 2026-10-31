@@ -1,6 +1,6 @@
 # @trustwork/worker: outbox relay, durable jobs and scheduled maintenance
 
-Status: **Live** (REL-001), not deployed anywhere. Coordination happens only in PostgreSQL, so any number of worker processes can run against one database. Registered domain handlers: transactional mail (MAIL-001, [`src/mail`](src/mail/README.md)), files (FILE-001, [`src/files`](src/files/README.md)), sanctions screening lists (SANC-002, [`src/screening-lists`](src/screening-lists/README.md)); search projections and other provider calls come with the packages that own them.
+Status: **Live** (REL-001), not deployed anywhere. Coordination happens only in PostgreSQL, so any number of worker processes can run against one database. Registered domain handlers: transactional mail (MAIL-001, [`src/mail`](src/mail/README.md)), files (FILE-001, [`src/files`](src/files/README.md)), sanctions screening lists (SANC-002, [`src/screening-lists`](src/screening-lists/README.md)), screening (SANC-003, [`src/screening`](src/screening/README.md)), re-screening (SANC-005, [`src/rescreen`](src/rescreen/README.md)); search projections and other provider calls come with the packages that own them.
 
 ## Run
 
@@ -88,6 +88,7 @@ Each task has a row in `worker_schedule`; a worker claims a due slot by moving `
 | `maintenance.monthly_partitions` | 6 h | `trustwork.ensure_monthly_partitions()`: current month plus three for `audit_event` and `outbox_event` |
 | `mail.settle` | 5 min | Mail deliveries take their job's final verdict (reconciled as succeeded: `sent`; dead: `failed`), expired tokens become `expired`; final rows keep no address or token |
 | `screening.lists_due`, `screening.lists_freshness`, `jurisdiction.ranges_age` | 15 min, 1 h, 1 day | Sanctions list ingestion jobs for due lists, freshness gauges and warnings, geolocation range-table age (SANC-002, [`src/screening-lists`](src/screening-lists/README.md)) |
+| `screening.rescreen_tick`, `screening.rescreen_weekly` | 1 min, 7 days | Re-screening watchdog, starter and cohort gauges; the weekly full safety-net run (SANC-005, [`src/rescreen`](src/rescreen/README.md)) |
 
 `audit_event` and `outbox_event` are range-partitioned by month with a `DEFAULT` partition, so inserts never fail when the worker is down. Creating a month whose rows already landed in `DEFAULT` (worker down for more than three months) fails loudly and needs an operator. Retention (detach and archive) is an open owner decision (architecture audit Q6) and is not automated.
 

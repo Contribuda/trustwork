@@ -1,6 +1,6 @@
 # Screening in the worker (SANC-003)
 
-The worker side of the screening engine ([ADR 014](../../../../docs/adr/014-sanctions-compliance-engine.md) decisions 11 to 13; handbook [Sanctions compliance](../../../../docs/engine/modules/sanctions-compliance.md)). Status: **Live** for persons and companies at registration, sign-in, creation and rename; the delta re-screen on every new list version is SANC-005.
+The worker side of the screening engine ([ADR 014](../../../../docs/adr/014-sanctions-compliance-engine.md) decisions 11 to 13; handbook [Sanctions compliance](../../../../docs/engine/modules/sanctions-compliance.md)). Status: **Live** for persons and companies at registration, sign-in, creation and rename; the delta re-screen on every new list version, the weekly full run and resumable runs are SANC-005 ([`../rescreen`](../rescreen/README.md)).
 
 ## What runs
 

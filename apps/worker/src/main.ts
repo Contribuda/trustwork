@@ -10,6 +10,7 @@ import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { registerScreening, screeningConfigFromEnv, screeningSweepTask, type ScreeningRuntime } from './screening/index.js';
+import { registerRescreen, rescreenConfigFromEnv, rescreenTickTask, rescreenWeeklyTask, type RescreenRuntime } from './rescreen/index.js';
 import { rangesAgeTask, registerScreeningLists, screeningFreshnessTask, screeningListsConfigFromEnv, screeningListsDueTask, type ScreeningListsRuntime } from './screening-lists/index.js';
 import { Worker } from './worker.js';
 
@@ -21,11 +22,12 @@ import { Worker } from './worker.js';
  * Domain handlers are registered here by the packages that own them: MAIL-001 mail delivery (`mail.requested`,
  * `mail.deliver`, `mail.feedback`, the `mail.settle` task), FILE-001 files, SANC-002 screening lists
  * (`screening.list_ingest`, the `screening.lists_due`, `screening.lists_freshness` and `jurisdiction.ranges_age` tasks)
- * and SANC-003 screening (the trigger handlers, `screening.screen_subject` and the `screening.names_sweep` task);
+ * SANC-003 screening (the trigger handlers, `screening.screen_subject` and the `screening.names_sweep` task) and SANC-005
+ * re-screening (`screening.rescreen_batch`, the `screening.rescreen_tick` and `screening.rescreen_weekly` tasks);
  * search projections and other consumers come later. Events of other types are marked published and counted as
  * `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export interface Domains { pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null }
+export interface Domains { pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
   registerMail(registry, { pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
@@ -37,6 +39,8 @@ export function buildRegistry(domains: Domains): HandlerRegistry {
   if (domains.screeningLists) registerScreeningLists(registry, domains.screeningLists);
   // SANC-003: screening of persons and companies; the fuzzy layer stays off unless SCREENING_FUZZY_THRESHOLD is set.
   if (domains.screening) registerScreening(registry, domains.screening);
+  // SANC-005: re-screening of every subject on each activated list version, weekly and on a compliance officer's request.
+  if (domains.rescreen) registerRescreen(registry, domains.rescreen);
   return registry;
 }
 
@@ -57,11 +61,13 @@ async function main(): Promise<void> {
   const assistant: AssistantRuntime | null = process.env.ASSISTANT_EFFECTS === 'fake' ? { pool, providers: fakeEffectProviders().all, hubId, log } : null;
   const screeningLists: ScreeningListsRuntime = { pool, metrics, log, config: screeningListsConfigFromEnv(process.env) };
   const screening: ScreeningRuntime = { pool, metrics, log, config: screeningConfigFromEnv(process.env) };
-  const registry = buildRegistry({ pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening });
+  const rescreen: RescreenRuntime = { pool, metrics, log, config: rescreenConfigFromEnv(process.env), screening: screening.config };
+  const registry = buildRegistry({ pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
     tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps), mailSettleTask({ pool, metrics }), ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []), ...(assistant ? [assistantSweepTask(assistant)] : []),
-      screeningListsDueTask(screeningLists), screeningFreshnessTask(screeningLists), rangesAgeTask({ env: process.env, log, metrics }), screeningSweepTask(screening)],
+      screeningListsDueTask(screeningLists), screeningFreshnessTask(screeningLists), rangesAgeTask({ env: process.env, log, metrics }), screeningSweepTask(screening),
+      rescreenTickTask(rescreen), rescreenWeeklyTask(rescreen)],
   });
   log('info', 'mail configured', { transport: mail.transport, locales: mail.render.locales.join(','), defaultLocale: mail.render.defaultLocale });
   let metricsServer: MetricsServer | null = null;
