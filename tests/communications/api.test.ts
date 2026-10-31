@@ -103,40 +103,40 @@ test('communications API: context threads, notifications, templates, mail, chann
 
   /* ---------- Templates: every hub language, a second person ---------- */
   await t.test('templates: activation needs every hub language and a person other than the drafter', async () => {
-    const draft = (client: Client, key: string, version: number, locale: string) => client.post(`/v1/hub/message-templates/${key}/drafts`, { version, locale, ...TEXTS[locale]! });
-    expectError(await carl.post('/v1/hub/message-templates/thread.message/drafts', { version: 1, locale: 'en', ...TEXTS.en! }), 403, 'access.forbidden');
-    expectError(await carl.get('/v1/hub/message-templates/thread.message'), 403, 'access.forbidden');
-    expectError(await anonymous.get('/v1/hub/message-templates/thread.message'), 401, 'auth.session_invalid');
-    expectError(await editor.post('/v1/hub/message-templates/thread.message/drafts', { version: 1, locale: 'en', subject: 'Hi {firstName}', body: 'x' }), 422, 'validation.schema');
-    expectError(await editor.post('/v1/hub/message-templates/thread.message/drafts', { version: 1, locale: 'pl', subject: 'Hi', body: 'x' }), 422, 'validation.schema');
-    expectError(await editor.post('/v1/hub/message-templates/thread.message/drafts', { version: 2, locale: 'en', ...TEXTS.en! }), 422, 'validation.schema');
+    const draft = (client: Client, key: string, version: number, locale: string) => client.post(`/v1/hubs/${HUB_ID}/message-templates/${key}/drafts`, { version, locale, ...TEXTS[locale]! });
+    expectError(await carl.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/drafts`, { version: 1, locale: 'en', ...TEXTS.en! }), 403, 'access.forbidden');
+    expectError(await carl.get(`/v1/hubs/${HUB_ID}/message-templates/thread.message`), 403, 'access.forbidden');
+    expectError(await anonymous.get(`/v1/hubs/${HUB_ID}/message-templates/thread.message`), 401, 'auth.session_invalid');
+    expectError(await editor.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/drafts`, { version: 1, locale: 'en', subject: 'Hi {firstName}', body: 'x' }), 422, 'validation.schema');
+    expectError(await editor.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/drafts`, { version: 1, locale: 'pl', subject: 'Hi', body: 'x' }), 422, 'validation.schema');
+    expectError(await editor.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/drafts`, { version: 2, locale: 'en', ...TEXTS.en! }), 422, 'validation.schema');
     for (const locale of ENGINE_TEMPLATE_LANGUAGES.filter((l) => l !== 'ka')) ok(await draft(editor, 'thread.message', 1, locale));
-    const incomplete = await ops.post('/v1/hub/message-templates/thread.message/versions/1/activate', { reason: 'Launch texts' });
+    const incomplete = await ops.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/versions/1/activate`, { reason: 'Launch texts' });
     expectError(incomplete, 422, 'validation.schema');
     assert.deepEqual((incomplete.body as { details: { missing: string[] } }).details.missing, ['ka'], 'the missing hub language is named');
     ok(await draft(editor, 'thread.message', 1, 'ka'));
-    expectError(await editor.post('/v1/hub/message-templates/thread.message/versions/1/activate', { reason: 'Self' }), 403, 'access.forbidden');
-    const active = ok<TemplateVersionList>(await ops.post('/v1/hub/message-templates/thread.message/versions/1/activate', { reason: 'Launch texts' }));
+    expectError(await editor.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/versions/1/activate`, { reason: 'Self' }), 403, 'access.forbidden');
+    const active = ok<TemplateVersionList>(await ops.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/versions/1/activate`, { reason: 'Launch texts' }));
     assert.equal(active.items.length, ENGINE_TEMPLATE_LANGUAGES.length);
     assert.ok(active.items.every((v) => v.status === 'active' && v.activatedByPersonId === staff.ops && v.draftedByPersonId === staff.editor));
     expectError(await draft(editor, 'thread.message', 1, 'en'), 409, 'validation.revision_conflict');
     // The operations person drafts version 2 and cannot activate their own draft.
     for (const locale of ENGINE_TEMPLATE_LANGUAGES) ok(await draft(ops, 'thread.message', 2, locale));
-    expectError(await ops.post('/v1/hub/message-templates/thread.message/versions/2/activate', { reason: 'Own draft' }), 403, 'access.second_approver_required');
-    const listed = ok<TemplateVersionList>(await editor.get('/v1/hub/message-templates/thread.message'));
+    expectError(await ops.post(`/v1/hubs/${HUB_ID}/message-templates/thread.message/versions/2/activate`, { reason: 'Own draft' }), 403, 'access.second_approver_required');
+    const listed = ok<TemplateVersionList>(await editor.get(`/v1/hubs/${HUB_ID}/message-templates/thread.message`));
     assert.equal(listed.items.filter((v) => v.status === 'active').length, ENGINE_TEMPLATE_LANGUAGES.length);
     assert.equal(listed.items.filter((v) => v.version === 1).every((v) => v.status === 'active'), true, 'version 1 stays active');
     // The other two templates, drafted by the editor and activated by operations (used below).
     for (const key of ['thread.opened', 'account.security_notice']) {
       for (const locale of ENGINE_TEMPLATE_LANGUAGES) {
         const text = key === 'account.security_notice' ? { subject: 'Security notice', body: 'Event: {event}' } : TEXTS[locale]!;
-        ok(await editor.post(`/v1/hub/message-templates/${key}/drafts`, { version: 1, locale, ...text }));
+        ok(await editor.post(`/v1/hubs/${HUB_ID}/message-templates/${key}/drafts`, { version: 1, locale, ...text }));
       }
     }
     // Two concurrent activations of the same version: one wins, the other finds it frozen; one active version per language.
-    const [a, b] = await Promise.all([ops.post('/v1/hub/message-templates/thread.opened/versions/1/activate', { reason: 'A' }), ops.post('/v1/hub/message-templates/thread.opened/versions/1/activate', { reason: 'B' })]);
+    const [a, b] = await Promise.all([ops.post(`/v1/hubs/${HUB_ID}/message-templates/thread.opened/versions/1/activate`, { reason: 'A' }), ops.post(`/v1/hubs/${HUB_ID}/message-templates/thread.opened/versions/1/activate`, { reason: 'B' })]);
     assert.deepEqual([a.status, b.status].sort(), [200, 409], `${JSON.stringify(a.body)} ${JSON.stringify(b.body)}`);
-    ok(await ops.post('/v1/hub/message-templates/account.security_notice/versions/1/activate', { reason: 'Launch' }));
+    ok(await ops.post(`/v1/hubs/${HUB_ID}/message-templates/account.security_notice/versions/1/activate`, { reason: 'Launch' }));
     assert.equal(await count("SELECT 1 FROM trustwork.template_version WHERE status = 'active'"), ENGINE_TEMPLATE_LANGUAGES.length * 3);
   });
 
@@ -377,10 +377,10 @@ test('communications API: context threads, notifications, templates, mail, chann
     assert.equal(channels.to('@boris_demo').length, sentBefore);
     assert.equal((await service.ingest({ ...event, providerMessageId: 'tg-1004' })).outcome, 'unmatched');
 
-    const counts = ok<{ items: { channel: string; state: string; count: number }[] }>(await ops.get('/v1/hub/deliveries/counts'));
+    const counts = ok<{ items: { channel: string; state: string; count: number }[] }>(await ops.get(`/v1/hubs/${HUB_ID}/deliveries/counts`));
     assert.ok(counts.items.some((c) => c.channel === 'messenger' && c.state === 'sent' && c.count === 1));
     assert.ok(!JSON.stringify(counts).includes(seed.people.boris), 'counts only, never per person');
-    expectError(await carl.get('/v1/hub/deliveries/counts'), 403, 'access.forbidden');
+    expectError(await carl.get(`/v1/hubs/${HUB_ID}/deliveries/counts`), 403, 'access.forbidden');
   });
 
   /* ---------- Losing the context ---------- */
