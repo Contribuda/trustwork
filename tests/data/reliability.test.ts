@@ -30,21 +30,16 @@ test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip
     }
   };
 
-  await t.test('outbox events are appended with the aggregate revision and claimed once', async () => {
+  await t.test('the runtime (API) role appends outbox events but cannot read, publish or delete them', async () => {
+    // Claiming and publishing moved to the worker role (REL-001); tests/worker covers the relay with SKIP LOCKED.
     await inTransaction(db.app, async (trx) => {
       await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: 'm-1', revision: 1, type: 'membership.activated', payload: { personId: 'p' } });
       await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: 'm-1', revision: 2, type: 'membership.ended', payload: { personId: 'p' } });
     });
-    const claimed = await inTransaction(db.app, async (trx) => {
-      const events = await outbox.claimUnpublished(trx, 10);
-      assert.deepEqual(events.map((e) => [e.type, e.revision]), [['membership.activated', 1], ['membership.ended', 2]]);
-      const concurrent = await inTransaction(db.app, (other) => outbox.claimUnpublished(other, 10));
-      assert.deepEqual(concurrent, [], 'rows locked by the first relay are skipped');
-      assert.equal(await outbox.markPublished(trx, events.map((e) => e.id)), 2);
-      return events.length;
-    });
-    assert.equal(claimed, 2);
-    assert.deepEqual(await inTransaction(db.app, (trx) => outbox.claimUnpublished(trx, 10)), []);
+    const stored = await db.admin.query<{ type: string; revision: number }>('SELECT type, revision FROM trustwork.outbox_event ORDER BY id');
+    assert.deepEqual(stored.rows.map((e) => [e.type, e.revision]), [['membership.activated', 1], ['membership.ended', 2]]);
+    await assert.rejects(inTransaction(db.app, (trx) => outbox.claimUnpublished(trx, 10)), (e: unknown) => sqlState(e) === '42501');
+    await assert.rejects(inTransaction(db.app, (trx) => trx.updateTable('outbox_event').set({ published_at: new Date() }).execute()), (e: unknown) => sqlState(e) === '42501');
     await assert.rejects(inTransaction(db.app, (trx) => trx.deleteFrom('outbox_event').execute()), (e: unknown) => sqlState(e) === '42501');
   });
 

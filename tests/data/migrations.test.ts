@@ -187,7 +187,11 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
       Object.assign(mirror, TABLE_COLUMNS);
     }
     const { rows } = await db.admin.query<{ table_name: string; column_name: string }>(
-      "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = 'trustwork' ORDER BY table_name, ordinal_position",
+      // Partitions (REL-001: monthly audit_event/outbox_event partitions) are storage of a mirrored parent, not tables of the model.
+      `SELECT table_name, column_name FROM information_schema.columns
+       WHERE table_schema = 'trustwork'
+         AND table_name NOT IN (SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'trustwork' AND c.relispartition)
+       ORDER BY table_name, ordinal_position`,
     );
     const live = new Map<string, string[]>();
     for (const row of rows) live.set(row.table_name, [...(live.get(row.table_name) ?? []), row.column_name]);

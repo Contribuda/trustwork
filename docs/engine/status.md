@@ -37,6 +37,7 @@ We would rather under-promise. This page says, area by area, what you can run to
 | [Country specifics](country-specifics.md) | Identifier formats, regions, currencies, residency notes in packs | — | — | Registers, licensing, codes, tax, signatures, payments (proposed) |
 | [Federation](federation.md) | — | — | — | Mesh protocol (proposed, [ADR 011](../adr/011-federation-mesh.md)) |
 | Sanctions | Restricted places in packs and compliance package; ownership declaration checks | Restricted places never offered | Screening adapter for the US Consolidated Screening List (needs a key) | Hub screening recipes (proposed) |
+| Background worker | Outbox relay with SKIP LOCKED, durable jobs (lease, heartbeat, fencing token, backoff, dead letters, `outcome_unknown` parking, reconciliation command), scheduled sweep and monthly audit/outbox partitions, Prometheus metrics, own database role; no domain handlers yet (mail delivery is MAIL-001) | — | Retry policy, action states, reconciliation | Provider adapters per owning package (designed) |
 | Design system | Accessible React components on React Aria, tokens, brand mark and localized wordmarks, Storybook. Its axe suite (`npm run test:a11y -w @trustwork/ui`) exists but no gate runs it: neither `npm run check` nor CI calls it until CI-001 (the web app's own axe checks do run in the CI browser job) | — | — | — |
 
 ## What this means if you try it
@@ -45,7 +46,7 @@ We would rather under-promise. This page says, area by area, what you can run to
 - `npm run dev:api` with the local database and the restricted runtime role printed by `npm run seed:dev -w @trustwork/api` runs the live identity, company and project API under `/v1/*` ([agent onboarding](agent-onboarding.md#3-install-and-run) has the exact commands).
 - The web app does not yet call the live API; WEB-006 and WEB-004 in the platform phase of the [roadmap](roadmap.md) connect them.
 - No payment, e-mail, model or registry provider is connected. Mail is an in-memory fake called from the request (no transport exists); Google and Apple sign-in have a fake mode and a live mode that needs keys nobody has configured; the sanctions screening adapter needs a key; payment, model, registry, storage and channel providers are designed ports with fakes.
-- The worker consumes nothing yet: the API writes outbox rows that no process reads (REL-001 builds the relay and the job runner).
+- The worker (REL-001) relays the outbox and runs durable jobs and scheduled maintenance under its own database role, but no domain handler is registered yet: outbox events are marked published as unhandled, and mail still goes through the in-memory fake from the request until MAIL-001.
 - What each kind of participant can try today, step by step: [How it works for you](../guides/README.md).
 
 ## Accuracy checked on 2026-10-31
@@ -58,7 +59,7 @@ The statements on this page, in [Architecture](architecture.md), in [API convent
 | Design-system axe tests | Root `check` script, `.github/workflows/check.yml`, `packages/ui/package.json` | Suite exists, not gated until CI-001; stated above |
 | "Next web work packages" | `work-packages.json` | Named: WEB-006 and WEB-004 |
 | One transaction for change, audit and outbox | `auth.service.ts`, `provider.service.ts`, `membership.service.ts`, `projects.service.ts` | True for memberships, projects and grants; several identity audits and all mail are outside it; [Architecture](architecture.md#data-and-reliability) says so |
-| Outbox feeding the worker | `apps/worker/src/main.ts` | The worker consumes nothing; the diagram marks it as designed |
+| Outbox feeding the worker | `apps/worker/src/relay.ts`, `apps/worker/src/runner.ts`, `tests/worker` | Since REL-001 the worker relays the outbox and runs jobs; no domain handler exists yet, so provider ports stay designed in the diagram |
 | "Routes are not implemented" | `docs/architecture/api.md` | Reworded: routes not listed as implemented are contract only |
 | Health contract | `packages/contracts/src/api.ts`, `apps/api/src/app.module.ts` | The controller reports `disabled`, `fake` or `live`; the frozen schema still says `disabled` (OPS-001 aligns it); documented in API conventions |
 | `.env.example` | `apps/api/src/config.ts`, `apps/api/src/app.ts`, `packages/data/src/config.ts`, `apps/web` | Four unread variables removed; `API_DATABASE_URL`, `PUBLIC_ORIGIN`, `AUTH_FLOW_SECRET` and the other read variables added |

@@ -632,7 +632,7 @@
       "id": "REL-001",
       "title": "Outbox relay, durable job runner and scheduler in apps/worker",
       "area": "platform",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-004"
       ],
