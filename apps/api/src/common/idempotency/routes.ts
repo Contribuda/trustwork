@@ -218,6 +218,19 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // REP-001: the reputation builder. Every route runs in one PrincipalService.runAs transaction (derived records are
+  // materialized inside it; the credential check calls the read-only register adapter inside it, bounded by a timeout)
+  // and returns its result unchanged.
+  'reputation.credential_record': IN_TRANSACTION,
+  'reputation.credential_check': IN_TRANSACTION,
+  'reputation.portfolio_add': IN_TRANSACTION,
+  'reputation.relation_declare': IN_TRANSACTION,
+  'reputation.confirmation_request': IN_TRANSACTION,
+  'reputation.confirmation_remind': IN_TRANSACTION,
+  'reputation.confirmation_withdraw': IN_TRANSACTION,
+  'reputation.confirmation_answer': IN_TRANSACTION,
+  'reputation.appeal_file': IN_TRANSACTION,
+  'reputation.limitation_appeal': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
