@@ -58,14 +58,14 @@ jobs:
           migrate=trustwork-migrate:local proxy=trustwork-proxy:local
 
       - name: The hosted preview build arguments still produce a working image (infra/Dockerfile)
-        # English and the US default, Russian (with the Russian overlay title) by cookie, Georgian by country cookie and
+        # Demo mode like the hosted preview. English and the US default, Russian (with the Russian overlay title) by cookie, Georgian by country cookie and
         # the companies directory, under the preview's base path (infra/images/web-smoke.mjs).
         run: |
           docker build -f infra/Dockerfile -t trustwork-web:preview \
             --build-arg NEXT_PUBLIC_BASE_PATH=/trustwork \
             --build-arg NEXT_PUBLIC_SITE_URL=https://example.invalid/trustwork \
             --build-arg TRUSTWORK_ALLOWED_ORIGINS=example.invalid .
-          docker run -d --name preview -p 127.0.0.1:3999:3000 -e TRUSTWORK_DEFAULT_COUNTRY=US trustwork-web:preview
+          docker run -d --name preview -p 127.0.0.1:3999:3000 -e TRUSTWORK_DEFAULT_COUNTRY=US -e TRUSTWORK_DEMO_MODE=1 trustwork-web:preview
           for i in $(seq 1 60); do
             status=$(docker inspect --format '{{.State.Health.Status}}' preview)
             [ "$status" = healthy ] && break
