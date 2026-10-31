@@ -2721,7 +2721,7 @@
       "id": "SANC-005",
       "title": "Re-screening on every list update and on schedule",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SANC-003"
       ],

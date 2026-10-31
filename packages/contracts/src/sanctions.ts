@@ -1021,3 +1021,66 @@ export const SCREENING_PRIVATE_FIELDS = [
   'matchedKey', 'matched_key', 'screenedName', 'screened_name', 'entryUid', 'entry_uid', 'listCode', 'list_code', 'sanctionsMatch', 'screenedVersions', 'screened_versions',
   'namesDigest', 'names_digest', 'suspendedForCompliance',
 ] as const;
+
+/* ---------- Re-screening (SANC-005) ---------- */
+
+/**
+ * Re-screening runs (ADR 014 decision 12): a `delta` run on every activated list version (the subjects whose names
+ * could meet an added or changed entry first, then everyone), a weekly `full` safety-net run, and a `full` run a
+ * compliance officer asks for. Idempotent per subject and list version; a failed run resumes from its cursor. Runs carry
+ * counts only (hub cohorts, nobody named); staff read them under the compliance role (console: SANC-006).
+ */
+export const RESCREEN_TRIGGERS = ['list_version', 'scheduled', 'manual'] as const;
+export const RescreenTriggerSchema = z.enum(RESCREEN_TRIGGERS);
+export type RescreenTrigger = z.infer<typeof RescreenTriggerSchema>;
+export const RESCREEN_RUN_STATES = ['queued', 'running', 'done', 'failed'] as const;
+export const RescreenRunStateSchema = z.enum(RESCREEN_RUN_STATES);
+/** The window a run must finish in before an `overdue` alert, in seconds (ten minutes to seven days). */
+export const RESCREEN_WINDOW_BOUNDS = { min: 600, max: 604_800 } as const;
+const count = z.int().min(0);
+export const RescreenRunSchema = z.strictObject({
+  id: IdSchema,
+  trigger: RescreenTriggerSchema,
+  mode: z.enum(['delta', 'full']),
+  /** The activated version of a delta run, and the version of the same list it superseded. */
+  listVersionId: IdSchema.nullable(),
+  previousVersionId: IdSchema.nullable(),
+  requestedBy: IdSchema.nullable(),
+  state: RescreenRunStateSchema,
+  phase: z.enum(['candidates', 'all']),
+  blockedReason: z.enum(['lists_unavailable']).nullable(),
+  windowSeconds: z.int().min(RESCREEN_WINDOW_BOUNDS.min).max(RESCREEN_WINDOW_BOUNDS.max),
+  subjectsTotal: count,
+  subjectsDone: count,
+  candidatesScreened: count,
+  screenedFull: count,
+  screenedDelta: count,
+  alreadyCurrent: count,
+  verified: count,
+  outcomes: z.strictObject({ clear: count, possibleMatch: count, insufficientName: count, notScreened: count }),
+  matchesOpened: count,
+  failures: count,
+  resumed: count,
+  overdue: z.boolean(),
+  queuedAt: TimestampSchema,
+  startedAt: TimestampSchema.nullable(),
+  finishedAt: TimestampSchema.nullable(),
+})
+  .refine((r) => (r.mode === 'delta') === (r.trigger === 'list_version') && (r.mode === 'delta') === (r.listVersionId !== null), { message: 'a delta run is the run of one activated version' })
+  .refine((r) => (r.trigger === 'manual') === (r.requestedBy !== null), { message: 'a manual run names who asked for it' })
+  .refine((r) => (r.state === 'done') === (r.finishedAt !== null), { message: 'finished exactly when done' });
+export type RescreenRun = z.infer<typeof RescreenRunSchema>;
+
+/** A compliance officer's request for a full run now (the reason is audited). */
+export const RescreenRequestSchema = z.strictObject({ reason: z.string().trim().min(1).max(500) });
+export type RescreenRequest = z.infer<typeof RescreenRequestSchema>;
+
+/** Outbox events of re-screening: identifiers and counts only. Alerts cannot be muted. */
+export const SCREENING_RESCREEN_EVENTS = {
+  runFinished: 'screening.rescreen_run_finished',
+  runAlert: 'screening.rescreen_run_alert',
+} as const;
+export const RescreenRunFinishedEventSchema = z.strictObject({
+  runId: IdSchema, trigger: RescreenTriggerSchema, mode: z.enum(['delta', 'full']), subjectsTotal: count, subjectsDone: count, matchesOpened: count, durationSeconds: count,
+});
+export const RescreenRunAlertEventSchema = z.strictObject({ runId: IdSchema, trigger: RescreenTriggerSchema, alert: z.enum(['failed', 'overdue']), mutable: z.literal(false) });

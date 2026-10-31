@@ -91,6 +91,8 @@ test('sources: only the screening slice reads screening records', () => {
   const TABLES = /screening_(subject_state|result|match|decision|report_draft)\b|repositories\/screening\.js|modules\/screening\//;
   const allowed = [
     'apps/api/src/modules/screening/', 'apps/worker/src/screening/', 'packages/data/src/repositories/screening.ts', 'packages/data/src/schema/screening.ts',
+    // SANC-005 re-screening is part of the screening engine: it records results through the screening repository.
+    'apps/worker/src/rescreen/', 'packages/data/src/repositories/rescreen.ts', 'packages/data/src/schema/rescreen.ts',
     // Registration only: the identity module mounts the screening routes; the composition root adds the suspension hook.
     'apps/api/src/modules/identity/identity.module.ts', 'apps/api/src/app.ts',
     // DATA-002 names `screening_result` as an object type a staff case grant may cover (staff_case), without reading it.
