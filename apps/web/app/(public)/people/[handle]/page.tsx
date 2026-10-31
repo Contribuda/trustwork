@@ -389,6 +389,13 @@ export default async function PersonPage({ params, searchParams }: Params) {
                         <div className="pp-career__body">
                           <p className="pp-career__role">{typo(c.role)}</p>
                           <p className="pp-career__company">{c.companyHref ? <NextLink href={c.companyHref}>{c.company}</NextLink> : c.company}</p>
+                          {c.confirmation ? (
+                            <p className="pp-career__confirmation">
+                              <span className={c.confirmation === 'company_confirmed' ? 'pp-work__flag pp-work__flag--platform' : 'pp-work__flag'}>
+                                {c.confirmation === 'company_confirmed' ? t('personPage.companyConfirmed') : t('personPage.selfDeclared')}
+                              </span>
+                            </p>
+                          ) : null}
                           <p className="pp-career__years">
                             {c.from} — {c.to ?? t('personPage.present')}
                           </p>

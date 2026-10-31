@@ -49,3 +49,5 @@ export type {
 } from './retrieval.js';
 // Directory projections, handles and pagination (BE-003); the web reads them through the live adapter (WEB-004).
 export * from './directory.js';
+// Profiles, consent records, portraits and experience (PPL-001); the web reads public profiles through the live adapter.
+export * from './profiles.js';

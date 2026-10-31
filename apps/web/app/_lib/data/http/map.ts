@@ -1,4 +1,4 @@
-import type { CompanyDirectoryEntry, Membership, MyProject, ParticipantProject, Person, PersonDirectoryEntry, Principal as ContractPrincipal, Project, ProjectDirectoryEntry, PublicCompany, PublicPerson, PublicProject, SessionView } from '@trustwork/contracts/client';
+import type { CompanyDirectoryEntry, Membership, MyProject, ParticipantProject, Person, PersonDirectoryEntry, Principal as ContractPrincipal, Project, ProjectDirectoryEntry, PublicCompany, PublicPerson, PublicPersonProfile, PublicProject, SessionView } from '@trustwork/contracts/client';
 import type {
   AuthenticatedPrincipal,
   CompanyCard,
@@ -10,6 +10,7 @@ import type {
   ProjectCard,
   ProjectDetail,
   SettingsView,
+  TopicKey,
   WorkspaceProjectDetail,
   WorkspaceProjectRow,
 } from '../types';
@@ -119,6 +120,41 @@ export function toPersonDetail(person: PublicPerson | PersonDirectoryEntry): Per
     mentions: [],
     projects: [],
     profile: { about: null, since: null, geography: [], signals: [], accreditation: null, platformCertificates: [], career: [], education: [], certificates: [], services: [], portfolio: [], contacts: null, faq: [] },
+  };
+}
+
+const TOPIC_KEYS: readonly TopicKey[] = ['materials', 'technologies', 'markets', 'regulation', 'projects', 'people', 'events'];
+const year = (date: string | null): number | null => (date === null ? null : Number(date.slice(0, 4)));
+
+/**
+ * The allowlisted public profile (PPL-001, `GET /v1/people/:id/profile`): only what the person chose to show and only
+ * while their `profile_public` consent is live. Experience keeps its confirmation label (self-declared until a
+ * company confirms); the portrait stays the initials avatar until a public image route exists for live files.
+ */
+export function toPersonDetailFromProfile(profile: PublicPersonProfile): PersonDetail {
+  const base = toPersonDetail({ id: profile.id, handle: profile.handle, displayName: profile.displayName, publicProfile: { headline: profile.headline, expertise: profile.expertise } });
+  const employer = profile.employer ? { name: profile.employer.name, href: `/companies/${profile.employer.companyId}` } : null;
+  return {
+    ...base,
+    roleLine: profile.roleLine ?? base.roleLine,
+    region: profile.regionCode ?? '',
+    topics: profile.topics.filter((topic): topic is TopicKey => (TOPIC_KEYS as readonly string[]).includes(topic)),
+    employer,
+    independent: employer === null,
+    profile: {
+      ...base.profile,
+      geography: profile.regionCode ? [profile.regionCode] : [],
+      career: profile.experience.map((entry) => ({
+        id: entry.id,
+        company: entry.organisation.name,
+        companyHref: entry.organisation.companyId ? `/companies/${entry.organisation.companyId}` : null,
+        role: entry.role,
+        from: year(entry.from) as number,
+        to: year(entry.to),
+        summary: entry.summary,
+        confirmation: entry.confirmation,
+      })),
+    },
   };
 }
 

@@ -132,7 +132,14 @@
       "previewTitle": "Başqaları səhifənizi belə görür",
       "portraitHidden": "Portret ictimai səhifədə gizlidir",
       "demoNote": "Demo: dəyişikliklər serverdə saxlanılmır.",
-      "portraitPending": "Portret foto yükləndikdən sonra görünəcək."
+      "portraitPending": "Portret foto yükləndikdən sonra görünəcək.",
+      "liveNote": "Dəyişikliklər hesabınızda saxlanılır. Səhifəni gizlətdikdə razılıq geri götürülür və səhifə dərhal ictimai səhifələrdən və kataloqdan çıxarılır.",
+      "saveFailed": "İctimai səhifəni saxlamaq mümkün olmadı. Sahələri yoxlayın və yenidən cəhd edin.",
+      "saving": "Saxlanılır…",
+      "notice": {
+        "profilePublic": "Dərc etməklə adımın, başlığımın və seçdiyim bölmələrin hamıya göstərilməsinə razıyam. Səhifəni istənilən vaxt gizlədə bilərəm.",
+        "portraitDisplay": "Portretimin ictimai səhifəmdə göstərilməsinə razıyam. O, yalnız təsvir üçün lisenziya qeydi olduqda görünür və razılığımı istənilən vaxt geri götürə bilərəm."
+      }
     },
     "history": {
       "org": "Təşkilat",

@@ -2,7 +2,7 @@
 
 Normative requirements: [Identity and accounts](modules/identity-and-accounts.md), [People and companies](modules/people-and-companies.md). Participants: [who uses what](participants/README.md).
 
-Requirements R01–R03, R15, R21–R24, R28. Status: accounts, sessions, memberships and public reads are **Live**; profiles and directories are **Demo**; claims and verification recipes are **Proposed**.
+Requirements R01–R03, R15, R21–R24, R28. Status: accounts, sessions, memberships, public reads, directories (BE-003) and profiles with consent records, portraits and experience (PPL-001, API and the "My page" editor on the live API) are **Live**; the remaining profile screens run on **Demo** data; claims and verification recipes are **Proposed**.
 
 ## A person is one human for life
 
@@ -74,7 +74,7 @@ Proving who a company is does not prove that a particular person may bind it com
 
 ## The people directory
 
-People appear in the public directory only when their profile is public. People mentioned in publications or listed by companies appear only with consent; consent and withdrawals are recorded, and withdrawal unpublishes. Portraits require a licence record. The engine ships no photographs: avatars are initials, covers are generated artworks, and each deployment registers its own licensed images.
+People appear in the public directory only when their profile is public, and a profile is public only while the person's `profile_public` consent is live (PPL-001). People mentioned in publications or listed by companies appear only with consent naming that publication or company; consent records are explicit (the person's own first-party form), versioned (each names the notice it answered) and revocable, and withdrawal unpublishes the dependent projection in the same transaction and leaves a tombstone so search, federation and caches drop it. Portraits require both a portrait consent and a licence record for the image. Experience entries belong to the person, survive every change of employer and are labelled "As stated by the professional" (`personPage.selfDeclared`) until a company confirmation is recorded. Bookmarks, follows, reading progress and preferences are never visible to employers, colleagues or anyone else. The engine ships no photographs: avatars are initials, covers are generated artworks, and each deployment registers its own licensed images.
 
 ## Designed next
 
@@ -92,4 +92,7 @@ People appear in the public directory only when their profile is public. People 
 - A former member loses company authority in the same transaction that ends the membership.
 - A person's public projection never contains e-mail bindings, provider identities, sessions or token hashes.
 - A private profile is not found (404) in the public directory, search and federation feeds.
+- A profile cannot become public without a live `profile_public` consent; withdrawing it hides the profile in the same transaction and writes a tombstone (PPL-001).
+- A portrait is shown only with a live portrait consent and a live licence on the same clean, public file of the person.
+- Profile, consent, experience, bookmark, follow and reading-progress rows are readable only by their person (FORCE RLS), never by an employer or a colleague.
 - An identifier value never upgrades a badge by itself.

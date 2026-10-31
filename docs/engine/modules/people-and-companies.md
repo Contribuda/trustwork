@@ -1,6 +1,6 @@
 # People and companies
 
-Module code `PCO`. Status: public reads of people and companies, company memberships (invite, accept, change, end, one active employer), company creation with a founding administrator, public handles with redirects and keyset-paginated people, company and project directories are **Live** in the API (BE-003); directories, profiles, the company page and "My page" with the public profile editor are **Demo**; company legal identifiers from country packs are **Contract**; profiles with consent and portraits, claims, registrations, licences, credentials, branches and statutory partner checks are **Proposed**. Packages: BE-001 (done), BE-003 (done), PPL-001, CLM-001, HUB-003, REG-001, PREQ-001, AGT-005. Narrative: [People and companies](../people-and-companies.md). Data: [§4 People and profiles](../../data/model.md#4-people-and-profiles), [§5 Companies](../../data/model.md#5-companies).
+Module code `PCO`. Status: public reads of people and companies, company memberships (invite, accept, change, end, one active employer), company creation with a founding administrator, public handles with redirects and keyset-paginated people, company and project directories are **Live** in the API (BE-003); profiles with consent records, portraits with licence records, experience, company listings by consent and private follows, bookmarks and reading progress are **Live** in the API, and "My page" saves the public profile through it on the live API (PPL-001); directories, profiles and the company page otherwise run on **Demo** data; company legal identifiers from country packs are **Contract**; claims, registrations, licences, credentials, branches and statutory partner checks are **Proposed**. Packages: BE-001 (done), BE-003 (done), PPL-001 (done), CLM-001, HUB-003, REG-001, PREQ-001, AGT-005. Narrative: [People and companies](../people-and-companies.md). Data: [§4 People and profiles](../../data/model.md#4-people-and-profiles), [§5 Companies](../../data/model.md#5-companies).
 
 ## Purpose
 
@@ -14,7 +14,7 @@ Every person; company administrators and members; trust reviewers who decide cla
 
 | # | Story | Status |
 |---|---|---|
-| PCO-S1 | As a professional, I want a public profile I edit with a live preview and can switch off, so that I control what the industry sees | Demo |
+| PCO-S1 | As a professional, I want a public profile I edit with a live preview and can switch off, so that I control what the industry sees | Live (API and "My page" on the live API); Demo (fixtures) |
 | PCO-S2 | As a company owner, I want to create my company, invite colleagues and remain the last administrator, so that the page is never orphaned | Live (memberships); Proposed (creation) |
 | PCO-S3 | As a supplier, I want to claim the sourced page the hub built from public records and get it verified, so that my real company is not confused with impostors | Proposed |
 | PCO-S4 | As a client, I want to see which facts about a contractor came from a state licence board, which the contractor claims and which the hub verified, each with a date | Proposed |
@@ -27,10 +27,10 @@ Every person; company administrators and members; trust reviewers who decide cla
 | ID | Requirement | Status | Packages |
 |---|---|---|---|
 | PCO-F01 | A person can read and publish without belonging to any company; profile, publications, learning record and authorship survive every change of employer | Live (identity); Demo (profile) | BE-001, PPL-001 |
-| PCO-F02 | "My page" (`me.title`) separates the private view (decisions, projects by role, mandates, publications, learning) from the public profile, edited with a live preview | Demo | PPL-001, WEB-004 |
-| PCO-F03 | A public profile can be hidden entirely (`profileVisibility`); a hidden profile is not found in directories, search and federation | Live (reads); Demo (setting) | BE-001, PPL-001 |
-| PCO-F04 | Portraits require consent and a media licence record; the engine ships no photographs; withdrawing consent unpublishes | Proposed | PPL-001 |
-| PCO-F05 | Experience entries, professional credentials and portfolio entries belong to the person and can be shown independently of the current employer | Proposed | PPL-001, REP-001 |
+| PCO-F02 | "My page" (`me.title`) separates the private view (decisions, projects by role, mandates, publications, learning) from the public profile, edited with a live preview | Live (public profile editor on the live API); Demo (other tabs) | PPL-001, WEB-004 |
+| PCO-F03 | A public profile can be hidden entirely (`profileVisibility`); a hidden profile is not found in directories, search and federation; going public is a recorded `profile_public` consent and hiding withdraws it | Live | BE-001, PPL-001 |
+| PCO-F04 | Portraits require consent and a media licence record; the engine ships no photographs; withdrawing consent unpublishes | Live (API; FILE-001 quarantines public images with location metadata) | PPL-001 |
+| PCO-F05 | Experience entries, professional credentials and portfolio entries belong to the person and can be shown independently of the current employer | Live (experience, labelled self-declared until confirmed); Proposed (credentials, portfolio) | PPL-001, REP-001 |
 | PCO-F06 | A person has at most one active ordinary employer; membership lifecycle `invited → active → ended` (or `declined \| expired \| withdrawn`); invitation, change and end need step-up; the last administrator cannot be removed | Live | BE-001 |
 | PCO-F07 | Ending a membership revokes company-derived permissions, cached decisions and every active mandate relying on company authority in the same transaction | Live (permissions); Proposed (mandates) | BE-001, AGT-001 |
 | PCO-F08 | Membership never implies commercial authority; spending and signing authority are separate proofs (`authority_proof`) | Contract | CLM-001, AST-001 |
@@ -43,9 +43,9 @@ Every person; company administrators and members; trust reviewers who decide cla
 | PCO-F15 | Credentials (licences, insurance certificates, professional certificates) track expiry and remind the holder before it | Proposed | REP-001, AGT-005 |
 | PCO-F16 | The statutory partner-check pack of the country (for example tax and pension status, insurance, registration that a client must check before contracting) is listed in the pack, collected once and shared per client by consent with expiry | Proposed | PREQ-001, CTRY packs |
 | PCO-F17 | Company branches in several hubs are one legal entity with linked records; links never merge records | Proposed | FED-003 |
-| PCO-F18 | People appear in the people directory only with a public profile; people mentioned by companies or publications appear only with consent | Live (API: public, keyset-paginated directories); Demo (screens); Proposed (consent) | BE-003 (done), PPL-001 |
+| PCO-F18 | People appear in the people directory only with a public profile; people mentioned by companies or publications appear only with consent | Live (API: directories, consent for public profiles, company listings and mention links); Demo (screens) | BE-003 (done), PPL-001 |
 | PCO-F19 | The company page shows details, wall, people who chose to appear, catalogue, projects, reputation and the external website; editing is permission-scoped | Demo | BE-003, WEB-004 |
-| PCO-F20 | Follow a person or a company; following shapes feeds and notifications and is never sold or shown as a public count of followers' identities | Proposed | PPL-001 |
+| PCO-F20 | Follow a person or a company; following shapes feeds and notifications and is never sold or shown as a public count of followers' identities | Live (private follows); Proposed (feeds) | PPL-001 |
 | PCO-F21 | Badge wording is a fixed, counsel-reviewed vocabulary; the words "certified", "licensed", "guaranteed" or "approved" appear only when bound to a register fact or a recorded accreditation | Proposed | WORD-001, CLM-001 |
 | PCO-F22 | No "who viewed your profile" feature exists | Live (absence, rule) | — |
 

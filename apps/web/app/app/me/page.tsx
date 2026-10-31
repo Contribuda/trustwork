@@ -7,7 +7,7 @@ import { MeLearning } from '@/components/workspace/MeLearning';
 import { MeProfileCard } from '@/components/workspace/MeProfileCard';
 import { MePublicEditor } from '@/components/workspace/MePublicEditor';
 import { DecisionList, PageHeader, ProjectRows } from '@/components/workspace/parts';
-import { data } from '@/app/_lib/data';
+import { data, DATA_SOURCE } from '@/app/_lib/data';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { longDate, shortDate, t, tDynamic } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
@@ -20,9 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * «Моя страница»: identity card with completeness, then tabs — Работа (decisions, projects by role, mandates),
- * Публикации, Интересы, Обучение (reading progress, bookmarks, certificates, courses), История, Публичный профиль
- * (editor with live preview). The private view and the public projection stay separate.
+ * "My page" (`me.title`): identity card with completeness, then tabs: Work (`me.tabs.work`: decisions, projects by
+ * role, mandates), Publications, Interests, Learning (reading progress, bookmarks, certificates, courses), History and
+ * Public profile (`me.tabs.publicProfile`: editor with live preview). The private view and the public projection stay
+ * separate; on the live API the public profile exists only with the person's consent (PPL-001).
  */
 export default async function MePage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
@@ -244,7 +245,12 @@ export default async function MePage({ searchParams }: { searchParams: PageSearc
         </div>
       ),
     },
-    { id: 'public', label: t('me.tabs.publicProfile'), content: <MePublicEditor name={principal.displayName} roleLine={me.roleLine} employer={principal.company?.name ?? null} publicHref={me.publicHref} seed={seed} /> },
+    {
+      id: 'public',
+      label: t('me.tabs.publicProfile'),
+      // On the live API the editor saves the profile, its consents and visibility through /v1/me/* (PPL-001).
+      content: <MePublicEditor name={principal.displayName} roleLine={me.roleLine} employer={principal.company?.name ?? null} publicHref={me.publicHref} seed={seed} live={DATA_SOURCE === 'api'} />,
+    },
   ];
 
   return (

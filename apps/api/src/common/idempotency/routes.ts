@@ -58,6 +58,26 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'project.location_set': IN_TRANSACTION,
   'project.permit_record': IN_TRANSACTION,
   'project.diary_add': IN_TRANSACTION,
+  // Profiles, consent, portraits, experience and private records (PPL-001): every route runs in one
+  // PrincipalService.runAs transaction (consent withdrawal, unpublication and tombstones included) and returns its
+  // result unchanged.
+  'profile.save': IN_TRANSACTION,
+  'profile.visibility': IN_TRANSACTION,
+  'consent.grant': IN_TRANSACTION,
+  'consent.withdraw': IN_TRANSACTION,
+  'media_licence.record': IN_TRANSACTION,
+  'media_licence.revoke': IN_TRANSACTION,
+  'portrait.set': IN_TRANSACTION,
+  'portrait.remove': IN_TRANSACTION,
+  'experience.add': IN_TRANSACTION,
+  'experience.update': IN_TRANSACTION,
+  'experience.archive': IN_TRANSACTION,
+  'preferences.save': IN_TRANSACTION,
+  'follow.add': IN_TRANSACTION,
+  'follow.end': IN_TRANSACTION,
+  'bookmark.add': IN_TRANSACTION,
+  'bookmark.remove': IN_TRANSACTION,
+  'reading_progress.record': IN_TRANSACTION,
   // Catalogue, needs, RFQs and invitations (COM-001): every route runs in one PrincipalService.runAs transaction (the
   // invitation outbox event included) and returns its result unchanged.
   'offering.create': IN_TRANSACTION,

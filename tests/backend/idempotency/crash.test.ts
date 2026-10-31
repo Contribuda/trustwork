@@ -437,6 +437,37 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await exactlyOnce({ action: 'agreement.withdraw', client: petr, url: `/v1/agreements/${d3.agreement.id}/withdraw`, body: { expectedRevision: d3.agreement.revision, reason: 'Exactly-once withdrawal', actor: person }, effects: () => auditCount(h.db.admin, 'agreement.withdrawn') });
   });
 
+  await t.test('profiles (PPL-001): profile, visibility, consent, licences, portraits, experience and private records', async () => {
+    const me = seed.people.petr;
+    const rows = (table: string, where = '') => () => count(h.db.admin, `SELECT 1 FROM trustwork.${table} WHERE ${table === 'follow' ? 'follower_person_id' : 'person_id'} = $1 ${where}`, [me]);
+    const profile = { headline: 'Exactly-once estimator', expertise: [], roleLine: 'Estimator', regionCode: 'US-CA', showEmployer: false, topics: [], languages: [], publicFields: ['roleLine'] };
+    await exactlyOnce({ action: 'profile.save', client: petr, url: '/v1/me/profile', body: { expectedRevision: null, ...profile }, effects: () => auditCount(h.db.admin, 'profile.saved') });
+    await exactlyOnce({ action: 'profile.visibility', client: petr, url: '/v1/me/profile/visibility', body: { visibility: 'public', noticeVersion: 'profile_public.v1' }, effects: () => auditCount(h.db.admin, 'profile.published') });
+    const consent = (await exactlyOnce({ action: 'consent.grant', client: petr, url: '/v1/me/consents', body: { purpose: 'marketing', target: null, noticeVersion: 'marketing.v1' }, effects: () => auditCount(h.db.admin, 'consent.granted') })).body as { id: string };
+    await exactlyOnce({ action: 'consent.withdraw', client: petr, url: `/v1/me/consents/${consent.id}/withdraw`, body: { reason: 'Exactly-once withdrawal' }, effects: () => auditCount(h.db.admin, 'consent.withdrawn') });
+    const asset = (await withMaintenance(h.db.admin, (trx) => trx.insertInto('evidence_artifact').values({
+      owner_person_id: me, owner_company_id: null, parent_kind: 'person', parent_id: me, classification: 'public', storage_key: 'person/petr/crash-portrait.png', sha256: 'e'.repeat(64), bytes: 512,
+      media_type: 'image/png', uploaded_by: me, scan_state: 'clean',
+    }).returning('id').executeTakeFirstOrThrow())).id;
+    const licence = (await exactlyOnce({ action: 'media_licence.record', client: petr, url: '/v1/me/media-licences', body: { assetId: asset, licensor: 'Fixture Petr', licenceKind: 'own_work', scope: 'profile portrait', validUntil: null }, effects: () => auditCount(h.db.admin, 'media_licence.recorded') })).body as { id: string };
+    const portraitConsent = (await created(await petr.post('/v1/me/consents', { purpose: 'portrait_display', target: null, noticeVersion: 'portrait_display.v1' }))) as unknown as { id: string };
+    const portrait = (await exactlyOnce({ action: 'portrait.set', client: petr, url: '/v1/me/portrait', body: { assetId: asset, mediaLicenceId: licence.id, consentRecordId: portraitConsent.id }, effects: () => auditCount(h.db.admin, 'portrait.set') })).body as { id: string; revision: number };
+    await exactlyOnce({ action: 'portrait.remove', client: petr, url: `/v1/me/portraits/${portrait.id}/remove`, body: { expectedRevision: portrait.revision }, effects: () => auditCount(h.db.admin, 'portrait.removed') });
+    await exactlyOnce({ action: 'media_licence.revoke', client: petr, url: `/v1/me/media-licences/${licence.id}/revoke`, body: { reason: 'Exactly-once revocation' }, effects: () => auditCount(h.db.admin, 'media_licence.revoked') });
+    const entryBody = { organisation: { companyId: null, name: 'Exactly-once Roofing' }, role: 'Estimator', summary: null, from: '2024-01-01', to: null, visibility: 'public' };
+    const entry = (await exactlyOnce({ action: 'experience.add', client: petr, url: '/v1/me/experience', body: entryBody, effects: () => auditCount(h.db.admin, 'experience.added') })).body as { id: string; revision: number };
+    const updated = (await exactlyOnce({ action: 'experience.update', client: petr, url: `/v1/me/experience/${entry.id}`, body: { ...entryBody, role: 'Senior estimator', expectedRevision: entry.revision }, effects: () => auditCount(h.db.admin, 'experience.updated') })).body as { revision: number };
+    await exactlyOnce({ action: 'experience.archive', client: petr, url: `/v1/me/experience/${entry.id}/archive`, body: { expectedRevision: updated.revision }, effects: () => auditCount(h.db.admin, 'experience.archived') });
+    // Private attention records are not audited: their effect is the row itself.
+    await exactlyOnce({ action: 'preferences.save', client: petr, url: '/v1/me/preferences', body: { intents: ['read'], topics: [], regions: [], onboardingCompleted: false, expectedRevision: null }, effects: rows('person_preference') });
+    const follow = (await exactlyOnce({ action: 'follow.add', client: petr, url: '/v1/me/follows', body: { target: { kind: 'topic', code: 'materials' } }, effects: rows('follow') })).body as { id: string };
+    await exactlyOnce({ action: 'follow.end', client: petr, url: `/v1/me/follows/${follow.id}/end`, body: {}, effects: rows('follow', 'AND ended_at IS NOT NULL') });
+    const publication = '0198b1d0-0000-7000-8000-0000000000dd';
+    const bookmark = (await exactlyOnce({ action: 'bookmark.add', client: petr, url: '/v1/me/bookmarks', body: { target: { kind: 'publication', id: publication } }, effects: rows('bookmark') })).body as { id: string };
+    await exactlyOnce({ action: 'bookmark.remove', client: petr, url: `/v1/me/bookmarks/${bookmark.id}/remove`, body: {}, effects: rows('bookmark', 'AND removed_at IS NOT NULL') });
+    await exactlyOnce({ action: 'reading_progress.record', client: petr, url: '/v1/me/reading-progress', body: { publicationVersionId: publication, progress: '0.5' }, effects: rows('reading_progress') });
+  });
+
   await t.test('every in-transaction route was crash-tested', () => {
     const expected = Object.entries(IDEMPOTENT_ROUTES).filter(([, mode]) => mode.kind === 'in_transaction').map(([action]) => action).sort();
     assert.deepEqual([...covered].sort(), expected);

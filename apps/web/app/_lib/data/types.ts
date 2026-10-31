@@ -166,7 +166,8 @@ export type PersonProfile = {
   signals: Signal<PersonSignalKind>[];
   accreditation: Accreditation;
   platformCertificates: PlatformCertificate[];
-  career: Array<{ id: string; company: string; companyHref: string | null; role: string; from: number; to: number | null; summary: string | null }>;
+  /** `confirmation` (live API, PPL-001): entries are self-declared until a company confirmation is recorded; absent in fixtures. */
+  career: Array<{ id: string; company: string; companyHref: string | null; role: string; from: number; to: number | null; summary: string | null; confirmation?: 'self_declared' | 'company_confirmed' }>;
   education: Array<{ id: string; school: string; degree: string; year: number | null }>;
   certificates: Certificate[];
   services: Array<{ id: string; name: string; description: string | null; format: 'onsite' | 'remote' | 'both'; unit: string | null }>;

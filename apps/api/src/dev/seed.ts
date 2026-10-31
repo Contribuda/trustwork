@@ -1,5 +1,6 @@
 import { hash } from '@node-rs/argon2';
 import { createPool, databaseConfigFromEnv, withMaintenance } from '../deps/data.js';
+import { consentRecords } from '../modules/profiles/deps.js';
 
 /**
  * Local development seed (synthetic personas from the contract fixtures; never real users). Runs with the
@@ -47,6 +48,10 @@ async function main(): Promise<void> {
         ids[p.key] = person.id;
         await trx.insertInto('email_binding').values({ person_id: person.id, email_normalized: p.email, is_primary: true, verified_at: new Date() }).execute();
         await trx.insertInto('credential').values({ person_id: person.id, kind: 'password', password_hash: await hash(p.password, { memoryCost: 19456, timeCost: 2, parallelism: 1 }) }).execute();
+        // PPL-001: a public profile exists only with the person's profile_public consent (synthetic persona).
+        if (p.visibility === 'public') {
+          await consentRecords.insert(trx, { subject_person_id: person.id, purpose: 'profile_public', target_kind: null, target_id: null, notice_version: 'profile_public.v1', evidence: { method: 'first_party_form', requestId: 'dev-seed' } });
+        }
       }
       for (const c of COMPANIES) {
         const company = await trx.insertInto('company').values({ display_name: c.name, claim_status: c.claim, public_description: c.description, legal_identifiers: JSON.stringify([]) }).returning('id').executeTakeFirstOrThrow();

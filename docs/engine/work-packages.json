@@ -1433,7 +1433,7 @@
       "id": "PPL-001",
       "title": "Profiles, consent records, portraits and experience",
       "area": "people",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-003",
         "FILE-001",
