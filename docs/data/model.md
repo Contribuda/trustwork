@@ -756,7 +756,7 @@ These packages close the gaps between the existing task graph and this model.
       "Add person_profile, person_preference, consent_record, media_licence, portrait, experience_entry, follow, bookmark and reading_progress (portfolio entries and credentials are delivered by REP-001).",
       "Implement consent withdrawal that unpublishes dependent projections in the same transaction and emits tombstones.",
       "Expose public profile reads only through allowlisted serializers; extend forbidden-field tests.",
-      "Connect the «Моя страница» public profile editor and the people directory to the API."
+      "Connect the "My page" public profile editor and the people directory to the API."
     ],
     "acceptance": [
       "A person mentioned or listed without consent never appears publicly.",

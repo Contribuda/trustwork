@@ -8,7 +8,7 @@ The [agent catalogue](agent-catalog.md) (Proposed) details what the agent does f
 
 ## One agent, one surface
 
-- Each person has **one** agent, the same thing the interface calls «Помощник» (the assistant). A company may additionally enable **one** standing representative ([below](#company-representation)). There is no list of bots to manage and no agent marketplace inside the product.
+- Each person has **one** agent, the same thing the interface calls "Assistant" (`assistant.title`). A company may additionally enable **one** standing representative ([below](#company-representation)). There is no list of bots to manage and no agent marketplace inside the product.
 - It lives on a full page and in an icon-only launcher in the bottom-right corner that opens a floating overlay. The overlay never shrinks or reflows the page; the full page and the overlay share one conversation and one state.
 - Internally the agent may use specialised workers (research, drafting, comparison, negotiation). Those are implementation details and stay invisible.
 - What the agent can do is packaged as **modules** ([catalogue](agent-catalog.md#the-module-system)). Modules are abilities of the one agent, never separate agents; the person sees them as jobs the agent offers and the mandates those jobs need.
@@ -86,7 +86,7 @@ Report: every Friday.
 ```
 
 - When you create a goal, the agent checks whether the current mandates allow it and proposes the missing mandate changes in one structured screen ("To pursue this goal I need: introductions up to 10, research in categories Facade works").
-- The agent keeps a plan, a progress log with evidence (which candidates, why, what happened) and asks for decisions in the «Нужно ваше решение» list.
+- The agent keeps a plan, a progress log with evidence (which candidates, why, what happened) and asks for decisions in the "Your decision is needed" list (`decision.kicker`).
 - Goals can be paused, edited or closed with an outcome. The weekly report is a draft you can share with colleagues.
 
 ## Negotiation
@@ -142,14 +142,14 @@ A company may enable **one standing representative** that keeps answering when p
 
 | Rule | Design |
 |---|---|
-| One per company | Enabled in «Компания → Представитель» by a company administrator; there is no list of representatives and no agent management screen |
+| One per company | Enabled in "Company" → "Representative" by a company administrator; there is no list of representatives and no agent management screen |
 | Always an accountable human | A current member with company authority is named **accountable person**. If they leave or lose authority, the representative suspends until another authorized member accepts the role |
 | Authority only from mandates | Company mandates granted by members with the authority to grant them. The representative's effective authority is the intersection of its mandates and the company's current grants; it never exceeds what the granting member could do |
 | Continuity with re-confirmation | When the member who granted a mandate leaves, the mandate is not silently inherited: another authorized member must re-confirm it within 7 days, or it suspends |
 | Labelled everywhere | Every message, quote and acceptance reads "Representative of Fasad-Primer (accountable: Anna Primerova)"; counterparties always know they deal with an agent |
 | Company money only | Commitments reserve from company transaction budgets; its own platform usage is billed to the company's platform budget |
 | Visible and stoppable | Members with the right see its activity, mandates and pending decisions on the company page; any company administrator can suspend it instantly; the hub kill switch applies |
-| Decisions go to people | Actions outside its mandates, or marked "needs approval", appear in the «Нужно ваше решение» list of the members named as approvers, in their own assistant |
+| Decisions go to people | Actions outside its mandates, or marked "needs approval", appear in the "Your decision is needed" list (`decision.kicker`) of the members named as approvers, in their own assistant |
 
 Typical jobs: keep the capability profile and catalogue presentation current, answer RFQ invitations and introduction requests, propose and schedule meetings at events, negotiate within the company's floors, accept orders within limits, and send a weekly report to the accountable person.
 

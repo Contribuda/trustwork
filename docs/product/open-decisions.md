@@ -21,7 +21,7 @@ No default here may silently become an accepted commercial, legal or UX claim. O
 | O15 | Multiple simultaneous employers | Out of current scope; no latent switcher or required UX |
 | O16 | ~~Agent tool entitlement~~ Retired 2026-10-31: contributors bring their own coding agents ([agent onboarding](../engine/agent-onboarding.md)) | Retired |
 | O17 | ~~Open-source license~~ Decided 2026-10-29 by the owner: **AGPL-3.0-only** (hosted forks share their changes); `LICENSE` carries the full text, every package declares the SPDX identifier (ADR-009 decision 8) | Decided |
-| O18 | ~~Neutral engine name~~ Decided 2026-10-29 by the owner: **Trustwork**, package scope `@trustwork/*`; Trustwork in every language, «Строй Репутация» only in the Russian interface (ADR-009 decision 6, ADR 010 decision 14) | Decided |
+| O18 | ~~Neutral engine name~~ Decided 2026-10-29 by the owner: **Trustwork**, package scope `@trustwork/*`; Trustwork in every language, a Russian-language name and wordmark only in the Russian interface (ADR-009 decision 6, ADR 010 decision 14) | Decided |
 | O19 | ~~Publication~~ Decided and done 2026-10-31: the engine is public as `Contribuddha/trustwork` (ADR 010 decisions 12 and 15) | Decided |
 
 A task can research an open decision without implementing a guessed answer. Escalate only the decisions that block the concrete task; keep independent work moving.

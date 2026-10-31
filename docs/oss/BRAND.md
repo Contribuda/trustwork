@@ -1,14 +1,14 @@
 # Brand
 
-**Trustwork everywhere** (owner decision 2026-10-31, ADR 010 decision 14). The engine, the public site, the workspace, the documentation and the hosted preview show Trustwork in every language. The only exception is the Russian interface, which shows «Строй Репутация».
+**Trustwork everywhere** (owner decision 2026-10-31, ADR 010 decision 14). The engine, the public site, the workspace, the documentation and the hosted preview show Trustwork in every language. The only exception is the Russian interface, which shows a Russian-language name and wordmark defined in `apps/web/brand`.
 
 | Layer | Where it lives | Status |
 |---|---|---|
 | Product and engine name | `NOTICE`, `README.md`, package scope `@trustwork/*`, env prefix `TRUSTWORK_`, cookies `trustwork.*`, CSS utility prefix `trustwork-`, digest algorithm `trustwork-digest-1`, PostgreSQL schema and roles `trustwork*` | **Trustwork**, decided by the owner on 2026-10-29 (O18). Repository `Contribuddha/trustwork`. |
 | Maintainer | `README.md`, `NOTICE`, `GOVERNANCE.md`, handbook | Created and maintained by Contribuddha (contribuddha.com), ADR 010 decision 13. |
 | Mark (three blue squares) | `packages/ui/brand/logo-mark*.svg`, `<Brand variant="mark" />` | The project's own symbol (owner decision 2026-10-29), shipped with the engine; `NOTICE` states the trademark reservation. |
-| Wordmark | `packages/ui/brand/logo-*.svg`, `packages/ui/src/components/Brand/wordmark.ts` | «trust / work», the default lockup. |
-| Russian-interface overlay | `apps/web/brand/` (`lettering.json`, `wordmarks.ts`, `logo/`, `messages/ru.json`) | «Строй Репутация» with the lettering «строй / репутация», applied only when the visitor chose Russian. On by default (`stroyreputation-ru`); `NEXT_PUBLIC_TRUSTWORK_BRAND=none` turns it off. |
+| Wordmark | `packages/ui/brand/logo-*.svg`, `packages/ui/src/components/Brand/wordmark.ts` | "trust / work", the default lockup. |
+| Russian-interface overlay | `apps/web/brand/` (`lettering.json`, `wordmarks.ts`, `logo/`, `messages/ru.json`) | A Russian-language name with its stacked two-word lettering, applied only when the visitor chose Russian. On by default (`stroyreputation-ru`); `NEXT_PUBLIC_TRUSTWORK_BRAND=none` turns it off. |
 | Country packs | `packages/country-packs/packs/*.json` | Engine data; each pack cites its sources. |
 | Legal templates | `docs/legal/templates` | Templates the operator adapts with counsel. |
 

@@ -43,7 +43,7 @@ Local stand: `npm run infra:up`, `DATABASE_URL=postgresql://trustwork_dev:local_
 `POST /v1/auth/signup` -> `202 { "status": "verification_sent" }` for new and existing addresses alike (the mailbox receives either the verification link or an "already registered" notice).
 
 ```json
-{ "name": "Пётр", "email": "petr@example.invalid", "password": "correct horse battery staple 42", "acceptedTermsVersion": "draft-2026-10" }
+{ "name": "Peter", "email": "petr@example.invalid", "password": "correct horse battery staple 42", "acceptedTermsVersion": "draft-2026-10" }
 ```
 
 `POST /v1/auth/verify-email { "token": "<from mail>" }` -> `200 { "status": "verified", "personId": "…", "email": "petr@example.invalid" }` + `Set-Cookie: __Host-sr_session=…`. Sessions, tokens and provider links created before verification are revoked (pre-hijack defence). The same route completes e-mail changes.

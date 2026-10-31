@@ -21,12 +21,12 @@ Both families are licensed under the SIL Open Font License 1.1; the licence text
 | Upstream | https://github.com/google/fonts, directory `ofl/ptserif` (ParaType) |
 | Commit | `f0f048639276f7abf542bc3956cc3672ef114e17` (last commit touching `ofl/ptserif` at download time) |
 | Vendored files (unmodified) | `PT_Serif-Web-Regular.ttf` `a4951fade06ff8f09b7673aa81ffb65a8cd409e24d3289a6dc670bc4dda2557a`; `PT_Serif-Web-Italic.ttf` `f57e95ff9dc85691a3b2e193f2028db36f6663939a46c0fc4f286d618b80b7ce`; `PT_Serif-Web-Bold.ttf` `038ba7336bd7ea14f12ad155bed51a4345cac5153275d521dec3ba04021c526e`; `PT_Serif-Web-BoldItalic.ttf` `f003788ba08981eb0988b3557a6f224a53dab49c20e283e8b74d5af3c466f8be` |
-| Why TTF, not WOFF2 | PT Serif is a static family (no variable version exists) and its OFL declares Reserved Font Names («PT Sans», «PT Serif», «ParaType»). The official files are vendored byte-for-byte so no "Modified Version" question arises. A WOFF2 conversion (~55% smaller) can be added later once the licence owner's position on format-only conversion is recorded; the reader font is loaded only on magazine routes. |
+| Why TTF, not WOFF2 | PT Serif is a static family (no variable version exists) and its OFL declares Reserved Font Names ("PT Sans", "PT Serif", "ParaType"). The official files are vendored byte-for-byte so no "Modified Version" question arises. A WOFF2 conversion (~55% smaller) can be added later once the licence owner's position on format-only conversion is recorded; the reader font is loaded only on magazine routes. |
 | Licence | `OFL-PTSerif.txt` (copyright 2010 ParaType Ltd, with Reserved Font Names) |
 
 ## Subsetting
 
-No subsetting was applied; both files contain full Cyrillic and Latin coverage including «», —, №, the ruble sign and Ё/ё. A Cyrillic+Latin subset is a later optimisation and would be a Modified Version under the OFL for PT Serif.
+No subsetting was applied; both files contain full Cyrillic and Latin coverage including Russian guillemets, the em dash, the numero sign, the ruble sign and the Cyrillic letter yo in both cases. A Cyrillic+Latin subset is a later optimisation and would be a Modified Version under the OFL for PT Serif.
 
 ## Noto Sans Georgian and Noto Sans Armenian (script fallbacks, INTL-GE / INTL-AM)
 

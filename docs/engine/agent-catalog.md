@@ -42,7 +42,7 @@ The catalogue adds breadth, never authority. Every rule of [Your agent](agents.m
 
 | Term | Meaning in this chapter |
 |---|---|
-| **Agent** | The person's single assistant, "Assistant" in the English interface and «Помощник» in the Russian one (locale keys, never hard-coded). |
+| **Agent** | The person's single assistant, "Assistant" in the English interface (`assistant.title`; every language from the locale files, never hard-coded). |
 | **Standing representative** | The company's single agent ([Company representation](agents.md#company-representation)). |
 | **Participant type** | A **lens for suggestions** (supplier, homeowner, editor…), derived from optional onboarding preferences and what the person actually does. It is never a role, confers no rights, is never shown to others and can be changed or cleared at any time. A person often fits several types; the agent combines them. |
 | **Module** | A versioned, engine-defined package of capability: job templates, the actions and tools it needs, mandate templates, triggers, report sections, meters and its safety tests. Enabled per hub, entitled per payer. |
@@ -1007,7 +1007,7 @@ The agent keeps one surface: the full assistant page and the floating overlay, o
 | Region | What it shows | Notes |
 |---|---|---|
 | Conversation | Requests, answers with citations, proposals | Chat proposals become structured forms; nothing in chat authorizes |
-| Decisions waiting ("Your decision needed"; «Нужно ваше решение» in Russian) | Each pending action with its exact effect, amount, counterparty, digest-bound approve and decline | Sorted by deadline; the same list for every plan |
+| Decisions waiting ("Your decision is needed", `decision.kicker`) | Each pending action with its exact effect, amount, counterparty, digest-bound approve and decline | Sorted by deadline; the same list for every plan |
 | Goals | Active goals with plan, progress log and evidence | Pause, edit, close with an outcome |
 | Mandates | Every active, suspended and expiring mandate in plain language, with the job that uses it | Revise, suspend, revoke; expiring ones surface a week ahead |
 | Runs | What the agent did, step by step, with evidence and meters consumed | Includes runs started by a connection, labelled with its name |
@@ -1041,7 +1041,7 @@ The surface is the same; the first cards differ by the participant-type lens, wh
 | Course author | Learner questions, assessment drafts, update proposals |
 | Hub staff | Queues for their role with drafted summaries (in the administration surface) |
 
-Company representative: configured and observed on the company page ("Company → Representative"; «Компания → Представитель» in Russian); its decisions arrive in the named approvers' own assistant. Members with the right see its activity there. There is no list of agents anywhere.
+Company representative: configured and observed on the company page ("Company" → "Representative"); its decisions arrive in the named approvers' own assistant. Members with the right see its activity there. There is no list of agents anywhere.
 
 Accessibility and small screens are part of done: every region is keyboard-operable and announced to screen readers; decisions can be approved on a phone with the full effect visible; all text comes from locale files in every hub language, dates, numbers and money through `Intl`.
 

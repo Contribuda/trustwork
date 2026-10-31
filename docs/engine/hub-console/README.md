@@ -30,7 +30,7 @@ The hub console is what a person uses after installing Trustwork for their count
 3. **The guard rails of [Hub administration](../hub-administration.md#guard-rails-that-no-console-can-switch-off) hold everywhere**: no access widening, no ranking controls, no impersonation, no raw database or unrestricted export, restricted places are code, baseline sanctions screening stays on, no surveillance dashboards. This design adds three: **no pipeline publishes** (publication, source activation, dataset activation, link decisions, claims, sanctions and price activation are human gates at every automation level, `HUMAN_GATES` in `hub.ts`); **secrets are write-only** (the console never shows a key back); **statistics about participants are cohorts** (every count under ten is suppressed, `AGGREGATE_MIN_COHORT`).
 4. **Versioned, two-person, reversible.** Configuration is never edited in place: each change is a version with a reason, activated (by a second person for sensitive domains) and superseded later. Engaging a kill switch is one click; releasing it needs a second person and an incident note.
 5. **Honest labels everywhere.** Demo data carries a banner and never leaves the hub; sourced records stay "from sources" until claimed; AI assistance and AI images are labelled; provider modes (fake, manual, live) are always visible; the console never claims a provider, a register or a backup works until a test or drill proved it.
-6. **Usable by one person on a phone, and by twenty staff on desktops.** Queues and approvals work at 375 px; complex editors say «more comfortable on a wide screen» and stay operable. WCAG 2.2 AA, keyboard first, every string in every hub language.
+6. **Usable by one person on a phone, and by twenty staff on desktops.** Queues and approvals work at 375 px; complex editors say "more comfortable on a wide screen" and stay operable. WCAG 2.2 AA, keyboard first, every string in every hub language.
 
 ## Who uses it
 
@@ -44,7 +44,7 @@ A node with one hub (the common case) opens straight into that hub's console; th
 
 ## Information architecture and navigation
 
-The console lives at `/admin` on the hub's origin, entered from the avatar menu («Администрирование» / "Administration") only by people who hold a staff role, after step-up and a second factor (an **elevated session**, `admin.session.elevate`). It has its own shell with a distinct header band so staff never confuse it with the workspace, a grouped left navigation, and a return link to the workspace.
+The console lives at `/admin` on the hub's origin, entered from the avatar menu ("Administration", `shell.menu.admin`) only by people who hold a staff role, after step-up and a second factor (an **elevated session**, `admin.session.elevate`). It has its own shell with a distinct header band so staff never confuse it with the workspace, a grouped left navigation, and a return link to the workspace.
 
 ```text
 /admin                                   landing: the single hub's overview, or the node console
@@ -258,7 +258,7 @@ apps/web/app/admin/
 ### Data
 
 - `apps/web/app/admin/_data/port.ts` declares `ConsoleDataPort` with one method per read model and per command, typed by the contracts. `fixture-adapter.ts` serves synthetic fixtures; a later `api-adapter.ts` calls `/v1/admin/*` with the same types. Commands in fixture mode change nothing and show a "demo: not saved" toast.
-- Fixtures are **synthetic and labelled**: «Trustwork United States (demo)», people like "Synthetic Editor", no real company names, no real EINs (use the `00-0000000` style placeholder pattern), no real provider keys (secret references only, fingerprints like `0123456789ab`). Every fixture is parsed by the contract schemas in a unit test (`tests/web/admin-fixtures.test.ts`), so a fixture that violates an invariant fails the build.
+- Fixtures are **synthetic and labelled**: "Trustwork United States (demo)", people like "Synthetic Editor", no real company names, no real EINs (use the `00-0000000` style placeholder pattern), no real provider keys (secret references only, fingerprints like `0123456789ab`). Every fixture is parsed by the contract schemas in a unit test (`tests/web/admin-fixtures.test.ts`), so a fixture that violates an invariant fails the build.
 - Staff personas extend `apps/web/app/_lib/persona.ts`: `?persona=hub-owner|editor|data-steward|trust-reviewer|support|commercial|ops|privacy|auditor|staff-none`, each mapping to a fixture `HubStaffAssignment` set, so every denied state can be exercised. Scenarios `error`, `offline`, `loading` reuse the existing switch; add `demo-data`, `maintenance`, `kill-switch-engaged`.
 - Every visible string under the `admin` key of `apps/web/app/_lib/locales/<locale>.json` in all six engine locales (English reference). Spanish (`es`) is not an engine locale yet; the US demo needs the proposed localization package below before `es-US` can be a hub language with complete strings.
 
@@ -270,7 +270,7 @@ Reuse `@trustwork/ui` (`DataTable`, `Tabs`, `Stepper`, `Dialog`/`ConfirmDialog`,
 |---|---|
 | `AdminShell`, `ConsoleNav`, `HubBand` | Shell with distinct band, grouped permission-filtered nav, hub name and stage, demo/maintenance bands |
 | `StatusLabel` | Live / Demo / Contract / Designed / Proposed and provider modes fake / manual / live, with text, never colour alone |
-| `ReasonField`, `AuditNote` | Required reason on every mutation; «This action is recorded in the audit log» |
+| `ReasonField`, `AuditNote` | Required reason on every mutation; "This action is recorded in the audit log" |
 | `SecondPersonRequest`, `ApprovalCard` | Request an approval bound to an action digest; approve or decline with reason; shows exactly what changes |
 | `VersionHistory`, `ConfigDiff` | Versions of any configuration domain with field-level diff, who drafted, approved and activated |
 | `SecretField` | Write-only input: paste, submit, then only the keyed fingerprint, store and rotation date are shown; never a reveal button |
@@ -288,7 +288,7 @@ Reuse `@trustwork/ui` (`DataTable`, `Tabs`, `Stepper`, `Dialog`/`ConfirmDialog`,
 | `LaunchChecklist` | Gates with evidence links and owners |
 | `SetupWizard` | Steps on `Stepper`, resumable, with a summary before finishing |
 | `AccountServiceCard`, `CaseGrantForm`, `PolicyExplainer` | Support workspace |
-| `CohortCount` | Renders suppressed counts as «fewer than 10», with an explanation |
+| `CohortCount` | Renders suppressed counts as "fewer than 10", with an explanation |
 | `TemplateTreeEditor` | Plan template phases and items with dependencies, keyboard-reorderable |
 | `RecommendationExplainer` | Shows which signals a rule uses and why an item fits a plan step |
 

@@ -76,7 +76,7 @@ Recommendation: MAIL-001: record mail intents in the outbox in the same transact
 
 **B5 · high · Accounts and directories are incomplete in the API.**
 Evidence: there is no endpoint to create or claim a company (companies are inserted only by the dev seed, `apps/api/src/dev/seed.ts:52`); no profile edit (`/v1/me` is read-only apart from password, e-mail and sessions, `controllers/me.controller.ts`); no list endpoints at all (no "my projects", no people or company directories); `PaginationSchema` exists in contracts (`packages/contracts/src/common/pagination.ts`) but no route uses it.
-Impact: a new user cannot reach the state the web demo shows (a company page, «My page», a projects list).
+Impact: a new user cannot reach the state the web demo shows (a company page, "My page", a projects list).
 Recommendation: BE-003 (section 8), contracts first.
 
 **B6 · medium · Rate limiting and IP lockout depend on proxy trust that is all-or-nothing.**
@@ -91,7 +91,7 @@ Recommendation: progressive delays and a challenge instead of hard disable; noti
 
 **B8 · low · Smaller API defects.**
 - The health response violates its own contract when providers are configured: `HealthSchema` fixes `externalProviders: 'disabled'` (`packages/contracts/src/api.ts:29-31`) but the controller returns `fake` or `live` (`app.module.ts:13`); the smoke test only checks the disabled case (`scripts/smoke.mjs`).
-- A hard-coded Russian fallback display name `'Участник'` for provider sign-ups (`modules/identity/providers/provider.service.ts:87`) breaks the "every visible string from locale files" rule; store `null` and render a localized placeholder.
+- A hard-coded Russian fallback display name (the Russian word for "participant") for provider sign-ups (`modules/identity/providers/provider.service.ts:87`) breaks the "every visible string from locale files" rule; store `null` and render a localized placeholder.
 - Generic unique violations return the constraint name to the client (`common/errors.ts:84`).
 - `mutation()` and `MutationEnvelopeSchema` put the idempotency key in the body (`packages/contracts/src/api.ts:34-37`) while the API requires the `Idempotency-Key` header; the helper is unused. Remove or align.
 - Several codes are "local, not yet in the frozen contract" (`common/errors.ts:16-30`, `controllers/auth.controller.ts:15-17`, `projects.controller.ts:12-16`); fold them into contracts.
@@ -171,7 +171,7 @@ Impact: one image cannot serve two hubs; changing the default country or brand m
 Recommendation: CFG-001.
 
 **E7 · low · Maintainability.**
-Three near-duplicate 600-line public "assistant" components (`components/public/{Company,Person,Project}Assistant.tsx`); pages of 800-1,000 lines (`app/(public)/projects/[slug]/page.tsx` 1,029 lines); stale comments promising work that BE-001 did not do (`auth-fake.ts:18`, `app/api/auth/login/route.ts:6-9`, `data/index.ts:5-6`); hard-coded `'Онлайн'` in the calendar export (`app/(public)/events/[slug]/calendar.ics/route.ts:17`); `npm run check` rewrites the tracked `apps/web/next-env.d.ts` (observed in this audit). Product question on the per-project agent surface is listed as Q8.
+Three near-duplicate 600-line public "assistant" components (`components/public/{Company,Person,Project}Assistant.tsx`); pages of 800-1,000 lines (`app/(public)/projects/[slug]/page.tsx` 1,029 lines); stale comments promising work that BE-001 did not do (`auth-fake.ts:18`, `app/api/auth/login/route.ts:6-9`, `data/index.ts:5-6`); a hard-coded Russian "Online" in the calendar export (`app/(public)/events/[slug]/calendar.ics/route.ts:17`); `npm run check` rewrites the tracked `apps/web/next-env.d.ts` (observed in this audit). Product question on the per-project agent surface is listed as Q8.
 
 **E8 · medium · The design system's accessibility suite is not part of any gate.**
 Evidence: `packages/ui` `test:a11y` (Storybook build + Playwright + axe) is not called by `npm run check` (only `test:ui` = unit tests) nor by `.github/workflows/check.yml`; status lists the design system as "Live" with axe tests.

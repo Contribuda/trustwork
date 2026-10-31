@@ -31,7 +31,7 @@ Review status is one of *reference* (English, the source of every key), *machine
 | Tag | Language | Status | Review status | Package | Notes |
 |---|---|---|---|---|---|
 | `en` | English | Live | Reference | INTL-002 | Reference key set and engine fallback; formats per country (`en-US`, `en-GB`, `en-IN` …) |
-| `ru` | Russian | Live | Original product language; no separate review recorded | INTL-002 | Optional secondary language, never a default; the only interface that shows «Строй Репутация» |
+| `ru` | Russian | Live | Original product language; no separate review recorded | INTL-002 | Optional secondary language, never a default; the only interface that shows the Russian-language name and wordmark |
 | `uz-Latn` | Uzbek (Latin script) | Live | Machine draft | INTL-UZ | Default for Uzbekistan |
 | `ka` | Georgian | Live | Machine draft | INTL-GE | Georgian script; Noto Sans for the wordmark |
 | `hy` | Armenian | Live | Machine draft | INTL-AM | Armenian script; Noto Sans for the wordmark |
@@ -90,7 +90,7 @@ Russia is not a market and is never offered; Russian remains available as a lang
 - **Formats**: dates, times, months, weekdays, time-zone names, numbers, currencies and units come from `Intl`, with a tag derived from the language and the country: English with the United States gives `en-US` (month before day, `$1,234.50`), English with the United Kingdom `en-GB`, Spanish with the United States `es-US`, Uzbek with Uzbekistan `uz-Latn-UZ`. A pair `Intl` has no data for uses the language's own formats; for English that is international English (`en-001`, day before month). See `intlTagFor` in `packages/ui/src/i18n/index.ts`.
 - **Plurals**: a counted word is one ICU message, `{count, plural, one {# project} other {# projects}}`; the category comes from `Intl.PluralRules` for the active language (English one/other, Russian one/few/many/other). Never write a plural helper or split a word into `…One`/`…Few`/`…Many` keys; `tests/web/i18n/plural-lint.test.ts` rejects both.
 - **One language per request**: the server resolves the request's message layers (brand overlay, the app dictionary, the English keys it lacks, the design-system dictionary) and the root layout hands exactly those to client components. During server rendering they live in a React context (`LocaleScope` in `packages/i18n-runtime`), on the server-component side in a per-request scope, and route handlers wrap themselves in `withRequestLocale`; no store is shared between requests (`tests/web/i18n/concurrent-render.test.ts`, `concurrent-locales.spec.ts`). Client bundles import no dictionary except the design system's English reference (`locale-weight.spec.ts`).
-- **Brand**: Trustwork in every language; only the Russian interface shows «Строй Репутация» (ADR 010 decision 14). The three-squares mark is shared.
+- **Brand**: Trustwork in every language; only the Russian interface shows a Russian-language name and wordmark, defined in `apps/web/brand` (ADR 010 decision 14). The three-squares mark is shared.
 
 Right-to-left scripts are not supported yet (planned: INTL-005), and Chinese, Japanese and Devanagari typography needs INTL-006 before LANG-ZH, LANG-JA and LANG-HI.
 
