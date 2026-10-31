@@ -3,9 +3,9 @@ import { cookies, headers } from 'next/headers';
 import { runWithLocaleScope, setLocaleStore } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
 import { uiLayers } from '@trustwork/ui/i18n/dictionaries';
-import { DEFAULT_COUNTRY, getCountryPack, type CountryPack } from '@trustwork/country-packs';
+import { getCountryPack, type CountryPack } from '@trustwork/country-packs';
 import { appLayers } from './locale-data';
-import { localesFor, negotiate } from './locale-negotiation';
+import { defaultCountryCode, localesFor, negotiate } from './locale-negotiation';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeCookiePath } from './locale-names';
 import { BASE_PATH } from './base-path';
@@ -17,7 +17,7 @@ export type ActiveLocale = { country: string; locale: string; chosen: boolean; p
 
 export function resolveActive(countryCookie: string | undefined, localeCookie: string | undefined, acceptLanguage: string | null): ActiveLocale {
   const wanted = countryCookie ? getCountryPack(countryCookie) : null;
-  const pack = wanted ?? getCountryPack(DEFAULT_COUNTRY)!;
+  const pack = wanted ?? getCountryPack(defaultCountryCode())!;
   const chosen = wanted !== null;
   const locale = localeCookie && localesFor(pack).includes(localeCookie) ? localeCookie : negotiate(acceptLanguage, pack, chosen);
   return { country: pack.code, locale, chosen, pack };

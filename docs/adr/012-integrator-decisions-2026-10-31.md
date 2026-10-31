@@ -107,6 +107,8 @@ Several used the same identifier for different work (PAY-001, PROV-001, OPS-001,
     - **Unchanged:** Russia is not a market and restricted places are never offered; Russian stays available as a language and is never a default. Every country fact cites a source and states its verification level. The engine has no default country (decision 11).
     - Integrator ordering recorded with this decision: new languages after the US demo content exists (DEMO-US), so translators work on the content that ships; INTL-005 after WEB-005 so the public stylesheets are converted once, after they are split per route; INTL-006 after INTL-005 because both change the root layout and global stylesheet; EU member packs after CTRY-EU.
 
+31. **The reference hub is San Diego, United States** (owner, 2026-10-31). The hosted preview and the reference hub default to English and to the United States (`TRUSTWORK_DEFAULT_COUNTRY=US`) for visitors who have not chosen a country, and the hub's home territory is San Diego, California. The US demo data (DEMO-US) is set in San Diego County, and the US country pack (INTL-US) and the demo hub configuration lead with California. Visitors can still pick any other country that is not a restricted place and any language.
+
 ## Consequences
 
 - [work-packages.json](../engine/work-packages.json) holds one graph of 150 packages (17 done, 130 open, 2 blocked, 1 rejected); `npm run work:next` starts with the platform phase.
