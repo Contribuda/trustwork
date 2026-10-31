@@ -1,30 +1,101 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Check, Eye, EyeOff, MapPin } from 'lucide-react';
 import { Button, Switch, TagSelect, TextField } from '@trustwork/ui';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
 import { EMPTY_STATE, SIGNALS, TOPICS, loadOnboardingWith, saveOnboarding, type OnboardingState } from '@/components/onboarding/onboarding-state';
+import { newIdempotencyKey, postJson, type ApiResult } from '@/app/_lib/api-client';
+import { withBase } from '@/app/_lib/base-path';
 import { t } from '@/app/_lib/i18n';
 import { regionLabel } from '@/app/_lib/country';
 import { typo } from '@/app/_lib/typo';
 
 /**
- * Public projection editor: what `/people/[handle]` will show. Publish is off until the person turns it on; the
- * portrait needs explicit consent; the employer line is optional. Saves to the browser session in the demo.
+ * The parts of `GET /v1/me/profile` (PPL-001, contract `MyProfileViewSchema`) the editor needs. The server validates
+ * the full view; the editor only reads it.
  */
-export function MePublicEditor({ name, roleLine, employer, publicHref, seed }: { name: string; roleLine: string; employer: string | null; publicHref: string | null; seed: Partial<OnboardingState> }) {
+type OwnerProfile = {
+  person: { profileVisibility: 'private' | 'public'; headline: string | null; expertise: string[] };
+  profile: { revision: number; roleLine: string | null; regionCode: string | null; languages: string[] } | null;
+  consents: { id: string; purpose: string; withdrawnAt: string | null }[];
+  publicPreview: unknown | null;
+  notices: Record<string, string>;
+};
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+async function loadOwnerProfile(): Promise<OwnerProfile | null> {
+  try {
+    const response = await fetch(withBase('/v1/me/profile'), { credentials: 'same-origin', cache: 'no-store', headers: { accept: 'application/json' } });
+    return response.ok ? ((await response.json()) as OwnerProfile) : null;
+  } catch {
+    return null;
+  }
+}
+const failed = (result: ApiResult) => result.kind !== 'ok';
+
+/**
+ * Public projection editor: what `/people/[handle]` shows. Publishing is a consent to the current notice and hiding
+ * withdraws it; the portrait needs its own consent (and a licence record for the image); the employer line is
+ * optional. In demo mode it saves to the browser session; on the live API (`live`) it saves the profile, the consents
+ * and the visibility through `/v1/me/*` (PPL-001), and the preview shows exactly the public parts.
+ */
+export function MePublicEditor({ name, roleLine, employer, publicHref, seed, live = false }: { name: string; roleLine: string; employer: string | null; publicHref: string | null; seed: Partial<OnboardingState>; live?: boolean }) {
+  const router = useRouter();
   const [state, setState] = useState<OnboardingState>(EMPTY_STATE);
-  const [saved, setSaved] = useState(false);
-  useEffect(() => setState(loadOnboardingWith(seed)), [seed]);
+  const [status, setStatus] = useState<SaveStatus>('idle');
+  const [owner, setOwner] = useState<OwnerProfile | null>(null);
+  useEffect(() => setState(live ? { ...EMPTY_STATE, ...seed } : loadOnboardingWith(seed)), [seed, live]);
+  const refresh = useCallback(async () => setOwner(await loadOwnerProfile()), []);
+  useEffect(() => {
+    if (live) void refresh();
+  }, [live, refresh]);
   const patch = (p: Partial<OnboardingState>) => {
-    setSaved(false);
+    setStatus('idle');
     setState((s) => ({ ...s, ...p }));
   };
+
+  const saveLive = async (current: OwnerProfile) => {
+    setStatus('saving');
+    const publicFields = ['roleLine', 'region', 'topics', 'experience', ...(state.showEmployer ? ['employer'] : []), ...(state.portraitConsent ? ['portrait'] : [])];
+    const steps: (() => Promise<ApiResult>)[] = [
+      () => postJson('/v1/me/profile', {
+        expectedRevision: current.profile?.revision ?? null, headline: state.headline.trim() || null, expertise: current.person.expertise, roleLine: current.profile?.roleLine ?? null,
+        regionCode: current.profile?.regionCode ?? null, showEmployer: state.showEmployer, topics: state.topics, languages: current.profile?.languages ?? [], publicFields,
+      }, { idempotencyKey: newIdempotencyKey() }),
+    ];
+    const portraitConsent = current.consents.find((c) => c.purpose === 'portrait_display' && c.withdrawnAt === null);
+    if (state.portraitConsent && !portraitConsent) {
+      steps.push(() => postJson('/v1/me/consents', { purpose: 'portrait_display', target: null, noticeVersion: current.notices.portrait_display ?? 'portrait_display.v1' }, { idempotencyKey: newIdempotencyKey() }));
+    }
+    if (!state.portraitConsent && portraitConsent) {
+      steps.push(() => postJson(`/v1/me/consents/${portraitConsent.id}/withdraw`, { reason: 'Withdrawn on My page' }, { idempotencyKey: newIdempotencyKey() }));
+    }
+    const isPublic = current.person.profileVisibility === 'public' && current.publicPreview !== null;
+    if (state.publish !== isPublic) {
+      steps.push(() => postJson('/v1/me/profile/visibility', state.publish ? { visibility: 'public', noticeVersion: current.notices.profile_public ?? 'profile_public.v1' } : { visibility: 'private' }, { idempotencyKey: newIdempotencyKey() }));
+    }
+    for (const step of steps) {
+      if (failed(await step())) {
+        setStatus('error');
+        await refresh();
+        return;
+      }
+    }
+    await refresh();
+    setStatus('saved');
+    router.refresh();
+  };
   const save = () => {
+    if (live) {
+      if (owner) void saveLive(owner);
+      else setStatus('error');
+      return;
+    }
     saveOnboarding(state);
-    setSaved(true);
+    setStatus('saved');
   };
   const line = state.headline.trim() || roleLine;
   const employerShown = employer && state.showEmployer ? employer : state.employment === 'company' && state.showEmployer && state.company.trim() ? state.company.trim() : null;
@@ -34,11 +105,11 @@ export function MePublicEditor({ name, roleLine, employer, publicHref, seed }: {
         <div className="ob__switches">
           <Switch isSelected={state.publish} onChange={(v) => patch({ publish: v })}>
             <strong>{t('onboarding3.profile.publish')}</strong>
-            <span className="ob__switch-hint">{typo(t('onboarding3.profile.publishHint'))}</span>
+            <span className="ob__switch-hint">{typo(live ? t('me.public.notice.profilePublic') : t('onboarding3.profile.publishHint'))}</span>
           </Switch>
           <Switch isSelected={state.portraitConsent} onChange={(v) => patch({ portraitConsent: v })}>
             <strong>{t('me.public.portraitConsent')}</strong>
-            <span className="ob__switch-hint">{typo(t('me.public.portraitLicence'))}</span>
+            <span className="ob__switch-hint">{typo(live ? t('me.public.notice.portraitDisplay') : t('me.public.portraitLicence'))}</span>
           </Switch>
           <Switch isSelected={state.showEmployer} onChange={(v) => patch({ showEmployer: v })}>
             <strong>{t('me.public.showEmployer')}</strong>
@@ -63,6 +134,7 @@ export function MePublicEditor({ name, roleLine, employer, publicHref, seed }: {
             onChange={(v) => patch({ topics: v as OnboardingState['topics'] })}
           />
         </div>
+        {live ? null : (
         <fieldset className="ob__fieldset">
           <legend className="ob__legend">{t('onboarding3.profile.signals')}</legend>
           <p className="ob__hint">{typo(t('onboarding3.profile.signalsHint'))}</p>
@@ -79,23 +151,31 @@ export function MePublicEditor({ name, roleLine, employer, publicHref, seed }: {
             })}
           </div>
         </fieldset>
+        )}
         <div className="ws-actions">
-          <Button variant="accent" onPress={save}>
-            {t('common.save')}
+          <Button variant="accent" onPress={save} isDisabled={status === 'saving'}>
+            {status === 'saving' ? t('me.public.saving') : t('common.save')}
           </Button>
-          {saved ? (
-            <span className="ws-saved" role="status">
-              <Check size={14} strokeWidth={2.5} aria-hidden="true" />
-              {t('common.saved')}
-            </span>
-          ) : null}
+          <span role="status" aria-live="polite" className={status === 'saved' ? 'ws-saved' : undefined}>
+            {status === 'saved' ? (
+              <>
+                <Check size={14} strokeWidth={2.5} aria-hidden="true" />
+                {t('common.saved')}
+              </>
+            ) : null}
+          </span>
           {publicHref ? (
             <NextLink href={publicHref} className="ws-more">
               {t('me.publicPage')}
             </NextLink>
           ) : null}
         </div>
-        <p className="ws-note">{t('me.public.demoNote')}</p>
+        {status === 'error' ? (
+          <p className="ws-note" role="alert">
+            {t('me.public.saveFailed')}
+          </p>
+        ) : null}
+        <p className="ws-note">{live ? t('me.public.liveNote') : t('me.public.demoNote')}</p>
       </div>
       <aside className="ws-editor__preview" aria-label={t('me.public.previewTitle')}>
         <span className="ob__preview-kicker">

@@ -132,7 +132,14 @@
       "previewTitle": "This is how others see your page",
       "portraitHidden": "The portrait is hidden on the public page",
       "demoNote": "Demo: changes are not saved on the server.",
-      "portraitPending": "The portrait appears after a photo is uploaded."
+      "portraitPending": "The portrait appears after a photo is uploaded.",
+      "liveNote": "Changes are saved to your account. Hiding the page withdraws your consent and removes it from public pages and the directory at once.",
+      "saveFailed": "The public page could not be saved. Check the fields and try again.",
+      "saving": "Saving…",
+      "notice": {
+        "profilePublic": "By publishing, I agree that my name, headline and the parts I choose are shown to everyone. I can hide the page at any time.",
+        "portraitDisplay": "I agree that my portrait is shown on my public page. It appears only with a licence record for the image, and I can withdraw this at any time."
+      }
     },
     "history": {
       "org": "Organisation",

@@ -3,17 +3,19 @@ import {
   CompanyDirectoryPageSchema,
   CompanyLookupSchema,
   MembershipSchema,
+  MyProfileViewSchema,
   MyProjectPageSchema,
   PersonDirectoryPageSchema,
-  PersonLookupSchema,
   PersonSchema,
   PrincipalSchema,
   ProjectDirectoryPageSchema,
   ProjectLookupSchema,
   ProjectSchema,
   PublicCompanySchema,
+  PublicPersonProfileSchema,
   PublicPersonSchema,
   PublicProjectSchema,
+  handleLookupSchema,
   ParticipantProjectSchema,
   SessionViewSchema,
   type MyProject,
@@ -29,7 +31,7 @@ import {
   toCompanyDetail,
   toMembershipView,
   toPersonCard,
-  toPersonDetail,
+  toPersonDetailFromProfile,
   toPrincipal,
   toProjectCard,
   toProjectDetail,
@@ -58,6 +60,7 @@ const DIRECTORY_SCAN_PAGES = 5;
 const TOPICS: TopicKey[] = ['materials', 'technologies', 'markets', 'regulation', 'projects', 'people', 'events'];
 
 const MeSchema = z.object({ person: PersonSchema, principal: PrincipalSchema });
+const ProfileLookupSchema = handleLookupSchema(PublicPersonProfileSchema);
 const CompanyReadSchema = z.object({ company: PublicCompanySchema, privateView: z.unknown().nullable(), membership: MembershipSchema.nullable() });
 const MembershipListSchema = z.object({ items: z.array(MembershipSchema) });
 const SessionListSchema = z.object({ items: z.array(SessionViewSchema), currentSessionId: z.string() });
@@ -156,13 +159,17 @@ export function createHttpDataPort(transport: Transport): DataPort {
     return body === null ? null : toCompanyDetail(fromDirectoryCompany(CompanyLookupSchema.parse(body).item));
   }
 
+  /**
+   * The allowlisted public profile (PPL-001): found only while the person keeps the profile public with a live
+   * `profile_public` consent, so a person listed without consent never gets a page.
+   */
   async function getPerson(handle: Handle) {
     if (UUID.test(handle)) {
-      const body = await publicGet(`/v1/people/${segment(handle)}`);
-      return body === null ? null : toPersonDetail(PublicPersonSchema.parse(body));
+      const body = await publicGet(`/v1/people/${segment(handle)}/profile`);
+      return body === null ? null : toPersonDetailFromProfile(PublicPersonProfileSchema.parse(body));
     }
-    const body = await publicGet(`/v1/people/by-handle/${segment(handle)}`);
-    return body === null ? null : toPersonDetail(PersonLookupSchema.parse(body).item);
+    const body = await publicGet(`/v1/people/by-handle/${segment(handle)}/profile`);
+    return body === null ? null : toPersonDetailFromProfile(ProfileLookupSchema.parse(body).item);
   }
 
   async function getPublicProject(handle: Handle) {
@@ -238,10 +245,17 @@ export function createHttpDataPort(transport: Transport): DataPort {
     };
   }
 
+  /** The owner view of the profile (PPL-001); `null` when the API does not serve it. */
+  const myProfile = cache(async () => {
+    const body = await transport.get('/v1/me/profile');
+    return body === null ? null : MyProfileViewSchema.parse(body);
+  });
+
   async function getMe(principal: Principal): Promise<MeView> {
     const p = person(principal);
     const session = await me();
-    const isPublished = session?.person.profileVisibility === 'public';
+    const owner = await myProfile().catch(() => null);
+    const isPublished = owner ? owner.publicPreview !== null : session?.person.profileVisibility === 'public';
     const projects = await listWorkspaceProjects(p);
     const memberships = [];
     if (p.company) {
@@ -252,17 +266,17 @@ export function createHttpDataPort(transport: Transport): DataPort {
       principal: p,
       publicHref: isPublished ? `/people/${p.handle}` : null,
       isPublished,
-      headline: session?.person.publicProfile.headline ?? null,
-      roleLine: session?.person.publicProfile.headline ?? '',
-      topics: [],
+      headline: owner?.person.headline ?? session?.person.publicProfile.headline ?? null,
+      roleLine: owner?.profile?.roleLine ?? owner?.person.headline ?? session?.person.publicProfile.headline ?? '',
+      topics: (owner?.profile?.topics ?? []).filter((topic): topic is TopicKey => (TOPICS as readonly string[]).includes(topic)),
       decisions: [],
       projects,
       publications: [],
       mandatesCount: 0,
       memberships,
       experience: '',
-      portraitConsent: false,
-      showEmployer: false,
+      portraitConsent: owner?.consents.some((c) => c.purpose === 'portrait_display' && c.withdrawnAt === null) ?? false,
+      showEmployer: owner?.profile?.showEmployer ?? false,
     };
   }
 

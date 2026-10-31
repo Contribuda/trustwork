@@ -132,7 +132,14 @@
       "previewTitle": "Sahifangizni boshqalar shunday koʻradi",
       "portraitHidden": "Portret ochiq sahifada yashirilgan",
       "demoNote": "Namoyish: oʻzgarishlar serverda saqlanmaydi.",
-      "portraitPending": "Portret surat yuklangandan soʻng paydo boʻladi."
+      "portraitPending": "Portret surat yuklangandan soʻng paydo boʻladi.",
+      "liveNote": "Oʻzgarishlar hisobingizda saqlanadi. Sahifani yashirsangiz, rozilik bekor qilinadi va sahifa ommaviy sahifalardan hamda katalogdan darhol olib tashlanadi.",
+      "saveFailed": "Ommaviy sahifani saqlab boʻlmadi. Maydonlarni tekshirib, qayta urinib koʻring.",
+      "saving": "Saqlanmoqda…",
+      "notice": {
+        "profilePublic": "Sahifani eʼlon qilib, ismim, sarlavham va men tanlagan boʻlimlar hammaga koʻrinishiga roziman. Sahifani istalgan vaqtda yashira olaman.",
+        "portraitDisplay": "Portretim ommaviy sahifamda koʻrsatilishiga roziman. U faqat tasvir uchun litsenziya yozuvi boʻlganda koʻrinadi va men roziligimni istalgan vaqtda qaytarib olishim mumkin."
+      }
     },
     "history": {
       "org": "Tashkilot",
