@@ -29,7 +29,9 @@ test('outbox relay and job runner consume real outbox rows written by the API ro
   if (!env) return;
   t.after(() => env.close());
   const job = (id: string) => env.db.admin.query<{ state: string; attempt: number; max_attempts: number; last_error: string | null; next_at: Date; delay: number }>(
-    'SELECT state, attempt, max_attempts, last_error, next_at, extract(epoch FROM next_at - now())::float8 AS delay FROM trustwork.job WHERE id = $1', [id]).then((r) => r.rows[0]!);
+    // delay: the backoff the worker scheduled, measured from the failure (updated_at, set with next_at in the same
+    // statement) rather than from this query's now(), so a slow machine between failure and check cannot shrink it.
+    'SELECT state, attempt, max_attempts, last_error, next_at, extract(epoch FROM next_at - updated_at)::float8 AS delay FROM trustwork.job WHERE id = $1', [id]).then((r) => r.rows[0]!);
   const jobsOfKind = (kind: string) => env.db.admin.query<{ id: string; state: string; payload: Record<string, unknown> }>('SELECT id, state, payload FROM trustwork.job WHERE kind = $1 ORDER BY created_at, id', [kind]).then((r) => r.rows);
 
   await t.test('a membership.invited row appended by the API role is relayed to its typed handler, which enqueues a provider job that runs once', async () => {
