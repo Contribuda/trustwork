@@ -5,5 +5,7 @@ Point-in-time research and audits that inform planning. A note here is **evidenc
 | Note | Date | Scope |
 |---|---|---|
 | [Architecture, code and engineering audit](architecture-audit-2026-10.md) | 2026-10-30 (owner decision of 2026-10-31 included) | API, data, contracts, web, design system, worker, tests, CI, infrastructure, security, operability, scalability, documentation accuracy, configurability and the United States demo hub; proposed new and amended work packages |
+| [Market scan and ideas](market-and-ideas-2026-10.md) | 2026-10-30 and 2026-10-31 | United States first: plan to people, reputation builder, missing capabilities, construction platforms, B2B discovery, media, due diligence, AI agents, federation, events and learning; business models, risks and proposed work packages |
+| [Competitive landscape worldwide](competitive-landscape-2026-11.md) | 2026-10-31 | Competitors and adjacent products by region (North America, Latin America, Europe, Middle East and Africa, South and East Asia, Oceania), what users love and hate, regulatory actions, and 22 ranked ideas mapped to work packages |
 
 Conventions: each note names the commit it examined, separates measured facts from judgement, cites `path:line` evidence, and lists open questions for the owner instead of guessing.
