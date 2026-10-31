@@ -5,13 +5,14 @@
 ## Rules for every slice
 
 1. **Forward only.** Timestamp-prefixed, immutable once applied, recorded in `migration_ledger` with checksum. Never edit an applied file; fix forward.
-2. **Small and working.** A slice lands with the use cases that need it, its invariants as constraints and triggers, FORCE row-level security with `maintenance_all` and runtime policies, column-level grants for `trustwork_app` (no DELETE, no TRUNCATE), `schema.ts` mirror and real-PostgreSQL tests under the runtime role (negative authorization and concurrency included).
+2. **Small and working.** A slice lands with the use cases that need it, its invariants as constraints and triggers, FORCE row-level security with `maintenance_all` and runtime policies, column-level grants for `trustwork_app` (no DELETE, no TRUNCATE), a schema mirror in `packages/data/src/schema/<module>.ts` and real-PostgreSQL tests under the runtime role (negative authorization and concurrency included).
 3. **Expand → migrate → contract.** Changes to existing tables add new columns or tables first, backfill in a separate step, switch readers, and drop the old shape only in a later reviewed migration with backup and restore evidence (for example `company.legal_identifiers` → `company_identifier`, `person.prefers_*` → `person_preference`).
 4. **Shared vocabularies grow per slice.** A slice that introduces a resource kind extends the `object_participation.resource_kind` CHECK (drop and re-add the constraint in the same transaction) and redefines `trustwork.owns_resource` / `participates_in_resource` with `CREATE OR REPLACE` for its kinds. The same applies to `mandate_context.context_kind`, `context_thread` context kinds and `audit_event.object_kind` documentation.
 5. **Immutability by the shared trigger.** Every versioned record attaches `trustwork.reject_update_when_frozen(...)` with its frozen columns; append-only tables attach `trustwork.forbid_mutation()`.
 6. **Hub scoping from the start.** Hub-scoped tables reference `hub(id)` from DATA-003 so no slice needs a later backfill of `hub_id`.
 7. **No seeded fake data.** Migrations create structure and reference vocabularies only (units, jurisdictions loaded from packs by a maintenance command, not by SQL literals of real-world facts). Synthetic fixtures live in tests and are labelled.
 8. **Numbering.** The integrator assigns timestamps at merge time in dependency order; the dates below are slots, not commitments. Slices whose packages run in parallel receive distinct timestamps in merge order.
+9. **One directory per module (DATA-004).** The twelve applied files stay in the flat root of `packages/data/migrations`; every later slice adds its files to `packages/data/migrations/<module>/` (exactly one level; lower-case `[a-z][a-z0-9_-]*`). The runner orders root and module files globally by their 14-digit timestamp, and the bare file name stays the ledger identity, so a file name must be unique across all directories. A nested directory, a non-SQL file, a malformed name or a duplicated file name makes the runner fail before anything is applied. A package owns `packages/data/migrations/<module>/`, `packages/data/src/schema/<module>.ts` and `packages/data/src/repositories/<module>.ts` and never edits another module's files or a shared file; see [packages/data/README.md](../../packages/data/README.md#parallel-slices-one-directory-per-module).
 
 ## Applied (Live)
 
@@ -159,7 +160,7 @@ flowchart LR
 
 ## Notes for the integrator
 
-- Decided 2026-10-31 ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 15): DATA-004 teaches the runner one level of module directories (`packages/data/migrations/<module>/`, global timestamp order; the twelve applied files stay in the root), so DATA-002 lands in `packages/data/migrations/admin` and every slice owns its module directory, schema mirror file and repository file.
+- Decided 2026-10-31 ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 15), delivered by DATA-004 (rule 9): DATA-004 teaches the runner one level of module directories (`packages/data/migrations/<module>/`, global timestamp order; the twelve applied files stay in the root), so DATA-002 lands in `packages/data/migrations/admin` and every slice owns its module directory, schema mirror file and repository file.
 - DATA-002 mentions claim tables; this plan delivers claims in C3 because they need recipe versions from HUB-003. Moderation tables stay in A2 as DATA-002 says.
 - `plan_baseline` and `project_milestone` from earlier designs are delivered as `plan_version` and `plan_item(kind = milestone)` in C4; `MilestoneSchema` stays the projection contract.
 - The billing chapter's "plan version" is `subscription_plan_version` in B1 to avoid the project plan name.

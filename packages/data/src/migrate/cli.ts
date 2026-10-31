@@ -3,6 +3,7 @@ import { databaseConfigFromEnv } from '../config.js';
 import { DEFAULT_MIGRATIONS_DIR, migrateUp, migrationStatus, statusProblems, verifyMigrations } from './runner.js';
 
 const USAGE = `Usage: node packages/data/bin/migrate.mjs <status|up|verify> [--dir <migrations directory>]
+Layout: <dir>/*.sql (foundation) plus <dir>/<module>/*.sql (one level), applied in global timestamp order.
 Connection: DATABASE_URL or TRUSTWORK_DATABASE_HOST/PORT/NAME/USER/PASSWORD (never loaded from .env).
 Exit codes: 0 ok, 1 failure or inconsistent ledger, 2 usage.`;
 
@@ -36,7 +37,7 @@ export async function runCli(argv: string[], env: NodeJS.ProcessEnv, out: { log(
     }
     const status = await migrationStatus(client, directory);
     for (const row of status.applied) out.log(`applied  ${row.filename}  ${row.checksum.slice(0, 12)}  ${row.applied_at.toISOString()}  by ${row.applied_by}`);
-    for (const file of status.pending) out.log(`pending  ${file.filename}  ${file.checksum.slice(0, 12)}`);
+    for (const file of status.pending) out.log(`pending  ${file.filename}  ${file.checksum.slice(0, 12)}${file.module ? `  module ${file.module}` : ''}`);
     const problems = statusProblems(status);
     for (const problem of problems) out.error(`problem  ${problem}`);
     return problems.length ? 1 : 0;

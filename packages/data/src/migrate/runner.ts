@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, type Dirent } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
@@ -7,7 +7,10 @@ import { APP_ROLE, OWNER_ROLE, SCHEMA } from '../config.js';
 import { parseDirectives, rowsSatisfy, splitStatements, type MigrationDirectives } from './sql.js';
 
 export interface MigrationFile {
+  /** Ledger identity: the bare file name, unique across the root and every module directory. */
   filename: string;
+  /** Module directory the file lives in (`packages/data/migrations/<module>/`), or null for the flat root. */
+  module: string | null;
   path: string;
   checksum: string;
   script: string;
@@ -35,6 +38,9 @@ export interface RunnerLogger { info(message: string): void }
 export type MigrationClient = pg.Client | pg.PoolClient;
 
 const FILENAME = /^\d{14}_[a-z0-9_]+\.sql$/;
+const MODULE_NAME = /^[a-z][a-z0-9_-]*$/;
+/** Editor and VCS artefacts that may sit in a migrations directory without being migrations. */
+const IGNORED_ENTRIES = new Set(['.gitkeep', '.DS_Store']);
 export const LOCK_KEY = 'trustwork.migrations';
 export const DEFAULT_MIGRATIONS_DIR = fileURLToPath(new URL('../../migrations', import.meta.url));
 
@@ -42,14 +48,52 @@ export function checksumOf(script: string): string {
   return createHash('sha256').update(script).digest('hex');
 }
 
-/** Loads and validates the migration directory; file names must be `<14-digit timestamp>_<snake_name>.sql`. */
+function sortedEntries(directory: string): Dirent[] {
+  return readdirSync(directory, { withFileTypes: true }).filter((entry) => !IGNORED_ENTRIES.has(entry.name)).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+}
+
+function assertMigrationFile(entry: Dirent, location: string): void {
+  if (!entry.isFile()) throw new Error(`Migration directory entry is not a regular file or module directory: ${location}`);
+  if (!entry.name.endsWith('.sql')) throw new Error(`Non-SQL file in the migrations directory: ${location}`);
+  if (!FILENAME.test(entry.name)) throw new Error(`Migration file name is not <timestamp>_<name>.sql: ${location}`);
+}
+
+/**
+ * Loads and validates the migration tree: SQL files in the flat root (the foundation migrations, whose ledger
+ * names never change) plus exactly one level of module directories (`<root>/<module>/<file>.sql`, one directory
+ * per owning work package). File names must be `<14-digit timestamp>_<snake_name>.sql` and unique across the whole
+ * tree because the bare file name is the ledger identity; files are ordered globally by name, i.e. by timestamp.
+ * A nested directory, a non-SQL file, a malformed file or module name or a duplicated file name fails loudly.
+ */
 export function loadMigrations(directory = DEFAULT_MIGRATIONS_DIR): MigrationFile[] {
-  const names = readdirSync(directory).filter((name) => name.endsWith('.sql')).sort();
-  for (const name of names) if (!FILENAME.test(name)) throw new Error(`Migration file name is not <timestamp>_<name>.sql: ${name}`);
-  return names.map((filename) => {
-    const path = join(directory, filename);
+  const found: { filename: string; module: string | null; path: string }[] = [];
+  for (const entry of sortedEntries(directory)) {
+    if (entry.isDirectory()) {
+      if (!MODULE_NAME.test(entry.name)) throw new Error(`Migration module directory name is not lower-case [a-z][a-z0-9_-]*: ${entry.name}`);
+      const moduleDir = join(directory, entry.name);
+      for (const child of sortedEntries(moduleDir)) {
+        const location = `${entry.name}/${child.name}`;
+        if (child.isDirectory()) throw new Error(`Nested migration directory (only one level of module directories is allowed): ${location}`);
+        assertMigrationFile(child, location);
+        found.push({ filename: child.name, module: entry.name, path: join(moduleDir, child.name) });
+      }
+      continue;
+    }
+    assertMigrationFile(entry, entry.name);
+    found.push({ filename: entry.name, module: null, path: join(directory, entry.name) });
+  }
+  const seen = new Map<string, string | null>();
+  for (const file of found) {
+    if (seen.has(file.filename)) {
+      const where = (module: string | null) => (module === null ? 'the root' : `module ${module}`);
+      throw new Error(`Duplicate migration file name ${file.filename} in ${where(seen.get(file.filename) ?? null)} and ${where(file.module)} (file names are the ledger identity and must be unique)`);
+    }
+    seen.set(file.filename, file.module);
+  }
+  found.sort((a, b) => (a.filename < b.filename ? -1 : a.filename > b.filename ? 1 : 0));
+  return found.map(({ filename, module, path }) => {
     const script = readFileSync(path, 'utf8');
-    return { filename, path, checksum: checksumOf(script), script, directives: parseDirectives(script) };
+    return { filename, module, path, checksum: checksumOf(script), script, directives: parseDirectives(script) };
   });
 }
 
