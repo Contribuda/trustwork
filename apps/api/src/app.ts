@@ -13,7 +13,7 @@ import { AuthGuard } from './common/auth.guard.js';
 import { CsrfGuard } from './common/csrf.guard.js';
 import { ErrorFilter } from './common/error.filter.js';
 import { ApiError } from './common/errors.js';
-import { IdempotencyInterceptor } from './common/idempotency.interceptor.js';
+import { IdempotencyInterceptor } from './common/idempotency/index.js';
 import type { AppContext } from './modules/identity/context.js';
 import { buildIdentityServices, type IdentityServices } from './modules/identity/identity.module.js';
 import { GoogleOidcProvider } from './modules/identity/providers/google.js';

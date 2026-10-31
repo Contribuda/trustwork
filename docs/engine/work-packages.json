@@ -708,7 +708,7 @@
       "id": "BE-005",
       "title": "Exactly-once completion for idempotent requests",
       "area": "backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "BE-002"
       ],
