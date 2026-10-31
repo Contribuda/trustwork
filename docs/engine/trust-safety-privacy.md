@@ -43,7 +43,7 @@ The sanction ladder: level 1 warning, level 2 temporary restriction, level 3 fea
 ## Privacy
 
 - **Data minimisation.** Sign-up asks for a name, an e-mail and a password. Onboarding is optional.
-- **Residency.** Each hub records where personal data is stored and processed; providers that would receive personal data must comply (for example, Uzbekistan requires personal data of its citizens to be stored in Uzbekistan, per the pack note pending confirmation).
+- **Residency.** Each hub records where personal data is stored and processed; providers that would receive personal data must comply (for example, a US hub records the US region it uses; an EU hub records its transfer basis under GDPR; the Uzbekistan pack notes that personal data of citizens must be stored in Uzbekistan, pending confirmation).
 - **Subject rights.** Access requests produce exports through the same projection code (never counterparties' private fields); deletion and erasure are decided by the privacy officer and executed by two people; erasure tombstones are replayed after restores and propagated to federation peers.
 - **Retention.** Classes per local law; lawful evidence preservation (for example accepted terms another party relies on) is reconciled with erasure, and hashes are never claimed to anonymise personal data.
 - **No surveillance.** No employee productivity views, no per-person behaviour analytics, pseudonymous operational logs.

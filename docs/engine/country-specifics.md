@@ -1,6 +1,6 @@
 # Country specifics
 
-Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan; the facets below and pack v2 are **Proposed**.
+Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan; the facets below and pack v2 are **Proposed**. The United States pack is next (INTL-US), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
 
 Construction is local. What a valid company looks like, who may legally pour concrete for a school, which code a facade must meet, how an invoice must be issued, how a document is signed, what counts as a working day: all of this differs from country to country. The engine handles these differences with two layers and one rule.
 
@@ -11,7 +11,11 @@ Construction is local. What a valid company looks like, who may legally pour con
 | **Country pack** | Facts about the country that are true for every hub there: identifier formats, registers and how to query them, licence categories, codes and standards, tax rates, e-invoicing and e-signature systems, holidays, scripts, legal facts. Every fact cites sources and states its verification level | Country-pack maintainers through reviewed pull requests | `packages/country-packs/packs/<cc>.json`, validated by schema and tests |
 | **Hub configuration** | Decisions of one operator: which providers are enabled, credentials, policies, legal document versions, local taxonomy additions | Hub staff in the console | Versioned records in the database with audit and, where sensitive, a second approver |
 
-**The rule:** engine logic stays country-agnostic. No code says `if (country === 'UZ')`. Code asks the pack for a fact or the hub for a decision, and an adapter does the country-specific talking to the outside world.
+**The rule:** engine logic stays country-agnostic. No code says `if (country === 'US')`, not even for the reference hub. Code asks the pack for a fact or the hub for a decision, and an adapter does the country-specific talking to the outside world.
+
+### Shared layers (Proposed)
+
+Some facts are the same for a group of countries. The **EU layer** (CTRY-EU) holds what every member state shares (GDPR, eIDAS, the VAT Directive and VAT in the Digital Age, EN standards and the Eurocodes, the Construction Products Regulation, the procurement directives, SEPA, the Digital Services Act and the AI Act) once, with sources. A member pack lists the layer and adds only what is national; overriding a layer fact needs its own source. Other groups (for example a customs union or a regional standards body) can become layers the same way.
 
 ## The facets
 
@@ -86,7 +90,7 @@ No provider is assumed to exist everywhere. Sanctioned banks and Russian payment
 
 ### Money, numbers and units
 
-Currency, minor units and display rounding (already in v1), cash rounding rules, secondary currencies, the local names and symbols of units of measure (square metre, cubic metre, tonne, running metre) mapped to the engine's unit catalogue, and local estimate norms where they exist.
+Currency, minor units and display rounding (already in v1), cash rounding rules, secondary currencies, the local names and symbols of units of measure (square metre, cubic metre, tonne, running metre; square foot, cubic yard and board foot where imperial units are used) mapped to the engine's unit catalogue, and local estimate norms where they exist.
 
 ### Calendar and time
 
@@ -94,7 +98,7 @@ Time zones (v1), working week, public holidays (fixed and movable, published by 
 
 ### Languages and scripts
 
-Official and common languages (v1 `locales`), scripts (Uzbek Latin and Cyrillic; Georgian; Armenian; Azerbaijani Latin), transliteration rules for search and names, personal name order and patronymics, typography rules (quotation marks, decimal separators come from `Intl`).
+Official and common languages (v1 `locales`), scripts (for example Latin and Cyrillic for Uzbek, Georgian, Armenian, Arabic written right to left, Han and Kana, Devanagari), transliteration rules for search and names, personal name order and patronymics, typography rules (quotation marks, decimal separators come from `Intl`).
 
 ### Addresses and geography
 
@@ -118,7 +122,7 @@ Sender registration for SMS, popular messengers and their business-use terms, e-
 
 ## Pack v2 shape (Proposed)
 
-Pack v2 keeps every v1 field and adds `facets`, each with facts, sources and verification:
+Pack v2 keeps every v1 field and adds `facets`, each with facts, sources and verification. The example below uses the existing Uzbekistan pack; a US, Brazilian or German pack has the same shape:
 
 ```json
 {
@@ -143,7 +147,7 @@ Pack v2 keeps every v1 field and adds `facets`, each with facts, sources and ver
 
 Validation rules: every facet with facts has at least one source; `verification` is one of `official`, `secondary`, `candidate`, `pending`; rates are decimal strings; nothing in a pack may enable a restricted place; adapters referenced by a facet must exist in the engine (possibly as fakes).
 
-## Starting points for the launch countries (secondary sources, pending confirmation)
+## Starting points for the example countries (secondary sources, pending confirmation)
 
 These are research leads for pack maintainers, gathered on 2026-10-30 from secondary sources. They are **not** pack facts until a maintainer confirms them against official sources and adds them to the pack with citations.
 
@@ -156,6 +160,18 @@ These are research leads for pack maintainers, gathered on 2026-10-30 from secon
 | Data residency | Required for personal data of citizens (pack v1 note, pending article confirmation) | See pack | See pack | See pack |
 
 Sources consulted: [VAT policy in Uzbekistan 2025](https://www.vatupdate.com/2025/01/09/overview-of-vat-policy-changes-and-exemptions-in-uzbekistan-by-2025/), [Uzbekistan e-invoicing](https://www.vatupdate.com/2024/06/21/how-does-e-invoicing-works-in-uzebekistan), [Georgia e-invoicing overview](https://www.e-invoice.app/country/GE), [Georgia VAT guide](https://lappa.org/guides/vat/georgia-vat-for-international-businesses/), [Armenia electronic settlement documents](https://lookuptax.com/docs/einvoicing/electronic-settlement-documents-einvoicing-armenia), [Armenia VAT guide](https://lappa.org/guides/vat/armenia-vat-registration-and-compliance-guide/), [Azerbaijan State Tax Service: electronic invoice](https://taxes.gov.az/en/page/elektron-qaime-faktura), [Azerbaijan e-invoicing](https://www.vatupdate.com/2025/05/17/e-invoicing-in-azerbaijan/).
+
+## Planned packs
+
+Each planned pack has a work package that lists the facets to source for its country: regions and formats, company registers and identifiers, construction licensing, building codes, public procurement, tax and e-invoicing, e-signatures, payment rails, privacy law, holidays, languages and scripts, and units. The leads named there are candidates to confirm, never pack facts. Run `node scripts/work-packages.mjs show CTRY-BR` (or any other code) to read one.
+
+| Region | Packages |
+|---|---|
+| Americas | INTL-US (next), CTRY-CA, CTRY-MX, CTRY-BR |
+| Europe | CTRY-GB; CTRY-EU, then CTRY-DE, CTRY-FR, CTRY-ES, CTRY-IT, CTRY-PL; CTRY-UA (government-controlled territory only) |
+| Middle East | CTRY-TR, CTRY-AE |
+| Asia-Pacific | CTRY-IN, CTRY-AU |
+| Africa and everywhere else | No pack planned yet: the generic profile works today, and a contributed pack is welcome |
 
 ## Adding a country
 

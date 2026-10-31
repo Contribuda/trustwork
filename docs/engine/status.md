@@ -30,7 +30,7 @@ We would rather under-promise. This page says, area by area, what you can run to
 | [Search and knowledge](search-and-knowledge.md) | — | Keyword search over public demo cards | Retrieval generations, embedding config, citations | Governed hybrid retrieval with pgvector (designed) |
 | [Communications](communications.md) | — | Notifications page and bell | — | Context threads, channel grants, templates (designed) |
 | [Billing](billing.md) | — | Billing state in settings | Two budget kinds, price versions, acceptances | Offers, entitlements, payment adapters (designed); licensed payment providers only, Trustwork never holds funds; hub commissions as versioned, disclosed settings (proposed: PAY-001, BILL-003) |
-| [Countries and languages](localization.md) | Country packs UZ, GE, AM, AZ; restricted places; any country with a generic profile | Country selector, six languages (en, ru, uz-Latn, ka, hy, az-Latn), every visible string localized including demo content | Pack schema v1 | Pack v2 facets, United States pack, Spanish, configuration over code (proposed: CTRY-002, INTL-US, LANG-ES, CFG-001) |
+| [Countries and languages](localization.md) | Country packs UZ, GE, AM, AZ; restricted places; any country with a generic profile | Country selector, six languages (en, ru, uz-Latn, ka, hy, az-Latn), every visible string localized including demo content | Pack schema v1 | Pack v2 facets, United States pack, Spanish, configuration over code (proposed: CTRY-002, INTL-US, LANG-ES, CFG-001); eleven more languages with right-to-left, CJK and Devanagari support and honest review status, an EU layer and fourteen more country packs (planned: ADR 012 decision 30, [languages and countries](localization.md#languages-and-countries)) |
 | Manufacturer and supplier knowledge on plan steps | — | — | — | Sourced pages and explained, never-paid recommendations per plan step (proposed: MAT-001, REC-001) |
 | [Hubs](hubs.md) | — | — | — | Hub model, territories, launch checklist (proposed) |
 | [Hub administration](hub-administration.md) | — | — | Admin permissions, audit events, case grants; hub console schemas in `hub.ts` (proposed, frozen by HUBC-000) | Hub console with setup wizard, keys and models, editorial office, data mining, jurisdiction settings (proposed); platform administration (designed) |
@@ -41,7 +41,7 @@ We would rather under-promise. This page says, area by area, what you can run to
 
 ## What this means if you try it
 
-- `npm run dev:web` shows the whole public site and workspace on synthetic data from Uzbekistan, in six languages. Personas are chosen with `?persona=reader|mixed|owner`.
+- `npm run dev:web` shows the whole public site and workspace on synthetic data set in Uzbekistan, in six languages; a synthetic United States demo hub replaces it in the platform phase (DEMO-US). Personas are chosen with `?persona=reader|mixed|owner`.
 - `npm run dev:api` with the local database and the restricted runtime role printed by `npm run seed:dev -w @trustwork/api` runs the live identity, company and project API under `/v1/*` ([agent onboarding](agent-onboarding.md#3-install-and-run) has the exact commands).
 - The web app does not yet call the live API; WEB-006 and WEB-004 in the platform phase of the [roadmap](roadmap.md) connect them.
 - No payment, e-mail, model or registry provider is connected. Adapters exist as ports with fakes.
@@ -50,5 +50,5 @@ We would rather under-promise. This page says, area by area, what you can run to
 
 - No interviews with practitioners have taken place yet (open research O01).
 - No real company, person, review or rating exists in the engine.
-- Translations into Uzbek, Georgian, Armenian and Azerbaijani were produced by the integrator and await review by native speakers.
+- Translations into Uzbek, Georgian, Armenian and Azerbaijani are machine drafts produced by the integrator and await review by native speakers.
 - Country facts that cite only secondary sources are marked as pending official confirmation inside each pack.

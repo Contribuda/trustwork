@@ -11,11 +11,11 @@ Trustwork gets better every time someone who knows something shares it. You do n
 
 ## If you speak one of our languages
 
-The interface and demo content exist in English, Russian, Uzbek, Georgian, Armenian and Azerbaijani. The last four were translated by the integrator and **need native speakers**. Read the dictionaries in `apps/web/app/_lib/locales/` and `packages/ui/locales/`, fix what sounds wrong, and tell us which construction terms professionals in your country actually use. Want your language? See [Countries and languages](localization.md#adding-a-language).
+The interface and demo content exist in English, Russian, Uzbek, Georgian, Armenian and Azerbaijani. The last four are machine drafts by the integrator and **need native speakers**. Spanish is next, then Portuguese, French, German, Italian, Polish, Ukrainian, Turkish, Arabic, Chinese, Hindi and Japanese ([language roadmap](localization.md#languages-and-countries)); each needs translators and, above all, reviewers. Every locale shows honestly whether it is a machine draft, community reviewed or native reviewed. Read the dictionaries in `apps/web/app/_lib/locales/` and `packages/ui/locales/`, fix what sounds wrong, and tell us which construction terms professionals in your country actually use. Want your language? See [Countries and languages](localization.md#adding-a-language).
 
 ## If you know a country
 
-Country packs make the engine correct for a country: registration identifiers, regions, legal entity types, registers, licensing, building codes, tax and e-invoicing, electronic signatures, payments, holidays. Every fact needs a source. Start with [How to add a country](../country-packs/how-to-add-a-country.md) and [Country specifics](country-specifics.md); even one well-sourced facet helps every hub in that country.
+Country packs make the engine correct for a country: registration identifiers, regions, legal entity types, registers, licensing, building codes, tax and e-invoicing, electronic signatures, payments, holidays. Every fact needs a source. Start with [How to add a country](../country-packs/how-to-add-a-country.md) and [Country specifics](country-specifics.md); even one well-sourced facet helps every hub in that country. Planned packs (the United States, Canada, Mexico, Brazil, the United Kingdom, the EU layer with Germany, France, Spain, Italy and Poland, Ukraine, Türkiye, the United Arab Emirates, India and Australia) list the facets to source in their work packages; any other country is welcome too.
 
 ## If you are a lawyer
 

@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were generated from it on 2026-10-31 and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 150 packages: 17 done, 130 open, 2 blocked and 1 rejected (superseded).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 179 packages: 18 done, 158 open, 2 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30.
 
 ## Rules that keep parallel work safe
 
@@ -223,6 +223,52 @@ The mesh of ADR 011: protocol, node identity, syndication, directory links, cros
 | FED-006 | Outbound ActivityPub bridge for publications, issues and public events | open | FED-002 |
 | REP-002 | Portable reputation passport: hub-issued verifiable credentials | open | REP-001, FED-001, LRN-001 |
 
+## Languages and country packs
+
+International by default ([ADR 012 decision 30](../adr/012-integrator-decisions-2026-10-31.md#owner-decision-of-2026-10-31-international-by-default)). A parallel track: the order of the tables is the priority, and each package becomes claimable as soon as its dependencies are done. LANG-ES, INTL-US and CTRY-003 belong to phase 1 and are repeated here for completeness. The live and planned state per language and country is in [Languages and countries](localization.md#languages-and-countries).
+
+**Languages.** New languages wait for the US demo content (DEMO-US) so translators work on the content that ships, and for review-status metadata (INTL-007). Arabic needs right-to-left support (INTL-005, after WEB-005 splits the public stylesheets); Chinese, Hindi and Japanese need CJK and Devanagari typography (INTL-006).
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| LANG-ES | Spanish (es) as the seventh engine language | open | CFG-001, INTL-004 |
+| INTL-007 | Locale review status: per-locale metadata shown in the language picker and the docs | open | CFG-001, INTL-004 |
+| LANG-PT | Portuguese (pt) with formats per country (pt-BR, pt-PT) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-FR | French (fr) with formats per country (fr-FR, fr-CA and others) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-DE | German (de) with formats per country (de-DE, de-AT, de-CH) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-IT | Italian (it) with formats per country | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-PL | Polish (pl) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-UK | Ukrainian (uk) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-TR | Turkish (tr) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| INTL-005 | Right-to-left support: direction per locale, logical CSS, mirrored icons and bidi isolation | open | INTL-004, WEB-005 |
+| LANG-AR | Arabic (ar), right to left | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-005 |
+| INTL-006 | CJK and Devanagari typography: font fallbacks, line breaking, no forced uppercase | open | INTL-004, INTL-005 |
+| LANG-ZH | Chinese, Simplified script (zh-Hans) | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-006 |
+| LANG-HI | Hindi (hi), Devanagari script | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-006 |
+| LANG-JA | Japanese (ja) | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-006 |
+
+**Country packs.** The United States pack comes first and is the model. EU members inherit a shared EU layer (CTRY-EU). Ukraine covers government-controlled territory only. Every fact cites an official source or is labelled with its lower verification level.
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| INTL-US | United States country pack | open | CTRY-002 |
+| CTRY-003 | Sourced v2 facets for Uzbekistan, Georgia, Armenia and Azerbaijan | open | CTRY-002 |
+| CTRY-CA | Canada country pack | open | CTRY-002 |
+| CTRY-MX | Mexico country pack | open | CTRY-002 |
+| CTRY-BR | Brazil country pack | open | CTRY-002 |
+| CTRY-GB | United Kingdom country pack | open | CTRY-002 |
+| CTRY-EU | European Union layer shared by member-state packs | open | CTRY-002 |
+| CTRY-DE | Germany country pack | open | CTRY-002, CTRY-EU |
+| CTRY-FR | France country pack | open | CTRY-002, CTRY-EU |
+| CTRY-ES | Spain country pack | open | CTRY-002, CTRY-EU |
+| CTRY-IT | Italy country pack | open | CTRY-002, CTRY-EU |
+| CTRY-PL | Poland country pack | open | CTRY-002, CTRY-EU |
+| CTRY-UA | Ukraine country pack | open | CTRY-002 |
+| CTRY-TR | Türkiye country pack | open | CTRY-002 |
+| CTRY-AE | United Arab Emirates country pack | open | CTRY-002 |
+| CTRY-IN | India country pack | open | CTRY-002 |
+| CTRY-AU | Australia country pack | open | CTRY-002 |
+
 ## Release
 
 A standalone release candidate verified end to end before any public deployment proposal.
@@ -258,6 +304,7 @@ flowchart LR
   P6 --> R
   P7 --> R
   P8 --> R
+  P1 --> INT[Languages and country packs]
 ```
 
 The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web and DATA-004 → REL-001 → MAIL-001 → BE-004 → ADM-001 for the platform; CTRY-002 → INTL-US and CFG-001 → LANG-ES → DEMO-US carry the US demo hub. Contracts (HUBC-000, AGT-002, FED-000), the open plan-step taxonomy (PLAN-000) and the business-model playbook (BIZ-001) can start at once.
@@ -275,3 +322,4 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 | Agent liability and disclosure wording per jurisdiction; electronic agreement validity | Counsel per hub | HUB-005 defaults, COM-002 and AGT-008 live use |
 | Practitioner interview programme | Owner | AGT-020 (blocked) |
 | Personalized journal policy | Owner | Not scheduled |
+| International by default: language and country-pack roadmap, honest review status | Decided 2026-10-31 by the owner ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 30) | LANG-PT … LANG-JA, INTL-005 … INTL-007, CTRY-EU, CTRY-CA … CTRY-AU |

@@ -65,7 +65,7 @@ Each guide is a recipe to be written and tested in INST-001; until tested it car
 | **Fly.io** | Three process groups in one app (`web`, `api`, `worker`), Fly Postgres or an external PostgreSQL, Tigris or another S3-compatible store; `release_command` runs migrations | Choose regions that match the hub's data-residency decision |
 | **Kubernetes** | A Helm chart: Deployments for `web`, `api`, `worker`; a `Job` hook for `migrate`; external PostgreSQL (operator such as CloudNativePG) and object storage; `Secret` objects or an external secrets operator | NetworkPolicy restricts egress of `worker` to the providers enabled in the console (the console shows the hostnames to allow) |
 
-Data residency drives the platform choice: a Samarkand hub that must keep personal data of Uzbek citizens in Uzbekistan needs servers and object storage in Uzbekistan; a US hub may choose any US region. The setup wizard records the decision; the console warns when a configured storage or provider region contradicts it.
+Data residency drives the platform choice: a US hub may choose any US region; an EU hub keeps personal data in the EU or records its transfer basis under GDPR; a Samarkand hub that must keep personal data of Uzbek citizens in Uzbekistan needs servers and object storage in Uzbekistan. The setup wizard records the decision; the console warns when a configured storage or provider region contradicts it.
 
 ## Sizing (unmeasured)
 

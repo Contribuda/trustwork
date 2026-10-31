@@ -68,7 +68,7 @@ Imported items arrive as **drafts in a review queue**, never published automatic
 
 ## Multilingual publishing (Proposed)
 
-A hub may serve several languages (Uzbekistan: Uzbek in Latin script, Russian, English). A publication has an **original language**; translations are **linked editions** with their own versions and translator credit. A machine-assisted translation is a draft labelled as such until a person reviews it. Readers see the edition in their language when it exists and the original otherwise, with a clear "original in Uzbek" label and a link. Demo content already follows the reader's language through per-string overrides; real content will use linked editions.
+A hub may serve several languages (a US hub: English and Spanish; a Canadian hub: English and French; an Indian hub: English and Hindi; the Uzbekistan example: Uzbek in Latin script, Russian and English). A publication has an **original language**; translations are **linked editions** with their own versions and translator credit. A machine-assisted translation is a draft labelled as such until a person reviews it. Readers see the edition in their language when it exists and the original otherwise, with a clear "original in Spanish" label and a link. Demo content already follows the reader's language through per-string overrides; real content will use linked editions.
 
 ## Community around publications (Proposed)
 

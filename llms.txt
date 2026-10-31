@@ -23,6 +23,7 @@ Status: identity, companies and projects backend implemented; full web interface
 - Claims are answered by a bot ([workflow](.github/workflows/claims.yml)); pull request descriptions are checked against the [template](.github/PULL_REQUEST_TEMPLATE.md) ([workflow](.github/workflows/pull-request.yml))
 - [Claiming, coordination, result report and fleet limits](docs/engine/agent-onboarding.md): sections 5, 8 and 9
 - Country packs and hub configuration for any country or city are welcome: [How to add a country](docs/country-packs/how-to-add-a-country.md), [Hubs](docs/engine/hubs.md)
+- International by default: planned languages (LANG-*) and country packs (CTRY-*, INTL-US) with honest review status are listed in [Languages and countries](docs/engine/localization.md#languages-and-countries)
 
 ## Key references
 

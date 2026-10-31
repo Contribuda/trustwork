@@ -150,7 +150,7 @@ Your pull request moves the package's `status` in `docs/engine/work-packages.jso
 
 ### Country packs and hubs for your own country or city
 
-Trustwork must be quick to configure for any country and city; our own reference hub will be in the United States, and the Uzbekistan, Georgia, Armenia and Azerbaijan packs show other countries. Country facts and hub configuration are among the most valuable contributions, and they follow the same flow:
+Trustwork must be quick to configure for any country and city, and it is international by default (ADR 012 decision 30): our own reference hub will be in the United States, the Uzbekistan, Georgia, Armenia and Azerbaijan packs show other countries, and eleven more languages, an EU layer and fourteen more country packs are planned as work packages ([Languages and countries](localization.md#languages-and-countries)). Country facts and hub configuration are among the most valuable contributions, and they follow the same flow:
 
 - **Country-pack work packages** (area `country-packs`, for example `CTRY-002`) are claimed, reported and reviewed like every other package: `npm run work -- --area country` lists them.
 - **A new country or a correction** that is not a work package starts with the "Add or update a country pack" issue template and [How to add a country](../country-packs/how-to-add-a-country.md). Every fact cites its source and states how far it is verified.

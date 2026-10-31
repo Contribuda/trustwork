@@ -2,7 +2,7 @@
 
 Requirement R31. Status: keyword search over public demo cards is **Demo** (`/search`); retrieval contracts (index generations, embedding configuration, citations) are **Contract** with deterministic fixtures; governed hybrid retrieval is **Designed** ([ADR 007](../adr/007-hybrid-retrieval.md), [retrieval architecture](../architecture/retrieval.md)); multilingual and federated retrieval are **Proposed**.
 
-People ask questions like "who installed ventilated facades on schools in Samarkand in the last two years?" or "what does the new standard say about anchors?". Your agent asks harder ones while working for you. The engine answers from **permitted facts with citations**, never from a model's imagination and never from data the asker may not see.
+People ask questions like "who installed ventilated facades on schools in Texas in the last two years?" or "what does the new standard say about anchors?". Your agent asks harder ones while working for you. The engine answers from **permitted facts with citations**, never from a model's imagination and never from data the asker may not see.
 
 ## Three ways to find things
 
@@ -28,9 +28,12 @@ Candidate embedding models are evaluated locally first (multilingual models with
 
 | Challenge | Approach |
 |---|---|
-| Uzbek in Latin and Cyrillic scripts | Index both forms; transliterate queries; keep the original script in citations |
-| Georgian and Armenian scripts | Full-text configuration per language; semantic models evaluated per language |
-| Mixed-language documents (Russian specifications in an Uzbek hub) | Language detection per chunk; cross-lingual retrieval evaluated before claiming it works |
+| Languages written in more than one script (for example Uzbek in Latin and Cyrillic, Serbian in Cyrillic and Latin) | Index both forms; transliterate queries; keep the original script in citations |
+| Non-Latin alphabets (for example Georgian, Armenian, Greek, Cyrillic) | Full-text configuration per language; semantic models evaluated per language |
+| Chinese and Japanese, written without spaces between words | PostgreSQL full-text search has no segmenter for them: n-gram indexing (for example `pg_trgm`) or a segmenter adapter with a fake, Unicode normalization and width folding for Japanese; recall measured per language before support is claimed (INTL-006 records the requirements; WEB-003 and RAG-201 implement them) |
+| Hindi and other Devanagari text | Unicode normalization; the simple configuration until a stemmer is evaluated; Latin-script (transliterated) queries matched to Devanagari |
+| Arabic | Normalize letter variants and optional diacritics for matching; keep the original text in citations; right-to-left display through INTL-005 |
+| Mixed-language documents (Spanish specifications in a US hub, English datasheets in a German hub) | Language detection per chunk; cross-lingual retrieval evaluated before claiming it works |
 | Names of people and companies | Transliteration variants as structured aliases, not fuzzy guesses |
 
 ## Hub knowledge sources (Proposed)

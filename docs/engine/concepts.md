@@ -70,7 +70,7 @@ The engine uses a small set of words precisely. When a document, a contract or a
 | **Your agent** | The single assistant that works for a person. Same thing as "the assistant"; there is no list of agents. |
 | **Company representative** | A company's single standing agent, with a named accountable person, acting only under company mandates; suspends when no accountable person or confirmed mandate remains. |
 | **Mandate** | A structured grant from a principal to their agent: allowed actions, contexts, limits, conditions, budgets, expiry, revision. Readable, changeable, revocable. |
-| **Goal** | A proposed object that tells your agent what to achieve (for example "find three facade subcontractors in Samarkand before 1 December") with success criteria and allowed actions. |
+| **Goal** | A proposed object that tells your agent what to achieve (for example "find three facade subcontractors in the Austin area before 1 December") with success criteria and allowed actions. |
 | **Run** | One durable piece of agent work, made of steps with checkpoints. |
 | **Action intent** | A proposed external effect with its digest, states and reservations. |
 | **Approval** | A human decision bound to the exact action digest; any material change invalidates it. |

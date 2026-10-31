@@ -41,7 +41,7 @@ A **company** has one page that its members share: details, wall of publications
 
 ### Legal identifiers come from the country pack
 
-Companies carry `legalIdentifiers[] { kind, value, status }`. The `kind` is a code from the country pack (`UZ-STIR`, `GE-IDC`, `AM-TIN`, `AZ-VOEN`), and the pack supplies the label, format and validation. A company outside the launch countries uses a free-form registration number until someone contributes its pack. **An identifier is never proof of anything**: anyone can type a public number.
+Companies carry `legalIdentifiers[] { kind, value, status }`. The `kind` is a code from the country pack (today `UZ-STIR`, `GE-IDC`, `AM-TIN` and `AZ-VOEN`; for example `US-EIN` once the US pack exists), and the pack supplies the label, format and validation. A company in a country without a pack uses a free-form registration number until someone contributes its pack. **An identifier is never proof of anything**: anyone can type a public number.
 
 ## Sourced, claimed, verified
 
@@ -62,7 +62,7 @@ Claim evidence is split into two questions:
 1. **Who is the claimant?** A verified login identity; optionally a national electronic identity or signature where the hub supports one.
 2. **What ties them to the company?** For example a code sent to an e-mail on the company's domain; a match between the claimant and the director or founder in the official register, fetched by the reviewer (an extract uploaded by the claimant proves nothing because it is public); a power of attorney or authority letter signed with a recognised electronic signature; a call-back to the phone listed in the register.
 
-Each hub defines which evidence types exist in its country and how they combine, through **verification recipes** (see [Hub administration](hub-administration.md#counterparty-verification)). The reference recipes for Uzbekistan, Georgia, Armenia and Azerbaijan are decided ([reference recipes](hub-administration.md#reference-recipes-for-the-launch-countries)). Common fallback for small firms on free mail services: register match plus call-back plus a signed authority letter. The badge rises to "claimed" immediately and to "verified" only after the reviewer records the match.
+Each hub defines which evidence types exist in its country and how they combine, through **verification recipes** (see [Hub administration](hub-administration.md#counterparty-verification)). The reference recipes for the four countries with packs today are decided, and every new pack brings its own ([reference recipes](hub-administration.md#reference-recipes-for-the-example-countries)). Common fallback for small firms on free mail services: register match plus call-back plus a signed authority letter. The badge rises to "claimed" immediately and to "verified" only after the reviewer records the match.
 
 Verification can be revoked with a reason (fraud, expired evidence, legal change); members are notified and every derived projection updates.
 

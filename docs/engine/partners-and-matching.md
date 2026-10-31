@@ -8,9 +8,9 @@ The most valuable thing a gathering point can do is help the right people find e
 
 | Demand side | Supply side |
 |---|---|
-| **Open needs** published on a project or company page ("ventilated facade subcontractor, Samarkand region, 2,400 m², start in March") | **Capability profiles** of companies and professionals: what they do, where, at what capacity, with which licences and certificates |
+| **Open needs** published on a project or company page ("ventilated facade subcontractor, Lyon region, 2,400 m², start in March") | **Capability profiles** of companies and professionals: what they do, where, at what capacity, with which licences and certificates |
 | **RFQs** (private, sent to chosen suppliers) | **Catalogue offerings**: goods, works, services and bundles with public fields |
-| **Partner requests** ("looking for a distributor in Georgia", "looking for a design partner for public tenders") | **Partner offers** ("we install curtain walls, open to subcontracting") |
+| **Partner requests** ("looking for a distributor in Brazil", "looking for a design partner for public tenders in India") | **Partner offers** ("we install curtain walls, open to subcontracting") |
 | **Event meeting profiles** | Event meeting profiles |
 
 A **capability profile** is structured: categories from the hub taxonomy, works and materials, regions served (ISO 3166-2), capacity ranges, typical project sizes, licences and certifications checked by the hub, languages, availability windows. It is public only in the fields the company chooses.
@@ -64,7 +64,7 @@ Matching can show **sourced** companies that are not platform users, clearly lab
 
 ## Alerts
 
-People and companies subscribe to new needs, partner requests or RFQ invitations that match their profile. Alerts are notifications with a reason ("matches your category Facade works in Samarkand region"), with frequency control.
+People and companies subscribe to new needs, partner requests or RFQ invitations that match their profile. Alerts are notifications with a reason ("matches your category Facade works in Lyon region"), with frequency control.
 
 ## Across the mesh (Proposed)
 

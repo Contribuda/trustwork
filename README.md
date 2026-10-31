@@ -37,23 +37,62 @@ Trustwork is not one website. It is something people run for a place they care a
 
 - **Configured for local reality.** Country packs carry each country's registration numbers, regions, currencies, languages and legal facts, every one with a source. Hub operators connect local registers to verify companies, register news and data sources, choose payment and e-signature providers, and publish legal documents reviewed by their counsel. Engine code stays country-agnostic.
 - **Lawful by design.** Operators comply with local law; the engine gives them the controls, the audit trail and the guard rails. Nobody, not even staff, can read private data without a scoped, time-limited, second-person-approved case grant.
-- **Any country, any language.** Pick any country that is not under sanctions and, independently, any language the engine speaks: English, Russian, Uzbek, Georgian, Armenian and Azerbaijani today, with more welcome.
+- **Any country, any language.** Pick any country that is not under sanctions and, independently, any language the engine speaks. Six languages work today, Spanish is next, and eleven more are on the [roadmap](#languages-and-countries).
+
+## Languages and countries
+
+Trustwork is international by default ([ADR 012, decision 30](docs/adr/012-integrator-decisions-2026-10-31.md#owner-decision-of-2026-10-31-international-by-default)). Our own reference hub will be in the United States; no other region is privileged, and every country and language is welcome.
+
+**Languages**
+
+| Status | Languages |
+|---|---|
+| **Live** | English (reference) · Russian · Uzbek · Georgian · Armenian · Azerbaijani |
+| **Next** | Spanish |
+| **Planned** | Portuguese · French · German · Italian · Polish · Ukrainian · Turkish · Arabic (right to left) · Chinese (Simplified) · Hindi · Japanese |
+| **Yours** | Any language you bring: [add a language](docs/engine/localization.md#adding-a-language) |
+
+Translations may start as machine drafts. Each one says honestly whether it is a machine draft, community reviewed or native reviewed; Uzbek, Georgian, Armenian and Azerbaijani are machine drafts waiting for native speakers.
+
+**Country packs**
+
+| Status | Countries |
+|---|---|
+| **Live** | Uzbekistan · Georgia · Armenia · Azerbaijan (pack v1: identifiers, regions, currency, formats, sourced legal notes) |
+| **Next** | United States, for our reference hub |
+| **Planned** | Canada · Mexico · Brazil · United Kingdom · Ukraine · Türkiye · United Arab Emirates · India · Australia, and an EU layer shared by Germany · France · Spain · Italy · Poland |
+| **Everywhere else** | Any country that is not a restricted place works today with a generic profile (currency, calling code, time zone) until someone contributes its pack |
+
+Package IDs, review status and what each pack will cover: [Languages and countries](docs/engine/localization.md#languages-and-countries).
 
 ## One mesh for the whole world
 
-Every deployment can join one network. Someone opens Trustwork for a country, someone else opens it for a city in that country, and **they complement each other**: the city's meetups appear in the national calendar, the national magazine reaches city readers, a client in one hub hires a contractor in another, and two parties on different hubs hold provably identical agreements. Each node keeps its own data, its own operator and its own law. Only public content travels by default; private data never leaves its home.
+Every deployment can join one network. Someone opens Trustwork for a country, someone else opens it for a city in that country, and **they complement each other**: the city's meetups appear in the national calendar, the national magazine reaches city readers, a client in one hub hires a contractor in another, and two parties on different hubs hold provably identical agreements.
 
-```text
-        ┌──────────────┐       peering        ┌──────────────┐
-        │ Uzbekistan   │◀────────────────────▶│ Georgia      │
-        │ country hub  │                      │ country hub  │
-        └──────┬───────┘                      └──────────────┘
-               │ complements
-        ┌──────┴───────┐
-        │ Samarkand    │   public news, events, directories flow both ways;
-        │ city hub     │   deals travel only between the parties' hubs
-        └──────────────┘
+Each node keeps its own data, its own operator and its own law.
+
+```mermaid
+flowchart LR
+  subgraph americas["Americas"]
+    ATX["Austin<br/>city hub"]
+    US["United States<br/>country hub"]
+    MX["Mexico<br/>country hub"]
+  end
+  subgraph europe["Europe"]
+    DE["Germany<br/>country hub"]
+  end
+  subgraph africa_asia["Africa and Asia"]
+    KE["Kenya<br/>country hub"]
+    IN["India<br/>country hub"]
+  end
+  ATX <-->|complements| US
+  US <-->|peering| MX
+  US <-->|peering| DE
+  DE <-->|peering| KE
+  KE <-->|peering| IN
 ```
+
+*Public news, events and directories flow both ways between hubs; a deal travels only between the hubs of the parties involved, and private data never leaves its home. This is an illustration: no hub is running yet, and any country or city that is not a restricted place can join.*
 
 ## What works today
 
@@ -94,8 +133,8 @@ Try `?persona=mixed` for someone who buys and sells, `?persona=reader` for a rea
 There is room for everyone who cares about this industry:
 
 - **Developers**: run `npm run work` to see work packages you can pick up today, each with its goal, acceptance criteria and the paths it owns.
-- **Native speakers** of Uzbek, Georgian, Armenian and Azerbaijani: our translations need your eyes. New languages are welcome.
-- **People who know a country**: add sourced facts to a country pack, so every hub there gets it right.
+- **Native speakers**: review Uzbek, Georgian, Armenian or Azerbaijani today, or help with Spanish, Portuguese, French, German and the rest of the [language roadmap](#languages-and-countries). Any other language is welcome too.
+- **People who know a country**: add sourced facts to a country pack (the United States, Canada, Mexico, Brazil, the EU layer and more are [planned](#languages-and-countries)), so every hub there gets it right.
 - **Lawyers**: help us make the legal templates better starting points for operators.
 - **Construction practitioners**: tell us what hurts, review the designs for your field, write, teach.
 - **Designers**: the hub console, the magazine PDF, check-in on a phone in bright sunlight.

@@ -11,7 +11,7 @@ A place people **want** to come back to, not because a dashboard demands it, but
 | You come to… | Because the platform… |
 |---|---|
 | **Read** | publishes topical news with sources and dates, practical articles from practitioners, and a curated weekly magazine you can read on a phone or download as a properly laid-out PDF |
-| **Meet** | lists industry events you can attend, and lets you host your own: a conference, a site visit, a webinar, a meetup of facade installers in Samarkand |
+| **Meet** | lists industry events you can attend, and lets you host your own: a conference, a site visit, a webinar, a meetup of facade installers in Austin, Lyon or Nairobi |
 | **Learn** | offers short practical courses and certificates anyone can check by number |
 | **Be found** | gives every person a profile that belongs to them for life, and every company a page with its people, projects, catalogue and evidence-backed reputation |
 | **Find partners** | helps you find the subcontractor, supplier, designer or client who fits, and explains *why* they fit |
