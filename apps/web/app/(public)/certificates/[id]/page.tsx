@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CertificatePage({ params }: Params) {
   await primeLocale();
   const { id } = await params;
-  const hit = data.getPlatformCertificate(id);
+  const hit = await data.getPlatformCertificate(id);
   return (
     <div className="pub pub-page">
       <div className="pub-wrap srch">

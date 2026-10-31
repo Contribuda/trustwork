@@ -109,7 +109,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: PageS
     sort: SORTS.find((x) => x === str('sort')) ?? 'relevance',
     show: Math.min(80, Math.max(PAGE, Number.parseInt(str('show') ?? '', 10) || PAGE)),
   };
-  const all = data.listPeople();
+  const all = await data.listPeople();
   const activity = (p: PersonCard) => p.projectsCount * 2 + p.publicationsCount + p.portfolioCount + p.servicesCount + p.signals.length;
   const sorters: Record<Sort, (a: PersonCard, b: PersonCard) => number> = {
     relevance: (a, b) => activity(b) - activity(a) || a.displayName.localeCompare(b.displayName, 'ru'),
@@ -122,11 +122,10 @@ export default async function PeoplePage({ searchParams }: { searchParams: PageS
   const specs = [...new Set(all.flatMap((p) => p.expertise))].sort((a, b) => a.localeCompare(b, 'ru'));
   const myId = principal.kind === 'person' ? principal.personId : null;
 
-  const articles = data.listArticles();
+  const articles = await data.listArticles();
   const writing = articles.filter((c) => c.authorKind === 'person' && c.articleFormat !== 'interview').slice(0, 3);
   const talks = articles.filter((c) => c.articleFormat === 'interview').slice(0, 2);
-  const meet = data
-    .listPublicProjects()
+  const meet = (await data.listPublicProjects())
     .filter((p) => p.publicParticipants.some((pp) => pp.href?.startsWith('/people/')))
     .slice(0, 1);
   const byHref = new Map(all.map((p) => [p.href, p]));
@@ -562,7 +561,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: PageS
             {meet.map((p) => (
               <article key={p.id} className="pp-meet">
                 <NextLink href={p.href} className="pp-meet__media" aria-hidden="true" tabIndex={-1}>
-                  <MediaFrame media={projectCover(p.slug)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 520px" />
+                  <MediaFrame media={projectCover(p.handle)} ratio="fill" radius="none" sizes="(max-width: 767px) 100vw, 520px" />
                 </NextLink>
                 <div className="pp-meet__body">
                   <span className="pub-kicker">

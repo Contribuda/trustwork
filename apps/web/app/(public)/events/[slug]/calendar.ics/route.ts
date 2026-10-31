@@ -12,7 +12,7 @@ const escape = (s: string) =>
 /** iCalendar file for one event in the visitor's language (UTC timestamps; calendar apps convert to the user's zone). */
 export const GET = withRequestLocale(async (_request: Request, context: { params: Promise<{ slug: string }> }) => {
   const { slug } = await context.params;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   if (!event) return new Response('Not found', { status: 404 });
   const location = event.format === 'online' ? t('events.online') : [event.venue?.name, event.venue?.address].filter(Boolean).join(', ');
   const lines = [

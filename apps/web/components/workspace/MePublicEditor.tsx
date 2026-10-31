@@ -11,7 +11,7 @@ import { regionLabel } from '@/app/_lib/country';
 import { typo } from '@/app/_lib/typo';
 
 /**
- * Public projection editor: what `/people/[slug]` will show. Publish is off until the person turns it on; the
+ * Public projection editor: what `/people/[handle]` will show. Publish is off until the person turns it on; the
  * portrait needs explicit consent; the employer line is optional. Saves to the browser session in the demo.
  */
 export function MePublicEditor({ name, roleLine, employer, publicHref, seed }: { name: string; roleLine: string; employer: string | null; publicHref: string | null; seed: Partial<OnboardingState> }) {

@@ -1,6 +1,7 @@
 import { toPublicCompany, toPublicPerson, toPublicProject } from '@trustwork/contracts/client';
 import type { CompanyFixture, EventFixture, IssueFixture, PersonFixture, ProjectFixture, PublicationFixture } from '@/fixtures/schemas';
-import { fixtures } from './fixtures';
+import { DATA_SOURCE, fixtures } from './fixtures';
+import type { DataPort, EventScope, Handle } from './port';
 import type {
   AssistantView,
   AuthenticatedPrincipal,
@@ -53,12 +54,14 @@ function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K>
 }
 
 /**
- * Fixture-backed implementation of the data boundary. BE-001 replaces this module with HTTP calls to
- * `/v1/*`; pages depend only on `./index` and the view models in `./types`.
+ * Fixture-backed implementation of the `DataPort` (`./port`), exported as `fixtureDataPort`. The functions
+ * below stay synchronous and module-private; the port wraps each one in an async method, so callers see the
+ * same contract a network-backed adapter offers. Pages never import this module: they use `data` from
+ * `./index`. Public lookups take the handle (here: the fixture slug), workspace lookups take the object id.
  *
  * Projection rules mirror the contracts: public people require `profileVisibility: public`
  * (`toPublicPerson` returns null otherwise), public projects require `publicity.enabled`
- * (`toPublicProject`), company public pages use `toPublicCompany`. Unpublished slugs resolve to
+ * (`toPublicProject`), company public pages use `toPublicCompany`. Unpublished handles resolve to
  * `null`, which pages turn into 404 (never 403: existence is not disclosed).
  */
 
@@ -189,7 +192,7 @@ function toPersonCard(p: PersonFixture): PersonCard | null {
   const profile = p.profile ?? EMPTY_PERSON_PROFILE;
   return {
     id: pub.id,
-    slug: p.slug,
+    handle: p.slug,
     href: `/people/${p.slug}`,
     displayName: pub.displayName,
     field: p.field,
@@ -252,7 +255,7 @@ function toProjectCard(p: ProjectFixture): ProjectCard | null {
   if (!pub) return null;
   return {
     id: pub.id,
-    slug: p.slug,
+    handle: p.slug,
     href: `/projects/${p.slug}`,
     name: pub.name,
     summary: pub.summary,
@@ -293,7 +296,7 @@ function toCompanyCard(c: CompanyFixture): CompanyCard {
   const pub = toPublicCompany(c.company);
   return {
     id: pub.id,
-    slug: c.slug,
+    handle: c.slug,
     href: `/companies/${c.slug}`,
     name: pub.name,
     status: pub.status,
@@ -346,7 +349,7 @@ const SECTION_RUBRICS: Record<string, RubricKey> = {
   'Цифры недели': 'numbers',
   'Вопрос — ответ': 'qa',
 };
-export const RUBRIC_KEYS: RubricKey[] = ['analysis', 'practice', 'report', 'interview', 'people', 'projectStory', 'materials', 'opinion', 'week', 'numbers', 'qa'];
+const RUBRIC_KEYS: RubricKey[] = ['analysis', 'practice', 'report', 'interview', 'people', 'projectStory', 'materials', 'opinion', 'week', 'numbers', 'qa'];
 
 function rubricOf(section: string): RubricKey {
   return SECTION_RUBRICS[section.trim()] ?? 'analysis';
@@ -422,7 +425,7 @@ function releasedIssues(): IssueView[] {
 
 // Public ---------------------------------------------------------------------------------------
 
-export function getHome(): HomeView {
+function getHome(): HomeView {
   const published = publishedPublications().map(toCard);
   const featured = published.filter((p) => fixtures.publications.find((f) => f.publication.id === p.id)?.featured).slice(0, 3);
   const articles = published.filter((p) => p.format === 'article').slice(0, 5);
@@ -480,14 +483,14 @@ function toEventCard(e: EventFixture, now = Date.now()): EventCard {
 }
 
 /** Events sorted by start; `scope` keeps upcoming (default) or past ones. */
-export function listEvents(scope: 'upcoming' | 'past' | 'all' = 'upcoming', now = Date.now()): EventCard[] {
+function listEvents(scope: 'upcoming' | 'past' | 'all' = 'upcoming', now = Date.now()): EventCard[] {
   return fixtures.events
     .map((e) => toEventCard(e, now))
     .filter((e) => (scope === 'all' ? true : scope === 'past' ? e.status === 'past' : e.status !== 'past'))
     .sort((a, b) => (scope === 'past' ? Date.parse(b.startsAt) - Date.parse(a.startsAt) : Date.parse(a.startsAt) - Date.parse(b.startsAt)));
 }
 
-export function getEvent(slug: string, now = Date.now()): EventDetail | null {
+function getEvent(slug: string, now = Date.now()): EventDetail | null {
   const e = fixtures.events.find((x) => x.slug === slug);
   if (!e) return null;
   const card = toEventCard(e, now);
@@ -507,19 +510,19 @@ export function getEvent(slug: string, now = Date.now()): EventDetail | null {
   };
 }
 
-export function listNews(topic?: TopicKey): PublicationCard[] {
+function listNews(topic?: TopicKey): PublicationCard[] {
   return publishedPublications()
     .filter((p) => p.publication.format === 'news' && (!topic || p.topics.includes(topic)))
     .map(toCard);
 }
 
-export function listArticles(format?: string): PublicationCard[] {
+function listArticles(format?: string): PublicationCard[] {
   return publishedPublications()
     .filter((p) => p.publication.format === 'article' && (!format || format === 'all' || p.articleFormat === format))
     .map(toCard);
 }
 
-export function getPublication(slug: string, format: 'news' | 'article'): PublicationDetail | null {
+function getPublication(slug: string, format: 'news' | 'article'): PublicationDetail | null {
   const pf = fixtures.publications.find((p) => p.slug === slug);
   if (!pf || !isPublished(pf)) return null;
   const expected = format === 'news' ? pf.publication.format === 'news' : pf.publication.format !== 'news';
@@ -541,12 +544,12 @@ export function getPublication(slug: string, format: 'news' | 'article'): Public
   };
 }
 
-export function listCompanies(): CompanyCard[] {
+function listCompanies(): CompanyCard[] {
   return fixtures.companies.map(toCompanyCard);
 }
 
-export function getCompany(slug: string): CompanyDetail | null {
-  const c = fixtures.companies.find((x) => x.slug === slug);
+function getCompany(handle: Handle): CompanyDetail | null {
+  const c = fixtures.companies.find((x) => x.slug === handle);
   if (!c) return null;
   const card = toCompanyCard(c);
   return {
@@ -570,12 +573,12 @@ export function getCompany(slug: string): CompanyDetail | null {
   };
 }
 
-export function listCourses(): Course[] {
+function listCourses(): Course[] {
   return fixtures.courses;
 }
 
 /** Public certificate check: the holder's public card and the course; unknown ids resolve to null. */
-export function getPlatformCertificate(id: string): { certificate: PlatformCertificate; holder: PersonCard } | null {
+function getPlatformCertificate(id: string): { certificate: PlatformCertificate; holder: PersonCard } | null {
   for (const p of fixtures.people) {
     const hit = (p.profile?.platformCertificates ?? []).find((c) => c.id === id);
     if (!hit) continue;
@@ -587,12 +590,12 @@ export function getPlatformCertificate(id: string): { certificate: PlatformCerti
   return null;
 }
 
-export function listPeople(): PersonCard[] {
+function listPeople(): PersonCard[] {
   return fixtures.people.flatMap((p) => toPersonCard(p) ?? []);
 }
 
-export function getPerson(slug: string): PersonDetail | null {
-  const p = fixtures.people.find((x) => x.slug === slug);
+function getPerson(handle: Handle): PersonDetail | null {
+  const p = fixtures.people.find((x) => x.slug === handle);
   if (!p) return null;
   const card = toPersonCard(p);
   if (!card) return null;
@@ -627,12 +630,12 @@ export function getPerson(slug: string): PersonDetail | null {
   };
 }
 
-export function listPublicProjects(): ProjectCard[] {
+function listPublicProjects(): ProjectCard[] {
   return fixtures.projects.flatMap((p) => toProjectCard(p) ?? []).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-export function getPublicProject(slug: string): ProjectDetail | null {
-  const p = fixtures.projects.find((x) => x.slug === slug);
+function getPublicProject(handle: Handle): ProjectDetail | null {
+  const p = fixtures.projects.find((x) => x.slug === handle);
   if (!p) return null;
   const card = toProjectCard(p);
   if (!card) return null;
@@ -722,12 +725,12 @@ export function getPublicProject(slug: string): ProjectDetail | null {
   };
 }
 
-export function getMagazine(): { current: IssueView | null; archive: IssueView[] } {
+function getMagazine(): { current: IssueView | null; archive: IssueView[] } {
   const issues = releasedIssues();
   return { current: issues[0] ?? null, archive: issues };
 }
 
-export function listRubrics(): RubricSummary[] {
+function listRubrics(): RubricSummary[] {
   const issues = releasedIssues();
   return RUBRIC_KEYS.map((key) => {
     const hits = issues.filter((i) => i.items.some((x) => x.rubric === key));
@@ -735,14 +738,14 @@ export function listRubrics(): RubricSummary[] {
   });
 }
 
-export function listRubricEntries(key: RubricKey): RubricEntry[] {
+function listRubricEntries(key: RubricKey): RubricEntry[] {
   return releasedIssues().flatMap((i) =>
     i.items.filter((x) => x.rubric === key).map((item) => ({ item, issue: { number: i.number, title: i.title, href: i.href, readerHref: i.readerHref, dateFrom: i.dateFrom, dateTo: i.dateTo } })),
   );
 }
 
 /** People and companies credited in released issues (editorial pieces count under «Редакция»), most prolific first. */
-export function listMagazineAuthors(): MagazineAuthor[] {
+function listMagazineAuthors(): MagazineAuthor[] {
   const counts = new Map<string, MagazineAuthor>();
   for (const i of releasedIssues())
     for (const x of i.items) {
@@ -751,14 +754,14 @@ export function listMagazineAuthors(): MagazineAuthor[] {
       if (hit) hit.count += 1;
       else {
         const slug = x.authorKind === 'person' && x.authorHref ? (x.authorHref.split('/').pop() ?? null) : null;
-        const person = slug ? (listPeople().find((p) => p.slug === slug) ?? null) : null;
+        const person = slug ? (listPeople().find((p) => p.handle === slug) ?? null) : null;
         counts.set(id, { label: x.authorLabel, href: x.authorHref, kind: x.authorKind, count: 1, person });
       }
     }
   return [...counts.values()].sort((a, b) => b.count - a.count);
 }
 
-export function getIssue(number: number): { issue: IssueView; previous: IssueView | null; next: IssueView | null } | null {
+function getIssue(number: number): { issue: IssueView; previous: IssueView | null; next: IssueView | null } | null {
   const issues = releasedIssues();
   const index = issues.findIndex((i) => i.number === number);
   if (index === -1) return null;
@@ -783,7 +786,7 @@ function membershipsOf(personId: string): MembershipView[] {
     .filter((m) => m.personId === personId)
     .map((m) => {
       const company = companyById(m.companyId);
-      return { id: m.id, role: m.role, permissions: m.permissions, status: m.status, validFrom: m.validFrom, endedAt: m.endedAt, companyName: company?.company.name ?? m.companyId, companySlug: company?.slug ?? '' };
+      return { id: m.id, role: m.role, permissions: m.permissions, status: m.status, validFrom: m.validFrom, endedAt: m.endedAt, companyName: company?.company.name ?? m.companyId, companyHandle: company?.slug ?? '' };
     });
 }
 
@@ -811,13 +814,13 @@ function toRfqRow(r: (typeof fixtures.workspace.rfqs)[number]): RfqRow {
 }
 
 /** RFQs the principal may see: company RFQs with the deals grant, plus personally owned ones. */
-export function listRfqs(principal: Principal): RfqRow[] {
+function listRfqs(principal: Principal): RfqRow[] {
   const p = requirePerson(principal);
   const canSeeCompany = p.company !== null && p.company.permissions.includes('company.deals.manage');
   return fixtures.workspace.rfqs.filter((r) => (r.owner.kind === 'person' && r.owner.id === p.personId) || (canSeeCompany && r.owner.kind === 'company' && r.owner.id === p.company!.id)).map(toRfqRow);
 }
 
-export function listLeads(principal: Principal): LeadRow[] {
+function listLeads(principal: Principal): LeadRow[] {
   const p = requirePerson(principal);
   if (!p.company || !p.company.permissions.includes('company.deals.manage')) return [];
   return fixtures.workspace.leads.filter((l) => l.companyId === p.company!.id).map((l) => omit(l, 'companyId'));
@@ -884,7 +887,7 @@ function toWorkspaceRow(project: ProjectFixture, role: 'owner' | 'leader' | 'par
   const ms = workspaceMilestones(project, role, false);
   return {
     id: project.project.id,
-    slug: project.slug,
+    handle: project.slug,
     href: withDemoHref(demo, `/app/projects/${project.project.id}`),
     name: project.project.name,
     summary: project.project.summary,
@@ -901,7 +904,7 @@ function toWorkspaceRow(project: ProjectFixture, role: 'owner' | 'leader' | 'par
   };
 }
 
-export function listWorkspaceProjects(principal: Principal): WorkspaceProjectRow[] {
+function listWorkspaceProjects(principal: Principal): WorkspaceProjectRow[] {
   const p = requirePerson(principal);
   return fixtures.projects
     .flatMap((project) => {
@@ -911,7 +914,7 @@ export function listWorkspaceProjects(principal: Principal): WorkspaceProjectRow
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-export function getWorkspaceProject(principal: Principal, id: string): WorkspaceProjectDetail | null {
+function getWorkspaceProject(principal: Principal, id: string): WorkspaceProjectDetail | null {
   const p = requirePerson(principal);
   const project = projectById(id);
   if (!project) return null;
@@ -927,7 +930,7 @@ export function getWorkspaceProject(principal: Principal, id: string): Workspace
   const share = (minor: string) => (limit ? Math.min(100, Math.round((Number(minor) / Number(limit.minorUnits)) * 100)) : 0);
   return {
     id: project.project.id,
-    slug: project.slug,
+    handle: project.slug,
     name: project.project.name,
     summary: project.project.summary,
     status: project.project.status,
@@ -1000,11 +1003,11 @@ function myPublications(principal: AuthenticatedPrincipal): MyPublicationRow[] {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-export function listMyPublications(principal: Principal): MyPublicationRow[] {
+function listMyPublications(principal: Principal): MyPublicationRow[] {
   return myPublications(requirePerson(principal));
 }
 
-export function getOverview(principal: Principal): OverviewView {
+function getOverview(principal: Principal): OverviewView {
   const p = requirePerson(principal);
   const rfqs = listRfqs(p);
   const leads = listLeads(p);
@@ -1035,7 +1038,7 @@ export function getOverview(principal: Principal): OverviewView {
   };
 }
 
-export function getCompanyWorkspace(principal: Principal): CompanyWorkspaceView | null {
+function getCompanyWorkspace(principal: Principal): CompanyWorkspaceView | null {
   const p = requirePerson(principal);
   if (!p.company) return null;
   const c = companyById(p.company.id);
@@ -1060,7 +1063,7 @@ export function getCompanyWorkspace(principal: Principal): CompanyWorkspaceView 
   };
 }
 
-export function getMe(principal: Principal): MeView {
+function getMe(principal: Principal): MeView {
   const p = requirePerson(principal);
   const pf = personById(p.personId)!;
   const isPublished = pf.person.profileVisibility === 'public';
@@ -1083,7 +1086,7 @@ export function getMe(principal: Principal): MeView {
   };
 }
 
-export function getAssistant(principal: Principal): AssistantView {
+function getAssistant(principal: Principal): AssistantView {
   const p = requirePerson(principal);
   const a = fixtures.workspace.assistant.find((x) => x.personId === p.personId);
   return {
@@ -1105,7 +1108,7 @@ export function getAssistant(principal: Principal): AssistantView {
   };
 }
 
-export function getSettings(principal: Principal): SettingsView {
+function getSettings(principal: Principal): SettingsView {
   const p = requirePerson(principal);
   const pf = personById(p.personId)!;
   return {
@@ -1120,7 +1123,7 @@ export function getSettings(principal: Principal): SettingsView {
 }
 
 /** Builds the authenticated principal for a persona (null for anonymous or unknown personas). */
-export function principalFor(demo: DemoContext): AuthenticatedPrincipal | null {
+function principalFor(demo: DemoContext): AuthenticatedPrincipal | null {
   if (demo.persona === 'anonymous') return null;
   const entry = fixtures.workspace.personas[demo.persona];
   const pf = entry ? personById(entry.personId) : undefined;
@@ -1134,13 +1137,13 @@ export function principalFor(demo: DemoContext): AuthenticatedPrincipal | null {
     demo,
     personId: pf.person.id,
     displayName: pf.person.displayName,
-    slug: pf.slug,
+    handle: pf.slug,
     preferences: pf.person.preferences,
     pinned: entry.pinned,
     onboarding: entry.onboarding,
     company:
       membership && company
-        ? { id: company.company.id, name: company.company.name, slug: company.slug, status: company.company.status, role: membership.role, permissions: membership.permissions, membershipId: membership.id }
+        ? { id: company.company.id, name: company.company.name, handle: company.slug, status: company.company.status, role: membership.role, permissions: membership.permissions, membershipId: membership.id }
         : null,
     attention: { procurement: 0, sales: 0, projects: 0, publications: 0, assistant: assistant?.approvals ?? 0 },
     notifications: fixtures.workspace.notifications
@@ -1156,3 +1159,43 @@ export function principalFor(demo: DemoContext): AuthenticatedPrincipal | null {
   base.attention.publications = myPublications(base).filter((x) => x.status === 'in_review').length;
   return base;
 }
+
+// Port -----------------------------------------------------------------------------------------
+
+/**
+ * The fixture adapter as a `DataPort`. `satisfies` makes the compiler prove conformance here as well
+ * (tests/web/data-port checks it from the outside, including that a synchronous adapter is rejected).
+ */
+export const fixtureDataPort = {
+  source: DATA_SOURCE,
+  getHome: async () => getHome(),
+  listEvents: async (scope?: EventScope, now?: number) => listEvents(scope, now),
+  getEvent: async (slug: string, now?: number) => getEvent(slug, now),
+  listNews: async (topic?: TopicKey) => listNews(topic),
+  listArticles: async (format?: string) => listArticles(format),
+  getPublication: async (slug: string, format: 'news' | 'article') => getPublication(slug, format),
+  listCompanies: async () => listCompanies(),
+  getCompany: async (handle: Handle) => getCompany(handle),
+  listPeople: async () => listPeople(),
+  getPerson: async (handle: Handle) => getPerson(handle),
+  listPublicProjects: async () => listPublicProjects(),
+  getPublicProject: async (handle: Handle) => getPublicProject(handle),
+  listCourses: async () => listCourses(),
+  getPlatformCertificate: async (id: string) => getPlatformCertificate(id),
+  getMagazine: async () => getMagazine(),
+  listRubrics: async () => listRubrics(),
+  listRubricEntries: async (key: RubricKey) => listRubricEntries(key),
+  listMagazineAuthors: async () => listMagazineAuthors(),
+  getIssue: async (number: number) => getIssue(number),
+  getOverview: async (principal: Principal) => getOverview(principal),
+  listRfqs: async (principal: Principal) => listRfqs(principal),
+  listLeads: async (principal: Principal) => listLeads(principal),
+  listWorkspaceProjects: async (principal: Principal) => listWorkspaceProjects(principal),
+  getWorkspaceProject: async (principal: Principal, id: string) => getWorkspaceProject(principal, id),
+  listMyPublications: async (principal: Principal) => listMyPublications(principal),
+  getCompanyWorkspace: async (principal: Principal) => getCompanyWorkspace(principal),
+  getMe: async (principal: Principal) => getMe(principal),
+  getAssistant: async (principal: Principal) => getAssistant(principal),
+  getSettings: async (principal: Principal) => getSettings(principal),
+  principalFor: async (demo: DemoContext) => principalFor(demo),
+} satisfies DataPort;

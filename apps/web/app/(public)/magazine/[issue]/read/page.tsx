@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
   const { issue } = await params;
   const number = parseNumber(issue);
-  const found = number === null ? null : data.getIssue(number);
+  const found = number === null ? null : await data.getIssue(number);
   return { title: found ? `${t('reader.label')} — ${t('magazine.issueTitle', { number: found.issue.number })}` : t('error.notFoundTitle') };
 }
 
@@ -26,7 +26,7 @@ export default async function ReadPage({ params }: Params) {
   await primeLocale();
   const { issue: raw } = await params;
   const number = parseNumber(raw);
-  const found = number === null ? null : data.getIssue(number);
+  const found = number === null ? null : await data.getIssue(number);
   if (!found) notFound();
   const { issue, previous, next } = found;
   const covers: Record<number, ReaderCover> = Object.fromEntries(
@@ -36,13 +36,15 @@ export default async function ReadPage({ params }: Params) {
     }),
   );
   const authors: Record<number, ReaderAuthor | null> = Object.fromEntries(
-    issue.items.map((item) => {
-      const slug = item.authorKind === 'person' && item.authorHref ? item.authorHref.split('/').pop() : null;
-      const person = slug ? data.getPerson(slug) : null;
-      return [item.position, person ? { name: person.displayName, roleLine: person.roleLine, portrait: person.portrait, href: person.href } : null];
-    }),
+    await Promise.all(
+      issue.items.map(async (item) => {
+        const handle = item.authorKind === 'person' && item.authorHref ? item.authorHref.split('/').pop() : null;
+        const person = handle ? await data.getPerson(handle) : null;
+        return [item.position, person ? { name: person.displayName, roleLine: person.roleLine, portrait: person.portrait, href: person.href } : null] as const;
+      }),
+    ),
   );
-  const pool = [...data.listArticles(), ...data.listNews()];
+  const pool = [...(await data.listArticles()), ...(await data.listNews())];
   const inIssue = new Set(issue.items.map((i) => i.publicationId));
   const related: Record<number, ReaderRelated[]> = Object.fromEntries(
     issue.items.map((item) => [

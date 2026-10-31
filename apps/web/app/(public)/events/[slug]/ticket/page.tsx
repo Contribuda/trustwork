@@ -22,7 +22,7 @@ export default async function TicketPage({ params, searchParams }: Props) {
   await primeLocale();
   const { slug } = await params;
   const sp = await searchParams;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   if (!event) notFound();
   const parsed = decodeTicket(typeof sp.t === 'string' ? sp.t : undefined);
   const ticket = parsed ? event.tickets.find((tk) => tk.id === parsed.ticketId) : undefined;

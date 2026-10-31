@@ -7,10 +7,9 @@ function esc(v: string): string {
 }
 
 /** RSS 2.0 of published news with the source name in the description; absolute links follow the request origin; texts in the visitor's language. */
-export const GET = withRequestLocale((request: Request): Response => {
+export const GET = withRequestLocale(async (request: Request): Promise<Response> => {
   const origin = new URL(request.url).origin;
-  const items = data
-    .listNews()
+  const items = (await data.listNews())
     .slice(0, 50)
     .map(
       (card) =>

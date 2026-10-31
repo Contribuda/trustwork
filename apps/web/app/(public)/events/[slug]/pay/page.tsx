@@ -23,7 +23,7 @@ export default async function PayPage({ params, searchParams }: Props) {
   await primeLocale();
   const { slug } = await params;
   const sp = await searchParams;
-  const event = data.getEvent(slug);
+  const event = await data.getEvent(slug);
   if (!event) notFound();
   const token = typeof sp.t === 'string' ? sp.t : '';
   const parsed = decodeTicket(token);

@@ -8,9 +8,9 @@ function esc(v: string): string {
 }
 
 /** RSS 2.0 of released issues (one entry per issue with its contents); absolute links follow the request origin; texts in the visitor's language. */
-export const GET = withRequestLocale((request: Request): Response => {
+export const GET = withRequestLocale(async (request: Request): Promise<Response> => {
   const origin = new URL(request.url).origin;
-  const { archive } = data.getMagazine();
+  const { archive } = await data.getMagazine();
   const items = archive
     .map((issue) => {
       const contents = issue.items.map((i) => `${String(i.position).padStart(2, '0')}. ${i.title} (${rubricLabel(i.rubric)})`).join('; ');

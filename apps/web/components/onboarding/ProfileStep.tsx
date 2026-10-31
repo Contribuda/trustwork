@@ -13,7 +13,7 @@ import { EMPTY_STATE, SIGNALS, completeness, loadOnboarding, saveOnboarding, typ
 
 /**
  * Step 4 «Ваша публичная страница»: publish on/off (off by default), portrait consent with the licence statement,
- * employer display, self-declared statuses; the live preview renders exactly what `/people/[slug]` would show.
+ * employer display, self-declared statuses; the live preview renders exactly what `/people/[handle]` would show.
  */
 export function ProfileStep({ name, nextHref, backHref, skipHref }: { name: string; nextHref: string; backHref: string; skipHref: string }) {
   const router = useRouter();

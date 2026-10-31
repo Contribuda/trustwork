@@ -57,7 +57,7 @@ function apply(list: ProjectCard[], f: Filters, except?: Facet): ProjectCard[] {
 }
 
 function cardCover(p: ProjectCard) {
-  return p.cover ? fixtureMedia(p.cover, 'project') : projectCover(p.slug);
+  return p.cover ? fixtureMedia(p.cover, 'project') : projectCover(p.handle);
 }
 
 /**
@@ -82,7 +82,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
     sort: SORTS.find((x) => x === str('sort')) ?? 'recent',
     show: Math.min(60, Math.max(PAGE, Number.parseInt(str('show') ?? '', 10) || PAGE)),
   };
-  const all = data.listPublicProjects();
+  const all = await data.listPublicProjects();
   const bbox = filters.view === 'map' && filters.bbox ? (filters.bbox.split(',').map(Number) as [number, number, number, number]) : null;
   const inBox = (p: ProjectCard) => !bbox || (p.location !== null && p.location.lng >= bbox[0] && p.location.lng <= bbox[2] && p.location.lat >= bbox[1] && p.location.lat <= bbox[3]);
   const sorters: Record<Sort, (a: ProjectCard, b: ProjectCard) => number> = {
@@ -96,15 +96,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
   const count = (except: Facet, pred: (p: ProjectCard) => boolean) => apply(all, filters, except).filter(pred).length;
   const active = Boolean(filters.q || filters.category || filters.stage || filters.region || filters.needs || filters.view);
   const featured = !active ? ([...all].sort((a, b) => b.openNeedsCount - a.openNeedsCount || Date.parse(b.updatedAt) - Date.parse(a.updatedAt))[0] ?? null) : null;
+  const details = await Promise.all(all.map((p) => data.getPublicProject(p.handle)));
   const moving = all
-    .flatMap((p) => (data.getPublicProject(p.slug)?.updates ?? []).map((u) => ({ ...u, project: p })))
+    .flatMap((p, index) => (details[index]?.updates ?? []).map((u) => ({ ...u, project: p })))
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
-  const articles = data
-    .listArticles()
+  const articles = (await data.listArticles())
     .filter((c) => c.articleFormat === 'projectStory' || c.articleFormat === 'experience')
     .slice(0, 2);
-  const people = new Map(data.listPeople().map((p) => [p.href, p]));
+  const people = new Map((await data.listPeople()).map((p) => [p.href, p]));
 
   const chips: Array<{ label: string; to: string }> = [];
   if (filters.q) chips.push({ label: `${t('events.searchPrefix')}: ${filters.q}`, to: href({ ...filters, q: undefined, show: undefined }) });

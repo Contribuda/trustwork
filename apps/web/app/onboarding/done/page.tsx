@@ -14,9 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DonePage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/onboarding/done');
+  const courses = await data.listCourses();
   return (
     <OnboardingShell name={principal.displayName} step="done">
-      <DoneStep name={principal.displayName} workspaceHref={hrefFor(principal, '/app')} settingsHref={hrefFor(principal, '/app/settings')} courses={data.listCourses()} />
+      <DoneStep name={principal.displayName} workspaceHref={hrefFor(principal, '/app')} settingsHref={hrefFor(principal, '/app/settings')} courses={courses} />
     </OnboardingShell>
   );
 }

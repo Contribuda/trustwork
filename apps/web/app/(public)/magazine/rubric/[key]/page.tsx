@@ -32,8 +32,8 @@ export default async function RubricPage({ params }: Params) {
   const { key } = await params;
   const rubric = parseKey(key);
   if (!rubric) notFound();
-  const entries = data.listRubricEntries(rubric);
-  const others = data.listRubrics().filter((r) => r.key !== rubric && r.count > 0);
+  const entries = await data.listRubricEntries(rubric);
+  const others = (await data.listRubrics()).filter((r) => r.key !== rubric && r.count > 0);
   const Icon = RUBRIC_ICONS[rubric];
   return (
     <div className="pub pub-page mg">

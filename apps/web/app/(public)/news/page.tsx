@@ -43,8 +43,8 @@ export default async function NewsPage({ searchParams }: { searchParams: PageSea
   const params = await searchParams;
   const topicParam = typeof params.topic === 'string' && (TOPICS as string[]).includes(params.topic) ? (params.topic as TopicKey) : undefined;
   const query = typeof params.q === 'string' ? params.q.trim().toLowerCase() : '';
-  const everything = data.listNews();
-  const scoped = data.listNews(topicParam);
+  const everything = await data.listNews();
+  const scoped = await data.listNews(topicParam);
   const items = query ? scoped.filter((n) => `${n.title} ${n.lede} ${n.source?.name ?? ''}`.toLowerCase().includes(query)) : scoped;
   const filtered = Boolean(topicParam || query);
   const page = Math.max(1, Number.parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1);

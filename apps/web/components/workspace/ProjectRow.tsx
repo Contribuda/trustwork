@@ -22,7 +22,7 @@ export function DateTile({ date, tone = 'default' }: { date: string; tone?: 'def
 
 /** One project in a workspace list: cover, name, status, role, next milestone and milestone progress. */
 export function ProjectRow({ row, compact = false }: { row: WorkspaceProjectRow; compact?: boolean }) {
-  const cover = projectCover(row.slug);
+  const cover = projectCover(row.handle);
   const p = row.progress;
   return (
     <li className={`ws-project${compact ? ' ws-project--compact' : ''}`}>

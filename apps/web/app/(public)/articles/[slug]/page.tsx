@@ -10,7 +10,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
   const { slug } = await params;
-  const item = data.getPublication(slug, 'article');
+  const item = await data.getPublication(slug, 'article');
   return { title: item ? item.title : t('error.notFoundTitle'), description: item?.lede };
 }
 
@@ -18,12 +18,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function ArticleDetailPage({ params }: Params) {
   await primeLocale();
   const { slug } = await params;
-  const item = data.getPublication(slug, 'article');
+  const item = await data.getPublication(slug, 'article');
   if (!item) notFound();
-  const authorSlug = item.authorKind === 'person' && item.authorHref ? item.authorHref.split('/').pop() : null;
-  const author = authorSlug ? data.getPerson(authorSlug) : null;
-  const more = data
-    .listArticles()
+  const authorHandle = item.authorKind === 'person' && item.authorHref ? item.authorHref.split('/').pop() : null;
+  const author = authorHandle ? await data.getPerson(authorHandle) : null;
+  const more = (await data.listArticles())
     .filter((n) => n.id !== item.id)
     .slice(0, 4);
   return (
@@ -32,7 +31,7 @@ export default async function ArticleDetailPage({ params }: Params) {
       section={{ href: '/articles', label: t('publicNav.2'), topicParam: (topic) => `/articles?topic=${topic}` }}
       more={more}
       moreTitle={t('detail.moreArticles')}
-      issue={data.getHome().currentIssue}
+      issue={(await data.getHome()).currentIssue}
       author={author}
       cta={{ title: t('articles.ctaTitle'), body: t('articles.ctaBody'), action: t('articles.suggest'), actionHref: '/login?next=%2Fapp%2Fpublications' }}
     />

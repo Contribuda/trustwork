@@ -24,7 +24,7 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
   const fallback = defaultPersona();
   const shells: Partial<Record<Persona, ShellData>> = {};
   for (const persona of PERSONAS) {
-    const principal = data.principalFor({ persona, scenario: 'default', fromQuery: persona !== fallback, defaultPersona: fallback });
+    const principal = await data.principalFor({ persona, scenario: 'default', fromQuery: persona !== fallback, defaultPersona: fallback });
     if (!principal) continue;
     shells[persona] = {
       name: principal.displayName,

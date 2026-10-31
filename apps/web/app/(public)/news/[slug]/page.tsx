@@ -10,7 +10,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   await primeLocale();
   const { slug } = await params;
-  const item = data.getPublication(slug, 'news');
+  const item = await data.getPublication(slug, 'news');
   return { title: item ? item.title : t('error.notFoundTitle'), description: item?.lede };
 }
 
@@ -18,10 +18,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function NewsDetailPage({ params }: Params) {
   await primeLocale();
   const { slug } = await params;
-  const item = data.getPublication(slug, 'news');
+  const item = await data.getPublication(slug, 'news');
   if (!item) notFound();
-  const more = data
-    .listNews()
+  const more = (await data.listNews())
     .filter((n) => n.id !== item.id)
     .slice(0, 4);
   return (
@@ -30,7 +29,7 @@ export default async function NewsDetailPage({ params }: Params) {
       section={{ href: '/news', label: t('publicNav.1'), topicParam: (topic) => `/news?topic=${topic}` }}
       more={more}
       moreTitle={t('detail.moreNews')}
-      issue={data.getHome().currentIssue}
+      issue={(await data.getHome()).currentIssue}
       cta={{ title: t('news.ctaTitle'), body: t('news.ctaBody'), action: t('detail.suggest'), actionHref: '/login?next=%2Fapp%2Fpublications' }}
     />
   );

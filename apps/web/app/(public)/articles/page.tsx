@@ -42,7 +42,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pag
   const format = typeof params.format === 'string' && (FORMATS as readonly string[]).includes(params.format) ? params.format : 'all';
   const topic = typeof params.topic === 'string' && (TOPICS as string[]).includes(params.topic) ? (params.topic as TopicKey) : undefined;
   const query = typeof params.q === 'string' ? params.q.trim().toLowerCase() : '';
-  const scoped = data.listArticles(format).filter((card) => !topic || card.topics.includes(topic));
+  const scoped = (await data.listArticles(format)).filter((card) => !topic || card.topics.includes(topic));
   const items = query ? scoped.filter((n) => `${n.title} ${n.lede} ${n.authorLabel}`.toLowerCase().includes(query)) : scoped;
   const filtered = format !== 'all' || Boolean(topic) || Boolean(query);
   const page = Math.max(1, Number.parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1);
@@ -57,10 +57,10 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pag
     next.set('page', String(page + 1));
     return `/articles?${next.toString()}#feed`;
   })();
-  const useful = data.getHome().useful.slice(0, 5);
-  const people = data.listPeople();
+  const useful = (await data.getHome()).useful.slice(0, 5);
+  const people = await data.listPeople();
   const counts = new Map<string, { label: string; href: string | null; role: string; portrait: string | null; count: number }>();
-  for (const card of [...data.listArticles(), ...data.listNews()]) {
+  for (const card of [...(await data.listArticles()), ...(await data.listNews())]) {
     if (card.authorKind === 'editorial') continue;
     const key = card.authorHref ?? card.authorLabel;
     const person = card.authorKind === 'person' ? people.find((p) => p.href === card.authorHref) : undefined;
@@ -69,7 +69,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pag
     counts.set(key, entry);
   }
   const authors = [...counts.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'ru')).slice(0, 10);
-  const issue = data.getHome().currentIssue;
+  const issue = (await data.getHome()).currentIssue;
   const metaLines = (card: PublicationCard) => [card.authorLabel, longDate(card.publishedAt)];
 
   return (

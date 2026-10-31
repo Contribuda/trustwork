@@ -50,7 +50,8 @@ export type PublicationDetail = PublicationCard & {
 export type CompanyKind = 'developer' | 'client' | 'generalContractor' | 'contractor' | 'designer' | 'manufacturer' | 'supplier' | 'equipment' | 'services' | 'logistics';
 export type CompanyCard = {
   id: string;
-  slug: string;
+  /** Public URL identity (see `Handle` in ./port); `id` stays the stable identifier. */
+  handle: string;
   href: string;
   name: string;
   status: CompanyStatus;
@@ -126,10 +127,13 @@ export type Certificate = { id: string; kind: CertificateKind; name: string; iss
 export type Accreditation = { verifiedAt: string; scope: string[] } | null;
 export type Course = { id: string; slug: string; title: string; summary: string; durationMinutes: number; modules: number; topics: TopicKey[] };
 export type PlatformCertificate = { id: string; course: Course; issuedAt: string; score: number | null };
+/** Public certificate check: the certificate and its holder's public card. */
+export type CertificateCheck = { certificate: PlatformCertificate; holder: PersonCard };
 export type Signal<K extends string> = { kind: K; note: string | null; until: string | null };
 export type PersonCard = {
   id: string;
-  slug: string;
+  /** Public URL identity (see `Handle` in ./port); `id` stays the stable identifier. */
+  handle: string;
   href: string;
   displayName: string;
   field: PersonField;
@@ -181,7 +185,8 @@ export type PersonDetail = PersonCard & {
 
 export type ProjectCard = {
   id: string;
-  slug: string;
+  /** Public URL identity (see `Handle` in ./port); `id` stays the stable identifier. */
+  handle: string;
   href: string;
   name: string;
   summary: string | null;
@@ -317,6 +322,10 @@ export type IssueView = {
   glossary: GlossaryEntry[];
   corrections: Array<{ id: string; itemTitle: string; summary: string; date: string; fromEdition: number; toEdition: number }>;
 };
+/** The magazine: the current released issue and the archive, newest first. */
+export type MagazineView = { current: IssueView | null; archive: IssueView[] };
+/** One released issue with its neighbours in the archive. */
+export type IssueLookup = { issue: IssueView; previous: IssueView | null; next: IssueView | null };
 
 export type EventType = 'conference' | 'seminar' | 'webinar' | 'tour' | 'exhibition' | 'meetup';
 export type EventFormat = 'offline' | 'online' | 'hybrid';
@@ -377,7 +386,7 @@ export type MembershipView = {
   validFrom: string | null;
   endedAt: string | null;
   companyName: string;
-  companySlug: string;
+  companyHandle: string;
 };
 
 export type NotificationView = { id: string; kind: 'decision' | 'quote' | 'project' | 'publication' | 'assistant' | 'magazine'; title: string; at: string; href: string; unread: boolean };
@@ -390,11 +399,12 @@ export type AuthenticatedPrincipal = {
   demo: DemoContext;
   personId: string;
   displayName: string;
-  slug: string;
+  /** Handle of the person's public profile. */
+  handle: string;
   preferences: { buying: boolean; selling: boolean; industryParticipation: boolean };
   pinned: { procurement: boolean; sales: boolean };
   onboarding: 'completed' | 'skipped' | 'pending';
-  company: { id: string; name: string; slug: string; status: CompanyStatus; role: 'member' | 'administrator'; permissions: CompanyPermission[]; membershipId: string } | null;
+  company: { id: string; name: string; handle: string; status: CompanyStatus; role: 'member' | 'administrator'; permissions: CompanyPermission[]; membershipId: string } | null;
   attention: { procurement: number; sales: number; projects: number; publications: number; assistant: number };
   notifications: NotificationView[];
   assistant: AssistantSummary;
@@ -432,7 +442,7 @@ export type EventRow = { id: string; date: string; title: string; href: string }
 export type WorkspaceProjectProgress = { done: number; total: number; percent: number; delayed: boolean };
 export type WorkspaceProjectRow = {
   id: string;
-  slug: string;
+  handle: string;
   href: string;
   name: string;
   summary: string | null;
@@ -486,7 +496,7 @@ export type WorkspaceMilestone = {
 export type WorkspaceParticipant = ProjectParticipant & { grant: string; isPublic: boolean };
 export type WorkspaceProjectDetail = {
   id: string;
-  slug: string;
+  handle: string;
   name: string;
   summary: string | null;
   status: ProjectStatus;

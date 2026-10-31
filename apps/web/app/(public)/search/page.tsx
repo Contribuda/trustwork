@@ -89,13 +89,13 @@ export default async function SearchPage({ searchParams }: { searchParams: PageS
     .split(/\s+/)
     .filter((w) => w.length >= 2);
   const has = words.length > 0;
-  const news = has ? data.listNews().filter((c) => matches(words, [c.title, c.lede, c.authorLabel, ...c.topics.map(topicLabel), formatLabel(c)])) : [];
-  const articles = has ? data.listArticles().filter((c) => matches(words, [c.title, c.lede, c.authorLabel, ...c.topics.map(topicLabel), formatLabel(c)])) : [];
-  const issues = has ? data.getMagazine().archive.filter((i) => matches(words, [i.title, i.lede, `№ ${i.number}`, String(i.number), ...i.items.map((x) => x.title)])) : [];
-  const events = has ? data.listEvents('all').filter((c) => matches(words, [c.title, c.lede, c.city ?? '', c.venueName ?? '', c.organizer.name, typeLabel(c.type), ...c.speakers.map((s) => s.name)])) : [];
-  const companies = has ? data.listCompanies().filter((c) => matches(words, [c.name, c.description ?? '', ...c.directions, regionLabel(c.region)])) : [];
-  const people = has ? data.listPeople().filter((c) => matches(words, [c.displayName, c.headline ?? '', c.roleLine, ...c.expertise, c.employer?.name ?? ''])) : [];
-  const projects = has ? data.listPublicProjects().filter((c) => matches(words, [c.name, c.summary ?? '', c.owner.label, regionLabel(c.region)])) : [];
+  const news = has ? (await data.listNews()).filter((c) => matches(words, [c.title, c.lede, c.authorLabel, ...c.topics.map(topicLabel), formatLabel(c)])) : [];
+  const articles = has ? (await data.listArticles()).filter((c) => matches(words, [c.title, c.lede, c.authorLabel, ...c.topics.map(topicLabel), formatLabel(c)])) : [];
+  const issues = has ? (await data.getMagazine()).archive.filter((i) => matches(words, [i.title, i.lede, `№ ${i.number}`, String(i.number), ...i.items.map((x) => x.title)])) : [];
+  const events = has ? (await data.listEvents('all')).filter((c) => matches(words, [c.title, c.lede, c.city ?? '', c.venueName ?? '', c.organizer.name, typeLabel(c.type), ...c.speakers.map((s) => s.name)])) : [];
+  const companies = has ? (await data.listCompanies()).filter((c) => matches(words, [c.name, c.description ?? '', ...c.directions, regionLabel(c.region)])) : [];
+  const people = has ? (await data.listPeople()).filter((c) => matches(words, [c.displayName, c.headline ?? '', c.roleLine, ...c.expertise, c.employer?.name ?? ''])) : [];
+  const projects = has ? (await data.listPublicProjects()).filter((c) => matches(words, [c.name, c.summary ?? '', c.owner.label, regionLabel(c.region)])) : [];
   const counts: Record<Group, number> = { news: news.length, articles: articles.length, magazine: issues.length, events: events.length, companies: companies.length, people: people.length, projects: projects.length };
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const visible = (g: Group) => (!only || only === g) && counts[g] > 0;

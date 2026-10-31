@@ -14,10 +14,12 @@ export default async function PublicLayout({ children }: { children: ReactNode }
   await primeLocale();
   const fallback = defaultPersona();
   const accounts = Object.fromEntries(
-    PERSONAS.map((persona) => {
-      const principal = data.principalFor({ persona, scenario: 'default', fromQuery: false, defaultPersona: fallback });
-      return [persona, principal ? { name: principal.displayName } : null];
-    }),
+    await Promise.all(
+      PERSONAS.map(async (persona) => {
+        const principal = await data.principalFor({ persona, scenario: 'default', fromQuery: false, defaultPersona: fallback });
+        return [persona, principal ? { name: principal.displayName } : null] as const;
+      }),
+    ),
   ) as Record<Persona, ShellAccount>;
   return (
     <PublicShell accounts={accounts} defaultPersona={fallback} localeControl={<HeaderLocaleSwitcher />}>

@@ -22,7 +22,7 @@ export default async function SalesPage({ searchParams }: { searchParams: PageSe
   const principal = await requirePrincipal(searchParams, '/app/sales');
   const sp = await searchParams;
   const status = typeof sp.status === 'string' && (STATUSES as readonly string[]).includes(sp.status) ? sp.status : 'all';
-  const all = data.listLeads(principal);
+  const all = await data.listLeads(principal);
   const rows = status === 'all' ? all : all.filter((r) => r.status === status);
   const canSell = principal.company !== null && principal.company.permissions.includes('company.deals.manage');
   const canCatalogue = principal.company?.permissions.includes('company.catalogue.edit') ?? false;

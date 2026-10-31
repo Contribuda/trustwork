@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OverviewPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app');
-  const overview = data.getOverview(principal);
+  const overview = await data.getOverview(principal);
   const createItems: Array<{ id: 'need' | 'quote' | 'project' | 'publication'; href: string }> = [
     ...(overview.procurement.show ? [{ id: 'need' as const, href: hrefFor(principal, '/app/procurement') }] : []),
     ...(overview.sales.show ? [{ id: 'quote' as const, href: hrefFor(principal, '/app/sales') }] : []),
@@ -40,7 +40,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pag
 
 async function OverviewBody({ principal }: { principal: AuthenticatedPrincipal }) {
   await scenarioDelay(principal.demo);
-  const o = data.getOverview(principal);
+  const o = await data.getOverview(principal);
   const link = (path: string) => hrefFor(principal, path);
   return (
     <div className="ws-section" style={{ gap: 24 }}>

@@ -31,7 +31,7 @@ export default async function PublicationsPage({ searchParams }: { searchParams:
   const params = await searchParams;
   const principal = await requirePrincipal(searchParams, '/app/publications');
   const state = typeof params.state === 'string' && (TABS as readonly string[]).includes(params.state) ? (params.state as (typeof TABS)[number]) : 'all';
-  const all = data.listMyPublications(principal);
+  const all = await data.listMyPublications(principal);
   const rows = state === 'all' ? all : all.filter((r) => r.status === state);
   const canCompany = principal.company?.permissions.includes('company.publish') ?? false;
   const count = (s: string) => (s === 'all' ? all.length : all.filter((r) => r.status === s).length);

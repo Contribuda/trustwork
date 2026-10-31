@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CompanyWorkspacePage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/company');
-  const view = data.getCompanyWorkspace(principal);
+  const view = await data.getCompanyWorkspace(principal);
   if (!view) {
     return (
       <>
@@ -269,7 +269,7 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
       <PageHeader title={t('company.title')} lede={t('company.lede')} />
       <div style={{ display: 'grid', gap: 24 }}>
         <section className="ws-identity" aria-label={c.name}>
-          <CompanyMark name={c.name} seed={c.slug} size={64} />
+          <CompanyMark name={c.name} seed={c.handle} size={64} />
           <div className="ws-identity__body">
             <span className="ws-identity__name">{typo(c.name)}</span>
             <span className="ws-identity__role">{c.kinds.map((k) => t(`companies.kindOne.${k}` as 'companies.kindOne.supplier')).join(' · ')}</span>

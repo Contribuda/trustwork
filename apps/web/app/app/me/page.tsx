@@ -27,12 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MePage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/me');
-  const me = data.getMe(principal);
-  const person = data.getPerson(principal.slug);
-  const issues = data.getMagazine().archive.map((i) => ({ number: i.number, title: i.title, readerHref: i.readerHref, items: i.items.map((x) => ({ position: x.position, title: x.title })) }));
+  const me = await data.getMe(principal);
+  const person = await data.getPerson(principal.handle);
+  const issues = (await data.getMagazine()).archive.map((i) => ({ number: i.number, title: i.title, readerHref: i.readerHref, items: i.items.map((x) => ({ position: x.position, title: x.title })) }));
   const certificates = (person?.profile.platformCertificates ?? []).map((c) => ({ id: c.id, title: c.course.title, issuedAt: c.issuedAt, score: c.score, href: `/certificates/${c.id}` }));
-  const courses = data
-    .listCourses()
+  const courses = (await data.listCourses())
     .slice(0, 3)
     .map((c) => ({ id: c.id, title: c.title, modules: c.modules, minutes: c.durationMinutes }));
   const membershipLabel = (status: string, endedAt: string | null) =>
