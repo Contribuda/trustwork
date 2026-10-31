@@ -1515,7 +1515,7 @@
       "id": "CNT-001",
       "title": "Publications, corrections and curated issues: backend",
       "area": "content-magazine",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-003",
         "PPL-001",
