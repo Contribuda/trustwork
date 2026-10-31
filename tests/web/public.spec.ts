@@ -150,7 +150,9 @@ test.describe('public resource', () => {
     await page.getByRole('radio', { name: 'Ниже +5 °C' }).click();
     await page.getByRole('button', { name: 'Проверить' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Верно' })).toBeVisible();
-    await page.getByRole('button', { name: 'Отметить прочитанным' }).click();
+    // Reaching the end of an item marks it read and removes the "Mark as read" button, so clicking that button
+    // races the scroll handler (the click's own scroll-into-view can remove it). Read to the end instead.
+    await page.locator('.mgr__foot').scrollIntoViewIfNeeded();
     await expect(page.getByText('Прочитано 1/8')).toBeVisible();
     const stored = await page.evaluate(() => window.localStorage.getItem('trustwork.magazine.12'));
     expect(stored).toContain('"read":[1]');

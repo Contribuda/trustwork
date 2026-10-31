@@ -6,11 +6,11 @@ import { Divider, Form, FormActions, FormAlert } from '../src/components/Form/Fo
 import { Link } from '../src/components/Link/Link';
 import { PasswordField, TextField } from '../src/components/TextField/TextField';
 import { t } from '../src/i18n';
-import { photo } from '../src/media/index';
+import { artworkFor } from '../src/media/index';
 
 function LoginPage({ error, busy = false }: { error?: 'credentials' | 'rate' | 'expired' | 'offline'; busy?: boolean }) {
   return (
-    <AuthShell brandHref="/" backHref="/" visual={{ headline: t('auth.visual.loginHeadline'), subline: t('auth.visual.loginSub'), media: photo('timber-framing') }} privacyHref="/privacy" termsHref="/terms" helpHref="/help">
+    <AuthShell brandHref="/" backHref="/" visual={{ headline: t('auth.visual.loginHeadline'), subline: t('auth.visual.loginSub'), media: artworkFor('timber-framing') }} privacyHref="/privacy" termsHref="/terms" helpHref="/help">
       <h1 style={{ fontSize: 'var(--text-h1-size)', lineHeight: 'var(--text-h1-line)' }}>{t('auth.login.title')}</h1>
       <p style={{ color: 'var(--color-text-muted)', marginBottom: 24 }}>{t('auth.login.subtitle')}</p>
       <Form isBusy={busy} onSubmit={(e) => e.preventDefault()}>

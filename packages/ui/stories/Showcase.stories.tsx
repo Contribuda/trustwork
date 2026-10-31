@@ -22,7 +22,7 @@ import { SidebarNav, type SidebarNavItem } from '../src/components/SidebarNav/Si
 import { StoryCard } from '../src/components/StoryCard/StoryCard';
 import { Heading, Kicker, Meta as MetaRow, Text } from '../src/components/Typography/Typography';
 import { locale, t } from '../src/i18n';
-import { photo } from '../src/media/index';
+import { artwork, artworkFor } from '../src/media/index';
 import { cx } from '../src/utils/cx';
 import { archiveIssues, companies, decisions, events, magazineIssue, newsItems, people, personas, projects, stories } from './editorial-fixtures';
 import { avatarMenuItems } from './fixtures';
@@ -47,10 +47,10 @@ function HomePage() {
       <PublicHeader hrefs={hrefs} currentIndex={0} brandHref="/" aboutHref="/about" onSearchPress={() => undefined} signInHref="/login" />
       <main id="main">
         <section className={cx('trustwork-container trustwork-enter-group', styles.lead)} aria-label="Главное">
-          <Hero size="md" media={photo('cranes-sky')} kicker="В фокусе" title="Как меняется строительство" dek="Материалы, технологии и решения — в одном обзоре." meta={['Обзор', '8 минут']} href={lead.href} />
+          <Hero size="md" media={artworkFor('cranes-sky')} kicker="В фокусе" title="Как меняется строительство" dek="Материалы, технологии и решения — в одном обзоре." meta={['Обзор', '8 минут']} href={lead.href} />
           <div className={styles.leadSide}>
             <Hero size="sm" headingLevel={2} media={stories[1].media} kicker="Материалы" title="Из чего складывается качество" meta={['Разбор', '6 минут']} href={stories[1].href} />
-            <Hero size="sm" headingLevel={2} media={photo('timber-framing')} kicker="Проекты" title="Каркас, который видно: школа на набережной" meta={['История проекта', '7 минут']} href={stories[3].href} />
+            <Hero size="sm" headingLevel={2} media={artworkFor('timber-framing')} kicker="Проекты" title="Каркас, который видно: школа на набережной" meta={['История проекта', '7 минут']} href={stories[3].href} />
           </div>
         </section>
 
@@ -128,7 +128,7 @@ function HomePage() {
           </div>
         </section>
 
-        <Band tone="navy" backdrop={photo('aerial-site-foundations')} padding="lg" aria-labelledby="cta-title">
+        <Band tone="navy" backdrop={artwork('glass-night')} padding="lg" aria-labelledby="cta-title">
           <div className={styles.cta}>
             <SectionHeader tone="inverse" kicker="О платформе" id="cta-title" title="Продолжите в своём рабочем пространстве" description="Личная страница, компания, проекты, закупки, продажи и публикации — в одном рабочем пространстве с одним помощником." />
             <div className={styles.ctaActions}>
@@ -233,7 +233,7 @@ function ArticlePage() {
           </Text>
           <MetaRow items={['Редакция', '18 октября 2026', '6 мин']} />
         </header>
-        <MediaFrame media={photo('facade-window-grid')} ratio="21/9" loading="eager" sizes="1200px" />
+        <MediaFrame media={artworkFor('facade-window-grid')} ratio="21/9" loading="eager" sizes="1200px" />
         <div className={styles.articleBody}>
           <Prose>
             <p>Материалы задают тон проекту. Они определяют, как здание взаимодействует с человеком, городом и временем. Выбор материала — это всегда больше, чем техническая задача.</p>

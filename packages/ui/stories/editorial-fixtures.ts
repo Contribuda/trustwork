@@ -1,4 +1,4 @@
-import { coverFor, artwork, photo } from '../src/media/index';
+import { coverFor, artwork, artworkFor } from '../src/media/index';
 
 /**
  * Synthetic editorial fixtures for stories. Names are deliberately generic («Фасад-Пример», «Образец-Строй»);
@@ -14,7 +14,7 @@ export const stories = [
     dek: 'Обновлённый стандарт уточняет требования к крепежу и испытаниям; производителям дадут переходный период.',
     meta: ['Редакция', '21 октября 2026', '2 мин'],
     href: '#story-1',
-    media: photo('glass-steel-facade'),
+    media: artworkFor('glass-steel-facade'),
   },
   {
     id: 'compare-panels',
@@ -24,7 +24,7 @@ export const stories = [
     dek: 'Единицы измерения, объёмы и замены — три причины, по которым два предложения нельзя сравнивать по одной цифре.',
     meta: ['Редакция', '18 октября 2026', '6 мин'],
     href: '#story-2',
-    media: photo('facade-window-grid'),
+    media: artworkFor('facade-window-grid'),
   },
   {
     id: 'insulation-protocols',
@@ -44,7 +44,7 @@ export const stories = [
     dek: 'Личный опыт руководителя проекта: как поэтапная приёмка снимает споры в конце объекта.',
     meta: ['Анна Примерова', '10 октября 2026', '4 мин'],
     href: '#story-4',
-    media: photo('house-scaffolding'),
+    media: artworkFor('house-scaffolding'),
   },
   {
     id: 'supplier-checklist',
@@ -64,7 +64,7 @@ export const stories = [
     dek: 'Наблюдения компании о плече доставки и сезонности спроса.',
     meta: ['Бетон Образцовый', '30 сентября 2026', '4 мин'],
     href: '#story-6',
-    media: photo('concrete-wall'),
+    media: artworkFor('concrete-wall'),
   },
 ] as const;
 
@@ -96,13 +96,13 @@ export const magazineIssue = {
   dateRange: '18 — 24 октября 2026',
   title: 'Фасады перед зимой',
   topics: ['Монтаж при минусе', 'Протоколы испытаний', 'Приёмка по этапам'],
-  media: photo('corrugated-building'),
+  media: artworkFor('corrugated-building'),
   summary: 'Что ещё можно сделать на фасаде до морозов, как читать протоколы и почему приёмка по этапам снимает споры.',
 };
 
 export const archiveIssues = [
-  { issue: 11, dateRange: '11 — 17 октября 2026', title: 'Осень на стройке', media: coverFor('magazine', 11, { prefer: 'photo' }) },
-  { issue: 10, dateRange: '4 — 10 октября 2026', title: 'Сталь и дерево', media: coverFor('magazine', 10, { prefer: 'photo' }) },
+  { issue: 11, dateRange: '11 — 17 октября 2026', title: 'Осень на стройке', media: coverFor('magazine', 11, { prefer: 'artwork' }) },
+  { issue: 10, dateRange: '4 — 10 октября 2026', title: 'Сталь и дерево', media: coverFor('magazine', 10, { prefer: 'artwork' }) },
   { issue: 9, dateRange: '27 сентября — 3 октября 2026', title: 'Чертёж как договор', media: artwork('blueprint-lines') },
 ] as const;
 

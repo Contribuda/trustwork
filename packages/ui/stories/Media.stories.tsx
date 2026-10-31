@@ -13,7 +13,7 @@ export const Ratios: Story = {
       {(['21/9', '16/10', '4/3', '1/1', '3/4'] as const).map((ratio, index) => (
         <div key={ratio}>
           <Kicker>{ratio}</Kicker>
-          <MediaFrame media={listPhotos()[index] ?? listPhotos()[0]!} ratio={ratio} />
+          <MediaFrame media={listArtworks()[index] ?? listArtworks()[0]!} ratio={ratio} />
         </div>
       ))}
     </div>
@@ -26,7 +26,7 @@ export const ScrimsWithText: Story = {
     <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
       {(['bottom', 'left', 'full'] as const).map((scrim, index) => (
         <div key={scrim} data-testid={`scrim-${scrim}`}>
-          <MediaFrame media={listPhotos()[index + 2] ?? listPhotos()[0]!} ratio="16/10" scrim={scrim}>
+          <MediaFrame media={listArtworks()[index + 2] ?? listArtworks()[0]!} ratio="16/10" scrim={scrim}>
             <Kicker tone="inverse">scrim · {scrim}</Kicker>
             <Heading level={3} tone="inverse">
               Белый текст поверх фотографии
