@@ -25,7 +25,7 @@ Status: Live in the API and the worker with fake providers only. No model, retri
 - `ask`: records a decision waiting for the person (`GET /v1/assistant/decisions`), bound to the digest; after the person approves it, the identical retry is allowed once;
 - anything else (unknown, foreign, malformed, revoked, suspended, expired mandate, kill switch, stop) is refused, and the module answers `403 access.mandate_scope` as before.
 
-Limits of this release: module checks carry no condition facts and no context facts (categories, region), so a mandate with conditions asks and a standing selector with categories or regions does not match; only `own_agent` mandates are accepted (colleague agents and the company representative arrive with AGT-001); company approver rules are recorded but the principal is the only approver.
+Limits of this release: module checks carry no condition facts and no context facts (categories, region), so a mandate with conditions asks and a standing selector with categories or regions does not match; only `own_agent` mandates are accepted on these routes (colleague agents and the company representative execute company mandates granted through the [assistant-goals module](../assistant-goals/README.md), AGT-001); company approver rules are recorded but the principal is the only approver.
 
 ## Routes
 

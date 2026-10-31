@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "Agente de {person}",
+      "personAgentForCompany": "Agente de {person} en nombre de {company}",
+      "representative": "Representante de {company} (responsable: {person})"
+    },
+    "session": {
+      "open": "Negociación abierta",
+      "agreedPendingConfirmation": "Acordado, pendiente de confirmación por personas",
+      "escalated": "Pasado a personas",
+      "declined": "Rechazado",
+      "withdrawn": "Retirado",
+      "expired": "Vencido"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "Un mensaje de otro agente necesita su decisión",
+      "outboundOutsideMandate": "Su agente pide ir más allá de su mandato",
+      "roundsExhausted": "La negociación llegó a su límite de rondas",
+      "sessionExpired": "La negociación venció",
+      "agreementNeedsConfirmation": "Un acuerdo espera su confirmación",
+      "confirmationRequested": "Confirmación solicitada"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "Esperando a la persona responsable",
+        "active": "Activo",
+        "suspended": "Suspendido",
+        "disabled": "Desactivado"
+      },
+      "suspension": {
+        "noAccountablePerson": "Sin persona responsable",
+        "noConfirmedMandate": "Sin mandato confirmado",
+        "adminSuspended": "Suspendido por un administrador",
+        "hubKillSwitch": "Detenido para todo el hub",
+        "nodeKillSwitch": "Detenido para todo el nodo"
+      }
+    },
+    "report": {
+      "goalProgress": "Avance del objetivo",
+      "event": {
+        "created": "Objetivo creado",
+        "mandate_proposed": "Cambios de mandato propuestos",
+        "confirmed": "Objetivo confirmado",
+        "mandate_confirmed": "Mandato confirmado",
+        "paused": "En pausa",
+        "resumed": "Reanudado",
+        "closed": "Cerrado",
+        "evidence": "Evidencia registrada",
+        "report": "Informe preparado",
+        "escalated": "Pasado a personas"
+      }
+    }
+  }
+}

@@ -4040,7 +4040,7 @@
       "id": "AGT-001",
       "title": "Agent goals, agent-to-agent envelopes, negotiation sessions, company mandates and the company representative",
       "area": "assistant",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "AST-001",
         "AGT-002"

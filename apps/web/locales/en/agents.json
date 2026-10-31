@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "{person}'s agent",
+      "personAgentForCompany": "{person}'s agent for {company}",
+      "representative": "Representative of {company} (accountable: {person})"
+    },
+    "session": {
+      "open": "Negotiation open",
+      "agreedPendingConfirmation": "Agreed, waiting for confirmation by people",
+      "escalated": "Handed to people",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "A message from another agent needs your decision",
+      "outboundOutsideMandate": "Your agent asks to go beyond its mandate",
+      "roundsExhausted": "The negotiation reached its round limit",
+      "sessionExpired": "The negotiation expired",
+      "agreementNeedsConfirmation": "An agreement is waiting for your confirmation",
+      "confirmationRequested": "Confirmation requested"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "Waiting for the accountable person",
+        "active": "Active",
+        "suspended": "Suspended",
+        "disabled": "Off"
+      },
+      "suspension": {
+        "noAccountablePerson": "No accountable person",
+        "noConfirmedMandate": "No confirmed mandate",
+        "adminSuspended": "Suspended by an administrator",
+        "hubKillSwitch": "Stopped for the whole hub",
+        "nodeKillSwitch": "Stopped for the whole node"
+      }
+    },
+    "report": {
+      "goalProgress": "Goal progress",
+      "event": {
+        "created": "Goal created",
+        "mandate_proposed": "Mandate changes proposed",
+        "confirmed": "Goal confirmed",
+        "mandate_confirmed": "Mandate confirmed",
+        "paused": "Paused",
+        "resumed": "Resumed",
+        "closed": "Closed",
+        "evidence": "Evidence recorded",
+        "report": "Report prepared",
+        "escalated": "Handed to people"
+      }
+    }
+  }
+}

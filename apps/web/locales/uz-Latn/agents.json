@@ -1,0 +1,55 @@
+{
+  "agents": {
+    "label": {
+      "personAgent": "{person} agenti",
+      "personAgentForCompany": "{person} agenti, {company} nomidan",
+      "representative": "{company} vakili (mas’ul: {person})"
+    },
+    "session": {
+      "open": "Muzokara davom etmoqda",
+      "agreedPendingConfirmation": "Kelishildi, odamlar tasdig‘ini kutmoqda",
+      "escalated": "Odamlarga topshirildi",
+      "declined": "Rad etildi",
+      "withdrawn": "Qaytarib olindi",
+      "expired": "Muddati tugadi"
+    },
+    "escalation": {
+      "inboundNeedsDecision": "Boshqa agentdan kelgan xabar sizning qaroringizni talab qiladi",
+      "outboundOutsideMandate": "Agentingiz vakolatidan tashqariga chiqishni so‘ramoqda",
+      "roundsExhausted": "Muzokara raundlar chegarasiga yetdi",
+      "sessionExpired": "Muzokara muddati tugadi",
+      "agreementNeedsConfirmation": "Kelishuv tasdig‘ingizni kutmoqda",
+      "confirmationRequested": "Tasdiq so‘raldi"
+    },
+    "representative": {
+      "status": {
+        "pendingAcceptance": "Mas’ul shaxsni kutmoqda",
+        "active": "Faol",
+        "suspended": "To‘xtatilgan",
+        "disabled": "O‘chirilgan"
+      },
+      "suspension": {
+        "noAccountablePerson": "Mas’ul shaxs yo‘q",
+        "noConfirmedMandate": "Tasdiqlangan vakolat yo‘q",
+        "adminSuspended": "Administrator tomonidan to‘xtatilgan",
+        "hubKillSwitch": "Butun hab uchun to‘xtatilgan",
+        "nodeKillSwitch": "Butun tugun uchun to‘xtatilgan"
+      }
+    },
+    "report": {
+      "goalProgress": "Maqsad bo‘yicha yutuqlar",
+      "event": {
+        "created": "Maqsad yaratildi",
+        "mandate_proposed": "Vakolat o‘zgarishlari taklif qilindi",
+        "confirmed": "Maqsad tasdiqlandi",
+        "mandate_confirmed": "Vakolat tasdiqlandi",
+        "paused": "To‘xtatildi",
+        "resumed": "Davom ettirildi",
+        "closed": "Yopildi",
+        "evidence": "Dalil qayd etildi",
+        "report": "Hisobot tayyorlandi",
+        "escalated": "Odamlarga topshirildi"
+      }
+    }
+  }
+}
