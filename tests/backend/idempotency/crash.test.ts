@@ -5,6 +5,8 @@ import { EMAILS, login, seedPersonas, type PersonaKey } from '../helpers/persona
 import { auditCount, count } from '../hardening/helpers.js';
 import { IDEMPOTENCY_TAKEOVER_LEASE_MS, IDEMPOTENT_ROUTES } from '../../../apps/api/src/common/idempotency/index.js';
 import { installCrashPoints, recordState } from './helpers.js';
+import { withMaintenance } from '@trustwork/data';
+import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
 
 const h = await startHarness('idem_crash');
 
@@ -181,6 +183,79 @@ test('exactly-once completion: crash before and after the handler commit, for ev
       action: 'membership.end', client: carl, url: `/v1/companies/${company}/memberships/end`,
       body: { membershipId, reason: 'exactly-once test', expectedRevision: await revisionOf('membership', membershipId) },
       effects: () => auditCount(h.db.admin, 'membership.ended'),
+    });
+  });
+
+  await t.test('plans (PLAN-001): versions, changes, shares, item state, location, permits, diary', async () => {
+    const reference = await kernelReference.fromRepository();
+    await withMaintenance(h.db.admin, (trx) => kernelSync.apply(trx, reference));
+    const project = await newProject('Exactly-once plan project');
+    const P = `/v1/projects/${project.id}/plan`;
+    const milestone = (key: string) => ({
+      key, parentKey: null, kind: 'milestone', title: `Milestone ${key}`, description: null, stepTerms: [], requiredSkills: [], quantity: null, estimate: null, duration: null, window: null,
+      riskLevel: null, decisionQuestion: null, sources: [], attachments: [], privateNotes: null,
+    });
+    const content = { summary: null, assumptions: [], budget: null, timeline: null, items: [milestone('m'), milestone('n')], dependencies: [{ predecessorKey: 'm', successorKey: 'n', type: 'fs', lagDays: 0 }] };
+    type Version = { id: string; revision: number; digest: { value: string } | null };
+    const plan = (await exactlyOnce({ action: 'plan.create', client: petr, url: P, body: { timeZone: 'America/Los_Angeles', actor: { via: 'person' }, content }, effects: () => auditCount(h.db.admin, 'plan.created') })).body as { draft: Version };
+    const saved = (await exactlyOnce({
+      action: 'plan.draft_save', client: petr, url: `${P}/versions/${plan.draft.id}/content`, body: { expectedRevision: plan.draft.revision, content: { ...content, summary: 'saved once' }, actor: { via: 'person' } },
+      effects: () => auditCount(h.db.admin, 'plan.draft_saved'),
+    })).body as Version;
+    const proposed = (await exactlyOnce({
+      action: 'plan.version_propose', client: petr, url: `${P}/versions/${plan.draft.id}/propose`, body: { expectedRevision: saved.revision, actor: { via: 'person' } },
+      effects: () => auditCount(h.db.admin, 'plan.version_proposed'),
+    })).body as Version;
+    const approved = (await exactlyOnce({
+      action: 'plan.version_approve', client: petr, url: `${P}/versions/${plan.draft.id}/approve`, body: { expectedRevision: proposed.revision, digest: proposed.digest },
+      effects: () => auditCount(h.db.admin, 'plan.version_approved'),
+    })).body as Version;
+    const v2 = (await exactlyOnce({ action: 'plan.draft_create', client: petr, url: `${P}/versions`, body: { basedOnVersionId: null, actor: { via: 'person' } }, effects: () => auditCount(h.db.admin, 'plan.draft_created') })).body as Version;
+    const v2proposed = (await petr.post(`${P}/versions/${v2.id}/propose`, { expectedRevision: v2.revision, actor: { via: 'person' } })).body as Version;
+    const change = (await exactlyOnce({
+      action: 'plan.change_record', client: petr, url: `${P}/changes`,
+      body: { fromVersionId: approved.id, toVersionId: v2.id, reason: 'Exactly-once change', cause: 'owner_request', requestedBy: { kind: 'person', id: seed.people.petr }, accountable: { kind: 'person', id: seed.people.petr }, agreementId: null, scheduleImpactDays: null },
+      effects: () => auditCount(h.db.admin, 'plan.change_recorded'),
+    })).body as { id: string; revision: number };
+    await exactlyOnce({
+      action: 'plan.change_decide', client: petr, url: `${P}/changes/${change.id}/decide`, body: { decision: 'approve', expectedRevision: change.revision, digest: v2proposed.digest },
+      effects: () => auditCount(h.db.admin, 'plan.change_approved'),
+    });
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.plan_version WHERE id = $1 AND status = 'approved'", [v2.id]), 1);
+    const v3 = await created(await petr.post(`${P}/versions`, { basedOnVersionId: null, actor: { via: 'person' } }));
+    const v3proposed = (await petr.post(`${P}/versions/${v3.id}/propose`, { expectedRevision: v3.revision, actor: { via: 'person' } })).body as Version;
+    await exactlyOnce({
+      action: 'plan.version_return', client: petr, url: `${P}/versions/${v3.id}/return`, body: { expectedRevision: v3proposed.revision, reason: 'Exactly-once return' },
+      effects: () => auditCount(h.db.admin, 'plan.version_returned'),
+    });
+    await exactlyOnce({
+      action: 'project.location_set', client: petr, url: `/v1/projects/${project.id}/location`,
+      body: { address: null, regionCode: 'US-CA', cadastralRef: null, siteContact: null, siteAccessNotes: null, expectedRevision: null },
+      effects: () => auditCount(h.db.admin, 'project.location_set'),
+    });
+    const shareRequest = { itemKey: 'm', audience: 'invited', invitee: { kind: 'person', id: seed.people.carl }, fields: ['scope', 'locality'], acceptanceRef: null };
+    const preview = (await petr.post(`${P}/shares/preview`, shareRequest)).body as { previewDigest: unknown };
+    const share = (await exactlyOnce({
+      action: 'plan.item_share', client: petr, url: `${P}/shares`, body: { ...shareRequest, validUntil: null, previewDigest: preview.previewDigest },
+      effects: () => auditCount(h.db.admin, 'plan.item_shared'),
+    })).body as { id: string; revision: number };
+    await exactlyOnce({
+      action: 'plan.share_revoke', client: petr, url: `${P}/shares/${share.id}/revoke`, body: { expectedRevision: share.revision, reason: 'Exactly-once revoke' },
+      effects: () => auditCount(h.db.admin, 'plan.share_revoked'),
+    });
+    await exactlyOnce({
+      action: 'plan.item_state', client: petr, url: `${P}/items/m/state`, body: { status: 'accepted', path: 'self', link: null, actualStart: null, actualEnd: null, expectedRevision: null },
+      effects: () => auditCount(h.db.admin, 'plan.item_state_changed'),
+    });
+    await exactlyOnce({
+      action: 'project.permit_record', client: petr, url: `/v1/projects/${project.id}/permits`,
+      body: { planItemKey: null, jurisdiction: 'US-CA', permitType: 'permit.building', authority: 'Demo County Building Department', number: null, appliedAt: null, issuedAt: null, expiresAt: null, inspectionResults: [], evidence: [], status: 'planned' },
+      effects: () => auditCount(h.db.admin, 'project.permit_recorded'),
+    });
+    await exactlyOnce({
+      action: 'project.diary_add', client: petr, url: `/v1/projects/${project.id}/diary`,
+      body: { entryDate: '2027-03-02', text: 'Exactly-once diary entry', evidence: [], planItemKey: null, visibility: 'owner_private' },
+      effects: () => auditCount(h.db.admin, 'project.diary_entry_added'),
     });
   });
 

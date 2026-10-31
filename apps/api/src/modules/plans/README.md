@@ -2,7 +2,7 @@
 
 Project plans for the flagship journey "plan to people" ([ADR 010](../../../../../docs/adr/010-gathering-point-hubs-agents-and-mesh.md) decision 17; [ADR 012](../../../../../docs/adr/012-integrator-decisions-2026-10-31.md) decisions 13, 14, 23 and 37). Contracts: [`packages/contracts/src/plans.ts`](../../../../../packages/contracts/src/plans.ts). Storage: [`packages/data/migrations/plans`](../../../../../packages/data/migrations/plans), [`packages/data/src/repositories/plans.ts`](../../../../../packages/data/src/repositories/plans.ts). Narrative: [Projects](../../../../../docs/engine/projects.md#plans-from-plan-to-people).
 
-All mutations: authenticated session, `X-Trustwork-Request` with same-origin metadata, `Idempotency-Key` (the BE-001 interceptor; BE-005's in-transaction completion is not merged yet). Errors use the contract envelope; plan-specific reasons are in `details.reason`.
+All mutations: authenticated session, `X-Trustwork-Request` with same-origin metadata, `Idempotency-Key`. Every plan action completes its idempotency record inside its own request transaction (BE-005, `in_transaction` in `apps/api/src/common/idempotency/routes.ts`) and is crash-tested in `tests/backend/idempotency/crash.test.ts`. Errors use the contract envelope; plan-specific reasons are in `details.reason`.
 
 ## Who may do what
 
