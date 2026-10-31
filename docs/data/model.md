@@ -1,98 +1,1012 @@
-# Domain data dictionary and ER model
+# Domain data dictionary
 
-**Status 2026-10-27:** the identity/access slice (person, email binding, credential, session, auth token, company, company_private, membership, permission grant, object participation, project, ownership transfer, audit, outbox, job, idempotency, inbox) is implemented by DATA-001 as six reviewed migrations in `packages/data/migrations` with FORCE RLS and real-PostgreSQL tests; the remaining entities below are proposed logical entities to be delivered as small reviewed migrations with invariants and tests. Avoid a hundred empty tables ahead of working use cases.
+**Status 2026-10-31.** This is the authoritative logical data model of the whole engine: every module, implemented and planned. The identity, access and project slice is **Live**: twelve reviewed migrations in `packages/data/migrations` (DATA-001, BE-001) with FORCE row-level security and real-PostgreSQL tests, mirrored by `packages/data/src/schema.ts`. Commerce tables exist as a **draft** migration on the `draft/com-001-commerce-migrations` branch (COM-001, not merged). Everything else is a logical entity that is delivered as small reviewed migrations, slice by slice, with invariants and tests ([migration plan](migration-plan.md)). Do not create a hundred empty tables before the working use cases exist.
 
-## Fundamental types and ownership
+Companion documents: [ER diagrams](er-diagrams.md), [lifecycles](lifecycles.md), [retention and privacy](retention-and-privacy.md), [migration plan](migration-plan.md), [knowledge and retrieval schema](knowledge-model.md). Handbook chapters describe behaviour; this dictionary fixes names, fields, layers, invariants and retention. When a chapter and this dictionary disagree on a name, this dictionary wins for storage and the chapter wins for behaviour; report the conflict in the work package issue.
 
-Every mutable aggregate has opaque UUID ID, revision, created_at/updated_at (`timestamptz`), actor/provenance and lifecycle status. Historical records retain actor identity and context at the event time. Identifiers do not grant access. Ownership is exactly one person OR company, enforced by a sum type in contracts and a database XOR check over nullable FKs. Do not use unconstrained generic owner IDs where referential integrity is possible.
+Two other designs are being written in parallel and must stay consistent with this model: the hub operator console (`docs/engine/hub-console/`, `packages/contracts/src/hub.ts`) and the agent catalogue (`docs/engine/agent-catalog.md`). Where this dictionary names a hub or agent entity, those documents own the screens and contract shapes; the table names and invariants here are the storage proposal.
 
-A human may have historical memberships but one active ordinary employer; enforce a partial unique membership index after clarifying invitation/pending states. No current-company filter alone can authorize shared transactions. `object_participation` joins a resource to a person/company party with capabilities, audience, validity, grantor and revision. Runtime object policy resolves current membership plus explicit grants, including personal owners. Private buyer/seller data uses separately authorized records/columns; a shared agreement projection has an explicit allowlist. Public projection is a third independent layer.
+**Engine configurability (owner decision 2026-10-31).** Every country-specific behaviour is data (country pack facts, hub configuration versions) or an adapter, never code. The reference deployment is a **United States** hub, so examples below use US facts: EIN and state registrations, state contractor licences, sales tax per jurisdiction, ESIGN/UETA signatures, card and ACH payments, CCPA/CPRA rights. The Uzbekistan, Georgia, Armenia and Azerbaijan packs remain worked examples of other countries. US facts named here are illustrative until a pack maintainer adds them to a `us` country pack with sources.
 
-Money stores integer minor units (`bigint`/bounded numeric) plus ISO currency, scale/rounding policy where required. Serialize integer values as strings. Quantities and rates use exact decimals with units and precision, never floating-point accounting. Mixed-currency comparison requires an explicit exchange-rate snapshot/source/time; not an implicit sum. Business dates retain local date/timezone; chronological events use UTC and source timestamps separately.
+**Other owner decisions of 2026-10-31 covered here:** the flagship journey "plan to people" (plans, plan items, consultations, scoped tasks, mentoring and knowledge sharing: sections 7 to 9), reputation-building tools for every participant (credentials, portfolio, confirmations, contributions, timeliness, passport and verifiable credentials: sections 4 and 20), and manufacturer and supplier knowledge matched to every plan step (ADR 010 decision 19: crawl policies, product entries, learning resources, the plan-step taxonomy and recommendations: sections 2, 13, 14, 15 and 24). Recommendations and reputation are never for sale.
 
-## Logical dictionary
+## 1. Conventions
 
-| Domain | Entities / key fields | Invariants and visibility |
+### 1.1 Notation used in the tables
+
+| Notation | Meaning in SQL | Meaning in contracts |
 |---|---|---|
-| Identity | `person(id, display_name, profile_visibility)`, `credential(person_id, kind, provider_subject, password_hash)`, `email_binding(email_normalized, verified_at, is_primary)`, `session(token_hash, idle_expires_at, absolute_expires_at, authenticated_at, revoked_at)`, `auth_token(kind: verify/recovery, token_hash, expires_at, consumed_at)`, `login_failure`, `authz_epoch` columns on `person`/`company` (epoch-only updates do not bump `revision`) | Persistent human; `(credential.kind, provider_subject)` unique; one primary binding; no auto-link by unverified email; credentials and token hashes never public (`SessionView` strips `token_hash`) |
-| Company | `company(id, sourced_status, claim_status, legal_identifiers)`, `membership(person_id, company_id, role, valid_from, ended_at)`, `company_claim(source, evidence, reviewer)` | Many people per company; one active employer per person; legal identifier is not verification |
-| Access | `permission_grant(principal, action, scope, limits, expiry)`, `object_participation(resource, party, side, capabilities[], audience, valid_from, valid_until, granted_by, revoked_at, revision, case_ref)`, `publication_grant` | Grant intersection, deny default, revocable; `audience ∈ {shared_party, party_private, owner_private}`; capability vocabulary and projection layers (`public`, `shared_party`, `party_private`, `owner_private`, `staff_case`) frozen in `packages/contracts/src/access.ts`; admin role not universal access |
-| Projects | `project(owner_person_id XOR owner_company_id, creator_id, leader_id, status, revision)`, `milestone(title,due,budget,shared)`, `ownership_transfer(from,to,consents,effective_at)`, `leadership_assignment` | Transfer != leadership; private default; preserved audit; participants see shared milestones without `budget` |
-| Planning | `plan_baseline(project_id, version, approved_at)`, `plan_change(baseline, reason, accountable_party, agreement)`, `milestone(dates,budget)`, `dependency(predecessor, successor, type, lag)` | Acyclic dependencies; original/revised plan both retained; no retroactive blame rewrite |
-| Catalogue | `offering(owner_company/person, kind, status)`, `offering_version(specs,options,price,availability,capacity,scope)`, `bundle_component(version,component,quantity)` | Goods/works/services and mixed bundles; immutable published version; selected public fields; private commercial knowledge separate |
-| Intake | `need(project, source, missing_fields)`, `need_line(kind,quantity,unit,spec)`, `rfq(id,owner,status,current_version_id,revision,public_projection)`, `rfq_version(id,rfq_id,version,status,payload,digest,published_at,superseded_by,amendment_reason)`, `rfq_private_constraint(budget_ceiling,evaluation_weights,internal_notes,shortlist)`, `rfq_invitation(rfq_version_id,party,channel,stale_reason)` | Published RFQ versions immutable (`digest = trustwork-digest-1 over {payload}`); invitations pin exact `rfq_version_id`; amendment sets `stale_reason = rfq_amended` on pinned responses (flag, not status) pending explicit revalidation; buyer-private constraint is a separate record; no send from parsed text alone |
-| Discovery | `supplier_candidate(source, observed_at, eligibility)`, `evaluation(criteria_version, evidence, score, uncertainty)` | External candidates not verified platform users; scoring explainable |
-| Sales | `lead(context,contact,provenance)`, `quote(rfq,seller,buyer,status,stale_reason)`, `quote_version(id,quote_id,version,rfq_version_id,rfq_version_digest,status,payload,digest,sent_at,valid_until,stale_reason,revalidated_from)`, `quote_line(rfq_line_id,kind,spec_snapshot,quantity,unit_price,tax,tax_amount,line_total,offering_version_ref)`, `quote_private_constraint(floor_prices,margin_targets,cost_basis,negotiation_notes)` | Sent version immutable (`digest` over `{rfqVersion, payload}`); exact RFQ version pinned by id and verified by digest; catalogue provenance plus embedded snapshot; recipient-specific; seller-private constraint is a separate record; no negotiation floor exposure |
-| Negotiation | `negotiation_round(context,proposal_version)`, `private_constraint(owner_party,encrypted_value)`, `accepted_terms(quote_version_ref,rfq_version_ref,digest)` | Private priorities separate from shared agreement; consent binds exact immutable version; `digest` over `{quoteVersion, rfqVersion}` computed once |
-| Transaction | `agreement(parties,accepted_terms,status,superseded_by,obligations)`, `agreement_buyer_private(agreement_id,owner_party,transaction_budget_id,approval_refs,notes)`, `agreement_seller_private(agreement_id,owner_party,fulfilment_plan,notes)`, `acceptance_event(kind,quote_version_ref,rfq_version_ref,accepted_terms_digest,actor,authority,idempotency_key)`, `order(agreement,accepted_terms_digest,revision,external_reference,reservation_id)`, `order_change(previous,new_terms,consents)`, `obligation(party,kind,due,amount_or_scope)` | No order commit without authority/reservation; buyer placement and seller acceptance distinct; `acceptance_event.accepted_terms_digest = agreement.accepted_terms_digest` (trigger); party-private agreement records are never joined into the shared or the other side's view |
-| Execution | `delivery(order,lines,quantity,evidence)`, `work_record(scope,period,claimant)`, `acceptance(subject,scope,accepted_quantity,actor)`, `defect`, `remediation` | Partial fulfillment/acceptance supported; claim != confirmation; contested quantities explicit |
-| Evidence | `source_record(uri,source_time,observed_at,license)`, `evidence_artifact(hash,storage_key,classification)`, `assertion(subject,predicate,claimant,status)`, `confirmation(assertion,reviewer,evidence)`, `dispute`, `supersession` | Append historical corrections; permitted provenance; storage access checked separately |
-| Reputation | `review(subject,author,transaction_ref,dimensions,text)`, `review_appeal`, `performance_observation(baseline,change,evidence,attribution)`, `reputation_snapshot(method_version,samples,dimension_scores,excluded_disputes)` | Subjective and evidence-based separate; missing != failed; no payment weight; explain method/samples |
-| Content | `publication(format,status)`, `publication_version(body,source_refs,correction_of)`, `authorship(person/company/editorial,credit)`, `topic`, `entity_link`, `wall_reference` | One publication store; author vs editor right; source event date vs publish date; sanitization/licensing |
-| Magazine | `issue(number,date,status)`, `issue_revision`, `issue_item(position,publication_version)`, `render_artifact(format,hash,source_revision)` | Curated immutable released edition; PDF separately laid out; correction trail and archive |
-| Personal journal | `journal_brief(audience,topics,permitted_sources,cadence)`, `journal_edition` | Optional future product; billing/free policy unresolved; no employee surveillance |
-| Assistant | `mandate(principal,actions,contexts,limits,conditions,valid_until,status,revision,revoked_at)`, `service_backlog`, `run`, `step`, `action_intent(action_digest,state,reservation_id,effect_correlation_key,outcome)`, `approval(action_digest,approver,expiry,revoked_at)`, `tool_attempt`, `external_outcome(kind: unknown/acknowledged/final)`, `reconciliation(attempt,operation,lookup_reference,outcome)` | Current principal rights cap mandate; chat not approval; revocation/revision checked before effect; unknown outcome preserved; `unknown -> final` only through a reconciliation record |
-| Communication | `channel_grant(person/account,provider,scopes,revoked_at)`, `context_thread`, `message(direction,provider_id,source_time)`, `message_link`, `send_receipt`, `notification` | Existing email retained; explicit scope; unique provider delivery/event key; bell separate from correspondence |
-| Billing | `billing_account(owner)`, `offer`, `plan_version`, `price_version(offer_id,version,currency,amount_minor,effective_from,effective_to,acceptance_text_version,status,drafted_by,activated_by,activated_at)`, `price_acceptance(price_version_id,acceptance_text_version,payer,accepted_by,amount)`, `subscription`, `entitlement`, `usage_event`, `credit_ledger`, `invoice_ref` | Price and acceptance versioned; `activated_by ≠ drafted_by`, `effective_from > activated_at`, no overlapping active versions; personal/company payer; economic rights distinct from roles |
-| Budgets | `budget(kind:transaction/platform,owner,project/employee_scope,period,limit)`, `reservation(budget,action_intent,amount,state: reserved/settled/released/expired,settled_amount,effect_correlation_key)`, `ledger_entry` | Two budget types; atomic reserve/settle/release, no double allocation; ledger immutable with correcting entries |
-| Reliability | `outbox_event(aggregate,revision,type,payload)`, `job(lease,fencing,attempt,next_at)`, `inbox_receipt(provider,event_id)`, `idempotency_record(scope,key,payload_hash,result)` | Atomic intent; duplicate delivery expected; unique keys; unknown effects reconciled |
-| Governance | `audit_event(actor,principal,action,object,before/after_digest,reason)`, `admin_audit_event(sequence,actor_role,permission,second_approver,approval_digest,reason_code,outcome)`, `access_log(sequence,grant,kind,fields_hash)`, `staff_role_assignment`, `staff_role_definition_version(sod_mode)`, `case_access_grant(requested_by ≠ approved_by,projection_class,excluded_field_classes,expires_at ≤ approved_at + 72h)`, `second_person_approval(action,action_digest)`, `moderation_case`, `deletion_request`, `erasure_tombstone` | Least data; append-only audit with monotonic sequence and policy retention; `negotiation_private`, `credentials`, `payment_refs` always excluded from case grants; deletion replay after restore |
+| `uuid` | `uuid` primary or foreign key; generated by `trustwork.new_uuid()` (UUIDv7 on PostgreSQL 18) | `IdSchema` opaque token |
+| `ts` | `timestamptz`, UTC | `TimestampSchema` RFC 3339 `Z` |
+| `bdate(x)` | `x_date date` + `x_time_zone text` (IANA) | `BusinessDateSchema` |
+| `money(x)` | `x_minor bigint` + `x_currency text` (ISO 4217, `^[A-Z]{3}$`) | `MoneySchema` with minor units as string |
+| `qty(x)` | `x_value text` (exact decimal, at most six fraction digits, regex-checked) + `x_unit text` (unit code) | `QuantitySchema` |
+| `digest` | `text` 64 lowercase hex of `trustwork-digest-1` | `DigestSchema { algorithm, value }` |
+| `party(x)` | `x_person_id uuid NULL` + `x_company_id uuid NULL`, `CHECK ((x_person_id IS NULL) <> (x_company_id IS NULL))` | `PartySchema` |
+| `actor(x)` | `party(x)` plus `x_hub_id uuid NULL` with `num_nonnulls(...) = 1` (hub editorial team as a third kind) | Authorship / organizer unions |
+| `ref(x)` | `x_kind text` (closed enum) + `x_id uuid`; validated by the owning module because no single foreign key is possible | `{ kind, id }` |
+| `enum(a\|b)` | `text` with `CHECK (... IN (...))` | `z.enum` |
+| `jsonb{…}` | `jsonb` with `jsonb_typeof` check; shape frozen by a Zod schema | strict object |
+| `jur` | jurisdiction code: ISO 3166-1 alpha-2, ISO 3166-2, or a pack-defined sub-jurisdiction `US-CA:los-angeles-county` | `JurisdictionCodeSchema` (proposed) |
+| `hub` | `hub_id uuid NOT NULL REFERENCES hub` on hub-scoped records | `hubId` |
+| (A) | append-only: `forbid_mutation` trigger, INSERT-only grant | immutable record |
+| (V) | versioned immutable record, see 1.5 | version schema with digest |
 
-## Core relationships
+Every mutable row also carries `revision int ≥ 1`, `created_at ts`, `updated_at ts` maintained by `trustwork.touch_row()`; the tables below omit them. Append-only rows carry `occurred_at` or `created_at` only.
 
-```mermaid
-erDiagram
-  PERSON ||--o{ MEMBERSHIP : holds
-  COMPANY ||--o{ MEMBERSHIP : contains
-  PERSON ||--o{ PROJECT : may_own
-  COMPANY ||--o{ PROJECT : may_own
-  PROJECT ||--o{ PARTICIPATION : grants
-  PROJECT ||--o{ PLAN_BASELINE : versions
-  PLAN_BASELINE ||--o{ PLAN_CHANGE : revised_by
-  PROJECT ||--o{ RFQ : needs
-  RFQ ||--o{ RFQ_VERSION : versions
-  RFQ ||--o{ QUOTE : receives
-  RFQ_VERSION ||--o{ RFQ_INVITATION : specifies
-  RFQ_VERSION ||--o{ QUOTE_VERSION : responds_to
-  OFFERING ||--o{ OFFERING_VERSION : versions
-  QUOTE ||--|{ QUOTE_VERSION : versions
-  QUOTE_VERSION ||--|{ QUOTE_LINE : snapshots
-  OFFERING_VERSION o|--o{ QUOTE_LINE : provenance_only
-  QUOTE_VERSION ||--o{ ACCEPTANCE_EVENT : exact_digest
-  QUOTE_VERSION ||--o{ AGREEMENT : accepted_terms
-  AGREEMENT ||--o{ PARTICIPATION : shared_scope
-  AGREEMENT ||--o{ ORDER : commits
-  ORDER ||--o{ DELIVERY : fulfills
-  DELIVERY ||--o{ ACCEPTANCE : confirms_scope
-  EVIDENCE ||--o{ ASSERTION : supports
-  ASSERTION ||--o{ DISPUTE : challenged
-  PERSON ||--o{ MANDATE : delegates
-  MANDATE ||--o{ RUN : authorizes
-  RUN ||--o{ ACTION_INTENT : persists
-  ACTION_INTENT ||--o{ APPROVAL : digest_bound
-  ACTION_INTENT ||--o{ RESERVATION : funds
-  BUDGET ||--o{ RESERVATION : caps
-  PUBLICATION ||--|{ PUBLICATION_VERSION : versions
-  PUBLICATION ||--o{ WALL_REFERENCE : appears
-  ISSUE ||--|{ ISSUE_ITEM : curates
-  PUBLICATION_VERSION ||--o{ ISSUE_ITEM : selected
+**Projection layers** column: `P` public, `S` shared_party, `PP` party_private, `O` owner_private, `SC` staff_case (diagnostic subset reachable only through a case access grant). A dash means the entity is never served by that path (internal or worker-only).
+
+**Status** column: **Live** (migration applied and tested), **Draft** (migration on an unmerged branch), **Contract** (Zod schema frozen, no table), **Designed** (accepted design, no schema), **Proposed** (this model or a 2026-10-30 handbook design, open for review), **Open** (blocked by a named owner decision).
+
+**Retention** column uses the classes defined in [retention and privacy](retention-and-privacy.md#2-retention-classes): `ephemeral`, `session`, `operational`, `account`, `published`, `commercial`, `accounting`, `evidence`, `verification`, `consent_proof`, `case`, `audit_long`, `audit_standard`, `conversation`, `derived`, `tombstone`, `config`.
+
+### 1.2 Identifiers
+
+- Local identifiers are opaque UUIDs. They never grant access; a valid id without a policy decision is "not found".
+- Federated objects also have a global identifier `trustwork://<node-host>/<kind>/<local-id>` (ADR 011), derived and never parsed for authorization.
+- Human-facing numbers (magazine issue number, certificate number, invoice number, support case number) are separate columns, unique per issuing hub and series. Certificate and ticket numbers are random with a check character, not sequential, so they cannot be enumerated.
+- Country-specific identifiers (EIN, state registration numbers, STIR, VÖEN, licence numbers) are values with a `kind` code from the country pack (for example `US-EIN`, `US-CA-SOS`, `US-CA-CSLB`, `UZ-STIR`); the pack supplies label, pattern, check rule and issuer.
+
+### 1.3 Revisions, epochs and concurrency
+
+- `revision` increments by one on every committed change; commands carry `expectedRevision` and fail with a conflict otherwise.
+- `authz_epoch` on `person` and `company` changes when authority changes (membership, participation, mandate); epoch-only updates do not bump `revision` (DATA-001 P2-4). Caches and admission leases compare epochs.
+- Admission scopes (`admission_scope.epoch`) linearize revocation against provider egress (BE-001).
+
+### 1.4 Timestamps and dates
+
+Chronological facts are UTC `timestamptz`. Business dates with local meaning (delivery windows, milestone due dates, event days, holidays) carry their IANA time zone. Imported facts keep `source_time` (what the source claims) separately from `observed_at` (when the engine saw it). Event times are `starts_at`/`ends_at` UTC plus the event `time_zone`.
+
+### 1.5 Money, quantities, taxes
+
+Money is integer minor units plus ISO currency; serialized as strings; no floating point anywhere in accounting. Scale and rounding come from the currency table (country pack). Mixed-currency comparison needs an explicit `exchange_rate_snapshot` (source, observed time); never an implicit sum. Quantities and rates are exact decimal strings with units from the unit catalogue; inside frozen payloads they keep their exact string so `10` and `10.0` remain distinct digest inputs. Tax is never a hard-coded rate: a quote or invoice line stores the computed `tax_amount` and a `tax_determination` reference that names the jurisdiction, rule and rate source (country pack fact or a tax adapter result), so US sales tax per state, county and city is reproducible later.
+
+### 1.6 Ownership: Party XOR
+
+Ownership and party identity are exactly one person XOR one company (`party(x)`), enforced by a contract sum type and a database XOR check over nullable foreign keys. Where the hub editorial team can be an actor (authorship, event organizer, course author) the three-way `actor(x)` form is used. No unconstrained generic owner id where referential integrity is possible; polymorphic `ref(x)` columns are allowed only for links to several modules and are validated by the owning module.
+
+A person may have historical memberships but one active ordinary employer (`membership_one_active_employer`). No current-company filter alone authorizes a shared object: `object_participation` joins each resource to each party. Private buyer/seller data lives in separately authorized records; a shared agreement projection has an explicit allowlist; the public projection is a third independent layer.
+
+### 1.7 Versioned immutable records (V)
+
+The pattern used by every record whose sent or published form other parties rely on:
+
+| Part | Shape |
+|---|---|
+| Envelope `x` | mutable: owner, status, `current_version int NULL`, `current_version_id uuid NULL`, revision |
+| Version `x_version` | `id`, `x_id`, `version int`, `status enum(draft\|published\|superseded)` (names vary per aggregate), `payload jsonb`, `digest NULL`, `published_at`, `published_by`, `superseded_by` |
+| Uniqueness | `UNIQUE (x_id, version)` |
+| Freeze | `trustwork.reject_update_when_frozen(status, 'draft', <frozen columns>)`: once the status leaves draft, frozen columns never change and the status never returns to draft |
+| Pinning | Other records pin by version **id** and verify by **digest**; identity decisions never compare digests |
+
+Applied to: `rfq_version`, `quote_version`, `offering_version`, `publication_version`, `issue_revision`, `course_version`, `plan_version`, `task_request_version`, `task_offer`, `consultation_price_version`, `hub_config_version`, `legal_document_version`, `template_version`, `price_version`, `subscription_plan_version`, `verification_recipe_version`, `screening_list_version`, `staff_role_definition_version`, `reputation_method_version`, `match_method_version`, `mandate_revision`, `agent_module_version`, `pipeline_version`.
+
+### 1.8 Digests
+
+`trustwork-digest-1` = lowercase hex SHA-256 over the RFC 8785 canonical bytes of an explicit digest input. Inputs are defined per record; identifiers, timestamps, actors and statuses are excluded unless listed.
+
+| Record | Digest input |
+|---|---|
+| `rfq_version` | `{ payload }` |
+| `quote_version` | `{ rfqVersion, payload }` |
+| `agreement` | `{ quoteVersion, rfqVersion }` (computed once) |
+| `approval`, `action_intent` | the canonical proposed action (`actionDigest`) |
+| `second_person_approval`, `case_access_grant` | the approved request (`actionDigest`, `approvalDigest`) |
+| `publication_version` | `{ title, body, sourceRefs, eventTime, correctionOf, correctionNote, language }` |
+| `issue_revision` | `{ issueNumber, date, items }` |
+| `course_version`, `plan_version`, `hub_config_version`, `legal_document_version`, `template_version`, recipe and method versions | `{ payload }` of the version |
+| `task_offer` | `{ taskRequestVersion, payload }` (pins the request version like a quote) |
+| `consultation_booking` | `{ offerId, priceVersion, slot, requestId }` (`terms_digest`) |
+| `agreement` with `terms_kind = task\|consultation` | `{ termsKind, offerRef, requestRef }` (proposed contract extension) |
+| `issued_credential` | the credential document without its proof; the proof is an Ed25519 signature by the issuing node key |
+| `screening_list_version` | the normalized entry list |
+| `federation envelope` | `{ payload }` of the projection carried |
+| `agent_envelope.mandate_proof` | **keyed** HMAC over the mandate revision with the node key, so a counterparty cannot test guesses about a mandate's content |
+
+Digests prove integrity and identity of content; they never authorize, and hashing never anonymizes personal data.
+
+### 1.9 Soft delete, hard delete, redaction, tombstones
+
+- The runtime role has **no DELETE and no TRUNCATE** on any table (DATA-001). Ordinary removal is a lifecycle state (`archived`, `ended`, `revoked`, `withdrawn`, `retracted`, `closed`) with actor, time and reason.
+- **Hard delete** happens only in owner-run SECURITY DEFINER functions: the sweeper (`trustwork.sweep_expired`) for `ephemeral`, `session` and `operational` classes, and the erasure executor for privacy erasure, each audited.
+- **Redaction** overwrites personal fields inside otherwise retained records (for example a frozen quote version that the counterparty relies on). It runs in maintenance context, sets `redacted_at`/`redaction_ref`, and the record then reports "redacted after acceptance": its stored digest still proves what was agreed but cannot be recomputed from the redacted payload.
+- **Tombstones** record that something must stay gone: `erasure_ledger` (authoritative, stored outside the restorable snapshot), `retrieval_tombstone` (indexes), `federation_tombstone` (peers). Restores replay the ledger before serving traffic.
+
+### 1.10 Audit and events
+
+Every command writes, in one transaction, the aggregate change, an `audit_event` (domain actions; staff actions also write `admin_audit_event`) and an `outbox_event`. Staff reads of private data write `access_log_entry`. Audit rows hold digests of before/after state, never payloads. Workers consume the outbox through leased `job` rows with fencing tokens; provider effects are at-least-once attempts with stable idempotency keys, and timeouts become `outcome_unknown`.
+
+### 1.11 Hub scoping and country data
+
+- A node hosts one or more hubs. **Node-scoped**: identity, people, companies, projects, commerce, billing accounts, assistant. **Hub-scoped** (`hub` column): publications, issues, events, courses, open needs, partner posts, sources and pipelines, verification records, legal documents, templates, staff assignments, hub configuration, taxonomy extensions, certificates (issuing hub). Node-scoped records created through a hub surface carry `origin_hub_id uuid NULL` for policy and display only.
+- Country facts come from the country pack (`packages/country-packs`, file-based and versioned) and are referenced by `pack_code` + `pack_version` + fact key; they are never copied into code. Hub decisions are `hub_config_version` rows. Records that depend on a country fact store the fact key and pack version they used (for example `tax_determination.rule_ref = 'us:tax/US-TX/sales/2027-01'`).
+
+## 2. Platform kernel
+
+Owner module: data integrator for reliability tables (Live); **kernel** (proposed shared module in `packages/data`, no business rules) for files, units, taxonomy, jurisdictions and exchange rates.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `audit_event` (A) | `id bigint`, `occurred_at ts`, `actor_person_id`, `on_behalf_of_person_id`\|`on_behalf_of_company_id`, `mandate_id`, `action`, `object_kind`, `object_id`, `before_digest`, `after_digest`, `basis jsonb`, `reason`, `request_id`, `authz_epoch` | SC (audit_read), O for own actions | UPDATE/DELETE raise for every role; on-behalf XOR | audit_standard | Live |
+| `outbox_event` | `aggregate_kind`, `aggregate_id`, `revision int`, `type`, `payload jsonb`, `published_at` | — | written in the aggregate's transaction; payload carries ids and digests, never private values | operational | Live |
+| `job` | `kind`, `payload jsonb`, `state enum(queued\|leased\|succeeded\|failed\|dead\|outcome_unknown)`, `attempt`, `max_attempts`, `next_at`, `leased_until`, `leased_by`, `fencing_token bigint`, `last_error` | — | lease shape check; fencing only via `lease_jobs`; parked states leave only via `reconcile_job` | operational | Live |
+| `idempotency_record` | `principal_id`, `action`, `context_id`, `key`, `payload_digest`, `state enum(in_progress\|completed)`, `result jsonb`, `expires_at` | — | unique `(principal, action, context, key)`; same key with different digest is a conflict | ephemeral | Live |
+| `inbox_receipt` | `provider`, `account`, `event_id`, `received_at` | — | unique `(provider, account, event_id)` | operational | Live |
+| `principal_key` | `id = 1`, `secret bytea(32)`, `rotated_at` | — | owner-only; MAC binds transaction identity | config | Live |
+| `admission_scope` | `scope text PK`, `epoch bigint`, `revoked_at` | — | revocation is an exclusive epoch bump | operational | Live |
+| `admission_lease` | `permit_id`, `principal_id`, `scopes[]`, `scope_epochs[]`, `target`, `purpose`, `binding jsonb`, `payload_digest`, `policy_epoch`, `scope_fingerprint`, `dependencies_digest`, `issued_at`, `expires_at`, `admitted_at`, `lease_until`, `settled_at`, `outcome`, `denied_*`, `revoked_at` | — | single use; ids and digests only | ephemeral | Live |
+| `revocation_event` (A) | `scope`, `epoch`, `reason`, `actor_person_id`, `occurred_at` | SC | append-only epoch history | audit_standard | Live |
+| `migration_ledger` | `filename`, `checksum`, `applied_at`, `applied_by`, `duration_ms`, `transactional` | — | runner-owned; checksums never change | config | Live |
+| `evidence_artifact` | `owner` party(owner), `parent` ref(parent), `classification enum(public\|shared\|party_private\|owner_private\|restricted)`, `storage_key text`, `sha256 text`, `bytes bigint`, `media_type`, `scan_state enum(pending\|clean\|quarantined)`, `uploaded_by`, `legal_hold bool` | inherits parent; own classification also applies | access through the authorized parent **and** its own classification; signed URLs with bounded TTL; copy/move preserves owner and classification and is audited; the name is kept because contracts reference `evidenceArtifactId` | inherits parent class | Contract (`AttachmentRefSchema`) |
+| `exchange_rate_snapshot` (A) | `base`, `quote` currencies, `rate text(decimal)`, `source`, `observed_at` | P | used for explicit comparisons only | commercial | Contract |
+| `unit` | `code text PK` (`m2`, `m3`, `t`, `lf`, `sq_ft`), `dimension enum(length\|area\|volume\|mass\|count\|time\|lump)`, `max_scale int`, `system enum(si\|us_customary\|other)` | P | names come from locale files; precision from catalogue (O11) | config | Proposed |
+| `unit_conversion_rule` | `from_unit`, `to_unit`, `factor text(decimal)`, `exact bool`, `source` | P | conversion only through an explicit rule; never implicit (`addQuantity` fails on mismatch) | config | Proposed |
+| `jurisdiction` | `code jur PK`, `parent_code`, `level enum(country\|subdivision\|county\|city\|district\|special)`, `pack_code`, `pack_version`, `restricted bool` (computed from code list, read-only) | P | mirrors the country pack tree (US states, territories, counties and tax districts; UZ regions); restricted places can never be selected by any hub or party | config | Proposed |
+| `taxonomy_term` | `hub` NULL for engine terms, `scheme enum(topic\|category\|article_format\|event_type\|licence_class\|need_category\|work_type\|trade\|material\|stage\|skill\|project_type)`, `code`, `parent_id`, `status enum(draft\|released\|retired)`, `release_id` | P | codes stable once released; labels in locale files; hub extensions never redefine engine codes | config | Proposed |
+| `step_term_relation` | `from_term_id`, `relation enum(requires_trade\|uses_material\|precedes_stage\|needs_permit_type\|teaches)`, `to_term_id` | P | the **plan-step taxonomy** (work types, trades, materials, stages, skills) is one shared vocabulary for plan items, capability profiles, consultation offers, products, learning resources, publications and events, so recommendations match on codes, not on guesses | config | Proposed |
+| `taxonomy_release` (V) | `hub`, `version`, `payload` (terms added/retired), `digest`, `released_by`, `released_at` | P | released with `admin.taxonomy.release`; retired terms keep history | config | Proposed |
+
+## 3. Identity and sessions
+
+Owner module: `identity`. Handbook: [People and companies](../engine/people-and-companies.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `person` | `display_name text(1..200)`, `profile_visibility enum(private\|public)`, `public_headline`, `public_expertise text[]`, `prefers_buying/selling/industry_participation bool`, `authz_epoch int` | P (`toPublicPerson` only when public), O | one human, one lifelong identity; private profile is not found publicly; preferences confer no rights | account | Live |
+| `email_binding` | `person_id`, `email_normalized` (unique, lower), `is_primary bool`, `verified_at` | O | one primary per person; never auto-link by unverified e-mail | account | Live |
+| `credential` | `person_id`, `kind enum(password\|google\|apple\|totp\|webauthn\|recovery_code)`, `provider`, `provider_subject`, `password_hash`, `disabled_at` | O (without hash) | `(provider, provider_subject)` unique; one password per person; hash column never selectable by runtime | account | Live |
+| `session` | `person_id`, `token_hash bytea(32)`, `idle_expires_at`, `absolute_expires_at`, `authenticated_at`, `auth_method`, `user_agent_family`, `ip_prefix`, `revoked_at`, `revoked_reason` | O (`toSessionView` strips hash) | idle ≤ absolute; revocation shape check; step-up = `authenticated_at` within 10 minutes | session | Live |
+| `auth_token` | `token_hash`, `kind enum(verify_email\|email_change\|recovery\|membership_invitation)`, `person_id`, `email_normalized`, `expires_at`, `consumed_at` | — | single use through `auth_consume_token` | ephemeral | Live |
+| `login_failure` | `subject_hash`, `occurred_at`, `expires_at` | — | capped at 10,000 rows; no runtime policy | ephemeral | Live |
+| `recovery_review` | `person_id`, `email_normalized`, `reason enum(corporate_domain\|rebinding\|suspicious)`, `evidence_refs`, `cooling_until ts`, `state enum(pending\|approved\|rejected\|expired)`, `decided_by`, `support_case_id` | O, SC | support-assisted rebinding needs evidence and a cooling period; decider ≠ requester of the case grant | case | Proposed |
+| `identity_provider_config` | `provider enum(google\|apple\|microsoft\|oidc\|national_eid)`, `hub` NULL, `issuer`, `client_id`, `secret_ref` → `provider_credential_ref`, `enabled bool` | — | `(provider, subject)` rule for every provider; national eID per country pack facet | config | Designed (MS/OIDC), Proposed (eID) |
+
+## 4. People and profiles
+
+Owner module: `identity` (profiles sub-area). Handbook: [People and companies](../engine/people-and-companies.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `person_profile` | `person_id PK`, `role_line`, `region_code jur`, `show_employer bool`, `portrait_id NULL`, `topics text[]`, `languages text[]`, `public_fields text[]` | P (allowlisted), O | public fields an explicit allowlist; the employer is shown only when `show_employer` and an active membership exist | account | Proposed (Demo UI) |
+| `person_preference` | `person_id PK`, `intents text[]` (read, publish, buy, sell, find_work, host_events), `topics`, `regions jur[]`, `onboarding_completed_at` | O | confers no rights or company access; replaces `prefers_*` columns by expand/contract later | account | Designed |
+| `consent_record` (A) | `subject_person_id`, `purpose enum(profile_public\|mentioned_in_publication\|listed_by_company\|portrait_display\|speaker_profile_link\|public_participant\|marketing\|research_participation\|cross_hub_syndication\|data_sharing_with_organizer\|sale_or_share_opt_in\|project_knowledge_share\|portfolio_display\|mentoring_listing\|passport_publication)`, `target ref(target)`, `notice_version`, `granted_at`, `evidence`, `withdrawn_at NULL` (the only updatable column, once) | O; P only as the effect it enables | withdrawal unpublishes dependent projections in the same transaction and emits tombstones; no consent, no public link | consent_proof | Proposed |
+| `media_licence` | `asset_id → evidence_artifact`, `licensor`, `licence_kind enum(own_work\|licensed\|cc_by\|cc_by_sa\|public_domain)`, `scope text`, `valid_until`, `recorded_by` | O, SC | an image is shown only while a licence record covers the use | evidence | Proposed |
+| `portrait` | `person_id`, `asset_id`, `media_licence_id`, `consent_record_id`, `status enum(pending\|shown\|withdrawn)` | P when shown, O | requires consent **and** licence (`admin.people.portrait.licence`) | account | Proposed |
+| `experience_entry` | `person_id`, `organisation` party(org) NULL + `organisation_name text`, `role`, `bdate(from)`, `bdate(to) NULL`, `visibility enum(public\|private)`, `confirmed_by_company_at NULL` | P when public, O | belongs to the person, survives employment; company confirmation is a separate label, never required | account | Proposed |
+| `portfolio_entry` | party(holder), `project_id NULL` \| `external_description`, `role`, `period` (bdate from/to), `scope_summary`, `evidence_refs`, `confirmation_request_id NULL`, `owner_consent_record_id NULL`, `visibility enum(public\|private)`, `ended_at` | P when consented and public, O | a platform project appears only with the project owner's consent; "confirmed by client" only with a recorded confirmation; survives the project and employment | evidence | Proposed |
+| `professional_credential` | party(holder), `kind enum(licence\|insurance\|bond\|certificate\|training\|membership\|registration)`, `jurisdiction jur`, `credential_type` (pack type, for example `US-TX-PE`, `US-CA-CSLB-B`, `US-FL-DBPR-CGC`, general liability insurance), `issuer`, `number`, `classification`, money(coverage) NULL, `valid_from`, `valid_until`, `evidence_artifact_id`, `verification_check_id NULL`, `issued_credential_id NULL`, `status enum(self_declared\|checked\|expired\|suspended\|revoked)` | P (kind, type, issuer, status, checked date and hub), O (number, policy details) | the one record for licences, insurance, bonds, external certificates and training of people **and** companies; "checked on date by hub X" only with a passing check; expiry triggers a re-check; platform course certificates (section 13) are never presented as these | verification | Proposed |
+| `follow` | `follower_person_id`, `target_kind enum(person\|company\|topic\|region\|hub\|event_series)`, `target_id`/`target_code` | O | follower lists are never public; shapes the home feed only | account | Proposed |
+| `bookmark` | `person_id`, ref(target) | O | private | account | Demo → Proposed |
+| `reading_progress` | `person_id`, `publication_version_id`, `progress text(decimal 0..1)`, `updated_at` | O | never visible to employers | account | Demo → Proposed |
+
+## 5. Companies
+
+Owner module: `identity` (company sub-area); verification decisions come from `verification`. Handbook: [People and companies](../engine/people-and-companies.md), [Hub administration](../engine/hub-administration.md#counterparty-verification).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `company` | `display_name`, `sourced_status enum(sourced\|registered)`, `claim_status enum(unclaimed\|claimed\|verified)` (derived cache of the strongest `company_verification`), `legal_identifiers jsonb[]` (legacy, see below), `public_description`, `verified_domains text[]`, `authz_epoch` | P (`toPublicCompany`), SC | sourced ≠ claimed ≠ verified; `claim_status` and `verified_domains` written only by maintenance or verification decisions | account (sourced: verification) | Live |
+| `company_private` | `company_id PK`, `internal_notes`, `billing_account_id` | O (members with permission) | never joined into public or shared reads | account | Live |
+| `company_profile` | `company_id PK`, `legal_form` (pack code, for example `US-LLC`, `US-CORP`), `website_url`, `region_code jur`, `categories text[]`, `logo_asset_id`, `public_fields text[]` | P, O | allowlisted public fields; logos need a media licence | account | Proposed |
+| `company_identifier` | `company_id`, `kind` (pack identifier kind: `US-EIN`, `US-DE-SOS`, `US-CA-SOS`, `UZ-STIR`), `jurisdiction jur`, `value_normalized`, `status enum(sourced\|claimed\|verified)`, `source_ref`, `verification_check_id NULL` | P (kind, value, status) | replaces `company.legal_identifiers` by expand/contract; unique `(kind, value_normalized)` among `verified` rows only; a value never upgrades a badge by itself | account | Proposed (Contract `LegalIdentifierSchema`) |
+| `company_registration` | `company_id`, `jurisdiction jur` (for example `US-DE` formation, `US-TX` foreign qualification), `kind enum(formation\|foreign_qualification\|dba\|branch)`, `registered_name`, `number`, `status enum(active\|inactive\|unknown)`, `observed_at`, `source_ref` | P, O | state-level registrations as data; unknown stays unknown | verification | Proposed |
+| `tax_registration` | party(holder), `jurisdiction jur`, `kind` (pack: `US-EIN`, `US-TX-SALES-PERMIT`, `UZ-VAT`), `number`, `status`, `exemption_certificate_asset_id NULL`, `valid_until` | O, S (number to a counterparty on an invoice) | drives `tax_determination`; never public by default | accounting | Proposed |
+| `company_branch` | `company_id`, `hub`, `name`, `address jsonb` (pack address order), `region_code jur`, `public bool` | P when public, O | one legal entity, many territories; federation links branches, never merges | account | Proposed |
+| `company_claim` | `company_id`, `claimant_person_id`, `target_level enum(claimed\|verified)`, `recipe_version_id`, `status`, `evidence_refs`, `decided_by`, `decided_at`, `reason_code` | O (claimant, company admins), SC | lifecycle in [lifecycles](lifecycles.md#company-claims-and-verification); decider ≠ claimant; uploaded register extracts prove nothing | verification | Designed / Proposed |
+| `company_verification` | `company_id`, `hub`, `level enum(claimed\|verified)`, `recipe_version_id`, `categories text[]` (badge categories), `decided_by`, `decided_at`, `valid_until`, `revoked_at`, `revocation_reason_code` | P (hub, level, categories, date), SC | badges show categories, never documents; recheck every 12 months or on register change; revocation updates every projection and peers | verification | Proposed |
+| `membership` | `person_id`, `company_id`, `role enum(member\|administrator)`, `permissions text[]` (seven company permissions), `status enum(invited\|active\|declined\|expired\|withdrawn\|ended)`, `invited_by`, `valid_from`, `ended_*` | O (self and colleagues), P only via public people listing with consent | one active employer; parties immutable; last administrator cannot be removed; end revokes derived grants, mandates and admission scope in one transaction (`end_membership`) | account (history kept) | Live |
+| `authority_proof` | `company_id`, `person_id`, `kind enum(officer_record\|power_of_attorney\|board_resolution\|signed_authority_letter)`, `scope text`, `limit money NULL`, `valid_until`, `evidence_refs`, `decided_by`, `status` | O, SC | spending authority is separate from verification and from membership (O05, O12) | verification | Open (O05, O12) |
+| `ownership_declaration` (A) | party(declarant), `version`, `answers jsonb` (organised in, operates in, 50% rule, listed), `signed_at`, `signed_by` | O, SC | mandatory for sellers, organizers taking payments, hub operators and peers; a new version supersedes | verification | Designed (logic in `packages/compliance`) |
+
+## 6. Access
+
+Owner module: `identity`. Contracts: `packages/contracts/src/access.ts`.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `permission_grant` | party(principal), `action`, `scope jsonb`, `limits jsonb`, `granted_by`, `expires_at`, `revoked_*` | O (principal, grantor) | never to oneself; grant intersection, deny by default | account | Live |
+| `object_participation` | `resource_kind`, `resource_id`, party(party), `side enum(owner\|buyer\|seller\|participant\|staff)`, `capabilities text[]` (15-verb vocabulary minus `read.public`), `audience enum(shared_party\|party_private\|owner_private)`, `valid_from`, `valid_until`, `granted_by_person_id`, `on_behalf_of` party NULL, `revoked_*`, `case_ref` | O (own rows), managers of the resource | one live row per (resource, party); one live owner per resource; parties immutable; never un-revoked; staff rows need `case_ref`; no amplification (`canGrant`); every change bumps the party epoch | account | Live |
+
+`resource_kind` today: `project, rfq, quote, agreement, order, thread, publication`. Each slice extends the CHECK in its own forward migration with the kinds it introduces: `plan`, `consultation_request`, `consultation_booking`, `task_request`, `task_assignment`, `mentoring_relationship`, `need`, `offering`, `event`, `registration`, `course`, `introduction`, `open_need`, `goal`, `negotiation_session`, `support_case`, `dispute_case`. The model's earlier `publication_grant` is **superseded** by participation rows with `resource_kind = publication` (editors hold `write.draft`/`publish`).
+
+## 7. Projects and plans
+
+Owner module: `projects`. Handbook: [Projects](../engine/projects.md). Lifecycles: [plans and plan items](lifecycles.md#plans-and-plan-items).
+
+The flagship journey "plan to people" (owner decision 2026-10-31): a person launches a project, their agent drafts a **plan** (phases, tasks, required expertise and trades, materials, permits and inspections, budget ranges, timeline, risks, decision points), the owner approves a version, and plan items turn into requests to people: consultations, scoped tasks, or RFQs. An approved plan version is the **baseline** of earlier designs (`plan_baseline` is renamed `plan_version`; `project_milestone` becomes a plan item of kind `milestone`, and `MilestoneSchema` is its projection). The billing "plan version" is renamed `subscription_plan_version` to avoid the clash.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `project` | party(owner), `creator_person_id`, `leader_person_id`, `name`, `summary`, `status enum(planned\|active\|suspended\|completed\|cancelled)`, `publicity_enabled`, `published_story`, `private_notes`, `origin_hub_id`, `project_type` (taxonomy term) | P (`toPublicProject`), S (`toParticipantProject`), O | owner XOR; creator and leader are not owner; publicity never releases budgets, quotes, files or messages | commercial | Live |
+| `ownership_transfer` | `project_id`, party(from), party(to), `status`, `proposed_by`, `recipient_consent_at`, `effective_at`, `expires_at` | O (both parties) | effective needs consent; parties immutable; applied only through `finalize_ownership_transfer` | commercial | Live |
+| `leadership_assignment` | `project_id`, `leader_person_id`, `assigned_by`, `assigned_at`, `ended_*` | S, O | one current leader; history kept | commercial | Live |
+| `project_location` | `project_id PK`, `address jsonb`, `region_code jur`, `cadastral_ref` (pack format, for example a US county APN), `geo point NULL` | P (region only), S (address only to a party with a booked site visit or an accepted task), O | owner-private by default; public page shows region or city only | commercial | Proposed |
+| `plan` | `project_id` (unique), `current_version`, `current_version_id`, `drafted_by enum(person\|agent)`, `mandate_id NULL`, `template_version_id NULL`, `status enum(drafting\|active\|closed)` | S (through `plan_share`), O | one plan per project; an agent draft is a proposal until the owner approves a version | commercial | Proposed |
+| `plan_version` (V) | `plan_id`, `version`, `status enum(draft\|proposed\|approved\|superseded)`, `payload` (summary, assumptions, budget range, timeline), `digest`, `approved_by`, `approved_at`, `change_id NULL` | S (projection below), O | the approved version is the baseline; original and revised versions both kept; frozen once proposed | commercial | Designed (`plan_baseline`) / Proposed |
+| `plan_item` | `plan_version_id`, `item_key` (stable across versions), `parent_key`, `kind enum(phase\|task\|milestone\|consultation\|material\|permit\|inspection\|decision\|risk)`, `title`, `description`, `step_terms` (plan-step taxonomy: work type, trade, material, stage), `required_skills text[]`, qty(quantity) NULL, money(estimate_low), money(estimate_high), `duration_low_days`, `duration_high_days`, bdate(start), bdate(due), `risk_level NULL`, `decision_question NULL`, `visibility enum(owner_private\|shared_with_invited\|public)`, `budget_visible_to_invited bool` | P (public items, no money), S (shared items; ranges only when the owner allows), O | frozen with its version; estimates are ranges labelled as estimates, never quotes; budgets owner-private unless explicitly shared as ranges | commercial | Proposed |
+| `plan_dependency` | `plan_version_id`, `predecessor_key`, `successor_key`, `type enum(fs\|ss\|ff\|sf)`, `lag_days int` | S, O | graph acyclic, checked when a version is proposed | commercial | Designed |
+| `plan_item_state` | `plan_id`, `item_key`, `status enum(proposed\|accepted\|requested\|in_progress\|done\|blocked\|cancelled\|skipped)`, `link` ref(rfq\|consultation_request\|task_request\|permit_record\|course\|event) NULL, `actual_start`, `actual_end`, `updated_by` | S (shared items), O | the mutable execution state of a frozen item; linking a request never edits the version | commercial | Proposed |
+| `plan_change` | `plan_id`, `from_version_id`, `to_version_id`, `reason`, party(requested_by), party(accountable), `agreement_id NULL`, `status enum(proposed\|approved\|rejected\|withdrawn)`, `decided_by` | S, O | no retroactive blame rewrite; client-caused changes are attributed so timing reputation excludes them | evidence | Designed |
+| `plan_share` | `plan_id`, party(invitee), `item_keys text[]` \| `scope enum(items\|whole_plan)`, `fields text[]` (allowlist), `share_budget_ranges bool`, `share_location enum(region\|address)`, `valid_until`, `participation_id` | S (exactly what it lists) | materialized as `object_participation` (`resource_kind = plan`, audience `shared_party`); invited experts never see private notes, exact budgets, other experts' offers or other invitees | commercial | Proposed |
+| `permit_record` | `project_id`, `plan_item_key`, `jurisdiction jur`, `permit_type` (pack fact), `authority`, `number`, `applied_at`, `issued_at`, `inspection_results jsonb[]`, `evidence_refs`, `status` | S (invited parties when shared), O | permit facts per jurisdiction come from the pack; the engine never files permits | evidence | Proposed |
+| `project_diary_entry` | `project_id`, `author_person_id`, bdate(entry), `text`, `evidence_refs`, `plan_item_key NULL`, `visibility enum(owner_private\|participants)` | S (participants), O | private while the project runs; becomes shared knowledge only through section 9 with consent | account | Proposed |
+| `project_public_participant` | `project_id`, party(participant), `consent_record_id` | P | shown only with the participant's consent | published | Proposed |
+| `project_template` (V) | `hub`, `project_type`, `payload` (phases, items with step terms, acceptance checkpoints, typical ranges), `derived_from_knowledge_item_id NULL` | P | maintained by the hub editorial or expert community or derived with consent from completed projects | config | Proposed |
+
+**What an invited expert sees of a private project.** Nothing by default (not found). A `plan_share` reveals only the listed items and fields; budget ranges only when `share_budget_ranges`; the address only after a site-visit booking or task assignment; never private notes, exact budgets, other invitees, other offers, diary entries or files that are not attached to a shared item. The serializer `toInvitedPlanView` (proposed) is the only path, and forbidden-field tests cover it.
+
+## 8. Consultations, tasks and mentoring
+
+Owner module: `matching` (offers, requests, mentoring) with commitments in `transactions` and money in `billing`. Lifecycles: [consultations and tasks](lifecycles.md#consultations-tasks-and-mentoring).
+
+Consultations are expert time (advice sessions, reviews of drawings, documents or quotes, site visits). Tasks are small scoped jobs for execution. Both reuse the commercial kernel: sent offers are immutable and digest-bound, acceptance creates an `agreement` (with `terms_kind`, section 18), money moves through billing. Larger or multi-line work goes through RFQs (section 16).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `consultation_offer` | party(expert), `expert_person_id`, `kind enum(advice_session\|document_review\|quote_review\|site_visit\|mentoring_session)`, `step_terms`, `regions jur[]`, `languages`, `format enum(online\|offline\|either)`, `duration_minutes`, `deliverable_kind`, `status enum(draft\|active\|paused\|archived)` | P when active | an expert must hold a public profile; credentials shown only when checked | commercial | Proposed |
+| `consultation_price_version` (V) | `offer_id`, `version`, money(price), `pricing enum(fixed\|per_hour\|free)`, `tax_rule_ref`, `effective_from` | P | immutable once booked at | commercial | Proposed |
+| `availability_window` | party(expert), `starts_at`, `ends_at`, `time_zone`, `recurrence`, `capacity` | S (requesters) | bookings serialize against capacity | operational | Proposed |
+| `consultation_request` | party(requester), `project_id NULL`, `plan_item_key NULL`, `kind`, `question`, `shared_material_refs`, `preferred_times jsonb`, money(budget_ceiling) NULL, `target_offer_id NULL` (direct) or open to matching, `status`, `generated_by_mandate_id NULL` | S (addressed or matched experts: question and shared materials), PP (requester: budget ceiling) | materials shared through `plan_share` rules; budget never shown to experts | commercial | Proposed |
+| `consultation_booking` | `request_id`, `offer_id`, `price_version_id`, party(expert), party(client), `slot` (starts/ends), `terms_digest`, `agreement_id`, `payment_id NULL`, `status` | S | the price and slot the client accepted are frozen by digest; no-show and cancellation rules from the expert's terms | commercial | Proposed |
+| `consultation_session` | `booking_id`, `started_at`, `ended_at`, `attendance jsonb`, `meeting_link_ref`, `site_address_revealed_at` | S | address revealed only for site visits after booking | commercial | Proposed |
+| `consultation_deliverable` | `booking_id`, `kind enum(written_advice\|marked_up_document\|site_report\|checklist\|recording)`, `artifact_id`, `delivered_at`, `accepted_at`, `acceptance_record_id` | S | delivery and acceptance are separate records; reviews cite the deliverable | evidence | Proposed |
+| `task_request` | party(owner), `project_id NULL`, `plan_item_key NULL`, `status enum(draft\|published\|closed\|cancelled\|expired)`, `audience enum(invited\|open)`, `current_version_id`, money(budget_ceiling) PP | P (open, allowlisted), S (invited), PP | budget ceiling party-private | commercial | Proposed |
+| `task_request_version` (V) | `task_request_id`, `version`, `payload` (scope, specification, quantity, region, window, acceptance criteria, attachments), `digest`, `published_at` | S | immutable once published; amendment flags offers stale like RFQs | commercial | Proposed |
+| `task_offer` (V) | `task_request_version_id`, `request_version_digest`, party(offeror), `version`, `payload` (price, milestones, start, duration, exclusions, validity), `digest`, `sent_at`, `status enum(draft\|sent\|superseded\|withdrawn\|expired\|accepted\|declined)` | S (owner and offeror only) | sent offers frozen; competing offerors never see each other; private floors in `quote_private_constraint`-like `task_offer_private` | commercial | Proposed |
+| `task_offer_private` | `task_offer_id PK`, party(owner), `floor_price`, `notes` | PP (offeror) | never in owner views or envelopes | commercial | Proposed |
+| `task_assignment` | `task_request_id`, `task_offer_id`, `agreement_id`, party(assignee), `milestones → obligation`, `status enum(assigned\|in_progress\|delivered\|accepted\|disputed\|cancelled)` | S | created only by acceptance; payments per milestone through billing; acceptance per milestone through execution records | commercial | Proposed |
+| `mentoring_relationship` | `mentor_person_id`, `mentee_person_id`, `topics`, `terms enum(free\|paid)`, `offer_id NULL`, `started_at`, `status enum(proposed\|active\|paused\|ended)`, `ended_reason` | S (both), P (count only, with both consents) | double opt-in; either side may end; sessions are consultation bookings of kind `mentoring_session` | account | Proposed |
+
+## 9. Knowledge sharing
+
+Owner module: `content`. With the owner's consent, completed projects become shared knowledge: diaries, lessons learned, checklists, templates, questions and answers, and mentoring. Knowledge items are **publications** (section 10) so walls, magazine, search and federation work unchanged; this section adds provenance and consent.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `knowledge_item` | `publication_id`, `kind enum(diary\|lesson\|checklist\|template\|case_study\|qa)`, `source_project_id NULL`, `source_plan_version_id NULL`, `source_refs jsonb[]` (diary entries, plan items, deliverables), `step_terms`, `redaction_review_by`, `redaction_reviewed_at` | P when published | the project owner's `project_knowledge_share` consent is required; every named participant's consent is required or they are anonymized; budgets, prices, addresses and counterparties' private data never carried over | published | Proposed |
+| `knowledge_consent` | `knowledge_item_id`, `consent_record_id`, `role enum(project_owner\|participant\|author)` | O | withdrawal unpublishes or re-anonymizes the item | consent_proof | Proposed |
+| `template_derivation` | `project_template_id`, `knowledge_item_id`, `generalized_by`, `reviewed_by` | P | templates are generalized; no identifying details | published | Proposed |
+
+## 10. Content
+
+Owner module: `content`. Handbook: [News, articles and walls](../engine/publishing.md). Contracts: `content.ts`.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `publication` | `hub`, `format enum(news\|article\|magazine_piece\|company_post\|personal_post\|announcement\|question\|answer\|diary\|lesson\|checklist\|template)`, `article_format enum(analysis\|practice\|overview\|experience\|interview\|project_story) NULL`, `status enum(draft\|in_review\|scheduled\|published\|corrected\|retracted)`, `original_language`, `current_version`, `licence enum(all_rights\|cc_by)`, `scheduled_for ts NULL`, `held_by_case_id NULL` | P when published, O for drafts (editors via participation) | one store for every format; editing rights via participation, authorship separate | published | Contract |
+| `publication_version` (V) | `publication_id`, `version`, `title`, `body`, `language`, `source_refs jsonb[]` {uri, sourceTime, observedAt, licence, sourceItemId}, `event_time`, `published_at`, `correction_of`, `correction_note`, `content_digest`, `assistant_assisted bool` | P | immutable once published; a correction is a new version with a reader-visible note | published | Contract |
+| `publication_authorship` | `publication_id`, actor(author), `credit`, `position`, `assistant_assisted bool` | P | authorship credit independent of editing rights; survives employer change | published | Contract (`AuthorshipSchema`) |
+| `correction` (A) | ref(subject publication\|issue), `from_version`, `to_version`, `reason`, `corrected_by`, `corrected_at` | P | every wall and issue pointing to the subject shows the notice | published | Contract |
+| `publication_topic` | `publication_id`, `term_id → taxonomy_term` | P | topics from the hub taxonomy | published | Contract (`topicIds`) |
+| `entity_link` | `publication_id`, ref(target company\|person\|project\|event\|course\|open_need), `relation` | P only when the target is public; a person link needs `mentioned_in_publication` consent | links never reveal private targets | published | Contract (party links) / Proposed (other kinds) |
+| `edition_link` | `original_publication_id`, `translation_publication_id`, `language`, `translator_person_id`, `machine_assisted bool`, `reviewed_by NULL` | P | machine translation is labelled until a person reviews it | published | Proposed |
+| `wall_reference` | actor(wall owner), `publication_id`, `publication_version_id NULL` (NULL follows current), `position`, `pinned bool` | P | references, never copies | published | Contract (concept) / Designed |
+| `comment` | `publication_id`, `author_person_id`, `parent_id`, `body`, `status enum(visible\|held\|removed)`, `moderation_case_id` | P when visible | off by default per hub; signed-in only; sanction ladder applies | published | Proposed |
+
+`source_item` (imported drafts) is owned by `hubs` (section 24); a publication references it in `source_refs`. Personal journal (`journal_brief`, `journal_edition`) is **Open** (O02) and has no schema.
+
+## 11. Magazine
+
+Owner module: `content`. Handbook: [The weekly magazine](../engine/magazine.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `issue` | `hub`, `number int` (unique per hub), `bdate(issue)`, `theme`, `cover_asset_id`, `editor_letter_publication_id`, `status enum(draft\|curated\|review\|released\|corrected)`, `current_edition int` | P when released | numbering unique per hub; released items frozen | published | Contract |
+| `issue_revision` (V) | `issue_id`, `edition int`, `status`, `digest`, `released_at`, `released_by`, `correction_note` | P | a correction is a new edition; archive keeps edition identity | published | Contract (`edition`) |
+| `issue_item` | `issue_revision_id`, `position`, `section`, `publication_id`, `publication_version_id` | P | unique position; pinned to exact versions | published | Contract |
+| `render_artifact` | `issue_revision_id`, `format enum(web\|pdf)`, `artifact_id → evidence_artifact`, `sha256`, `renderer_version`, `status enum(queued\|rendered\|failed)` | P (file), SC (job state) | records the revision it renders; re-render after correction is a new artifact | published | Contract / Designed |
+| `magazine_digest` | `hub`, `title`, `period`, `status`, items `{global_id, version, home_node, licence}` | P | references only; licence decides full text vs headline and link | published | Proposed |
+
+## 12. Events
+
+Owner module: `events`. Handbook: [Events](../engine/events.md). Lifecycles: [events and registrations](lifecycles.md#events-registrations-and-tickets).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `event` | `hub`, actor(organizer), `type enum(conference\|exhibition\|webinar\|meetup\|training\|site_visit\|open_day\|competition\|other)`, `format enum(offline\|online\|hybrid)`, `starts_at`, `ends_at`, `time_zone`, `venue jsonb` (address, accessibility notes), `region_code jur`, `online_link_ref` (secret-like, registrants only), `capacity int NULL`, `show_registered_count bool`, `status`, `postponed_from NULL` | P (allowlist: no online link, no attendee data), O (organizer) | hosting policy of the hub decides who may create; sponsorship never changes listing order | published | Proposed |
+| `event_co_organizer` | `event_id`, actor(co_organizer), `accepted_at` | P after acceptance | listed only after acceptance | published | Proposed |
+| `event_session` | `event_id`, `title`, `starts_at`, `ends_at`, `stream`, `room` | P | within event times | published | Proposed |
+| `event_speaker` | `session_id`, `person_id NULL`, `display_name`, `role_line`, `shown_fields text[]`, `consent_record_id`, `accepted_at` | P only after acceptance | no profile link without `speaker_profile_link` consent | published | Proposed (`speaker_consent`) |
+| `event_sponsor` | `event_id`, party(sponsor), `label enum(sponsor\|exhibitor\|partner)` | P | labelled; never affects ranking or reputation | published | Proposed |
+| `ticket_type` | `event_id`, `name`, `quota int`, `sales_from`, `sales_until`, `status` | P | quota never exceeded under concurrency (row lock on the type) | commercial | Proposed |
+| `ticket_price_version` (V) | `ticket_type_id`, `version`, `price money`, `tax_rule_ref`, `effective_from`, `status` | P | immutable once a ticket is sold at it | commercial | Proposed |
+| `registration_question` | `event_id`, `position`, `kind enum(text\|choice\|consent)`, `required bool`, `shared_with_organizer bool` | P | answers outside the shared set stay with the registrant | commercial | Proposed |
+| `registration` | `event_id`, party(buyer), `buyer_person_id`, `answers jsonb`, `consent_record_id` (data sharing notice version), `status`, `price_version_id`, `payment_id NULL`, `total money` | O (registrant), S (organizer: shared fields only), SC | buyer may differ from attendees; organizer export goes through the same serializer | commercial | Proposed |
+| `ticket` | `registration_id`, `attendee_person_id NULL`, `attendee_name`, `code_hash bytea`, `status enum(issued\|checked_in\|void\|transferred)` | O (attendee, buyer), S (organizer: name, type, check-in) | code stored hashed; QR carries an opaque token | commercial | Proposed |
+| `check_in` (A) | `ticket_id`, `scanned_by_person_id`, `scanned_at`, `device_label`, `duplicate bool`, `synced_at` | S (organizer) | append-only; duplicates flagged, never rejected silently offline | operational | Proposed |
+| `waitlist_entry` | `event_id`, `ticket_type_id`, `person_id`, `position`, `offer_expires_at`, `status enum(waiting\|offered\|accepted\|expired\|left)` | O, S (organizer counts) | offers expire; position assignment serialized | operational | Proposed |
+| `meeting_profile` | `event_id`, `person_id`, `offers`, `looks_for`, `topics`, `opted_in_at`, `withdrawn_at` | S (other opted-in attendees) | opt-in only | operational | Proposed |
+| `meeting_slot` | `event_id`, `starts_at`, `ends_at`, `room` | S | defined by organizer | operational | Proposed |
+| `meeting_request` | `event_id`, `requester_person_id`, `recipient_person_id`, `slot_id`, `status enum(requested\|accepted\|declined\|cancelled\|expired)`, `generated_by_mandate_id NULL` | O (each side; requester never sees "declined", only "not accepted") | declines private; organizer sees counts and rooms only; agents never accept without mandate | operational | Proposed |
+| `event_material` | `event_id`, `publication_id` | P | materials are publications | published | Proposed |
+| `event_feedback` | `event_id`, `respondent_person_id`, `answers jsonb` | S (organizer aggregate), O | never public ratings; no reputation input | operational | Proposed |
+
+## 13. Learning
+
+Owner module: `learning`. Handbook: [Learning and certificates](../engine/learning.md). Lifecycles: [courses and certificates](lifecycles.md#courses-enrollments-and-certificates).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `course` | `hub`, actor(author), `sponsor` party NULL, `status enum(draft\|in_review\|published\|withdrawn\|archived)`, `current_version`, `paid bool` | P when published | sponsorship labelled | published | Proposed |
+| `course_version` (V) | `course_id`, `version`, `language`, `payload` (modules, lesson keys, validity period), `digest`, `published_at` | P | certificates name the version earned on | published | Proposed |
+| `course_lesson` | `course_version_id`, `lesson_key`, `position`, `kind enum(text\|video\|checklist\|template\|practice)`, `content_ref` | P (enrolled or free) | lesson keys stable within a version | published | Proposed |
+| `assessment` | `course_version_id`, `kind enum(quiz\|practical)`, `pass_threshold text(decimal)`, `grading enum(auto\|reviewer)`, `item_bank_ref` | P (description), O (author: answer keys) | answer keys never in the learner projection | published | Proposed |
+| `course_price_version` (V) | `course_id`, `price money`, `effective_from`, `tax_rule_ref` | P | same rules as ticket prices | commercial | Proposed |
+| `enrollment` | `person_id`, `course_id`, `course_version_id`, `status enum(active\|completed\|withdrawn)`, `sponsor` party NULL, `payment_id NULL` | O | learner-private; a sponsor sees only that the access was used, never progress | account | Proposed |
+| `lesson_progress` | `enrollment_id`, `lesson_key`, `completed_at` | O | no employer view, no company participation possible | account | Demo → Proposed |
+| `assessment_attempt` | `enrollment_id`, `assessment_id`, `attempt_no`, `answers_ref`, `submitted_at`, `score text(decimal)`, `result enum(pending_review\|passed\|failed)`, `graded_by NULL` | O, SC | grader ≠ learner | account | Proposed |
+| `certificate` | `hub` (issuer), `number` (random, unique per hub), `holder_person_id`, `display_name`, `kind enum(completion\|attendance)`, `course_version_id NULL` \| `event_id NULL`, actor(author org), `issued_at`, `show_score bool`, `score`, `valid_until`, `status enum(valid\|expired\|revoked)`, `revocation_reason_code`, `accreditation_id NULL` | P (check page allowlist) | never changes after issue; revocation is a status with reason; accreditation shown only when recorded with source | published | Proposed |
+| `accreditation` | `hub`, `body_name`, `jurisdiction jur` (for example a US state board for CE credits), `source_url`, `scope` (CPD/CE points), `course_id`, `version_from`, `version_to`, `valid_from`, `valid_until`, `recorded_by`, `evidence_refs` | P | no accreditation claim without a source | verification | Proposed |
+| `learning_resource` | `hub`, actor(provider) (often a sourced manufacturer), `kind enum(course\|guide\|video\|webinar\|technical_article\|manual\|installation_instructions)`, `title`, `language`, `url`, `source_item_id NULL`, `step_terms`, `cost enum(free\|paid\|unknown)`, `labels text[]` (for example `manufacturer_content`), `status enum(sourced\|claimed_managed\|withdrawn)` | P (with provider and "from sources" label) | external resources are linked and summarized within the source licence, never copied beyond it; distinct from platform `course` and never shown as a certificate path | published (source licence bound) | Proposed (delivered by REC-001) |
+
+## 14. Partners and matching
+
+Owner module: `matching`. Handbook: [Partners and matching](../engine/partners-and-matching.md). Lifecycles: [introductions and open needs](lifecycles.md#open-needs-and-introductions).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `capability_profile` | party(holder), `categories`, `regions jur[]`, `capacity jsonb` (ranges with units), `typical_project_size qty`, `credential_refs → professional_credential`, `step_terms`, `languages`, `availability jsonb`, `public_fields text[]` | P (chosen fields), O | public only in chosen fields; licences shown only when checked | account | Proposed |
+| `open_need` | `hub`, party(owner), `project_id NULL`, `categories`, `region_code jur`, `size qty`, `bdate(start)`, `status`, `outcome enum(filled\|cancelled\|postponed) NULL`, `cross_border bool`, `expires_at`, `rfq_id NULL` | P when published, O | distinct from procurement `need` (private intake); links to an RFQ only when the owner publishes one | published | Proposed |
+| `need_interest` | `open_need_id`, party(interested), `person_id`, `created_at` | O (owner sees list; interested party sees own row) | lightweight signal; no contact reveal | operational | Proposed |
+| `partner_post` | `hub`, party(author), `kind enum(looking_for\|offering)`, `categories`, `regions`, `text`, `expires_at`, `status` | P | expires | published | Proposed |
+| `match_method_version` (V) | `version`, `payload` (features, default weights, tie rotation, minimum samples), `released_by`, `released_at`, `explanation_publication_id` | P | payment-blind: no feature reads entitlements, plans or sponsorship | config | Proposed |
+| `match_run` | `requester_person_id`, `on_behalf` party, `mandate_id NULL`, ref(subject open_need\|rfq\|partner_post\|meeting_profile), `method_version_id`, `weights_override jsonb`, `created_at` | O | reads only data the requester may see | operational | Proposed |
+| `match_candidate` | `run_id`, `candidate` party NULL \| `sourced_company_id`, `eligibility jsonb[]` {rule, result pass\|fail\|unknown, evidenceRef}, `features jsonb[]` {name, value, explanation}, `rank`, `uncertainty`, `rotation_seed` | O | unknown is not failure; sourced candidates labelled; tests compare ranks with and without paid entitlements | operational | Proposed |
+| `introduction` | party(requester) + `requester_person_id`, party(recipient), `purpose`, ref(context open_need\|partner_post\|event\|rfq\|offering), `status`, `generated_by enum(person\|agent\|matching)`, `mandate_id NULL`, `expires_at`, `decided_at`, `contact_revealed_at`, `thread_id NULL` | S (purpose and public cards before acceptance; contacts after), O | double opt-in; requester never sees "declined"; contacts only after acceptance; counts against the quota | operational | Proposed |
+| `outreach_quota` | `person_id`, `window_start`, `window_length`, `limit int`, `used int`, `reduced_until`, `reduction_reason` | O, SC | agents draw from their human's quota; serialized decrement | operational | Proposed |
+| `alert_subscription` | `person_id`, `kind enum(open_need\|partner_post\|rfq_invitation)`, `filters jsonb`, `frequency` | O | alerts are notifications with a reason | account | Proposed |
+| `recommendation_method_version` (V) | `version`, `payload` (target kinds, features, step-term matching, region and language rules, diversity rules), `released_by`, `released_at`, `explanation_publication_id` | P | payment-blind like matching; no feature reads sponsorship, entitlements or plans | config | Proposed |
+| `recommendation_set` | `plan_id`, `plan_version_id`, `plan_item_key`, `requester_person_id`, `mandate_id NULL`, `method_version_id`, `generated_at`, `audience enum(owner\|owner_and_invited)` | O (plan owner), S (invited parties when the owner shares it) | built only from data the audience may see; regenerated when the plan item changes | operational | Proposed |
+| `recommendation` | `set_id`, `target` ref(product_entry\|offering\|publication\|learning_resource\|course\|event\|consultation_offer\|capability_profile\|company\|person), `rank`, `explanation jsonb` (matched step terms, region, language, evidence, unknowns), `feedback enum(useful\|not_relevant\|dismissed) NULL` | same as the set | every item explains why it fits the step; people and companies appear only with public profiles; contacting them goes through introductions | operational | Proposed |
+| `sponsored_placement` | `hub`, party(sponsor), `target` ref, `step_terms`, `label`, `period`, `price_version_id`, `status` | P (labelled slot) | only where the hub allows sponsorship; shown in a separate labelled slot, never inside or reordering a ranked list; never affects matching, recommendation rank or reputation | commercial | Proposed |
+
+## 15. Catalogue
+
+Owner module: `catalogue`. Contracts: `catalogue.ts`. Handbook: [Buying and selling](../engine/commerce.md#the-catalogue).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `offering` | party(owner), `created_by`, `kind enum(goods\|works\|services\|bundle)`, `status enum(draft\|active\|archived)`, `current_version` | P (active), O | owner XOR | commercial | Draft |
+| `offering_version` (V) | `offering_id`, `version`, `status enum(draft\|published\|superseded)`, `payload` (title, description, specification, unit, listPrice, options, availability), `public_fields text[]`, `published_*` | P (allowlisted fields of published versions) | immutable once published; catalogue edits never touch sent quotes | commercial | Draft |
+| `bundle_component` | `offering_version_id`, `position`, `component_offering_id`, `component_version`, qty(quantity) | P | references exact published component versions | commercial | Draft |
+| `offering_version_private` | `offering_version_id PK`, `private_knowledge jsonb` {costBasis, marginTarget, notes} | O | never joined into public or shared reads | commercial | Draft |
+| `product_entry` | `company_id` (often a sourced manufacturer or supplier), `name`, `step_terms` (materials, work types), `specification jsonb`, `standards_refs`, `datasheet_artifact_id NULL`, `source_url`, `source_id NULL`, `status enum(sourced\|claimed_managed\|withdrawn)`, `offering_id NULL`, `observed_at` | P (with "from sources" label and provenance) | a sourced product is information, not an offer: it cannot be quoted or ordered until the company claims its page and publishes an `offering`; per-field provenance in `sourced_record_field`; licence and robots rules of the source apply | published (source licence bound) | Proposed |
+
+## 16. Procurement
+
+Owner module: `procurement`. Contracts: `procurement.ts`.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `need` | party(owner), `project_id`, `created_by`, `source enum(manual\|file\|email\|assistant)`, `status enum(draft\|clarifying\|ready\|converted)`, `title`, `missing_fields text[]`, `rfq_id` | O | private intake; parsing grants no authority and sends nothing | commercial | Draft |
+| `need_line` | `need_id`, `position`, `kind NULL`, `description`, qty(quantity) NULL, `specification jsonb`, `alternatives_allowed`, `extraction_locator jsonb NULL` | O | lines keep evidence of where they were extracted from | commercial | Draft |
+| `rfq` | party(owner), `project_id`, `creator_person_id`, `status enum(draft\|published\|closed\|cancelled\|expired)`, `current_version`, `current_version_id`, `public_projection_enabled`, `public_projection_fields`, `category`, `accepted_agreement_id` | P (`toPublicRfq`), S, O | current version id set only after publication | commercial | Draft |
+| `rfq_version` (V) | `rfq_id`, `version`, `status enum(draft\|published\|superseded)`, `payload`, `digest`, `published_*`, `superseded_by`, `amendment_reason` | S (`toSharedRfqVersion`) | immutable once published; amendments need a reason | commercial | Draft |
+| `rfq_private_constraint` | `rfq_id PK`, party(owner), `budget_ceiling money`, `evaluation_weights`, `internal_notes`, `shortlist` | PP (buyer) | never in supplier views, search, notifications, exports or federation | commercial | Draft |
+| `rfq_invitation` | `rfq_id`, `rfq_version_id`, party(invitee), `channel enum(platform\|email\|assistant)`, `status`, `stale_reason enum(rfq_amended\|rfq_closed) NULL`, `sent_by_person_id`, `sent_by_mandate_id` | S (invitee sees own), O | pins exact version; stale is a flag decided by version id | commercial | Draft |
+| `rfq_clarification` | `rfq_version_id`, party(asked_by), `question`, `answer`, `answered_at`, `visibility enum(all_invitees\|asker)` | S | answers attach to the exact version; a material answer requires an amendment | commercial | Proposed |
+| `supplier_candidate` | `rfq_id`, party(candidate) NULL \| `sourced_company_id`, `source`, `observed_at`, `eligibility jsonb` | PP (buyer) | external candidates are not platform users; no bulk outreach | commercial | Contract / Designed |
+| `evaluation` | `rfq_id`, `quote_version_id`, `criteria_version`, `evidence`, `score`, `uncertainty` | PP (buyer) | explainable; uses only buyer-visible data | commercial | Designed |
+
+## 17. Sales and negotiation
+
+Owner module: `sales`. Contracts: `sales.ts`.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `lead` | party(seller), ref(context), `contact_ref`, `provenance`, `status` | O | contextual; no standalone CRM | commercial | Designed |
+| `quote` | `rfq_id`, party(seller), party(buyer), `status enum(draft\|sent\|superseded\|withdrawn\|expired\|accepted)`, `stale_reason`, `current_version` | S, O | recipient-specific; never public | commercial | Contract |
+| `quote_version` (V) | `quote_id`, `version`, `rfq_version_id`, `rfq_version_digest`, `status`, `payload` (lines, totals, terms, validity), `digest`, `sent_at`, `sent_by`, `sent_by_mandate_id`, `valid_until`, `stale_reason`, `revalidated_from`, `redacted_at NULL` | S (`toSharedQuoteVersion`) | sent only against the current published RFQ version; totals recomputed exactly; frozen columns per invariant 2 | commercial | Contract |
+| `quote_line` | `quote_version_id`, `line_id`, `rfq_line_id`, `kind`, `spec_snapshot`, `offering_version_ref`, qty(quantity), money(unit_price), `tax_determination_id`, money(tax_amount), money(line_total) | S (without catalogue provenance) | a frozen projection of the payload lines written at send for querying; the payload remains authoritative | commercial | Contract |
+| `tax_determination` (A) | ref(subject quote_line\|invoice_line\|ticket), `jurisdiction jur` (for example `US-TX:harris-county:houston`), `rule_ref` (pack fact or adapter rule id), `rate text(decimal)`, `taxability enum(taxable\|exempt\|reverse_charge\|not_applicable)`, `exemption_ref`, `provider enum(pack\|adapter)`, `determined_at` | S (with the line) | reproducible: names the rule and source; never a hard-coded rate | accounting | Proposed |
+| `quote_private_constraint` | `quote_id PK`, party(owner), `floor_prices`, `margin_targets`, `cost_basis`, `negotiation_notes` | PP (seller) | never in buyer views, envelopes or logs visible to others | commercial | Contract |
+| `negotiation_round` | ref(context rfq\|quote\|agreement), `round_no`, `proposal ref(quote_version\|rfq_version\|amendment_request)`, party(proposer), `negotiation_session_id NULL`, `created_at` | S | every proposal is a structured version, never chat prose | commercial | Designed |
+| `amendment_request` | `quote_version_id`, party(requester), `line_refs`, `requested_changes jsonb`, `status enum(open\|answered\|withdrawn)` | S | references exact lines; the answer is a new quote version | commercial | Proposed |
+
+## 18. Transactions
+
+Owner module: `transactions`. Contracts: `transactions.ts`, `server/commercial.ts`.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `agreement` | party(buyer), party(seller), `terms_kind enum(rfq_quote\|task\|consultation)` (proposed; today only `rfq_quote`), `quote_version_id`, `rfq_version_id` \| `task_offer_id`, `task_request_version_id` \| `consultation_booking_id`, `accepted_terms_digest`, `status enum(proposed\|accepted_by_buyer\|accepted_by_both\|declined\|withdrawn\|superseded)`, `superseded_by` | S (`toSharedAgreement`) | digest over `{quoteVersion, rfqVersion}` computed once; never public | commercial | Contract |
+| `agreement_buyer_private` | `agreement_id`, party(owner), `transaction_budget_id`, `approval_refs`, `notes` | PP (buyer) | never joined into shared or seller views | commercial | Contract |
+| `agreement_seller_private` | `agreement_id`, party(owner), `fulfilment_plan jsonb`, `notes` | PP (seller) | never joined into shared or buyer views | commercial | Contract |
+| `acceptance_event` (A) | `agreement_id`, `kind enum(buyer_selects\|buyer_accepts_terms\|seller_accepts_order\|seller_declines\|withdrawn)`, `quote_version_id`, `rfq_version_id`, `accepted_terms_digest`, actor {person, onBehalfOf, mandate, approval}, `authority` {budget ids, reservation}, `occurred_at`, `idempotency_key` | S | trigger: digest equals the agreement digest; buyer and seller acceptance are separate events | commercial | Contract |
+| `order` | `agreement_id`, `accepted_terms_digest`, `status enum(placed\|accepted\|changed\|cancelled\|fulfilled)`, `external_reference`, `reservation_id` | S | no commit without authority and a transaction budget reservation | commercial | Contract |
+| `order_change` | `order_id`, `previous_terms_digest`, `new_terms_digest`, `consents jsonb[]`, `status` | S | appended jointly accepted versions; history never mutates | commercial | Designed |
+| `obligation` | `agreement_id`, party(obligor), `kind enum(deliver\|perform\|pay\|accept)`, `due ts`, money(amount) NULL, qty(scope) NULL, `status enum(open\|fulfilled\|partially\|waived\|disputed)` | S | derived from accepted terms; changes only through order changes | commercial | Contract |
+
+## 19. Execution and evidence
+
+Owner module: `execution` (records), `trust` (assertions, disputes). Contracts: `execution.ts`. Handbook: [Execution, evidence and reputation](../engine/execution-and-reputation.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `delivery_claim` | `order_id`, party(claimant), `lines jsonb[]` {quoteLineId, claimedQuantity}, `evidence refs`, `claimed_at`, `state enum(asserted\|confirmed\|disputed\|superseded)` | S | a claim is never a confirmed fact | evidence | Contract |
+| `work_record` | `order_id`, party(claimant), `scope`, `period` (bdate from/to), `evidence refs`, `state` | S | claim ≠ confirmation | evidence | Designed |
+| `acceptance_record` | `delivery_claim_id` \| `work_record_id`, `accepted_by` {person, onBehalfOf}, `lines jsonb[]` {acceptedQuantity, contestedQuantity, defectNote}, `accepted_at`, `stage_code NULL` (hidden-works stage from the pack template) | S | partial acceptance normal; contested quantities explicit | evidence | Contract |
+| `defect` | `order_id`, `location`, `severity enum(minor\|major\|critical)`, `description`, `evidence refs`, `reported_by`, `status` | S | appended; never deleted | evidence | Designed |
+| `remediation` | `defect_id`, `action`, `evidence refs`, `acceptance_record_id NULL`, `status` | S | closes only by acceptance | evidence | Designed |
+| `source_record` (A) | `uri`, `source_time`, `observed_at`, `licence`, `retrieved_by` | S, SC | permitted provenance only | evidence | Designed |
+| `assertion` | ref(subject), `predicate`, party(claimant), `state enum(asserted\|confirmed\|disputed\|superseded)`, `evidence refs`, `superseded_by`, `source_time`, `observed_at` | S, P (only through a reputation snapshot) | append-only chain; supersession and reversal append | evidence | Contract |
+| `confirmation` (A) | `assertion_id`, `decided_by` {person, onBehalfOf} \| trust reviewer with `dispute_case_id`, `decision enum(confirmed\|rejected)`, `evidence refs`, `decided_at` | S | a recorded decision by an authorized actor, never an import | evidence | Designed |
+| `dispute_case` | `assertion_ids`, party(opened_by), `reason`, `status enum(open\|evidence\|decided\|appealed\|closed)`, `assigned_reviewer`, `decision`, `decided_at` | S (parties), SC | disputed observations excluded or annotated until resolved; appeal decided by a different person | case | Designed |
+
+## 20. Reputation
+
+Owner module: `trust`. Handbook: [Execution, evidence and reputation](../engine/execution-and-reputation.md#reputation).
+
+Reputation is something every participant **builds and confirms** with tools (owner decision 2026-10-31), not something the platform watches: checked credentials (section 4), portfolio entries with client confirmations, confirmations from counterparties tied to real transactions, consultations and tasks, knowledge contributions, timeliness signals from shared contexts, a portable passport with verifiable credentials, and fair appeals. The evidence → assertion → confirmation → snapshot chain stays the single source; the new records feed it and never bypass it. Explainable, evidence-based, never for sale.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `review` | party(subject), `author_person_id`, `agreement_id`, `dimensions jsonb` {timing, quality, payment, cooperation}, `text`, `status enum(unconfirmed\|confirmed\|appealed\|corrected\|removed)`, `language` | P (per hub policy and local law), S | tied to a real interaction; unconfirmed excluded from aggregates; never syndicated across nodes | evidence | Designed |
+| `review_appeal` | `review_id`, party(appellant), `reason`, `status`, `decided_by` (≠ original decider) | S, SC | appeals and corrections append | case | Designed |
+| `performance_observation` | party(subject), `dimension`, `agreement_id`, `baseline_id`, `plan_change_id NULL`, `value jsonb`, `evidence refs`, `attribution enum(subject\|counterparty\|external\|unknown)` | S, SC | client-caused changes excluded from timing; missing ≠ failed | evidence | Designed |
+| `reputation_method_version` (V) | `hub` NULL (engine bounds) / hub parameters, `version`, `payload` (dimensions, weights, windows, minimum samples), `released_by` (hub owner), `released_at`, `explanation_publication_id` | P | released through review; weights open (O07) | config | Designed / Open (O07) |
+| `reputation_exclusion` (A) | `observation_id`, `reason enum(dispute_pending\|client_caused_change\|duplicate\|method_rule)`, `decided_by`, `case_id` | P (counts and reasons in the snapshot) | staff can exclude only with a case and a reason; attributed | evidence | Designed |
+| `reputation_snapshot` (A) | party(subject), `home_node`, `method_version_id`, `dimension_scores jsonb`, `samples jsonb`, `exclusions jsonb`, `computed_at`, `inputs_digest` | P | computed only on the subject's home node; no payment input; "not enough data" below minimum samples | published | Designed |
+| `confirmation_request` | party(requester), `assertion_id` (the claim to confirm, created with the request), party(addressed_to), ref(context agreement\|order\|task_assignment\|consultation_booking\|mentoring_relationship\|project\|portfolio_entry), `statement_kind enum(delivered\|on_time\|quality_met\|role_performed\|paid_on_time\|advice_delivered)`, `due_at`, `status enum(requested\|confirmed\|declined\|expired\|disputed\|withdrawn)` | S (both parties) | only for contexts both parties actually took part in; a confirmation is a `confirmation` row on the assertion; decline is private to the requester as "not confirmed"; rate-limited | evidence | Proposed |
+| `confirmation_response` (A) | `confirmation_request_id`, `responder_person_id`, `on_behalf` party, `decision enum(confirmed\|declined\|partially)`, `comment`, `confirmation_id NULL`, `responded_at` | S | appealable; the counterparty cannot edit a response, only append a correction | evidence | Proposed |
+| `contribution_record` (A) | party(holder), `kind enum(publication\|accepted_answer\|consultation_given\|mentoring\|course_taught\|event_talk\|document_review\|knowledge_item)`, ref(source), `outcome jsonb` (for example deliverable accepted, learners completed count, answer accepted), `occurred_at`, `hub` | P (holder chooses whether to show it in the passport), O | system-derived from canonical records, never self-asserted; counts never sold or boosted | evidence | Proposed |
+| `timeliness_observation` (A) | party(subject), `kind enum(response\|delivery\|payment\|consultation_start\|milestone)`, ref(context), `expected_at`, `actual_at`, `delta_seconds`, `attribution enum(subject\|counterparty\|external\|unknown)`, `plan_change_id NULL`, `excluded_reason NULL` | O (subject sees every observation about them), S (counterparty of that context), P (only aggregated in a snapshot) | only from contexts the subject took part in, never behaviour tracking; client-caused delay excluded; feeds `performance_observation` dimension timing | evidence | Proposed |
+| `reputation_passport` | party(subject), `home_hub_id`, `slug`, `sections jsonb` (identity verification, credentials, portfolio entries, contributions, current snapshot), `visibility enum(private\|link\|public)`, `consent_record_id`, `generated_at` | P or link-only per subject choice, O | the subject curates what is shown but cannot alter evidence; a reputation snapshot is shown whole or not at all; never purchasable | published | Proposed |
+| `issued_credential` | `vc_id` (URI under the issuing node), `issuer_hub_id`, `issuer_key_id`, `subject` party + global id, `type enum(identity_verified\|company_verified\|credential_checked\|course_certificate\|portfolio_confirmed\|reputation_snapshot\|contribution)`, `claims jsonb` (minimal facts, no private data), `issued_at`, `valid_until`, `status enum(valid\|suspended\|revoked\|expired)`, `status_list_id`, `status_index`, `revocation_reason_code`, `proof jsonb` | P (by the holder's choice), O | W3C Verifiable Credentials data model; portable across hubs; verified against the issuing node's key and status list; claims are what the issuing hub checked, nothing more; never sold | verification | Proposed |
+| `credential_status_list` | `issuer_hub_id`, `list_id`, `purpose enum(revocation\|suspension)`, `encoded_list`, `updated_at` | P | revocation visible to any verifier without revealing the holder list | verification | Proposed |
+
+## 21. Assistant and agents
+
+Owner module: `assistant` (AST-001), goals and representation sub-area (AGT-001). Contracts: `assistant.ts`. Handbook: [Your agent](../engine/agents.md). The agent catalogue (`docs/engine/agent-catalog.md`, in progress) owns module codes and descriptions.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `mandate` | `principal_person_id`, `on_behalf` party NULL, `executor_kind enum(person_agent\|company_representative)`, `actions text[]` (8-verb vocabulary), money(ceiling), money(per_action_ceiling) NULL, `transaction_budget_id`, `platform_budget_id`, `conditions jsonb`, `approval_policy jsonb`, `escalation jsonb`, `valid_until`, `status enum(draft\|active\|suspended\|revoked\|expired)`, `revoked_*`, `authority_basis jsonb` (membership, participation ids it relies on) | O (principal), O (company members with permission for company mandates), SC (diagnostic) | never exceeds the principal's current rights; revoked in the transaction that removes the basis; chat never changes it | account | Contract |
+| `mandate_context` | `mandate_id`, `context_kind enum(project\|plan\|rfq\|quote\|agreement\|introduction\|event\|open_need\|goal\|consultation_request\|task_request\|task_assignment)`, `context_id` | O | rows, so revocation of a context cascades by query | account | Contract (`contexts`) |
+| `mandate_revision` (A) | `mandate_id`, `revision`, `snapshot jsonb`, `digest`, `changed_by`, `changed_at` | O | approvals and actions bind `(mandate_id, revision)`; history explains what was authorized when | audit_standard | Proposed |
+| `conversation_turn` | `person_id`, `role enum(person\|agent\|system)`, `content`, `created_at`, `expires_at` | O | one conversation per person shared by page and overlay; no chain-of-thought stored; not indexed | conversation | Proposed |
+| `assistant_note` | `person_id`, `text`, `source_dependencies jsonb[]`, `retained_at` | O | deliberately retained notes only; dependencies rechecked on reuse | account | Proposed |
+| `service_backlog_item` | `person_id` \| `company_id`, `title`, `proposal jsonb`, `source_run_id`, `status enum(proposed\|accepted\|dismissed\|done)` | O | separate from any development backlog | account | Designed |
+| `run` | `principal_person_id`, `mandate_id NULL`, `goal_id NULL`, `kind`, `state enum(queued\|running\|waiting_approval\|waiting_event\|completed\|failed\|cancelled)`, `checkpoint jsonb`, `started_at`, `ended_at`, `cost_counters jsonb` | O, SC | durable; crash never loses an authority check or reservation | operational | Designed |
+| `run_step` | `run_id`, `seq`, `kind enum(tool_call\|model_call\|decision\|checkpoint)`, `tool`, `input_digest`, `output_ref`, `state`, `started_at`, `finished_at` | O, SC | tool allowlist per action type; outputs by reference | operational | Designed |
+| `action_intent` | `run_id`, `mandate_id`, `mandate_revision`, `action`, ref(context), money(amount) NULL, `action_digest`, `state` (11 states), `reservation_id`, `attempt_count`, `effect_correlation_key` (unique) | O, SC | `actionTransitionAllowed`; recheck before effect; outcome_unknown keeps the reservation | commercial | Contract |
+| `action_attempt` | `action_intent_id`, `attempt_no`, `operation_id`, `provider`, `job_id`, `fencing_token`, `started_at`, `ended_at` | SC | persisted before the external call; reuses the stable correlation key | operational | Designed (`tool_attempt`) |
+| `action_outcome` (A) | `action_intent_id`, `attempt_id`, `kind enum(unknown\|acknowledged\|final)`, `reason`, `result`, `provider_reference`, `evidence`, `observed_at` | O, SC | `outcomeTransitionAllowed`; unknown → final only through reconciliation | commercial | Contract |
+| `approval` | `action_intent_id`, `action_digest`, `approver_person_id`, `approved_at`, `expires_at`, `revoked_at` | O | binds the exact digest; any material change voids it | commercial | Contract |
+| `reconciliation` (A) | `action_intent_id`, `attempt_id`, `operation_id`, `lookup_reference`, `outcome`, `reconciled_by enum(worker\|staff)`, `reconciled_at` | O, SC | required for unknown → final | commercial | Contract |
+| `goal` | `principal_person_id`, `on_behalf` party NULL, `text`, `success_criteria jsonb`, `allowed_actions text[]`, `horizon ts`, `report_cadence`, `status`, `outcome` | O | creating a goal proposes mandate changes; never widens authority by itself | account | Proposed |
+| `goal_progress` (A) | `goal_id`, `event_kind`, `evidence_refs`, `at` | O | evidence-backed progress log | account | Proposed |
+| `agent_envelope` | `direction enum(outbound\|inbound)`, party(from) + `from_person_id`, `actor_kind enum(person_agent\|company_representative)`, `actor_label`, ref(context), `intent enum(request_proposal\|propose\|counter\|clarify\|answer\|accept\|decline\|withdraw\|schedule_meeting\|introduce)`, `refs jsonb[]` {kind, id, version, digest}, `note text` (untrusted), `mandate_proof`, `expires_at`, `negotiation_session_id`, `home_node`, `delivery_status` | S (parties of the context) | only structured parts move state after the receiver's own mandate checks; notes never obeyed; never carries private constraints | commercial | Proposed |
+| `negotiation_session` | ref(context), `parties jsonb`, `max_rounds`, `rounds_used`, `expires_at`, `status` | S | round limit and expiry; deadlock escalates to humans; no pricing relay between competing sellers | commercial | Proposed |
+| `company_representative` | `company_id` (unique), `accountable_person_id`, `status enum(pending_acceptance\|active\|suspended\|disabled)`, `suspension_reason enum(no_accountable_person\|no_confirmed_mandate\|admin_suspended\|hub_kill_switch\|node_kill_switch) NULL`, `enabled_by`, `accepted_at` | P (label: company and accountable person name), O (company members with permission) | at most one per company; accountable person must be a current member with authority; suspends automatically | account | Proposed |
+| `representative_accountability` (A) | `representative_id`, `person_id`, `from`, `to`, `ended_reason` | O, SC | history of who was accountable when each action happened | audit_standard | Proposed |
+| `company_mandate` | `company_id`, `mandate_id`, `granted_by_person_id`, `executor_kind enum(person_agent\|company_representative)`, `executor_person_id NULL`, `reconfirm_due_at NULL`, `reconfirmed_by`, `reconfirmed_at`, `status enum(active\|awaiting_reconfirmation\|suspended\|revoked)` | O (members with permission) | executor's authority end stops it in the same transaction; granter leaves → re-confirm within 7 days or suspend | account | Proposed |
+| `external_agent_client` | `hub` NULL, `name`, party(publisher), `kind enum(api_client\|mcp_client)`, `redirect_uris text[]`, `homepage_url`, `status enum(pending_review\|approved\|suspended\|revoked)`, `reviewed_by`, `screening_result_id` | P (approved clients: name, publisher) | a connection the person authorizes, not a second agent: it acts as the person's agent surface under the person's mandates and labels actions "via <client>"; no multi-agent UI | config | Proposed |
+| `agent_access_token` | `person_id`, `client_id`, `token_hash bytea(32)`, `scopes text[]` (read scopes and `propose`), `mandate_ids uuid[]` (effects allowed only under these), `expires_at`, `last_used_at`, `revoked_at` | O (without hash) | hash only; revoked with the mandate or membership; never grants staff or another person's data | session | Proposed |
+| `agent_module` | `code` (catalogue), `owner enum(engine\|hub)`, `status` | P | catalogue codes from the agent catalogue; modules are capabilities of the single agent | config | Proposed |
+| `agent_module_version` (V) | `module_id`, `version`, `payload` (actions provided, default limits, meters, model routing purpose), `released_by` | P | enabling a module never widens a mandate | config | Proposed |
+| `agent_module_enablement` | `hub`, `module_version_id`, `allowed_actions`, `limits jsonb`, `config_version_id` | P (hub policy summary) | hub agent policy; commitments may require verified companies | config | Proposed |
+
+The agent's planning help (drafting plans, turning items into requests, recommending resources) and the reputation helper (suggesting confirmations to request, credentials to renew, portfolio entries to document, and presenting the passport) are agent modules from the catalogue; they act only under the person's mandates and never contact counterparties outside them. Module entitlements and metering use billing records: an `entitlement` with `module_code`, and `usage_event` rows against `meter` codes that a module version declares (section 23).
+
+## 22. Communications
+
+Owner module: `channels`. Handbook: [Communications](../engine/communications.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `context_thread` | ref(context rfq\|quote\|agreement\|order\|introduction\|project\|plan\|consultation_booking\|task_request\|task_assignment\|mentoring_relationship\|registration\|support_case\|negotiation_session), `subject`, `status enum(open\|closed)` | S (via participation `resource_kind = thread`) | no thread without a context; whoever may see the context may see the thread, nobody else | commercial (support: case) | Designed |
+| `message` | `thread_id`, `direction enum(inbound\|outbound\|internal)`, `author_kind enum(person\|agent\|system)`, `author_person_id`, `on_behalf` party, `mandate_id`, `body`, `attachments refs`, `source_time`, `received_at`, `provider`, `provider_message_id`, `channel_grant_id`, `untrusted bool` | S | inbound content untrusted; unique `(provider, provider_message_id)`; existing mail never deleted | commercial | Designed |
+| `message_link` | `message_id`, ref(object), `version_id` | S | links to exact versions discussed | commercial | Designed |
+| `reply_token` | `thread_id`, `token_hash`, `expires_at` | — | matches inbound mail to contexts | ephemeral | Designed |
+| `channel_grant` | `person_id`, `provider enum(email\|telegram\|whatsapp\|sms\|other)`, `account_display`, `scopes jsonb` {contextKinds, actions}, `credential_ref → provider_credential_ref`, `status`, `granted_at`, `revoked_at` | O | per channel, per scope, revocable; no blanket mailbox | account | Designed |
+| `send_receipt` (A) | `message_id`, `provider`, `provider_ref`, `state`, `observed_at` | S | provider evidence that a message left | commercial | Designed |
+| `notification` | `recipient_person_id`, `category`, `template_version_id`, `params jsonb` (recipient-visible values only), `link ref`, `transactional bool`, `read_at`, `dismissed_at` | O | carries no private value the recipient may not read; bell separate from correspondence | operational | Demo → Designed |
+| `notification_preference` | `person_id`, `category`, `frequency enum(immediate\|daily\|weekly\|off)`, `channel` | O | transactional notices cannot be turned off | account | Designed |
+| `message_template` | `hub`, `key`, `category`, `transactional bool` | — | — | config | Designed |
+| `template_version` (V) | `template_id`, `version`, `locale`, `subject`, `body`, `status enum(draft\|active\|retired)`, `drafted_by`, `activated_by` | P (rendered output only) | activation blocked unless every hub language exists; drafter ≠ activator | config | Designed |
+| `delivery` | ref(item notification\|message), `channel enum(email\|sms\|messenger\|push)`, `provider`, `attempt`, `state enum(queued\|sent\|delivered\|bounced\|failed\|outcome_unknown)`, `provider_event_id` | SC; hub sees counts | duplicate provider events ignored | operational | Designed |
+| `sender_identity` | `hub`, `kind enum(email_domain\|sms_sender\|messenger_bot)`, `value`, `verification jsonb` (SPF, DKIM, DMARC, 10DLC or local registration), `status` | — | activation needs a second person when non-fake | config | Proposed |
+| `suppression_entry` | `hub`, `address_hash`, `reason enum(bounce\|complaint\|unsubscribe\|legal)`, `created_at` | — | suppressed addresses never receive non-transactional mail | consent_proof | Proposed |
+
+## 23. Billing, budgets and payments
+
+Owner module: `billing`. Contracts: `billing.ts`. Handbook: [Billing](../engine/billing.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `billing_account` | party(owner), `hub`, `currency`, `tax_registration_id NULL`, `billing_address jsonb`, `status` | O (permission `company.billing.view`) | personal and company payers; economic rights distinct from roles | accounting | Designed |
+| `offer` | `hub`, `code`, `name`, `kind enum(plan\|deliverable\|credit_pack\|marketplace_fee\|verification_fee\|agent_module)`, `status` | P | money never buys ranking, matching, reputation or a badge | config | Contract |
+| `subscription_plan_version` (V) | `offer_id`, `version`, `payload` (included modules, limits, meters), `status` | P | what a subscription plan includes is versioned ("plan version" in the billing chapter; renamed to avoid the project plan) | config | Designed |
+| `price_version` (V) | `offer_id`, `version`, money(amount), `effective_from`, `effective_to`, `acceptance_text_version`, `status enum(draft\|active\|superseded\|cancelled)`, `drafted_by`, `activated_by`, `activated_at`, `tax_rule_ref` | P | activator ≠ drafter; no back-dating; no overlapping active versions | config | Contract |
+| `price_acceptance` (A) | `price_version_id`, `acceptance_text_version`, party(payer), `accepted_by_person_id`, `accepted_at`, money(amount) | O | immutable; price changes never alter an acceptance | accounting | Contract |
+| `subscription` | `billing_account_id`, `offer_id`, `subscription_plan_version_id`, `price_version_id`, `price_acceptance_id`, `status enum(trial\|active\|past_due\|cancelled\|ended)`, `current_period`, `renews_at` | O | trial parameters open (O03) | accounting | Designed |
+| `entitlement` | `billing_account_id`, `offer_id`, `module_code NULL`, `limits jsonb`, `valid_from`, `valid_until`, `source enum(free_basic\|trial\|subscription\|credit\|sponsorship)` | O | never read by ranking, matching or reputation code | accounting | Contract |
+| `meter` | `code`, `unit`, `module_code NULL`, `description_key` | P | declared by module versions | config | Proposed |
+| `usage_event` (A) | `billing_account_id`, `entitlement_id`, `meter_code`, qty(quantity), `occurred_at`, ref(source run\|action_intent\|render\|verification_check), `idempotency_key` | O | unique idempotency key; corrections are new events | accounting | Designed |
+| `budget` | `kind enum(transaction\|platform)`, party(owner), `project_id`, `employee_person_id`, `period`, money(limit) | O (owner), PP within agreements | two kinds; one never implies the other | accounting | Contract |
+| `reservation` | `budget_id`, `action_intent_id`, money(amount), `state enum(reserved\|settled\|released\|expired)`, money(settled_amount), `effect_correlation_key` | O | atomic reserve under row lock or serializable retry; settle or release only from evidence | accounting | Contract |
+| `ledger_entry` (A) | `batch_id`, `account_kind enum(budget\|billing_account\|payout\|hub_revenue)`, `account_id`, money(amount) (signed), `reservation_id`, `payment_id`, `correcting_entry_of`, `occurred_at` | O, SC (diagnostic totals) | balanced per batch and currency; corrections are new entries | accounting | Designed |
+| `invoice` | `hub` (issuer series), `number`, `billing_account_id`, `issued_at`, money(totals), `tax_lines jsonb`, `status enum(draft\|issued\|paid\|void\|corrected)`, `e_invoice_ref`, `corrects_invoice_id` | O | numbering gap-free per series where the pack requires it; issued invoices immutable, corrections reference them | accounting | Designed (`invoice_ref`) |
+| `invoice_line` | `invoice_id`, `description`, qty(quantity), money(unit_price), `tax_determination_id`, money(line_total) | O | totals recomputed exactly | accounting | Designed |
+| `payment` | party(payer), ref(purpose invoice\|registration\|enrollment\|subscription\|consultation_booking\|task_milestone), money(amount), `method enum(card\|ach\|bank_transfer\|wallet\|other)`, `provider`, `provider_ref`, `state enum(created\|pending\|succeeded\|failed\|outcome_unknown\|refunded\|partially_refunded)`, `idempotency_key` | O | unknown outcomes reconcile, never charge twice; card and bank data never stored (provider tokens only) | accounting | Designed |
+| `refund` | `payment_id`, money(amount), `reason_code`, `state`, `provider_ref`, `idempotency_key` | O | never exceeds the captured amount | accounting | Designed |
+| `payout_account` | party(holder), `provider`, `account_ref → provider_credential_ref`, `status`, `screening_result_id` | O (restricted `payment_refs`) | always excluded from case grants; payee screened | accounting | Proposed |
+| `payout` | `payout_account_id`, ref(source event\|course), money(gross), money(fee) (from the hub fee price version), money(net), `state`, `provider_ref` | O | fee from a published price version; unknown outcomes reconcile | accounting | Proposed |
+| `credit_grant` (A) | `billing_account_id`, money(amount), `reason_code`, `issued_by` (staff), `cap_check jsonb`, `case_id` | O, SC | capped per staff role; never a hidden refund | accounting | Designed |
+
+## 24. Hubs, sources and verification
+
+Owner modules: `hubs` (hub, configuration, legal, sources, pipelines, launch), `verification` (providers, recipes, checks, screening). Handbook: [Hubs](../engine/hubs.md), [Hub administration](../engine/hub-administration.md), [Country specifics](../engine/country-specifics.md). The hub console design (`docs/engine/hub-console/`, `packages/contracts/src/hub.ts`) owns the screens and contract shapes.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `hub` | `node_id`, `key` (unique per node), `name`, `status enum(draft\|preparing\|soft_launch\|public\|suspended\|closing\|closed)`, `default_locale`, `locales text[]`, `brand_ref`, `pack_code`, `pack_version`, `successor_hub_global_id NULL` | P (from soft launch) | a hub whose country is restricted cannot exist; public only with every launch gate satisfied | config | Proposed |
+| `hub_territory` | `hub_id`, `level enum(country\|region\|city)`, `code jur`, `place_key` | P | descriptive, never exclusive; restricted places rejected at every entry point | config | Proposed |
+| `hub_config_version` (V) | `hub_id`, `domain enum(identity\|legal\|privacy\|sources\|verification\|commerce\|tax\|agents\|editorial\|events_learning\|communications\|federation)`, `version`, `payload`, `digest`, `drafted_by`, `activated_by`, `effective_from`, `status` | P (published policy summaries), SC | sensitive domains need a different activator; no setting widens data access; one active version per (hub, domain) | config | Proposed |
+| `legal_document_version` (V) | `hub_id`, `kind enum(terms\|privacy_notice\|sanctions_section\|cookie_notice\|community_rules\|organizer_terms\|author_terms\|notice_at_collection\|do_not_sell_notice)`, `locale`, `version`, `body`, `digest`, `counsel_approval_id`, `status enum(draft\|approved\|active\|superseded)`, `effective_from` | P when active | activation needs counsel approval and a second person; every hub locale present | config | Proposed |
+| `counsel_approval` (A) | `hub_id`, `document_version_ids uuid[]`, `counsel_name`, `firm`, `approved_on date`, `scope_note`, `recorded_by` | SC | required before activation | config | Proposed |
+| `legal_acceptance` (A) | `person_id` \| party, `legal_document_version_id`, `accepted_at`, `context enum(signup\|checkout\|hosting\|authoring\|peering)` | O | proves which exact text was accepted | consent_proof | Designed (`acceptedTermsVersion`) |
+| `launch_gate` | `hub_id`, `gate_code` (12 checklist gates), `state enum(open\|satisfied\|invalidated)`, `evidence_ref`, `checked_by`, `checked_at` | SC | no waiver; a later change (for example a legal version expiring) invalidates the gate | config | Proposed |
+| `source` | `hub_id`, `kind enum(rss\|api\|file_drop\|website_crawl\|register_open_data\|register_api\|procurement_portal\|standards_body\|statistics\|press_inbox\|manual)`, `purpose enum(news\|company_directory\|manufacturer_catalogue\|learning_resources\|people_directory\|knowledge\|opportunities)`, `licence_text_ref`, `legal_basis` (see retention doc), `allowed_uses jsonb` {headline, summary, full_text, index, model_egress, syndicate}, `attribution_template`, `takedown_contact`, `owner_person_id`, `status enum(draft\|active\|paused\|taken_down)` | SC; P (attribution only) | a display-only source never reaches a model or a peer; personal-data sources need a recorded legal basis | config | Proposed |
+| `crawl_policy` | `source_id`, `domain`, `robots_fetched_at`, `robots_digest`, `allowed_paths text[]`, `disallowed_paths text[]`, `crawl_delay_s`, `terms_ref`, `terms_reviewed_by`, `user_agent`, `status enum(allowed\|restricted\|forbidden)` | SC | a crawl never exceeds robots rules, site terms or the hub's legal basis; a robots or terms change pauses the pipeline until reviewed; per-item provenance through `sourced_record_field` | config | Proposed |
+| `dataset` | `hub_id`, `source_id`, `kind enum(news_items\|company_records\|officer_records\|licence_records\|procurement_notices\|standards\|statistics\|products\|learning_resources\|events)`, `schema_version`, `contains_personal_data bool`, `retention_class` | SC | personal-data datasets carry legal basis and retention | config | Proposed |
+| `pipeline` | `hub_id`, `dataset_id`, `name`, `current_version`, `status enum(draft\|active\|paused\|retired)` | SC | — | config | Proposed |
+| `pipeline_version` (V) | `pipeline_id`, `version`, `payload` (steps: fetch, parse, normalize, match, stage), `adapter`, `digest`, `activated_by` | SC | activation of a live adapter needs a second person | config | Proposed |
+| `pipeline_schedule` | `pipeline_id`, `cron`, `time_zone`, `enabled bool`, `next_run_at`, `respect_source_cadence bool` | SC | never faster than the source's terms allow | config | Proposed |
+| `pipeline_run` | `pipeline_version_id`, `schedule_id NULL`, `trigger enum(scheduled\|manual\|retry)`, `state`, `job_id`, `started_at`, `finished_at`, `counts jsonb`, `import_batch_id NULL`, `error_code` | SC | lifecycle in [lifecycles](lifecycles.md#pipelines-runs-and-import-batches); a run never publishes anything | operational | Proposed |
+| `import_batch` | `source_id`, `pipeline_run_id`, `counts`, `conflicts`, `status enum(staged\|in_review\|activated\|rejected\|rolled_back)`, `activated_by` | SC | activation is a separate decision (`admin.sources.import.activate`) | operational | Proposed |
+| `source_item` | `source_id`, `import_batch_id`, `external_id`, `url`, `title`, `summary`, `full_text_ref NULL` (only if licensed), `source_time`, `observed_at`, `licence_snapshot jsonb`, `status enum(queued\|drafted\|discarded\|taken_down)`, `publication_id NULL` | SC (editors) | never published without a person's decision | derived (from source licence) | Proposed |
+| `sourced_record_field` | ref(record company\|company_identifier\|company_registration\|professional_credential\|product_entry\|learning_resource\|event), `field`, `value`, `source_id`, `import_batch_id`, `observed_at` | P (provenance label), SC | field-level provenance for "from sources" records | verification | Proposed |
+| `record_link_proposal` | ref(left), `right_local_id` \| `right_global_id`, `evidence enum(identifier_match\|signed_statement\|person_confirmed)`, `proposed_by enum(import\|peer\|person)`, `state enum(proposed\|accepted\|rejected)`, `decided_by` | SC | links, never merges; decided by a data steward | verification | Proposed |
+| `verification_provider` | `hub_id`, `check_type`, `adapter`, `mode enum(fake\|manual\|live)`, money(cost_per_check), `quota`, `result_retention_class`, `legal_basis`, `personal_data_sent text[]`, `credential_ref` | SC | live mode needs a second person; credentials only by reference | config | Proposed |
+| `verification_recipe_version` (V) | `hub_id`, `recipe_code`, `subject_kind enum(company\|person\|event_organizer\|seller)`, `trigger enum(claim\|seller_onboarding\|regulated_rfq\|list_update\|scheduled)`, `payload` (steps, result mapping, badge categories), `recheck_policy`, `digest` | P (badge categories and summary) | reference recipes per launch country and the US example | config | Proposed |
+| `verification_check` | ref(subject), `recipe_version_id`, `check_type enum(register_match\|status_active\|identifier_match\|officer_match\|tax_registered\|licence_valid\|qualification_valid\|ownership_disclosed\|sanctions_screening\|domain_confirmed\|signature_verified\|callback_confirmed\|identity_attested)`, `provider_id`, `result enum(pass\|fail\|unknown\|potential_match)`, `result_detail_category`, `evidence_artifact_id`, `checked_by`, `checked_at`, `expires_at` | P (category and date via badge), O (subject), SC | uploaded extracts never satisfy a register check; results expire and trigger re-checks | verification | Proposed |
+| `screening_list` | `hub_id` NULL (baseline engine list), `name`, `source_url`, `cadence`, `matching_rules jsonb`, `baseline bool`, `status` | SC | baseline (US Consolidated Screening List) cannot be disabled; hubs only add lists | config | Proposed (adapter Live) |
+| `screening_list_version` (A) | `list_id`, `fetched_at`, `entries_ref`, `digest`, `entry_count` | SC | re-screening on list update | verification | Proposed |
+| `screening_result` | ref(subject), `list_version_ids uuid[]`, `outcome enum(clear\|potential_match\|confirmed_match\|false_positive)`, `review_case_id NULL`, `screened_at` | SC; subject sees only what the law allows | a potential match never auto-blocks or auto-clears | verification | Proposed |
+| `screening_review_case` | `screening_result_id`, `assigned_to`, `decision`, `decided_by`, `appeal_decided_by` (≠), `status` | SC | human review always | case | Proposed |
+| `provider_credential_ref` | `hub_id` \| node, `provider`, `adapter`, `secret_ref` (key in the secret store), `scope`, `rotated_at`, `activated_by`, `status` | — | the secret value never enters the database or a console | config | Proposed |
+| `model_route` | `hub_id`, `data_class enum(public\|person_private\|company_private\|project_restricted\|deal_party_private)`, `purpose enum(query_embedding\|document_embedding\|rerank\|answer\|agent_reasoning\|translation)`, `provider`, `model_revision`, `residency_constraint jur NULL`, `decision enum(allowed\|denied\|public_only)`, `config_version_id` | SC; P (summary in privacy notice) | respects data residency; admission permits bind the route | config | Proposed |
+| `provider_cost_budget` | `hub_id`, `provider`, `period`, money(limit), `alert_thresholds`, `hard_stop bool` | SC | spend beyond a hard stop is refused before egress | config | Proposed |
+| `peering_agreement` | see section 26 | | | | |
+
+## 25. Search and knowledge
+
+Owner module: `retrieval`. The complete schema, field projection matrix and constraints are in [Knowledge records, lineage and retrieval projections](knowledge-model.md); contracts in `retrieval.ts`; design in [ADR 007](../adr/007-hybrid-retrieval.md) and [retrieval architecture](../architecture/retrieval.md). Summary for the dictionary:
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `knowledge_source` | entity kind/id, canonical owner, connector, purpose, rights/consent ref, classification | — | not a second canonical store | derived | Contract / Designed |
+| `knowledge_version` | source version, canonical revision, original hash, source/observed times, evidence state, deletion sequence | — | exact RFQ/quote version links | derived | Designed |
+| `extraction_artifact` | bytes hash, parser/OCR version, language, layout map, confidence, quarantine state | — | malformed output never auto-confirmed | derived | Designed |
+| `knowledge_projection` | field set, audience policy, permission cohort, authz epoch, eligibility | per audience | never mixes audiences | derived | Designed |
+| `knowledge_chunk` | projection, extraction, chunker revision, content hash, locator, language | per audience | deterministic ids; no cross-audience chunk | derived | Designed |
+| `citation_locator` | page + box \| table cell \| text offsets | per audience | points to immutable originals | derived | Contract |
+| `embedding_config` | provider policy, model revision, dimensions, metric, normalization, fingerprint | — | immutable; models never mixed | config | Contract |
+| `index_generation` | config, revisions, watermarks, state (building → validated → active → draining → retired, failed, tainted) | — | one active pointer per corpus scope | derived | Contract |
+| `chunk_embedding`, `lexical_projection` | chunk, generation, vector or tsvector | — | same deletion semantics | derived | Designed |
+| `knowledge_edge` | nodes, relation, evidence, validity, audience | per audience | edges never launder hidden relationships | derived | Designed |
+| `index_job` | outbox event, expected epoch, fence, checkpoint | — | stale job cannot reactivate revoked material | operational | Designed |
+| `retrieval_tombstone` | source/projection, deny sequence, reason, effective_at | — | monotonic; replayed after restore | tombstone | Designed |
+| `retrieval_receipt` | principal pseudonym, policy stamp, generation, allowed source ids, counters | SC | no raw text, vectors or queries by default | audit_standard | Designed |
+| `answer_dependency` | answer id, source versions, policy stamp, expiry | O | answers survive only while every dependency is still permitted | derived | Designed |
+| `saved_answer` | `person_id`, `question`, `answer`, `status enum(supported\|qualified\|abstain)`, `dependencies → answer_dependency`, `saved_at` | O | visible only to people who may see **all** sources | account | Proposed |
+
+Federated replicas are indexed as a separate source class with their licence flags; `shared_party` replicas only for the parties of that deal.
+
+## 26. Federation
+
+Owner module: `federation`. Handbook: [Federation](../engine/federation.md); [ADR 011](../adr/011-federation-mesh.md). Contracts to be frozen by FED-000 (`packages/contracts/src/federation.ts`).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `node` | `host` (this node, single row), `operator jsonb` (legal entity, jurisdiction, registration identifier, contacts), `protocols text[]`, `engine_version`, `current_key_id` | P (manifest) | a restricted jurisdiction cannot start | config | Proposed |
+| `node_key` | `node_id`, `public_key`, `private_key_ref` (secret store), `created_at`, `retired_at`, `rotation_signature` | P (public part) | rotation signed by the previous key | config | Proposed |
+| `peer_node` | `host`, `manifest_digest`, `manifest jsonb`, `jurisdiction jur`, `fetched_at`, `screening_result_id`, `status enum(known\|peered\|defederated\|refused)` | SC | refused at handshake when restricted; operator screened | config | Proposed |
+| `peering_agreement` | `hub_id`, `peer_node_id`, `level enum(syndicate\|trust_verifications\|deal_routing\|identity)`, `licences jsonb`, `tombstone_sla_hours`, `started_at`, `ended_at`, `approved_by` (second person for deal_routing and identity) | P (level and peer), SC | either side may lower or end; defederation never rewrites history | config | Proposed |
+| `feed_cursor` | `peer_node_id`, `stream`, `cursor`, `last_pulled_at` | — | opaque cursors | operational | Proposed |
+| `replica` | `global_id`, `kind`, `home_node`, `revision`, `projection enum(public\|shared_party)`, `payload jsonb`, `digest`, `syndication`, `licence`, `received_at`, `hidden_locally bool`, `hidden_reason` | P (public replicas with attribution), S (shared_party replicas to deal parties only) | read-only; never satisfies a write authorization; digest verified on receipt | derived (licence-bound) | Proposed |
+| `federation_inbox_item` | `sender_node`, `delivery_id`, `kind enum(introduction\|rfq_invitation\|quote_version\|agreement_event\|agent_envelope\|takedown\|tombstone\|report)`, `payload_digest`, `signature_verified bool`, `state enum(received\|accepted\|rejected\|applied)`, `received_at` | S (addressed parties) | unique `(sender_node, delivery_id)`; untrusted until verified and authorized | operational | Proposed |
+| `federation_delivery` | `peer_node_id`, `envelope_global_id`, `kind`, `attempts`, `state enum(queued\|sent\|acknowledged\|failed\|outcome_unknown)`, `last_error` | — | no transit through third nodes | operational | Proposed |
+| `entity_link` | `local` ref, `remote_global_id`, `evidence enum(identifier_match\|admin_signed_statement\|person_confirmed)`, `state enum(proposed\|accepted\|rejected\|withdrawn)`, `decided_by` | P (link and provenance) | links, never merges; display picks the strongest claim status | verification | Proposed |
+| `federated_identity_link` | `person_id`, `remote_global_id`, `confirmed_local_at`, `confirmed_remote_at`, `revoked_at` | O | both sides must confirm; used only at `identity` peering | account | Proposed |
+| `federation_tombstone` | `global_id`, `kind`, `reason_category enum(deleted\|unpublished\|erased\|retracted\|takedown\|licence_ended)`, `issued_at`, `apply_by` | P (signed) | peers apply within the agreement period (default 72 h) | tombstone | Proposed |
+| `tombstone_application` | `tombstone_id`, `peer_node_id`, `acknowledged_at`, `applied_at` | SC | missing acknowledgements feed defederation decisions | operational | Proposed |
+| `takedown_notice` | ref(object) \| `global_id`, `reason_category`, `requested_by`, `legal_basis`, `received_at`, `status` | SC | pushed to peers' inboxes | case | Proposed |
+
+Issued credentials (section 20) are verified against the issuing node's manifest key and status list; peers display passports and credentials as replicas with attribution and never re-issue them.
+
+## 27. Administration, support and privacy operations
+
+Owner module: `platform-admin` (privacy operations sub-area). Contracts: `admin.ts`. Handbook: [Hub administration](../engine/hub-administration.md), [Security, trust and privacy](../engine/trust-safety-privacy.md).
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `staff_role_definition_version` (V) | `version`, `role` (13 roles plus hub roles from the hub console contract), `permissions text[]` (`admin.*` vocabulary), `caps jsonb` {creditCap, grantMaxHours ≤ 72}, `sod_conflicts`, `sod_mode enum(reduced\|full)`, `released_by` | SC | released definitions immutable | config | Contract |
+| `staff_role_assignment` | `person_id`, `role`, `scope enum(platform\|node\|hub)` + `hub_id NULL`, `definition_version`, `valid_from`, `valid_until`, `granted_by`, `approved_by`, `reason`, `breakglass bool`, `revoked_*` | SC | sensitive roles need a distinct approver; break-glass expires within hours; scope `hub` is the proposed extension of the frozen `platform` literal | audit_long | Contract (+ Proposed hub scope) |
+| `staff_conflict_declaration` | `staff_person_id`, party(conflict), `declared_at`, `ended_at` | SC | blocks acting on one's own employer or declared parties | audit_long | Proposed |
+| `session_elevation` | `session_id`, `staff_person_id`, `elevated_at`, `expires_at`, `reason` | SC | every staff mutation references an elevation | audit_standard | Contract (`sessionElevationId`) |
+| `second_person_approval` | `action enum(...A+2 actions)`, `action_digest`, `requested_by`, `approved_by`, `approved_at`, `expires_at`, `revoked_at` | SC | requester ≠ approver; binds the exact digest | audit_long | Contract |
+| `case_access_grant` | `support_case_id`, `requested_by`, `approved_by`, `approval_digest`, `object_selector jsonb`, `projection_class enum(diagnostic\|support_private_limited\|evidence)`, `excluded_field_classes` (always negotiation_private, credentials, payment_refs), `purpose`, `approved_at`, `expires_at ≤ +72h`, `revoked_*`, `legal_exception_ref` | SC | the only staff path to private objects; materialized as a `staff` participation row with `case_ref` | audit_long | Contract |
+| `admin_audit_event` (A) | `sequence` (monotonic), `actor_person_id`, `actor_role`, `permission`, `session_elevation_id`, `case_id`, `second_approver_person_id`, `approval_digest`, `action`, `object_type`, `object_id`, `revision_before/after`, `before/after_digest`, `reason_code`, `reason_text`, `outcome`, `request_id`, `client_fingerprint_hash`, `retention_class` | SC (auditor) | gap-free sequence; A+2 actions record the approver | audit_long / audit_standard | Contract |
+| `access_log_entry` (A) | `sequence`, `read_at`, `actor_person_id`, `grant_id`, `case_ref {kind, id}`, `kind enum(case_read\|dispute_evidence_read\|audit_read\|evidence_view)`, `object_type`, `object_id`, `fields_hash` | SC (auditor), O (subject, via privacy request where law allows) | every staff read of private data | audit_long | Contract |
+| `support_case` | `hub_id`, `number`, `requester_person_id`, `subject_refs`, `category`, `status`, `assigned_to`, `priority`, `opened_at`, `closed_at`, `resolution_code` | O (requester), SC | lifecycle in [lifecycles](lifecycles.md#support-cases-and-case-grants); diagnostics without private data unless a grant exists | case | Designed |
+| `support_case_note` (A) | `support_case_id`, `author_staff_id`, `body`, `visibility enum(internal\|requester)` | SC; O when `requester` | internal notes never contain private payloads | case | Proposed |
+| `moderation_report` | `hub_id`, `reporter_person_id`, ref(target), `clause_code`, `text`, `created_at` | O (reporter), SC | reporter identity hidden from the reported party | case | Designed |
+| `moderation_case` | `hub_id`, ref(target), `report_ids`, `clause_codes`, `status`, `assigned_to`, `emergency_hold bool`, `decision`, `decided_by` | SC; S (target owner sees reasons) | the author is notified with reasons; appeal by a different person | case | Designed |
+| `sanction` | party(subject), `level int 1..4`, `scope` (feature), `starts_at`, `ends_at`, `moderation_case_id`, `decided_by`, `second_approval_id` (level 4) | O (subject), SC | durations within engine bounds; level 4 needs two people | case | Designed |
+| `appeal` | ref(subject sanction\|moderation_case\|verification_check\|review\|screening_result\|confirmation_response\|timeliness_observation\|performance_observation\|issued_credential\|recommendation), `appellant`, `status`, `decided_by` (≠ original decider) | O, SC | one appeal path per decision | case | Designed |
+| `privacy_request` | `hub_id`, `subject_person_id` \| `subject_identifier_hash` (non-users found in sources), `kind enum(access\|portability\|rectification\|erasure\|restriction\|objection\|opt_out_sale_share\|limit_sensitive_use\|appeal)`, `channel`, `authorized_agent_ref NULL`, `identity_verified_at`, `received_at`, `due_at` (from the pack deadline), `extended_until`, `status`, `decided_by`, `executed_by`, `second_approval_id` | O (requester), SC | deadlines from the country pack (for example 45 days, extendable, under CCPA); erasure executed by two people | case | Designed |
+| `privacy_preference` | `person_id` \| `subject_identifier_hash`, `opt_out_sale_share bool`, `limit_sensitive_use bool`, `gpc_honoured_at`, `marketing_opt_out bool`, `source enum(user\|gpc_signal\|authorized_agent)` | O | the engine never sells personal data; the flags still exist so a hub can honour state opt-out rights and Global Privacy Control signals | consent_proof | Proposed |
+| `privacy_export` | `privacy_request_id`, `manifest jsonb` (modules, digests), `artifact_id`, `expires_at`, `downloaded_at` | O | composed through projection serializers; never counterparties' private fields | ephemeral | Designed |
+| `erasure_ledger` (A) | `sequence`, `privacy_request_id`, `subject_ref`, `scope jsonb` (modules, records), `method enum(delete\|redact\|pseudonymize)`, `executed_at`, `executed_by`, `second_approver` | — (stored outside the restorable snapshot) | replayed after every restore before serving traffic; drives retrieval and federation tombstones | tombstone | Designed |
+| `legal_hold` | `hub_id`, `scope jsonb` (subjects, records), `reason`, `authority_ref`, `placed_by`, `placed_at`, `released_by`, `released_at` | SC | suspends deletion and erasure for covered records; erasure requests are answered with the hold reason category where the law allows | audit_long | Designed |
+| `retention_policy` | `hub_id`, `class`, `min_period`, `max_period`, `pack_fact_ref`, `disclosure_text_key`, `config_version_id` | P (disclosed periods), SC | hub values stay within pack statutory bounds; disclosed per category where law requires (CPRA) | config | Proposed |
+| `data_broker_registration` | `hub_id`, `jurisdiction jur` (for example `US-CA`, `US-VT`, `US-TX`, `US-OR`), `registered bool`, `registration_number`, `assessment_ref`, `renew_by` | SC | recorded when the operator's counsel decides that importing personal data from sources makes the hub a data broker in that state | config | Proposed |
+| `incident` | `hub_id` \| node, `kind enum(security\|privacy_breach\|provider\|content\|availability)`, `severity`, `opened_at`, `linked_actions jsonb` (kill switches, taints, holds, freezes), `breach_authority`, `notification_deadline`, `notified_at`, `post_review_ref`, `status` | SC | every emergency action requires a post-incident review | audit_long | Designed |
+| `kill_switch` | `scope enum(node\|hub)`, `hub_id`, `target enum(agent_dispatch\|provider\|federation\|payments)`, `target_ref`, `engaged_at`, `engaged_by`, `released_at`, `released_by`, `incident_id` | SC; P (banner state) | release needs an incident note | audit_long | Designed |
+| `feature_flag` | `key`, `scope enum(node\|hub)`, `hub_id`, `value jsonb`, `changed_by`, `changed_at` | SC | a flag can never widen access or change ranking | config | Designed |
+| `maintenance_window` | `scope`, `starts_at`, `ends_at`, `reason`, `read_only bool` | P (banner) | — | config | Designed |
+
+## 28. Required database invariants
+
+1. Unique active employer membership; XOR owner and party foreign keys everywhere; historical membership and participation parties cannot be reassigned.
+2. Published RFQ versions are immutable; each invitation and quote version references exact `rfq_version_id`. Amendment from quantity 10 in v1 to 100 in v2 sets `stale_reason` on v1 responses; compare/accept only against explicit matched scope or an explicitly revalidated new quote, never auto-upgrade. Unique `(rfq_id, version)` and `(quote_id, version)`; `reject_update_when_frozen` on `payload`, `digest`, `rfq_version_id`, `rfq_version_digest`, `valid_until`, `sent_at`, `sent_by` (quote) and `payload`, `digest`, `published_at`, `published_by` (RFQ) when status is not `draft`; `quote_version.valid_until` equals `payload.validity.until`; a quote may be sent only against the published current RFQ version; acceptance references exact quote version and digest (`trustwork-digest-1`, ADR 003). Amendments append versions or events. Drafts are edited with a revision check. The same freeze applies to every (V) record in section 1.7.
+3. Atomic budget reserve under row lock or serializable transaction with retry; ledger balanced per currency and batch. Concurrent valid requests cannot exceed the remaining balance. Ticket quotas, event capacity, waitlist positions and outreach quotas use the same serialized pattern.
+4. Unique idempotency `(principal, action, context, key)` with payload digest; unique inbound `(provider, account, event_id)`; unique `(provider, provider_message_id)`; unique federation `(sender_node, delivery_id)`; unique external-effect correlation key. An unknown timeout is never a failed effect.
+5. Public field allowlists; FORCE row-level security tested under the runtime role distinct from the schema owner; review every SECURITY DEFINER function and view. Row security does not solve field policy or consent: projections do.
+6. Append-only evidence, confirmation, dispute, supersession, audit, access log, consent, acceptance and ledger chains with source and observation times. Erasure reconciles privacy with lawful evidence preservation by redaction and pseudonymization recorded in the erasure ledger; hashes are never claimed to anonymize.
+7. Attachment access through the authorized parent and the attachment's own classification; signed URL TTL bounded; move and copy preserve owner and classification and are audited.
+8. Material approvals bind current scope and revision; revocation invalidates queued authority. Membership end bumps epochs, revokes derived participation, grants, company mandates and admission scopes, and suspends a representative whose accountable person left, in one transaction.
+9. Restricted jurisdictions can never be stored as a hub territory, peer jurisdiction, event region or company registration jurisdiction offered for new activity; the list lives in code.
+10. No column read by ranking, matching, recommendation or reputation code is derived from payment, entitlement, subscription plan or sponsorship (tested by comparing results with and without entitlements and sponsored placements). Reputation passports and issued credentials can never be bought, and paid entitlements never add, hide or reorder their contents.
+11. Hub configuration versions, legal document versions, price versions, live provider activation, peering above `syndicate`, erasure and sanction level 4 require a second person distinct from the drafter or requester.
+
+## 29. Implementation and migration ownership
+
+The data integrator exclusively owns `packages/data/migrations`, numbering and lockfile impact. Use timestamp-prefixed immutable SQL files with a checksum ledger and one transaction per safe migration; use explicit non-transactional exceptions for operations such as concurrent index builds. Forward-only expand → migrate → contract with old/new application compatibility; destructive changes need a separate reviewed migration and backup/restore evidence. Never edit an applied migration or use automatic ORM schema synchronization. Dry-run on a disposable database, test from empty and from the previous schema, test the actual runtime role, record rollback and forward recovery. `packages/data/src/schema.ts` mirrors every migration-owned table and is checked against `information_schema` by tests.
+
+DATA-001 delivered the first six migrations (identity, access, projects, reliability, hardening); BE-001 added six (principal MAC, admission, identity commands, public reads, sweeper). The ordered plan for everything else, mapped to work packages, is the [migration plan](migration-plan.md). The [knowledge schema](knowledge-model.md) defines retrieval records; no retrieval migration has been applied.
+
+## 30. Size of the model
+
+| Domain | Entities | Live | Draft | Contract | Designed | Proposed / Open |
+|---|---|---|---|---|---|---|
+| Platform kernel | 18 | 10 | 0 | 2 | 0 | 6 |
+| Identity and sessions | 8 | 6 | 0 | 0 | 1 | 1 |
+| People and profiles | 11 | 0 | 0 | 0 | 1 | 10 |
+| Companies | 12 | 3 | 0 | 0 | 2 | 7 |
+| Access | 2 | 2 | 0 | 0 | 0 | 0 |
+| Projects and plans | 15 | 3 | 0 | 0 | 3 | 9 |
+| Consultations, tasks and mentoring | 13 | 0 | 0 | 0 | 0 | 13 |
+| Knowledge sharing | 3 | 0 | 0 | 0 | 0 | 3 |
+| Content | 9 | 0 | 0 | 7 | 0 | 2 |
+| Magazine | 5 | 0 | 0 | 4 | 0 | 1 |
+| Events | 17 | 0 | 0 | 0 | 0 | 17 |
+| Learning | 11 | 0 | 0 | 0 | 0 | 11 |
+| Partners and matching | 14 | 0 | 0 | 0 | 0 | 14 |
+| Catalogue | 5 | 0 | 4 | 0 | 0 | 1 |
+| Procurement | 9 | 0 | 6 | 1 | 1 | 1 |
+| Sales and negotiation | 8 | 0 | 0 | 4 | 2 | 2 |
+| Transactions | 7 | 0 | 0 | 6 | 1 | 0 |
+| Execution and evidence | 9 | 0 | 0 | 3 | 6 | 0 |
+| Reputation | 13 | 0 | 0 | 0 | 6 | 7 |
+| Assistant and agents | 25 | 0 | 0 | 6 | 4 | 15 |
+| Communications | 13 | 0 | 0 | 0 | 10 | 3 |
+| Billing, budgets and payments | 19 | 0 | 0 | 6 | 10 | 3 |
+| Hubs, sources and verification | 28 | 0 | 0 | 0 | 1 | 27 |
+| Search and knowledge | 15 | 0 | 0 | 4 | 10 | 1 |
+| Federation | 13 | 0 | 0 | 0 | 0 | 13 |
+| Administration, support and privacy operations | 25 | 0 | 0 | 7 | 13 | 5 |
+| **Total (26 domains)** | **327** | **24** | **10** | **50** | **71** | **172** |
+
+The Live count is the 24 tables of `packages/data/src/schema.ts`. "Contract" counts entities whose shape is frozen in Zod but which have no table yet. Counts are recomputed by the integrator when a slice lands; a row counted once here may be split into several SQL tables or folded into a payload by its slice, which the slice records in this file.
+
+## 31. Proposed work packages
+
+These packages close the gaps between the existing task graph and this model. They are proposals in the exact shape of `docs/engine/work-packages.json`; the integrator adds them (or folds their steps into existing packages) in a separate pull request. Existing packages (DATA-002, COM-001, BILL-001, AST-001, CNT-001, EXE-001, EVT-001, LRN-001, MATCH-001, AGT-001, HUB-001, HUB-003, RAG-201, FED-001…005) keep their scope; the [migration plan](migration-plan.md) maps their slices.
+
+```json
+[
+  {
+    "id": "DATA-003",
+    "title": "Shared kernel persistence: files, units, jurisdictions, taxonomy, exchange rates and the hub anchor",
+    "area": "data",
+    "status": "open",
+    "dependsOn": ["DATA-001"],
+    "handbook": "docs/engine/architecture.md",
+    "goal": "Create the shared tables every later slice references, so modules never invent their own file, unit, jurisdiction or hub columns.",
+    "read": ["docs/data/model.md", "docs/data/migration-plan.md", "docs/engine/country-specifics.md"],
+    "steps": [
+      "Add evidence_artifact with classification, hash, scan state and parent reference; signed-URL port with bounded TTL.",
+      "Add unit, unit_conversion_rule, jurisdiction (loaded from country packs, restricted flag computed from code) and exchange_rate_snapshot.",
+      "Add taxonomy_term (including the plan-step schemes work_type, trade, material, stage and skill), step_term_relation and taxonomy_release with engine and hub scope.",
+      "Add a minimal hub and hub_territory anchor (id, node-local key, status, pack binding) that HUB-001 extends.",
+      "Mirror every table in packages/data/src/schema.ts and extend the schema introspection test."
+    ],
+    "acceptance": [
+      "A restricted jurisdiction cannot be inserted as a hub territory or selectable region.",
+      "Attachment reads require both the parent decision and the attachment classification.",
+      "Unit conversion happens only through an explicit rule; quantities with different units never add.",
+      "No country-specific code path: US, UZ, GE, AM and AZ jurisdictions load from packs only."
+    ],
+    "paths": ["packages/data/migrations", "packages/data/src", "tests/data"]
+  },
+  {
+    "id": "PPL-001",
+    "title": "Profiles, consent records, portraits and experience",
+    "area": "people",
+    "status": "open",
+    "dependsOn": ["DATA-003", "BE-001"],
+    "handbook": "docs/engine/people-and-companies.md",
+    "goal": "Give every person a lifelong, consent-driven public profile with experience, and a recorded consent for every public mention.",
+    "read": ["docs/data/model.md", "docs/data/retention-and-privacy.md", "docs/engine/people-and-companies.md"],
+    "steps": [
+      "Add person_profile, person_preference, consent_record, media_licence, portrait, experience_entry, follow, bookmark and reading_progress (portfolio entries and credentials are delivered by REP-001).",
+      "Implement consent withdrawal that unpublishes dependent projections in the same transaction and emits tombstones.",
+      "Expose public profile reads only through allowlisted serializers; extend forbidden-field tests.",
+      "Connect the «Моя страница» public profile editor and the people directory to the API."
+    ],
+    "acceptance": [
+      "A person mentioned or listed without consent never appears publicly.",
+      "A portrait is shown only with both consent and a licence record.",
+      "Reading progress and bookmarks are never visible to employers or colleagues.",
+      "Experience entries belong to the person and survive employment changes."
+    ],
+    "paths": ["apps/api/src/modules/identity", "tests/profiles"]
+  },
+  {
+    "id": "CLM-001",
+    "title": "Company identifiers, registrations, licences, claims and per-hub verification badges",
+    "area": "trust",
+    "status": "open",
+    "dependsOn": ["DATA-003", "HUB-003"],
+    "handbook": "docs/engine/people-and-companies.md",
+    "goal": "Model sourced, claimed and verified honestly: country-pack identifier kinds, state-level registrations and contractor licences, claims through hub recipes and per-hub badges.",
+    "read": ["docs/data/model.md", "docs/engine/hub-administration.md", "docs/engine/country-specifics.md"],
+    "steps": [
+      "Add company_profile, company_identifier (expand from legal_identifiers jsonb, then contract), company_registration, tax_registration, company_branch, company_claim and company_verification; contractor licences are professional_credential rows of kind licence (REP-001).",
+      "Derive company.claim_status from the strongest active company_verification in the same transaction.",
+      "Implement claim submission and reviewer decisions against recipe versions; decider differs from claimant.",
+      "Use the US as the worked example (EIN, Secretary of State registrations, state contractor licences) with synthetic fixtures only."
+    ],
+    "acceptance": [
+      "An identifier value never upgrades a badge by itself.",
+      "Badges show categories and dates, never documents.",
+      "Verification expires and re-checks per recipe; revocation updates every projection.",
+      "No real company data in fixtures."
+    ],
+    "paths": ["apps/api/src/modules/verification/claims", "tests/claims"]
+  },
+  {
+    "id": "PRJ-001",
+    "title": "Project plans: versions, items, dependencies, changes, sharing with invited experts, permits and diaries",
+    "area": "projects",
+    "status": "open",
+    "dependsOn": ["BE-001", "DATA-003"],
+    "handbook": "docs/engine/projects.md",
+    "goal": "Turn a project into a plan the owner approves (phases, tasks, trades, materials, permits, budget ranges, timeline, risks, decisions) and keep every version and change so nobody is blamed retroactively.",
+    "read": ["docs/data/model.md", "docs/data/lifecycles.md", "docs/engine/projects.md", "docs/engine/agents.md"],
+    "steps": [
+      "Add plan, plan_version (frozen once proposed), plan_item, plan_dependency, plan_item_state, plan_change, plan_share, permit_record, project_diary_entry, project_location and project_public_participant.",
+      "Let the agent draft plan versions only as proposals under the owner's mandate; the owner approves.",
+      "Implement plan_share as participation rows with the invited-plan serializer; extend forbidden-field tests (budgets, notes, other invitees, address before booking).",
+      "Validate dependency graphs as acyclic; expose plan changes to EXE-001 for timing attribution."
+    ],
+    "acceptance": [
+      "Approved plan versions are immutable; original and revised versions are both retained.",
+      "An invited expert sees exactly the shared items and fields and nothing else; uninvited parties get not found.",
+      "A client-caused change is attributed and excluded from supplier timing.",
+      "Estimates are shown as ranges and never as quotes."
+    ],
+    "paths": ["apps/api/src/modules/projects/planning", "tests/projects-planning"]
+  },
+  {
+    "id": "COMMS-001",
+    "title": "Context threads, messages, channel grants, notifications, templates and deliveries",
+    "area": "communications",
+    "status": "open",
+    "dependsOn": ["BE-001", "DATA-003"],
+    "handbook": "docs/engine/communications.md",
+    "goal": "Conversations that belong to the work, notifications that never leak, and versioned templates in every hub language.",
+    "read": ["docs/data/model.md", "docs/engine/communications.md", "docs/adr/004-delivery-and-providers.md"],
+    "steps": [
+      "Add context_thread, message, message_link, reply_token, channel_grant, send_receipt, notification, notification_preference, message_template, template_version, delivery, sender_identity and suppression_entry.",
+      "Implement idempotent inbound intake keyed by provider message id; inbound content flagged untrusted.",
+      "Block template activation unless every hub language exists and the activator differs from the drafter.",
+      "Use fake mail and messenger adapters only."
+    ],
+    "acceptance": [
+      "No thread exists without a context; non-participants get not found.",
+      "Duplicate inbound events never create duplicate messages.",
+      "A notification never carries a value the recipient may not read.",
+      "Suppressed addresses never receive non-transactional mail."
+    ],
+    "paths": ["apps/api/src/modules/channels", "tests/channels"]
+  },
+  {
+    "id": "HUB-004",
+    "title": "Information sources, datasets, pipelines, schedules, runs and import batches",
+    "area": "hubs",
+    "status": "open",
+    "dependsOn": ["HUB-001", "DATA-003"],
+    "handbook": "docs/engine/hub-administration.md",
+    "goal": "Let a hub connect licensed sources through versioned pipelines whose runs stage reviewable import batches and never publish on their own.",
+    "read": ["docs/data/model.md", "docs/data/lifecycles.md", "docs/data/retention-and-privacy.md", "docs/engine/hub-administration.md"],
+    "steps": [
+      "Add source (including website_crawl sources), crawl_policy, dataset, pipeline, pipeline_version, pipeline_schedule, pipeline_run, import_batch, source_item, sourced_record_field and record_link_proposal.",
+      "Record licence flags and legal basis per source; block model egress and syndication for display-only sources.",
+      "Run pipelines as leased jobs with fake adapters; runs stage batches, activation is a separate decision.",
+      "Implement takedown: deactivate records, emit retrieval and federation tombstones, audit the reason."
+    ],
+    "acceptance": [
+      "No imported item is published without a person's decision.",
+      "A display-only source never reaches a model provider or a peer.",
+      "Matches produce link proposals, never merges.",
+      "Personal-data datasets cannot activate without a recorded legal basis and retention class."
+    ],
+    "paths": ["apps/api/src/modules/hubs/sources", "apps/worker/src/pipelines", "tests/sources"]
+  },
+  {
+    "id": "AGT-002",
+    "title": "External agent clients, access tokens, agent modules and metering",
+    "area": "assistant",
+    "status": "open",
+    "dependsOn": ["AST-001", "BILL-001"],
+    "handbook": "docs/engine/agents.md",
+    "goal": "Let a person connect an external agent client as their own agent surface under their mandates, and let hubs enable and meter agent modules without widening authority.",
+    "read": ["docs/data/model.md", "docs/engine/agents.md", "docs/engine/billing.md"],
+    "steps": [
+      "Add external_agent_client, agent_access_token (hash only), agent_module, agent_module_version and agent_module_enablement.",
+      "Bind token effects to named mandates; label every action with the client.",
+      "Declare meters per module version and record usage_event rows idempotently against entitlements.",
+      "Screen client publishers before approval; revoke tokens with mandates and memberships."
+    ],
+    "acceptance": [
+      "A token can never act outside its mandates or read another person's data.",
+      "Enabling a module never widens a mandate or a budget.",
+      "There is still one agent surface per person; connected clients appear as connections, not as a list of agents.",
+      "Metering never influences ranking, matching or reputation."
+    ],
+    "paths": ["apps/api/src/modules/assistant/clients", "tests/assistant-clients"]
+  },
+  {
+    "id": "BILL-002",
+    "title": "Invoices, tax determinations, payments, refunds and marketplace payouts",
+    "area": "billing",
+    "status": "open",
+    "dependsOn": ["BILL-001", "CLM-001"],
+    "handbook": "docs/engine/billing.md",
+    "goal": "Charge for tickets, courses and platform services with reproducible per-jurisdiction tax and pay organizers and authors, through fake adapters.",
+    "read": ["docs/data/model.md", "docs/engine/billing.md", "docs/engine/country-specifics.md"],
+    "steps": [
+      "Add invoice, invoice_line, tax_determination, payment, refund, payout_account, payout and credit_grant.",
+      "Determine tax from country pack rules or a tax adapter and store the rule reference and jurisdiction (US sales tax per state, county and city as the worked example).",
+      "Reconcile unknown payment outcomes; never charge twice; balanced ledger entries for every money movement.",
+      "Screen payees before the first payout."
+    ],
+    "acceptance": [
+      "Every tax amount names its jurisdiction and rule source; no hard-coded rate.",
+      "A payment timeout never produces a second charge.",
+      "Card and bank data never enter the database.",
+      "Payout fees come from a published price version."
+    ],
+    "paths": ["apps/api/src/modules/billing/payments", "tests/billing-payments"]
+  },
+  {
+    "id": "PRV-001",
+    "title": "Privacy operations: requests, exports, erasure ledger, legal holds, retention and state privacy rights",
+    "area": "privacy",
+    "status": "open",
+    "dependsOn": ["DATA-002", "ADM-001", "HUB-001"],
+    "handbook": "docs/engine/trust-safety-privacy.md",
+    "goal": "Answer access, deletion, correction and opt-out requests within country-pack deadlines, propagate erasure everywhere and keep lawful evidence.",
+    "read": ["docs/data/retention-and-privacy.md", "docs/data/model.md", "docs/operations/runbook.md"],
+    "steps": [
+      "Add privacy_request, privacy_preference, privacy_export, erasure_ledger (outside the restorable snapshot), legal_hold, retention_policy and data_broker_registration.",
+      "Compose exports from module exporters through projection serializers.",
+      "Execute erasure with two people: delete, redact or pseudonymize per module; emit retrieval and federation tombstones; replay the ledger after restore.",
+      "Honour opt-out of sale or sharing, limit sensitive use and Global Privacy Control signals as data (US worked example)."
+    ],
+    "acceptance": [
+      "An export never contains a counterparty's private fields.",
+      "A restore drill with erased-subject fixtures serves nothing erased.",
+      "Legal holds suspend deletion with an audited reason.",
+      "Deadlines and retention bounds come from the country pack, never from code."
+    ],
+    "paths": ["apps/api/src/modules/platform-admin/privacy", "tests/privacy"]
+  },
+  {
+    "id": "CONS-001",
+    "title": "Consultations, scoped tasks and mentoring from plan items",
+    "area": "matching",
+    "status": "open",
+    "dependsOn": ["PRJ-001", "COM-001", "BILL-002"],
+    "handbook": "docs/engine/partners-and-matching.md",
+    "goal": "Turn plan items into consultation requests and task requests to platform participants, with immutable offers, bookings, deliverables, assignments and payments, automated by both sides' agents within mandates.",
+    "read": ["docs/data/model.md", "docs/data/lifecycles.md", "docs/engine/partners-and-matching.md", "docs/engine/agents.md"],
+    "steps": [
+      "Add consultation_offer, consultation_price_version, availability_window, consultation_request, consultation_booking, consultation_session, consultation_deliverable, task_request, task_request_version, task_offer, task_offer_private, task_assignment and mentoring_relationship.",
+      "Propose the agreement terms_kind contract extension through an ADR and implement acceptance through transactions.",
+      "Serialize bookings against availability capacity; pay through billing adapters with fakes; reconcile unknown outcomes.",
+      "Allow agents to request, offer and schedule only under mandates; label agent actions."
+    ],
+    "acceptance": [
+      "Sent task offers and booked consultation terms are immutable and digest-bound.",
+      "Competing offerors never see each other's offers; budget ceilings never reach experts.",
+      "A site address is revealed only after a site-visit booking or task assignment.",
+      "Reviews of consultations cite the accepted deliverable."
+    ],
+    "paths": ["apps/api/src/modules/matching/consultations", "apps/api/src/modules/matching/tasks", "tests/consultations"]
+  },
+  {
+    "id": "KNOW-001",
+    "title": "Knowledge sharing from completed projects: diaries, lessons, checklists, templates and Q&A",
+    "area": "content-magazine",
+    "status": "open",
+    "dependsOn": ["CNT-001", "PRJ-001", "PPL-001"],
+    "handbook": "docs/engine/publishing.md",
+    "goal": "With consent, turn completed projects into shared knowledge that others can learn from, with provenance and redaction review.",
+    "read": ["docs/data/model.md", "docs/data/retention-and-privacy.md", "docs/engine/publishing.md"],
+    "steps": [
+      "Add knowledge_item, knowledge_consent and template_derivation; add publication formats diary, lesson, checklist and template.",
+      "Require the project owner's consent and each named participant's consent or anonymization before publication.",
+      "Strip budgets, prices, addresses and counterparties' private data through a redaction review step.",
+      "Derive project templates from consented knowledge items after editorial review."
+    ],
+    "acceptance": [
+      "No knowledge item publishes without the project owner's consent.",
+      "Consent withdrawal unpublishes or re-anonymizes the item and emits tombstones.",
+      "No private value of the source project appears in any knowledge projection."
+    ],
+    "paths": ["apps/api/src/modules/content/knowledge", "tests/knowledge"]
+  },
+  {
+    "id": "REP-001",
+    "title": "Reputation-building tools: credentials, portfolio, confirmations, contributions, timeliness, passport and verifiable credentials",
+    "area": "execution-trust",
+    "status": "open",
+    "dependsOn": ["EXE-001", "PPL-001", "HUB-003"],
+    "handbook": "docs/engine/execution-and-reputation.md",
+    "goal": "Give every participant tools to build and confirm their reputation from evidence, and a portable passport of verifiable credentials that works across hubs, never for sale.",
+    "read": ["docs/data/model.md", "docs/data/lifecycles.md", "docs/engine/execution-and-reputation.md", "docs/engine/federation.md"],
+    "steps": [
+      "Add professional_credential (licences, insurance, bonds, certificates, training) for people and companies, portfolio_entry, confirmation_request, confirmation_response, contribution_record, timeliness_observation, reputation_passport, issued_credential and credential_status_list.",
+      "Create confirmations as assertion confirmations, never as standalone scores; derive contributions and timeliness from canonical records only.",
+      "Issue W3C verifiable credentials signed by the node key with a status list for revocation; verify credentials from peer nodes.",
+      "Extend appeals to confirmations, timeliness observations and issued credentials."
+    ],
+    "acceptance": [
+      "Payment, plans and sponsorship never add, hide or reorder passport contents or credentials (test).",
+      "Confirmations exist only for contexts both parties took part in.",
+      "Every timeliness observation is visible to its subject and appealable; client-caused delay is excluded.",
+      "A revoked credential fails verification on any node."
+    ],
+    "paths": ["apps/api/src/modules/trust/passport", "tests/trust-passport"]
+  },
+  {
+    "id": "REC-001",
+    "title": "Manufacturer and supplier sources, product entries, learning resources and plan-step recommendations",
+    "area": "matching",
+    "status": "open",
+    "dependsOn": ["HUB-004", "PRJ-001", "RAG-301"],
+    "handbook": "docs/engine/partners-and-matching.md",
+    "goal": "Within each source's licence and robots rules, build sourced manufacturer and supplier pages with products, guides, training and events, and recommend for every plan step the materials, reading, training, events, consultants and contacts that fit, with explanations and never for pay.",
+    "read": ["docs/data/model.md", "docs/data/retention-and-privacy.md", "docs/engine/hub-administration.md", "docs/engine/partners-and-matching.md"],
+    "steps": [
+      "Add product_entry, learning_resource, recommendation_method_version, recommendation_set, recommendation and sponsored_placement (crawl_policy comes from HUB-004, the plan-step taxonomy from DATA-003).",
+      "Crawl only through website_crawl sources whose crawl policy allows it; record per-field provenance; keep sourced labels until a claim.",
+      "Match plan items to targets through the shared plan-step taxonomy and governed retrieval; explain every recommendation.",
+      "Show sponsored placements, where a hub allows them, only in a separate labelled slot."
+    ],
+    "acceptance": [
+      "Recommendation ranks are identical with and without sponsored placements and entitlements (test).",
+      "A robots or terms change pauses the pipeline until reviewed.",
+      "Sourced product entries cannot be quoted or ordered until the company publishes an offering.",
+      "Every recommendation names the matched step terms and the unknowns."
+    ],
+    "paths": ["apps/api/src/modules/matching/recommendations", "apps/worker/src/crawl", "tests/recommendations"]
+  }
+]
 ```
-
-The two ownership arrows mean XOR, not two simultaneous owners. Party participation and field policy qualify every relationship. ER notation is a conceptual map, not a complete SQL schema or authorization proof.
-
-## Required database invariants
-
-1. Unique active employer membership; XOR project owner FKs; historical membership cannot be overwritten to another person.
-2. Published RFQ versions are immutable; each invitation and quote version references exact `rfq_version_id`. Amendment from quantity 10 in v1 to 100 in v2 sets `stale_reason` on v1 responses; compare/accept only against explicit matched scope or an explicitly revalidated new quote, never auto-upgrade. Unique `(rfq_id, version)` and `(quote_id, version)`; `reject_update_when_frozen` trigger on `payload`, `digest`, `rfq_version_id`, `rfq_version_digest`, `valid_until`, `sent_at`, `sent_by` (quote) and `payload`, `digest`, `published_at`, `published_by` (RFQ) when status is not `draft`; `quote_version.valid_until` equals `payload.validity.until`; a quote may be sent only against the published current RFQ version; acceptance references exact quote version/digest (`trustwork-digest-1`, ADR 003 amendment). Amendments append versions/events. A draft may be edited with revision check.
-3. Atomic budget reserve under row lock or serializable transaction, with retry on serialization failure; all ledger changes balanced per currency and reservation kind. Concurrent valid requests cannot exceed remaining balance.
-4. Unique idempotency `(principal,action,context,key)` with payload digest (`idempotency_record`); unique inbound `(provider,account,event_id)`; unique external-effect correlation. Never consider an unknown timeout a failed effect.
-5. Public field allowlist; row security, if enabled, tested under runtime role distinct from schema owner/superuser/BYPASSRLS. Use FORCE RLS where appropriate, inspect security-definer functions and views. RLS does not solve field policy or consent.
-6. Append-only evidence/confirmation/dispute/supersession chain with source and observation times. Retention/erasure design reconciles privacy and lawful evidence preservation; no claim that hashes anonymize personal data.
-7. Attachment access through authorized parent and own classification; signed URL TTL bounded; move/copy preserves owner/classification and is audited.
-8. All material approvals bind current scope and revision; revoke invalidates queued authority. Membership end updates authorization version and invalidates relevant caches/runs.
-
-## Implementation and migration ownership
-
-The data integrator exclusively owns `packages/data/migrations` and migration numbering/lockfile impact. Use timestamp-prefixed immutable SQL files with checksum ledger and one transaction per safe migration; use explicit nontransactional exceptions for operations such as concurrent indexes. Forward-only expand/migrate/contract with old/new app compatibility; destructive changes require separate reviewed migration and backup/restore evidence. Never edit an applied migration or use automatic ORM schema synchronization. Dry-run on disposable DB, test from empty and previous schema, test actual runtime role, record rollback/forward recovery. DATA-001 delivered the first six migrations (identity/access, hardening) with a checksum ledger; DATA-002 adds administration tables; COM-001 attaches `reject_update_when_frozen` to commercial versions.
-
-[Knowledge schema](knowledge-model.md) defines source versions, audience-separated projections, chunks, generation-specific embeddings, source dependencies and tombstones. Canonical records remain authoritative; no retrieval migration has been applied.
