@@ -7055,7 +7055,7 @@
       "id": "PRC-000",
       "title": "Freeze the procurement and supply contracts",
       "area": "integrator-contracts",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CTRY-002"
       ],
