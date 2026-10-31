@@ -6,7 +6,9 @@
       "anonymous": "Invitado",
       "reader": "Lector y autor sin empresa",
       "mixed": "Empleado de una empresa: compra y vende",
-      "owner": "Propietario de un proyecto personal"
+      "owner": "Propietario de un proyecto personal",
+      "seller": "Propietario de un negocio: vende obras y servicios",
+      "buyer": "Comprador: compra para proyectos"
     },
     "noEmailSent": "Demostración: no se envían correos y no se crea ninguna cuenta.",
     "noAccountCreated": "Demostración: no se crea ninguna cuenta ni se inicia sesión.",

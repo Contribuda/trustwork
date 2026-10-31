@@ -1187,7 +1187,7 @@
       "id": "DEMO-US",
       "title": "United States demo hub: defaults and synthetic demo data",
       "area": "international",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "INTL-US",
         "CFG-001",

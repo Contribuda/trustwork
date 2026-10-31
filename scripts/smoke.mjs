@@ -38,4 +38,24 @@ await smoke(['node_modules/next/dist/bin/next', 'start', 'apps/web', '--hostname
   assert.equal(ru.status, 200);
   const ruHtml = await ru.text(); assert.match(ruHtml, /lang="ru"/); assert.match(ruHtml, /<title>(Строй Репутация|Trustwork)<\/title>/);
 });
-console.log('API health and the localized web home page (English default, a chosen country in its language, ru by cookie) passed loopback smoke checks; owned processes stopped.');
+// The demo deployment (DEMO-US): with demo mode on, the configured default country selects the synthetic dataset. The
+// hosted preview's US opens the San Diego hub in English with USD and month-day dates; a UZ default keeps the example
+// hub, and a visitor who picks the United States there still gets the US hub.
+const text = async (port, path, cookie) => {
+  const response = await fetch(`http://127.0.0.1:${port}${path}`, { headers: cookie ? { cookie } : {}, signal: AbortSignal.timeout(10000) });
+  assert.equal(response.status, 200, `${path} (${cookie ?? 'no cookie'})`);
+  return response.text();
+};
+const usPort = await availablePort();
+await smoke(['node_modules/next/dist/bin/next', 'start', 'apps/web', '--hostname', '127.0.0.1', '--port', String(usPort)], usPort, '/', async (r) => {
+  const html = await r.text(); assert.match(html, /lang="en"/); assert.match(html, /Demo: synthetic data/); assert.match(html, /How to compare three bids for a backyard ADU/);
+  assert.match(await text(usPort, '/companies'), /Sample Coast Builders/);
+  const event = await text(usPort, '/events/building-better-adus-forum-2026'); assert.match(event, /\$95\.00/); assert.match(event, /November 14, 2026/);
+  assert.match(await text(usPort, '/companies', 'trustwork.country=UZ; trustwork.locale=en'), /Fasad-Namuna/);
+}, { TRUSTWORK_DEMO_MODE: '1', TRUSTWORK_DEFAULT_COUNTRY: 'US' });
+const uzPort = await availablePort();
+await smoke(['node_modules/next/dist/bin/next', 'start', 'apps/web', '--hostname', '127.0.0.1', '--port', String(uzPort)], uzPort, '/companies', async (r) => {
+  const html = await r.text(); assert.match(html, /Demo: synthetic data/); assert.doesNotMatch(html, /Sample Coast Builders/);
+  assert.match(await text(uzPort, '/companies', 'trustwork.country=US; trustwork.locale=en'), /Sample Coast Builders/);
+}, { TRUSTWORK_DEMO_MODE: '1', TRUSTWORK_DEFAULT_COUNTRY: 'UZ' });
+console.log('API health, the localized web home page (English default, a chosen country in its language, ru by cookie) and the demo hub per configured country (US: San Diego in English with USD; UZ: the example hub) passed loopback smoke checks; owned processes stopped.');

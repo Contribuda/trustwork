@@ -233,7 +233,9 @@
     "sessions/1/device": "Phone browser",
     "sessions/1/location": "Samarkand (approximate)",
     "sessions/2/device": "Desktop browser",
-    "sessions/2/location": "Bukhara (approximate)"
+    "sessions/2/location": "Bukhara (approximate)",
+    "leads/3/buyer": "Residential developer (example)",
+    "leads/3/request": "Balcony glazing, 120 windows"
   },
   "issues": {
     "issues/0/corrections/0/correction/reason": "Corrected the lower temperature limit for adhesives in the article “Façades in winter”.",

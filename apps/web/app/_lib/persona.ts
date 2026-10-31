@@ -12,7 +12,7 @@
  * parameter only when it differs from the process default.
  */
 
-export const PERSONAS = ['anonymous', 'reader', 'mixed', 'owner'] as const;
+export const PERSONAS = ['anonymous', 'reader', 'mixed', 'owner', 'seller', 'buyer'] as const;
 export type Persona = (typeof PERSONAS)[number];
 
 export const SCENARIOS = ['default', 'error', 'offline', 'loading'] as const;

@@ -112,7 +112,7 @@ The project's own reference and demo deployment is a **United States hub whose h
 | Public URLs | English pages without a prefix; other languages under `/<lang>/` with `hreflang` alternates and a canonical URL; no country in public URLs ([Countries and languages](localization.md#public-urls-decided)) | Decided (decision 27); implemented by WEB-005 |
 | Data and sign-ups | **Demo-only with synthetic, labelled data** (decision 12). Real sign-ups open only after the platform release candidate QA-002 passes, counsel has reviewed the US privacy and agreement questions, and the owner switches them on; the switch is a hub setting, not a code change | Decided (decision 28) |
 
-Today no hub, including the reference hub, accepts real users; the demo web app still runs on synthetic data set in Uzbekistan until DEMO-US replaces it ([status](status.md)).
+Today no hub, including the reference hub, accepts real users; the demo web app runs on synthetic, labelled data: the San Diego dataset for visitors in the United States and, on a deployment that defaults to the United States, for every country without its own dataset; the original Uzbekistan dataset for the Uzbekistan, Georgia, Armenia and Azerbaijan examples (DEMO-US, `apps/web/fixtures/datasets.ts`; [status](status.md)).
 
 ## Help with launching
 

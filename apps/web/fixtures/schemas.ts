@@ -430,7 +430,7 @@ const LeadSource = z.enum(['invitation', 'openNeed', 'direct', 'email']);
 export const WorkspaceFileSchema = z.strictObject({
   ...Envelope,
   personas: z.record(
-    z.enum(['reader', 'mixed', 'owner']),
+    z.enum(['reader', 'mixed', 'owner', 'seller', 'buyer']),
     z.strictObject({
       personId: IdSchema,
       companyId: IdSchema.nullable(),

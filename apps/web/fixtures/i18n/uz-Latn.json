@@ -477,7 +477,9 @@
     "sessions/1/device": "Telefondagi brauzer",
     "sessions/1/location": "Samarqand (taxminan)",
     "sessions/2/device": "Kompyuterdagi brauzer",
-    "sessions/2/location": "Buxoro (taxminan)"
+    "sessions/2/location": "Buxoro (taxminan)",
+    "leads/3/buyer": "Turar-joy quruvchisi (namuna)",
+    "leads/3/request": "Lodjiyalarni oynalash, 120 ta deraza"
   },
   "people": {
     "people/0/experience": "Osma fasadli obyektlarda sakkiz yil: quyi tizim tanlashdan qabul qilishgacha. Tavsifni mutaxassis oʻzi tuzgan.",

@@ -1,0 +1,542 @@
+{
+  "synthetic": true,
+  "description": "Synthetic people of the United States demo hub (San Diego County). Four demo personas: a general contractor's project manager (Dana Sampleton), a sole-proprietor tile subcontractor (Luis Ejemplo), a homeowner building a backyard home (Morgan Demoworth) and a buyer at a property owner (Priya Mockford); plus an independent author, an architect, an engineer, a superintendent, an estimator with a private profile and a crew lead. Names are invented and deliberately unusual; licence numbers start with DEMO; e-mail domains are example.invalid. No portrait depicts a real person and no profile is verified by the platform.",
+  "people": [
+    {
+      "slug": "dana-sampleton",
+      "person": {
+        "id": "us-person-dana",
+        "displayName": "Dana Sampleton",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Project manager for multifamily and school work", "expertise": ["multifamily construction", "trade buyout", "schedules"] },
+        "emailBindings": [{ "email": "dana@example.invalid", "verifiedAt": "2026-08-18T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": true, "selling": true, "industryParticipation": true },
+        "revision": 3,
+        "createdAt": "2026-08-18T16:00:00Z"
+      },
+      "roleLine": "Project manager, Sample Coast Builders",
+      "field": "management",
+      "region": "US-CA",
+      "topics": ["projects", "markets"],
+      "showEmployer": true,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Twelve years of multifamily and school projects: buyout, schedules and owner meetings. Written by the person herself.",
+      "publicationIds": ["us-pub-art-5"],
+      "projectIds": ["us-project-commons", "us-project-school"],
+      "profile": {
+        "about": "I run projects for a general contractor: from the buyout of trade packages to the last punch-list item. Right now that means a four-story mixed-use building and a summer-break school modernization.\n\nI publish our plans with their open packages, so trades can see what we need and when. I answer every quote, including the ones we do not accept.",
+        "since": 2014,
+        "geography": ["San Diego", "Chula Vista"],
+        "signals": [{ "kind": "hiring", "note": "Assistant superintendent and tile, glazing and landscape trades", "until": null }],
+        "career": [
+          {
+            "id": "us-car-dana-1",
+            "company": "Sample Coast Builders",
+            "companyId": "us-company-samplecoast",
+            "role": "Project manager",
+            "from": 2020,
+            "to": null,
+            "summary": "Multifamily buildings up to five stories, school modernizations."
+          },
+          {
+            "id": "us-car-dana-2",
+            "company": "Commercial builder (example)",
+            "companyId": null,
+            "role": "Project engineer, then assistant project manager",
+            "from": 2014,
+            "to": 2020,
+            "summary": "Submittals, requests for information, then trade buyout."
+          }
+        ],
+        "education": [{ "id": "us-edu-dana-1", "school": "State university (example)", "degree": "B.S. in Construction Management", "year": 2014 }],
+        "certificates": [
+          {
+            "id": "us-cert-dana-1",
+            "kind": "education",
+            "name": "Construction site safety course, 30 hours (example)",
+            "issuer": "Training provider (example)",
+            "number": null,
+            "validUntil": null,
+            "evidence": "asserted"
+          }
+        ],
+        "services": [],
+        "portfolio": [
+          {
+            "id": "us-pf-dana-1",
+            "title": "Mesa Example Commons: mixed-use building",
+            "kind": "Project management",
+            "year": 2027,
+            "description": "Four stories, 48 apartments over shops; wood frame over a concrete podium.",
+            "cover": "house-scaffolding",
+            "projectId": "us-project-commons"
+          },
+          {
+            "id": "us-pf-dana-2",
+            "title": "Example Valley school modernization",
+            "kind": "Project management",
+            "year": 2026,
+            "description": "Fourteen classrooms modernized in one summer break.",
+            "cover": "site-wall-measuring",
+            "projectId": "us-project-school"
+          }
+        ],
+        "contacts": { "email": null, "phone": null, "telegram": null },
+        "faq": [{ "q": "Can I send you a quote without an invitation?", "a": "Yes, answer one of the open requests on our project pages. Invitations go to trades we have worked with before." }]
+      }
+    },
+    {
+      "slug": "luis-ejemplo",
+      "person": {
+        "id": "us-person-luis",
+        "displayName": "Luis Ejemplo",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Tile and stone setter, sole proprietor", "expertise": ["tile setting", "shower waterproofing", "stone counters"] },
+        "emailBindings": [{ "email": "luis@example.invalid", "verifiedAt": "2026-09-08T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": false, "selling": true, "industryParticipation": true },
+        "revision": 2,
+        "createdAt": "2026-09-08T16:00:00Z"
+      },
+      "roleLine": "Tile and stone setter, Ejemplo Tile & Stone",
+      "field": "construction",
+      "region": "US-CA",
+      "topics": ["materials", "people"],
+      "showEmployer": true,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Eleven years of tile and stone, the last six on my own. I describe my work myself.",
+      "publicationIds": ["us-pub-art-2"],
+      "projectIds": ["us-project-commons"],
+      "profile": {
+        "about": "I set tile and stone in bathrooms, kitchens and entries, and I waterproof every shower with a flood test before the first tile. I work alone, with a helper on larger jobs, as a subcontractor for builders and directly for homeowners.\n\nI write about what goes wrong under the tile: slabs that are not flat, missing slopes, membranes without a test.",
+        "since": 2015,
+        "geography": ["San Diego", "Chula Vista", "National City"],
+        "signals": [{ "kind": "openToProjects", "note": "Apartment bathrooms as a subcontractor, homes directly", "until": null }],
+        "career": [
+          {
+            "id": "us-car-luis-1",
+            "company": "Ejemplo Tile & Stone",
+            "companyId": "us-company-ejemplo",
+            "role": "Owner and tile setter",
+            "from": 2020,
+            "to": null,
+            "summary": "Bathrooms, kitchens, shower waterproofing."
+          },
+          { "id": "us-car-luis-2", "company": "Flooring contractor (example)", "companyId": null, "role": "Tile setter", "from": 2015, "to": 2020, "summary": "Apartment and hotel bathrooms." }
+        ],
+        "education": [],
+        "certificates": [
+          {
+            "id": "us-cert-luis-1",
+            "kind": "education",
+            "name": "Waterproofing membrane installer course (example)",
+            "issuer": "Trade training center (example)",
+            "number": null,
+            "validUntil": null,
+            "evidence": "asserted"
+          }
+        ],
+        "services": [
+          {
+            "id": "us-svc-luis-1",
+            "name": "Bathroom tile, floor to ceiling",
+            "description": "Substrate check, waterproofing with flood test, setting and grout.",
+            "format": "onsite",
+            "unit": "per bathroom"
+          },
+          { "id": "us-svc-luis-2", "name": "Second opinion on a tile quote", "description": "I read your quote and photos and tell you what is missing.", "format": "remote", "unit": "per session" }
+        ],
+        "portfolio": [
+          {
+            "id": "us-pf-luis-1",
+            "title": "Walk-in shower with a linear drain",
+            "kind": "Tile and waterproofing",
+            "year": 2026,
+            "description": "Sloped mortar bed, membrane, flood test, large-format porcelain.",
+            "cover": "wall-layers",
+            "projectId": null
+          },
+          {
+            "id": "us-pf-luis-2",
+            "title": "Kitchen backsplash in handmade tile",
+            "kind": "Tile setting",
+            "year": 2025,
+            "description": "Irregular tile, narrow joints, matched outlets.",
+            "cover": "terrazzo",
+            "projectId": null
+          }
+        ],
+        "contacts": { "email": "luis@example.invalid", "phone": null, "telegram": null },
+        "faq": [{ "q": "Do you work on weekends?", "a": "Saturdays until 3 p.m. for occupied homes, so the bathroom is usable on Sunday." }]
+      }
+    },
+    {
+      "slug": "morgan-demoworth",
+      "person": {
+        "id": "us-person-morgan",
+        "displayName": "Morgan Demoworth",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Homeowner building a backyard home", "expertise": ["ADU planning"] },
+        "emailBindings": [{ "email": "morgan@example.invalid", "verifiedAt": "2026-09-01T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": true, "selling": false, "industryParticipation": false },
+        "revision": 2,
+        "createdAt": "2026-09-01T16:00:00Z"
+      },
+      "roleLine": "Homeowner",
+      "field": "client",
+      "region": "US-CA",
+      "topics": ["projects", "regulation"],
+      "showEmployer": false,
+      "portraitConsent": false,
+      "portrait": null,
+      "experience": "First building project: a detached ADU in the back yard for my parents.",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": {
+        "about": "I am building a small detached home in my back yard so my parents can live close by. My assistant turned the idea into a plan with phases, permits and decision points; I am now comparing builders.",
+        "since": null,
+        "geography": ["Chula Vista"],
+        "signals": [],
+        "career": [],
+        "education": [],
+        "certificates": [],
+        "services": [],
+        "portfolio": [],
+        "contacts": null,
+        "faq": []
+      }
+    },
+    {
+      "slug": "priya-mockford",
+      "person": {
+        "id": "us-person-priya",
+        "displayName": "Priya Mockford",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Procurement manager at a property owner", "expertise": ["owner procurement", "bid leveling"] },
+        "emailBindings": [{ "email": "priya@example.invalid", "verifiedAt": "2026-08-25T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": true, "selling": false, "industryParticipation": true },
+        "revision": 2,
+        "createdAt": "2026-08-25T16:00:00Z"
+      },
+      "roleLine": "Procurement manager, Mesa Example Properties",
+      "field": "procurement",
+      "region": "US-CA",
+      "topics": ["markets", "projects"],
+      "showEmployer": true,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Buys owner packages for mixed-use buildings: storefronts, landscaping, inspections. Profile text by the person.",
+      "publicationIds": [],
+      "projectIds": ["us-project-commons"],
+      "profile": {
+        "about": "I buy what the owner buys directly on our buildings: storefront glazing, landscaping, owner's inspections and furnishings. Every request I publish says how I will choose, and I tell every bidder the result.",
+        "since": 2017,
+        "geography": ["San Diego"],
+        "signals": [],
+        "career": [
+          {
+            "id": "us-car-priya-1",
+            "company": "Mesa Example Properties",
+            "companyId": "us-company-mesa",
+            "role": "Procurement manager",
+            "from": 2021,
+            "to": null,
+            "summary": "Owner packages for mixed-use buildings."
+          },
+          { "id": "us-car-priya-2", "company": "Hospitality group (example)", "companyId": null, "role": "Purchasing coordinator", "from": 2017, "to": 2021, "summary": null }
+        ],
+        "education": [{ "id": "us-edu-priya-1", "school": "State university (example)", "degree": "B.A. in Economics", "year": 2016 }],
+        "certificates": [],
+        "services": [],
+        "portfolio": [],
+        "contacts": { "email": null, "phone": null, "telegram": null },
+        "faq": [{ "q": "Do you accept alternates?", "a": "Yes, as a separate line with its own price. The base bid has to match the request." }]
+      }
+    },
+    {
+      "slug": "jordan-sketchley",
+      "person": {
+        "id": "us-person-jordan",
+        "displayName": "Jordan Sketchley",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Retired building inspector, writes about inspections", "expertise": ["inspections", "permit sets"] },
+        "emailBindings": [{ "email": "jordan@example.invalid", "verifiedAt": "2026-09-03T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": false, "selling": false, "industryParticipation": true },
+        "revision": 1,
+        "createdAt": "2026-09-03T16:00:00Z"
+      },
+      "roleLine": "Retired building inspector, independent author",
+      "field": "control",
+      "region": "US-CA",
+      "topics": ["regulation", "people"],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Twenty-five years of field inspections, now writing and mentoring. Self-described.",
+      "publicationIds": ["us-pub-art-6", "us-pub-post-1"],
+      "projectIds": [],
+      "profile": {
+        "about": "I inspected homes and small commercial buildings for twenty-five years. Now I write about what inspectors look for and why, and I mentor people preparing for their first inspections.",
+        "since": 1999,
+        "geography": ["San Diego County"],
+        "signals": [{ "kind": "consulting", "note": "Mentoring before first inspections", "until": null }],
+        "career": [
+          {
+            "id": "us-car-jordan-1",
+            "company": "City building department (example)",
+            "companyId": null,
+            "role": "Building inspector",
+            "from": 1999,
+            "to": 2024,
+            "summary": "Residential and small commercial inspections."
+          }
+        ],
+        "education": [],
+        "certificates": [
+          {
+            "id": "us-cert-jordan-1",
+            "kind": "education",
+            "name": "Building inspector certification (example)",
+            "issuer": "Code council (example)",
+            "number": null,
+            "validUntil": null,
+            "evidence": "asserted"
+          }
+        ],
+        "services": [{ "id": "us-svc-jordan-1", "name": "Pre-inspection walk-through", "description": "We walk your site before the city inspector does.", "format": "both", "unit": "per visit" }],
+        "portfolio": [],
+        "contacts": null,
+        "faq": [{ "q": "Can you sign off my inspection?", "a": "No. Only the jurisdiction's inspector can. I help you get ready." }]
+      }
+    },
+    {
+      "slug": "alex-exampleby",
+      "person": {
+        "id": "us-person-alex",
+        "displayName": "Alex Exampleby",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Architect, independent practice: ADUs and small homes", "expertise": ["ADU design", "permit drawings"] },
+        "emailBindings": [{ "email": "alex@example.invalid", "verifiedAt": "2026-09-05T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": false, "selling": true, "industryParticipation": true },
+        "revision": 1,
+        "createdAt": "2026-09-05T16:00:00Z"
+      },
+      "roleLine": "Architect, independent practice",
+      "field": "design",
+      "region": "US-CA",
+      "topics": ["technologies", "materials"],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Small homes and ADUs, from feasibility to permit drawings. Self-described.",
+      "publicationIds": ["us-pub-art-9"],
+      "projectIds": [],
+      "profile": {
+        "about": "I design small homes and backyard ADUs, from a feasibility check of the lot to the permit set. I like simple shapes that are cheap to frame and easy to inspect.",
+        "since": 2011,
+        "geography": ["San Diego County"],
+        "signals": [{ "kind": "openToProjects", "note": "ADU design for spring 2027 permits", "until": null }],
+        "career": [{ "id": "us-car-alex-1", "company": "Own practice", "companyId": null, "role": "Architect", "from": 2018, "to": null, "summary": null }],
+        "education": [{ "id": "us-edu-alex-1", "school": "School of architecture (example)", "degree": "Master of Architecture", "year": 2011 }],
+        "certificates": [
+          {
+            "id": "us-cert-alex-1",
+            "kind": "permit",
+            "name": "Architect licence (example)",
+            "issuer": "State architects board (example)",
+            "number": "DEMO-A-000201",
+            "validUntil": "2027-12-31",
+            "evidence": "asserted"
+          }
+        ],
+        "services": [{ "id": "us-svc-alex-1", "name": "Lot feasibility for an ADU", "description": "Setbacks, utilities, access and a first budget range.", "format": "both", "unit": "per lot" }],
+        "portfolio": [
+          {
+            "id": "us-pf-alex-1",
+            "title": "Garden ADU, 480 sq ft (example)",
+            "kind": "Design and permit drawings",
+            "year": 2025,
+            "description": "One bedroom, shed roof, fiber-cement siding.",
+            "cover": "timber-framing",
+            "projectId": null
+          }
+        ],
+        "contacts": { "email": "alex@example.invalid", "phone": null, "telegram": null },
+        "faq": []
+      }
+    },
+    {
+      "slug": "sam-fictora",
+      "person": {
+        "id": "us-person-sam",
+        "displayName": "Sam Fictora",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Structural engineer for wood and concrete buildings", "expertise": ["wood-frame design", "retrofits"] },
+        "emailBindings": [{ "email": "sam@example.invalid", "verifiedAt": "2026-09-12T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": false, "selling": true, "industryParticipation": true },
+        "revision": 1,
+        "createdAt": "2026-09-12T16:00:00Z"
+      },
+      "roleLine": "Structural engineer, consultant",
+      "field": "engineering",
+      "region": "US-CA",
+      "topics": ["technologies", "regulation"],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Structural design of wood-frame homes and podium buildings. Self-described.",
+      "publicationIds": ["us-pub-art-11"],
+      "projectIds": [],
+      "profile": {
+        "about": "I design structures for wood-frame homes, ADUs and podium buildings, and I review foundations of older houses before a remodel.",
+        "since": 2008,
+        "geography": ["San Diego County"],
+        "signals": [{ "kind": "consulting", "note": "Foundation reviews before remodels", "until": null }],
+        "career": [{ "id": "us-car-sam-1", "company": "Own consulting practice", "companyId": null, "role": "Structural engineer", "from": 2016, "to": null, "summary": null }],
+        "education": [{ "id": "us-edu-sam-1", "school": "Engineering college (example)", "degree": "M.S. in Structural Engineering", "year": 2008 }],
+        "certificates": [
+          {
+            "id": "us-cert-sam-1",
+            "kind": "permit",
+            "name": "Professional engineer licence (example)",
+            "issuer": "State engineering board (example)",
+            "number": "DEMO-S-000301",
+            "validUntil": "2027-09-30",
+            "evidence": "asserted"
+          }
+        ],
+        "services": [{ "id": "us-svc-sam-1", "name": "Foundation review before a remodel", "description": "Site visit, photos and a short written opinion.", "format": "onsite", "unit": "per visit" }],
+        "portfolio": [],
+        "contacts": null,
+        "faq": []
+      }
+    },
+    {
+      "slug": "chris-draftman",
+      "person": {
+        "id": "us-person-chris",
+        "displayName": "Chris Draftman",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Site superintendent, wood-frame buildings", "expertise": ["site logistics", "daily logs"] },
+        "emailBindings": [{ "email": "chris@example.invalid", "verifiedAt": "2026-09-30T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": false, "selling": false, "industryParticipation": true },
+        "revision": 1,
+        "createdAt": "2026-09-30T16:00:00Z"
+      },
+      "roleLine": "Site superintendent, Sample Coast Builders",
+      "field": "construction",
+      "region": "US-CA",
+      "topics": ["projects", "people"],
+      "showEmployer": true,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Runs the site at Mesa Example Commons. Self-described.",
+      "publicationIds": ["us-pub-art-8"],
+      "projectIds": ["us-project-commons"],
+      "profile": {
+        "about": "I run the site: trades, deliveries, inspections and the daily log. My rule is simple: if it is not in the log with a photo, it did not happen.",
+        "since": 2009,
+        "geography": ["San Diego"],
+        "signals": [],
+        "career": [
+          {
+            "id": "us-car-chris-1",
+            "company": "Sample Coast Builders",
+            "companyId": "us-company-samplecoast",
+            "role": "Site superintendent",
+            "from": 2026,
+            "to": null,
+            "summary": "Mesa Example Commons."
+          }
+        ],
+        "education": [],
+        "certificates": [],
+        "services": [],
+        "portfolio": [],
+        "contacts": null,
+        "faq": []
+      }
+    },
+    {
+      "slug": "kim-samplewood",
+      "person": {
+        "id": "us-person-kim",
+        "displayName": "Kim Samplewood",
+        "profileVisibility": "private",
+        "publicProfile": { "headline": null, "expertise": [] },
+        "emailBindings": [{ "email": "kim@example.invalid", "verifiedAt": "2026-08-20T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": true, "selling": true, "industryParticipation": false },
+        "revision": 1,
+        "createdAt": "2026-08-20T16:00:00Z"
+      },
+      "roleLine": "Estimator",
+      "field": "sales",
+      "region": "US-CA",
+      "topics": [],
+      "showEmployer": false,
+      "portraitConsent": false,
+      "portrait": null,
+      "experience": "",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": null
+    },
+    {
+      "slug": "rosa-muestra",
+      "person": {
+        "id": "us-person-rosa",
+        "displayName": "Rosa Muestra",
+        "profileVisibility": "public",
+        "publicProfile": { "headline": "Concrete finishing crew lead, open to work", "expertise": ["slab finishing", "crew safety"] },
+        "emailBindings": [{ "email": "rosa@example.invalid", "verifiedAt": "2026-10-02T16:00:00Z", "isPrimary": true }],
+        "providerIdentities": [],
+        "preferences": { "buying": false, "selling": true, "industryParticipation": true },
+        "revision": 1,
+        "createdAt": "2026-10-02T16:00:00Z"
+      },
+      "roleLine": "Concrete finishing crew lead, independent",
+      "field": "construction",
+      "region": "US-CA",
+      "topics": ["people", "materials"],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "portrait": null,
+      "experience": "Fourteen years of slabs and podium decks; leads a crew of four. Self-described.",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": {
+        "about": "I lead a crew of four concrete finishers: slabs on grade, podium decks, sidewalks. I run our safety talks in Spanish and English every morning.",
+        "since": 2012,
+        "geography": ["San Diego County"],
+        "signals": [{ "kind": "openToWork", "note": "Crew of four, from December", "until": null }],
+        "career": [{ "id": "us-car-rosa-1", "company": "Concrete subcontractor (example)", "companyId": null, "role": "Crew lead", "from": 2018, "to": 2026, "summary": null }],
+        "education": [],
+        "certificates": [
+          {
+            "id": "us-cert-rosa-1",
+            "kind": "education",
+            "name": "Construction site safety course, 10 hours (example)",
+            "issuer": "Training provider (example)",
+            "number": null,
+            "validUntil": null,
+            "evidence": "asserted"
+          }
+        ],
+        "services": [],
+        "portfolio": [],
+        "contacts": null,
+        "faq": []
+      }
+    }
+  ]
+}

@@ -233,7 +233,9 @@
     "sessions/1/device": "Telefon brauzeri",
     "sessions/1/location": "Səmərqənd (təxmini)",
     "sessions/2/device": "Masaüstü brauzer",
-    "sessions/2/location": "Buxara (təxmini)"
+    "sessions/2/location": "Buxara (təxmini)",
+    "leads/3/buyer": "Yaşayış binası tikintiçisi (nümunə)",
+    "leads/3/request": "Lojaların şüşələnməsi, 120 pəncərə"
   },
   "issues": {
     "issues/0/corrections/0/correction/reason": "“Qışda fasadlar” məqaləsində yapışdırıcıların aşağı temperatur həddi düzəldildi.",

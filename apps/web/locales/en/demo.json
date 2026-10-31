@@ -6,7 +6,9 @@
       "anonymous": "Guest",
       "reader": "Reader and author without a company",
       "mixed": "Company employee: buys and sells",
-      "owner": "Owner of a personal project"
+      "owner": "Owner of a personal project",
+      "seller": "Business owner: sells works and services",
+      "buyer": "Buyer: purchases for projects"
     },
     "noEmailSent": "Demo: no emails are sent and no account is created.",
     "noAccountCreated": "Demo: no account is created and no sign-in happens.",

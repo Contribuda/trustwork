@@ -1,0 +1,186 @@
+{
+  "synthetic": true,
+  "description": "Synthetic magazine issues of the United States demo hub. The poll distribution is a labelled demo sample, not real votes.",
+  "issues": [
+    {
+      "issue": {
+        "id": "us-issue-2",
+        "number": 2,
+        "date": "2026-10-30",
+        "status": "released",
+        "edition": 1,
+        "items": [
+          {
+            "position": 1,
+            "publicationId": "us-pub-art-1",
+            "publicationVersion": 1,
+            "section": "practice"
+          },
+          {
+            "position": 2,
+            "publicationId": "us-pub-art-4",
+            "publicationVersion": 1,
+            "section": "interview"
+          },
+          {
+            "position": 3,
+            "publicationId": "us-pub-art-3",
+            "publicationVersion": 1,
+            "section": "analysis"
+          },
+          {
+            "position": 4,
+            "publicationId": "us-pub-art-5",
+            "publicationVersion": 1,
+            "section": "projectStory"
+          },
+          {
+            "position": 5,
+            "publicationId": "us-pub-mag-w2",
+            "publicationVersion": 1,
+            "section": "week"
+          },
+          {
+            "position": 6,
+            "publicationId": "us-pub-mag-n2",
+            "publicationVersion": 1,
+            "section": "numbers"
+          }
+        ],
+        "renderArtifacts": [
+          {
+            "format": "web",
+            "hash": "f000000000000000000000000000000000000000000000000000000000000002",
+            "sourceEdition": 1
+          }
+        ],
+        "revision": 2
+      },
+      "title": "Building through the rainy season",
+      "lede": "How to compare ADU bids, where an ADU budget goes, a buyer's view of quotes and a building framed before the storms.",
+      "dateFrom": "2026-10-24",
+      "dateTo": "2026-10-30",
+      "releasedAt": "2026-10-30",
+      "pdf": {
+        "state": "pending"
+      },
+      "corrections": [],
+      "poll": {
+        "question": "What delays your projects most often?",
+        "options": ["Plan-check corrections", "Material lead times", "Weather", "Finding trades"],
+        "sample": [38, 27, 14, 21]
+      },
+      "glossary": [
+        {
+          "term": "ADU",
+          "definition": "Accessory dwelling unit: a second, smaller home on the same lot as a main house."
+        },
+        {
+          "term": "Allowance",
+          "definition": "A placeholder amount in a bid for an item that has not been chosen yet."
+        },
+        {
+          "term": "Bid leveling",
+          "definition": "Putting several bids into the same scope and structure so that they can be compared."
+        },
+        {
+          "term": "Exclusions",
+          "definition": "Work a bid does not include; read them before the price."
+        },
+        {
+          "term": "Podium",
+          "definition": "A concrete base, often with parking or shops, on which a wood-frame building stands."
+        }
+      ]
+    },
+    {
+      "issue": {
+        "id": "us-issue-1",
+        "number": 1,
+        "date": "2026-10-23",
+        "status": "corrected",
+        "edition": 2,
+        "items": [
+          {
+            "position": 1,
+            "publicationId": "us-pub-art-2",
+            "publicationVersion": 1,
+            "section": "practice"
+          },
+          {
+            "position": 2,
+            "publicationId": "us-pub-art-6",
+            "publicationVersion": 1,
+            "section": "opinion"
+          },
+          {
+            "position": 3,
+            "publicationId": "us-pub-art-9",
+            "publicationVersion": 1,
+            "section": "materials"
+          },
+          {
+            "position": 4,
+            "publicationId": "us-pub-mag-w1",
+            "publicationVersion": 1,
+            "section": "week"
+          },
+          {
+            "position": 5,
+            "publicationId": "us-pub-mag-q1",
+            "publicationVersion": 1,
+            "section": "qa"
+          }
+        ],
+        "renderArtifacts": [
+          {
+            "format": "web",
+            "hash": "f000000000000000000000000000000000000000000000000000000000000011",
+            "sourceEdition": 2
+          }
+        ],
+        "revision": 3
+      },
+      "title": "Under the tile and behind the stucco",
+      "lede": "A tile setter's slab checklist, an inspector's case for conversation, coastal finishes and who calls for inspections.",
+      "dateFrom": "2026-10-17",
+      "dateTo": "2026-10-23",
+      "releasedAt": "2026-10-23",
+      "pdf": {
+        "state": "pending"
+      },
+      "corrections": [
+        {
+          "correction": {
+            "id": "us-corr-1-1",
+            "subject": {
+              "kind": "issue",
+              "id": "us-issue-1",
+              "fromEdition": 1,
+              "toEdition": 2
+            },
+            "reason": "The reader question now says that rules differ by jurisdiction.",
+            "correctedBy": "us-person-editor",
+            "correctedAt": "2026-10-25T16:00:00Z"
+          },
+          "publicationId": "us-pub-mag-q1",
+          "summary": "Added that inspection rules differ by jurisdiction"
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Flood test",
+          "definition": "Filling a waterproofed shower pan with water and checking the level a day later before tile goes on."
+        },
+        {
+          "term": "Weep screed",
+          "definition": "A metal strip at the bottom of a stucco wall that lets water out."
+        },
+        {
+          "term": "Owner-builder",
+          "definition": "A homeowner who takes the permit and the builder's responsibilities themselves."
+        }
+      ]
+    }
+  ]
+}

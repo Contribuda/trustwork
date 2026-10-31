@@ -1,6 +1,6 @@
 {
   "synthetic": true,
-  "description": "Synthetic workspace state per demo persona: reader (no company, no commerce), mixed (company administrator who buys and sells), owner (personal project with personal procurement). Nothing here is a real deal, budget or person.",
+  "description": "Synthetic workspace state per demo persona: reader (no company, no commerce), mixed (company administrator who buys and sells), owner (personal project with personal procurement), seller (administrator of a small contractor who only sells), buyer (procurement lead without a company). Nothing here is a real deal, budget or person.",
   "personas": {
     "reader": {
       "personId": "person-olga",
@@ -22,6 +22,24 @@
     },
     "owner": {
       "personId": "person-petr",
+      "companyId": null,
+      "pinned": {
+        "procurement": true,
+        "sales": false
+      },
+      "onboarding": "completed"
+    },
+    "seller": {
+      "personId": "person-sergey",
+      "companyId": "company-steklo",
+      "pinned": {
+        "procurement": false,
+        "sales": true
+      },
+      "onboarding": "completed"
+    },
+    "buyer": {
+      "personId": "person-igor",
       "companyId": null,
       "pinned": {
         "procurement": true,
@@ -75,6 +93,21 @@
       "endedBy": "person-olga",
       "endedReason": "Переход на независимую работу",
       "revision": 2
+    },
+    {
+      "id": "membership-sergey",
+      "personId": "person-sergey",
+      "companyId": "company-steklo",
+      "role": "administrator",
+      "permissions": ["company.page.edit", "company.deals.manage", "company.catalogue.edit"],
+      "status": "active",
+      "invitedBy": null,
+      "invitedAt": "2026-09-10T09:00:00Z",
+      "validFrom": "2026-09-10T09:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
     }
   ],
   "rfqs": [
@@ -192,6 +225,17 @@
       "status": "negotiating",
       "quoteVersion": 3,
       "needsDecision": true
+    },
+    {
+      "id": "lead-steklo-1",
+      "companyId": "company-steklo",
+      "buyer": "Застройщик жилого дома (пример)",
+      "request": "Остекление лоджий, 120 окон",
+      "source": "openNeed",
+      "deadline": "2026-11-20",
+      "status": "drafting",
+      "quoteVersion": null,
+      "needsDecision": false
     }
   ],
   "decisions": [

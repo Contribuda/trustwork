@@ -1,0 +1,484 @@
+{
+  "synthetic": true,
+  "description": "Synthetic projects of the United States demo hub, each with a plan: phases (milestones), open trade packages, a procurement plan and decision points. Two public projects (a mixed-use building of a property owner, a school modernization of a general contractor) and two private ones (a homeowner's backyard home, a contractor's warehouse fit-out). Sites have no real addresses; money is in US dollars (cents) and invented.",
+  "projects": [
+    {
+      "slug": "mesa-example-commons",
+      "project": {
+        "id": "us-project-commons",
+        "owner": { "kind": "company", "id": "us-company-mesa" },
+        "creatorPersonId": "us-person-priya",
+        "leaderPersonId": "us-person-priya",
+        "name": "Mesa Example Commons: homes over shops",
+        "summary": "A four-story mixed-use building: 48 rental apartments over ground-floor shops, wood frame over a concrete podium.",
+        "status": "active",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "Site work and the concrete podium were finished in early summer. Wood framing started in July; the owner added balconies on the street side in September, which moved the end of framing by a month. The fourth floor was framed by the end of October, ahead of the first winter storms.",
+          "openNeedIds": ["us-rfq-mesa-1", "us-rfq-sc-2"],
+          "publicParticipantIds": ["us-company-mesa", "us-person-priya", "us-company-samplecoast", "us-person-dana", "us-company-studio", "us-company-ejemplo"]
+        },
+        "milestones": [
+          {
+            "id": "us-ms-commons-1",
+            "title": "Site work and concrete podium",
+            "due": { "date": "2026-06-30", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "310000000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-commons-2",
+            "title": "Wood framing, four floors",
+            "due": { "date": "2026-11-14", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "420000000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-commons-3",
+            "title": "Roof, windows and weather barrier",
+            "due": { "date": "2027-01-29", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "260000000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-commons-4",
+            "title": "Rough plumbing, electrical and mechanical inspections",
+            "due": { "date": "2027-03-12", "timeZone": "America/Los_Angeles" },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "us-ms-commons-5",
+            "title": "Finishes, storefronts and landscaping",
+            "due": { "date": "2027-06-04", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "380000000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-commons-6",
+            "title": "Owner's contingency",
+            "due": { "date": "2027-07-30", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "90000000", "currency": "USD" },
+            "shared": false
+          }
+        ],
+        "sharedFiles": [{ "evidenceArtifactId": "us-artifact-commons-plan", "hash": "3333333333333333333333333333333333333333333333333333333333333331", "audience": "shared" }],
+        "baselinePlanId": "us-baseline-commons-1",
+        "budgets": [{ "budgetId": "us-budget-commons", "limit": { "minorUnits": "1460000000", "currency": "USD" } }],
+        "participantIds": ["us-company-samplecoast", "us-person-dana", "us-company-studio", "us-company-canyon", "us-company-ejemplo", "us-person-chris"],
+        "privateFiles": [{ "evidenceArtifactId": "us-artifact-commons-contract", "hash": "3333333333333333333333333333333333333333333333333333333333333332" }],
+        "privateNotes": "owner_private",
+        "revision": 7,
+        "createdAt": "2026-03-02T16:00:00Z"
+      },
+      "category": "housing",
+      "region": "US-CA",
+      "participants": [
+        { "party": { "kind": "company", "id": "us-company-mesa" }, "role": "owner", "partyRole": "developer", "roleTitle": "Owner and developer", "isPublic": true, "grant": "owner_private" },
+        { "party": { "kind": "person", "id": "us-person-priya" }, "role": "leader", "partyRole": "client", "roleTitle": "Owner's procurement lead", "isPublic": true, "grant": "owner_private" },
+        {
+          "party": { "kind": "company", "id": "us-company-samplecoast" },
+          "role": "participant",
+          "partyRole": "generalContractor",
+          "roleTitle": "General contractor",
+          "isPublic": true,
+          "grant": "shared_party"
+        },
+        {
+          "party": { "kind": "person", "id": "us-person-dana" },
+          "role": "participant",
+          "partyRole": "generalContractor",
+          "roleTitle": "Contractor's project manager",
+          "isPublic": true,
+          "grant": "shared_party"
+        },
+        { "party": { "kind": "company", "id": "us-company-studio" }, "role": "participant", "partyRole": "designer", "roleTitle": "Architect of record", "isPublic": true, "grant": "shared_party" },
+        { "party": { "kind": "company", "id": "us-company-canyon" }, "role": "participant", "partyRole": "supplier", "roleTitle": "Concrete supplier", "isPublic": false, "grant": "shared_party" },
+        {
+          "party": { "kind": "company", "id": "us-company-ejemplo" },
+          "role": "participant",
+          "partyRole": "subcontractor",
+          "roleTitle": "Tile subcontractor (sample units)",
+          "isPublic": true,
+          "grant": "shared_party"
+        },
+        {
+          "party": { "kind": "person", "id": "us-person-chris" },
+          "role": "participant",
+          "partyRole": "generalContractor",
+          "roleTitle": "Site superintendent",
+          "isPublic": false,
+          "grant": "shared_party"
+        }
+      ],
+      "updates": [
+        { "id": "us-upd-commons-1", "type": "result", "title": "Concrete podium finished and inspected", "date": "2026-06-26", "evidence": "confirmed", "isPublic": true },
+        {
+          "id": "us-upd-commons-2",
+          "type": "teamMessage",
+          "title": "Street-side balconies added by the owner: framing finish moves to mid-November",
+          "date": "2026-09-15",
+          "evidence": "asserted",
+          "isPublic": true
+        },
+        { "id": "us-upd-commons-3", "type": "result", "title": "Fourth floor framed before the first storm", "date": "2026-10-28", "evidence": "asserted", "isPublic": true },
+        { "id": "us-upd-commons-4", "type": "discussion", "title": "Storefront color: dark bronze or clear anodized", "date": "2026-10-29", "evidence": "disputed", "isPublic": true },
+        { "id": "us-upd-commons-5", "type": "teamMessage", "title": "Internal cost review of the balcony change", "date": "2026-10-30", "evidence": "asserted", "isPublic": false }
+      ],
+      "publishedMilestones": [
+        { "milestoneId": "us-ms-commons-1", "baselineDue": "2026-06-30", "changedDue": null, "actual": "2026-06-26", "changedByClient": false },
+        { "milestoneId": "us-ms-commons-2", "baselineDue": "2026-10-16", "changedDue": "2026-11-14", "actual": null, "changedByClient": true },
+        { "milestoneId": "us-ms-commons-3", "baselineDue": "2027-01-29", "changedDue": null, "actual": null, "changedByClient": false },
+        { "milestoneId": "us-ms-commons-4", "baselineDue": "2027-03-12", "changedDue": null, "actual": null, "changedByClient": false },
+        { "milestoneId": "us-ms-commons-5", "baselineDue": "2027-06-04", "changedDue": null, "actual": null, "changedByClient": false }
+      ],
+      "publicationIds": ["us-pub-art-5", "us-pub-news-6"],
+      "projectionDate": "2026-10-29",
+      "updatedAt": "2026-10-30T18:00:00Z",
+      "files": [
+        { "id": "us-file-commons-1", "name": "Building overview.pdf", "audience": "public", "kind": "brochure" },
+        { "id": "us-file-commons-2", "name": "Permit set, architectural.pdf", "audience": "participants", "kind": "drawing" },
+        { "id": "us-file-commons-3", "name": "Owner-contractor agreement.pdf", "audience": "private" },
+        { "id": "us-file-commons-4", "name": "Framing photos, October.zip", "audience": "public", "kind": "archive" }
+      ],
+      "budget": { "reservedMinorUnits": "730000000", "settledMinorUnits": "520000000" },
+      "showcase": {
+        "passport": {
+          "address": "San Diego, CA (demo site, no real address)",
+          "objectType": "Mixed-use building: apartments over shops",
+          "totalArea": "4,800 m² (about 52,000 sq ft)",
+          "floors": "4",
+          "siteArea": "0.24 ha (0.6 acre)",
+          "designer": "Demo Studio Architects",
+          "commissioning": "Summer 2027"
+        },
+        "openRoles": [
+          { "id": "us-or-commons-1", "role": "supplier", "title": "Storefront glazing for five shops", "note": "Aluminum storefront with insulated glass, about 140 m²", "when": "December 2026" },
+          { "id": "us-or-commons-2", "role": "subcontractor", "title": "Tile for 48 apartment bathrooms", "note": "Through the general contractor's open request", "when": "January 2027" },
+          { "id": "us-or-commons-3", "role": "subcontractor", "title": "Landscaping and drip irrigation", "note": null, "when": "March 2027" }
+        ],
+        "materials": [
+          { "id": "us-mt-commons-1", "name": "Post-tensioned concrete podium", "supplierPartyId": "us-company-canyon", "supplierName": null, "status": "inUse" },
+          { "id": "us-mt-commons-2", "name": "Wood frame with plywood shear walls", "supplierPartyId": null, "supplierName": null, "status": "inUse" },
+          { "id": "us-mt-commons-3", "name": "Fiber-cement siding over a weather-resistive barrier", "supplierPartyId": null, "supplierName": null, "status": "approved" },
+          { "id": "us-mt-commons-4", "name": "Aluminum storefront with insulated glass", "supplierPartyId": null, "supplierName": null, "status": "planned" }
+        ],
+        "procurementPlan": [
+          { "id": "us-pp-commons-1", "title": "Storefront glazing", "kind": "bundle", "when": "December 2026", "status": "open", "rfqId": "us-rfq-mesa-1" },
+          { "id": "us-pp-commons-2", "title": "Bathroom tile, 48 units", "kind": "works", "when": "January 2027", "status": "open", "rfqId": "us-rfq-sc-2" },
+          { "id": "us-pp-commons-3", "title": "Landscaping and irrigation", "kind": "works", "when": "March 2027", "status": "planned", "rfqId": null },
+          { "id": "us-pp-commons-4", "title": "Framing lumber, fourth floor", "kind": "goods", "when": "September 2026", "status": "closed", "rfqId": null }
+        ],
+        "supplierTerms": ["A company page with licence and insurance certificates", "Quotes list labor, materials and exclusions separately", "Lien releases with every progress payment"],
+        "commercial": {
+          "offering": "48 rental apartments from studios to two bedrooms, and five ground-floor shops for neighborhood businesses. Leasing starts in spring 2027.",
+          "infrastructure": ["Bike room", "Rooftop terrace", "Ground-floor shops", "Bus stop at the corner"],
+          "audiences": [
+            {
+              "id": "us-aud-commons-tenants",
+              "kind": "tenants",
+              "title": "For future residents",
+              "description": "Studios, one- and two-bedroom apartments with in-unit laundry. Leasing opens in spring 2027.",
+              "units": [
+                { "id": "us-u-commons-1", "title": "Studios", "detail": "About 40 m² (430 sq ft)" },
+                { "id": "us-u-commons-2", "title": "One bedroom", "detail": "About 58 m² (620 sq ft)" },
+                { "id": "us-u-commons-3", "title": "Two bedrooms", "detail": "About 80 m² (860 sq ft), some with balconies" }
+              ],
+              "terms": ["Twelve-month leases", "Pets allowed with a deposit"],
+              "commercialTerms": ["Rents are published when leasing opens", "No application fees during the demo"],
+              "fileIds": ["us-file-commons-1"],
+              "faq": [{ "q": "Can I join a waitlist?", "a": "Yes: send a request and the owner will write to you when leasing opens. This is a demo; nothing is sent." }],
+              "action": "join"
+            }
+          ],
+          "note": "Demo project: the building, the units and the terms are invented.",
+          "contactPartyId": "us-company-mesa",
+          "salesOffice": null
+        },
+        "press": [],
+        "documents": [
+          { "id": "us-doc-commons-1", "kind": "permit", "name": "Building permit (example)", "number": "DEMO-BP-2026-0001", "date": "2026-02-20", "evidence": "asserted" },
+          { "id": "us-doc-commons-2", "kind": "other", "name": "Soils report (example)", "number": null, "date": "2025-11-10", "evidence": "asserted" }
+        ],
+        "gallery": [
+          { "id": "us-g-commons-1", "photo": "house-scaffolding", "caption": "Fourth floor framing, October" },
+          { "id": "us-g-commons-2", "photo": "aerial-site-foundations", "caption": "Concrete podium, June" },
+          { "id": "us-g-commons-3", "photo": "timber-framing", "caption": "Shear walls on the second floor" }
+        ],
+        "video": null,
+        "highlights": [
+          { "label": "Apartments", "value": "48" },
+          { "label": "Shops", "value": "5" },
+          { "label": "Floors", "value": "4" },
+          { "label": "Opening", "value": "Summer 2027" }
+        ],
+        "plans": [
+          { "id": "us-pl-commons-1", "title": "Dry-in: roof, windows and weather barrier", "when": "January 2027" },
+          { "id": "us-pl-commons-2", "title": "Choose storefront and landscaping trades", "when": "December 2026 – March 2027" }
+        ],
+        "partnerNote": "We are buying storefront glazing now and landscaping in March. Each request lists quantities, drawings and how we choose (price, schedule, scope completeness, references). Trades with a company page and published projects are invited first; everyone can answer an open request.",
+        "contactPartyId": "us-person-priya",
+        "needs": [
+          { "rfqId": "us-rfq-mesa-1", "summary": "Aluminum storefront with insulated glass for five shops, delivery and installation.", "quantity": "140", "unit": "m²" },
+          { "rfqId": "us-rfq-sc-2", "summary": "Bathroom floor and wall tile with shower waterproofing in 48 apartments; owner supplies the tile.", "quantity": "48", "unit": "units" }
+        ]
+      },
+      "location": { "lat": 32.7488, "lng": -117.1298 }
+    },
+    {
+      "slug": "example-valley-school-modernization",
+      "project": {
+        "id": "us-project-school",
+        "owner": { "kind": "company", "id": "us-company-samplecoast" },
+        "creatorPersonId": "us-person-dana",
+        "leaderPersonId": "us-person-dana",
+        "name": "Example Valley school modernization",
+        "summary": "Fourteen classrooms modernized during one summer break: windows, lighting, accessibility upgrades and finishes.",
+        "status": "active",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "The school stays open, so all work in classrooms happens between the last day of school in June and the first week of August. Demolition and abatement are planned for the first two weeks, windows and lighting for July. Window replacement is the long-lead item: we are choosing the supplier now so the glass arrives in May.",
+          "openNeedIds": ["us-rfq-sc-1"],
+          "publicParticipantIds": ["us-company-samplecoast", "us-person-dana", "us-company-glazing"]
+        },
+        "milestones": [
+          { "id": "us-ms-school-1", "title": "Window supplier selected and submittals approved", "due": { "date": "2026-12-18", "timeZone": "America/Los_Angeles" }, "budget": null, "shared": true },
+          {
+            "id": "us-ms-school-2",
+            "title": "Demolition and abatement",
+            "due": { "date": "2027-06-25", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "38000000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-school-3",
+            "title": "Windows, lighting and accessibility upgrades",
+            "due": { "date": "2027-07-23", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "164000000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-school-4",
+            "title": "Finishes and final inspection before classes",
+            "due": { "date": "2027-08-06", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "52000000", "currency": "USD" },
+            "shared": true
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": "us-baseline-school-1",
+        "budgets": [{ "budgetId": "us-budget-school", "limit": { "minorUnits": "254000000", "currency": "USD" } }],
+        "participantIds": ["us-company-glazing", "us-company-lifts"],
+        "privateFiles": [],
+        "privateNotes": "owner_private",
+        "revision": 3,
+        "createdAt": "2026-09-14T16:00:00Z"
+      },
+      "category": "education",
+      "region": "US-CA",
+      "participants": [
+        {
+          "party": { "kind": "company", "id": "us-company-samplecoast" },
+          "role": "owner",
+          "partyRole": "generalContractor",
+          "roleTitle": "General contractor",
+          "isPublic": true,
+          "grant": "owner_private"
+        },
+        { "party": { "kind": "person", "id": "us-person-dana" }, "role": "leader", "partyRole": "generalContractor", "roleTitle": "Project manager", "isPublic": true, "grant": "owner_private" },
+        {
+          "party": { "kind": "company", "id": "us-company-glazing" },
+          "role": "participant",
+          "partyRole": "supplier",
+          "roleTitle": "Window supplier (bidding)",
+          "isPublic": true,
+          "grant": "shared_party"
+        },
+        { "party": { "kind": "company", "id": "us-company-lifts" }, "role": "participant", "partyRole": "other", "roleTitle": "Lift rental", "isPublic": false, "grant": "shared_party" }
+      ],
+      "updates": [
+        { "id": "us-upd-school-1", "type": "result", "title": "Existing conditions surveyed in all fourteen classrooms", "date": "2026-10-09", "evidence": "asserted", "isPublic": true },
+        { "id": "us-upd-school-2", "type": "teamMessage", "title": "Window request published: quotes due November 20", "date": "2026-10-21", "evidence": "asserted", "isPublic": true }
+      ],
+      "publishedMilestones": [
+        { "milestoneId": "us-ms-school-1", "baselineDue": "2026-12-18", "changedDue": null, "actual": null, "changedByClient": false },
+        { "milestoneId": "us-ms-school-2", "baselineDue": "2027-06-25", "changedDue": null, "actual": null, "changedByClient": false },
+        { "milestoneId": "us-ms-school-3", "baselineDue": "2027-07-23", "changedDue": null, "actual": null, "changedByClient": false },
+        { "milestoneId": "us-ms-school-4", "baselineDue": "2027-08-06", "changedDue": null, "actual": null, "changedByClient": false }
+      ],
+      "publicationIds": [],
+      "projectionDate": "2026-10-21",
+      "updatedAt": "2026-10-21T18:00:00Z",
+      "files": [
+        { "id": "us-file-school-1", "name": "Window schedule.pdf", "audience": "public", "kind": "drawing" },
+        { "id": "us-file-school-2", "name": "Phasing plan.pdf", "audience": "participants", "kind": "drawing" }
+      ],
+      "budget": { "reservedMinorUnits": "0", "settledMinorUnits": "0" },
+      "showcase": {
+        "passport": {
+          "address": "Chula Vista, CA (demo site, no real address)",
+          "objectType": "Elementary school, classroom wing",
+          "totalArea": "1,300 m² (about 14,000 sq ft)",
+          "floors": "1",
+          "siteArea": null,
+          "designer": null,
+          "commissioning": "August 2027"
+        },
+        "openRoles": [{ "id": "us-or-school-1", "role": "supplier", "title": "Replacement windows, 112 units", "note": "Aluminum, insulated glass, delivered by May 2027", "when": "November 2026" }],
+        "materials": [{ "id": "us-mt-school-1", "name": "Aluminum windows with insulated glass", "supplierPartyId": "us-company-glazing", "supplierName": null, "status": "planned" }],
+        "procurementPlan": [
+          { "id": "us-pp-school-1", "title": "Replacement windows", "kind": "goods", "when": "November 2026", "status": "open", "rfqId": "us-rfq-sc-1" },
+          { "id": "us-pp-school-2", "title": "Lighting fixtures", "kind": "goods", "when": "February 2027", "status": "planned", "rfqId": null }
+        ],
+        "supplierTerms": ["Delivery to the site by May 2027", "Submittals within three weeks of award"],
+        "commercial": null,
+        "press": [],
+        "documents": [],
+        "gallery": [{ "id": "us-g-school-1", "photo": "site-wall-measuring", "caption": "Survey of existing windows" }],
+        "video": null,
+        "highlights": [
+          { "label": "Classrooms", "value": "14" },
+          { "label": "Work window", "value": "7 weeks" }
+        ],
+        "plans": [{ "id": "us-pl-school-1", "title": "Award the window package", "when": "December 2026" }],
+        "partnerNote": "Window suppliers: the quantities and the window schedule are public; quotes are due November 20. We choose on price, delivery date and service.",
+        "contactPartyId": "us-person-dana",
+        "needs": [{ "rfqId": "us-rfq-sc-1", "summary": "112 aluminum windows with insulated glass, delivered by May 2027; installation by our crews.", "quantity": "112", "unit": "units" }]
+      },
+      "location": { "lat": 32.6401, "lng": -117.0842 }
+    },
+    {
+      "slug": "demoworth-backyard-adu",
+      "project": {
+        "id": "us-project-adu",
+        "owner": { "kind": "person", "id": "us-person-morgan" },
+        "creatorPersonId": "us-person-morgan",
+        "leaderPersonId": "us-person-morgan",
+        "name": "Backyard home for my parents",
+        "summary": "A detached one-bedroom ADU of about 60 m² (640 sq ft) behind the main house.",
+        "status": "planned",
+        "publicity": { "enabled": false, "publishedStory": null, "openNeedIds": [], "publicParticipantIds": [] },
+        "milestones": [
+          {
+            "id": "us-ms-adu-1",
+            "title": "Design and lot feasibility",
+            "due": { "date": "2026-10-15", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "1200000", "currency": "USD" },
+            "shared": true
+          },
+          { "id": "us-ms-adu-2", "title": "Choose a builder", "due": { "date": "2026-11-20", "timeZone": "America/Los_Angeles" }, "budget": null, "shared": true },
+          {
+            "id": "us-ms-adu-3",
+            "title": "Permit set submitted and approved",
+            "due": { "date": "2027-02-26", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "900000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-adu-4",
+            "title": "Foundation, framing and roof",
+            "due": { "date": "2027-05-28", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "7800000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-adu-5",
+            "title": "Rough inspections, insulation and drywall",
+            "due": { "date": "2027-07-16", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "4200000", "currency": "USD" },
+            "shared": true
+          },
+          {
+            "id": "us-ms-adu-6",
+            "title": "Finishes, tile and final inspection",
+            "due": { "date": "2027-09-10", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "3900000", "currency": "USD" },
+            "shared": true
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": "us-baseline-adu-1",
+        "budgets": [{ "budgetId": "us-budget-adu", "limit": { "minorUnits": "18000000", "currency": "USD" } }],
+        "participantIds": ["us-person-alex"],
+        "privateFiles": [],
+        "privateNotes": "owner_private",
+        "revision": 4,
+        "createdAt": "2026-09-01T16:00:00Z"
+      },
+      "category": "housing",
+      "region": "US-CA",
+      "participants": [
+        { "party": { "kind": "person", "id": "us-person-morgan" }, "role": "owner", "partyRole": "client", "roleTitle": "Homeowner", "isPublic": false, "grant": "owner_private" },
+        { "party": { "kind": "person", "id": "us-person-alex" }, "role": "participant", "partyRole": "designer", "roleTitle": "Architect", "isPublic": false, "grant": "shared_party" }
+      ],
+      "updates": [
+        { "id": "us-upd-adu-1", "type": "result", "title": "Lot feasibility done: setbacks and sewer connection work", "date": "2026-10-14", "evidence": "confirmed", "isPublic": false },
+        { "id": "us-upd-adu-2", "type": "teamMessage", "title": "Three builder quotes received", "date": "2026-10-29", "evidence": "asserted", "isPublic": false }
+      ],
+      "publishedMilestones": [],
+      "publicationIds": [],
+      "projectionDate": null,
+      "updatedAt": "2026-10-29T18:00:00Z",
+      "files": [
+        { "id": "us-file-adu-1", "name": "Site plan, draft.pdf", "audience": "participants", "kind": "drawing" },
+        { "id": "us-file-adu-2", "name": "Budget plan.xlsx", "audience": "private" }
+      ],
+      "budget": { "reservedMinorUnits": "1200000", "settledMinorUnits": "1150000" },
+      "showcase": null,
+      "location": null
+    },
+    {
+      "slug": "sample-coast-warehouse-fit-out",
+      "project": {
+        "id": "us-project-warehouse",
+        "owner": { "kind": "company", "id": "us-company-samplecoast" },
+        "creatorPersonId": "us-person-kim",
+        "leaderPersonId": "us-person-dana",
+        "name": "Warehouse fit-out for a tenant",
+        "summary": "Offices, restrooms and a loading dock in an existing warehouse; estimate stage.",
+        "status": "planned",
+        "publicity": { "enabled": false, "publishedStory": null, "openNeedIds": [], "publicParticipantIds": [] },
+        "milestones": [
+          { "id": "us-ms-wh-1", "title": "Estimate and proposal to the tenant", "due": { "date": "2026-11-27", "timeZone": "America/Los_Angeles" }, "budget": null, "shared": true },
+          {
+            "id": "us-ms-wh-2",
+            "title": "Tenant improvements built",
+            "due": { "date": "2027-04-30", "timeZone": "America/Los_Angeles" },
+            "budget": { "minorUnits": "61000000", "currency": "USD" },
+            "shared": false
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": null,
+        "budgets": [],
+        "participantIds": ["us-person-kim"],
+        "privateFiles": [],
+        "privateNotes": "owner_private",
+        "revision": 1,
+        "createdAt": "2026-10-19T16:00:00Z"
+      },
+      "category": "industrial",
+      "region": "US-CA",
+      "participants": [
+        {
+          "party": { "kind": "company", "id": "us-company-samplecoast" },
+          "role": "owner",
+          "partyRole": "generalContractor",
+          "roleTitle": "General contractor",
+          "isPublic": false,
+          "grant": "owner_private"
+        },
+        { "party": { "kind": "person", "id": "us-person-kim" }, "role": "participant", "partyRole": "generalContractor", "roleTitle": "Estimator", "isPublic": false, "grant": "owner_private" }
+      ],
+      "updates": [],
+      "publishedMilestones": [],
+      "publicationIds": [],
+      "projectionDate": null,
+      "updatedAt": "2026-10-19T18:00:00Z",
+      "files": [{ "id": "us-file-wh-1", "name": "Tenant floor plan.pdf", "audience": "participants", "kind": "drawing" }],
+      "budget": null,
+      "showcase": null,
+      "location": null
+    }
+  ]
+}

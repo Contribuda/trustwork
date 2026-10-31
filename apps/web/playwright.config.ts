@@ -4,6 +4,12 @@ const port = Number(process.env.TRUSTWORK_E2E_PORT ?? 3459);
 /** A second server of the same build with no deployment configuration at all (CFG-001: no default country). */
 const neutralPort = Number(process.env.TRUSTWORK_E2E_NEUTRAL_PORT ?? port + 1);
 const next = (listen: number) => `node ../../node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port ${listen}`;
+/**
+ * Default country of the main server (DEMO-US): the hosted preview's `US` unless `TRUSTWORK_E2E_DEFAULT_COUNTRY` names
+ * another one. The suite passes with `US` and with `UZ` (`TRUSTWORK_E2E_DEFAULT_COUNTRY=UZ npx playwright test`); the
+ * demo dataset follows the configured country (apps/web/fixtures/datasets.ts).
+ */
+const defaultCountry = (process.env.TRUSTWORK_E2E_DEFAULT_COUNTRY ?? 'US').trim().toUpperCase();
 
 /**
  * Browser tests for apps/web (Chromium only; no extra browsers). They run against `next start` of a
@@ -26,7 +32,8 @@ export default defineConfig({
     timezoneId: 'Europe/Moscow',
     /* Smooth scrolling makes scroll-into-view clicks flap between frames; browsers honour the reduce preference. */
     reducedMotion: 'reduce',
-    // The suites were written against the Russian locale; the engine default is English (ADR-009).
+    // The suites were written against the Russian locale and the example (Uzbekistan) dataset; the engine default is
+    // English (ADR-009) and the main server defaults to the United States demo hub (DEMO-US), so they choose UZ and ru.
     storageState: {
       cookies: [
         { name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/', expires: -1, httpOnly: false, secure: false, sameSite: 'Lax' as const },
@@ -39,15 +46,15 @@ export default defineConfig({
   },
   // These suites exercise the synthetic demo (fixtures and `?persona=`); the live API suite is tests/web/live-api (WEB-004).
   // The main server is configured like the hosted preview (demo mode, English, United States for visitors who have not
-  // chosen; ADR 012 decision 31); the second runs the same build with no country configured (CFG-001,
-  // tests/web/deployment-config.spec.ts).
+  // chosen, so the San Diego demo hub; ADR 012 decision 31, DEMO-US) unless TRUSTWORK_E2E_DEFAULT_COUNTRY says otherwise;
+  // the second runs the same build with no country configured (CFG-001, tests/web/deployment-config.spec.ts).
   webServer: [
     {
       command: next(port),
       url: `http://127.0.0.1:${port}/`,
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
-      env: { NEXT_TELEMETRY_DISABLED: '1', TRUSTWORK_DEMO_MODE: '1', TRUSTWORK_DEFAULT_COUNTRY: 'US' },
+      env: { NEXT_TELEMETRY_DISABLED: '1', TRUSTWORK_DEMO_MODE: '1', TRUSTWORK_DEFAULT_COUNTRY: defaultCountry },
     },
     {
       command: next(neutralPort),
