@@ -1,0 +1,62 @@
+# Platform release candidate overlay (QA-002). Used together with infra/compose.yaml, never alone:
+#   docker compose -p trustwork-release -f infra/compose.yaml -f tests/release/platform/compose.release.yaml --profile stack up --build --wait
+# (tests/release/platform/run.mjs does exactly this with free ports and its own project name, so the shared development
+# database of the "trustwork-local" project is never touched). Relative paths resolve against infra/, the directory of
+# the first compose file.
+#
+# What it changes against the plain local stack, and why:
+# - mail: the worker submits real SMTP (MAIL_TRANSPORT=smtp, MAIL-001 adapter) to an in-memory sink on the compose
+#   network instead of printing messages to its log; the journey reads the rendered messages from the sink's reader.
+# - jurisdiction gate: an explicit mode (SANC-001) on the API and the web. `edge_header` stands in for the hosting
+#   edge; locally the release suite sends the header itself to prove that a restricted place is refused. In production
+#   this mode is safe only behind an edge that strips client-supplied copies (gate list in docs/quality/release/platform.md).
+# - demo mode: stated explicitly off on the web (it is the default), so the journey proves live data only.
+# Every value here is a local throwaway; no secret, provider account or network call beyond the compose network.
+
+services:
+  smtp-sink:
+    profiles: [stack]
+    image: node:24.18.0-alpine
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp"]
+    working_dir: /sink
+    command: ["node", "/sink/smtp-sink.mjs"]
+    environment:
+      SINK_SMTP_PORT: "2525"
+      SINK_HTTP_PORT: "8025"
+    volumes:
+      - ../tests/release/platform/smtp-sink.mjs:/sink/smtp-sink.mjs:ro
+    ports:
+      - "127.0.0.1:${TRUSTWORK_RELEASE_MAIL_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8025/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: "no"
+
+  api:
+    environment:
+      TRUSTWORK_JURISDICTION_GATE: edge_header
+      TRUSTWORK_JURISDICTION_COUNTRY_HEADER: x-release-edge-country
+      TRUSTWORK_JURISDICTION_REGION_HEADER: x-release-edge-region
+
+  worker:
+    depends_on:
+      smtp-sink: { condition: service_healthy }
+    environment:
+      MAIL_TRANSPORT: smtp
+      MAIL_SMTP_HOST: smtp-sink
+      MAIL_SMTP_PORT: "2525"
+      MAIL_SMTP_SECURITY: none
+      MAIL_FROM_ADDRESS: no-reply@release-hub.example.invalid
+
+  web:
+    environment:
+      TRUSTWORK_DEMO_MODE: "0"
+      TRUSTWORK_JURISDICTION_GATE: edge_header
+      TRUSTWORK_JURISDICTION_COUNTRY_HEADER: x-release-edge-country
+      TRUSTWORK_JURISDICTION_REGION_HEADER: x-release-edge-region

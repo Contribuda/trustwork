@@ -1397,7 +1397,7 @@
       "id": "QA-002",
       "title": "Platform release candidate: the US demo hub on a deployable stack",
       "area": "qa-release",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "WEB-004",
         "MAIL-001",

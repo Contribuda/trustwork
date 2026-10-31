@@ -1,0 +1,90 @@
+name: release-platform
+# QA-002: the platform release candidate at the exact head commit, on synthetic data only. Two jobs:
+#   suites   negative authorization, readiness and worker fault suites (PostgreSQL service), counts in the job summary
+#   stack    every image built locally, the compose stack with the release overlay (real SMTP to an in-memory sink, an
+#            explicit jurisdiction gate, demo mode off), readiness and screening checks, the browser journey and HTTP
+#            gates in English and Spanish at desktop and phone width
+# Nothing is pushed, published or deployed; there are no secrets. Gate list and evidence: docs/quality/release/platform.md.
+on:
+  pull_request:
+    paths:
+      - 'tests/release/platform/**'
+      - 'docs/quality/release/platform.md'
+      - '.github/workflows/release-platform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/release/platform/**'
+      - '.github/workflows/release-platform.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-platform-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  suites:
+    name: release suites (negative authorization, readiness, worker faults)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.3
+        env:
+          POSTGRES_DB: trustwork_dev
+          POSTGRES_USER: trustwork_dev
+          POSTGRES_PASSWORD: local_only_change_me
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U trustwork_dev -d trustwork_dev"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      TRUSTWORK_TEST_PG_BACKEND: external
+      TRUSTWORK_TEST_DATABASE_URL: postgresql://trustwork_dev:local_only_change_me@localhost:5432/trustwork_dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - name: Release suites at the head commit (non-empty, nothing skipped)
+        run: node tests/release/platform/run.mjs suites
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: release-suites
+          path: tests/release/platform/dist/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  stack:
+    name: release stack journey (en/es, desktop/phone)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TRUSTWORK_RELEASE_PROJECT: trustwork-release
+      TRUSTWORK_STACK_PORT: '8080'
+      TRUSTWORK_PG_PORT: '54329'
+      TRUSTWORK_RELEASE_MAIL_PORT: '8025'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: Build, start, check and stop the release stack
+        run: node tests/release/platform/run.mjs stack
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: release-stack
+          path: tests/release/platform/dist/
+          if-no-files-found: ignore
+          retention-days: 30
