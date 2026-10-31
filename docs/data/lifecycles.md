@@ -95,7 +95,7 @@ stateDiagram-v2
   Accepted --> Reviewed
 ```
 
-`consultation_request.status ∈ {requested, offered, booked, withdrawn, expired, declined}`; `consultation_booking.status ∈ {booked, held, delivered, accepted, disputed, cancelled_by_client, cancelled_by_expert, no_show, reviewed}`. Cancellation and no-show money follows the expert's terms frozen in the booking; refunds go through billing reconciliation. A review of a consultation exists only after `accepted` and cites the deliverable.
+`consultation_request.status ∈ {requested, offered, booked, withdrawn, expired, declined}`; `consultation_booking.status ∈ {requested, proposed, booked, held, delivered, accepted, cancelled, disputed}` (the agent catalogue's `ConsultationBooking`), with `cancellation_kind ∈ {client, expert, no_show}` recorded on cancellation and `reviewed` tracked by the review record. Cancellation and no-show money follows the expert's terms frozen in the booking; refunds go through billing reconciliation. A review of a consultation exists only after `accepted` and cites the deliverable.
 
 Task requests follow the RFQ pattern: `task_request.status ∈ {draft, published, closed, cancelled, expired}`; `task_request_version.status ∈ {draft, published, superseded}`, and an amendment flags pinned offers stale. `task_offer.status`: `draft → sent → superseded | withdrawn | expired | declined | accepted`. Acceptance creates an agreement (`terms_kind = task`) and a `task_assignment`: `assigned → in_progress → delivered → accepted`, with `disputed` from `delivered` back to `in_progress` or forward to `accepted` on resolution, and `cancelled` from `assigned` or `in_progress` with compensation decided by the obligations. `mentoring_relationship`: `proposed → active ⇄ paused → ended`, or `proposed → declined`; either side may end.
 
@@ -229,9 +229,9 @@ stateDiagram-v2
 
 `company_claim`: `submitted → claimed` (verified login plus one company tie) `→ under_review → verified | rejected`; `withdrawn` from any non-terminal state; `verified → revoked` with a reason. `company_verification`: `active → expired | revoked`, recheck creates a new row. `verification_check`: results are immutable; expiry is computed; a `potential_match` opens a screening review case.
 
-### Confirmation requests and issued credentials
+### Confirmation requests and passport credentials
 
-`confirmation_request`: `requested → confirmed | declined | expired | withdrawn`, and `confirmed → disputed` when an appeal is lodged. `issued_credential`: `valid → suspended ⇄ valid`, `valid | suspended → revoked`, `valid → expired`; every change updates the status list before the response returns.
+`confirmation_request`: `requested → confirmed | declined | expired | withdrawn`, and `confirmed → disputed` when an appeal is lodged. `passport_credential`: `valid → suspended ⇄ valid`, `valid | suspended → revoked`, `valid → expired`; every change updates the status list before the response returns.
 
 ### Support cases and case grants
 
