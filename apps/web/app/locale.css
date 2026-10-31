@@ -155,18 +155,28 @@
   display: grid;
   place-items: center;
   padding: 16px;
+  /* The dialog itself scrolls; the overlay never lets content escape the viewport on small or zoomed screens. */
+  overflow: hidden;
   background: rgba(15, 31, 61, 0.55);
   backdrop-filter: blur(2px);
 }
 
 .cg-modal {
   width: min(100%, 640px);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  display: flex;
   outline: none;
 }
 
 .cg {
   display: grid;
   gap: 14px;
+  width: 100%;
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 28px;
   border-radius: 20px;
   background: var(--color-surface);
@@ -241,15 +251,47 @@
   align-items: center;
   gap: 12px;
   margin-top: 4px;
+  /* Always reachable: the confirm button stays at the bottom of the scrolling dialog. */
+  position: sticky;
+  bottom: -28px;
+  margin-inline: -28px;
+  margin-bottom: -28px;
+  padding: 14px 28px 20px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 479.98px) {
   .cg {
+    gap: 10px;
     padding: 20px;
   }
 
+  .cg__lede {
+    font-size: 14px;
+  }
+
+  /* Two compact columns keep every featured country and the confirm button within one phone screen. */
   .cg__countries {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .cg__country {
+    padding: 10px;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .cg__actions {
+    bottom: -20px;
+    margin-inline: -20px;
+    margin-bottom: -20px;
+    padding: 12px 20px 16px;
+  }
+
+  .cg__actions .pub-btn {
+    width: 100%;
   }
 }
 

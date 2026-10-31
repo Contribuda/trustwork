@@ -76,3 +76,27 @@ test.describe('hosted preview configuration', () => {
     await expect(gate.getByRole('button', { name: 'Continue' })).toBeEnabled();
   });
 });
+
+test.describe('country gate on a phone', () => {
+  test.use({ locale: 'en-US', storageState: { cookies: [], origins: [] } });
+
+  for (const viewport of [{ width: 375, height: 667 }, { width: 320, height: 568 }]) {
+    test(`${viewport.width}x${viewport.height}: the default country leads and Continue is always visible and works (Russian, the longest copy)`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.context().addCookies([{ name: 'trustwork.locale', value: 'ru', url: `http://127.0.0.1:${port}` }]);
+      await page.goto('/');
+      const gate = page.getByRole('dialog');
+      await expect(gate).toBeVisible();
+      // The reference hub's default country is the first card.
+      await expect(gate.getByRole('radio').first()).toContainText('US');
+      const confirm = gate.locator('.cg__actions .pub-btn');
+      await expect(confirm).toBeEnabled();
+      await expect(confirm).toBeInViewport({ ratio: 1 });
+      // The dialog never exceeds the screen; its content scrolls inside it.
+      const box = await gate.boundingBox();
+      expect(box && box.y + box.height).toBeLessThanOrEqual(viewport.height);
+      await confirm.click();
+      await expect.poll(() => countryCookie(page)).toBe('US');
+    });
+  }
+});
