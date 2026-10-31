@@ -92,6 +92,8 @@ test.describe('country gate on a phone', () => {
       const confirm = gate.locator('.cg__actions .pub-btn');
       await expect(confirm).toBeEnabled();
       await expect(confirm).toBeInViewport({ ratio: 1 });
+      // The primary action reads as primary: the accent fill, not the plain outline.
+      expect(await confirm.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(7, 86, 216)');
       // The dialog never exceeds the screen; its content scrolls inside it.
       const box = await gate.boundingBox();
       expect(box && box.y + box.height).toBeLessThanOrEqual(viewport.height);

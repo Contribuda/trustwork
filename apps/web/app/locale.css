@@ -261,6 +261,37 @@
   border-top: 1px solid var(--color-border);
 }
 
+/* The gate's one primary action. Self-contained: the gate also opens on routes without the public stylesheet. */
+.cg__actions .pub-btn--accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cg__actions .pub-btn--accent:hover {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+.cg__actions .pub-btn--accent:active {
+  background: var(--color-accent-active);
+}
+
+.cg__actions .pub-btn--accent:disabled {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
 @media (max-width: 479.98px) {
   .cg {
     gap: 10px;
