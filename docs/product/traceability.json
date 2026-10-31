@@ -383,7 +383,10 @@
       "id": "R38",
       "tasks": [
         "CTRY-002",
-        "INTL-UZ"
+        "INTL-UZ",
+        "INTL-US",
+        "DEMO-US",
+        "LANG-ES"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",

@@ -1524,6 +1524,102 @@
         "apps/api/src/modules/federation/identity",
         "tests/federation/identity"
       ]
+    },
+    {
+      "id": "INTL-US",
+      "title": "United States country pack, complete",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "INTL-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A complete, sourced US country pack that the reference hub runs on: the model for every other country.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md"
+      ],
+      "steps": [
+        "Add packages/country-packs/packs/us.json: en (and es when LANG-ES lands) locales, USD, America/New_York default time zone with per-state zones, phone and ZIP formats, the 50 states plus DC and territories as ISO 3166-2 regions, US address order.",
+        "Registration identifiers: EIN (federal) and a state business registration identifier kind; legal entity types (LLC, C corporation, S corporation, partnership, sole proprietorship, nonprofit).",
+        "Facets with sources (pack v2 shape when CTRY-002 lands, notes until then): state contractor licensing boards, state sales tax, SAM.gov and state procurement portals, ESIGN/UETA, card and ACH payments, CCPA/CPRA and other state privacy laws, federal holidays.",
+        "Validator and tests: identifier patterns, region codes, sources for every fact."
+      ],
+      "acceptance": [
+        "The US pack validates and is offered first in the country selector of the reference hub.",
+        "Every fact cites a source and states its verification level.",
+        "No US-specific branches in engine code."
+      ],
+      "paths": [
+        "packages/country-packs/packs/us.json",
+        "tests/country-packs"
+      ]
+    },
+    {
+      "id": "DEMO-US",
+      "title": "United States demo hub: defaults and demo data",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "INTL-US"
+      ],
+      "handbook": "docs/engine/hubs.md",
+      "goal": "The reference deployment opens as a US hub with synthetic, clearly labelled demo data for one US metro area, while every engine default stays configurable.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hubs.md",
+        "docs/engine/localization.md"
+      ],
+      "steps": [
+        "Make the default country and locale configuration (for example NEXT_PUBLIC_TRUSTWORK_DEFAULT_COUNTRY and NEXT_PUBLIC_TRUSTWORK_DEFAULT_LOCALE) instead of the hard-coded DEFAULT_COUNTRY='UZ'; keep the engine default neutral and documented.",
+        "Add a US demo dataset (companies, people, projects, publications, events, courses, issues) for one metro area, synthetic and labelled, with USD amounts, US regions and identifiers; keep the existing demo sets as other-country examples selectable by configuration.",
+        "Update the leak and locale tests so every demo set stays complete in every engine language.",
+        "Configure the hosted preview to the US hub and record screenshots."
+      ],
+      "acceptance": [
+        "A fresh visit to the reference hub shows the US hub in English with USD and US regions.",
+        "Another deployment switches to its own country by configuration only.",
+        "Demo data is synthetic and labelled; browser and locale tests pass."
+      ],
+      "paths": [
+        "packages/country-packs/src",
+        "apps/web/app/_lib",
+        "apps/web/fixtures",
+        "tests/web",
+        "infra/Dockerfile"
+      ]
+    },
+    {
+      "id": "LANG-ES",
+      "title": "Spanish (es) as an engine language",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "INTL-002"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Spanish across the interface and demo content, so US and Latin American hubs can serve Spanish-speaking professionals.",
+      "read": [
+        "docs/engine/localization.md"
+      ],
+      "steps": [
+        "Add es dictionaries for packages/ui and apps/web with full key coverage and correct ICU plurals.",
+        "Add es overrides for the demo content.",
+        "Add es to the language switcher and to the US pack locales.",
+        "Extend the locale and leak tests to es."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in es.",
+        "Every public page renders in es without Russian or untranslated text.",
+        "Native-speaker review requested in a good-first issue."
+      ],
+      "paths": [
+        "packages/ui/locales/es.json",
+        "apps/web/app/_lib/locales/es.json",
+        "apps/web/fixtures/i18n/es.json",
+        "apps/web/components/locale"
+      ]
     }
   ]
 }
