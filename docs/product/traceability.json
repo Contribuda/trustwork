@@ -46,7 +46,8 @@
       "id": "R05",
       "tasks": [
         "COM-001",
-        "WEB-002"
+        "WEB-002",
+        "COM-002"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -65,7 +66,8 @@
       "id": "R07",
       "tasks": [
         "COM-001",
-        "WEB-002"
+        "WEB-002",
+        "COM-002"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -75,7 +77,8 @@
       "id": "R08",
       "tasks": [
         "AST-001",
-        "WEB-002"
+        "WEB-002",
+        "COMMS-001"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -85,7 +88,8 @@
       "id": "R09",
       "tasks": [
         "DS-001",
-        "WEB-002"
+        "WEB-002",
+        "AGT-018"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -112,7 +116,8 @@
     {
       "id": "R12",
       "tasks": [
-        "EXE-001"
+        "EXE-001",
+        "PLAN-001"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -133,7 +138,8 @@
       "tasks": [
         "EXE-001",
         "ADM-001",
-        "ADM-002"
+        "ADM-002",
+        "REP-001"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -145,7 +151,9 @@
         "CNT-001",
         "WEB-001",
         "ADM-001",
-        "ADM-002"
+        "ADM-002",
+        "WEB-004",
+        "CNT-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -167,7 +175,8 @@
       "tasks": [
         "CNT-001",
         "ADM-001",
-        "ADM-002"
+        "ADM-002",
+        "CNT-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -185,7 +194,8 @@
     {
       "id": "R19",
       "tasks": [
-        "BILL-001"
+        "BILL-001",
+        "BILL-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -196,7 +206,8 @@
       "tasks": [
         "BILL-001",
         "ADM-001",
-        "ADM-002"
+        "ADM-002",
+        "BILL-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -207,7 +218,9 @@
       "tasks": [
         "BE-000",
         "BE-001",
-        "WEB-001"
+        "WEB-001",
+        "WEB-004",
+        "BE-004"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -255,7 +268,9 @@
       "id": "R26",
       "tasks": [
         "DS-001",
-        "WEB-001"
+        "WEB-001",
+        "INTL-003",
+        "INTL-004"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -264,7 +279,8 @@
     {
       "id": "R27",
       "tasks": [
-        "QA-001"
+        "QA-001",
+        "QA-002"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -278,7 +294,8 @@
         "DATA-001",
         "BE-001",
         "ADM-001",
-        "ADM-002"
+        "ADM-002",
+        "BE-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md",
@@ -324,7 +341,8 @@
     {
       "id": "R32",
       "tasks": [
-        "EVT-001"
+        "EVT-001",
+        "EVT-002"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -343,7 +361,9 @@
       "id": "R34",
       "tasks": [
         "MATCH-001",
-        "COM-001"
+        "COM-001",
+        "WEB-010",
+        "MATCH-002"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -353,7 +373,8 @@
       "id": "R35",
       "tasks": [
         "AGT-001",
-        "AST-001"
+        "AST-001",
+        "AGT-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -362,7 +383,8 @@
     {
       "id": "R36",
       "tasks": [
-        "HUB-001"
+        "HUB-001",
+        "HUB-004"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -373,7 +395,11 @@
       "tasks": [
         "HUB-002",
         "HUB-003",
-        "ADM-002"
+        "ADM-002",
+        "KEYS-001",
+        "SRC-001",
+        "PIPE-001",
+        "EDIT-001"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -386,7 +412,9 @@
         "INTL-UZ",
         "INTL-US",
         "DEMO-US",
-        "LANG-ES"
+        "LANG-ES",
+        "CTRY-003",
+        "CFG-001"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -400,7 +428,144 @@
         "FED-002",
         "FED-003",
         "FED-004",
-        "FED-005"
+        "FED-005",
+        "FED-006"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R40",
+      "tasks": [
+        "CFG-001",
+        "CTRY-002",
+        "INTL-US",
+        "LANG-ES",
+        "DEMO-US",
+        "HUB-004",
+        "QA-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R41",
+      "tasks": [
+        "PLAN-000",
+        "PLAN-001",
+        "TASK-001",
+        "WEB-007",
+        "AGT-010"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R42",
+      "tasks": [
+        "CONS-001",
+        "CONS-002",
+        "PLAN-003",
+        "WEB-007"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R43",
+      "tasks": [
+        "KNOW-001",
+        "PLAN-003"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R44",
+      "tasks": [
+        "REP-001",
+        "REP-002",
+        "AGT-005",
+        "WEB-008",
+        "CLM-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R45",
+      "tasks": [
+        "PLAN-000",
+        "SRC-001",
+        "EDIT-001",
+        "MAT-001",
+        "REC-001",
+        "AGT-021"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R46",
+      "tasks": [
+        "PAY-001",
+        "BILL-002",
+        "PAY-002",
+        "CONS-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R47",
+      "tasks": [
+        "BILL-003",
+        "BIZ-001",
+        "MATCH-002",
+        "AGT-004"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R48",
+      "tasks": [
+        "HUB-005",
+        "CTRY-002",
+        "HUBC-005"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R49",
+      "tasks": [
+        "AGT-022",
+        "AGT-018",
+        "AGT-016"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R50",
+      "tasks": [
+        "AGT-023",
+        "AGT-003",
+        "EVAL-001",
+        "AGT-019",
+        "HUBC-005"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",

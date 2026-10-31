@@ -500,9 +500,16 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 
 ### HC-81 Agent policy — `/agents/policy`
 - **Purpose**: hub-wide agent rules.
-- **Data**: allowed actions, outreach quotas, channels, disclosure text per language, plan-to-people automation limits.
+- **Data**: allowed actions, outreach quotas, channels, disclosure text per language, plan-to-people automation limits; per-jurisdiction disclosure, liability, consent, record-keeping and per-action limits with the country-pack default beside each value (HUB-005).
 - **Actions**: edit (version).
 - **Locale**: `admin.agents.policy.*`
+
+### HC-85 Extensions — `/agents/extensions`, `/agents/extensions/[extension]`
+- **Purpose**: the governed extension registry (ADR 010 decision 22).
+- **Data**: extensions with status, declared actions and mandate kinds, inputs, data classes, side effects, endpoints, cost model, safety-suite result and date, activation history.
+- **Actions**: draft version, run the safety suite on the fake adapter, request activation (second person), suspend (one person), retire.
+- **States**: failing safety suite → activation blocked; endpoint in a restricted place → refused at registration.
+- **Locale**: `admin.agents.extensions.*`
 
 ### HC-82 External agents — `/agents/external`
 - **Purpose**: MCP and A2A access policy.

@@ -159,7 +159,7 @@ flowchart LR
 
 ## Notes for the integrator
 
-- DATA-002 names `packages/data/migrations/admin` as its path; the runner reads one flat directory today, so either the runner learns subdirectories (a reviewed change) or A2 lands as flat files. Decide before A2.
+- Decided 2026-10-31 ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 15): DATA-004 teaches the runner one level of module directories (`packages/data/migrations/<module>/`, global timestamp order; the twelve applied files stay in the root), so DATA-002 lands in `packages/data/migrations/admin` and every slice owns its module directory, schema mirror file and repository file.
 - DATA-002 mentions claim tables; this plan delivers claims in C3 because they need recipe versions from HUB-003. Moderation tables stay in A2 as DATA-002 says.
 - `plan_baseline` and `project_milestone` from earlier designs are delivered as `plan_version` and `plan_item(kind = milestone)` in C4; `MilestoneSchema` stays the projection contract.
 - The billing chapter's "plan version" is `subscription_plan_version` in B1 to avoid the project plan name.

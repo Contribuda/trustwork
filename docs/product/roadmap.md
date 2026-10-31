@@ -2,6 +2,8 @@
 
 Phases sequence validated slices; they do not remove the full domain from the model. All production phases require explicit release authorization. See the machine-readable task graph for executable dependencies.
 
+The executable plan is the [engine roadmap](../engine/roadmap.md) (phases 1–8 with package identifiers, ADR 012); this page keeps the original product-level gates, which still apply to those phases.
+
 | Phase | Deliverable | Entry / exit gate |
 |---|---|---|
 | F0 Foundation (this bootstrap) | Decision baseline, inspected references, architecture/ADRs, model/contracts plan, runnable technical examples, atomic claims, task briefs | Local validation plus independent coordinator review; no production functionality claim |

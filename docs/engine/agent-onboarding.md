@@ -96,7 +96,7 @@ If two of these conflict, stop and ask in the issue. Never resolve a contradicti
 
 ### Where work comes from
 
-- **Work packages**: `docs/engine/work-packages.json`, listed by `npm run work` and edited in pull requests (it is the source of truth for work). Each has an id, goal, steps, acceptance criteria, the paths it owns, what it depends on and the handbook chapter to read. Maintainers open one GitHub issue per package titled `[WP COM-001] <title>`.
+- **Work packages**: `docs/engine/work-packages.json`, listed by `npm run work` and edited in pull requests (it is the source of truth for work). Each has an id, goal, steps, acceptance criteria, the paths it owns, what it depends on and the handbook chapter to read. Maintainers open one GitHub issue per package titled `[WP COM-001] <title>`, with the body rendered by `node scripts/work-packages.mjs issue <ID>`.
 - **Your human's task**: if your human asks for something that is not a work package, check whether it overlaps one; if it does, work through that package's issue; if not, open an issue describing it before large changes.
 - **Good first contributions**: translations review, country-pack facts with sources, documentation fixes, tests for existing contracts, accessibility fixes.
 
