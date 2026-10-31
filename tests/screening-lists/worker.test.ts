@@ -59,7 +59,7 @@ test('SANC-002 worker: ingestion modes, sanity bounds, activation and freshness'
     const runtime = makeRuntime(pool);
     const registry = new HandlerRegistry();
     registerScreeningLists(registry, runtime);
-    const worker = new Worker({ pool, registry, metrics, config: { pollIntervalMs: 50, concurrency: 2 }, tasks: () => [screeningListsDueTask(runtime), screeningFreshnessTask(runtime)], random: () => 0 });
+    const worker = new Worker({ pool, registry, metrics, config: { pollIntervalMs: 50, concurrency: 1 }, tasks: () => [screeningListsDueTask(runtime), screeningFreshnessTask(runtime)], random: () => 0 });
     workers.push(worker);
     return { worker, pool, runtime };
   };
