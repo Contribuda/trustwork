@@ -1,5 +1,4 @@
-import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
@@ -7,18 +6,25 @@ import { ROUTES } from '../helpers.js';
 import { ENGINE_LOCALES, localeCountry } from './helpers.js';
 
 /**
- * INTL-004 acceptance "every page renders byte-identical text before and after the move in all six
- * languages": a text snapshot of the server-rendered pages. For every engine language and every route
- * (the a11y routes plus every fixture detail page) the visible text of the document is hashed; the hashes
- * live in `page-text.snapshot.json`. The snapshot was written from the single-file dictionaries before the
- * move to `apps/web/locales/<tag>/<namespace>.json` and still matches after it.
+ * Text snapshot for refactors that must not change a single visible word (INTL-004 acceptance "every page
+ * renders byte-identical text before and after the move in all six languages"; reusable for any later
+ * restructuring of dictionaries, layouts or stylesheets).
  *
- * When you change copy on purpose, rewrite the snapshot and commit it with the copy change:
- * `TRUSTWORK_UPDATE_PAGE_TEXT=1 npx playwright test page-text`.
+ * The document text of every route (the a11y routes plus every fixture detail page) in every language
+ * directory is recorded from one build and compared against another. It is not a standing gate: pages show
+ * today's date and upcoming events, and format instants in the server's time zone, so a recording is only
+ * comparable on the same day with the same `TZ`. Opt-in, one worker, the same request order every run:
+ *
+ *   TZ=UTC NEXT_DIST_DIR=.next-e2e npx next build --webpack            # base commit
+ *   TZ=UTC TRUSTWORK_PAGE_TEXT=record NEXT_DIST_DIR=.next-e2e npx playwright test page-text
+ *   TZ=UTC NEXT_DIST_DIR=.next-e2e npx next build --webpack            # your change
+ *   TZ=UTC TRUSTWORK_PAGE_TEXT=compare NEXT_DIST_DIR=.next-e2e npx playwright test page-text
+ *
+ * The recording goes to `TRUSTWORK_PAGE_TEXT_FILE` (default `apps/web/dist/page-text.json`, ignored by git).
  */
+const mode = process.env.TRUSTWORK_PAGE_TEXT;
 const here = dirname(fileURLToPath(import.meta.url));
-const snapshotFile = resolve(here, 'page-text.snapshot.json');
-const update = process.env.TRUSTWORK_UPDATE_PAGE_TEXT === '1';
+const file = resolve(process.env.TRUSTWORK_PAGE_TEXT_FILE ?? resolve(here, '../../../apps/web/dist/page-text.json'));
 
 type Row = Record<string, unknown>;
 const fixtures = resolve(here, '../../../apps/web/fixtures');
@@ -34,16 +40,6 @@ for (const c of fixture('companies')) routes.add(`/companies/${c.slug}`);
 for (const p of fixture('people')) routes.add(`/people/${p.slug}`);
 for (const p of fixture('projects')) routes.add(`/projects/${p.slug}`);
 for (const e of fixture('events')) routes.add(`/events/${e.slug}`);
-
-/**
- * Pages whose server-rendered text depends on which request loaded a module first, not on the dictionaries:
- * the onboarding interests step lists `REGIONS`, computed once per process from the country of the first
- * request that imported `components/onboarding/onboarding-state.ts` (a pre-existing cross-request leak,
- * reported as a follow-up of INTL-004). They stay out of the snapshot; INTL-004 compared them before and
- * after the move on fresh servers with the same request order.
- */
-const ORDER_DEPENDENT = new Set(['/onboarding/interests?persona=reader']);
-for (const route of ORDER_DEPENDENT) routes.delete(route);
 
 const LOCALES: Array<[string, string]> = ENGINE_LOCALES.map((tag) => [tag, localeCountry(tag)]);
 
@@ -68,36 +64,47 @@ function documentText(html: string): string {
     .trim();
 }
 
-type Snapshot = Record<string, Record<string, string>>;
-const recorded: Snapshot = existsSync(snapshotFile) ? (JSON.parse(readFileSync(snapshotFile, 'utf8')) as Snapshot) : {};
-const written: Snapshot = {};
-
-test.describe.configure({ mode: update ? 'serial' : 'parallel' });
-
-for (const [tag, country] of LOCALES) {
-  test(`page text in ${tag} matches the snapshot`, async ({ playwright, baseURL }) => {
-    test.setTimeout(300_000);
-    const context = await playwright.request.newContext({ baseURL: baseURL!, extraHTTPHeaders: { cookie: `trustwork.country=${country}; trustwork.locale=${tag}` } });
-    const actual: Record<string, string> = {};
-    for (const route of [...routes].sort()) {
-      const response = await context.get(route, { maxRedirects: 0 });
-      const text = documentText(await response.text());
-      actual[route] = `${response.status()} ${Buffer.byteLength(text)} ${createHash('sha256').update(text).digest('hex').slice(0, 32)}`;
-    }
-    await context.dispose();
-    expect(Object.keys(actual).length).toBeGreaterThanOrEqual(90);
-    if (update) {
-      written[tag] = actual;
-      return;
-    }
-    expect(recorded[tag], `no snapshot for ${tag}; run with TRUSTWORK_UPDATE_PAGE_TEXT=1`).toBeTruthy();
-    const changed = Object.keys({ ...recorded[tag], ...actual }).filter((route) => recorded[tag]![route] !== actual[route]);
-    expect(changed, `pages whose text changed in ${tag}:\n${changed.map((r) => `${r}: ${recorded[tag]![r]} -> ${actual[r]}`).join('\n')}`).toEqual([]);
-  });
+/** The first difference between two texts, with some context, for the failure message. */
+function firstDifference(a: string, b: string): string {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+  return `at ${i}: "…${a.slice(Math.max(0, i - 40), i + 60)}…" -> "…${b.slice(Math.max(0, i - 40), i + 60)}…"`;
 }
 
-test.afterAll(() => {
-  if (!update || Object.keys(written).length !== LOCALES.length) return;
-  const ordered = Object.fromEntries(LOCALES.map(([tag]) => [tag, written[tag]]));
-  writeFileSync(snapshotFile, `${JSON.stringify(ordered, null, 2)}\n`);
+test.describe('page text snapshot', () => {
+  test.skip(mode !== 'record' && mode !== 'compare', 'set TRUSTWORK_PAGE_TEXT=record or compare (see the header of this file)');
+
+  test('every page in every language', async ({ playwright, baseURL }) => {
+    test.setTimeout(600_000);
+    const actual: Record<string, Record<string, string>> = {};
+    for (const [tag, country] of LOCALES) {
+      const context = await playwright.request.newContext({ baseURL: baseURL!, extraHTTPHeaders: { cookie: `trustwork.country=${country}; trustwork.locale=${tag}` } });
+      const pages: Record<string, string> = {};
+      for (const route of [...routes].sort()) {
+        const response = await context.get(route, { maxRedirects: 0 });
+        pages[route] = `${response.status()} ${documentText(await response.text())}`;
+      }
+      actual[tag] = pages;
+      await context.dispose();
+    }
+    expect(Object.keys(actual.en ?? {}).length).toBeGreaterThanOrEqual(90);
+    if (mode === 'record') {
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, `${JSON.stringify(actual, null, 1)}\n`);
+      return;
+    }
+    expect(existsSync(file), `no recording at ${file}; run with TRUSTWORK_PAGE_TEXT=record on the base build first`).toBe(true);
+    const recorded = JSON.parse(readFileSync(file, 'utf8')) as typeof actual;
+    const changed: string[] = [];
+    for (const [tag] of LOCALES) {
+      const before = recorded[tag] ?? {};
+      const after = actual[tag] ?? {};
+      for (const route of new Set([...Object.keys(before), ...Object.keys(after)])) {
+        const a = before[route] ?? '(missing)';
+        const b = after[route] ?? '(missing)';
+        if (a !== b) changed.push(`${tag} ${route} ${firstDifference(a, b)}`);
+      }
+    }
+    expect(changed, changed.slice(0, 20).join('\n')).toEqual([]);
+  });
 });
