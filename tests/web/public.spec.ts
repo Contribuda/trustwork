@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { PUBLIC_NAV, ROUTES, expectRussianOnly } from './helpers.js';
+import { PUBLIC_NAV, ROUTES, expectRussianOnly, hydrated } from './helpers.js';
 
 test.describe('public resource', () => {
   test('home renders the public shell with exactly the seven sections in order', async ({ page }) => {
@@ -120,7 +120,7 @@ test.describe('public resource', () => {
     await page.goto('/magazine/12/read');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Фасады зимой');
     await expect(page.getByText('Исправлена нижняя граница', { exact: false }).or(page.getByRole('status').first())).toBeVisible();
-    await page.getByRole('button', { name: 'Следующий материал' }).click();
+    await (await hydrated(page.getByRole('button', { name: 'Следующий материал' }))).click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Люди недели');
     await expect(page.getByText('2 из 8')).toBeVisible();
     await expect(page).toHaveURL(/#item-2$/);
@@ -132,7 +132,7 @@ test.describe('public resource', () => {
     await page.goto('/magazine');
     const counter = page.locator('.leaf__counter');
     await expect(counter).toHaveText('01–02 / 20');
-    await page.getByRole('button', { name: 'Следующие страницы' }).first().click();
+    await (await hydrated(page.getByRole('button', { name: 'Следующие страницы' }))).first().click();
     await expect(counter).toHaveText('03–04 / 20', { timeout: 5000 });
     await expect(page).toHaveURL(/#page-3$/);
     await page.getByRole('button', { name: 'Содержание', exact: true }).click();
@@ -147,7 +147,7 @@ test.describe('public resource', () => {
 
   test('reader quiz and reading progress stay in the browser', async ({ page }) => {
     await page.goto('/magazine/12/read');
-    await page.getByRole('radio', { name: 'Ниже +5 °C' }).click();
+    await (await hydrated(page.getByRole('radio', { name: 'Ниже +5 °C' }))).click();
     await page.getByRole('button', { name: 'Проверить' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Верно' })).toBeVisible();
     // Reaching the end of an item marks it read and removes the "Mark as read" button, so clicking that button
@@ -165,7 +165,7 @@ test.describe('public resource', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Как сравнивать предложения');
     await expect(page.getByText('3 из 8')).toBeVisible();
     await page.goto('/magazine/12');
-    await page.getByRole('link', { name: 'Люди недели: руководитель проекта о приёмке без споров' }).first().click();
+    await (await hydrated(page.getByRole('link', { name: 'Люди недели: руководитель проекта о приёмке без споров' }))).first().click();
     await expect(page).toHaveURL(/\/magazine\/12\/read#item-2$/);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Люди недели');
   });
@@ -189,7 +189,7 @@ test.describe('public resource', () => {
     await expect(header.getByRole('button', { name: 'Аккаунт' })).toBeVisible();
     await expect(header.getByRole('link', { name: 'Войти в сервис' })).toHaveCount(0);
     await expect(header.getByText('Анна Примерова')).toHaveCount(0);
-    await header.getByRole('button', { name: 'Аккаунт' }).click();
+    await (await hydrated(header.getByRole('button', { name: 'Аккаунт' }))).click();
     await expect(page.getByRole('menuitem', { name: 'В рабочее пространство' })).toBeVisible();
   });
 });

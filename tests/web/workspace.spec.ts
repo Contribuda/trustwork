@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ROUTES, WORKSPACE_NAV, expectRussianOnly } from './helpers.js';
+import { ROUTES, WORKSPACE_NAV, expectRussianOnly, hydrated } from './helpers.js';
 
 test.describe('workspace shell', () => {
   for (const route of ROUTES.filter((r) => r.path.startsWith('/app') || r.path.startsWith('/onboarding'))) {
@@ -25,7 +25,7 @@ test.describe('workspace shell', () => {
     await page.goto('/app?persona=reader');
     const nav = page.getByRole('navigation', { name: 'Рабочее пространство' }).first();
     await expect(nav.locator('ul a').filter({ visible: true })).toHaveText(['Обзор', 'Моя страница', 'Компания', 'Проекты', 'Публикации', 'Помощник']);
-    await nav.getByRole('button', { name: 'Ещё' }).click();
+    await (await hydrated(nav.getByRole('button', { name: 'Ещё' }))).click();
     await expect(nav.getByRole('link', { name: 'Закупки' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Продажи' })).toBeVisible();
   });
@@ -47,6 +47,7 @@ test.describe('workspace shell', () => {
 
   test('keyboard walk: skip link, brand, collapse, nav, header controls; collapse keeps focus and announces state', async ({ page }) => {
     await page.goto('/app?persona=mixed');
+    await hydrated(page.getByRole('button', { name: 'Аккаунт' }));
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: 'К содержимому' })).toBeFocused();
     await page.keyboard.press('Tab');
@@ -82,7 +83,7 @@ test.describe('workspace shell', () => {
 
   test('avatar menu follows the menu-button pattern with «Помощь» before «Выйти»', async ({ page }) => {
     await page.goto('/app?persona=mixed');
-    const avatar = page.getByRole('button', { name: 'Аккаунт' });
+    const avatar = await hydrated(page.getByRole('button', { name: 'Аккаунт' }));
     await avatar.focus();
     await page.keyboard.press('ArrowDown');
     const menu = page.getByRole('menu');
@@ -102,7 +103,7 @@ test.describe('workspace shell', () => {
 
   test('bell opens an object-linked notifications list with the count in its name', async ({ page }) => {
     await page.goto('/app?persona=mixed');
-    await page.getByRole('button', { name: 'Уведомления, 2 новых' }).click();
+    await (await hydrated(page.getByRole('button', { name: 'Уведомления, 2 новых' }))).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('Сравнение предложений по балкам готово');
     await expect(dialog.getByRole('link', { name: 'Все уведомления' })).toBeVisible();
@@ -116,6 +117,7 @@ test.describe('workspace shell', () => {
     const before = await main.boundingBox();
     const launcher = page.getByRole('button', { name: /Помощник/ }).last();
     await expect(launcher).toHaveAttribute('aria-expanded', 'false');
+    await hydrated(launcher);
     await launcher.focus();
     await page.keyboard.press('Enter');
     const overlay = page.getByRole('complementary', { name: 'Окно помощника' });
@@ -142,7 +144,7 @@ test.describe('workspace shell', () => {
     await expect(page.getByText('Вы пока не связаны с компанией')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Присоединиться по приглашению' })).toBeVisible();
     await page.goto('/app/company?persona=mixed');
-    await page.getByRole('tab', { name: 'Каталог' }).click();
+    await (await hydrated(page.getByRole('tab', { name: 'Каталог' }))).click();
     await expect(page.getByRole('tabpanel')).toContainText('Минимальная цена (не публикуется)');
   });
 
@@ -151,11 +153,11 @@ test.describe('workspace shell', () => {
     // The scroll hint renders only when the tab row overflows, so it is not asserted at desktop width.
     await page.goto('/app/projects/project-dacha?persona=mixed');
     await expect(page.getByRole('tab', { name: 'Бюджет' })).toHaveCount(0);
-    await page.getByRole('tab', { name: 'План' }).click();
+    await (await hydrated(page.getByRole('tab', { name: 'План' }))).click();
     await expect(page.getByRole('tabpanel')).toContainText('Утепление стен');
     await expect(page.getByRole('tabpanel')).not.toContainText('Транш кредита');
     await page.goto('/app/projects/project-dacha?persona=owner');
-    await page.getByRole('tab', { name: 'Бюджет' }).click();
+    await (await hydrated(page.getByRole('tab', { name: 'Бюджет' }))).click();
     await expect(page.getByRole('tabpanel')).toContainText('Лимит');
     expect((await page.goto('/app/projects/project-dacha?persona=reader'))?.status()).toBe(404);
   });

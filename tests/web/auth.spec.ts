@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { hydrated } from './helpers.js';
 
 const ready = (page: import('@playwright/test').Page) => page.locator('form[data-hydrated]').first().waitFor();
 
@@ -71,6 +72,7 @@ test.describe('auth and onboarding (fake contract adapter)', () => {
 
   test('login keyboard order: brand, back, e-mail, password, toggle, forgot, submit', async ({ page }) => {
     await page.goto('/login');
+    await ready(page);
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: 'Перейти к содержимому' })).toBeFocused();
     await page.keyboard.press('Tab');
@@ -95,31 +97,34 @@ test.describe('auth and onboarding (fake contract adapter)', () => {
     await expect(page.getByText('Аккаунт создан')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Пока осмотрюсь' })).toBeVisible();
     await expect(page.getByText('ИНН')).toHaveCount(0);
-    await page.getByRole('radio', { name: 'Инженеры и технологи' }).click();
+    // The first step is server-rendered: a choice made before hydration is lost and "Continue" stays on the page.
+    // Later steps are client navigations (router.push): wait for the navigation itself, which fetches the next
+    // route from the server and can take longer than an assertion's poll window on a loaded machine.
+    await (await hydrated(page.getByRole('radio', { name: 'Инженеры и технологи' }))).click();
     await page.getByRole('radio', { name: 'Независимый специалист' }).click();
     await page.getByLabel('Кто вы одной строкой').fill('Инженер стройконтроля');
     await page.getByRole('button', { name: 'Продолжить' }).click();
-    await expect(page).toHaveURL(/\/onboarding\/goals\?persona=reader$/);
+    await page.waitForURL(/\/onboarding\/goals\?persona=reader$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Что вы хотите делать на платформе?');
     await page.getByRole('checkbox', { name: /Читать и учиться/ }).check();
     await page.getByRole('checkbox', { name: /Закупать/ }).check();
     await page.getByRole('button', { name: 'Продолжить' }).click();
-    await expect(page).toHaveURL(/\/onboarding\/interests\?persona=reader$/);
+    await page.waitForURL(/\/onboarding\/interests\?persona=reader$/);
     await page.getByRole('checkbox', { name: 'Материалы', exact: true }).check();
     await page.getByRole('checkbox', { name: 'Строительные материалы' }).check();
     await expect(page.getByRole('checkbox', { name: 'Строительные материалы' })).toBeChecked();
     await page.getByRole('button', { name: 'Продолжить' }).click();
-    await expect(page).toHaveURL(/\/onboarding\/profile\?persona=reader$/);
+    await page.waitForURL(/\/onboarding\/profile\?persona=reader$/);
     await expect(page.getByText('Страница скрыта')).toBeVisible();
     await page.getByText('Показывать мою страницу в разделе «Люди»', { exact: true }).click();
     await expect(page.getByRole('switch', { name: /Показывать мою страницу/ })).toBeChecked();
     await expect(page.getByText('Так вас увидят')).toBeVisible();
     await expect(page.getByText('Инженер стройконтроля').first()).toBeVisible();
     await page.getByRole('button', { name: 'Завершить' }).click();
-    await expect(page).toHaveURL(/\/onboarding\/done\?persona=reader$/);
+    await page.waitForURL(/\/onboarding\/done\?persona=reader$/);
     await expect(page.getByText(/Профиль заполнен|начать работать/)).toBeVisible();
     await page.getByRole('link', { name: 'Открыть кабинет' }).click();
-    await expect(page).toHaveURL(/\/app\?persona=reader$/);
+    await page.waitForURL(/\/app\?persona=reader$/);
   });
 
   test('?next= accepts only same-origin relative paths (open redirect)', async ({ page }) => {
