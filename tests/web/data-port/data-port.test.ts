@@ -20,7 +20,7 @@ test('type test: the fixture adapter satisfies the DataPort, every method is asy
 });
 
 test('runtime probe: async results, handle and id addressing, private projects and anonymous workspace access', () => {
-  const result = spawnSync(process.execPath, ['--import', 'tsx', join(here, 'probe.tsx')], { encoding: 'utf8', env: { ...process.env, TSX_TSCONFIG_PATH: tsconfig } });
+  const result = spawnSync(process.execPath, ['--import', 'tsx', join(here, 'probe.tsx')], { encoding: 'utf8', env: { ...process.env, TSX_TSCONFIG_PATH: tsconfig, TRUSTWORK_DEMO_MODE: '1' } });
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout) as Record<string, unknown>;
   assert.equal(report.source, 'fixtures');

@@ -26,7 +26,8 @@
   },
   "status": {
     "sourcedHint": "Qeyd açıq mənbədən yaradılıb; şirkət məlumatları hələ təsdiqləməyib.",
-    "claimedHint": "Məlumatlar şirkət nümayəndəsi tərəfindən bəyan edilib və yoxlama gözləyir."
+    "claimedHint": "Məlumatlar şirkət nümayəndəsi tərəfindən bəyan edilib və yoxlama gözləyir.",
+    "registered": "Platformada qeydiyyatdan keçib"
   },
   "provenance": {
     "source": "Mənbə: {source}, yenilənib {date}",

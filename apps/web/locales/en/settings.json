@@ -18,7 +18,8 @@
       "language": "Interface language",
       "languageLabel": "Interface language",
       "languageValue": "English",
-      "demoNote": "Demo: changing the email and deleting the account come with the server."
+      "demoNote": "Demo: changing the email and deleting the account come with the server.",
+      "liveNote": "Changing the email and deleting the account come in a later stage."
     },
     "security": {
       "changePassword": "Change the password",
@@ -42,7 +43,16 @@
       "sessionsCaption": "Session list",
       "google": "Google",
       "lastSeenAt": "Activity: {date}",
-      "apple": "Apple"
+      "apple": "Apple",
+      "unknownDevice": "Unknown device",
+      "endPending": "Ending…",
+      "ended": "The session has ended.",
+      "othersEnded": "{count, plural, =0 {No other sessions were active.} one {# other session ended.} other {# other sessions ended.}}",
+      "passwordChanged": "The password has been changed. Your other sessions have ended.",
+      "passwordHint": "At least {min} characters. You can paste a password from a password manager.",
+      "passwordTooShort": "The password is too short",
+      "passwordTooLong": "The password is too long",
+      "saving": "Saving…"
     },
     "preferences": {
       "interests": "Interests",
@@ -79,6 +89,13 @@
       "invoices": "Invoices",
       "noInvoices": "No invoices"
     },
-    "profileLink": "Profile and public page"
+    "profileLink": "Profile and public page",
+    "stepUp": {
+      "title": "Confirm it is you",
+      "body": "Enter your password to continue. Sensitive changes need a recent sign-in.",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "pending": "Checking…"
+    }
   }
 }

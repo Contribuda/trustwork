@@ -184,7 +184,8 @@
       "find": "Find a company in the directory",
       "policyNote": "Joining is confirmed by the company.",
       "findHint": "Companies with verified pages, catalogues and projects.",
-      "lede": "The workspace works without a company too; you can join or create a page at any time."
+      "lede": "The workspace works without a company too; you can join or create a page at any time.",
+      "invitationByEmail": "Invitations from a company arrive by email."
     },
     "join": {
       "code": "Invitation code or link",
@@ -205,7 +206,8 @@
       "status_ended": "Ended",
       "sinceDate": "since {date}",
       "hidden": "Not shown on the public page",
-      "inviteNote": "Invitations and ending participation come in the next stage."
+      "inviteNote": "Invitations and ending participation come in the next stage.",
+      "privateName": "Private profile"
     },
     "membersEmpty": "No employees yet",
     "wallEmpty": "No company publications yet",
@@ -233,7 +235,8 @@
       "sourced": "Created from an open source",
       "claimed": "Claimed, awaiting verification",
       "verified": "Verified",
-      "pendingRequests": "{count, plural, one {# request to join} other {# requests to join}}"
+      "pendingRequests": "{count, plural, one {# request to join} other {# requests to join}}",
+      "registered": "Registered on the platform, not claimed or verified yet"
     },
     "projectsEmpty": "No company projects available to you yet",
     "reputationNote": "Internal evidence on deals appears after the first fulfilled orders.",
@@ -260,7 +263,44 @@
       }
     },
     "peopleHint": "The company’s employees and their roles. Being public is each person’s own decision.",
-    "website": "Company website"
+    "website": "Company website",
+    "create": {
+      "title": "Create a company page",
+      "body": "You become its administrator. The page starts as registered: claims and verification are separate steps.",
+      "name": "Company name",
+      "handle": "Page address (optional)",
+      "handleHint": "3 to 40 lowercase Latin letters, digits and hyphens, for example acme-build.",
+      "description": "Public description (optional)",
+      "descriptionHint": "Shown on the public company page.",
+      "submit": "Create the page",
+      "pending": "Creating…",
+      "statusNote": "A person works for one company at a time: to create a page you must have no active employer.",
+      "error": {
+        "nameRequired": "Enter the company name",
+        "nameTooLong": "The name is too long",
+        "handleInvalid": "Use 3 to 40 lowercase Latin letters, digits and hyphens; not only digits.",
+        "handleTaken": "This address is taken. Choose another one.",
+        "handleLimit": "The page address has been changed too many times.",
+        "descriptionTooLong": "The description is too long"
+      }
+    },
+    "inviteForm": {
+      "title": "Invite a colleague",
+      "body": "The invitation goes to the email. We do not show whether the address has an account.",
+      "permissions": "Permissions",
+      "submit": "Send the invitation",
+      "pending": "Sending…",
+      "sent": "If the address belongs to a verified account, the invitation is on its way."
+    },
+    "permissionLabel": {
+      "pageEdit": "Edit the company page",
+      "publish": "Publish on behalf of the company",
+      "membersManage": "Manage members",
+      "dealsManage": "Manage projects and deals",
+      "catalogueEdit": "Edit the catalogue",
+      "billingView": "View billing",
+      "billingManage": "Manage billing"
+    }
   },
   "projectsWs": {
     "title": "Projects",
@@ -426,6 +466,36 @@
       "privateCount": "{count, plural, one {# private} other {# private}}",
       "purchases": "Project procurement",
       "purchasesCount": "{count, plural, =0 {no requests} one {# request} other {# requests}}"
+    },
+    "createForm": {
+      "title": "New project",
+      "body": "The project stays private until you publish it.",
+      "name": "Project name",
+      "summary": "Short description (optional)",
+      "owner": "Owner",
+      "ownerMe": "Me (a personal project)",
+      "ownerCompany": "Company: {name}",
+      "submit": "Create the project",
+      "pending": "Creating…",
+      "cancel": "Cancel",
+      "error": {
+        "nameRequired": "Enter the project name",
+        "nameTooLong": "The name is too long",
+        "summaryTooLong": "The description is too long"
+      }
+    },
+    "publish": {
+      "title": "Publish the project",
+      "body": "Everyone will see the name, the short description, the status and the story below. Budgets, files, notes and participants stay private.",
+      "story": "Project story",
+      "storyHint": "What you are building, why, and how it is going.",
+      "submit": "Publish",
+      "pending": "Publishing…",
+      "notAllowed": "Only the project owner can publish it.",
+      "error": {
+        "storyRequired": "Write a few words about the project",
+        "storyTooLong": "The story is too long"
+      }
     }
   },
   "ws": {

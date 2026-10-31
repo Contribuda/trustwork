@@ -13,6 +13,7 @@
     "scenario": {
       "error": "Loading error",
       "offline": "No connection"
-    }
+    },
+    "noPasswordChanged": "Demo: no password is changed."
   }
 }

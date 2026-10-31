@@ -184,7 +184,8 @@
       "find": "Katalogdan kompaniya topish",
       "policyNote": "Qoʻshilishni kompaniya tasdiqlaydi.",
       "findHint": "Tasdiqlangan sahifa, katalog va loyihalarga ega kompaniyalar.",
-      "lede": "Kabinet kompaniyasiz ham ishlaydi; qoʻshilish yoki sahifa yaratish istalgan vaqtda mumkin."
+      "lede": "Kabinet kompaniyasiz ham ishlaydi; qoʻshilish yoki sahifa yaratish istalgan vaqtda mumkin.",
+      "invitationByEmail": "Kompaniya takliflari pochtaga keladi."
     },
     "join": {
       "code": "Taklifnoma kodi yoki havolasi",
@@ -205,7 +206,8 @@
       "status_ended": "Tugagan",
       "sinceDate": "{date} dan",
       "hidden": "Ochiq sahifada koʻrsatilmaydi",
-      "inviteNote": "Taklifnomalar va ishtirokni tugatish keyingi bosqichda paydo boʻladi."
+      "inviteNote": "Taklifnomalar va ishtirokni tugatish keyingi bosqichda paydo boʻladi.",
+      "privateName": "Yopiq profil"
     },
     "membersEmpty": "Hozircha xodimlar yoʻq",
     "wallEmpty": "Hozircha kompaniya nashrlari yoʻq",
@@ -233,7 +235,8 @@
       "sourced": "Ochiq manba boʻyicha yaratilgan",
       "claimed": "Bildirilgan, tasdiqlashni kutmoqda",
       "verified": "Tasdiqlangan",
-      "pendingRequests": "{count, plural, one {# ta qoʻshilish soʻrovi} other {# ta qoʻshilish soʻrovi}}"
+      "pendingRequests": "{count, plural, one {# ta qoʻshilish soʻrovi} other {# ta qoʻshilish soʻrovi}}",
+      "registered": "Platformada ro‘yxatdan o‘tgan, hali tasdiqlanmagan va tekshirilmagan"
     },
     "projectsEmpty": "Sizga ochiq kompaniya loyihalari hozircha yoʻq",
     "reputationNote": "Bitimlar boʻyicha ichki dalillar birinchi bajarilgan buyurtmalardan soʻng paydo boʻladi.",
@@ -260,7 +263,44 @@
       }
     },
     "peopleHint": "Kompaniya xodimlari va ularning rollari. Ochiqlik — har birining oʻz qarori.",
-    "website": "Kompaniya sayti"
+    "website": "Kompaniya sayti",
+    "create": {
+      "title": "Kompaniya sahifasini yaratish",
+      "body": "Siz uning administratori bo‘lasiz. Sahifa «ro‘yxatdan o‘tgan» holatida yaratiladi: tasdiqlash va tekshirish alohida bosqichlar.",
+      "name": "Kompaniya nomi",
+      "handle": "Sahifa manzili (ixtiyoriy)",
+      "handleHint": "3 dan 40 gacha kichik lotin harflari, raqamlar va chiziqchalar, masalan acme-build.",
+      "description": "Ommaviy tavsif (ixtiyoriy)",
+      "descriptionHint": "Kompaniyaning ommaviy sahifasida ko‘rsatiladi.",
+      "submit": "Sahifani yaratish",
+      "pending": "Yaratilmoqda…",
+      "statusNote": "Inson bir vaqtda bitta kompaniyada ishlaydi: sahifa yaratish uchun sizda amaldagi ish beruvchi bo‘lmasligi kerak.",
+      "error": {
+        "nameRequired": "Kompaniya nomini kiriting",
+        "nameTooLong": "Nom juda uzun",
+        "handleInvalid": "3 dan 40 gacha kichik lotin harflari, raqamlar va chiziqchalardan foydalaning; faqat raqamlar emas.",
+        "handleTaken": "Bu manzil band. Boshqasini tanlang.",
+        "handleLimit": "Sahifa manzili juda ko‘p marta o‘zgartirilgan.",
+        "descriptionTooLong": "Tavsif juda uzun"
+      }
+    },
+    "inviteForm": {
+      "title": "Hamkasbni taklif qilish",
+      "body": "Taklif pochtaga yuboriladi. Manzilning akkaunti bor-yo‘qligini ko‘rsatmaymiz.",
+      "permissions": "Huquqlar",
+      "submit": "Taklifni yuborish",
+      "pending": "Yuborilmoqda…",
+      "sent": "Agar manzil tasdiqlangan akkauntga tegishli bo‘lsa, taklif yo‘lda."
+    },
+    "permissionLabel": {
+      "pageEdit": "Kompaniya sahifasini tahrirlash",
+      "publish": "Kompaniya nomidan nashr qilish",
+      "membersManage": "Xodimlarni boshqarish",
+      "dealsManage": "Loyihalar va bitimlarni yuritish",
+      "catalogueEdit": "Katalogni tahrirlash",
+      "billingView": "To‘lovlarni ko‘rish",
+      "billingManage": "To‘lovlarni boshqarish"
+    }
   },
   "projectsWs": {
     "title": "Loyihalar",
@@ -426,6 +466,36 @@
       "privateCount": "{count, plural, one {# maxfiy} other {# maxfiy}}",
       "purchases": "Loyiha xaridlari",
       "purchasesCount": "{count, plural, =0 {soʻrovlar yoʻq} one {# soʻrov} other {# soʻrov}}"
+    },
+    "createForm": {
+      "title": "Yangi loyiha",
+      "body": "Loyiha siz nashr qilmaguningizcha yopiq.",
+      "name": "Loyiha nomi",
+      "summary": "Qisqa tavsif (ixtiyoriy)",
+      "owner": "Egasi",
+      "ownerMe": "Men (shaxsiy loyiha)",
+      "ownerCompany": "Kompaniya: {name}",
+      "submit": "Loyihani yaratish",
+      "pending": "Yaratilmoqda…",
+      "cancel": "Bekor qilish",
+      "error": {
+        "nameRequired": "Loyiha nomini kiriting",
+        "nameTooLong": "Nom juda uzun",
+        "summaryTooLong": "Tavsif juda uzun"
+      }
+    },
+    "publish": {
+      "title": "Loyihani nashr qilish",
+      "body": "Hamma nom, qisqa tavsif, holat va quyidagi hikoyani ko‘radi. Byudjetlar, fayllar, eslatmalar va ishtirokchilar yopiq qoladi.",
+      "story": "Loyiha haqida hikoya",
+      "storyHint": "Nima qurayapsiz, nima uchun va ishlar qanday ketmoqda.",
+      "submit": "Nashr qilish",
+      "pending": "Nashr qilinmoqda…",
+      "notAllowed": "Loyihani faqat uning egasi nashr qila oladi.",
+      "error": {
+        "storyRequired": "Loyiha haqida bir necha so‘z yozing",
+        "storyTooLong": "Hikoya juda uzun"
+      }
     }
   },
   "ws": {

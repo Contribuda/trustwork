@@ -16,15 +16,59 @@
       },
       "recovery": {
         "on_hold": "Bərpa sorğusu alındı və korporativ e-poçt siyasətinə əsasən yoxlama üçün saxlanıldı. Qərar barədə məlumat verəcəyik."
-      }
+      },
+      "provider": {
+        "already_linked": "Bu giriş üsulu artıq hesaba bağlanıb.",
+        "state_mismatch": "Giriş çox uzun çəkdi və ya kəsildi. Yenidən başlayın."
+      },
+      "email_taken": "Bu e-poçt artıq başqa hesabda istifadə olunur."
     },
     "access": {
       "not_found": "Səhifə tapılmadı",
-      "forbidden": "Giriş yoxdur"
+      "forbidden": "Giriş yoxdur",
+      "participation_expired": "Bu obyektə girişiniz başa çatıb.",
+      "mandate_revoked": "Köməkçinin bu əməliyyat üçün səlahiyyəti geri alınıb.",
+      "mandate_scope": "Bu əməliyyat köməkçinin səlahiyyətindən kənardır.",
+      "staff_no_case": "Əməkdaş girişi üçün açıq müraciət lazımdır.",
+      "approval_required": "Bu əməliyyat üçün əvvəlcə təsdiq lazımdır.",
+      "approval_digest_mismatch": "Təsdiq başqa versiya üçün verilib. Cari versiyanı təsdiqləyin.",
+      "second_approver_required": "Bu əməliyyatı ikinci şəxs təsdiqləməlidir."
     },
     "validation": {
       "schema": "Sahələri yoxlayın",
-      "unknown_field": "Sorğuda naməlum sahələr var"
+      "unknown_field": "Sorğuda naməlum sahələr var",
+      "revision_conflict": "Siz işləyərkən bu dəyişdirilib. Səhifəni yeniləyin və yenidən cəhd edin.",
+      "idempotency_conflict": "Bu sorğu artıq başqa məlumatlarla göndərilib. Səhifəni yeniləyin və yenidən cəhd edin.",
+      "idempotency_in_progress": "Əvvəlki sorğu hələ emal olunur. Bir az gözləyin və yenidən cəhd edin.",
+      "unit_mismatch": "Müxtəlif vahidlərdə olan miqdarları birləşdirmək olmaz.",
+      "not_canonicalizable": "Məlumatları bu formada qeyd etmək olmaz. Sahələri yoxlayın.",
+      "payload_too_large": "Sorğu çox böyükdür."
+    },
+    "network": "Bağlantı yoxdur. Şəbəkəni yoxlayın və yenidən cəhd edin.",
+    "commercial": {
+      "version_immutable": "Bu versiya yekundur və dəyişdirilmir.",
+      "rfq_version_not_current": "Sorğunun daha yeni versiyası var. Təklifi cari versiya üçün hazırlayın.",
+      "rfq_version_mismatch": "Təklif sorğunun başqa versiyasına aiddir.",
+      "stale_version": "Bu versiya köhnəlib. Cari versiyanı açın.",
+      "digest_mismatch": "Sənəd qeydə alınmış versiyaya uyğun gəlmir. Yeniləyin və yoxlayın.",
+      "totals_mismatch": "Yekunlar uyğun gəlmir. Məbləğləri yoxlayın.",
+      "currency_mismatch": "Müxtəlif valyutalarda olan məbləğləri birləşdirmək olmaz.",
+      "quote_not_acceptable": "Bu təklifi indiki vəziyyətində qəbul etmək olmaz.",
+      "quote_expired": "Təklifin müddəti bitib.",
+      "budget_insufficient": "Bu əməliyyat üçün büdcə kifayət deyil.",
+      "authority_missing": "Bu öhdəliyi götürmək səlahiyyətiniz yoxdur.",
+      "outcome_unknown": "Nəticə hələ məlum deyil. Yoxlayırıq; əməliyyatı təkrarlamayın.",
+      "transfer_consent_pending": "Alıcı hələ ötürülməyə razılıq verməyib."
+    },
+    "membership": {
+      "already_employed": "Siz artıq şirkətdə işləyirsiniz. İnsanın eyni vaxtda bir aktiv işəgötürəni olur.",
+      "last_administrator": "Şirkətin ən azı bir administratoru olmalıdır.",
+      "invitation_expired": "Dəvətin müddəti bitib. Yenisini istəyin.",
+      "ended": "Şirkətdəki bu üzvlük başa çatıb.",
+      "permission_missing": "Şirkətdəki rolunuz buna icazə vermir."
+    },
+    "internal": {
+      "error": "Bizim tərəfimizdə nəsə səhv getdi. Sonra yenidən cəhd edin."
     }
   },
   "taxonomy": {

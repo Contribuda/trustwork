@@ -46,7 +46,7 @@ function buildNav(shell: ShellData, pathname: string, demo: DemoContext): { item
   return { items: all.filter((item) => !unpinned.has(item.id)), more: all.filter((item) => unpinned.has(item.id)) };
 }
 
-function Shell({ shell, demo, localeControl, children }: { shell: ShellData; demo: DemoContext; localeControl?: ReactNode; children: ReactNode }) {
+function Shell({ shell, demo, demoMode, localeControl, children }: { shell: ShellData; demo: DemoContext; demoMode: boolean; localeControl?: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)', false);
@@ -89,7 +89,7 @@ function Shell({ shell, demo, localeControl, children }: { shell: ShellData; dem
     ...(shell.isPlatformAdmin ? [{ id: 'admin', label: t('shell.menu.admin'), href: '/admin' }] : []),
     { id: 'exit', label: t('publicExit'), href: withDemo('/', demo), separatorBefore: true },
     { id: 'help', label: t('shell.menu.help'), href: '/#help' },
-    { id: 'signOut', label: t('shell.menu.signOut'), href: '/?persona=anonymous', separatorBefore: true },
+    { id: 'signOut', label: t('shell.menu.signOut'), href: demoMode ? '/?persona=anonymous' : '/logout', separatorBefore: true },
   ];
 
   return (
@@ -186,14 +186,15 @@ function Shell({ shell, demo, localeControl, children }: { shell: ShellData; dem
  * (layouts cannot read the URL), keeps the single assistant conversation in context so the overlay and
  * `/app/assistant` share it, and never renders an inbox, company switcher, role switch or second avatar.
  */
-export function WorkspaceShell({ shells, defaultPersona, localeControl, children }: { shells: Partial<Record<Persona, ShellData>>; defaultPersona: Persona; localeControl?: ReactNode; children: ReactNode }) {
+export function WorkspaceShell({ shells, defaultPersona, demoMode, localeControl, children }: { shells: Partial<Record<Persona, ShellData>>; defaultPersona: Persona; demoMode: boolean; localeControl?: ReactNode; children: ReactNode }) {
   const params = useSearchParams();
-  const demo = resolveDemoContext(params, defaultPersona);
+  // Live mode (WEB-004): the query never selects a principal; the layout passes the session's shell under the default key.
+  const demo = resolveDemoContext(params, defaultPersona, demoMode);
   const shell = shells[demo.persona];
   if (!shell) return <>{children}</>;
   return (
     <AssistantProvider initialUnread={shell.assistantUnread} attention={shell.attention.assistant}>
-      <Shell shell={shell} demo={demo} localeControl={localeControl}>
+      <Shell shell={shell} demo={demo} demoMode={demoMode} localeControl={localeControl}>
         {children}
       </Shell>
     </AssistantProvider>

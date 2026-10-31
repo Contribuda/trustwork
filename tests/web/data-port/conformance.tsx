@@ -5,12 +5,16 @@
  */
 import { data, type DataPort, type HomeView, type PersonDetail } from '@/app/_lib/data';
 import { fixtureDataPort } from '@/app/_lib/data/fixture-adapter';
+import { httpDataPort } from '@/app/_lib/data/http';
 
 type Assert<T extends true> = T;
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 
 // 1. The fixture adapter satisfies the port, and the boundary hands pages exactly the port type.
 export const adapter: DataPort = fixtureDataPort;
+// The live API adapter (WEB-004) satisfies the same port and adds nothing either.
+export const live: DataPort = httpDataPort;
+export type LiveNoExtraMembers = Assert<Equal<Exclude<keyof typeof httpDataPort, keyof DataPort>, never>>;
 export type BoundaryIsThePort = Assert<Equal<typeof data, DataPort>>;
 
 // 2. The adapter adds nothing beyond the port (pages cannot reach fixture-only helpers through it).

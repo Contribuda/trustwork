@@ -16,15 +16,59 @@
       },
       "recovery": {
         "on_hold": "The recovery request was received and placed on hold for review under the corporate email policy. We will let you know the decision."
-      }
+      },
+      "provider": {
+        "already_linked": "This sign-in method is already linked to an account.",
+        "state_mismatch": "The sign-in took too long or was interrupted. Start again."
+      },
+      "email_taken": "This email is already used by another account."
     },
     "access": {
       "not_found": "Page not found",
-      "forbidden": "No access"
+      "forbidden": "No access",
+      "participation_expired": "Your access to this object has ended.",
+      "mandate_revoked": "The assistant’s authority for this action was revoked.",
+      "mandate_scope": "This action is outside the assistant’s authority.",
+      "staff_no_case": "Staff access needs an open case.",
+      "approval_required": "This action needs an approval first.",
+      "approval_digest_mismatch": "The approval was given for a different version. Approve the current one.",
+      "second_approver_required": "A second person must approve this action."
     },
     "validation": {
       "schema": "Check the fields",
-      "unknown_field": "The request contains unknown fields"
+      "unknown_field": "The request contains unknown fields",
+      "revision_conflict": "Someone changed this in the meantime. Reload the page and try again.",
+      "idempotency_conflict": "This request was already sent with different data. Reload the page and try again.",
+      "idempotency_in_progress": "The previous request is still being processed. Wait a moment and try again.",
+      "unit_mismatch": "Quantities in different units cannot be combined.",
+      "not_canonicalizable": "The data cannot be recorded in this form. Check the fields.",
+      "payload_too_large": "The request is too large."
+    },
+    "network": "No connection. Check the network and try again.",
+    "commercial": {
+      "version_immutable": "This version is final and cannot be changed.",
+      "rfq_version_not_current": "The request has a newer version. Prepare the quote for the current one.",
+      "rfq_version_mismatch": "The quote belongs to a different version of the request.",
+      "stale_version": "This version is outdated. Open the current one.",
+      "digest_mismatch": "The document does not match its recorded version. Reload and check it.",
+      "totals_mismatch": "The totals do not add up. Check the amounts.",
+      "currency_mismatch": "Amounts in different currencies cannot be combined.",
+      "quote_not_acceptable": "This quote cannot be accepted in its current state.",
+      "quote_expired": "The quote has expired.",
+      "budget_insufficient": "The budget is not enough for this action.",
+      "authority_missing": "You have no authority to commit to this.",
+      "outcome_unknown": "The result is not known yet. We are checking it; do not repeat the action.",
+      "transfer_consent_pending": "The recipient has not agreed to the transfer yet."
+    },
+    "membership": {
+      "already_employed": "You already work for a company. A person has one active employer at a time.",
+      "last_administrator": "A company needs at least one administrator.",
+      "invitation_expired": "The invitation has expired. Ask for a new one.",
+      "ended": "This membership has ended.",
+      "permission_missing": "Your role in the company does not allow this."
+    },
+    "internal": {
+      "error": "Something went wrong on our side. Try again later."
     }
   },
   "taxonomy": {

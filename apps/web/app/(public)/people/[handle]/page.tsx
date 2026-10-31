@@ -88,7 +88,7 @@ export default async function PersonPage({ params, searchParams }: Params) {
     name: person.displayName,
     handle: person.handle,
     role: person.roleLine,
-    field: t(`people.fields.${person.field}`),
+    field: person.field ? t(`people.fields.${person.field}`) : '',
     independent: person.independent,
     employer: person.employer,
     about: pr.about ?? person.experience,
@@ -275,14 +275,16 @@ export default async function PersonPage({ params, searchParams }: Params) {
                     ))}
                   </dd>
                 </div>
-                <div>
-                  <dt>{t('people.fieldLabel')}</dt>
-                  <dd>
-                    <NextLink href={`/people?field=${person.field}`} className="co-tag">
-                      {t(`people.fields.${person.field}`)}
-                    </NextLink>
-                  </dd>
-                </div>
+                {person.field ? (
+                  <div>
+                    <dt>{t('people.fieldLabel')}</dt>
+                    <dd>
+                      <NextLink href={`/people?field=${person.field}`} className="co-tag">
+                        {t(`people.fields.${person.field}`)}
+                      </NextLink>
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
               {person.signals.length ? (
                 <div className="pp-status-list">

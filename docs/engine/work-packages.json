@@ -960,7 +960,7 @@
       "id": "WEB-004",
       "title": "Run the web app on the live API for accounts, companies and projects",
       "area": "frontend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "WEB-006",
         "BE-003",

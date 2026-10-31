@@ -45,12 +45,14 @@ Then point them to [status](status.md) for details and to `npm run work` for wha
 | Node 24.18.0 and npm 11.16.0 | `nvm install && nvm use`, then `npm install --global npm@11.16.0` |
 | Install dependencies | `npm ci` |
 | Full quality gate | `npm run check` (lint, typecheck, unit and contract tests, design-system tests, docs validation, builds, smoke) |
-| Web app on demo data | `npm run dev:web`, open `http://localhost:3000`, try `?persona=mixed` and `?country=GE&lang=ka` |
+| Web app on demo data | `TRUSTWORK_DEMO_MODE=1 npm run dev:web`, open `http://localhost:3000`, try `?persona=mixed` and `?country=GE&lang=ka` |
+| Web app on the live API | start the API (below), then `npm run dev:web`: demo mode is off by default, `/v1/*` is rewritten to `TRUSTWORK_API_ORIGIN` (default `http://127.0.0.1:3001`) and `?persona=` is ignored; set the API's `PUBLIC_ORIGIN` to the web origin |
 | Local database | `npm run infra:up` (PostgreSQL 18.3 on 127.0.0.1:54329, needs Docker) |
 | Migrations | `DATABASE_URL=postgresql://trustwork_dev:local_only_change_me@localhost:54329/trustwork_dev npm run db:migrate` |
 | Demo personas and runtime role | `DATABASE_URL=… npm run seed:dev -w @trustwork/api` prints personas and an `apiDatabaseUrl` for the restricted runtime role |
 | API | `API_DATABASE_URL=<printed> AUTH_PROVIDER_MODE=fake API_LOG_MAIL=1 npm run dev:api`; without a database URL only `GET http://localhost:3001/health` is served |
-| Browser tests | `cd apps/web && NEXT_DIST_DIR=.next-e2e npx next build --webpack && NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test` |
+| Browser tests | `cd apps/web && NEXT_DIST_DIR=.next-e2e npx next build --webpack && NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test` (demo mode) |
+| Live API browser tests | `cd apps/web && NEXT_DIST_DIR=.next-live TRUSTWORK_API_ORIGIN=http://127.0.0.1:3471 npx next build --webpack && NEXT_DIST_DIR=.next-live npx playwright test -c ../../tests/web/live-api/playwright.config.ts` (starts a migrated PostgreSQL database, the API and a fake mailbox; see `tests/web/live-api`) |
 | Design system | `npm run storybook -w @trustwork/ui` |
 | Work packages | `npm run work`, `npm run work:next`, `npm run work:context -- COM-001`, `node scripts/work-packages.mjs show COM-001` |
 | Claims | `npm run claims -- lint claim.txt`, `npm run claims -- status` |

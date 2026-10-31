@@ -13,6 +13,7 @@
     "scenario": {
       "error": "Բեռնման սխալ",
       "offline": "Կապ չկա"
-    }
+    },
+    "noPasswordChanged": "Դեմո. գաղտնաբառը չի փոխվում։"
   }
 }

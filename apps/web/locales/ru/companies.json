@@ -151,7 +151,8 @@
     "statusHintVerified": "Реквизиты и домен подтверждены платформой",
     "openProjectTitle": "Проект: {name}",
     "signalLabel": "Статус",
-    "signalAll": "Любой статус"
+    "signalAll": "Любой статус",
+    "statusHintRegistered": "Страницу создал на платформе представитель компании; она ещё не подтверждена и не проверена."
   },
   "companyPage": {
     "nav": {

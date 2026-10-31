@@ -1,0 +1,111 @@
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createApp } from '../../../apps/api/src/app.js';
+import { FakeMailbox, type Clock } from '../../../apps/api/src/modules/identity/ports.js';
+import { createPool } from '@trustwork/data';
+import { provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
+import { API_PORT, CONTROL_PORT, WEB_ORIGIN } from './ports.js';
+
+/**
+ * Real backend for the live API browser suite (WEB-004), started by Playwright as a web server from the repository
+ * root: a fresh PostgreSQL database with every migration (the same backends as the database tests: an external URL,
+ * Docker or embedded-postgres), the API on a restricted runtime role, and a fake mailbox. A loopback-only control
+ * server lets the tests read the mailbox (verification and recovery tokens) and move the API clock forward to reach
+ * the step-up window. None of this is product code; nothing leaves the machine. The database is dropped on exit.
+ */
+class MovableClock implements Clock {
+  offsetMs = 0;
+  now(): Date {
+    return new Date(Date.now() + this.offsetMs);
+  }
+}
+
+const mail = new FakeMailbox();
+const clock = new MovableClock();
+
+function send(res: ServerResponse, status: number, body: unknown): void {
+  res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+  res.end(JSON.stringify(body));
+}
+
+async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) chunks.push(chunk as Buffer);
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+const control = createServer((req, res) => {
+  void (async () => {
+    const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+    if (req.method === 'GET' && url.pathname === '/mail') {
+      const to = url.searchParams.get('to') ?? '';
+      return send(res, 200, { items: mail.sent.filter((m) => m.to === to).reverse() });
+    }
+    if (req.method === 'POST' && url.pathname === '/clock') {
+      const body = await readJson(req);
+      clock.offsetMs = typeof body.offsetMs === 'number' ? body.offsetMs : 0;
+      return send(res, 200, { offsetMs: clock.offsetMs });
+    }
+    return send(res, 404, { error: 'not found' });
+  })();
+});
+// Bind the loopback ports before a database exists, so a taken port fails fast and leaves nothing behind.
+await new Promise<void>((resolveListen, reject) => {
+  control.once('error', reject);
+  control.listen(CONTROL_PORT, '127.0.0.1', () => resolveListen());
+});
+
+const db = await provisionTestDatabase('web_live');
+if (!db) {
+  console.error(SKIP_REASON);
+  control.close();
+  process.exit(1);
+}
+let pool: ReturnType<typeof createPool> | null = null;
+let created: Awaited<ReturnType<typeof createApp>> | null = null;
+let closing = false;
+async function shutdown(code = 0): Promise<void> {
+  if (closing) return;
+  closing = true;
+  control.close();
+  await created?.close().catch(() => undefined);
+  await pool?.end().catch(() => undefined);
+  await db!.close().catch(() => undefined);
+  process.exit(code);
+}
+process.on('SIGTERM', () => void shutdown());
+process.on('SIGINT', () => void shutdown());
+
+try {
+  await db.migrate();
+  await db.createAppLogin();
+  pool = createPool({ ...db.appConfig, max: 8 });
+  created = await createApp({
+    env: {
+      API_HOST: '127.0.0.1',
+      API_PORT: String(API_PORT),
+      // The browser loads the web origin; the API proves same-origin mutations against it.
+      PUBLIC_ORIGIN: WEB_ORIGIN,
+      AUTH_PROVIDER_MODE: 'disabled',
+      // Every browser request reaches the API through the web server's rewrite (one peer address).
+      API_TRUSTED_PROXY_HOPS: '1',
+      AUTH_RATE_LIMIT_PER_MINUTE: '10000',
+      AUTH_LOCKOUT_THRESHOLD: '50',
+      API_LOG_LEVEL: 'error',
+    },
+    pool,
+    mail,
+    clock,
+    logSink: (line) => {
+      if (line.includes('"level":"error"')) console.error('[api]', line);
+    },
+  });
+  await created.app.listen(API_PORT, '127.0.0.1');
+} catch (error) {
+  console.error('[live-api] start failed', error);
+  await shutdown(1);
+}
+console.log(`[live-api] database=${db.databaseName} api=:${API_PORT} control=:${CONTROL_PORT} origin=${WEB_ORIGIN}`);

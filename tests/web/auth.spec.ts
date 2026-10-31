@@ -3,7 +3,7 @@ import { hydrated } from './helpers.js';
 
 const ready = (page: import('@playwright/test').Page) => page.locator('form[data-hydrated]').first().waitFor();
 
-test.describe('auth and onboarding (fake contract adapter)', () => {
+test.describe('auth and onboarding (demo deployment: contract validation, no backend)', () => {
   test('login validation errors render contract codes mapped to Russian', async ({ page }) => {
     await page.goto('/login');
     await ready(page);
@@ -15,16 +15,18 @@ test.describe('auth and onboarding (fake contract adapter)', () => {
     await expect(page.getByText('Введите пароль').first()).toBeVisible();
   });
 
-  test('well-formed login is rejected with auth.invalid_credentials, password cleared, e-mail kept', async ({ page }) => {
+  test('a well-formed login in the demo sends nothing and says that nobody signs in, e-mail kept', async ({ page }) => {
+    const calls: string[] = [];
+    page.on('request', (r) => {
+      if (r.method() === 'POST') calls.push(r.url());
+    });
     await page.goto('/login');
     await ready(page);
     await page.getByLabel('Электронная почта').fill('demo@example.invalid');
     await page.getByLabel('Пароль', { exact: true }).fill('любой-пароль');
-    const [response] = await Promise.all([page.waitForResponse('**/api/auth/login'), page.getByRole('button', { name: 'Войти', exact: true }).click()]);
-    expect(response.status()).toBe(401);
-    expect((await response.json()).code).toBe('auth.invalid_credentials');
-    await expect(page.getByRole('alert').first()).toContainText('Неверная почта или пароль');
-    await expect(page.getByLabel('Пароль', { exact: true })).toHaveValue('');
+    await page.getByRole('button', { name: 'Войти', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'вход не выполняется' })).toBeVisible();
+    expect(calls, 'the demo has no API: the form must not post anywhere').toEqual([]);
     await expect(page.getByLabel('Электронная почта')).toHaveValue('demo@example.invalid');
     await expect(page.getByRole('link', { name: 'Забыли пароль?' })).toHaveAttribute('href', /email=demo%40example.invalid/);
   });
@@ -47,27 +49,24 @@ test.describe('auth and onboarding (fake contract adapter)', () => {
     await page.getByRole('button', { name: 'Создать аккаунт' }).click();
     await expect(page.getByText('Пароль слишком короткий').first()).toBeVisible();
     await page.getByLabel('Пароль', { exact: true }).fill('длинный-пароль-для-демонстрации');
-    const [response] = await Promise.all([page.waitForResponse('**/api/auth/signup'), page.getByRole('button', { name: 'Создать аккаунт' }).click()]);
-    expect((await response.json()).code).toBe('auth.email_unverified');
+    await page.getByRole('button', { name: 'Создать аккаунт' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Подтвердите почту');
     await expect(page.getByText('письма не отправляются')).toBeVisible();
   });
 
-  test('recovery request shows the neutral confirmation; reset handles invalid tokens and the hold state', async ({ page }) => {
+  test('recovery request shows the neutral confirmation; the demo reset validates and changes nothing', async ({ page }) => {
     await page.goto('/recover?email=demo@example.invalid');
     await ready(page);
     await expect(page.getByLabel('Электронная почта')).toHaveValue('demo@example.invalid');
     await page.getByRole('button', { name: 'Отправить ссылку' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Если такая почта' })).toContainText('Если такая почта зарегистрирована');
-    await page.goto('/recover/not-a-real-token');
-    await expect(page.getByText('Ссылка недействительна.')).toBeVisible();
-    await expect(page.getByLabel('Новый пароль')).toHaveCount(0);
-    await page.goto('/recover/demo-recovery-token-0001');
+    await page.goto('/recover/demo-reset-token-0001');
     await ready(page);
+    await page.getByRole('button', { name: 'Сохранить пароль' }).click();
+    await expect(page.getByText('Пароль слишком короткий').first()).toBeVisible();
     await page.getByLabel('Новый пароль').fill('длинный-пароль-для-демонстрации');
-    const [response] = await Promise.all([page.waitForResponse('**/api/auth/recover/reset'), page.getByRole('button', { name: 'Сохранить пароль' }).click()]);
-    expect((await response.json()).code).toBe('auth.recovery.on_hold');
-    await expect(page.getByRole('status').filter({ hasText: 'проверку' })).toContainText('поставлен на проверку');
+    await page.getByRole('button', { name: 'Сохранить пароль' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'пароль не меняется' })).toBeVisible();
   });
 
   test('login keyboard order: brand, back, e-mail, password, toggle, forgot, submit', async ({ page }) => {
@@ -138,10 +137,9 @@ test.describe('auth and onboarding (fake contract adapter)', () => {
     await expect(page.getByRole('link', { name: 'Зарегистрироваться' })).toHaveAttribute('href', '/signup');
   });
 
-  test('auth routes reject requests without the contract header', async ({ request }) => {
-    const response = await request.post('/api/auth/login', { data: { email: 'a@b.ru', password: 'x' } });
-    expect(response.status()).toBe(403);
-    expect((await response.json()).code).toBe('auth.csrf_rejected');
+  test('the fake auth routes are gone: a demo deployment answers no sign-in at all', async ({ request }) => {
+    const response = await request.post('/api/auth/login', { data: { email: 'a@b.ru', password: 'x' }, headers: { 'X-Trustwork-Request': '1' } });
+    expect(response.status()).toBe(404);
   });
 
   test('anonymous /app redirects to login with next', async ({ page }) => {

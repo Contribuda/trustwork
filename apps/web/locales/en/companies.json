@@ -151,7 +151,8 @@
     "statusHintVerified": "Registration details and the domain are confirmed by the platform",
     "openProjectTitle": "Project: {name}",
     "signalLabel": "Status",
-    "signalAll": "Any status"
+    "signalAll": "Any status",
+    "statusHintRegistered": "The page was created on the platform by a company representative; it is not claimed or verified yet."
   },
   "companyPage": {
     "nav": {

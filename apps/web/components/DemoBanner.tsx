@@ -22,7 +22,7 @@ export function DemoBanner({ defaultPersona }: { defaultPersona: Persona }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const ctx = resolveDemoContext(params, defaultPersona);
+  const ctx = resolveDemoContext(params, defaultPersona, true);
   const onChange = (id: string) => {
     const next = new URLSearchParams(params.toString());
     next.delete('scenario');

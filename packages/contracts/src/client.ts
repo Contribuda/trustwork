@@ -47,3 +47,5 @@ export type {
   ProviderBinding, EgressRequest, EgressPermit, DeliveryPolicy, SourceProjectionPort, AuthorizationPort, DeliveryGate, StructuredResolverPort, RetrievalPort,
   EgressAdmissionPort, EmbeddingPort, ContextAssemblyPort, RerankPort, AnswerPort, CitationResolverPort,
 } from './retrieval.js';
+// Directory projections, handles and pagination (BE-003); the web reads them through the live adapter (WEB-004).
+export * from './directory.js';

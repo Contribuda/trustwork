@@ -23,10 +23,11 @@ function currentSection(pathname: string): number | undefined {
  * circular avatar (menu: workspace, my page, account settings, help, sign out), `main`, footer with
  * «Помощь» last. The demo persona comes from the query so static pages stay static.
  */
-export function PublicShell({ accounts, defaultPersona, localeControl, children }: { accounts: Record<Persona, ShellAccount>; defaultPersona: Persona; localeControl?: ReactNode; children: ReactNode }) {
+export function PublicShell({ accounts, defaultPersona, demoMode, localeControl, children }: { accounts: Record<Persona, ShellAccount>; defaultPersona: Persona; demoMode: boolean; localeControl?: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
   const params = useSearchParams();
-  const demo = resolveDemoContext(params, defaultPersona);
+  // Live mode (WEB-004): the query never selects a principal; the layout passes the session's account under the default key.
+  const demo = resolveDemoContext(params, defaultPersona, demoMode);
   const account = accounts[demo.persona];
   const hrefs = SECTION_PATHS.map((path) => withDemo(path, demo));
 
@@ -35,7 +36,7 @@ export function PublicShell({ accounts, defaultPersona, localeControl, children 
     { id: 'me', label: t('shell.menu.myPage'), href: withDemo('/app/me', demo) },
     { id: 'settings', label: t('shell.menu.accountSettings'), href: withDemo('/app/settings', demo) },
     { id: 'help', label: t('shell.menu.help'), href: '/#help', separatorBefore: true },
-    { id: 'signOut', label: t('shell.menu.signOut'), href: '/?persona=anonymous' },
+    { id: 'signOut', label: t('shell.menu.signOut'), href: demoMode ? '/?persona=anonymous' : '/logout' },
   ];
 
   return (

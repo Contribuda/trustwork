@@ -1,4 +1,6 @@
+import { demoModeEnabled } from '../persona';
 import { fixtureDataPort } from './fixture-adapter';
+import { httpDataPort } from './http';
 import type { DataPort, DataSource } from './port';
 
 /**
@@ -6,10 +8,10 @@ import type { DataPort, DataSource } from './port';
  * `DataPort` in `./port`) and the view-model types from here, never an adapter module. Every method is
  * asynchronous; public entities are addressed by handle and workspace objects by id.
  *
- * Today the only adapter reads synthetic fixtures (`./fixture-adapter`). WEB-004 adds the HTTP adapter for
- * the implemented `/v1/*` endpoints under `./http` and selects it here; no page changes are needed for that.
+ * The adapter is chosen once per server process (WEB-004): `TRUSTWORK_DEMO_MODE=1` serves the synthetic fixtures
+ * (`./fixture-adapter`, demo deployments such as the hosted preview); otherwise the live `/v1/*` API (`./http`).
  */
-export const data: DataPort = fixtureDataPort;
+export const data: DataPort = demoModeEnabled() ? fixtureDataPort : httpDataPort;
 
 /** `fixtures` shows the demo banner; the API adapter reports `api`. */
 export const DATA_SOURCE: DataSource = data.source;

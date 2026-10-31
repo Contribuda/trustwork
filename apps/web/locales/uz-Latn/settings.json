@@ -18,7 +18,8 @@
       "language": "Interfeys tili",
       "languageLabel": "Interfeys tili",
       "languageValue": "Oʻzbekcha",
-      "demoNote": "Namoyish: pochtani oʻzgartirish va hisobni oʻchirish server bilan birga paydo boʻladi."
+      "demoNote": "Namoyish: pochtani oʻzgartirish va hisobni oʻchirish server bilan birga paydo boʻladi.",
+      "liveNote": "Pochtani o‘zgartirish va akkauntni o‘chirish keyingi bosqichda paydo bo‘ladi."
     },
     "security": {
       "changePassword": "Parolni oʻzgartirish",
@@ -42,7 +43,16 @@
       "sessionsCaption": "Seanslar roʻyxati",
       "google": "Google",
       "lastSeenAt": "Faollik: {date}",
-      "apple": "Apple"
+      "apple": "Apple",
+      "unknownDevice": "Noma’lum qurilma",
+      "endPending": "Tugatilmoqda…",
+      "ended": "Seans tugatildi.",
+      "othersEnded": "{count, plural, =0 {Boshqa faol seanslar yo‘q edi.} other {Boshqa # ta seans tugatildi.}}",
+      "passwordChanged": "Parol o‘zgartirildi. Boshqa seanslaringiz tugatildi.",
+      "passwordHint": "Kamida {min} belgi. Parol menejeridan parolni qoʻyish mumkin.",
+      "passwordTooShort": "Parol juda qisqa",
+      "passwordTooLong": "Parol juda uzun",
+      "saving": "Saqlanmoqda…"
     },
     "preferences": {
       "interests": "Qiziqishlar",
@@ -79,6 +89,13 @@
       "invoices": "Hisob-fakturalar",
       "noInvoices": "Hisob-fakturalar yoʻq"
     },
-    "profileLink": "Profil va ochiq sahifa"
+    "profileLink": "Profil va ochiq sahifa",
+    "stepUp": {
+      "title": "Bu siz ekanligingizni tasdiqlang",
+      "body": "Davom etish uchun parolni kiriting. Muhim o‘zgarishlar uchun yaqinda tizimga kirgan bo‘lishingiz kerak.",
+      "confirm": "Tasdiqlash",
+      "cancel": "Bekor qilish",
+      "pending": "Tekshirilmoqda…"
+    }
   }
 }
