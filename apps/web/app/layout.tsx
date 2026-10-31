@@ -12,7 +12,6 @@ import { defaultPersona } from '@/app/_lib/persona';
 import { t } from '@/app/_lib/i18n';
 import { primeLocale, rootClientLocale } from '@/app/_lib/locale';
 import { DATA_SOURCE } from '@/app/_lib/data';
-import { currentDeployment } from '@trustwork/config/server';
 import { LocaleProvider } from '@/components/locale/LocaleProvider';
 import { FirstVisitGate } from '@/components/locale/LocaleControls';
 
@@ -64,8 +63,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
   return {
-    // Runtime configuration first (TRUSTWORK_SITE_URL or site.url, CFG-001), then the build-time value.
-    metadataBase: new URL(currentDeployment().site.url ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://127.0.0.1:3000'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://127.0.0.1:3000'),
     title: { default: t('brand.name'), template: `%s — ${t('brand.name')}` },
     description: t('publicShell.tagline'),
     robots: { index: false, follow: false },

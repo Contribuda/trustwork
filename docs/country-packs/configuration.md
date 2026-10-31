@@ -23,7 +23,7 @@ The engine itself has no default country ([ADR 012](../adr/012-integrator-decisi
 | `TRUSTWORK_DATA_DIR` | Path of the data directory; its `trustwork.config.json` is used when `TRUSTWORK_CONFIG` is unset | `/srv/hub/data` |
 | `TRUSTWORK_DEFAULT_COUNTRY` | Country of a visitor who has not chosen one (ISO 3166-1 alpha-2), or `none` | `US` |
 | `TRUSTWORK_BRAND` | Brand overlay id, or `none` for Trustwork in every language | `none` |
-| `TRUSTWORK_SITE_URL` | Public origin and path for absolute URLs and page metadata | `https://build.example.org` |
+| `TRUSTWORK_SITE_URL` | Public origin and path for absolute URLs (see [Runtime and build time](#runtime-and-build-time)) | `https://build.example.org` |
 
 The hosted preview and the United States reference hub set only `TRUSTWORK_DEFAULT_COUNTRY=US` (ADR 012 decision 31): English, the United States for visitors who have not chosen, every other country and language one click away.
 
@@ -62,7 +62,7 @@ A city hub in Nairobi that offers only East African countries in English would w
 | `languages.enabled` | `"all"` | `"all"` (every language with a dictionary) or a list; only these can be chosen, by the selector, a cookie or `?lang=` |
 | `languages.byCountry` | `{}` | A country's starting language, overriding the pack's `defaultLocale` |
 | `brand.overlay` | the application default | Brand overlay id, or `null` for Trustwork in every language |
-| `site.url` | `NEXT_PUBLIC_SITE_URL` | Public origin for metadata and absolute URLs |
+| `site.url` | none | Public origin for absolute URLs (see [Runtime and build time](#runtime-and-build-time)) |
 | `dataDir` | none | Data directory, relative to the file |
 
 The schema is `DeploymentConfigSchema` in `packages/config/src/schema.ts`; unknown keys are refused, so a typo never passes silently.
@@ -114,7 +114,7 @@ A valid start logs `deployment configuration loaded` with the file, data directo
 |---|---|---|
 | Countries, languages, packs, dictionaries, demo-content overrides | Start | Data and configuration |
 | Brand overlay | Start | `brand.overlay` or `TRUSTWORK_BRAND`; when neither is set the build-time `NEXT_PUBLIC_TRUSTWORK_BRAND` still applies, then the default `stroyreputation-ru` (Russian interface only) |
-| Site URL | Start | `site.url` or `TRUSTWORK_SITE_URL`; else the build-time `NEXT_PUBLIC_SITE_URL` |
+| Site URL | Start (configuration); build (page metadata, for now) | `site.url` or `TRUSTWORK_SITE_URL` is validated and available as `currentDeployment().site.url`; the root layout's `metadataBase` still reads the build-time `NEXT_PUBLIC_SITE_URL` until the layout (owned by WEB-005) switches to it, a one-line change |
 | Base path | Build | Next compiles `basePath` into every route, asset URL and client bundle, so `NEXT_PUBLIC_BASE_PATH` stays a build argument (`apps/web/next.config.ts`, `apps/web/app/_lib/base-path.ts`). A deployment under another path needs its own build |
 
 So one image built without a base path serves, for example:
