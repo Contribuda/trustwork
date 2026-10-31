@@ -5,7 +5,9 @@ import { EMAILS, login, seedPersonas, type PersonaKey } from '../helpers/persona
 import { auditCount, count } from '../hardening/helpers.js';
 import { IDEMPOTENCY_TAKEOVER_LEASE_MS, IDEMPOTENT_ROUTES } from '../../../apps/api/src/common/idempotency/index.js';
 import { installCrashPoints, recordState } from './helpers.js';
-import { withMaintenance } from '@trustwork/data';
+import { withMaintenance, withPrincipal } from '@trustwork/data';
+import { budgets } from '../../../packages/data/src/repositories/billing.js';
+import { principalFor } from '../../data/helpers/seed.js';
 import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -338,6 +340,101 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     const moved = (await exactlyOnce({ action: 'file.move', client: petr, url: `/v1/files/${id}/move`, body: { parent: { kind: 'project', id: other } }, effects: () => auditCount(h.db.admin, 'file.moved') })).body as { id: string };
     await exactlyOnce({ action: 'file.delete', client: petr, url: `/v1/files/${moved.id}/delete`, body: {}, effects: () => auditCount(h.db.admin, 'file.deletion_requested') });
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.outbox_event WHERE type = 'file.deletion_requested' AND aggregate_id = $1", [moved.id]), 1, 'one deletion intent');
+  });
+
+  await t.test('commerce (COM-002): quotes, negotiation, agreements, orders and changes', async () => {
+    const reference = await kernelReference.fromRepository();
+    await withMaintenance(h.db.admin, (trx) => kernelSync.apply(trx, reference));
+    const person = { via: 'person' };
+    const consent = { consented: true, disclosureKey: 'trustwork.electronic-records.v1' };
+    const bdate = (date: string) => ({ date, timeZone: 'America/Los_Angeles' });
+    const usd = (minorUnits: string) => ({ minorUnits, currency: 'USD' });
+    const rfqPayload = { title: 'Exactly-once deal', lines: [{ lineId: 'l1', kind: 'goods', description: 'Pavers', specification: {}, quantity: { value: '10', unit: 'm2' }, alternativesAllowed: false }], deliveryTerms: { location: { region: 'US-CA' }, window: { from: bdate('2027-03-01'), to: bdate('2027-03-31') } }, acceptanceCriteria: 'Owner check', paymentTermsRequested: null, currency: 'USD', responseDeadline: '2027-02-15T17:00:00.000Z', attachments: [] };
+    const quotePayload = (price: string) => {
+      const total = (10n * BigInt(price)).toString();
+      return {
+        currency: 'USD', paymentTerms: 'Net 30', validity: { until: '2027-06-01T00:00:00.000Z' }, exclusions: [], attachments: [], deliveryTerms: { milestones: [], location: 'Site' },
+        totals: { net: usd(total), tax: usd('0'), gross: usd(total) },
+        lines: [{ lineId: 'q1', rfqLineId: 'l1', kind: 'goods', specSnapshot: {}, offeringVersionRef: null, quantity: { value: '10', unit: 'm2' }, unitPrice: usd(price), tax: { kind: 'none', ratePercent: null, included: false }, taxAmount: usd('0'), lineTotal: usd(total), substitution: null, options: [] }],
+      };
+    };
+    type Ref = { id: string; version: number; digest: { algorithm: string; value: string } };
+    type Quote = { quote: { id: string; revision: number }; versions: (Ref & { status: string })[]; privateConstraint: { revision: number }; amendmentRequests: { id: string; status: string }[] };
+    type Deal = { agreement: { id: string; revision: number; acceptedTerms: { quoteVersion: Ref; rfqVersion: Ref; digest: Ref['digest'] } }; privateRevision: number; orders: { id: string; revision: number }[]; orderChanges: { id: string; revision: number }[] };
+    const ref = (v: Ref) => ({ id: v.id, version: v.version, digest: v.digest });
+    const grant = async (limit: string) => withPrincipal(h.pool, await principalFor(h.db.admin, seed.people.petr), (trx) => budgets.grant(trx, {
+      kind: 'transaction', owner: 'person', projectId: null, employeePersonId: null, periodFrom: '2026-01-01T00:00:00Z', periodTo: '2030-01-01T00:00:00Z', limitMinor: limit, currency: 'USD',
+    }));
+    const publish = async () => {
+      let rfq = (await created(await petr.post('/v1/rfqs', { owner: { kind: 'person', id: seed.people.petr }, projectId: null, payload: rfqPayload, category: null, publicProjection: { enabled: false, fields: [] }, privateConstraint: null, source: null, actor: person }))) as unknown as { rfq: { id: string; revision: number; currentVersionId: string } };
+      rfq = (await created(await petr.post(`/v1/rfqs/${rfq.rfq.id}/publish`, { rfqId: rfq.rfq.id, version: 1, expectedRevision: rfq.rfq.revision, amendmentReason: null, actor: person }))) as unknown as typeof rfq;
+      await created(await petr.post(`/v1/rfqs/${rfq.rfq.id}/invitations`, { rfqId: rfq.rfq.id, rfqVersionId: rfq.rfq.currentVersionId, party: { kind: 'person', id: seed.people.carl }, channel: 'platform', actor: person }));
+      const versions = ((await petr.get(`/v1/rfqs/${rfq.rfq.id}`)).body as { versions: Ref[] }).versions;
+      return { id: rfq.rfq.id, current: ref(versions[0]!) };
+    };
+    const carlQuote = async (id: string) => (await carl.get(`/v1/quotes/${id}`)).body as Quote;
+    const buyerDeal = async (id: string) => (await petr.get(`/v1/agreements/${id}`)).body as Deal;
+
+    const rfq = await publish();
+    let quote = (await exactlyOnce({ action: 'quote.create', client: carl, url: '/v1/quotes', body: { rfqId: rfq.id, rfqVersionId: rfq.current.id, seller: { kind: 'person', id: seed.people.carl }, payload: quotePayload('3000'), privateConstraint: null, actor: person }, effects: () => auditCount(h.db.admin, 'quote.drafted') })).body as Quote;
+    const Q = `/v1/quotes/${quote.quote.id}`;
+    quote = (await exactlyOnce({ action: 'quote.draft_save', client: carl, url: `${Q}/versions/${quote.versions[0]!.id}`, body: { expectedRevision: quote.quote.revision, payload: quotePayload('3100'), actor: person }, effects: () => auditCount(h.db.admin, 'quote.draft_saved') })).body as Quote;
+    quote = (await exactlyOnce({ action: 'quote.private_save', client: carl, url: `${Q}/private`, body: { expectedRevision: quote.privateConstraint.revision, floorPrices: {}, marginTargets: {}, costBasis: {}, negotiationNotes: 'once' }, effects: () => auditCount(h.db.admin, 'quote.private_constraint_saved') })).body as Quote;
+    quote = (await exactlyOnce({ action: 'quote.send', client: carl, url: `${Q}/send`, body: { quoteId: quote.quote.id, version: 1, expectedRevision: quote.quote.revision, actor: person }, effects: () => auditCount(h.db.admin, 'quote.sent') })).body as Quote;
+    const v1 = quote.versions[0]!;
+    await exactlyOnce({ action: 'quote.amendment_request', client: petr, url: `${Q}/amendment-requests`, body: { quoteVersionId: v1.id, changes: [{ lineId: 'q1', quantity: null, targetUnitPrice: usd('2900'), reason: null }], targetTotal: null, actor: person }, effects: () => auditCount(h.db.admin, 'quote.amendment_requested') });
+    quote = await carlQuote(quote.quote.id);
+    const request = quote.amendmentRequests.find((r) => r.status === 'open')!;
+    quote = (await exactlyOnce({ action: 'quote.version_open', client: carl, url: `${Q}/versions`, body: { expectedRevision: quote.quote.revision, rfqVersionId: rfq.current.id, payload: quotePayload('2900'), answersAmendmentRequestId: request.id, actor: person }, effects: () => auditCount(h.db.admin, 'quote.version_opened') })).body as Quote;
+    quote = (await created(await carl.post(`${Q}/send`, { quoteId: quote.quote.id, version: 2, expectedRevision: quote.quote.revision, actor: person }))) as unknown as Quote;
+    const v2 = quote.versions.find((v) => v.status === 'sent')!;
+    await created(await petr.post(`${Q}/amendment-requests`, { quoteVersionId: v2.id, changes: [{ lineId: 'q1', quantity: null, targetUnitPrice: usd('2800'), reason: null }], targetTotal: null, actor: person }));
+    const second = (await carlQuote(quote.quote.id)).amendmentRequests.find((r) => r.status === 'open')!;
+    await exactlyOnce({ action: 'quote.amendment_request_withdraw', client: petr, url: `${Q}/amendment-requests/${second.id}/withdraw`, body: { reason: 'Exactly-once withdrawal' }, effects: () => auditCount(h.db.admin, 'quote.amendment_request_withdrawn') });
+    quote = await carlQuote(quote.quote.id);
+    let deal = (await exactlyOnce({
+      action: 'agreement.accept_terms', client: petr, url: '/v1/agreements', effects: () => auditCount(h.db.admin, 'agreement.accepted_by_buyer'),
+      body: { rfqId: rfq.id, quoteVersion: ref(v2), rfqVersion: rfq.current, expectedRevision: quote.quote.revision, electronicRecords: consent, actor: person },
+    })).body as Deal;
+    const A = `/v1/agreements/${deal.agreement.id}`;
+    deal = (await exactlyOnce({ action: 'agreement.private_save', client: petr, url: `${A}/private`, body: { side: 'buyer', expectedRevision: deal.privateRevision, approvalRefs: [], notes: 'once' }, effects: () => auditCount(h.db.admin, 'agreement.buyer_private_saved') })).body as Deal;
+    const budgetId = await grant('100000000');
+    deal = (await exactlyOnce({
+      action: 'order.place', client: petr, url: `${A}/orders`, effects: () => auditCount(h.db.admin, 'order.placed'),
+      body: { action: 'place_order', context: { kind: 'rfq', id: rfq.id }, agreementId: deal.agreement.id, quoteVersion: deal.agreement.acceptedTerms.quoteVersion, rfqVersion: deal.agreement.acceptedTerms.rfqVersion, expectedRevision: deal.agreement.revision, transactionBudgetId: budgetId, platformBudgetId: null, externalReference: null, actor: person },
+    })).body as Deal;
+    assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.reservation WHERE action_intent_id = $1', [deal.agreement.id]), 1, 'one reservation for the order');
+    await exactlyOnce({ action: 'agreement.seller_accept', client: carl, url: `${A}/accept`, body: { expectedRevision: deal.agreement.revision, acceptedTermsDigest: deal.agreement.acceptedTerms.digest, electronicRecords: consent, actor: person }, effects: () => auditCount(h.db.admin, 'agreement.accepted_by_both') });
+    quote = await carlQuote(quote.quote.id);
+    quote = (await created(await carl.post(`${Q}/versions`, { expectedRevision: quote.quote.revision, rfqVersionId: rfq.current.id, payload: quotePayload('3200'), answersAmendmentRequestId: null, actor: person }))) as unknown as Quote;
+    quote = (await created(await carl.post(`${Q}/send`, { quoteId: quote.quote.id, version: 3, expectedRevision: quote.quote.revision, actor: person }))) as unknown as Quote;
+    deal = await buyerDeal(deal.agreement.id);
+    const orderId = deal.orders[0]!.id;
+    deal = (await exactlyOnce({ action: 'order.change_propose', client: carl, url: `/v1/orders/${orderId}/changes`, body: { expectedRevision: deal.orders[0]!.revision, quoteVersion: ref(quote.versions.at(-1)!), transactionBudgetId: null, actor: person }, effects: () => auditCount(h.db.admin, 'order.change_proposed') })).body as Deal;
+    deal = await buyerDeal(deal.agreement.id);
+    const change = deal.orderChanges[0]!;
+    await exactlyOnce({ action: 'order.change_decide', client: petr, url: `/v1/orders/${orderId}/changes/${change.id}`, body: { expectedRevision: change.revision, decision: 'accept', transactionBudgetId: budgetId, reason: null, actor: person }, effects: () => auditCount(h.db.admin, 'order.change_accepted') });
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.agreement WHERE rfq_id = $1 AND status = 'accepted_by_both'", [rfq.id]), 1, 'one superseding agreement');
+
+    // Withdrawal, decline, cancellation and agreement withdrawal on a second RFQ.
+    const other = await publish();
+    let q2 = (await created(await carl.post('/v1/quotes', { rfqId: other.id, rfqVersionId: other.current.id, seller: { kind: 'person', id: seed.people.carl }, payload: quotePayload('3000'), privateConstraint: null, actor: person }))) as unknown as Quote;
+    const Q2 = `/v1/quotes/${q2.quote.id}`;
+    q2 = (await created(await carl.post(`${Q2}/send`, { quoteId: q2.quote.id, version: 1, expectedRevision: q2.quote.revision, actor: person }))) as unknown as Quote;
+    q2 = (await exactlyOnce({ action: 'quote.withdraw', client: carl, url: `${Q2}/withdraw`, body: { expectedRevision: q2.quote.revision, reason: 'Exactly-once withdrawal', actor: person }, effects: () => auditCount(h.db.admin, 'quote.withdrawn') })).body as Quote;
+    q2 = (await created(await carl.post(`${Q2}/versions`, { expectedRevision: q2.quote.revision, rfqVersionId: other.current.id, payload: quotePayload('3000'), answersAmendmentRequestId: null, actor: person }))) as unknown as Quote;
+    q2 = (await created(await carl.post(`${Q2}/send`, { quoteId: q2.quote.id, version: 2, expectedRevision: q2.quote.revision, actor: person }))) as unknown as Quote;
+    const accept = async () => {
+      const current = await carlQuote(q2.quote.id);
+      return (await created(await petr.post('/v1/agreements', { rfqId: other.id, quoteVersion: ref(current.versions.find((v) => v.status === 'sent')!), rfqVersion: other.current, expectedRevision: current.quote.revision, electronicRecords: consent, actor: person }))) as unknown as Deal;
+    };
+    let d2 = await accept();
+    d2 = (await created(await petr.post(`/v1/agreements/${d2.agreement.id}/orders`, { action: 'place_order', context: { kind: 'rfq', id: other.id }, agreementId: d2.agreement.id, quoteVersion: d2.agreement.acceptedTerms.quoteVersion, rfqVersion: d2.agreement.acceptedTerms.rfqVersion, expectedRevision: d2.agreement.revision, transactionBudgetId: budgetId, platformBudgetId: null, externalReference: null, actor: person }))) as unknown as Deal;
+    await exactlyOnce({ action: 'agreement.seller_decline', client: carl, url: `/v1/agreements/${d2.agreement.id}/decline`, body: { expectedRevision: d2.agreement.revision, reason: 'Exactly-once decline', actor: person }, effects: () => auditCount(h.db.admin, 'agreement.declined') });
+    d2 = await buyerDeal(d2.agreement.id);
+    await exactlyOnce({ action: 'order.cancel', client: petr, url: `/v1/orders/${d2.orders[0]!.id}/cancel`, body: { expectedRevision: d2.orders[0]!.revision, reason: 'Exactly-once release', actor: person }, effects: () => auditCount(h.db.admin, 'order.reservation_released') });
+    const d3 = await accept();
+    await exactlyOnce({ action: 'agreement.withdraw', client: petr, url: `/v1/agreements/${d3.agreement.id}/withdraw`, body: { expectedRevision: d3.agreement.revision, reason: 'Exactly-once withdrawal', actor: person }, effects: () => auditCount(h.db.admin, 'agreement.withdrawn') });
   });
 
   await t.test('every in-transaction route was crash-tested', () => {

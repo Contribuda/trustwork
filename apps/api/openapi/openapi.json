@@ -5423,6 +5423,15 @@
             ],
             "additionalProperties": false
           },
+          "termsKind": {
+            "default": "rfq_quote",
+            "type": "string",
+            "enum": [
+              "rfq_quote",
+              "task",
+              "consultation"
+            ]
+          },
           "acceptedTerms": {
             "type": "object",
             "properties": {
@@ -5693,6 +5702,7 @@
         "required": [
           "id",
           "parties",
+          "termsKind",
           "acceptedTerms",
           "acceptanceEventIds",
           "status",

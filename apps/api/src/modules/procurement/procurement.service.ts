@@ -523,6 +523,8 @@ export class ProcurementService extends CommerceService {
   async setProjection(rfqId: string, input: In<typeof SetRfqProjectionCommandSchema>, state: RequestState): Promise<OwnerRfqView> {
     return this.run(state, async (trx, p) => {
       const loaded = this.ownerSide(p, await this.load(trx, rfqId, true), 'publish');
+      // Publishing to invited suppliers is deal work (company.deals.manage); showing the RFQ publicly needs company.publish.
+      if (loaded.row.owner_company_id !== null && !p.membership?.permissions.includes('company.publish')) throw new ApiError('membership.permission_missing', 'a public projection needs company.publish');
       if (loaded.row.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
       const saved = await rfqs.setProjection(trx, rfqId, input.expectedRevision, { enabled: input.publicProjection.enabled, fields: [...input.publicProjection.fields], category: input.category });
       if (!saved) throw new ApiError('validation.revision_conflict');

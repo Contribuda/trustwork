@@ -2,7 +2,7 @@
 
 Normative requirements: [Procurement and supply](modules/procurement-and-supply.md), [Sales](modules/sales.md), [Catalogue and manufacturer knowledge](modules/catalogue-and-manufacturer-knowledge.md). Participants: [who uses what](participants/README.md).
 
-Requirements R05–R08, R10. Status: the catalogue (versioned offerings, private knowledge, public fields), needs, RFQs with immutable digested versions, buyer-private constraints, invitations pinned to the exact version and amendments that flag them stale are **Live** in the API (COM-001, [procurement module](../../apps/api/src/modules/procurement/README.md), [catalogue module](../../apps/api/src/modules/catalogue/README.md)); procurement and sales lists and the decisions panel are **Demo**; quote versions, agreements, acceptance and comparison are **Contract** with tests and database rules specified; their flows are **Designed** (COM-002).
+Requirements R05–R08, R10. Status: the catalogue (versioned offerings, private knowledge, public fields), needs, RFQs with immutable digested versions, buyer-private constraints, invitations pinned to the exact version and amendments that flag them stale are **Live** in the API (COM-001, [procurement module](../../apps/api/src/modules/procurement/README.md), [catalogue module](../../apps/api/src/modules/catalogue/README.md)); procurement and sales lists and the decisions panel are **Demo**; quote versions pinned to the current RFQ version, comparison with explicit exclusions, negotiation rounds and amendment requests, agreements with `terms_kind`, separate buyer and seller acceptance with consent to electronic records, orders with a transaction-budget reservation and order changes are **Live** in the API (COM-002, [sales module](../../apps/api/src/modules/sales/README.md), [transactions module](../../apps/api/src/modules/transactions/README.md)).
 
 A company buys and sells at the same time, often on the same day: it buys facade panels and sells installation work. The engine gives both sides one honest workflow in which nothing that was sent can silently change.
 
@@ -39,7 +39,7 @@ Suppliers come from the buyer's own list, the platform directory, [matching](par
 
 ### 5. Comparison
 
-`comparableQuoteVersions` splits quotes pinned to the current RFQ version from historical ones. Comparison shows exclusions and non-comparable scope instead of a misleading total; historical mode shows no ranking. Mixed currencies are compared only with an explicit, dated exchange-rate snapshot. Raw quotes stay available to permitted participants.
+`comparableQuoteVersions` splits quotes pinned to the current RFQ version from historical ones. Comparison shows exclusions and non-comparable scope instead of a misleading total; historical mode shows no ranking. Mixed currencies are compared only with an explicit, dated exchange-rate snapshot (until one is supplied, a quote in another currency is listed without a total). Raw quotes stay available to permitted participants.
 
 ### 6. Negotiation
 
@@ -47,7 +47,7 @@ Negotiation rounds propose new versions; private priorities stay private. Agents
 
 ### 7. Agreements and orders
 
-- An **agreement** pins accepted terms to exact quote and RFQ versions by id and digest. Its digest is computed once over `{ quoteVersion, rfqVersion }`.
+- An **agreement** pins accepted terms to exact quote and RFQ versions by id and digest. Its digest is computed once over `{ termsKind, quoteVersion, rfqVersion }` (`terms_kind` is `rfq_quote` here; task and consultation terms use the same shape, ADR 012 decision 19). An RFQ has at most one live agreement.
 - **Buyer acceptance and seller acceptance are separate events** (`proposed → accepted_by_buyer → accepted_by_both`, or `declined | withdrawn | superseded`). Both reference the agreement digest; a database trigger checks they match.
 - An **order** is possible only after authority and budget checks: the person or their agent must hold `commit_order` within a mandate, and the **transaction budget** reservation must succeed atomically. If a paid platform deliverable was requested, a separate **platform budget** reservation is needed too.
 - Changes append jointly accepted versions; history never mutates. Cancellation, refund and compensation depend on what actually happened externally.
@@ -83,7 +83,7 @@ Messages belong to an RFQ, a quote, a transaction, an introduction or a project.
 | Electronic invoices and acceptance acts | Hub e-invoicing and e-document adapters |
 | Units of measure and their local names | Hub taxonomy, engine unit catalogue |
 | Public procurement notices as opportunities | Hub sources: procurement portal feeds |
-| Electronic agreement validity | Open legal decision O12, per country |
+| Electronic agreement validity | Open legal decision O12, per country; acceptance records consent to electronic records as the hub requires (US pack: ESIGN and UETA facts) |
 
 ## Invariants checked by tests
 

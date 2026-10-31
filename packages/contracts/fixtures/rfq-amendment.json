@@ -413,6 +413,7 @@
             "id": "company-supplier-1"
           }
         },
+        "termsKind": "rfq_quote",
         "acceptedTerms": {
           "quoteVersion": {
             "id": "quote-amend-v2",
@@ -432,7 +433,7 @@
           },
           "digest": {
             "algorithm": "trustwork-digest-1",
-            "value": "ffb771ad7693aed96ad0d10ae77da594183b1aa5d78f7540df1ba7af37ee14ea"
+            "value": "8cc7a2b6b79144377921296b1b765af66ecdcd4675760ad34826786094aa1129"
           }
         },
         "acceptanceEventIds": [
@@ -494,6 +495,7 @@
         "id": "acceptance-1",
         "agreementId": "agreement-amend",
         "kind": "buyer_accepts_terms",
+        "termsKind": "rfq_quote",
         "quoteVersion": {
           "id": "quote-amend-v2",
           "version": 2,
@@ -512,7 +514,7 @@
         },
         "acceptedTermsDigest": {
           "algorithm": "trustwork-digest-1",
-          "value": "ffb771ad7693aed96ad0d10ae77da594183b1aa5d78f7540df1ba7af37ee14ea"
+          "value": "8cc7a2b6b79144377921296b1b765af66ecdcd4675760ad34826786094aa1129"
         },
         "actor": {
           "personId": "person-buyer",

@@ -3,7 +3,7 @@ import { computeDigest, digestEquals, verifyDigest } from '../common/digest.js';
 import { sameVersion, type VersionRefSchema } from '../common/version.js';
 import { rfqVersionDigestInput, type RfqVersion, type RfqVersionPayload } from '../procurement.js';
 import { isQuoteStale, quoteVersionDigestInput, type QuoteVersion, type QuoteVersionPayload } from '../sales.js';
-import { AcceptanceEventRecordSchema, AgreementRecordSchema, agreementDigestInput } from '../transactions.js';
+import { AcceptanceEventRecordSchema, AgreementRecordSchema, agreementDigestInput, type AgreementTermsKind } from '../transactions.js';
 
 /**
  * Server-only commercial digest computation and the acceptance guard (node:crypto through `common/digest.ts`).
@@ -23,17 +23,18 @@ export function computeQuoteVersionDigest(rfqVersion: VersionRef, payload: Quote
 export function verifyQuoteVersionDigest(version: QuoteVersion): boolean {
   return version.digest !== null && verifyDigest(quoteVersionDigestInput(version.rfqVersion, version.payload), version.digest);
 }
-export function computeAgreementDigest(quoteVersion: VersionRef, rfqVersion: VersionRef) {
-  return computeDigest(agreementDigestInput(quoteVersion, rfqVersion));
+/** `termsKind` defaults to `rfq_quote` (ADR 012 decision 19: the kind is part of the digest input). */
+export function computeAgreementDigest(quoteVersion: VersionRef, rfqVersion: VersionRef, termsKind: AgreementTermsKind = 'rfq_quote') {
+  return computeDigest(agreementDigestInput(quoteVersion, rfqVersion, termsKind));
 }
 
 /** Server validation of an acceptance event: the recorded digest must equal the digest of the pinned versions. */
-export const AcceptanceEventSchema = AcceptanceEventRecordSchema.refine((e) => digestEquals(e.acceptedTermsDigest, computeAgreementDigest(e.quoteVersion, e.rfqVersion)), {
+export const AcceptanceEventSchema = AcceptanceEventRecordSchema.refine((e) => digestEquals(e.acceptedTermsDigest, computeAgreementDigest(e.quoteVersion, e.rfqVersion, e.termsKind)), {
   message: 'acceptedTermsDigest must equal the digest of the pinned versions',
   path: ['acceptedTermsDigest'],
 });
-/** Server validation of an agreement: `acceptedTerms.digest` is recomputed from the two version refs. */
-export const AgreementSchema = AgreementRecordSchema.refine((a) => digestEquals(a.acceptedTerms.digest, computeAgreementDigest(a.acceptedTerms.quoteVersion, a.acceptedTerms.rfqVersion)), {
+/** Server validation of an agreement: `acceptedTerms.digest` is recomputed from the terms kind and the two version refs. */
+export const AgreementSchema = AgreementRecordSchema.refine((a) => digestEquals(a.acceptedTerms.digest, computeAgreementDigest(a.acceptedTerms.quoteVersion, a.acceptedTerms.rfqVersion, a.termsKind)), {
   message: 'acceptedTerms.digest must be the digest of the pinned versions',
   path: ['acceptedTerms', 'digest'],
 });

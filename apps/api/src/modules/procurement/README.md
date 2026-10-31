@@ -9,7 +9,7 @@ All mutations: authenticated session, `X-Trustwork-Request` with same-origin met
 | Object | Owner side | Others |
 |---|---|---|
 | Need | The owner person; members of the owner company holding `company.deals.manage` | `404` |
-| RFQ | The access policy for resource kind `rfq`: the owner person, owner company members with `company.deals.manage` (`company.publish` for publishing, closing and the public projection), or a live participation with a party-private or owner-private audience carrying the capability | Invited parties get the supplier view; everyone else `404` |
+| RFQ | The access policy for resource kind `rfq`: the owner person, owner company members with `company.deals.manage` (publishing and closing included, integrator decision applied in COM-002; `company.publish` only for the public projection), or a live participation with a party-private or owner-private audience carrying the capability | Invited parties get the supplier view; everyone else `404` |
 | Invitation | The buyer side invites, revalidates and withdraws | The invitee (a person, or members of the invited company holding `company.deals.manage`) records `viewed` or `declined` |
 
 The database repeats every rule under FORCE RLS (`trustwork.rfq_can`, `trustwork.rfq_invitee`, `trustwork.commerce_party_acts`) and in guards, so a bug in this layer cannot widen access.
