@@ -24,7 +24,7 @@ Nothing is read from `.env` implicitly. `DATABASE_URL` (migrator/superuser) is u
 | `API_LOG_MAIL` | unset | `1` prints fake outbound mail (verification/recovery tokens) to stdout in fake mode (local only). |
 | `API_TRUSTED_PROXY_HOPS`, `API_TRUSTED_PROXIES` | `0`, unset | Which `X-Forwarded-For` hops are trusted for the client address (rate limits, lockout, session list): by default none (the socket peer); set the number of proxies in front of the API or their addresses/CIDRs, not both. The former trust-all `API_TRUST_PROXY` is refused. |
 
-Pool limits, structured logs, readiness, telemetry and security headers (`API_DB_*`, `API_LOG_*`, `API_READINESS_*`, `OTEL_*`, `API_HSTS_MAX_AGE_SECONDS`) are listed in the repository `.env.example` (OPS-001).
+Pool limits, structured logs, readiness, telemetry and security headers (`API_DB_*`, `API_LOG_*`, `API_READINESS_*`, `OTEL_*`, `TRUSTWORK_HSTS`) are listed in the repository `.env.example` (OPS-001).
 
 Sweeper (bounded tables): scheduled by `apps/worker` (`trustwork.worker_sweep_expired()`); the manual `DATABASE_URL=<migrator> npm run sweep -w @trustwork/api` runs in a maintenance transaction (the API role may not run it since BE-002) and deletes expired/consumed tokens, expired login failures and idempotency records, settled admission leases past the grace period, old revoked sessions and never-verified signups older than seven days; `login_failure` is additionally capped at 10,000 rows in the database.
 

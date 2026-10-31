@@ -34,15 +34,26 @@ export function contentSecurityPolicy(nonce: string, { development, https }: Csp
   ].join('; ');
 }
 
-/** Headers on every document and redirect the proxy answers. HSTS is ignored by browsers on plain-http responses. */
-export function documentSecurityHeaders(development: boolean): Record<string, string> {
+/**
+ * `Strict-Transport-Security` exactly as configured in `TRUSTWORK_HSTS` (read at request time), or null: no HSTS by
+ * default. HSTS pins the whole host, and with `includeSubDomains` every subdomain, to HTTPS for its max-age; that is
+ * the domain operator's decision, so set it only when the app owns the whole host (never for an app served under a
+ * path of another site, such as the hosted preview). A malformed value is ignored rather than sent.
+ */
+export function configuredHsts(raw: string | undefined = process.env.TRUSTWORK_HSTS): string | null {
+  const value = raw?.trim();
+  return value && /^max-age=\d{1,10}(\s*;\s*(includeSubDomains|preload))*\s*;?$/i.test(value) ? value : null;
+}
+
+/** Headers on every document and redirect the proxy answers. */
+export function documentSecurityHeaders(hsts: string | null = configuredHsts()): Record<string, string> {
   return {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
     'Cross-Origin-Opener-Policy': 'same-origin',
-    ...(development ? {} : { 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains' }),
+    ...(hsts ? { 'Strict-Transport-Security': hsts } : {}),
   };
 }
 
@@ -79,7 +90,7 @@ export function proxy(request: NextRequest) {
   }
   const nonce = newNonce();
   const csp = contentSecurityPolicy(nonce, { development, https: isHttps(request) });
-  const headers = { ...documentSecurityHeaders(development), 'Content-Security-Policy': csp };
+  const headers = { ...documentSecurityHeaders(), 'Content-Security-Policy': csp };
   const country = url.searchParams.get('country');
   const lang = url.searchParams.get('lang');
   if (!country && !lang) {
