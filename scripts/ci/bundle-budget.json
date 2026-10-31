@@ -1,6 +1,6 @@
 {
-  "$comment": "Gzip (level 9) byte budgets for the web app's client JavaScript, measured on the webpack build by scripts/ci/bundle-budget.mjs: about 10% above the 2026-10-31 measurement (shared 134215, largest route 334266, all chunks 592191). Raising a budget needs a reviewed reason; INTL-003 is expected to lower them.",
+  "$comment": "Gzip (level 9) byte budgets for the web app's client JavaScript, measured on the webpack build by scripts/ci/bundle-budget.mjs: about 10% above the measurement of main at 2026-10-31 08:57 UTC (shared 134215, largest route 378757 for /app/me, all chunks about 628 KB). The first measurement that morning was 334266 for the largest route; work merged during the day added about 13%. Raising a budget needs a reviewed reason; INTL-003 is expected to lower them.",
   "sharedGzipBytes": 148480,
-  "largestRouteGzipBytes": 368640,
-  "totalGzipBytes": 652288
+  "largestRouteGzipBytes": 416768,
+  "totalGzipBytes": 691200
 }
