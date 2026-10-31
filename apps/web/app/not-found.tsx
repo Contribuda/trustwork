@@ -1,31 +1,37 @@
 import type { Metadata } from 'next';
-import { ButtonLink } from '@/components/ui';
-import { t } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
+import { currentDeployment } from '@trustwork/config/server';
+import { messageIn } from '@/app/_lib/locale';
+import { withBase } from '@/app/_lib/base-path';
 
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('error.notFoundTitle') };
+export function generateMetadata(): Metadata {
+  return { title: messageIn(currentDeployment().languages.default, 'error.notFoundTitle'), robots: { index: false, follow: false } };
 }
 
 /**
- * Root 404: used for unknown routes and for private slugs (never «forbidden», existence is not disclosed).
- * Primes the request-scoped locale itself: the not-found boundary renders outside the page tree, so without
- * this it would read the module-level store last written by another visitor's request.
+ * Last-resort 404 for addresses outside every document (WEB-005): public addresses get the public 404 in their
+ * language and the workspace its own; this one answers the rest (an unknown path under a sign-in or onboarding
+ * address). Next renders this boundary inside every page's tree, public pages included, so it reads no cookie,
+ * leaves the request's locale alone (`messageIn`) and stays a minimal, unstyled document in the deployment's default
+ * language: importing the global stylesheets here as well would let them be ordered after the documents' own.
  */
-export default async function NotFound() {
-  await primeLocale();
+export default function NotFound() {
+  const lang = currentDeployment().languages.default;
+  const t = (key: string) => messageIn(lang, key);
   return (
-    <main id="main" className="page page--narrow" tabIndex={-1}>
-      <section className="row" aria-labelledby="root-404-title">
-        <h1 id="root-404-title" tabIndex={-1}>
-          {t('error.notFoundTitle')}
-        </h1>
-        <p>{t('error.notFoundBody')}</p>
-        <div className="row__actions">
-          <ButtonLink href="/">{t('auth.backHome')}</ButtonLink>
-        </div>
-      </section>
-    </main>
+    <html lang={lang}>
+      <body>
+        <main id="main" className="page page--narrow" tabIndex={-1}>
+          <section className="row" aria-labelledby="root-404-title">
+            <h1 id="root-404-title" tabIndex={-1}>
+              {t('error.notFoundTitle')}
+            </h1>
+            <p>{t('error.notFoundBody')}</p>
+            <div className="row__actions">
+              <a href={withBase('/')}>{t('auth.backHome')}</a>
+            </div>
+          </section>
+        </main>
+      </body>
+    </html>
   );
 }

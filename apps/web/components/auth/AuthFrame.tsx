@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowLeft, BookOpenCheck, Building2, FolderKanban, GraduationCap, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import { Brand, MediaFrame } from '@/components/ui';
 import type { MediaRef } from '@/app/_lib/media';

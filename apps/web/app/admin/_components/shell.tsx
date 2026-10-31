@@ -1,5 +1,5 @@
 import { Suspense, type ReactNode } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ButtonLink, EmptyState, Skeleton, SkeletonGroup, StatusChip } from '@/components/ui';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';

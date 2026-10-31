@@ -106,3 +106,19 @@ test('proxy: a restricted page renders the refusal page in place, a call is 451 
   assert.ok(waited.length >= 1, 'the relay of a refused session runs beside the response');
   await Promise.all(waited);
 });
+
+test('proxy: the gate runs before language routing (WEB-005); the refusal page is not a localized address', () => {
+  lib.webJurisdictionGate({ TRUSTWORK_JURISDICTION_GATE: 'fake' }, true);
+  const event = { waitUntil: () => {} };
+  const refused = (url: string, headers: Record<string, string> = {}) => proxy(new NextRequest(`http://127.0.0.1:3000${url}`, { headers: { ...HTML, 'x-real-ip': '192.0.2.10', ...headers } }), event);
+  for (const url of ['/news', '/ru/news', '/en/news', '/news?topic=markets', '/companies?country=GE&lang=ka']) {
+    const response = refused(url, { cookie: 'trustwork.locale=ru; trustwork.country=UZ' });
+    assert.match(response.headers.get('x-middleware-rewrite') ?? '', /\/restricted$/, `${url}: refused in place, never a language redirect`);
+    assert.equal(response.headers.get('location'), null, url);
+    assert.equal(response.headers.get('set-cookie'), null, `${url}: no locale cookie is set`);
+  }
+  const page = proxy(new NextRequest('http://127.0.0.1:3000/restricted', { headers: { ...HTML, 'x-real-ip': '192.0.2.10', cookie: 'trustwork.locale=ru' } }), event);
+  assert.equal(page.headers.get('location'), null, 'the refusal page follows the cookie language, it is never redirected to a prefix');
+  assert.equal(page.headers.get('x-middleware-request-x-trustwork-public-route'), null);
+  assert.match(page.headers.get('content-security-policy') ?? '', /'nonce-/);
+});

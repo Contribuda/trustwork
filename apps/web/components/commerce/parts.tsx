@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import './commerce.css';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { Lock } from 'lucide-react';
 import type { Party } from '@trustwork/contracts/client';
 import { KindBadge, StatusChip } from '@/components/ui';

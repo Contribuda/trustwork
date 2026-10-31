@@ -114,7 +114,7 @@ A valid start logs `deployment configuration loaded` with the file, data directo
 |---|---|---|
 | Countries, languages, packs, dictionaries, demo-content overrides | Start | Data and configuration |
 | Brand overlay | Start | `brand.overlay` or `TRUSTWORK_BRAND`; when neither is set the build-time `NEXT_PUBLIC_TRUSTWORK_BRAND` still applies, then the default `stroyreputation-ru` (Russian interface only) |
-| Site URL | Start (configuration); build (page metadata, for now) | `site.url` or `TRUSTWORK_SITE_URL` is validated and available as `currentDeployment().site.url`; the root layout's `metadataBase` still reads the build-time `NEXT_PUBLIC_SITE_URL` until the layout (owned by WEB-005) switches to it, a one-line change |
+| Site URL | Start (configuration) | `site.url` or `TRUSTWORK_SITE_URL` (origin and base path, for example `https://hub.example.org` or `https://example.org/trustwork`) is validated and read when a page renders: `metadataBase`, canonical URLs, `hreflang` alternates and feed links (WEB-005, `apps/web/app/_lib/site.ts`). The build-time `NEXT_PUBLIC_SITE_URL` is only a fallback for images built before it |
 | Base path | Build | Next compiles `basePath` into every route, asset URL and client bundle, so `NEXT_PUBLIC_BASE_PATH` stays a build argument (`apps/web/next.config.ts`, `apps/web/app/_lib/base-path.ts`). A deployment under another path needs its own build |
 
 So one image built without a base path serves, for example:

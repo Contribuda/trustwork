@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight } from 'lucide-react';
 import { ButtonLink } from '@/components/ui';
 import { PageHeader } from '@/components/workspace/parts';

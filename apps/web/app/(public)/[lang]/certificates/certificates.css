@@ -1,0 +1,35 @@
+/* Route stylesheet of the public certificates pages (WEB-005): rules only these pages use, split out of ../public.css (the shell and shared rules) in their original order. */
+.sr-cert__valid {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: var(--text-caption-size);
+  font-weight: 700;
+}
+
+.sr-cert--page .sr-cert__title {
+  font-size: 1.5rem;
+}
+
+.sr-cert__facts {
+  margin: var(--space-2) 0;
+}
+
+.sr-cert__holder {
+  display: inline-grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sr-cert__holder-role {
+  font-size: var(--text-caption-size);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}

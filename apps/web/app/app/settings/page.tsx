@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, KeyRound, Laptop, Mail, ShieldCheck, Smartphone } from 'lucide-react';
 import { Button, StatusChip } from '@/components/ui';
 import { SettingsPreferences } from '@/components/workspace/SettingsPreferences';

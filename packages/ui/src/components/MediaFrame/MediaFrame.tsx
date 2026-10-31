@@ -28,7 +28,7 @@ export type MediaFrameProps = {
   /** Overlay content (kicker, title, meta) positioned at the bottom-left by default. */
   children?: ReactNode;
   overlayAlign?: 'bottom' | 'center' | 'top' | undefined;
-  /** `eager` for the lead image above the fold. */
+  /** `eager` for the lead image above the fold: fetched first and shown as soon as it is decoded, without waiting for scripts. */
   loading?: 'lazy' | 'eager' | undefined;
   /** When the frame sits inside a hover-lifted card, the parent sets this to enable the 1.03 media scale. */
   hoverScale?: boolean | undefined;
@@ -75,6 +75,7 @@ export function MediaFrame({ media, ratio = '16/10', scrim = 'none', radius = 'm
       )}
       style={style}
       data-loaded={loaded || undefined}
+      data-eager={loading === 'eager' || undefined}
     >
       <div className={styles.placeholder} style={backgroundStyle} aria-hidden="true" />
       <img
@@ -85,6 +86,7 @@ export function MediaFrame({ media, ratio = '16/10', scrim = 'none', radius = 'm
         alt={source.alt}
         {...(source.width && source.height ? { width: source.width, height: source.height } : {})}
         loading={loading}
+        {...(loading === 'eager' ? { fetchPriority: 'high' as const } : {})}
         decoding="async"
         onLoad={() => setLoaded(true)}
         className={styles.image}

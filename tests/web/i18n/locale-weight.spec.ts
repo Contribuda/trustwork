@@ -61,7 +61,8 @@ const ROUTE_GROUP_PAGES: Array<[string, string]> = [
   ['/onboarding?persona=reader', 'onboarding'],
   ['/app?persona=owner', 'workspace'],
   ['/app/assistant?persona=mixed', 'workspace'],
-  ['/this-route-does-not-exist', 'root'],
+  // An unknown public address gets the public 404 inside the public document (WEB-005).
+  ['/this-route-does-not-exist', 'public'],
 ];
 
 for (const [tag, country] of LOCALES.filter(([tag]) => ['en', 'ru', 'ka'].includes(tag))) {

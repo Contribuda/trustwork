@@ -15,13 +15,17 @@ import { REPO } from './helpers.js';
 const WEB = resolve(REPO, 'apps/web');
 const EXTENSIONS = ['.ts', '.tsx', '/index.ts', '/index.tsx'];
 
-/** Route groups with their own client namespaces: the root layout's list reaches every page; a group adds its own. */
+/**
+ * Route groups with their own client namespaces: the root list reaches every page; a group adds its own. Every group
+ * renders its HTML document with `components/RootDocument.tsx` (WEB-005: there is no shared root layout), which hands
+ * over the root namespaces, so the root group starts there.
+ */
 export const ROUTE_GROUPS = {
-  root: { dir: 'app', nested: false },
-  public: { dir: 'app/(public)', nested: true },
-  auth: { dir: 'app/(auth)', nested: true },
-  workspace: { dir: 'app/app', nested: true },
-  onboarding: { dir: 'app/onboarding', nested: true },
+  root: { dir: 'app', nested: false, extra: ['components/RootDocument.tsx'] },
+  public: { dir: 'app/(public)', nested: true, extra: [] },
+  auth: { dir: 'app/(auth)', nested: true, extra: [] },
+  workspace: { dir: 'app/app', nested: true, extra: [] },
+  onboarding: { dir: 'app/onboarding', nested: true, extra: [] },
 } as const;
 export type RouteGroup = keyof typeof ROUTE_GROUPS;
 
@@ -74,14 +78,14 @@ function parse(file: string): Parsed {
 }
 
 function filesOf(group: RouteGroup): string[] {
-  const { dir, nested } = ROUTE_GROUPS[group];
+  const { dir, nested, extra } = ROUTE_GROUPS[group];
   const walk = (path: string): string[] =>
     readdirSync(path).flatMap((name) => {
       const full = join(path, name);
       if (statSync(full).isDirectory()) return nested && !name.startsWith('_') ? walk(full) : [];
       return /\.tsx?$/.test(name) ? [full] : [];
     });
-  return walk(join(WEB, dir));
+  return [...walk(join(WEB, dir)), ...extra.map((file) => join(WEB, file))];
 }
 
 /** Modules that run in the browser on the routes of `group`: client boundaries and everything they import. */

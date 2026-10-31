@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { AlertCircle, BookOpen, FileText, FolderKanban, Sparkles, Tag } from 'lucide-react';
 import { PageHeader } from '@/components/workspace/parts';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';

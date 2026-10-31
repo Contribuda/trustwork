@@ -263,7 +263,7 @@ Governed hybrid retrieval (ADR 007) with permission-separated ingestion, deliver
 | RAG-301 | Governed hybrid retrieval and delivery fencing | open | RAG-201 |
 | WEB-003 | Search, cited answers and freshness states on the web | open | RAG-301, WEB-004 |
 | RAG-401 | Verify real RAG quality, security, scale and recovery | open | RAG-301, AST-001, WEB-003 |
-| WEB-005 | Cacheable, indexable and lighter public pages | open | WEB-004, INTL-004 |
+| WEB-005 | Cacheable, indexable and lighter public pages | done | WEB-004, INTL-004 |
 
 ## Phase 8: federation and the portable passport
 
@@ -425,7 +425,7 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 | No held funds; commissions as hub settings; detailed configuration and extensions | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20–22) | PAY-001, BILL-002, BILL-003, HUB-005, AGT-022, AGT-023 |
 | Complete administrator controls over models, prices and agent functionality, with guard rails no administrator can switch off | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 25, R73) | KEYS-001, MODEL-001, LLM-001, AGT-003, AGT-004, AGT-022, AGT-023, BILL-002, BILL-003, BILL-004, HUBC-002, HUBC-005, HUBC-008, HUBC-009 |
 | US reference hub on Railway in a US region, operated by Contribuda; demo-only until QA-002, counsel review and the owner's switch | Decided 2026-10-31 by the owner and the conductor ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decisions 26 and 28) | OPS-003 targets, QA-002 follow-up, any deployment |
-| English default; other languages under `/<lang>/` with hreflang; no country in public URLs | Decided 2026-10-31 (ADR 012 decision 27) | WEB-005 (unblocked) |
+| English default; other languages under `/<lang>/` with hreflang; no country in public URLs | Decided 2026-10-31 (ADR 012 decision 27) | WEB-005 (done) |
 | Prices, trials, tiers and commission levels | Owner / hub operators | BILL-001, BILL-003 activation |
 | Reputation weights, windows, minimum samples | Owner | EXE-001, REP-001 public scores |
 | Agent liability and disclosure wording per jurisdiction; electronic agreement validity | Counsel per hub | HUB-005 defaults, COM-002 and AGT-008 live use |

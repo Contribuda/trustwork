@@ -8,8 +8,9 @@ import { datasetForCountry } from '../../apps/web/fixtures/datasets.js';
 
 /**
  * ADR-009 owner decision 10: outside the Russian locale no Russian text may reach a reader, demo content
- * included. Every public page is rendered for each engine language through the locale cookie and the
- * visible text is scanned for Cyrillic. Language names in the switcher («Русский») are the only allowed hit.
+ * included. Every public page is rendered for each engine language at its own address (English unprefixed, every
+ * other language under its prefix, ADR 012 decision 27) and the visible text is scanned for Cyrillic. Language names
+ * in the switcher («Русский») are the only allowed hit.
  */
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../apps/web/fixtures');
 type Row = Record<string, unknown>;
@@ -28,6 +29,7 @@ const US_ROUTES = usRoutes();
 
 // Every language directory except Russian (INTL-004: a new language is scanned without editing this list).
 const LOCALES: Array<[string, string]> = ENGINE_LOCALES.filter((tag) => tag !== 'ru').map((tag) => [tag, tag === 'en' ? 'UZ' : localeCountry(tag)]);
+const inLanguage = (tag: string, route: string) => (tag === 'en' ? route : `/${tag}${route === '/' ? '' : route}`);
 
 const visibleText = (html: string) => html
   .replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
@@ -43,7 +45,7 @@ for (const [tag, country] of LOCALES) {
     let rendered = 0;
     const us = datasetForCountry(country) === 'us';
     for (const route of us ? US_ROUTES : routes) {
-      const response = await context.get(route, { maxRedirects: 0 });
+      const response = await context.get(inLanguage(tag, route), { maxRedirects: 0 });
       if (response.status() !== 200) continue;
       rendered += 1;
       const hits = [...new Set(visibleText(await response.text()).match(/[Ѐ-ӿ][Ѐ-ӿ\s,.:;«»()\-–—]*/g) ?? [])].map((s) => s.trim()).filter(Boolean);

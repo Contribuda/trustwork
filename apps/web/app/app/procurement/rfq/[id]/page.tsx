@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { notFound, redirect } from 'next/navigation';
 import { Breadcrumb, StatusChip } from '@/components/ui';
 import { PageHeader } from '@/components/workspace/parts';

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+// The document (and its global stylesheets) first, so route stylesheets come after them in the cascade.
+import { VisitorDocument, documentMetadata } from '@/components/RootDocument';
 import '../auth.css';
 import './workspace.css';
 import { WorkspaceShell, type ShellData } from '@/components/workspace/WorkspaceShell';
@@ -10,9 +12,12 @@ import { t } from '@/app/_lib/i18n';
 import { clientLayers, primeLocale } from '@/app/_lib/locale';
 import { LocaleNamespaces } from '@/components/locale/LocaleProvider';
 
+/** Private: rendered per request for the visitor's session and cookies, never cached (WEB-005 keeps this explicit). */
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
-  return { title: { default: t('shell.navLabel'), template: `%s — ${t('brand.name')}` }, robots: { index: false, follow: false } };
+  return { ...documentMetadata(), title: { default: t('shell.navLabel'), template: `%s — ${t('brand.name')}` }, robots: { index: false, follow: false } };
 }
 
 /**
@@ -39,10 +44,12 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
     };
   }
   return (
-    <LocaleNamespaces {...clientLayers(active.locale, 'workspace')}>
-      <WorkspaceShell shells={shells} defaultPersona={fallback} demoMode={demoMode} localeControl={<HeaderLocaleSwitcher />}>
-        {children}
-      </WorkspaceShell>
-    </LocaleNamespaces>
+    <VisitorDocument>
+      <LocaleNamespaces {...clientLayers(active.locale, 'workspace')}>
+        <WorkspaceShell shells={shells} defaultPersona={fallback} demoMode={demoMode} localeControl={<HeaderLocaleSwitcher active={active} />}>
+          {children}
+        </WorkspaceShell>
+      </LocaleNamespaces>
+    </VisitorDocument>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { RecoveryRequestCommandSchema } from '@trustwork/contracts/client';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { MailCheck } from 'lucide-react';
 import { Button, Form, FormActions, FormAlert, TextField } from '@trustwork/ui';
 import { mapFieldErrors, useAuthForm } from './useAuthForm';

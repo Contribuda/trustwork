@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, ChevronDown, Globe } from 'lucide-react';
 import { Dialog, DialogTrigger, Popover, Button as AriaButton } from 'react-aria-components';
-import { writeLocaleCookies } from './locale-cookies';
+import { publicPathIn, writeLocaleCookies } from './locale-cookies';
 import { t } from '@/app/_lib/i18n';
 
 /** A selectable country: the platform's own packs are `featured`; every other country is a generic profile. */
@@ -46,6 +46,8 @@ export function CountrySelect({ countries, value, onChange, className, id }: { c
  * combined with any engine language (owner decision 2026-10-29): the platform's own packs are one click
  * away, every other country sits in the select, and the language row is independent of the country. Without a
  * country (none chosen and none configured, ADR 012 decision 11) the control says "Country" and asks for one.
+ * On a public page the language is the page's own (its URL, ADR 012 decision 27): choosing another opens the same page
+ * in that language.
  */
 export function LocaleSwitcher({ countries, languages, country, locale, tone = 'light' }: { countries: SwitcherCountry[]; languages: SwitcherLanguage[]; country: string; locale: string; tone?: 'light' | 'dark' }) {
   const router = useRouter();
@@ -55,7 +57,8 @@ export function LocaleSwitcher({ countries, languages, country, locale, tone = '
   const choose = (code: string, tag: string) => {
     writeLocaleCookies(code, tag);
     setOpen(false);
-    startTransition(() => router.refresh());
+    const target = tag !== locale ? publicPathIn(tag, window.location, languages.map((l) => l.tag)) : null;
+    startTransition(() => (target ? router.push(target) : router.refresh()));
   };
   if (!countries.length) return null;
   const featured = countries.filter((c) => c.featured);

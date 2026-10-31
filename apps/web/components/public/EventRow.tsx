@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, MapPin, Users, Video } from 'lucide-react';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
 import type { EventCard } from '@/app/_lib/data/types';

@@ -1,16 +1,24 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { PublicFooter, PublicHeader, type MenuItemDef } from '@trustwork/ui';
-import { resolveDemoContext, withDemo, type Persona } from '@/app/_lib/persona';
+import { withDemo } from '@/app/_lib/persona';
 import { t } from '@/app/_lib/i18n';
-
-export type ShellAccount = { name: string } | null;
+import { localHref, unprefixedLanguage } from '@/app/_lib/localize';
+import { splitLanguage } from '@/app/_lib/public-paths';
+import { localeTag } from '@trustwork/ui/i18n';
+import { useViewer } from './viewer';
 
 const FOOTER_TOPICS = ['materials', 'technologies', 'markets', 'projects', 'people'] as const;
 
 const SECTION_PATHS = ['/', '/news', '/articles', '/events', '/companies', '/people', '/projects', '/magazine'] as const;
+
+/** The page's path without its language prefix (decision 27), for the section highlight and the search box. */
+function barePath(pathname: string): string {
+  const lang = localeTag();
+  return lang === unprefixedLanguage() ? pathname : splitLanguage(pathname, [lang]).path;
+}
 
 function currentSection(pathname: string): number | undefined {
   if (pathname === '/') return 0;
@@ -21,14 +29,13 @@ function currentSection(pathname: string): number | undefined {
 /**
  * Public shell: header with the eight public sections (events added by owner decision 2026-10-28), search, «О платформе», sign-in or the single
  * circular avatar (menu: workspace, my page, account settings, help, sign out), `main`, footer with
- * «Помощь» last. The demo persona comes from the query so static pages stay static.
+ * «Помощь» last. The page is cached and the same for everybody (WEB-005): the account and the demo persona come from
+ * the viewer context in the browser; links keep the page's language.
  */
-export function PublicShell({ accounts, defaultPersona, demoMode, localeControl, children }: { accounts: Record<Persona, ShellAccount>; defaultPersona: Persona; demoMode: boolean; localeControl?: ReactNode; children: ReactNode }) {
-  const pathname = usePathname();
-  const params = useSearchParams();
-  // Live mode (WEB-004): the query never selects a principal; the layout passes the session's account under the default key.
-  const demo = resolveDemoContext(params, defaultPersona, demoMode);
-  const account = accounts[demo.persona];
+export function PublicShell({ demoMode, localeControl, children }: { demoMode: boolean; localeControl?: ReactNode; children: ReactNode }) {
+  const pathname = barePath(usePathname());
+  const { viewer, demo, query } = useViewer();
+  const account = viewer ? { name: viewer.name } : null;
   const hrefs = SECTION_PATHS.map((path) => withDemo(path, demo));
 
   const menuItems: readonly MenuItemDef[] = [
@@ -46,7 +53,7 @@ export function PublicShell({ accounts, defaultPersona, demoMode, localeControl,
         currentIndex={currentSection(pathname)}
         brandHref={withDemo('/', demo)}
         aboutHref="/#about"
-        search={{ action: '/search', placeholder: t('search.placeholder'), defaultValue: pathname === '/search' ? (params.get('q') ?? '') : '' }}
+        search={{ action: localHref('/search'), placeholder: t('search.placeholder'), defaultValue: pathname === '/search' ? (query?.get('q') ?? '') : '' }}
         signInHref={account ? undefined : '/login'}
         account={account ? { name: account.name, menuItems } : undefined}
         mainId="main"

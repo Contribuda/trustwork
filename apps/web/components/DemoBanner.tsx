@@ -11,27 +11,35 @@ function personaLabel(id: Persona): string {
 }
 
 /**
- * 32 px demo strip (`@trustwork/ui` DemoBanner) that the root layout renders whenever the fixture adapter is
+ * 32 px demo strip (`@trustwork/ui` DemoBanner) that every document (`components/RootDocument.tsx`) renders whenever the fixture adapter is
  * the data source: synthetic data must never masquerade as real customers or a working backend. The layout
  * decides, so this client module never imports the fixtures (their demo content in every language would
  * otherwise ship to every browser). The persona switch is a menu button; choosing an entry navigates to the
  * current path with `?persona=` (cookie-less, see persona.ts) and drops any demo scenario. The strip is last
  * in DOM order (keyboard order starts at the shell) and first visually (`order: -1` on the body flex column).
  */
-export function DemoBanner({ defaultPersona }: { defaultPersona: Persona }) {
+export function DemoBanner({ defaultPersona, static: fixed = false }: { defaultPersona: Persona; static?: boolean }) {
+  return fixed ? <Strip persona={defaultPersona} params={null} /> : <FromQuery defaultPersona={defaultPersona} />;
+}
+
+/** Reads the query (public pages render `static` on the server inside a Suspense boundary, then this in the browser). */
+function FromQuery({ defaultPersona }: { defaultPersona: Persona }) {
+  const params = useSearchParams();
+  return <Strip persona={resolveDemoContext(params, defaultPersona, true).persona} params={params} />;
+}
+
+function Strip({ persona, params }: { persona: Persona; params: URLSearchParams | null }) {
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
-  const ctx = resolveDemoContext(params, defaultPersona, true);
   const onChange = (id: string) => {
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(params?.toString() ?? '');
     next.delete('scenario');
     next.set('persona', id);
     router.push(`${pathname}?${next.toString()}`);
   };
   return (
     <div className="demo-strip" data-testid="demo-banner">
-      <DemoStrip message={t('demo.banner')} personas={PERSONAS.map((id) => ({ id, label: personaLabel(id) }))} currentId={ctx.persona} onChange={onChange} />
+      <DemoStrip message={t('demo.banner')} personas={PERSONAS.map((id) => ({ id, label: personaLabel(id) }))} currentId={persona} onChange={onChange} />
     </div>
   );
 }

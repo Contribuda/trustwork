@@ -72,7 +72,9 @@ test.describe('the US hub', () => {
       const context = await playwright.request.newContext({ baseURL: baseURL!, extraHTTPHeaders: { cookie: `trustwork.country=US; trustwork.locale=${tag}` } });
       const problems: string[] = [];
       for (const route of routes) {
-        const response = await context.get(route, { maxRedirects: 0 });
+        // Public pages carry the language in their address (ADR 012 decision 27); private ones follow the cookie.
+        const address = tag === 'en' || /^\/(?:app|login|signup|recover|onboarding)(?:[/?]|$)/.test(route) ? route : `/${tag}${route === '/' ? '' : route}`;
+        const response = await context.get(address, { maxRedirects: 0 });
         if (response.status() !== 200) { problems.push(`${tag} ${route}: HTTP ${response.status()}`); continue; }
         const html = await response.text();
         if (!html.includes(`<html lang="${tag}"`)) problems.push(`${tag} ${route}: html lang`);

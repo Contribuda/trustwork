@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { blockingGates, LAUNCH_GATES, providerBudgetState, SOFT_LAUNCH_GATES, type ConsolePermission } from '@trustwork/contracts/client';
 import { formatMoney, t, tDynamic } from '@/app/_lib/i18n';
 import { approvalBlocker } from '../../_data/commands';

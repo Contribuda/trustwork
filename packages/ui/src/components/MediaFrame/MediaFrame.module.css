@@ -86,6 +86,11 @@
   opacity: 1;
 }
 
+/* The lead image is the page's largest paint: it appears when decoded, not when scripts have run (WEB-005). */
+.frame[data-eager] .image {
+  opacity: 1;
+}
+
 .hoverScale .image {
   will-change: transform;
 }

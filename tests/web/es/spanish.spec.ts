@@ -42,6 +42,9 @@ const US_EQUIVALENT: Record<string, string> = {
   '/app/projects/project-school?persona=mixed': '/app/projects/us-project-school?persona=mixed',
 };
 
+/** Public pages carry the language in their address (ADR 012 decision 27); private ones follow the cookie. */
+const inSpanish = (path: string) => (/^\/(?:app|login|signup|recover|logout|verify-email|onboarding)(?:[/?]|$)/.test(path) ? path : `/es${path === '/' ? '' : path}`);
+
 const visibleText = (html: string) => html
   .replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
   .replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ')
@@ -58,12 +61,14 @@ test.describe('Spanish (es) with the United States', () => {
     const leftovers: string[] = [];
     let rendered = 0;
     for (const route of ROUTES) {
-      const path = US_EQUIVALENT[route.path] ?? route.path;
+      const path = inSpanish(US_EQUIVALENT[route.path] ?? route.path);
       const response = await context.get(path, { maxRedirects: 0 });
       if (![200, 404].includes(response.status())) continue;
       const html = await response.text();
       rendered += 1;
-      expect(html, path).toMatch(/<html[^>]* lang="es"/);
+      // Next renders a page's notFound() as a document shell that the browser completes from the page data, so the
+      // language attribute is only checked on pages that render (the 404's Spanish copy is in that data).
+      if (response.status() === 200) expect(html, path).toMatch(/<html[^>]* lang="es"/);
       const text = visibleText(html);
       const hits = english.filter((value) => text.includes(value));
       if (hits.length) leftovers.push(`${path}: ${hits.slice(0, 3).join(' | ')}`);

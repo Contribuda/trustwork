@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, Modal, ModalOverlay } from 'react-aria-components';
-import { writeLocaleCookies } from './locale-cookies';
+import { publicPathIn, writeLocaleCookies } from './locale-cookies';
 import { CountrySelect, localeName, type SwitcherCountry, type SwitcherLanguage } from './LocaleSwitcher';
 import { t } from '@/app/_lib/i18n';
 
@@ -13,7 +13,8 @@ import { t } from '@/app/_lib/i18n';
  * (never a restricted place) is in the select. `suggested` is the deployment's default country, or empty when it
  * configures none: then nothing is preselected and the visitor must choose (ADR 012 decision 11). Closing without
  * a choice keeps the default (or no country) and shows the gate again on the next visit; the header switcher is
- * always available afterwards.
+ * always available afterwards. Choosing a language on a public page opens the same page in that language (its URL
+ * prefix, ADR 012 decision 27).
  */
 export function CountryGate({ countries, languages, suggested, suggestedLocale }: { countries: SwitcherCountry[]; languages: SwitcherLanguage[]; suggested: string; suggestedLocale: string }) {
   const router = useRouter();
@@ -29,7 +30,8 @@ export function CountryGate({ countries, languages, suggested, suggestedLocale }
     const tag = languages.some((l) => l.tag === locale) ? locale : (languages[0]?.tag ?? 'en');
     writeLocaleCookies(current.code, tag);
     setOpen(false);
-    startTransition(() => router.refresh());
+    const target = tag !== suggestedLocale ? publicPathIn(tag, window.location, languages.map((l) => l.tag)) : null;
+    startTransition(() => (target ? router.push(target) : router.refresh()));
   };
   const pickCountry = (c: SwitcherCountry) => {
     setCountry(c.code);

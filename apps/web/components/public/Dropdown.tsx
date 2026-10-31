@@ -1,4 +1,4 @@
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ChevronDown } from 'lucide-react';
 import { t } from '@/app/_lib/i18n';
 

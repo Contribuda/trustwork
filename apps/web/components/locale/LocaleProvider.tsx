@@ -5,12 +5,13 @@ import { LocaleScope } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
 import { brandOverlay, registerBrandOverlay, type BrandOverlay } from '@trustwork/ui/brand';
 import { installPacks, type CountryPack } from '@trustwork/country-packs';
+import { setDefaultLanguage } from '@/app/_lib/localize';
 
 type WordmarkLines = BrandOverlay['wordmarks'][string];
 
 /**
  * The deployment's brand overlay is runtime configuration (CFG-001), so the browser learns it from the server: the
- * root layout hands over the overlay's wordmark for this document's language, and it is added here (never removed:
+ * document (`components/RootDocument.tsx`) hands over the overlay's wordmark for this document's language, and it is added here (never removed:
  * one deployment has one overlay, so concurrent server renders in different languages only ever add entries).
  */
 function registerWordmark(locale: string, wordmark: WordmarkLines | null | undefined): void {
@@ -67,7 +68,7 @@ function Scope({ received, children }: { received: Received; children: ReactNode
 }
 
 /**
- * Hands the active locale and the root layout's message layers (this request's language only: brand
+ * Hands the active locale and the document's message layers (this request's language only: brand
  * overlay, the root namespaces, the design system's dictionary) to the client components below.
  * `LocaleScope` keeps them request-scoped during server rendering, so concurrent visitors in different
  * languages never mix; `<html lang>` follows on the client.
@@ -83,7 +84,9 @@ function registerPack(pack: CountryPack | null | undefined): void {
   installPacks([...deploymentPacks.values()]);
 }
 
-export function LocaleProvider({ locale, country, brand, wordmark, pack, namespaces, layers, ui, children }: { locale: string; country: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
+export function LocaleProvider({ locale, country, defaultLanguage, brand, wordmark, pack, namespaces, layers, ui, children }: { locale: string; country: string; defaultLanguage: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
+  // The unprefixed language of public URLs (decision 27): one value per deployment, so concurrent renders agree.
+  setDefaultLanguage(defaultLanguage);
   registerWordmark(locale, wordmark);
   registerPack(pack);
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ArrowRight, Bookmark, CheckCircle2, Flame } from 'lucide-react';
 import { t } from '@/app/_lib/i18n';
 import { listDoneIssues, loadIssueState, quizTotals, streakFrom } from './reader-state';
+import { localHref } from '@/app/_lib/localize';
 
 /** «Ваш прогресс»: items read, quiz answers, bookmarks and the issue streak, read from the browser only. */
 export function IssueProgress({ issue, total, readerHref, positions, compact = false }: { issue: number; total: number; readerHref: string; positions: number[]; compact?: boolean }) {
@@ -45,7 +46,7 @@ export function IssueProgress({ issue, total, readerHref, positions, compact = f
             </span>
           ) : null}
         </span>
-        <a href={done ? readerHref : `${readerHref}#item-${positions.find((p) => !state.read.includes(p)) ?? positions[0] ?? 1}`} className="mg-progress__cta">
+        <a href={localHref(done ? readerHref : `${readerHref}#item-${positions.find((p) => !state.read.includes(p)) ?? positions[0] ?? 1}`)} className="mg-progress__cta">
           {read === 0 ? t('magazine.progressStart') : done ? t('magazine.readOnline') : t('magazine.progressContinue')}
           <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
         </a>

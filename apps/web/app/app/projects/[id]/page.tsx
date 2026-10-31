@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { notFound } from 'next/navigation';
 import { ArrowRight, ArrowUpRight, Check, EyeOff, FileText, Lock, Users } from 'lucide-react';
 import { Breadcrumb, EvidenceLabel, MediaFrame, StatusChip, Timeline } from '@/components/ui';

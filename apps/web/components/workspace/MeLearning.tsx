@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import NextLink from 'next/link';
+import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, Bookmark, BookOpenCheck, GraduationCap } from 'lucide-react';
 import { SRLogo } from '@/components/public/SRMark';
 import { loadIssueState, quizTotals } from '@/components/public/magazine/reader-state';

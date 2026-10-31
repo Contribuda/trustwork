@@ -1,0 +1,330 @@
+/* Route stylesheet of the public home page (WEB-005): rules only these pages use, split out of ../public.css (the shell and shared rules) in their original order. */
+.hero-lead:focus-visible {
+  outline: 3px solid var(--color-focus);
+}
+
+.hero-lead__slide.is-active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.hero-lead__slide.is-active > * {
+  animation: hero-zoom 9s linear forwards;
+}
+
+.hero-lead__title {
+  font-size: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.hero-lead__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.hero-lead__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero-lead__link:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.hero-lead__dek {
+  max-width: 56ch;
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.hero-lead__meta {
+  font-size: var(--text-body-sm-size);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-lead__bottom > * {
+  pointer-events: auto;
+}
+
+.hero-lead__cta:hover {
+  text-decoration-color: #fff;
+}
+
+.hero-lead__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-lead__btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-lead__btn:active {
+  transform: scale(0.94);
+}
+
+.hero-lead__btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.hero-lead__counter-sep,
+.hero-lead__counter-total {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hero-lead[data-running='true'] .hero-lead__progress::after {
+  animation: hero-progress 7s linear forwards;
+}
+
+.hero-tiles {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: var(--pub-gap);
+  min-height: 0;
+}
+
+.hero-tile__title {
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.hero-tile:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1023.98px) {
+
+  .hero-tiles {
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+
+  .hero-lead__media {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+  }
+
+  .hero-lead__scrim {
+    background: linear-gradient(180deg, rgba(10, 22, 40, 0.08) 0%, rgba(10, 22, 40, 0.12) 30%, rgba(10, 22, 40, 0.72) 62%, rgba(10, 22, 40, 0.94) 100%);
+  }
+
+  .hero-lead__title {
+    font-size: 1.375rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-wrap: pretty;
+  }
+
+  .hero-lead__dek {
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.84);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .hero-lead__meta {
+    display: none;
+  }
+
+  .hero-lead__cta {
+    font-size: 0.8125rem;
+  }
+
+  .hero-lead__controls {
+    gap: 4px;
+  }
+
+  .hero-lead__controls .hero-lead__btn:not(.hero-lead__btn--play) {
+    display: none;
+  }
+
+  .hero-lead__dots {
+    display: flex;
+    top: 10px;
+    right: 10px;
+  }
+
+  .hero-lead__dot.is-active {
+    width: 18px;
+    border-radius: 3px;
+  }
+  .hero-tiles {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--pub-gutter) * -1);
+    padding-inline: var(--pub-gutter);
+  }
+
+  .hero-tile__title {
+    font-size: 0.9375rem;
+    line-height: 1.25;
+  }
+}
+
+.home-ev {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 48px);
+  align-items: start;
+}
+
+.home-ev__lead {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.home-ev__media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--pub-radius);
+  aspect-ratio: 16 / 8;
+}
+
+.home-ev__text {
+  display: grid;
+  gap: 10px;
+  max-width: 60ch;
+}
+
+.home-ev__title {
+  font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.875rem);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.home-ev__lede {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.home-ev__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-ev__item {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.home-ev__item:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.home-ev__tile {
+  padding: 6px 0 8px;
+}
+
+.home-ev__tile .ev-tile__day {
+  font-size: 1.375rem;
+}
+
+.home-ev__item-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.home-ev__item-title {
+  font-size: var(--text-body-size);
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.home-ev__item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: var(--text-caption-size);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 1023.98px) {
+  .home-ev {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .home-ev__media {
+    border-radius: 12px;
+    aspect-ratio: 16 / 10;
+  }
+
+  .home-ev__text {
+    gap: 8px;
+  }
+
+  .home-ev__lede {
+    font-size: 0.875rem;
+  }
+
+  .home-ev__item {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .home-ev__tile .ev-tile__day {
+    font-size: 1.125rem;
+  }
+}
+.feed-row__date-tile {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  min-width: 44px;
+  padding: 4px 6px 6px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-e1);
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.feed-row__date-tile .ev-tile__day {
+  font-size: 1.125rem;
+}
+
+.feed-row__date-tile .ev-tile__month {
+  font-size: 0.6875rem;
+}

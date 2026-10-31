@@ -5955,7 +5955,7 @@
       "id": "WEB-005",
       "title": "Cacheable, indexable and lighter public pages",
       "area": "frontend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "WEB-004",
         "INTL-004"

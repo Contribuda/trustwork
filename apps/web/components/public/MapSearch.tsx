@@ -6,6 +6,7 @@ import { ArrowUpRight, Clock, FileText, FolderOpen, Globe, LocateFixed, MapPin, 
 import { CompanyMark } from '@/components/public/CompanyMark';
 import { SRMark } from '@/components/public/SRMark';
 import { t } from '@/app/_lib/i18n';
+import { localHref, localPath } from '@/app/_lib/localize';
 
 export type PinTone = 'navy' | 'blue' | 'green' | 'amber' | 'grey';
 export type MapFactIcon = 'region' | 'projects' | 'publications' | 'needs' | 'people' | 'updated' | 'site';
@@ -186,14 +187,14 @@ export function MapSearch({
     const q = new URLSearchParams(baseQuery);
     q.set('view', 'map');
     q.set('bbox', b.join(','));
-    router.replace(`${basePath}?${q.toString()}`, { scroll: false });
+    router.replace(localPath(`${basePath}?${q.toString()}`), { scroll: false });
     setMoved(false);
   };
   searchRef.current = search;
   const clearArea = () => {
     const q = new URLSearchParams(baseQuery);
     q.set('view', 'map');
-    router.replace(`${basePath}?${q.toString()}`, { scroll: false });
+    router.replace(localPath(`${basePath}?${q.toString()}`), { scroll: false });
     setMoved(false);
   };
   const holdPeek = () => {
@@ -441,7 +442,7 @@ export function MapSearch({
                 </span>
                 <div className="ms-card__body">
                   <span className="pub-kicker">{it.kicker}</span>
-                  <a href={it.href} className="ms-card__title">
+                  <a href={localHref(it.href)} className="ms-card__title">
                     {it.title}
                   </a>
                   {it.subtitle ? <span className="ms-card__sub">{it.subtitle}</span> : null}
@@ -463,7 +464,7 @@ export function MapSearch({
         {!ready && !failed ? <div className="ms__loading">{t('map.loading')}</div> : null}
         {failed ? (
           <div className="ms__loading">
-            {t('map.failed')} <a href={listHref}>{t('map.toList')}</a>
+            {t('map.failed')} <a href={localHref(listHref)}>{t('map.toList')}</a>
           </div>
         ) : null}
         <div className="ms__controls">
@@ -516,7 +517,7 @@ export function MapSearch({
               <X size={14} strokeWidth={2} aria-hidden="true" />
             </button>
             {current.cover ? (
-              <a href={current.href} className="ms-pop__cover" tabIndex={-1} aria-hidden="true">
+              <a href={localHref(current.href)} className="ms-pop__cover" tabIndex={-1} aria-hidden="true">
                 <img src={current.cover} alt="" />
                 {current.progress !== null ? (
                   <span className="ms-pop__progress" style={{ ['--p' as string]: `${current.progress}%` }}>
@@ -530,7 +531,7 @@ export function MapSearch({
                 {current.mark ? <CompanyMark name={current.mark.name} seed={current.mark.seed} size={44} /> : null}
                 <div className="ms-pop__heading">
                   <span className="pub-kicker">{current.kicker}</span>
-                  <a href={current.href} className="ms-pop__title">
+                  <a href={localHref(current.href)} className="ms-pop__title">
                     {current.title}
                   </a>
                 </div>
@@ -548,12 +549,12 @@ export function MapSearch({
               </div>
               <Facts facts={current.facts} max={4} />
               <div className="ms-pop__actions">
-                <a href={current.href} className="pub-btn pub-btn--dark ms-pop__open">
+                <a href={localHref(current.href)} className="pub-btn pub-btn--dark ms-pop__open">
                   {t('map.open')}
                   <ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" />
                 </a>
                 {current.agentHref ? (
-                  <a href={current.agentHref} className="pub-btn ms-pop__agent">
+                  <a href={localHref(current.agentHref)} className="pub-btn ms-pop__agent">
                     <MessageSquareText size={16} strokeWidth={2} aria-hidden="true" />
                     {t('map.talk')}
                   </a>
