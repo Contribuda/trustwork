@@ -3,7 +3,8 @@
   "compilerOptions": {
     "incremental": false,
     "noEmit": true,
-    "plugins": []
+    "plugins": [],
+    "types": ["node"]
   },
   "include": ["conformance.tsx", "probe.tsx", "../../../apps/web/next-env.d.ts"]
 }
