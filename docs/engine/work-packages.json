@@ -2382,7 +2382,7 @@
       "id": "HUB-001",
       "title": "Hubs, territories, hub-scoped staff and versioned hub configuration",
       "area": "hubs",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-002",
         "ADM-001",

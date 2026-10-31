@@ -2,7 +2,7 @@
 
 Normative requirements: [Hubs and the hub console](modules/hubs-and-console.md). Participants: [who uses what](participants/README.md).
 
-Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub lifecycle and launch checklist are **Proposed**; the United States reference hub (hosting, operator, demo-only start) is **decided** and not deployed.
+Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub-scoped staff, versioned hub configuration, the hub lifecycle and the launch checklist are **Live** as an API without a console (HUB-001, [module](../../apps/api/src/modules/hubs/README.md)); the console screens are **Proposed**; the United States reference hub (hosting, operator, demo-only start) is **decided** and not deployed.
 
 The engine is not one website. It is something people run for a place they care about. A **hub** is the platform for one territory: a country, a region, or a city. Whoever runs it is the **hub operator**: an industry association, a trade publisher, a chamber of commerce, a university, an entrepreneur, a community of engineers. The operator brings local knowledge, legal responsibility and people; the engine brings everything else.
 
@@ -68,9 +68,9 @@ draft → preparing → soft_launch (invite-only) → public → suspended → c
 - **Suspended**: read-only with a banner (legal order, operator incident).
 - **Closing and closed**: participants are notified in advance, can export their own data, and can move to another hub; federation peers receive tombstones or a handover notice naming the successor hub.
 
-## Launch checklist (Proposed)
+## Launch checklist
 
-The console refuses to switch a hub to **public** until every gate is green:
+The engine refuses to switch a hub to **public** until every gate is green (HUB-001: enforced by the database for every writer; a passed gate whose precondition the engine can verify, such as two staff with second factors or counsel-approved legal texts in every hub language, blocks again as soon as the precondition stops holding; soft launch needs the first six gates and the two console gates `demo_data_purged` and `ai_egress_policy_reviewed`):
 
 1. Operator legal entity recorded; operator screened against sanctions lists.
 2. Terms, privacy notice and sanctions section adapted with the operator's counsel; the counsel approval recorded with date and version.

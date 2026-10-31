@@ -218,6 +218,27 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // HUB-001: hubs, territories, versioned configuration, launch gates, lifecycle, legal documents and credential
+  // references. Every route runs in one PrincipalService.runAs transaction through a hubs_* SECURITY DEFINER command that
+  // writes its audit row there (a two-person action without an approval writes the approval request instead).
+  'hub.create': IN_TRANSACTION,
+  'hub.profile_update': IN_TRANSACTION,
+  'hub.territory_add': IN_TRANSACTION,
+  'hub.territory_remove': IN_TRANSACTION,
+  'hub.config_draft': IN_TRANSACTION,
+  'hub.config_import_deployment': IN_TRANSACTION,
+  'hub.config_activate': IN_TRANSACTION,
+  'hub.config_cancel': IN_TRANSACTION,
+  'hub.gate_check': IN_TRANSACTION,
+  'hub.gate_invalidate': IN_TRANSACTION,
+  'hub.transition': IN_TRANSACTION,
+  'hub.legal_draft': IN_TRANSACTION,
+  'hub.legal_counsel_record': IN_TRANSACTION,
+  'hub.legal_activate': IN_TRANSACTION,
+  'hub.legal_accept': IN_TRANSACTION,
+  'hub.credential_register': IN_TRANSACTION,
+  'hub.credential_activate': IN_TRANSACTION,
+  'hub.credential_retire': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
