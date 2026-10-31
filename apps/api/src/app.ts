@@ -36,6 +36,11 @@ export interface CreateAppOptions {
   staffRoles?: StaffRoleResolver;
   /** Destination of the structured JSON log lines (default: stdout). */
   logSink?: LogSink;
+  /**
+   * Deprecated (kept so existing callers compile): without `logSink`, receives only the error-level structured lines
+   * as `log(line)`; every other line is dropped. New code passes `logSink`.
+   */
+  log?: (message: string, error?: unknown) => void;
   /** Telemetry exporter override (tests pass the recording fake); default OTLP/HTTP JSON when configured, else no-op. */
   telemetryExporter?: TelemetryExporter;
   /** `fetch` used by the OTLP exporter (tests pass a fake; the default is the global fetch). */
@@ -63,7 +68,9 @@ export async function assertRuntimeRole(pool: DataPool): Promise<void> {
 export async function createApp(options: CreateAppOptions = {}): Promise<CreatedApp> {
   const env = options.env ?? process.env;
   const config: ApiConfig = { ...apiConfigFromEnv(env), ...options.config };
-  const logger = createLogger({ level: config.log.level, ...(options.logSink ? { sink: options.logSink } : {}) });
+  const legacy = options.log;
+  const sink: LogSink | undefined = options.logSink ?? (legacy ? (line) => { if (line.includes('"level":"error"')) legacy(line); } : undefined);
+  const logger = createLogger({ level: config.log.level, ...(sink ? { sink } : {}) });
   const log = messageLogger(logger);
   const telemetry = createTelemetry(config.telemetry, {
     ...(options.telemetryExporter ? { exporter: options.telemetryExporter } : {}),
