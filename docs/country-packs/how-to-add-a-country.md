@@ -1,6 +1,6 @@
 # How to add your country
 
-This guide covers country pack v1. The proposed pack v2 adds facets (registers, licensing, standards, procurement, tax and e-invoicing, electronic signatures, payments, calendar, scripts, privacy and content law): see [Country specifics](../engine/country-specifics.md).
+This guide covers country pack v2 (CTRY-002). A v2 pack keeps every v1 field and adds verification levels, several time zones, subdivision kinds for federal countries, facts per subdivision and facets: identifiers, registers, licensing, standards, procurement, tax and e-invoicing, electronic signatures, payments, calendar and holidays, units, scripts, privacy, content law, national sanctions lists and agent-law defaults. v1 files (without `schemaVersion`) stay valid and are upgraded losslessly when loaded. Background: [Country specifics](../engine/country-specifics.md).
 
 A country pack tells the engine everything that differs between markets: languages, currency, the company registration identifier, legal entity types, regions, address order, legal templates and data-residency rules. The UI, demo data and contracts read the active pack; nothing country-specific is hard-coded (ADR-009).
 
@@ -14,7 +14,7 @@ Restricted places (`packages/country-packs/packs/restricted.json`, ADR-009 decis
 
 ## 2. Create the pack
 
-Copy `packages/country-packs/packs/uz.json` to `packs/<code>.json` (lower-case ISO 3166-1 alpha-2) and fill every field. The schema is `CountryPackSchema` in `packages/country-packs/src/index.ts`:
+Copy `packages/country-packs/packs/uz.json` to `packs/<code>.json` (lower-case ISO 3166-1 alpha-2), add `"schemaVersion": 2` and fill every field. The schema is `CountryPackSchema` in `packages/country-packs/src/schema.ts`; the facets are in `src/facets.ts`:
 
 | Field | What to put | Source required |
 |---|---|---|
@@ -22,16 +22,67 @@ Copy `packages/country-packs/packs/uz.json` to `packs/<code>.json` (lower-case I
 | `enabled`, `status` | `enabled: true` once reviewed; `status` is `complete` (all dictionaries translated), `partial` (core UI translated, English fallback) or `draft` | — |
 | `locales`, `defaultLocale` | BCP 47 tags (`uz-Latn`, `ka`, `hy`, `az-Latn`); English may be listed as a secondary locale | — |
 | `currency`, `secondaryCurrencies` | ISO 4217 code, minor-unit digits, displayed digits, symbol | yes (central bank or ISO) |
-| `formats` | IANA time zone, phone calling code and length, postal-code pattern | yes |
-| `registrationIdentifier` | `kind` as `<CODE>-<NAME>` (e.g. `UZ-STIR`), regex `pattern`, an `example` that matches it, the issuing authority and how a company proves it | yes |
+| `formats` | The representative IANA time zone, phone calling code and length, postal-code pattern | yes |
+| `timeZones` (v2) | Every IANA time zone used in the country; must include `formats.timeZone` | yes (pack `sources`) |
+| `registrationIdentifier` | The primary company identifier: `kind` as `<CODE>-<NAME>` (e.g. `UZ-STIR`), regex `pattern`, an `example` that matches it, the issuing authority, a free-text `verification` note and (v2) `verificationLevel`. Further kinds go into the `identifiers` facet | yes |
 | `legalEntityTypes` | Codes and localized names of the entity forms companies register under | yes |
-| `regions` | ISO 3166-2 codes with localized names and `kind` | yes |
-| `address` | Order of address lines and whether the city comes first | — |
+| `regions` | ISO 3166-2 codes with localized names and `kind` (`city`, `region`, `republic`, `autonomous-republic`, `rayon`, `municipality`, `state`, `district`, `territory`, `province`); v2 adds an optional `parent` (a county inside a state), the region's own `timeZones` (a subset of the pack's) and `facets` that hold only there | yes |
+| `address` | Order of address lines (`street`, `street2` for a unit or suite, `city`, `region`, `postalCode`) and whether the city comes first | — |
 | `legalTemplates` | Template keys under `docs/legal/templates` (`terms`, `privacy`, `sanctions-and-export-controls`) | — |
-| `dataResidency` | Whether personal data must stay in the country, with a note and sources | yes |
-| `sources` | Every page you relied on: URL, what it confirms, access date, verification status | yes |
+| `dataResidency` | Whether personal data must stay in the country, with a note, sources and (v2) `verificationLevel` | yes |
+| `verificationLevel` (v2) | Level of the pack-wide facts cited in `sources` (formats, currency, entity types, regions) | — |
+| `facets` (v2) | Country-level facts, see below | yes, per fact |
+| `sources` | Every page you relied on: URL, what it confirms, access date, an optional free-text note | yes |
 
-Facts must cite primary sources (the registry, the statistics office, the central bank, the law). Where only a secondary source exists, say so in `verification` so an operator knows what still needs confirmation.
+Facts must cite primary sources (the registry, the statistics office, the central bank, the law). Where only a secondary source exists, say so with the verification level so an operator knows what still needs confirmation.
+
+### Verification levels
+
+Every fact states one of four levels, and the validator refuses a fact without one:
+
+| Level | Meaning |
+|---|---|
+| `official` | Checked against the primary source: the law, the register, the authority's own page |
+| `secondary` | Taken from reputable secondary sources; official confirmation still to do |
+| `candidate` | A lead worth checking (for example a portal named by one source); not yet a fact |
+| `pending` | Recorded but not yet checked by a maintainer |
+
+Be conservative: a level is never higher than what you checked. v1 facts upgraded automatically become `secondary` when their note says so, otherwise `pending`, never `official`. Agent-law defaults stay below `official` until counsel review (`counselReview: "done"`).
+
+## 2a. Add facts (facets)
+
+`facets` (on the pack, and on any region) is an object of lists, one list per facet. Every fact in every list has the same envelope:
+
+```json
+{ "id": "state-sales-tax", "sources": [{ "url": "https://...", "what": "What this page confirms", "accessed": "2026-10-30" }], "verification": "secondary", "verificationNote": "optional free text", "effectiveFrom": "2025-01-01" }
+```
+
+- `id` is lower-case letters, digits and hyphens, unique within its scope (the country, or one region).
+- A region fact with the same `id` as a country fact (or as a fact of an enclosing region) replaces it for that region; it must be the same facet and kind, and it cites its own sources. This is how a state overrides a national default, and how a member pack will override a shared layer (CTRY-EU).
+- Text shown to people (`name`, `summary`, `label`) is localized and needs at least `en`.
+- Rates are percentages as decimal strings (`"6.25"`, never `6.25`), between 0 and 100. Amounts are money objects in integer minor units (`{ "minorUnits": "10000000", "currency": "USD" }`).
+- `adapter` names an adapter that exists in engine code, as `{ "capability": "<provider capability>", "id": "<adapter id>" }` from `ENGINE_ADAPTERS` in `src/adapters.ts`; the validator refuses any other. An adapter that does not exist yet goes into `candidateAdapters` as a plain name. Facts never call anything: they describe the world, and the hub decides what to switch on.
+- Nothing in a facet can name, enable or override a restricted place; the list in `packs/restricted.json` is authoritative.
+
+| Facet | Kinds of fact (`type` where there is more than one) | Notes |
+|---|---|---|
+| `identifiers` | Identifier kinds besides the primary one: `kind`, `role` (`registration`, `tax`, `vat`, `register`, `licence`, `procurement`, `statistical`, `other`), `label`, `pattern`, `example`, `issuer`, optional `appliesTo`, `checkDigit`, `register` (a register fact id) | National kinds are `<CC>-<NAME>`; a region's kinds are `<CC>-<SUB>-<NAME>` (for example a state contractor licence). Kinds are unique across the pack |
+| `registers` | `name`, `url`, `query` (`manual`, `open_data`, `api`), `dataLicence`, `covers` (identifier kinds) | — |
+| `licensing` | `activity` (authority, `required`, `register`, `identifierKind`, `categories`), `profession` (certifying body), `insurance` (`mandatory`) | — |
+| `standards` | Code `system`, standards `body`, `publications`, `textLicence`, `adopts` | — |
+| `procurement` | `portal` (`level`: national, federal, state, regional, local; `openData`), `threshold` (money) | — |
+| `tax` | `rate` (`taxKind`: vat, gst, sales, use, excise, withholding, other; `standardRate` or `null`; `reducedRates`; `localRates`: none or additive; `registrationThreshold`; `calculation`: rate or adapter), `e-invoicing` (`system`, `mandatory`, `scope`: B2B, B2G, B2C; `signatureRequired`) | `calculation: "adapter"` needs `adapter` or `candidateAdapters`; the engine never hard-codes a tax computation |
+| `eSignature` | `kind` (signature, identity, both), `strength` (simple, advanced, qualified), `legalBasis` | — |
+| `payments` | `scheme` (`rails`: card, credit-transfer, instant-credit-transfer, direct-debit, wallet, cash, other), `currency-control` | No sanctioned bank or Russian payment rail, ever |
+| `calendar` | `working-week`, `fiscal-year`, `holiday` (`rule`: `fixed` month and day, `nth-weekday` with `nth` 1 to 4 or -1 for the last, or published `dates`; `observed`: none, nearest-weekday, next-weekday, sunday-to-monday; `holiday`: public, federal, state, bank, observance; `nonWorking`) | Movable holidays are published per year with sources. `holidaysInYear(pack, year, region)` computes dates and observed dates |
+| `units` | `system` (metric, imperial, us-customary, mixed; `common` catalogue units), `local-name` (a local name for a catalogue unit) | Unit codes come from the catalogue in `packages/contracts/src/common/units.ts` (metric and inch-pound units with exact conversion factors); unknown codes are refused |
+| `scripts` | `language`, ISO 15924 `scripts`, `direction`, `transliteration` | — |
+| `privacy` | `law` (`authority`, `consent`, `subjectRequestDays`, `breachNotificationHours`, `minorsAge`, `appliesWhen`), `retention`, `data-residency` (regions only; the country rule stays in `dataResidency`) | — |
+| `contentLaw` | `topic` (media registration, defamation, right of reply, reviews, advertising, copyright, takedown, consumer protection, distance selling, other), `summary` | — |
+| `sanctions` | National lists a hub must apply: `name`, `authority`, `url`, `updateCadence`, optional `adapter` | Restricted places are not a facet and cannot be changed by a pack |
+| `agentLaw` | Defaults for agent disclosure, liability, consent, record keeping and per-action limits, with `counselReview` | Unverified until counsel review |
+
+A federal country puts national facts on the pack and per-state facts on each region: sales tax, privacy laws, contractor licensing boards, state holidays. Engine code reads them with `factsFor(pack, facet, regionCode)`, `identifierKinds(pack, regionCode)` and `packTimeZones(pack, regionCode)`; it never branches on a country code. `tests/country-packs/v2/federal-fixture.ts` is a complete synthetic example (not real facts).
 
 ## 3. Add the dictionaries
 
@@ -52,7 +103,7 @@ node --import tsx scripts/validate-country-packs.ts packs/xx.json
 npm test                                                         # pack, locale and fixture tests
 ```
 
-The validator rejects restricted places, identifier examples that do not match their pattern, duplicate or foreign region codes, missing sources and a `complete` pack without dictionaries.
+The validator (`packProblems` in `packages/country-packs/src/validate.ts`, also used by the script) lists every problem at once. It rejects restricted places as a pack, region or parent; identifier examples that do not match their pattern and duplicate identifier kinds; duplicate or foreign region codes and broken parent chains; invalid IANA time zones; facts without sources or verification level; rates that are not decimal strings between 0 and 100; adapters that do not exist in the engine; unknown unit codes; v2 fields in a file without `"schemaVersion": 2`; and a `complete` pack without dictionaries.
 
 ## 6. Open a pull request
 

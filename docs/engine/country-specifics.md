@@ -1,6 +1,6 @@
 # Country specifics
 
-Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan; the facets below and pack v2 are **Proposed**. The United States pack is next (INTL-US), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
+Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan. The pack v2 schema (facets at country and subdivision level, verification levels, several time zones and identifier kinds, the measurement-unit catalogue) is a **Contract** (CTRY-002); sourced v2 facts for the existing packs (CTRY-003) and the facets' use by engine modules are **Proposed**. The United States pack is next (INTL-US), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
 
 Construction is local. What a valid company looks like, who may legally pour concrete for a school, which code a facade must meet, how an invoice must be issued, how a document is signed, what counts as a working day: all of this differs from country to country. The engine handles these differences with two layers and one rule.
 
@@ -122,32 +122,9 @@ Restricted places (engine-wide, in code), the engine baseline screening list, an
 
 Sender registration for SMS, popular messengers and their business-use terms, e-mail deliverability expectations.
 
-## Pack v2 shape (Proposed)
+## Pack v2 shape (Contract)
 
-Pack v2 keeps every v1 field and adds `facets`, each with facts, sources and verification. The example below uses the existing Uzbekistan pack; a US, Brazilian or German pack has the same shape:
-
-```json
-{
-  "code": "UZ",
-  "facets": {
-    "identifiers": [{ "kind": "UZ-STIR", "...": "as in v1" }],
-    "registers": [{ "id": "uz-business-register", "name": {"en": "..."}, "url": "https://...", "query": "manual|open_data|api", "dataLicence": "...", "sources": [], "verification": "pending" }],
-    "licensing": { "activities": [], "professions": [], "sources": [], "verification": "pending" },
-    "standards": { "system": {"en": "..."}, "body": {"en": "..."}, "publications": "https://...", "sources": [] },
-    "procurement": { "portals": [{ "url": "https://...", "verification": "candidate" }], "sources": [] },
-    "tax": { "vat": { "standardRate": "12", "reducedRates": [], "registrationThreshold": null }, "eInvoicing": { "mandatory": true, "scope": ["B2B", "B2G"], "system": {"en": "..."} }, "sources": [], "verification": "secondary" },
-    "eSignature": { "schemes": [], "sources": [] },
-    "payments": { "schemes": [], "sources": [] },
-    "calendar": { "workingWeek": ["mon","tue","wed","thu","fri"], "holidays": { "2027": [] }, "sources": [] },
-    "scripts": { "uz": ["Latn", "Cyrl"] },
-    "privacy": { "dataResidency": "as in v1", "breachAuthority": null, "sources": [] },
-    "contentLaw": { "notes": [], "sources": [] },
-    "sanctions": { "nationalLists": [], "sources": [] }
-  }
-}
-```
-
-Validation rules: every facet with facts has at least one source; `verification` is one of `official`, `secondary`, `candidate`, `pending`; rates are decimal strings; nothing in a pack may enable a restricted place; adapters referenced by a facet must exist in the engine (possibly as fakes).
+Pack v2 (`"schemaVersion": 2`, CTRY-002) keeps every v1 field and adds `timeZones`, verification levels on the v1 facts, region kinds `state`, `district`, `territory` and `province`, a region `parent`, and `facets` on the pack and on any region. Each facet is a list of facts with a stable `id`, at least one source and a verification level (`official`, `secondary`, `candidate`, `pending`); a narrower scope overrides a wider fact by `id` with its own sources, which is also how the EU layer (CTRY-EU) will work. Rates are decimal strings, adapters referenced by a fact must exist in the engine (`ENGINE_ADAPTERS`), unit codes come from the catalogue in `packages/contracts/src/common/units.ts`, and nothing in a pack can name or enable a restricted place. v1 files stay valid and are upgraded losslessly when loaded. The field-by-field reference is in [How to add a country](../country-packs/how-to-add-a-country.md#2a-add-facts-facets); `tests/country-packs/v2/federal-fixture.ts` is a synthetic federal example.
 
 ## Starting points for the example countries (secondary sources, pending confirmation)
 

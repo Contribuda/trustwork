@@ -4,12 +4,12 @@
  *   node --import tsx scripts/validate-country-packs.ts [path/to/pack.json ...]
  *
  * Without arguments it checks the packs shipped in packages/country-packs/packs. A pack passes when it
- * parses, is not a restricted place, has a dictionary for its default locale (or is marked partial/draft),
+ * passes `packProblems` (schema v1 or v2, restricted places, sourced and verified facts), has a dictionary for its default locale (or is marked partial/draft),
  * cites sources for identifier, residency and the pack itself, and its regions are unique ISO 3166-2 codes.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, basename } from 'node:path';
-import { CountryPackSchema, RESTRICTED, isRestricted } from '../packages/country-packs/src/index.js';
+import { RESTRICTED, isRestricted, packProblems } from '../packages/country-packs/src/index.js';
 
 const root = resolve(new URL('..', import.meta.url).pathname);
 const files = process.argv.slice(2).length
@@ -23,7 +23,15 @@ for (const file of files) {
   const problems: string[] = [];
   let pack;
   try {
-    pack = CountryPackSchema.parse(JSON.parse(readFileSync(file, 'utf8')));
+    // Schema v1/v2, restricted places, facts (sources, verification levels, rates, adapters), time zones (CTRY-002).
+    const check = packProblems(JSON.parse(readFileSync(file, 'utf8')));
+    if (!check.pack) {
+      console.log(`✖ ${basename(file)}`);
+      for (const p of check.problems) console.log(`    - ${p}`);
+      failures += 1;
+      continue;
+    }
+    pack = check.pack;
   } catch (error) {
     console.log(`✖ ${basename(file)}: ${error instanceof Error ? error.message.split('\n').slice(0, 6).join(' ') : String(error)}`);
     failures += 1;

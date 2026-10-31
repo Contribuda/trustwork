@@ -6,6 +6,7 @@
 export * from './common/ids.js';
 export * from './common/money.js';
 export * from './common/quantity.js';
+export * from './common/units.js';
 export * from './common/canonical.js';
 export * from './common/encoding.js';
 export * from './common/digest-schema.js';
