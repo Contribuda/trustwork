@@ -116,8 +116,12 @@ services:
         TRUSTWORK_ALLOWED_ORIGINS: localhost:${TRUSTWORK_STACK_PORT:-8080}
     <<: *hardening
     tmpfs: ["/tmp", "/app/apps/web/.next/cache:uid=1000,gid=1000"]
+    depends_on:
+      api: { condition: service_healthy }
     environment:
       TRUSTWORK_DEFAULT_COUNTRY: US
+      # Server rendering reads the API directly on the compose network; browsers reach /v1/* through the proxy.
+      TRUSTWORK_API_ORIGIN: http://api:3001
     restart: unless-stopped
 
   # S3-compatible object storage for the storage port (no code uses it yet; the adapter comes with its package).

@@ -9,9 +9,11 @@
 # The app listens on PORT (default 3000) on every interface (IPv4 and IPv6, `::`). This file is the image the hosted
 # preview builds (Railway reads it from infra/Dockerfile and passes service variables named like the ARGs below).
 # Build-time values: NEXT_PUBLIC_* are inlined by Next, and the standalone server freezes next.config.ts at build
-# time, so TRUSTWORK_ALLOWED_ORIGINS (server-action origins behind a proxy) must be a build argument as well.
+# time, so TRUSTWORK_ALLOWED_ORIGINS (server-action origins behind a proxy) and TRUSTWORK_API_ORIGIN (only for the
+# optional /v1/* rewrite) are build arguments as well.
 # NEXT_PUBLIC_TRUSTWORK_BRAND selects a deployment brand overlay from apps/web/brand (empty = neutral engine).
-# Runtime values (docker run -e): PORT, TRUSTWORK_DEFAULT_COUNTRY, TRUSTWORK_DEMO_PERSONA, TRUSTWORK_HSTS.
+# Runtime values (docker run -e): PORT, TRUSTWORK_API_ORIGIN (server rendering; required unless TRUSTWORK_DEMO_MODE=1),
+# TRUSTWORK_DEMO_MODE, TRUSTWORK_DEFAULT_COUNTRY, TRUSTWORK_CONFIG, TRUSTWORK_DATA_DIR, TRUSTWORK_DEMO_PERSONA, TRUSTWORK_HSTS.
 # Other images (API, worker, migrate job) and the compose stack: docs/operations/images.md.
 ARG NODE_IMAGE=node:24.18.0-alpine
 ARG RUNTIME_IMAGE=alpine:3.24
@@ -22,10 +24,15 @@ ARG NEXT_PUBLIC_BASE_PATH=
 ARG NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
 ARG NEXT_PUBLIC_TRUSTWORK_BRAND=
 ARG TRUSTWORK_ALLOWED_ORIGINS=
+# Read by next.config.ts for the same-origin /v1/* rewrite (WEB-004). Empty (default): no rewrite, the reverse proxy
+# routes /v1/* (infra/proxy); demo deployments set TRUSTWORK_DEMO_MODE=1 at run time and never call the API.
+ARG TRUSTWORK_API_ORIGIN=
+ARG TRUSTWORK_DEMO_MODE=
 # NEXT_PRIVATE_STANDALONE switches Next's default `output` to "standalone" without changing next.config.ts; the
 # test after the build fails loudly if a Next upgrade stops honouring it.
 ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_TRUSTWORK_BRAND=$NEXT_PUBLIC_TRUSTWORK_BRAND \
-    TRUSTWORK_ALLOWED_ORIGINS=$TRUSTWORK_ALLOWED_ORIGINS NEXT_TELEMETRY_DISABLED=1 NEXT_PRIVATE_STANDALONE=1
+    TRUSTWORK_ALLOWED_ORIGINS=$TRUSTWORK_ALLOWED_ORIGINS TRUSTWORK_API_ORIGIN=$TRUSTWORK_API_ORIGIN TRUSTWORK_DEMO_MODE=$TRUSTWORK_DEMO_MODE \
+    NEXT_TELEMETRY_DISABLED=1 NEXT_PRIVATE_STANDALONE=1
 COPY package.json package-lock.json tsconfig.json ./
 COPY apps ./apps
 COPY packages ./packages
