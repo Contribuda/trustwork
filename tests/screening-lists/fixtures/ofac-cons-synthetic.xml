@@ -1,0 +1,43 @@
+<?xml version="1.0" standalone="yes"?>
+<!-- Synthetic test data in the layout of the OFAC Sanctions List Service CONSOLIDATED.XML export (non-SDN lists).
+     Every name and place below is invented for tests. -->
+<sdnList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/XML">
+  <publshInformation>
+    <Publish_Date>10/21/2026</Publish_Date>
+    <Record_Count>3</Record_Count>
+  </publshInformation>
+  <sdnEntry>
+    <uid>920001</uid>
+    <lastName>SAMPLE SECTORAL ENERGY JSC</lastName>
+    <sdnType>Entity</sdnType>
+    <programList>
+      <program>SYNTHETIC-SSI</program>
+    </programList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>920002</uid>
+    <firstName>Zoran</firstName>
+    <lastName>EKSAMPLOV</lastName>
+    <sdnType>Individual</sdnType>
+    <programList>
+      <program>SYNTHETIC-FSE</program>
+    </programList>
+    <akaList>
+      <aka>
+        <uid>9200021</uid>
+        <type>a.k.a.</type>
+        <category>strong</category>
+        <firstName>Зоран</firstName>
+        <lastName>Эксамплов</lastName>
+      </aka>
+    </akaList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>920003</uid>
+    <lastName>PLACEHOLDER MILITARY-INDUSTRIAL CO</lastName>
+    <sdnType>Entity</sdnType>
+    <programList>
+      <program>SYNTHETIC-CMIC</program>
+    </programList>
+  </sdnEntry>
+</sdnList>

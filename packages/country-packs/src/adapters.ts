@@ -17,6 +17,10 @@ export type EngineAdapter = {
 
 export const ENGINE_ADAPTERS: readonly EngineAdapter[] = [
   { capability: 'sanctions_list', id: 'us-consolidated-screening-list', module: '@trustwork/compliance', withoutCredentials: 'not_run' },
+  // SANC-002: list ingestion adapter (packages/compliance/src/lists, LIST_ADAPTERS). It reads exports the operator drops
+  // into the data directory (`file` mode, no credentials, no network); `live` downloads do not run until a provider is
+  // activated by a second person (KEYS-001). A pack's `sanctions` fact may name it for an additional list.
+  { capability: 'sanctions_list', id: 'ofac-sls-xml', module: '@trustwork/compliance', withoutCredentials: 'not_run' },
 ];
 
 export function findAdapter(ref: AdapterRef, registry: readonly EngineAdapter[] = ENGINE_ADAPTERS): EngineAdapter | null {

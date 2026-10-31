@@ -1,6 +1,6 @@
 # @trustwork/worker: outbox relay, durable jobs and scheduled maintenance
 
-Status: **Live** (REL-001), not deployed anywhere. Coordination happens only in PostgreSQL, so any number of worker processes can run against one database. Registered domain handlers: transactional mail (MAIL-001, [`src/mail`](src/mail/README.md)); search projections and other provider calls come with the packages that own them.
+Status: **Live** (REL-001), not deployed anywhere. Coordination happens only in PostgreSQL, so any number of worker processes can run against one database. Registered domain handlers: transactional mail (MAIL-001, [`src/mail`](src/mail/README.md)), files (FILE-001, [`src/files`](src/files/README.md)), sanctions screening lists (SANC-002, [`src/screening-lists`](src/screening-lists/README.md)); search projections and other provider calls come with the packages that own them.
 
 ## Run
 
@@ -40,6 +40,7 @@ The migration runner bootstraps the NOLOGIN group `trustwork_worker` next to `tr
 | `mail_delivery` (MAIL-001, `migrations/mail/`) | `SELECT`, `UPDATE` of state, outcome and the two personal columns it clears (`recipient`, `sealed_secret`); never the template, parameters or address hash; no `INSERT` or `DELETE` |
 | `suppression_entry` (MAIL-001) | `SELECT`, `INSERT` (no `DELETE`: lifting a suppression is an operator decision) |
 | functions | `lease_jobs`, `reconcile_job`, `release_job`, `worker_sweep_expired()`, `ensure_monthly_partitions()`, plus the helpers `new_uuid()` and `in_maintenance()` |
+| screening lists (SANC-002, `migrations/screening-lists/`) | no table grant; only the owner-run `screening_list_*` entry points, `screening_list_freshness` and `screening_available` ([`src/screening-lists`](src/screening-lists/README.md)) |
 
 It has no grant on any party table (person, company, membership, project, sessions, credentials, idempotency records, admission). The only personal data it reads is the recipient address of a pending mail delivery, which it clears when the delivery is final. The same migration revokes the API role's `SELECT` on `audit_event` and `outbox_event`: the API appends only. `tests/worker/roles.test.ts` checks both directions.
 
@@ -86,6 +87,7 @@ Each task has a row in `worker_schedule`; a worker claims a due slot by moving `
 | `maintenance.sweep_expired` | 1 h | `trustwork.worker_sweep_expired()`: intervals fixed in the function (sessions 90 days, settled admission leases 1 day, never-verified signups 7 days); also removes expired idempotency records, used auth tokens and expired login failures |
 | `maintenance.monthly_partitions` | 6 h | `trustwork.ensure_monthly_partitions()`: current month plus three for `audit_event` and `outbox_event` |
 | `mail.settle` | 5 min | Mail deliveries take their job's final verdict (reconciled as succeeded: `sent`; dead: `failed`), expired tokens become `expired`; final rows keep no address or token |
+| `screening.lists_due`, `screening.lists_freshness`, `jurisdiction.ranges_age` | 15 min, 1 h, 1 day | Sanctions list ingestion jobs for due lists, freshness gauges and warnings, geolocation range-table age (SANC-002, [`src/screening-lists`](src/screening-lists/README.md)) |
 
 `audit_event` and `outbox_event` are range-partitioned by month with a `DEFAULT` partition, so inserts never fail when the worker is down. Creating a month whose rows already landed in `DEFAULT` (worker down for more than three months) fails loudly and needs an operator. Retention (detach and archive) is an open owner decision (architecture audit Q6) and is not automated.
 

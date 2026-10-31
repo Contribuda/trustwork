@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { consolidatedScreeningList } from '@trustwork/compliance';
+import { OFAC_SLS_XML_ADAPTER } from '../../../packages/compliance/src/lists/index.js';
 import { PROVIDER_CAPABILITIES } from '@trustwork/contracts/client';
 import { ENGINE_ADAPTERS } from '@trustwork/country-packs';
 
 test('the adapter registry lists only adapters that exist in engine code', async () => {
   const implementations: Record<string, () => { id: string }> = {
     'us-consolidated-screening-list': () => consolidatedScreeningList(),
+    'ofac-sls-xml': () => OFAC_SLS_XML_ADAPTER,
   };
   for (const adapter of ENGINE_ADAPTERS) {
     assert.ok(PROVIDER_CAPABILITIES.includes(adapter.capability), adapter.id);

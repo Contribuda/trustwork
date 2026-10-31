@@ -489,3 +489,283 @@ export function jurisdictionGateFromEnv(
     }
   }
 }
+
+/* ---------- Screening lists, versions, entries and freshness (SANC-002) ---------- */
+
+/*
+ * Lists are data ingested by the worker (ADR 014 decisions 10 and 11). Every hub screens against the **baseline** (the
+ * OFAC Sanctions List Service exports: the SDN list and the consolidated non-SDN lists), which cannot be paused or
+ * deleted; a hub adds lists through country-pack `sanctions` facts that name an adapter. Each list version is
+ * immutable once staged and is activated only after it parses and passes the sanity bounds, so a truncated export
+ * never "clears" anyone. Freshness ages run per list; a stale or missing baseline makes screening unavailable, and
+ * every money and commitment gate then refuses (SANC-004 reads `ScreeningAvailability`).
+ *
+ * Name keys (`NameKeySchema`) are produced by `@trustwork/compliance` (`packages/compliance/src/names`): lower case,
+ * compatibility decomposition with marks removed, punctuation dropped, transliteration into Latin by sourced tables
+ * (ICAO Doc 9303 for Cyrillic), distinct tokens sorted and joined by one space.
+ */
+
+export const SCREENING_LIST_MODES = ['fake', 'file', 'live'] as const;
+export const ScreeningListModeSchema = z.enum(SCREENING_LIST_MODES);
+export type ScreeningListMode = z.infer<typeof ScreeningListModeSchema>;
+
+export const SCREENING_LIST_STATUSES = ['active', 'paused'] as const;
+export const ScreeningListStatusSchema = z.enum(SCREENING_LIST_STATUSES);
+export type ScreeningListStatus = z.infer<typeof ScreeningListStatusSchema>;
+
+export const SCREENING_LIST_VERSION_STATES = ['staged', 'active', 'superseded', 'rejected'] as const;
+export const ScreeningListVersionStateSchema = z.enum(SCREENING_LIST_VERSION_STATES);
+export type ScreeningListVersionState = z.infer<typeof ScreeningListVersionStateSchema>;
+
+export const SCREENING_ENTRY_TYPES = ['individual', 'entity', 'vessel', 'aircraft'] as const;
+export const ScreeningEntryTypeSchema = z.enum(SCREENING_ENTRY_TYPES);
+export type ScreeningEntryType = z.infer<typeof ScreeningEntryTypeSchema>;
+
+/** The baseline lists every hub screens against; the migration seeds them and nothing can pause or delete them. */
+export const BASELINE_LIST_CODES = ['ofac-sdn', 'ofac-cons'] as const;
+/** Engine bound: a baseline list is stale at the latest 14 days after its content was last confirmed. */
+export const BASELINE_STALE_AFTER_MAX_SECONDS = 14 * 24 * 3600;
+
+export const ScreeningListCodeSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{1,39}$/);
+export const ScreeningListAdapterIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{1,59}$/);
+/** One normalized name: distinct tokens of letters and digits, sorted, joined by one space. */
+export const NameKeySchema = z
+  .string()
+  .min(1)
+  .max(1000)
+  .regex(/^[\p{L}\p{N}]+(?: [\p{L}\p{N}]+)*$/u)
+  .refine((key) => key === key.toLowerCase(), { message: 'a name key is lower case' });
+/** The list's own identifier of an entry (OFAC: the `uid`). ASCII only, so byte order and code-unit order agree. */
+export const ScreeningEntryUidSchema = z.string().regex(/^[A-Za-z0-9._:-]{1,64}$/);
+const Sha256HexSchema = z.string().regex(/^[0-9a-f]{64}$/);
+const IsoDateSchema = z.iso.date();
+
+export const ScreeningListSchema = z
+  .strictObject({
+    id: IdSchema,
+    /** Null for the baseline lists, which apply to every hub of the node. */
+    hubId: IdSchema.nullable(),
+    code: ScreeningListCodeSchema,
+    name: z.string().min(1).max(200),
+    authority: z.string().min(1).max(200),
+    sourceUrl: z.url({ protocol: /^https$/ }).max(500),
+    adapter: ScreeningListAdapterIdSchema,
+    mode: ScreeningListModeSchema,
+    /** How often the worker looks for a new version. */
+    cadenceSeconds: z.int().min(60),
+    /** Past this age since the content was last confirmed the console warns. */
+    warnAfterSeconds: z.int().min(60),
+    /** Past this age the list is stale; for the baseline at most `BASELINE_STALE_AFTER_MAX_SECONDS`. */
+    staleAfterSeconds: z.int().min(60),
+    /** A new version whose entry count drops by more than this share of the active one waits for a person. */
+    maxDropShare: z.number().gt(0).lt(1),
+    /** Fewer entries than this never activate. */
+    minEntries: z.int().min(1),
+    baseline: z.boolean(),
+    status: ScreeningListStatusSchema,
+  })
+  .refine((l) => l.baseline === (l.hubId === null), { message: 'the baseline lists, and only they, apply to every hub (hubId null)' })
+  .refine((l) => !l.baseline || (l.status === 'active' && l.staleAfterSeconds <= BASELINE_STALE_AFTER_MAX_SECONDS), { message: 'a baseline list stays active and is stale after at most 14 days' })
+  .refine((l) => l.cadenceSeconds <= l.warnAfterSeconds && l.warnAfterSeconds < l.staleAfterSeconds, { message: 'cadence <= warning age < stale age' });
+export type ScreeningList = z.infer<typeof ScreeningListSchema>;
+
+export const ScreeningIdentifierSchema = z.strictObject({
+  type: z.string().min(1).max(100),
+  number: z.string().min(1).max(200),
+  country: z.string().min(1).max(100).nullable(),
+});
+
+/** Secondary attributes as published. Shown to reviewers; never used to clear a match automatically. */
+export const ScreeningEntryAttributesSchema = z.strictObject({
+  /** Aliases as published (a.k.a. and f.k.a. names), for reviewers; their keys are in `nameKeys`. */
+  aliases: z.array(z.string().min(1).max(1000)).max(1000).optional(),
+  datesOfBirth: z.array(z.string().min(1).max(200)).max(100).optional(),
+  placesOfBirth: z.array(z.string().min(1).max(300)).max(100).optional(),
+  nationalities: z.array(z.string().min(1).max(200)).max(100).optional(),
+  citizenships: z.array(z.string().min(1).max(200)).max(100).optional(),
+  identifiers: z.array(ScreeningIdentifierSchema).max(200).optional(),
+  addresses: z.array(z.string().min(1).max(1000)).max(200).optional(),
+});
+export type ScreeningEntryAttributes = z.infer<typeof ScreeningEntryAttributesSchema>;
+
+export const ScreeningListEntrySchema = z.strictObject({
+  entryUid: ScreeningEntryUidSchema,
+  entryType: ScreeningEntryTypeSchema,
+  /** The primary name as published (individuals: given names then surname). */
+  primaryName: z.string().min(1).max(1000),
+  programs: z.array(z.string().min(1).max(100)).max(100),
+  /** Normalized keys of the primary name and every alias, distinct and sorted. */
+  nameKeys: z.array(NameKeySchema).min(1).max(1000),
+  attributes: ScreeningEntryAttributesSchema,
+  /** SHA-256 of the entry's canonical form (`@trustwork/compliance`); the version digest is built from these. */
+  entryDigest: Sha256HexSchema,
+});
+export type ScreeningListEntry = z.infer<typeof ScreeningListEntrySchema>;
+
+export const LIST_SANITY_OUTCOMES = ['pass', 'needs_confirmation', 'rejected'] as const;
+export const LIST_SANITY_REASONS = ['declared_count_mismatch', 'below_minimum', 'empty', 'drop_beyond_share'] as const;
+export type ListSanityReason = (typeof LIST_SANITY_REASONS)[number];
+
+/** The sanity check recorded beside every staged version. */
+export const ListSanitySchema = z.strictObject({
+  outcome: z.enum(LIST_SANITY_OUTCOMES),
+  reasons: z.array(z.enum(LIST_SANITY_REASONS)),
+  /** The count the export itself declares (OFAC `Record_Count`), when it declares one. */
+  declaredCount: z.int().min(0).nullable(),
+  parsedCount: z.int().min(0),
+  /** The entry count of the version active when this one was staged. */
+  previousCount: z.int().min(0).nullable(),
+  /** Share of the previous count that disappeared (0 when the list grew). */
+  dropShare: z.number().min(0).max(1).nullable(),
+  maxDropShare: z.number().gt(0).lt(1),
+  minEntries: z.int().min(1),
+});
+export type ListSanity = z.infer<typeof ListSanitySchema>;
+
+/**
+ * Sanity bounds before activation (ADR 014 decision 10): an export that disagrees with its own declared count, is
+ * empty or has fewer entries than the list's minimum is rejected; one whose count drops by more than the configured
+ * share of the active version waits for a person's confirmation. Pure, so the worker and the tests share it.
+ */
+export function checkListSanity(input: { parsedCount: number; declaredCount: number | null; previousCount: number | null; maxDropShare: number; minEntries: number }): ListSanity {
+  const reasons: ListSanityReason[] = [];
+  if (input.declaredCount !== null && input.declaredCount !== input.parsedCount) reasons.push('declared_count_mismatch');
+  if (input.parsedCount === 0) reasons.push('empty');
+  else if (input.parsedCount < input.minEntries) reasons.push('below_minimum');
+  const dropShare = input.previousCount === null || input.previousCount === 0 ? null : Math.max(0, (input.previousCount - input.parsedCount) / input.previousCount);
+  const rejected = reasons.length > 0;
+  if (!rejected && dropShare !== null && dropShare > input.maxDropShare) reasons.push('drop_beyond_share');
+  return {
+    outcome: rejected ? 'rejected' : reasons.length ? 'needs_confirmation' : 'pass',
+    reasons,
+    declaredCount: input.declaredCount,
+    parsedCount: input.parsedCount,
+    previousCount: input.previousCount,
+    dropShare: dropShare === null ? null : Math.round(dropShare * 10_000) / 10_000,
+    maxDropShare: input.maxDropShare,
+    minEntries: input.minEntries,
+  };
+}
+
+export const ScreeningListVersionSchema = z
+  .strictObject({
+    id: IdSchema,
+    listId: IdSchema,
+    version: z.int().min(1),
+    /** The publication date the export states, when it states one. */
+    publishedOn: IsoDateSchema.nullable(),
+    /** When the content was obtained from its source (download time, or the file's modification time). */
+    fetchedAt: TimestampSchema,
+    mode: ScreeningListModeSchema,
+    /** SHA-256 of the export's bytes. */
+    sourceDigest: Sha256HexSchema,
+    entryCount: z.int().min(0),
+    /** SHA-256 of the entry digests in entry-uid order (`@trustwork/compliance` `listDigest`, rechecked by the database). */
+    digest: Sha256HexSchema,
+    state: ScreeningListVersionStateSchema,
+    sanity: ListSanitySchema,
+    stagedAt: TimestampSchema,
+    activatedAt: TimestampSchema.nullable(),
+    /** The person who confirmed a drop beyond the share; null for an automatic activation. */
+    activatedBy: IdSchema.nullable(),
+    rejectedReason: z.string().regex(/^[a-z_]{1,60}$/).nullable(),
+  })
+  .refine((v) => (v.state === 'active' || v.state === 'superseded') === (v.activatedAt !== null), { message: 'activated exactly when active or superseded' })
+  .refine((v) => (v.state === 'rejected') === (v.rejectedReason !== null), { message: 'a rejected version names its reason' });
+export type ScreeningListVersion = z.infer<typeof ScreeningListVersionSchema>;
+
+/** Outbox event `screening.list_version_activated` (identifiers and counts only; SANC-005 re-screens on it). */
+export const SCREENING_LIST_VERSION_ACTIVATED = 'screening.list_version_activated';
+export const ScreeningListVersionActivatedEventSchema = z.strictObject({
+  listId: IdSchema,
+  listCode: ScreeningListCodeSchema,
+  hubId: IdSchema.nullable(),
+  baseline: z.boolean(),
+  versionId: IdSchema,
+  version: z.int().min(1),
+  previousVersionId: IdSchema.nullable(),
+  entryCount: z.int().min(0),
+  digest: Sha256HexSchema,
+  publishedOn: IsoDateSchema.nullable(),
+  /** Set when a person confirmed a drop beyond the share. */
+  confirmedBy: IdSchema.nullable(),
+});
+export type ScreeningListVersionActivatedEvent = z.infer<typeof ScreeningListVersionActivatedEventSchema>;
+
+/** Outcome of one ingestion attempt, kept on the list for the console and metrics. */
+export const LIST_INGEST_OUTCOMES = ['activated', 'unchanged', 'needs_confirmation', 'rejected', 'malformed', 'source_missing', 'refused', 'failed'] as const;
+export const ListIngestOutcomeSchema = z.enum(LIST_INGEST_OUTCOMES);
+export type ListIngestOutcome = z.infer<typeof ListIngestOutcomeSchema>;
+
+/* ---------- Freshness ---------- */
+
+/**
+ * `fresh` and `warning` lists are usable; `stale` (older than its stale age), `missing` (no active version) and
+ * `paused` (additional lists only) are not. Ages count from when the active content was last confirmed from its
+ * source, never from the export's publication date (OFAC publishes irregularly).
+ */
+export const SCREENING_FRESHNESS_STATES = ['fresh', 'warning', 'stale', 'missing', 'paused'] as const;
+export const ScreeningFreshnessStateSchema = z.enum(SCREENING_FRESHNESS_STATES);
+export type ScreeningFreshnessState = z.infer<typeof ScreeningFreshnessStateSchema>;
+
+export const ScreeningListFreshnessSchema = z.strictObject({
+  listId: IdSchema,
+  hubId: IdSchema.nullable(),
+  code: ScreeningListCodeSchema,
+  baseline: z.boolean(),
+  status: ScreeningListStatusSchema,
+  state: ScreeningFreshnessStateSchema,
+  activeVersionId: IdSchema.nullable(),
+  publishedOn: IsoDateSchema.nullable(),
+  lastCheckedAt: TimestampSchema.nullable(),
+  ageSeconds: z.int().min(0).nullable(),
+  warnAfterSeconds: z.int().min(60),
+  staleAfterSeconds: z.int().min(60),
+});
+export type ScreeningListFreshness = z.infer<typeof ScreeningListFreshnessSchema>;
+
+export const SCREENING_UNAVAILABLE_REASONS = ['no_baseline', 'baseline_missing', 'baseline_stale'] as const;
+export type ScreeningUnavailableReason = (typeof SCREENING_UNAVAILABLE_REASONS)[number];
+
+/** What the money and commitment gates read (SANC-004): screening is available only with every baseline list usable. */
+export const ScreeningAvailabilitySchema = z.strictObject({
+  available: z.boolean(),
+  checkedAt: TimestampSchema,
+  reasons: z.array(z.strictObject({ reason: z.enum(SCREENING_UNAVAILABLE_REASONS), code: ScreeningListCodeSchema.nullable() })),
+  lists: z.array(ScreeningListFreshnessSchema),
+});
+export type ScreeningAvailability = z.infer<typeof ScreeningAvailabilitySchema>;
+
+/** The freshness state of one list at `now`. The database function `screening_list_freshness` implements the same rule. */
+export function listFreshnessState(
+  list: { status: ScreeningListStatus; baseline: boolean; hasActiveVersion: boolean; lastCheckedAt: Date | null; warnAfterSeconds: number; staleAfterSeconds: number },
+  now: Date,
+): ScreeningFreshnessState {
+  if (list.status === 'paused' && !list.baseline) return 'paused';
+  if (!list.hasActiveVersion || list.lastCheckedAt === null) return 'missing';
+  const age = Math.max(0, (now.getTime() - list.lastCheckedAt.getTime()) / 1000);
+  const staleAfter = list.baseline ? Math.min(list.staleAfterSeconds, BASELINE_STALE_AFTER_MAX_SECONDS) : list.staleAfterSeconds;
+  if (age > staleAfter) return 'stale';
+  if (age > list.warnAfterSeconds) return 'warning';
+  return 'fresh';
+}
+
+/** Screening is available when at least one baseline list exists and every baseline list is `fresh` or `warning`. */
+export function screeningAvailability(lists: readonly ScreeningListFreshness[], checkedAt: Date): ScreeningAvailability {
+  const reasons: ScreeningAvailability['reasons'] = [];
+  const baseline = lists.filter((l) => l.baseline);
+  if (baseline.length === 0) reasons.push({ reason: 'no_baseline', code: null });
+  for (const list of baseline) {
+    if (list.state === 'missing' || list.state === 'paused') reasons.push({ reason: 'baseline_missing', code: list.code });
+    else if (list.state === 'stale') reasons.push({ reason: 'baseline_stale', code: list.code });
+  }
+  return { available: reasons.length === 0, checkedAt: checkedAt.toISOString(), reasons, lists: [...lists] };
+}
+
+/** Staff command (console): pause or resume an additional list. The baseline lists refuse it (`screening.baseline_list`). */
+export const SetScreeningListStatusCommandSchema = z.strictObject({ status: ScreeningListStatusSchema, reason: z.string().trim().min(1).max(500) });
+export type SetScreeningListStatusCommand = z.infer<typeof SetScreeningListStatusCommandSchema>;
+
+/** Staff command (console): activate a staged version whose entry count dropped beyond the share, after checking it. */
+export const ConfirmScreeningListVersionCommandSchema = z.strictObject({ reason: z.string().trim().min(1).max(500) });
+export type ConfirmScreeningListVersionCommand = z.infer<typeof ConfirmScreeningListVersionCommandSchema>;

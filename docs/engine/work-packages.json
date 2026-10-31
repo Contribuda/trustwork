@@ -2590,7 +2590,7 @@
       "id": "SANC-002",
       "title": "Sanctions list ingestion and freshness through the worker",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SANC-001",
         "REL-001"
