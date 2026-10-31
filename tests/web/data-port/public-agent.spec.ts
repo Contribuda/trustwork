@@ -1,4 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+/** Clicks the page's agent trigger until the dialog opens (a click before hydration has no listener yet). */
+async function openAgent(page: Page) {
+  const dialog = page.getByRole('dialog');
+  await expect(async () => {
+    if (!(await dialog.isVisible())) await page.locator('button.cp-ask').first().click();
+    await expect(dialog).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
+  return dialog;
+}
 
 /**
  * WEB-006: the company, person and project pages share one parameterized agent dialog (`PublicAssistant`).
@@ -14,9 +24,7 @@ const PAGES = [
 for (const { kind, path } of PAGES) {
   test(`the ${kind} page opens its agent, answers a starter question and resets`, async ({ page }) => {
     await page.goto(path);
-    await page.locator('button.cp-ask').first().click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
+    const dialog = await openAgent(page);
     const log = dialog.getByRole('log');
     await expect(log.locator('.cp-msg--agent')).toHaveCount(1);
     const starters = dialog.locator('.cp-chat__starter .cp-chip');
@@ -40,6 +48,9 @@ for (const { kind, path } of PAGES) {
 
 test('a trigger opens only the agent of its own kind', async ({ page }) => {
   await page.goto('/people/anna-primerova');
+  const dialog = await openAgent(page);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('company-agent:open', { detail: {} })));
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('person-agent:open', { detail: {} })));
@@ -48,8 +59,7 @@ test('a trigger opens only the agent of its own kind', async ({ page }) => {
 
 test('company agent: a resume for a company with several vacancies asks which one, then hands over after sign-in', async ({ page }) => {
   await page.goto('/companies/fasad-primer');
-  await page.locator('button.cp-ask').first().click();
-  const dialog = page.getByRole('dialog');
+  const dialog = await openAgent(page);
   await dialog.locator('input[type="file"]').setInputFiles({ name: 'resume.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 synthetic') });
   const purposes = dialog.getByRole('radiogroup').getByRole('radio');
   await expect(purposes).toHaveCount(4);
