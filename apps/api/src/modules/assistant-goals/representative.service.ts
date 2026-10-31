@@ -1,9 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { z } from 'zod';
-import {
-  CompanyMandateTermsSchema, computeDigest, mandateChangeAllowed, MandateV2Schema, type CompanyMandateTerms, type Grantee, type Principal,
-  type ConfigureRepresentativeCommandSchema, type GrantCompanyMandateCommandSchema, type ReconfirmCompanyMandateCommandSchema, type RevisionCommandSchema,
-} from '../../deps/contracts.js';
+import { computeDigest, mandateChangeAllowed, MandateV2Schema, type Grantee, type Principal } from '../../deps/contracts.js';
+import { CompanyMandateTermsSchema, type CompanyMandateTerms, type ConfigureRepresentativeCommandSchema, type GrantCompanyMandateCommandSchema, type ReconfirmCompanyMandateCommandSchema, type RevisionCommandSchema } from './contracts.js';
 import type { Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
