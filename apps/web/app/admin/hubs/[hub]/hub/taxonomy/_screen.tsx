@@ -1,18 +1,12 @@
-import type { Metadata } from 'next';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import { TAXONOMY_KINDS, type TaxonomyTree } from '../../../../_data/schemas';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
 import { localized, longDate } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, Panel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.taxonomy.title') };
-}
+import { ConsoleHeader, Panel } from '../../../../_components/shell';
 
 /** Terms as nested lists (the tree pattern of the screen contract, readable at 375 px). */
 function Terms({ tree, parent, hubLocale }: { tree: TaxonomyTree; parent: string | null; hubLocale: string }) {
@@ -71,10 +65,4 @@ async function Taxonomy(ctx: HubContext) {
 }
 
 /** HC-16 Taxonomy and units: versioned trees of topics, categories, plan steps and units. */
-export default async function TaxonomyPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'taxonomy' }}>
-      {(ctx) => Taxonomy(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'taxonomy', title: () => t('admin.hub.taxonomy.title'), render: Taxonomy };

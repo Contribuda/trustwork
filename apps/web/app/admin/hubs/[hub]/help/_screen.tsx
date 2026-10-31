@@ -1,15 +1,9 @@
-import type { Metadata } from 'next';
 import type { HubStaffRole } from '@trustwork/contracts/client';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { HelpChecklist } from '../../../_components/HelpChecklist';
-import type { HubContext, HubParams, PageSearchParams } from '../../../_components/context';
-import { ConsoleHeader, HubConsolePage, Panel, StatusLabel } from '../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.help.title') };
-}
+import type { HubContext } from '../../../_components/context';
+import type { Screen } from '../../../_components/screen';
+import { ConsoleHeader, Panel, StatusLabel } from '../../../_components/shell';
 
 const REPOSITORY = 'https://github.com/Contribuda/trustwork/blob/main/';
 const HANDBOOK = [
@@ -101,10 +95,4 @@ function Help(ctx: HubContext) {
 }
 
 /** HC-03 Help: role checklists, handbook links, status labels, glossary and keyboard use. */
-export default async function HelpPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'home', id: 'help' }}>
-      {(ctx) => Help(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'home', id: 'help', title: () => t('admin.help.title'), render: Help };

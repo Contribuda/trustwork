@@ -1,17 +1,11 @@
-import type { Metadata } from 'next';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, TextInput } from '../../../../_components/forms';
 import { country } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, KeyValues, Panel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.residency.title') };
-}
+import { ConsoleHeader, KeyValues, Panel } from '../../../../_components/shell';
 
 async function Residency(ctx: HubContext) {
   const residency = await ctx.port.residency(ctx.record.hub.id);
@@ -114,10 +108,4 @@ async function Residency(ctx: HubContext) {
 }
 
 /** HC-14 Residency and sub-processors: where personal data lives and who processes it; changes need a second person. */
-export default async function ResidencyPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'residency' }}>
-      {(ctx) => Residency(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'residency', title: () => t('admin.hub.residency.title'), render: Residency };

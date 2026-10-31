@@ -1,19 +1,13 @@
-import type { Metadata } from 'next';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../_data/actions';
 import { approvalBlocker, APPROVER_PERMISSIONS, holdsAny } from '../../../_data/commands';
 import type { ApprovalRequest, ChangeValue, ConsolePerson } from '../../../_data/schemas';
 import { ConsoleForm } from '../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../_components/context';
+import type { HubContext } from '../../../_components/context';
+import type { Screen } from '../../../_components/screen';
 import { formLabels, SelectField } from '../../../_components/forms';
 import { dateTime } from '../../../_components/format';
-import { ConsoleHeader, HubConsolePage, KeyValues, Panel, StatusLabel } from '../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.approvals.title') };
-}
+import { ConsoleHeader, KeyValues, Panel, StatusLabel } from '../../../_components/shell';
 
 function Value({ value }: { value: ChangeValue }) {
   if (value.kind === 'none') return <span className="admin-meta">{t('admin.common.none')}</span>;
@@ -173,10 +167,4 @@ async function Approvals(ctx: HubContext) {
 }
 
 /** HC-02 Approvals: second-person decisions bound to one action, one scope and one digest; never one's own. */
-export default async function ApprovalsPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'home', id: 'approvals' }}>
-      {(ctx) => Approvals(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'home', id: 'approvals', title: () => t('admin.approvals.title'), render: Approvals };
