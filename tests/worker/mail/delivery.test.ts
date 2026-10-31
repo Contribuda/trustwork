@@ -151,9 +151,12 @@ test('MAIL-001 delivery: identity mail leaves through the outbox and the worker'
       for (let i = 0; i < 5; i += 1) stalled.push(await timed(`stalled.${i}@example.test`));
       const ids = await Promise.all(stalled.map(async (_, i) => (await stack.mailbox.lastTo(`stalled.${i}@example.test`))!.id));
       await waitFor(async () => {
-        const { rows } = await admin.query<{ n: number }>("SELECT count(*)::int AS n FROM trustwork.mail_delivery WHERE id = ANY($1::uuid[]) AND state = 'pending' AND last_error IS NOT NULL", [ids]);
+        // The delivery row and its job are settled by the worker in turn; wait until both are, so the job is not read
+        // while it is still leased.
+        const { rows } = await admin.query<{ n: number }>(
+          "SELECT count(*)::int AS n FROM trustwork.mail_delivery d JOIN trustwork.job j ON j.id = d.job_id WHERE d.id = ANY($1::uuid[]) AND d.state = 'pending' AND d.last_error IS NOT NULL AND j.state <> 'leased'", [ids]);
         return rows[0]!.n === ids.length;
-      }, 20_000, 'every stalled delivery to be back in pending with an error');
+      }, 20_000, 'every stalled delivery to be back in pending with an error and its job released');
       const { rows } = await admin.query<{ state: string; attempt: number; due_later: boolean }>(
         "SELECT j.state, j.attempt, j.next_at > now() AS due_later FROM trustwork.job j JOIN trustwork.mail_delivery d ON d.job_id = j.id WHERE d.id = ANY($1::uuid[])", [ids]);
       for (const job of rows) assert.deepEqual(job, { state: 'queued', attempt: 1, due_later: true }, 'a definitive not-accepted answer retries later');

@@ -63,7 +63,11 @@ function ok<T>(r: Response, status = 200): T {
   return r.body as T;
 }
 function noLeak(value: unknown, keys: readonly string[], secrets: readonly string[]): void {
-  const json = JSON.stringify(value);
+  // Ids, digests and timestamps are random; strip them so a secret number inside one is not mistaken for a leak.
+  const json = JSON.stringify(value)
+    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
+    .replace(/\b[0-9a-f]{32,}\b/gi, '')
+    .replace(/\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:?\d{2})?/g, '');
   for (const key of keys) assert.ok(!json.includes(`"${key}"`), `${key} leaked: ${json.slice(0, 400)}`);
   for (const secret of secrets) assert.ok(!json.includes(secret), `${secret} leaked: ${json.slice(0, 400)}`);
 }
