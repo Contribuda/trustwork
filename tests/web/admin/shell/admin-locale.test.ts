@@ -37,7 +37,7 @@ function codeFiles(dir: string): string[] {
 }
 
 test('every engine language has an admin namespace', () => {
-  for (const tag of ['en', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']) assert.ok(tags.includes(tag), tag);
+  for (const tag of ['en', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn', 'es']) assert.ok(tags.includes(tag), tag);
   for (const tag of tags) assert.ok(statSync(join(LOCALES, tag, 'admin.json')).isFile(), `${tag}/admin.json`);
 });
 
@@ -91,8 +91,8 @@ test('every language defines exactly the English keys, with the same placeholder
 
 /** Values that may legitimately read the same in every language: pure placeholders and punctuation. */
 const SAME_EVERYWHERE = new Set(['admin.hub.identity.percent', 'admin.overview.gatesOf']);
-/** International words that are spelled the same in another Latin-script language (Uzbek, Azerbaijani). */
-const COGNATES = new Set(['Moderator', 'Auditor', 'Audit', 'Operator', 'Region', 'Status']);
+/** International words that are spelled the same in another Latin-script language (Uzbek, Azerbaijani, Spanish). */
+const COGNATES = new Set(['Moderator', 'Auditor', 'Audit', 'Operator', 'Region', 'Status', 'Editor', 'Editorial', 'Manual', 'Hub']);
 /** Product names and technical tokens that stay Latin in every script. */
 const LATIN_TOKENS = /\b(US-CA:san-diego|US-TX:austin|US-CA:cslb|build\.example\.org|materials\.steel|ev-counsel-letter-2|Trustwork|OpenRouter|HTTPS|localhost|Escape|Tab|ISO|SMS|USD|US-CA|US-TX|US|UZ|OK|ID|URL|plural|one|two|few|many|other|zero|en|es)\b/g;
 
