@@ -99,7 +99,7 @@ export class PrincipalService {
       authenticatedAt: authenticatedAt.toISOString(),
       authzEpoch,
       membership: membershipView,
-      staff: await this.ctx.staffRoles(personId),
+      staff: await this.ctx.staffRoles(personId, trx),
       delegation: null,
     });
   }

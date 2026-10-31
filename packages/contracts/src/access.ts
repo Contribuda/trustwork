@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { StaffRoleIdSchema } from './admin.js';
+import { STAFF_ROLES } from './admin.js';
 import { IdSchema, RevisionSchema, ShortTextSchema, TimestampSchema } from './common/ids.js';
 import { GrantAudienceSchema, ProjectionLayerSchema } from './common/projection.js';
 import { CompanyPermissionSchema } from './company.js';
@@ -79,7 +79,12 @@ export const PrincipalSchema = z.strictObject({
     permissions: z.array(CompanyPermissionSchema),
     companyAuthzEpoch: z.int().min(0),
   }).nullable(),
-  staff: z.array(StaffRoleIdSchema),
+  /**
+   * Active staff roles from `staff_role_assignment` that cover this deployment (platform, this node, or this hub).
+   * The console vocabulary: the platform roles plus the hub roles of `HUB_STAFF_ROLES` in hub.ts (listed here because
+   * hub.ts imports this file); tests/contracts/staff-roles.test.ts keeps both lists equal.
+   */
+  staff: z.array(z.enum([...STAFF_ROLES, 'hub-owner', 'compliance-officer', 'node-operator'])),
   delegation: z.strictObject({ mandateId: IdSchema, mandateRevision: RevisionSchema, principalPersonId: IdSchema }).nullable(),
 });
 export type Principal = z.infer<typeof PrincipalSchema>;
