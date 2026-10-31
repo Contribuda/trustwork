@@ -1,6 +1,6 @@
 # The capability registry: one system for the agent and the interface
 
-Requirement: [ADR 010 decision 23](../adr/010-gathering-point-hubs-agents-and-mesh.md) (owner, 2026-10-31). Status: the registry entry, the registry and the invariant and parity-gap functions are **Contract** (AGT-002, `packages/contracts/src/agent-catalog.ts`, with tests); the per-module entries, the generated CI parity report and the runtime that resolves every agent step through the registry are **Proposed**. The procurement and supply suite registers its operations through PRC-023, and the MCP server design projects registry entries as MCP tools. Module pages list their own entries under "Agent capabilities" ([module specifications](modules/README.md)).
+Requirement: [ADR 010 decision 23](../adr/010-gathering-point-hubs-agents-and-mesh.md) (owner, 2026-10-31). Status: the registry entry, the registry and the invariant and parity-gap functions are **Contract** (AGT-002, `packages/contracts/src/agent-catalog.ts`, with tests); the per-module entries, the generated CI parity report and the runtime that resolves every agent step through the registry are **Proposed**. The procurement and supply suite registers its operations through PRC-023, and [the MCP server](mcp-server.md) ([ADR 013](../adr/013-mcp-server.md)) projects every registry entry exposed to connections as exactly one MCP tool; MCP-001 runs the registry and the CI parity and coverage report. Participants connect their own AI chat as described in [Connect Trustwork to your AI chat](../guides/connect-your-ai-chat.md). Module pages list their own entries under "Agent capabilities" ([module specifications](modules/README.md)).
 
 ## The decision in one paragraph
 
@@ -60,7 +60,7 @@ A generator reads the registry of the engine (and of each hub after its policy a
 | Interface and agent surfaces | `parityGaps` finds a capability without `ui` or `agent` |
 | Invariants | `capabilityViolations` reports any rule above |
 | Contract references | An input or output reference does not resolve to an exported schema |
-| MCP projection | A capability exposed to connections is missing from the MCP catalogue without a declared exclusion |
+| MCP projection | A capability with the `mcp` surface does not have exactly one tool (`mcpProjectionGaps` in `mcp.ts`) |
 | Locale | A label, decision text or error text is missing in any engine language |
 | Status honesty | An entry claims Live without a test exercising its use case, or the agent offers a Proposed capability as available |
 | Tests | A `commit` capability has no negative authorization test |
@@ -98,6 +98,6 @@ The identity, company and project operations of the live API are the only capabi
 
 ## Open points
 
-- Where the registry's generated report runs and who owns it (the MCP server design proposes it with its first package; see [conflicts to resolve](conflicts-to-resolve.md), C7).
+- The registry runtime and the CI parity and coverage report belong to MCP-001 ([conflicts to resolve](conflicts-to-resolve.md), C7, resolved); each module package adds its own entries.
 - The procurement suite proposes three more mandate verbs (`approve`, `release_payment`, `maintain_records`) that the frozen v2 vocabulary does not contain ([conflicts to resolve](conflicts-to-resolve.md), C13).
 - Per-object public assistants (ADR 012 decision 25) use the visitor's own agent and public `read` capabilities only.

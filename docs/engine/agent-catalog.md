@@ -781,7 +781,7 @@ Makes systems (facade kits, insulation, fixings); sells through distributors and
 | Technical articles and guidance | content_writer | schedule: monthly | `prepare`, `publish` \| company publications \| labelled company, sources cited \| — \| `ask_each` |
 | Design-office and installer discovery | discovery, introductions | goal | `research`, `introduce` \| selector \| ≤ quota; purpose stated \| — \| `ask_first(3)` |
 | Technical answers in projects | quoting | event: `clarification.requested` in contexts where the company participates | `communicate` \| those contexts \| structured answer with document refs \| — \| `ask_each` |
-| Open day on the plant | organizer_desk | request | see [type 13](#13-event-organizer) | — |
+| Open day on the plant | organizer_desk | request | see [type 13](#13-event-organizer) |
 | Product certificates and test reports validity | compliance_checker | deadline | `research` \| company documents \| — \| — \| none |
 | Knowledge profile: catalogues, installation guides, training, events; answers to plan-step questions | representative, plan_step_companion | event: `step_question.received`; schedule: monthly content review | see [knowledge partners](#manufacturers-and-suppliers-as-knowledge-partners) |
 
