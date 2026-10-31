@@ -4,7 +4,7 @@ import { sql } from 'kysely';
 import { withMaintenance } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { actionIntents, mandateProposals, mandates } from '../../packages/data/src/repositories/assistant.js';
-import { AssistantMandateRevocation } from '../../apps/api/src/modules/assistant/mandate-store.js';
+import { AssistantMandateRevocation, MODULE_KEYS } from '../../apps/api/src/modules/assistant/mandate-store.js';
 import { expectError, SKIP_REASON, startHarness, type Client } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
 import { as, assistantService, draft, fails, mandateStore, ok, personalBudget, stateOf, usd, type IntentView, type MandateView } from './helpers.js';
@@ -157,6 +157,17 @@ test('mandates: first-party confirmation, proposals, module wiring, stop control
     assert.equal((await store.check(check, ['task_marketplace'])).allowed, true, 'the approved digest, once');
     const again = await store.check(check, ['task_marketplace']);
     assert.equal(again.allowed, false, 'the approval was consumed');
+  });
+
+  await t.test('the execution port (EXE-001) answers record_evidence on an agreement from the same store', async () => {
+    const agreementId = '0192f0c0-0000-7000-8000-00000000a001';
+    const evidence = ok<MandateView>(await petrApi.post('/v1/assistant/mandates', { draft: draft({ moduleKeys: ['execution_clerk'], actions: ['record_evidence'], contexts: [{ kind: 'agreement', id: agreementId }] }) }), 201);
+    const port = mandateStore(h).port(MODULE_KEYS.execution);
+    const check = { personId: petr, mandateId: evidence.id, action: 'record_evidence' as const, context: { kind: 'agreement' as const, id: agreementId }, at: new Date() };
+    assert.equal(await port.allows(check), true);
+    assert.equal(await port.allows({ ...check, context: { kind: 'agreement', id: '0192f0c0-0000-7000-8000-00000000a002' } }), false, 'another agreement');
+    assert.equal(await port.allows({ ...check, personId: carl }), false, 'another person');
+    assert.equal(await mandateStore(h).port(MODULE_KEYS.tasks).allows(check), false, 'another module');
   });
 
   await t.test('concurrent checks never exceed the cumulative ceiling or the action window', async () => {
