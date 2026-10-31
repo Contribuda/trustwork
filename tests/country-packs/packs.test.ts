@@ -12,7 +12,7 @@ test('every pack file on disk validates and is loaded', () => {
 test('launch markets are present and Uzbekistan is complete and first', () => {
   assert.deepEqual(
     PACKS.map((p) => p.code),
-    ['UZ', 'GE', 'AM', 'AZ'],
+    ['UZ', 'GE', 'AM', 'AZ', 'US'],
   );
   assert.equal(getPack('uz')?.status, 'complete');
   assert.equal(getPack('UZ')?.defaultLocale, 'uz-Latn');
@@ -55,7 +55,7 @@ test('every locale has a fallback to en and ru is never a default', () => {
   for (const pack of PACKS) {
     assert.ok(pack.locales.includes('en'));
     assert.notEqual(pack.defaultLocale, 'ru');
-    assert.notEqual(pack.defaultLocale, 'en');
+    // English may be a pack default where it is the country's language (the United States, ADR 012 decisions 27 and 31).
   }
   assert.deepEqual([...ALL_LOCALES].sort(), ['az-Latn', 'en', 'hy', 'ka', 'ru', 'uz-Latn']);
 });

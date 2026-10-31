@@ -82,7 +82,7 @@ Be conservative: a level is never higher than what you checked. v1 facts upgrade
 | `sanctions` | National lists a hub must apply: `name`, `authority`, `url`, `updateCadence`, optional `adapter` | Restricted places are not a facet and cannot be changed by a pack |
 | `agentLaw` | Defaults for agent disclosure, liability, consent, record keeping and per-action limits, with `counselReview` | Unverified until counsel review |
 
-A federal country puts national facts on the pack and per-state facts on each region: sales tax, privacy laws, contractor licensing boards, state holidays. Engine code reads them with `factsFor(pack, facet, regionCode)`, `identifierKinds(pack, regionCode)` and `packTimeZones(pack, regionCode)`; it never branches on a country code. `tests/country-packs/v2/federal-fixture.ts` is a complete synthetic example (not real facts).
+A federal country puts national facts on the pack and per-state facts on each region: sales tax, privacy laws, contractor licensing boards, state holidays. Engine code reads them with `factsFor(pack, facet, regionCode)`, `identifierKinds(pack, regionCode)` and `packTimeZones(pack, regionCode)`; it never branches on a country code. `tests/country-packs/v2/federal-fixture.ts` is a complete synthetic example (not real facts); `packs/us.json` is the real, sourced model (every state, the District of Columbia and the territories, with California in depth), and `tests/country-packs/us` shows the tests a pack of that size should carry.
 
 ## 3. Add the dictionaries
 

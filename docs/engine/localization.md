@@ -64,7 +64,7 @@ Every fact in a pack cites a source and states how far it is verified ([Country 
 | `GE` | Georgia | Live (pack v1) | INTL-GE; v2 facets CTRY-003 | Existing example |
 | `AM` | Armenia | Live (pack v1) | INTL-AM; v2 facets CTRY-003 | Existing example |
 | `AZ` | Azerbaijan | Live (pack v1) | INTL-AZ; v2 facets CTRY-003 | Existing example |
-| `US` | United States | Next | INTL-US | The reference hub; the model for every other pack |
+| `US` | United States | Live (pack v2, English) | INTL-US | The reference hub and the model v2 pack: every state, DC and the territories; California and San Diego County in depth; Spanish with LANG-ES |
 | `CA` | Canada | Planned | CTRY-CA | English and French |
 | `MX` | Mexico | Planned | CTRY-MX | |
 | `BR` | Brazil | Planned | CTRY-BR | |
