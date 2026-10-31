@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 257 packages (49 done when the sanctions packages were added); 9 of them are the sanctions compliance engine of [ADR 014](../adr/014-sanctions-compliance-engine.md) (SANC-001 … SANC-009); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 258 packages (49 done when the sanctions packages were added); 9 of them are the sanctions compliance engine of [ADR 014](../adr/014-sanctions-compliance-engine.md) (SANC-001 … SANC-009); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71); MODEL-001 was added for the administrator's complete control set (ADR 010 decision 25, R73).
 
 ## Rules that keep parallel work safe
 
@@ -179,8 +179,8 @@ Hubs, territories and versioned configuration, jurisdiction settings (decision 2
 | HUBC-005 | Console M5: modules, agents, extensions and billing screens on fixtures | open | ADM-002 |
 | HUBC-006 | Console M6: federation, privacy, staff, audit, operations and node console on fixtures | open | ADM-002 |
 | HUBC-007 | Console live wiring: shell, setup, hub settings, approvals and staff | open | ADM-002, HUB-004, HUB-005 |
-| HUBC-008 | Console live wiring: keys, models, automation, editorial and data | open | HUBC-002, HUBC-003, HUBC-007, PIPE-001, EDIT-001, MINE-001 |
-| HUBC-009 | Console live wiring: participants, support, trust, modules, agents and billing | open | HUBC-004, HUBC-005, HUBC-007, SUP-001, CLM-001, PLAN-003, AGT-003, AGT-023, SANC-006 |
+| HUBC-008 | Console live wiring: keys, models, automation, editorial and data | open | HUBC-002, HUBC-003, HUBC-007, PIPE-001, EDIT-001, MINE-001, MODEL-001 |
+| HUBC-009 | Console live wiring: participants, support, trust, modules, agents and billing | open | HUBC-004, HUBC-005, HUBC-007, SUP-001, CLM-001, PLAN-003, AGT-003, AGT-023, SANC-006, AGT-004, BILL-003 |
 | HUBC-010 | Console live wiring: federation, privacy, operations and node console | open | HUBC-006, HUBC-007, PRV-001, OPS-004, FED-001 |
 | HUB-002 | Hub operator console (umbrella): end-to-end acceptance of every section | open | HUBC-008, HUBC-009, HUBC-010 |
 
@@ -198,6 +198,7 @@ The durable agent runtime, goals, envelopes and the company representative, the 
 | AGT-022 | Detailed agent settings for every participant, with previews and explanations | open | AGT-003, HUB-005 |
 | AGT-023 | Governed extension registry for agent capabilities | open | AGT-003, KEYS-001, EVAL-001 |
 | LLM-001 | Model gateway with egress-policy routing and per-mandate cost caps | open | KEYS-001, AST-001, BILL-001 |
+| MODEL-001 | Model catalogue per hub: pinned versions, evaluation before activation, canary rollout, rollback and per-model kill switch | open | KEYS-001, LLM-001, EVAL-001 |
 | EVAL-001 | Agent safety suite harness mapped to OWASP LLM and Agentic Top 10 | open | AST-001 |
 | AGT-005 | Presence agent modules: profile keeper, compliance checker and reputation coach | open | AGT-003, REP-001 |
 | AGT-007 | Opportunity agent modules: discovery, opportunity watch, introductions and engagements | open | AGT-003, MATCH-001 |
@@ -422,6 +423,7 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 |---|---|---|
 | Phase order, defaults and merged packages | Decided 2026-10-31 by the integrator ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md)) | Whole graph |
 | No held funds; commissions as hub settings; detailed configuration and extensions | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20–22) | PAY-001, BILL-002, BILL-003, HUB-005, AGT-022, AGT-023 |
+| Complete administrator controls over models, prices and agent functionality, with guard rails no administrator can switch off | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 25, R73) | KEYS-001, MODEL-001, LLM-001, AGT-003, AGT-004, AGT-022, AGT-023, BILL-002, BILL-003, BILL-004, HUBC-002, HUBC-005, HUBC-008, HUBC-009 |
 | US reference hub on Railway in a US region, operated by Contribuda; demo-only until QA-002, counsel review and the owner's switch | Decided 2026-10-31 by the owner and the conductor ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decisions 26 and 28) | OPS-003 targets, QA-002 follow-up, any deployment |
 | English default; other languages under `/<lang>/` with hreflang; no country in public URLs | Decided 2026-10-31 (ADR 012 decision 27) | WEB-005 (unblocked) |
 | Prices, trials, tiers and commission levels | Owner / hub operators | BILL-001, BILL-003 activation |
