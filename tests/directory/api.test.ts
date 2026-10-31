@@ -261,4 +261,14 @@ test('directory API: company creation, handles with redirects, keyset directorie
     assert.equal(ok<{ handle: string }>(await pure.post('/v1/me/handle', { handle: 'pure-builder' })).handle, 'pure-builder');
     assert.equal(body<{ redirect: boolean }>(await anonymous.get('/v1/people/by-handle/pure-step-3')).redirect, true);
   });
+
+  await t.test('BE-002: a public person without a display name is listed with displayName null and nothing private', async () => {
+    const id = await withMaintenance(admin, async (trx) => (await trx.insertInto('person').values({ display_name: null, profile_visibility: 'public' }).returning('id').executeTakeFirstOrThrow()).id);
+    const people = await walk<{ id: string; displayName: string | null }>(anonymous, '/v1/people', 100);
+    keysOf(people, PERSON_KEYS);
+    const nameless = people.find((p) => p.id === id);
+    assert.ok(nameless, 'listed like any public profile');
+    assert.equal(nameless.displayName, null, 'no name is invented; clients render personPage.unnamed');
+    noPrivateMarkers(await anonymous.get('/v1/people?limit=100'));
+  });
 });

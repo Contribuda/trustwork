@@ -29,7 +29,8 @@ function before(alias: string, after: DirectoryPosition | null): RawBuilder<bool
   return sql<boolean>`(${sql.ref(`${alias}.created_at`)}, ${sql.ref(`${alias}.id`)}) < (${after?.createdAt ?? 'infinity'}::timestamptz, ${after?.id ?? MAX_UUID}::uuid)`;
 }
 
-export interface PersonDirectoryRow { id: string; display_name: string; public_headline: string | null; public_expertise: string[]; handle: string | null; sort_key: string }
+/** `display_name` is NULL for a provider sign-up without a name (BE-002); clients render `personPage.unnamed`. */
+export interface PersonDirectoryRow { id: string; display_name: string | null; public_headline: string | null; public_expertise: string[]; handle: string | null; sort_key: string }
 export interface CompanyDirectoryRow { id: string; display_name: string; sourced_status: SourcedStatus; claim_status: ClaimStatus; legal_identifiers: unknown; public_description: string | null; handle: string | null; sort_key: string }
 export interface ProjectDirectoryRow { id: string; name: string; summary: string | null; status: ProjectStatus; published_story: string | null; handle: string | null; sort_key: string }
 export interface MyProjectRow {
