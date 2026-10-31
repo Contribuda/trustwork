@@ -1,6 +1,7 @@
 name: check
 on:
   pull_request:
+  merge_group:
   push:
     branches: [main]
 permissions:
@@ -50,21 +51,34 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Pull requests that cannot change the web app skip the suite (scripts/ci/affected.mjs); pushes to main and
+      # merge-queue groups always run it, so nothing reaches main untested.
+      - name: Which suites this change affects
+        id: affected
+        run: node scripts/ci/affected.mjs "${{ github.event_name }}" "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.affected.outputs.web == 'true'
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm install --global npm@11.16.0
+        if: steps.affected.outputs.web == 'true'
       - run: npm ci
+        if: steps.affected.outputs.web == 'true'
       - run: npx playwright install --with-deps chromium
+        if: steps.affected.outputs.web == 'true'
         working-directory: apps/web
       - run: NEXT_DIST_DIR=.next-e2e npx next build --webpack
+        if: steps.affected.outputs.web == 'true'
         working-directory: apps/web
       - name: Client bundle-size budget
+        if: steps.affected.outputs.web == 'true'
         run: node scripts/ci/bundle-budget.mjs apps/web/.next-e2e
       - run: NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test
+        if: steps.affected.outputs.web == 'true'
         working-directory: apps/web
       - name: The browser build leaves a clean checkout clean
+        if: steps.affected.outputs.web == 'true'
         run: node scripts/ci/assert-clean-tree.mjs "the web build or browser tests changed tracked files"
 
   design-system:
@@ -73,17 +87,28 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Pull requests that cannot change the web app skip the suite (scripts/ci/affected.mjs); pushes to main and
+      # merge-queue groups always run it, so nothing reaches main untested.
+      - name: Which suites this change affects
+        id: affected
+        run: node scripts/ci/affected.mjs "${{ github.event_name }}" "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.affected.outputs.ui == 'true'
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm install --global npm@11.16.0
+        if: steps.affected.outputs.ui == 'true'
       - run: npm ci
+        if: steps.affected.outputs.ui == 'true'
       - run: npx playwright install --with-deps chromium
+        if: steps.affected.outputs.ui == 'true'
         working-directory: packages/ui
       # Storybook build, then axe-core (WCAG A/AA tags) over every story plus keyboard, contrast and mobile specs.
       - run: npm run test:a11y -w @trustwork/ui
+        if: steps.affected.outputs.ui == 'true'
       - name: The Storybook build leaves a clean checkout clean
+        if: steps.affected.outputs.ui == 'true'
         run: node scripts/ci/assert-clean-tree.mjs "the design-system suite changed tracked files"
 
   dependencies:
@@ -139,7 +164,7 @@ jobs:
 
   dco:
     name: DCO sign-off
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -148,11 +173,14 @@ jobs:
       - name: Every commit carries Signed-off-by
         env:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          # A merge-queue group checks the commits it adds on top of main.
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
         run: |
           missing=0
-          for sha in $(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+          for sha in $(git rev-list "$BASE_SHA".."$HEAD_SHA"); do
             # Dependabot's own version-bump commits cannot sign off; a maintainer reviews and merges them.
-            if [ "$PR_AUTHOR" = "dependabot[bot]" ] && [ "$(git log -1 --format=%ae "$sha")" = "49699333+dependabot[bot]@users.noreply.github.com" ]; then
+            if { [ "$PR_AUTHOR" = "dependabot[bot]" ] || [ -z "$PR_AUTHOR" ]; } && [ "$(git log -1 --format=%ae "$sha")" = "49699333+dependabot[bot]@users.noreply.github.com" ]; then
               continue
             fi
             if ! git log -1 --format=%B "$sha" | grep -qE '^Signed-off-by: .+ <.+>$'; then
