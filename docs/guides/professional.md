@@ -8,7 +8,7 @@ Status labels are explained in the [guides index](README.md#status-labels).
 
 | # | Step | What happens | Status |
 |---|---|---|---|
-| 1 | **Create your account** | One account for life, independent of any employer. | **Live** in the API (e-mail verification through a fake mailbox until MAIL-001); screens are **Demo** |
+| 1 | **Create your account** | One account for life, independent of any employer. | **Live** in the API (verification mail through the worker; no mail server is configured in the demo); screens are **Demo** |
 | 2 | **Fill in your public profile** | Name, trade, region, experience, languages. You choose whether the profile is public at all and preview exactly what others see. | The public profile editor on "My page" is **Demo**; profiles with consent records are **Proposed** (PPL-001) |
 | 3 | **Join your employer** | Your company invites you; you accept. One active employer at a time; when you leave, your own profile and publications stay with you and the company's data stays with the company. | Memberships (invite, accept, change, end) are **Live** in the API |
 | 4 | **Add credentials** | State licences, insurance certificates, manufacturer certifications, course certificates. The hub checks what it can and shows "checked on date by hub X"; the documents themselves are never shown publicly. Your agent reminds you 60, 30 and 7 days before something expires. | Platform certificates on "My page" and the public certificate check are **Demo**; credentials and checks are **Proposed** (REP-001, CLM-001, HUB-003) |

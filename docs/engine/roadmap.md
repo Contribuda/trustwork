@@ -48,7 +48,7 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 | REL-001 | Outbox relay, durable job runner and scheduler in apps/worker | done | DATA-004 |
 | BE-002 | Identity hardening follow-ups | open | DATA-004 |
 | BE-003 | Account and directory completeness: company creation, handles, lists with pagination | done | DATA-004 |
-| MAIL-001 | Transactional mail through the outbox with localized templates and an SMTP adapter | open | REL-001, BE-002 |
+| MAIL-001 | Transactional mail through the outbox with localized templates and an SMTP adapter | done | REL-001, BE-002 |
 | BE-004 | Second factor, recovery codes and elevated sessions | open | MAIL-001 |
 | INTL-003 | Locale correctness and weight: request-scoped client locale, one dictionary per page, CLDR plurals, country-aware formats | done |  |
 | INTL-004 | Locale files per feature namespace | open | INTL-003 |

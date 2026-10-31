@@ -1,0 +1,6 @@
+{
+  "$comment": "Russian-interface brand overlay for mail (docs/oss/BRAND.md): applied only to Russian messages; every other language keeps the brand from the mail dictionary. TRUSTWORK_BRAND=none disables it.",
+  "ru": {
+    "name": "Строй Репутация"
+  }
+}

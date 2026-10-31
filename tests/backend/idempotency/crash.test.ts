@@ -166,7 +166,7 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     const company = seed.companies.unrelated;
     const invite = await carl.post(`/v1/companies/${company}/memberships`, { companyId: company, inviteeEmail: EMAILS.petr, role: 'member', permissions: [] });
     assert.equal(invite.status, 202, JSON.stringify(invite.body));
-    const mail = h.mail.lastTo(EMAILS.petr, 'membership_invitation')!;
+    const mail = (await h.mail.lastTo(EMAILS.petr, 'membership_invitation'))!;
     const membershipId = mail.params.membershipId as string;
     await exactlyOnce({
       action: 'membership.accept', client: petr, url: `/v1/companies/${company}/memberships/accept`, body: { membershipId, invitationToken: mail.params.token as string },

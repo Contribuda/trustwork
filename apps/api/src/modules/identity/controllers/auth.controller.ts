@@ -8,6 +8,7 @@ import { Authenticated, CsrfExempt, Req, ReqState, type RequestState, type Trust
 import { Body, Params, Query } from '../../../common/zod.js';
 import { ApiError } from '../../../common/errors.js';
 import { AuthService } from '../auth.service.js';
+import { ReqLocales } from '../mail.js';
 import { APP_CONTEXT, type AppContext } from '../context.js';
 import { FakeOidcProvider } from '../ports.js';
 import { ProviderService } from '../providers/provider.service.js';
@@ -24,8 +25,8 @@ export class AuthController {
   constructor(@Inject(AuthService) private readonly auth: AuthService, @Inject(ProviderService) private readonly providers: ProviderService, @Inject(APP_CONTEXT) private readonly ctx: AppContext) {}
 
   @Post('signup') @HttpCode(202)
-  signup(@Body(SignupCommandSchema) body: z.infer<typeof SignupCommandSchema>, @ReqState() state: RequestState) {
-    return this.auth.signup(body, state.requestId);
+  signup(@Body(SignupCommandSchema) body: z.infer<typeof SignupCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    return this.auth.signup(body, state.requestId, locales);
   }
 
   @Post('verify-email') @HttpCode(200)
@@ -44,13 +45,13 @@ export class AuthController {
   }
 
   @Post('recovery') @HttpCode(202)
-  recovery(@Body(RecoveryRequestCommandSchema) body: z.infer<typeof RecoveryRequestCommandSchema>, @ReqState() state: RequestState) {
-    return this.auth.requestRecovery(body.email, state.requestId);
+  recovery(@Body(RecoveryRequestCommandSchema) body: z.infer<typeof RecoveryRequestCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    return this.auth.requestRecovery(body.email, state.requestId, locales);
   }
 
   @Post('recovery/complete') @HttpCode(200)
-  recoveryComplete(@Body(RecoveryCompleteCommandSchema) body: z.infer<typeof RecoveryCompleteCommandSchema>, @ReqState() state: RequestState) {
-    return this.auth.completeRecovery(body, state.requestId);
+  recoveryComplete(@Body(RecoveryCompleteCommandSchema) body: z.infer<typeof RecoveryCompleteCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    return this.auth.completeRecovery(body, state.requestId, locales);
   }
 
   @Post('step-up') @HttpCode(200) @Authenticated()
@@ -64,8 +65,8 @@ export class AuthController {
   }
 
   @Post('unlink') @HttpCode(204) @Authenticated('step_up')
-  async unlink(@Body(ProviderLinkStartCommandSchema) body: z.infer<typeof ProviderLinkStartCommandSchema>, @ReqState() state: RequestState) {
-    await this.providers.unlink(body.provider, state);
+  async unlink(@Body(ProviderLinkStartCommandSchema) body: z.infer<typeof ProviderLinkStartCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    await this.providers.unlink(body.provider, state, locales);
   }
 
   @Post(':provider/start') @HttpCode(200)
@@ -75,8 +76,8 @@ export class AuthController {
 
   /** Top-level navigation from the provider; protected by `state` + the signed flow cookie, not by the CSRF header. */
   @Get(':provider/callback') @CsrfExempt()
-  async callback(@Params(ProviderParams) params: z.infer<typeof ProviderParams>, @Query(CallbackQuery) query: z.infer<typeof CallbackQuery>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res() reply: FastifyReply) {
-    const outcome = await this.providers.callback(params.provider, query, state, request, reply);
+  async callback(@Params(ProviderParams) params: z.infer<typeof ProviderParams>, @Query(CallbackQuery) query: z.infer<typeof CallbackQuery>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res() reply: FastifyReply, @ReqLocales() locales: string[]) {
+    const outcome = await this.providers.callback(params.provider, query, state, request, reply, locales);
     const target = new URL(this.ctx.config.authReturnPath, this.ctx.config.publicOrigin);
     target.searchParams.set('auth', outcome);
     reply.header('Cache-Control', 'no-store').header('Referrer-Policy', 'no-referrer').redirect(target.toString(), 303);

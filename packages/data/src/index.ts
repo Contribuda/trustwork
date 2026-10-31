@@ -9,3 +9,4 @@ export { projects, ownershipTransfers, leadershipAssignments } from './repositor
 export { auditEvents, outbox, jobs, idempotency, inbox, maintenance, type IdempotencyScope, type SweepReport, type SweepOptions } from './repositories/reliability.js';
 export { admission, admissionScopes, AdmissionGate, AdmissionLeaseExpiredError, permitSignature, type AdmissionCheck, type AdmissionDenyReason, type GateResult, type GateOptions } from './admission/index.js';
 export type { MembershipEnded } from './repositories/company.js';
+export { mailDeliveries, suppressions, MAIL_REQUESTED, MAIL_AGGREGATE, MAIL_TEMPLATES, MAIL_FINAL_STATES, normalizeMailAddress, mailAddressHash, deriveMailSecretKey, mailSecretKeyFromEnv, DEVELOPMENT_MAIL_SECRET_KEY, sealMailSecret, unsealMailSecret, MailSecretError, type MailRecordInput, type MailDelivery, type MailDeliveryState, type MailFeedback, type MailTemplateName, type SuppressionReason } from './repositories/mail.js';

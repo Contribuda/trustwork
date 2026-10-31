@@ -1,0 +1,66 @@
+{
+  "brand": {
+    "name": "Trustwork"
+  },
+  "layout": {
+    "greeting": "Assalomu alaykum!",
+    "linkFallback": "Agar tugma ishlamasa, ushbu manzilni brauzeringizga nusxalang:",
+    "automated": "Bu xabar hisobingizdagi amal sababli {brand} tomonidan avtomatik yuborildi. Ushbu manzilga yuborilgan javoblar o‘qilmaydi.",
+    "signature": "{brand} jamoasi"
+  },
+  "verifyEmail": {
+    "subject": "{brand} uchun elektron pochta manzilingizni tasdiqlang",
+    "heading": "Elektron pochta manzilingizni tasdiqlang",
+    "intro": "Kimdir, umid qilamizki siz, ushbu manzil bilan {brand} hisobini yaratdi. Ro‘yxatdan o‘tishni yakunlash uchun manzilni tasdiqlang.",
+    "action": "Manzilni tasdiqlash",
+    "expiry": "Havola faqat bir marta ishlaydi va {hours, plural, one {# soatdan} other {# soatdan}} keyin muddati tugaydi.",
+    "ignore": "Agar siz hisob yaratmagan bo‘lsangiz, bu xabarni e’tiborsiz qoldiring. Tasdiqlashsiz hech narsa bo‘lmaydi."
+  },
+  "alreadyRegistered": {
+    "subject": "{brand} hisobingiz allaqachon mavjud",
+    "heading": "Sizda allaqachon hisob bor",
+    "intro": "Kimdir ushbu manzil bilan {brand} hisobini yaratmoqchi bo‘ldi, ammo bu manzilga ega hisob allaqachon mavjud.",
+    "action": "Kirish",
+    "recoverHint": "Parolingizni unutdingizmi? Yangisini o‘rnatishingiz mumkin:",
+    "recoverAction": "Parolni tiklash",
+    "ignore": "Agar bu siz bo‘lmasangiz, bu xabarni e’tiborsiz qoldiring. Hisobingizda hech narsa o‘zgarmadi."
+  },
+  "recovery": {
+    "subject": "{brand} parolini tiklash",
+    "heading": "Parolni tiklash",
+    "intro": "{brand} hisobingiz parolini tiklash so‘rovini oldik.",
+    "action": "Yangi parol tanlash",
+    "expiry": "Havola faqat bir marta ishlaydi va {minutes, plural, one {# daqiqadan} other {# daqiqadan}} keyin muddati tugaydi. Tiklashdan so‘ng barcha seanslardan chiqiladi.",
+    "ignore": "Agar buni so‘ramagan bo‘lsangiz, bu xabarni e’tiborsiz qoldiring. Parolingiz o‘zgarmaydi."
+  },
+  "emailChange": {
+    "subject": "{brand} uchun yangi elektron pochta manzilingizni tasdiqlang",
+    "heading": "Yangi manzilingizni tasdiqlang",
+    "intro": "Siz ushbu manzilni {brand} hisobingiz uchun ishlatishni so‘radingiz. O‘zgarishni yakunlash uchun uni tasdiqlang.",
+    "action": "Yangi manzilni tasdiqlash",
+    "expiry": "Havola faqat bir marta ishlaydi va {hours, plural, one {# soatdan} other {# soatdan}} keyin muddati tugaydi.",
+    "ignore": "Agar buni so‘ramagan bo‘lsangiz, bu xabarni e’tiborsiz qoldiring. Hisob joriy manzilini saqlab qoladi."
+  },
+  "membershipInvitation": {
+    "subject": "{company} sizni {brand} platformasidagi jamoasiga taklif qilmoqda",
+    "heading": "{company} jamoasiga taklif",
+    "intro": "Hamkasbingiz sizni {brand} platformasida {company} jamoasiga qo‘shilishga taklif qildi. A’zo bo‘lish uchun ushbu manzil bilan kiring va taklifni qabul qiling.",
+    "action": "Taklifni ko‘rish",
+    "expiry": "Taklif muddati {days, plural, one {# kundan} other {# kundan}} keyin tugaydi.",
+    "ignore": "Agar bu taklifni kutmagan bo‘lsangiz, bu xabarni e’tiborsiz qoldiring. Qabul qilmaguningizcha hech narsa o‘zgarmaydi."
+  },
+  "securityNotice": {
+    "subject": "{brand} hisobingiz xavfsizligi haqida xabar",
+    "heading": "Xavfsizlik haqida xabar",
+    "events": {
+      "login_throttled": "Hisobingizga kirish uchun bir necha muvaffaqiyatsiz urinish bo‘ldi. Keyingi urinishlar bir muddat sekinlashtirildi. Parolingiz o‘chirilmagan.",
+      "password_reset": "Hisobingiz paroli tiklash havolasi orqali tiklandi va barcha seanslardan chiqildi.",
+      "password_changed": "Hisobingiz paroli o‘zgartirildi va boshqa seanslardan chiqildi.",
+      "email_change_requested": "Hisobingiz elektron pochta manzilini o‘zgartirish so‘raldi. O‘zgarish faqat yangi manzil tasdiqlangandan keyin amalga oshadi.",
+      "provider_linked": "Hisobingizga {provider} orqali kirish ulandi.",
+      "provider_unlinked": "Hisobingizdan {provider} orqali kirish uzildi."
+    },
+    "notYou": "Agar bu siz bo‘lmasangiz, hoziroq parolingizni tiklang va faol seanslaringizni tekshiring.",
+    "action": "Parolni tiklash"
+  }
+}

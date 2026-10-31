@@ -33,16 +33,16 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     }
     // BE-002: an address held only by an unverified binding stays claimable by mailbox proof, so the second signup
     // receives its own verification link instead of an "already registered" notice.
-    assert.equal(h.mail.countTo('newcomer@example.invalid', 'verify_email'), 2);
-    assert.equal(h.mail.countTo('newcomer@example.invalid', 'already_registered'), 0);
-    assert.equal(h.mail.countTo(EMAILS.anna, 'already_registered'), 1);
+    assert.equal(await h.mail.countTo('newcomer@example.invalid', 'verify_email'), 2);
+    assert.equal(await h.mail.countTo('newcomer@example.invalid', 'already_registered'), 0);
+    assert.equal(await h.mail.countTo(EMAILS.anna, 'already_registered'), 1);
     const beforeVerify = await anonymous.post('/v1/auth/login', { email: 'newcomer@example.invalid', password: PASSWORD }, { idempotencyKey: null });
     expectError(beforeVerify, 401, 'auth.invalid_credentials');
     assert.equal(beforeVerify.cookies.length, 0);
   });
 
   await t.test('verification POST issues the first session; the token is single use; the cookie carries the hardened attributes', async () => {
-    const token = h.mail.lastTo('newcomer@example.invalid', 'verify_email')?.params.token as string;
+    const token = (await h.mail.lastTo('newcomer@example.invalid', 'verify_email'))?.params.token as string;
     const client = h.client();
     const verified = await client.post('/v1/auth/verify-email', { token }, { idempotencyKey: null });
     assert.equal(verified.status, 200, JSON.stringify(verified.body));
@@ -152,10 +152,10 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     const unknown = await anonymous.post('/v1/auth/recovery', { email: 'ghost@example.invalid' }, { idempotencyKey: null });
     assert.equal(known.status, 202);
     assert.deepEqual(known.body, unknown.body);
-    assert.equal(h.mail.countTo('ghost@example.invalid'), 0);
-    const first = h.mail.lastTo(EMAILS.boris, 'recovery')?.params.token as string;
+    assert.equal(await h.mail.countTo('ghost@example.invalid'), 0);
+    const first = (await h.mail.lastTo(EMAILS.boris, 'recovery'))?.params.token as string;
     await anonymous.post('/v1/auth/recovery', { email: EMAILS.boris }, { idempotencyKey: null });
-    const second = h.mail.lastTo(EMAILS.boris, 'recovery')?.params.token as string;
+    const second = (await h.mail.lastTo(EMAILS.boris, 'recovery'))?.params.token as string;
     assert.notEqual(first, second);
     expectError(await anonymous.post('/v1/auth/recovery/complete', { token: first, newPassword: 'another long password 123' }, { idempotencyKey: null }), 404, 'access.not_found');
     const done = await anonymous.post('/v1/auth/recovery/complete', { token: second, newPassword: 'another long password 123' }, { idempotencyKey: null });
@@ -233,7 +233,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     assert.match(String(apple.headers.location), /auth=verification_pending/);
     const yme = await y.get('/v1/me');
     assert.equal((yme.body as { principal: { emailVerified: boolean } }).principal.emailVerified, false);
-    assert.equal(h.mail.countTo('apple-user@example.invalid', 'verify_email'), 1);
+    assert.equal(await h.mail.countTo('apple-user@example.invalid', 'verify_email'), 1);
     const yProject = await y.post('/v1/projects', { owner: { kind: 'person', id: (yme.body as { person: { id: string } }).person.id }, name: 'Проект без подтверждённой почты', summary: null, leaderPersonId: null });
     assert.equal(yProject.status, 201, 'a session exists via the subject link');
     expectError(await y.post(`/v1/projects/${(yProject.body as { id: string }).id}/publish`, { projectId: (yProject.body as { id: string }).id, publishedStory: 'история', openNeedIds: [], expectedRevision: 1 }), 403, 'auth.email_unverified');
@@ -245,7 +245,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     const st = new URL((s.body as { authorizationUrl: string }).authorizationUrl).searchParams.get('state') as string;
     h.apple.enqueue({ subject: 'apple-first', email: 'apple-first@example.invalid', emailVerified: false, name: 'Первый' });
     assert.match(String((await y.get(`/v1/auth/apple/callback?code=fake&state=${st}`)).headers.location), /verification_pending/);
-    const token = h.mail.lastTo('apple-first@example.invalid', 'verify_email')?.params.token as string;
+    const token = (await h.mail.lastTo('apple-first@example.invalid', 'verify_email'))?.params.token as string;
     const fresh = h.client();
     assert.equal((await fresh.post('/v1/auth/verify-email', { token }, { idempotencyKey: null })).status, 200, 'verified from a fresh browser without a session');
     const me = await fresh.get('/v1/me');
@@ -261,7 +261,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
   });
 
   await t.test('P1-2: without AUTH_PROVIDER_MODE provider routes are not found and health says disabled; fake-identity only from loopback', async () => {
-    const disabled = await createApp({ env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test' }, pool: h.pool, mail: h.mail, clock: h.clock, logSink: () => undefined });
+    const disabled = await createApp({ env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test' }, pool: h.pool, clock: h.clock, logSink: () => undefined });
     try {
       const health = await disabled.fastify.inject({ method: 'GET', url: '/health' });
       assert.deepEqual(JSON.parse(health.body), { status: 'ok', mode: 'bootstrap', externalProviders: 'disabled' });
@@ -304,7 +304,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     assert.equal(me.status, 200, 'the resolver re-reads the epoch once');
     assert.ok(client.sessionCookie, 'cookie kept');
     assert.equal((await client.post('/v1/me/email', { newEmail: EMAILS.anna })).status, 202, 'identical acknowledgement');
-    const token = h.mail.lastTo(EMAILS.anna, 'email_change')?.params.token as string;
+    const token = (await h.mail.lastTo(EMAILS.anna, 'email_change'))?.params.token as string;
     const taken = await client.post('/v1/auth/verify-email', { token }, { idempotencyKey: null });
     assert.equal(taken.status, 409);
     assert.equal((taken.body as { code: string }).code, 'auth.email_taken');
@@ -328,7 +328,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     h.google.enqueue({ subject: 'google-carl', email: EMAILS.carl, emailVerified: true, name: 'Carl' });
     const linked = await client.get(`/v1/auth/google/callback?code=fake&state=${state2}`);
     assert.match(String(linked.headers.location), /auth=linked/);
-    assert.ok(h.mail.countTo(EMAILS.carl, 'security_notice') >= 1);
+    assert.ok(await h.mail.countTo(EMAILS.carl, 'security_notice') >= 1);
     const fresh = h.client();
     const s = await fresh.post('/v1/auth/google/start', undefined, { idempotencyKey: null });
     const st = new URL((s.body as { authorizationUrl: string }).authorizationUrl).searchParams.get('state') as string;
@@ -356,7 +356,7 @@ test('authentication flows over HTTP against the Nest app (Fastify inject, real 
     expectError(await b.get('/v1/me'), 401, 'auth.session_invalid');
     assert.equal((await a.get('/v1/me')).status, 200);
     assert.equal((await a.post('/v1/me/email', { newEmail: 'pure-new@example.invalid' })).status, 202);
-    const token = h.mail.lastTo('pure-new@example.invalid', 'email_change')?.params.token as string;
+    const token = (await h.mail.lastTo('pure-new@example.invalid', 'email_change'))?.params.token as string;
     assert.equal((await a.post('/v1/auth/verify-email', { token }, { idempotencyKey: null })).status, 200);
     const me = await a.get('/v1/me');
     const bindings = (me.body as { person: { emailBindings: { email: string; isPrimary: boolean; verifiedAt: string | null }[] } }).person.emailBindings;

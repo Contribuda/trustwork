@@ -50,9 +50,10 @@ Then point them to [status](status.md) for details and to `npm run work` for wha
 | Local database | `npm run infra:up` (PostgreSQL 18.3 on 127.0.0.1:54329, needs Docker) |
 | Migrations | `DATABASE_URL=postgresql://trustwork_dev:local_only_change_me@localhost:54329/trustwork_dev npm run db:migrate` |
 | Demo personas and runtime role | `DATABASE_URL=… npm run seed:dev -w @trustwork/api` prints personas and an `apiDatabaseUrl` for the restricted runtime role |
-| API | `API_DATABASE_URL=<printed> AUTH_PROVIDER_MODE=fake API_LOG_MAIL=1 npm run dev:api`; without a database URL only `GET http://localhost:3001/health` is served |
+| API | `API_DATABASE_URL=<printed> AUTH_PROVIDER_MODE=fake npm run dev:api`; without a database URL only `GET http://localhost:3001/health` is served |
+| Worker with mail printed to the terminal | `WORKER_DATABASE_URL=<worker login> MAIL_TRANSPORT=log npm run worker` (verification and recovery links appear on stdout; see `apps/worker/src/mail/README.md`) |
 | Browser tests | `cd apps/web && NEXT_DIST_DIR=.next-e2e npx next build --webpack && NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test` (demo mode) |
-| Live API browser tests | `cd apps/web && NEXT_DIST_DIR=.next-live TRUSTWORK_API_ORIGIN=http://127.0.0.1:3471 npx next build --webpack && NEXT_DIST_DIR=.next-live npx playwright test -c ../../tests/web/live-api/playwright.config.ts` (starts a migrated PostgreSQL database, the API and a fake mailbox; see `tests/web/live-api`) |
+| Live API browser tests | `cd apps/web && NEXT_DIST_DIR=.next-live TRUSTWORK_API_ORIGIN=http://127.0.0.1:3471 npx next build --webpack && NEXT_DIST_DIR=.next-live npx playwright test -c ../../tests/web/live-api/playwright.config.ts` (starts a migrated PostgreSQL database, the API and a mailbox that reads the committed mail intents; see `tests/web/live-api`) |
 | Design system | `npm run storybook -w @trustwork/ui` |
 | Work packages | `npm run work`, `npm run work:next`, `npm run work:context -- COM-001`, `node scripts/work-packages.mjs show COM-001` |
 | Claims | `npm run claims -- lint claim.txt`, `npm run claims -- status` |

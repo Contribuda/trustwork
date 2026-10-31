@@ -228,7 +228,7 @@ test('object authorization acceptance suite over HTTP (access-and-journeys.md) w
     const unknown = await admin.post(`/v1/companies/${seed.companies.unrelated}/memberships`, { companyId: seed.companies.unrelated, inviteeEmail: 'nobody@example.invalid', role: 'member', permissions: [] });
     assert.equal(invite.status, 202);
     assert.deepEqual(invite.body, unknown.body);
-    const mail = h.mail.lastTo(EMAILS.pure, 'membership_invitation')!;
+    const mail = (await h.mail.lastTo(EMAILS.pure, 'membership_invitation'))!;
     const invitee = await as('pure');
     const membershipId = mail.params.membershipId as string;
     expectError(await invitee.post(`/v1/companies/${seed.companies.unrelated}/memberships/accept`, { membershipId, invitationToken: 'x'.repeat(32) }), 404, 'access.not_found');
@@ -237,7 +237,7 @@ test('object authorization acceptance suite over HTTP (access-and-journeys.md) w
     assert.equal((await invitee.post(`/v1/companies/${seed.companies.mixed}/memberships/end`, { membershipId: pureMembership.id, reason: 'leaving', expectedRevision: pureMembership.revision })).status, 200);
     const invite2 = await admin.post(`/v1/companies/${seed.companies.unrelated}/memberships`, { companyId: seed.companies.unrelated, inviteeEmail: EMAILS.pure, role: 'member', permissions: ['company.deals.manage'] });
     assert.equal(invite2.status, 202);
-    const mail2 = h.mail.lastTo(EMAILS.pure, 'membership_invitation')!;
+    const mail2 = (await h.mail.lastTo(EMAILS.pure, 'membership_invitation'))!;
     const accepted = await invitee.post(`/v1/companies/${seed.companies.unrelated}/memberships/accept`, { membershipId: mail2.params.membershipId as string, invitationToken: mail2.params.token as string });
     assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     const m = accepted.body as { id: string; revision: number; status: string };

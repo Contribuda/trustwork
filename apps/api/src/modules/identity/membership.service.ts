@@ -5,6 +5,7 @@ import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from './context.js';
 import type { PrincipalService } from './principal.service.js';
+import { daysOf } from './mail.js';
 import { toCompany, toMembership } from './serializers.js';
 import { randomToken, sha256Hex } from './tokens.js';
 
@@ -64,22 +65,29 @@ export class MembershipService {
     if (!membership.permissions.includes('company.members.manage')) throw new ApiError('membership.permission_missing');
     if (!principal.emailVerified) throw new ApiError('auth.email_unverified');
     const token = randomToken();
+    const expiresAt = new Date(this.ctx.clock.now().getTime() + this.ctx.config.tokens.invitationMs);
     const inviteeId = await auth.issueToken(this.ctx.pool, {
-      emailNormalized: input.inviteeEmail, kind: 'membership_invitation', tokenHashHex: sha256Hex(token),
-      expiresAt: new Date(this.ctx.clock.now().getTime() + this.ctx.config.tokens.invitationMs), requireVerified: true,
+      emailNormalized: input.inviteeEmail, kind: 'membership_invitation', tokenHashHex: sha256Hex(token), expiresAt, requireVerified: true,
     });
     if (inviteeId && inviteeId !== principal.personId) {
-      const invited = await this.principals.runAs(state, async (trx, p) => {
+      await this.principals.runAs(state, async (trx, p) => {
         const existing = (await memberships.listForCompany(trx, companyId)).find((m) => m.person_id === inviteeId && (m.status === 'invited' || m.status === 'active'));
-        if (existing?.status === 'active') return null;
+        if (existing?.status === 'active') return;
         // A pending invitation is re-sent with a fresh mailbox proof instead of a duplicate row.
-        if (existing) return existing;
-        const row = await memberships.invite(trx, { person_id: inviteeId, company_id: companyId, role: input.role, permissions: input.permissions, invited_by: p.personId });
-        await auditEvents.append(trx, { actor_person_id: p.personId, on_behalf_of_company_id: companyId, action: 'membership.invited', object_kind: 'membership', object_id: row.id, request_id: state.requestId, authz_epoch: p.authzEpoch, basis: { role: input.role, permissions: input.permissions } });
-        await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: row.id, revision: row.revision, type: 'membership.invited', payload: { companyId } });
-        return row;
+        let row = existing;
+        if (!row) {
+          row = await memberships.invite(trx, { person_id: inviteeId, company_id: companyId, role: input.role, permissions: input.permissions, invited_by: p.personId });
+          await auditEvents.append(trx, { actor_person_id: p.personId, on_behalf_of_company_id: companyId, action: 'membership.invited', object_kind: 'membership', object_id: row.id, request_id: state.requestId, authz_epoch: p.authzEpoch, basis: { role: input.role, permissions: input.permissions } });
+          await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: row.id, revision: row.revision, type: 'membership.invited', payload: { companyId } });
+        }
+        const company = await companies.getById(trx, companyId);
+        // The invitee's language is unknown here (the inviter caused the mail): the hub default applies.
+        await this.ctx.mail.record(trx, {
+          to: input.inviteeEmail, template: 'membership_invitation',
+          params: { membershipId: row.id, companyId, company: company?.display_name ?? '', days: daysOf(this.ctx.config.tokens.invitationMs) },
+          secret: { token, expiresAt },
+        });
       });
-      if (invited) await this.ctx.mail.send({ to: input.inviteeEmail, template: 'membership_invitation', params: { token, membershipId: invited.id, companyId } });
     }
     return { status: 'invited' };
   }

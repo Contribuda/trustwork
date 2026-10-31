@@ -1,9 +1,11 @@
+import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import { createApp, type CreateAppOptions, type CreatedApp } from '../../../apps/api/src/app.js';
 import type { IdentityServices } from '../../../apps/api/src/modules/identity/identity.module.js';
 import { CSRF_HEADER, SESSION_COOKIE } from '@trustwork/contracts';
 import { createPool, type DataPool } from '@trustwork/data';
-import { FakeMailbox, FakeOidcProvider, RecordingMandateRevocation, type Clock } from '../../../apps/api/src/modules/identity/ports.js';
+import { FakeOidcProvider, RecordingMandateRevocation, type Clock } from '../../../apps/api/src/modules/identity/ports.js';
+import { CommittedMailbox } from '../../worker/mail/helpers/committed-mailbox.js';
 import { endPool, provisionTestDatabase, SKIP_REASON, type TestDatabase } from '../../data/helpers/postgres.js';
 
 export { SKIP_REASON, createApp };
@@ -27,7 +29,8 @@ export interface Harness {
   /** Runtime pool used by the API (member of trustwork_app). */
   pool: DataPool;
   created: CreatedApp;
-  mail: FakeMailbox;
+  /** Mail intents committed by the API (MAIL-001: mail leaves through the outbox and the worker). */
+  mail: CommittedMailbox;
   google: FakeOidcProvider;
   apple: FakeOidcProvider;
   mandates: RecordingMandateRevocation;
@@ -95,15 +98,16 @@ export async function startHarness(label: string, options: Partial<CreateAppOpti
   await db.migrate();
   await db.createAppLogin();
   const pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
-  const mail = new FakeMailbox();
+  const mailKeyHex = randomBytes(32).toString('hex');
+  const mail = new CommittedMailbox(db.admin, Buffer.from(mailKeyHex, 'hex'));
   const google = new FakeOidcProvider('google');
   const apple = new FakeOidcProvider('apple');
   const mandates = new RecordingMandateRevocation();
   const clock = new TestClock();
   const staff = new Map<string, string[]>();
   const created = await createApp({
-    env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_PROVIDER_MODE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '1000', AUTH_LOCKOUT_THRESHOLD: '5' },
-    pool, mail, clock, mandates, providers: { google, apple }, staffRoles: async (personId) => staff.get(personId) ?? [],
+    env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_PROVIDER_MODE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '1000', AUTH_LOCKOUT_THRESHOLD: '5', MAIL_SECRET_KEY: mailKeyHex },
+    pool, clock, mandates, providers: { google, apple }, staffRoles: async (personId) => staff.get(personId) ?? [],
     // Structured API log lines: only failures are printed, so a failing test still shows the server-side stack.
     logSink: (line) => {
       if (line.includes('"level":"error"')) console.error('[api]', line);

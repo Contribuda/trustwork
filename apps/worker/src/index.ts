@@ -11,3 +11,4 @@ export { Scheduler, expireLeasesTask, sweepTask, partitionsTask, type ScheduledT
 export { reconcileJob, RECONCILE_OUTCOMES, type ReconcileInput, type ReconcileOutcome } from './reconcile.js';
 export { runCli, type CliIo } from './cli.js';
 export { Worker, type WorkerOptions, type IterationReport } from './worker.js';
+export * as mail from './mail/index.js';

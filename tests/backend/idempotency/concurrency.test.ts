@@ -132,15 +132,15 @@ test('exactly-once completion under concurrency, fencing and the lease routes', 
     await crash.arm('bookkeeping');
     assert.equal((await send()).status, 202);
     assert.equal((await recordState(h.db.admin, 'invite-1'))?.state, 'in_progress', 'the bookkeeping after COMMIT was lost');
-    assert.equal(h.mail.countTo(EMAILS.xenia, 'membership_invitation'), 1);
+    assert.equal(await h.mail.countTo(EMAILS.xenia, 'membership_invitation'), 1);
     await crash.disarm('bookkeeping');
     expectError(await send(), 409, 'validation.idempotency_in_progress');
     h.clock.advance(IDEMPOTENCY_TAKEOVER_LEASE_MS + 1_000);
     assert.equal((await send()).status, 202);
-    assert.equal(h.mail.countTo(EMAILS.xenia, 'membership_invitation'), 2, 'the takeover re-sent the invitation (documented)');
+    assert.equal(await h.mail.countTo(EMAILS.xenia, 'membership_invitation'), 2, 'the takeover re-sent the invitation (documented)');
     assert.equal(await invitations(), 1, 'the pending invitation is re-sent, not duplicated');
     assert.equal((await send()).status, 202);
-    assert.equal(h.mail.countTo(EMAILS.xenia, 'membership_invitation'), 2, 'later retries replay');
+    assert.equal(await h.mail.countTo(EMAILS.xenia, 'membership_invitation'), 2, 'later retries replay');
   });
 
   await t.test('a recorded 5xx is re-executed by exactly one retry', async () => {

@@ -1,8 +1,11 @@
+import type { DataPool } from '@trustwork/data';
 import { workerConfigFromEnv } from './config.js';
 import { assertWorkerRole, createWorkerPool } from './db.js';
 import { HandlerRegistry } from './handlers.js';
-import { describeError, jsonLogger } from './log.js';
-import { startMetricsServer, type MetricsServer } from './metrics.js';
+import { describeError, jsonLogger, type Logger } from './log.js';
+import { assertDictionariesComplete, createMailTransport, mailConfigFromEnv, mailSettleTask, registerMail, type MailConfig, type MailTransport } from './mail/index.js';
+import { Metrics, startMetricsServer, type MetricsServer } from './metrics.js';
+import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
 import { Worker } from './worker.js';
 
 /**
@@ -10,20 +13,32 @@ import { Worker } from './worker.js';
  *
  *   WORKER_DATABASE_URL=postgresql://<worker login>@.../trustwork npm run start -w @trustwork/worker
  *
- * Domain handlers are registered here by the packages that own them (MAIL-001 mail delivery, search projections, …).
- * Today only the built-in outbox redelivery job is registered: events of other types are marked published and counted
- * as `unhandled`; the rows stay in the partitioned outbox for consumers added later.
+ * Domain handlers are registered here by the packages that own them: MAIL-001 mail delivery (`mail.requested`,
+ * `mail.deliver`, `mail.feedback`, the `mail.settle` task); search projections and other consumers come later. Events
+ * of other types are marked published and counted as `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export function buildRegistry(): HandlerRegistry {
-  return new HandlerRegistry();
+export interface Domains { pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport }
+export function buildRegistry(domains: Domains): HandlerRegistry {
+  const registry = new HandlerRegistry();
+  registerMail(registry, { pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
+  return registry;
 }
 
 async function main(): Promise<void> {
   const log = jsonLogger();
   const { databaseUrl, config } = workerConfigFromEnv(process.env);
+  const mail = mailConfigFromEnv(process.env);
+  assertDictionariesComplete(mail.render.locales);
   const pool = createWorkerPool(databaseUrl, config.concurrency + 4);
   const login = await assertWorkerRole(pool);
-  const worker = new Worker({ pool, registry: buildRegistry(), config, log });
+  const metrics = new Metrics();
+  const mailTransport = createMailTransport(mail);
+  const registry = buildRegistry({ pool, metrics, log, mail, mailTransport });
+  const worker = new Worker({
+    pool, registry, config, log, metrics,
+    tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps), mailSettleTask({ pool, metrics })],
+  });
+  log('info', 'mail configured', { transport: mail.transport, locales: mail.render.locales.join(','), defaultLocale: mail.render.defaultLocale });
   let metricsServer: MetricsServer | null = null;
   if (config.metrics.port !== null) {
     metricsServer = await startMetricsServer(config.metrics.host, config.metrics.port, () => worker.renderMetrics());

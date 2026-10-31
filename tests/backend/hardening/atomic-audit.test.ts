@@ -27,18 +27,18 @@ test('identity changes commit atomically with their audit rows and outbox intent
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.email_binding WHERE email_normalized = $1', [email]), 0);
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.auth_token WHERE email_normalized = $1', [email]), 0);
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.person WHERE display_name = 'Atomic Person'"), 0);
-    assert.equal(h.mail.countTo(email), 0, 'mail goes out only after COMMIT');
+    assert.equal(await h.mail.countTo(email), 0, 'mail goes out only after COMMIT');
     await fault.clear();
     const before = await outboxCount(h.db.admin, 'identity.person_registered');
     assert.equal((await anonymous.post('/v1/auth/signup', signupBody(email, 'Atomic Person'), { idempotencyKey: null })).status, 202);
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.email_binding WHERE email_normalized = $1', [email]), 1);
     assert.equal(await outboxCount(h.db.admin, 'identity.person_registered'), before + 1, 'the intent commits with the change');
-    assert.equal(h.mail.countTo(email, 'verify_email'), 1);
+    assert.equal(await h.mail.countTo(email, 'verify_email'), 1);
   });
 
   await t.test('verification: the token stays usable and the binding unverified when the audit write fails', async () => {
     const email = 'atomic-signup@example.invalid';
-    const token = h.mail.lastTo(email, 'verify_email')?.params.token as string;
+    const token = (await h.mail.lastTo(email, 'verify_email'))?.params.token as string;
     await fault.fail('auth.email_verified');
     const client = h.client();
     forced(await client.post('/v1/auth/verify-email', { token }, { idempotencyKey: null }));
@@ -83,13 +83,13 @@ test('identity changes commit atomically with their audit rows and outbox intent
     forced(await anonymous.post('/v1/auth/login', { email: EMAILS.carl, password: 'not the password at all' }, { idempotencyKey: null, remoteAddress: '198.51.100.21' }));
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.login_failure WHERE subject_hash = $1', [account]), 4, 'the fifth failure is not recorded');
     assert.equal(await outboxCount(h.db.admin, 'identity.login_throttled', seed.people.carl), 0);
-    assert.equal(h.mail.countTo(EMAILS.carl, 'security_notice'), 0);
+    assert.equal(await h.mail.countTo(EMAILS.carl, 'security_notice'), 0);
     await fault.clear();
     expectError(await anonymous.post('/v1/auth/login', { email: EMAILS.carl, password: 'not the password at all' }, { idempotencyKey: null, remoteAddress: '198.51.100.21' }), 401, 'auth.invalid_credentials');
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.login_failure WHERE subject_hash = $1', [account]), 5);
     assert.equal(await outboxCount(h.db.admin, 'identity.login_throttled', seed.people.carl), 1);
     assert.equal(await auditCount(h.db.admin, 'auth.login_lockout'), 1);
-    assert.equal(h.mail.countTo(EMAILS.carl, 'security_notice'), 1, 'the owner is notified once');
+    assert.equal(await h.mail.countTo(EMAILS.carl, 'security_notice'), 1, 'the owner is notified once');
     await h.db.admin.query('DELETE FROM trustwork.login_failure WHERE subject_hash = $1', [account]);
   });
 
@@ -103,12 +103,12 @@ test('identity changes commit atomically with their audit rows and outbox intent
     forced(await anonymous.post('/v1/auth/recovery', { email: EMAILS.anna }, { idempotencyKey: null }));
     assert.equal(await all(), total, 'no token issued');
     assert.equal(await live(), 1, 'the earlier token is still valid');
-    assert.equal(h.mail.countTo(EMAILS.anna, 'recovery'), 1);
+    assert.equal(await h.mail.countTo(EMAILS.anna, 'recovery'), 1);
     await fault.clear();
   });
 
   await t.test('recovery completion: the password, sessions and tokens are unchanged when the audit write fails', async () => {
-    const token = h.mail.lastTo(EMAILS.anna, 'recovery')?.params.token as string;
+    const token = (await h.mail.lastTo(EMAILS.anna, 'recovery'))?.params.token as string;
     await fault.fail('auth.recovery_completed');
     forced(await anonymous.post('/v1/auth/recovery/complete', { token, newPassword: 'a brand new password 2026' }, { idempotencyKey: null }));
     await login(h.client(), 'anna');
@@ -127,7 +127,7 @@ test('identity changes commit atomically with their audit rows and outbox intent
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.email_binding WHERE email_normalized = 'apple-atomic@example.invalid'"), 0);
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.auth_token WHERE email_normalized = 'apple-atomic@example.invalid'"), 0);
     assert.equal(client.sessionCookie, null);
-    assert.equal(h.mail.countTo('apple-atomic@example.invalid'), 0);
+    assert.equal(await h.mail.countTo('apple-atomic@example.invalid'), 0);
     await fault.clear();
 
     // H06: a verified Google identity claims an unverified binding; a failed audit write keeps the original owner.
