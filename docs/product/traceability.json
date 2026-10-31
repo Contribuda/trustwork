@@ -570,6 +570,45 @@
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R51",
+      "tasks": [
+        "LANG-ES",
+        "LANG-PT",
+        "LANG-FR",
+        "LANG-DE",
+        "LANG-IT",
+        "LANG-PL",
+        "LANG-UK",
+        "LANG-TR",
+        "LANG-AR",
+        "LANG-ZH",
+        "LANG-HI",
+        "LANG-JA",
+        "INTL-005",
+        "INTL-006",
+        "INTL-007",
+        "INTL-US",
+        "CTRY-EU",
+        "CTRY-CA",
+        "CTRY-MX",
+        "CTRY-BR",
+        "CTRY-GB",
+        "CTRY-DE",
+        "CTRY-FR",
+        "CTRY-ES",
+        "CTRY-IT",
+        "CTRY-PL",
+        "CTRY-UA",
+        "CTRY-TR",
+        "CTRY-AE",
+        "CTRY-IN",
+        "CTRY-AU"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }

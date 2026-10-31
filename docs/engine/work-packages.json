@@ -5121,6 +5121,1073 @@
       "paths": [
         "apps/web/app/admin/deferred"
       ]
+    },
+    {
+      "id": "INTL-005",
+      "title": "Right-to-left support: direction per locale, logical CSS, mirrored icons and bidi isolation",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "INTL-004",
+        "WEB-005"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Make a right-to-left language a translation, not a redesign: Arabic first (LANG-AR), then any right-to-left language a contributor brings. Comes after WEB-005 so the public stylesheets are converted once, after they are split per route.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/research/architecture-audit-2026-10.md"
+      ],
+      "steps": [
+        "Derive the text direction from the locale (Intl.Locale text information where the runtime has it, with a fallback list) in apps/web/app/_lib/direction.ts and set lang and dir on the html element; elements that show user content use dir=\"auto\".",
+        "Replace physical CSS properties (left, right, margin-left, padding-right, border-left, text-align: left and similar) with logical ones (inset-inline-start, margin-inline-start, padding-inline-end, text-align: start …) in the owned global, locale, auth and public stylesheets and the design-system styles; add a test that fails on new physical properties in those files.",
+        "Mirror directional icons (arrows, chevrons, back and forward, progress) in right-to-left and keep non-directional ones (the three-squares mark, logos, media controls, check marks) unmirrored; mark each icon as mirrorable or not in packages/ui/src/components/Icon.",
+        "Isolate mixed-direction text with bdi or unicode-bidi: isolate for names, identifiers, numbers, prices, URLs and code inside right-to-left sentences, and for right-to-left names quoted in left-to-right sentences.",
+        "Add browser tests with a test-only pseudo right-to-left locale (mirrored English, never offered to visitors) so the layout can be verified before any Arabic string exists."
+      ],
+      "acceptance": [
+        "With a right-to-left locale every public and workspace page renders a mirrored layout with no clipped text, overlapping elements or horizontal scrolling at 320 px and 1280 px (browser tests with screenshots).",
+        "Directional icons mirror; the brand mark and media controls do not (tested).",
+        "Latin names, numbers, prices and identifiers inside right-to-left text keep their order (bidi isolation tested).",
+        "No physical left or right property remains in the owned stylesheets (test), and left-to-right pages are visually unchanged (screenshot comparison).",
+        "Keyboard focus order and screen-reader reading order follow the visual order in right-to-left."
+      ],
+      "paths": [
+        "apps/web/app/_lib/direction.ts",
+        "apps/web/app/layout.tsx",
+        "apps/web/app/globals.css",
+        "apps/web/app/locale.css",
+        "apps/web/app/auth.css",
+        "apps/web/app/(public)/public.css",
+        "packages/ui/src/styles",
+        "packages/ui/src/components/Icon",
+        "tests/web/rtl"
+      ]
+    },
+    {
+      "id": "INTL-006",
+      "title": "CJK and Devanagari typography: font fallbacks, line breaking, no forced uppercase",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "INTL-004",
+        "INTL-005"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Make Chinese, Japanese and Hindi (and later Korean and other Indic scripts) read naturally, with correct fonts, line breaking and emphasis, without shipping large font files to every visitor. Ordered after INTL-005 because both change the root layout and the global stylesheet.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/engine/search-and-knowledge.md",
+        "packages/ui/fonts/PROVENANCE.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Extend the font stacks per script with :lang() rules, system fonts first (for example PingFang SC, Microsoft YaHei and Noto Sans SC; Hiragino Sans, Yu Gothic and Noto Sans JP; Noto Sans Devanagari and Nirmala UI); add an OFL web-font subset only where a system font is missing, with its provenance in packages/ui/fonts/PROVENANCE.md; never put a full CJK font in the default bundle.",
+        "Line breaking: line-break: strict and normal word breaking for Chinese and Japanese (keep-all only where tested), overflow-wrap: anywhere for long identifiers and URLs, no automatic hyphenation for CJK; line heights that never clip Devanagari conjuncts, vowel signs or combining marks.",
+        "Remove forced text-transform: uppercase and wide letter-spacing for scripts without letter case through :lang() overrides or tokens; emphasis uses weight rather than italics for CJK.",
+        "Search tokenization note: PostgreSQL full-text search has no Chinese or Japanese segmenter and only a simple configuration for Hindi; confirm and extend the requirements recorded in docs/engine/search-and-knowledge.md (n-gram or a segmenter adapter, Unicode normalization, width folding for Japanese) for WEB-003 and RAG-201; do not change search code in this package.",
+        "Add browser tests with pseudo text in Han, Kana and Devanagari at 320 px and 1280 px."
+      ],
+      "acceptance": [
+        "Han, Kana and Devanagari text renders in a script-appropriate font, never as missing-glyph boxes (browser screenshots in Chromium plus a recorded manual check on other systems).",
+        "Japanese and Chinese lines never start with closing punctuation or a full stop, and words never split mid-character cluster in the tested pages.",
+        "No forced uppercase or wide letter-spacing applies to scripts without case (test).",
+        "The default page weight does not grow for visitors who do not use these scripts (bundle budget test)."
+      ],
+      "paths": [
+        "apps/web/app/layout.tsx",
+        "apps/web/app/globals.css",
+        "apps/web/app/scripts.css",
+        "packages/ui/fonts",
+        "packages/ui/tokens.css",
+        "tests/web/typography"
+      ]
+    },
+    {
+      "id": "INTL-007",
+      "title": "Locale review status: per-locale metadata shown in the language picker and the docs",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Every locale carries an honest review status (English is the reference; others are machine draft, community reviewed or native reviewed) that readers see in the language picker and contributors see in the docs, so no translation claims a review that did not happen (ADR 012 decision 30).",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/adr/009-international-engine-and-open-source.md"
+      ],
+      "steps": [
+        "Define the metadata contract in packages/i18n-runtime/src/review-status.ts: status (reference, machine_draft, community_reviewed, native_reviewed), reviewers by public handle and only with their consent, review date, the namespaces the review covered, and a link to the review issue or pull request.",
+        "Add apps/web/locales/<locale>.meta.json beside each locale directory (not inside it, so the namespace parity test does not treat it as a namespace) for the six engine languages with the recorded state: en reference; uz-Latn, ka, hy and az-Latn machine draft (produced by the integrator); ru as the owner records it. A locale without metadata is treated as machine draft.",
+        "Show the status in the language picker as a short localized label with an accessible description, and on a public note about translations; never hide a language because it is a draft.",
+        "Add scripts/locale-status.mjs, which prints the languages table for docs/engine/localization.md from the metadata, and document how a reviewer moves a locale to community or native reviewed through a pull request."
+      ],
+      "acceptance": [
+        "Every enabled locale shows its review status in the picker; an unreviewed locale is labelled machine draft (tested).",
+        "A locale without metadata is shown as machine draft, never as reviewed (tested).",
+        "Review labels exist in every engine language and are announced by screen readers.",
+        "The printed table matches the languages table in the localization chapter at merge time."
+      ],
+      "paths": [
+        "packages/i18n-runtime/src/review-status.ts",
+        "apps/web/locales/en.meta.json",
+        "apps/web/locales/ru.meta.json",
+        "apps/web/locales/uz-Latn.meta.json",
+        "apps/web/locales/ka.meta.json",
+        "apps/web/locales/hy.meta.json",
+        "apps/web/locales/az-Latn.meta.json",
+        "apps/web/components/locale",
+        "scripts/locale-status.mjs",
+        "tests/web/locale-review"
+      ]
+    },
+    {
+      "id": "LANG-PT",
+      "title": "Portuguese (pt) with formats per country (pt-BR, pt-PT)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Portuguese across the interface and demo content through configuration only, for hubs in Brazil, Portugal and Portuguese-speaking Africa; formats follow the country (pt-BR in Brazil, pt-PT in Portugal), as decided for Spanish (ADR 012 decision 10).",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add pt files for every namespace in apps/web/locales/pt and the design system dictionary packages/ui/locales/pt.json with full key coverage and CLDR plural forms as Intl.PluralRules reports them; translate from English, the reference.",
+        "Write Brazilian construction vocabulary first and record terms that differ in European Portuguese as review notes; propose a pt-PT vocabulary overlay as a separate package only if reviewers need one.",
+        "Add pt overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register pt through configuration (no TypeScript change) and extend the locale and leak tests to pt.",
+        "Record the review status in apps/web/locales/pt.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Portuguese speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in pt; the brand reads Trustwork.",
+        "Every public page renders in pt without Russian or untranslated text (leak test).",
+        "With country BR dates, numbers and currency use pt-BR formats; with country PT they use pt-PT.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/pt",
+        "apps/web/locales/pt.meta.json",
+        "packages/ui/locales/pt.json",
+        "apps/web/fixtures/i18n/pt.json",
+        "tests/web/pt"
+      ]
+    },
+    {
+      "id": "LANG-FR",
+      "title": "French (fr) with formats per country (fr-FR, fr-CA and others)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "French across the interface and demo content through configuration only, for hubs in France, Canada, Belgium, Switzerland and French-speaking Africa; formats follow the country.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add fr files for every namespace in apps/web/locales/fr and the design system dictionary packages/ui/locales/fr.json with full key coverage and CLDR plural forms as Intl.PluralRules reports them; translate from English, the reference.",
+        "Keep French typography in the strings (non-breaking spaces before ; : ! ? and guillemets « » where the country uses them); record Canadian French vocabulary differences as review notes for CTRY-CA.",
+        "Add fr overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register fr through configuration (no TypeScript change) and extend the locale and leak tests to fr.",
+        "Record the review status in apps/web/locales/fr.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for French speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in fr; the brand reads Trustwork.",
+        "Every public page renders in fr without Russian or untranslated text (leak test).",
+        "With country FR dates and numbers use fr-FR formats; with country CA they use fr-CA.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/fr",
+        "apps/web/locales/fr.meta.json",
+        "packages/ui/locales/fr.json",
+        "apps/web/fixtures/i18n/fr.json",
+        "tests/web/fr"
+      ]
+    },
+    {
+      "id": "LANG-DE",
+      "title": "German (de) with formats per country (de-DE, de-AT, de-CH)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "German across the interface and demo content through configuration only, for hubs in Germany, Austria and Switzerland; formats follow the country.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add de files for every namespace in apps/web/locales/de and the design system dictionary packages/ui/locales/de.json with full key coverage and CLDR plural forms as Intl.PluralRules reports them; translate from English, the reference.",
+        "Use the formal address (Sie) by default; long compound words must wrap: rely on the lang attribute for hyphenation and check narrow screens.",
+        "Add de overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register de through configuration (no TypeScript change) and extend the locale and leak tests to de.",
+        "Record the review status in apps/web/locales/de.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for German speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in de; the brand reads Trustwork.",
+        "Every public page renders in de without Russian or untranslated text (leak test).",
+        "With country DE dates and numbers use de-DE formats; with AT and CH they use de-AT and de-CH.",
+        "No German label overflows its control at 320 px (browser screenshots).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/de",
+        "apps/web/locales/de.meta.json",
+        "packages/ui/locales/de.json",
+        "apps/web/fixtures/i18n/de.json",
+        "tests/web/de"
+      ]
+    },
+    {
+      "id": "LANG-IT",
+      "title": "Italian (it) with formats per country",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Italian across the interface and demo content through configuration only, for hubs in Italy and Italian-speaking Switzerland; formats follow the country.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add it files for every namespace in apps/web/locales/it and the design system dictionary packages/ui/locales/it.json with full key coverage and CLDR plural forms as Intl.PluralRules reports them; translate from English, the reference.",
+        "Add it overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register it through configuration (no TypeScript change) and extend the locale and leak tests to it.",
+        "Record the review status in apps/web/locales/it.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Italian speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in it; the brand reads Trustwork.",
+        "Every public page renders in it without Russian or untranslated text (leak test).",
+        "With country IT dates and numbers use it-IT formats; with CH they use it-CH.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/it",
+        "apps/web/locales/it.meta.json",
+        "packages/ui/locales/it.json",
+        "apps/web/fixtures/i18n/it.json",
+        "tests/web/it"
+      ]
+    },
+    {
+      "id": "LANG-PL",
+      "title": "Polish (pl)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Polish across the interface and demo content through configuration only, for hubs in Poland; formats follow the country.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add pl files for every namespace in apps/web/locales/pl and the design system dictionary packages/ui/locales/pl.json with full key coverage and all four CLDR plural categories (one, few, many, other) in every count string; translate from English, the reference.",
+        "Avoid grammatical-case problems in templated strings by using whole-sentence keys rather than concatenated fragments.",
+        "Add pl overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register pl through configuration (no TypeScript change) and extend the locale and leak tests to pl.",
+        "Record the review status in apps/web/locales/pl.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Polish speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in pl; the brand reads Trustwork.",
+        "Every public page renders in pl without Russian or untranslated text (leak test).",
+        "With country PL dates, numbers and currency use pl-PL formats.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/pl",
+        "apps/web/locales/pl.meta.json",
+        "packages/ui/locales/pl.json",
+        "apps/web/fixtures/i18n/pl.json",
+        "tests/web/pl"
+      ]
+    },
+    {
+      "id": "LANG-UK",
+      "title": "Ukrainian (uk)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Ukrainian across the interface and demo content through configuration only, for hubs in Ukraine (government-controlled territory) and the Ukrainian diaspora; formats follow the country. Ukrainian is translated from English, never derived from the Russian text.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add uk files for every namespace in apps/web/locales/uk and the design system dictionary packages/ui/locales/uk.json with full key coverage and all four CLDR plural categories (one, few, many, other) in every count string; translate from English, the reference.",
+        "Adapt the leak test so that for uk it detects Russian text rather than any Cyrillic (for example letters used only in Russian such as ы, э, ъ and ё, plus common Russian function words), because Ukrainian is written in Cyrillic; the Russian lettering «Строй Репутация» never appears in uk.",
+        "Add uk overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register uk through configuration (no TypeScript change) and extend the locale and leak tests to uk.",
+        "Record the review status in apps/web/locales/uk.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Ukrainian speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in uk; the brand reads Trustwork.",
+        "Every public page renders in uk without Russian or untranslated text (leak test).",
+        "With country UA dates, numbers and currency use uk-UA formats.",
+        "The leak test passes for uk and still fails on a page with Russian text (tested with a fixture).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/uk",
+        "apps/web/locales/uk.meta.json",
+        "packages/ui/locales/uk.json",
+        "apps/web/fixtures/i18n/uk.json",
+        "tests/web/uk"
+      ]
+    },
+    {
+      "id": "LANG-TR",
+      "title": "Turkish (tr)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Turkish across the interface and demo content through configuration only, for hubs in Türkiye and the Turkish-speaking diaspora; formats follow the country.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add tr files for every namespace in apps/web/locales/tr and the design system dictionary packages/ui/locales/tr.json with full key coverage and CLDR plural forms as Intl.PluralRules reports them; translate from English, the reference.",
+        "Case conversion and case-insensitive matching use the tr locale (dotted and dotless i); no visible label depends on CSS uppercase without the lang attribute.",
+        "Add tr overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register tr through configuration (no TypeScript change) and extend the locale and leak tests to tr.",
+        "Record the review status in apps/web/locales/tr.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Turkish speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in tr; the brand reads Trustwork.",
+        "Every public page renders in tr without Russian or untranslated text (leak test).",
+        "With country TR dates, numbers and currency use tr-TR formats.",
+        "Upper- and lower-casing of words with i and ı is correct in labels and search (tested).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/tr",
+        "apps/web/locales/tr.meta.json",
+        "packages/ui/locales/tr.json",
+        "apps/web/fixtures/i18n/tr.json",
+        "tests/web/tr"
+      ]
+    },
+    {
+      "id": "LANG-AR",
+      "title": "Arabic (ar), right to left",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "INTL-005"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Arabic across the interface and demo content through configuration only, for hubs in the United Arab Emirates and other Arabic-speaking countries; right-to-left through INTL-005; formats follow the country (for example ar-AE).",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add ar files for every namespace in apps/web/locales/ar and the design system dictionary packages/ui/locales/ar.json with full key coverage and all six CLDR plural categories (zero, one, two, few, many, other); translate from English, the reference.",
+        "Digits follow the country's Intl default (Arabic-Indic or Latin) unless the hub configures otherwise; prices, identifiers and Latin names are isolated with the INTL-005 helpers.",
+        "Add ar overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register ar through configuration (no TypeScript change) and extend the locale and leak tests to ar.",
+        "Record the review status in apps/web/locales/ar.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Arabic speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in ar; the brand reads Trustwork.",
+        "Every public page renders in ar without Russian or untranslated text (leak test).",
+        "With country AE dates, numbers and currency use ar-AE formats.",
+        "Every public page renders right to left in ar without clipped text, wrong mirroring or broken bidi order (INTL-005 browser tests run for ar).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/ar",
+        "apps/web/locales/ar.meta.json",
+        "packages/ui/locales/ar.json",
+        "apps/web/fixtures/i18n/ar.json",
+        "tests/web/ar"
+      ]
+    },
+    {
+      "id": "LANG-ZH",
+      "title": "Chinese, Simplified script (zh-Hans)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "INTL-006"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Simplified Chinese across the interface and demo content through configuration only, for Chinese-speaking professionals in any hub; fonts and line breaking through INTL-006; formats are derived from the language and the hub country.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add zh-Hans files for every namespace in apps/web/locales/zh-Hans and the design system dictionary packages/ui/locales/zh-Hans.json with full key coverage and the single CLDR plural category (other); counts are phrased with measure words, not plural endings; translate from English, the reference.",
+        "Use the script tag zh-Hans in files and configuration; a Traditional script (zh-Hant) is a separate future package.",
+        "Add zh-Hans overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register zh-Hans through configuration (no TypeScript change) and extend the locale and leak tests to zh-Hans.",
+        "Record the review status in apps/web/locales/zh-Hans.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Chinese (Simplified) speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in zh-Hans; the brand reads Trustwork.",
+        "Every public page renders in zh-Hans without Russian or untranslated text (leak test).",
+        "Dates and numbers use the Intl tag derived from zh-Hans and the hub country (for example zh-Hans-SG in Singapore).",
+        "Text wraps by Chinese line-breaking rules with no forced uppercase at 320 px (INTL-006 browser tests run for zh-Hans).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/zh-Hans",
+        "apps/web/locales/zh-Hans.meta.json",
+        "packages/ui/locales/zh-Hans.json",
+        "apps/web/fixtures/i18n/zh-Hans.json",
+        "tests/web/zh-Hans"
+      ]
+    },
+    {
+      "id": "LANG-HI",
+      "title": "Hindi (hi), Devanagari script",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "INTL-006"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Hindi across the interface and demo content through configuration only, for hubs in India; Devanagari typography through INTL-006; Indian digit grouping (lakh, crore) through Intl. English with en-IN formats remains common in Indian construction, so a hub in India usually serves both.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add hi files for every namespace in apps/web/locales/hi and the design system dictionary packages/ui/locales/hi.json with full key coverage and CLDR plural forms as Intl.PluralRules reports them; translate from English, the reference.",
+        "Add hi overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register hi through configuration (no TypeScript change) and extend the locale and leak tests to hi.",
+        "Record the review status in apps/web/locales/hi.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Hindi speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in hi; the brand reads Trustwork.",
+        "Every public page renders in hi without Russian or untranslated text (leak test).",
+        "With country IN dates and numbers use hi-IN formats, including lakh and crore grouping.",
+        "Devanagari conjuncts and vowel signs are never clipped or split (INTL-006 browser tests run for hi).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/hi",
+        "apps/web/locales/hi.meta.json",
+        "packages/ui/locales/hi.json",
+        "apps/web/fixtures/i18n/hi.json",
+        "tests/web/hi"
+      ]
+    },
+    {
+      "id": "LANG-JA",
+      "title": "Japanese (ja)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "INTL-006"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Japanese across the interface and demo content through configuration only, for Japanese-speaking professionals in any hub; fonts and line breaking through INTL-006.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add ja files for every namespace in apps/web/locales/ja and the design system dictionary packages/ui/locales/ja.json with full key coverage and the single CLDR plural category (other); translate from English, the reference.",
+        "Use the polite form (desu/masu) throughout; show family name first where a profile records the order; Gregorian calendar with ja-JP formats.",
+        "Add ja overrides for the demo content (the synthetic US demo hub of DEMO-US, so the translation covers the content that ships).",
+        "Register ja through configuration (no TypeScript change) and extend the locale and leak tests to ja.",
+        "Record the review status in apps/web/locales/ja.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Japanese speakers."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in ja; the brand reads Trustwork.",
+        "Every public page renders in ja without Russian or untranslated text (leak test).",
+        "Dates and numbers use the Intl tag derived from ja and the hub country (ja-JP in Japan).",
+        "Text wraps by Japanese line-breaking rules (kinsoku) with no forced uppercase at 320 px (INTL-006 browser tests run for ja).",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/ja",
+        "apps/web/locales/ja.meta.json",
+        "packages/ui/locales/ja.json",
+        "apps/web/fixtures/i18n/ja.json",
+        "tests/web/ja"
+      ]
+    },
+    {
+      "id": "CTRY-EU",
+      "title": "European Union layer shared by member-state packs",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "Source EU-wide law once and let every member-state pack inherit it, so Germany, France, Spain, Italy and Poland (and later every other member state) only add what is national. Proposed first among the European packs; the member packs depend on it.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Add an optional layers field to the pack schema (packages/country-packs/src/layers.ts): a pack lists the layers it inherits (EU); a layer fact applies unless the pack overrides it with its own sourced fact; layers cannot enable a restricted place.",
+        "Source the layer from EUR-Lex and other official EU sources: GDPR (Regulation (EU) 2016/679); eIDAS (Regulation (EU) No 910/2014 as amended by Regulation (EU) 2024/1183, European Digital Identity Wallets); the VAT Directive 2006/112/EC and VAT in the Digital Age (ViDA) with its e-invoicing and digital reporting timeline; EN standards and the Eurocodes (EN 1990 to EN 1999) with national annexes left to members; the Construction Products Regulation (EU) 2024/3110 and CE marking; public procurement directives 2014/24/EU and 2014/25/EU with TED notices and eForms; SEPA and instant credit transfers (Regulation (EU) 2024/886); the Late Payment Directive 2011/7/EU; the Digital Services Act (Regulation (EU) 2022/2065) for hubs as online platforms; the AI Act (Regulation (EU) 2024/1689) for agent transparency; the European Accessibility Act (Directive (EU) 2019/882); EU restrictive measures (the consolidated financial sanctions list) as a national-list facet.",
+        "Record which facts members vary (VAT rates, national e-invoicing mandates, national annexes, holidays) and leave them to the member packs.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The layer validates; every fact cites EUR-Lex or another official EU source with its verification level.",
+        "A member pack that lists the layer validates and shows layer facts with the layer as their source (tested with a synthetic fixture, not real facts).",
+        "A member pack cannot silently contradict a layer fact: an override needs its own source (validator test).",
+        "No engine code branches on EU membership."
+      ],
+      "paths": [
+        "packages/country-packs/layers",
+        "packages/country-packs/src/layers.ts",
+        "tests/country-packs/eu"
+      ]
+    },
+    {
+      "id": "CTRY-CA",
+      "title": "Canada country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Canada pack, modelled on the United States pack (INTL-US), so a hub in Canada is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 10 provinces and 3 territories (ISO 3166-2:CA); six time zones including Newfoundland's half-hour offset; postal codes A1A 1A1; phone +1; CAD.",
+        "Companies and identifiers: Canada Revenue Agency Business Number and program accounts, federal (Corporations Canada) and provincial corporate registry numbers, the Quebec enterprise number (NEQ); entity forms (federal or provincial corporation, partnership, sole proprietorship, cooperative).",
+        "Facets to source: construction licensing by province and territory (for example the Régie du bâtiment du Québec licences; skilled trades bodies; provincial regulators of engineers and architects); building codes (National Building Code of Canada published by the National Research Council and adopted or adapted by provinces; CSA standards); public procurement (CanadaBuys and provincial portals; trade-agreement thresholds); tax (GST, HST, PST and QST by province; e-invoicing status); e-signatures (PIPEDA Part 2 and provincial electronic commerce acts); payment rails (Interac e-Transfer, EFT, cards) and prompt-payment and adjudication laws (for example Ontario's Construction Act); privacy (PIPEDA, Quebec Law 25, private-sector laws of Alberta and British Columbia); holidays (federal and provincial statutory holidays); units (metric by law, imperial common in residential construction).",
+        "Languages: en (en-CA) and fr (fr-CA, once LANG-FR is done); Quebec defaults to French.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country CA sees en-CA or fr-CA formats, CAD and the provinces and territories.",
+        "No engine code branches on CA; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ca.json",
+        "tests/country-packs/ca"
+      ]
+    },
+    {
+      "id": "CTRY-MX",
+      "title": "Mexico country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Mexico pack, modelled on the United States pack (INTL-US), so a hub in Mexico is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 31 states and Mexico City (ISO 3166-2:MX); several IANA time zones; five-digit postal codes; phone +52; MXN.",
+        "Companies and identifiers: RFC (Registro Federal de Contribuyentes) from SAT for companies; CURP only as a sensitive personal identifier that is never displayed; entity forms (S.A. de C.V., S. de R.L. de C.V., S.A.S., persona física con actividad empresarial); REPSE registration for specialized services and works subcontracting.",
+        "Facets to source: construction licensing (Directores Responsables de Obra and co-responsible experts under state and municipal construction regulations; professional licences, cédula profesional); building codes (state and municipal reglamentos de construcción, for example Mexico City's with its complementary technical standards; NOM and NMX standards); public procurement (the public works law, Ley de Obras Públicas y Servicios Relacionados con las Mismas, and the federal e-procurement platform); tax (IVA standard and border-region rates; CFDI 4.0 mandatory e-invoicing through authorized certification providers); e-signatures (e.firma); payment rails (SPEI, cards); privacy (the federal law on personal data held by private parties as reformed in 2025; confirm the current authority); holidays (statutory rest days of the Federal Labour Law); units (metric).",
+        "Languages: es (es-MX formats through LANG-ES).",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country MX sees es-MX formats, MXN and the 32 federal entities.",
+        "No engine code branches on MX; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/mx.json",
+        "tests/country-packs/mx"
+      ]
+    },
+    {
+      "id": "CTRY-BR",
+      "title": "Brazil country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Brazil pack, modelled on the United States pack (INTL-US), so a hub in Brazil is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 26 states and the Federal District (ISO 3166-2:BR); four IANA time zones; eight-digit CEP postal codes; phone +55; BRL.",
+        "Companies and identifiers: CNPJ for companies with check digits (confirm the alphanumeric CNPJ format announced by the Receita Federal for 2026), state and municipal registrations; CPF only as a sensitive personal identifier; entity forms (LTDA, SLU, S.A., EI, MEI).",
+        "Facets to source: construction licensing (CREA and CONFEA registration of engineers, CAU registration of architects, ART and RRT technical-responsibility records); building codes (ABNT NBR standards such as NBR 15575 on building performance; municipal building codes); public procurement (Law 14.133/2021 and the PNCP national portal; Compras.gov.br); tax (ICMS, ISS, PIS and COFINS, NF-e and NFS-e e-invoicing, the consumption-tax reform phasing in CBS and IBS); e-signatures (ICP-Brasil certificates and the gov.br advanced signature under Law 14.063/2020); payment rails (Pix, boleto, cards); privacy (LGPD and the ANPD); holidays (national, state and municipal); units (metric).",
+        "Languages: pt (pt-BR formats, once LANG-PT is done) and en.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country BR sees pt-BR formats, BRL and the 27 federative units.",
+        "No engine code branches on BR; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/br.json",
+        "tests/country-packs/br"
+      ]
+    },
+    {
+      "id": "CTRY-GB",
+      "title": "United Kingdom country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced United Kingdom pack, modelled on the United States pack (INTL-US), so a hub in United Kingdom is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: England, Scotland, Wales and Northern Ireland with their ISO 3166-2:GB subdivisions; Europe/London; postcodes; phone +44; GBP.",
+        "Companies and identifiers: Companies House company number, VAT registration number, Unique Taxpayer Reference only as a sensitive identifier, Companies House identity verification; entity forms (private limited company, public limited company, LLP, partnership, sole trader, community interest company).",
+        "Facets to source: construction licensing (no general contractor licence; competent person schemes, Gas Safe Register, CSCS cards, registered building control approvers and the Building Safety Regulator for higher-risk buildings under the Building Safety Act 2022; Engineering Council and ARB registers); building codes (Building Regulations and Approved Documents in England, building standards in Scotland, separate regulations in Wales and Northern Ireland; BSI standards and the Eurocodes as BS EN with UK national annexes); public procurement (Procurement Act 2023 and the Find a Tender service); tax (VAT rates, the VAT domestic reverse charge for construction services, the Construction Industry Scheme deductions, Making Tax Digital; e-invoicing status); e-signatures (Electronic Communications Act 2000 and UK eIDAS); payment rails (Faster Payments, Bacs, cards) and construction payment law (Housing Grants, Construction and Regeneration Act 1996: payment notices and adjudication); privacy (UK GDPR, Data Protection Act 2018, PECR, the ICO); holidays (bank holidays per nation); units (metric, with imperial in everyday use).",
+        "Languages: en (en-GB); Welsh (cy) is welcome as a contributor language.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country GB sees en-GB formats, GBP and the four nations with their subdivisions.",
+        "No engine code branches on GB; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/gb.json",
+        "tests/country-packs/gb"
+      ]
+    },
+    {
+      "id": "CTRY-DE",
+      "title": "Germany country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Germany pack, modelled on the United States pack (INTL-US), so a hub in Germany is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 16 Länder (ISO 3166-2:DE); Europe/Berlin; five-digit postal codes; phone +49; EUR.",
+        "Companies and identifiers: commercial register number with the register court (HRA, HRB), VAT identification number (USt-IdNr.), tax number only where needed; entity forms (GmbH, UG (haftungsbeschränkt), AG, KG, GmbH & Co. KG, OHG, GbR, sole trader).",
+        "Facets to source: construction licensing (master craftsperson requirement and the trades register of the chambers of crafts under the Handwerksordnung; building-submission authorization of architects and engineers through their chambers); building codes (the 16 state building codes and the model building code, DIN standards and the Eurocodes with German national annexes, technical building rules); public procurement (VOB/A, VgV and UVgO, e-procurement platforms, TED above thresholds) and construction contract terms (VOB/B); tax (national VAT rates over the EU layer, reverse charge for construction services, construction withholding tax with exemption certificates, the B2B e-invoicing mandate phased from 2025 with XRechnung and ZUGFeRD); e-signatures (eIDAS from the EU layer, national eID); payment rails (SEPA from the EU layer); privacy (GDPR from the EU layer plus BDSG and TDDDG); holidays (federal and state holidays); units (metric).",
+        "Languages: de (de-DE formats, once LANG-DE is done) and en.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country DE sees de-DE formats, EUR and the 16 Länder.",
+        "The pack lists the EU layer and overrides only national facts, each with its own source.",
+        "No engine code branches on DE; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/de.json",
+        "tests/country-packs/de"
+      ]
+    },
+    {
+      "id": "CTRY-FR",
+      "title": "France country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced France pack, modelled on the United States pack (INTL-US), so a hub in France is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: metropolitan regions and departments plus the overseas departments and regions (ISO 3166-2:FR); Europe/Paris and the overseas time zones; five-digit postal codes; phone +33; EUR.",
+        "Companies and identifiers: SIREN and SIRET numbers from the INSEE Sirene directory, RCS registration, intra-EU VAT number; entity forms (SARL, EURL, SAS, SASU, SA, sole trader and micro-entrepreneur).",
+        "Facets to source: construction licensing (no general licence; mandatory ten-year liability insurance, assurance décennale; Qualibat qualifications and the RGE label; architects registered with the Ordre des architectes); building codes (Code de la construction et de l'habitation, DTU technical documents, the RE2020 environmental regulation, Eurocodes with French national annexes); public procurement (Code de la commande publique, BOAMP, PLACE, TED above thresholds); tax (national VAT rates over the EU layer, reverse charge for construction subcontracting, the B2B e-invoicing and e-reporting reform phased from September 2026, Chorus Pro for public buyers); construction payment rules (retention guarantee, direct payment of subcontractors under the 1975 subcontracting law); e-signatures (eIDAS from the EU layer); payment rails (SEPA, Cartes Bancaires); privacy (GDPR from the EU layer plus the CNIL's rules); holidays (national holidays and the additional days in Alsace-Moselle); units (metric).",
+        "Languages: fr (fr-FR formats, once LANG-FR is done) and en.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country FR sees fr-FR formats, EUR and the regions and departments.",
+        "The pack lists the EU layer and overrides only national facts, each with its own source.",
+        "No engine code branches on FR; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/fr.json",
+        "tests/country-packs/fr"
+      ]
+    },
+    {
+      "id": "CTRY-ES",
+      "title": "Spain country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Spain pack, modelled on the United States pack (INTL-US), so a hub in Spain is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 17 autonomous communities, two autonomous cities and 50 provinces (ISO 3166-2:ES); Europe/Madrid and Atlantic/Canary; five-digit postal codes; phone +34; EUR.",
+        "Companies and identifiers: NIF for companies, NIE for foreign persons only as a sensitive identifier, Mercantile Register entries; entity forms (S.L., S.A., cooperative, self-employed autónomo).",
+        "Facets to source: construction licensing (the register of accredited companies, REA, and the subcontracting book required by Law 32/2006 on subcontracting in construction); building codes (Código Técnico de la Edificación, UNE standards, Eurocodes with Spanish national annexes); public procurement (Law 9/2017 on public sector contracts, the public sector contracting platform, the official register of bidders ROLECE); tax (national VAT rates over the EU layer, reverse charge for certain construction works, the SII real-time VAT reporting, the Verifactu billing-software rules and the planned B2B e-invoicing; confirm effective dates); e-signatures (eIDAS from the EU layer, DNIe, Cl@ve); payment rails (SEPA, Bizum); privacy (GDPR from the EU layer plus LOPDGDD and the AEPD); holidays (national, regional and local); units (metric).",
+        "Languages: es (es-ES formats through LANG-ES) and en; Catalan, Basque and Galician are welcome as contributor languages.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country ES sees es-ES formats, EUR and the autonomous communities and provinces.",
+        "The pack lists the EU layer and overrides only national facts, each with its own source.",
+        "No engine code branches on ES; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/es.json",
+        "tests/country-packs/es"
+      ]
+    },
+    {
+      "id": "CTRY-IT",
+      "title": "Italy country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Italy pack, modelled on the United States pack (INTL-US), so a hub in Italy is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 20 regions and their provinces and metropolitan cities (ISO 3166-2:IT); Europe/Rome; five-digit CAP postal codes; phone +39; EUR.",
+        "Companies and identifiers: Partita IVA, codice fiscale for companies, REA number in the Registro delle imprese of the chambers of commerce; entity forms (S.r.l., S.r.l.s., S.p.A., S.n.c., S.a.s., sole proprietorship).",
+        "Facets to source: construction licensing (SOA qualification for public works above the threshold, the DURC contribution regularity certificate, prefecture white lists); building codes (Norme Tecniche per le Costruzioni, UNI standards, Eurocodes with Italian national annexes); public procurement (the public contracts code, Legislative Decree 36/2023, ANAC and its national database of public contracts); tax (national VAT rates over the EU layer, mandatory e-invoicing through the Sistema di Interscambio in FatturaPA format, reverse charge in construction subcontracting, split payment for public bodies); e-signatures (eIDAS from the EU layer, SPID, CIE, certified e-mail PEC as legal delivery); payment rails (SEPA, pagoPA for public payments); privacy (GDPR from the EU layer plus the privacy code and the Garante); holidays (national holidays and local patron-saint days); units (metric).",
+        "Languages: it (it-IT formats, once LANG-IT is done) and en; German in South Tyrol is a regional language to source.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country IT sees it-IT formats, EUR and the regions and provinces.",
+        "The pack lists the EU layer and overrides only national facts, each with its own source.",
+        "No engine code branches on IT; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/it.json",
+        "tests/country-packs/it"
+      ]
+    },
+    {
+      "id": "CTRY-PL",
+      "title": "Poland country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Poland pack, modelled on the United States pack (INTL-US), so a hub in Poland is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 16 voivodeships (ISO 3166-2:PL); Europe/Warsaw; NN-NNN postal codes; phone +48; PLN.",
+        "Companies and identifiers: NIP tax number, REGON statistical number, KRS National Court Register number and CEIDG entries for sole traders; entity forms (sp. z o.o., S.A., simple joint-stock company PSA, general and limited partnerships, sole trader).",
+        "Facets to source: construction licensing (building qualifications, uprawnienia budowlane, and membership of the chambers of civil engineers and architects); building codes (the Construction Law and the technical conditions regulation, PN-EN standards and the Eurocodes with Polish national annexes); public procurement (the 2019 Public Procurement Law, the e-Zamówienia platform and the Public Procurement Bulletin); tax (national VAT rates over the EU layer, the KSeF national e-invoicing system phased in from 2026, the mandatory split payment for listed construction services, the VAT payers white list for bank accounts); e-signatures (eIDAS from the EU layer, Profil Zaufany, mObywatel); payment rails (Elixir and Express Elixir, BLIK, cards); privacy (GDPR from the EU layer and the UODO authority); holidays (national); units (metric).",
+        "Languages: pl (pl-PL formats, once LANG-PL is done) and en.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country PL sees pl-PL formats, PLN and the 16 voivodeships.",
+        "The pack lists the EU layer and overrides only national facts, each with its own source.",
+        "No engine code branches on PL; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/pl.json",
+        "tests/country-packs/pl"
+      ]
+    },
+    {
+      "id": "CTRY-UA",
+      "title": "Ukraine country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Ukraine pack for the government-controlled territory only, modelled on the United States pack (INTL-US), so a hub in Ukraine is configured with data and settings, never with code. The restricted regions UA-43 (Crimea), UA-40 (Sevastopol), UA-14 (Donetsk) and UA-09 (Luhansk) stay excluded. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: oblasts and Kyiv city (ISO 3166-2:UA) except the restricted places UA-43, UA-40, UA-14 and UA-09, which are never offered; Europe/Kyiv; five-digit postal codes; phone +380; UAH.",
+        "Companies and identifiers: EDRPOU code for legal entities from the Unified State Register; the individual tax number only as a sensitive identifier; entity forms (limited liability company TOV, joint-stock company, individual entrepreneur FOP).",
+        "Facets to source: construction licensing (licences by consequence class CC1 to CC3 and the current licensing and inspection authority after the recent reforms; confirm); building codes (DBN state building norms, DSTU standards, the transition to Eurocodes); public procurement (Prozorro) and reconstruction data (the DREAM reconstruction ecosystem as a candidate source); tax (VAT, electronic tax invoices registered in the Unified Register of Tax Invoices); e-signatures (qualified electronic signature, Diia.Signature); payment rails (the National Bank's payment system, cards); privacy (the personal data protection law and its pending GDPR-aligned reform); holidays and deadlines (martial-law rules); units (metric).",
+        "Languages: uk (uk-UA formats, once LANG-UK is done) and en; Russian is never a default.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country UA sees uk-UA formats, UAH and the oblasts of government-controlled territory.",
+        "The pack never offers UA-43, UA-40, UA-14 or UA-09; the validator and the restricted-places tests refuse them.",
+        "No engine code branches on UA; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ua.json",
+        "tests/country-packs/ua"
+      ]
+    },
+    {
+      "id": "CTRY-TR",
+      "title": "Türkiye country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Türkiye pack, modelled on the United States pack (INTL-US), so a hub in Türkiye is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 81 provinces (ISO 3166-2:TR); Europe/Istanbul; five-digit postal codes; phone +90; TRY.",
+        "Companies and identifiers: tax identification number (VKN), MERSIS number and the trade registry; the personal identification number only as a sensitive identifier; entity forms (limited company Ltd. Şti., joint-stock company A.Ş., sole proprietorship).",
+        "Facets to source: construction licensing (the contractor authorization certificate of the Ministry of Environment, Urbanisation and Climate Change and its contractor information system); building codes (the Turkish Building Earthquake Code 2018, TSE standards, zoning regulations; compulsory earthquake insurance DASK); public procurement (Public Procurement Law 4734 and the EKAP electronic procurement platform); tax (KDV rates, e-Fatura, e-Arşiv and e-İrsaliye through the Revenue Administration); e-signatures (Electronic Signature Law 5070, e-Devlet); payment rails (FAST instant payments, cards); privacy (KVKK, Law 6698, and VERBİS registration); holidays (national and religious holidays on the lunar calendar); units (metric).",
+        "Languages: tr (tr-TR formats, once LANG-TR is done) and en.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country TR sees tr-TR formats, TRY and the 81 provinces.",
+        "No engine code branches on TR; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/tr.json",
+        "tests/country-packs/tr"
+      ]
+    },
+    {
+      "id": "CTRY-AE",
+      "title": "United Arab Emirates country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced United Arab Emirates pack, modelled on the United States pack (INTL-US), so a hub in United Arab Emirates is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: seven emirates (ISO 3166-2:AE); Asia/Dubai; addresses without a national postal-code system; phone +971; AED.",
+        "Companies and identifiers: trade licence numbers of each emirate's economic department or free-zone authority, the VAT tax registration number (TRN) of the Federal Tax Authority; entity forms (LLC, sole establishment, free-zone company, branch).",
+        "Facets to source: construction licensing (contractor classification and licensing per emirate, for example by Dubai Municipality); building codes (emirate building codes such as the Dubai Building Code and the Abu Dhabi International Building Code, the UAE Fire and Life Safety Code, green-building ratings); public procurement (federal and emirate portals); tax (VAT, corporate tax, the e-invoicing programme announced for 2026 and later; confirm dates); e-signatures (UAE Pass and the federal law on electronic transactions and trust services); payment rails (UAEFTS, the Aani instant payment platform, cards); privacy (the federal personal data protection law and the separate DIFC and ADGM regimes); holidays (announced public holidays including lunar-calendar dates; Monday-to-Friday working week); units (metric).",
+        "Languages: ar (ar-AE formats, once LANG-AR is done) and en; Arabic and Latin scripts.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country AE sees ar-AE or en-AE formats, AED and the seven emirates.",
+        "No engine code branches on AE; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ae.json",
+        "tests/country-packs/ae"
+      ]
+    },
+    {
+      "id": "CTRY-IN",
+      "title": "India country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced India pack, modelled on the United States pack (INTL-US), so a hub in India is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 28 states and 8 union territories (ISO 3166-2:IN); Asia/Kolkata; six-digit PIN codes; phone +91; INR.",
+        "Companies and identifiers: CIN and LLPIN of the Ministry of Corporate Affairs, GSTIN, Udyam registration for small enterprises; PAN of individuals and Aadhaar numbers only as sensitive identifiers that are never stored in clear; entity forms (private limited, public limited, one person company, LLP, partnership, proprietorship).",
+        "Facets to source: construction licensing (contractor registration classes of central and state public works departments; RERA registration of real-estate projects and agents per state; Council of Architecture registration); building codes (National Building Code of India by BIS, IS standards, state and municipal building bye-laws); public procurement (GeM, the Central Public Procurement Portal and state e-procurement systems); tax (GST with e-invoicing through the invoice registration portal above a turnover threshold, e-way bills, tax deducted at source on contractor payments); e-signatures (Information Technology Act 2000, Aadhaar-based eSign, DigiLocker); payment rails (UPI, NEFT, RTGS, IMPS); privacy (Digital Personal Data Protection Act 2023 and its rules); holidays (national gazetted holidays and state holidays); units (metric; lakh and crore through Intl).",
+        "Languages: hi (hi-IN formats, once LANG-HI is done) and en (en-IN); other scheduled languages are welcome as contributor languages.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country IN sees en-IN or hi-IN formats with lakh and crore grouping, INR and the states and union territories.",
+        "No engine code branches on IN; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/in.json",
+        "tests/country-packs/in"
+      ]
+    },
+    {
+      "id": "CTRY-AU",
+      "title": "Australia country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Australia pack, modelled on the United States pack (INTL-US), so a hub in Australia is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Regions and formats: 6 states and the mainland territories (ISO 3166-2:AU); several IANA time zones including half-hour offsets and daylight saving only in some states; four-digit postcodes; phone +61; AUD.",
+        "Companies and identifiers: ABN from the Australian Business Register and ACN from ASIC; entity forms (proprietary limited company, public company, sole trader, partnership, trust).",
+        "Facets to source: construction licensing (state and territory builder and trade licensing, for example NSW Fair Trading and the Queensland Building and Construction Commission); building codes (National Construction Code by the Australian Building Codes Board, Australian Standards); public procurement (AusTender and state portals); tax (GST, the taxable payments annual report for building and construction, Peppol e-invoicing); e-signatures (Electronic Transactions Act 1999 and state equivalents); payment rails (New Payments Platform with PayID and PayTo, BPAY, cards) and security-of-payment laws per state; privacy (Privacy Act 1988, the Australian Privacy Principles and the OAIC); holidays (national and state public holidays); units (metric).",
+        "Languages: en (en-AU).",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country AU sees en-AU formats, AUD and the states and territories.",
+        "No engine code branches on AU; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/au.json",
+        "tests/country-packs/au"
+      ]
     }
   ]
 }

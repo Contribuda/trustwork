@@ -98,9 +98,19 @@ Several used the same identifier for different work (PAY-001, PROV-001, OPS-001,
 | 11 | Electronic agreement validity and consumer rules per state and country (O12) | Counsel | Live commitments (COM-002, AGT-008) |
 | 12 | Payment, mail, model, storage and hosting providers for the reference hub (O08) | Commercial and legal | Any live adapter |
 
+## Owner decision of 2026-10-31: international by default
+
+30. **International by default** (owner, 2026-10-31). Trustwork is a worldwide engine. No region is privileged in the documentation, examples or defaults, except that the United States reference hub (ADR 010 decision 16) is the primary worked example; other examples are mixed across the Americas, Europe, Africa, the Middle East and Asia-Pacific. The Uzbekistan, Georgia, Armenia and Azerbaijan packs remain as existing examples of real data in the repository.
+    - **Language roadmap, in this order:** Spanish (LANG-ES, already planned), Portuguese (LANG-PT, formats per country: `pt-BR`, `pt-PT`), French (LANG-FR), German (LANG-DE), Italian (LANG-IT), Polish (LANG-PL), Ukrainian (LANG-UK), Turkish (LANG-TR), Arabic (LANG-AR, after right-to-left support INTL-005), Chinese in Simplified script (LANG-ZH, tag `zh-Hans`), Hindi (LANG-HI) and Japanese (LANG-JA), the last three after CJK and Devanagari typography (INTL-006); and any language a contributor brings. The order sets priority; dependencies decide when a package can be claimed.
+    - **Country-pack roadmap:** the United States (INTL-US) first, then Canada, Mexico, Brazil, the United Kingdom, Germany, France, Spain, Italy, Poland, Ukraine (government-controlled territory only: the restricted regions UA-43, UA-40, UA-14 and UA-09 stay excluded), Türkiye, the United Arab Emirates, India and Australia (CTRY-CA … CTRY-AU). The European Union members share an EU layer (CTRY-EU: GDPR, eIDAS, VAT and ViDA, EN standards and the Eurocodes, the Construction Products Regulation, procurement directives, SEPA) that is sourced once and inherited.
+    - **Review status, never overstated:** translations may start as machine drafts, but every locale carries a review status (machine draft, community reviewed, native reviewed; English is the reference) recorded in its metadata, shown in the language picker and in the documentation (INTL-007). Nobody claims a review that did not happen.
+    - **Unchanged:** Russia is not a market and restricted places are never offered; Russian stays available as a language and is never a default. Every country fact cites a source and states its verification level. The engine has no default country (decision 11).
+    - Integrator ordering recorded with this decision: new languages after the US demo content exists (DEMO-US), so translators work on the content that ships; INTL-005 after WEB-005 so the public stylesheets are converted once, after they are split per route; INTL-006 after INTL-005 because both change the root layout and global stylesheet; EU member packs after CTRY-EU.
+
 ## Consequences
 
 - [work-packages.json](../engine/work-packages.json) holds one graph of 150 packages (17 done, 130 open, 2 blocked, 1 rejected); `npm run work:next` starts with the platform phase.
 - The [specification](../product/specification.md) gains R40–R50 and the [traceability](../product/traceability.json) maps them to packages.
 - The [roadmap](../engine/roadmap.md) is rewritten as phases with package identifiers; the [status](../engine/status.md) labels are unchanged except where this ADR adds designed work.
 - `node scripts/work-packages.mjs issue <ID>` renders the GitHub issue body for a package; the conductor syncs issues.
+- Decision 30 adds 29 packages (INTL-005, INTL-006, INTL-007, LANG-PT … LANG-JA, CTRY-EU and CTRY-CA … CTRY-AU), requirement R51 in the [specification](../product/specification.md), and a languages-and-countries table in the [localization chapter](../engine/localization.md#languages-and-countries).

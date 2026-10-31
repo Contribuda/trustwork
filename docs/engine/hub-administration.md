@@ -133,7 +133,7 @@ recheck: every 12 months or when the register changes
 
 Other typical recipes: seller onboarding before the first quote above a threshold; a licence check before an RFQ in a regulated category; re-screening of every counterparty when a sanctions list updates; professional qualification for a person's profile.
 
-#### Reference recipes for the launch countries
+#### Reference recipes for the example countries
 
 Decided by the integrator on 2026-10-30 under the owner's delegation (ADR 010 decision 11). These are the reference recipes the engine starts with; every hub may tighten them. Provider names are **candidates** gathered from secondary sources and become pack facts only after confirmation against official sources (CTRY-002, HUB-003).
 
@@ -146,7 +146,7 @@ Decided by the integrator on 2026-10-30 under the owner's delegation (ADR 010 de
 
 **Rules that apply everywhere:** a registration number alone proves nothing; an uploaded register extract proves nothing; free e-mail services (common among small contractors) cannot satisfy the domain tie, so those firms use the register match plus the signatory tie; verification is re-checked every 12 months and whenever the register record changes; a potential sanctions match always goes to human review; spending authority (who may sign orders) is a separate proof and is not granted by verification.
 
-**Country starting points (candidates):**
+**Country starting points (candidates).** These rows cover the four countries whose packs exist in the repository today. The United States recipe (state business entity registers, EIN, state contractor licence boards) is sourced with the US pack and demo hub (INTL-US, DEMO-US); every other country gets its recipe with its pack (CTRY-CA … CTRY-AU, CTRY-EU), sourced the same way.
 
 | Country | Register check | Signatory tie | Notes |
 |---|---|---|---|

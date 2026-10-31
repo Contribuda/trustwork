@@ -10,7 +10,7 @@ The engine is not one website. It is something people run for a place they care 
 |---|---|---|
 | What it is | One installation of the engine: database, web origin, signing key, operator | A community for a territory, hosted on a node |
 | How many | As many as people choose to run | One or more per node |
-| Example | `build.example.uz` run by an association in Tashkent | "Uzbekistan" hub and "Samarkand" hub on the same node |
+| Example | `build.example.org` run by a trade association in Texas | "United States" hub and "Austin" hub on the same node |
 
 A node can host a single country hub, or a country hub and several city hubs that share infrastructure and staff. Two different operators can also run a country hub and a city hub on **separate nodes**; the [mesh](federation.md) makes them complement each other.
 
@@ -18,13 +18,13 @@ A node can host a single country hub, or a country hub and several city hubs tha
 
 A hub declares its territory as data:
 
-| Level | How it is identified | Example |
-|---|---|---|
-| Country | ISO 3166-1 alpha-2 | `UZ` |
-| Region | ISO 3166-2 | `UZ-SA` (Samarkand region) |
-| City or named place | A place key from the country pack's places list, with optional Wikidata and OpenStreetMap references | `UZ-SA:samarkand` |
+| Level | How it is identified | Example | Another example |
+|---|---|---|---|
+| Country | ISO 3166-1 alpha-2 | `US` | `DE` |
+| Region | ISO 3166-2 | `US-TX` (Texas) | `DE-BY` (Bavaria) |
+| City or named place | A place key from the country pack's places list, with optional Wikidata and OpenStreetMap references | `US-TX:austin` | `DE-BY:munich` |
 
-Territories are **descriptive and never exclusive**. A Samarkand city hub and an Uzbekistan country hub both cover Samarkand; content, events and needs located there appear on both, each with its home hub named. Nobody owns a city. A hub can never declare a restricted place as its territory, and the engine refuses to start a hub whose country is restricted.
+Territories are **descriptive and never exclusive**. An Austin city hub and a United States country hub both cover Austin; content, events and needs located there appear on both, each with its home hub named. Nobody owns a city. A hub can never declare a restricted place as its territory, and the engine refuses to start a hub whose country is restricted.
 
 ## How country and city hubs complement each other
 
@@ -33,7 +33,7 @@ Territories are **descriptive and never exclusive**. A Samarkand city hub and an
 | City news, local events, local open needs | City hub | City hub, and the country hub's region and city views |
 | National news, regulations, the national magazine | Country hub | Country hub, and city hubs as "from the national hub" |
 | Company page | The hub where the company registered | Both, linked; the canonical display is the record with the strongest claim status |
-| An RFQ from a Samarkand client to a Tashkent supplier | The client's home hub | Shared with the supplier's hub for the deal only |
+| An RFQ from an Austin client to a supplier in Monterrey registered on a Mexico hub | The client's home hub | Shared with the supplier's hub for the deal only |
 | Reputation of a company | Computed by the company's home node | Displayed with attribution everywhere |
 
 Operators of overlapping hubs are encouraged to sign a short **cooperation agreement**: editorial exchange, shared event calendar, who verifies which companies, and how they split hub fees for cross-hub transactions if they charge any. The engine records the agreement's peering level; the commercial terms are theirs.
@@ -72,7 +72,7 @@ The console refuses to switch a hub to **public** until every gate is green:
 
 1. Operator legal entity recorded; operator screened against sanctions lists.
 2. Terms, privacy notice and sanctions section adapted with the operator's counsel; the counsel approval recorded with date and version.
-3. Data-residency decision recorded (for example personal data of Uzbek citizens stored on servers in Uzbekistan) and storage configured accordingly.
+3. Data-residency decision recorded (for example the US region a US hub uses, or in-country servers where a country requires local storage of citizens' personal data, as the Uzbekistan pack notes) and storage configured accordingly.
 4. At least two staff with distinct roles (separation of duties), each with a second factor.
 5. Editorial team with an editor-in-chief; editorial policy published.
 6. Community rules published in every hub language; moderation clause library mapped to local law.

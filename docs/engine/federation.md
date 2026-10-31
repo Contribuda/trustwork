@@ -2,7 +2,7 @@
 
 Requirement R39. Status: **Proposed**. Architecture decision: [ADR 011](../adr/011-federation-mesh.md).
 
-Imagine an association that opens the engine for Uzbekistan, and a group of engineers who separately open it for Samarkand. With federation they do not compete for the same people; they complement each other. Samarkand's meetups appear in the national calendar, the national magazine reaches Samarkand readers, a Samarkand client can hire a Tashkent contractor, and a Georgian supplier can answer an Uzbek request. Every deployment that joins makes every other one more useful. Together they form a mesh that can cover the world, with no central owner.
+Imagine a trade association that opens the engine for the United States, and a group of engineers who separately open it for Austin. With federation they do not compete for the same people; they complement each other. Austin's meetups appear in the national calendar, the national magazine reaches Austin readers, an Austin client can hire a Houston contractor, a supplier on a Mexico hub can answer a Texas request, and an engineer in Nairobi can read what a hub in Munich publishes on facade fire safety. Every deployment that joins makes every other one more useful. Together they form a mesh that can cover the world, with no central owner.
 
 ## Principles
 
@@ -20,12 +20,12 @@ Each node publishes a signed **manifest** at `https://<node>/.well-known/trustwo
 
 | Field | Example |
 |---|---|
-| `node` | `build.example.uz` |
+| `node` | `build.example.org` |
 | `protocol` | `["trustwork-mesh/1"]` |
 | `engine` | Engine version and source repository URL (AGPL) |
 | `operator` | Legal entity name, country, registration identifier, abuse and takedown contacts |
-| `jurisdiction` | `UZ` |
-| `hubs` | Hub IDs with territories (`UZ`, `UZ-SA`, `UZ-SA:samarkand`) and languages |
+| `jurisdiction` | `US` |
+| `hubs` | Hub IDs with territories (`US`, `US-TX`, `US-TX:austin`) and languages |
 | `packs` | Country pack versions in use |
 | `licences` | Licence per data class (publications, events, directory facts, profiles, issues) |
 | `peeringPolicy` | Which levels it offers and on what terms |
@@ -38,8 +38,8 @@ The manifest is signed with the node key. Key rotation is signed by the previous
 Every federated object has a global identifier:
 
 ```text
-trustwork://build.example.uz/publication/7b0c…
-trustwork://samarkand.example.org/event/2f91…
+trustwork://build.example.org/publication/7b0c…
+trustwork://austin.example.org/event/2f91…
 ```
 
 Local opaque IDs stay as they are inside the node. The global form is derived for federation and never parsed to authorize anything.
@@ -50,10 +50,10 @@ Objects travel as envelopes:
 
 ```json
 {
-  "id": "trustwork://build.example.uz/publication/7b0c…",
+  "id": "trustwork://build.example.org/publication/7b0c…",
   "kind": "publication",
   "revision": 3,
-  "homeNode": "build.example.uz",
+  "homeNode": "build.example.org",
   "projection": "public",
   "payload": { "…": "the public projection, exactly as the home node serializes it" },
   "digest": { "algorithm": "trustwork-digest-1", "value": "64 hex" },
@@ -110,12 +110,12 @@ A community-run **mesh directory** may list nodes that ask to be listed, with th
 
 | Situation | What happens |
 |---|---|
-| A meetup is published on the Samarkand node | It appears in the Uzbekistan node's event calendar under "Samarkand", labelled with its home hub |
-| The national magazine releases issue 12 | Samarkand readers see it in their magazine section as "national issue", read on the home node or as a replica |
-| A company registered on the national node joins the Samarkand community | The Samarkand node shows the national record as a replica and links any local record to it |
-| A Samarkand client invites a Tashkent supplier to an RFQ | The invitation is delivered to the supplier's home node; the deal runs as described below |
-| The national node verifies a company | The Samarkand node shows "verified by the Uzbekistan hub" if it peers at `trust-verifications` |
-| Two nodes in different countries | They peer at `syndicate`; their participants discover each other's public content and can raise to `deal-routing` for cross-border work |
+| A meetup is published on the Austin node | It appears in the United States node's event calendar under "Austin", labelled with its home hub |
+| The national magazine releases issue 12 | Austin readers see it in their magazine section as "national issue", read on the home node or as a replica |
+| A company registered on the national node joins the Austin community | The Austin node shows the national record as a replica and links any local record to it |
+| An Austin client invites a Houston supplier to an RFQ | The invitation is delivered to the supplier's home node; the deal runs as described below |
+| The national node verifies a company | The Austin node shows "verified by the United States hub" if it peers at `trust-verifications` |
+| Two nodes in different countries (for example the United States and Mexico, or Germany and Kenya) | They peer at `syndicate`; their participants discover each other's public content and can raise to `deal-routing` for cross-border work |
 
 ## Entity links, never merges
 

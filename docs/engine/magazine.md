@@ -33,7 +33,7 @@ The PDF is a **separate artifact with its own layout**, not a print of the web p
 
 ## Cross-hub digests (Proposed)
 
-Within the [mesh](federation.md), an editor may build a **digest** that selects items from other hubs' released issues (for example "Caucasus facade practice, November"). Each item stays pinned to its home node, version and licence; the digest only references. Items whose licence does not permit redisplay outside their hub are offered as headline plus link.
+Within the [mesh](federation.md), an editor may build a **digest** that selects items from other hubs' released issues (for example "Facade practice across the Americas, November"). Each item stays pinned to its home node, version and licence; the digest only references. Items whose licence does not permit redisplay outside their hub are offered as headline plus link.
 
 ## The personalized journal (open)
 

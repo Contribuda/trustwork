@@ -23,7 +23,7 @@ Many people will keep using e-mail and messengers. The engine connects them thro
 - Existing e-mail is preserved; the platform does not delete or move your mail.
 - Inbound content is untrusted: it can inform your agent's drafts, never authorize an action.
 
-Which channels a hub offers is a hub setting: e-mail everywhere; messengers popular in the territory where their terms allow business use (Telegram is widely used in Uzbekistan); SMS for one-time codes where sender registration rules are met.
+Which channels a hub offers is a hub setting: e-mail everywhere; messengers popular in the territory where their terms allow business use (for example WhatsApp in Brazil, Mexico and India, LINE in Japan, Telegram in Uzbekistan); SMS for one-time codes where sender registration rules are met.
 
 ## Notifications are not mail
 
@@ -31,7 +31,7 @@ The bell shows **notifications**: short, actionable signals with a link ("Quote 
 
 ## Templates
 
-Notification and e-mail texts are **versioned templates** per language, edited by the hub's editors and activated by operations staff, previewed with synthetic data. Every template exists in every language the hub serves; a missing translation blocks activation instead of sending English to a Georgian reader.
+Notification and e-mail texts are **versioned templates** per language, edited by the hub's editors and activated by operations staff, previewed with synthetic data. Every template exists in every language the hub serves; a missing translation blocks activation instead of sending English to a reader who chose Polish, Georgian or any other language.
 
 ## Hub sender identity (Proposed)
 

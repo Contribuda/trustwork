@@ -18,7 +18,7 @@ The [agent catalogue](agent-catalog.md) (Proposed) details what the agent does f
 
 | Job | Examples | Typical authority |
 |---|---|---|
-| **Research** | Find facade subcontractors in Samarkand with licence category X; summarise a market; compare three insulation test reports | `research` |
+| **Research** | Find facade subcontractors in Texas with a given state licence; summarise a market; compare three insulation test reports | `research` |
 | **Prepare** | Turn an e-mail thread into an RFQ draft; draft a quote from your catalogue; prepare a company presentation; draft a publication | `prepare` (drafts only) |
 | **Present your services** | Answer RFQ invitations with a draft quote; keep your capability profile current; propose talking points for an event meeting | `prepare`, `send_quote` |
 | **Find partners** | Run a matching search for your open need; request introductions within your quota | `research`, `communicate` |
@@ -52,14 +52,14 @@ Rules that never bend:
 2. **Chat text never authorizes anything.** Saying "go ahead" in the conversation does not create or widen a mandate; the agent turns it into a proposed mandate change you confirm in a structured form.
 3. **Approvals bind an exact action digest.** If the agent asks "may I place this order?" and anything material changes (price, quantity, supplier, terms), the approval is void and it must ask again.
 4. **Everything is rechecked just before the effect**: your current rights, the mandate revision, participant access, limits and both applicable budgets.
-5. **No mandatory confirmation clicks when a sufficient mandate exists.** If you pre-authorized "accept orders under 50 million UZS from verified buyers for catalogue items", the agent does not interrupt you for each one.
+5. **No mandatory confirmation clicks when a sufficient mandate exists.** If you pre-authorized "accept orders under USD 5,000 from verified buyers for catalogue items", the agent does not interrupt you for each one.
 
 ## Goals (Proposed)
 
 A **goal** tells your agent what to achieve rather than what to click:
 
 ```text
-Goal: "Find three facade subcontractors in Samarkand region for project Shkola na reke, start in March."
+Goal: "Find three facade subcontractors in the Austin area for project Riverside School, start in March."
 Success: three accepted introductions with subcontractors that pass eligibility.
 Allowed: research, communicate (introductions only, up to 10 requests), no commitments.
 Horizon: until 15 December.
@@ -115,7 +115,7 @@ A company is represented in two ways, and both keep the rule "authority comes on
 
 ### Through its people's agents
 
-Someone with company authority grants a **company mandate** to a colleague's agent (for example a sales lead grants "answer RFQ invitations in category Facade works with draft quotes; send quotes under 100 million UZS from the catalogue price list"). Such a mandate is visible on the company page to members with the right to see it, names the person whose agent executes it, and stops automatically when that person's authority or membership ends.
+Someone with company authority grants a **company mandate** to a colleague's agent (for example a sales lead grants "answer RFQ invitations in category Facade works with draft quotes; send quotes under EUR 10,000 from the catalogue price list"). Such a mandate is visible on the company page to members with the right to see it, names the person whose agent executes it, and stops automatically when that person's authority or membership ends.
 
 ### Through the company representative (Proposed, owner decision 2026-10-30)
 

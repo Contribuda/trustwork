@@ -336,7 +336,7 @@ The conductor's sixteen candidates, evaluated against real products and US law. 
 | [Tradeshift](https://tradeshift.com/about/) | E-invoicing network, Peppol access point, compliance in dozens of countries | Network and compliance fees |
 | [LinkedIn](https://www.linkedin.com/help/linkedin/answer/140551) | Lifelong personal profiles; free identity verification through partners; **workplace verification** by work e-mail or employer-provided signals; company-page badges. [Services marketplace](https://www.linkedin.com/help/lms/answer/a550345): RFPs to providers, replies gated by Premium | Premium subscriptions, recruiting and advertising |
 
-**Adopt.** LinkedIn's workplace verification by a code to the company domain is exactly the "domain tie" in Trustwork's [reference recipes](../engine/hub-administration.md#reference-recipes-for-the-launch-countries). Keep it, and keep the rule that free e-mail domains cannot satisfy it.
+**Adopt.** LinkedIn's workplace verification by a code to the company domain is exactly the "domain tie" in Trustwork's [reference recipes](../engine/hub-administration.md#reference-recipes-for-the-example-countries). Keep it, and keep the rule that free e-mail domains cannot satisfy it.
 
 **Adopt.** Alibaba's practice of letting the buyer **download the inspection report behind a badge** is a good transparency pattern, adapted to Trustwork's privacy rule: the badge shows evidence *categories*, the date and the issuing node publicly; the documents themselves stay private and are shown only to parties of a deal with consent.
 
