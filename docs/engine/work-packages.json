@@ -3094,7 +3094,7 @@
       "id": "OPS-003",
       "title": "Backup, restore drill and retention automation",
       "area": "platform",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "OPS-002",
         "FILE-001"

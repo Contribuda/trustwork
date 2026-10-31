@@ -1,0 +1,70 @@
+# Point-in-time restore target (OPS-003). Started by scripts/restore after the data directory and the WAL to replay
+# were staged into the volume TRUSTWORK_RESTORE_VOLUME (base backup + recovery.signal + the restore fence in
+# pg_hba.conf). Never shares a project, network or volume with the live stack:
+#   docker compose -p trustwork-restore -f infra/backup/compose.restore.yaml up -d --wait postgres
+# Networks: runtime services of the restored stack (the opt-in `worker` profile) join only `isolated`, an internal
+# network without egress, so nothing restored can reach a provider; the database also joins `operator` for a
+# loopback-only port used by the operator's verification and reconciliation tools. Providers are disabled in every
+# restored service (log mail transport, no file storage) until reconciliation and explicit authorization.
+name: trustwork-restore
+
+services:
+  postgres:
+    image: postgres:18.3
+    command:
+      - postgres
+      - -c
+      - archive_mode=off
+      - -c
+      - restore_command=cp /var/lib/postgresql/wal-restore/%f %p
+      - -c
+      - recovery_target_time=${TRUSTWORK_RESTORE_TARGET_TIME:-}
+      - -c
+      - recovery_target_action=promote
+      - -c
+      - recovery_target_timeline=latest
+    environment:
+      # Only used if the volume were empty (it never is: the staging step fills it); local-only value.
+      POSTGRES_PASSWORD: local_only_change_me
+    volumes:
+      - restore_data:/var/lib/postgresql
+    networks: [isolated, operator]
+    ports:
+      - "127.0.0.1:${TRUSTWORK_RESTORE_PG_PORT:-54349}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustwork_dev -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 150
+    restart: "no"
+
+  # Opt-in (--profile worker): the real worker image on the isolated network with providers disabled. While the
+  # restore fence holds it cannot log in and exits; after authorization it starts normally.
+  worker:
+    profiles: [worker]
+    image: trustwork-worker:local
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      WORKER_DATABASE_URL: postgresql://trustwork_stack_worker:${TRUSTWORK_STACK_WORKER_PASSWORD:-local_only_stack_worker}@postgres:5432/trustwork_stack
+      NODE_ENV: development
+      MAIL_TRANSPORT: log
+      MAIL_SECRET_KEY: ${TRUSTWORK_STACK_MAIL_SECRET_KEY:-6c6f63616c2d6f6e6c792d737461636b2d6d61696c2d6b65792d6e6f742d70726f64}
+      MAIL_PUBLIC_ORIGIN: http://localhost:8080
+      FILES_STORAGE: disabled
+    networks: [isolated]
+    restart: "no"
+
+networks:
+  isolated:
+    internal: true
+  operator: {}
+
+volumes:
+  restore_data:
+    external: true
+    name: ${TRUSTWORK_RESTORE_VOLUME:?set TRUSTWORK_RESTORE_VOLUME to the staged restore volume}

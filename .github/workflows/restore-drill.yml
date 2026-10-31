@@ -1,0 +1,54 @@
+name: restore-drill
+# OPS-003: the full backup and point-in-time restore drill on synthetic data (scripts/restore/drill.ts). It starts its
+# own PostgreSQL containers (WAL archiving, an isolated restore project), so it runs separately from `check`: on
+# changes to the backup and restore tooling, the migrations or the worker, weekly, and on demand. The evidence JSON is
+# kept as an artifact. Nothing is pushed or deployed; every credential and key is generated per run.
+on:
+  pull_request:
+    paths:
+      - 'infra/backup/**'
+      - 'infra/compose.yaml'
+      - 'infra/images/stack-roles.sql'
+      - 'scripts/restore/**'
+      - 'tests/restore/**'
+      - 'packages/data/migrations/**'
+      - 'packages/data/src/files/**'
+      - 'apps/worker/src/**'
+      - '.github/workflows/restore-drill.yml'
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: restore-drill-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drill:
+    name: backup, PITR restore, reconciliation (synthetic data)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - name: Restore drill
+        env:
+          TRUSTWORK_RESTORE_DRILL: '1'
+          TRUSTWORK_RESTORE_DRILL_EVIDENCE: restore-drill-evidence.json
+        run: node --import tsx --test --test-reporter=spec tests/restore/drill.test.ts
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: restore-drill-evidence
+          path: restore-drill-evidence.json
+          if-no-files-found: ignore
+          retention-days: 90
+      - name: Leftover drill resources on failure
+        if: failure()
+        run: docker ps -a --filter name=trustwork-drill; docker volume ls --filter name=trustwork-drill
