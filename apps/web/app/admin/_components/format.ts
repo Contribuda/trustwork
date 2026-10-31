@@ -7,7 +7,7 @@ import type { LocalizedName } from '@trustwork/contracts/client';
 
 const displayNames = new Map<string, Intl.DisplayNames | null>();
 
-/** A language's name in the viewer's language (`es` → "Spanish" / "испанский"), falling back to the tag. */
+/** A language's name in the viewer's language (`es` → "Spanish" in English, "español" in Spanish), falling back to the tag. */
 export function languageName(tag: string): string {
   const locale = currentLocale();
   let names = displayNames.get(locale);
