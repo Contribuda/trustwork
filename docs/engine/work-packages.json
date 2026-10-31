@@ -1364,7 +1364,7 @@
       "id": "ADM-001",
       "title": "Platform administration backend module",
       "area": "platform-admin-backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-002",
         "BE-004"

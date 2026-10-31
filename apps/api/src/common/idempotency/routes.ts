@@ -154,6 +154,31 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'task.agreement_withdraw': IN_TRANSACTION,
   'task.record': IN_TRANSACTION,
   'task.review': IN_TRANSACTION,
+  // Platform administration (ADM-001): staff routes behind an elevated session plus the participant moderation routes;
+  // every route runs in one PrincipalService.runAs transaction (the DATA-002 command, its audit row, port calls and
+  // outbox intents included) and returns its result unchanged. A denied attempt's audit row is written in its own
+  // transaction after the refusal, which completes the record as an error result.
+  'admin.staff.assign': IN_TRANSACTION,
+  'admin.staff.revoke': IN_TRANSACTION,
+  'admin.staff.breakglass': IN_TRANSACTION,
+  'admin.staff.conflict_declare': IN_TRANSACTION,
+  'admin.staff.conflict_end': IN_TRANSACTION,
+  'admin.incident.open': IN_TRANSACTION,
+  'admin.approval.request': IN_TRANSACTION,
+  'admin.approval.approve': IN_TRANSACTION,
+  'admin.approval.decline': IN_TRANSACTION,
+  'admin.approval.withdraw': IN_TRANSACTION,
+  'admin.case_grant.request': IN_TRANSACTION,
+  'admin.case_grant.decide': IN_TRANSACTION,
+  'admin.case_grant.revoke': IN_TRANSACTION,
+  'admin.moderation.case_open': IN_TRANSACTION,
+  'admin.moderation.decide': IN_TRANSACTION,
+  'admin.moderation.sanction_apply': IN_TRANSACTION,
+  'admin.moderation.sanction_lift': IN_TRANSACTION,
+  'admin.moderation.appeal_decide': IN_TRANSACTION,
+  'admin.flag.set': IN_TRANSACTION,
+  'moderation.report': IN_TRANSACTION,
+  'moderation.appeal_file': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

@@ -14,6 +14,7 @@ import { SalesModule } from './modules/sales/sales.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
+import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
 
 @Controller()
 export class HealthController {
@@ -24,7 +25,7 @@ export class HealthController {
 
 /**
  * Composition root: health always; identity, projects, directory, plans, catalogue, procurement, sales, transactions,
- * profiles and tasks only when a database is configured; files (FILE-001) additionally only with a configured blob store.
+ * profiles, tasks and platform administration only when a database is configured; files (FILE-001) additionally only with a configured blob store.
  */
 @Module({})
 export class AppModule {
@@ -33,7 +34,7 @@ export class AppModule {
       module: AppModule,
       controllers: [HealthController],
       providers: [{ provide: API_CONFIG, useValue: config }],
-      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity), SalesModule.forRoot(ctx, identity), TransactionsModule.forRoot(ctx, identity), ProfilesModule.forRoot(ctx, identity), TasksModule.forRoot(ctx, identity), FilesModule.forRoot(ctx, identity, files)] : [],
+      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity), SalesModule.forRoot(ctx, identity), TransactionsModule.forRoot(ctx, identity), ProfilesModule.forRoot(ctx, identity), TasksModule.forRoot(ctx, identity), PlatformAdminModule.forRoot(ctx, identity), FilesModule.forRoot(ctx, identity, files)] : [],
     };
   }
 }
