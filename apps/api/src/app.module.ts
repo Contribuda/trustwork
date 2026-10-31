@@ -7,6 +7,8 @@ import { IdentityModule, type IdentityServices } from './modules/identity/identi
 import { ProjectsModule } from './modules/projects/projects.module.js';
 import { DirectoryModule } from './modules/directory/directory.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
+import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
+import { ProcurementModule } from './modules/procurement/procurement.module.js';
 
 @Controller()
 export class HealthController {
@@ -15,7 +17,7 @@ export class HealthController {
   @Get('health') getHealth() { return { ...health, externalProviders: this.config?.providers.mode ?? 'disabled' }; }
 }
 
-/** Composition root: health always; identity, projects, directory and plans only when a database is configured. */
+/** Composition root: health always; identity, projects, directory, plans, catalogue and procurement only when a database is configured. */
 @Module({})
 export class AppModule {
   static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig): DynamicModule {
@@ -23,7 +25,7 @@ export class AppModule {
       module: AppModule,
       controllers: [HealthController],
       providers: [{ provide: API_CONFIG, useValue: config }],
-      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity)] : [],
+      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity)] : [],
     };
   }
 }

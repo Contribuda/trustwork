@@ -1661,7 +1661,7 @@
       "id": "COM-001",
       "title": "Catalogue, needs, RFQs and invitations (commerce slice 1)",
       "area": "commerce-backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-003"
       ],

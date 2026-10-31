@@ -1,6 +1,6 @@
 # Catalogue and manufacturer knowledge
 
-Module code `CAT`. Status: catalogue offering versions are **Contract** inside commerce; the company catalogue and public catalogue fields are **Designed** (COM-001); sourced manufacturer and supplier pages, product entries, learning resources, the free manufacturer knowledge feed and step questions are **Proposed** ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 19). Packages: COM-001, MAT-001, CLM-001, PIPE-001, EDIT-001, REC-001, AGT-021, BIM-001. Narrative: [The catalogue](../commerce.md#the-catalogue), [Manufacturer and supplier sources](../publishing.md#manufacturer-and-supplier-sources-proposed), [Manufacturer and supplier knowledge](../search-and-knowledge.md#manufacturer-and-supplier-knowledge-proposed), [autonomous editorial office §11](../hub-console/autonomous-editorial.md#11-manufacturer-and-supplier-knowledge-adr-010-decision-19). Data: [§15 Catalogue](../../data/model.md#15-catalogue), [§13 Learning](../../data/model.md#13-learning).
+Module code `CAT`. Status: catalogue offering versions, the company catalogue and public catalogue fields are **Live** in the API (COM-001); sourced manufacturer and supplier pages, product entries, learning resources, the free manufacturer knowledge feed and step questions are **Proposed** ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 19). Packages: COM-001, MAT-001, CLM-001, PIPE-001, EDIT-001, REC-001, AGT-021, BIM-001. Narrative: [The catalogue](../commerce.md#the-catalogue), [Manufacturer and supplier sources](../publishing.md#manufacturer-and-supplier-sources-proposed), [Manufacturer and supplier knowledge](../search-and-knowledge.md#manufacturer-and-supplier-knowledge-proposed), [autonomous editorial office §11](../hub-console/autonomous-editorial.md#11-manufacturer-and-supplier-knowledge-adr-010-decision-19). Data: [§15 Catalogue](../../data/model.md#15-catalogue), [§13 Learning](../../data/model.md#13-learning).
 
 ## Purpose
 
@@ -14,7 +14,7 @@ Suppliers, distributors and manufacturers; contractors and design offices that s
 
 | # | Story | Status |
 |---|---|---|
-| CAT-S1 | As a supplier, I want a versioned catalogue whose public fields I choose, so that quotes cite exact versions and my private cost basis stays private | Contract (versions); Designed (catalogue) |
+| CAT-S1 | As a supplier, I want a versioned catalogue whose public fields I choose, so that quotes cite exact versions and my private cost basis stays private | Live (API) |
 | CAT-S2 | As a manufacturer, I want to claim the page the hub built from my public site and publish my installation guides and training myself, free | Proposed |
 | CAT-S3 | As a homeowner framing a house, I want the connectors suited to my county's wind requirements and the manufacturer's installation guide on that plan step, with why they fit | Proposed |
 | CAT-S4 | As a homeowner, I want to ask a manufacturer a question about my step without revealing my project, address or budget | Proposed |
@@ -25,8 +25,8 @@ Suppliers, distributors and manufacturers; contractors and design offices that s
 
 | ID | Requirement | Status | Packages |
 |---|---|---|---|
-| CAT-F01 | Offerings are reusable and versioned (goods, works, services, bundles, rentals, surplus) with specifications, options, availability, capacity and scope; a published offering version is immutable | Contract | COM-001 |
-| CAT-F02 | Public offering fields are an explicit allowlist; private commercial knowledge (cost basis, floors, supplier terms) lives in a separate record | Contract | COM-001 |
+| CAT-F01 | Offerings are reusable and versioned (goods, works, services, bundles, rentals, surplus) with specifications, options, availability, capacity and scope; a published offering version is immutable | Live | COM-001 |
+| CAT-F02 | Public offering fields are an explicit allowlist; private commercial knowledge (cost basis, floors, supplier terms) lives in a separate record | Live | COM-001 |
 | CAT-F03 | Complex systems are presented as kits per building with components, because price depends on the specific project | Designed | COM-001 |
 | CAT-F04 | The editorial office discovers manufacturers and suppliers within the hub's legal basis, each site's robots rules and terms, and builds sourced company pages with per-field provenance | Proposed | MAT-001, PIPE-001 |
 | CAT-F05 | Product entries and learning resources (installation guides, data sheets, warranty conditions, training, technical articles, events) are indexed with plan-step terms; facts and links are stored, full texts only where the licence allows | Proposed | MAT-001 |
@@ -40,7 +40,7 @@ Suppliers, distributors and manufacturers; contractors and design offices that s
 | CAT-F13 | Environmental product declarations, test reports and certificates are documents with issuer, validity and source; their presence is shown, their claims are not re-scored | Proposed | MAT-001, PRC-020 |
 | CAT-F14 | Product data can be exported and imported in open BIM formats (IFC property sets) for design tools through an adapter | Proposed | BIM-001 |
 | CAT-F15 | "Approved equal" suggestions always require the designer's or specifier's approval; the engine never asserts equivalence | Proposed | PRC-006 |
-| CAT-F16 | Catalogue changes never change sent quotes, accepted agreements or published knowledge that cited a previous version | Contract | COM-001 |
+| CAT-F16 | Catalogue changes never change sent quotes, accepted agreements or published knowledge that cited a previous version | Live | COM-001 |
 
 ## Agent capabilities
 
