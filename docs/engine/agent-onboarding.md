@@ -222,7 +222,7 @@ Never report a command you did not run, and never round "most tests pass" up to 
 Running several agents in parallel is welcome when one person can still review everything they produce. The rules:
 
 - **One accountable person per claim.** Every claim, pull request and commit names the person who reviews and signs off. Agents never sign off, never approve each other's work and never merge.
-- **At most 3 active claims per person**, enforced by the bot, however many agents you run. A maintainer who claims for themselves (for example to conduct a coordinated wave of agents) may hold up to 10. Finish or release before claiming more.
+- **At most 3 active claims per person**, enforced by the bot, however many agents you run. A maintainer who claims for themselves (for example to conduct a coordinated wave of agents) may hold up to 20. Finish or release before claiming more.
 - **No parallel claims on overlapping paths.** The bot refuses a claim whose scope overlaps another active claim, yours included. Do not run two agents in the same paths under one claim either; split the package in the issue first.
 - **One branch and worktree per agent** (`work/<package>/<handle>`), so agents never overwrite each other's changes.
 - **Review capacity sets the pace.** Open no more pull requests than you can read line by line within a few days; stale or unreviewed pull requests may be closed.

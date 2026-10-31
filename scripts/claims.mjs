@@ -22,7 +22,7 @@ export const CLAIM_TTL_DAYS = 7;
 export const HEARTBEAT_DAYS = 3;
 export const MAX_ACTIVE_CLAIMS_PER_HUMAN = 3;
 /** A maintainer claiming for themselves (for example while conducting a coordinated wave of agents) may hold more. */
-export const MAX_ACTIVE_CLAIMS_PER_MAINTAINER = 10;
+export const MAX_ACTIVE_CLAIMS_PER_MAINTAINER = 20;
 export const BOT_LOGIN = 'github-actions[bot]';
 export const LABELS = {
   claimed: { name: 'claimed', color: 'FBCA04', description: 'A valid claim is active; see the latest claims bot comment' },
