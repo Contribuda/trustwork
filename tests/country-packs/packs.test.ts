@@ -73,24 +73,33 @@ test('schema rejects unknown fields so packs stay data', () => {
   assert.throws(() => CountryPackSchema.parse({ ...getPack('UZ')!, forkedCode: true }));
 });
 
-test('the four existing pack files still validate unchanged (v1) and upgrade to v2 without losing a fact or a source', () => {
+test('the four example packs are v2 files (CTRY-003) whose v1 view still validates and upgrades without losing a fact or a source', () => {
   for (const file of ['uz', 'ge', 'am', 'az']) {
     const raw = JSON.parse(readFileSync(`packages/country-packs/packs/${file}.json`, 'utf8')) as Record<string, unknown> & { registrationIdentifier: Record<string, unknown>; dataResidency: Record<string, unknown> };
-    assert.equal(raw.schemaVersion, undefined, `${file}.json is still a v1 file`);
+    assert.equal(raw.schemaVersion, 2, `${file}.json is a v2 file`);
     assert.deepEqual(packProblems(raw).problems, [], file);
-    const pack = upgradePack(CountryPackSchema.parse(raw));
-    assert.equal(pack.schemaVersion, 2);
-    assert.deepEqual(pack.timeZones, [pack.formats.timeZone]);
-    assert.deepEqual(pack.facets, {});
-    for (const level of [pack.verificationLevel, pack.registrationIdentifier.verificationLevel, pack.dataResidency.verificationLevel]) {
+    // The v1 view of the file (v2 fields removed) is still a valid v1 pack, and upgrading it keeps every v1 field and source.
+    const v1 = structuredClone(raw);
+    for (const key of ['schemaVersion', 'verificationLevel', 'timeZones', 'facets'] as const) delete v1[key];
+    delete v1.registrationIdentifier.verificationLevel;
+    delete v1.dataResidency.verificationLevel;
+    assert.deepEqual(packProblems(v1).problems, [], `${file}: v1 view`);
+    const upgraded = upgradePack(CountryPackSchema.parse(v1));
+    assert.equal(upgraded.schemaVersion, 2);
+    assert.deepEqual(upgraded.facets, {});
+    for (const level of [upgraded.verificationLevel, upgraded.registrationIdentifier.verificationLevel, upgraded.dataResidency.verificationLevel]) {
       assert.ok(level === 'secondary' || level === 'pending', `${file}: a v1 fact is never upgraded to ${level}`);
     }
-    const v1View = structuredClone(pack) as unknown as Record<string, unknown> & { registrationIdentifier: Record<string, unknown>; dataResidency: Record<string, unknown> };
-    for (const key of ['schemaVersion', 'verificationLevel', 'timeZones', 'facets'] as const) delete v1View[key];
-    delete v1View.registrationIdentifier.verificationLevel;
-    delete v1View.dataResidency.verificationLevel;
-    assert.deepEqual(v1View, raw, `${file}: every v1 field and source is kept verbatim`);
-    assert.deepEqual(getPack(file), pack, `${file}: the served pack is the upgraded file`);
+    // The v1 facts still rest on the v1 sources (ISO lists, secondary identifier guides, laws pending counsel): never official.
+    const pack = getPack(file)!;
+    for (const level of [pack.verificationLevel, pack.registrationIdentifier.verificationLevel, pack.dataResidency.verificationLevel]) {
+      assert.ok(level === 'secondary' || level === 'pending', `${file}: a v1 fact is declared ${level}`);
+    }
+    const servedV1 = structuredClone(pack) as unknown as Record<string, unknown> & { registrationIdentifier: Record<string, unknown>; dataResidency: Record<string, unknown> };
+    for (const key of ['schemaVersion', 'verificationLevel', 'timeZones', 'facets'] as const) delete servedV1[key];
+    delete servedV1.registrationIdentifier.verificationLevel;
+    delete servedV1.dataResidency.verificationLevel;
+    assert.deepEqual(servedV1, v1, `${file}: the served pack keeps every v1 field and source verbatim`);
   }
   assert.equal(getPack('UZ')?.registrationIdentifier.verificationLevel, 'secondary', 'UZ-STIR rests on secondary sources');
   assert.equal(getPack('UZ')?.dataResidency.verificationLevel, 'pending', 'UZ residency article numbering is pending');

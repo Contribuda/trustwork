@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "code": "AZ",
   "name": {
     "en": "Azerbaijan",
@@ -34,6 +35,10 @@
       "example": "AZ1000"
     }
   },
+  "timeZones": [
+    "Asia/Baku"
+  ],
+  "verificationLevel": "secondary",
   "registrationIdentifier": {
     "kind": "AZ-VOEN",
     "label": {
@@ -51,6 +56,7 @@
       "url": "https://www.taxes.gov.az"
     },
     "verification": "secondary-sources; 10 digits with a check digit in position 9 and the legal-status digit (1 legal person, 2 natural person) in position 10; check-digit algorithm not enforced until confirmed officially",
+    "verificationLevel": "secondary",
     "sources": [
       {
         "url": "https://arthurdejong.org/python-stdnum/doc/2.2/stdnum.az.voen",
@@ -755,6 +761,7 @@
     "note": {
       "en": "Azerbaijan's Law on Personal Data (2010) regulates cross-border transfers; no general localization requirement was identified. Local-law compliance is for local counsel."
     },
+    "verificationLevel": "pending",
     "sources": [
       {
         "url": "https://e-qanun.az/framework/19675",
@@ -764,8 +771,554 @@
       }
     ]
   },
+  "facets": {
+    "registers": [
+      {
+        "id": "az-vat-payers-register",
+        "name": {
+          "en": "State register of VAT payers (State Tax Service)"
+        },
+        "url": "https://www.taxes.gov.az/az",
+        "query": "manual",
+        "covers": [
+          "AZ-VOEN"
+        ],
+        "candidateAdapters": [
+          "State Tax Service taxpayer lookup (e-taxes.gov.az, not reachable when checked)"
+        ],
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46948",
+            "what": "Tax Code of the Republic of Azerbaijan (e-qanun.az, current text): art. 155.1 VAT registration above AZN 200 000 of taxable operations in 12 consecutive months; art. 157.2 the state register of VAT payers; art. 173.1 VAT rate 18%; art. 71-1 electronic invoices; art. 13.2.72 electronic cabinet accessed with an enhanced electronic signature or a tax-authority code-password",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Tax Code art. 157.2 checked: the tax authority enters a VAT payer in the state register of VAT payers and issues a notice with its VÖEN. How the register is queried and its terms were not reviewed; no live calls."
+      }
+    ],
+    "tax": [
+      {
+        "type": "rate",
+        "id": "vat",
+        "taxKind": "vat",
+        "name": {
+          "en": "Value added tax (ƏDV)"
+        },
+        "standardRate": "18",
+        "registrationThreshold": {
+          "minorUnits": "20000000",
+          "currency": "AZN"
+        },
+        "calculation": "rate",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46948",
+            "what": "Tax Code of the Republic of Azerbaijan (e-qanun.az, current text): art. 155.1 VAT registration above AZN 200 000 of taxable operations in 12 consecutive months; art. 157.2 the state register of VAT payers; art. 173.1 VAT rate 18%; art. 71-1 electronic invoices; art. 13.2.72 electronic cabinet accessed with an enhanced electronic signature or a tax-authority code-password",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "e-invoicing",
+        "id": "e-invoicing",
+        "system": {
+          "en": "Electronic invoices (elektron qaimə-faktura) and electronic VAT invoices (elektron vergi hesab-faktura) in the taxpayer's electronic cabinet"
+        },
+        "mandatory": true,
+        "scope": [
+          "B2B"
+        ],
+        "signatureRequired": false,
+        "candidateAdapters": [
+          "State Tax Service electronic cabinet (terms not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46948",
+            "what": "Tax Code of the Republic of Azerbaijan (e-qanun.az, current text): art. 155.1 VAT registration above AZN 200 000 of taxable operations in 12 consecutive months; art. 157.2 the state register of VAT payers; art. 173.1 VAT rate 18%; art. 71-1 electronic invoices; art. 13.2.72 electronic cabinet accessed with an enhanced electronic signature or a tax-authority code-password",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Tax Code art. 71-1 checked: persons registered with the tax authority issue electronic invoices within set deadlines in the cases set by the Code; forms and procedures come from the executive authority (not reviewed). The electronic cabinet is entered with an enhanced electronic signature or a code-password (art. 13.2.72), so a qualified signature is not required."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "enhanced-electronic-signature",
+        "kind": "signature",
+        "name": {
+          "en": "Enhanced electronic signature (gücləndirilmiş elektron imza)"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "Law No. 602-IIQ of 9 March 2004, art. 3.2: same legal force as a handwritten signature when made with certified tools and a valid certificate"
+        },
+        "candidateAdapters": [
+          "Asan İmza mobile signature (asanimza.az; terms not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://taxes.gov.az/az/post/316",
+            "what": "Law No. 602-IIQ of 9 March 2004 'On electronic signature and electronic document' as published by the State Tax Service: art. 3.2, an enhanced electronic signature has the same legal force as a handwritten signature",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Text as published by the State Tax Service; the e-qanun.az consolidated text was not compared. The enhanced signature is recorded as qualified because it carries handwritten-signature effect."
+      }
+    ],
+    "payments": [
+      {
+        "type": "scheme",
+        "id": "cards",
+        "name": {
+          "en": "Payment cards (Interbank Card Center, BKM)"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "a licensed card acquirer configured per hub"
+        ],
+        "sources": [
+          {
+            "url": "https://www.cbar.az/page-41/payment-systems",
+            "what": "Central Bank of the Republic of Azerbaijan, payment systems: AZIPS (real-time gross settlement), XÖHKS (low-value payments clearing and settlement), AÖS (instant payments system, IPS), BKM (Interbank Card Center), HÖP (government payment portal)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "scheme",
+        "id": "credit-transfers",
+        "name": {
+          "en": "Credit transfers through AZIPS and the low-value payments clearing and settlement system (XÖHKS)"
+        },
+        "rails": [
+          "credit-transfer"
+        ],
+        "sources": [
+          {
+            "url": "https://www.cbar.az/page-41/payment-systems",
+            "what": "Central Bank of the Republic of Azerbaijan, payment systems: AZIPS (real-time gross settlement), XÖHKS (low-value payments clearing and settlement), AÖS (instant payments system, IPS), BKM (Interbank Card Center), HÖP (government payment portal)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "scheme",
+        "id": "instant-payments",
+        "name": {
+          "en": "Instant Payments System (Ani Ödənişlər Sistemi, AÖS)"
+        },
+        "rails": [
+          "instant-credit-transfer"
+        ],
+        "sources": [
+          {
+            "url": "https://www.cbar.az/page-41/payment-systems",
+            "what": "Central Bank of the Republic of Azerbaijan, payment systems: AZIPS (real-time gross settlement), XÖHKS (low-value payments clearing and settlement), AÖS (instant payments system, IPS), BKM (Interbank Card Center), HÖP (government payment portal)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The Central Bank page lists the system; launch date and participation were not reviewed."
+      }
+    ],
+    "calendar": [
+      {
+        "type": "working-week",
+        "id": "working-week",
+        "days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Labour Code art. 90.1 sets a five-day week with two rest days; that the rest days are Saturday and Sunday was not read from the Code. Employers may set a six-day week (art. 90.2)."
+      },
+      {
+        "type": "holiday",
+        "id": "new-year",
+        "name": {
+          "en": "New Year"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "new-year-2",
+        "name": {
+          "en": "New Year (second day)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 2
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "national-mourning-day",
+        "name": {
+          "en": "National Mourning Day"
+        },
+        "holiday": "observance",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 20
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "womens-day",
+        "name": {
+          "en": "Women's Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "victory-over-fascism-day",
+        "name": {
+          "en": "Victory over Fascism Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 9
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "independence-day",
+        "name": {
+          "en": "Independence Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 28
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "national-salvation-day",
+        "name": {
+          "en": "National Salvation Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 6,
+          "day": 15
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "armed-forces-day",
+        "name": {
+          "en": "Armed Forces Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 6,
+          "day": 26
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "state-sovereignty-day",
+        "name": {
+          "en": "State Sovereignty Day"
+        },
+        "holiday": "public",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 9,
+          "day": 20
+        },
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "remembrance-day",
+        "name": {
+          "en": "Remembrance Day"
+        },
+        "holiday": "observance",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 9,
+          "day": 27
+        },
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "restoration-of-independence-day",
+        "name": {
+          "en": "Restoration of Independence Day"
+        },
+        "holiday": "public",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 10,
+          "day": 18
+        },
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "victory-day",
+        "name": {
+          "en": "Victory Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 8
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "flag-day",
+        "name": {
+          "en": "National Flag Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 9
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "constitution-day",
+        "name": {
+          "en": "Constitution Day"
+        },
+        "holiday": "public",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 12
+        },
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "national-revival-day",
+        "name": {
+          "en": "National Revival Day"
+        },
+        "holiday": "public",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 17
+        },
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "solidarity-day",
+        "name": {
+          "en": "Day of Solidarity of World Azerbaijanis"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 31
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/46943",
+            "what": "Labour Code of the Republic of Azerbaijan (e-qanun.az): art. 90.1 five-day week with two rest days; art. 105 holidays and non-working holidays, weekend rest days that coincide move to the next working day, Novruz, Gurban and Ramazan dates announced by the end of December for the next year; art. 106 national mourning day; art. 106-1 Remembrance Day",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      }
+    ]
+  },
   "notes": [
-    "ISO 3166-2:AZ lists 78 subdivisions; Wikipedia marks AZ-SUS (Shusha) as removed in a newsletter while the table still carries it — verify against the ISO Online Browsing Platform before relying on it."
+    "ISO 3166-2:AZ lists 78 subdivisions; Wikipedia marks AZ-SUS (Shusha) as removed in a newsletter while the table still carries it — verify against the ISO Online Browsing Platform before relying on it.",
+    "Weekend moves follow Labour Code art. 105.5 (observed: next-weekday). When a moved holiday lands on another holiday (Victory Day on a Sunday and Flag Day on the Monday, as in 2026) the law moves the rest day again; the engine does not resolve such collisions, so hubs confirm them against the Cabinet's annual calendar."
   ],
   "sources": [
     {

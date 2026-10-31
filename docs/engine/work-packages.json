@@ -1043,7 +1043,7 @@
       "id": "CTRY-003",
       "title": "Sourced v2 facets for Uzbekistan, Georgia, Armenia and Azerbaijan",
       "area": "country-packs",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CTRY-002"
       ],

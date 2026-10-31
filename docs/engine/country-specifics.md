@@ -2,7 +2,7 @@
 
 Normative requirements: [Country packs and localization](modules/country-packs-and-localization.md). Participants: [who uses what](participants/README.md).
 
-Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan. The pack v2 schema (facets at country and subdivision level, verification levels, several time zones and identifier kinds, the measurement-unit catalogue) is a **Contract** (CTRY-002); sourced v2 facts for the existing packs (CTRY-003) and the facets' use by engine modules are **Proposed**. The United States pack is the first sourced v2 pack (**Live**, INTL-US: every state, the District of Columbia and the territories, with California and San Diego County in depth; facts at candidate or pending level are labelled), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
+Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan. The pack v2 schema (facets at country and subdivision level, verification levels, several time zones and identifier kinds, the measurement-unit catalogue) is a **Contract** (CTRY-002); sourced v2 facts for the four example packs are **Live** as pack data (CTRY-003: registers, procurement, VAT, e-invoicing, e-signature, payments and holidays, each fact with its source and verification level), and the facets' use by engine modules is **Proposed**. The United States pack is the first sourced v2 pack (**Live**, INTL-US: every state, the District of Columbia and the territories, with California and San Diego County in depth; facts at candidate or pending level are labelled), and an EU layer plus fourteen more packs are planned (ADR 012 decision 30; [Languages and countries](localization.md#languages-and-countries)).
 
 Construction is local. What a valid company looks like, who may legally pour concrete for a school, which code a facade must meet, how an invoice must be issued, how a document is signed, what counts as a working day: all of this differs from country to country. The engine handles these differences with two layers and one rule.
 
@@ -128,9 +128,23 @@ Sender registration for SMS, popular messengers and their business-use terms, e-
 
 Pack v2 (`"schemaVersion": 2`, CTRY-002) keeps every v1 field and adds `timeZones`, verification levels on the v1 facts, region kinds `state`, `district`, `territory` and `province`, a region `parent`, and `facets` on the pack and on any region. Each facet is a list of facts with a stable `id`, at least one source and a verification level (`official`, `secondary`, `candidate`, `pending`); a narrower scope overrides a wider fact by `id` with its own sources, which is also how the EU layer (CTRY-EU) will work. Rates are decimal strings, adapters referenced by a fact must exist in the engine (`ENGINE_ADAPTERS`), unit codes come from the catalogue in `packages/contracts/src/common/units.ts`, and nothing in a pack can name or enable a restricted place. v1 files stay valid and are upgraded losslessly when loaded. The field-by-field reference is in [How to add a country](../country-packs/how-to-add-a-country.md#2a-add-facts-facets); `tests/country-packs/v2/federal-fixture.ts` is a synthetic federal example.
 
+## Recorded v2 facts for the example countries (CTRY-003)
+
+Since CTRY-003 the four example packs are v2 files. Every fact cites its source with the retrieval date (2026-10-31) and a verification level; anything below `official` carries a note saying what is still unconfirmed, and adapters are named only as candidates (no live register call). The pack files are the reference; this table only shows the levels.
+
+| Facet | Uzbekistan | Georgia | Armenia | Azerbaijan |
+|---|---|---|---|---|
+| VAT rate | 12%, official (Tax Code art. 258) | 18%, official (Tax Code art. 166); threshold GEL 100 000 (art. 165) | 20%, secondary (2018 translation of the Tax Code, art. 63) | 18%, official (Tax Code art. 173.1); threshold AZN 200 000 (art. 155.1) |
+| E-invoicing | Official (Tax Code art. 47, Resolution No. 522) | Pending (Tax Code art. 180 allows written or electronic invoices; the Minister's order is not reviewed) | Secondary (Tax Code arts. 56, 66, 68 in the 2018 translation) | Official (Tax Code art. 71-1) |
+| E-signature | Official (Law ZRU-793, art. 4) | Official (Law on Electronic Documents and Electronic Trust Services, art. 3) | Secondary (EKENG description; the law is not opened) | Official (Law No. 602-IIQ, art. 3.2) |
+| Payments | Secondary (Uzcard, Humo); candidate (instant payments) | Official (cards, RTGS; instant payments are a project) | Official (ArCa); candidate (ArcaPay) | Official (cards, AZIPS and XÖHKS, instant payments) |
+| Registers | Candidate (statistics register) | Secondary (NAPR register) | Candidate (Ministry of Justice e-register) | Official (state register of VAT payers) |
+| Procurement portal | Official (xarid.uzex.uz) | Official (tenders.procurement.gov.ge) | Official (armeps.am) | Not recorded |
+| Holidays | Official fixed days (Labour Code art. 208); 2026 Eid dates secondary | Official fixed days (Labour Code art. 30); 2026 Easter dates secondary | Official (Law HO-200 as in force from 24.07.2026) | Official fixed days (Labour Code art. 105); Novruz, Ramazan and Gurban dates not recorded |
+
 ## Starting points for the example countries (secondary sources, pending confirmation)
 
-These are research leads for pack maintainers, gathered on 2026-10-30 from secondary sources. They are **not** pack facts until a maintainer confirms them against official sources and adds them to the pack with citations.
+These are research leads for pack maintainers, gathered on 2026-10-30 from secondary sources. They are **not** pack facts until a maintainer confirms them against official sources and adds them to the pack with citations; the table above shows which ones CTRY-003 confirmed.
 
 | Topic | Uzbekistan | Georgia | Armenia | Azerbaijan |
 |---|---|---|---|---|
