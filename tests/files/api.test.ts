@@ -93,7 +93,9 @@ test('FILE-001 files API', { skip: stack ? false : SKIP_REASON }, async (t) => {
     stack.clock.advance(61_000);
     await assert.rejects(stack.store.acceptGet(ticket.download.url, stack.clock.now()), (e: unknown) => e instanceof SignedUrlRejectedError && e.reason === 'expired');
     stack.clock.reset();
-    const forged = ticket.download.url.replace(sharedKey, `${sharedKey.slice(0, -1)}0`);
+    // Change the last character to a different one; replacing it with a fixed character is a no-op when the key
+    // already ends with that character.
+    const forged = ticket.download.url.replace(sharedKey, `${sharedKey.slice(0, -1)}${sharedKey.endsWith('0') ? '1' : '0'}`);
     await assert.rejects(stack.store.acceptGet(forged, stack.clock.now()), SignedUrlRejectedError, 'another key with the same signature');
     const longer = new URL(ticket.download.url);
     longer.searchParams.set('expires', String(Number(longer.searchParams.get('expires')) + 3600));
