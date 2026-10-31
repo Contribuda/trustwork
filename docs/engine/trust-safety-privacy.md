@@ -56,6 +56,7 @@ The sanction ladder: level 1 warning, level 2 temporary restriction, level 3 fea
 - Tool access is allowlisted per action; no superuser channel.
 - Model egress is decided per data class and provider by the hub, respecting residency.
 - Kill switches exist per hub and per node.
+- A person's own AI chat connected over MCP is another hand of their one agent: audience-bound short-lived tokens, consent per client on the hub's site, private data classes off by default, commitments confirmed on the site, untrusted text marked in every result, no token passthrough ([The MCP server](mcp-server.md)).
 - Private chain-of-thought is not logged or shown; activity logs show actions and evidence.
 
 ## Sanctions and export controls

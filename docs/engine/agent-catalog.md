@@ -1095,11 +1095,13 @@ Two directions, two protocols:
 
 Exact protocol versions are pinned in the implementing work package; the engine ships both behind adapters with fakes, and no external call happens in tests.
 
+**The MCP side is now designed in full** in [The MCP server](mcp-server.md) and [ADR 013](../adr/013-mcp-server.md) (2026-10-31): the tool catalogue is the shared capability registry (ADR 010 decision 23, full parity) and covers every participant-facing module; protocol revision 2026-07-28 over Streamable HTTP; the hub's own authorization server with Client ID Metadata Documents (Dynamic Client Registration only as a fallback); toolsets; on-site confirmation of commitments through URL-mode elicitation; public and admin surfaces. Where this section and the chapter differ, the chapter wins; the tool list below is the earlier proposal.
+
 ### Registration and consent
 
 ```text
 person opens Settings → Connections → "Connect an agent"
-  → the external client registers (OAuth 2.1 dynamic client registration, rate-limited; the client name is self-asserted and labelled "unverified" unless the hub lists it)
+  → the external client identifies itself (a Client ID Metadata Document, or dynamic client registration as a rate-limited fallback; the client name is self-asserted and labelled "unverified" unless the hub lists it)
   → authorization code flow with PKCE on the hub's origin, step-up required
   → consent screen: client name, redirect URI, requested scopes, mandates to bind, data classes, rate limits, expiry
   → person confirms; the connection record is created; tokens are issued for the MCP resource only
@@ -1126,7 +1128,7 @@ If a bound mandate is revised, suspended or revoked, the binding stops at once (
 
 ### Tools exposed over MCP (proposal)
 
-Tools appear only when the hub enabled and the payer is entitled to the module behind them.
+Superseded by the [tool catalogue](mcp-server.md#tool-catalogue) of the MCP chapter, which keeps every tool below under a domain-prefixed name. Tools appear only when the hub enabled and the payer is entitled to the module behind them.
 
 | Tool | Scope | Module |
 |---|---|---|

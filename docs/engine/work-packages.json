@@ -4101,38 +4101,706 @@
       ]
     },
     {
-      "id": "AGT-016",
-      "title": "External agent connections over MCP",
+      "id": "MCP-001",
+      "title": "Capability registry runtime, the MCP projection and the CI parity report",
       "area": "assistant",
       "status": "open",
       "dependsOn": [
-        "AGT-003",
-        "BE-004"
+        "AGT-002",
+        "AGT-003"
       ],
-      "handbook": "docs/engine/agent-catalog.md",
-      "goal": "Let a participant connect their own external agent to their single Trustwork agent identity with scoped, mandate-bound tokens, audit, rate limits and revocation, and offer a read-only MCP server over the public projection.",
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Run AGT-002's one capability registry (buildCapabilityRegistry over module manifests and activated extensions) for the agent runtime, MCP and the interface (ADR 010 decision 23), keep the MCP tool projection (McpToolSchema) complete, and report parity and coverage gaps in CI.",
       "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
         "docs/engine/agent-catalog.md",
-        "docs/research/market-and-ideas-2026-10.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "packages/contracts/src/agent-catalog.ts",
+        "packages/contracts/src/mcp.ts"
+      ],
+      "steps": [
+        "Build the registry at start-up from module manifests and activated extension versions; refuse invalid capabilities (capabilityViolations).",
+        "Maintain the MCP projection: one McpTool per capability with the mcp surface and one handoff per govern capability in the interface; validate with mcpToolViolations and mcpProjectionGaps.",
+        "Generate the agent runtime tool allowlist and the MCP tool list from the same registry.",
+        "Write scripts/capability-parity.mjs: parityGaps (ui and agent surfaces), mcpProjectionGaps, interface paths that do not exist under apps/web/app and interface commands without a capability; compare with a reviewed baseline; run it in npm run check."
+      ],
+      "acceptance": [
+        "A capability without the ui or agent surface, or an MCP capability without exactly one tool, fails the build (tested).",
+        "The catalogue size table of the MCP chapter matches the generated counts.",
+        "Adding a gap not in the baseline fails CI; removing one updates the baseline in the same pull request."
+      ],
+      "paths": [
+        "apps/api/src/modules/capabilities",
+        "scripts/capability-parity.mjs",
+        "tests/capabilities"
+      ]
+    },
+    {
+      "id": "MCP-002",
+      "title": "Authorization server: metadata, client registration, PKCE, resource indicators, tokens and consent records",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "AGT-002",
+        "BE-004",
+        "OPS-001"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Run the hub authorization server for the MCP surfaces: RFC 9728 and RFC 8414 metadata, Client ID Metadata Documents with SSRF protection, deprecated dynamic registration behind a hub switch, PKCE S256, exact resource indicators, iss in responses, opaque hashed tokens with refresh rotation and reuse detection, revocation and per-client consent records.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/adr/002-identity-and-access.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/connections: connection, consent, client registration, token (hash only), token family, connection call, confirmation challenge.",
+        "Serve /.well-known/oauth-protected-resource for /mcp and /mcp/admin and /.well-known/oauth-authorization-server; one authorization server entry; S256 only; iss on every response; client_id_metadata_document_supported and the none token endpoint method.",
+        "Fetch client metadata documents only through the egress proxy (HTTPS, private and link-local ranges blocked, size and time limits, cache headers); trust policy any HTTPS client or listed clients only.",
+        "Authorization endpoint with the first-party login, step-up and the elevated session for staff; consent per client id and redirect URI; CSRF and frame-ancestors none; progressive scopes.",
+        "Token endpoint (form-urlencoded) issuing 15-minute opaque access tokens bound to one surface audience, rotating refresh tokens, DPoP when presented; RFC 7009 revocation; revoke-all on password change and recovery."
+      ],
+      "acceptance": [
+        "A token for /mcp is refused on /mcp/admin and on the first-party API, and a session cookie never authorizes /mcp (tested).",
+        "Reusing a rotated refresh token revokes the family and suspends the connection (tested).",
+        "A metadata document URL resolving to a private address is never fetched (tested).",
+        "A changed redirect URI requires new consent."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/oauth",
+        "packages/data/migrations/connections",
+        "packages/data/src/schema/connections.ts",
+        "packages/data/src/repositories/connections.ts",
+        "tests/connections/oauth"
+      ]
+    },
+    {
+      "id": "MCP-003",
+      "title": "MCP transport and protocol layer",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-002",
+        "AGT-003"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Serve /mcp, /mcp/public and /mcp/admin over Streamable HTTP for protocol 2026-07-28 (stateless, server/discover) with the 2025-11-25 handshake for older clients, with token and audience checks, rate limits, kill switches, audit and tracing.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/architecture/api.md",
+        "docs/engine/agent-catalog.md"
+      ],
+      "steps": [
+        "Pin the protocol revisions and the SDK (written reason in the pull request); POST-only endpoint, 405 on GET and DELETE, never mint session ids.",
+        "Validate Origin, MCP-Protocol-Version, Mcp-Method, Mcp-Name and Mcp-Param headers against the body; answer UnsupportedProtocolVersion with the supported list.",
+        "Resolve the bearer token to its connection on every request; check audience, status, kill switches (node, hub, external_agent_api, module, person stop, connection) and toolsets.",
+        "Token buckets per connection and class with Retry-After; circuit breaker on repeated denials, loops or injection signatures.",
+        "Write a connection_call row per call (argument digest only) and a trace span from the _meta trace context; treat a closed response stream as cancellation."
+      ],
+      "acceptance": [
+        "Header and body mismatches answer 400 HeaderMismatch (-32020) (tested).",
+        "An engaged kill switch blocks the next call on every surface (tested).",
+        "tools/list is deterministic and carries ttlMs and cacheScope."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/transport",
+        "tests/connections/mcp/transport"
+      ]
+    },
+    {
+      "id": "MCP-004",
+      "title": "Tool projection: contract-derived schemas, annotations, toolsets, data-class filtering, untrusted envelope, errors and messages",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-001",
+        "MCP-003",
+        "INTL-004",
+        "LANG-ES"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Project registry entries into MCP tools with JSON Schema 2020-12 generated from the Zod contracts, explicit annotations, toolsets, the data-class filter after the projection serializers, the untrusted-content envelope and localized person-facing messages.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/localization.md",
+        "docs/adr/008-contracts-and-validation.md"
+      ],
+      "steps": [
+        "Generate inputSchema and outputSchema with z.toJSONSchema; snapshot them for conformance.",
+        "Deny a capability whose required private classes the connection lacks (connectionMayInvoke); remove redactable private fields without the opt-in and list them in _meta.redactedFields; never pass contact details or file contents until AGT-002 adds those classes.",
+        "Wrap every outside free text as UntrustedText in structuredContent and fence it in the text rendering.",
+        "Map errors to McpToolErrorSchema with an English message and a userMessage from the mcp locale namespace in every engine language."
+      ],
+      "acceptance": [
+        "No result contains budgetRange, constraint records, floors, tokenHash or argsDigest without the matching class (forbidden-field scan).",
+        "Every free-text field from another party arrives as UntrustedText (tested per tool).",
+        "Annotations follow the class table of the chapter for every entry (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/registry",
+        "apps/web/locales/en/mcp.json",
+        "apps/web/locales/ru/mcp.json",
+        "apps/web/locales/uz-Latn/mcp.json",
+        "apps/web/locales/ka/mcp.json",
+        "apps/web/locales/hy/mcp.json",
+        "apps/web/locales/az-Latn/mcp.json",
+        "apps/web/locales/es/mcp.json",
+        "tests/connections/mcp/registry"
+      ]
+    },
+    {
+      "id": "MCP-005",
+      "title": "Confirmation challenges, URL-mode elicitation, handoffs and long-running tasks",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-004",
+        "AST-001"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Execute commits only within bound mandates or after the person confirms on the site: challenges bound to person, connection, capability version and action digest, URL-mode elicitation through InputRequiredResult with AEAD requestState, the fallback link with a decision waiting, handoffs, and the tasks extension for long work.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/agents.md",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Create challenges (at most 15 minutes, single use) from action intents that no bound mandate pre-authorizes; human-only verbs always.",
+        "Return URL-mode elicitation when the client declares it, otherwise mcp.confirmation_required with siteUrl and a decision waiting.",
+        "Verify requestState integrity, principal, connection, argument digest and expiry; consume the challenge once and execute with it as the idempotency key.",
+        "Implement handoffs to first-party pages prefilled from draft handles; implement tasks/get for long work when the client declares the extension."
+      ],
+      "acceptance": [
+        "Two retries of one confirmed challenge execute once (concurrency test).",
+        "A tampered or foreign requestState is refused (tested).",
+        "A confirmation opened by another account changes nothing (tested).",
+        "An unknown outcome goes to reconciliation and is never retried blindly."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/confirmation",
+        "tests/connections/mcp/confirmation"
+      ]
+    },
+    {
+      "id": "MCP-010",
+      "title": "MCP read tools: account, agent, companies, projects, plans, consultations, tasks",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-004",
+        "BE-003",
+        "PPL-001",
+        "AGT-001",
+        "AGT-022",
+        "PLAN-001",
+        "CONS-001",
+        "TASK-001"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the read tools of these domains as thin adapters over existing use cases and serializers.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/projects.md",
+        "docs/engine/people-and-companies.md"
+      ],
+      "steps": [
+        "Implement every read tool of the listed domains in the chapter catalogue.",
+        "Add negative authorization tests per tool and role."
+      ],
+      "acceptance": [
+        "Every read tool returns exactly what the same interface view returns for the same person, filtered by data class (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/read/people-and-plans",
+        "tests/connections/mcp/tools/read-people-and-plans"
+      ]
+    },
+    {
+      "id": "MCP-011",
+      "title": "MCP read tools: catalogue, procurement, sales, orders, execution, reputation, billing",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-004",
+        "COM-002",
+        "EXE-001",
+        "REP-002",
+        "AGT-004"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the read tools of these domains as thin adapters over existing use cases and serializers.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/commerce.md",
+        "docs/engine/execution-and-reputation.md",
+        "docs/engine/billing.md"
+      ],
+      "steps": [
+        "Implement every read tool of the listed domains in the chapter catalogue.",
+        "Add negative authorization tests per tool and role, including the other party of a deal."
+      ],
+      "acceptance": [
+        "A counterparty never receives the other side private constraints through any read tool (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/read/commerce-and-trust",
+        "tests/connections/mcp/tools/read-commerce-and-trust"
+      ]
+    },
+    {
+      "id": "MCP-012",
+      "title": "MCP read tools: knowledge, learning, events, publications, matching, messages, notifications, files, hub",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-004",
+        "RAG-301",
+        "REC-001",
+        "LRN-001",
+        "EVT-001",
+        "CNT-003",
+        "MATCH-001",
+        "COMMS-001",
+        "FILE-001",
+        "HUB-001"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the read tools of these domains as thin adapters over existing use cases and serializers.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/search-and-knowledge.md",
+        "docs/engine/events.md",
+        "docs/engine/learning.md",
+        "docs/engine/communications.md"
+      ],
+      "steps": [
+        "Implement every read tool of the listed domains in the chapter catalogue.",
+        "Messages are read per context only; no cross-context inbox."
+      ],
+      "acceptance": [
+        "Message bodies and file text always arrive as untrusted text (tested).",
+        "Recommendations are identical with and without sponsorship (comparison test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/read/community",
+        "tests/connections/mcp/tools/read-community"
+      ]
+    },
+    {
+      "id": "MCP-020",
+      "title": "MCP draft tools: account, agent, companies, projects, plans, consultations, tasks, reputation",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-010",
+        "MCP-011",
+        "AGT-010"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the draft tools of these domains: private, idempotent, non-binding writes the person sees on the site in the same places as the built-in agent drafts.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/agent-catalog.md"
+      ],
+      "steps": [
+        "Implement every draft tool of the listed domains with idempotency keys and draft handles bound to person and connection.",
+        "Proposals for goals, mandates and settings stay inert until confirmed on the site."
+      ],
+      "acceptance": [
+        "No draft tool changes anything another person can see (tested).",
+        "A proposed mandate or plan version never becomes active through MCP (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/draft/people-and-plans",
+        "tests/connections/mcp/tools/draft-people-and-plans"
+      ]
+    },
+    {
+      "id": "MCP-021",
+      "title": "MCP draft tools: catalogue, procurement, sales, knowledge, learning, events, publications, matching, messages, notifications, files",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-011",
+        "MCP-012"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the draft tools of these domains, including quarantined uploads.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/commerce.md",
+        "docs/engine/publishing.md"
+      ],
+      "steps": [
+        "Implement every draft tool of the listed domains.",
+        "Uploads are size-limited, scanned, quarantined and stored as untrusted attachments."
+      ],
+      "acceptance": [
+        "No draft tool changes anything another person can see (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/draft/commerce-and-community",
+        "tests/connections/mcp/tools/draft-commerce-and-community"
+      ]
+    },
+    {
+      "id": "MCP-030",
+      "title": "MCP commit tools: profile, companies, projects, plans, consultations, tasks, execution, reputation",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-005",
+        "MCP-020"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the commit tools of these domains through action intents, mandates, budgets and the confirmation flow.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/agents.md",
+        "docs/engine/execution-and-reputation.md"
+      ],
+      "steps": [
+        "Implement every commit tool of the listed domains with its mandate kind and confirmation policy from the registry.",
+        "confirm_execution and confirmation responses are confirmed on the site every time."
+      ],
+      "acceptance": [
+        "No commit executes without a bound pre-authorizing mandate or an on-site confirmation (negative tests per tool).",
+        "Sharing a plan always asks on the site."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/commit/plans-and-reputation",
+        "tests/connections/mcp/tools/commit-plans-and-reputation"
+      ]
+    },
+    {
+      "id": "MCP-031",
+      "title": "MCP commit tools: catalogue, procurement, sales, orders",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-005",
+        "MCP-021",
+        "AGT-008"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the commerce commit tools with immutable versions, digests, budgets, consumer mode and the anti-splitting guard.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/commerce.md",
+        "docs/adr/003-snapshots-evidence-and-authority.md"
+      ],
+      "steps": [
+        "Implement every commit tool of the listed domains.",
+        "Bind every confirmation to the quote, RFQ or agreement digest; refuse values that appear only in untrusted text."
+      ],
+      "acceptance": [
+        "A changed price, quantity, counterparty or term voids the confirmation (tested).",
+        "An order beyond the budget is refused with commercial.budget_insufficient (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/commit/commerce",
+        "tests/connections/mcp/tools/commit-commerce"
+      ]
+    },
+    {
+      "id": "MCP-032",
+      "title": "MCP commit tools: knowledge, learning, events, publications, matching, messages",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-005",
+        "MCP-021"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Implement the community commit tools within the protective limits (introductions, meeting requests, announcements) that cannot be bought.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/events.md"
+      ],
+      "steps": [
+        "Implement every commit tool of the listed domains.",
+        "Label every message and post as sent by the person agent."
+      ],
+      "acceptance": [
+        "Introduction and meeting quotas apply to MCP exactly as to the built-in agent (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/tools/commit/community",
+        "tests/connections/mcp/tools/commit-community"
+      ]
+    },
+    {
+      "id": "MCP-040",
+      "title": "MCP resources, resource templates, subscriptions and prompts",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-010",
+        "MCP-011",
+        "MCP-012"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Serve trustwork:// resources with digests for immutable versions, subscriptions to the briefing, decisions and action status, and the guided workflow prompts.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/agent-catalog.md"
+      ],
+      "steps": [
+        "Implement resources/list, resources/templates/list and resources/read with the same projection and data-class rules as tools.",
+        "Implement subscriptions/listen for resource updates and list changes.",
+        "Implement the prompts of the chapter in English with a locale argument."
+      ],
+      "acceptance": [
+        "Resources of immutable versions carry their trustwork-digest-1 digest and match the API (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/resources",
+        "apps/api/src/modules/connections/mcp/prompts",
+        "tests/connections/mcp/resources"
+      ]
+    },
+    {
+      "id": "MCP-050",
+      "title": "Public read-only MCP surface",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-012"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Serve /mcp/public without an account: public reads only, public caching, anti-scraping caps, data and source licences, sourced labels.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/federation.md",
+        "docs/engine/search-and-knowledge.md"
+      ],
+      "steps": [
+        "Expose the tools marked public in the registry; cacheScope public.",
+        "Rate-limit per client address and client id; enforce the public records cap.",
+        "Keep cited answers behind a hub switch, off by default."
+      ],
+      "acceptance": [
+        "No non-public field is reachable on /mcp/public (scan test).",
+        "No write tool is listed or callable (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/public",
+        "tests/connections/mcp/public"
+      ]
+    },
+    {
+      "id": "MCP-060",
+      "title": "Admin MCP surface for hub staff",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-005",
+        "ADM-001",
+        "HUB-001",
+        "AGT-015"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Serve /mcp/admin, off by default: staff reads and drafts under staff permissions, case grants and elevated sessions; every decision in the console through handoffs.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/hub-administration.md",
+        "docs/engine/hub-console/README.md"
+      ],
+      "steps": [
+        "Implement the admin tools of the chapter with their staff permissions.",
+        "Require an elevated session at consent and an active case grant for private case data.",
+        "Hand off every decision, approval, case grant and kill switch to the console."
+      ],
+      "acceptance": [
+        "A participant token is refused on /mcp/admin and a staff token on /mcp (tested).",
+        "No admin tool approves, decides, activates or releases anything (tested).",
+        "Private case data without an active case grant answers not found (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/connections/mcp/admin",
+        "tests/connections/mcp/admin"
+      ]
+    },
+    {
+      "id": "MCP-070",
+      "title": "Participant screens: consent, Settings → Connections and the confirmation page",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-005",
+        "AGT-018"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Build the consent page, connection management with call history and revocation, and the /confirm/<id> page that renders the action from first-party records.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/design/screen-contracts/workspace/settings.md",
+        "docs/quality/accessibility.md"
+      ],
+      "steps": [
+        "Consent page: client label, redirect host, loopback warning, scopes in plain language, toolsets, private classes with warnings, mandate bindings, expiry.",
+        "Connections: list, scopes, toolsets, classes, last use, call history by digest, revoke one or all.",
+        "Confirmation page: the structured action, digest, budget and the connection label; confirm or decline; same-person check."
+      ],
+      "acceptance": [
+        "Pages work by keyboard and screen reader and at phone width in every engine language (browser tests, screenshots in Spanish).",
+        "The confirmation page never renders text supplied by the model (tested)."
+      ],
+      "paths": [
+        "apps/web/app/(auth)/oauth",
+        "apps/web/app/app/settings/connections",
+        "apps/web/app/app/confirm",
+        "apps/web/components/connections",
+        "tests/web/connections"
+      ]
+    },
+    {
+      "id": "MCP-071",
+      "title": "Console: External agents policy for MCP (HC-82)",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-002",
+        "HUBC-009"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Extend the External agents screen with the MCP policy (McpHubPolicySchema): endpoints, disabled tools, client trust and listed clients, dynamic registration, anonymous cited answers, token lifetimes and limits next to the AGT-002 protection limits, and counts by client, without any list of who connected what.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/hub-console/user-agents-admin.md",
+        "docs/engine/hub-console/screens.md"
+      ],
+      "steps": [
+        "Edit McpHubPolicySchema as a hub configuration version; explain each bound.",
+        "Show connection counts by client and surface, cohort-suppressed."
+      ],
+      "acceptance": [
+        "A policy can never widen scopes, data classes or confirmation rules (tested).",
+        "Enabling the admin surface needs a second person."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/agents/external",
+        "tests/web/admin/external-agents"
+      ]
+    },
+    {
+      "id": "MCP-080",
+      "title": "MCP conformance, negative authorization, concurrency and red-team suites with a fake MCP client",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-030",
+        "MCP-031",
+        "MCP-032",
+        "MCP-040",
+        "MCP-050",
+        "MCP-060",
+        "MCP-070",
+        "EVAL-001"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Prove the server against the protocol and the product rules with a scripted fake MCP client and no external calls.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/quality/security.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Fake MCP client covering discovery, OAuth with PKCE, step-up, every tool with fixtures, URL elicitation retries and the fallback path.",
+        "Protocol and authorization conformance for 2026-07-28 and 2025-11-25, using the official conformance tooling where available.",
+        "Negative authorization matrix for every tool against scopes, toolsets, data classes, modules, rights, mandates, connection state and kill switches.",
+        "Red team: canaries in every untrusted channel, tampered requestState, guessed handles, SSRF metadata URLs, consent clickjacking, confused deputy, phishing a confirmation link."
+      ],
+      "acceptance": [
+        "Every suite runs in CI at the exact head commit with counts.",
+        "Zero commits executed without mandate or confirmation across the red-team corpus."
+      ],
+      "paths": [
+        "tests/connections/mcp/conformance",
+        "tests/connections/mcp/redteam",
+        "tests/connections/mcp/fake-client"
+      ]
+    },
+    {
+      "id": "MCP-090",
+      "title": "MCP client guides, runnable examples and connector listing material",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-080",
+        "MCP-071"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Make connecting easy and honest: the participant guide with screenshots, runnable examples against a local stack with fixtures, and the material a hub needs to list its server in client directories.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/guides/README.md"
+      ],
+      "steps": [
+        "Update docs/guides/connect-your-ai-chat.md with the real flow, screenshots in English and Spanish, and the status of each step.",
+        "Add runnable examples (a minimal client script) under docs/guides/examples/mcp.",
+        "Describe directory listing material (name, description, scopes, privacy notes) per hub."
+      ],
+      "acceptance": [
+        "Every step in the guide is labelled with its true status.",
+        "The examples run against the local stack without network access to third parties."
+      ],
+      "paths": [
+        "docs/guides/connect-your-ai-chat.md",
+        "docs/guides/examples/mcp"
+      ]
+    },
+    {
+      "id": "AGT-016",
+      "title": "MCP server end-to-end acceptance (umbrella)",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "MCP-090"
+      ],
+      "handbook": "docs/engine/mcp-server.md",
+      "goal": "Umbrella for MCP-001 … MCP-090 (ADR 013): a participant connects their own AI chat to their one Trustwork agent and uses every participant-facing capability with scoped, audience-bound tokens, data-class consent, on-site confirmation of commitments, audit, rate limits and revocation; the public and admin surfaces behave as designed.",
+      "read": [
+        "docs/engine/mcp-server.md",
+        "docs/adr/013-mcp-server.md",
+        "docs/engine/agent-catalog.md",
         "docs/engine/agents.md"
       ],
       "steps": [
-        "Pin the MCP version; expose the tool set behind entitlements through an adapter with a fake client.",
-        "Implement OAuth 2.1 dynamic client registration, authorization code with PKCE, step-up consent, resource-bound opaque tokens stored as hashes and refresh rotation with reuse detection (packages/data/migrations/connections).",
-        "Implement scopes, per-class private data opt-in (off by default) and mandate bindings by id and revision; connection call audit, rate limits, circuit breaker, expiry and revocation.",
-        "Offer read-only public search and record tools with citations; no writes, no private projections."
+        "Run the full journey with the fake client and one real client against the local stack on synthetic data: connect, consent, plan to people, quotes and an order with on-site confirmation, revoke.",
+        "Run the parity report, the conformance and red-team suites at the exact head commit.",
+        "Record limitations and client compatibility in docs/quality/release/mcp.md."
       ],
       "acceptance": [
         "A connection can never approve, confirm or widen a mandate, step up, accept terms or press a kill switch (negative tests).",
         "Cookies never authorize MCP and bearer tokens never authorize the first-party API.",
-        "Revoking a mandate stops its binding before the next call."
+        "Revoking a mandate stops its binding before the next call.",
+        "The parity report shows no participant capability without an agent or interface path."
       ],
       "paths": [
-        "apps/api/src/modules/connections/mcp",
-        "packages/data/migrations/connections",
-        "packages/data/src/schema/connections.ts",
-        "packages/data/src/repositories/connections.ts",
-        "tests/connections/mcp"
+        "tests/connections/mcp/acceptance",
+        "docs/quality/release/mcp.md"
       ]
     },
     {
