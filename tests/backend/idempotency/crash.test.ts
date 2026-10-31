@@ -7,8 +7,13 @@ import { IDEMPOTENCY_TAKEOVER_LEASE_MS, IDEMPOTENT_ROUTES } from '../../../apps/
 import { installCrashPoints, recordState } from './helpers.js';
 import { withMaintenance } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { FilesystemBlobStore } from '../../../packages/data/src/files/index.js';
 
-const h = await startHarness('idem_crash');
+// FILE-001: the files routes are mounted only with a blob store; the storage fake keeps everything local.
+const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobStore({ root: mkdtempSync(join(tmpdir(), 'trustwork-crash-files-')) }) } });
 
 /**
  * BE-005 acceptance on real PostgreSQL, for every in-transaction route of every mutating route family (projects,
@@ -315,6 +320,24 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     rfq = (await exactlyOnce({ action: 'rfq.projection_set', client: petr, url: `${R}/projection`, body: { expectedRevision: rfq.rfq.revision, publicProjection: { enabled: true, fields: ['title'] }, category: null }, effects: () => auditCount(h.db.admin, 'rfq.projection_set') })).body as Rfq;
     await exactlyOnce({ action: 'rfq.close', client: petr, url: `${R}/close`, body: { expectedRevision: rfq.rfq.revision, outcome: 'closed', reason: 'Exactly-once close' }, effects: () => auditCount(h.db.admin, 'rfq.closed') });
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.rfq_invitation WHERE rfq_id = $1 AND stale_reason IS NOT NULL", [rfq.rfq.id]), 2, 'both invitations are flagged once');
+  });
+
+  await t.test('files (FILE-001): upload start and completion, copy, move and deletion requests', async () => {
+    const owner = { kind: 'person', id: seed.people.petr };
+    const project = (await newProject('Exactly-once files')).id;
+    const other = (await newProject('Exactly-once files target')).id;
+    const started = (await exactlyOnce({
+      action: 'file.upload_start', client: petr, url: '/v1/files/uploads', effects: () => auditCount(h.db.admin, 'file.upload_started'),
+      body: { owner, parent: { kind: 'project', id: project }, mediaType: 'text/plain', bytes: 12, sha256: 'c'.repeat(64), uploadKey: 'crash-upload-key-0001' },
+    })).body as { file: { id: string } };
+    const id = started.file.id;
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.evidence_artifact WHERE uploaded_by = $1 AND sha256 = $2", [seed.people.petr, 'c'.repeat(64)]), 1, 'one artifact');
+    await exactlyOnce({ action: 'file.upload_complete', client: petr, url: `/v1/files/${id}/complete`, body: {}, effects: () => auditCount(h.db.admin, 'file.upload_completed') });
+    await withMaintenance(h.db.admin, (trx) => trx.updateTable('evidence_artifact').set({ scan_state: 'clean' }).where('id', '=', id).execute());
+    await exactlyOnce({ action: 'file.copy', client: petr, url: `/v1/files/${id}/copy`, body: { parent: { kind: 'project', id: other } }, effects: () => auditCount(h.db.admin, 'file.copied') });
+    const moved = (await exactlyOnce({ action: 'file.move', client: petr, url: `/v1/files/${id}/move`, body: { parent: { kind: 'project', id: other } }, effects: () => auditCount(h.db.admin, 'file.moved') })).body as { id: string };
+    await exactlyOnce({ action: 'file.delete', client: petr, url: `/v1/files/${moved.id}/delete`, body: {}, effects: () => auditCount(h.db.admin, 'file.deletion_requested') });
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.outbox_event WHERE type = 'file.deletion_requested' AND aggregate_id = $1", [moved.id]), 1, 'one deletion intent');
   });
 
   await t.test('every in-transaction route was crash-tested', () => {
