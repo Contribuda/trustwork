@@ -1,0 +1,14 @@
+{
+  "scheme": "project_type",
+  "terms": [
+    { "code": "project" },
+    { "code": "project.new_house", "parent": "project" },
+    { "code": "project.whole_house_renovation", "parent": "project" },
+    { "code": "project.kitchen_remodel", "parent": "project" },
+    { "code": "project.bathroom_remodel", "parent": "project" },
+    { "code": "project.addition", "parent": "project" },
+    { "code": "project.roof_replacement", "parent": "project" },
+    { "code": "project.basement_finish", "parent": "project" },
+    { "code": "project.accessory_dwelling", "parent": "project" }
+  ]
+}

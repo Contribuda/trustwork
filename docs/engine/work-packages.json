@@ -1559,7 +1559,7 @@
       "id": "PLAN-000",
       "title": "Open plan-step taxonomy v1 (CC0) with slots for licensed mappings",
       "area": "projects",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/engine/projects.md",
       "goal": "Publish the shared vocabulary that plans, consultations, tasks, knowledge and recommendations use: work types, trades, materials, stages and skills with predecessors, under CC0.",

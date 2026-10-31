@@ -1,0 +1,22 @@
+{
+  "scheme": "stage",
+  "terms": [
+    { "code": "stage" },
+    { "code": "stage.define", "parent": "stage", "predecessors": [] },
+    { "code": "stage.site_and_feasibility", "parent": "stage", "predecessors": ["stage.define"] },
+    { "code": "stage.design", "parent": "stage", "predecessors": ["stage.site_and_feasibility"] },
+    { "code": "stage.permitting", "parent": "stage", "predecessors": ["stage.design"] },
+    { "code": "stage.contracting", "parent": "stage", "predecessors": ["stage.design"] },
+    { "code": "stage.site_preparation", "parent": "stage", "predecessors": ["stage.permitting", "stage.contracting"] },
+    { "code": "stage.foundation", "parent": "stage", "predecessors": ["stage.site_preparation"] },
+    { "code": "stage.structure", "parent": "stage", "predecessors": ["stage.foundation"] },
+    { "code": "stage.envelope", "parent": "stage", "predecessors": ["stage.structure"] },
+    { "code": "stage.rough_in", "parent": "stage", "predecessors": ["stage.envelope"] },
+    { "code": "stage.insulation", "parent": "stage", "predecessors": ["stage.rough_in"] },
+    { "code": "stage.interior_finishes", "parent": "stage", "predecessors": ["stage.insulation"] },
+    { "code": "stage.exterior_finishes", "parent": "stage", "predecessors": ["stage.envelope"] },
+    { "code": "stage.systems_finish", "parent": "stage", "predecessors": ["stage.interior_finishes"] },
+    { "code": "stage.final_inspections", "parent": "stage", "predecessors": ["stage.systems_finish", "stage.exterior_finishes"] },
+    { "code": "stage.handover", "parent": "stage", "predecessors": ["stage.final_inspections"] }
+  ]
+}

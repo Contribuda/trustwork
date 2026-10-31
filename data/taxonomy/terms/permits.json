@@ -1,0 +1,20 @@
+{
+  "scheme": "permit_type",
+  "terms": [
+    { "code": "permit" },
+    { "code": "permit.zoning", "parent": "permit", "stage": "stage.site_and_feasibility", "predecessors": ["work.planning.feasibility"] },
+    { "code": "permit.historic_review", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.design.architectural"] },
+    { "code": "permit.association_approval", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.design.architectural"] },
+    { "code": "permit.building", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.electrical", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.plumbing", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.mechanical", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.demolition", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.grading", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.right_of_way", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.septic", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application", "work.survey.geotechnical"] },
+    { "code": "permit.well", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.permitting.application"] },
+    { "code": "permit.hazardous_materials_notice", "parent": "permit", "stage": "stage.permitting", "predecessors": ["work.survey.hazardous_materials"] },
+    { "code": "permit.occupancy", "parent": "permit", "stage": "stage.final_inspections", "predecessors": ["inspection.building_final"] }
+  ]
+}

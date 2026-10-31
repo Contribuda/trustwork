@@ -1,0 +1,21 @@
+{
+  "scheme": "inspection_type",
+  "terms": [
+    { "code": "inspection" },
+    { "code": "inspection.erosion_control", "parent": "inspection", "stage": "stage.site_preparation", "permits": ["permit.grading"], "predecessors": ["work.site.erosion_control", "permit.grading"] },
+    { "code": "inspection.temporary_power", "parent": "inspection", "stage": "stage.site_preparation", "permits": ["permit.electrical"], "predecessors": ["work.site.temporary_facilities", "permit.electrical"] },
+    { "code": "inspection.hazardous_clearance", "parent": "inspection", "stage": "stage.site_preparation", "permits": ["permit.hazardous_materials_notice"], "predecessors": ["work.site.hazardous_abatement", "permit.hazardous_materials_notice"] },
+    { "code": "inspection.septic", "parent": "inspection", "stage": "stage.site_preparation", "permits": ["permit.septic"], "predecessors": ["work.site.septic", "permit.septic"] },
+    { "code": "inspection.footing", "parent": "inspection", "stage": "stage.foundation", "permits": ["permit.building"], "predecessors": ["work.foundation.footing_prep", "permit.building"] },
+    { "code": "inspection.under_slab", "parent": "inspection", "stage": "stage.foundation", "permits": ["permit.building", "permit.plumbing"], "predecessors": ["work.foundation.slab_prep", "permit.building", "permit.plumbing"] },
+    { "code": "inspection.plumbing_rough", "parent": "inspection", "stage": "stage.rough_in", "permits": ["permit.plumbing"], "predecessors": ["work.mep.plumbing_rough", "work.mep.gas", "permit.plumbing"] },
+    { "code": "inspection.electrical_rough", "parent": "inspection", "stage": "stage.rough_in", "permits": ["permit.electrical"], "predecessors": ["work.mep.electrical_rough", "work.mep.low_voltage", "permit.electrical"] },
+    { "code": "inspection.mechanical_rough", "parent": "inspection", "stage": "stage.rough_in", "permits": ["permit.mechanical"], "predecessors": ["work.mep.hvac_rough", "work.mep.gas", "permit.mechanical"] },
+    { "code": "inspection.framing", "parent": "inspection", "stage": "stage.rough_in", "permits": ["permit.building"], "predecessors": ["work.structure.sheathing", "work.structure.stairs", "work.structure.alterations", "work.envelope.windows_doors", "work.mep.plumbing_rough", "work.mep.electrical_rough", "work.mep.hvac_rough", "work.mep.gas", "work.mep.fire_sprinklers", "permit.building"] },
+    { "code": "inspection.insulation", "parent": "inspection", "stage": "stage.insulation", "permits": ["permit.building"], "predecessors": ["work.insulation.thermal", "permit.building"] },
+    { "code": "inspection.plumbing_final", "parent": "inspection", "stage": "stage.final_inspections", "permits": ["permit.plumbing"], "predecessors": ["work.mep.plumbing_finish", "work.mep.appliances", "permit.plumbing"] },
+    { "code": "inspection.electrical_final", "parent": "inspection", "stage": "stage.final_inspections", "permits": ["permit.electrical"], "predecessors": ["work.mep.electrical_finish", "work.mep.appliances", "work.mep.solar_pv", "permit.electrical"] },
+    { "code": "inspection.mechanical_final", "parent": "inspection", "stage": "stage.final_inspections", "permits": ["permit.mechanical"], "predecessors": ["work.mep.hvac_finish", "permit.mechanical"] },
+    { "code": "inspection.building_final", "parent": "inspection", "stage": "stage.final_inspections", "permits": ["permit.building"], "predecessors": ["inspection.plumbing_final", "inspection.electrical_final", "inspection.mechanical_final", "work.testing.performance", "work.exterior.final_grading", "work.exterior.gutters", "work.exterior.decks_porches", "work.interior.flooring", "permit.building"] }
+  ]
+}
