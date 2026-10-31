@@ -1,19 +1,20 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
-import { AlertCircle, BookOpen, FileText, FolderKanban, Sparkles, Tag } from 'lucide-react';
+import { AlertCircle, BookOpen, FileText, FolderKanban, MessageSquare, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { PageHeader } from '@/components/workspace/parts';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import type { NotificationView } from '@/app/_lib/data';
 import { longDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
+import { MarkReadButton } from './_components/NotificationActions';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
   return { title: t('notifications.title') };
 }
 
-const ICONS: Record<NotificationView['kind'], typeof Tag> = { decision: AlertCircle, quote: Tag, project: FolderKanban, publication: FileText, assistant: Sparkles, magazine: BookOpen };
+const ICONS: Record<NotificationView['kind'], typeof Tag> = { decision: AlertCircle, quote: Tag, project: FolderKanban, publication: FileText, assistant: Sparkles, magazine: BookOpen, message: MessageSquare, account: ShieldCheck };
 
 function dayKey(at: string, now: Date): 'today' | 'yesterday' | 'earlier' {
   const d = new Date(at);
@@ -21,7 +22,10 @@ function dayKey(at: string, now: Date): 'today' | 'yesterday' | 'earlier' {
   return days <= 0 ? 'today' : days === 1 ? 'yesterday' : 'earlier';
 }
 
-/** «Все уведомления»: object-linked list grouped by day, never message bodies or correspondence (not a mailbox). */
+/**
+ * "All notifications": object-linked list grouped by day, never message bodies or correspondence (not a mailbox).
+ * Live notifications (COMMS-001) come from the API and can be marked read; demo fixtures cannot.
+ */
 export default async function NotificationsPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/notifications');
@@ -30,6 +34,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   const all = principal.notifications;
   const rows = onlyUnread ? all.filter((n) => n.unread) : all;
   const unread = all.filter((n) => n.unread).length;
+  const live = all.some((n) => n.live);
   const now = all.length
     ? new Date(
         all
@@ -87,6 +92,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
                             <NextLink href={n.href} className="ws-row__action">
                               {t('notifications.open')}
                             </NextLink>
+                            {n.live && n.unread ? <MarkReadButton id={n.id} /> : null}
                           </span>
                         </li>
                       );
@@ -118,7 +124,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
                 {t('settings.nav.preferences')}
               </NextLink>
             </div>
-            <p className="ws-note">{t('notifications.demoNote')}</p>
+            {live ? (unread > 0 ? <MarkReadButton all /> : null) : <p className="ws-note">{t('notifications.demoNote')}</p>}
           </div>
         </div>
       )}

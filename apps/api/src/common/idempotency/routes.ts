@@ -218,6 +218,19 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // COMMS-001: every route runs in one PrincipalService.runAs transaction (mail intents are written in it through
+  // MAIL-001's outbox) and returns its result unchanged; messenger and SMS sends happen after COMMIT and are not
+  // repeated by a replay.
+  'comms.thread_open': IN_TRANSACTION,
+  'comms.message_post': IN_TRANSACTION,
+  'comms.notification_read': IN_TRANSACTION,
+  'comms.notification_read_all': IN_TRANSACTION,
+  'comms.preference_set': IN_TRANSACTION,
+  'comms.mail_unsubscribe': IN_TRANSACTION,
+  'comms.channel_grant_create': IN_TRANSACTION,
+  'comms.channel_grant_revoke': IN_TRANSACTION,
+  'comms.template_draft': IN_TRANSACTION,
+  'comms.template_activate': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

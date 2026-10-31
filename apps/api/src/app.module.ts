@@ -21,6 +21,7 @@ import { AssistantModule, assistantMandateStore } from './modules/assistant/assi
 import { MODULE_KEYS } from './modules/assistant/mandate-store.js';
 import { AttestationModule } from './modules/jurisdiction/attestation/attestation.module.js';
 import type { ConfiguredGateMode } from './modules/jurisdiction/attestation/attestation.service.js';
+import { CommunicationsModule, type CommunicationsModuleOptions } from './modules/communications/communications.module.js';
 
 @Controller()
 export class HealthController {
@@ -31,14 +32,15 @@ export class HealthController {
 
 /**
  * Composition root: health always; identity, projects, directory, plans, catalogue, procurement, sales, transactions,
- * profiles, tasks, execution and trust, platform administration, the assistant and the deployment-location attestation
+ * profiles, tasks, execution and trust, platform administration, the assistant, communications and the deployment-location attestation
  * (SANC-009, told the configured jurisdiction gate mode) only when a database is configured;
  * files (FILE-001) additionally only with a configured blob store. Every module's agent check goes to the one AST-001
  * mandate store (confirmed mandates); a caller-supplied mandate port in `files` still wins (tests).
  */
 @Module({})
 export class AppModule {
-  static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured'): DynamicModule {
+  static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured',
+    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }): DynamicModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     return {
@@ -59,6 +61,8 @@ export class AppModule {
         AssistantModule.forRoot(ctx, identity),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FilesModule.forRoot(ctx, identity, { ...files, mandates: files.mandates ?? store.port(MODULE_KEYS.files) }),
+        // COMMS-001: agent-written messages need a confirmed `communicate` mandate of the person's assistant.
+        CommunicationsModule.forRoot(ctx, identity, { ...communications.options, mandates: communications.options.mandates ?? store.port(['correspondence']) }, communications.env),
       ],
     };
   }

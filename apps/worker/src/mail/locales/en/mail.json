@@ -72,5 +72,9 @@
     },
     "notYou": "If this was not you, reset your password now and review your active sessions.",
     "action": "Reset password"
+  },
+  "notification": {
+    "action": "Open in {brand}",
+    "footer": "You receive this message because you take part in this work on {brand}. You can choose which notifications reach you by email in your notification settings."
   }
 }

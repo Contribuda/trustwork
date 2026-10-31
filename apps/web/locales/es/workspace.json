@@ -11,7 +11,9 @@
       "project": "Proyecto",
       "publication": "Publicación",
       "assistant": "Asistente",
-      "magazine": "Revista"
+      "magazine": "Revista",
+      "message": "Mensaje",
+      "account": "Cuenta"
     },
     "unread": "No leídas",
     "unreadOne": "nueva",
@@ -27,7 +29,14 @@
     },
     "settingsTitle": "Sobre qué avisar",
     "settingsHint": "Las decisiones, las ejecuciones del asistente, las publicaciones y los nuevos números de la revista se configuran en las preferencias.",
-    "demoNote": "Demostración: las marcas de lectura no se guardan."
+    "demoNote": "Demostración: las marcas de lectura no se guardan.",
+    "template": {
+      "threadOpened": "{authorName} inició una conversación: {threadSubject}",
+      "threadMessage": "{authorName} escribió en «{threadSubject}»",
+      "securityNotice": "Aviso de seguridad de su cuenta"
+    },
+    "markAllRead": "Marcar todo como leído",
+    "markFailed": "No se guardó la marca de lectura. Inténtelo de nuevo."
   },
   "overview": {
     "title": "Resumen",

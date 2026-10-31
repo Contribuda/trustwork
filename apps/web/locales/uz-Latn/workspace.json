@@ -11,7 +11,9 @@
       "project": "Loyiha",
       "publication": "Nashr",
       "assistant": "Yordamchi",
-      "magazine": "Jurnal"
+      "magazine": "Jurnal",
+      "message": "Xabar",
+      "account": "Hisob"
     },
     "unread": "Oʻqilmagan",
     "unreadOne": "yangi",
@@ -27,7 +29,14 @@
     },
     "settingsTitle": "Nima haqida xabar berish",
     "settingsHint": "Qarorlar, yordamchi ishga tushirishlari, nashrlar va jurnalning yangi sonlari afzalliklarda sozlanadi.",
-    "demoNote": "Namoyish: oʻqilganlik belgilari saqlanmaydi."
+    "demoNote": "Namoyish: oʻqilganlik belgilari saqlanmaydi.",
+    "template": {
+      "threadOpened": "{authorName} yozishmani boshladi: {threadSubject}",
+      "threadMessage": "{authorName} “{threadSubject}” mavzusida yozdi",
+      "securityNotice": "Hisobingiz xavfsizligi haqida bildirishnoma"
+    },
+    "markAllRead": "Barchasini o‘qilgan deb belgilash",
+    "markFailed": "O‘qilganlik belgisi saqlanmadi. Qayta urinib ko‘ring."
   },
   "overview": {
     "title": "Umumiy koʻrinish",

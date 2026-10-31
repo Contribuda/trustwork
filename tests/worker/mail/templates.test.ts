@@ -27,6 +27,8 @@ function inputs(locale: string): RenderInput[] {
     { ...base, template: 'email_change', params: { hours: '1' }, secret: 'tok-change' },
     { ...base, template: 'membership_invitation', params: { company: 'Acme <Builders> & Sons', membershipId: '0b9c3f9e-8f1c-4a57-9f0e-2c1d3b4a5e6f', days: '7' }, secret: 'tok-invite' },
     ...SECURITY_EVENTS.map((event) => ({ ...base, template: 'security_notice' as const, params: { event, ...(event.startsWith('provider_') ? { provider: 'google' } : {}) }, secret: null })),
+    // COMMS-001: subject and body pre-rendered from the hub's active template version.
+    { ...base, template: 'notification', params: { subject: 'New message: <Roof> & gutters', body: 'Demo Owner wrote in "Roof".\n\nOpen the project to answer.', path: '/app/projects/0b9c3f9e-8f1c-4a57-9f0e-2c1d3b4a5e6f', transactional: 'false' }, secret: null },
   ];
 }
 
@@ -155,6 +157,12 @@ test('MAIL-001 templates: brand, language choice, links and escaping', async (t)
     assert.throws(() => renderMail(config(), { ...inputs('en')[1]!, secret: 'unexpected' }), TemplateParameterError);
     assert.throws(() => renderMail(config(), { localePreferences: [], template: 'security_notice', params: { event: 'something_else' }, secret: null }), TemplateParameterError);
     assert.throws(() => renderMail(config(), { localePreferences: [], template: 'security_notice', params: { event: 'provider_linked', provider: 'evil' }, secret: null }), TemplateParameterError);
-    assert.equal(MAIL_TEMPLATES.length, 6);
+    assert.equal(MAIL_TEMPLATES.length, 7);
+    const notification = renderMail(config(), inputs('en').at(-1)!);
+    assert.equal(notification.subject, 'New message: <Roof> & gutters');
+    assert.ok(notification.html.includes('&lt;Roof&gt; &amp; gutters') && !notification.html.includes('<Roof>'), 'pre-rendered texts are escaped');
+    assert.ok(notification.text.includes('https://hub.example/app/projects/0b9c3f9e-8f1c-4a57-9f0e-2c1d3b4a5e6f'));
+    assert.throws(() => renderMail(config(), { ...inputs('en').at(-1)!, params: { subject: 's', body: 'b', path: 'https://evil.example/' } }), TemplateParameterError);
+    assert.throws(() => renderMail(config(), { ...inputs('en').at(-1)!, params: { subject: 'two\nlines', body: 'b', path: '/app/x' } }), TemplateParameterError);
   });
 });
