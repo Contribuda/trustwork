@@ -286,7 +286,7 @@ apps/web/app/admin/
 - `apps/web/app/admin/_data/port.ts` declares `ConsoleDataPort` with one method per read model and per command, typed by the contracts. `fixture-adapter.ts` serves synthetic fixtures; a later `api-adapter.ts` calls `/v1/admin/*` with the same types. Commands in fixture mode change nothing and show a "demo: not saved" toast.
 - Fixtures are **synthetic and labelled**: "Trustwork United States (demo)", people like "Synthetic Editor", no real company names, no real EINs (use the `00-0000000` style placeholder pattern), no real provider keys (secret references only, fingerprints like `0123456789ab`). Every fixture is parsed by the contract schemas in a unit test (`tests/web/admin-fixtures.test.ts`), so a fixture that violates an invariant fails the build.
 - Staff personas extend `apps/web/app/_lib/persona.ts`: `?persona=hub-owner|editor|data-steward|trust-reviewer|support|commercial|ops|privacy|auditor|staff-none`, each mapping to a fixture `ScopedStaffRoleAssignment` set, so every denied state can be exercised. Scenarios `error`, `offline`, `loading` reuse the existing switch; add `demo-data`, `maintenance`, `kill-switch-engaged`.
-- Every visible string under the `admin` key of `apps/web/app/_lib/locales/<locale>.json` in all six engine locales (English reference). Spanish (`es`) is not an engine locale yet; the US demo needs the proposed localization package below before `es-US` can be a hub language with complete strings.
+- Every visible string under the `admin` key in the console's own namespace file `apps/web/locales/<locale>/admin.json`, in every engine locale (English reference; [Namespaces](../localization.md#namespaces)). Spanish (`es`) is not an engine locale yet; the US demo needs the proposed localization package below before `es-US` can be a hub language with complete strings.
 
 ### Components to build
 
@@ -517,7 +517,7 @@ Reuse `@trustwork/ui` (`DataTable`, `Tabs`, `Stepper`, `Dialog`/`ConfirmDialog`,
     "read": ["docs/engine/country-specifics.md", "docs/engine/localization.md", "docs/country-packs/how-to-add-a-country.md"],
     "steps": ["Write the US pack with sources and honest verification levels.", "Add the es locale with complete strings and native review.", "Add a US demo fixture set labelled synthetic."],
     "acceptance": ["Every fact cites a source.", "es passes the locale completeness tests."],
-    "paths": ["packages/country-packs/packs/us.json", "packages/ui/locales/es.json", "apps/web/app/_lib/locales/es.json"]
+    "paths": ["packages/country-packs/packs/us.json", "packages/ui/locales/es.json", "apps/web/locales/es"]
   },
   {
     "id": "HUBC-001",

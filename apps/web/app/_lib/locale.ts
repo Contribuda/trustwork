@@ -4,8 +4,9 @@ import { runWithLocaleScope, setLocaleStore } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
 import { uiLayers } from '@trustwork/ui/i18n/dictionaries';
 import { getCountryPack, type CountryPack } from '@trustwork/country-packs';
-import { appLayers } from './locale-data';
+import { appLayers, brandLayers } from './locale-data';
 import { defaultCountryCode, localesFor, negotiate } from './locale-negotiation';
+import CLIENT_NAMESPACES from '@/locales/client-namespaces.json';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeCookiePath } from './locale-names';
 import { BASE_PATH } from './base-path';
@@ -24,12 +25,36 @@ export function resolveActive(countryCookie: string | undefined, localeCookie: s
 }
 
 /**
- * Every message layer one locale needs, in lookup order: the application's (brand overlay, own
- * dictionary, the English keys it lacks), then the design system's dictionary. The root layout hands
- * exactly these to the client, so a page carries one language and never the other dictionaries.
+ * Every message layer one locale needs on the server, in lookup order: the deployment's brand overlay,
+ * the application's layers for every namespace (own messages, then the English keys they lack), then the
+ * design system's dictionary. Server components resolve against all of them.
  */
 export function localeLayers(tag: string): Messages[] {
-  return [...appLayers(tag), ...uiLayers(tag)];
+  return [...brandLayers(tag), ...appLayers(tag), ...uiLayers(tag)];
+}
+
+/** Route groups with their own client namespaces (`apps/web/locales/client-namespaces.json`). */
+export type RouteGroup = Exclude<keyof typeof CLIENT_NAMESPACES, '$comment'>;
+
+/** The namespaces whose messages a route group hands to client components (the root list reaches every page). */
+export function clientNamespaces(group: RouteGroup): string[] {
+  return [...CLIENT_NAMESPACES[group]];
+}
+
+/**
+ * What the browser receives for one route group (INTL-004): the application layers of exactly the
+ * namespaces that group's client components use. The root layout adds the brand overlay and the design
+ * system's dictionary once (`rootClientLocale`); a page therefore carries one language and only the
+ * namespaces its route needs.
+ */
+export function clientLayers(tag: string, group: RouteGroup): { namespaces: string[]; layers: Messages[] } {
+  const namespaces = clientNamespaces(group);
+  return { namespaces, layers: appLayers(tag, namespaces) };
+}
+
+/** The root layout's client locale: brand overlay, the root namespaces and the design system's dictionary. */
+export function rootClientLocale(tag: string): { brand: Messages[]; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
+  return { brand: brandLayers(tag), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
 }
 
 /**

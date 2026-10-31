@@ -1,0 +1,84 @@
+{
+  "settings": {
+    "title": "Parametrlər",
+    "lede": "Şəxsi parametrlər hesabla birlikdə saxlanılır; şirkət parametrləri “Şirkət” bölməsindədir.",
+    "nav": {
+      "label": "Parametrlər",
+      "account": "Hesab",
+      "security": "Təhlükəsizlik və sessiyalar",
+      "preferences": "Üstünlüklər",
+      "channels": "Bağlantılar",
+      "billing": "Ödənişlər və planlar"
+    },
+    "account": {
+      "name": "Ad",
+      "email": "Giriş e-poçtu",
+      "changeEmail": "E-poçtu dəyiş",
+      "deleteAccount": "Hesabı sil",
+      "language": "İnterfeys dili",
+      "languageLabel": "İnterfeys dili",
+      "languageValue": "Azərbaycan dili",
+      "demoNote": "Demo: e-poçtun dəyişdirilməsi və hesabın silinməsi serverlə birlikdə gələcək."
+    },
+    "security": {
+      "changePassword": "Parolu dəyiş",
+      "providers": "Giriş üsulları",
+      "password": "Parol",
+      "link": "Bağla",
+      "unlink": "Ayır",
+      "notLinked": "Bağlanmayıb",
+      "sessions": "Aktiv sessiyalar",
+      "currentSession": "Cari sessiya",
+      "endSession": "Bitir",
+      "endOthers": "Bütün digər sessiyaları bitir",
+      "col": {
+        "device": "Cihaz",
+        "location": "Yer",
+        "lastSeen": "Son fəaliyyət"
+      },
+      "demoSession": "Demo: sessiya yoxdur; siyahı nümunə kimi göstərilir.",
+      "currentPassword": "Cari parol",
+      "newPassword": "Yeni parol",
+      "sessionsCaption": "Sessiya siyahısı",
+      "google": "Google",
+      "lastSeenAt": "Fəaliyyət: {date}",
+      "apple": "Apple"
+    },
+    "preferences": {
+      "interests": "Maraqlar",
+      "sections": "Menyu bölmələri",
+      "pinProcurement": "Menyuda “Satınalmalar”ı göstər",
+      "pinSales": "Menyuda “Satışlar”ı göstər",
+      "pinNote": "Gizlədilmiş bölmə “Daha çox”a keçir və əlçatan qalır.",
+      "notifications": "Bildirişlər",
+      "notify": {
+        "decisions": "Qərarlar və təsdiqlər",
+        "runs": "Köməkçinin işləri",
+        "publications": "Nəşrlər",
+        "magazine": "Jurnalın yeni buraxılışı"
+      },
+      "assistantFocus": "Köməkçi pəncərəsi açılanda son mesaja keç",
+      "demoNote": "Demo: parametrlər yalnız bu brauzer pəncərəsində tətbiq olunur.",
+      "interestsHint": "Mövzular, məqsədlər və regionlar anketdə dəyişdirilə bilər."
+    },
+    "channels": {
+      "empty": "Bağlantı yoxdur",
+      "connect": "Bağla",
+      "scopes": "İcazələr",
+      "revoke": "Ləğv et",
+      "untrustedNote": "Bağlantılardan gələn məktublar və fayllar etibarsız məlumat sayılır və köməkçiyə səlahiyyət vermir."
+    },
+    "billing": {
+      "noOffers": "Planlar hələ dərc edilməyib.",
+      "currentPlan": "Cari plan",
+      "free": "Seçilməyib",
+      "platformBudget": "Ödənişli xidmətlər büdcəsi",
+      "acceptedOffers": "Qəbul edilmiş şərtlər",
+      "noneAccepted": "Qəbul edilmiş şərt yoxdur",
+      "companyBilling": "Şirkətin ödənişləri və planları",
+      "invoices": "Hesab-fakturalar",
+      "noInvoices": "Hesab-faktura yoxdur"
+    },
+    "profileLink": "Profil və ictimai səhifə"
+  }
+}

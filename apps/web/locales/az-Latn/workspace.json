@@ -1,0 +1,443 @@
+{
+  "notifications": {
+    "title": "Bildirişlər",
+    "lede": "Bildirişlər obyektlərə bağlıdır: qərarlar, sorğular, layihələr və nəşrlər. Bu, poçt qutusu deyil.",
+    "empty": "Yeni bildiriş yoxdur",
+    "markRead": "Oxunmuş kimi qeyd et",
+    "open": "Aç",
+    "kind": {
+      "decision": "Qərar lazımdır",
+      "quote": "Təklif",
+      "project": "Layihə",
+      "publication": "Nəşr",
+      "assistant": "Köməkçi",
+      "magazine": "Jurnal"
+    },
+    "unread": "Oxunmamış",
+    "unreadOne": "yeni",
+    "noUnread": "Oxunmamış bildiriş yoxdur",
+    "group": {
+      "today": "Bu gün",
+      "yesterday": "Dünən",
+      "earlier": "Daha əvvəl"
+    },
+    "stats": {
+      "unread": "oxunmamış",
+      "decisions": "qərar tələb edir"
+    },
+    "settingsTitle": "Nə barədə bildirmək",
+    "settingsHint": "Qərarlar, köməkçinin işləri, nəşrlər və jurnalın yeni buraxılışları üstünlüklərdə tənzimlənir.",
+    "demoNote": "Demo: oxunma işarələri saxlanılmır."
+  },
+  "overview": {
+    "title": "İcmal",
+    "subtitle": {
+      "mixed": "Satınalmalar, satışlar və layihələriniz",
+      "buyer": "Satınalmalar və layihələriniz",
+      "seller": "Satışlar və layihələriniz",
+      "personal": "Layihələriniz və nəşrləriniz"
+    },
+    "create": "Yarat",
+    "createItems": {
+      "need": "Ehtiyac",
+      "quote": "Təklif",
+      "project": "Layihə",
+      "publication": "Nəşr"
+    },
+    "decisions": "Qərarınız lazımdır",
+    "decisionsEmpty": "Qərar tələb olunmur",
+    "inProgress": "{count, plural, one {# tapşırıq davam edir} other {# tapşırıq davam edir}}",
+    "all": "Hamısı",
+    "procurement": {
+      "title": "Satınalmalar",
+      "findSupplier": "Təchizatçı tap",
+      "empty": "Hələ satınalma yoxdur",
+      "createNeed": "Ehtiyac yarat",
+      "all": "Bütün satınalmalar"
+    },
+    "sales": {
+      "title": "Satışlar",
+      "allQuotes": "Bütün təkliflər",
+      "catalogue": "Mal, iş və xidmətlər kataloqu",
+      "empty": "Hələ təklif yoxdur",
+      "fillCatalogue": "Kataloqu doldur"
+    },
+    "projects": {
+      "title": "Mənim layihələrim",
+      "all": "Bütün layihələr",
+      "next": "Növbəti mərhələ: {name}",
+      "empty": "Hələ layihə yoxdur",
+      "create": "Layihə yarat"
+    },
+    "events": {
+      "title": "Qarşıdakı tədbirlər",
+      "empty": "Tədbir yoxdur"
+    },
+    "publications": {
+      "title": "Nəşrlər",
+      "empty": "Qaralama yoxdur",
+      "write": "Məqalə yaz",
+      "all": "Bütün nəşrlər"
+    },
+    "assistant": {
+      "title": "Köməkçi",
+      "summary": "Köməkçi: işləyir — {running}, qərarınızı gözləyir — {approvals}, tutuşdurulur — {unknown}",
+      "open": "Köməkçi səhifəsini aç"
+    },
+    "digestChanged": "Şərtlər dəyişib; yenidən yoxlayın",
+    "accessChanged": "Giriş dəyişib",
+    "industryPicks": "Sahədə",
+    "due": "Müddət: {date}",
+    "cardError": "Kartı yükləmək mümkün olmadı",
+    "industryKicker": "İctimai bölmələrdən"
+  },
+  "me": {
+    "title": "Mənim səhifəm",
+    "publicPage": "İctimai səhifə",
+    "accountSettings": "Hesab parametrləri",
+    "tabs": {
+      "work": "İş",
+      "publications": "Nəşrlər",
+      "interests": "Maraqlar",
+      "history": "Tarixçə",
+      "publicProfile": "İctimai profil",
+      "learning": "Təlim"
+    },
+    "membership": {
+      "active": "Cari iş yeri",
+      "invited": "Dəvət",
+      "ended": "Bitib {date}",
+      "none": "Şirkət yoxdur"
+    },
+    "mandates": "Köməkçi üçün mandatlar",
+    "mandatesCount": "{count, plural, one {# mandat} other {# mandat}}",
+    "saved": "Saxlanılmış",
+    "savedEmpty": "Saxlanılmış material yoxdur",
+    "decisions": "Mənim qərarlarım",
+    "projectsByRole": "Rola görə layihələr",
+    "startHint": "Layihə və ya nəşrlə başlayın",
+    "interestsHint": "Maraqlar yalnız icmalın hansı kartları göstərəcəyinə təsir edir. Onlar şirkətdə hüquq vermir.",
+    "editInterests": "Maraqları dəyiş",
+    "public": {
+      "published": "Səhifə dərc edilib",
+      "unpublished": "Səhifə dərc edilməyib",
+      "portraitConsent": "Portretimin ictimai səhifədə göstərilməsinə icazə ver",
+      "portraitLicence": "Bu şəkli istifadə etmək hüququm olduğunu təsdiqləyirəm.",
+      "showEmployer": "Cari iş yerimi göstər",
+      "bio": "Haqqımda",
+      "topics": "Mövzular",
+      "show": "Göstər",
+      "contact": "Platforma vasitəsilə mənə mesaj göndərilməsinə icazə ver",
+      "preview": "Önbaxış",
+      "previewTitle": "Başqaları səhifənizi belə görür",
+      "portraitHidden": "Portret ictimai səhifədə gizlidir",
+      "demoNote": "Demo: dəyişikliklər serverdə saxlanılmır.",
+      "portraitPending": "Portret foto yükləndikdən sonra görünəcək."
+    },
+    "history": {
+      "org": "Təşkilat",
+      "role": "Rol",
+      "from": "Başlanğıc",
+      "to": "Son",
+      "status": "Status",
+      "empty": "Şirkət üzvlüyü qeydi yoxdur",
+      "terms": "Qəbul edilmiş şərtlər: versiya {version}, {date}"
+    },
+    "editProfile": "Profili redaktə et",
+    "profileGood": "Yaxşı doldurulub",
+    "profileMore": "Tamamlamaq olar",
+    "tabsLearning": "Təlim",
+    "learning": {
+      "readCount": "oxunmuş material",
+      "quizCount": "düzgün cavab",
+      "bookmarksCount": "əlfəcinlənib",
+      "certCount": "sertifikat",
+      "issues": "Jurnal buraxılışları",
+      "emptyTitle": "Hələ jurnalı oxumağa başlamamısınız",
+      "emptyBody": "İrəliləyiş, testlər və əlfəcinlər buraxılış açan kimi burada görünəcək.",
+      "bookmarksEmpty": "Hələ əlfəcin yoxdur: materialları oxuyucuda qeyd edin.",
+      "certificates": "Trustwork sertifikatları",
+      "certEmpty": "Hələ sertifikat yoxdur. Onlar Akademiyanın mini-kurslarını bitirdikdən sonra verilir.",
+      "check": "yoxla",
+      "courses": "Akademiya kursları",
+      "coursesNote": "Kurslara yazılma və sertifikat verilməsi xidmət başladıqdan sonra açılacaq."
+    },
+    "workIntro": "Bu gün sizi gözləyən qərarlar, layihələr və mandatlar."
+  },
+  "company": {
+    "title": "Şirkət",
+    "publicPage": "İctimai səhifə",
+    "settings": "Şirkət parametrləri",
+    "tabs": {
+      "overview": "İcmal",
+      "wall": "Divar",
+      "people": "İnsanlar",
+      "catalogue": "Kataloq",
+      "projects": "Layihələr",
+      "reputation": "Nüfuz"
+    },
+    "empty": {
+      "title": "Hələ heç bir şirkətə bağlı deyilsiniz",
+      "body": "Şirkətsiz də işləyə bilərsiniz: oxuyun, dərc edin və şəxsi layihələr aparın. Şirkəti təmsil edirsinizsə, dəvətlə qoşulun və ya onun səhifəsini yaradın.",
+      "join": "Dəvətlə qoşul",
+      "create": "Şirkət səhifəsi yarat",
+      "find": "Kataloqda şirkət tap",
+      "policyNote": "Qoşulmanı şirkət təsdiqləyir.",
+      "findHint": "Yoxlanılmış səhifələri, kataloqları və layihələri olan şirkətlər.",
+      "lede": "İş sahəsi şirkətsiz də işləyir; istənilən vaxt qoşula və ya səhifə yarada bilərsiniz."
+    },
+    "join": {
+      "code": "Dəvət kodu və ya keçidi",
+      "pending": "Sorğu göndərildi və təsdiq gözləyir",
+      "cancel": "Sorğunu ləğv et"
+    },
+    "membershipEnded": "Üzvlüyünüz {date} tarixində bitib",
+    "invite": "Dəvət et",
+    "member": {
+      "name": "Ad",
+      "role": "Rol",
+      "status": "Status",
+      "since": "Başlanğıc",
+      "actions": "Əməliyyatlar",
+      "end": "İştirakı bitir",
+      "status_active": "Aktiv",
+      "status_invited": "Dəvət edilib",
+      "status_ended": "Bitib",
+      "sinceDate": "{date}-dən",
+      "hidden": "İctimai səhifədə göstərilmir",
+      "inviteNote": "Dəvətlər və iştirakın bitirilməsi növbəti mərhələdə gələcək."
+    },
+    "membersEmpty": "Hələ əməkdaş yoxdur",
+    "wallEmpty": "Hələ şirkət nəşri yoxdur",
+    "catalogue": {
+      "empty": "Kataloq boşdur",
+      "newVersion": "Yeni versiya",
+      "publish": "Versiyanı dərc et",
+      "version": "Versiya {version}, {date}",
+      "name": "Ad",
+      "kind": "Növ",
+      "unit": "Vahid",
+      "price": "Qiymət",
+      "priceOnRequest": "Sorğu ilə",
+      "public": "İctimai",
+      "privateFloor": "Minimal qiymət (dərc edilmir)",
+      "yes": "Bəli",
+      "no": "Xeyr",
+      "count": "{count, plural, one {# mövqe} other {# mövqe}}",
+      "floorNote": "Minimal qiymətlər yalnız sövdələşmə hüququ ilə görünür və heç vaxt dərc edilmir.",
+      "publicNote": "İctimai mövqelər şirkət səhifəsində “sorğu ilə” qiymətlə görünür.",
+      "emptyHint": "Mal, iş və xidmətlər kataloqu alıcıların sorğularını gətirir."
+    },
+    "claim": {
+      "title": "Səhifənin statusu",
+      "sourced": "Açıq mənbədən yaradılıb",
+      "claimed": "Bəyan edilib, yoxlama gözləyir",
+      "verified": "Yoxlanılıb",
+      "pendingRequests": "{count, plural, one {# qoşulma sorğusu} other {# qoşulma sorğusu}}"
+    },
+    "projectsEmpty": "Sizə əlçatan şirkət layihəsi hələ yoxdur",
+    "reputationNote": "Sövdələşmələr üzrə daxili sübutlar ilk yerinə yetirilmiş sifarişlərdən sonra görünəcək.",
+    "decisions": "Şirkət qərarları",
+    "noAccess": "Bu bölməyə giriş yoxdur",
+    "lede": "Şirkətinizin ümumi səhifəsi: qərarlar, divar, insanlar, kataloq və layihələr.",
+    "stats": {
+      "members": "əməkdaş",
+      "catalogue": "kataloq mövqeyi",
+      "projects": "layihə",
+      "wall": "nəşr"
+    },
+    "evidence": {
+      "title": "Təsdiqlər",
+      "identifier": "Qeydiyyat məlumatları",
+      "none": "Göstərilməyib",
+      "domain": "Veb-sayt domeni",
+      "domainYes": "Təsdiqlənib",
+      "domainNo": "Təsdiqlənməyib",
+      "publicMembers": "İctimai əməkdaşlar",
+      "note": "Bunlar hamının gördüyü faktlardır. Platformada bal və reytinq yoxdur.",
+      "kind": {
+        "other": "Digər identifikator"
+      }
+    },
+    "peopleHint": "Şirkətin əməkdaşları və onların rolları. İctimai olmaq hər kəsin öz qərarıdır.",
+    "website": "Şirkətin veb-saytı"
+  },
+  "projectsWs": {
+    "title": "Layihələr",
+    "create": "Layihə yarat",
+    "empty": "Hələ layihə yoxdur",
+    "emptyHint": "Şəxsi layihə şirkətsiz də aparıla bilər.",
+    "filter": {
+      "role": "Mənim rolum",
+      "status": "Status",
+      "owner": "Sahib",
+      "all": "Hamısı"
+    },
+    "owner": {
+      "me": "Mən",
+      "company": "Şirkət"
+    },
+    "col": {
+      "title": "Layihə",
+      "owner": "Sahib",
+      "role": "Mənim rolum",
+      "status": "Status",
+      "nextMilestone": "Növbəti mərhələ",
+      "updated": "Yenilənib"
+    },
+    "list": "Layihə siyahısı",
+    "tabs": {
+      "overview": "İcmal",
+      "plan": "Plan",
+      "execution": "İcra",
+      "acceptance": "Qəbul",
+      "disputes": "Mübahisələr",
+      "purchases": "Satınalmalar",
+      "participants": "İştirakçılar",
+      "files": "Fayllar",
+      "correspondence": "Yazışma",
+      "budget": "Büdcə",
+      "publication": "Dərc"
+    },
+    "notPublished": "Dərc edilməyib",
+    "publishedProjection": "Dərc edilib: {fields}",
+    "leader": "Rəhbər",
+    "noLeader": "Rəhbər təyin edilməyib",
+    "actions": {
+      "menu": "Layihə əməliyyatları",
+      "transfer": "Sahibliyi ötür",
+      "assignLeader": "Rəhbər təyin et",
+      "publish": "Dərci tənzimlə"
+    },
+    "plan": {
+      "baseline": "Baza planı",
+      "change": "Dəyişiklik {index}, {date}",
+      "viewingVersion": "{date} tarixli versiyaya baxırsınız",
+      "toCurrent": "Cari versiyaya",
+      "reason": "Dəyişikliyin səbəbi",
+      "responsible": "Məsul tərəf",
+      "dependsOn": "Asılıdır",
+      "empty": "Hələ mərhələ əlavə edilməyib",
+      "sharedOnly": "İştirakçılar yalnız paylaşılan mərhələləri büdcəsiz görür.",
+      "timeline": "Layihə mərhələləri",
+      "done": "tamamlanıb",
+      "current": "cari",
+      "upcoming": "qarşıda",
+      "actual": "Faktiki: {date}",
+      "changedFrom": "{date} tarixinə planlaşdırılmışdı",
+      "privateMilestone": "İştirakçılara göstərilmir",
+      "budgetsVisible": "Mərhələ məbləğləri yalnız sahib kimi sizə görünür.",
+      "budgetHidden": "Mərhələ məbləğləri layihə sahibinə görünür.",
+      "currentChip": "Cari mərhələ"
+    },
+    "execution": {
+      "empty": "Hələ icra qeydi yoxdur",
+      "addRecord": "Qeyd əlavə et",
+      "hint": "Nəticələr, komanda mesajları və müzakirələr burada təsdiq işarələri ilə görünür."
+    },
+    "acceptance": {
+      "empty": "Hələ qəbul qeydi yoxdur",
+      "hint": "Qəbul aktları və gizli işlərin qəbulu bu bölmədə saxlanılacaq."
+    },
+    "disputes": {
+      "empty": "Mübahisə yoxdur",
+      "claimNotFact": "Tərəfin iddiası təsdiqlənmiş fakt deyil"
+    },
+    "purchases": {
+      "empty": "Əlaqəli satınalma yoxdur",
+      "participantNote": "Layihə satınalmaları sahibə və rəhbərə görünür."
+    },
+    "participants": {
+      "party": "İştirakçı",
+      "role": "Rol",
+      "grant": "Giriş",
+      "empty": "Hələ iştirakçı yoxdur",
+      "count": "{count, plural, one {# iştirakçı} other {# iştirakçı}}",
+      "grantLabel": {
+        "owner_private": "tam giriş",
+        "shared_party": "paylaşılan materiallar"
+      },
+      "hidden": "İctimai səhifədə gizlidir"
+    },
+    "files": {
+      "empty": "Fayl yoxdur",
+      "audience": {
+        "private": "Şəxsi",
+        "participants": "İştirakçılar üçün",
+        "public": "Dərc edilib"
+      }
+    },
+    "correspondence": {
+      "empty": "Hələ layihə yazışması yoxdur",
+      "hint": "Layihə ilə bağlı məktub və mesajlar bir yerdə saxlanılır və heç vaxt dərc edilmir."
+    },
+    "budget": {
+      "limit": "Limit",
+      "reserved": "Rezerv edilib",
+      "settled": "Ödənilib",
+      "ownerOnly": "Büdcə yalnız layihə sahibinə görünür.",
+      "share": "Limitin {percent}%-i",
+      "note": "Məbləğlər yalnız layihə sahibinə görünür və heç vaxt dərc edilmir."
+    },
+    "publication": {
+      "preview": "İctimai səhifəyə önbaxış",
+      "note": "Dərc açıq sahə siyahısıdır. Fayllar, büdcələr və yazışma heç vaxt dərc edilmir.",
+      "fields": "Nə dərc edilir",
+      "field": {
+        "story": "Layihə hekayəsi",
+        "milestones": "Paylaşılan mərhələlər",
+        "participants": "İctimai iştirakçılar"
+      },
+      "on": "dərc edilib",
+      "off": "gizli"
+    },
+    "transfer": {
+      "pending": "Alıcının razılığı gözlənilir",
+      "title": "Sahibliyin ötürülməsi"
+    },
+    "nextMilestone": "Növbəti mərhələ",
+    "noMilestone": "Mərhələ yoxdur",
+    "ownerPerson": "Şəxsi layihə",
+    "ownerCompany": "Şirkət layihəsi",
+    "createDisabled": "Layihə yaratma növbəti mərhələdə gələcək.",
+    "lede": "Sahib, rəhbər və ya iştirakçı olduğunuz layihələr. Şəxsi layihə şirkətsiz də aparıla bilər.",
+    "stats": {
+      "total": "cəmi layihə",
+      "active": "davam edir",
+      "delayed": "müddəti dəyişdirilmiş",
+      "published": "dərc edilib"
+    },
+    "noMatch": "Bu filtrlərə heç bir layihə uyğun gəlmir",
+    "resetFilters": "Filtrləri sıfırla",
+    "open": "Aç",
+    "progressOf": "{total, plural, one {# mərhələdən} other {# mərhələdən}} {done}",
+    "delayed": "Müddət dəyişdirilib",
+    "hero": {
+      "region": "Region",
+      "publicPage": "İctimai səhifə",
+      "onTrack": "Cədvəl üzrə"
+    },
+    "overview": {
+      "nextSteps": "Növbəti addımlar",
+      "noCurrent": "Bütün mərhələlər tamamlanıb",
+      "recent": "Son qeydlər",
+      "team": "Komanda",
+      "filesCount": "{count, plural, one {# fayl} other {# fayl}}",
+      "privateCount": "{count, plural, one {# şəxsi} other {# şəxsi}}",
+      "purchases": "Layihə satınalmaları",
+      "purchasesCount": "{count, plural, =0 {sorğu yoxdur} one {# sorğu} other {# sorğu}}"
+    }
+  },
+  "ws": {
+    "loading": "Bölmə yüklənir…",
+    "pageError": "Bölməni yükləmək mümkün olmadı",
+    "retry": "Yenidən cəhd et",
+    "backToOverview": "İcmala",
+    "offlineReadOnly": "Bağlantı yoxdur: bölmə yalnız oxumaq üçün göstərilir.",
+    "notFoundTitle": "Bölmə tapılmadı",
+    "notFoundBody": "Ünvanı yoxlayın və ya icmala qayıdın.",
+    "tabsScrollHint": "Vərəqlər üfüqi sürüşür və ox düymələri ilə dəyişir.",
+    "coverKicker": "Layihə",
+    "factsLabel": "Əsas faktlar"
+  }
+}

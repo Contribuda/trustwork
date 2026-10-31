@@ -1,0 +1,24 @@
+/**
+ * Key types for `t()`: the English reference namespaces (INTL-004). A feature that adds
+ * `apps/web/locales/en/<feature>.json` adds one line here; `tests/web/locales.test.ts` checks the list.
+ */
+export type AppMessages =
+  typeof import('./en/assistant.json')
+  & typeof import('./en/auth.json')
+  & typeof import('./en/companies.json')
+  & typeof import('./en/core.json')
+  & typeof import('./en/demo.json')
+  & typeof import('./en/editorial.json')
+  & typeof import('./en/events.json')
+  & typeof import('./en/home.json')
+  & typeof import('./en/magazine.json')
+  & typeof import('./en/map.json')
+  & typeof import('./en/onboarding.json')
+  & typeof import('./en/people.json')
+  & typeof import('./en/procurement.json')
+  & typeof import('./en/projects.json')
+  & typeof import('./en/public.json')
+  & typeof import('./en/publishing.json')
+  & typeof import('./en/sales.json')
+  & typeof import('./en/settings.json')
+  & typeof import('./en/workspace.json');

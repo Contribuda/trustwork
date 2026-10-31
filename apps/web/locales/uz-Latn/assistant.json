@@ -1,0 +1,68 @@
+{
+  "assistantPage": {
+    "lede": "Yordamchi bitta: bu sahifadagi va suzuvchi oynadagi suhbat umumiy.",
+    "tabs": {
+      "conversation": "Suhbat",
+      "mandates": "Topshiriqlar",
+      "approvals": "Kelishuvlar",
+      "runs": "Ishga tushirishlar"
+    },
+    "suggestedStarts": "Nimadan boshlash kerak",
+    "suggestion1": "Qaysi kompaniyalar shamollatiladigan fasadlar boʻyicha material eʼlon qilganini soʻrash.",
+    "suggestion2": "Tavsifdan ehtiyoj qoralamasini tayyorlashni soʻrash.",
+    "suggestion3": "Bu hafta loyihaning qaysi bosqichlari qaror talab qilishini bilish.",
+    "demoReply": "Bu namoyish: yordamchi modelga ulanmagan. Xabaringiz suhbatda saqlandi va xuddi shu holat suzuvchi oynada va sahifada koʻrinadi.",
+    "mandatesSummary": "Faol topshiriqlar",
+    "approvalsWaiting": "Qaror kutmoqda",
+    "runsInProgress": "Jarayondagi ishga tushirishlar",
+    "noAuthorityNote": "Suhbatdagi matn yordamchiga vakolat bermaydi. Vakolatlar faqat tuzilgan topshiriq bilan belgilanadi.",
+    "approvalsDemoNote": "Namoyish: qarorlar yuborilmaydi va topshiriqlarni oʻzgartirmaydi.",
+    "conversationKicker": "Suhbat",
+    "statsLabel": "Xulosa",
+    "howTitle": "Bu qanday ishlaydi",
+    "how": {
+      "ask": "Soʻrang: yordamchi platforma maʼlumotlari boʻyicha javob beradi va manbalarni koʻrsatadi.",
+      "mandate": "Topshiriq u nima qila olishini va qaysi chegaralarda ekanini belgilaydi.",
+      "approve": "Chegaralardan tashqari harakatlar sizning kelishuvingizni kutadi.",
+      "trace": "Har bir ishga tushirish iz qoldiradi: nima qilindi, nima boʻlmadi, nima nomaʼlum."
+    }
+  },
+  "mandate": {
+    "create": "Topshiriq yaratish",
+    "empty": "Topshiriqlar yoʻq",
+    "action": "Harakat",
+    "context": "Kontekst",
+    "limit": "Summa chegarasi",
+    "validity": "Amal qilish muddati",
+    "approvalPolicy": "Kelishish",
+    "approval": {
+      "none": "Chegaralar doirasida talab qilinmaydi",
+      "digest": "Har bir harakatni kelishish talab qilinadi",
+      "escalate": "Qarorni doim menga topshirish"
+    },
+    "version": "{version}-versiya",
+    "state": {
+      "active": "Amalda",
+      "paused": "Toʻxtatilgan",
+      "revoked": "Bekor qilingan",
+      "expired": "Muddati oʻtgan"
+    },
+    "noAuthorityNote": "Suhbatdagi matn yordamchiga vakolat bermaydi. Vakolatlar faqat shu yerda belgilanadi.",
+    "formNote": "Topshiriq shakli keyingi bosqichda paydo boʻladi."
+  },
+  "approval": {
+    "title": "Harakatni kelishish",
+    "empty": "Qarorlar talab qilinmaydi",
+    "approve": "Maʼqullash",
+    "reject": "Rad etish",
+    "expiresIn": "{date} gacha amal qiladi",
+    "bindsDigest": "Maʼqullash faqat aynan shu shartlarga tegishli.",
+    "digest": "Harakat izi",
+    "invalidated": "Shartlar oʻzgardi; yangi kelishuvni soʻrang"
+  },
+  "runs": {
+    "empty": "Hozircha ishga tushirishlar boʻlmagan",
+    "log": "Harakatlar jurnali",
+    "outcomeUnknownExplain": "Tashqi tizim javob bermadi. Natijani solishtirmoqdamiz; harakat avtomatik takrorlanmaydi."
+  }
+}

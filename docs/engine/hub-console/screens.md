@@ -26,7 +26,7 @@ Status: **Proposed**, no visual reference (`no reference` in the sense of the [s
 
 **Keyboard and focus.** Skip link → band → navigation → page heading → filters → content. After navigation focus moves to the page `h1`; after a mutation to the toast and then back to the changed row. No drag-only interaction: reordering uses move up / move down buttons with announcements.
 
-**Locale.** Every string under `admin.<namespace>` in `apps/web/app/_lib/locales/<locale>.json` for all six engine locales (English reference). Shared enums reuse `common.*`, `status.*`, `lifecycle.*`, `run.*`. Dates, numbers and money via `Intl`. Russian copy in this file is illustrative; locale owners finalize it.
+**Locale.** Every string under `admin.<section>` in `apps/web/locales/<locale>/admin.json` for every engine locale (English reference). Shared enums reuse `common.*`, `status.*`, `lifecycle.*`, `run.*`. Dates, numbers and money via `Intl`. Russian copy in this file is illustrative; locale owners finalize it.
 
 **Screen ids.** `SW-*` setup wizard, `NC-*` node console, `HC-*` hub console.
 

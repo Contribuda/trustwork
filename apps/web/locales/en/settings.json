@@ -1,0 +1,84 @@
+{
+  "settings": {
+    "title": "Settings",
+    "lede": "Personal settings live with the account; company settings are in the Company section.",
+    "nav": {
+      "label": "Settings",
+      "account": "Account",
+      "security": "Security and sessions",
+      "preferences": "Preferences",
+      "channels": "Connections",
+      "billing": "Billing and plans"
+    },
+    "account": {
+      "name": "Name",
+      "email": "Sign-in email",
+      "changeEmail": "Change the email",
+      "deleteAccount": "Delete the account",
+      "language": "Interface language",
+      "languageLabel": "Interface language",
+      "languageValue": "English",
+      "demoNote": "Demo: changing the email and deleting the account come with the server."
+    },
+    "security": {
+      "changePassword": "Change the password",
+      "providers": "Ways to sign in",
+      "password": "Password",
+      "link": "Link",
+      "unlink": "Unlink",
+      "notLinked": "Not linked",
+      "sessions": "Active sessions",
+      "currentSession": "Current session",
+      "endSession": "End",
+      "endOthers": "End all other sessions",
+      "col": {
+        "device": "Device",
+        "location": "Location",
+        "lastSeen": "Last activity"
+      },
+      "demoSession": "Demo: there is no session; the list is shown as an example.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "sessionsCaption": "Session list",
+      "google": "Google",
+      "lastSeenAt": "Activity: {date}",
+      "apple": "Apple"
+    },
+    "preferences": {
+      "interests": "Interests",
+      "sections": "Menu sections",
+      "pinProcurement": "Show Procurement in the menu",
+      "pinSales": "Show Sales in the menu",
+      "pinNote": "A hidden section moves to “More” and stays available.",
+      "notifications": "Notifications",
+      "notify": {
+        "decisions": "Decisions and approvals",
+        "runs": "Assistant runs",
+        "publications": "Publications",
+        "magazine": "A new magazine issue"
+      },
+      "assistantFocus": "When the assistant window opens, jump to the latest message",
+      "demoNote": "Demo: settings apply only in this browser window.",
+      "interestsHint": "Topics, goals and regions can be changed in the questionnaire."
+    },
+    "channels": {
+      "empty": "No connections",
+      "connect": "Connect",
+      "scopes": "Permissions",
+      "revoke": "Revoke",
+      "untrustedNote": "Emails and files from connections count as untrusted data and give the assistant no authority."
+    },
+    "billing": {
+      "noOffers": "Plans are not published yet.",
+      "currentPlan": "Current plan",
+      "free": "Not selected",
+      "platformBudget": "Paid services budget",
+      "acceptedOffers": "Accepted terms",
+      "noneAccepted": "No accepted terms",
+      "companyBilling": "Company billing and plans",
+      "invoices": "Invoices",
+      "noInvoices": "No invoices"
+    },
+    "profileLink": "Profile and public page"
+  }
+}

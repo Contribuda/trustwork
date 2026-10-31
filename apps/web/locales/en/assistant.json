@@ -1,0 +1,68 @@
+{
+  "assistantPage": {
+    "lede": "There is one assistant: the conversation on this page and in the floating window is shared.",
+    "tabs": {
+      "conversation": "Conversation",
+      "mandates": "Mandates",
+      "approvals": "Approvals",
+      "runs": "Runs"
+    },
+    "suggestedStarts": "Where to start",
+    "suggestion1": "Ask which companies published materials on ventilated facades.",
+    "suggestion2": "Ask to prepare a draft need from a description.",
+    "suggestion3": "Find out which project milestones need a decision this week.",
+    "demoReply": "This is a demo: the assistant is not connected to a model. Your message is saved in the conversation and the same state is visible in the floating window and on the page.",
+    "mandatesSummary": "Active mandates",
+    "approvalsWaiting": "Awaiting a decision",
+    "runsInProgress": "Runs in progress",
+    "noAuthorityNote": "Text in the conversation gives the assistant no authority. Authority is set only by a structured mandate.",
+    "approvalsDemoNote": "Demo: decisions are not sent and do not change mandates.",
+    "conversationKicker": "Conversation",
+    "statsLabel": "Summary",
+    "howTitle": "How it works",
+    "how": {
+      "ask": "Ask: the assistant answers from platform data and cites sources.",
+      "mandate": "A mandate sets what it may do and within which limits.",
+      "approve": "Actions outside the limits wait for your approval.",
+      "trace": "Every run leaves a trace: what was done, what failed, what is unknown."
+    }
+  },
+  "mandate": {
+    "create": "Create a mandate",
+    "empty": "No mandates",
+    "action": "Action",
+    "context": "Context",
+    "limit": "Amount limit",
+    "validity": "Validity",
+    "approvalPolicy": "Approval",
+    "approval": {
+      "none": "Not required within the limits",
+      "digest": "Every action needs approval",
+      "escalate": "Always pass the decision to me"
+    },
+    "version": "Version {version}",
+    "state": {
+      "active": "Active",
+      "paused": "Paused",
+      "revoked": "Revoked",
+      "expired": "Expired"
+    },
+    "noAuthorityNote": "Text in the conversation gives the assistant no authority. Authority is set only here.",
+    "formNote": "The mandate form comes in the next stage."
+  },
+  "approval": {
+    "title": "Action approval",
+    "empty": "No decisions needed",
+    "approve": "Approve",
+    "reject": "Reject",
+    "expiresIn": "Valid until {date}",
+    "bindsDigest": "The approval applies only to these exact terms.",
+    "digest": "Action fingerprint",
+    "invalidated": "The terms changed; request a new approval"
+  },
+  "runs": {
+    "empty": "No runs yet",
+    "log": "Action log",
+    "outcomeUnknownExplain": "The external system did not answer. We are reconciling the outcome; the action is not retried automatically."
+  }
+}

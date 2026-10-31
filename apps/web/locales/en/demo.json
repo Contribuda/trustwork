@@ -1,0 +1,18 @@
+{
+  "demo": {
+    "bannerNote": "Working features are still in development.",
+    "personaLabel": "Demo participant",
+    "persona": {
+      "anonymous": "Guest",
+      "reader": "Reader and author without a company",
+      "mixed": "Company employee: buys and sells",
+      "owner": "Owner of a personal project"
+    },
+    "noEmailSent": "Demo: no emails are sent and no account is created.",
+    "noAccountCreated": "Demo: no account is created and no sign-in happens.",
+    "scenario": {
+      "error": "Loading error",
+      "offline": "No connection"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "demo": {
+    "bannerNote": "İş funksiyaları hələ hazırlanır.",
+    "personaLabel": "Demo iştirakçısı",
+    "persona": {
+      "anonymous": "Qonaq",
+      "reader": "Şirkətsiz oxucu və müəllif",
+      "mixed": "Şirkət əməkdaşı: alır və satır",
+      "owner": "Şəxsi layihənin sahibi"
+    },
+    "noEmailSent": "Demo: məktub göndərilmir və hesab yaradılmır.",
+    "noAccountCreated": "Demo: hesab yaradılmır və giriş baş vermir.",
+    "scenario": {
+      "error": "Yükləmə səhvi",
+      "offline": "Bağlantı yoxdur"
+    }
+  }
+}

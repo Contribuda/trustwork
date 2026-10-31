@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { toPublicPerson, toPublicProject } from '@trustwork/contracts/client';
 import { FIXTURE_FILES, PeopleFileSchema, ProjectsFileSchema } from '../../apps/web/fixtures/schemas.js';
+import { appDictionary } from './i18n/helpers.js';
 
 /** apps/web fixtures must satisfy the frozen contract schemas and be labelled synthetic (runs without a browser). */
 const root = resolve('apps/web/fixtures');
@@ -96,7 +97,7 @@ test('projection rules: a private profile and an unpublished project are not pub
 });
 
 test('locale additions have no English product copy and no duplicate package keys', () => {
-  const additions = JSON.parse(readFileSync(resolve('apps/web/app/_lib/locales/ru.json'), 'utf8')) as Record<string, unknown>;
+  const additions = appDictionary('ru') as Record<string, unknown>;
   const base = JSON.parse(readFileSync(resolve('packages/ui/locales/ru.json'), 'utf8')) as Record<string, unknown>;
   const leaves: Array<[string, string]> = [];
   const walk = (node: unknown, path: string) => {

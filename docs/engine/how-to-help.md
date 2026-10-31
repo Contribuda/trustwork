@@ -13,7 +13,7 @@ Trustwork gets better every time someone who knows something shares it. You do n
 
 ## If you speak one of our languages
 
-The interface and demo content exist in English, Russian, Uzbek, Georgian, Armenian and Azerbaijani. The last four are machine drafts by the integrator and **need native speakers**. Spanish is next, then Portuguese, French, German, Italian, Polish, Ukrainian, Turkish, Arabic, Chinese, Hindi and Japanese ([language roadmap](localization.md#languages-and-countries)); each needs translators and, above all, reviewers. Every locale shows honestly whether it is a machine draft, community reviewed or native reviewed. Read the dictionaries in `apps/web/app/_lib/locales/` and `packages/ui/locales/`, fix what sounds wrong, and tell us which construction terms professionals in your country actually use. Want your language? See [Countries and languages](localization.md#adding-a-language).
+The interface and demo content exist in English, Russian, Uzbek, Georgian, Armenian and Azerbaijani. The last four are machine drafts by the integrator and **need native speakers**. Spanish is next, then Portuguese, French, German, Italian, Polish, Ukrainian, Turkish, Arabic, Chinese, Hindi and Japanese ([language roadmap](localization.md#languages-and-countries)); each needs translators and, above all, reviewers. Every locale shows honestly whether it is a machine draft, community reviewed or native reviewed. Read the dictionaries in `apps/web/locales/<tag>/` (one file per feature) and `packages/ui/locales/`, fix what sounds wrong, and tell us which construction terms professionals in your country actually use. Want your language? See [Countries and languages](localization.md#adding-a-language).
 
 ## If you know a country
 

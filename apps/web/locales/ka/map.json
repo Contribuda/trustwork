@@ -1,0 +1,29 @@
+{
+  "map": {
+    "viewList": "სია",
+    "viewMap": "რუკა",
+    "listLabel": "შედეგები რუკაზე",
+    "mapLabel": "ობიექტების რუკა",
+    "inArea": "ამ არეალში",
+    "ofTotal": "{total}-დან",
+    "clearArea": "მთელი რუკა",
+    "empty": "ამ არეალში არაფერია. გადაადგილეთ რუკა ან გაასუფთავეთ არეალი.",
+    "showOnMap": "რუკაზე ჩვენება",
+    "loading": "რუკა იტვირთება…",
+    "failed": "რუკა არ ჩაიტვირთა.",
+    "toList": "სიის გახსნა",
+    "zoomIn": "მიახლოება",
+    "zoomOut": "დაშორება",
+    "autoSearch": "ძებნა რუკის გადაადგილებისას",
+    "searchHere": "ამ არეალში ძებნა",
+    "open": "გახსნა",
+    "clusterTitle": "{count, plural, one {# ობიექტი} other {# ობიექტი}}, დააჭირეთ მისაახლოებლად",
+    "areaFilter": "არეალი რუკაზე",
+    "legend": "ლეგენდა",
+    "legendOther": "შეჩერებული ან გაუქმებული",
+    "onMap": "რუკაზე",
+    "talk": "აგენტი",
+    "readiness": "მზადყოფნა {percent}%",
+    "participantsCount": "{count, plural, one {# მონაწილე} other {# მონაწილე}}"
+  }
+}

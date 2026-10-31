@@ -1,0 +1,443 @@
+{
+  "notifications": {
+    "title": "Bildirishnomalar",
+    "lede": "Bildirishnomalar obyektlarga bogʻlangan: qarorlar, soʻrovlar, loyihalar va nashrlar. Bu pochta qutisi emas.",
+    "empty": "Yangi bildirishnomalar yoʻq",
+    "markRead": "Oʻqilgan deb belgilash",
+    "open": "Ochish",
+    "kind": {
+      "decision": "Qaror kerak",
+      "quote": "Taklif",
+      "project": "Loyiha",
+      "publication": "Nashr",
+      "assistant": "Yordamchi",
+      "magazine": "Jurnal"
+    },
+    "unread": "Oʻqilmagan",
+    "unreadOne": "yangi",
+    "noUnread": "Oʻqilmaganlar yoʻq",
+    "group": {
+      "today": "Bugun",
+      "yesterday": "Kecha",
+      "earlier": "Avvalroq"
+    },
+    "stats": {
+      "unread": "oʻqilmagan",
+      "decisions": "qaror talab qiladi"
+    },
+    "settingsTitle": "Nima haqida xabar berish",
+    "settingsHint": "Qarorlar, yordamchi ishga tushirishlari, nashrlar va jurnalning yangi sonlari afzalliklarda sozlanadi.",
+    "demoNote": "Namoyish: oʻqilganlik belgilari saqlanmaydi."
+  },
+  "overview": {
+    "title": "Umumiy koʻrinish",
+    "subtitle": {
+      "mixed": "Xaridlar, sotuvlar va loyihalaringiz",
+      "buyer": "Xaridlar va loyihalaringiz",
+      "seller": "Sotuvlar va loyihalaringiz",
+      "personal": "Loyihalaringiz va nashrlaringiz"
+    },
+    "create": "Yaratish",
+    "createItems": {
+      "need": "Ehtiyoj",
+      "quote": "Taklif",
+      "project": "Loyiha",
+      "publication": "Nashr"
+    },
+    "decisions": "Qaroringiz kerak",
+    "decisionsEmpty": "Qarorlar talab qilinmaydi",
+    "inProgress": "{count, plural, one {# vazifa jarayonda} other {# vazifa jarayonda}}",
+    "all": "Hammasi",
+    "procurement": {
+      "title": "Xaridlar",
+      "findSupplier": "Yetkazib beruvchi topish",
+      "empty": "Hozircha xaridlar yoʻq",
+      "createNeed": "Ehtiyoj yaratish",
+      "all": "Barcha xaridlar"
+    },
+    "sales": {
+      "title": "Sotuvlar",
+      "allQuotes": "Barcha takliflar",
+      "catalogue": "Tovar, ish va xizmatlar katalogi",
+      "empty": "Hozircha takliflar yoʻq",
+      "fillCatalogue": "Katalogni toʻldirish"
+    },
+    "projects": {
+      "title": "Mening loyihalarim",
+      "all": "Barcha loyihalar",
+      "next": "Keyingi bosqich: {name}",
+      "empty": "Hozircha loyihalar yoʻq",
+      "create": "Loyiha yaratish"
+    },
+    "events": {
+      "title": "Yaqin tadbirlar",
+      "empty": "Tadbirlar yoʻq"
+    },
+    "publications": {
+      "title": "Nashrlar",
+      "empty": "Qoralamalar yoʻq",
+      "write": "Maqola yozish",
+      "all": "Barcha nashrlar"
+    },
+    "assistant": {
+      "title": "Yordamchi",
+      "summary": "Yordamchi: bajarilmoqda — {running}, qaroringizni kutmoqda — {approvals}, solishtiruvda — {unknown}",
+      "open": "Yordamchi sahifasini ochish"
+    },
+    "digestChanged": "Shartlar oʻzgardi, qaytadan tekshiring",
+    "accessChanged": "Ruxsat oʻzgardi",
+    "industryPicks": "Sohada",
+    "due": "Muddat: {date}",
+    "cardError": "Kartochkani yuklab boʻlmadi",
+    "industryKicker": "Ochiq boʻlimlardan"
+  },
+  "me": {
+    "title": "Mening sahifam",
+    "publicPage": "Ochiq sahifa",
+    "accountSettings": "Hisob sozlamalari",
+    "tabs": {
+      "work": "Ish",
+      "publications": "Nashrlar",
+      "interests": "Qiziqishlar",
+      "history": "Tarix",
+      "publicProfile": "Ochiq profil",
+      "learning": "Oʻrganish"
+    },
+    "membership": {
+      "active": "Joriy ish joyi",
+      "invited": "Taklifnoma",
+      "ended": "Tugagan: {date}",
+      "none": "Kompaniyasiz"
+    },
+    "mandates": "Yordamchiga topshiriqlar",
+    "mandatesCount": "{count, plural, one {# topshiriq} other {# topshiriq}}",
+    "saved": "Saqlanganlar",
+    "savedEmpty": "Saqlangan materiallar yoʻq",
+    "decisions": "Mening qarorlarim",
+    "projectsByRole": "Rollar boʻyicha loyihalar",
+    "startHint": "Loyiha yoki nashrdan boshlang",
+    "interestsHint": "Qiziqishlar faqat umumiy koʻrinishda qaysi kartochkalar koʻrsatilishiga taʼsir qiladi. Ular kompaniyada huquq bermaydi.",
+    "editInterests": "Qiziqishlarni oʻzgartirish",
+    "public": {
+      "published": "Sahifa eʼlon qilingan",
+      "unpublished": "Sahifa eʼlon qilinmagan",
+      "portraitConsent": "Ochiq sahifada portretimni koʻrsatishga ruxsat beraman",
+      "portraitLicence": "Bu tasvirdan foydalanish huquqim borligini tasdiqlayman.",
+      "showEmployer": "Joriy ish joyini koʻrsatish",
+      "bio": "Oʻzim haqimda",
+      "topics": "Mavzular",
+      "show": "Koʻrsatish",
+      "contact": "Platforma orqali menga yozishga ruxsat berish",
+      "preview": "Koʻrinish",
+      "previewTitle": "Sahifangizni boshqalar shunday koʻradi",
+      "portraitHidden": "Portret ochiq sahifada yashirilgan",
+      "demoNote": "Namoyish: oʻzgarishlar serverda saqlanmaydi.",
+      "portraitPending": "Portret surat yuklangandan soʻng paydo boʻladi."
+    },
+    "history": {
+      "org": "Tashkilot",
+      "role": "Rol",
+      "from": "Boshlanish",
+      "to": "Tugash",
+      "status": "Holat",
+      "empty": "Kompaniyalardagi ishtirok boʻyicha yozuvlar yoʻq",
+      "terms": "Qabul qilingan shartlar: {version}-versiya, {date}"
+    },
+    "editProfile": "Profilni oʻzgartirish",
+    "profileGood": "Yaxshi toʻldirilgan",
+    "profileMore": "Toʻldirish mumkin",
+    "tabsLearning": "Oʻrganish",
+    "learning": {
+      "readCount": "material oʻqildi",
+      "quizCount": "toʻgʻri javob",
+      "bookmarksCount": "xatchoʻplarda",
+      "certCount": "sertifikat",
+      "issues": "Jurnal sonlari",
+      "emptyTitle": "Siz hali jurnalni oʻqishni boshlamagansiz",
+      "emptyBody": "Natija, viktorinalar va xatchoʻplar sonni ochishingiz bilan shu yerda paydo boʻladi.",
+      "bookmarksEmpty": "Hozircha xatchoʻplar yoʻq: materiallarni oʻqish rejimida belgilang.",
+      "certificates": "Trustwork sertifikatlari",
+      "certEmpty": "Hozircha sertifikatlar yoʻq. Ular Akademiya mini-kurslarini oʻtgandan soʻng beriladi.",
+      "check": "tekshirish",
+      "courses": "Akademiya kurslari",
+      "coursesNote": "Kurslarga yozilish va sertifikat berish xizmat ishga tushgandan soʻng ochiladi."
+    },
+    "workIntro": "Bugun sizni kutayotgan qarorlar, loyihalar va topshiriqlar."
+  },
+  "company": {
+    "title": "Kompaniya",
+    "publicPage": "Ochiq sahifa",
+    "settings": "Kompaniya sozlamalari",
+    "tabs": {
+      "overview": "Umumiy koʻrinish",
+      "wall": "Devor",
+      "people": "Odamlar",
+      "catalogue": "Katalog",
+      "projects": "Loyihalar",
+      "reputation": "Obroʻ"
+    },
+    "empty": {
+      "title": "Siz hali kompaniyaga bogʻlanmagansiz",
+      "body": "Kompaniyasiz ishlash mumkin: oʻqish, eʼlon qilish va shaxsiy loyihalarni yuritish. Agar kompaniyani ifodalasangiz, taklifnoma bilan qoʻshiling yoki uning sahifasini yarating.",
+      "join": "Taklifnoma bilan qoʻshilish",
+      "create": "Kompaniya sahifasini yaratish",
+      "find": "Katalogdan kompaniya topish",
+      "policyNote": "Qoʻshilishni kompaniya tasdiqlaydi.",
+      "findHint": "Tasdiqlangan sahifa, katalog va loyihalarga ega kompaniyalar.",
+      "lede": "Kabinet kompaniyasiz ham ishlaydi; qoʻshilish yoki sahifa yaratish istalgan vaqtda mumkin."
+    },
+    "join": {
+      "code": "Taklifnoma kodi yoki havolasi",
+      "pending": "Soʻrov yuborildi va tasdiqlashni kutmoqda",
+      "cancel": "Soʻrovni bekor qilish"
+    },
+    "membershipEnded": "Aʼzoligingiz {date} kuni tugagan",
+    "invite": "Taklif qilish",
+    "member": {
+      "name": "Ism",
+      "role": "Rol",
+      "status": "Holat",
+      "since": "Boshlanish",
+      "actions": "Amallar",
+      "end": "Ishtirokni tugatish",
+      "status_active": "Amalda",
+      "status_invited": "Taklif qilingan",
+      "status_ended": "Tugagan",
+      "sinceDate": "{date} dan",
+      "hidden": "Ochiq sahifada koʻrsatilmaydi",
+      "inviteNote": "Taklifnomalar va ishtirokni tugatish keyingi bosqichda paydo boʻladi."
+    },
+    "membersEmpty": "Hozircha xodimlar yoʻq",
+    "wallEmpty": "Hozircha kompaniya nashrlari yoʻq",
+    "catalogue": {
+      "empty": "Katalog hozircha boʻsh",
+      "newVersion": "Yangi versiya",
+      "publish": "Versiyani eʼlon qilish",
+      "version": "{version}-versiya, {date}",
+      "name": "Nomi",
+      "kind": "Turi",
+      "unit": "Birlik",
+      "price": "Narx",
+      "priceOnRequest": "Soʻrov boʻyicha",
+      "public": "Ochiq",
+      "privateFloor": "Eng past narx (eʼlon qilinmaydi)",
+      "yes": "Ha",
+      "no": "Yoʻq",
+      "count": "{count, plural, one {# pozitsiya} other {# pozitsiya}}",
+      "floorNote": "Eng past narxlar faqat bitimlar huquqi bilan koʻrinadi va hech qachon eʼlon qilinmaydi.",
+      "publicNote": "Ochiq pozitsiyalar kompaniya sahifasida «soʻrov boʻyicha» narxi bilan koʻrsatiladi.",
+      "emptyHint": "Tovar, ish va xizmatlar katalogi buyurtmachilardan soʻrovlar keltiradi."
+    },
+    "claim": {
+      "title": "Sahifa holati",
+      "sourced": "Ochiq manba boʻyicha yaratilgan",
+      "claimed": "Bildirilgan, tasdiqlashni kutmoqda",
+      "verified": "Tasdiqlangan",
+      "pendingRequests": "{count, plural, one {# ta qoʻshilish soʻrovi} other {# ta qoʻshilish soʻrovi}}"
+    },
+    "projectsEmpty": "Sizga ochiq kompaniya loyihalari hozircha yoʻq",
+    "reputationNote": "Bitimlar boʻyicha ichki dalillar birinchi bajarilgan buyurtmalardan soʻng paydo boʻladi.",
+    "decisions": "Kompaniya boʻyicha qarorlar",
+    "noAccess": "Bu boʻlimga ruxsat yoʻq",
+    "lede": "Kompaniyangizning umumiy sahifasi: qarorlar, devor, odamlar, katalog va loyihalar.",
+    "stats": {
+      "members": "xodim",
+      "catalogue": "katalog pozitsiyasi",
+      "projects": "loyiha",
+      "wall": "nashr"
+    },
+    "evidence": {
+      "title": "Tasdiqlar",
+      "identifier": "Rekvizitlar",
+      "none": "Koʻrsatilmagan",
+      "domain": "Sayt domeni",
+      "domainYes": "Tasdiqlangan",
+      "domainNo": "Tasdiqlanmagan",
+      "publicMembers": "Ochiq xodimlar",
+      "note": "Bu hamma koʻradigan faktlar. Platformada baholar va reytinglar yoʻq.",
+      "kind": {
+        "other": "Boshqa identifikator"
+      }
+    },
+    "peopleHint": "Kompaniya xodimlari va ularning rollari. Ochiqlik — har birining oʻz qarori.",
+    "website": "Kompaniya sayti"
+  },
+  "projectsWs": {
+    "title": "Loyihalar",
+    "create": "Loyiha yaratish",
+    "empty": "Hozircha loyihalar yoʻq",
+    "emptyHint": "Shaxsiy loyihani kompaniyasiz ham yuritish mumkin.",
+    "filter": {
+      "role": "Mening rolim",
+      "status": "Holat",
+      "owner": "Ega",
+      "all": "Hammasi"
+    },
+    "owner": {
+      "me": "Men",
+      "company": "Kompaniya"
+    },
+    "col": {
+      "title": "Loyiha",
+      "owner": "Ega",
+      "role": "Mening rolim",
+      "status": "Holat",
+      "nextMilestone": "Keyingi bosqich",
+      "updated": "Yangilangan"
+    },
+    "list": "Loyihalar roʻyxati",
+    "tabs": {
+      "overview": "Umumiy koʻrinish",
+      "plan": "Reja",
+      "execution": "Bajarilish",
+      "acceptance": "Qabul qilish",
+      "disputes": "Nizolar",
+      "purchases": "Xaridlar",
+      "participants": "Ishtirokchilar",
+      "files": "Fayllar",
+      "correspondence": "Yozishmalar",
+      "budget": "Byudjet",
+      "publication": "Nashr"
+    },
+    "notPublished": "Eʼlon qilinmagan",
+    "publishedProjection": "Eʼlon qilingan: {fields}",
+    "leader": "Rahbar",
+    "noLeader": "Rahbar tayinlanmagan",
+    "actions": {
+      "menu": "Loyiha bilan amallar",
+      "transfer": "Egalikni oʻtkazish",
+      "assignLeader": "Rahbar tayinlash",
+      "publish": "Nashrni sozlash"
+    },
+    "plan": {
+      "baseline": "Asosiy reja",
+      "change": "{date} sanasidagi {index}-oʻzgarish",
+      "viewingVersion": "Siz {date} sanasidagi versiyani koʻryapsiz",
+      "toCurrent": "Joriy versiyaga",
+      "reason": "Oʻzgarish sababi",
+      "responsible": "Masʼul tomon",
+      "dependsOn": "Bogʻliq",
+      "empty": "Bosqichlar hali qoʻshilmagan",
+      "sharedOnly": "Ishtirokchilarga faqat umumiy bosqichlar byudjetsiz koʻrinadi.",
+      "timeline": "Loyiha bosqichlari",
+      "done": "bajarilgan",
+      "current": "joriy",
+      "upcoming": "oldinda",
+      "actual": "Amalda: {date}",
+      "changedFrom": "Reja {date} ga edi",
+      "privateMilestone": "Ishtirokchilarga koʻrsatilmaydi",
+      "budgetsVisible": "Bosqichlar summasi faqat sizga, ega sifatida, koʻrinadi.",
+      "budgetHidden": "Bosqichlar summasi loyiha egasiga koʻrinadi.",
+      "currentChip": "Joriy bosqich"
+    },
+    "execution": {
+      "empty": "Bajarilish boʻyicha yozuvlar hozircha yoʻq",
+      "addRecord": "Yozuv qoʻshish",
+      "hint": "Natijalar, jamoa xabarlari va muhokamalar bu yerda tasdiq belgilari bilan paydo boʻladi."
+    },
+    "acceptance": {
+      "empty": "Qabul qilish boʻyicha yozuvlar hozircha yoʻq",
+      "hint": "Dalolatnomalar va yashirin ishlarni qabul qilish shu boʻlimda yuritiladi."
+    },
+    "disputes": {
+      "empty": "Nizolar yoʻq",
+      "claimNotFact": "Tomonning bayonoti tasdiqlangan fakt emas"
+    },
+    "purchases": {
+      "empty": "Bogʻliq xaridlar yoʻq",
+      "participantNote": "Loyiha xaridlarini ega va rahbar koʻradi."
+    },
+    "participants": {
+      "party": "Ishtirokchi",
+      "role": "Rol",
+      "grant": "Ruxsat",
+      "empty": "Hozircha ishtirokchilar yoʻq",
+      "count": "{count, plural, one {# ishtirokchi} other {# ishtirokchi}}",
+      "grantLabel": {
+        "owner_private": "toʻliq ruxsat",
+        "shared_party": "umumiy materiallar"
+      },
+      "hidden": "Ochiq sahifada yashirilgan"
+    },
+    "files": {
+      "empty": "Fayllar yoʻq",
+      "audience": {
+        "private": "Maxfiy",
+        "participants": "Ishtirokchilar uchun",
+        "public": "Eʼlon qilingan"
+      }
+    },
+    "correspondence": {
+      "empty": "Loyiha boʻyicha yozishmalar hozircha yoʻq",
+      "hint": "Loyiha boʻyicha xatlar va xabarlar bir joyda saqlanadi va eʼlon qilinmaydi."
+    },
+    "budget": {
+      "limit": "Limit",
+      "reserved": "Band qilingan",
+      "settled": "Toʻlangan",
+      "ownerOnly": "Byudjet faqat loyiha egasiga koʻrinadi.",
+      "share": "limitning {percent}%",
+      "note": "Summalar faqat loyiha egasiga koʻrinadi va hech qachon eʼlon qilinmaydi."
+    },
+    "publication": {
+      "preview": "Ochiq sahifa koʻrinishi",
+      "note": "Nashr — bu maydonlarning aniq roʻyxati. Fayllar, byudjetlar va yozishmalar eʼlon qilinmaydi.",
+      "fields": "Nima eʼlon qilingan",
+      "field": {
+        "story": "Loyiha tarixi",
+        "milestones": "Umumiy bosqichlar",
+        "participants": "Ochiq ishtirokchilar"
+      },
+      "on": "eʼlon qilinadi",
+      "off": "yashirilgan"
+    },
+    "transfer": {
+      "pending": "Qabul qiluvchining roziligi kutilmoqda",
+      "title": "Egalikni oʻtkazish"
+    },
+    "nextMilestone": "Keyingi bosqich",
+    "noMilestone": "Bosqichlar yoʻq",
+    "ownerPerson": "Shaxsiy loyiha",
+    "ownerCompany": "Kompaniya loyihasi",
+    "createDisabled": "Loyiha yaratish keyingi bosqichda paydo boʻladi.",
+    "lede": "Siz ega, rahbar yoki ishtirokchi boʻlgan loyihalar. Shaxsiy loyihani kompaniyasiz ham yuritish mumkin.",
+    "stats": {
+      "total": "jami loyihalar",
+      "active": "jarayonda",
+      "delayed": "muddati koʻchirilgan",
+      "published": "eʼlon qilingan"
+    },
+    "noMatch": "Bu filtrlar boʻyicha loyihalar yoʻq",
+    "resetFilters": "Filtrlarni tiklash",
+    "open": "Ochish",
+    "progressOf": "{total, plural, one {# bosqichdan} other {# bosqichdan}} {done} tasi",
+    "delayed": "Muddat koʻchirilgan",
+    "hero": {
+      "region": "Hudud",
+      "publicPage": "Ochiq sahifa",
+      "onTrack": "Reja boʻyicha ketmoqda"
+    },
+    "overview": {
+      "nextSteps": "Yaqin qadamlar",
+      "noCurrent": "Barcha bosqichlar yakunlangan",
+      "recent": "Soʻnggi yozuvlar",
+      "team": "Jamoa",
+      "filesCount": "{count, plural, one {# fayl} other {# fayl}}",
+      "privateCount": "{count, plural, one {# maxfiy} other {# maxfiy}}",
+      "purchases": "Loyiha xaridlari",
+      "purchasesCount": "{count, plural, =0 {soʻrovlar yoʻq} one {# soʻrov} other {# soʻrov}}"
+    }
+  },
+  "ws": {
+    "loading": "Boʻlim yuklanmoqda…",
+    "pageError": "Boʻlimni yuklab boʻlmadi",
+    "retry": "Qayta urinish",
+    "backToOverview": "Umumiy koʻrinishga",
+    "offlineReadOnly": "Aloqa yoʻq: boʻlim faqat oʻqish rejimida koʻrsatilmoqda.",
+    "notFoundTitle": "Boʻlim topilmadi",
+    "notFoundBody": "Manzilni tekshiring yoki umumiy koʻrinishga qayting.",
+    "tabsScrollHint": "Yorliqlarni gorizontal aylantirish yoki strelkalar bilan almashtirish mumkin.",
+    "coverKicker": "Loyiha",
+    "factsLabel": "Asosiy maʼlumotlar"
+  }
+}

@@ -2,7 +2,7 @@ import { formatDate, formatMessage, formatNumber, intlTag, localeTag, messageOrU
 import { formatMoney as packMoney } from '@trustwork/country-packs';
 
 /**
- * Application i18n (ADR-009): keys are dot paths into `locales/en.json` (the reference) layered over the
+ * Application i18n (ADR-009): keys are dot paths into `apps/web/locales/en/*.json` (the reference) layered over the
  * design-system dictionary. The active locale and its message layers live in the request-scoped store
  * primed by `primeLocale()` (server) and the `LocaleProvider` (client); a locale falls back to English per
  * key. No product copy is written in TSX: every string comes through `t()`.
@@ -25,7 +25,7 @@ type PathsOf<T, Prefix extends string = ''> = T extends readonly (infer U)[]
         [K in keyof T & string]: T[K] extends string ? `${Prefix}${K}` : PathsOf<T[K], `${Prefix}${K}.`>;
       }[keyof T & string];
 
-type Additions = typeof import('./locales/en.json');
+type Additions = import('../../locales/types.js').AppMessages;
 type AdditionKeys = Exclude<PathsOf<Additions>, '$comment'>;
 type UiKeys = PathsOf<typeof import('@trustwork/ui/locales/en.json')>;
 export type LocaleKey = UiKeys | AdditionKeys;

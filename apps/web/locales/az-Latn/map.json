@@ -1,0 +1,29 @@
+{
+  "map": {
+    "viewList": "Siyahı",
+    "viewMap": "Xəritə",
+    "listLabel": "Xəritədəki nəticələr",
+    "mapLabel": "Obyektlərin xəritəsi",
+    "inArea": "Bu ərazidə",
+    "ofTotal": "{total}-dan",
+    "clearArea": "Bütün xəritə",
+    "empty": "Bu ərazidə heç nə yoxdur. Xəritəni hərəkət etdirin və ya ərazini sıfırlayın.",
+    "showOnMap": "Xəritədə göstər",
+    "loading": "Xəritə yüklənir…",
+    "failed": "Xəritə yüklənmədi.",
+    "toList": "Siyahını aç",
+    "zoomIn": "Yaxınlaşdır",
+    "zoomOut": "Uzaqlaşdır",
+    "autoSearch": "Xəritə hərəkət etdikcə axtar",
+    "searchHere": "Bu ərazidə axtar",
+    "open": "Aç",
+    "clusterTitle": "{count, plural, one {# obyekt} other {# obyekt}}, yaxınlaşdırmaq üçün basın",
+    "areaFilter": "Xəritədəki ərazi",
+    "legend": "Şərti işarələr",
+    "legendOther": "Dayandırılıb və ya ləğv edilib",
+    "onMap": "Xəritədə",
+    "talk": "Agent",
+    "readiness": "Hazırlıq {percent}%",
+    "participantsCount": "{count, plural, one {# iştirakçı} other {# iştirakçı}}"
+  }
+}

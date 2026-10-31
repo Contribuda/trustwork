@@ -1,0 +1,115 @@
+{
+  "error": {
+    "generic": "Nəsə səhv getdi. Zəhmət olmasa, yenidən cəhd edin.",
+    "pageTitle": "Səhifəni yükləmək mümkün olmadı",
+    "notFoundTitle": "Səhifə tapılmadı",
+    "notFoundBody": "Bu səhifə mövcud deyil və ya ona girişiniz yoxdur.",
+    "auth": {
+      "invalid_credentials": "E-poçt və ya şifrə səhvdir",
+      "throttled": "Həddindən çox cəhd. {minutes, plural, one {# dəqiqə} other {# dəqiqə}} sonra yenidən cəhd edin.",
+      "step_up_required": "Davam etmək üçün girişi yenidən təsdiqləyin.",
+      "email_unverified": "E-poçt hələ təsdiqlənməyib.",
+      "session_invalid": "Sessiya başa çatdı. Yenidən daxil olun.",
+      "csrf_rejected": "Sorğu rədd edildi. Səhifəni yeniləyin və yenidən cəhd edin.",
+      "password": {
+        "rejected": "Şifrə tələblərə uyğun deyil."
+      },
+      "recovery": {
+        "on_hold": "Bərpa sorğusu alındı və korporativ e-poçt siyasətinə əsasən yoxlama üçün saxlanıldı. Qərar barədə məlumat verəcəyik."
+      }
+    },
+    "access": {
+      "not_found": "Səhifə tapılmadı",
+      "forbidden": "Giriş yoxdur"
+    },
+    "validation": {
+      "schema": "Sahələri yoxlayın",
+      "unknown_field": "Sorğuda naməlum sahələr var"
+    }
+  },
+  "taxonomy": {
+    "materials": "Tikinti materialları",
+    "equipment": "Avadanlıq",
+    "engineering": "Mühəndis sistemləri",
+    "rawMaterials": "Xammal və komponentlər",
+    "works": "Tikinti işləri",
+    "designServices": "Layihələndirmə və xidmətlər",
+    "topics": {
+      "materials": "Materiallar",
+      "technologies": "Texnologiyalar",
+      "markets": "Bazarlar",
+      "regulation": "Tənzimləmə",
+      "projects": "Layihələr",
+      "people": "İnsanlar",
+      "events": "Tədbirlər"
+    }
+  },
+  "shell2": {
+    "notificationsTitle": "Bildirişlər",
+    "notificationsError": "Bildirişləri yükləmək mümkün olmadı",
+    "navSheetTitle": "Menyu",
+    "searchTitle": "Axtarış",
+    "searchLabel": "Sorğu",
+    "searchHint": "Şirkətləri, insanları, layihələri və nəşrləri axtarın.",
+    "updatedAt": "Yenilənib: {time}",
+    "menuName": "Hesab menyusundakı ad",
+    "demoSwitch": "Demo iştirakçısını dəyiş",
+    "signOutDemo": "Demo: çıxış sessiyanı bitirmədən ana səhifəyə qaytarır."
+  },
+  "role": {
+    "owner": "Sahib",
+    "leader": "Rəhbər",
+    "participant": "İştirakçı",
+    "member": "Əməkdaş",
+    "administrator": "Administrator"
+  },
+  "unitLabel": {
+    "t": "t",
+    "m2": "m²",
+    "m3": "m³",
+    "pcs": "əd",
+    "set": "dəst"
+  },
+  "signals": {
+    "person": {
+      "openToWork": "İşə açıqdır",
+      "openToProjects": "Layihələr qəbul edir",
+      "hiring": "Komandama işçi axtarıram",
+      "lookingForPartners": "Tərəfdaş axtarıram",
+      "consulting": "Məsləhət",
+      "busy": "Məşğul"
+    },
+    "company": {
+      "hiring": "İşçi götürürük",
+      "acceptingOrders": "Sifariş qəbul edirik",
+      "lookingForSubcontractors": "Subpodratçı axtarırıq",
+      "lookingForSuppliers": "Təchizatçı axtarırıq",
+      "lookingForPartners": "Tərəfdaş axtarırıq",
+      "lookingForProjects": "Obyekt axtarırıq",
+      "paused": "Yeni sifariş qəbul etmirik"
+    },
+    "until": "{date} tarixinədək",
+    "label": "Status",
+    "declared": "Status iştirakçı tərəfindən bəyan edilib",
+    "all": "İstənilən status",
+    "none": "Status təyin edilməyib"
+  },
+  "locale": {
+    "switcherLabel": "Ölkə və dil: {country}, {language}",
+    "dialogLabel": "Ölkə və dil",
+    "dialogTitle": "Ölkə və dil",
+    "partial": "Tərcümə davam edir; çatışmayan mətn ingiliscə göstərilir",
+    "partialShort": "qismən",
+    "note": "ABŞ sanksiyaları ilə bağlanmış yerlər istisna olmaqla istənilən ölkə, mühərrikin istənilən dili ilə; platformanın öz ölkə paketləri birinci gəlir. Seçim bu brauzerdə saxlanılır.",
+    "gateKicker": "Xoş gəlmisiniz",
+    "gateTitle": "Ölkənizi seçin",
+    "gateLede": "Platforma ölkəyə görə işləyir: dil, valyuta, şirkət qeydiyyat məlumatları və rayonlar. Seçimi istənilən vaxt başlıqda dəyişə bilərsiniz.",
+    "country": "Ölkə",
+    "language": "Dil",
+    "gateConfirm": "Davam et",
+    "gateNote": "«Qismən» işarəli dillər tərcümə olmayan yerlərdə ingiliscəyə keçir.",
+    "otherCountry": "Başqa ölkə",
+    "chooseCountry": "Ölkə seçin…",
+    "featured": "Platforma ölkələri"
+  }
+}
