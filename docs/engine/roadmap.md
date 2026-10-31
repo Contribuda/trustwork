@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 211 packages: 20 done, 189 open, 1 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004) and 28 are the procurement and supply suite (R53).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 227 packages: 25 done, 200 open, 1 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71).
 
 ## Rules that keep parallel work safe
 
@@ -45,16 +45,16 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 | DATA-004 | Migration layout for parallel slices: one directory per module, schema mirror per module | done |  |
 | CI-001 | Harden the pipeline: required database tests, audits, drift and size checks | open |  |
 | OPS-001 | Production runtime baseline: configuration guard, structured logs, readiness, telemetry, security headers | open |  |
-| REL-001 | Outbox relay, durable job runner and scheduler in apps/worker | open | DATA-004 |
+| REL-001 | Outbox relay, durable job runner and scheduler in apps/worker | done | DATA-004 |
 | BE-002 | Identity hardening follow-ups | open | DATA-004 |
 | BE-003 | Account and directory completeness: company creation, handles, lists with pagination | done | DATA-004 |
 | MAIL-001 | Transactional mail through the outbox with localized templates and an SMTP adapter | open | REL-001, BE-002 |
 | BE-004 | Second factor, recovery codes and elevated sessions | open | MAIL-001 |
 | INTL-003 | Locale correctness and weight: request-scoped client locale, one dictionary per page, CLDR plurals, country-aware formats | done |  |
 | INTL-004 | Locale files per feature namespace | open | INTL-003 |
-| WEB-006 | Asynchronous data boundary in the web app | open | INTL-003 |
+| WEB-006 | Asynchronous data boundary in the web app | done | INTL-003 |
 | WEB-004 | Run the web app on the live API for accounts, companies and projects | open | WEB-006, BE-003, OPS-001 |
-| CTRY-002 | Country pack v2 schema: facets, subdivisions, several time zones and identifiers, unit catalogue | open |  |
+| CTRY-002 | Country pack v2 schema: facets, subdivisions, several time zones and identifiers, unit catalogue | done |  |
 | CTRY-003 | Sourced v2 facets for Uzbekistan, Georgia, Armenia and Azerbaijan | open | CTRY-002 |
 | CFG-001 | Configuration over code: runtime country packs, languages, defaults and brand | open | CTRY-002, INTL-004, OPS-001, WEB-006 |
 | LANG-ES | Spanish (es) as the seventh engine language | open | CFG-001, INTL-004 |
@@ -148,7 +148,7 @@ Hubs, territories and versioned configuration, jurisdiction settings (decision 2
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
-| HUBC-000 | Review and freeze the hub console contracts | open |  |
+| HUBC-000 | Review and freeze the hub console contracts | done |  |
 | HUB-001 | Hubs, territories, hub-scoped staff and versioned hub configuration | open | DATA-002, ADM-001, HUBC-000, CFG-001 |
 | HUB-005 | Jurisdiction settings: agent disclosure, liability, consent, record-keeping and per-action limits | open | HUB-001, CTRY-002 |
 | HUB-004 | Setup wizard backend and first run | open | HUB-001, BE-004 |
@@ -191,7 +191,7 @@ The durable agent runtime, goals, envelopes and the company representative, the 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
 | AST-001 | Durable mandate and action workflow with fakes | open | COM-002, BILL-001, REL-001 |
-| AGT-002 | Freeze agent catalogue contracts: mandate v2, modules, metering, goals, envelopes, connections | open |  |
+| AGT-002 | Freeze agent catalogue contracts: mandate v2, modules, metering, goals, envelopes, connections | done |  |
 | AGT-001 | Agent goals, agent-to-agent envelopes, negotiation sessions, company mandates and the company representative | open | AST-001, AGT-002 |
 | AGT-003 | Agent module registry, hub agent policy, job subscriptions and kill switches | open | AGT-001, HUB-001 |
 | AGT-004 | Agent metering, quotas, agent plans and usage statistics | open | AGT-003, BILL-001 |
@@ -258,6 +258,29 @@ The mesh of ADR 011: protocol, node identity, syndication, directory links, cros
 | FED-005 | Federated sign-in between peered nodes | open | FED-001, BE-004 |
 | FED-006 | Outbound ActivityPub bridge for publications, issues and public events | open | FED-002 |
 | REP-002 | Portable reputation passport: hub-issued verifiable credentials | open | REP-001, FED-001, LRN-001 |
+
+## Added by the full system specification (2026-10-31)
+
+Packages for capabilities the [module specifications](modules/README.md) added from the [worldwide competitive landscape](../research/competitive-landscape-2026-11.md) and the specification work ([ideas](ideas.md), requirements R55–R71). The phase column says where each belongs by priority; dependencies alone decide when it can be claimed. Existing packages amended by the same change: MATCH-002 (request receipt and charter), PREQ-001 (national question sets and statutory partner checks), REG-001 (register catalogue and expiry watch), HOME-001 (deposit-limit templates), MAT-001 (free knowledge feed, aggregate signals), KNOW-001 (product links without affiliate fees), PRV-001 (export at any time), EVT-001 (hosted-buyer meetings), REP-001 (explained limitations).
+
+| ID | Title | Phase | Status | Depends on |
+|---|---|---|---|---|
+| BILL-004 | Fair subscription controls: disclosure, renewal reminders, easy cancellation, price-change notice | 3 (commerce and payments) | open | BILL-001, COMMS-001 |
+| REV-001 | Review integrity controls and the public review policy | 2 (reputation) | open | EXE-001, WEB-004 |
+| RANK-001 | Ranking statements generated from configuration for every ranked surface | 6 (matching) | open | MATCH-001, HUB-001, WEB-004 |
+| PERF-001 | Named-performer confirmation on offers, quotes and work records | 6 (matching, after tasks and claims) | open | COM-002, CLM-001, TASK-001 |
+| WORD-001 | Badge and label vocabulary guard | 1 (platform, after locale namespaces) | open | INTL-004 |
+| CRED-001 | Worker credential card: holder-presented, offline-verifiable credentials | 8 (passport) | open | REP-002, LRN-001, MOB-001 |
+| DSA-001 | EU trader traceability for consumer-facing offers | 4 (hubs, EU layer) | open | CTRY-EU, CLM-001, COM-002 |
+| IDV-001 | Wallet-based identity and attribute verification | 4 (hubs and verification) | open | BE-004, KEYS-001, CTRY-002 |
+| PROC-002 | Tender source adapters, Open Contracting first | 6 (matching) | open | PROC-001, PIPE-001 |
+| ESIG-001 | Electronic signature adapters bound to agreement digests | 3 (commerce) | open | COM-002, KEYS-001, CTRY-002 |
+| BIM-001 | Open BIM exchange for product data and plan items (IFC property sets) | 4 (manufacturer knowledge) | open | MAT-001, PLAN-000 |
+| MOB-001 | Installable, offline-first mobile web shell | 7 (lighter public pages) | open | CHAN-001, WEB-005 |
+| A11Y-001 | Accessibility programme: manual audits and a per-hub accessibility statement | 4 (hubs and launch gates) | open | CI-001, HUB-001 |
+| ANL-001 | Privacy-preserving analytics: own metrics, cohorts and aggregate readership | 4 (hubs) | open | REL-001, HUB-001, WEB-004 |
+| PRV-002 | Data-broker readiness and deletion-platform adapters | 4 (data mining and privacy) | open | PRV-001, MINE-001 |
+| FIN-001 | Financing partner referrals: licensed, labelled, never ranking | 3 (payments) | open | BILL-003, HUB-003 |
 
 ## Languages and country packs
 

@@ -1841,13 +1841,15 @@
         "Contracts and migrations (packages/data/migrations/reputation): professional_credential (licences, insurance, bonds, certificates, training) for people and companies, portfolio_entry, confirmation_request, confirmation_response, contribution_record and timeliness_observation.",
         "Allow confirmations only from parties of an accepted agreement, completed booking or closed project; block employees and relatives of the subject; no incentives; one request plus one reminder.",
         "Let a participant invite a former client to confirm a past project; evidence exists only after confirmation; self-reported and client-confirmed are labelled differently.",
-        "Derive contributions and timeliness from canonical records only; every observation is visible to its subject and appealable."
+        "Derive contributions and timeliness from canonical records only; every observation is visible to its subject and appealable.",
+        "State the reason, evidence and appeal path on every automated limitation of a person (throttled introductions, paused modules, excluded observations)."
       ],
       "acceptance": [
         "A confirmation without a recorded relationship is rejected (negative test).",
         "No entitlement, payment, sponsorship or staff action changes a snapshot (comparison test).",
         "No input comes from activity tracking or per-employee metrics.",
-        "Client-caused delay is excluded from timeliness."
+        "Client-caused delay is excluded from timeliness.",
+        "Every automated limitation carries a reason code and an appeal link (test)."
       ],
       "paths": [
         "packages/contracts/src/reputation-builder.ts",
@@ -1881,12 +1883,14 @@
         "Add knowledge_item, knowledge_consent and template_derivation (packages/data/migrations/knowledge); publication formats diary, lesson, checklist, template and expert answer linked to the source project version.",
         "Require the project owner's consent and each named participant's consent or anonymization; a redaction step strips budgets, prices, addresses, faces and private data of counterparties.",
         "Add a licence per item (for example CC BY 4.0, CC BY-SA 4.0, all rights reserved) shown to readers and carried in exports and federation.",
-        "Let a person start a new plan from a published template with attribution; show the formats in the reader and on the project."
+        "Let a person start a new plan from a published template with attribution; show the formats in the reader and on the project.",
+        "Let diaries and templates link the products actually used to their sourced or claimed pages, with no affiliate fees and no margin-based ordering."
       ],
       "acceptance": [
         "Nothing from a private project is published without the owner's publish act and recorded consents (tested).",
         "Consent withdrawal unpublishes or re-anonymizes the item and emits tombstones.",
-        "Templates keep a link to their source and author; the licence travels with every copy."
+        "Templates keep a link to their source and author; the licence travels with every copy.",
+        "Product links in knowledge items never carry tracking or affiliate parameters (test)."
       ],
       "paths": [
         "apps/api/src/modules/knowledge",
@@ -2610,12 +2614,14 @@
         "Add privacy_request, privacy_preference, privacy_export, erasure_ledger (outside the restorable snapshot), legal_hold and data_broker_registration (packages/data/migrations/privacy).",
         "Compose exports from module exporters through projection serializers.",
         "Execute erasure with two people: delete, redact or pseudonymize per module; emit retrieval and federation tombstones as outbox events; replay the ledger after restore.",
-        "Honour opt-out of sale or sharing, limits on sensitive data and Global Privacy Control signals as data (US worked example)."
+        "Honour opt-out of sale or sharing, limits on sensitive data and Global Privacy Control signals as data (US worked example).",
+        "Offer a full export of everything a person or company owns in open formats at any time, including after a paid plan ends."
       ],
       "acceptance": [
         "An export never contains a counterparty's private fields (tested).",
         "A restore drill with erased-subject fixtures serves nothing erased.",
-        "Legal holds suspend deletion with an audited reason; deadlines and retention bounds come from the pack, never from code."
+        "Legal holds suspend deletion with an audited reason; deadlines and retention bounds come from the pack, never from code.",
+        "Export remains available after a plan ends and contains only the requester's own data and shared records they may read."
       ],
       "paths": [
         "apps/api/src/modules/platform-admin/privacy",
@@ -2823,12 +2829,14 @@
         "Add product_entry and learning_resource (packages/data/migrations/manufacturers); tag items with plan-step keys and ETIM classes where licensed.",
         "Crawl only logged-off public pages through sources whose crawl policy allows it, honouring robots.txt and RSL; store facts and links, not full documents, unless licensed; record per-field provenance.",
         "Keep sourced labels until the company claims its page (CLM-001); let claimed manufacturers supply catalogues, guides and training under an explicit licence.",
-        "Takedown requests remove the item and propagate tombstones."
+        "Takedown requests remove the item and propagate tombstones.",
+        "Offer claimed manufacturers a free structured knowledge feed and only aggregate signals (cohorts of at least ten), never who read or specified their products."
       ],
       "acceptance": [
         "No content is collected behind a login or technical barrier (collector configuration test).",
         "A robots or terms change pauses the pipeline until reviewed.",
-        "Sourced product entries cannot be quoted or ordered until the company publishes an offering."
+        "Sourced product entries cannot be quoted or ordered until the company publishes an offering.",
+        "No manufacturer view shows an individual reader or specifier (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/manufacturers",
@@ -2933,12 +2941,14 @@
         "Define a sourced-fact contract: subject, fact kind, value, source id, licence flags, observed_at, valid_until, link.",
         "Add register-fact adapters with deterministic fakes for one US licence-board file, SAM.gov entity status, DOL OSHA inspections and GLEIF LEI; live mode off by default and behind second-person activation.",
         "Link facts to companies only through identifiers from the pack, never by name alone.",
-        "Render sourced facts with a distinct treatment and a \"how this is sourced\" explanation in every locale."
+        "Render sourced facts with a distinct treatment and a \"how this is sourced\" explanation in every locale.",
+        "Keep a register adapters catalogue per country pack (access method, licence, refresh cadence) and an expiry watch that reminds the subject before a licence or registration lapses."
       ],
       "acceptance": [
         "Sourced facts never change a reputation snapshot (comparison test).",
         "A fact without a licence flag permitting display is not shown; expired facts are labelled stale.",
-        "Wording never claims \"certified\" or \"licensed by Trustwork\"."
+        "Wording never claims \"certified\" or \"licensed by Trustwork\".",
+        "Expiring facts trigger a reminder to the subject before the expiry date (clock test)."
       ],
       "paths": [
         "packages/contracts/src/sourced-facts.ts",
@@ -2968,12 +2978,14 @@
       "steps": [
         "Define passport sections with sourced, claimed and verified status per item and expiry.",
         "Collect insurance certificates as claimed documents; confirm them with the issuer where the hub configures a recipe; remind before expiry.",
-        "Share by consent grants with scope, recipient and expiry; revocation stops access immediately."
+        "Share by consent grants with scope, recipient and expiry; revocation stops access immediately.",
+        "Map passport sections to national question sets and statutory partner checks from country packs (for example the UK Common Assessment Standard and Finland's contractor obligations) so one passport answers many clients."
       ],
       "acceptance": [
         "A client sees only the sections granted, only until expiry (negative tests).",
         "Self-declared items are labelled claimed until a document is reviewed.",
-        "Subcontractors are never charged to hold or share a passport."
+        "Subcontractors are never charged to hold or share a passport.",
+        "A client in a country with a statutory partner-check list sees which required items are present, missing or expired."
       ],
       "paths": [
         "apps/api/src/modules/prequalification",
@@ -4340,13 +4352,15 @@
         "Add event, co-organizer, session, speaker consent, ticket type, ticket price version, registration question, registration, ticket, check-in, waitlist, meeting profile, slot, request, material and feedback (packages/data/migrations/events).",
         "Implement organizer use cases with the hub hosting policy and review states.",
         "Implement registration and ticket issuance with quota and capacity under concurrency; paid tickets go through PAY-001.",
-        "Implement the offline-first check-in API with duplicate scan detection and opt-in meeting profiles with private declines."
+        "Implement the offline-first check-in API with duplicate scan detection and opt-in meeting profiles with private declines.",
+        "Add hosted-buyer meetings curated by organizers with mutual acceptance and a slot optimiser for personal schedules."
       ],
       "acceptance": [
         "Online links and attendee lists never appear in the public projection.",
         "Quotas and capacity hold under concurrent registrations (tested).",
         "A sold ticket keeps its price version; unknown payment outcomes reconcile, never double-charge.",
-        "Speakers are shown only with recorded consent; sponsorship and payments never change listing order."
+        "Speakers are shown only with recorded consent; sponsorship and payments never change listing order.",
+        "A hosted-buyer meeting needs both sides' acceptance; the optimiser never double-books a person (test)."
       ],
       "paths": [
         "apps/api/src/modules/events",
@@ -4478,12 +4492,14 @@
       "steps": [
         "Add a fan-out cap and an explicit consent record to private-client needs.",
         "Reject offer and price-version definitions whose billable unit is a lead, introduction or received RFQ.",
-        "Record need outcomes so the board stays honest; show the client how many providers saw the need."
+        "Record need outcomes so the board stays honest; show the client how many providers saw the need.",
+        "Publish the lead-honesty charter (no per-lead fees, fan-out cap, no resale) as a versioned hub setting and add a request receipt: the client sees who received the request and why; each recipient sees it was not sold and how many others received it."
       ],
       "acceptance": [
         "A need is never delivered to more providers than the client consented to (concurrency test).",
         "The billing schema rejects per-lead units.",
-        "Providers never see other providers' responses."
+        "Providers never see other providers' responses.",
+        "A request receipt lists exactly the recipients and never more (test)."
       ],
       "paths": [
         "apps/api/src/modules/matching/lead-honesty",
@@ -4602,12 +4618,14 @@
       "steps": [
         "Define home passport, installed item, warranty and warranty-claim contracts owned by the homeowner.",
         "Fill the passport from accepted deliveries and field records; remind before maintenance and warranty deadlines.",
-        "Transfer the passport to a new owner only with the current owner's consent; contractors keep their own evidence copies."
+        "Transfer the passport to a new owner only with the current owner's consent; contractors keep their own evidence copies.",
+        "Offer milestone payment templates with deposit limits and cancellation rights from the country or state pack for private clients."
       ],
       "acceptance": [
         "Home passports are owner_private and never federate (negative tests).",
         "Warranty claims reach only the contractor named on the installed item.",
-        "Estimates always show their sources and the word estimate."
+        "Estimates always show their sources and the word estimate.",
+        "A consumer template cannot exceed the pack's deposit limit (test)."
       ],
       "paths": [
         "packages/contracts/src/home-passport.ts",
@@ -7342,6 +7360,512 @@
       "paths": [
         "apps/api/src/modules/agent-modules/supply",
         "tests/agent-modules/supply"
+      ]
+    },
+    {
+      "id": "BILL-004",
+      "title": "Fair subscription controls: disclosure, renewal reminders, easy cancellation, price-change notice",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "BILL-001",
+        "COMMS-001"
+      ],
+      "handbook": "docs/engine/modules/billing-and-commissions.md",
+      "goal": "Make every paid hub plan as easy to leave as to join: recurring price before purchase, renewal reminders, online cancellation, no termination fees, notice and grandfathering for price increases, no silently expiring credits; the engine refuses plan versions that break these rules.",
+      "read": [
+        "docs/research/competitive-landscape-2026-11.md",
+        "docs/engine/billing.md"
+      ],
+      "steps": [
+        "Add plan-version rules (renewal reminder lead time, cancellation path, notice period, credit validity disclosure) as validated fields of subscription plan and offer versions.",
+        "Implement renewal reminders through notification templates in every hub language and online cancellation that takes effect at the end of the paid period.",
+        "Apply price increases only from the payer's next renewal after the notice period; keep accepted versions unchanged.",
+        "Refuse activation of plan or credit-pack versions without disclosed validity and refund policy; record the version shown at purchase."
+      ],
+      "acceptance": [
+        "A plan version without a renewal reminder, an online cancellation path or a notice period cannot be activated (test).",
+        "Cancellation takes no more steps than purchase, measured on the flow definition; no early-termination fee can be configured.",
+        "A price increase never applies to a payer before the notice period and the next renewal (test with clock).",
+        "Credits never expire without a validity shown before purchase; unknown payment outcomes reconcile, never double-charge."
+      ],
+      "paths": [
+        "apps/api/src/modules/billing/subscriptions",
+        "tests/billing/subscriptions"
+      ]
+    },
+    {
+      "id": "REV-001",
+      "title": "Review integrity controls and the public review policy",
+      "area": "trust-safety",
+      "status": "open",
+      "dependsOn": [
+        "EXE-001",
+        "WEB-004"
+      ],
+      "handbook": "docs/engine/modules/reputation-and-passport.md",
+      "goal": "Keep reviews trustworthy under laws such as the US FTC reviews rule and the UK DMCC Act: reviews only from counterparties of recorded work, no incentives or sentiment gating, no suppression, spike locks, a public review policy and an internal evidence log of the steps taken.",
+      "read": [
+        "docs/engine/execution-and-reputation.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Validate review eligibility against recorded agreements, tasks or consultations; label and exclude unconfirmed reviews from aggregates.",
+        "Detect spikes, rings and reciprocal patterns and open moderation cases; never apply automatic sanctions or silent score changes.",
+        "Record every integrity step (checks, cases, decisions) in an append-only log exportable to the hub for regulators.",
+        "Publish the review policy page in every hub language from versioned hub text."
+      ],
+      "acceptance": [
+        "A review without a recorded relationship is rejected (negative test).",
+        "No code path offers an incentive for a review or filters review requests by expected sentiment (test).",
+        "A fair negative review cannot be hidden by the reviewed party or by payment; responses and disputes are the only paths.",
+        "The policy page renders in every engine language with its version and date."
+      ],
+      "paths": [
+        "apps/api/src/modules/trust/review-integrity",
+        "apps/web/app/(public)/policies/reviews",
+        "tests/trust/review-integrity"
+      ]
+    },
+    {
+      "id": "RANK-001",
+      "title": "Ranking statements generated from configuration for every ranked surface",
+      "area": "trust-safety",
+      "status": "open",
+      "dependsOn": [
+        "MATCH-001",
+        "HUB-001",
+        "WEB-004"
+      ],
+      "handbook": "docs/engine/modules/matching-and-partners.md",
+      "goal": "Publish, for every ranked surface (directory, matching, needs board, search, recommendations, event listings), the main ranking parameters and the statement that payment has no influence, generated from the active method versions and hub configuration so it can never drift.",
+      "read": [
+        "docs/engine/partners-and-matching.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Define a ranking-statement contract per surface derived from match, recommendation and search method versions.",
+        "Render the public statements page in every hub language and link it from each ranked list.",
+        "Regenerate statements on every method or configuration activation and keep the history."
+      ],
+      "acceptance": [
+        "Changing a method version changes the published statement in the same activation (test).",
+        "Every ranked surface links to its statement; the statement says that payment, plans and sponsorship do not influence ranking, and tests prove it.",
+        "The page renders in every engine language."
+      ],
+      "paths": [
+        "apps/api/src/modules/ranking-statements",
+        "apps/web/app/(public)/policies/ranking",
+        "tests/ranking-statements"
+      ]
+    },
+    {
+      "id": "PERF-001",
+      "title": "Named-performer confirmation on offers, quotes and work records",
+      "area": "verification",
+      "status": "open",
+      "dependsOn": [
+        "COM-002",
+        "CLM-001",
+        "TASK-001"
+      ],
+      "handbook": "docs/engine/modules/tasks-and-mentoring.md",
+      "goal": "Stop identity borrowing: when an offer, quote or work record names a licensed or certified person, that person confirms it from their own account; until then the name shows as not confirmed.",
+      "read": [
+        "docs/research/competitive-landscape-2026-11.md",
+        "docs/engine/commerce.md"
+      ],
+      "steps": [
+        "Add a named-performer reference to offer, quote and work-record versions with a confirmation request to the named person.",
+        "Show \"named performer confirmed\" or \"not confirmed\" in every projection that shows the name; never upgrade a licence badge from the name alone.",
+        "Let country packs mark categories where confirmation is required before acceptance."
+      ],
+      "acceptance": [
+        "A named person who did not confirm is shown as not confirmed everywhere (projection test).",
+        "Only the named person's own account can confirm (negative test with another member of the same company).",
+        "Withdrawn confirmation after acceptance is recorded and shown to the counterparty without changing the accepted version."
+      ],
+      "paths": [
+        "packages/contracts/src/named-performer.ts",
+        "tests/contracts/named-performer.test.ts",
+        "apps/api/src/modules/named-performers",
+        "tests/named-performers"
+      ]
+    },
+    {
+      "id": "WORD-001",
+      "title": "Badge and label vocabulary guard",
+      "area": "trust-safety",
+      "status": "open",
+      "dependsOn": [
+        "INTL-004"
+      ],
+      "handbook": "docs/engine/modules/trust-safety-privacy-compliance.md",
+      "goal": "Prevent misleading trust wording: badge and label texts in every locale use a fixed, counsel-reviewed vocabulary, and the words certified, licensed, guaranteed and approved (and their translations) appear only in keys bound to a register fact or a recorded accreditation.",
+      "read": [
+        "docs/engine/people-and-companies.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "List the restricted words per engine language and the locale keys allowed to use them.",
+        "Add a check that scans locale namespaces and fails on restricted words outside allowed keys.",
+        "Document the vocabulary for translators and hub operators."
+      ],
+      "acceptance": [
+        "The check fails on a restricted word in an unapproved key in any engine language (test with fixtures).",
+        "Allowed keys are tied to sourced or accredited facts in their component contracts.",
+        "Adding a language without its restricted-word list fails the check."
+      ],
+      "paths": [
+        "scripts/vocabulary",
+        "tests/vocabulary"
+      ]
+    },
+    {
+      "id": "CRED-001",
+      "title": "Worker credential card: holder-presented, offline-verifiable credentials",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "REP-002",
+        "LRN-001",
+        "MOB-001"
+      ],
+      "handbook": "docs/engine/modules/reputation-and-passport.md",
+      "goal": "Give workers a credential card on their phone (identity check level, trainings, licences) that a site, an event or a client verifies offline against the issuing node's key and status list, without the engine ever logging verifications as attendance or location.",
+      "read": [
+        "docs/engine/execution-and-reputation.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Package selected passport credentials into a QR presentation with short validity and selective disclosure where the format supports it.",
+        "Provide an offline verifier page that checks signatures and a cached status list.",
+        "Show the holder exactly what a verifier sees before presenting."
+      ],
+      "acceptance": [
+        "Verification works offline with a status list fetched within its validity (test).",
+        "The engine stores no record of who verified whose card, where or when (negative test on audit and logs).",
+        "A revoked credential fails verification after the next status list refresh."
+      ],
+      "paths": [
+        "apps/api/src/modules/credential-cards",
+        "apps/web/app/app/me/credential-card",
+        "tests/credential-cards"
+      ]
+    },
+    {
+      "id": "DSA-001",
+      "title": "EU trader traceability for consumer-facing offers",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-EU",
+        "CLM-001",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/modules/trust-safety-privacy-compliance.md",
+      "goal": "In EU hubs, collect and make best efforts to verify trader traceability information before a trader can offer to consumers, show trader or non-trader status on offers, and let traders meet their information duties (Digital Services Act Articles 30 and 31).",
+      "read": [
+        "docs/engine/country-specifics.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Add traceability fields and verification states from the EU layer of the country packs.",
+        "Block consumer-facing offers of traders without complete traceability; show trader status on offers.",
+        "Provide a suspension and notice path when information proves inaccurate."
+      ],
+      "acceptance": [
+        "A trader without complete traceability cannot publish a consumer-facing offer in an EU hub (test).",
+        "Non-EU hubs are unaffected unless their pack enables the facet.",
+        "Trader status shows on every consumer-facing offer projection."
+      ],
+      "paths": [
+        "apps/api/src/modules/trader-traceability",
+        "tests/trader-traceability"
+      ]
+    },
+    {
+      "id": "IDV-001",
+      "title": "Wallet-based identity and attribute verification",
+      "area": "backend",
+      "status": "open",
+      "dependsOn": [
+        "BE-004",
+        "KEYS-001",
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/modules/identity-and-accounts.md",
+      "goal": "Let people prove identity and professional attributes with digital identity wallets (EU Digital Identity Wallet, mobile driver's licences, national eID where a hub enables them) through an adapter with a fake, storing verification results and claims, never raw credentials.",
+      "read": [
+        "docs/engine/people-and-companies.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Define the verification-level contract (email_verified, document_checked, wallet_verified, in_person) with issuer and date.",
+        "Add a relying-party adapter port with a deterministic fake and per-country configuration from packs.",
+        "Record results as evidence usable by claims and credentials; show categories, never documents."
+      ],
+      "acceptance": [
+        "No raw credential or document is stored (test).",
+        "A wallet presentation from a restricted place is refused.",
+        "Verification results appear in projections only as categories and dates."
+      ],
+      "paths": [
+        "packages/contracts/src/identity-verification.ts",
+        "tests/contracts/identity-verification.test.ts",
+        "apps/api/src/modules/identity-verification",
+        "tests/identity-verification"
+      ]
+    },
+    {
+      "id": "PROC-002",
+      "title": "Tender source adapters, Open Contracting first",
+      "area": "matching",
+      "status": "open",
+      "dependsOn": [
+        "PROC-001",
+        "PIPE-001"
+      ],
+      "handbook": "docs/engine/modules/matching-and-partners.md",
+      "goal": "Import public tenders and awards from national portals (SAM.gov, the UK Central Digital Platform, TED, Brazil's PNCP, Chile's Mercado Publico, India's GeM and others) through adapters that map to the Open Contracting Data Standard, each with licence flags and a fake.",
+      "read": [
+        "docs/engine/partners-and-matching.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Define an OCDS-based mapping contract for notices and awards.",
+        "Add adapters with fakes and recorded fixtures per portal family; register each as a source with licence flags.",
+        "Feed notices to the opportunities board and awards to sourced track records."
+      ],
+      "acceptance": [
+        "No adapter submits bids or contacts buyers (test).",
+        "A portal whose terms forbid reuse cannot be activated as a source.",
+        "Imported notices are labelled from a public source and never appear as platform members' needs."
+      ],
+      "paths": [
+        "apps/worker/src/tenders",
+        "tests/tenders"
+      ]
+    },
+    {
+      "id": "ESIG-001",
+      "title": "Electronic signature adapters bound to agreement digests",
+      "area": "integrations",
+      "status": "open",
+      "dependsOn": [
+        "COM-002",
+        "KEYS-001",
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/modules/integrations.md",
+      "goal": "Let parties sign agreements, acts and waivers with electronic signatures valid in their jurisdiction (ESIGN and UETA providers in the US, eIDAS advanced and qualified signatures in the EU, national schemes elsewhere) through adapters with fakes; the signed document's hash binds to the agreement digest.",
+      "read": [
+        "docs/engine/country-specifics.md",
+        "docs/engine/commerce.md"
+      ],
+      "steps": [
+        "Define the signature request and evidence contracts with signature level and provider reference.",
+        "Add an adapter port with a deterministic fake; per-country signature levels come from packs.",
+        "Reconcile unknown provider outcomes; never resend blindly."
+      ],
+      "acceptance": [
+        "A signature over a document whose hash differs from the agreement digest is rejected (test).",
+        "Signature levels shown match the pack facts for the parties' jurisdictions.",
+        "Unknown outcomes go to reconciliation (fault-injection test)."
+      ],
+      "paths": [
+        "packages/contracts/src/e-signature.ts",
+        "tests/contracts/e-signature.test.ts",
+        "apps/api/src/modules/e-signatures",
+        "apps/worker/src/e-signatures",
+        "tests/e-signatures"
+      ]
+    },
+    {
+      "id": "BIM-001",
+      "title": "Open BIM exchange for product data and plan items (IFC property sets)",
+      "area": "integrations",
+      "status": "open",
+      "dependsOn": [
+        "MAT-001",
+        "PLAN-000"
+      ],
+      "handbook": "docs/engine/modules/catalogue-and-manufacturer-knowledge.md",
+      "goal": "Export and import product entries and plan items as IFC property sets so designers can use Trustwork product data in their BIM tools, without shipping proprietary formats.",
+      "read": [
+        "docs/engine/search-and-knowledge.md",
+        "docs/research/market-and-ideas-2026-10.md"
+      ],
+      "steps": [
+        "Map product entry and plan-step attributes to IFC property sets with the taxonomy crosswalk slots.",
+        "Add export and import endpoints with validation and provenance per field.",
+        "Document the mapping and its limits."
+      ],
+      "acceptance": [
+        "Exports validate against the pinned IFC schema version (test).",
+        "Imports never overwrite sourced or claimed facts without provenance.",
+        "No proprietary classification ships in the repository."
+      ],
+      "paths": [
+        "apps/api/src/modules/bim",
+        "tests/bim"
+      ]
+    },
+    {
+      "id": "MOB-001",
+      "title": "Installable, offline-first mobile web shell",
+      "area": "frontend",
+      "status": "open",
+      "dependsOn": [
+        "CHAN-001",
+        "WEB-005"
+      ],
+      "handbook": "docs/engine/modules/mobile-and-offline.md",
+      "goal": "Make the web app installable and dependable on site: manifest and offline shell, encrypted offline caches cleared on sign-out, low-data and sunlight-readable modes, and web push only with permission per category.",
+      "read": [
+        "docs/engine/communications.md",
+        "docs/quality/accessibility.md"
+      ],
+      "steps": [
+        "Add the web app manifest and an offline shell that never caches other people's data.",
+        "Add low-data and high-contrast large-target preferences in every engine language.",
+        "Add web push with per-category permission and quiet hours."
+      ],
+      "acceptance": [
+        "Signing out or losing access clears offline caches at the next sync (test).",
+        "The shell works offline for assigned items only (browser test).",
+        "Push is never sent without permission for that category."
+      ],
+      "paths": [
+        "apps/web/app/manifest.ts",
+        "apps/web/pwa",
+        "tests/web/pwa"
+      ]
+    },
+    {
+      "id": "A11Y-001",
+      "title": "Accessibility programme: manual audits and a per-hub accessibility statement",
+      "area": "quality",
+      "status": "open",
+      "dependsOn": [
+        "CI-001",
+        "HUB-001"
+      ],
+      "handbook": "docs/engine/modules/accessibility.md",
+      "goal": "Turn WCAG 2.2 AA from a target into recorded evidence: manual walkthroughs per release with screen readers, keyboard, zoom and reduced motion, and an accessibility statement per hub generated from that evidence with a barrier-report contact.",
+      "read": [
+        "docs/quality/accessibility.md",
+        "docs/design/system/accessibility-evidence.md"
+      ],
+      "steps": [
+        "Define the audit record (device, assistive technology, steps, evidence, issues, reviewer) and a release checklist.",
+        "Generate the hub accessibility statement page from recorded evidence in every hub language.",
+        "Add the brand-overlay contrast check as a launch gate input."
+      ],
+      "acceptance": [
+        "The statement never claims conformance beyond recorded evidence (test on generator).",
+        "A release without a manual audit record is flagged in the release checklist.",
+        "The statement page renders in every engine language."
+      ],
+      "paths": [
+        "docs/quality/accessibility-audits",
+        "apps/web/app/(public)/accessibility",
+        "tests/web/accessibility-statement"
+      ]
+    },
+    {
+      "id": "ANL-001",
+      "title": "Privacy-preserving analytics: own metrics, cohorts and aggregate readership",
+      "area": "analytics",
+      "status": "open",
+      "dependsOn": [
+        "REL-001",
+        "HUB-001",
+        "WEB-004"
+      ],
+      "handbook": "docs/engine/modules/analytics.md",
+      "goal": "Give participants their own metrics and hubs cohort analytics without surveillance: first-party aggregate events with short raw retention, cohorts of at least ten, no third-party trackers, honoured opt-outs and Global Privacy Control.",
+      "read": [
+        "docs/engine/vision.md",
+        "docs/engine/hub-console/user-agents-admin.md"
+      ],
+      "steps": [
+        "Define event and cohort contracts with suppression below the minimum cohort.",
+        "Aggregate in the worker; expire raw events quickly; expose own metrics to participants and cohorts to hub staff.",
+        "Honour opt-outs and Global Privacy Control where the law requires."
+      ],
+      "acceptance": [
+        "No per-person behaviour view exists for staff (negative test).",
+        "Every count under ten is suppressed (test).",
+        "No third-party tracker or advertising identifier is loaded by any page (browser test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/analytics",
+        "apps/worker/src/analytics",
+        "packages/data/migrations/analytics",
+        "packages/data/src/schema/analytics.ts",
+        "tests/analytics"
+      ]
+    },
+    {
+      "id": "PRV-002",
+      "title": "Data-broker readiness and deletion-platform adapters",
+      "area": "privacy",
+      "status": "open",
+      "dependsOn": [
+        "PRV-001",
+        "MINE-001"
+      ],
+      "handbook": "docs/engine/modules/trust-safety-privacy-compliance.md",
+      "goal": "Before a hub enables people data from sources, check whether it may be a data broker under applicable law, record registrations, and process state deletion platforms (for example California's DROP) through an adapter with a fake.",
+      "read": [
+        "docs/data/retention-and-privacy.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Add a broker-status checklist that gates people datasets in the console.",
+        "Add a deletion-platform adapter port with a fake and scheduled retrieval within the legal cadence.",
+        "Apply deletions through privacy operations with the erasure ledger and tombstones."
+      ],
+      "acceptance": [
+        "A people dataset cannot be activated without a recorded broker-status decision (test).",
+        "Deletion requests retrieved from the platform are applied and reported within the configured cadence (clock test).",
+        "Deletions propagate to indexes and peers as tombstones."
+      ],
+      "paths": [
+        "apps/api/src/modules/platform-admin/data-broker",
+        "apps/worker/src/data-broker",
+        "tests/privacy/data-broker"
+      ]
+    },
+    {
+      "id": "FIN-001",
+      "title": "Financing partner referrals: licensed, labelled, never ranking",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "BILL-003",
+        "HUB-003"
+      ],
+      "handbook": "docs/engine/modules/getting-paid.md",
+      "goal": "Let a hub list licensed trade-credit and project-finance partners with disclosed referral fees, shown as labelled options to participants who ask, never influencing ranking, matching, recommendations or reputation, and never consumer lending unless the partner is licensed for it.",
+      "read": [
+        "docs/engine/billing.md",
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "Add financing partner records with licence evidence, jurisdictions, products and referral-fee disclosure.",
+        "Show partners only on request or in a labelled panel; never in candidate lists.",
+        "Screen partners with the compliance package before activation (second person)."
+      ],
+      "acceptance": [
+        "Rankings are identical with and without financing partners configured (comparison test).",
+        "A partner without recorded licence evidence for the jurisdiction cannot be activated.",
+        "Referral fees are shown before any referral."
+      ],
+      "paths": [
+        "apps/api/src/modules/financing-partners",
+        "tests/financing-partners"
       ]
     }
   ]
