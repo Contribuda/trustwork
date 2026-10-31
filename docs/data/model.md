@@ -787,7 +787,8 @@ DATA-001 delivered the first six migrations (identity, access, projects, reliabi
 | Search and knowledge | 15 | 0 | 0 | 4 | 10 | 1 |
 | Federation | 13 | 0 | 0 | 0 | 0 | 13 |
 | Administration, support and privacy operations | 25 | 0 | 0 | 7 | 13 | 5 |
-| **Total (27 domains)** | **395** | **24** | **10** | **50** | **71** | **240** |
+| Full specification additions (section 32) | 16 | 0 | 0 | 0 | 0 | 16 |
+| **Total (28 domains)** | **411** | **24** | **10** | **50** | **71** | **256** |
 
 The Live count is the 24 tables of `packages/data/src/schema.ts`. "Contract" counts entities whose shape is frozen in Zod but which have no table yet. Counts are recomputed by the integrator when a slice lands; a row counted once here may be split into several SQL tables or folded into a payload by its slice, which the slice records in this file.
 
@@ -1102,3 +1103,28 @@ These packages close the gaps between the existing task graph and this model.
   }
 ]
 ```
+
+## 32. Additions proposed by the full system specification (2026-10-31)
+
+Owner modules as named per row. Handbook: [module specifications](../engine/modules/README.md) and [ideas](../engine/ideas.md). Every entity here is **Proposed** with the work package that would add it; none has a contract or a table. Where a capability needs no storage (credential presentations, BIM exports) the row says so, because "nothing is stored" is part of the design.
+
+| Entity | Key fields | Layers | Invariants | Retention | Status |
+|---|---|---|---|---|---|
+| `request_receipt` (A) | `open_need_id` or ref(task_request\|rfq), `recipients` (party list with the reason each was chosen or consented), `charter_version` ref(hub_config_version), `created_at` | O (client); recipients see only `recipient_count` and "not sold" | written when a private client's request is delivered; never lists more recipients than received it (MATCH-002) | commercial | Proposed |
+| `renewal_reminder` (A) | `subscription_id`, `due_at`, `sent_at`, `template_version_id`, `price_version_id` | O (payer) | one per term before renewal; price increases reference the notice period (BILL-004) | accounting | Proposed |
+| `subscription_plan_version` additions | `renewal_reminder_days`, `cancellation_flow_ref`, `notice_period_days`, `credit_validity_days NULL`, `refund_policy_version_id` | P (published offer fields) | activation refused without reminder, cancellation path and notice period (BILL-004) | config | Proposed |
+| `review_integrity_event` (A) | `hub`, `review_id NULL`, `kind enum(eligibility_check\|spike_lock\|ring_signal\|case_opened\|decision)`, `evidence jsonb`, `actor`, `occurred_at` | SC; exportable to the hub for regulators | append-only log of the steps taken; never changes a score by itself (REV-001) | audit_long | Proposed |
+| `ranking_statement_version` (V) | `hub`, `surface enum(directory\|matching\|needs_board\|search\|recommendations\|events)`, `method_version_refs`, `payload` (main parameters, payment statement), `activated_at` | P | regenerated in the same activation as the methods it describes (RANK-001) | config | Proposed |
+| `named_performer_ref` | ref(task_offer\|quote_version\|work_record), `person_id`, `credential_ref NULL`, `status enum(requested\|confirmed\|declined\|withdrawn)` | S (parties), P where the offer is public | only the named person's own account changes the status; a name never upgrades a badge (PERF-001) | commercial | Proposed |
+| `performer_confirmation` (A) | `named_performer_ref_id`, `decision`, `person_id`, `occurred_at` | S | append-only | commercial | Proposed |
+| credential presentation | — (no table) | — | a presentation is created on the holder's device from passport credentials; the engine stores no record of who verified whose card, where or when (CRED-001) | — | Proposed |
+| `trader_traceability_record` | `company_id` or `person_id`, `hub`, fields required by the EU layer (name, address, contact, registration, self-certification), `verification_state enum(collected\|checked\|incomplete\|suspended)`, `checked_at` | O, SC; trader status flag on offers is P | consumer-facing offers in EU hubs require `checked` (DSA-001) | verification | Proposed |
+| `identity_verification` (A) | `person_id`, `level enum(email_verified\|document_checked\|wallet_verified\|in_person)`, `method`, `issuer`, `attribute_claims jsonb` (categories only), `verified_at`, `expires_at NULL` | O; categories and dates may appear in P | raw credentials and documents never stored (IDV-001) | verification | Proposed |
+| `signature_request` | ref(agreement\|acceptance_record\|lien_waiver), `document_digest`, `signers`, `level enum(simple\|advanced\|qualified)`, `provider_ref`, `status enum(requested\|signed\|declined\|expired\|outcome_unknown)` | S | `document_digest` equals the bound object's digest; unknown outcomes reconcile (ESIG-001) | evidence | Proposed |
+| `signature_evidence` (A) | `signature_request_id`, `signer`, `provider_evidence_ref`, `signed_at` | S | append-only | evidence | Proposed |
+| `push_subscription` | `person_id`, `endpoint_ref`, `categories`, `quiet_hours`, `created_at` | O | push only for categories the person allowed (MOB-001) | session | Proposed |
+| `accessibility_audit` (A) | `hub NULL`, `release`, `assistive_technology`, `device`, `steps`, `issues jsonb`, `reviewer`, `occurred_at` | P summary in the statement; details O for staff | the statement never claims beyond recorded audits (A11Y-001) | audit_standard | Proposed |
+| `analytics_event` | `hub`, `kind`, `cohort_keys jsonb` (no person identifiers beyond a rotating pseudonym), `occurred_at` | — (worker only) | expires quickly; only aggregates are kept (ANL-001) | ephemeral | Proposed |
+| `analytics_cohort` | `hub`, `metric`, `period`, `dimensions jsonb`, `value`, `group_size` | staff (cohorts of at least ten) | counts under ten are suppressed (ANL-001) | derived | Proposed |
+| `deletion_platform_request` | `hub`, `platform enum` (for example `ca_drop`), `external_ref`, `received_at`, `matched_subject_ref NULL`, `status enum(received\|applied\|no_match\|exempt)`, `reported_at` | SC | processed within the legal cadence; applied through privacy operations and tombstones (PRV-002) | case | Proposed |
+| `financing_partner` | `hub`, `company_ref`, `licences` (jurisdiction, licence, evidence), `products`, `referral_fee_disclosure`, `status`, `screened_at` | P (labelled panel) | never an input to ranking, matching, recommendations or reputation (FIN-001) | config | Proposed |
