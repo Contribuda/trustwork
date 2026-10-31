@@ -16,7 +16,8 @@ export interface ExecutionModuleOptions {
 @Module({})
 export class ExecutionModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: ExecutionModuleOptions = {}): DynamicModule {
-    const hubId = options.hubId !== undefined ? options.hubId : staffHubFromEnv(process.env);
+    // Read at request time, so a hub configured after start (setup wizard, tests) is picked up.
+    const hubId = options.hubId !== undefined ? options.hubId : () => staffHubFromEnv(process.env);
     const service = new ExecutionService(ctx, identity.principals, options.mandates ?? new NoExecutionMandates(), { hubId });
     return { module: ExecutionModule, controllers: [ExecutionController], providers: [{ provide: ExecutionService, useValue: service }], exports: [ExecutionService] };
   }
