@@ -41,7 +41,7 @@ Weights: 400 regular, 500 medium (UI labels), 600–700 for headings. Letter-spa
 
 ## Russian typography considerations and font candidates
 
-Requirements: complete Cyrillic (including Ё, ё, №, «», — and currency signs), tabular figures, readable at 14–16 px, open licence, self-hostable (no third-party font CDN dependency for a Russian audience), variable font preferred for weight range with one file.
+Requirements: complete Cyrillic coverage for the Russian interface (including the letter yo in both cases, the numero sign, guillemet quotation marks, the em dash and currency signs), tabular figures, readable at 14–16 px, open licence, self-hostable (no third-party font CDN dependency for a Russian audience), variable font preferred for weight range with one file.
 
 | Candidate | Cyrillic | Licence | Notes | Source |
 |---|---|---|---|---|
@@ -53,7 +53,7 @@ Requirements: complete Cyrillic (including Ё, ё, №, «», — and currency s
 
 Proposal: **Golos Text** for UI and public body (Russian-first, OFL, variable), with **PT Serif** as the optional magazine reader/PDF body serif, and a system-font fallback stack (`system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif`). Inter remains the safe alternative if the human prefers neutrality. Licence files must be vendored in `packages/ui` with provenance (DS-001). URLs above are the official project pages as known at writing; DS-001 must verify licence text and version when vendoring (this task did not fetch them).
 
-Typography rules: hyphenation `hyphens: auto` with `lang="ru"` for long words in narrow columns; Russian quotation marks «» and em dash — in copy; dates as `27 октября 2026`, short `27.10.2026`; numbers with non-breaking space thousands separator (`1 250 000 сум`), decimal comma; currency symbol after number; no English in product copy.
+Typography rules: hyphenation `hyphens: auto` with `lang="ru"` for long words in narrow columns; in the Russian interface, guillemet quotation marks and the em dash in copy; dates in the Russian long form (day, month name in the genitive case, year), short `27.10.2026`; numbers with a non-breaking space thousands separator (for example `1 250 000` followed by the currency), decimal comma; currency symbol after the number; no English words in Russian product copy. All of these come from `Intl` with the active locale, never from hand-written patterns.
 
 ## Colour roles (provisional, not final hex)
 

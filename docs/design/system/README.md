@@ -15,9 +15,9 @@ Status: **implemented by DS-001 and visually reworked by DS-002 (phase 1) on 202
 ## What is approved and what is not
 
 - Accepted direction (manifest): public home menu, companies hub, magazine, login, signup, onboarding references; brand rules (three blue squares, black stacked wordmark, light restrained surfaces). The components follow those directions.
-- **Not approved:** the workspace composition in `workspace-latest.png` (status `proposed_unapproved`). `SidebarNav`, `AppHeader`, `AssistantLauncher` and `AssistantOverlay` implement the parts that the specification already mandates (R09, R23, R24: collapse inside the brand row, avatar-only account, bell with count, floating launcher, no docked panel); the overview layout, breadcrumb root, split «Создать» button and other A1–A11 questions are not implemented and wait for the owner.
+- **Not approved:** the workspace composition in `workspace-latest.png` (status `proposed_unapproved`). `SidebarNav`, `AppHeader`, `AssistantLauncher` and `AssistantOverlay` implement the parts that the specification already mandates (R09, R23, R24: collapse inside the brand row, avatar-only account, bell with count, floating launcher, no docked panel); the overview layout, breadcrumb root, split "Create" button and other A1–A11 questions are not implemented and wait for the owner.
 - Token values are proposed canonical, not visually accepted. Nothing in this package claims visual approval.
-- The rejection ledger was respected: no docked assistant, no avatar name/chevron, no bottom-left account block, no company switcher, no «Agents» UI, no primary menu-setup button, no OTP primary auth, no English product copy.
+- The rejection ledger was respected: no docked assistant, no avatar name/chevron, no bottom-left account block, no company switcher, no "Agents" UI, no primary menu-setup button, no OTP primary auth, no English product copy.
 
 ## Stack (integrator decision, 2026-10-27)
 
@@ -30,7 +30,7 @@ packages/ui/
   package.json          exports map (TS sources, consistent with @trustwork/contracts), scripts
   tokens/index.ts       token source; tokens/tokens.css generated (npm run tokens:build)
   tokens.css            legacy path -> @import tokens/tokens.css
-  locales/ru.json       Russian copy; existing keys preserved, new keys per DS-000 conventions
+  locales/*.json        copy for every interface language (en is the reference); keys per DS-000 conventions
   brand/*.svg           logo variants (see logo.md)
   media/                artworks/*.svg + manifest, PROVENANCE.md, tools/ (no photographs ship with the engine; see media.md)
   fonts/                woff2/ttf, OFL texts, PROVENANCE.md, fonts.css
@@ -64,7 +64,7 @@ import { UiProvider, Button, TextField, t } from '@trustwork/ui';
 <Button type="submit" isLoading={busy} pendingLabel={t('auth.submitting')}>{t('auth.submitLogin')}</Button>
 ```
 
-- All product copy comes from `locales/ru.json` through `t(key, params)`; components accept Russian strings as props and never embed copy except via locale keys. Plural groups use `{count, plural, one {…} few {…} many {…}}`.
+- All product copy comes from the locale dictionaries (`locales/<lang>.json`) through `t(key, params)`; components accept localized strings as props and never embed copy except via locale keys. Plural groups use ICU `{count, plural, …}` with the categories of each language (English one/other; Russian one/few/many).
 - Styles: tokens are CSS custom properties; override by setting the property on a wrapper (`--color-accent`), never by targeting generated class names.
 - Next.js consumers must add `transpilePackages: ['@trustwork/ui']` (TS sources + CSS Modules) and should load the fonts with `next/font/local` from `packages/ui/fonts` (WEB-001).
 - Documentation and visual testing: `npm run storybook -w @trustwork/ui` (http://127.0.0.1:6006); static build `npm run build:storybook -w @trustwork/ui` → `packages/ui/dist/storybook`.
@@ -88,7 +88,7 @@ import { UiProvider, Button, TextField, t } from '@trustwork/ui';
 | Family | States implemented |
 |---|---|
 | Button / IconButton / IconLink | default, hover, focus-visible, pressed, disabled, loading (`isPending`, label swap), icon-only with required `aria-label`, pressed toggle |
-| Link | inline, standalone (arrow), external (icon + «внешняя ссылка», `rel="noopener"`), nav (`aria-current`), disabled, visited (inline) |
+| Link | inline, standalone (arrow), external (icon + "external link" (`common.externalLink`), `rel="noopener"`), nav (`aria-current`), disabled, visited (inline) |
 | TextField / TextArea / PasswordField | default, focus, filled, required (text marker), description, error (`aria-invalid` + `aria-describedby`), disabled, read-only, counter, show/hide toggle with `aria-pressed` |
 | Select / ComboBox | closed, open, selected, filtering, loading, no results, error, disabled |
 | Checkbox / Radio / Switch | unchecked, checked, mixed, focus, disabled, invalid, group label/description/error, switch on/off text, loading |
@@ -102,15 +102,15 @@ import { UiProvider, Button, TextField, t } from '@trustwork/ui';
 | Typography / Media | Heading, Text, Kicker, Meta; MediaFrame ratios, scrims, blur-up, `fill`; coverFor determinism |
 | Editorial | Hero lg/md/sm, StoryCard s/m/l vertical/horizontal/text-only, SectionHeader, Band navy/tint/warm with backdrop, MagazineCover lg/md/sm link/static, Quote pull/inline/inverse, Prose |
 | Workspace cards | DecisionCard decision/review/assistant, EntityCard company/person/project vertical/horizontal, DateTile/EventList, DemoBanner with persona menu |
-| Breadcrumb / Pagination / Stepper / Tabs | current page, disabled ends, loading, links or buttons; step done/current/upcoming with «Шаг N из M»; tabs selected/disabled/overflow |
+| Breadcrumb / Pagination / Stepper / Tabs | current page, disabled ends, loading, links or buttons; step done/current/upcoming with "Step N of M"; tabs selected/disabled/overflow |
 | DataTable | sorted asc/desc (`aria-sort`), loading, empty, error, row actions, tablet scroll region, mobile cards keeping labels |
 | ComparisonTable / VersionPicker | comparable / non-comparable (reason disclosure) / missing cells, stale and excluded offers, incomplete totals, select per supplier, mobile accordion with supplier switcher; versions current / historical / stale with announcement and focus move |
 | CitationChip / AnswerStatusLine / RetrievalStatusBanner / CitationDetails | available / historical / unavailable (revoked, deleted, consent, scope); supported / qualified / abstain with scope note; complete / partial (reason) / no answer / unavailable / stale / previous shown / historical / offline |
 | Timeline / EvidenceList | done, pending, baseline vs changed, disputed, outcome unknown; evidence state per item with freshness line |
 | TagSelect / RemovableTag | pills or cards, selected, disabled, announced count; removable constraint chips |
-| SidebarNav | expanded, collapsed (icons + tooltips + hidden labels), attention badges with text, divider groups, «Ещё» disclosure, «В отрасль», sheet variant |
+| SidebarNav | expanded, collapsed (icons + tooltips + hidden labels), attention badges with text, divider groups, "More" (`shell.more`) disclosure, "To the industry" (`publicExit`), sheet variant |
 | AppHeader | breadcrumb (depth > 1), search, bell with count / unknown / none, avatar menu, offline banner, mobile menu button |
-| PublicHeader / PublicFooter | anonymous / authenticated, active section, mobile sheet; four footer groups with «Помощь» last |
+| PublicHeader / PublicFooter | anonymous / authenticated, active section, mobile sheet; four footer groups with "Help" (`footer.help`) last |
 | AuthShell | desktop two columns, stacked < 900, mobile; login composition with every contract state in stories |
 | AssistantLauncher / AssistantOverlay | closed, open (`aria-expanded`), unread, action required; overlay online / offline / unavailable, empty, unread marker, attention strip, not-sent message, desktop non-modal panel, mobile modal sheet |
 
@@ -119,11 +119,11 @@ import { UiProvider, Button, TextField, t } from '@trustwork/ui';
 1. Native semantics first; ARIA from React Aria only where native elements fall short.
 2. Visible focus ring (2 px, ≥ 3:1) on `:focus-visible` only; nothing hides it. `base.css` sets `scroll-padding-top` (sticky header height) and `scroll-padding-bottom` (launcher) on `html` and on the `.trustwork-scroll` class that workspace scroll containers must carry, so a control scrolled into view on focus lands fully visible (asserted by a Playwright test). Residual limitation: a control that is already inside the viewport but under the sticky header is not re-scrolled by browsers on focus; keep sticky bars short and avoid placing controls under them in page layouts.
 3. Minimum 24×24 CSS px targets; defaults 40 px; error-summary links padded to 24 px.
-4. Every icon-only control has a Russian accessible name from a locale key; icons are `aria-hidden`.
+4. Every icon-only control has a localized accessible name from a locale key; icons are `aria-hidden`.
 5. Status never colour-only (text + icon); contrast verified by unit test and axe.
 6. Keyboard: menu button, dialog, tabs, combobox, listbox, toggle group and grid patterns via React Aria; Escape closes overlays and returns focus; modal content makes the rest of the document `inert`.
 7. Reduced motion respected via tokens and base.css.
-8. Consistent help (3.2.6): «Помощь» last in PublicFooter and AuthShell footer, directly before «Выйти» in the avatar menu (asserted in a Playwright test).
+8. Consistent help (3.2.6): "Help" (`footer.help`) last in PublicFooter and AuthShell footer, directly before "Sign out" (`shell.menu.signOut`) in the avatar menu (asserted in a Playwright test).
 9. Redundant entry (3.3.7) and no cognitive-test auth: password fields allow paste/managers; prefill is the consumer's duty and documented in the contracts.
 10. Automated zero axe violations is **not** accessibility acceptance; manual screen-reader sessions are listed in accessibility-evidence.md with what was and was not done.
 

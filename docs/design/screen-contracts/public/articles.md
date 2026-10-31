@@ -4,20 +4,20 @@ Routes: `/articles`, `/articles/[slug]`.
 
 ## Status and evidence
 
-`proposed (reference: accepted direction)` for the list pattern — the «Статьи и разборы» block of `public-home.png` (private design archive) and the publication cards in companies/people hubs; `no reference` for the detail page. Spec R15, R16 (author, format, topics, entity links, lifecycle, corrections; walls reference the same publication record), "Content and editorial" (format separate from topic taxonomy).
+`proposed (reference: accepted direction)` for the list pattern — the "Articles and analyses" block of `public-home.png` (private design archive) and the publication cards in companies/people hubs; `no reference` for the detail page. Spec R15, R16 (author, format, topics, entity links, lifecycle, corrections; walls reference the same publication record), "Content and editorial" (format separate from topic taxonomy).
 
 ## Audience and access policy
 
-Same as news: published/corrected items for everyone; bookmark and authoring require login. Author identity appears only as a public projection (person or company public page); an author who withdrew consent for a public profile is shown by name only if policy permits, otherwise «Автор» with no link.
+Same as news: published/corrected items for everyone; bookmark and authoring require login. Author identity appears only as a public projection (person or company public page); an author who withdrew consent for a public profile is shown by name only if policy permits, otherwise "Author" with no link.
 
 ## Data projection
 
 | Field | Public |
 |---|---|
 | Title, lede, cover (licensed), body with headings/figures/tables | yes |
-| Format (разбор, практика, опыт, мнение, интервью, история проекта, обзор) | yes, badge |
+| Format (analysis, practice, experience, opinion, interview, project story, overview; `articles.formats.*`) | yes, badge |
 | Topics (materials, technologies, markets…) | yes, chips |
-| Author kind + author public page; «при участии помощника» flag if assistant-assisted | yes |
+| Author kind + author public page; "with the assistant's help" flag if assistant-assisted | yes |
 | Published/updated time; version number and correction history | yes |
 | Entity links: companies, people, projects (public projections only) | yes |
 | Attached files | only if explicitly published |
@@ -34,7 +34,7 @@ Same as news: published/corrected items for everyone; bookmark and authoring req
 
 | Width | List | Detail |
 |---|---|---|
-| Desktop ≥1280 | Public shell; H1 «Статьи и разборы»; format tabs (Все, Разборы, Практика, Опыт, Мнения, Интервью); topic chips; filter row (topic, author kind, period, sort); card grid 2 columns (cover, format badge, title, lede, author, time, bookmark); right rail «Полезно под рукой», «Есть чем поделиться?»; pagination | Public shell; breadcrumb; format badge; H1; lede; byline with author avatar/logo and link; cover; article body max ~720 px with left-aligned text, figures full width ~960 px; sidebar (sticky) with table of contents on ≥1280; CorrectionBanner; entity links block; «Ещё по теме»; share/bookmark actions |
+| Desktop ≥1280 | Public shell; H1 "Articles and analyses"; format tabs (All, Analyses, Practice, Experience, Opinions, Interviews); topic chips; filter row (topic, author kind, period, sort); card grid 2 columns (cover, format badge, title, lede, author, time, bookmark); right rail "Useful at hand", "Something to share?" (`articles.ctaTitle`); pagination | Public shell; breadcrumb; format badge; H1; lede; byline with author avatar/logo and link; cover; article body max ~720 px with left-aligned text, figures full width ~960 px; sidebar (sticky) with table of contents on ≥1280; CorrectionBanner; entity links block; "More on the topic"; share/bookmark actions |
 | Tablet | Grid 2 columns; rail below; detail single column, TOC collapsible above body | |
 | Mobile <768 | Tabs scroll horizontally; grid 1 column; filters in sheet; detail single column, 16 px gutters, tables scroll horizontally inside a region with visible edge | |
 
@@ -46,7 +46,7 @@ PublicShell, Tabs (format), ChipGroup, FilterSelect/FilterSheet, PublicationCard
 
 | State | Behaviour |
 |---|---|
-| Empty | «Пока нет статей в этом формате» + link to all |
+| Empty | "No articles in this format yet" + link to all |
 | Loading | Skeleton cards; detail streams body server-side |
 | Error | Inline error with retry |
 | Permission-denied | Unpublished slug → 404 (no existence leak) |
@@ -63,31 +63,31 @@ Article body tables: on <768 the table sits in a horizontally scrollable region 
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.articles.title` | Статьи и разборы |
-| `ru.articles.lede` | Объяснения, сравнения и практические материалы от редакции, специалистов и компаний. |
-| `ru.articles.formats.all` | Все |
-| `ru.articles.formats.analysis` | Разбор |
-| `ru.articles.formats.practice` | Практика |
-| `ru.articles.formats.experience` | Опыт |
-| `ru.articles.formats.opinion` | Мнение |
-| `ru.articles.formats.interview` | Интервью |
-| `ru.articles.formats.projectStory` | История проекта |
-| `ru.articles.formats.overview` | Обзор |
-| `ru.articles.authorKind.editorial` | Редакция |
-| `ru.articles.authorKind.person` | Автор |
-| `ru.articles.authorKind.company` | Компания |
-| `ru.articles.assistantAssisted` | При участии помощника |
-| `ru.articles.readTime` | {minutes} мин |
-| `ru.articles.toc` | Содержание |
-| `ru.articles.mentions` | В материале упоминаются |
-| `ru.articles.moreOnTopic` | Ещё по теме |
-| `ru.articles.empty` | Пока нет статей в этом формате |
-| `ru.articles.write` | Написать статью |
-| `ru.common.share` | Поделиться |
-| `ru.common.tableScrollHint` | Таблицу можно прокрутить по горизонтали |
-| `ru.common.updated` | Обновлено {date} |
+| `articles.title` | Articles and analyses |
+| `articles.lede` | Explanations, comparisons and practical material from the editors, professionals and companies. |
+| `articles.formats.all` | All |
+| `articles.formats.analysis` | Analysis |
+| `articles.formats.practice` | Practice |
+| `articles.formats.experience` | Experience |
+| `articles.formats.opinion` | Opinion |
+| `articles.formats.interview` | Interview |
+| `articles.formats.projectStory` | Project story |
+| `articles.formats.overview` | Overview |
+| `articles.authorKind.editorial` | Editorial |
+| `articles.authorKind.person` | Author |
+| `articles.authorKind.company` | Company |
+| `articles.assistantAssisted` | With the assistant’s help |
+| `articles.readTime` | {minutes} min |
+| `articles.toc` | Contents |
+| `articles.mentions` | Mentioned in this material |
+| `articles.moreOnTopic` | More on the topic |
+| `articles.empty` | No articles in this format yet |
+| `articles.write` | Write an article |
+| `common.share` | Share |
+| `common.tableScrollHint` | The table scrolls horizontally |
+| `common.updated` | Updated {date} |
 
 ## Open questions
 

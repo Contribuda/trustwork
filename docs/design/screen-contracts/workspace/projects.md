@@ -21,17 +21,17 @@ Object-level checks on every tab, attachment and action; a public projection nev
 
 | Tab | Content | Private vs shared |
 |---|---|---|
-| Обзор | Title, status, owner, leader, next milestone, open decisions, publicity state («Не опубликован» / «Опубликовано: …») | Per grant |
-| План | Roadmap: milestones with dependencies, baseline dates vs current changed plan, change log with reason and responsible party («по инициативе заказчика» etc.), version picker (baseline, each change) | Shared with participants; reasons visible to parties involved |
-| Исполнение | Deliveries, performed work, evidence records (assertion → evidence → confirmed/disputed/superseded), who asserted, who confirmed | Evidence visibility per party |
-| Приёмка | Partial/full acceptance records, defects, remediation, acceptance documents | Parties |
-| Споры | Disputed items, positions, resolution status, appeals; «claim is not a fact» labelling | Parties + scoped support if granted |
-| Закупки | Linked RFQs/orders from procurement; obligations | Buyer side; supplier sees own order only |
-| Участники | People/companies, roles, grants (owner view shows grant scopes), invite, remove, leadership reassignment | Owner/leader |
-| Файлы | Attachments with audience label (приватные / для участников / опубликованные) | Per audience |
-| Переписка | Threads belonging to this project (R08); email provider state | Per party |
-| Бюджет | Owner's cost limits, reservations, settlements (private to owner side) | Owner side only |
-| Публикация | Projection editor: which fields, milestones, updates, photos, participants (each consented) go public; preview | Owner |
+| Overview | Title, status, owner, leader, next milestone, open decisions, publicity state ("Not published" / "Published: …") | Per grant |
+| Plan | Roadmap: milestones with dependencies, baseline dates vs current changed plan, change log with reason and responsible party ("at the client's request" etc.), version picker (baseline, each change) | Shared with participants; reasons visible to parties involved |
+| Execution | Deliveries, performed work, evidence records (assertion → evidence → confirmed/disputed/superseded), who asserted, who confirmed | Evidence visibility per party |
+| Acceptance | Partial/full acceptance records, defects, remediation, acceptance documents | Parties |
+| Disputes | Disputed items, positions, resolution status, appeals; "claim is not a fact" labelling | Parties + scoped support if granted |
+| Procurement | Linked RFQs/orders from procurement; obligations | Buyer side; supplier sees own order only |
+| Participants | People/companies, roles, grants (owner view shows grant scopes), invite, remove, leadership reassignment | Owner/leader |
+| Files | Attachments with audience label (private / for participants / published) | Per audience |
+| Correspondence | Threads belonging to this project (R08); email provider state | Per party |
+| Budget | Owner's cost limits, reservations, settlements (private to owner side) | Owner side only |
+| Publication | Projection editor: which fields, milestones, updates, photos, participants (each consented) go public; preview | Owner |
 
 ## Primary tasks
 
@@ -45,7 +45,7 @@ Object-level checks on every tab, attachment and action; a public projection nev
 
 | Width | List | Detail |
 |---|---|---|
-| Desktop ≥1280 | Shell; PageHeader («Проекты», «Создать проект»); filters (роль, статус, владелец: я/компания); table or card list (title, owner, my role, status, next milestone, updated) | Shell; PageHeader (title, StatusChip, owner/leader line, publicity label, actions menu: Передать владение, Назначить руководителя, Опубликовать…); tabs; panel; optional right rail with key dates and decisions on Обзор |
+| Desktop ≥1280 | Shell; PageHeader ("Projects", "Create a project"); filters (role, status, owner: me/company); table or card list (title, owner, my role, status, next milestone, updated) | Shell; PageHeader (title, StatusChip, owner/leader line, publicity label, actions menu: Transfer ownership, Assign a lead, Publish…); tabs; panel; optional right rail with key dates and decisions on Overview |
 | Tablet | Cards | Tabs scroll; rail below |
 | Mobile <768 | Cards; filters sheet | Tabs scroll; tables collapse |
 
@@ -57,14 +57,14 @@ PageHeader, FilterBar, DataTable (sortable, responsive), ProjectCard, StatusChip
 
 | State | Behaviour |
 |---|---|
-| Empty (list) | «Проектов пока нет» + «Создать проект»; explains personal projects need no company |
-| Empty (tab) | Per tab, e.g., «Записей об исполнении пока нет» |
+| Empty (list) | "No projects yet" + "Create a project"; explains personal projects need no company |
+| Empty (tab) | Per tab, e.g., "No execution records yet" |
 | Loading | Skeleton |
 | Error | Inline + retry |
 | Permission-denied | Tab panel shows NoAccess; tabs the user has no grant for are hidden if the grant model says so, else shown with NoAccess (decide in FND-002; propose hidden for counterparties, NoAccess for members) |
 | Offline | Read-only |
-| Partial/stale | Plan version viewed is not current: banner «Вы смотрите версию от {date}» + «К текущей»; transfer pending: banner for both parties; disputed evidence annotated |
-| Transfer | Proposed → recipient sees acceptance card; owner sees «ожидает согласия»; expired/rejected shown |
+| Partial/stale | Plan version viewed is not current: banner "You are viewing the version of {date}" + "To current"; transfer pending: banner for both parties; disputed evidence annotated |
+| Transfer | Proposed → recipient sees acceptance card; owner sees "awaiting consent"; expired/rejected shown |
 
 ## Keyboard order and focus
 
@@ -72,72 +72,72 @@ Shell → header → actions menu → tabs → panel. Timeline: each milestone i
 
 ## Responsive table behaviour
 
-Project list, participants, budget and acceptance tables collapse to cards below 768. Plan table (этап, план, изменённый план, факт, ответственный) collapses to a card per milestone with four labelled lines; baseline and changed values always both present when they differ.
+Project list, participants, budget and acceptance tables collapse to cards below 768. Plan table (milestone, plan, changed plan, actual, responsible) collapses to a card per milestone with four labelled lines; baseline and changed values always both present when they differ.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.projectsWs.title` | Проекты |
-| `ru.projectsWs.create` | Создать проект |
-| `ru.projectsWs.empty` | Проектов пока нет |
-| `ru.projectsWs.emptyHint` | Личный проект можно вести без компании. |
-| `ru.projectsWs.filter.role` | Моя роль |
-| `ru.projectsWs.filter.status` | Статус |
-| `ru.projectsWs.filter.owner` | Владелец |
-| `ru.projectsWs.owner.me` | Я |
-| `ru.projectsWs.owner.company` | Компания |
-| `ru.projectsWs.col.title` | Проект |
-| `ru.projectsWs.col.nextMilestone` | Следующий этап |
-| `ru.projectsWs.col.updated` | Обновлён |
-| `ru.projectsWs.tabs.overview` | Обзор |
-| `ru.projectsWs.tabs.plan` | План |
-| `ru.projectsWs.tabs.execution` | Исполнение |
-| `ru.projectsWs.tabs.acceptance` | Приёмка |
-| `ru.projectsWs.tabs.disputes` | Споры |
-| `ru.projectsWs.tabs.purchases` | Закупки |
-| `ru.projectsWs.tabs.participants` | Участники |
-| `ru.projectsWs.tabs.files` | Файлы |
-| `ru.projectsWs.tabs.correspondence` | Переписка |
-| `ru.projectsWs.tabs.budget` | Бюджет |
-| `ru.projectsWs.tabs.publication` | Публикация |
-| `ru.projectsWs.notPublished` | Не опубликован |
-| `ru.projectsWs.publishedProjection` | Опубликовано: {fields} |
-| `ru.projectsWs.actions.transfer` | Передать владение |
-| `ru.projectsWs.actions.assignLeader` | Назначить руководителя |
-| `ru.projectsWs.actions.publish` | Настроить публикацию |
-| `ru.projectsWs.plan.baseline` | Базовый план |
-| `ru.projectsWs.plan.change` | Изменение {index} от {date} |
-| `ru.projectsWs.plan.viewingVersion` | Вы смотрите версию от {date} |
-| `ru.projectsWs.plan.toCurrent` | К текущей версии |
-| `ru.projectsWs.plan.reason` | Причина изменения |
-| `ru.projectsWs.plan.responsible` | Ответственная сторона |
-| `ru.projectsWs.plan.dependsOn` | Зависит от |
-| `ru.projectsWs.execution.empty` | Записей об исполнении пока нет |
-| `ru.projectsWs.execution.addRecord` | Добавить запись |
-| `ru.projectsWs.execution.assertedBy` | Заявил {actor}, {date} |
-| `ru.projectsWs.execution.confirmedBy` | Подтвердил {actor}, {date} |
-| `ru.projectsWs.acceptance.partial` | Частичная приёмка |
-| `ru.projectsWs.acceptance.full` | Приёмка завершена |
-| `ru.projectsWs.acceptance.defect` | Недостаток |
-| `ru.projectsWs.acceptance.remediation` | Устранение |
-| `ru.projectsWs.disputes.claimNotFact` | Заявление стороны не является подтверждённым фактом |
-| `ru.projectsWs.disputes.appeal` | Подать апелляцию |
-| `ru.projectsWs.transfer.title` | Передача владения |
-| `ru.projectsWs.transfer.explain` | Получатель должен принять передачу. После этого доступ всех участников будет пересмотрен. |
-| `ru.projectsWs.transfer.pending` | Ожидает согласия получателя |
-| `ru.projectsWs.transfer.accept` | Принять передачу |
-| `ru.projectsWs.transfer.reject` | Отклонить |
-| `ru.projectsWs.files.audience.private` | Приватный |
-| `ru.projectsWs.files.audience.participants` | Для участников |
-| `ru.projectsWs.files.audience.public` | Опубликован |
-| `ru.projectsWs.budget.limit` | Лимит |
-| `ru.projectsWs.budget.reserved` | Зарезервировано |
-| `ru.projectsWs.budget.settled` | Оплачено |
-| `ru.projectsWs.publication.preview` | Предпросмотр публичной страницы |
+| `projectsWs.title` | Projects |
+| `projectsWs.create` | Create a project |
+| `projectsWs.empty` | No projects yet |
+| `projectsWs.emptyHint` | A personal project can run without a company. |
+| `projectsWs.filter.role` | My role |
+| `projectsWs.filter.status` | Status |
+| `projectsWs.filter.owner` | Owner |
+| `projectsWs.owner.me` | Me |
+| `projectsWs.owner.company` | Company |
+| `projectsWs.col.title` | Project |
+| `projectsWs.col.nextMilestone` | Next milestone |
+| `projectsWs.col.updated` | Updated |
+| `projectsWs.tabs.overview` | Overview |
+| `projectsWs.tabs.plan` | Plan |
+| `projectsWs.tabs.execution` | Execution |
+| `projectsWs.tabs.acceptance` | Acceptance |
+| `projectsWs.tabs.disputes` | Disputes |
+| `projectsWs.tabs.purchases` | Procurement |
+| `projectsWs.tabs.participants` | Participants |
+| `projectsWs.tabs.files` | Files |
+| `projectsWs.tabs.correspondence` | Correspondence |
+| `projectsWs.tabs.budget` | Budget |
+| `projectsWs.tabs.publication` | Publication |
+| `projectsWs.notPublished` | Not published |
+| `projectsWs.publishedProjection` | Published: {fields} |
+| `projectsWs.actions.transfer` | Transfer ownership |
+| `projectsWs.actions.assignLeader` | Assign a lead |
+| `projectsWs.actions.publish` | Set up publication |
+| `projectsWs.plan.baseline` | Baseline plan |
+| `projectsWs.plan.change` | Change {index} of {date} |
+| `projectsWs.plan.viewingVersion` | You are viewing the version of {date} |
+| `projectsWs.plan.toCurrent` | To the current version |
+| `projectsWs.plan.reason` | Reason for the change |
+| `projectsWs.plan.responsible` | Responsible party |
+| `projectsWs.plan.dependsOn` | Depends on |
+| `projectsWs.execution.empty` | No execution records yet |
+| `projectsWs.execution.addRecord` | Add a record |
+| `projectsWs.execution.assertedBy` | Asserted by {actor}, {date} |
+| `projectsWs.execution.confirmedBy` | Confirmed by {actor}, {date} |
+| `projectsWs.acceptance.partial` | Partial acceptance |
+| `projectsWs.acceptance.full` | Acceptance complete |
+| `projectsWs.acceptance.defect` | Defect |
+| `projectsWs.acceptance.remediation` | Remediation |
+| `projectsWs.disputes.claimNotFact` | A party’s claim is not a confirmed fact |
+| `projectsWs.disputes.appeal` | File an appeal |
+| `projectsWs.transfer.title` | Ownership transfer |
+| `projectsWs.transfer.explain` | The recipient must accept the transfer. After that, every participant's access will be reviewed. |
+| `projectsWs.transfer.pending` | Awaiting the recipient’s consent |
+| `projectsWs.transfer.accept` | Accept the transfer |
+| `projectsWs.transfer.reject` | Decline |
+| `projectsWs.files.audience.private` | Private |
+| `projectsWs.files.audience.participants` | For participants |
+| `projectsWs.files.audience.public` | Published |
+| `projectsWs.budget.limit` | Limit |
+| `projectsWs.budget.reserved` | Reserved |
+| `projectsWs.budget.settled` | Paid |
+| `projectsWs.publication.preview` | Preview the public page |
 
 ## Open questions
 
 - Grant model (hidden vs NoAccess tabs) — FND-002.
-- Whether roadmap dependencies need a visual graph; proposal: list with «зависит от» text, no Gantt in the first slice.
+- Whether roadmap dependencies need a visual graph; proposal: list with "depends on" text, no Gantt in the first slice.
 - Budget tab belongs to EXE-001/BILL-001 contract on transaction vs platform budgets.
