@@ -1507,7 +1507,11 @@ LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
     'id', p_pub.id::text, 'format', p_pub.format, 'articleFormat', p_pub.article_format, 'status', p_pub.status, 'originalLanguage', p_pub.original_language, 'licence', p_pub.licence,
     'firstPublishedAt', trustwork.content_iso(p_pub.first_published_at),
     'owner', jsonb_build_object('kind', p_pub.owner_kind, 'id', coalesce(p_pub.owner_person_id, p_pub.owner_company_id)::text),
-    'authorship', (SELECT coalesce(jsonb_agg(jsonb_build_object('kind', a.author_kind, 'id', coalesce(a.author_person_id, a.author_company_id)::text, 'credit', a.credit,
+    -- A credited person other than the owner is identified only with their consent to be named in this publication.
+    'authorship', (SELECT coalesce(jsonb_agg(jsonb_build_object('kind', a.author_kind, 'credit', a.credit,
+                                                                'id', CASE WHEN a.author_person_id IS NULL OR a.author_person_id = p_pub.owner_person_id
+                                                                             OR EXISTS (SELECT 1 FROM trustwork.profiles_consented_mentions(p_pub.id, ARRAY[a.author_person_id]))
+                                                                           THEN coalesce(a.author_person_id, a.author_company_id)::text END,
                                                                 'assistantAssisted', a.assistant_assisted) ORDER BY a.position), '[]'::jsonb)
                    FROM trustwork.publication_authorship a WHERE a.publication_id = p_pub.id),
     'topics', (SELECT coalesce(jsonb_agg(t.code ORDER BY t.code), '[]'::jsonb) FROM trustwork.publication_topic pt JOIN trustwork.taxonomy_term t ON t.id = pt.term_id

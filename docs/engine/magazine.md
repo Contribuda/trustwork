@@ -2,7 +2,7 @@
 
 Normative requirements: [News, articles, magazine and the editorial office](modules/publishing-and-editorial.md). Participants: [who uses what](participants/README.md).
 
-Requirements R17, R18. Status: issues, covers, reader, archive, rubric pages and RSS are **Demo**; issue model and corrections are **Contract**; the PDF layout pipeline is **Designed**; cross-hub digests are **Proposed**; the personalized journal is an **open opportunity**.
+Requirements R17, R18. Status: issues, covers, reader, archive, rubric pages and RSS are **Demo**; issues, editions, corrections, render records and local digests are **Live** as an API (CNT-001; the reading pages still use demo data); the PDF layout pipeline is **Designed**; cross-hub digests are **Proposed**; the personalized journal is an **open opportunity**.
 
 A news feed tells you what happened. A magazine tells you what mattered. Every hub can publish a numbered weekly issue, curated by its editors, that people read on a phone in a minute or download as a properly laid-out PDF for the weekend.
 
