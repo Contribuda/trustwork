@@ -70,7 +70,8 @@ test('identity and access persistence under the restricted runtime role', { skip
     const admin = ['access_log_entry', 'admin_audit_event', 'admin_node', 'admin_sequence', 'appeal', 'case_access_grant', 'feature_flag', 'incident', 'kill_switch', 'maintenance_window', 'moderation_case',
       'moderation_report', 'sanction', 'second_person_approval', 'staff_conflict_declaration', 'staff_role_assignment', 'staff_role_definition_version', 'support_case', 'support_case_note']; // DATA-002
     const execution = ['execution_claim', 'execution_confirmation', 'execution_defect', 'execution_dispute', 'execution_evidence', 'performance_observation', 'reputation_snapshot', 'review', 'review_response']; // EXE-001
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin, ...execution].sort());
+    const jurisdiction = ['jurisdiction_hold', 'jurisdiction_refusal_count']; // SANC-001
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin, ...execution, ...jurisdiction].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -98,6 +99,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       ...ADMIN_DEFINERS, ...ADMIN_TRIGGER_DEFINERS, // DATA-002
       'execution_artifact_digest', 'execution_decide_dispute', 'execution_decide_dispute_appeal', 'execution_observe', 'execution_timing_facts', // EXE-001
       'trust_appeal_states', 'trust_file_appeal', 'trust_public_snapshot', // EXE-001
+      'jurisdiction_hold_session', 'jurisdiction_session_held', 'jurisdiction_hold_open', 'jurisdiction_count_refusal', 'jurisdiction_staff_reader', 'jurisdiction_clear_hold', // SANC-001
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files

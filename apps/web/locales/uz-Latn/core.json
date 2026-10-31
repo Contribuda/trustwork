@@ -21,7 +21,8 @@
         "already_linked": "Bu kirish usuli allaqachon akkauntga bog‘langan.",
         "state_mismatch": "Kirish juda uzoq davom etdi yoki to‘xtatildi. Qaytadan boshlang."
       },
-      "email_taken": "Bu pochta boshqa akkauntda allaqachon ishlatilmoqda."
+      "email_taken": "Bu pochta boshqa akkauntda allaqachon ishlatilmoqda.",
+      "jurisdiction_hold": "Bu hisob toʻxtatib qoʻyildi, chunki undan sanksiyalar toʻgʻrisidagi qonun ushbu xizmatni koʻrsatishga ruxsat bermaydigan joydan foydalanilgan. Undagi hech narsa oʻchirilmagan. Agar siz endi u yerda boʻlmasangiz, sayt operatori bilan bogʻlaning; tekshiruvchi toʻxtatishni olib tashlagach, yana kirishingiz mumkin."
     },
     "access": {
       "not_found": "Sahifa topilmadi",
@@ -69,6 +70,9 @@
     },
     "internal": {
       "error": "Bizning tomonimizda nimadir noto‘g‘ri ketdi. Keyinroq urinib ko‘ring."
+    },
+    "jurisdiction": {
+      "restricted": "Bu sayt sizning joylashuvingizda mavjud emas."
     }
   },
   "taxonomy": {

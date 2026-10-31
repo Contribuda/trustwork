@@ -27,6 +27,8 @@ import { createReadinessProbe, discoverMigrationsDir, registerHealthRoutes, type
 import { instrumentHttp, NestJsonLogger } from './observability/http.js';
 import { createLogger, messageLogger, type Logger, type LogSink } from './observability/logger.js';
 import { createTelemetry, type Telemetry, type TelemetryExporter } from './observability/telemetry.js';
+import { jurisdictionGateFor, jurisdictionHook, loadRestrictedPlaces } from './modules/jurisdiction/gate.js';
+import type { JurisdictionGate } from './modules/jurisdiction/deps.js';
 
 export interface CreateAppOptions {
   config?: Partial<ApiConfig>;
@@ -55,6 +57,11 @@ export interface CreateAppOptions {
   secondFactorKey?: Buffer;
   /** Files module (FILE-001): blob store, URL lifetimes and mandate port; default from `FILES_*` (off unless configured). */
   files?: FilesModuleOptions;
+  /**
+   * Jurisdiction gate (SANC-001); default from `TRUSTWORK_JURISDICTION_GATE` and the synced restricted places. With a
+   * database, production refuses to start without an explicit mode (exit 78).
+   */
+  jurisdictionGate?: JurisdictionGate;
 }
 export interface CreatedApp {
   app: NestFastifyApplication;
@@ -121,6 +128,17 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     ]);
     telemetry.observeGauge('db.client.connection.pending_requests', '{request}', 'Requests waiting for a runtime pool connection.', () => [{ attributes: {}, value: observed.waitingCount }]);
   }
+  // The gate is built before any route exists: a configuration problem stops the process instead of serving unguarded.
+  let jurisdictionGate: JurisdictionGate | null = null;
+  if (pool) {
+    try {
+      jurisdictionGate = options.jurisdictionGate ?? jurisdictionGateFor(env, await loadRestrictedPlaces(pool, logger), config.production);
+    } catch (error) {
+      if (ownsPool) await pool.end().catch(() => undefined);
+      throw error;
+    }
+    if (jurisdictionGate.mode !== 'unconfigured') logger.info('jurisdiction.gate', { ...jurisdictionGate.describe() });
+  }
   const clock = options.clock ?? systemClock;
   const providerFor = (name: 'google' | 'apple'): OidcProviderPort | null => {
     if (options.providers && name in options.providers) return config.providers.mode === 'disabled' ? null : (options.providers[name] ?? null);
@@ -182,6 +200,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     if (services) await services.principals.attach(request, reply);
     else (request as FastifyRequest & { trustwork?: unknown }).trustwork = { requestId: String(request.id), principal: null, session: null, sessionTokenHash: null, client: { userAgentFamily: '', ipPrefix: '', ip: request.ip } };
   });
+  // SANC-001: refuse restricted places and held people before any route runs (after the identity hook attached the
+  // session, which a sighting needs to hold its person).
+  if (pool && jurisdictionGate) fastify.addHook('onRequest', jurisdictionHook({ gate: jurisdictionGate, pool, log: logger }));
   const reflector = app.get(Reflector);
   app.useGlobalFilters(new ErrorFilter());
   app.useGlobalGuards(new CsrfGuard(reflector, config), new AuthGuard(reflector, config, () => clock.now()));

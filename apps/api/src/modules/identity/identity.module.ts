@@ -12,6 +12,7 @@ import { ProviderService } from './providers/provider.service.js';
 import { ElevationGuard } from './second-factor/elevation.guard.js';
 import { AdminSessionController, MeSecondFactorController, SecondFactorLoginController, SupportSecondFactorController } from './second-factor/second-factor.controllers.js';
 import { SecondFactorService } from './second-factor/second-factor.service.js';
+import { JurisdictionHoldsController, JurisdictionRelayController } from '../jurisdiction/jurisdiction.controller.js';
 
 /** Service graph built once from the application context so the Fastify hook and Nest share the same instances. */
 export interface IdentityServices {
@@ -43,7 +44,8 @@ export class IdentityModule {
   static forRoot(ctx: AppContext, services: IdentityServices): DynamicModule {
     return {
       module: IdentityModule,
-      controllers: [AuthController, MeController, CompaniesController, MeSecondFactorController, SecondFactorLoginController, AdminSessionController, SupportSecondFactorController],
+      // The jurisdiction gate's relay and staff routes (SANC-001) live with identity: a hold is part of admission.
+      controllers: [AuthController, MeController, CompaniesController, MeSecondFactorController, SecondFactorLoginController, AdminSessionController, SupportSecondFactorController, JurisdictionRelayController, JurisdictionHoldsController],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },
         { provide: AuthService, useValue: services.auth },

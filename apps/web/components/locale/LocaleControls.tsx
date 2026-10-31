@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { COUNTRIES, countryName, enabledPacks, getPack, pick, type CountryPack } from '@trustwork/country-packs';
 import { isCountryOffered } from '@trustwork/config';
 import { currentDeployment } from '@trustwork/config/server';
@@ -45,5 +46,7 @@ export async function HeaderLocaleSwitcher({ tone = 'light' }: { tone?: 'light' 
 export async function FirstVisitGate() {
   const active = await primeLocale();
   if (active.chosen) return null;
+  // Not over the jurisdiction refusal page (SANC-001): there is nothing to choose a country for.
+  if ((await headers()).get('x-trustwork-refusal') === 'jurisdiction') return null;
   return <CountryGate countries={await switcherCountries()} languages={await switcherLanguages()} suggested={active.country} suggestedLocale={active.locale} />;
 }

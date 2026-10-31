@@ -17,8 +17,9 @@ export class ApiError extends Error {
  * Codes not yet in the frozen contract (requested from FND-002): `internal.error` for unexpected failures and
  * `auth.email_taken` for an e-mail change to an address that is already bound. The body keeps the envelope shape.
  */
-export type LocalErrorCode = 'internal.error' | 'auth.email_taken';
-const LOCAL_STATUS: Record<LocalErrorCode, number> = { 'internal.error': 500, 'auth.email_taken': 409 };
+export type LocalErrorCode = 'internal.error' | 'auth.email_taken' | 'jurisdiction.restricted' | 'auth.jurisdiction_hold';
+/** `jurisdiction.restricted` and `auth.jurisdiction_hold` are the gate's codes (SANC-001, `JURISDICTION_ERROR_STATUS`). */
+const LOCAL_STATUS: Record<LocalErrorCode, number> = { 'internal.error': 500, 'auth.email_taken': 409, 'jurisdiction.restricted': 451, 'auth.jurisdiction_hold': 403 };
 export class LocalApiError extends Error {
   constructor(readonly code: LocalErrorCode, message: string = code) {
     super(message);

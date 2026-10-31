@@ -12,6 +12,7 @@ export type AppMessages =
   & typeof import('./en/editorial.json')
   & typeof import('./en/events.json')
   & typeof import('./en/home.json')
+  & typeof import('./en/jurisdiction.json')
   & typeof import('./en/magazine.json')
   & typeof import('./en/map.json')
   & typeof import('./en/onboarding.json')

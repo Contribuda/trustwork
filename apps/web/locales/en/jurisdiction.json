@@ -1,0 +1,11 @@
+{
+  "jurisdiction": {
+    "pageTitle": "Not available in your location",
+    "title": "This site is not available in your location",
+    "lead": "We are sorry. The operator of this site must follow sanctions and export-control law, which does not allow this service to be provided to anyone located in Russia, Crimea, Sevastopol, the Donetsk and Luhansk regions of Ukraine, Cuba, Iran or North Korea.",
+    "notPersonal": "This is not about you as a person, and it is not a judgement about you. The rule applies to everyone in these places, without exception.",
+    "nothingDeleted": "If you have an account, nothing in it is deleted. If you signed in from one of these places, your account is paused until we can confirm that you are no longer there.",
+    "wrongPlace": "If you are not in any of these places, the location check may be wrong. Please contact the operator of this site through the contact details in its terms of service.",
+    "attribution": "Location estimate: {attribution}"
+  }
+}

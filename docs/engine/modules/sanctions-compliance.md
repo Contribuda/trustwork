@@ -1,6 +1,6 @@
 # Sanctions compliance
 
-Module code `SNC`. Status: the restricted-places list (code, country packs, configuration, database kernel, console contracts) and the ownership declaration with a screening adapter that never fakes "clear" are **Live**; everything else on this page is **Proposed** ([ADR 014](../../adr/014-sanctions-compliance-engine.md)). Packages: INTL-SAN (done), SANC-001 … SANC-009, HUB-003 (verification recipes that call this module). Narrative: [Trust, safety and privacy](../trust-safety-privacy.md#sanctions-and-export-controls), [Hub administration](../hub-administration.md#sanctions-screening-configuration). Data: [§24a Sanctions compliance](../../data/model.md#24a-sanctions-compliance). Requirement R72; owner decision [ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 24.
+Module code `SNC`. Status: the restricted-places list (code, country packs, configuration, database kernel, console contracts), the ownership declaration with a screening adapter that never fakes "clear", and the jurisdiction gate with holds at the web proxy and the API (SANC-001) are **Live**; everything else on this page is **Proposed** ([ADR 014](../../adr/014-sanctions-compliance-engine.md)). Packages: INTL-SAN (done), SANC-001 … SANC-009, HUB-003 (verification recipes that call this module). Narrative: [Trust, safety and privacy](../trust-safety-privacy.md#sanctions-and-export-controls), [Hub administration](../hub-administration.md#sanctions-screening-configuration). Data: [§24a Sanctions compliance](../../data/model.md#24a-sanctions-compliance). Requirement R72; owner decision [ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 24.
 
 ## Purpose
 
@@ -34,11 +34,11 @@ Keep every hub lawful under the sanctions and export-control rules that bind its
 | ID | Requirement | Status | Packages |
 |---|---|---|---|
 | SNC-F01 | Restricted places come only from the authoritative list in code; a hub may add places with a legal basis and a second person, never remove one; nobody is exempt | Live (list); Proposed (hub additions) | INTL-SAN, SANC-001, HUB-001 |
-| SNC-F02 | The web proxy refuses a request from a restricted place before anything else: pages render `/restricted` in the visitor's language, other requests get 451 `jurisdiction.restricted`; only the refusal page, legal pages, health probes, provider webhooks and unsubscribe links stay open | Proposed | SANC-001 |
-| SNC-F03 | The API refuses the same requests in an `onRequest` hook before any route reads a session | Proposed | SANC-001 |
-| SNC-F04 | Geolocation is a port with `ranges_file`, `edge_header`, `upstream_gate` and `fake` adapters; the client address is read only through the trusted-proxy rules and is never logged or stored; records name the place and the dataset | Proposed | SANC-001 |
-| SNC-F05 | A refused request that carries a valid session or connection token holds the person; an open hold refuses them on every request and at sign-in by name; their agent, connections and mandates stop; one open hold per person; the first sighting stands | Proposed | SANC-001 |
-| SNC-F06 | A hold is cleared only by a compliance reviewer with a reason and evidence category, never by the subject; the person is notified; the cleared row stays; a new sighting holds again | Proposed | SANC-001, SANC-006, SANC-007 |
+| SNC-F02 | The web proxy refuses a request from a restricted place before anything else: pages render `/restricted` in the visitor's language, other requests get 451 `jurisdiction.restricted`; only the refusal page, legal pages, health probes, provider webhooks and unsubscribe links stay open | Live | SANC-001 |
+| SNC-F03 | The API refuses the same requests in an `onRequest` hook before any route reads a session | Live | SANC-001 |
+| SNC-F04 | Geolocation is a port with `ranges_file`, `edge_header`, `upstream_gate` and `fake` adapters; the client address is read only through the trusted-proxy rules and is never logged or stored; records name the place and the dataset | Live | SANC-001 |
+| SNC-F05 | A refused request that carries a valid session or connection token holds the person; an open hold refuses them on every request and at sign-in by name; their agent, connections and mandates stop; one open hold per person; the first sighting stands | Live (sessions; agents, connections and mandates when they exist: AGT-001, MCP-002) | SANC-001 |
+| SNC-F06 | A hold is cleared only by a compliance reviewer with a reason and evidence category, never by the subject; the person is notified; the cleared row stays; a new sighting holds again | Live (clear and audit); Proposed (console, person notice: SANC-006, SANC-007) | SANC-001, SANC-006, SANC-007 |
 | SNC-F07 | A restricted own-location declaration (residence, company places, payout country) refuses and holds; other place fields refuse only | Proposed | SANC-001, SANC-004 |
 | SNC-F08 | Every hub screens against the baseline OFAC lists (SDN and consolidated non-SDN), which cannot be disabled; additional lists come from country-pack facts and adapters; the CSL adapter runs only with a key | Proposed | SANC-002 |
 | SNC-F09 | List versions are immutable with source, publication date, entry count and digest; ingestion modes `file`, `live` (second person) and `fake`; sanity bounds block a truncated version; stale baseline closes money and commitment gates | Proposed | SANC-002 |
@@ -74,8 +74,8 @@ An agent whose principal is held, or whose action is refused by a gate, reports 
 
 | Surface | Route | Status |
 |---|---|---|
-| Refusal page | `/restricted` (rendered in place by the proxy) | Proposed (SANC-001) |
-| Sign-in refusal for a held account | the sign-in page, error `auth.jurisdiction_hold` | Proposed (SANC-001) |
+| Refusal page | `/restricted` (rendered in place by the proxy) | Live (SANC-001) |
+| Sign-in refusal for a held account | the sign-in page, error `auth.jurisdiction_hold` | Live (SANC-001) |
 | Own compliance status and appeal | `/app/settings/account/compliance` | Proposed (SANC-007) |
 | Refusal notices on payouts, sales and commitments | inline on the affected forms | Proposed (SANC-004) |
 | Console: Trust → Screening (lists, matches queue, holds, re-screen runs, geolocation table, metrics) | `/admin/hubs/[hub]/trust/screening` (HC-74) | Proposed (SANC-006) |

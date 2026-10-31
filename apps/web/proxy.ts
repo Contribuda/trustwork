@@ -1,8 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { isOfferedLanguage, offeredCountryPack } from './app/_lib/locale-negotiation';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE as MAX_AGE, localeCookiePath } from './app/_lib/locale-names';
 import { BASE_PATH } from './app/_lib/base-path';
+import { clientAddressOf, decideWebRequest, JURISDICTION_REFUSAL_PATH, relaySighting } from './app/_lib/jurisdiction';
 
 /** Third-party origins the pages load on purpose: the Leaflet stylesheet (script trust flows from the nonce) and map tiles. */
 const MAP_STYLE_ORIGIN = 'https://unpkg.com';
@@ -76,22 +77,48 @@ function withHeaders(response: NextResponse, headers: Record<string, string>): N
   return response;
 }
 
+/** Relays a refused visitor's session to the API (SANC-001) after the response, so the API's gate can hold the person. */
+function relay(request: NextRequest, event?: NextFetchEvent): void {
+  const pending = relaySighting({ cookieHeader: request.headers.get('cookie'), address: clientAddressOf((name) => request.headers.get(name)) });
+  if (event) event.waitUntil(pending);
+  else void pending;
+}
+
 /**
  * Security headers for every page (nonce-based CSP; Next reads the nonce from the request's CSP header and stamps
  * its own scripts) and, for `?country=<code>&lang=<tag>` on any address, sets the cookies and redirects to the same
  * address without the parameters, so links can carry a country and a language. Any country and language the
  * deployment offers works (its configuration, CFG-001; a restricted place is never offered, so it cannot be set);
- * other values are ignored.
+ * other values are ignored. Before all of this the jurisdiction gate (SANC-001, `app/_lib/jurisdiction.ts`) refuses
+ * requests from restricted places: pages render `/restricted`, everything else is answered 451.
  */
-export function proxy(request: NextRequest) {
+export function proxy(request: NextRequest, event?: NextFetchEvent) {
   const development = process.env.NODE_ENV === 'development';
   const url = request.nextUrl;
+  // SANC-001: the jurisdiction gate runs before anything else, media included.
+  const decision = decideWebRequest({ method: request.method, pathname: url.pathname, header: (name) => request.headers.get(name) });
+  if (decision.kind === 'unavailable' || decision.kind === 'refuse_call') {
+    if (decision.kind === 'refuse_call') relay(request, event);
+    return withHeaders(NextResponse.json(decision.body, { status: decision.status }), { 'Cache-Control': 'no-store', ...documentSecurityHeaders() });
+  }
   if (url.pathname.startsWith('/media/')) {
     return withHeaders(NextResponse.next(), { 'Content-Security-Policy': MEDIA_CSP, 'X-Content-Type-Options': 'nosniff' });
   }
   const nonce = newNonce();
   const csp = contentSecurityPolicy(nonce, { development, https: isHttps(request) });
   const headers = { ...documentSecurityHeaders(), 'Content-Security-Policy': csp };
+  if (decision.kind === 'refuse_page') {
+    relay(request, event);
+    const target = url.clone();
+    target.pathname = JURISDICTION_REFUSAL_PATH;
+    target.search = '';
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-nonce', nonce);
+    requestHeaders.set('Content-Security-Policy', csp);
+    requestHeaders.set('x-trustwork-refusal', 'jurisdiction');
+    // 451 where the runtime keeps a rewrite's status (RFC 7725); the page is noindex either way.
+    return withHeaders(NextResponse.rewrite(target, { status: 451, request: { headers: requestHeaders } }), { ...headers, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
+  }
   const country = url.searchParams.get('country');
   const lang = url.searchParams.get('lang');
   if (!country && !lang) {
