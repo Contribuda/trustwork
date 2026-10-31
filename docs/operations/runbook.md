@@ -1,0 +1,33 @@
+# Operations, release and recovery runbook
+
+**No production environment exists yet.** A hosted preview runs the web app on demo data; hosting, domain, payment, model and e-mail providers for production and the legal geography of each hub are unresolved. The following is an actionable release checklist for future implementation, not proof of configured infrastructure.
+
+## Local operation
+
+Use README setup and optional `npm run infra:up` for the isolated PostgreSQL service at loopback port 54329. Credentials are local demo values only. No business migration is applied. `npm run infra:down` stops the service while preserving its volume. Never point examples at an existing production database or run `down -v` as routine cleanup. Web/API startup is loopback-only; health proves process liveness, not readiness. Future readiness must check required DB/schema/job dependencies without leaking secrets.
+
+## Release gate
+
+1. Maintainers accept the work packages in the release; clean candidate commit, lockfile and migration checksums.
+2. Run `npm run check`, dependency/security checks and feature-specific DB/browser/authority tests; the pull request checks must pass on the exact SHA, and a reviewer re-runs what the change needs.
+3. Resolve provider/jurisdiction/data-retention and pricing gates relevant to this release. Owner controls infrastructure credentials, backups and domain.
+4. Prepare immutable build/image digest, SBOM/dependency record, environment inventory and secret references. Keep secrets outside Git/logs. Nonroot runtime, bounded resources, HTTPS, safe proxy trust and explicit egress.
+5. Rehearse migration on disposable restored data and test old/new application compatibility. Expand/migrate/contract. Back up before irreversible changes; rollback app only when schema compatible, otherwise forward fix.
+6. Obtain explicit production action authorization, deploy to approved target, verify actual service SHA/schema version, readiness and authorized journeys. Record deployment separately from code merge and acceptance.
+7. Watch measured errors/latency/jobs/authorization/ledger discrepancies; abort/rollback via tested plan when thresholds fail. Targets remain UNKNOWN until chosen.
+
+## Observability
+
+Structured logs carry request/trace ID, actor/principal pseudonymous ID, aggregate/action/run/attempt ID, revision and provider correlation; omit secrets, private terms and full prompts. Metrics: API latency/error rates, DB saturation, outbox oldest age, lease expirations, retry/dead-letter counts, unknown external outcomes, denial spikes, reservation reconciliation and queue depth. Separate audit from debugging logs; immutable audit access is restricted. Trace web->API->job->provider with bounded retention. Alert on actionable stuck unknown outcomes/budget mismatches, not every normal retry. SLO/RPO/RTO and paging owner must be agreed before production.
+
+## Backup and restore drill
+
+Define RPO/RTO and retention with the owner; do not invent contractual guarantees. Product-owned PostgreSQL backups plus WAL/PITR where chosen, off-host encrypted copies, object version/checksum backups, key access and separate erasure tombstone log. A database dump alone does not include object files, credentials, management decisions or successful restore proof.
+
+Rehearsal: select timestamp and backup manifest; restore to isolated network with external adapters disabled; verify schema/checksums/counts and quote/evidence digests; restore permitted objects; replay deletion/erasure ledger recorded after backup; confirm identities/permissions and pending actions without re-sending effects; compare queued jobs/provider receipts and reconcile uncertain outcomes; record measured recovery duration and data-loss window. Never reconnect restored workers to live providers before reconciliation and explicit authorization. Keep drill evidence and destroy only drill-owned resources after approval under retention policy.
+
+## Incident and credential compromise
+
+Stop affected workers/adapters and revoke grants; preserve evidence and record scope. Do not erase unknown external actions. Rotate only affected credentials through owner-controlled store, invalidate sessions/mandates as appropriate, reconcile orders/payments and communicate via authorized channels. Apply fix with regression tests, restore/replay safely, record root cause and follow-up. Staff support access is time-limited and audited.
+
+[Retrieval runbook](retrieval.md) defines generation activation/rollback, tombstones, restore reconciliation, policy fencing, quarantine, cost caps and safe incident fallback. No vector runtime is installed by the preparation.

@@ -1,6 +1,6 @@
 # Requirement traceability
 
-All 39 accepted requirements are specified, not implemented end to end. Machine-readable map (private repository record, not exported) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
+All 39 accepted requirements are specified, not implemented end to end. [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
 
 | Requirements | Modules | Primary decisions |
 |---|---|---|

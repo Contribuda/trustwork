@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "Generated from the core team task graph by scripts/work-packages.mjs; do not edit by hand.",
+  "source": "Edited directly in pull requests; validated by node scripts/work-packages.mjs validate (part of npm run check).",
   "packages": [
     {
       "id": "BE-000",
@@ -147,9 +147,9 @@
       "steps": [
         "Implement auth/session/reset/link adapter using fakes for external providers.",
         "Implement membership end, owner/leader separation and participation policy.",
-        "After DATA-001 acceptance, own the exclusive packages/data lease to implement the common admission/revocation primitive in packages/data/admission, its ordered migrations and identity-revocation integration. Bind bounded provider dispatch/delivery to current policy, exact payload digest, provider policy/model/data class; serialize admission with committed revocation.",
+        "After DATA-001 acceptance, take exclusive ownership of packages/data to implement the common admission/revocation primitive in packages/data/admission, its ordered migrations and identity-revocation integration. Bind bounded provider dispatch/delivery to current policy, exact payload digest, provider policy/model/data class; serialize admission with committed revocation.",
         "Add public/private serializers and command authorization.",
-        "Wire modules through an integration request if composition path is outside lease."
+        "Wire modules through an integration request if the composition path is outside the package's paths."
       ],
       "acceptance": [
         "No auto-link by unverified email; no privilege from buyer preference.",
@@ -499,7 +499,7 @@
       "acceptance": [
         "Architecture/source register/contracts/fixtures/DAG consistent; no source image changes.",
         "Independent exact-head review and check required before integration; CI account blocker remains explicit.",
-        "One-off coordinator-authorized pre-main lease documented; INTG-000 scope unchanged."
+        "One-off maintainer-authorized change before merge documented; integrator bookkeeping scope unchanged."
       ],
       "paths": [
         "README.md",
@@ -630,7 +630,7 @@
       ],
       "steps": [
         "Prepare fixture-based layouts after FND-002 and DS-001; final implementation depends on RAG-301.",
-        "Integrate search and source drawer through owned components; request app-route integration under frontend owner lease.",
+        "Integrate search and source drawer through owned components; request app-route integration from the frontend owner.",
         "Test keyboard/mobile states, revoked citations and stale RFQ comparisons."
       ],
       "acceptance": [
@@ -819,7 +819,7 @@
       "id": "INTL-001",
       "title": "Country-pack model, registration identifier and currency abstraction; remove Russia-only assumptions",
       "area": "international",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "WEB-001",
         "FND-002"
@@ -852,7 +852,7 @@
       "id": "INTL-002",
       "title": "i18n engine and country selector",
       "area": "international",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "INTL-001",
         "DS-001"
@@ -886,7 +886,7 @@
       "id": "INTL-UZ",
       "title": "Uzbekistan pack end to end",
       "area": "international",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "INTL-002"
       ],
@@ -916,7 +916,7 @@
       "id": "INTL-GE",
       "title": "Georgia pack",
       "area": "international",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "INTL-UZ"
       ],
@@ -941,7 +941,7 @@
       "id": "INTL-AM",
       "title": "Armenia pack",
       "area": "international",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "INTL-UZ"
       ],
@@ -966,7 +966,7 @@
       "id": "INTL-AZ",
       "title": "Azerbaijan pack",
       "area": "international",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "INTL-UZ"
       ],
@@ -991,7 +991,7 @@
       "id": "INTL-SAN",
       "title": "Sanctions terms template, partner SDN hook, removal of Russian integrations and plans",
       "area": "compliance",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "INTL-001"
       ],

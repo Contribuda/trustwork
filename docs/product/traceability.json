@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "requirements": [
+    {
+      "id": "R01",
+      "tasks": [
+        "BE-000",
+        "BE-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R02",
+      "tasks": [
+        "BE-001",
+        "DATA-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R03",
+      "tasks": [
+        "FND-002",
+        "WEB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R04",
+      "tasks": [
+        "DATA-001",
+        "BE-001",
+        "EXE-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R05",
+      "tasks": [
+        "COM-001",
+        "WEB-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R06",
+      "tasks": [
+        "COM-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R07",
+      "tasks": [
+        "COM-001",
+        "WEB-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R08",
+      "tasks": [
+        "AST-001",
+        "WEB-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R09",
+      "tasks": [
+        "DS-001",
+        "WEB-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R10",
+      "tasks": [
+        "AST-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R11",
+      "tasks": [
+        "AST-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R12",
+      "tasks": [
+        "EXE-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R13",
+      "tasks": [
+        "EXE-001",
+        "ADM-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R14",
+      "tasks": [
+        "EXE-001",
+        "ADM-001",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R15",
+      "tasks": [
+        "CNT-001",
+        "WEB-001",
+        "ADM-001",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R16",
+      "tasks": [
+        "CNT-001",
+        "ADM-001",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R17",
+      "tasks": [
+        "CNT-001",
+        "ADM-001",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R18",
+      "tasks": [
+        "BILL-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R19",
+      "tasks": [
+        "BILL-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R20",
+      "tasks": [
+        "BILL-001",
+        "ADM-001",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R21",
+      "tasks": [
+        "BE-000",
+        "BE-001",
+        "WEB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R22",
+      "tasks": [
+        "WEB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R23",
+      "tasks": [
+        "DS-000",
+        "WEB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R24",
+      "tasks": [
+        "DS-001",
+        "WEB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R25",
+      "tasks": [
+        "DS-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R26",
+      "tasks": [
+        "DS-001",
+        "WEB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R27",
+      "tasks": [
+        "QA-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R28",
+      "tasks": [
+        "BE-000",
+        "FND-002",
+        "DATA-001",
+        "BE-001",
+        "ADM-001",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R29",
+      "tasks": [
+        "AST-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R30",
+      "tasks": [
+        "FND-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R31",
+      "tasks": [
+        "RAG-000",
+        "RAG-101",
+        "FND-002",
+        "DATA-001",
+        "BE-001",
+        "RAG-201",
+        "RAG-301",
+        "AST-001",
+        "WEB-003",
+        "RAG-401",
+        "QA-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "docs/quality/retrieval-evaluation.md; fake fixtures are not real semantic/DB evidence",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R32",
+      "tasks": [
+        "EVT-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R33",
+      "tasks": [
+        "LRN-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R34",
+      "tasks": [
+        "MATCH-001",
+        "COM-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R35",
+      "tasks": [
+        "AGT-001",
+        "AST-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R36",
+      "tasks": [
+        "HUB-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R37",
+      "tasks": [
+        "HUB-002",
+        "HUB-003",
+        "ADM-002"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R38",
+      "tasks": [
+        "CTRY-002",
+        "INTL-UZ"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    },
+    {
+      "id": "R39",
+      "tasks": [
+        "FED-000",
+        "FED-001",
+        "FED-002",
+        "FED-003",
+        "FED-004",
+        "FED-005"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
+    }
+  ]
+}

@@ -43,7 +43,7 @@ Welcome. Start with `AGENTS.md` and the [agent onboarding guide](agent-onboardin
 
 ## If you want to work with Contribuddha
 
-Trustwork is created and maintained by [Contribuddha](https://contribuddha.com). If you want help launching a hub, adapting the engine for your organisation, or joining the team, get in touch at [contribuddha.com](https://contribuddha.com).
+Trustwork is created and maintained by [Contribuddha](https://contribuddha.com). If you want help launching a hub, adapting the engine for your organisation, or joining the team, get in touch at [contribuddha.com](https://contribuddha.com). Contribuddha does not provide services to persons in the places listed in `NOTICE`.
 
 ## How we work together
 

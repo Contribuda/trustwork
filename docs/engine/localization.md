@@ -27,7 +27,7 @@ All six dictionaries are complete. Translations other than English and Russian w
 - **Demo content**: base fixtures plus `apps/web/fixtures/i18n/<tag>.json` overrides addressed by JSON pointer; resolution per string is the locale, then English, then base. Tests require English to cover every base string and every other language to cover every English override.
 - **Real content**: publications have an original language and linked translations ([Publishing](publishing.md#multilingual-publishing-proposed)).
 - **Formats**: dates, times, months, weekdays, time-zone names, numbers, currencies and units come from `Intl`.
-- **Brand**: the wordmark reads "build reputation" in every language, drawn from one generator; the three-square mark is shared.
+- **Brand**: Trustwork in every language; only the Russian interface shows «Строй Репутация» (ADR 010 decision 14). The three-squares mark is shared.
 
 Right-to-left scripts are not supported yet.
 

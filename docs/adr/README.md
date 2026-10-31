@@ -13,3 +13,5 @@ Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are 
 | [009](009-international-engine-and-open-source.md) | Owner decisions 1-9 recorded | International engine, country packs, any country × any language, sanctions, Trustwork name and mark, AGPL-3.0-only, open-source export |
 | [010](010-gathering-point-hubs-agents-and-mesh.md) | Owner decisions recorded 2026-10-30 | Gathering point, events, partners and matching, representative agents, hubs and hub operators, country specifics, worldwide mesh, documentation |
 | [011](011-federation-mesh.md) | Proposed 2026-10-30 | Federation of independently operated nodes: signed manifests, global identifiers, public syndication, cross-node deals, links not merges |
+
+Numbers 005 and 006 recorded the core team's former private delivery coordination and development-management integration; both were retired on 2026-10-31 when development moved into this repository (ADR 010 decision 15).

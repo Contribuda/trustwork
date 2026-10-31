@@ -98,7 +98,7 @@ The engine helps; people grow a community. A playbook distilled from the design:
 
 ## Help with launching
 
-You can launch a hub entirely on your own: the engine, the handbook and the console are free. If you want help with configuration, local registers, legal templates or federation, the team that maintains the engine, [Contribuddha](https://contribuddha.com), works with hub operators.
+You can launch a hub entirely on your own: the engine, the handbook and the console are free. If you want help with configuration, local registers, legal templates or federation, the team that maintains the engine, [Contribuddha](https://contribuddha.com), works with hub operators. Contribuddha does not provide services to persons in the places listed in `NOTICE`.
 
 ## Operator responsibilities
 

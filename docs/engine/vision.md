@@ -61,7 +61,7 @@ Not by vanity charts. The specification asks for research with consenting practi
 
 ## Who builds it
 
-Trustwork is created and maintained by [Contribuddha](https://contribuddha.com), together with everyone who contributes. Contribuddha helps hub operators launch and run their hubs and builds products on the engine; the engine itself stays free software that anyone can run.
+Trustwork is created and maintained by [Contribuddha](https://contribuddha.com), together with everyone who contributes. Contribuddha helps hub operators launch and run their hubs and builds products on the engine; the engine itself stays free software that anyone can run. Contribuddha does not provide services to persons in the places listed in `NOTICE`.
 
 ## Where to go next
 

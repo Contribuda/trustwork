@@ -1,6 +1,6 @@
 # Roadmap and work packages
 
-Phases sequence the work; they never remove scope from the design. The machine-readable list is [work-packages.json](work-packages.json); `npm run work` shows what can be picked up now, and `node scripts/work-packages.mjs show <ID>` prints one package with its goal, steps, acceptance criteria and owned paths. Statuses below were generated from that file on 2026-10-30; the file is the source of truth.
+Phases sequence the work; they never remove scope from the design. The machine-readable list is [work-packages.json](work-packages.json); `npm run work` shows what can be picked up now, and `node scripts/work-packages.mjs show <ID>` prints one package with its goal, steps, acceptance criteria and owned paths. Statuses below reflect that file on 2026-10-31; the file is the source of truth and is edited in pull requests.
 
 ## Phases
 
@@ -8,7 +8,7 @@ Phases sequence the work; they never remove scope from the design. The machine-r
 |---|---|---|
 | **F0 Foundation** (done) | Specification, ADRs, contracts, coordination | BE-000, DS-000, FND-002, RAG-000, RAG-101, ADM-000 |
 | **F1 Identity and shells** (done) | Accounts, sessions, companies, memberships, projects on PostgreSQL; design system; public and workspace shells on demo data | DATA-001, BE-001, DS-001, WEB-001 |
-| **F1b International** (in review) | Country packs, six languages, any country with any language, sanctions basics | INTL-001, INTL-002, INTL-UZ, INTL-GE, INTL-AM, INTL-AZ, INTL-SAN |
+| **F1b International** (done) | Country packs, six languages, any country with any language, sanctions basics | INTL-001, INTL-002, INTL-UZ, INTL-GE, INTL-AM, INTL-AZ, INTL-SAN |
 | **F2 Content and commerce core** | Publications and the magazine; paired RFQ, catalogue, quotes and agreements; billing with two budget kinds; identity hardening | CNT-001, COM-001, BILL-001, BE-002 |
 | **F3 Agents and knowledge** | Durable mandates and runs with fakes; governed hybrid retrieval; search with cited answers | RAG-201, RAG-301, AST-001, WEB-003, RAG-401 |
 | **F4 Execution, trust and administration** | Execution evidence and fair reputation; administration persistence, module and web surface | EXE-001, DATA-002, ADM-001, ADM-002, ADM-003 |
@@ -66,10 +66,10 @@ flowchart LR
 | RAG-000 | Prepare first-class RAG architecture and deterministic contracts | done | |
 | RAG-101 | Resolve corpus, model and retrieval evaluation contract | done | |
 | ADM-000 | Platform administration research and screen contracts | done | |
-| INTL-001 | Country-pack model, registration identifier and currency abstraction | in review | WEB-001, FND-002 |
-| INTL-002 | i18n engine and country selector | in review | INTL-001, DS-001 |
-| INTL-UZ / GE / AM / AZ | Country packs end to end | in review | INTL-002 / INTL-UZ |
-| INTL-SAN | Sanctions terms template, partner screening hook | in review | INTL-001 |
+| INTL-001 | Country-pack model, registration identifier and currency abstraction | done | WEB-001, FND-002 |
+| INTL-002 | i18n engine and country selector | done | INTL-001, DS-001 |
+| INTL-UZ / GE / AM / AZ | Country packs end to end | done | INTL-002 / INTL-UZ |
+| INTL-SAN | Sanctions terms template, partner screening hook | done | INTL-001 |
 | COM-001 | Paired RFQ, catalogue, quote and agreement slice | open | BE-001, FND-002 |
 | BILL-001 | Neutral offers, entitlements and two budget kinds | open | BE-001 |
 | CNT-001 | Publications and curated issue proof | open | BE-001, DS-001 |
@@ -107,7 +107,7 @@ flowchart LR
 |---|---|---|
 | Prices, trials, tiers per hub | Owner / hub operators | BILL-001 |
 | Reputation weights, windows, minimum samples | Owner | EXE-001 |
-| Company claim evidence for the reference deployment | Decided 2026-10-30 (reference recipes) | HUB-003 |
+| Reference company claim evidence | Decided 2026-10-30 (reference recipes) | HUB-003 |
 | Standing company representative agent | Decided 2026-10-30: yes, one per company with an accountable person | AGT-001 |
 | Default data licences for federation | Decided 2026-10-30 | FED-002 |
 | Electronic agreement validity per country | Local counsel | COM-001, FED-004 |

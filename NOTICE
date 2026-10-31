@@ -45,7 +45,8 @@ Third-party components
 
 Marks: the name "Trustwork" and the three-squares mark are the owner's marks and
 ship with the engine as its identity; the licence grants no right to use them to
-imply endorsement or origin of a modified version. The name "Строй Репутация"
-and its localized forms (Build Reputation, Obroʻ qur, ააშენე რეპუტაცია,
-Կառուցիր համբավ, Nüfuz qur) belong to the reference deployment and are not part
-of the engine (docs/oss/BRAND.md).
+imply endorsement or origin of a modified version. Trustwork is the default
+brand in every language. Only the Russian interface shows «Строй Репутация»
+(overlay in apps/web/brand); its name and lettering are marks of their owner,
+and under AGPL-3.0 section 7(e) the licence grants no trademark rights to them
+(docs/oss/BRAND.md).

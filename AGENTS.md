@@ -25,6 +25,8 @@ Use the summary in `docs/engine/agent-onboarding.md` section 2. Be exact about s
 - Restricted places (see `NOTICE`) are never offered, hosted, served or federated.
 - No secrets, no real personal data, no external calls, no account registration, no spending, no deployment.
 - Migrations, the root lockfile and root configuration change only with a maintainer's agreement. Stay inside your package's paths.
+- Every change lands through a pull request with passing checks. Never force-push `main`, rewrite published history or run destructive resets on shared branches.
+- Trustwork is the brand in every language; «Строй Репутация» appears only in the Russian interface (`docs/oss/BRAND.md`). Never hard-code either name outside the brand files.
 - Security-critical flows need real negative authorization and concurrency tests.
 
 ## Coordination

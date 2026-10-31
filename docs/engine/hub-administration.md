@@ -133,7 +133,7 @@ Other typical recipes: seller onboarding before the first quote above a threshol
 
 #### Reference recipes for the launch countries
 
-Decided by the integrator on 2026-10-30 under the owner's delegation (ADR 010 decision 11). These are the recipes the reference deployment starts with; every hub may tighten them. Provider names are **candidates** gathered from secondary sources and become pack facts only after confirmation against official sources (CTRY-002, HUB-003).
+Decided by the integrator on 2026-10-30 under the owner's delegation (ADR 010 decision 11). These are the reference recipes the engine starts with; every hub may tighten them. Provider names are **candidates** gathered from secondary sources and become pack facts only after confirmation against official sources (CTRY-002, HUB-003).
 
 **Two levels, the same everywhere:**
 
