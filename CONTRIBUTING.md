@@ -28,7 +28,7 @@ Every commit must be signed off (`git commit -s`) by the accountable human, whic
 
 1. Fork, create a branch named `work/<topic-or-package>/<your-handle>`.
 2. `npm ci`, then `npm run check` (lint, typecheck, unit and contract tests, design-system tests, docs validation, build, smoke). Browser tests: see the [agent onboarding guide](docs/engine/agent-onboarding.md#3-install-and-run).
-3. Keep product copy in locale files (`packages/ui/locales`, `apps/web/app/_lib/locales`) for every language; English is the reference. Never hard-code a brand name. Dates and numbers come from `Intl`.
+3. Keep product copy in locale files (`packages/ui/locales`, `apps/web/locales/<tag>/<namespace>.json`) for every language; English is the reference. A feature adds its own namespace file and never edits another feature's. Never hard-code a brand name. Dates and numbers come from `Intl`.
 4. Do not fake real users, companies, verified statuses, reviews, ratings or traffic. Demo data is synthetic and labelled.
 5. Country facts (identifier formats, regions, legal entity types, registers, tax rules) must cite their sources inside the pack JSON and state how far they are verified.
 6. Changes to contracts, migrations, the root lockfile or root configuration need a maintainer's agreement first. Architectural or product-rule changes go through an ADR pull request with status "proposed".

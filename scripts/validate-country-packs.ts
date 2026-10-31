@@ -54,9 +54,9 @@ for (const file of files) {
     for (const tag of pack.locales) if (!region.name[tag] && !region.name.en) problems.push(`region ${region.code} has no name for ${tag} or en`);
   }
   for (const tag of [pack.defaultLocale]) {
-    const dict = resolve(root, 'apps/web/app/_lib/locales', `${tag}.json`);
+    const dict = resolve(root, 'apps/web/locales', tag);
     const ui = resolve(root, 'packages/ui/locales', `${tag}.json`);
-    if (pack.status === 'complete' && (!existsSync(dict) || !existsSync(ui))) problems.push(`complete pack needs dictionaries for ${tag} in apps/web and packages/ui`);
+    if (pack.status === 'complete' && (!existsSync(dict) || !existsSync(ui))) problems.push(`complete pack needs dictionaries for ${tag} in apps/web/locales/${tag}/ and packages/ui/locales/`);
     if (pack.status !== 'complete' && !existsSync(ui)) problems.push(`no design-system dictionary for ${tag}; add packages/ui/locales/${tag}.json or the UI falls back to English everywhere`);
   }
   for (const [name, sources] of [['pack', pack.sources], ['registrationIdentifier', pack.registrationIdentifier.sources], ['dataResidency', pack.dataResidency.sources]] as const) {

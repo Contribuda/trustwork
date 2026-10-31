@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
+import { ENGINE_LOCALES, localeCountry } from './i18n/helpers.js';
 
 /**
  * ADR-009 owner decision 10: outside the Russian locale no Russian text may reach a reader, demo content
@@ -20,7 +21,8 @@ for (const p of fixture('people')) routes.add(`/people/${p.slug}`);
 for (const p of fixture('projects')) routes.add(`/projects/${p.slug}`);
 for (const e of fixture('events')) routes.add(`/events/${e.slug}`);
 
-const LOCALES: Array<[string, string]> = [['en', 'UZ'], ['uz-Latn', 'UZ'], ['ka', 'GE'], ['hy', 'AM'], ['az-Latn', 'AZ']];
+// Every language directory except Russian (INTL-004: a new language is scanned without editing this list).
+const LOCALES: Array<[string, string]> = ENGINE_LOCALES.filter((tag) => tag !== 'ru').map((tag) => [tag, tag === 'en' ? 'UZ' : localeCountry(tag)]);
 
 const visibleText = (html: string) => html
   .replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<svg[\s\S]*?<\/svg>/gi, ' ')

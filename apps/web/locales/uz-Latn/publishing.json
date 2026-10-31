@@ -1,0 +1,71 @@
+{
+  "publications": {
+    "title": "Nashrlar",
+    "lede": "Qoralamalar, tekshiruvdagi materiallar va eʼlon qilinganlar — sizdan yoki kompaniyadan.",
+    "write": "Yozish",
+    "empty": "Hozircha nashrlar yoʻq",
+    "companyHint": "Kompaniya nomidan eʼlon qilish uchun kompaniyada nashr huquqi kerak.",
+    "list": "Nashrlar roʻyxati",
+    "tabs": {
+      "all": "Hammasi",
+      "drafts": "Qoralamalar",
+      "review": "Tekshiruvda",
+      "scheduled": "Rejalashtirilgan",
+      "published": "Eʼlon qilingan",
+      "corrected": "Tuzatilgan",
+      "retracted": "Qaytarib olingan"
+    },
+    "col": {
+      "title": "Nomi",
+      "format": "Format",
+      "author": "Kimning nomidan",
+      "state": "Holat",
+      "updated": "Yangilangan",
+      "shownIn": "Qayerda koʻrsatiladi"
+    },
+    "shownIn": {
+      "myWall": "Mening sahifam",
+      "companyWall": "Kompaniya devori",
+      "issue": "{number}-son",
+      "nowhere": "Hech qayerda"
+    },
+    "format": {
+      "news": "Yangilik",
+      "article": "Maqola",
+      "magazine_piece": "Jurnal materiali",
+      "company_post": "Kompaniya yozuvi",
+      "personal_post": "Shaxsiy yozuv"
+    },
+    "editorNote": "Materiallar muharriri keyingi bosqichda paydo boʻladi.",
+    "createDisabled": "Materiallar muharriri keyingi bosqichda paydo boʻladi.",
+    "emptyHint": "Qoralamalar, tekshiruvdagi materiallar va eʼlon qilinganlar shu yerda paydo boʻladi.",
+    "openPublic": "Ochish",
+    "stats": {
+      "published": "eʼlon qilingan",
+      "pipeline": "tekshiruvda va rejada",
+      "drafts": "qoralama",
+      "inIssues": "jurnal sonlarida"
+    },
+    "how": {
+      "title": "Material yoʻli",
+      "draft": "Qoralamani faqat siz va hammualliflar koʻradi.",
+      "review": "Tahririyat faktlar va bezakni tekshiradi.",
+      "publish": "Nashr sizning sahifangizda, kompaniya devorida yoki sonda paydo boʻladi.",
+      "correct": "Tuzatishlar versiyalar tarixini saqlaydi, qaytarib olish arxivda qoladi."
+    },
+    "companyOk": "Sizda kompaniya nomidan eʼlon qilish huquqi bor.",
+    "magazine": {
+      "title": "Jurnalga yozing",
+      "hint": "Tahririyat soha ishtirokchilaridan keyslar, tahlillar va ustunlar qabul qiladi.",
+      "cta": "Jurnal mualliflari"
+    }
+  },
+  "pubState": {
+    "draft": "Qoralama",
+    "in_review": "Tekshiruvda",
+    "scheduled": "{date} ga rejalashtirilgan",
+    "published": "Eʼlon qilingan",
+    "corrected": "Tuzatilgan",
+    "retracted": "Qaytarib olingan"
+  }
+}

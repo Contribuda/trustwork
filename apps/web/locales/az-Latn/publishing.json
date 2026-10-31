@@ -1,0 +1,71 @@
+{
+  "publications": {
+    "title": "Nəşrlər",
+    "lede": "Qaralamalar, baxışdakı materiallar və dərc edilmiş işlər: sizdən və ya şirkətdən.",
+    "write": "Yaz",
+    "empty": "Hələ nəşr yoxdur",
+    "companyHint": "Şirkət adından dərc etmək üçün şirkətdə dərc hüququ lazımdır.",
+    "list": "Nəşr siyahısı",
+    "tabs": {
+      "all": "Hamısı",
+      "drafts": "Qaralamalar",
+      "review": "Baxışda",
+      "scheduled": "Planlaşdırılıb",
+      "published": "Dərc edilib",
+      "corrected": "Düzəldilib",
+      "retracted": "Geri çağırılıb"
+    },
+    "col": {
+      "title": "Başlıq",
+      "format": "Format",
+      "author": "Kimin adından",
+      "state": "Vəziyyət",
+      "updated": "Yenilənib",
+      "shownIn": "Harada göstərilir"
+    },
+    "shownIn": {
+      "myWall": "Mənim səhifəm",
+      "companyWall": "Şirkət divarı",
+      "issue": "Buraxılış № {number}",
+      "nowhere": "Heç yerdə"
+    },
+    "format": {
+      "news": "Xəbər",
+      "article": "Məqalə",
+      "magazine_piece": "Jurnal materialı",
+      "company_post": "Şirkət paylaşımı",
+      "personal_post": "Şəxsi paylaşım"
+    },
+    "editorNote": "Material redaktoru növbəti mərhələdə gələcək.",
+    "createDisabled": "Material redaktoru növbəti mərhələdə gələcək.",
+    "emptyHint": "Qaralamalar, baxışdakı materiallar və dərc edilmiş işlər burada görünəcək.",
+    "openPublic": "Aç",
+    "stats": {
+      "published": "dərc edilib",
+      "pipeline": "baxışda və planlaşdırılıb",
+      "drafts": "qaralama",
+      "inIssues": "jurnal buraxılışlarında"
+    },
+    "how": {
+      "title": "Materialın yolu",
+      "draft": "Qaralamanı yalnız siz və həmmüəlliflər görür.",
+      "review": "Redaksiya faktları və tərtibatı yoxlayır.",
+      "publish": "Nəşr səhifənizdə, şirkət divarında və ya buraxılışda görünür.",
+      "correct": "Düzəlişlər versiya tarixçəsini saxlayır; geri çağırılan arxivdə qalır."
+    },
+    "companyOk": "Şirkət adından dərc etmək hüququnuz var.",
+    "magazine": {
+      "title": "Jurnal üçün yazın",
+      "hint": "Redaksiya sahə iştirakçılarından keyslər, təhlillər və köşə yazıları qəbul edir.",
+      "cta": "Jurnal müəllifləri"
+    }
+  },
+  "pubState": {
+    "draft": "Qaralama",
+    "in_review": "Yoxlamada",
+    "scheduled": "{date} üçün planlaşdırılıb",
+    "published": "Dərc edilib",
+    "corrected": "Düzəldilib",
+    "retracted": "Geri çəkilib"
+  }
+}

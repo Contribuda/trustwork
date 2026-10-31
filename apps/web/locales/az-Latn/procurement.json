@@ -1,0 +1,71 @@
+{
+  "procurement": {
+    "title": "Satınalmalar",
+    "lede": "Səlahiyyətiniz daxilində ehtiyaclar, təchizatçılara sorğular və təkliflər.",
+    "createNeed": "Ehtiyac yarat",
+    "findSupplier": "Təchizatçı tap",
+    "empty": "Hələ satınalma yoxdur",
+    "emptyHint": "Ehtiyac şirkət adından və ya şəxsən öz layihəniz üçün aparıla bilər.",
+    "list": "Satınalma siyahısı",
+    "col": {
+      "title": "Ehtiyac",
+      "kind": "Tərkib",
+      "version": "Versiya",
+      "quotes": "Təkliflər",
+      "deadline": "Müddət",
+      "operator": "Məsul",
+      "status": "Status"
+    },
+    "versionShort": "versiya {version}",
+    "flowsNote": "Ehtiyac yaratma, təkliflərin müqayisəsi və sifarişlər növbəti mərhələdə gələcək. Bu siyahı hüquqlarınız daxilində göstərilir.",
+    "createDisabled": "Ehtiyac yaratma növbəti mərhələdə gələcək.",
+    "stages": "Satınalma mərhələləri",
+    "stage": {
+      "draft": "Qaralamalar",
+      "open": "Sorğu açıqdır",
+      "compare": "Müqayisə və danışıqlar",
+      "order": "Sifariş və icra",
+      "done": "Tamamlanıb",
+      "problem": "Mübahisələr və vaxtı keçmiş"
+    },
+    "noProject": "Layihəsiz",
+    "ownerPerson": "Şəxsi satınalma",
+    "ownerCompany": "Şirkət adından",
+    "needsDecision": "Qərarınız lazımdır: təkliflər toplanıb, şərtləri seçin.",
+    "deadlineShort": "{date}-dək",
+    "stats": {
+      "decisions": "qərar gözləyir",
+      "quotes": "alınmış təklif",
+      "open": "açıq sorğu",
+      "nearest": "ən yaxın müddət"
+    },
+    "how": {
+      "title": "Satınalma necə gedir",
+      "need": "Ehtiyacı təsvir edin: tərkib, miqdar, region və müddət.",
+      "quotes": "Təchizatçılar sorğunun konkret versiyasına təklif göndərir.",
+      "compare": "Şərtləri müqayisə edin, sual verin, ən yaxşısını seçin.",
+      "order": "Sifarişi yerləşdirin; təchizatçı qəbulu təsdiqləyir.",
+      "accept": "Çatdırılmanı qəbul edin və təchizatçı haqqında rəy yazın.",
+      "note": "Qiymətlər və büdcələr saytda heç vaxt dərc edilmir."
+    },
+    "findHint": "Kataloqları, layihələri və rəyləri olan yoxlanılmış şirkətlər."
+  },
+  "rfqStatus": {
+    "needDraft": "Ehtiyac qaralaması",
+    "clarifying": "Dəqiqləşdirilir",
+    "published": "Sorğu dərc edilib",
+    "quotesCollected": "Təkliflər toplanıb",
+    "negotiating": "Danışıqlar",
+    "termsSelected": "Şərtlər seçilib",
+    "orderPlaced": "Sifariş verilib",
+    "supplierAccepted": "Sifariş təchizatçı tərəfindən qəbul edilib",
+    "fulfilling": "İcrada",
+    "partiallyAccepted": "Qismən qəbul edilib",
+    "accepted": "Qəbul edilib",
+    "reviewed": "Rəy yazılıb",
+    "disputed": "Mübahisəli",
+    "closed": "Bağlanıb",
+    "expired": "Müddəti bitib",
+    "cancelled": "Ləğv edilib"
+  }
+}

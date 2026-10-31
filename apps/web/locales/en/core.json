@@ -1,0 +1,115 @@
+{
+  "error": {
+    "generic": "Something went wrong. Please try again.",
+    "pageTitle": "Could not load the page",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page does not exist or you have no access to it.",
+    "auth": {
+      "invalid_credentials": "Wrong email or password",
+      "throttled": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+      "step_up_required": "Confirm your sign-in again to continue.",
+      "email_unverified": "The email is not confirmed yet.",
+      "session_invalid": "Your session has ended. Sign in again.",
+      "csrf_rejected": "The request was rejected. Reload the page and try again.",
+      "password": {
+        "rejected": "The password does not meet the requirements."
+      },
+      "recovery": {
+        "on_hold": "The recovery request was received and placed on hold for review under the corporate email policy. We will let you know the decision."
+      }
+    },
+    "access": {
+      "not_found": "Page not found",
+      "forbidden": "No access"
+    },
+    "validation": {
+      "schema": "Check the fields",
+      "unknown_field": "The request contains unknown fields"
+    }
+  },
+  "taxonomy": {
+    "materials": "Building materials",
+    "equipment": "Equipment",
+    "engineering": "Building services",
+    "rawMaterials": "Raw materials and components",
+    "works": "Construction works",
+    "designServices": "Design and services",
+    "topics": {
+      "materials": "Materials",
+      "technologies": "Technologies",
+      "markets": "Markets",
+      "regulation": "Regulation",
+      "projects": "Projects",
+      "people": "People",
+      "events": "Events"
+    }
+  },
+  "shell2": {
+    "notificationsTitle": "Notifications",
+    "notificationsError": "Could not load notifications",
+    "navSheetTitle": "Menu",
+    "searchTitle": "Search",
+    "searchLabel": "Query",
+    "searchHint": "Search companies, people, projects and publications.",
+    "updatedAt": "Updated {time}",
+    "menuName": "Name in the account menu",
+    "demoSwitch": "Switch the demo participant",
+    "signOutDemo": "Demo: signing out returns you to the home page without ending a session."
+  },
+  "role": {
+    "owner": "Owner",
+    "leader": "Lead",
+    "participant": "Participant",
+    "member": "Employee",
+    "administrator": "Administrator"
+  },
+  "unitLabel": {
+    "t": "t",
+    "m2": "m²",
+    "m3": "m³",
+    "pcs": "pcs",
+    "set": "set"
+  },
+  "signals": {
+    "person": {
+      "openToWork": "Open to work",
+      "openToProjects": "Taking projects",
+      "hiring": "Hiring for my team",
+      "lookingForPartners": "Looking for partners",
+      "consulting": "Consulting",
+      "busy": "Busy"
+    },
+    "company": {
+      "hiring": "Hiring",
+      "acceptingOrders": "Accepting orders",
+      "lookingForSubcontractors": "Looking for subcontractors",
+      "lookingForSuppliers": "Looking for suppliers",
+      "lookingForPartners": "Looking for partners",
+      "lookingForProjects": "Looking for sites",
+      "paused": "Not taking new orders"
+    },
+    "until": "until {date}",
+    "label": "Status",
+    "declared": "Status declared by the participant",
+    "all": "Any status",
+    "none": "No status set"
+  },
+  "locale": {
+    "switcherLabel": "Country and language: {country}, {language}",
+    "dialogLabel": "Country and language",
+    "dialogTitle": "Country and language",
+    "partial": "Translation in progress; missing text is shown in English",
+    "partialShort": "partly",
+    "note": "Any country except the places closed by US sanctions, with any of the engine languages; the platform’s own country packs come first. The choice is kept in this browser.",
+    "gateKicker": "Welcome",
+    "gateTitle": "Choose your country",
+    "gateLede": "The platform works per country: its language, currency, company registration details and regions. You can change the choice at any time in the header.",
+    "country": "Country",
+    "language": "Language",
+    "gateConfirm": "Continue",
+    "gateNote": "Languages marked “partly” fall back to English where a translation is missing.",
+    "otherCountry": "Other country",
+    "chooseCountry": "Choose a country…",
+    "featured": "Platform countries"
+  }
+}

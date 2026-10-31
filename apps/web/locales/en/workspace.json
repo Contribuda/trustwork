@@ -1,0 +1,443 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "lede": "Notifications are tied to objects: decisions, requests, projects and publications. This is not a mailbox.",
+    "empty": "No new notifications",
+    "markRead": "Mark as read",
+    "open": "Open",
+    "kind": {
+      "decision": "Decision needed",
+      "quote": "Quote",
+      "project": "Project",
+      "publication": "Publication",
+      "assistant": "Assistant",
+      "magazine": "Magazine"
+    },
+    "unread": "Unread",
+    "unreadOne": "new",
+    "noUnread": "No unread notifications",
+    "group": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "earlier": "Earlier"
+    },
+    "stats": {
+      "unread": "unread",
+      "decisions": "need a decision"
+    },
+    "settingsTitle": "What to notify about",
+    "settingsHint": "Decisions, assistant runs, publications and new magazine issues are set in the preferences.",
+    "demoNote": "Demo: read marks are not saved."
+  },
+  "overview": {
+    "title": "Overview",
+    "subtitle": {
+      "mixed": "Procurement, sales and your projects",
+      "buyer": "Procurement and your projects",
+      "seller": "Sales and your projects",
+      "personal": "Your projects and publications"
+    },
+    "create": "Create",
+    "createItems": {
+      "need": "Need",
+      "quote": "Quote",
+      "project": "Project",
+      "publication": "Publication"
+    },
+    "decisions": "Your decision is needed",
+    "decisionsEmpty": "No decisions needed",
+    "inProgress": "{count, plural, one {# task in progress} other {# tasks in progress}}",
+    "all": "All",
+    "procurement": {
+      "title": "Procurement",
+      "findSupplier": "Find a supplier",
+      "empty": "No procurement yet",
+      "createNeed": "Create a need",
+      "all": "All procurement"
+    },
+    "sales": {
+      "title": "Sales",
+      "allQuotes": "All quotes",
+      "catalogue": "Catalogue of goods, works and services",
+      "empty": "No quotes yet",
+      "fillCatalogue": "Fill in the catalogue"
+    },
+    "projects": {
+      "title": "My projects",
+      "all": "All projects",
+      "next": "Next milestone: {name}",
+      "empty": "No projects yet",
+      "create": "Create a project"
+    },
+    "events": {
+      "title": "Upcoming events",
+      "empty": "No events"
+    },
+    "publications": {
+      "title": "Publications",
+      "empty": "No drafts",
+      "write": "Write an article",
+      "all": "All publications"
+    },
+    "assistant": {
+      "title": "Assistant",
+      "summary": "Assistant: running — {running}, waiting for your decision — {approvals}, reconciling — {unknown}",
+      "open": "Open the assistant page"
+    },
+    "digestChanged": "The terms changed; check again",
+    "accessChanged": "Access changed",
+    "industryPicks": "In the industry",
+    "due": "Due: {date}",
+    "cardError": "Could not load the card",
+    "industryKicker": "From the public sections"
+  },
+  "me": {
+    "title": "My page",
+    "publicPage": "Public page",
+    "accountSettings": "Account settings",
+    "tabs": {
+      "work": "Work",
+      "publications": "Publications",
+      "interests": "Interests",
+      "history": "History",
+      "publicProfile": "Public profile",
+      "learning": "Learning"
+    },
+    "membership": {
+      "active": "Current workplace",
+      "invited": "Invitation",
+      "ended": "Ended {date}",
+      "none": "No company"
+    },
+    "mandates": "Mandates for the assistant",
+    "mandatesCount": "{count, plural, one {# mandate} other {# mandates}}",
+    "saved": "Saved",
+    "savedEmpty": "No saved materials",
+    "decisions": "My decisions",
+    "projectsByRole": "Projects by role",
+    "startHint": "Start with a project or a publication",
+    "interestsHint": "Interests only affect which cards the overview shows. They grant no rights in a company.",
+    "editInterests": "Change interests",
+    "public": {
+      "published": "The page is published",
+      "unpublished": "The page is not published",
+      "portraitConsent": "Allow my portrait to be shown on the public page",
+      "portraitLicence": "I confirm that I have the right to use this image.",
+      "showEmployer": "Show my current workplace",
+      "bio": "About me",
+      "topics": "Topics",
+      "show": "Show",
+      "contact": "Allow messages to me through the platform",
+      "preview": "Preview",
+      "previewTitle": "This is how others see your page",
+      "portraitHidden": "The portrait is hidden on the public page",
+      "demoNote": "Demo: changes are not saved on the server.",
+      "portraitPending": "The portrait appears after a photo is uploaded."
+    },
+    "history": {
+      "org": "Organisation",
+      "role": "Role",
+      "from": "Start",
+      "to": "End",
+      "status": "Status",
+      "empty": "No records of company membership",
+      "terms": "Accepted terms: version {version}, {date}"
+    },
+    "editProfile": "Edit the profile",
+    "profileGood": "Well filled in",
+    "profileMore": "Can be completed",
+    "tabsLearning": "Learning",
+    "learning": {
+      "readCount": "materials read",
+      "quizCount": "correct answers",
+      "bookmarksCount": "bookmarked",
+      "certCount": "certificates",
+      "issues": "Magazine issues",
+      "emptyTitle": "You have not started reading the magazine yet",
+      "emptyBody": "Progress, quizzes and bookmarks appear here as soon as you open an issue.",
+      "bookmarksEmpty": "No bookmarks yet: mark materials in the reader.",
+      "certificates": "Trustwork certificates",
+      "certEmpty": "No certificates yet. They are issued after completing Academy mini-courses.",
+      "check": "check",
+      "courses": "Academy courses",
+      "coursesNote": "Course enrolment and certificate issue open after the service launches."
+    },
+    "workIntro": "Decisions, projects and mandates waiting for you today."
+  },
+  "company": {
+    "title": "Company",
+    "publicPage": "Public page",
+    "settings": "Company settings",
+    "tabs": {
+      "overview": "Overview",
+      "wall": "Wall",
+      "people": "People",
+      "catalogue": "Catalogue",
+      "projects": "Projects",
+      "reputation": "Reputation"
+    },
+    "empty": {
+      "title": "You are not linked to a company yet",
+      "body": "You can work without a company: read, publish and run personal projects. If you represent a company, join by invitation or create its page.",
+      "join": "Join by invitation",
+      "create": "Create a company page",
+      "find": "Find a company in the directory",
+      "policyNote": "Joining is confirmed by the company.",
+      "findHint": "Companies with verified pages, catalogues and projects.",
+      "lede": "The workspace works without a company too; you can join or create a page at any time."
+    },
+    "join": {
+      "code": "Invitation code or link",
+      "pending": "The request was sent and awaits confirmation",
+      "cancel": "Cancel the request"
+    },
+    "membershipEnded": "Your membership ended on {date}",
+    "invite": "Invite",
+    "member": {
+      "name": "Name",
+      "role": "Role",
+      "status": "Status",
+      "since": "Start",
+      "actions": "Actions",
+      "end": "End participation",
+      "status_active": "Active",
+      "status_invited": "Invited",
+      "status_ended": "Ended",
+      "sinceDate": "since {date}",
+      "hidden": "Not shown on the public page",
+      "inviteNote": "Invitations and ending participation come in the next stage."
+    },
+    "membersEmpty": "No employees yet",
+    "wallEmpty": "No company publications yet",
+    "catalogue": {
+      "empty": "The catalogue is empty",
+      "newVersion": "New version",
+      "publish": "Publish the version",
+      "version": "Version {version} of {date}",
+      "name": "Name",
+      "kind": "Type",
+      "unit": "Unit",
+      "price": "Price",
+      "priceOnRequest": "On request",
+      "public": "Public",
+      "privateFloor": "Floor price (not published)",
+      "yes": "Yes",
+      "no": "No",
+      "count": "{count, plural, one {# item} other {# items}}",
+      "floorNote": "Floor prices are visible only with the deals right and are never published.",
+      "publicNote": "Public items appear on the company page with the price “on request”.",
+      "emptyHint": "A catalogue of goods, works and services brings requests from buyers."
+    },
+    "claim": {
+      "title": "Page status",
+      "sourced": "Created from an open source",
+      "claimed": "Claimed, awaiting verification",
+      "verified": "Verified",
+      "pendingRequests": "{count, plural, one {# request to join} other {# requests to join}}"
+    },
+    "projectsEmpty": "No company projects available to you yet",
+    "reputationNote": "Internal evidence on deals appears after the first fulfilled orders.",
+    "decisions": "Company decisions",
+    "noAccess": "No access to this section",
+    "lede": "Your company’s shared page: decisions, wall, people, catalogue and projects.",
+    "stats": {
+      "members": "employees",
+      "catalogue": "catalogue items",
+      "projects": "projects",
+      "wall": "publications"
+    },
+    "evidence": {
+      "title": "Confirmations",
+      "identifier": "Registration details",
+      "none": "Not given",
+      "domain": "Website domain",
+      "domainYes": "Confirmed",
+      "domainNo": "Not confirmed",
+      "publicMembers": "Public employees",
+      "note": "These are facts everyone sees. There are no scores or ratings on the platform.",
+      "kind": {
+        "other": "Other identifier"
+      }
+    },
+    "peopleHint": "The company’s employees and their roles. Being public is each person’s own decision.",
+    "website": "Company website"
+  },
+  "projectsWs": {
+    "title": "Projects",
+    "create": "Create a project",
+    "empty": "No projects yet",
+    "emptyHint": "A personal project can run without a company.",
+    "filter": {
+      "role": "My role",
+      "status": "Status",
+      "owner": "Owner",
+      "all": "All"
+    },
+    "owner": {
+      "me": "Me",
+      "company": "Company"
+    },
+    "col": {
+      "title": "Project",
+      "owner": "Owner",
+      "role": "My role",
+      "status": "Status",
+      "nextMilestone": "Next milestone",
+      "updated": "Updated"
+    },
+    "list": "Project list",
+    "tabs": {
+      "overview": "Overview",
+      "plan": "Plan",
+      "execution": "Execution",
+      "acceptance": "Acceptance",
+      "disputes": "Disputes",
+      "purchases": "Procurement",
+      "participants": "Participants",
+      "files": "Files",
+      "correspondence": "Correspondence",
+      "budget": "Budget",
+      "publication": "Publication"
+    },
+    "notPublished": "Not published",
+    "publishedProjection": "Published: {fields}",
+    "leader": "Lead",
+    "noLeader": "No lead assigned",
+    "actions": {
+      "menu": "Project actions",
+      "transfer": "Transfer ownership",
+      "assignLeader": "Assign a lead",
+      "publish": "Set up publication"
+    },
+    "plan": {
+      "baseline": "Baseline plan",
+      "change": "Change {index} of {date}",
+      "viewingVersion": "You are viewing the version of {date}",
+      "toCurrent": "To the current version",
+      "reason": "Reason for the change",
+      "responsible": "Responsible party",
+      "dependsOn": "Depends on",
+      "empty": "No milestones added yet",
+      "sharedOnly": "Participants see only shared milestones without budgets.",
+      "timeline": "Project milestones",
+      "done": "done",
+      "current": "current",
+      "upcoming": "ahead",
+      "actual": "Actual: {date}",
+      "changedFrom": "Planned for {date}",
+      "privateMilestone": "Not shown to participants",
+      "budgetsVisible": "Milestone amounts are visible only to you as the owner.",
+      "budgetHidden": "Milestone amounts are visible to the project owner.",
+      "currentChip": "Current milestone"
+    },
+    "execution": {
+      "empty": "No execution records yet",
+      "addRecord": "Add a record",
+      "hint": "Results, team messages and discussions appear here with confirmation marks."
+    },
+    "acceptance": {
+      "empty": "No acceptance records yet",
+      "hint": "Acceptance certificates and hidden-works acceptance will be kept in this section."
+    },
+    "disputes": {
+      "empty": "No disputes",
+      "claimNotFact": "A party’s claim is not a confirmed fact"
+    },
+    "purchases": {
+      "empty": "No related procurement",
+      "participantNote": "Project procurement is visible to the owner and the lead."
+    },
+    "participants": {
+      "party": "Participant",
+      "role": "Role",
+      "grant": "Access",
+      "empty": "No participants yet",
+      "count": "{count, plural, one {# participant} other {# participants}}",
+      "grantLabel": {
+        "owner_private": "full access",
+        "shared_party": "shared materials"
+      },
+      "hidden": "Hidden on the public page"
+    },
+    "files": {
+      "empty": "No files",
+      "audience": {
+        "private": "Private",
+        "participants": "For participants",
+        "public": "Published"
+      }
+    },
+    "correspondence": {
+      "empty": "No project correspondence yet",
+      "hint": "Letters and messages about the project are kept in one place and are never published."
+    },
+    "budget": {
+      "limit": "Limit",
+      "reserved": "Reserved",
+      "settled": "Paid",
+      "ownerOnly": "The budget is visible only to the project owner.",
+      "share": "{percent}% of the limit",
+      "note": "Amounts are visible only to the project owner and are never published."
+    },
+    "publication": {
+      "preview": "Preview the public page",
+      "note": "Publication is an explicit list of fields. Files, budgets and correspondence are never published.",
+      "fields": "What is published",
+      "field": {
+        "story": "Project story",
+        "milestones": "Shared milestones",
+        "participants": "Public participants"
+      },
+      "on": "published",
+      "off": "hidden"
+    },
+    "transfer": {
+      "pending": "Awaiting the recipient’s consent",
+      "title": "Ownership transfer"
+    },
+    "nextMilestone": "Next milestone",
+    "noMilestone": "No milestones",
+    "ownerPerson": "Personal project",
+    "ownerCompany": "Company project",
+    "createDisabled": "Creating projects comes in the next stage.",
+    "lede": "Projects where you are the owner, the lead or a participant. A personal project can run without a company.",
+    "stats": {
+      "total": "projects in total",
+      "active": "in progress",
+      "delayed": "with a moved deadline",
+      "published": "published"
+    },
+    "noMatch": "No projects match these filters",
+    "resetFilters": "Reset filters",
+    "open": "Open",
+    "progressOf": "{done} of {total, plural, one {# milestone} other {# milestones}}",
+    "delayed": "Deadline moved",
+    "hero": {
+      "region": "Region",
+      "publicPage": "Public page",
+      "onTrack": "On schedule"
+    },
+    "overview": {
+      "nextSteps": "Next steps",
+      "noCurrent": "All milestones are complete",
+      "recent": "Latest records",
+      "team": "Team",
+      "filesCount": "{count, plural, one {# file} other {# files}}",
+      "privateCount": "{count, plural, one {# private} other {# private}}",
+      "purchases": "Project procurement",
+      "purchasesCount": "{count, plural, =0 {no requests} one {# request} other {# requests}}"
+    }
+  },
+  "ws": {
+    "loading": "Loading the section…",
+    "pageError": "Could not load the section",
+    "retry": "Retry",
+    "backToOverview": "To the overview",
+    "offlineReadOnly": "No connection: the section is shown read-only.",
+    "notFoundTitle": "Section not found",
+    "notFoundBody": "Check the address or go back to the overview.",
+    "tabsScrollHint": "Tabs scroll horizontally and switch with the arrow keys.",
+    "coverKicker": "Project",
+    "factsLabel": "Key facts"
+  }
+}

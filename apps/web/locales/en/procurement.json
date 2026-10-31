@@ -1,0 +1,71 @@
+{
+  "procurement": {
+    "title": "Procurement",
+    "lede": "Needs, requests to suppliers and quotes, within your authority.",
+    "createNeed": "Create a need",
+    "findSupplier": "Find a supplier",
+    "empty": "No procurement yet",
+    "emptyHint": "A need can be run on behalf of the company or personally for your own project.",
+    "list": "Procurement list",
+    "col": {
+      "title": "Need",
+      "kind": "Composition",
+      "version": "Version",
+      "quotes": "Quotes",
+      "deadline": "Deadline",
+      "operator": "Responsible",
+      "status": "Status"
+    },
+    "versionShort": "version {version}",
+    "flowsNote": "Creating needs, comparing quotes and orders come in the next stage. This list is shown within your rights.",
+    "createDisabled": "Creating needs comes in the next stage.",
+    "stages": "Procurement stages",
+    "stage": {
+      "draft": "Drafts",
+      "open": "Request open",
+      "compare": "Comparison and negotiation",
+      "order": "Order and fulfilment",
+      "done": "Done",
+      "problem": "Disputes and expired"
+    },
+    "noProject": "No project",
+    "ownerPerson": "Personal procurement",
+    "ownerCompany": "On behalf of the company",
+    "needsDecision": "Your decision is needed: quotes are collected, choose the terms.",
+    "deadlineShort": "Due by {date}",
+    "stats": {
+      "decisions": "awaiting a decision",
+      "quotes": "quotes received",
+      "open": "open requests",
+      "nearest": "nearest deadline"
+    },
+    "how": {
+      "title": "How procurement goes",
+      "need": "Describe the need: composition, quantity, region and deadline.",
+      "quotes": "Suppliers send quotes for a specific version of the request.",
+      "compare": "Compare the terms, ask questions, choose the best.",
+      "order": "Place the order; the supplier confirms acceptance.",
+      "accept": "Accept the delivery and leave a review of the supplier.",
+      "note": "Prices and budgets are never published on the site."
+    },
+    "findHint": "Verified companies with catalogues, projects and reviews."
+  },
+  "rfqStatus": {
+    "needDraft": "Draft need",
+    "clarifying": "Clarifying",
+    "published": "Request published",
+    "quotesCollected": "Quotes collected",
+    "negotiating": "Negotiating",
+    "termsSelected": "Terms selected",
+    "orderPlaced": "Order placed",
+    "supplierAccepted": "Order accepted by the supplier",
+    "fulfilling": "In fulfilment",
+    "partiallyAccepted": "Partially accepted",
+    "accepted": "Accepted",
+    "reviewed": "Review left",
+    "disputed": "Disputed",
+    "closed": "Closed",
+    "expired": "Expired",
+    "cancelled": "Cancelled"
+  }
+}

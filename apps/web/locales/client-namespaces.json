@@ -1,0 +1,8 @@
+{
+  "$comment": "Namespaces whose messages reach the browser, per route group (INTL-004). The root list reaches every page; a group adds its own list for its routes. Server components always see every namespace. tests/web/i18n/client-namespaces.test.ts derives these lists from the client components and fails when this file is stale.",
+  "root": ["core", "demo"],
+  "public": ["companies", "editorial", "home", "magazine", "map", "people", "projects", "public"],
+  "auth": ["auth", "settings"],
+  "workspace": ["assistant", "companies", "editorial", "magazine", "onboarding", "people", "projects", "public", "publishing", "settings", "workspace"],
+  "onboarding": ["magazine", "onboarding", "people"]
+}

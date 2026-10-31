@@ -1,0 +1,49 @@
+{
+  "sales": {
+    "title": "Sales",
+    "lede": "Buyers’ requests, your quotes and the company catalogue.",
+    "catalogue": "Catalogue of goods, works and services",
+    "leads": "Requests",
+    "empty": "No requests yet",
+    "emptyHint": "Companies’ published needs are available in the Projects section of the site.",
+    "fillCatalogue": "Fill in the catalogue",
+    "list": "Request list",
+    "col": {
+      "buyer": "Buyer",
+      "request": "Request",
+      "source": "Source",
+      "deadline": "Deadline",
+      "status": "Status",
+      "version": "Quote version"
+    },
+    "noCompanyTitle": "Sales are run on behalf of a company",
+    "noCompanyBody": "To answer requests and keep a catalogue you need a company and the deals right. A personal catalogue is not part of this stage.",
+    "flowsNote": "The quote editor, versions and order acceptance come in the next stage.",
+    "quoteVersion": "Quote, version {version}",
+    "noQuote": "The quote has not been sent yet",
+    "needsDecision": "Your decision is needed: the buyer chose the terms, accept or decline the order.",
+    "stats": {
+      "decisions": "awaiting a decision",
+      "active": "in progress",
+      "won": "orders accepted"
+    },
+    "catalogueHint": "A filled-in catalogue of goods, works and services brings requests from buyers.",
+    "openNeeds": "Open needs",
+    "openNeedsHint": "Companies publish needs in projects: you can respond with a quote from your company."
+  },
+  "leadStatus": {
+    "new": "New",
+    "drafting": "Preparing a quote",
+    "sent": "Sent",
+    "negotiating": "Negotiating",
+    "won": "Order accepted",
+    "lost": "The buyer chose another supplier",
+    "expired": "Expired"
+  },
+  "leadSource": {
+    "invitation": "Invitation",
+    "openNeed": "Open need",
+    "direct": "Direct request",
+    "email": "From an email"
+  }
+}

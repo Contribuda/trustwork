@@ -1,0 +1,178 @@
+{
+  "onboarding2": {
+    "accountCreated": "Account created",
+    "toSite": "To the site",
+    "capabilities": {
+      "title": "What interests you on the platform?",
+      "subtitle": "We will tune the workspace to your tasks."
+    },
+    "buy": {
+      "description": "I look for suppliers, compare quotes and organise procurement.",
+      "tags": "Suppliers · Procurement",
+      "title": "What do you usually buy?",
+      "subtitle": "We will pick companies and materials for your interests."
+    },
+    "sell": {
+      "description": "I offer goods, works or services and find clients.",
+      "tags": "Company · Quotes",
+      "title": "What do you offer?",
+      "subtitle": "We will show requests and projects matching your profile."
+    },
+    "industry": {
+      "description": "I read, publish articles and news, share experience and meet people.",
+      "tags": "Publications · Community",
+      "title": "Which topics interest you?",
+      "subtitle": "We will gather news and articles on your topics."
+    },
+    "save": "Save",
+    "saveError": "Could not save. You can continue and come back to this later.",
+    "continueWithoutSaving": "Continue without saving",
+    "multiDirectionsHint": "You can pick several areas.",
+    "directions": "Areas",
+    "directionsSearch": "Find an area, product or service",
+    "regions": {
+      "buy": "Where do you need supplies or works?",
+      "sell": "Where do you work?",
+      "industry": "Which regions interest you?",
+      "placeholder": "Choose regions",
+      "hint": "You can pick several regions or leave it unrestricted.",
+      "loading": "Loading regions…"
+    },
+    "optional": "Optional",
+    "changeLater": "Interests can be changed later.",
+    "setupLater": "Set up later",
+    "taxonomyError": "Could not load the list. You can set it up later.",
+    "noMatches": "Nothing found. You can continue without choosing.",
+    "demoNote": "Demo: the choice is not saved on the server.",
+    "directionsCount": "{count, plural, one {# area} other {# areas}}",
+    "stepCapabilities": "Interests",
+    "stepInterests": "Areas",
+    "stepsLabel": "Set-up steps"
+  },
+  "onboarding3": {
+    "pageTitle": "Profile set-up",
+    "steps": {
+      "who": "Who you are",
+      "goals": "Goals",
+      "interests": "Interests",
+      "profile": "Page"
+    },
+    "completeness": "Profile {percent}% complete",
+    "completenessTitle": "Profile completeness",
+    "completenessHint": "Every step is optional",
+    "who": {
+      "title": "{name}, who are you in the industry?",
+      "lede": "We will pick materials, people and courses for your work. You can change the answers at any time.",
+      "field": "Field of work",
+      "fieldHint": "One option, the closest to your role.",
+      "employment": "How you work now",
+      "company": "Company name",
+      "companyHint": "Just the name. No registration details or confirmations at this step.",
+      "companyPlaceholder": "For example, “Fasad-Namuna”",
+      "headline": "Who you are in one line",
+      "headlineHint": "This is how you appear on the public page and in search.",
+      "headlinePlaceholder": "For example: site control engineer, facades and glazing"
+    },
+    "employment": {
+      "company": "I work in a company",
+      "independent": "Independent professional",
+      "seeking": "Looking for work or orders",
+      "student": "Studying or starting out"
+    },
+    "employmentHint": {
+      "company": "Employee, manager or owner.",
+      "independent": "Private practice, a crew or consulting.",
+      "seeking": "We will show vacancies and projects that need people.",
+      "student": "We will pick courses and materials to start with."
+    },
+    "goals": {
+      "title": "What do you want to do on the platform?",
+      "lede": "You can pick several goals. They decide what the workspace shows.",
+      "none": "Nothing selected is fine too; we will set it up later."
+    },
+    "goal": {
+      "learn": {
+        "title": "Read and learn",
+        "desc": "The magazine, analyses, Academy mini-courses and certificates.",
+        "tags": "Magazine · Courses"
+      },
+      "work": {
+        "title": "Find work and orders",
+        "desc": "Company vacancies, projects with open roles, the “open to work” status.",
+        "tags": "Vacancies · Projects"
+      },
+      "hire": {
+        "title": "Hire and find partners",
+        "desc": "People with confirmed experience, crews, contractors.",
+        "tags": "People · Partners"
+      },
+      "publish": {
+        "title": "Publish experience",
+        "desc": "Articles, project stories and notes in your own name.",
+        "tags": "Publications"
+      },
+      "projects": {
+        "title": "Run projects",
+        "desc": "Roadmap, participants, requests and site materials.",
+        "tags": "Projects"
+      },
+      "buy": {
+        "title": "Buy",
+        "desc": "Requests to suppliers, quote comparison, procurement.",
+        "tags": "Suppliers · Procurement"
+      },
+      "sell": {
+        "title": "Supply",
+        "desc": "A catalogue, quotes and clients for your company.",
+        "tags": "Company · Quotes"
+      }
+    },
+    "interests": {
+      "title": "Topics, areas and regions",
+      "lede": "This is how we assemble the feed, the magazine and recommendations. Everything is optional.",
+      "topics": "Topics to read",
+      "topicsHint": "What you want to see in the feed and the magazine.",
+      "regions": "Regions",
+      "regionsHint": "Where you work or where you expect offers from."
+    },
+    "profile": {
+      "title": "Your public page",
+      "lede": "Decide what other participants see. The page is off until you turn it on.",
+      "preview": "Preview of the public page",
+      "previewPublic": "This is how others see you",
+      "previewHidden": "The page is hidden",
+      "previewRole": "Industry participant",
+      "publish": "Show my page in the People section",
+      "publishHint": "Name, role, topics and statuses. Contacts and workplace only if you decide so.",
+      "portrait": "Allow my portrait to be shown",
+      "portraitHint": "A photo appears only after upload and your consent. Initials are shown until then.",
+      "employer": "Show my workplace",
+      "employerHint": "The company name you gave. Without the company’s confirmation it is marked as claimed.",
+      "signals": "Your status",
+      "signalsHint": "A self-declared status, as in professional networks. It shows on the page and in filters.",
+      "portraitNote": "Portraits are shown only with consent. Initials are always the safe option.",
+      "later": "Set up later",
+      "finish": "Finish"
+    },
+    "done": {
+      "pageTitle": "Profile set up",
+      "title": "{name}, all set",
+      "ledeGood": "Your profile is complete and the workspace is tuned to your goals.",
+      "ledeMore": "You can start working right now and complete the profile later in the settings.",
+      "next": "Where to start",
+      "open": "Open",
+      "recMagazine": "Latest issue of the magazine",
+      "recMagazineBody": "Analyses, practice and the numbers of the week with quizzes.",
+      "recPeople": "People of the industry",
+      "recPeopleBody": "Professionals with the “open to work” and “hiring” statuses.",
+      "recCompanies": "Companies and projects",
+      "recCompaniesBody": "Verified records, requests and projects’ open needs.",
+      "recPublish": "Your first publication",
+      "recPublishBody": "An article or a project story in your own name.",
+      "academy": "Courses on your topics",
+      "academyBody": "Academy mini-courses with a Trustwork certificate on completion.",
+      "settings": "Change in settings",
+      "workspace": "Open the workspace"
+    }
+  }
+}

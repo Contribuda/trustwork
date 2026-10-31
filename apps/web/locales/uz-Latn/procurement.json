@@ -1,0 +1,71 @@
+{
+  "procurement": {
+    "title": "Xaridlar",
+    "lede": "Ehtiyojlar, yetkazib beruvchilarga soʻrovlar va takliflar — vakolatlaringiz doirasida.",
+    "createNeed": "Ehtiyoj yaratish",
+    "findSupplier": "Yetkazib beruvchi topish",
+    "empty": "Hozircha xaridlar yoʻq",
+    "emptyHint": "Ehtiyojni kompaniya nomidan yoki shaxsan oʻz loyihangiz uchun yuritish mumkin.",
+    "list": "Xaridlar roʻyxati",
+    "col": {
+      "title": "Ehtiyoj",
+      "kind": "Tarkib",
+      "version": "Versiya",
+      "quotes": "Takliflar",
+      "deadline": "Muddat",
+      "operator": "Masʼul",
+      "status": "Holat"
+    },
+    "versionShort": "{version}-versiya",
+    "flowsNote": "Ehtiyoj yaratish, takliflarni solishtirish va buyurtmalar keyingi bosqichda paydo boʻladi. Bu yerda roʻyxat huquqlaringiz doirasida koʻrsatilgan.",
+    "createDisabled": "Ehtiyoj yaratish keyingi bosqichda paydo boʻladi.",
+    "stages": "Xarid bosqichlari",
+    "stage": {
+      "draft": "Qoralamalar",
+      "open": "Soʻrov ochiq",
+      "compare": "Solishtirish va muzokaralar",
+      "order": "Buyurtma va bajarilish",
+      "done": "Yakunlangan",
+      "problem": "Nizolar va muddati oʻtganlar"
+    },
+    "noProject": "Loyihasiz",
+    "ownerPerson": "Shaxsiy xarid",
+    "ownerCompany": "Kompaniya nomidan",
+    "needsDecision": "Qaroringiz kerak: takliflar yigʻildi, shartlarni tanlang.",
+    "deadlineShort": "{date} gacha",
+    "stats": {
+      "decisions": "qaror kutmoqda",
+      "quotes": "taklif olindi",
+      "open": "ochiq soʻrov",
+      "nearest": "eng yaqin muddat"
+    },
+    "how": {
+      "title": "Xarid qanday kechadi",
+      "need": "Ehtiyojni tasvirlang: tarkib, hajm, hudud va muddat.",
+      "quotes": "Yetkazib beruvchilar soʻrovning aniq versiyasiga takliflar yuboradi.",
+      "compare": "Shartlarni solishtiring, savollar bering, eng yaxshisini tanlang.",
+      "order": "Buyurtma bering, yetkazib beruvchi qabul qilganini tasdiqlaydi.",
+      "accept": "Yetkazib berishni qabul qiling va yetkazib beruvchi haqida sharh qoldiring.",
+      "note": "Narxlar va byudjetlar saytda hech qachon eʼlon qilinmaydi."
+    },
+    "findHint": "Katalog, loyiha va sharhlarga ega tekshirilgan kompaniyalar."
+  },
+  "rfqStatus": {
+    "needDraft": "Ehtiyoj qoralamasi",
+    "clarifying": "Aniqlashtirish",
+    "published": "Soʻrov eʼlon qilingan",
+    "quotesCollected": "Takliflar yigʻildi",
+    "negotiating": "Muzokaralar",
+    "termsSelected": "Shartlar tanlangan",
+    "orderPlaced": "Buyurtma berilgan",
+    "supplierAccepted": "Buyurtmani yetkazib beruvchi qabul qildi",
+    "fulfilling": "Bajarilmoqda",
+    "partiallyAccepted": "Qisman qabul qilingan",
+    "accepted": "Qabul qilingan",
+    "reviewed": "Sharh qoldirilgan",
+    "disputed": "Nizo",
+    "closed": "Yopilgan",
+    "expired": "Muddati oʻtgan",
+    "cancelled": "Bekor qilingan"
+  }
+}

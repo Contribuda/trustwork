@@ -1,0 +1,71 @@
+{
+  "publications": {
+    "title": "Publications",
+    "lede": "Drafts, materials in review and published work, from you or from the company.",
+    "write": "Write",
+    "empty": "No publications yet",
+    "companyHint": "To publish on behalf of the company you need the publishing right in the company.",
+    "list": "Publication list",
+    "tabs": {
+      "all": "All",
+      "drafts": "Drafts",
+      "review": "In review",
+      "scheduled": "Scheduled",
+      "published": "Published",
+      "corrected": "Corrected",
+      "retracted": "Retracted"
+    },
+    "col": {
+      "title": "Title",
+      "format": "Format",
+      "author": "On behalf of",
+      "state": "State",
+      "updated": "Updated",
+      "shownIn": "Shown in"
+    },
+    "shownIn": {
+      "myWall": "My page",
+      "companyWall": "Company wall",
+      "issue": "Issue No. {number}",
+      "nowhere": "Nowhere"
+    },
+    "format": {
+      "news": "News",
+      "article": "Article",
+      "magazine_piece": "Magazine material",
+      "company_post": "Company post",
+      "personal_post": "Personal post"
+    },
+    "editorNote": "The material editor comes in the next stage.",
+    "createDisabled": "The material editor comes in the next stage.",
+    "emptyHint": "Drafts, materials in review and published work appear here.",
+    "openPublic": "Open",
+    "stats": {
+      "published": "published",
+      "pipeline": "in review and scheduled",
+      "drafts": "drafts",
+      "inIssues": "in magazine issues"
+    },
+    "how": {
+      "title": "A material’s path",
+      "draft": "Only you and co-authors see the draft.",
+      "review": "The editors check facts and layout.",
+      "publish": "The publication appears on your page, the company wall or in an issue.",
+      "correct": "Corrections keep the version history; a retraction stays in the archive."
+    },
+    "companyOk": "You have the right to publish on behalf of the company.",
+    "magazine": {
+      "title": "Write for the magazine",
+      "hint": "The editors accept case studies, analyses and columns from industry participants.",
+      "cta": "Magazine authors"
+    }
+  },
+  "pubState": {
+    "draft": "Draft",
+    "in_review": "In review",
+    "scheduled": "Scheduled for {date}",
+    "published": "Published",
+    "corrected": "Corrected",
+    "retracted": "Retracted"
+  }
+}

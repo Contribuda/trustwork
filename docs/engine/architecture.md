@@ -65,7 +65,7 @@ Every API shape lives in `packages/contracts` as a Zod `strictObject`; JSON Sche
 
 ## Front end conventions
 
-- Every visible string comes from locale dictionaries (`apps/web/app/_lib/locales/<locale>.json`, `packages/ui/locales/<locale>.json`); English is the reference key set; tests fail on missing keys and on placeholder text.
+- Every visible string comes from locale dictionaries (`apps/web/locales/<locale>/<namespace>.json`, one file per feature namespace, and `packages/ui/locales/<locale>.json`); English is the reference key set; tests fail on missing keys, missing namespace files and placeholder text. A page's browser payload carries only its route group's namespaces ([Namespaces](localization.md#namespaces)).
 - Dates, months, weekdays, time zones, numbers, money and file sizes come from `Intl` for the active locale.
 - Demo content resolves per string: the locale's override, then English, then the base text; tests ensure no Russian reaches readers of other languages.
 - Accessibility is tested with axe in Playwright; keyboard order, focus return and reduced motion are part of acceptance.

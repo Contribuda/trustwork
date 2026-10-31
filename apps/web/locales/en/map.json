@@ -1,0 +1,29 @@
+{
+  "map": {
+    "viewList": "List",
+    "viewMap": "Map",
+    "listLabel": "Results on the map",
+    "mapLabel": "Map of sites",
+    "inArea": "In this area",
+    "ofTotal": "of {total}",
+    "clearArea": "Whole map",
+    "empty": "Nothing in this area. Move the map or reset the area.",
+    "showOnMap": "Show on the map",
+    "loading": "Loading the map…",
+    "failed": "The map did not load.",
+    "toList": "Open the list",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "autoSearch": "Search as the map moves",
+    "searchHere": "Search this area",
+    "open": "Open",
+    "clusterTitle": "{count, plural, one {# site} other {# sites}}, press to zoom in",
+    "areaFilter": "Area on the map",
+    "legend": "Legend",
+    "legendOther": "Suspended or cancelled",
+    "onMap": "On the map",
+    "talk": "Agent",
+    "readiness": "Readiness {percent}%",
+    "participantsCount": "{count, plural, one {# participant} other {# participants}}"
+  }
+}

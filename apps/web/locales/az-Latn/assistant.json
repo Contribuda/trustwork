@@ -1,0 +1,68 @@
+{
+  "assistantPage": {
+    "lede": "Köməkçi birdir: bu səhifədəki və üzən pəncərədəki söhbət ortaqdır.",
+    "tabs": {
+      "conversation": "Söhbət",
+      "mandates": "Mandatlar",
+      "approvals": "Təsdiqlər",
+      "runs": "İşlər"
+    },
+    "suggestedStarts": "Haradan başlamalı",
+    "suggestion1": "Hansı şirkətlərin ventilyasiyalı fasadlar haqqında material dərc etdiyini soruşun.",
+    "suggestion2": "Təsvirdən ehtiyac qaralaması hazırlamağı xahiş edin.",
+    "suggestion3": "Bu həftə hansı layihə mərhələlərinin qərar tələb etdiyini öyrənin.",
+    "demoReply": "Bu demodur: köməkçi modelə qoşulmayıb. Mesajınız söhbətdə saxlanılır və eyni vəziyyət üzən pəncərədə və səhifədə görünür.",
+    "mandatesSummary": "Aktiv mandatlar",
+    "approvalsWaiting": "Qərar gözləyir",
+    "runsInProgress": "Davam edən işlər",
+    "noAuthorityNote": "Söhbətdəki mətn köməkçiyə səlahiyyət vermir. Səlahiyyət yalnız strukturlaşdırılmış mandatla müəyyən edilir.",
+    "approvalsDemoNote": "Demo: qərarlar göndərilmir və mandatları dəyişmir.",
+    "conversationKicker": "Söhbət",
+    "statsLabel": "Xülasə",
+    "howTitle": "Necə işləyir",
+    "how": {
+      "ask": "Soruşun: köməkçi platforma məlumatlarından cavab verir və mənbələri göstərir.",
+      "mandate": "Mandat nə edə biləcəyini və hansı hədlərdə edəcəyini müəyyən edir.",
+      "approve": "Hədlərdən kənar əməliyyatlar təsdiqinizi gözləyir.",
+      "trace": "Hər iş iz qoyur: nə edilib, nə alınmayıb, nə naməlumdur."
+    }
+  },
+  "mandate": {
+    "create": "Mandat yarat",
+    "empty": "Mandat yoxdur",
+    "action": "Əməliyyat",
+    "context": "Kontekst",
+    "limit": "Məbləğ limiti",
+    "validity": "Etibarlılıq müddəti",
+    "approvalPolicy": "Təsdiq",
+    "approval": {
+      "none": "Limitlər daxilində tələb olunmur",
+      "digest": "Hər əməliyyat təsdiq tələb edir",
+      "escalate": "Qərarı həmişə mənə ötür"
+    },
+    "version": "Versiya {version}",
+    "state": {
+      "active": "Aktiv",
+      "paused": "Dayandırılıb",
+      "revoked": "Ləğv edilib",
+      "expired": "Müddəti bitib"
+    },
+    "noAuthorityNote": "Söhbətdəki mətn köməkçiyə səlahiyyət vermir. Səlahiyyət yalnız burada müəyyən edilir.",
+    "formNote": "Mandat forması növbəti mərhələdə gələcək."
+  },
+  "approval": {
+    "title": "Əməliyyatın təsdiqi",
+    "empty": "Qərar tələb olunmur",
+    "approve": "Təsdiqlə",
+    "reject": "Rədd et",
+    "expiresIn": "{date}-dək etibarlıdır",
+    "bindsDigest": "Təsdiq yalnız bu dəqiq şərtlərə aiddir.",
+    "digest": "Əməliyyatın izi",
+    "invalidated": "Şərtlər dəyişib; yeni təsdiq istəyin"
+  },
+  "runs": {
+    "empty": "Hələ iş yoxdur",
+    "log": "Əməliyyat jurnalı",
+    "outcomeUnknownExplain": "Xarici sistem cavab vermədi. Nəticəni tutuşdururuq; əməliyyat avtomatik təkrarlanmır."
+  }
+}

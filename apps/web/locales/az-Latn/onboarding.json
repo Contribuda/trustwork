@@ -1,0 +1,178 @@
+{
+  "onboarding2": {
+    "accountCreated": "Hesab yaradıldı",
+    "toSite": "Sayta",
+    "capabilities": {
+      "title": "Platformada sizi nə maraqlandırır?",
+      "subtitle": "İş sahəsini tapşırıqlarınıza uyğunlaşdıracağıq."
+    },
+    "buy": {
+      "description": "Təchizatçı axtarıram, təklifləri müqayisə edirəm və satınalmaları təşkil edirəm.",
+      "tags": "Təchizatçılar · Satınalmalar",
+      "title": "Adətən nə alırsınız?",
+      "subtitle": "Maraqlarınıza uyğun şirkət və materialları seçəcəyik."
+    },
+    "sell": {
+      "description": "Mal, iş və ya xidmət təklif edirəm və müştəri tapıram.",
+      "tags": "Şirkət · Təkliflər",
+      "title": "Nə təklif edirsiniz?",
+      "subtitle": "Profilinizə uyğun sorğu və layihələri göstərəcəyik."
+    },
+    "industry": {
+      "description": "Oxuyuram, məqalə və xəbər dərc edirəm, təcrübə paylaşıram və insanlarla tanış oluram.",
+      "tags": "Nəşrlər · İcma",
+      "title": "Hansı mövzular sizi maraqlandırır?",
+      "subtitle": "Mövzularınız üzrə xəbər və məqalələri toplayacağıq."
+    },
+    "save": "Saxla",
+    "saveError": "Saxlamaq mümkün olmadı. Davam edib buna sonra qayıda bilərsiniz.",
+    "continueWithoutSaving": "Saxlamadan davam et",
+    "multiDirectionsHint": "Bir neçə istiqamət seçə bilərsiniz.",
+    "directions": "İstiqamətlər",
+    "directionsSearch": "İstiqamət, məhsul və ya xidmət tapın",
+    "regions": {
+      "buy": "Təchizat və ya işlər harada lazımdır?",
+      "sell": "Harada işləyirsiniz?",
+      "industry": "Hansı regionlar sizi maraqlandırır?",
+      "placeholder": "Regionları seçin",
+      "hint": "Bir neçə region seçə və ya məhdudiyyətsiz saxlaya bilərsiniz.",
+      "loading": "Regionlar yüklənir…"
+    },
+    "optional": "Könüllü",
+    "changeLater": "Maraqları sonra dəyişmək olar.",
+    "setupLater": "Sonra quraşdır",
+    "taxonomyError": "Siyahını yükləmək mümkün olmadı. Sonra quraşdıra bilərsiniz.",
+    "noMatches": "Heç nə tapılmadı. Seçmədən davam edə bilərsiniz.",
+    "demoNote": "Demo: seçim serverdə saxlanılmır.",
+    "directionsCount": "{count, plural, one {# istiqamət} other {# istiqamət}}",
+    "stepCapabilities": "Maraqlar",
+    "stepInterests": "İstiqamətlər",
+    "stepsLabel": "Quraşdırma addımları"
+  },
+  "onboarding3": {
+    "pageTitle": "Profilin quraşdırılması",
+    "steps": {
+      "who": "Kimsiniz",
+      "goals": "Məqsədlər",
+      "interests": "Maraqlar",
+      "profile": "Səhifə"
+    },
+    "completeness": "Profil {percent}% doldurulub",
+    "completenessTitle": "Profilin dolğunluğu",
+    "completenessHint": "Hər addım könüllüdür",
+    "who": {
+      "title": "{name}, sahədə kimsiniz?",
+      "lede": "İşiniz üçün material, insan və kurslar seçəcəyik. Cavabları istənilən vaxt dəyişə bilərsiniz.",
+      "field": "Fəaliyyət sahəsi",
+      "fieldHint": "Rolunuza ən yaxın bir variant.",
+      "employment": "İndi necə işləyirsiniz",
+      "company": "Şirkətin adı",
+      "companyHint": "Yalnız ad. Bu addımda qeydiyyat məlumatları və ya təsdiqlər lazım deyil.",
+      "companyPlaceholder": "Məsələn, “Fasad-Nümunə”",
+      "headline": "Bir sətirdə kimsiniz",
+      "headlineHint": "İctimai səhifədə və axtarışda belə görünürsünüz.",
+      "headlinePlaceholder": "Məsələn: tikinti nəzarəti mühəndisi, fasadlar və şüşələmə"
+    },
+    "employment": {
+      "company": "Şirkətdə işləyirəm",
+      "independent": "Müstəqil peşəkar",
+      "seeking": "İş və ya sifariş axtarıram",
+      "student": "Oxuyuram və ya başlayıram"
+    },
+    "employmentHint": {
+      "company": "Əməkdaş, rəhbər və ya sahib.",
+      "independent": "Özəl təcrübə, briqada və ya məsləhət.",
+      "seeking": "İnsan lazım olan vakansiya və layihələri göstərəcəyik.",
+      "student": "Başlamaq üçün kurs və materiallar seçəcəyik."
+    },
+    "goals": {
+      "title": "Platformada nə etmək istəyirsiniz?",
+      "lede": "Bir neçə məqsəd seçə bilərsiniz. Onlar iş sahəsinin nəyi göstərəcəyini müəyyən edir.",
+      "none": "Heç nə seçməmək də olar; sonra tənzimləyərik."
+    },
+    "goal": {
+      "learn": {
+        "title": "Oxumaq və öyrənmək",
+        "desc": "Jurnal, təhlillər, Akademiyanın mini-kursları və sertifikatlar.",
+        "tags": "Jurnal · Kurslar"
+      },
+      "work": {
+        "title": "İş və sifariş tapmaq",
+        "desc": "Şirkət vakansiyaları, açıq rollu layihələr, “işə açığam” statusu.",
+        "tags": "Vakansiyalar · Layihələr"
+      },
+      "hire": {
+        "title": "İşə götürmək və tərəfdaş tapmaq",
+        "desc": "Təsdiqlənmiş təcrübəli insanlar, briqadalar, podratçılar.",
+        "tags": "İnsanlar · Tərəfdaşlar"
+      },
+      "publish": {
+        "title": "Təcrübəni dərc etmək",
+        "desc": "Öz adınızdan məqalələr, layihə hekayələri və qeydlər.",
+        "tags": "Nəşrlər"
+      },
+      "projects": {
+        "title": "Layihələri idarə etmək",
+        "desc": "Yol xəritəsi, iştirakçılar, sorğular və obyekt materialları.",
+        "tags": "Layihələr"
+      },
+      "buy": {
+        "title": "Almaq",
+        "desc": "Təchizatçılara sorğular, təkliflərin müqayisəsi, satınalmalar.",
+        "tags": "Təchizatçılar · Satınalmalar"
+      },
+      "sell": {
+        "title": "Təchiz etmək",
+        "desc": "Şirkətiniz üçün kataloq, təkliflər və müştərilər.",
+        "tags": "Şirkət · Təkliflər"
+      }
+    },
+    "interests": {
+      "title": "Mövzular, istiqamətlər və regionlar",
+      "lede": "Lenti, jurnalı və tövsiyələri belə formalaşdırırıq. Hər şey könüllüdür.",
+      "topics": "Oxumaq üçün mövzular",
+      "topicsHint": "Lentdə və jurnalda nə görmək istəyirsiniz.",
+      "regions": "Regionlar",
+      "regionsHint": "Harada işləyirsiniz və ya haradan təklif gözləyirsiniz."
+    },
+    "profile": {
+      "title": "Sizin ictimai səhifəniz",
+      "lede": "Digər iştirakçıların nə görəcəyinə qərar verin. Səhifə siz yandırana qədər söndürülüdür.",
+      "preview": "İctimai səhifəyə önbaxış",
+      "previewPublic": "Başqaları sizi belə görür",
+      "previewHidden": "Səhifə gizlidir",
+      "previewRole": "Sahə iştirakçısı",
+      "publish": "Səhifəmi “İnsanlar” bölməsində göstər",
+      "publishHint": "Ad, rol, mövzular və statuslar. Əlaqə və iş yeri yalnız siz qərar versəniz.",
+      "portrait": "Portretimin göstərilməsinə icazə ver",
+      "portraitHint": "Foto yalnız yükləndikdən və razılığınızdan sonra görünür. O vaxta qədər baş hərflər göstərilir.",
+      "employer": "İş yerimi göstər",
+      "employerHint": "Göstərdiyiniz şirkətin adı. Şirkətin təsdiqi olmadan o, bəyan edilmiş kimi qeyd olunur.",
+      "signals": "Sizin statusunuz",
+      "signalsHint": "Peşəkar şəbəkələrdəki kimi öz bəyan etdiyiniz status. Səhifədə və filtrlərdə görünür.",
+      "portraitNote": "Portretlər yalnız razılıqla göstərilir. Baş hərflər həmişə təhlükəsiz seçimdir.",
+      "later": "Sonra quraşdır",
+      "finish": "Bitir"
+    },
+    "done": {
+      "pageTitle": "Profil quraşdırıldı",
+      "title": "{name}, hər şey hazırdır",
+      "ledeGood": "Profiliniz doldurulub və iş sahəsi məqsədlərinizə uyğunlaşdırılıb.",
+      "ledeMore": "İşə elə indi başlaya və profili sonra parametrlərdə tamamlaya bilərsiniz.",
+      "next": "Haradan başlamalı",
+      "open": "Aç",
+      "recMagazine": "Jurnalın son buraxılışı",
+      "recMagazineBody": "Təhlillər, təcrübə və həftənin rəqəmləri testlərlə.",
+      "recPeople": "Sahənin insanları",
+      "recPeopleBody": "“İşə açığam” və “işə götürürəm” statuslu peşəkarlar.",
+      "recCompanies": "Şirkətlər və layihələr",
+      "recCompaniesBody": "Yoxlanılmış qeydlər, sorğular və layihələrin açıq ehtiyacları.",
+      "recPublish": "İlk nəşriniz",
+      "recPublishBody": "Öz adınızdan məqalə və ya layihə hekayəsi.",
+      "academy": "Mövzularınız üzrə kurslar",
+      "academyBody": "Bitirdikdə Trustwork sertifikatı verilən Akademiya mini-kursları.",
+      "settings": "Parametrlərdə dəyiş",
+      "workspace": "İş sahəsini aç"
+    }
+  }
+}

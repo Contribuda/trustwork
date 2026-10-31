@@ -1,0 +1,84 @@
+{
+  "settings": {
+    "title": "Sozlamalar",
+    "lede": "Shaxsiy sozlamalar hisob bilan birga; kompaniya sozlamalari — «Kompaniya» boʻlimida.",
+    "nav": {
+      "label": "Sozlamalar",
+      "account": "Hisob",
+      "security": "Xavfsizlik va seanslar",
+      "preferences": "Afzalliklar",
+      "channels": "Ulanishlar",
+      "billing": "Toʻlov va tariflar"
+    },
+    "account": {
+      "name": "Ism",
+      "email": "Kirish pochtasi",
+      "changeEmail": "Pochtani oʻzgartirish",
+      "deleteAccount": "Hisobni oʻchirish",
+      "language": "Interfeys tili",
+      "languageLabel": "Interfeys tili",
+      "languageValue": "Oʻzbekcha",
+      "demoNote": "Namoyish: pochtani oʻzgartirish va hisobni oʻchirish server bilan birga paydo boʻladi."
+    },
+    "security": {
+      "changePassword": "Parolni oʻzgartirish",
+      "providers": "Kirish usullari",
+      "password": "Parol",
+      "link": "Bogʻlash",
+      "unlink": "Uzish",
+      "notLinked": "Bogʻlanmagan",
+      "sessions": "Faol seanslar",
+      "currentSession": "Joriy seans",
+      "endSession": "Tugatish",
+      "endOthers": "Boshqa barcha seanslarni tugatish",
+      "col": {
+        "device": "Qurilma",
+        "location": "Joylashuv",
+        "lastSeen": "Soʻnggi faollik"
+      },
+      "demoSession": "Namoyish: seans yoʻq, roʻyxat namuna sifatida koʻrsatilgan.",
+      "currentPassword": "Joriy parol",
+      "newPassword": "Yangi parol",
+      "sessionsCaption": "Seanslar roʻyxati",
+      "google": "Google",
+      "lastSeenAt": "Faollik: {date}",
+      "apple": "Apple"
+    },
+    "preferences": {
+      "interests": "Qiziqishlar",
+      "sections": "Menyu boʻlimlari",
+      "pinProcurement": "Menyuda «Xaridlar»ni koʻrsatish",
+      "pinSales": "Menyuda «Sotuvlar»ni koʻrsatish",
+      "pinNote": "Yashirilgan boʻlim «Yana» ga oʻtadi va mavjud boʻlib qoladi.",
+      "notifications": "Bildirishnomalar",
+      "notify": {
+        "decisions": "Qarorlar va kelishuvlar",
+        "runs": "Yordamchi ishga tushirishlari",
+        "publications": "Nashrlar",
+        "magazine": "Jurnalning yangi soni"
+      },
+      "assistantFocus": "Yordamchi oynasi ochilganda soʻnggi xabarga oʻtish",
+      "demoNote": "Namoyish: sozlamalar faqat shu brauzer oynasida qoʻllanadi.",
+      "interestsHint": "Mavzular, maqsadlar va hududlarni soʻrovnomada oʻzgartirish mumkin."
+    },
+    "channels": {
+      "empty": "Ulanishlar yoʻq",
+      "connect": "Ulash",
+      "scopes": "Ruxsatlar",
+      "revoke": "Bekor qilish",
+      "untrustedNote": "Ulanishlardan kelgan xatlar va fayllar tekshirilmagan maʼlumot hisoblanadi va yordamchiga vakolat bermaydi."
+    },
+    "billing": {
+      "noOffers": "Tariflar hali eʼlon qilinmagan.",
+      "currentPlan": "Joriy reja",
+      "free": "Tanlanmagan",
+      "platformBudget": "Pullik xizmatlar byudjeti",
+      "acceptedOffers": "Qabul qilingan shartlar",
+      "noneAccepted": "Qabul qilingan shartlar yoʻq",
+      "companyBilling": "Kompaniya toʻlovi va tariflari",
+      "invoices": "Hisob-fakturalar",
+      "noInvoices": "Hisob-fakturalar yoʻq"
+    },
+    "profileLink": "Profil va ochiq sahifa"
+  }
+}

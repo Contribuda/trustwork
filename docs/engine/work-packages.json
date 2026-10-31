@@ -893,7 +893,7 @@
       "id": "INTL-004",
       "title": "Locale files per feature namespace",
       "area": "international",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "INTL-003"
       ],

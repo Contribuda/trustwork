@@ -4,14 +4,15 @@ import { PublicShell, type ShellAccount } from '@/components/public/PublicShell'
 import { HeaderLocaleSwitcher } from '@/components/locale/LocaleControls';
 import { data } from '@/app/_lib/data';
 import { PERSONAS, defaultPersona, type Persona } from '@/app/_lib/persona';
-import { primeLocale } from '@/app/_lib/locale';
+import { clientLayers, primeLocale } from '@/app/_lib/locale';
+import { LocaleNamespaces } from '@/components/locale/LocaleProvider';
 
 /**
  * Public resource shell. Rendered per request (see root layout) so the demo persona from the query is
  * known during server rendering; accounts per persona are display names only.
  */
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  await primeLocale();
+  const active = await primeLocale();
   const fallback = defaultPersona();
   const accounts = Object.fromEntries(
     await Promise.all(
@@ -22,8 +23,10 @@ export default async function PublicLayout({ children }: { children: ReactNode }
     ),
   ) as Record<Persona, ShellAccount>;
   return (
-    <PublicShell accounts={accounts} defaultPersona={fallback} localeControl={<HeaderLocaleSwitcher />}>
-      {children}
-    </PublicShell>
+    <LocaleNamespaces {...clientLayers(active.locale, 'public')}>
+      <PublicShell accounts={accounts} defaultPersona={fallback} localeControl={<HeaderLocaleSwitcher />}>
+        {children}
+      </PublicShell>
+    </LocaleNamespaces>
   );
 }

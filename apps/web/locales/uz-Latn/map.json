@@ -1,0 +1,29 @@
+{
+  "map": {
+    "viewList": "Roʻyxat",
+    "viewMap": "Xarita",
+    "listLabel": "Xaritadagi natijalar",
+    "mapLabel": "Obyektlar xaritasi",
+    "inArea": "Bu hududda",
+    "ofTotal": "{total} dan",
+    "clearArea": "Butun xarita",
+    "empty": "Bu hududda hech narsa yoʻq. Xaritani suring yoki hududni tiklang.",
+    "showOnMap": "Xaritada koʻrsatish",
+    "loading": "Xarita yuklanmoqda…",
+    "failed": "Xarita yuklanmadi.",
+    "toList": "Roʻyxatni ochish",
+    "zoomIn": "Yaqinlashtirish",
+    "zoomOut": "Uzoqlashtirish",
+    "autoSearch": "Xarita surilganda qidirish",
+    "searchHere": "Bu hududda qidirish",
+    "open": "Ochish",
+    "clusterTitle": "{count, plural, one {# obyekt} other {# obyekt}}, yaqinlashtirish uchun bosing",
+    "areaFilter": "Xaritadagi hudud",
+    "legend": "Belgilar",
+    "legendOther": "Toʻxtatilgan yoki bekor qilingan",
+    "onMap": "Xaritada",
+    "talk": "Agent",
+    "readiness": "Tayyorlik {percent}%",
+    "participantsCount": "{count, plural, one {# ishtirokchi} other {# ishtirokchi}}"
+  }
+}

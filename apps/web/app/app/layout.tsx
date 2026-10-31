@@ -7,7 +7,8 @@ import { HeaderLocaleSwitcher } from '@/components/locale/LocaleControls';
 import { data } from '@/app/_lib/data';
 import { PERSONAS, defaultPersona, type Persona } from '@/app/_lib/persona';
 import { t } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
+import { clientLayers, primeLocale } from '@/app/_lib/locale';
+import { LocaleNamespaces } from '@/components/locale/LocaleProvider';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
@@ -20,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * with `requirePrincipal` and redirect anonymous visitors to `/login?next=`.
  */
 export default async function WorkspaceLayout({ children }: { children: ReactNode }) {
-  await primeLocale();
+  const active = await primeLocale();
   const fallback = defaultPersona();
   const shells: Partial<Record<Persona, ShellData>> = {};
   for (const persona of PERSONAS) {
@@ -36,8 +37,10 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
     };
   }
   return (
-    <WorkspaceShell shells={shells} defaultPersona={fallback} localeControl={<HeaderLocaleSwitcher />}>
-      {children}
-    </WorkspaceShell>
+    <LocaleNamespaces {...clientLayers(active.locale, 'workspace')}>
+      <WorkspaceShell shells={shells} defaultPersona={fallback} localeControl={<HeaderLocaleSwitcher />}>
+        {children}
+      </WorkspaceShell>
+    </LocaleNamespaces>
   );
 }

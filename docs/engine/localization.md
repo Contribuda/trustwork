@@ -86,26 +86,58 @@ Russia is not a market and is never offered; Russian remains available as a lang
 
 ## How strings are resolved
 
-- **Interface**: `apps/web/app/_lib/locales/<tag>.json` and `packages/ui/locales/<tag>.json`; English is the reference; tests fail on missing keys and on placeholder words.
+- **Interface**: the application dictionaries are `apps/web/locales/<tag>/<namespace>.json` (one directory per language, one file per feature namespace, see [Namespaces](#namespaces)); the design system's dictionary is `packages/ui/locales/<tag>.json`. English is the reference; tests fail on missing keys, missing namespace files and placeholder words.
 - **Demo content**: base fixtures plus `apps/web/fixtures/i18n/<tag>.json` overrides addressed by JSON pointer; resolution per string is the locale, then English, then base. Tests require English to cover every base string and every other language to cover every English override.
 - **Real content**: publications have an original language and linked translations ([Publishing](publishing.md#multilingual-publishing-proposed)).
 - **Formats**: dates, times, months, weekdays, time-zone names, numbers, currencies and units come from `Intl`, with a tag derived from the language and the country: English with the United States gives `en-US` (month before day, `$1,234.50`), English with the United Kingdom `en-GB`, Spanish with the United States `es-US`, Uzbek with Uzbekistan `uz-Latn-UZ`. A pair `Intl` has no data for uses the language's own formats; for English that is international English (`en-001`, day before month). See `intlTagFor` in `packages/ui/src/i18n/index.ts`.
 - **Plurals**: a counted word is one ICU message, `{count, plural, one {# project} other {# projects}}`; the category comes from `Intl.PluralRules` for the active language (English one/other, Russian one/few/many/other). Never write a plural helper or split a word into `…One`/`…Few`/`…Many` keys; `tests/web/i18n/plural-lint.test.ts` rejects both.
-- **One language per request**: the server resolves the request's message layers (brand overlay, the app dictionary, the English keys it lacks, the design-system dictionary) and the root layout hands exactly those to client components. During server rendering they live in a React context (`LocaleScope` in `packages/i18n-runtime`), on the server-component side in a per-request scope, and route handlers wrap themselves in `withRequestLocale`; no store is shared between requests (`tests/web/i18n/concurrent-render.test.ts`, `concurrent-locales.spec.ts`). Client bundles import no dictionary except the design system's English reference (`locale-weight.spec.ts`).
+- **One language per request, only the namespaces a route uses**: the server resolves the request's message layers (brand overlay, every application namespace with the English keys it lacks, the design-system dictionary) for server components. Client components receive less: the root layout hands over the brand overlay, the root namespaces and the design-system dictionary, and each route group's layout adds the namespaces its client components use (`apps/web/locales/client-namespaces.json`, checked by `tests/web/i18n/client-namespaces.test.ts`). During server rendering they live in a React context (`LocaleScope` in `packages/i18n-runtime`), on the server-component side in a per-request scope, and route handlers wrap themselves in `withRequestLocale`; no store is shared between requests (`tests/web/i18n/concurrent-render.test.ts`, `concurrent-locales.spec.ts`). Client bundles import no dictionary except the design system's English reference, and a page carries only its route group's namespaces (`locale-weight.spec.ts`).
 - **Brand**: Trustwork in every language; only the Russian interface shows a Russian-language name and wordmark, defined in `apps/web/brand` (ADR 010 decision 14). The three-squares mark is shared.
 
 Right-to-left scripts are not supported yet (planned: INTL-005), and Chinese, Japanese and Devanagari typography needs INTL-006 before LANG-ZH, LANG-JA and LANG-HI.
 
+## Namespaces
+
+Application strings are split by feature: `apps/web/locales/<tag>/<namespace>.json`, one directory per language, one file per namespace (ADR 012 decision 16). A namespace file holds whole top-level keys (`companies`, `companyPage` …); the key paths used in code (`t('companyPage.ask')`) do not mention the namespace.
+
+| Namespace | Top-level keys |
+|---|---|
+| `core` | `error`, `locale`, `shell2`, `taxonomy`, `signals`, `role`, `unitLabel` |
+| `demo` | `demo` |
+| `auth` | `auth` |
+| `public` | `publicPages`, `search`, `status`, `provenance`, `reputation`, `sr`, `detail` |
+| `home` | `home` |
+| `editorial` | `news`, `correction`, `articles` |
+| `magazine` | `magazine`, `reader`, `archive` |
+| `companies` | `companies`, `companyPage` |
+| `people` | `people`, `personPage` |
+| `projects` | `projects`, `projectStatus`, `updateType`, `milestone`, `projectPage` |
+| `events` | `events` |
+| `map` | `map` |
+| `onboarding` | `onboarding2`, `onboarding3` |
+| `workspace` | `overview`, `ws`, `me`, `company`, `projectsWs`, `notifications` |
+| `settings` | `settings` |
+| `procurement` | `procurement`, `rfqStatus` |
+| `sales` | `sales`, `leadStatus`, `leadSource` |
+| `publishing` | `publications`, `pubState` |
+| `assistant` | `assistantPage`, `mandate`, `approval`, `runs` |
+
+**The rule for features.** A feature adds `apps/web/locales/<tag>/<feature>.json` in every engine language, with new top-level keys of its own, and never edits another feature's file. Besides the dictionary files it adds one line to `apps/web/locales/types.ts` (the key types of `t()`) and, if its client components look strings up, its namespace to the route groups in `apps/web/locales/client-namespaces.json`; `npm test` names the exact groups when that list is stale. Shared vocabulary stays in `core` and changes through its own review.
+
+**Checks.** `tests/web/locales.test.ts` lists the directories: every language must have every namespace file of `en/` (a missing file fails, even for a language that falls back to English for most keys: it then holds `{}` or only what is translated), a top-level key may live in one namespace only and in the same namespace in every language, and nothing but `<tag>.meta.json` (review status, INTL-007), `client-namespaces.json` and `types.ts` may sit next to the language directories. `tests/web/locale-leak.spec.ts` and `tests/web/i18n/page-text.spec.ts` render every page in every language directory they find.
+
+**Server and browser.** The server reads the files once per process (restart after adding a language or namespace). Server components resolve against every namespace; the browser receives only the namespaces of its route group, so a feature's strings weigh nothing on pages that do not use them.
+
 ## Adding a language
 
-1. Copy `en.json` in both dictionary folders to `<tag>.json` and translate every value. Keep ICU plural forms correct for your language (the categories `Intl.PluralRules` reports for it).
-2. Add demo content overrides in `apps/web/fixtures/i18n/<tag>.json` (optional but recommended).
-3. Add the tag to the relevant country pack's `locales`, or to a new pack.
-4. Add the language name to the switcher and, if you want a localized wordmark, the lettering to the brand generator.
-5. Run `npm run check`; the locale tests list anything missing.
-6. Label the translation honestly: a machine-drafted or AI-assisted translation is a *machine draft* until a person reviews it; add the language to the table above with its review status.
+Adding a language is a data-only change: no TypeScript file changes. Use the BCP 47 tag with a script subtag where the language is written in more than one script (`uz-Latn`, `az-Latn`, `zh-Hans`) and no region (`es`, not `es-US`: formats come from the visitor's country). Spanish (LANG-ES) is the next language and the worked example.
 
-Once INTL-004 is done, dictionaries move to `apps/web/locales/<tag>/<namespace>.json`, and a new language follows the shape of the LANG packages (LANG-ES, LANG-PT …).
+1. **Application dictionary**: copy `apps/web/locales/en/` to `apps/web/locales/<tag>/` (for example `apps/web/locales/es/`) and translate every value of every namespace file. Keep every file, even one you have not translated yet: delete the keys you have not translated (they fall back to English key by key), leaving `{}` at worst. Keep ICU plural forms correct for your language (the categories `Intl.PluralRules` reports for it).
+2. **Design-system dictionary**: copy `packages/ui/locales/en.json` to `packages/ui/locales/<tag>.json` and translate it. The web server registers any design-system dictionary it finds there.
+3. **Offer the language**: add the tag to `locales` in the country packs that should suggest it (`packages/country-packs/packs/<code>.json`, data; for Spanish the US pack that INTL-US adds). Every language a pack lists can be chosen in every country. The language picker shows the language's own name from `Intl.DisplayNames` (`español`); until CFG-001 replaces pack lists with deployment configuration, a language that no pack lists is not offered.
+4. **Demo content** (optional but recommended): overrides in `apps/web/fixtures/i18n/<tag>.json`. Until CFG-001 the fixture store still registers override files by name in `apps/web/app/_lib/data/fixtures.ts`; that is the one code line left for a language with demo content.
+5. **Review status**: once INTL-007 is done, add `apps/web/locales/<tag>.meta.json` next to the directory with the honest status (a machine-drafted or AI-assisted translation is a *machine draft* until a named person reviews it). Until then, add the language to the table above with its review status.
+6. **Check**: `npm run check`; the locale tests list every missing namespace file, key or placeholder, and the leak and page-text browser suites pick the new directory up by themselves. Scripts that `Intl` and Golos Text do not cover need fonts first (INTL-006) and right-to-left languages need INTL-005.
 
 ## Adding a country
 

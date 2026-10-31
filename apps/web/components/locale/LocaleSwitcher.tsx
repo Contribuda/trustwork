@@ -13,8 +13,16 @@ export type SwitcherCountry = { code: string; name: string; featured: boolean; d
 export type SwitcherLanguage = { tag: string; partial: boolean };
 
 const LOCALE_NAMES: Record<string, string> = { en: 'English', ru: 'Русский', 'uz-Latn': 'Oʻzbekcha', ka: 'ქართული', hy: 'Հայերեն', 'az-Latn': 'Azərbaycanca' };
+/** A language's own name; a language added as data only (INTL-004) gets its name from `Intl`. */
 export function localeName(tag: string): string {
-  return LOCALE_NAMES[tag] ?? tag;
+  const known = LOCALE_NAMES[tag];
+  if (known) return known;
+  try {
+    const name = new Intl.DisplayNames([tag], { type: 'language' }).of(tag);
+    return name ? name.charAt(0).toLocaleUpperCase(tag) + name.slice(1) : tag;
+  } catch {
+    return tag;
+  }
 }
 
 /** Native `<select>` over every non-featured country: accessible, searchable by typing, no extra script. */

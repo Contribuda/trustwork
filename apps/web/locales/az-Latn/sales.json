@@ -1,0 +1,49 @@
+{
+  "sales": {
+    "title": "Satışlar",
+    "lede": "Alıcıların sorğuları, təklifləriniz və şirkət kataloqu.",
+    "catalogue": "Mal, iş və xidmətlər kataloqu",
+    "leads": "Sorğular",
+    "empty": "Hələ sorğu yoxdur",
+    "emptyHint": "Şirkətlərin dərc edilmiş ehtiyacları saytın “Layihələr” bölməsində əlçatandır.",
+    "fillCatalogue": "Kataloqu doldur",
+    "list": "Sorğu siyahısı",
+    "col": {
+      "buyer": "Alıcı",
+      "request": "Sorğu",
+      "source": "Mənbə",
+      "deadline": "Müddət",
+      "status": "Status",
+      "version": "Təklif versiyası"
+    },
+    "noCompanyTitle": "Satışlar şirkət adından aparılır",
+    "noCompanyBody": "Sorğulara cavab vermək və kataloq aparmaq üçün şirkət və sövdələşmə hüququ lazımdır. Şəxsi kataloq bu mərhələnin hissəsi deyil.",
+    "flowsNote": "Təklif redaktoru, versiyalar və sifarişlərin qəbulu növbəti mərhələdə gələcək.",
+    "quoteVersion": "Təklif, versiya {version}",
+    "noQuote": "Təklif hələ göndərilməyib",
+    "needsDecision": "Qərarınız lazımdır: alıcı şərtləri seçib, sifarişi qəbul edin və ya rədd edin.",
+    "stats": {
+      "decisions": "qərar gözləyir",
+      "active": "davam edir",
+      "won": "qəbul edilmiş sifariş"
+    },
+    "catalogueHint": "Doldurulmuş mal, iş və xidmətlər kataloqu alıcıların sorğularını gətirir.",
+    "openNeeds": "Açıq ehtiyaclar",
+    "openNeedsHint": "Şirkətlər ehtiyacları layihələrdə dərc edir: şirkətinizin təklifi ilə cavab verə bilərsiniz."
+  },
+  "leadStatus": {
+    "new": "Yeni",
+    "drafting": "Təklif hazırlanır",
+    "sent": "Göndərilib",
+    "negotiating": "Danışıqlar",
+    "won": "Sifariş qəbul edilib",
+    "lost": "Alıcı başqa təchizatçı seçdi",
+    "expired": "Müddəti bitib"
+  },
+  "leadSource": {
+    "invitation": "Dəvət",
+    "openNeed": "Açıq ehtiyac",
+    "direct": "Birbaşa sorğu",
+    "email": "Məktubdan"
+  }
+}

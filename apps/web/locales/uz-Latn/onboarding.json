@@ -1,0 +1,178 @@
+{
+  "onboarding2": {
+    "accountCreated": "Hisob yaratildi",
+    "toSite": "Saytga",
+    "capabilities": {
+      "title": "Platformada sizni nima qiziqtiradi?",
+      "subtitle": "Ish maydonini vazifalaringizga moslaymiz."
+    },
+    "buy": {
+      "description": "Yetkazib beruvchi izlayman, takliflarni solishtiraman va xaridlarni tashkil qilaman.",
+      "tags": "Yetkazib beruvchilar · Xaridlar",
+      "title": "Odatda nima xarid qilasiz?",
+      "subtitle": "Qiziqishlaringiz boʻyicha kompaniya va materiallarni tanlaymiz."
+    },
+    "sell": {
+      "description": "Tovar, ish yoki xizmat taklif qilaman va mijozlar topaman.",
+      "tags": "Kompaniya · Takliflar",
+      "title": "Nima taklif qilasiz?",
+      "subtitle": "Profilingiz boʻyicha soʻrov va loyihalarni koʻrsatamiz."
+    },
+    "industry": {
+      "description": "Oʻqiyman, maqola va yangiliklar eʼlon qilaman, tajriba ulashaman va odamlar bilan tanishaman.",
+      "tags": "Nashrlar · Jamoa",
+      "title": "Qaysi mavzular sizni qiziqtiradi?",
+      "subtitle": "Mavzularingiz boʻyicha yangiliklar va maqolalarni yigʻamiz."
+    },
+    "save": "Saqlash",
+    "saveError": "Saqlab boʻlmadi. Davom etib, bunga keyinroq qaytish mumkin.",
+    "continueWithoutSaving": "Saqlamasdan davom etish",
+    "multiDirectionsHint": "Bir nechta yoʻnalishni tanlash mumkin.",
+    "directions": "Yoʻnalishlar",
+    "directionsSearch": "Yoʻnalish, tovar yoki xizmatni topish",
+    "regions": {
+      "buy": "Yetkazib berish yoki ishlar qayerda kerak?",
+      "sell": "Qayerda ishlaysiz?",
+      "industry": "Qaysi hududlar sizni qiziqtiradi?",
+      "placeholder": "Hududlarni tanlang",
+      "hint": "Bir nechta hudud koʻrsatish yoki cheklovsiz qoldirish mumkin.",
+      "loading": "Hududlar yuklanmoqda…"
+    },
+    "optional": "Ixtiyoriy",
+    "changeLater": "Qiziqishlarni keyinroq oʻzgartirish mumkin.",
+    "setupLater": "Keyinroq sozlayman",
+    "taxonomyError": "Roʻyxatni yuklab boʻlmadi. Keyinroq sozlash mumkin.",
+    "noMatches": "Hech narsa topilmadi. Tanlovsiz davom etish mumkin.",
+    "demoNote": "Namoyish: tanlov serverda saqlanmaydi.",
+    "directionsCount": "{count, plural, one {# yoʻnalish} other {# yoʻnalish}}",
+    "stepCapabilities": "Nima qiziqtiradi",
+    "stepInterests": "Yoʻnalishlar",
+    "stepsLabel": "Sozlash qadamlari"
+  },
+  "onboarding3": {
+    "pageTitle": "Profilni sozlash",
+    "steps": {
+      "who": "Siz kimsiz",
+      "goals": "Maqsadlar",
+      "interests": "Qiziqishlar",
+      "profile": "Sahifa"
+    },
+    "completeness": "Profil {percent}% toʻldirilgan",
+    "completenessTitle": "Profil toʻliqligi",
+    "completenessHint": "Barcha qadamlar ixtiyoriy",
+    "who": {
+      "title": "{name}, siz sohada kimsiz?",
+      "lede": "Ishingizga mos materiallar, odamlar va kurslarni tanlaymiz. Javoblarni istalgan vaqtda oʻzgartirish mumkin.",
+      "field": "Ish yoʻnalishi",
+      "fieldHint": "Rolingizga eng yaqin bitta variant.",
+      "employment": "Hozir qanday ishlaysiz",
+      "company": "Kompaniya nomi",
+      "companyHint": "Faqat nomi. Bu qadamda hech qanday rekvizit va tasdiq yoʻq.",
+      "companyPlaceholder": "Masalan, «Fasad-Namuna»",
+      "headline": "Siz kimsiz, bir qatorda",
+      "headlineHint": "Sizni ochiq sahifada va qidiruvda shunday koʻrishadi.",
+      "headlinePlaceholder": "Masalan: qurilish nazorati muhandisi, fasadlar va oynalash"
+    },
+    "employment": {
+      "company": "Kompaniyada ishlayman",
+      "independent": "Mustaqil mutaxassis",
+      "seeking": "Ish yoki buyurtma izlayapman",
+      "student": "Oʻqiyapman yoki boshlayapman"
+    },
+    "employmentHint": {
+      "company": "Xodim, rahbar yoki ega.",
+      "independent": "Xususiy amaliyot, brigada yoki maslahatlar.",
+      "seeking": "Odamlar kerak boʻlgan vakansiya va loyihalarni koʻrsatamiz.",
+      "student": "Boshlash uchun kurs va materiallarni tanlaymiz."
+    },
+    "goals": {
+      "title": "Platformada nima qilmoqchisiz?",
+      "lede": "Bir nechta maqsadni tanlash mumkin. Kabinetda nimani koʻrsatishimiz ularga bogʻliq.",
+      "none": "Hech narsa tanlanmagan boʻlsa ham mayli, keyinroq sozlaymiz."
+    },
+    "goal": {
+      "learn": {
+        "title": "Oʻqish va oʻrganish",
+        "desc": "Jurnal, tahlillar, Akademiya mini-kurslari va sertifikatlar.",
+        "tags": "Jurnal · Kurslar"
+      },
+      "work": {
+        "title": "Ish va buyurtma topish",
+        "desc": "Kompaniyalar vakansiyalari, ochiq rolli loyihalar, «ishga ochiq» holati.",
+        "tags": "Vakansiyalar · Loyihalar"
+      },
+      "hire": {
+        "title": "Yollash va hamkor izlash",
+        "desc": "Tasdiqlangan tajribali odamlar, brigadalar, pudratchilar.",
+        "tags": "Odamlar · Hamkorlar"
+      },
+      "publish": {
+        "title": "Tajribani eʼlon qilish",
+        "desc": "Oʻz nomingizdan maqolalar, loyiha hikoyalari va qaydlar.",
+        "tags": "Nashrlar"
+      },
+      "projects": {
+        "title": "Loyihalarni yuritish",
+        "desc": "Yoʻl xaritasi, ishtirokchilar, soʻrovlar va obyekt materiallari.",
+        "tags": "Loyihalar"
+      },
+      "buy": {
+        "title": "Xarid qilish",
+        "desc": "Yetkazib beruvchilarga soʻrovlar, takliflarni solishtirish, xaridlar.",
+        "tags": "Yetkazib beruvchilar · Xaridlar"
+      },
+      "sell": {
+        "title": "Yetkazib berish",
+        "desc": "Kompaniyangiz uchun katalog, takliflar va mijozlar.",
+        "tags": "Kompaniya · Takliflar"
+      }
+    },
+    "interests": {
+      "title": "Mavzular, yoʻnalishlar va hududlar",
+      "lede": "Shunday qilib lenta, jurnal va tavsiyalarni yigʻamiz. Hammasi ixtiyoriy.",
+      "topics": "Oʻqish uchun mavzular",
+      "topicsHint": "Lenta va jurnalda nimani koʻrmoqchisiz.",
+      "regions": "Hududlar",
+      "regionsHint": "Qayerda ishlaysiz yoki qayerdan taklif kutasiz."
+    },
+    "profile": {
+      "title": "Sizning ochiq sahifangiz",
+      "lede": "Boshqa ishtirokchilar nimani koʻrishini hal qiling. Sahifa siz yoqmaguningizcha oʻchirilgan.",
+      "preview": "Ochiq sahifa koʻrinishi",
+      "previewPublic": "Sizni shunday koʻrishadi",
+      "previewHidden": "Sahifa yashirilgan",
+      "previewRole": "Soha ishtirokchisi",
+      "publish": "Sahifamni «Odamlar» boʻlimida koʻrsatish",
+      "publishHint": "Ism, rol, mavzular va holatlar. Kontaktlar va ish joyi — faqat sizning qaroringiz bilan.",
+      "portrait": "Portretni koʻrsatishga ruxsat beraman",
+      "portraitHint": "Surat faqat yuklangandan va roziligingizdan soʻng paydo boʻladi. Hozircha bosh harflarni koʻrsatamiz.",
+      "employer": "Ish joyini koʻrsatish",
+      "employerHint": "Siz koʻrsatgan kompaniya nomi. Kompaniya tasdigʻisiz u bildirilgan deb belgilanadi.",
+      "signals": "Sizning holatingiz",
+      "signalsHint": "Kasbiy tarmoqlardagidek oʻzi bildirgan holat. U sahifada va filtrlarda koʻrinadi.",
+      "portraitNote": "Portretlarni faqat rozilik bilan koʻrsatamiz. Bosh harflar — har doim xavfsiz variant.",
+      "later": "Keyinroq sozlayman",
+      "finish": "Yakunlash"
+    },
+    "done": {
+      "pageTitle": "Profil sozlandi",
+      "title": "{name}, hammasi tayyor",
+      "ledeGood": "Profil toʻldirildi — kabinet maqsadlaringizga moslashtirildi.",
+      "ledeMore": "Hoziroq ishlashni boshlash mumkin, profilni esa keyinroq sozlamalarda toʻldirasiz.",
+      "next": "Nimadan boshlash kerak",
+      "open": "Ochish",
+      "recMagazine": "Jurnalning yangi soni",
+      "recMagazineBody": "Tahlillar, amaliyot va hafta raqamlari viktorinalar bilan.",
+      "recPeople": "Soha odamlari",
+      "recPeopleBody": "«Ishga ochiq» va «yollayman» holatli mutaxassislar.",
+      "recCompanies": "Kompaniyalar va loyihalar",
+      "recCompaniesBody": "Tekshirilgan yozuvlar, soʻrovlar va loyihalarning ochiq ehtiyojlari.",
+      "recPublish": "Birinchi nashringiz",
+      "recPublishBody": "Oʻz nomingizdan maqola yoki loyiha hikoyasi.",
+      "academy": "Mavzularingiz boʻyicha kurslar",
+      "academyBody": "Oʻtgandan soʻng Trustwork sertifikati beriladigan Akademiya mini-kurslari.",
+      "settings": "Sozlamalarda oʻzgartirish",
+      "workspace": "Kabinetni ochish"
+    }
+  }
+}

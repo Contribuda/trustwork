@@ -1,0 +1,18 @@
+{
+  "demo": {
+    "bannerNote": "Ish funksiyalari hali ishlab chiqilmoqda.",
+    "personaLabel": "Namoyish ishtirokchisi",
+    "persona": {
+      "anonymous": "Mehmon",
+      "reader": "Kompaniyasiz oʻquvchi va muallif",
+      "mixed": "Kompaniya xodimi: xarid qiladi va sotadi",
+      "owner": "Shaxsiy loyiha egasi"
+    },
+    "noEmailSent": "Namoyish: xatlar yuborilmaydi, hisob yaratilmaydi.",
+    "noAccountCreated": "Namoyish: hisob yaratilmaydi va kirish bajarilmaydi.",
+    "scenario": {
+      "error": "Yuklash xatosi",
+      "offline": "Aloqa yoʻq"
+    }
+  }
+}

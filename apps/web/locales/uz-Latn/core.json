@@ -1,0 +1,115 @@
+{
+  "error": {
+    "generic": "Nimadir notoʻgʻri ketdi. Qayta urinib koʻring.",
+    "pageTitle": "Sahifani yuklab boʻlmadi",
+    "notFoundTitle": "Sahifa topilmadi",
+    "notFoundBody": "Bunday sahifa yoʻq yoki sizda unga kirish huquqi yoʻq.",
+    "auth": {
+      "invalid_credentials": "Pochta yoki parol notoʻgʻri",
+      "throttled": "Urinishlar juda koʻp. {minutes, plural, one {# daqiqadan} other {# daqiqadan}} soʻng qayta urinib koʻring.",
+      "step_up_required": "Davom etish uchun kirishni yana bir bor tasdiqlang.",
+      "email_unverified": "Pochta hali tasdiqlanmagan.",
+      "session_invalid": "Seans tugadi. Qaytadan kiring.",
+      "csrf_rejected": "Soʻrov rad etildi. Sahifani yangilang va qayta urinib koʻring.",
+      "password": {
+        "rejected": "Parol talablarga mos emas."
+      },
+      "recovery": {
+        "on_hold": "Tiklash soʻrovi qabul qilindi va korporativ pochta siyosati boʻyicha tekshiruvga qoʻyildi. Qaror haqida xabar beramiz."
+      }
+    },
+    "access": {
+      "not_found": "Sahifa topilmadi",
+      "forbidden": "Ruxsat yoʻq"
+    },
+    "validation": {
+      "schema": "Maydonlarni toʻldirishni tekshiring",
+      "unknown_field": "Soʻrovda nomaʼlum maydonlar bor"
+    }
+  },
+  "taxonomy": {
+    "materials": "Qurilish materiallari",
+    "equipment": "Uskunalar",
+    "engineering": "Muhandislik tizimlari",
+    "rawMaterials": "Xomashyo va butlovchilar",
+    "works": "Qurilish ishlari",
+    "designServices": "Loyihalash va xizmatlar",
+    "topics": {
+      "materials": "Materiallar",
+      "technologies": "Texnologiyalar",
+      "markets": "Bozorlar",
+      "regulation": "Tartibga solish",
+      "projects": "Loyihalar",
+      "people": "Odamlar",
+      "events": "Tadbirlar"
+    }
+  },
+  "shell2": {
+    "notificationsTitle": "Bildirishnomalar",
+    "notificationsError": "Bildirishnomalarni yuklab boʻlmadi",
+    "navSheetTitle": "Menyu",
+    "searchTitle": "Qidiruv",
+    "searchLabel": "Soʻrov",
+    "searchHint": "Kompaniyalar, odamlar, loyihalar va nashrlar boʻyicha qidiruv.",
+    "updatedAt": "Yangilandi: {time}",
+    "menuName": "Hisob menyusidagi ism",
+    "demoSwitch": "Namoyish ishtirokchisini almashtirish",
+    "signOutDemo": "Namoyish: chiqish sizni seansni tugatmasdan bosh sahifaga qaytaradi."
+  },
+  "role": {
+    "owner": "Ega",
+    "leader": "Rahbar",
+    "participant": "Ishtirokchi",
+    "member": "Xodim",
+    "administrator": "Administrator"
+  },
+  "unitLabel": {
+    "t": "t",
+    "m2": "m²",
+    "m3": "m³",
+    "pcs": "dona",
+    "set": "toʻpl."
+  },
+  "signals": {
+    "person": {
+      "openToWork": "Ishga ochiq",
+      "openToProjects": "Loyihalar olaman",
+      "hiring": "Jamoaga yollayman",
+      "lookingForPartners": "Hamkor izlayman",
+      "consulting": "Maslahat beraman",
+      "busy": "Band"
+    },
+    "company": {
+      "hiring": "Yollaymiz",
+      "acceptingOrders": "Buyurtma qabul qilamiz",
+      "lookingForSubcontractors": "Subpudratchi izlaymiz",
+      "lookingForSuppliers": "Yetkazib beruvchi izlaymiz",
+      "lookingForPartners": "Hamkor izlaymiz",
+      "lookingForProjects": "Obyekt izlaymiz",
+      "paused": "Yangi buyurtma olmaymiz"
+    },
+    "until": "{date} gacha",
+    "label": "Holat",
+    "declared": "Holatni ishtirokchi oʻzi koʻrsatgan",
+    "all": "Istalgan holat",
+    "none": "Holat koʻrsatilmagan"
+  },
+  "locale": {
+    "switcherLabel": "Mamlakat va til: {country}, {language}",
+    "dialogLabel": "Mamlakat va til",
+    "dialogTitle": "Mamlakat va til",
+    "partial": "Tarjima jarayonda; yetishmayotgan matn inglizcha koʻrsatiladi",
+    "partialShort": "qisman",
+    "note": "AQSh sanksiyalari bilan yopilgan joylardan tashqari istalgan davlat, dvigatelning istalgan tili bilan; platformaning oʻz davlat paketlari birinchi turadi. Tanlov shu brauzerda saqlanadi.",
+    "gateKicker": "Xush kelibsiz",
+    "gateTitle": "Mamlakatingizni tanlang",
+    "gateLede": "Platforma mamlakatlar boʻyicha ishlaydi: til, valyuta, kompaniya rekvizitlari va hududlar. Tanlovni istalgan vaqtda sarlavhada oʻzgartirish mumkin.",
+    "country": "Mamlakat",
+    "language": "Til",
+    "gateConfirm": "Davom etish",
+    "gateNote": "«Qisman» belgili tillar tarjima yoʻq joyda inglizcha matn koʻrsatadi.",
+    "otherCountry": "Boshqa davlat",
+    "chooseCountry": "Davlatni tanlang…",
+    "featured": "Platforma davlatlari"
+  }
+}

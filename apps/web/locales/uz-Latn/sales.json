@@ -1,0 +1,49 @@
+{
+  "sales": {
+    "title": "Sotuvlar",
+    "lede": "Buyurtmachilar soʻrovlari, takliflaringiz va kompaniya katalogi.",
+    "catalogue": "Tovar, ish va xizmatlar katalogi",
+    "leads": "Soʻrovlar",
+    "empty": "Hozircha soʻrovlar yoʻq",
+    "emptyHint": "Kompaniyalarning eʼlon qilingan ehtiyojlari saytning «Loyihalar» boʻlimida mavjud.",
+    "fillCatalogue": "Katalogni toʻldirish",
+    "list": "Soʻrovlar roʻyxati",
+    "col": {
+      "buyer": "Buyurtmachi",
+      "request": "Soʻrov",
+      "source": "Manba",
+      "deadline": "Muddat",
+      "status": "Holat",
+      "version": "Taklif versiyasi"
+    },
+    "noCompanyTitle": "Sotuvlar kompaniya nomidan yuritiladi",
+    "noCompanyBody": "Soʻrovlarga javob berish va katalog yuritish uchun kompaniya va bitimlar huquqi kerak. Shaxsiy katalog bu bosqichda koʻzda tutilmagan.",
+    "flowsNote": "Takliflar muharriri, versiyalar va buyurtmalarni qabul qilish keyingi bosqichda paydo boʻladi.",
+    "quoteVersion": "Taklif, {version}-versiya",
+    "noQuote": "Taklif hali yuborilmagan",
+    "needsDecision": "Qaroringiz kerak: buyurtmachi shartlarni tanladi, buyurtmani qabul qiling yoki rad eting.",
+    "stats": {
+      "decisions": "qaror kutmoqda",
+      "active": "jarayonda",
+      "won": "buyurtma qabul qilindi"
+    },
+    "catalogueHint": "Toʻldirilgan tovar, ish va xizmatlar katalogi buyurtmachilardan soʻrovlar keltiradi.",
+    "openNeeds": "Ochiq ehtiyojlar",
+    "openNeedsHint": "Kompaniyalar loyihalarda ehtiyojlarni eʼlon qiladi: kompaniyangiz nomidan taklif bilan javob berish mumkin."
+  },
+  "leadStatus": {
+    "new": "Yangi",
+    "drafting": "Taklif tayyorlanmoqda",
+    "sent": "Yuborilgan",
+    "negotiating": "Muzokaralar",
+    "won": "Buyurtma qabul qilindi",
+    "lost": "Buyurtmachi boshqa yetkazib beruvchini tanladi",
+    "expired": "Muddati oʻtgan"
+  },
+  "leadSource": {
+    "invitation": "Taklifnoma",
+    "openNeed": "Ochiq ehtiyoj",
+    "direct": "Toʻgʻridan-toʻgʻri soʻrov",
+    "email": "Xatdan"
+  }
+}
