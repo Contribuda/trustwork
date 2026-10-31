@@ -31,6 +31,17 @@ export const LABELS = {
 };
 const MANAGED_LABELS = Object.values(LABELS).map((l) => l.name);
 const MAINTAINER_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
+/**
+ * Handles named in .github/CODEOWNERS are maintainers too: GitHub reports a private organization member's comments
+ * as CONTRIBUTOR or NONE to the Actions token, so the association alone misses them.
+ */
+export const CODEOWNER_HANDLES = (() => {
+  try {
+    const text = readFileSync(resolve(process.cwd(), '.github/CODEOWNERS'), 'utf8');
+    return new Set([...text.matchAll(/@([A-Za-z0-9-]+)(?!\/)/g)].map((m) => m[1].toLowerCase()));
+  } catch { return new Set(); }
+})();
+const isMaintainer = (author, association) => MAINTAINER_ASSOCIATIONS.has(association) || CODEOWNER_HANDLES.has(String(author ?? '').toLowerCase());
 const DAY = 24 * 60 * 60 * 1000;
 const MARKER = 'trustwork-claims';
 const HANDLE = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
@@ -113,7 +124,7 @@ function validateUntil(until, at) {
   return null;
 }
 
-const mayActOn = (claim, author, association) => MAINTAINER_ASSOCIATIONS.has(association) || [claim.human, claim.author].some((h) => lower(h) === lower(author));
+const mayActOn = (claim, author, association) => isMaintainer(author, association) || [claim.human, claim.author].some((h) => lower(h) === lower(author));
 
 /**
  * Judges one command. `active` maps package id → active claim at time `at`. Returns a decision record
@@ -144,7 +155,7 @@ export function decide({ parsed, issuePackageId, author, association, at, packag
     const agent = parseAgent(f.agent);
     if (!agent.agent) reasons.push('add `agent: <tool and model>` (or `agent: none`)');
     if (agent.forHuman && human && lower(agent.forHuman) !== lower(human)) reasons.push(`the agent line names ${code(agent.forHuman)} but \`human\` is ${code(human)}`);
-    if (human && lower(author) !== lower(human) && !MAINTAINER_ASSOCIATIONS.has(association)) reasons.push(`post the claim from the accountable person's account (comment by ${code(author)}, \`human\` is ${code(human)})`);
+    if (human && lower(author) !== lower(human) && !isMaintainer(author, association)) reasons.push(`post the claim from the accountable person's account (comment by ${code(author)}, \`human\` is ${code(human)})`);
     if (!f.scope.length) reasons.push('add `scope:` with the package paths you will change (all of them or a narrower part)');
     for (const path of f.scope) {
       if (!validPath(path)) reasons.push(`invalid path in scope: ${code(path)}`);
@@ -156,7 +167,7 @@ export function decide({ parsed, issuePackageId, author, association, at, packag
     const placeholders = [f.human, f.agent, f.until, ...f.scope, ...f.plan].filter((v) => /<[^>]*>/.test(v));
     if (placeholders.length) reasons.push(`replace the template placeholders: ${placeholders.map(code).join(', ')}`);
     const mine = [...active.values()].filter((c) => lower(c.human) === lower(human) && c.package !== id);
-    const limit = human && lower(author) === lower(human) && MAINTAINER_ASSOCIATIONS.has(association) ? MAX_ACTIVE_CLAIMS_PER_MAINTAINER : MAX_ACTIVE_CLAIMS_PER_HUMAN;
+    const limit = human && lower(author) === lower(human) && isMaintainer(author, association) ? MAX_ACTIVE_CLAIMS_PER_MAINTAINER : MAX_ACTIVE_CLAIMS_PER_HUMAN;
     if (human && mine.length >= limit) reasons.push(`${code(human)} already holds ${mine.length} active claims (${mine.map((c) => code(c.package)).join(', ')}); the limit is ${limit} per ${limit === MAX_ACTIVE_CLAIMS_PER_HUMAN ? 'person' : 'maintainer'}`);
     for (const other of active.values()) {
       if (other.package === id) continue;

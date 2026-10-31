@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { applyActions, BOT_LOGIN, checkPullRequest, githubClient, loadIssues, overlaps, packageIdFromTitle, parseAgent, parseCommand, readMarkers, reconcile } from '../../scripts/claims.mjs';
+import { applyActions, BOT_LOGIN, checkPullRequest, CODEOWNER_HANDLES, githubClient, loadIssues, overlaps, packageIdFromTitle, parseAgent, parseCommand, readMarkers, reconcile } from '../../scripts/claims.mjs';
 import { load } from '../../scripts/work-packages.mjs';
 
 // Synthetic packages: AAA-001 done; BBB-001 and CCC-001 open and available; DDD-001 waits for BBB-001;
@@ -180,6 +180,13 @@ test('a maintainer claiming for themselves may hold more active claims; a claim 
   const result = step(forOthers, T0 + DAY);
   assert.equal(result.claims.length, 3);
   assert.match(lastBot(forOthers[3]).body, /limit is 3 per person/);
+});
+
+test('a CODEOWNERS maintainer whose organization membership is private still gets the maintainer limit', () => {
+  const [owner] = [...CODEOWNER_HANDLES];
+  assert.ok(owner, '.github/CODEOWNERS names at least one maintainer');
+  const own = ['BBB-001', 'FFF-001', 'GGG-001', 'HHH-001'].map((id, n) => issue(40 + n, id, [comment(owner, claimBody(id, owner), n / 100, 'CONTRIBUTOR')]));
+  assert.equal(step(own, T0 + DAY).claims.length, 4);
 });
 
 test('labels follow work-packages.json: ready-to-claim when available, waiting otherwise, none when done', () => {
