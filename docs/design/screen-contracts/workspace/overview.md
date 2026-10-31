@@ -1,4 +1,4 @@
-# Overview («Обзор»)
+# Overview (`overview.title`)
 
 Route: `/app`.
 
@@ -23,12 +23,12 @@ A panel with zero items but a relevant capability shows a purposeful empty state
 
 | Panel | Items (authorized only) |
 |---|---|
-| Decisions («Нужно ваше решение») | Cross-object list: quote comparison ready, approval digest pending (assistant), order acceptance pending, dispute response due, publication review; each with object link, due time, one primary action |
-| Procurement («Закупки») | Count in progress; top item needing action; up to 4 recent RFQs with lifecycle status chip; links «Все закупки», «Найти поставщика» |
-| Sales («Продажи») | Count in progress; top item (quote due); recent leads/quotes with status; links «Все предложения», «Каталог товаров, работ и услуг» |
-| My projects («Мои проекты») | Up to 4 projects with next milestone (baseline/changed indicator), role (владелец/руководитель/участник) |
-| Events («Ближайшие события») | Dated list: deliveries, acceptances, quote validity expiry, mandate expiry, issue release; each links to its object |
-| Assistant («Помощник») | One line: runs in progress / outcome unknown count / approvals waiting; link to page |
+| Decisions ("Your decision is needed") | Cross-object list: quote comparison ready, approval digest pending (assistant), order acceptance pending, dispute response due, publication review; each with object link, due time, one primary action |
+| Procurement (`overview.procurement.title`) | Count in progress; top item needing action; up to 4 recent RFQs with lifecycle status chip; links "All procurement" (`overview.procurement.all`), "Find a supplier" |
+| Sales (`overview.sales.title`) | Count in progress; top item (quote due); recent leads/quotes with status; links "All quotes", "Catalogue of goods, works and services" |
+| My projects | Up to 4 projects with next milestone (baseline/changed indicator), role (owner/lead/participant) |
+| Events ("Upcoming events") | Dated list: deliveries, acceptances, quote validity expiry, mandate expiry, issue release; each links to its object |
+| Assistant (`overview.assistant.title`) | One line: runs in progress / outcome unknown count / approvals waiting; link to page |
 | Publications | Drafts and items in review, if any |
 
 No omnibus charts. Numeric badges only for counts of authorized items.
@@ -38,35 +38,35 @@ No omnibus charts. Numeric badges only for counts of authorized items.
 1. See what needs a decision today and act on it in one click.
 2. Check in-progress procurement and sales without switching context.
 3. Jump to a project's next step.
-4. Create a new object (RFQ, quote, project, publication) via one «Создать» menu.
+4. Create a new object (RFQ, quote, project, publication) via one "Create" menu.
 
 ## Layout regions
 
 | Width | Layout |
 |---|---|
-| Desktop ≥1280 | Shell; H1 «Обзор» + subline that reflects variant («Закупки, продажи и ваши проекты» / «Ваши проекты и публикации»); «Создать ▾» menu button right; row 1: Decisions full width if ≥1 item, else omitted; row 2: Procurement and Sales as two equal cards (or a single card if one capability); row 3: My projects (2/3) + Events (1/3); row 4: Publications + Assistant line. Cards have header (icon, title, count badge, «Все →») |
+| Desktop ≥1280 | Shell; H1 "Overview" (`overview.title`) + subline that reflects variant ("Procurement, sales and your projects" / "Your projects and publications"); "Create ▾" menu button right; row 1: Decisions full width if ≥1 item, else omitted; row 2: Procurement and Sales as two equal cards (or a single card if one capability); row 3: My projects (2/3) + Events (1/3); row 4: Publications + Assistant line. Cards have header (icon, title, count badge, "All →") |
 | Tablet | Cards stack to one column; Projects and Events side by side at ≥1024 |
-| Mobile <768 | Single column; each card's list limited to 3 with «Все»; «Создать» as full-width button under H1 |
+| Mobile <768 | Single column; each card's list limited to 3 with "All"; "Create" as full-width button under H1 |
 
 ## Component inventory
 
-PageHeader (H1 + subline + actions), CreateMenu (menu button; items depend on grants: Потребность, Предложение, Проект, Публикация), OverviewCard, DecisionRow (title, context, due, primary Button), ObjectRow (thumbnail optional, title, context line, StatusChip), StatusChip (lifecycle, text + icon), EventRow (date tile with accessible full date), MilestoneIndicator (baseline vs changed), EmptyState (per card), Skeleton, Link «Все».
+PageHeader (H1 + subline + actions), CreateMenu (menu button; items depend on grants: Need, Quote, Project, Publication; `overview.createItems.*`), OverviewCard, DecisionRow (title, context, due, primary Button), ObjectRow (thumbnail optional, title, context line, StatusChip), StatusChip (lifecycle, text + icon), EventRow (date tile with accessible full date), MilestoneIndicator (baseline vs changed), EmptyState (per card), Skeleton, Link "All".
 
 ## Interaction states
 
 | State | Behaviour |
 |---|---|
-| Empty (personal-only, nothing yet) | Cards: Projects «Проектов пока нет» + «Создать проект»; Publications «Черновиков нет» + «Написать»; Events «Событий нет»; a single short industry picks block; never a welcome wizard |
-| Empty (commerce capability, no objects) | Procurement: «Закупок пока нет» + «Создать потребность» + «Найти поставщика»; Sales: «Предложений пока нет» + «Заполнить каталог» (only if company permits) |
+| Empty (personal-only, nothing yet) | Cards: Projects "No projects yet" + "Create a project"; Publications "No drafts" + "Write"; Events "No events"; a single short industry picks block; never a welcome wizard |
+| Empty (commerce capability, no objects) | Procurement: "No procurement yet" + "Create a need" + "Find a supplier"; Sales: "No quotes yet" + "Fill in the catalogue" (only if company permits) |
 | Loading | Card skeletons with fixed heights per card type |
 | Error | Card-level error with retry; other cards unaffected |
-| Permission-denied | A card whose data the user lost access to (e.g., employment ended) disappears on next load; stale objects show «Доступ изменился» row until reload |
-| Offline | Cached cards with «обновлено {time}»; actions disabled |
-| Partial/stale | Decisions whose underlying digest changed show «Условия изменились, проверьте заново» |
+| Permission-denied | A card whose data the user lost access to (e.g., employment ended) disappears on next load; stale objects show "Access changed" row until reload |
+| Offline | Cached cards with "updated {time}"; actions disabled |
+| Partial/stale | Decisions whose underlying digest changed show "The terms changed; check again" |
 
 ## Keyboard order and focus
 
-Shell → H1 → «Создать» → Decisions rows (title link, action button) → Procurement card («Все», rows, links) → Sales card → Projects → Events → Publications → Assistant line → launcher. Card headings are `h2`; each card is a `section` with `aria-labelledby`. The «Создать» menu is a menu button with arrow navigation.
+Shell → H1 → "Create" → Decisions rows (title link, action button) → Procurement card ("All", rows, links) → Sales card → Projects → Events → Publications → Assistant line → launcher. Card headings are `h2`; each card is a `section` with `aria-labelledby`. The "Create" menu is a menu button with arrow navigation.
 
 ## Responsive table behaviour
 
@@ -74,45 +74,45 @@ No tables; lists only.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.overview.subtitle.mixed` | Закупки, продажи и ваши проекты |
-| `ru.overview.subtitle.personal` | Ваши проекты и публикации |
-| `ru.overview.create` | Создать |
-| `ru.overview.create.need` | Потребность |
-| `ru.overview.create.quote` | Предложение |
-| `ru.overview.create.project` | Проект |
-| `ru.overview.create.publication` | Публикация |
-| `ru.overview.decisions` | Нужно ваше решение |
-| `ru.overview.inProgress` | {count, plural, one {# задача в работе} few {# задачи в работе} many {# задач в работе}} |
-| `ru.overview.all` | Все |
-| `ru.overview.procurement.findSupplier` | Найти поставщика |
-| `ru.overview.procurement.empty` | Закупок пока нет |
-| `ru.overview.procurement.createNeed` | Создать потребность |
-| `ru.overview.sales.allQuotes` | Все предложения |
-| `ru.overview.sales.catalogue` | Каталог товаров, работ и услуг |
-| `ru.overview.sales.empty` | Предложений пока нет |
-| `ru.overview.sales.fillCatalogue` | Заполнить каталог |
-| `ru.overview.projects` | Мои проекты |
-| `ru.overview.projects.all` | Все проекты |
-| `ru.overview.projects.next` | Следующий этап: {name} |
-| `ru.overview.projects.empty` | Проектов пока нет |
-| `ru.overview.projects.create` | Создать проект |
-| `ru.overview.events` | Ближайшие события |
-| `ru.overview.events.empty` | Событий нет |
-| `ru.overview.publications` | Публикации |
-| `ru.overview.publications.empty` | Черновиков нет |
-| `ru.overview.publications.write` | Написать статью |
-| `ru.overview.assistant.summary` | Помощник: выполняется — {running}, ждут вашего решения — {approvals}, на сверке — {unknown} |
-| `ru.overview.digestChanged` | Условия изменились, проверьте заново |
-| `ru.overview.accessChanged` | Доступ изменился |
-| `ru.overview.industryPicks` | В отрасли |
-| `ru.role.owner` | Владелец |
-| `ru.role.leader` | Руководитель |
-| `ru.role.participant` | Участник |
+| `overview.subtitle.mixed` | Procurement, sales and your projects |
+| `overview.subtitle.personal` | Your projects and publications |
+| `overview.create` | Create |
+| `overview.create.need` | Need |
+| `overview.create.quote` | Quote |
+| `overview.create.project` | Project |
+| `overview.create.publication` | Publication |
+| `overview.decisions` | Your decision is needed |
+| `overview.inProgress` | {count, plural, one {# task in progress} other {# tasks in progress}} |
+| `overview.all` | All |
+| `overview.procurement.findSupplier` | Find a supplier |
+| `overview.procurement.empty` | No procurement yet |
+| `overview.procurement.createNeed` | Create a need |
+| `overview.sales.allQuotes` | All quotes |
+| `overview.sales.catalogue` | Catalogue of goods, works and services |
+| `overview.sales.empty` | No quotes yet |
+| `overview.sales.fillCatalogue` | Fill in the catalogue |
+| `overview.projects` | My projects |
+| `overview.projects.all` | All projects |
+| `overview.projects.next` | Next milestone: {name} |
+| `overview.projects.empty` | No projects yet |
+| `overview.projects.create` | Create a project |
+| `overview.events` | Upcoming events |
+| `overview.events.empty` | No events |
+| `overview.publications` | Publications |
+| `overview.publications.empty` | No drafts |
+| `overview.publications.write` | Write an article |
+| `overview.assistant.summary` | Assistant: running — {running}, waiting for your decision — {approvals}, reconciling — {unknown} |
+| `overview.digestChanged` | The terms changed; check again |
+| `overview.accessChanged` | Access changed |
+| `overview.industryPicks` | In the industry |
+| `role.owner` | Owner |
+| `role.leader` | Lead |
+| `role.participant` | Participant |
 
 ## Open questions
 
-- Decisions panel vs the reference's «Нужно ваше решение» inside each card: proposal is one cross-object Decisions panel on top **and** the per-card top item; human to choose (see [human review request](../human-review-request.md)).
-- Whether «Создать» is a split button (reference) or a plain menu button (proposal: menu button).
+- Decisions panel vs the reference's "Your decision is needed" inside each card: proposal is one cross-object Decisions panel on top **and** the per-card top item; human to choose (see [human review request](../human-review-request.md)).
+- Whether "Create" is a split button (reference) or a plain menu button (proposal: menu button).
 - Industry picks block on a workspace page: keep minimal (3 links) or drop.

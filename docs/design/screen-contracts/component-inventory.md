@@ -1,17 +1,17 @@
 # Component inventory for DS-001
 
-Status: proposed. Consolidated from every screen contract in this directory. DS-001 builds these as accessible, Russian-labelled primitives and composites in `packages/ui`; WEB tasks compose them. Required states and accessibility notes are the acceptance baseline, not optional polish. WCAG 2.2 AA is the target (see [accessibility](../../quality/accessibility.md)); the patterns referenced are the WAI-ARIA Authoring Practices patterns (menu button, dialog, tabs, combobox, listbox, toolbar, tree, disclosure).
+Status: proposed. Consolidated from every screen contract in this directory. DS-001 builds these as accessible, localized primitives and composites in `packages/ui`; WEB tasks compose them. Required states and accessibility notes are the acceptance baseline, not optional polish. WCAG 2.2 AA is the target (see [accessibility](../../quality/accessibility.md)); the patterns referenced are the WAI-ARIA Authoring Practices patterns (menu button, dialog, tabs, combobox, listbox, toolbar, tree, disclosure).
 
 ## Conventions that apply to every component
 
 - Visible focus indicator with at least 3:1 contrast against adjacent colours, not removed on mouse use; focus never obscured by sticky bars, the launcher or the overlay (WCAG 2.2 2.4.11).
 - Minimum target 24×24 CSS px; comfortable default 40×40 for primary controls, 44 on touch.
 - Status is never colour-only: text label or icon with text alternative accompanies every colour.
-- Every icon-only control has a Russian accessible name from a locale key.
+- Every icon-only control has a localized accessible name from a locale key.
 - Reduced motion: transitions ≤200 ms and disabled under `prefers-reduced-motion`.
 - Text zoom 200% and 320 px width reflow without loss; no horizontal page scroll except inside labelled table regions.
-- All copy via locale keys; components accept labels as props, never embed Russian strings.
-- Consistent help (WCAG 2.2 3.2.6): the «Помощь» link (`ru.footer.help`) appears in the same relative position in every shell: last item of the legal link group in PublicFooter, the AuthShell footer and the OnboardingShell footer, and the item directly before «Выйти» in the workspace AvatarMenu.
+- All copy via locale keys; components accept labels as props, never embed product strings.
+- Consistent help (WCAG 2.2 3.2.6): the "Help" link (`footer.help`) appears in the same relative position in every shell: last item of the legal link group in PublicFooter, the AuthShell footer and the OnboardingShell footer, and the item directly before "Sign out" (`shell.menu.signOut`) in the workspace AvatarMenu.
 - Redundant entry (WCAG 2.2 3.3.7): information a person already entered in the same process is prefilled or selectable, never re-typed: the email from a failed login is carried to `/recover`; name and email persist from signup through email verification and first login; RFQ lines (specification, quantity, unit, milestones) are prefilled into the quote editor; onboarding selections are pre-checked on revisit. Exceptions are only security re-entry (password confirmation) and cases where the earlier value is no longer valid.
 
 ## Primitives
@@ -19,7 +19,7 @@ Status: proposed. Consolidated from every screen contract in this directory. DS-
 | Component | Variants / props | Required states | Accessibility requirements |
 |---|---|---|---|
 | Button | primary (dark navy), secondary (outlined), tertiary (text), destructive, icon-only; sizes md/lg; with leading icon; loading | default, hover, focus-visible, active, disabled (`aria-disabled` + reason when action is blocked, prefer explanation over disabling), loading (`aria-busy`, label changes) | Native `button`; icon-only requires `aria-label`; loading announces via live region in form context |
-| Link | inline, standalone with arrow, external (icon + visually hidden «внешняя ссылка») | default, hover, focus, visited (public content only) | Native `a`; external links `rel="noopener"` |
+| Link | inline, standalone with arrow, external (icon + visually hidden "external link" (`common.externalLink`)) | default, hover, focus, visited (public content only) | Native `a`; external links `rel="noopener"` |
 | TextField / Textarea | label, hint, error, leading icon, counter, required marker (text, not only `*`) | default, focus, filled, error, disabled, read-only | Label element; `aria-describedby` for hint+error; `aria-invalid`; autocomplete attributes; paste allowed |
 | PasswordField | show/hide toggle | as TextField; toggle pressed/unpressed | Toggle `aria-pressed` + label; no `autocomplete="off"` |
 | Checkbox / CheckboxCard / SelectableCard | label with inline links; card with icon/illustration | unchecked, checked, mixed, focus, disabled, error | Native input inside label or `role="checkbox"`; whole card activatable; selected state has border + check mark |
@@ -27,10 +27,10 @@ Status: proposed. Consolidated from every screen contract in this directory. DS-
 | Switch | with visible on/off text | on, off, focus, disabled, loading | `role="switch"` + `aria-checked`; label describes the effect |
 | Select (native) | — | default, focus, error, disabled | Native `select` for short lists |
 | Combobox (multi/single, typeahead) | tags for multi; async loading | closed, open, filtering, loading, no-results, selected tags, error | WAI-ARIA combobox pattern; listbox options; Backspace removes last tag; announces result count |
-| DatePicker | input + popover calendar | default, open, invalid, range | Text input accepts typed date (DD.MM.YYYY); calendar grid pattern; Russian month/day names |
+| DatePicker | input + popover calendar | default, open, invalid, range | Text input accepts a typed date in the active locale's format; calendar grid pattern; localized month/day names from `Intl` |
 | Chip / ChoiceChip / ConstraintChip / Tag | selectable, removable | default, selected, focus, removable (× with label) | Selectable chips as toggle buttons `aria-pressed`; removable chips have labelled remove button |
 | Badge (count) | numeric, dot | zero (hidden), n, 99+ | Text alternative in parent control's accessible name |
-| StatusChip / StatusBadge | lifecycle (RFQ, quote, run, publication, project, membership), record status (sourced/claimed/verified), evidence state (asserted/confirmed/disputed/superseded), kind (товар/работы/услуга/комплект) | one per enum value; icon + text | Text always present; colour token per family; `title` not relied on |
+| StatusChip / StatusBadge | lifecycle (RFQ, quote, run, publication, project, membership), record status (sourced/claimed/verified), evidence state (asserted/confirmed/disputed/superseded), kind (goods/works/service/bundle; `kind.*`) | one per enum value; icon + text | Text always present; colour token per family; `title` not relied on |
 | Avatar | image, initials, sizes 24–96; decorative vs informative | loaded, fallback initials, consent-hidden | `alt` = name when informative, empty when decorative next to name |
 | Icon | from one set; sizes 16/20/24 | — | `aria-hidden` unless standalone with label |
 | Spinner / ProgressBar | inline, block, determinate | — | `role="status"` / `progressbar` with label |
@@ -39,8 +39,8 @@ Status: proposed. Consolidated from every screen contract in this directory. DS-
 | Tooltip | on hover/focus for icon-only and collapsed nav | — | Not the only accessible name; dismissible with Escape; does not obscure |
 | Toast / InlineAlert / FormAlert / StatusBanner | info, success, warning, error; variants per search status | appear, dismiss, action | `role="status"` for info/success, `role="alert"` for errors; toasts persist ≥5 s and are pausable; FormAlert receives focus on submit error |
 | Card / Panel / RailCard | — | default, interactive, selected | Interactive card has one primary link; not nested interactive inside link |
-| Breadcrumb | — | — | `nav[aria-label="Навигация"]`, `aria-current="page"` |
-| Pagination / LoadMore | — | current, disabled ends, loading | `nav[aria-label="Страницы"]`; LoadMore moves focus to first new item |
+| Breadcrumb | — | — | `nav[aria-label="Breadcrumbs"]` (`common.breadcrumbs`), `aria-current="page"` |
+| Pagination / LoadMore | — | current, disabled ends, loading | `nav[aria-label="Pages"]` (`common.pagination`); LoadMore moves focus to first new item |
 | EmptyState | title, body, up to two actions, optional illustration | — | Heading level matches context |
 | NoAccess | title/body/action | — | Same as EmptyState; never reveals object existence beyond the route |
 
@@ -50,7 +50,7 @@ Status: proposed. Consolidated from every screen contract in this directory. DS-
 |---|---|---|
 | PublicHeader + PublicNav (7 items) | anonymous / authenticated; active item; mobile sheet open | `nav[aria-label]`; `aria-current`; mobile sheet is a dialog with focus trap/return |
 | PublicFooter | — | `contentinfo` landmark |
-| SidebarNav + BrandRow + CollapseButton + NavItem + NavDisclosure («Ещё») + ExternalNavLink | expanded, collapsed (icons + tooltips + visually hidden labels), mobile sheet; item active; attention badge; disclosure open/closed | Collapse button `aria-expanded`; order never changes programmatically; keyboard order identical in both states |
+| SidebarNav + BrandRow + CollapseButton + NavItem + NavDisclosure ("More" (`shell.more`)) + ExternalNavLink | expanded, collapsed (icons + tooltips + visually hidden labels), mobile sheet; item active; attention badge; disclosure open/closed | Collapse button `aria-expanded`; order never changes programmatically; keyboard order identical in both states |
 | WorkspaceHeader + Breadcrumb + GlobalSearchButton + NotificationBell + NotificationsPanel + AvatarButton + AvatarMenu | bell with count/dot; panel open; menu open; offline banner | Menu button pattern; popover/sheet with focus return; bell count in accessible name |
 | AuthShell / OnboardingShell / ReaderShell / AdminShell | desktop two-column, stacked | Landmarks; skip link |
 | PageHeader | title, subtitle, actions, status, version pill | H1 is the page's only H1 |
@@ -69,7 +69,7 @@ Status: proposed. Consolidated from every screen contract in this directory. DS-
 |---|---|---|
 | DataTable (sortable, selectable rows optional, row action menu) | loading, empty, error, sorted asc/desc, responsive collapse to cards (<768), horizontal scroll region (tablet), column visibility (tablet) | `table/caption/th scope`; sort buttons with `aria-sort`; scroll region `role="region"` + label + `tabindex=0`; cards keep field labels |
 | ComparisonTable (quotes) | comparable / non-comparable cells; stale excluded/included; totals incomplete; select column | Row headers = RFQ lines; sticky header/column; non-comparable cell contains text + disclosure; mobile per-line accordion with supplier switcher |
-| LineItemTable (editable) | editing, validation errors per cell, added/removed rows | Each input labelled «{column}, позиция {n}»; Tab across cells; errors via `aria-describedby`; mobile line cards + edit sheet |
+| LineItemTable (editable) | editing, validation errors per cell, added/removed rows | Each input labelled "{column}, line {n}"; Tab across cells; errors via `aria-describedby`; mobile line cards + edit sheet |
 | DescriptionList (dl) for facts, digests, provenance | — | `dl/dt/dd` |
 | VersionPill / VersionPicker | current, historical selected, stale | Listbox/select; selection announces and moves focus to content heading |
 | Timeline / MilestoneTimeline / RunTimeline / EvidenceList / ChangeLogList | baseline vs changed (two labelled marks), disputed annotation, outcome_unknown | Ordered list; text labels for every mark; no colour-only |

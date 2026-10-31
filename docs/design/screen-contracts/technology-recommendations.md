@@ -70,7 +70,7 @@ Status: **proposal.** The integrator and the DS-001/WEB-001 owners decide; addin
 
 ## 8. Internationalization and locale keys
 
-Requirements: Russian only now, keys in `packages/ui/locales/ru.json`, typed keys, ICU-style plurals for Russian (one/few/many), no English fallback strings in product copy.
+Requirements as written by DS-000 (since superseded by [ADR 009](../../adr/009-international-engine-and-open-source.md): English is the reference language and Russian is one additional interface language): Russian only, keys in `packages/ui/locales/ru.json`, typed keys, ICU-style plurals for Russian (one/few/many), no English fallback strings in product copy.
 
 | Option | Pros | Cons | Source |
 |---|---|---|---|

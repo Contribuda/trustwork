@@ -8,11 +8,11 @@ Routes: `/recover` (request), `/recover/[token]` (reset).
 
 ## Audience and access policy
 
-Anonymous. The request form always responds with the same neutral confirmation regardless of whether the email exists. Reset tokens are single-use and time-limited; the reset page validates the token server-side before rendering the form. An authenticated user changes password in settings, not here. Email rebinding (changing the login email after losing access to a corporate mailbox) is a separate, stricter flow owned by BE-000 and is only linked from here («Нет доступа к почте?»).
+Anonymous. The request form always responds with the same neutral confirmation regardless of whether the email exists. Reset tokens are single-use and time-limited; the reset page validates the token server-side before rendering the form. An authenticated user changes password in settings, not here. Email rebinding (changing the login email after losing access to a corporate mailbox) is a separate, stricter flow owned by BE-000 and is only linked from here ("No access to the mailbox?").
 
 ## Data projection
 
-Request: email, prefilled from a failed login attempt or the «Забыли пароль?» link when available (WCAG 2.2 3.3.7). Reset: new password, confirmation (optional; propose single field with show toggle). Token state: valid / expired / used / invalid.
+Request: email, prefilled from a failed login attempt or the "Forgot your password?" (`auth.forgot`) link when available (WCAG 2.2 3.3.7). Reset: new password, confirmation (optional; propose single field with show toggle). Token state: valid / expired / used / invalid.
 
 ## Primary tasks
 
@@ -22,7 +22,7 @@ Request: email, prefilled from a failed login attempt or the «Забыли па
 
 ## Layout regions
 
-AuthShell at all widths (see login). Request form: H1 «Восстановление пароля», explanation, email, «Отправить ссылку», «Вернуться ко входу», secondary link «Нет доступа к почте?». Confirmation screen replaces the form: «Если такая почта зарегистрирована, мы отправили письмо», resend after cooldown. Reset form: H1 «Новый пароль», password field with hint, «Сохранить пароль». Success: «Пароль изменён» + «Войти».
+AuthShell at all widths (see login). Request form: H1 "Password recovery", explanation, email, "Send the link", "Back to sign-in", secondary link "No access to the mailbox?". Confirmation screen replaces the form: "If this email is registered, we have sent a message", resend after cooldown. Reset form: H1 "New password", password field with hint, "Save the password". Success: "Password changed" + "Sign in" (`auth.submitLogin`).
 
 ## Component inventory
 
@@ -35,15 +35,15 @@ AuthShell, TextField, PasswordField, Button, FormAlert, InlineError, Link, Statu
 | Empty | Form |
 | Loading | Spinner in button |
 | Error (validation) | Field errors |
-| Error (token expired/used/invalid) | StatusCard with explanation and «Запросить новую ссылку»; no form |
+| Error (token expired/used/invalid) | StatusCard with explanation and "Request a new link"; no form |
 | Error (rate limit) | Alert with retry-after |
 | Permission-denied | Not applicable |
 | Offline | Alert |
-| Partial/stale | After success all other sessions may be revoked per policy; show note «Другие сессии завершены» if policy does so |
+| Partial/stale | After success all other sessions may be revoked per policy; show note "Other sessions ended" if policy does so |
 
 ## Keyboard order and focus
 
-Brand → back link → email → submit → links. After submit, focus moves to confirmation heading. Reset: password → toggle → submit; on success focus «Войти» button.
+Brand → back link → email → submit → links. After submit, focus moves to confirmation heading. Reset: password → toggle → submit; on success focus "Sign in" (`auth.submitLogin`) button.
 
 ## Responsive table behaviour
 
@@ -51,23 +51,23 @@ No tables.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.auth.recover.title` | Восстановление пароля |
-| `ru.auth.recover.body` | Укажите почту, с которой вы входите. Мы отправим ссылку для смены пароля. |
-| `ru.auth.recover.submit` | Отправить ссылку |
-| `ru.auth.recover.sent` | Если такая почта зарегистрирована, мы отправили письмо. Проверьте папку «Спам». |
-| `ru.auth.recover.resend` | Отправить ещё раз |
-| `ru.auth.recover.backToLogin` | Вернуться ко входу |
-| `ru.auth.recover.noMailbox` | Нет доступа к почте? |
-| `ru.auth.reset.title` | Новый пароль |
-| `ru.auth.reset.submit` | Сохранить пароль |
-| `ru.auth.reset.success` | Пароль изменён |
-| `ru.auth.reset.otherSessions` | Другие сессии завершены |
-| `ru.auth.reset.tokenExpired` | Ссылка устарела. Запросите новую. |
-| `ru.auth.reset.tokenUsed` | Эта ссылка уже использована. |
-| `ru.auth.reset.tokenInvalid` | Ссылка недействительна. |
-| `ru.auth.reset.requestNew` | Запросить новую ссылку |
+| `auth.recover.title` | Password recovery |
+| `auth.recover.body` | Enter the email you sign in with. We will send a link to change the password. |
+| `auth.recover.submit` | Send the link |
+| `auth.recover.sent` | If this email is registered, we sent a message. Check the spam folder. |
+| `auth.recover.resend` | Send again |
+| `auth.recover.backToLogin` | Back to sign-in |
+| `auth.recover.noMailbox` | No access to the mailbox? |
+| `auth.reset.title` | New password |
+| `auth.reset.submit` | Save the password |
+| `auth.reset.success` | Password changed |
+| `auth.reset.otherSessions` | Other sessions ended |
+| `auth.reset.tokenExpired` | The link has expired. Request a new one. |
+| `auth.reset.tokenUsed` | This link has already been used. |
+| `auth.reset.tokenInvalid` | The link is invalid. |
+| `auth.reset.requestNew` | Request a new link |
 
 ## Open questions
 

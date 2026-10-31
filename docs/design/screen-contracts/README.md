@@ -26,7 +26,7 @@ A contract describes what a screen must do before anyone draws or implements it 
 | Interaction states | empty, loading, error, permission-denied, offline, partial/stale, plus screen-specific states |
 | Keyboard order and focus | Tab order, landmarks, focus target after navigation/actions, dialogs |
 | Responsive table behaviour | What happens to each table below tablet width |
-| Locale keys | Proposed `ru.*` keys with Russian copy (proposal for `packages/ui/locales/ru.json`; DS-001/WEB owners merge). Any key containing `{count}` is a plural group in ICU form, for example `{count, plural, one {# проект} few {# проекта} many {# проектов}}` |
+| Locale keys | Locale keys with the English reference copy (`en`; dictionaries in `packages/ui/locales` and `apps/web/app/_lib/locales`, where every key exists in all interface languages; DS-001/WEB owners merge). Keys not yet in a dictionary are proposals. Any key containing `{count}` is a plural group in ICU form, for example `{count, plural, one {# project} other {# projects}}`; languages with more plural categories (Russian uses one/few/many) add their own forms in their dictionary |
 | Open questions | What a human or a later task must decide |
 
 ## Status legend
@@ -87,11 +87,11 @@ A contract describes what a screen must do before anyone draws or implements it 
 
 ## Locale key conventions
 
-- Keys are `ru.<area>.<element>[.<state>]`. Areas: `publicShell`, `footer`, `home`, `news`, `articles`, `companies`, `people`, `projects`, `magazine`, `reader`, `archive`, `search`, `answer`, `citation`, `auth`, `onboarding`, `taxonomy`, `shell`, `overview`, `me`, `company`, `projectsWs`, `procurement`, `intake`, `rfq`, `supplier`, `quote`, `compare`, `negotiation`, `order`, `approvals`, `sales`, `quoteEditor`, `salesOrder`, `catalogue`, `publications`, `editor`, `assistant`, `mandate`, `approval`, `run`, `settings`, `admin`.
-- Shared enums live once and are reused everywhere: `ru.common.*` (generic actions and states), `ru.status.*` (sourced / claimed / verified), `ru.evidence.*` (asserted / confirmed / disputed / superseded), `ru.kind.*` (goods / works / services / bundle), `ru.role.*`, `ru.projectStatus.*`, `ru.rfqStatus.*`, `ru.pubState.*`, `ru.run.state.*`. A screen contract must not redefine them under its own area.
-- Enum labels name a kind in the singular («Товар», «Услуга», «Комплект»; «Работы» is used as the trade term); counted labels are plural groups with `{count}` as above; column headers and filter labels use the plural noun where the column lists many («Предложения»).
+- Keys are `<area>.<element>[.<state>]` and exist with the same name in every interface language. Areas: `publicShell`, `footer`, `home`, `news`, `articles`, `companies`, `people`, `projects`, `magazine`, `reader`, `archive`, `search`, `answer`, `citation`, `auth`, `onboarding`, `taxonomy`, `shell`, `overview`, `me`, `company`, `projectsWs`, `procurement`, `intake`, `rfq`, `supplier`, `quote`, `compare`, `negotiation`, `order`, `approvals`, `sales`, `quoteEditor`, `salesOrder`, `catalogue`, `publications`, `editor`, `assistant`, `mandate`, `approval`, `run`, `settings`, `admin`.
+- Shared enums live once and are reused everywhere: `common.*` (generic actions and states), `status.*` (sourced / claimed / verified), `evidence.*` (asserted / confirmed / disputed / superseded), `kind.*` (goods / works / services / bundle), `role.*`, `projectStatus.*`, `rfqStatus.*`, `pubState.*`, `run.state.*`. A screen contract must not redefine them under its own area.
+- Enum labels name a kind in the singular ("Goods", "Service", "Bundle"; "Works" is used as the trade term); counted labels are plural groups with `{count}` as above; column headers and filter labels use the plural noun where the column lists many ("Quotes").
 - Values in the tables are product copy. An italic parenthetical after a value, such as *(wording from reference; editorial review)*, is an engineering annotation marking copy carried over from a reference image that the editorial owner must review; it is not part of the string.
-- «Помощь» is a shared key `ru.footer.help` used in the same relative position in every shell (WCAG 2.2 3.2.6 Consistent Help).
+- "Help" is a shared key `footer.help` used in the same relative position in every shell (WCAG 2.2 3.2.6 Consistent Help).
 
 ## How downstream tasks consume these contracts
 
@@ -107,9 +107,9 @@ A contract describes what a screen must do before anyone draws or implements it 
 
 ## Rules preserved in every contract
 
-- Public navigation is exactly `Главная, Новости, Статьи, Компании, Люди, Проекты, Журнал`; workspace destinations are exactly `Обзор, Моя страница, Компания, Проекты, Закупки, Продажи, Публикации, Помощник` plus outbound `В отрасль`.
+- Public navigation is exactly `Home, News, Articles, Companies, People, Projects, Magazine` (`publicNav`); workspace destinations are exactly `Overview, My page, Company, Projects, Procurement, Sales, Publications, Assistant` (`workspaceNav`) plus outbound `To the industry` (`publicExit`).
 - One circular avatar top-right, collapse control inside the brand row, bell is not a mailbox, no inbox, no company/workspace switcher, no persona switch, no "Agents" UI, no primary menu-setup button, assistant never reorders navigation.
 - One assistant: full page plus icon-only circular bottom-right launcher whose overlay floats and never reflows the page.
-- All product copy is Russian through locale keys; keys in these contracts are proposals using the `ru.*` namespace and must not be merged into `ru.json` by this task.
+- All product copy comes from locale keys in every interface language (English is the reference; Russian is one additional interface language); keys in these contracts that are not yet in a dictionary are proposals.
 - Sourced, claimed and verified are always distinct; people need consent and portrait licensing; projects are public only via explicit projection.
 - No synthetic metrics, names or counts from the references are to be reused as real data.

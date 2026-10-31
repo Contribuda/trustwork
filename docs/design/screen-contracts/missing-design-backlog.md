@@ -11,15 +11,15 @@ Status: proposed. Every item is a design (not implementation) gap discovered whi
 | 5 | Empty, loading, error, denied, offline states for public lists and details | public/* | P1 | WEB-001 | no |
 | 6 | News detail page; article detail page with TOC; correction banner and retraction notice | [news](public/news.md), [articles](public/articles.md) | P1 | CNT-001 | no |
 | 7 | Company public page (tabs), person public page, project public page | [companies](public/companies.md), [people](public/people.md), [projects](public/projects.md) | P1 | WEB-001 | no |
-| 8 | Sourced / claimed / verified badge system and provenance line; reputation summary with sample counts and «данных недостаточно» | [companies](public/companies.md) | P1 | DS-001 | partly (O05, O07 policy) |
+| 8 | Sourced / claimed / verified badge system and provenance line; reputation summary with sample counts and "not enough data" | [companies](public/companies.md) | P1 | DS-001 | partly (O05, O07 policy) |
 | 9 | Person card/profile without portrait (initials), consent indicators | [people](public/people.md) | P1 | DS-001 | no |
 | 10 | Magazine mobile single-column reader; issue detail; archive empty state; PDF pending state; correction banner; PDF layout template and accessibility plan | [magazine](public/magazine.md) | P1 | CNT-001 | yes (PDF look) |
 | 11 | Search results page with partial/no-answer/unavailable/stale/historical banners; citation drawer; unavailable citation | [search](public/search-and-citations.md) | P1 | WEB-003 | no |
 | 12 | Login/signup error, rate-limit, loading, provider error, email verification interstitial, mobile stacked layout | [login](public/auth-login.md), [signup](public/auth-signup.md) | P1 | WEB-001 | no |
 | 13 | Recovery request/reset pages and token-state cards | [recover](public/auth-recover.md) | P1 | WEB-001 | no |
-| 14 | Onboarding selected states, keyboard focus on cards, mobile sticky actions; «Поставляю» and «Участвую» variants of step 2 | [onboarding](public/onboarding-capabilities.md), [step 2](public/onboarding-categories-regions.md) | P1 | WEB-001 | small (Continue enabled with zero) |
-| 15 | Workspace shell: collapsed sidebar, tablet overlay sidebar, mobile navigation sheet, notifications panel, avatar menu, offline banner, «Ещё» disclosure | [shell](workspace/shell.md) | P1 | DS-001 + WEB-001 | yes (whole workspace visual) |
-| 16 | Overview personal-only variant; empty cards; Decisions panel; «Создать» menu | [overview](workspace/overview.md) | P1 | WEB-001 | yes |
+| 14 | Onboarding selected states, keyboard focus on cards, mobile sticky actions; "I supply" and "I take part" variants of step 2 | [onboarding](public/onboarding-capabilities.md), [step 2](public/onboarding-categories-regions.md) | P1 | WEB-001 | small (Continue enabled with zero) |
+| 15 | Workspace shell: collapsed sidebar, tablet overlay sidebar, mobile navigation sheet, notifications panel, avatar menu, offline banner, "More" (`shell.more`) disclosure | [shell](workspace/shell.md) | P1 | DS-001 + WEB-001 | yes (whole workspace visual) |
+| 16 | Overview personal-only variant; empty cards; Decisions panel; "Create" menu | [overview](workspace/overview.md) | P1 | WEB-001 | yes |
 | 17 | My page: private work view, public projection editor with preview and consent | [my page](workspace/my-page.md) | P1 | WEB-001 | no |
 | 18 | Company: no-company empty state, join/create flows, member/admin views, catalogue version UI, end-membership confirmation | [company](workspace/company.md) | P1 | WEB-001 (+ COM-001 data) | partly (O05) |
 | 19 | Projects: list, detail tabs, baseline vs changed timeline, evidence list, transfer flow, projection editor | [projects](workspace/projects.md) | P2 | WEB-002 / EXE-001 | no |
@@ -33,8 +33,8 @@ Status: proposed. Every item is a design (not implementation) gap discovered whi
 | 27 | Illustration set for onboarding and empty states, or decision to use none | onboarding | P3 | DS-001 | yes |
 | 28 | Licensed photography plan for public pages (replace synthetic images) | public/* | P2 | CNT-001 / human | yes (budget) |
 | 29 | Map view for projects | [projects](public/projects.md) | P3 | deferred (O08) | yes |
-| 30 | 404 / 500 / maintenance pages in Russian within public and workspace shells | all | P1 | WEB-001 | no |
-| 31 | Email templates (verification, recovery, invitation, notifications) in Russian, consistent with brand | auth, company | P2 | BE-000 / CNT-001 | no |
+| 30 | 404 / 500 / maintenance pages in every interface language within public and workspace shells | all | P1 | WEB-001 | no |
+| 31 | Email templates (verification, recovery, invitation, notifications) in every interface language, consistent with brand | auth, company | P2 | BE-000 / CNT-001 | no |
 | 32 | Print styles for quote snapshots and acceptance records | sales, projects | P3 | WEB-002 | no |
 
 ## Coverage check against the design inventory table

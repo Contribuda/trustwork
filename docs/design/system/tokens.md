@@ -81,7 +81,7 @@ Unit test: white over navy at alpha 0.78 composited on pure white = 8.3:1; `navy
 | serif | 19 / 1.65 | 18 / 1.6 | 0 | 400 | Article bodies |
 | quote | 26 / 1.35 | 22 / 1.4 | −0.005em | 400 italic | Pull quotes |
 
-Utilities in `base.css`: `.trustwork-display`, `.trustwork-h1…h4`, `.trustwork-body-lg`, `.trustwork-body`, `.trustwork-body-sm`, `.trustwork-caption`, `.trustwork-kicker`, `.trustwork-serif`, `.trustwork-muted`, `.trustwork-tabular`. Russian typography rules (quotes «», em dash, non-breaking thousands separator, decimal comma, currency after the number) remain the job of `formatNumber` / `formatDate`.
+Utilities in `base.css`: `.trustwork-display`, `.trustwork-h1…h4`, `.trustwork-body-lg`, `.trustwork-body`, `.trustwork-body-sm`, `.trustwork-caption`, `.trustwork-kicker`, `.trustwork-serif`, `.trustwork-muted`, `.trustwork-tabular`. Russian typography rules (guillemet quotation marks, em dash, non-breaking thousands separator, decimal comma, currency after the number) remain the job of `formatNumber` / `formatDate`.
 
 ## Radius, elevation, motion, z-index, sizes
 

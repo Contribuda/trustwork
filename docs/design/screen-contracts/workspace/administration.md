@@ -1,6 +1,6 @@
 # Platform administration: editorial, moderation, support, commercial offers and prices
 
-Routes (proposed): `/admin` (landing by role), `/admin/editorial`, `/admin/moderation`, `/admin/support`, `/admin/commercial`. Entered from the avatar menu («Администрирование») only when the person holds at least one platform role. Not a company setting, not in the workspace sidebar.
+Routes (proposed): `/admin` (landing by role), `/admin/editorial`, `/admin/moderation`, `/admin/support`, `/admin/commercial`. Entered from the avatar menu ("Administration") only when the person holds at least one platform role. Not a company setting, not in the workspace sidebar.
 
 ## Status and evidence
 
@@ -16,7 +16,7 @@ Routes (proposed): `/admin` (landing by role), `/admin/editorial`, `/admin/moder
 | Commercial admin | Offers/plans/prices/entitlements versions with effective dates; usage and credits views; no customer transactions | Separate from editorial right |
 | Platform admin without case grant | Sees nothing private (authorization suite requirement) | |
 
-Every action is audited with actor identity; UI shows «Действие будет записано в журнал» on consequential forms.
+Every action is audited with actor identity; UI shows "This action will be recorded in the audit log" on consequential forms.
 
 ## Data projection
 
@@ -40,89 +40,89 @@ Every action is audited with actor identity; UI shows «Действие буд�
 
 | Width | Layout |
 |---|---|
-| Desktop ≥1280 | Admin shell: distinct header band label «Администрирование» (so staff never confuse it with the workspace), left sub-navigation per granted areas, content with DataTables and detail panels; return link «В рабочее пространство» |
+| Desktop ≥1280 | Admin shell: distinct header band label "Administration" (so staff never confuse it with the workspace), left sub-navigation per granted areas, content with DataTables and detail panels; return link "Back to the workspace" |
 | Tablet | Sub-navigation collapses to tabs |
-| Mobile <768 | Supported for reading queues and approving/returning; complex editors (issue TOC, offer versions) show «Удобнее на широком экране» note but remain operable |
+| Mobile <768 | Supported for reading queues and approving/returning; complex editors (issue TOC, offer versions) show "Easier on a wide screen" note but remain operable |
 
 ## Component inventory
 
-AdminShell (reuses workspace primitives with a different accent band), SubNav, DataTable with filters and saved views, QueueRow, ReviewPanel (publication preview + feedback form), IssueEditor (ordered list with keyboard reordering: move up/down buttons, not drag-only), ReleaseChecklist (checkbox items with evidence links), CorrectionEditor, TaxonomyTree (tree view pattern), CaseCard, EvidenceList, ScopeGrantForm (objects, fields, expiry; audited), OfferVersionTable, OfferVersionForm (price in minor units with currency, effective dates, entitlements), PublishConfirmDialog («Опубликованную версию изменить нельзя; создайте новую»), AuditNote, EmptyState, Skeleton, Toast.
+AdminShell (reuses workspace primitives with a different accent band), SubNav, DataTable with filters and saved views, QueueRow, ReviewPanel (publication preview + feedback form), IssueEditor (ordered list with keyboard reordering: move up/down buttons, not drag-only), ReleaseChecklist (checkbox items with evidence links), CorrectionEditor, TaxonomyTree (tree view pattern), CaseCard, EvidenceList, ScopeGrantForm (objects, fields, expiry; audited), OfferVersionTable, OfferVersionForm (price in minor units with currency, effective dates, entitlements), PublishConfirmDialog ("A published version cannot be changed; create a new one"), AuditNote, EmptyState, Skeleton, Toast.
 
 ## Interaction states
 
 | State | Behaviour |
 |---|---|
-| Empty | Queue: «Материалов на проверке нет»; cases: «Открытых обращений нет»; offers: «Опубликованных версий нет» |
+| Empty | Queue: "No materials in review"; cases: "No open cases"; offers: "No published versions" |
 | Loading | Skeleton |
 | Error | Inline + retry |
-| Permission-denied | Area missing from sub-nav; direct URL → NoAccess; case view without grant → NoAccess with «Запросить доступ по обращению» |
+| Permission-denied | Area missing from sub-nav; direct URL → NoAccess; case view without grant → NoAccess with "Request case-based access" |
 | Offline | Read-only |
-| Partial/stale | Issue release blocked: checklist shows unmet items; offer with past effective date cannot be edited; publication changed since review started → «Материал изменён автором; проверьте заново» |
+| Partial/stale | Issue release blocked: checklist shows unmet items; offer with past effective date cannot be edited; publication changed since review started → "The author changed the material; review it again" |
 
 ## Keyboard order and focus
 
-Admin header → sub-nav → filters → table → detail panel. Issue TOC reordering via buttons with announcements («Материал перемещён на позицию 3»). Publish confirmation focuses Cancel.
+Admin header → sub-nav → filters → table → detail panel. Issue TOC reordering via buttons with announcements ("Material moved to position 3"). Publish confirmation focuses Cancel.
 
 ## Responsive table behaviour
 
-All admin tables → cards below 768 with a «Показать столбцы» control on tablet.
+All admin tables → cards below 768 with a "Show columns" control on tablet.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.admin.title` | Администрирование |
-| `ru.admin.backToWorkspace` | В рабочее пространство |
-| `ru.admin.nav.editorial` | Редакция |
-| `ru.admin.nav.moderation` | Модерация |
-| `ru.admin.nav.support` | Поддержка |
-| `ru.admin.nav.commercial` | Коммерческие условия |
-| `ru.admin.auditNote` | Действие будет записано в журнал |
-| `ru.admin.editorial.queue` | На проверке |
-| `ru.admin.editorial.queueEmpty` | Материалов на проверке нет |
-| `ru.admin.editorial.approve` | Одобрить |
-| `ru.admin.editorial.return` | Вернуть с замечаниями |
-| `ru.admin.editorial.schedule` | Запланировать |
-| `ru.admin.editorial.changedSinceReview` | Материал изменён автором; проверьте заново |
-| `ru.admin.issues.title` | Выпуски журнала |
-| `ru.admin.issues.state.draft` | Черновик |
-| `ru.admin.issues.state.curated` | Собран |
-| `ru.admin.issues.state.review` | На проверке |
-| `ru.admin.issues.state.released` | Выпущен |
-| `ru.admin.issues.state.corrected` | Исправленная редакция |
-| `ru.admin.issues.moveUp` | Переместить выше |
-| `ru.admin.issues.moveDown` | Переместить ниже |
-| `ru.admin.issues.moved` | Материал перемещён на позицию {index} |
-| `ru.admin.issues.checklist` | Чек-лист выпуска |
-| `ru.admin.issues.check.web` | Веб-версия проверена на мобильном |
-| `ru.admin.issues.check.pdf` | PDF собран и проверен постранично |
-| `ru.admin.issues.check.a11y` | План доступности PDF заполнен |
-| `ru.admin.issues.release` | Выпустить |
-| `ru.admin.issues.correct` | Создать исправленную редакцию |
-| `ru.admin.taxonomy.title` | Справочники |
-| `ru.admin.moderation.cases` | Обращения |
-| `ru.admin.moderation.casesEmpty` | Открытых обращений нет |
-| `ru.admin.moderation.decision` | Решение |
-| `ru.admin.moderation.appeal` | Апелляция |
-| `ru.admin.support.cases` | Обращения в поддержку |
-| `ru.admin.support.grantScope` | Доступ по обращению |
-| `ru.admin.support.grantExpires` | Доступ до {date} |
-| `ru.admin.support.requestAccess` | Запросить доступ по обращению |
-| `ru.admin.commercial.offers` | Версии предложений |
-| `ru.admin.commercial.noOffers` | Опубликованных версий нет |
-| `ru.admin.commercial.plan` | План |
-| `ru.admin.commercial.price` | Цена |
-| `ru.admin.commercial.trialDays` | Пробный период, дней |
-| `ru.admin.commercial.entitlements` | Возможности |
-| `ru.admin.commercial.effectiveFrom` | Действует с |
-| `ru.admin.commercial.effectiveTo` | Действует до |
-| `ru.admin.commercial.state.draft` | Черновик |
-| `ru.admin.commercial.state.published` | Опубликовано |
-| `ru.admin.commercial.state.retired` | Снято |
-| `ru.admin.commercial.publishConfirm` | Опубликованную версию изменить нельзя; для изменений создайте новую версию. |
-| `ru.admin.commercial.acceptances` | {count, plural, one {# принятие} few {# принятия} many {# принятий}} |
-| `ru.admin.commercial.usage` | Использование и кредиты |
-| `ru.admin.narrowScreenNote` | Удобнее на широком экране |
+| `admin.title` | Administration |
+| `admin.backToWorkspace` | Back to the workspace |
+| `admin.nav.editorial` | Editorial |
+| `admin.nav.moderation` | Moderation |
+| `admin.nav.support` | Support |
+| `admin.nav.commercial` | Commercial terms |
+| `admin.auditNote` | This action will be recorded in the audit log |
+| `admin.editorial.queue` | In review |
+| `admin.editorial.queueEmpty` | No materials in review |
+| `admin.editorial.approve` | Approve |
+| `admin.editorial.return` | Return with comments |
+| `admin.editorial.schedule` | Schedule |
+| `admin.editorial.changedSinceReview` | The author changed the material; review it again |
+| `admin.issues.title` | Magazine issues |
+| `admin.issues.state.draft` | Draft |
+| `admin.issues.state.curated` | Curated |
+| `admin.issues.state.review` | In review |
+| `admin.issues.state.released` | Released |
+| `admin.issues.state.corrected` | Corrected edition |
+| `admin.issues.moveUp` | Move up |
+| `admin.issues.moveDown` | Move down |
+| `admin.issues.moved` | Material moved to position {index} |
+| `admin.issues.checklist` | Issue release checklist |
+| `admin.issues.check.web` | Web version checked on mobile |
+| `admin.issues.check.pdf` | PDF built and checked page by page |
+| `admin.issues.check.a11y` | PDF accessibility plan completed |
+| `admin.issues.release` | Release |
+| `admin.issues.correct` | Create a corrected edition |
+| `admin.taxonomy.title` | Reference lists |
+| `admin.moderation.cases` | Cases |
+| `admin.moderation.casesEmpty` | No open cases |
+| `admin.moderation.decision` | Decision |
+| `admin.moderation.appeal` | Appeal |
+| `admin.support.cases` | Support cases |
+| `admin.support.grantScope` | Case-based access |
+| `admin.support.grantExpires` | Access until {date} |
+| `admin.support.requestAccess` | Request case-based access |
+| `admin.commercial.offers` | Offer versions |
+| `admin.commercial.noOffers` | No published versions |
+| `admin.commercial.plan` | Plan |
+| `admin.commercial.price` | Price |
+| `admin.commercial.trialDays` | Trial period, days |
+| `admin.commercial.entitlements` | Entitlements |
+| `admin.commercial.effectiveFrom` | Effective from |
+| `admin.commercial.effectiveTo` | Effective until |
+| `admin.commercial.state.draft` | Draft |
+| `admin.commercial.state.published` | Published |
+| `admin.commercial.state.retired` | Retired |
+| `admin.commercial.publishConfirm` | A published version cannot be changed; to make changes, create a new version. |
+| `admin.commercial.acceptances` | {count, plural, one {# acceptance} other {# acceptances}} |
+| `admin.commercial.usage` | Usage and credits |
+| `admin.narrowScreenNote` | Easier on a wide screen |
 
 ## Open questions
 

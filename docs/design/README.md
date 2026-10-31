@@ -18,7 +18,7 @@ Eleven generated PNGs were inspected and preserved byte-for-byte in the private 
 
 ## Brand and layout rules
 
-Three blue squares in an L-like arrangement with black stacked Russian wordmark. Raster references inspire a canonical editable asset; no final logo asset is fabricated here. Light white/cool-gray surfaces, restrained blue, readable sans-serif and purposeful imagery. Preserve complete functionality while reducing clutter. No generic giant charts, excessive panels, inconsistent controls or English product text.
+Three blue squares in an L-like arrangement with a black stacked wordmark: Trustwork is the product name everywhere; a Russian-language wordmark defined in `apps/web/brand` is shown only in the Russian interface. Raster references inspire a canonical editable asset; no final logo asset is fabricated here. Light white/cool-gray surfaces, restrained blue, readable sans-serif and purposeful imagery. Preserve complete functionality while reducing clutter. No generic giant charts, excessive panels, inconsistent controls or hard-coded product text.
 
 Full-page desktop references guide hierarchy. Mobile adaptation is mandatory in implementation but need not be displayed beside every desktop concept. Public raster references have narrow long-page dimensions and must not be mistaken for measured CSS breakpoints or sufficient typography specs. All pixel values/tokens are provisional until DS-001 review.
 

@@ -1,4 +1,4 @@
-# Publications («Публикации»): drafts, lifecycle, corrections
+# Publications: drafts, lifecycle, corrections
 
 Routes: `/app/publications` (list), `/app/publications/new`, `/app/publications/[id]` (editor), `/app/publications/[id]/history`.
 
@@ -12,15 +12,15 @@ Routes: `/app/publications` (list), `/app/publications/new`, `/app/publications/
 |---|---|
 | Any registered person | Own personal publications in all states |
 | Company member with publish/editor grant | Company-authored publications; may edit without being credited as author |
-| Editorial (platform) | Review queue lives in administration, not here; an item «на проверке» shows reviewer feedback |
-| Assistant | May create drafts under mandate; «при участии помощника» flag set automatically; publishing requires the person's/ company's publication authority |
+| Editorial (platform) | Review queue lives in administration, not here; an item "in review" shows reviewer feedback |
+| Assistant | May create drafts under mandate; "with the assistant's help" flag set automatically; publishing requires the person's/ company's publication authority |
 
 ## Data projection
 
 | Field | Notes |
 |---|---|
 | Title, lede, body (rich text with headings, lists, figures, tables, quotes), cover | Body stored versioned |
-| Format (разбор, практика, опыт, мнение, интервью, история проекта, обзор, новость) | Separate from topics |
+| Format (analysis, practice, experience, opinion, interview, project story, overview, news) | Separate from topics |
 | Topics (taxonomy), entity links (company/person/project; only ones the author may reference) | Links to public projections |
 | Author credit (me / company) and editors list | Credit ≠ edit rights |
 | Lifecycle state, scheduled time, published time, versions, corrections (summary per correction), retraction record | Visible history |
@@ -38,8 +38,8 @@ Routes: `/app/publications` (list), `/app/publications/new`, `/app/publications/
 
 | Width | List | Editor |
 |---|---|---|
-| Desktop ≥1280 | Shell; PageHeader («Публикации», «Написать»); tabs by state (Черновики, На проверке, Запланированные, Опубликованные, Исправленные, Отозванные); DataTable (title, format, author credit, state, updated, where shown) | Shell; PageHeader (title field inline, state chip, actions: Сохранить, Отправить на проверку / Опубликовать / Запланировать, Предпросмотр, меню: История, Отозвать); two-column: editor (max 760 px) + settings rail (format, topics, cover, entity links, author credit, editors, schedule) |
-| Tablet | Cards | Rail collapses into a «Настройки» sheet |
+| Desktop ≥1280 | Shell; PageHeader ("Publications", "Write"); tabs by state (Drafts, In review, Scheduled, Published, Corrected, Retracted; `publications.tabs.*`); DataTable (title, format, author credit, state, updated, where shown) | Shell; PageHeader (title field inline, state chip, actions: Save, Send for review / Publish / Schedule, Preview, menu: History, Retract); two-column: editor (max 760 px) + settings rail (format, topics, cover, entity links, author credit, editors, schedule) |
+| Tablet | Cards | Rail collapses into a "Settings" sheet |
 | Mobile <768 | Cards | Full-width editor; toolbar sticky; settings sheet |
 
 ## Component inventory
@@ -50,79 +50,79 @@ PageHeader, Tabs, DataTable, PublicationRow, StatusChip (lifecycle), RichTextEdi
 
 | State | Behaviour |
 |---|---|
-| Empty | «Публикаций пока нет» + «Написать»; hint that company authorship needs a grant |
-| Loading | Skeleton; editor shows «Загружаем…» |
-| Error | Autosave failure banner «Черновик не сохранён» with retry; never lose text locally |
-| Permission-denied | «Опубликовать» replaced by «Отправить на проверку» when policy requires review; company credit option hidden without grant; editing someone else's item → NoAccess |
+| Empty | "No publications yet" + "Write"; hint that company authorship needs a grant |
+| Loading | Skeleton; editor shows "Loading…" |
+| Error | Autosave failure banner "Draft not saved" with retry; never lose text locally |
+| Permission-denied | "Publish" replaced by "Send for review" when policy requires review; company credit option hidden without grant; editing someone else's item → NoAccess |
 | Offline | Local draft retained; banner |
-| Partial/stale | Item pinned in a released issue: editing after release creates a correction (banner «Материал входит в выпуск № N; изменения станут исправлением»); concurrent edit conflict → «Документ изменён другим редактором» with reload/compare |
-| Review | «На проверке» shows reviewer feedback and allows withdraw |
+| Partial/stale | Item pinned in a released issue: editing after release creates a correction (banner "The material is part of issue No. N; changes will become a correction"); concurrent edit conflict → "Another editor changed the document" with reload/compare |
+| Review | "In review" shows reviewer feedback and allows withdraw |
 
 ## Keyboard order and focus
 
-Shell → header (title input, actions) → editor toolbar (toolbar pattern: one tab stop, arrows between buttons) → editor content → rail fields → footer actions. Dialogs trap focus. After publish, focus to the state chip with announcement «Опубликовано».
+Shell → header (title input, actions) → editor toolbar (toolbar pattern: one tab stop, arrows between buttons) → editor content → rail fields → footer actions. Dialogs trap focus. After publish, focus to the state chip with announcement "Published".
 
 ## Responsive table behaviour
 
-List table → cards below 768; history table (версия, дата, автор изменения, тип) → stacked list.
+List table → cards below 768; history table (version, date, author of the change, type) → stacked list.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.publications.title` | Публикации |
-| `ru.publications.write` | Написать |
-| `ru.publications.empty` | Публикаций пока нет |
-| `ru.publications.companyHint` | Чтобы публиковать от имени компании, нужно право публикации в компании. |
-| `ru.publications.tabs.drafts` | Черновики |
-| `ru.publications.tabs.review` | На проверке |
-| `ru.publications.tabs.scheduled` | Запланированные |
-| `ru.publications.tabs.published` | Опубликованные |
-| `ru.publications.tabs.corrected` | Исправленные |
-| `ru.publications.tabs.retracted` | Отозванные |
-| `ru.publications.col.title` | Название |
-| `ru.publications.col.format` | Формат |
-| `ru.publications.col.author` | От чьего имени |
-| `ru.publications.col.state` | Состояние |
-| `ru.publications.col.updated` | Обновлено |
-| `ru.publications.col.shownIn` | Где показывается |
-| `ru.pubState.draft` | Черновик |
-| `ru.pubState.inReview` | На проверке |
-| `ru.pubState.scheduled` | Запланировано на {date} |
-| `ru.pubState.published` | Опубликовано |
-| `ru.pubState.corrected` | Исправлено |
-| `ru.pubState.retracted` | Отозвано |
-| `ru.editor.titlePlaceholder` | Заголовок |
-| `ru.editor.ledePlaceholder` | Короткое описание |
-| `ru.editor.bodyPlaceholder` | Текст материала |
-| `ru.editor.save` | Сохранить |
-| `ru.editor.autosaved` | Черновик сохранён {time} |
-| `ru.editor.autosaveFailed` | Черновик не сохранён |
-| `ru.editor.sendToReview` | Отправить на проверку |
-| `ru.editor.publish` | Опубликовать |
-| `ru.editor.schedule` | Запланировать |
-| `ru.editor.preview` | Предпросмотр |
-| `ru.editor.history` | История |
-| `ru.editor.retract` | Отозвать |
-| `ru.editor.settings` | Настройки материала |
-| `ru.editor.format` | Формат |
-| `ru.editor.topics` | Темы |
-| `ru.editor.cover` | Обложка |
-| `ru.editor.entityLinks` | Упоминания |
-| `ru.editor.authorCredit` | От чьего имени |
-| `ru.editor.authorMe` | От себя |
-| `ru.editor.authorCompany` | От компании |
-| `ru.editor.editors` | Редакторы |
-| `ru.editor.assistantAssisted` | При участии помощника |
-| `ru.editor.inIssueWarning` | Материал входит в выпуск № {issue}. Изменения станут исправлением с видимой пометкой. |
-| `ru.editor.conflict` | Документ изменён другим редактором. Обновите страницу или сравните версии. |
-| `ru.editor.correction.title` | Исправление |
-| `ru.editor.correction.summary` | Что исправлено |
-| `ru.editor.retract.reason` | Причина отзыва |
-| `ru.editor.retract.note` | На месте материала останется запись об отзыве. |
-| `ru.editor.reviewFeedback` | Замечания редакции |
-| `ru.editor.withdrawReview` | Отозвать с проверки |
-| `ru.editor.toolbar` | Форматирование |
+| `publications.title` | Publications |
+| `publications.write` | Write |
+| `publications.empty` | No publications yet |
+| `publications.companyHint` | To publish on behalf of the company you need the publishing right in the company. |
+| `publications.tabs.drafts` | Drafts |
+| `publications.tabs.review` | In review |
+| `publications.tabs.scheduled` | Scheduled |
+| `publications.tabs.published` | Published |
+| `publications.tabs.corrected` | Corrected |
+| `publications.tabs.retracted` | Retracted |
+| `publications.col.title` | Title |
+| `publications.col.format` | Format |
+| `publications.col.author` | On behalf of |
+| `publications.col.state` | State |
+| `publications.col.updated` | Updated |
+| `publications.col.shownIn` | Shown in |
+| `pubState.draft` | Draft |
+| `pubState.inReview` | In review |
+| `pubState.scheduled` | Scheduled for {date} |
+| `pubState.published` | Published |
+| `pubState.corrected` | Corrected |
+| `pubState.retracted` | Retracted |
+| `editor.titlePlaceholder` | Title |
+| `editor.ledePlaceholder` | Short description |
+| `editor.bodyPlaceholder` | Text of the material |
+| `editor.save` | Save |
+| `editor.autosaved` | Draft saved {time} |
+| `editor.autosaveFailed` | Draft not saved |
+| `editor.sendToReview` | Send for review |
+| `editor.publish` | Publish |
+| `editor.schedule` | Schedule |
+| `editor.preview` | Preview |
+| `editor.history` | History |
+| `editor.retract` | Retract |
+| `editor.settings` | Material settings |
+| `editor.format` | Format |
+| `editor.topics` | Topics |
+| `editor.cover` | Cover |
+| `editor.entityLinks` | Mentions |
+| `editor.authorCredit` | Published as |
+| `editor.authorMe` | Myself |
+| `editor.authorCompany` | The company |
+| `editor.editors` | Editors |
+| `editor.assistantAssisted` | With the assistant's help |
+| `editor.inIssueWarning` | The material is part of issue No. {issue}. Changes will become a correction with a visible note. |
+| `editor.conflict` | Another editor changed the document. Reload the page or compare versions. |
+| `editor.correction.title` | Correction |
+| `editor.correction.summary` | What was corrected |
+| `editor.retract.reason` | Reason for retraction |
+| `editor.retract.note` | A retraction notice will remain in place of the material. |
+| `editor.reviewFeedback` | Editorial comments |
+| `editor.withdrawReview` | Withdraw from review |
+| `editor.toolbar` | Formatting |
 
 ## Open questions
 

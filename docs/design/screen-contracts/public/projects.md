@@ -8,18 +8,18 @@ Routes: `/projects`, `/projects/[slug]`.
 
 ## Audience and access policy
 
-Everyone sees only projects with an **explicit public projection** (an allowlisted set of fields and attachments chosen by the owner/leader). Participants of a private project do not see it here; they use `/app/projects`. Nothing on these pages reveals quotes, attachments, messages, budgets, internal commitments or private participants. A public «open need» is itself an explicit projection of an RFQ (scope summary, region, deadline), never the full RFQ.
+Everyone sees only projects with an **explicit public projection** (an allowlisted set of fields and attachments chosen by the owner/leader). Participants of a private project do not see it here; they use `/app/projects`. Nothing on these pages reveals quotes, attachments, messages, budgets, internal commitments or private participants. A public "open need" is itself an explicit projection of an RFQ (scope summary, region, deadline), never the full RFQ.
 
 ## Data projection
 
 | Field | Public when |
 |---|---|
-| Title, category (жильё, образование, производство, общественные пространства, инфраструктура…), region | in projection |
-| Status (планируется, реализуется, приостановлен, завершён, отменён) | in projection |
+| Title, category (housing, education, industry, public spaces, infrastructure…), region | in projection |
+| Status (planned, in progress, paused, completed, cancelled) | in projection |
 | Owner (person or company public page) | in projection |
 | Public participants with public roles | each participant consented to be listed |
-| Description, photos (licensed; «Визуализация» tag when a render) | in projection |
-| Published updates: type (результат / сообщение команды / обсуждение) with evidence label (утверждение / подтверждено) | in projection; R13 labels mandatory |
+| Description, photos (licensed; "Visualisation" tag when a render) | in projection |
+| Published updates: type (result / team message / discussion) with evidence label (assertion / confirmed) | in projection; R13 labels mandatory |
 | Milestones chosen for publication (name, planned/actual date) | in projection; baseline vs changed shown only if owner publishes both |
 | Open needs (public RFQ projections) | explicit |
 | Related publications | published |
@@ -36,7 +36,7 @@ Everyone sees only projects with an **explicit public projection** (an allowlist
 
 | Width | Hub | Project page |
 |---|---|---|
-| Desktop ≥1280 | Public shell; breadcrumb; H1 + lede; outlined «Представить проект»; featured project; search + «Найти»; view toggle (cards only in first slice; map deferred); chips (categories); filters (Регион, Стадия, Участники, sort); 2-column project cards (photo with optional «Визуализация», title, category/status chips, region, description, owner line, participant chips, «Участники и их роли», «Открыть проект»); right rail («Что видно в проекте», «Открытые потребности», «История с указанием источников»); «Как движутся проекты» update cards; articles; CTA band; footer | Public shell; breadcrumb; header (title, chips, region, owner, status); photo gallery; tabs: Обзор, Участники, Этапы, Обновления, Потребности, Публикации; right rail: owner card, «Что здесь опубликовано» note, report link |
+| Desktop ≥1280 | Public shell; breadcrumb; H1 + lede; outlined "Present a project"; featured project; search + "Find"; view toggle (cards only in first slice; map deferred); chips (categories); filters (Region, Stage, Participants, sort); 2-column project cards (photo with optional "Visualisation", title, category/status chips, region, description, owner line, participant chips, "Participants and their roles", "Open the project"); right rail ("What a project shows" (`projects.whatVisible`), "Open needs", "A story with sources" (`projects.sourcesTitle`)); "How projects are moving" update cards; articles; CTA band; footer | Public shell; breadcrumb; header (title, chips, region, owner, status); photo gallery; tabs: Overview, Participants, Milestones, Updates, Needs, Publications (`projects.tabs.*`); right rail: owner card, "What is published here" note, report link |
 | Tablet | Cards 2 columns; rail below | Tabs scroll |
 | Mobile <768 | Cards 1 column; filters in sheet | Single column; gallery becomes swipeable with buttons and dots that are real controls |
 
@@ -48,69 +48,69 @@ PublicShell, Breadcrumb, SearchField, ChipGroup, FilterSelect/FilterSheet, Segme
 
 | State | Behaviour |
 |---|---|
-| Empty | «Проекты не найдены» + reset; «Открытые потребности» hidden if none |
+| Empty | "No projects found" + reset; "Open needs" hidden if none |
 | Loading | Skeleton cards |
 | Error | Inline error + retry |
 | Permission-denied | Private project slug → 404; a participant gets the same 404 here and a hint only inside the workspace |
 | Offline | Cached readable |
-| Partial/stale | Projection older than its source version shows «Опубликованная версия от {date}»; update marked «Оспаривается» when the assertion is disputed; «Визуализация» tag on renders |
+| Partial/stale | Projection older than its source version shows "Published version of {date}"; update marked "Disputed" when the assertion is disputed; "Visualisation" tag on renders |
 
 ## Keyboard order and focus
 
-Shell → H1 → CTA → search → view toggle → chips → filters → cards (title link, «Участники и их роли», «Открыть проект») → rail. Gallery: previous/next buttons, thumbnails as radio group; images have meaningful alt from the projection.
+Shell → H1 → CTA → search → view toggle → chips → filters → cards (title link, "Participants and their roles", "Open the project") → rail. Gallery: previous/next buttons, thumbnails as radio group; images have meaningful alt from the projection.
 
 ## Responsive table behaviour
 
-Milestones tab may be a table (этап, план, факт, статус). Below 768: stacked cards per milestone with baseline and changed dates on separate labelled lines; «изменено по инициативе заказчика» note stays visible (R13).
+Milestones tab may be a table (milestone, plan, actual, status). Below 768: stacked cards per milestone with baseline and changed dates on separate labelled lines; "changed at the client's request" note stays visible (R13).
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.projects.title` | Проекты, за которыми стоит общее дело *(wording from reference; editorial review)* |
-| `ru.projects.lede` | Объекты, участники и опубликованная история — от идеи до результата. *(wording from reference; editorial review)* |
-| `ru.projects.present` | Представить проект |
-| `ru.projects.searchPlaceholder` | Название, тип объекта, компания или участник |
-| `ru.projects.allProjects` | Все проекты |
-| `ru.projects.view.cards` | Карточки |
-| `ru.projects.view.map` | Карта |
-| `ru.projects.filter.region` | Регион |
-| `ru.projects.filter.stage` | Стадия проекта |
-| `ru.projects.filter.participants` | Участники |
-| `ru.projects.sort.recent` | Недавно обновлённые |
-| `ru.projects.featured` | Проект в фокусе |
-| `ru.projects.participants` | Участники проекта |
-| `ru.projects.participantsAndRoles` | Участники и их роли |
-| `ru.projects.open` | Открыть проект |
-| `ru.projects.owner` | Владелец |
-| `ru.projects.visualization` | Визуализация |
-| `ru.projects.openNeeds` | Открытые потребности |
-| `ru.projects.viewNeeds` | Посмотреть запросы |
-| `ru.projects.howMoving` | Как движутся проекты |
-| `ru.projects.empty` | Проекты не найдены |
-| `ru.projects.publishedVersion` | Опубликованная версия от {date} |
-| `ru.projects.tabs.overview` | Обзор |
-| `ru.projects.tabs.participants` | Участники |
-| `ru.projects.tabs.milestones` | Этапы |
-| `ru.projects.tabs.updates` | Обновления |
-| `ru.projects.tabs.needs` | Потребности |
-| `ru.projects.tabs.publications` | Публикации |
-| `ru.projectStatus.planned` | Планируется |
-| `ru.projectStatus.active` | Реализуется |
-| `ru.projectStatus.suspended` | Приостановлен |
-| `ru.projectStatus.completed` | Завершён |
-| `ru.projectStatus.cancelled` | Отменён |
-| `ru.updateType.result` | Результат |
-| `ru.updateType.teamMessage` | Сообщение команды |
-| `ru.updateType.discussion` | Обсуждение |
-| `ru.evidence.asserted` | Утверждение |
-| `ru.evidence.confirmed` | Подтверждено |
-| `ru.evidence.disputed` | Оспаривается |
-| `ru.evidence.superseded` | Устарело |
-| `ru.milestone.baseline` | План |
-| `ru.milestone.changed` | Изменённый план |
-| `ru.milestone.actual` | Факт |
-| `ru.milestone.changedByClient` | Изменено по инициативе заказчика |
+| `projects.title` | Projects with a common cause behind them *(wording from reference; editorial review)* |
+| `projects.lede` | Sites, participants and the published story, from idea to result. *(wording from reference; editorial review)* |
+| `projects.present` | Present a project |
+| `projects.searchPlaceholder` | Name, site type, company or participant |
+| `projects.allProjects` | All projects |
+| `projects.view.cards` | Cards |
+| `projects.view.map` | Map |
+| `projects.filter.region` | Region |
+| `projects.filter.stage` | Project stage |
+| `projects.filter.participants` | Participants |
+| `projects.sort.recent` | Recently updated |
+| `projects.featured` | Project in focus |
+| `projects.participants` | Project participants |
+| `projects.participantsAndRoles` | Participants and their roles |
+| `projects.open` | Open the project |
+| `projects.owner` | Owner |
+| `projects.visualization` | Visualisation |
+| `projects.openNeeds` | Open needs |
+| `projects.viewNeeds` | See the requests |
+| `projects.howMoving` | How projects are moving |
+| `projects.empty` | No projects found |
+| `projects.publishedVersion` | Published version of {date} |
+| `projects.tabs.overview` | Overview |
+| `projects.tabs.participants` | Participants |
+| `projects.tabs.milestones` | Milestones |
+| `projects.tabs.updates` | Updates |
+| `projects.tabs.needs` | Needs |
+| `projects.tabs.publications` | Publications |
+| `projectStatus.planned` | Planned |
+| `projectStatus.active` | In progress |
+| `projectStatus.suspended` | Suspended |
+| `projectStatus.completed` | Completed |
+| `projectStatus.cancelled` | Cancelled |
+| `updateType.result` | Result |
+| `updateType.teamMessage` | Team message |
+| `updateType.discussion` | Discussion |
+| `evidence.asserted` | Asserted |
+| `evidence.confirmed` | Confirmed |
+| `evidence.disputed` | Disputed |
+| `evidence.superseded` | Superseded by a newer version |
+| `milestone.baseline` | Plan |
+| `milestone.changed` | Changed plan |
+| `milestone.actual` | Actual |
+| `milestone.changedByClient` | Changed at the client’s request |
 
 ## Open questions
 

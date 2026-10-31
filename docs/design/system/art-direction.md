@@ -69,7 +69,7 @@ Tokens: `fast` 120, `base` 160, `slow` 200, `enter` 240, `hover` 300, `open` 200
 
 ## 8. Consistency rules
 
-One card family (`StoryCard`, `EntityCard`, `DecisionCard`, `Card`: surface, radius 12, `e1`, hairline ring, one primary link stretched over the card), one chip family (`StatusChip` tones; topic chips in cards are plain text), one meta row (`Meta`: «Редакция · 21 окт 2026 · 6 мин», 14 px muted, middle dots hidden from assistive technology), link style ink with blue hover underline in prose and blue in UI, icons 20 px in UI / 16 px in meta, kicker always 12 px uppercase.
+One card family (`StoryCard`, `EntityCard`, `DecisionCard`, `Card`: surface, radius 12, `e1`, hairline ring, one primary link stretched over the card), one chip family (`StatusChip` tones; topic chips in cards are plain text), one meta row (`Meta`: "Editorial · Oct 21, 2026 · 6 min", 14 px muted, middle dots hidden from assistive technology), link style ink with blue hover underline in prose and blue in UI, icons 20 px in UI / 16 px in meta, kicker always 12 px uppercase.
 
 ## 9. What was deliberately not done
 

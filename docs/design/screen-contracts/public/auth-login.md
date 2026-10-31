@@ -8,7 +8,7 @@ Route: `/login` (`?next=` for return path, validated as same-origin relative pat
 
 ## Audience and access policy
 
-Anonymous only. An authenticated visitor is redirected to `next` or `/app`. Rate limiting and lockout messages must not disclose whether an email exists («Неверная почта или пароль»). Apple and Google are alternatives; account linking rules belong to O10/BE-000.
+Anonymous only. An authenticated visitor is redirected to `next` or `/app`. Rate limiting and lockout messages must not disclose whether an email exists ("Wrong email or password"). Apple and Google are alternatives; account linking rules belong to O10/BE-000.
 
 ## Data projection
 
@@ -25,7 +25,7 @@ Form fields: email, password. No remembered email prefill from other users; brow
 
 | Width | Layout |
 |---|---|
-| Desktop ≥1280 | Top bar: brand (link to `/`), right «← На главную». Two columns: left visual panel (licensed image or illustration, overlay headline + subline, decorative), right form column ~480 px: H1 «Вход», subtitle, email, password (show/hide toggle), «Забыли пароль?», primary «Войти», «или» divider, two outlined provider buttons, «Ещё нет аккаунта? Зарегистрироваться». Footer links |
+| Desktop ≥1280 | Top bar: brand (link to `/`), right "← Back to home". Two columns: left visual panel (licensed image or illustration, overlay headline + subline, decorative), right form column ~480 px: H1 "Sign in", subtitle, email, password (show/hide toggle), "Forgot your password?", primary "Sign in", "or" divider, two outlined provider buttons, "No account yet? Sign up". Footer links |
 | Tablet | Same two columns at ≥900; below 900 visual panel becomes a short banner above the form |
 | Mobile <768 | Single column: top bar, compact brand strip (no photo or 120 px banner), form full width with 16 px gutters, buttons full width, footer links wrap |
 
@@ -37,19 +37,19 @@ AuthShell (top bar + visual panel + footer), Brand, TextField (email), PasswordF
 
 | State | Behaviour |
 |---|---|
-| Empty | Fields blank; «Войти» enabled (validation on submit, not disabled button) |
-| Loading | Button shows spinner + «Входим…», fields disabled, `aria-busy` on form |
+| Empty | Fields blank; "Sign in" enabled (validation on submit, not disabled button) |
+| Loading | Button shows spinner + "Signing in…", fields disabled, `aria-busy` on form |
 | Error (validation) | Field-level messages; focus moves to first invalid field; alert summary at top for screen readers |
-| Error (credentials) | FormAlert «Неверная почта или пароль»; password cleared; email kept |
-| Error (rate limit) | FormAlert «Слишком много попыток. Попробуйте через {minutes} мин.» button disabled until then |
-| Error (provider) | FormAlert «Не удалось войти через {provider}. Попробуйте ещё раз или используйте почту.» |
+| Error (credentials) | FormAlert "Wrong email or password"; password cleared; email kept |
+| Error (rate limit) | FormAlert "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}." button disabled until then |
+| Error (provider) | FormAlert "Could not sign in with {provider}. Try again or use your email." |
 | Permission-denied | Not applicable |
-| Offline | FormAlert «Нет соединения»; submit retries when online |
-| Partial/stale | Session expired notice: «Сессия завершена. Войдите снова.» shown when `?reason=expired` |
+| Offline | FormAlert "No connection" (`common.offline`); submit retries when online |
+| Partial/stale | Session expired notice: "Your session has ended. Please sign in again." shown when `?reason=expired` |
 
 ## Keyboard order and focus
 
-Brand → «На главную» → email → password → show/hide toggle → «Забыли пароль?» → «Войти» → Apple → Google → «Зарегистрироваться» → footer links. Initial focus: not auto-moved (page H1 announced); after error, first invalid field. Enter submits from any field. Show/hide toggle does not change tab order.
+Brand → "Back to home" → email → password → show/hide toggle → "Forgot your password?" → "Sign in" → Apple → Google → "Create an account" → footer links. Initial focus: not auto-moved (page H1 announced); after error, first invalid field. Enter submits from any field. Show/hide toggle does not change tab order.
 
 ## Responsive table behaviour
 
@@ -57,38 +57,38 @@ No tables.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.auth.login.title` | Вход |
-| `ru.auth.login.subtitle` | Рады видеть вас снова |
-| `ru.auth.emailPlaceholder` | Введите почту |
-| `ru.auth.passwordPlaceholder` | Введите пароль |
-| `ru.auth.showPassword` | Показать пароль |
-| `ru.auth.hidePassword` | Скрыть пароль |
-| `ru.auth.forgot` | Забыли пароль? |
-| `ru.auth.submitLogin` | Войти |
-| `ru.auth.submitting` | Входим… |
-| `ru.auth.or` | или |
+| `auth.login.title` | Sign in |
+| `auth.login.subtitle` | Good to see you again |
+| `auth.emailPlaceholder` | Enter your email |
+| `auth.passwordPlaceholder` | Enter your password |
+| `auth.showPassword` | Show password |
+| `auth.hidePassword` | Hide password |
+| `auth.forgot` | Forgot your password? |
+| `auth.submitLogin` | Sign in |
+| `auth.submitting` | Signing in… |
+| `auth.or` | or |
 | `auth.apple` | Continue with Apple (neutral provider behind the identity adapter, ADR-009) |
-| `ru.auth.google` | Войти через Google |
-| `ru.auth.noAccount` | Ещё нет аккаунта? |
-| `ru.auth.register` | Зарегистрироваться |
-| `ru.auth.backHome` | На главную |
-| `ru.auth.error.invalidCredentials` | Неверная почта или пароль |
-| `ru.auth.error.rateLimited` | Слишком много попыток. Попробуйте через {minutes} мин. |
-| `ru.auth.error.provider` | Не удалось войти через {provider}. Попробуйте ещё раз или используйте почту. |
-| `ru.auth.error.emailRequired` | Укажите электронную почту |
-| `ru.auth.error.emailFormat` | Проверьте адрес почты |
-| `ru.auth.error.passwordRequired` | Введите пароль |
-| `ru.auth.sessionExpired` | Сессия завершена. Войдите снова. |
-| `ru.auth.visual.loginHeadline` | Хорошие решения. Надёжные партнёры. *(wording from reference; editorial review)* |
-| `ru.auth.visual.loginSub` | Находите людей и компании, делитесь опытом и работайте над проектами. |
-| `ru.footer.help` | Помощь (shared; same relative position as in PublicFooter) |
+| `auth.google` | Continue with Google |
+| `auth.noAccount` | No account yet? |
+| `auth.register` | Create an account |
+| `auth.backHome` | Back to home |
+| `auth.error.invalidCredentials` | Wrong email or password |
+| `auth.error.rateLimited` | Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}. |
+| `auth.error.provider` | Could not sign in with {provider}. Try again or use your email. |
+| `auth.error.emailRequired` | Enter your email |
+| `auth.error.emailFormat` | Check the email address |
+| `auth.error.passwordRequired` | Enter your password |
+| `auth.sessionExpired` | Your session has ended. Please sign in again. |
+| `auth.visual.loginHeadline` | Good decisions. Reliable partners. *(wording from reference; editorial review)* |
+| `auth.visual.loginSub` | Find people and companies, share experience and work on projects together. |
+| `footer.help` | Help (shared; same relative position as in PublicFooter) |
 
-Existing keys reused: `auth.email`, `auth.password`. After a failed login, «Забыли пароль?» carries the entered email to `/recover` as a prefilled value (WCAG 2.2 3.3.7).
+Existing keys reused: `auth.email`, `auth.password`. After a failed login, "Forgot your password?" carries the entered email to `/recover` as a prefilled value (WCAG 2.2 3.3.7).
 
 ## Open questions
 
 - O10: provider linking, what happens when a Google email matches an existing password account.
 - Visual panel imagery licensing; fallback to brand illustration.
-- «Запомнить меня» checkbox: not in reference; propose none (session policy decided in BE-000).
+- "Remember me" checkbox: not in reference; propose none (session policy decided in BE-000).

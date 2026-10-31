@@ -11,7 +11,7 @@ Target: WCAG 2.2 AA (see [accessibility acceptance](../../quality/accessibility.
 | Stories scanned | **170** (28 CSF files: the 140 DS-001 stories plus 30 DS-002 stories for typography, media, editorial, workspace cards and the showcase compositions) |
 | Violations | **0** |
 | Page errors while rendering | 0 (the test fails on any uncaught exception, which also proves every `t()` key used by a component exists and every media file resolves) |
-| Opened states | `tests/e2e/opened.spec.ts` reruns axe after a user opens each overlay kind (dialog, destructive confirm, avatar menu, row-actions menu, popover, select listbox, combobox listbox after typing, assistant overlay, tooltip on focus, comparison disclosure, sidebar «Ещё», **demo persona menu**); `mobile.spec.ts` rescans after opening the public menu sheet and the assistant sheet and on the showcase home. All 0 violations with one documented exception below |
+| Opened states | `tests/e2e/opened.spec.ts` reruns axe after a user opens each overlay kind (dialog, destructive confirm, avatar menu, row-actions menu, popover, select listbox, combobox listbox after typing, assistant overlay, tooltip on focus, comparison disclosure, sidebar "More" (`shell.more`), **demo persona menu**); `mobile.spec.ts` rescans after opening the public menu sheet and the assistant sheet and on the showcase home. All 0 violations with one documented exception below |
 | Known finding, not a defect | Combobox listbox open: React Aria keeps the non-modal popover interactive and marks the rest of the page `aria-hidden`; axe flags the other focusable fields as `aria-hidden-focus`. The rule is disabled for that single case with a comment |
 | Output | `packages/ui/dist/axe-summary.json` (per story: id, violation count, rule ids); `packages/ui/dist/playwright-report.json` |
 
@@ -25,23 +25,23 @@ Run: `npx playwright test` inside `packages/ui` after a Storybook build. Result 
 |---|---|---|
 | Dialog: opens from keyboard, initial focus on the first field, Tab stays inside, rest of document `inert`, Escape closes, focus returns to trigger | 2.1.2, 2.4.3, 2.4.7 | pass |
 | Confirm dialog focuses the non-destructive action first | 3.3.4 | pass |
-| Avatar menu: `aria-haspopup="menu"`, ArrowDown opens, arrows/End move, Escape closes and returns focus; «Помощь» is directly before «Выйти» | 2.1.1, 3.2.6 | pass |
+| Avatar menu: `aria-haspopup="menu"`, ArrowDown opens, arrows/End move, Escape closes and returns focus; "Help" (`footer.help`) is directly before "Sign out" (`shell.menu.signOut`) | 2.1.1, 3.2.6 | pass |
 | Tabs: ArrowRight selects, Tab reaches the panel | 2.1.1 | pass |
 | Password toggle: `aria-pressed`, Space toggles, tab order unchanged | 4.1.2 | pass |
 | Sortable headers: `aria-sort`, click/keyboard toggles; table region focusable with a label | 1.3.1, 2.1.1 | pass |
-| Sidebar collapse inside the brand row, `aria-expanded`, focus stays, collapsed links keep names and attention text, «В отрасль» present | 2.4.3, 4.1.2 | pass |
+| Sidebar collapse inside the brand row, `aria-expanded`, focus stays, collapsed links keep names and attention text, "To the industry" (`publicExit`) present | 2.4.3, 4.1.2 | pass |
 | Bell count in the accessible name; avatar is the only account control | 4.1.2, R24 | pass |
-| Assistant overlay: fixed, page width unchanged, non-modal, focus to «Закрыть», Escape returns focus, `aria-expanded` | 1.4.10, 2.4.3, R09 | pass |
+| Assistant overlay: fixed, page width unchanged, non-modal, focus to "Close" (`common.close`), Escape returns focus, `aria-expanded` | 1.4.10, 2.4.3, R09 | pass |
 | Launcher names its unread / action-required state | 4.1.2 | pass |
 | Citation chips: state in name, `aria-expanded` | 4.1.2 | pass |
-| TagSelect: `aria-pressed`, live «Выбран 1 вариант» | 4.1.2, 4.1.3 | pass |
+| TagSelect: `aria-pressed`, live "1 option selected" | 4.1.2, 4.1.3 | pass |
 | Public header: seven sections in order, `aria-current`, skip link first | 2.4.1, R15 | pass |
 | Toast region polite, errors `role="alert"` | 4.1.3 | pass |
 | Focus ring rendered on keyboard focus | 2.4.7 | pass |
 | Focused control scrolled into view lands below the sticky header | 2.4.11 | pass |
 | **StoryCard: exactly one link per card, focus ring drawn on the whole card** | 2.4.7, 2.4.4 | pass |
 | **Hero: single link named by the headline, image `alt` present** | 1.1.1, 2.4.4 | pass |
-| **MagazineCover link named «Обложка выпуска № 12 … Фасады перед зимой» from its own text** | 2.5.3, 2.4.4 | pass |
+| **MagazineCover link named "Cover of issue No. 12 … Facades before winter" from its own text** | 2.5.3, 2.4.4 | pass |
 | **DemoBanner: `role="status"` message; persona menu opens with ArrowDown, `menuitemradio` checked state, End + Enter selects, name updates, focus returns** | 4.1.2, 2.4.3 | pass |
 | **DecisionCard: one CTA, kicker names the state (never colour-only)** | 1.4.1 | pass |
 | **EventList: `time[datetime]` with visually hidden full date, one link per item** | 1.3.1 | pass |

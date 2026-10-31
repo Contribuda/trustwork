@@ -8,7 +8,7 @@ Routes: `/news`, `/news/[slug]`.
 
 ## Audience and access policy
 
-Anonymous and authenticated readers see the same published items. Bookmark and «Предложить материал» require authentication. Editorial actions never appear here. Retracted items are not listed; a direct link to a retracted slug shows an explanatory record only if policy permits.
+Anonymous and authenticated readers see the same published items. Bookmark and "Suggest a material" require authentication. Editorial actions never appear here. Retracted items are not listed; a direct link to a retracted slug shows an explanatory record only if policy permits.
 
 ## Data projection
 
@@ -34,9 +34,9 @@ Anonymous and authenticated readers see the same published items. Bookmark and �
 
 | Width | List | Detail |
 |---|---|---|
-| Desktop ≥1280 | Public shell; breadcrumb; H1 + lede; search + «Найти»; chip row (topics); filter row (period, region, source, sort); main column: day groups («Сегодня», «Вчера», dates) with rows (time, topic label, title, lede, source type, «К источнику», optional thumbnail, bookmark); right rail: «Темы в фокусе», «О новостной ленте», «Нужен контекст?»; «Показать ещё» + pagination | Public shell; breadcrumb; topic label; H1; byline (author kind, published time, event time, source); correction banner if corrected; body; source block («Первоисточник», link, source type); entity links; related news; footer |
+| Desktop ≥1280 | Public shell; breadcrumb; H1 + lede; search + "Find"; chip row (topics); filter row (period, region, source, sort); main column: day groups ("Today", "Yesterday", dates) with rows (time, topic label, title, lede, source type, "To the source", optional thumbnail, bookmark); right rail: "Topics in focus", "About the news feed", "Need context?"; "Show more" (`common.showMore`) + pagination | Public shell; breadcrumb; topic label; H1; byline (author kind, published time, event time, source); correction banner if corrected; body; source block ("Primary source", link, source type); entity links; related news; footer |
 | Tablet | Filters wrap to two lines; rail below list; detail single column max ~720 px | |
-| Mobile <768 | Chips scroll horizontally; filters collapse into a «Фильтры» sheet button with active-count badge; rows stack (time + topic on one line, thumbnail below title); «Показать ещё» as primary pagination; rail at bottom | Single column; sticky source link at the end |
+| Mobile <768 | Chips scroll horizontally; filters collapse into a "Filters" sheet button with active-count badge; rows stack (time + topic on one line, thumbnail below title); "Show more" (`common.showMore`) as primary pagination; rail at bottom | Single column; sticky source link at the end |
 
 ## Component inventory
 
@@ -46,17 +46,17 @@ PublicShell, Breadcrumb, SearchField, ChipGroup, FilterSelect, FilterSheet (mobi
 
 | State | Behaviour |
 |---|---|
-| Empty (no filter) | «Пока нет новостей» with link to articles |
-| Empty (filtered) | «По этим условиям ничего не найдено» + «Сбросить фильтры» |
+| Empty (no filter) | "No news yet" with link to articles |
+| Empty (filtered) | "Nothing matches these conditions" + "Reset filters" |
 | Loading | Skeleton rows (5) preserving row height; filters disabled with `aria-busy` |
 | Error | Inline error card with retry; filters stay usable |
 | Permission-denied | Not applicable for list; detail of unpublished slug returns 404 page, never "forbidden" (do not reveal existence) |
-| Offline | Cached list readable; bookmark toast «Нет соединения» |
-| Partial/stale | Corrected item shows «Исправлено DD.MM» label; detail shows CorrectionBanner with link to revision list; retracted shows RetractionNotice |
+| Offline | Cached list readable; bookmark toast "No connection" (`common.offline`) |
+| Partial/stale | Corrected item shows "Corrected <date>" label; detail shows CorrectionBanner with link to revision list; retracted shows RetractionNotice |
 
 ## Keyboard order and focus
 
-Shell order → breadcrumb → H1 → search → chips (roving tabindex, arrow keys) → filters → rows (title is the link; «К источнику» and bookmark are separate tab stops) → «Показать ещё» → pagination → rail. After «Показать ещё», focus moves to the first new row and a live region announces «Загружено ещё N новостей». Filter sheet is a modal dialog with focus return.
+Shell order → breadcrumb → H1 → search → chips (roving tabindex, arrow keys) → filters → rows (title is the link; "To the source" and bookmark are separate tab stops) → "Show more" → pagination → rail. After "Show more" (`common.showMore`), focus moves to the first new row and a live region announces "Loaded N more news items". Filter sheet is a modal dialog with focus return.
 
 ## Responsive table behaviour
 
@@ -64,44 +64,44 @@ No tables; the list is a semantic `<ul>`/`<article>` list, not a table.
 
 ## Locale keys
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `ru.news.title` | Новости отрасли |
-| `ru.news.lede` | Что происходит в строительстве, производстве и на рынке материалов. *(wording from reference; editorial review)* |
-| `ru.news.searchPlaceholder` | Найти новость, тему или источник |
-| `ru.news.find` | Найти |
-| `ru.news.allTopics` | Все темы |
-| `ru.news.period` | Период |
-| `ru.news.regions` | Все регионы |
-| `ru.news.sources` | Все источники |
-| `ru.news.sortNewest` | Сначала новые |
-| `ru.news.today` | Сегодня |
-| `ru.news.yesterday` | Вчера |
-| `ru.news.toSource` | К источнику |
-| `ru.news.primarySource` | Первоисточник |
-| `ru.news.eventTime` | Событие |
-| `ru.news.publishedTime` | Опубликовано |
-| `ru.news.loadMore` | Показать ещё новости |
-| `ru.news.loadedMore` | Загружено ещё {count, plural, one {# новость} few {# новости} many {# новостей}} |
-| `ru.news.empty` | Пока нет новостей |
-| `ru.news.emptyFiltered` | По этим условиям ничего не найдено |
-| `ru.news.resetFilters` | Сбросить фильтры |
-| `ru.news.topicsInFocus` | Темы в фокусе |
-| `ru.news.aboutFeed` | О новостной ленте |
-| `ru.news.howWeWorkWithSources` | Как мы работаем с источниками |
-| `ru.news.needContext` | Нужен контекст? |
-| `ru.news.readAnalyses` | Читать разборы |
-| `ru.news.related` | По теме |
-| `ru.common.filters` | Фильтры |
-| `ru.common.bookmark` | Сохранить |
-| `ru.common.bookmarked` | Сохранено |
-| `ru.correction.banner` | Материал исправлен {date}. {summary} |
-| `ru.correction.history` | История изменений |
-| `ru.correction.retracted` | Материал отозван редакцией. |
-| `ru.common.pagination` | Страницы |
-| `ru.common.next` | Далее |
+| `news.title` | Industry news |
+| `news.lede` | What is happening in construction, manufacturing and the materials market. *(wording from reference; editorial review)* |
+| `news.searchPlaceholder` | Find a news item, topic or source |
+| `news.find` | Find |
+| `news.allTopics` | All topics |
+| `news.period` | Period |
+| `news.regions` | All regions |
+| `news.sources` | All sources |
+| `news.sortNewest` | Newest first |
+| `news.today` | Today |
+| `news.yesterday` | Yesterday |
+| `news.toSource` | To the source |
+| `news.primarySource` | Primary source |
+| `news.eventTime` | Event |
+| `news.publishedTime` | Published |
+| `news.loadMore` | Show more news |
+| `news.loadedMore` | Loaded {count, plural, one {# more news item} other {# more news items}} |
+| `news.empty` | No news yet |
+| `news.emptyFiltered` | Nothing matches these conditions |
+| `news.resetFilters` | Reset filters |
+| `news.topicsInFocus` | Topics in focus |
+| `news.aboutFeed` | About the news feed |
+| `news.howWeWorkWithSources` | How we work with sources |
+| `news.needContext` | Need context? |
+| `news.readAnalyses` | Read the analyses |
+| `news.related` | Related |
+| `common.filters` | Filters |
+| `common.bookmark` | Save |
+| `common.bookmarked` | Saved |
+| `correction.banner` | This material was corrected on {date}. {summary} |
+| `correction.history` | Change history |
+| `correction.retracted` | This material was retracted by the editors. |
+| `common.pagination` | Pages |
+| `common.next` | Next |
 
 ## Open questions
 
 - Which source types are allowed and how source licensing is displayed (CNT-001 editorial source policy).
-- Whether «Предложить материал» goes to a public form or requires login (propose: login, lands in `/app/publications/new`).
+- Whether "Suggest a material" goes to a public form or requires login (propose: login, lands in `/app/publications/new`).
