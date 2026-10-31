@@ -70,7 +70,7 @@ export function serializeError(error: unknown): SerializedError {
 /** Recursively removes secret and private keys, scrubs strings, bounds depth/size and breaks cycles. */
 export function redact(value: unknown, depth = 0, seen = new WeakSet<object>()): unknown {
   if (value === null || value === undefined) return value;
-  if (typeof value === 'string') return scrubText(value.length > 4_000 ? `${value.slice(0, 4_000)}…` : value);
+  if (typeof value === 'string') return scrubText(value.length > 4_000 ? `${value.slice(0, 4_000)}...` : value);
   if (typeof value === 'number' || typeof value === 'boolean') return value;
   if (typeof value === 'bigint') return value.toString();
   if (value instanceof Error) return serializeError(value);
