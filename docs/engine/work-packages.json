@@ -7473,7 +7473,7 @@
       "id": "PRC-001",
       "title": "Approval routes, decisions and delegation",
       "area": "commerce-backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "PRC-000",
         "BE-003",

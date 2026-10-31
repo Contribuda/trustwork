@@ -218,6 +218,14 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // PRC-001: approval routes. Drafting, activation, decisions (with the request's step changes and outbox event),
+  // withdrawal and delegation commit with their audit row in the request transaction.
+  'approval.route_draft': IN_TRANSACTION,
+  'approval.route_activate': IN_TRANSACTION,
+  'approval.decide': IN_TRANSACTION,
+  'approval.withdraw': IN_TRANSACTION,
+  'approval.delegate': IN_TRANSACTION,
+  'approval.delegation_revoke': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

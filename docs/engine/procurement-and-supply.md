@@ -318,7 +318,7 @@ A **requisition** is an internal request inside one company (or one person's pro
 
 ## Approval routes
 
-Status: **Proposed** (PRC-001; console templates HUBC-011).
+Status: **Live** in the API (PRC-001, `apps/api/src/modules/approval-routes`); console templates are proposed (HUBC-011). The requester never decides, without exception (the sole-person audit flag applies to the other built-in rules); the worker job that runs the escalation sweep is a follow-up.
 
 Approval routes are the company's own versioned rules for who must approve what. They are human decisions; agents prepare them.
 
