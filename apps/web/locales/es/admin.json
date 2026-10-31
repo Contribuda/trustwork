@@ -1,0 +1,1132 @@
+{
+  "admin": {
+    "title": "Administración",
+    "backToWorkspace": "Volver al espacio de trabajo",
+    "helpLink": "Ayuda",
+    "navLabel": "Navegación de la consola",
+    "bandLinks": "Enlaces de la consola",
+    "menu": "Secciones",
+    "hubBand": {
+      "actsOn": "Esta página actúa sobre",
+      "stage": "Etapa: {stage}"
+    },
+    "bands": {
+      "demo": "Datos de demostración: sintéticos y etiquetados. Nunca salen de este hub, nunca se indexan ni se federan; los cambios no se guardan.",
+      "maintenance": "Mantenimiento: el hub es de solo lectura para los participantes.",
+      "killSwitch": "Interruptor de emergencia activado: {scope}. Para liberarlo se necesitan una segunda persona y una nota de incidente.",
+      "offline": "Sin conexión: puede leer, pero los cambios están deshabilitados hasta que vuelva la conexión."
+    },
+    "demo": {
+      "current": "Perfil de personal de demostración: {persona}",
+      "choose": "Cambiar el perfil de personal de demostración",
+      "nobody": "nadie ha iniciado sesión",
+      "personas": {
+        "hub-owner": "Propietario del hub (Estados Unidos)",
+        "staff-admin": "Administrador del personal",
+        "compliance": "Responsable de cumplimiento",
+        "editor": "Editor (editor en jefe en Estados Unidos, editor en Samarcanda)",
+        "data-steward": "Responsable de datos",
+        "trust-reviewer": "Revisor de confianza y moderador",
+        "support": "Soporte (líder en Estados Unidos, agente en Samarcanda)",
+        "commercial": "Administrador comercial",
+        "ops": "Ingeniero de operaciones (todo el nodo)",
+        "privacy": "Responsable de privacidad",
+        "auditor": "Auditor (plataforma)",
+        "node-operator": "Operador del nodo y propietario de la plataforma",
+        "staff-none": "Participante sin rol de personal"
+      }
+    },
+    "status": {
+      "live": "En funcionamiento",
+      "demo": "Demostración",
+      "contract": "Contrato",
+      "designed": "Diseñado",
+      "proposed": "Propuesto"
+    },
+    "providerMode": {
+      "fake": "Simulado",
+      "manual": "Manual",
+      "live": "Real"
+    },
+    "roles": {
+      "platform-owner": "Propietario de la plataforma",
+      "staff-admin": "Administrador del personal",
+      "editor-in-chief": "Editor en jefe",
+      "editor": "Editor",
+      "moderator": "Moderador",
+      "trust-reviewer": "Revisor de confianza",
+      "support-agent": "Agente de soporte",
+      "support-lead": "Líder de soporte",
+      "commercial-admin": "Administrador comercial",
+      "data-steward": "Responsable de datos",
+      "ops-engineer": "Ingeniero de operaciones",
+      "privacy-officer": "Responsable de privacidad",
+      "auditor": "Auditor",
+      "hub-owner": "Propietario del hub",
+      "compliance-officer": "Responsable de cumplimiento",
+      "node-operator": "Operador del nodo"
+    },
+    "lifecycle": {
+      "draft": "Borrador",
+      "preparing": "En preparación",
+      "soft_launch": "Lanzamiento preliminar",
+      "public": "Público",
+      "suspended": "Suspendido",
+      "closing": "En cierre",
+      "closed": "Cerrado"
+    },
+    "nav": {
+      "home": "Inicio",
+      "hub": "Hub",
+      "participants": "Participantes",
+      "support": "Soporte",
+      "editorial": "Redacción",
+      "data": "Datos",
+      "modules": "Módulos",
+      "trust": "Confianza y seguridad",
+      "agents": "Agentes",
+      "billing": "Planes y pagos",
+      "integrations": "Claves y modelos",
+      "automation": "Automatización",
+      "communications": "Comunicaciones",
+      "federation": "Federación",
+      "privacy": "Privacidad",
+      "staff": "Personal y auditoría",
+      "ops": "Operaciones"
+    },
+    "sections": {
+      "home": {
+        "overview": "Resumen",
+        "approvals": "Aprobaciones",
+        "help": "Ayuda"
+      },
+      "hub": {
+        "identity": "Identidad y territorio",
+        "modes": "Modos del sistema",
+        "modules": "Módulos",
+        "legal": "Aspectos legales y operador",
+        "residency": "Residencia y subencargados",
+        "country": "Base del país",
+        "taxonomy": "Taxonomía y unidades",
+        "launch": "Lista de lanzamiento"
+      },
+      "participants": {
+        "people": "Personas",
+        "companies": "Empresas",
+        "claims": "Reclamaciones de fichas",
+        "verification": "Verificación",
+        "credentials": "Credenciales",
+        "consents": "Consentimientos"
+      },
+      "support": {
+        "lookup": "Búsqueda",
+        "cases": "Casos",
+        "recovery": "Recuperación",
+        "explain": "Explicación de accesos"
+      },
+      "editorial": {
+        "desk": "Mesa de redacción",
+        "sources": "Fuentes",
+        "discovery": "Descubrimiento",
+        "pipelines": "Flujos de procesamiento",
+        "review": "Revisión",
+        "calendar": "Calendario",
+        "publications": "Publicaciones",
+        "magazine": "Revista",
+        "translations": "Traducciones",
+        "policy": "Política editorial"
+      },
+      "data": {
+        "datasets": "Conjuntos de datos",
+        "batches": "Lotes de importación",
+        "links": "Vínculos",
+        "knowledge": "Conocimiento",
+        "recommendations": "Recomendaciones"
+      },
+      "modules": {
+        "projects": "Proyectos",
+        "planner": "Planificador",
+        "marketplace": "Mercado",
+        "knowledgeSharing": "Conocimiento compartido",
+        "events": "Eventos",
+        "learning": "Formación",
+        "matching": "Emparejamiento",
+        "commerce": "Comercio",
+        "procurement": "Compras y suministro"
+      },
+      "trust": {
+        "moderation": "Moderación",
+        "disputes": "Disputas",
+        "reputation": "Métodos de reputación",
+        "appeals": "Apelaciones",
+        "screening": "Control de sanciones",
+        "confirmations": "Confirmaciones"
+      },
+      "agents": {
+        "modules": "Módulos del agente",
+        "policy": "Política de agentes",
+        "extensions": "Extensiones",
+        "external": "Agentes externos",
+        "usage": "Uso",
+        "abuse": "Abusos"
+      },
+      "billing": {
+        "offers": "Ofertas y planes",
+        "prices": "Precios",
+        "invoices": "Facturas",
+        "payouts": "Pagos a participantes",
+        "credits": "Créditos y reembolsos",
+        "tax": "Impuestos"
+      },
+      "integrations": {
+        "providers": "Proveedores",
+        "routing": "Enrutamiento",
+        "egress": "Salida de datos",
+        "budgets": "Límites de gasto",
+        "usage": "Uso y costos",
+        "killSwitches": "Interruptores de emergencia"
+      },
+      "automation": {
+        "schedules": "Programaciones",
+        "runs": "Ejecuciones",
+        "alerts": "Alertas"
+      },
+      "communications": {
+        "senders": "Remitentes",
+        "templates": "Plantillas",
+        "deliverability": "Entregabilidad",
+        "announcements": "Anuncios"
+      },
+      "federation": {
+        "peers": "Nodos pares",
+        "licences": "Licencias",
+        "tombstones": "Registros de eliminación",
+        "links": "Vínculos entrantes"
+      },
+      "privacy": {
+        "requests": "Solicitudes",
+        "retention": "Conservación y retenciones",
+        "settings": "Configuración de privacidad",
+        "breaches": "Brechas"
+      },
+      "staff": {
+        "staff": "Personal",
+        "audit": "Auditoría"
+      },
+      "ops": {
+        "health": "Estado del sistema",
+        "jobs": "Tareas",
+        "flags": "Indicadores de funciones",
+        "maintenance": "Mantenimiento",
+        "incidents": "Incidentes",
+        "locales": "Idiomas",
+        "accessibility": "Accesibilidad"
+      }
+    },
+    "common": {
+      "demoNotSaved": "Demostración: los cambios no se guardan.",
+      "demoSecondPerson": "Demostración: esto crearía una solicitud a una segunda persona para “{action}”; no se guarda nada.",
+      "reason": "Motivo",
+      "reasonHelp": "Obligatorio. Se registra junto con el cambio.",
+      "auditNote": "Esta acción se registra en el registro de auditoría.",
+      "secondPersonNote": "Este cambio necesita una segunda persona: crea una solicitud que aprueba otro miembro del personal.",
+      "readOnly": "Solo lectura: sus roles no incluyen cambiar esto.",
+      "offlineDisabled": "Sin conexión: los cambios están deshabilitados hasta que vuelva la conexión.",
+      "saveVersion": "Guardar como una nueva versión",
+      "updated": "Actualizado {time}",
+      "loading": "Cargando",
+      "none": "Ninguno",
+      "notRecorded": "Sin registrar",
+      "yes": "Sí",
+      "no": "No",
+      "on": "Activado",
+      "off": "Desactivado",
+      "version": "Versión {version}",
+      "unknownPerson": "Alguien ajeno a este hub",
+      "opensNewTab": "(se abre en una pestaña nueva)"
+    },
+    "denied": {
+      "title": "No tiene acceso a esta sección",
+      "rolesGrant": "Roles que la otorgan: {roles}.",
+      "noStaffTitle": "No tiene un rol de personal en este hub",
+      "noStaffBody": "La consola se abre solo para las personas que tienen un rol de personal. Si necesita uno, pídaselo al administrador del personal del hub.",
+      "hubNotCovered": "Sus roles de personal abarcan otro hub, no este."
+    },
+    "elevation": {
+      "title": "Confirme que es usted",
+      "body": "La consola se abre después de que confirme su segundo factor (un código de la aplicación de autenticación o un código de recuperación). La sesión elevada termina 15 minutos después o cuando cierre sesión; confirme de nuevo para continuar.",
+      "action": "Confirmar y continuar",
+      "demoNote": "Demostración: la confirmación es simulada."
+    },
+    "designed": {
+      "title": "Diseñado, aún no construido",
+      "body": "Esta sección está diseñada en el manual (pantalla {screen}) y todavía no tiene pantalla. Nada aquí finge funcionar.",
+      "handbook": "Leer el contrato de la pantalla"
+    },
+    "errors": {
+      "denied": "Sus roles no permiten esta acción.",
+      "elevation_required": "Primero confirme su contraseña y su segundo factor.",
+      "offline": "No tiene conexión; no se envió nada.",
+      "reason_required": "Escriba un motivo; se registra junto con el cambio.",
+      "stale": "Otro miembro del personal hizo cambios; actualice la página y vuelva a intentarlo. Lo que escribió se conserva.",
+      "invalid": "Revise los valores resaltados y vuelva a intentarlo.",
+      "territory_restricted": "Este territorio no está disponible.",
+      "transition_not_allowed": "El hub no puede pasar a esta etapa desde su etapa actual.",
+      "gates_open": "Lo impiden condiciones de lanzamiento pendientes: {items}.",
+      "modes_violation": "Estas configuraciones se contradicen: {items}.",
+      "module_requires": "Primero active estos módulos: {items}.",
+      "module_required_by": "Estos módulos dependen de él: {items}.",
+      "counsel_missing": "Registre la aprobación del asesor legal antes de la activación.",
+      "language_missing": "Falta un idioma del hub: {items}.",
+      "own_request": "No puede aprobar su propia solicitud.",
+      "not_own_request": "Solo la persona que hizo la solicitud puede retirarla.",
+      "request_void": "La acción cambió; se necesita una nueva solicitud.",
+      "request_expired": "Esta solicitud venció.",
+      "digest_mismatch": "La acción que revisó no es la que está en espera; vuelva a cargar la solicitud.",
+      "setup_blocked": "Primero termine los pasos anteriores: {items}.",
+      "second_factor_required": "Elija un segundo factor y confirme que guardó los códigos de recuperación.",
+      "not_found": "No se encontró."
+    },
+    "details": {
+      "demo_data_only_before_soft_launch": "los datos de demostración solo se permiten antes del lanzamiento preliminar",
+      "demo_data_never_indexed": "los datos de demostración nunca se indexan",
+      "demo_data_never_federated": "los datos de demostración nunca se federan",
+      "open_registration_only_when_public": "registro abierto solo cuando el hub es público",
+      "registration_closed_before_soft_launch": "el registro permanece cerrado antes del lanzamiento preliminar",
+      "indexing_only_after_launch": "indexación en buscadores solo después del lanzamiento",
+      "moduleRequires": "{module} necesita {dependency}"
+    },
+    "landing": {
+      "title": "Hubs en este nodo",
+      "lede": "Elija el hub que va a administrar. Cada hub tiene su propia consola; no hay un selector para cambiar entre ellos.",
+      "node": "Nodo:",
+      "stage": "Etapa",
+      "country": "País",
+      "data": "Datos",
+      "yourRoles": "Sus roles aquí",
+      "open": "Abrir la consola",
+      "nodeConsole": "Consola del nodo",
+      "nodeConsoleStatus": "Los hubs, el personal del nodo, las actualizaciones, las copias de seguridad, las claves y los interruptores de emergencia de todo el nodo tendrán su propia consola en un paquete posterior."
+    },
+    "capabilities": {
+      "llm": "Modelos de lenguaje",
+      "embeddings": "Incrustaciones vectoriales",
+      "rerank": "Reordenamiento",
+      "image_generation": "Generación de imágenes",
+      "translation": "Traducción",
+      "speech_to_text": "Voz a texto",
+      "text_to_speech": "Texto a voz",
+      "ocr": "Reconocimiento de texto",
+      "web_search": "Búsqueda web",
+      "web_fetch": "Descarga de páginas web",
+      "email": "Correo electrónico",
+      "sms": "SMS",
+      "messenger": "Mensajería",
+      "payments": "Pagos",
+      "payouts": "Pagos a participantes",
+      "e_invoicing": "Facturación electrónica",
+      "e_signature": "Firma electrónica",
+      "register_lookup": "Consultas a registros",
+      "sanctions_list": "Listas de sanciones",
+      "maps_geocoding": "Mapas y geocodificación",
+      "object_storage": "Almacenamiento de objetos",
+      "tax_calculation": "Cálculo de impuestos"
+    },
+    "killSwitch": {
+      "engage": "Activar un interruptor de emergencia",
+      "engageSubmit": "Activar ahora",
+      "scope": "Qué detener",
+      "releaseNote": "La activación surte efecto de inmediato y necesita una sola persona. La liberación necesita una segunda persona y una nota de incidente.",
+      "scopes": {
+        "outbound_messages": "todos los mensajes salientes",
+        "hub_agent_dispatch": "todas las acciones de agentes en este hub",
+        "external_agent_api": "el acceso de agentes externos"
+      }
+    },
+    "overview": {
+      "title": "Resumen",
+      "lede": "Lo que necesita a una persona hoy, y si el hub está sano y cumple la ley.",
+      "reducedSod": "Este hub tiene menos de cinco miembros del personal, así que solo se aplica la regla “quien actúa no es quien aprueba”. Agregue un segundo miembro del personal con otro rol antes del lanzamiento preliminar.",
+      "queues": "Colas en las que puede actuar",
+      "nothingWaiting": "Hoy nada requiere su decisión.",
+      "noQueues": "Ninguna cola lo necesita en este momento.",
+      "nearestDeadline": "plazo más próximo: {date}",
+      "queue": {
+        "claims": "Reclamaciones de fichas",
+        "review_items": "Elementos en espera de un editor",
+        "link_proposals": "Propuestas de vínculos",
+        "reports": "Denuncias",
+        "support_cases": "Casos de soporte",
+        "grant_requests": "Solicitudes de permisos por caso",
+        "privacy_requests": "Solicitudes de privacidad",
+        "unknown_outcomes": "Resultados desconocidos por conciliar",
+        "alerts": "Alertas de automatización"
+      },
+      "approvals": "Aprobaciones",
+      "approvalsWaiting": "{count, plural, one {# solicitud espera su decisión.} many {# solicitudes esperan su decisión.} other {# solicitudes esperan su decisión.}}",
+      "approvalsNone": "Ninguna solicitud espera su decisión.",
+      "openApprovals": "Abrir las aprobaciones",
+      "launch": "Lista de lanzamiento",
+      "gatesPassed": "Condiciones cumplidas",
+      "softLaunchOpen": "Condiciones del lanzamiento preliminar cumplidas",
+      "gatesOf": "{passed} de {total}",
+      "openLaunch": "Abrir la lista de lanzamiento",
+      "compliance": "Cumplimiento",
+      "legalDue": "Documentos legales que requieren acción",
+      "screeningAge": "Antigüedad de la lista de sanciones",
+      "days": "{count, plural, one {# día} many {# días} other {# días}}",
+      "licencesExpiring": "Licencias de fuentes por vencer",
+      "fakeProviders": "Proveedores simulados en uso",
+      "health": "Estado del sistema",
+      "healthCheck": {
+        "readiness": "Disponibilidad",
+        "outbox_age": "Antigüedad de la bandeja de salida",
+        "dead_letters": "Mensajes no entregados",
+        "unknown_outcomes": "Resultados desconocidos",
+        "backup_age": "Última copia de seguridad"
+      },
+      "healthState": {
+        "ok": "Correcto",
+        "warning": "Requiere atención",
+        "failing": "Con fallas",
+        "unknown": "Aún sin medir"
+      },
+      "minutes": "{count, plural, one {# minuto} many {# minutos} other {# minutos}}",
+      "spend": "Gasto frente a los límites",
+      "spentOf": "{spent} de {limit}",
+      "budgetScope": {
+        "hub": "Todo el hub",
+        "job": "Tarea",
+        "pipeline": "Flujo de procesamiento",
+        "agent_module": "Módulo del agente",
+        "connection": "Conexión"
+      },
+      "budgetJob": {
+        "translation": "Tareas de traducción",
+        "editorial_rewrite": "Reescritura editorial",
+        "summarisation": "Resúmenes",
+        "embeddings": "Incrustaciones vectoriales"
+      },
+      "budgetState": {
+        "ok": "Dentro del límite",
+        "alert": "Se alcanzó el umbral de alerta",
+        "exhausted": "Se alcanzó el límite: se bloquean las nuevas llamadas de pago"
+      },
+      "period": {
+        "day": "por día",
+        "month": "por mes"
+      },
+      "nextFive": "Las próximas cinco tareas",
+      "next": {
+        "inviteStaff": "Invite a un segundo miembro del personal con otro rol.",
+        "legalDocuments": "Registre los documentos legales con la aprobación del asesor legal en todos los idiomas del hub.",
+        "firstSource": "Registre la primera fuente de información con sus verificaciones legales.",
+        "verificationRecipe": "Elija una receta de verificación para las empresas.",
+        "backupDrill": "Programe una copia de seguridad y haga un simulacro de restauración."
+      }
+    },
+    "approvals": {
+      "title": "Aprobaciones",
+      "lede": "Decisiones de una segunda persona. Cada aprobación vincula una acción, un alcance y el resumen exacto del cambio, y vence.",
+      "reducedSod": "Separación de funciones reducida: mientras el hub tenga menos de cinco miembros del personal, solo se aplica la regla “quien actúa no es quien aprueba”.",
+      "forMe": "Solicitudes que usted puede decidir",
+      "forMeEmpty": "Nada requiere su decisión.",
+      "mine": "Sus solicitudes",
+      "mineEmpty": "No tiene solicitudes abiertas.",
+      "decisions": "Decisiones recientes",
+      "decisionsEmpty": "Aún no hay decisiones.",
+      "requestedBy": "Solicitada por",
+      "reason": "Motivo",
+      "requestedAt": "Solicitada",
+      "expiresAt": "Vence",
+      "digest": "Resumen de la acción",
+      "changes": "Qué cambia",
+      "before": "Antes:",
+      "after": "Después:",
+      "decision": "Decisión",
+      "approve": "Aprobar",
+      "decline": "Rechazar",
+      "approved": "Aprobada",
+      "declined": "Rechazada",
+      "decide": "Registrar la decisión",
+      "bindsDigest": "Su decisión queda vinculada al resumen que se muestra arriba; si la acción cambia, la solicitud queda anulada.",
+      "withdraw": "Retirar la solicitud",
+      "ownRequest": "No puede aprobar su propia solicitud.",
+      "actionChanged": "La acción cambió; se necesita una nueva solicitud.",
+      "expired": "Esta solicitud venció; vuelva a pedirla si todavía la necesita.",
+      "askQuestion": "Preguntas en el hilo de la solicitud:",
+      "action": "Acción",
+      "decidedBy": "Decidida por",
+      "decidedAt": "Decidida",
+      "state": {
+        "pending": "En espera",
+        "void": "Anulada",
+        "expired": "Vencida"
+      },
+      "fields": {
+        "documentVersion": "Versión del documento",
+        "languages": "Idiomas",
+        "providerMode": "Modo del proveedor",
+        "automationLevel": "Nivel de automatización",
+        "feeVersion": "Versión de las comisiones",
+        "role": "Rol"
+      },
+      "actions": {
+        "staff": {
+          "assign_sensitive_role": "Asignar un rol de personal sensible",
+          "switch_sod_mode": "Cambiar el modo de separación de funciones",
+          "grant_breakglass": "Otorgar acceso de emergencia"
+        },
+        "commerce": {
+          "activate_price_version": "Activar una versión de precios"
+        },
+        "privacy": {
+          "execute_erasure": "Ejecutar una eliminación de datos"
+        },
+        "moderation": {
+          "apply_sanction_l4": "Aplicar una sanción de nivel 4"
+        },
+        "providers": {
+          "enable_non_fake": "Habilitar un proveedor no simulado"
+        },
+        "hub": {
+          "transition_soft_launch": "Pasar el hub al lanzamiento preliminar",
+          "transition_public": "Hacer público el hub",
+          "change_residency": "Cambiar la residencia de los datos"
+        },
+        "legal": {
+          "activate_document_version": "Activar una versión de un documento legal"
+        },
+        "federation": {
+          "raise_peering_level": "Elevar un nivel de interconexión"
+        },
+        "models": {
+          "activate_private_route": "Activar una ruta de modelos para datos no públicos"
+        },
+        "egress": {
+          "allow_private_class": "Permitir la salida de una clase de datos no públicos"
+        },
+        "pipelines": {
+          "activate_personal_data_dataset": "Activar un conjunto de datos con datos personales"
+        },
+        "datasets": {
+          "activate_court_or_debt": "Activar un conjunto de datos judiciales o de deudas"
+        },
+        "automation": {
+          "raise_to_supervised_autonomous": "Elevar un dominio a autonomía supervisada"
+        },
+        "agents": {
+          "enable_commitment_module": "Habilitar un módulo del agente con compromisos",
+          "activate_extension": "Activar una extensión del agente"
+        },
+        "jurisdiction": {
+          "activate_settings": "Activar la configuración de jurisdicción"
+        },
+        "billing": {
+          "activate_fee_version": "Activar una versión de las comisiones",
+          "release_payout_batch": "Liberar un lote de pagos a participantes"
+        },
+        "payments": {
+          "change_settings": "Cambiar la configuración de pagos"
+        },
+        "sponsored": {
+          "enable": "Habilitar el contenido patrocinado"
+        },
+        "support": {
+          "reset_second_factor": "Restablecer un segundo factor",
+          "rebind_recovery_email": "Volver a vincular un correo de recuperación"
+        },
+        "ops": {
+          "execute_restore": "Ejecutar una restauración",
+          "apply_production_migration": "Aplicar una migración en producción",
+          "rotate_node_key": "Rotar la clave del nodo"
+        },
+        "kill_switch": {
+          "release": "Liberar un interruptor de emergencia"
+        }
+      }
+    },
+    "values": {
+      "languages": {
+        "en": "Inglés",
+        "enEs": "Inglés y español"
+      },
+      "mode": {
+        "fake": "Simulado",
+        "manual": "Manual",
+        "live": "Real"
+      },
+      "automation": {
+        "manual": "Manual",
+        "assisted": "Asistido",
+        "supervised_autonomous": "Autonomía supervisada"
+      }
+    },
+    "help": {
+      "title": "Ayuda",
+      "lede": "Cómo trabajar en la consola: listas de verificación para sus roles, el manual, el significado de cada etiqueta y el teclado.",
+      "checklists": "Listas de verificación",
+      "checklistNote": "Las marcas se guardan solo en este navegador.",
+      "checklistFor": "Primera semana como {role}",
+      "checklist": {
+        "everyone": "Para todos los miembros del personal"
+      },
+      "items": {
+        "secondFactor": "Guarde de forma segura su segundo factor y sus códigos de recuperación.",
+        "readGuardRails": "Lea las salvaguardas que ninguna consola puede desactivar.",
+        "statusLabels": "Aprenda qué significan En funcionamiento, Demostración, Contrato, Diseñado y Propuesto.",
+        "secondStaff": "Invite a un segundo miembro del personal para que las aprobaciones funcionen.",
+        "launchGates": "Revise la lista de lanzamiento con el responsable de cumplimiento.",
+        "legal": "Asegúrese de que cada documento legal tenga la aprobación del asesor legal en todos los idiomas.",
+        "approvals": "Revise la página de aprobaciones todos los días.",
+        "policy": "Redacte la política editorial y las reglas de etiquetado de contenido generado con IA.",
+        "sources": "Revise qué fuentes se pueden usar y cómo.",
+        "reviewRules": "Defina reglas de revisión por formato y tipo de autor.",
+        "countryBase": "Revise la base del país y registre los añadidos locales con sus fuentes.",
+        "taxonomy": "Dé forma a la taxonomía y publique una versión.",
+        "firstSource": "Registre la primera fuente con las verificaciones de su licencia, del archivo robots y de sus condiciones.",
+        "caseGrants": "Aprenda cómo funcionan los permisos por caso: con alcance limitado, de 72 horas como máximo y aprobados por una segunda persona.",
+        "recovery": "Atienda las escalaciones de recuperación con evidencias y el período de espera.",
+        "noImpersonation": "Recuerde: no existe “iniciar sesión como”; explique los accesos con códigos de motivo."
+      },
+      "handbook": "Manual",
+      "docs": {
+        "console": "La consola del hub",
+        "screens": "Pantallas de la consola",
+        "setup": "El asistente de configuración",
+        "guardRails": "La administración del hub y sus salvaguardas"
+      },
+      "statuses": "Qué significan las etiquetas",
+      "status": {
+        "live": "Implementado de principio a fin con pruebas automatizadas. Aún no está desplegado en producción en ningún lugar.",
+        "demo": "La pantalla existe y está probada, pero funciona con datos sintéticos y no se guarda nada.",
+        "contract": "Las estructuras de datos y las reglas están fijadas como contratos; todavía no hay almacenamiento ni pantalla.",
+        "designed": "Un diseño aceptado lo describe; todavía no hay código.",
+        "proposed": "Diseñado por primera vez y abierto a revisión."
+      },
+      "mode": {
+        "fake": "Una imitación integrada para probar el hub: nada llega a un proveedor real.",
+        "manual": "Una persona hace el trabajo fuera del motor, por ejemplo una consulta a un registro.",
+        "live": "Un proveedor real, habilitado por una segunda persona después de una prueba sintética."
+      },
+      "glossary": "Glosario",
+      "terms": {
+        "hub": {
+          "term": "Hub",
+          "definition": "Un punto de encuentro para un país o una ciudad, con su propio personal, su configuración y sus condiciones de lanzamiento."
+        },
+        "node": {
+          "term": "Nodo",
+          "definition": "Una instalación del motor; puede alojar varios hubs."
+        },
+        "lifecycle": {
+          "term": "Etapa del ciclo de vida",
+          "definition": "Borrador, en preparación, lanzamiento preliminar, público, suspendido, en cierre o cerrado; avanzar requiere condiciones cumplidas y una segunda persona."
+        },
+        "elevation": {
+          "term": "Sesión elevada",
+          "definition": "Una sesión de la consola que se abre después de su contraseña y su segundo factor; termina tras un período de inactividad."
+        },
+        "secondPerson": {
+          "term": "Aprobación de una segunda persona",
+          "definition": "Un miembro del personal pide un cambio sensible y otro lo aprueba; nadie aprueba su propia solicitud."
+        },
+        "digest": {
+          "term": "Resumen de la acción",
+          "definition": "Una huella del cambio exacto; la aprobación queda vinculada a ella, así que cualquier cambio posterior anula la aprobación."
+        },
+        "killSwitch": {
+          "term": "Interruptor de emergencia",
+          "definition": "Detiene una función de inmediato; una persona lo activa y para liberarlo se necesitan una segunda persona y una nota de incidente."
+        },
+        "launchGate": {
+          "term": "Condición de lanzamiento",
+          "definition": "Una condición con evidencias que debe cumplirse antes del lanzamiento preliminar o público; no hay excepciones."
+        },
+        "configVersion": {
+          "term": "Versión de la configuración",
+          "definition": "La configuración nunca se edita directamente: cada cambio es una versión que se activa y luego se reemplaza."
+        },
+        "demoData": {
+          "term": "Datos de demostración",
+          "definition": "Registros sintéticos y etiquetados; nunca se indexan ni se federan y se eliminan antes del lanzamiento preliminar."
+        },
+        "caseGrant": {
+          "term": "Permiso por caso",
+          "definition": "La única forma en que el personal ve datos privados: limitado a un caso, de 72 horas como máximo, aprobado por una segunda persona y con cada lectura registrada."
+        }
+      },
+      "keyboard": "Teclado",
+      "keys": {
+        "skip": "La primera pulsación de Tab llega a “Saltar al contenido”.",
+        "order": "Luego la franja superior, la navegación, el encabezado de la página y el contenido, en ese orden.",
+        "menu": "En un teléfono, las secciones se abren con el botón “Secciones” como un panel de altura completa; Escape lo cierra.",
+        "forms": "Cada cambio necesita un motivo; el resultado se anuncia y se muestra como una notificación."
+      }
+    },
+    "hub": {
+      "identity": {
+        "title": "Identidad y territorio",
+        "lede": "Quién es y dónde está el hub: nombres en todos los idiomas del hub, territorios, idiomas, moneda y zona horaria.",
+        "names": "Nombre del hub en cada idioma",
+        "language": "Idioma",
+        "name": "Nombre",
+        "territories": "Territorios",
+        "level": "Nivel",
+        "code": "Código",
+        "territoryName": "Nombre",
+        "levels": {
+          "country": "País",
+          "region": "Región",
+          "place": "Localidad"
+        },
+        "territoriesNote": "Los territorios describen dónde trabaja el hub; nunca son exclusivos, y los lugares restringidos se rechazan en todos los niveles.",
+        "languages": "Idiomas",
+        "completeness": "Completitud de la interfaz",
+        "default": "predeterminado",
+        "percent": "{percent}%",
+        "notEngineLanguage": "Aún no es un idioma del motor",
+        "basics": "Moneda, hora y dirección",
+        "currency": "Moneda",
+        "timeZone": "Zona horaria",
+        "domain": "Dominio",
+        "brand": "Capa de marca",
+        "noBrand": "Ninguna (marca neutral del motor)",
+        "revision": "Configuración",
+        "contrast": "Contraste de la marca por idioma",
+        "ratio": "contraste {ratio}:1",
+        "contrastPass": "cumple",
+        "contrastFail": "no cumple",
+        "change": "Cambiar la identidad",
+        "addTerritory": "Agregar un territorio",
+        "addTerritoryHelp": "Un país (US), una región (US-TX) o una localidad (US-TX:austin).",
+        "defaultLanguage": "Idioma predeterminado",
+        "versionsNote": "Al guardar se crea una nueva versión de la configuración; la activa se mantiene hasta que se active la nueva versión."
+      },
+      "modes": {
+        "title": "Modos del sistema",
+        "lede": "Cómo se comporta el hub: etapa del ciclo de vida, datos, registro, moderación, automatización, indexación y mantenimiento.",
+        "lifecycle": "Ciclo de vida",
+        "stage": "Etapa actual",
+        "nextStages": "Etapas siguientes permitidas",
+        "blockedBy": "El lanzamiento preliminar está bloqueado por condiciones pendientes: {items}.",
+        "openLaunch": "Abrir la lista de lanzamiento",
+        "requestTransition": "Solicitar el cambio de etapa",
+        "to": "Pasar a",
+        "behaviour": "Comportamiento",
+        "data": "Datos",
+        "dataMode": {
+          "demo": "Datos de demostración",
+          "live": "Datos reales"
+        },
+        "registration": "Registro",
+        "registrationMode": {
+          "closed": "Cerrado",
+          "invite_only": "Solo por invitación",
+          "open": "Abierto"
+        },
+        "moderation": "Moderación",
+        "moderationMode": {
+          "pre_moderate_all": "Revisar todo antes de publicar",
+          "pre_moderate_new_authors": "Revisar a los autores nuevos antes de publicar",
+          "post_moderate": "Revisar después de publicar"
+        },
+        "indexing": "Indexación en buscadores",
+        "maintenance": "Mantenimiento",
+        "demoRule": "Los datos de demostración nunca salen del hub, nunca se indexan ni se federan y deben eliminarse antes del lanzamiento preliminar.",
+        "automation": "Automatización",
+        "domain": "Dominio",
+        "level": "Nivel",
+        "domains": {
+          "editorial": "Editorial",
+          "translation": "Traducción",
+          "magazine_assembly": "Armado de la revista",
+          "data_mining": "Extracción de datos",
+          "entity_resolution": "Resolución de entidades",
+          "verification_rechecks": "Nuevas comprobaciones de verificación",
+          "moderation_triage": "Clasificación para moderación"
+        },
+        "humanGates": "Decisiones que siempre corresponden a una persona",
+        "humanGatesNote": "Ningún nivel de automatización las elimina.",
+        "gates": {
+          "source_activation": "Activar una fuente",
+          "dataset_activation": "Activar un conjunto de datos",
+          "publication": "Publicar",
+          "magazine_release": "Publicar un número de la revista",
+          "claim_decision": "Decidir una reclamación de ficha",
+          "link_decision": "Decidir un vínculo",
+          "moderation_sanction": "Aplicar una sanción",
+          "price_activation": "Activar un precio"
+        },
+        "change": "Cambiar los modos",
+        "supervisedNote": "Elevar un dominio a autonomía supervisada necesita una segunda persona y límites de gasto activos.",
+        "violationsFound": "Los modos actuales contradicen el ciclo de vida: {items}."
+      },
+      "modules": {
+        "title": "Módulos",
+        "lede": "Qué módulos del producto están activados en este hub, en qué se basa cada uno y hasta dónde lo ha construido el motor.",
+        "list": "Módulos del producto",
+        "engine": "En el motor:",
+        "dependsOn": "Se basa en: {items}.",
+        "needsFirst": "Active primero: {items}.",
+        "change": "Activar o desactivar un módulo",
+        "module": "Módulo",
+        "action": "Acción",
+        "enable": "Activar",
+        "disable": "Desactivar",
+        "disableNote": "Al desactivar un módulo se oculta a los participantes; los registros existentes se conservan y vuelven cuando se activa de nuevo.",
+        "names": {
+          "publications": "Publicaciones",
+          "magazine": "Revista",
+          "events": "Eventos",
+          "learning": "Formación",
+          "matching": "Emparejamiento",
+          "catalogue": "Catálogo",
+          "procurement": "Compras",
+          "sales": "Ventas",
+          "execution_reputation": "Ejecución y reputación",
+          "agents": "Agentes",
+          "external_agent_api": "Acceso de agentes externos",
+          "search": "Búsqueda",
+          "knowledge_answers": "Respuestas con conocimiento",
+          "communications": "Comunicaciones",
+          "billing": "Facturación",
+          "federation": "Federación",
+          "editorial_automation": "Automatización editorial",
+          "data_mining": "Extracción de datos",
+          "project_planner": "Planificador de proyectos",
+          "expert_marketplace": "Mercado de consultas y tareas",
+          "shared_knowledge": "Conocimiento compartido",
+          "reputation_passport": "Pasaporte de reputación",
+          "plan_recommendations": "Recomendaciones para los pasos del plan"
+        }
+      },
+      "legal": {
+        "title": "Aspectos legales y operador",
+        "lede": "El operador del hub y los documentos que aceptan los participantes; una versión solo se activa con la aprobación del asesor legal en todos los idiomas del hub.",
+        "operator": "Operador",
+        "legalName": "Razón social",
+        "form": "Forma jurídica",
+        "forms": {
+          "llc": "Sociedad de responsabilidad limitada (LLC)",
+          "corporation": "Corporación",
+          "nonprofit_association": "Asociación sin fines de lucro",
+          "sole_proprietor": "Empresario individual",
+          "limited_company": "Sociedad limitada"
+        },
+        "identifier": "Identificador de registro",
+        "address": "Dirección",
+        "legalContact": "Contacto para notificaciones legales",
+        "abuseContact": "Contacto para abusos y solicitudes de retiro",
+        "screening": "Control de sanciones",
+        "screeningResult": {
+          "not_run": "Aún no se ha ejecutado",
+          "no_match": "Sin coincidencias",
+          "potential_match": "Posible coincidencia: requiere revisión"
+        },
+        "fakeScreening": "adaptador simulado, no es un control real",
+        "noOperator": "Aún no se ha registrado ningún operador.",
+        "documents": "Documentos",
+        "kind": "Documento",
+        "kinds": {
+          "terms": "Términos de uso",
+          "privacy_notice": "Aviso de privacidad",
+          "community_rules": "Normas de la comunidad",
+          "imprint": "Aviso legal",
+          "cookie_policy": "Política de cookies"
+        },
+        "version": "Versión",
+        "status": "Estado",
+        "statuses": {
+          "draft": "Borrador",
+          "counsel_approved": "Aprobado por el asesor legal",
+          "active": "Activo",
+          "superseded": "Reemplazado"
+        },
+        "effective": "vigente desde {date}",
+        "languages": "Idiomas",
+        "missing": "faltan: {items}",
+        "counsel": "Aprobación del asesor legal",
+        "noCounsel": "Aún no aprobado",
+        "noDocuments": "Aún no hay documentos legales.",
+        "requestActivation": "Solicitar la activación",
+        "document": "Versión del documento",
+        "nothingToActivate": "Ninguna versión aprobada por el asesor legal está en espera de activación.",
+        "draft": "Redactar una nueva versión",
+        "templatesNote": "Una nueva versión parte de las plantillas del motor; el asesor legal la revisa antes de la activación."
+      },
+      "residency": {
+        "title": "Residencia y subencargados",
+        "lede": "Dónde se almacenan y procesan los datos personales, y quién los procesa por cuenta del hub.",
+        "none": "Aún no se ha registrado ninguna decisión de residencia.",
+        "contradiction": "{services} funcionan fuera de {country}, el país de residencia. Verifique si les llegan datos personales.",
+        "privateOutside": "Un subencargado fuera del país de residencia recibe datos privados; revise las reglas de salida de datos.",
+        "decision": "Decisión de residencia",
+        "country": "País",
+        "regime": "Régimen de privacidad",
+        "regimes": {
+          "us_state_privacy": "Leyes estatales de privacidad de Estados Unidos",
+          "uz_personal_data": "Ley de datos personales de Uzbekistán",
+          "not_recorded": "Aún sin registrar"
+        },
+        "version": "Versión",
+        "servicesTitle": "Servicios y regiones",
+        "service": "Servicio",
+        "services": {
+          "database": "Base de datos",
+          "object_storage": "Almacenamiento de objetos",
+          "backups": "Copias de seguridad",
+          "worker": "Proceso en segundo plano",
+          "email_relay": "Retransmisión de correo"
+        },
+        "region": "Región",
+        "outside": "fuera del país de residencia",
+        "subProcessors": "Subencargados",
+        "subProcessorsNote": "Se genera a partir de las conexiones del hub; en esta demostración cada conexión es un adaptador simulado o manual.",
+        "processor": "Subencargado",
+        "capability": "Función",
+        "mode": "Modo",
+        "privateData": "Datos privados",
+        "change": "Cambiar la residencia",
+        "requestChange": "Solicitar el cambio",
+        "newCountry": "Nuevo país de residencia",
+        "newCountryHelp": "Código de país de dos letras, por ejemplo US."
+      },
+      "country": {
+        "title": "Base del país",
+        "lede": "Los datos del país en los que se apoya el hub: el paquete de país vinculado o el perfil genérico, y los añadidos locales del hub.",
+        "binding": "Paquete de país",
+        "pack": "Paquete",
+        "packVersion": "{country}, versión {version}",
+        "packStatus": "Estado del paquete",
+        "packStatuses": {
+          "complete": "Completo",
+          "partial": "Parcial",
+          "draft": "Borrador"
+        },
+        "identifier": "Identificador de empresa",
+        "identifierKind": "Código del identificador",
+        "currency": "Moneda",
+        "regions": "Regiones",
+        "entityTypes": "Tipos de entidades jurídicas",
+        "residencyRequired": "Almacenamiento obligatorio dentro del país",
+        "generic": "Perfil genérico: solo datos ISO; agregue identificadores, registros y otros datos como añadidos locales.",
+        "sourcesNote": "Cada dato de un paquete cita su fuente e indica hasta qué punto está verificado.",
+        "additions": "Añadidos locales",
+        "kind": "Tipo",
+        "kinds": {
+          "identifier": "Identificador",
+          "register": "Registro",
+          "licence_category": "Categoría de licencia",
+          "holiday": "Día festivo",
+          "tax_fact": "Dato fiscal",
+          "unit": "Unidad"
+        },
+        "label": "Nombre",
+        "verification": "Verificación",
+        "levels": {
+          "candidate": "Candidato",
+          "confirmed": "Confirmado"
+        },
+        "noAdditions": "Aún no hay añadidos locales.",
+        "export": "Exportar los añadidos como un cambio del paquete de país:",
+        "add": "Agregar un añadido local",
+        "key": "Clave",
+        "keyHelp": "Una clave estable, por ejemplo US-CA:cslb.",
+        "candidateNote": "Un añadido nuevo sigue siendo candidato hasta que el responsable de cumplimiento lo confirma con una fuente."
+      },
+      "taxonomy": {
+        "title": "Taxonomía y unidades",
+        "lede": "Temas, categorías, categorías de pasos del plan y unidades con sus nombres en todos los idiomas del hub, publicados como versiones.",
+        "kinds": {
+          "topics": "Temas",
+          "categories": "Categorías",
+          "plan_steps": "Categorías de pasos del plan",
+          "units": "Unidades"
+        },
+        "released": "publicada el {date}",
+        "unreleased": "aún no publicada",
+        "terms": "{count, plural, one {# término} many {# términos} other {# términos}}",
+        "usage": "{count, plural, one {usado una vez} many {usado # veces} other {usado # veces}}",
+        "deprecated": "obsoleto",
+        "empty": "Aún no hay taxonomía. Empiece por los temas y las categorías de pasos del plan; se puede importar la taxonomía abierta de pasos del plan del motor.",
+        "deprecateNote": "Para marcar como obsoleto un término que está en uso, primero hay que asignarlo a otro término.",
+        "add": "Agregar un término",
+        "kind": "Árbol",
+        "key": "Clave",
+        "keyHelp": "En minúsculas, por ejemplo materials.steel.",
+        "label": "Nombre"
+      },
+      "launch": {
+        "title": "Lista de lanzamiento",
+        "lede": "Lo que separa al hub del lanzamiento preliminar o público. Cada condición necesita evidencias; no hay excepciones.",
+        "progress": "{passed} de {total} condiciones cumplidas",
+        "progressLabel": "Condiciones cumplidas",
+        "gatesTitle": "Condiciones",
+        "gate": "Condición",
+        "state": "Estado",
+        "states": {
+          "open": "Pendiente",
+          "passed": "Cumplida",
+          "invalidated": "Invalidada"
+        },
+        "evidence": "Evidencia",
+        "checked": "Comprobada",
+        "softLaunchGate": "necesaria para el lanzamiento preliminar",
+        "noWaiver": "Ningún control exime de una condición; una condición invalidada bloquea igual que una pendiente hasta que se compruebe de nuevo.",
+        "gates": {
+          "operator_recorded_and_screened": "Operador registrado y sometido al control de sanciones",
+          "legal_documents_counsel_approved": "Documentos legales aprobados por el asesor legal",
+          "data_residency_configured": "Residencia de datos configurada",
+          "two_staff_with_second_factor": "Dos miembros del personal con segundo factor",
+          "editorial_team_and_policy": "Equipo y política editorial",
+          "community_rules_all_languages": "Normas de la comunidad en todos los idiomas",
+          "information_source_registered": "Una fuente de información registrada",
+          "verification_recipe_enabled": "Una receta de verificación habilitada",
+          "sanctions_screening_configured": "Control de sanciones configurado",
+          "i18n_complete": "Interfaz completa en todos los idiomas del hub",
+          "backup_restore_exercised": "Copia de seguridad restaurada en un simulacro",
+          "brand_accessibility_checked": "Accesibilidad de la marca comprobada",
+          "demo_data_purged": "Datos de demostración eliminados",
+          "ai_egress_policy_reviewed": "Política de salida de datos hacia IA revisada"
+        },
+        "mark": "Marcar una condición como cumplida",
+        "evidenceRef": "Referencia de la evidencia",
+        "evidenceHelp": "El identificador de la evidencia almacenada, por ejemplo ev-counsel-letter-2.",
+        "request": "Solicitar el lanzamiento preliminar o público",
+        "softBlocked": "El lanzamiento preliminar está bloqueado por: {items}.",
+        "softReady": "Se cumplieron todas las condiciones del lanzamiento preliminar.",
+        "publicBlocked": "{count, plural, one {# condición todavía impide hacerlo público.} many {# condiciones todavía impiden hacerlo público.} other {# condiciones todavía impiden hacerlo público.}}",
+        "publicReady": "Se cumplieron todas las condiciones."
+      }
+    },
+    "setup": {
+      "title": "Configuración",
+      "stepsLabel": "Pasos de la configuración",
+      "resume": "Sus respuestas se guardan en el servidor, así que puede detenerse y continuar con el mismo enlace. En esta demostración no se guarda nada.",
+      "answers": "Sus respuestas",
+      "continue": "Guardar y continuar",
+      "finish": "Terminar la configuración",
+      "chooseCountry": "Elija un país",
+      "check": {
+        "title": "Comprobación de la instalación",
+        "purpose": "Antes que nada, el motor comprueba la dirección, la base de datos, el almacenamiento de objetos, el proceso en segundo plano, el reloj y el almacén de secretos.",
+        "items": {
+          "address": "Dirección pública",
+          "database": "Base de datos",
+          "object_storage": "Almacenamiento de objetos",
+          "worker": "Proceso en segundo plano",
+          "clock": "Reloj",
+          "secret_store": "Almacén de secretos"
+        },
+        "states": {
+          "pass": "Superada",
+          "warn": "Advertencia",
+          "fail": "Fallida"
+        },
+        "help": {
+          "address": "Configure la dirección pública con HTTPS (o localhost para una prueba).",
+          "database": "Ejecute las migraciones; el rol de ejecución no debe saltarse la seguridad a nivel de fila.",
+          "object_storage": "El bucket debe permitir escribir, leer y eliminar, y no debe ser público.",
+          "worker": "Inicie el proceso en segundo plano; no se detectó ninguna señal de actividad en el último minuto.",
+          "clock": "El reloj del servidor difiere del de su navegador en más de 30 segundos; las firmas y las programaciones dependen de él.",
+          "secret_store": "Configure una clave real de cifrado de claves; los valores de ejemplo se rechazan."
+        },
+        "blocking": "Falló una comprobación bloqueante, por lo que la configuración no puede continuar.",
+        "guide": "Leer la guía de instalación",
+        "cannotContinue": "La configuración no puede continuar hasta que se superen todas las comprobaciones bloqueantes."
+      },
+      "node": {
+        "title": "Identidad del nodo",
+        "purpose": "El nombre, el dominio y la jurisdicción de la instalación, y su clave de firma.",
+        "name": "Nombre del nodo",
+        "domain": "Dominio",
+        "domainHelp": "Por ejemplo build.example.org.",
+        "jurisdiction": "Jurisdicción del nodo",
+        "jurisdictionHelp": "El país cuya legislación sigue el operador del nodo. Los lugares restringidos nunca se ofrecen.",
+        "key": "Al continuar se genera una clave de firma. Solo se muestran su clave pública y su huella digital; la clave privada nunca se muestra."
+      },
+      "hub": {
+        "title": "Identidad del hub",
+        "purpose": "Configure su país o su ciudad sin código: punto de partida, territorio, nombre en cada idioma, idiomas, moneda y zona horaria.",
+        "examples": "Partir de un ejemplo:",
+        "exampleUs": "Estados Unidos (San Diego)",
+        "exampleSamarkand": "Samarcanda, Uzbekistán",
+        "exampleNote": "Los valores de ejemplo son sintéticos; reemplácelos por los suyos.",
+        "start": "Punto de partida",
+        "startHelp": "Un paquete de país aporta regiones, formatos de identificadores, moneda y datos legales; el perfil genérico solo aporta datos ISO.",
+        "pack": "Paquete de país: {country}",
+        "generic": "Perfil genérico (aún sin paquete)",
+        "territory": "Territorio",
+        "territoryHelp": "Un código de país, región o localidad, por ejemplo US-CA:san-diego.",
+        "name": "Nombre del hub",
+        "nameHelp": "Obligatorio en cada idioma del hub; puede agregar los demás idiomas en la consola.",
+        "languages": "Idiomas del hub",
+        "languagesHelp": "Etiquetas de idioma, primero la predeterminada, por ejemplo en, es.",
+        "currency": "Moneda",
+        "timeZone": "Zona horaria"
+      },
+      "operator": {
+        "title": "Operador",
+        "purpose": "La entidad jurídica que opera el hub, sus contactos, su declaración de titularidad y su control de sanciones.",
+        "legalName": "Razón social",
+        "form": "Forma jurídica",
+        "identifier": "Identificador de registro",
+        "address": "Dirección",
+        "legalContact": "Contacto para notificaciones legales",
+        "abuseContact": "Contacto para abusos y solicitudes de retiro",
+        "ownership": "Declaro con veracidad la titularidad del operador.",
+        "screening": "El control se ejecuta con la lista base del motor. Con el adaptador simulado, el resultado se etiqueta “simulado: no es un control real”; una posible coincidencia abre una revisión que el operador no puede cerrar."
+      },
+      "admin": {
+        "title": "Primer administrador",
+        "purpose": "El primer miembro del personal, con un segundo factor obligatorio y códigos de recuperación que se muestran una sola vez.",
+        "name": "Nombre",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "passwordHelp": "En esta demostración, el nombre, el correo electrónico y la contraseña nunca salen de esta página.",
+        "secondFactor": "Segundo factor",
+        "secondFactorHelp": "El segundo factor es obligatorio; la configuración no puede terminar sin él.",
+        "chooseFactor": "Elija un segundo factor",
+        "passkey": "Llave de acceso",
+        "totp": "Aplicación de autenticación",
+        "recoveryCodes": "Aquí aparecen una sola vez diez códigos de recuperación de un solo uso, después de registrar el segundo factor. En esta demostración no se genera ninguno.",
+        "stored": "Guardé los códigos de recuperación.",
+        "reducedSod": "Con un solo miembro del personal, el hub funciona con separación de funciones reducida; las acciones de dos personas esperan hasta que se una un segundo miembro del personal."
+      },
+      "residency": {
+        "title": "Almacenamiento y residencia",
+        "purpose": "Dónde se almacenan y procesan los datos personales, y qué régimen de privacidad siguen los avisos.",
+        "country": "País de residencia",
+        "countryHelp": "La base de datos, el almacenamiento de objetos y las copias de seguridad deben estar ubicados allí.",
+        "regime": "Régimen de privacidad",
+        "egress": "De forma predeterminada, ningún dato no público sale del país de residencia y nada no público va a un proveedor externo de modelos hasta que usted lo permita."
+      },
+      "providers": {
+        "title": "Proveedores",
+        "purpose": "Cada función empieza con su adaptador simulado, para que el hub se pueda explorar sin cuentas ni costos.",
+        "options": {
+          "fake": "Mantener el simulado por ahora",
+          "manual": "Manual (lo hace una persona)",
+          "later": "Conectar más tarde en la consola"
+        },
+        "liveLater": "Aquí nunca se hacen conexiones reales: necesitan una prueba sintética superada, una decisión sobre la salida de datos y una segunda persona.",
+        "models": "Para los modelos de lenguaje, más adelante puede conectar un proveedor directamente o a través de OpenRouter, un enrutador opcional.",
+        "invite": "Para invitar al segundo miembro del personal antes de que el correo esté activo, la consola muestra un enlace de invitación de un solo uso que vence en 72 horas."
+      },
+      "modes": {
+        "title": "Modos",
+        "purpose": "Cómo empieza el hub: modo de datos, registro, módulos, moderación y automatización.",
+        "defaults": "El registro empieza cerrado, todos los dominios de automatización en manual y la indexación desactivada; las publicaciones, la revista, los eventos, la búsqueda y las comunicaciones están activados. Cámbielos después en la consola."
+      },
+      "review": {
+        "title": "Revisión",
+        "purpose": "Un resumen de cada paso antes de terminar. Al terminar se registra la configuración, se crean las condiciones de lanzamiento y se invalida el token de configuración.",
+        "done": "Hecho",
+        "notDone": "Pendiente",
+        "edit": "Editar",
+        "afterFinish": "Al terminar, el hub queda como borrador: registro cerrado, todos los proveedores simulados e indexación desactivada."
+      }
+    }
+  }
+}
