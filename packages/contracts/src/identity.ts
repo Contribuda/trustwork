@@ -27,7 +27,7 @@ export type EmailBinding = z.infer<typeof EmailBindingSchema>;
 export const PersonSchema = z
   .strictObject({
     id: IdSchema,
-    displayName: NameSchema,
+    displayName: NameSchema.nullable(),
     profileVisibility: z.enum(['private', 'public']),
     publicProfile: z.strictObject({ headline: TextSchema.nullable(), expertise: z.array(z.string().min(1).max(100)) }),
     /** owner_private: the person alone. */
@@ -40,7 +40,7 @@ export const PersonSchema = z
   .refine((p) => p.emailBindings.filter((b) => b.isPrimary).length <= 1, { message: 'at most one primary e-mail binding', path: ['emailBindings'] });
 export type Person = z.infer<typeof PersonSchema>;
 
-export const PublicPersonSchema = z.strictObject({ id: IdSchema, displayName: NameSchema, publicProfile: PersonSchema.shape.publicProfile });
+export const PublicPersonSchema = z.strictObject({ id: IdSchema, displayName: PersonSchema.shape.displayName, publicProfile: PersonSchema.shape.publicProfile });
 export type PublicPerson = z.infer<typeof PublicPersonSchema>;
 /** Public people require `profileVisibility: public`; private profiles are not found, not forbidden. */
 export function toPublicPerson(person: Person): PublicPerson | null {

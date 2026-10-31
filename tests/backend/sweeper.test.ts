@@ -51,7 +51,9 @@ test('bounded tables: sweeper and login_failure cap (review P2-3)', { skip: db ?
       const recent = await trx.insertInto('person').values({ display_name: 'recent unverified' }).returning('id').executeTakeFirstOrThrow();
       await trx.insertInto('email_binding').values({ person_id: recent.id, email_normalized: 'recent@example.invalid', is_primary: true }).execute();
     });
-    const report = await runSweep(runtime);
+    // The manual sweep needs the maintenance (migrator) connection; the runtime role may not run it (BE-002).
+    await assert.rejects(runtime.query("SELECT * FROM trustwork.sweep_expired(interval '0', interval '0', interval '0')"), (e: unknown) => (e as { code?: string }).code === '42501');
+    const report = await runSweep(db.admin);
     assert.equal(report.auth_tokens, 1);
     assert.equal(report.idempotency_records, 1);
     assert.equal(report.sessions, 1);

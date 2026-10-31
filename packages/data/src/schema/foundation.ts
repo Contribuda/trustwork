@@ -35,7 +35,8 @@ export type AdmissionOutcome = 'dispatched' | 'failed' | 'lease_expired' | 'canc
 
 export interface PersonTable {
   id: GeneratedUuid;
-  display_name: string;
+  /** NULL for a provider sign-up without a name (BE-002); clients render a localized placeholder. */
+  display_name: string | null;
   profile_visibility: Generated<ProfileVisibility>;
   public_headline: string | null;
   public_expertise: Generated<string[]>;

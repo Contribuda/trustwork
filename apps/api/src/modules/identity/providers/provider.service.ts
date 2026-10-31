@@ -1,11 +1,12 @@
 import { createHash, randomBytes } from 'node:crypto';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { auditEvents, auth, credentials, withPrincipal, type Provider } from '../../../deps/data.js';
+import { assumePrincipal, auth, credentials, preIdentity, withPrincipal, type Provider } from '../../../deps/data.js';
 import { clearFlowCookie, flowCookieName, readCookie, setFlowCookie } from '../../../common/cookies.js';
 import { withoutPrincipal } from '../../../common/db.js';
 import { ApiError } from '../../../common/errors.js';
 import type { RequestState } from '../../../common/request.js';
 import type { AppContext } from '../context.js';
+import { journal, type AuditEntry } from '../journal.js';
 import { ProviderUnavailableError, type ProviderIdentity } from '../ports.js';
 import type { PrincipalService } from '../principal.service.js';
 import { constantTimeEqual, randomToken, sha256Hex, signFlow, verifyFlow, type FlowState } from '../tokens.js';
@@ -46,13 +47,15 @@ export class ProviderService {
 
   /** Provider redirect target. Returns the outcome; the controller redirects to the return path with it. */
   async callback(provider: Provider, query: { code: string; state: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<CallbackOutcome> {
+    // Disabled or unconfigured providers answer 404 before any flow state is inspected (same as start).
+    const port = this.port(provider);
     const cookie = readCookie(request, flowCookieName(this.ctx.config));
     clearFlowCookie(reply, this.ctx.config);
     const flow = cookie ? verifyFlow(this.ctx.config.flowSecret, cookie, this.ctx.clock.now()) : null;
     if (!flow || flow.provider !== provider || !constantTimeEqual(flow.state, query.state)) throw new ApiError('auth.provider.state_mismatch', 'authorization flow state does not match');
     let identity: ProviderIdentity;
     try {
-      identity = await this.port(provider).complete({ code: query.code, codeVerifier: flow.codeVerifier, nonce: flow.nonce, redirectUri: this.redirectUri(provider), state: flow.state });
+      identity = await port.complete({ code: query.code, codeVerifier: flow.codeVerifier, nonce: flow.nonce, redirectUri: this.redirectUri(provider), state: flow.state });
     } catch (error) {
       if (error instanceof ProviderUnavailableError) return 'provider_unavailable';
       throw error;
@@ -69,43 +72,65 @@ export class ProviderService {
     if (existing && !existing.disabled_at) throw new ApiError('auth.provider.already_linked', 'this provider identity is linked to another account');
     await this.principals.runAs(state, async (trx, p) => {
       await credentials.insertProvider(trx, p.personId, provider, identity.subject);
-      await auditEvents.append(trx, { actor_person_id: p.personId, action: 'auth.provider_linked', object_kind: 'person', object_id: p.personId, request_id: state.requestId, authz_epoch: p.authzEpoch, basis: { provider } });
+      await journal(trx, { action: 'auth.provider_linked', objectKind: 'person', objectId: p.personId, requestId: state.requestId, actor: p.personId, epoch: p.authzEpoch, basis: { provider } },
+        [{ personId: p.personId, type: 'identity.provider_linked', payload: { provider } }]);
     });
     await this.notify(state, 'provider_linked');
     return 'linked';
   }
 
+  /**
+   * Sign-in or provider-first sign-up. The session, the person created for the subject (or the H06 claim), the
+   * verification token, the audit rows and the outbox intents commit in one transaction. A provider that supplies no
+   * name stores none: clients render a localized placeholder.
+   */
   private async login(provider: Provider, identity: ProviderIdentity, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<CallbackOutcome> {
     const linked = await auth.lookupProviderCredential(this.ctx.pool, provider, identity.subject);
     if (linked && !linked.disabled_at) {
-      const { sessionId } = await this.principals.issueSession(reply, request, linked.person_id, linked.authz_epoch, provider);
-      await this.audit('auth.login', 'person', linked.person_id, state.requestId, linked.person_id, { sessionId, method: provider });
+      const issued = await withPrincipal(this.ctx.pool, { personId: linked.person_id, authzEpoch: linked.authz_epoch }, async (trx) => {
+        const session = await this.principals.createSession(trx, request, linked.person_id, provider);
+        await journal(trx, { action: 'auth.login', objectKind: 'person', objectId: linked.person_id, requestId: state.requestId, actor: linked.person_id, epoch: linked.authz_epoch, basis: { sessionId: session.sessionId, method: provider } },
+          [{ personId: linked.person_id, type: 'identity.session_started', payload: { sessionId: session.sessionId, method: provider } }]);
+        return session;
+      });
+      this.principals.setCookie(reply, issued.token);
       return 'signed_in';
     }
     if (!identity.email) return 'email_required';
     const email = identity.email.normalize('NFC').toLowerCase();
-    const displayName = (identity.name ?? email.split('@')[0] ?? 'Участник').normalize('NFC').trim().slice(0, 200) || 'Участник';
+    const emailRef = sha256Hex(email).slice(0, 32);
+    const displayName = identity.name?.normalize('NFC').trim().slice(0, 200) || null;
     const verifiedByGoogle = provider === 'google' && identity.emailVerified === true;
-    let personId: string | null = null;
-    if (verifiedByGoogle) {
-      personId = await auth.claimUnverifiedBinding(this.ctx.pool, { displayName, emailNormalized: email, provider, subject: identity.subject });
-      if (personId) await this.audit('auth.unverified_binding_claimed', 'email', sha256Hex(email).slice(0, 32), state.requestId, personId, { provider });
-    }
-    personId ??= await auth.registerProviderPerson(this.ctx.pool, { displayName, emailNormalized: email, provider, subject: identity.subject, emailVerified: verifiedByGoogle });
-    if (!personId) {
-      // A binding (verified, or unverified and not claimable) exists: never auto-link; the owner links from settings.
-      await this.audit('auth.provider_login_refused', 'email', sha256Hex(email).slice(0, 32), state.requestId, null, { provider, reason: 'binding_exists' });
-      return 'account_exists';
-    }
-    const fresh = await auth.lookupProviderCredential(this.ctx.pool, provider, identity.subject);
-    if (!fresh) throw new ApiError('auth.session_invalid', 'provider registration did not produce a credential');
-    if (!verifiedByGoogle) {
-      const token = randomToken();
-      await auth.issueToken(this.ctx.pool, { emailNormalized: email, kind: 'verify_email', tokenHashHex: sha256Hex(token), expiresAt: new Date(this.ctx.clock.now().getTime() + this.ctx.config.tokens.verifyEmailMs), requireVerified: false });
-      await this.ctx.mail.send({ to: email, template: 'verify_email', params: { token, expiresInHours: String(this.ctx.config.tokens.verifyEmailMs / 3_600_000) } });
-    }
-    const { sessionId } = await this.principals.issueSession(reply, request, personId, fresh.authz_epoch, provider);
-    await this.audit('auth.login', 'person', personId, state.requestId, personId, { sessionId, method: provider, firstLogin: true });
+    const verifyToken = verifiedByGoogle ? null : randomToken();
+    const outcome = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      let personId: string | null = null;
+      if (verifiedByGoogle) personId = await preIdentity.claimUnverifiedBinding(trx, { displayName, emailNormalized: email, provider, subject: identity.subject });
+      const claimed = personId !== null;
+      personId ??= await preIdentity.registerProviderPerson(trx, { displayName, emailNormalized: email, provider, subject: identity.subject, emailVerified: verifiedByGoogle });
+      if (!personId) {
+        // A binding (verified, or unverified and not claimable) exists: never auto-link; the owner links from settings.
+        await journal(trx, { action: 'auth.provider_login_refused', objectKind: 'email', objectId: emailRef, requestId: state.requestId, basis: { provider, reason: 'binding_exists' } });
+        return null;
+      }
+      const epoch = await preIdentity.personEpoch(trx, personId);
+      if (epoch === null) throw new ApiError('auth.session_invalid', 'provider registration did not produce a person');
+      if (verifyToken) {
+        await preIdentity.issueToken(trx, { emailNormalized: email, kind: 'verify_email', tokenHashHex: sha256Hex(verifyToken), expiresAt: new Date(this.ctx.clock.now().getTime() + this.ctx.config.tokens.verifyEmailMs), requireVerified: false });
+      }
+      await assumePrincipal(trx, { personId, authzEpoch: epoch });
+      const session = await this.principals.createSession(trx, request, personId, provider);
+      const entries: AuditEntry[] = [];
+      if (claimed) entries.push({ action: 'auth.unverified_binding_claimed', objectKind: 'email', objectId: emailRef, requestId: state.requestId, actor: personId, basis: { provider } });
+      entries.push({ action: 'auth.login', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { sessionId: session.sessionId, method: provider, firstLogin: true } });
+      await journal(trx, entries, [
+        { personId, type: 'identity.person_registered', payload: { method: provider, emailVerified: verifiedByGoogle, claimedUnverifiedBinding: claimed } },
+        { personId, type: 'identity.session_started', payload: { sessionId: session.sessionId, method: provider } },
+      ]);
+      return session;
+    });
+    if (!outcome) return 'account_exists';
+    this.principals.setCookie(reply, outcome.token);
+    if (verifyToken) await this.ctx.mail.send({ to: email, template: 'verify_email', params: { token: verifyToken, expiresInHours: String(this.ctx.config.tokens.verifyEmailMs / 3_600_000) } });
     return verifiedByGoogle ? 'signed_in' : 'verification_pending';
   }
 
@@ -119,7 +144,8 @@ export class ProviderService {
       if (!hasPassword && others.length === 0) throw new ApiError('access.forbidden', 'unlinking would leave no way to sign in', { reason: 'last_credential' });
       const disabled = await credentials.disableProvider(trx, p.personId, provider, this.ctx.clock.now());
       if (disabled === 0) throw new ApiError('access.not_found', 'provider is not linked');
-      await auditEvents.append(trx, { actor_person_id: p.personId, action: 'auth.provider_unlinked', object_kind: 'person', object_id: p.personId, request_id: state.requestId, authz_epoch: p.authzEpoch, basis: { provider } });
+      await journal(trx, { action: 'auth.provider_unlinked', objectKind: 'person', objectId: p.personId, requestId: state.requestId, actor: p.personId, epoch: p.authzEpoch, basis: { provider } },
+        [{ personId: p.personId, type: 'identity.provider_unlinked', payload: { provider } }]);
     });
     await this.notify(state, 'provider_unlinked');
   }
@@ -127,10 +153,6 @@ export class ProviderService {
   private async notify(state: RequestState, event: string): Promise<void> {
     const bindings = await this.principals.runAs(state, (trx, p) => withPrincipalBindings(trx, p.personId));
     for (const email of bindings) await this.ctx.mail.send({ to: email, template: 'security_notice', params: { event } });
-  }
-
-  private audit(action: string, objectKind: string, objectId: string, requestId: string, actor: string | null, basis?: unknown): Promise<unknown> {
-    return withoutPrincipal(this.ctx.pool, (trx) => auditEvents.append(trx, { actor_person_id: actor, action, object_kind: objectKind, object_id: objectId, request_id: requestId, basis }));
   }
 }
 

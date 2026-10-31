@@ -129,18 +129,31 @@ export class PrincipalService {
     return principal;
   }
 
-  /** Creates a session row for a person who just proved a credential and sets the cookie. */
-  async issueSession(reply: FastifyReply, request: FastifyRequest, personId: string, authzEpoch: number, authMethod: 'password' | 'google' | 'apple' | 'recovery'): Promise<{ sessionId: string }> {
+  /**
+   * Creates a session row inside the caller's transaction (the principal must already be set on it), so the session,
+   * its audit row and its outbox intent commit together. The raw token is returned for `setCookie` after COMMIT.
+   */
+  async createSession(trx: Transaction, request: FastifyRequest, personId: string, authMethod: 'password' | 'google' | 'apple' | 'recovery'): Promise<{ sessionId: string; token: string }> {
     const now = this.ctx.clock.now();
     const token = randomToken();
-    const client = { userAgentFamily: userAgentFamily(request.headers['user-agent']), ipPrefix: ipPrefix(request.ip) };
     const absolute = new Date(now.getTime() + this.ctx.config.session.absoluteMs);
     const idle = new Date(Math.min(now.getTime() + this.ctx.config.session.idleMs, absolute.getTime()));
-    const row = await withPrincipal(this.ctx.pool, { personId, authzEpoch }, (trx) => sessions.insert(trx, {
+    const row = await sessions.insert(trx, {
       person_id: personId, token_hash_hex: sha256Hex(token), created_at: now, last_seen_at: now, authenticated_at: now,
-      idle_expires_at: idle, absolute_expires_at: absolute, auth_method: authMethod, user_agent_family: client.userAgentFamily, ip_prefix: client.ipPrefix,
-    }));
+      idle_expires_at: idle, absolute_expires_at: absolute, auth_method: authMethod, user_agent_family: userAgentFamily(request.headers['user-agent']), ip_prefix: ipPrefix(request.ip),
+    });
+    return { sessionId: row.id, token };
+  }
+
+  /** Sets the session cookie; call only after the transaction that created the session has committed. */
+  setCookie(reply: FastifyReply, token: string): void {
     setSessionCookie(reply, this.ctx.config, token);
-    return { sessionId: row.id };
+  }
+
+  /** Creates a session in its own transaction and sets the cookie (callers without other changes to commit). */
+  async issueSession(reply: FastifyReply, request: FastifyRequest, personId: string, authzEpoch: number, authMethod: 'password' | 'google' | 'apple' | 'recovery'): Promise<{ sessionId: string }> {
+    const { sessionId, token } = await withPrincipal(this.ctx.pool, { personId, authzEpoch }, (trx) => this.createSession(trx, request, personId, authMethod));
+    this.setCookie(reply, token);
+    return { sessionId };
   }
 }

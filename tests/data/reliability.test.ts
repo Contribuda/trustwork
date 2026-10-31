@@ -1,16 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import pg from 'pg';
-import { bindTransaction, idempotency, inbox, jobs, outbox, withMaintenance, type Transaction } from '@trustwork/data';
+import { bindTransaction, createPool, idempotency, inbox, jobs, outbox, withMaintenance, type Transaction } from '@trustwork/data';
+import { WORKER_ROLE } from '../../packages/data/src/config.js';
 import { provisionTestDatabase, SKIP_REASON, sqlState } from './helpers/postgres.js';
 
 const db = await provisionTestDatabase('reliability');
 
 test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip: db ? false : SKIP_REASON }, async (t) => {
   if (!db) return;
-  t.after(() => db.close());
   await db.migrate();
   await db.createAppLogin();
+  // Job leasing, completion and reconciliation run under the worker role (REL-001, BE-002); the API role enqueues.
+  const workerLogin = `trustwork_worker_test_${randomBytes(4).toString('hex')}`;
+  const workerPassword = randomBytes(12).toString('hex');
+  await db.admin.query(`CREATE ROLE ${workerLogin} LOGIN PASSWORD '${workerPassword}' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE INHERIT IN ROLE ${WORKER_ROLE}`);
+  const worker = createPool({ ...db.appConfig, user: workerLogin, password: workerPassword, max: 4 });
+  t.after(async () => {
+    await worker.end().catch(() => undefined);
+    await db.admin.query(`DROP ROLE IF EXISTS ${workerLogin}`).catch(() => undefined);
+    await db.close();
+  });
 
   /** Reliability tables carry no party data, so the runtime role uses plain transactions without a principal. */
   const inTransaction = async <T>(pool: pg.Pool, fn: (trx: Transaction, client: pg.PoolClient) => Promise<T>): Promise<T> => {
@@ -48,8 +59,11 @@ test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip
       for (const n of [1, 2, 3]) await jobs.enqueue(trx, { kind: 'embed', payload: { n }, max_attempts: 2 });
       await jobs.enqueue(trx, { kind: 'later', next_at: new Date(Date.now() + 3_600_000) });
     });
-    const a = await db.app.connect();
-    const b = await db.app.connect();
+    // BE-002: leasing, completion and reconciliation belong to the worker role; the API role only enqueues.
+    await assert.rejects(inTransaction(db.app, (trx) => jobs.lease(trx, ['embed'], 'api', 30, 1)), (e: unknown) => sqlState(e) === '42501', 'the API role cannot lease jobs');
+    await assert.rejects(inTransaction(db.app, (trx) => trx.updateTable('job').set({ state: 'dead' }).execute()), (e: unknown) => sqlState(e) === '42501', 'the API role cannot update jobs');
+    const a = await worker.connect();
+    const b = await worker.connect();
     try {
       await a.query('BEGIN');
       await b.query('BEGIN');
@@ -65,53 +79,53 @@ test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip
       a.release();
       b.release();
     }
-    const [job] = await inTransaction(db.app, (trx) => trx.selectFrom('job').selectAll().where('kind', '=', 'embed').orderBy('id').limit(1).execute());
+    const [job] = await inTransaction(worker, (trx) => trx.selectFrom('job').selectAll().where('kind', '=', 'embed').orderBy('id').limit(1).execute());
     assert.ok(job);
     // Reconciliation stand-in: an expired lease is explicitly re-queued by the maintenance identity, never by lease_jobs.
     await withMaintenance(db.admin, (trx) => trx.updateTable('job').set({ state: 'queued', leased_until: null, leased_by: null, next_at: new Date() }).where('id', '=', job.id).execute());
-    assert.deepEqual(await inTransaction(db.app, (trx) => jobs.lease(trx, ['embed'], 'worker-c', 30, 5)).then((r) => r.map((j) => [j.id, j.fencing_token, j.attempt])), [[job.id, '2', 2]]);
-    assert.equal(await inTransaction(db.app, (trx) => jobs.complete(trx, job.id, 1)), false, 'the stale worker is fenced out');
-    assert.equal(await inTransaction(db.app, (trx) => jobs.heartbeat(trx, job.id, 1, 30)), false);
-    assert.equal(await inTransaction(db.app, (trx) => jobs.heartbeat(trx, job.id, 2, 30)), true);
-    assert.equal(await inTransaction(db.app, (trx) => jobs.complete(trx, job.id, 2)), true);
-    assert.equal((await inTransaction(db.app, (trx) => jobs.getById(trx, job.id)))?.state, 'succeeded');
-    assert.equal(await inTransaction(db.app, (trx) => jobs.complete(trx, job.id, 2)), false, 'completion is not repeatable');
+    assert.deepEqual(await inTransaction(worker, (trx) => jobs.lease(trx, ['embed'], 'worker-c', 30, 5)).then((r) => r.map((j) => [j.id, j.fencing_token, j.attempt])), [[job.id, '2', 2]]);
+    assert.equal(await inTransaction(worker, (trx) => jobs.complete(trx, job.id, 1)), false, 'the stale worker is fenced out');
+    assert.equal(await inTransaction(worker, (trx) => jobs.heartbeat(trx, job.id, 1, 30)), false);
+    assert.equal(await inTransaction(worker, (trx) => jobs.heartbeat(trx, job.id, 2, 30)), true);
+    assert.equal(await inTransaction(worker, (trx) => jobs.complete(trx, job.id, 2)), true);
+    assert.equal((await inTransaction(worker, (trx) => jobs.getById(trx, job.id)))?.state, 'succeeded');
+    assert.equal(await inTransaction(worker, (trx) => jobs.complete(trx, job.id, 2)), false, 'completion is not repeatable');
 
-    const others = await inTransaction(db.app, (trx) => trx.selectFrom('job').select(['id', 'fencing_token']).where('kind', '=', 'embed').where('state', '=', 'leased').execute());
+    const others = await inTransaction(worker, (trx) => trx.selectFrom('job').select(['id', 'fencing_token']).where('kind', '=', 'embed').where('state', '=', 'leased').execute());
     assert.equal(others.length, 2);
     const victim = others[0]!;
-    assert.equal(await inTransaction(db.app, (trx) => jobs.fail(trx, victim.id, victim.fencing_token, 'pre-effect failure', new Date())), true);
-    assert.equal((await inTransaction(db.app, (trx) => jobs.getById(trx, victim.id)))?.state, 'queued', 'first failure re-queues (max_attempts 2)');
-    const again = await inTransaction(db.app, (trx) => jobs.lease(trx, ['embed'], 'worker-d', 30, 5));
+    assert.equal(await inTransaction(worker, (trx) => jobs.fail(trx, victim.id, victim.fencing_token, 'pre-effect failure', new Date())), true);
+    assert.equal((await inTransaction(worker, (trx) => jobs.getById(trx, victim.id)))?.state, 'queued', 'first failure re-queues (max_attempts 2)');
+    const again = await inTransaction(worker, (trx) => jobs.lease(trx, ['embed'], 'worker-d', 30, 5));
     assert.deepEqual(again.map((j) => [j.id, j.attempt, j.fencing_token]), [[victim.id, 2, '2']]);
-    assert.equal(await inTransaction(db.app, (trx) => jobs.fail(trx, victim.id, 2, 'failed again', new Date())), true);
-    assert.equal((await inTransaction(db.app, (trx) => jobs.getById(trx, victim.id)))?.state, 'dead', 'attempts exhausted: dead-letter, not silent retry');
+    assert.equal(await inTransaction(worker, (trx) => jobs.fail(trx, victim.id, 2, 'failed again', new Date())), true);
+    assert.equal((await inTransaction(worker, (trx) => jobs.getById(trx, victim.id)))?.state, 'dead', 'attempts exhausted: dead-letter, not silent retry');
     const unknown = others[1]!;
-    assert.equal(await inTransaction(db.app, (trx) => jobs.markOutcomeUnknown(trx, unknown.id, unknown.fencing_token, 'timeout after dispatch')), true);
-    assert.deepEqual(await inTransaction(db.app, (trx) => jobs.lease(trx, ['embed'], 'worker-e', 30, 5)), [], 'outcome_unknown and dead jobs are never re-leased');
+    assert.equal(await inTransaction(worker, (trx) => jobs.markOutcomeUnknown(trx, unknown.id, unknown.fencing_token, 'timeout after dispatch')), true);
+    assert.deepEqual(await inTransaction(worker, (trx) => jobs.lease(trx, ['embed'], 'worker-e', 30, 5)), [], 'outcome_unknown and dead jobs are never re-leased');
     await assert.rejects(inTransaction(db.app, (trx) => trx.insertInto('job').values({ kind: 'x', state: 'leased' }).execute()), (e: unknown) => sqlState(e) === '23514');
-    await assert.rejects(inTransaction(db.app, (trx) => trx.updateTable('job').set({ fencing_token: '99' }).where('id', '=', job.id).execute()), (e: unknown) => sqlState(e) === '42501', 'the runtime role cannot move the fencing token');
-    await assert.rejects(inTransaction(db.app, (trx) => trx.updateTable('job').set({ attempt: 0 }).where('id', '=', job.id).execute()), (e: unknown) => sqlState(e) === '42501');
+    await assert.rejects(inTransaction(worker, (trx) => trx.updateTable('job').set({ fencing_token: '99' }).where('id', '=', job.id).execute()), (e: unknown) => sqlState(e) === '42501', 'the worker role cannot move the fencing token');
+    await assert.rejects(inTransaction(worker, (trx) => trx.updateTable('job').set({ attempt: 0 }).where('id', '=', job.id).execute()), (e: unknown) => sqlState(e) === '42501');
   });
 
   await t.test('expired leases are parked as outcome_unknown for reconciliation, never re-leased', async () => {
     const queued = await inTransaction(db.app, (trx) => jobs.enqueue(trx, { kind: 'dispatch' }));
-    const [leased] = await inTransaction(db.app, (trx) => jobs.lease(trx, ['dispatch'], 'worker-x', 1, 1));
+    const [leased] = await inTransaction(worker, (trx) => jobs.lease(trx, ['dispatch'], 'worker-x', 1, 1));
     assert.equal(leased?.id, queued.id);
-    assert.deepEqual(await inTransaction(db.app, (trx) => jobs.expireLeases(trx, new Date())), [], 'a live lease is untouched');
-    const expired = await inTransaction(db.app, (trx) => jobs.expireLeases(trx, new Date(Date.now() + 5_000)));
+    assert.deepEqual(await inTransaction(worker, (trx) => jobs.expireLeases(trx, new Date())), [], 'a live lease is untouched');
+    const expired = await inTransaction(worker, (trx) => jobs.expireLeases(trx, new Date(Date.now() + 5_000)));
     assert.deepEqual(expired.map((j) => [j.id, j.state, j.leased_by, j.fencing_token]), [[queued.id, 'outcome_unknown', null, '1']]);
-    assert.equal(await inTransaction(db.app, (trx) => jobs.complete(trx, queued.id, 1)), false, 'the old worker cannot complete a parked job');
-    assert.deepEqual(await inTransaction(db.app, (trx) => jobs.lease(trx, ['dispatch'], 'worker-y', 30, 5)), [], 'reconciliation is an explicit command, not a replay');
-    await assert.rejects(inTransaction(db.app, (trx) => trx.updateTable('job').set({ state: 'queued' }).where('id', '=', queued.id).execute()), (e: unknown) => sqlState(e) === '23000' && /reconciliation/.test(String(e)), 'parked jobs cannot be re-queued directly');
-    await assert.rejects(inTransaction(db.app, (trx) => jobs.reconcile(trx, queued.id, 'queued', '')), (e: unknown) => sqlState(e) === '23000' && /reference/.test(String(e)));
-    const reconciled = await inTransaction(db.app, (trx) => jobs.reconcile(trx, queued.id, 'queued', 'reconciliation-1'));
+    assert.equal(await inTransaction(worker, (trx) => jobs.complete(trx, queued.id, 1)), false, 'the old worker cannot complete a parked job');
+    assert.deepEqual(await inTransaction(worker, (trx) => jobs.lease(trx, ['dispatch'], 'worker-y', 30, 5)), [], 'reconciliation is an explicit command, not a replay');
+    await assert.rejects(inTransaction(worker, (trx) => trx.updateTable('job').set({ state: 'queued' }).where('id', '=', queued.id).execute()), (e: unknown) => sqlState(e) === '23000' && /reconciliation/.test(String(e)), 'parked jobs cannot be re-queued directly');
+    await assert.rejects(inTransaction(worker, (trx) => jobs.reconcile(trx, queued.id, 'queued', '')), (e: unknown) => sqlState(e) === '23000' && /reference/.test(String(e)));
+    const reconciled = await inTransaction(worker, (trx) => jobs.reconcile(trx, queued.id, 'queued', 'reconciliation-1'));
     assert.equal(reconciled.state, 'queued');
-    assert.deepEqual(await inTransaction(db.app, (trx) => jobs.lease(trx, ['dispatch'], 'worker-y', 30, 5)).then((r) => r.map((j) => [j.id, j.fencing_token])), [[queued.id, '2']]);
-    await assert.rejects(inTransaction(db.app, (trx) => jobs.reconcile(trx, queued.id, 'succeeded', 'reconciliation-2')), (e: unknown) => sqlState(e) === '23000' && /not awaiting/.test(String(e)));
-    const done = (await inTransaction(db.app, (trx) => jobs.complete(trx, queued.id, 2)));
+    assert.deepEqual(await inTransaction(worker, (trx) => jobs.lease(trx, ['dispatch'], 'worker-y', 30, 5)).then((r) => r.map((j) => [j.id, j.fencing_token])), [[queued.id, '2']]);
+    await assert.rejects(inTransaction(worker, (trx) => jobs.reconcile(trx, queued.id, 'succeeded', 'reconciliation-2')), (e: unknown) => sqlState(e) === '23000' && /not awaiting/.test(String(e)));
+    const done = (await inTransaction(worker, (trx) => jobs.complete(trx, queued.id, 2)));
     assert.equal(done, true);
-    await assert.rejects(inTransaction(db.app, (trx) => trx.updateTable('job').set({ state: 'queued' }).where('id', '=', queued.id).execute()), (e: unknown) => sqlState(e) === '23000', 'terminal states are final for the runtime role');
+    await assert.rejects(inTransaction(worker, (trx) => trx.updateTable('job').set({ state: 'queued' }).where('id', '=', queued.id).execute()), (e: unknown) => sqlState(e) === '23000', 'terminal states are final for the worker role');
   });
 
   await t.test('invariant 4: idempotency records are unique per (principal, action, context, key) with a payload digest', async () => {

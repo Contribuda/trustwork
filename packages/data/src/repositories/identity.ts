@@ -1,4 +1,5 @@
-import type { Transaction } from '../pool.js';
+import { sql } from 'kysely';
+import { PrincipalError, type Transaction } from '../pool.js';
 import type { AuthTokenKind, Credential, EmailBinding, NewSession, Person, PersonUpdate, Session, SessionRevokedReason } from '../schema.js';
 import { hashToBuffer } from './auth.js';
 
@@ -111,3 +112,94 @@ export const authTokens = {
     return Number((await query.executeTakeFirst()).numUpdatedRows);
   },
 };
+
+/**
+ * Pre-identity definer calls bound to an open transaction (BE-002): the change, its audit row and its outbox intents
+ * commit together. Inputs are hashes, never raw tokens; every function is on the reviewed SECURITY DEFINER allowlist.
+ */
+export type SignupOutcome = 'registered' | 'claim_pending' | 'bound';
+export type MailboxProofOutcome = 'verified' | 'bound' | 'claimed' | 'taken';
+export interface MailboxProof {
+  person_id: string;
+  email_normalized: string;
+  kind: 'verify_email' | 'email_change';
+  authz_epoch: number;
+  outcome: MailboxProofOutcome;
+  binding_id: string | null;
+  /** Person whose unverified (squatting) binding the proof removed. */
+  displaced_person_id: string | null;
+}
+export interface ThrottleState { failures: number; secondsSinceLast: number }
+
+export const preIdentity = {
+  /** `registered`, `claim_pending` (address held by another person's unverified binding) or `bound` (verified owner). */
+  async signup(trx: Transaction, input: { displayName: string; emailNormalized: string; passwordHash: string; verifyTokenHashHex: string; verifyExpiresAt: Date }): Promise<{ personId: string | null; outcome: SignupOutcome }> {
+    const { rows } = await sql<{ person_id: string | null; outcome: SignupOutcome }>`
+      SELECT * FROM trustwork.auth_signup(${input.displayName}, ${input.emailNormalized}, ${input.passwordHash}, ${hashToBuffer(input.verifyTokenHashHex)}, ${input.verifyExpiresAt})`.execute(trx);
+    const row = rows[0];
+    if (!row) throw new Error('auth_signup returned no row');
+    return { personId: row.person_id, outcome: row.outcome };
+  },
+  /** Consumes a verify_email or email_change token and binds the address (removing a squatting unverified binding). */
+  async proveMailbox(trx: Transaction, tokenHashHex: string): Promise<MailboxProof | null> {
+    const { rows } = await sql<MailboxProof>`SELECT * FROM trustwork.auth_prove_mailbox(${hashToBuffer(tokenHashHex)})`.execute(trx);
+    return rows[0] ?? null;
+  },
+  /** Single-use token consumption of another kind (recovery, invitation) inside the transaction. */
+  async consumeToken(trx: Transaction, tokenHashHex: string, kind: AuthTokenKind): Promise<{ token_id: string; person_id: string; email_normalized: string; authz_epoch: number } | null> {
+    const { rows } = await sql<{ token_id: string; person_id: string; email_normalized: string; authz_epoch: number }>`
+      SELECT * FROM trustwork.auth_consume_token(${hashToBuffer(tokenHashHex)}, ${kind})`.execute(trx);
+    return rows[0] ?? null;
+  },
+  async issueToken(trx: Transaction, input: { emailNormalized: string; kind: AuthTokenKind; tokenHashHex: string; expiresAt: Date; requireVerified: boolean }): Promise<string | null> {
+    const { rows } = await sql<{ id: string | null }>`
+      SELECT trustwork.auth_issue_token(${input.emailNormalized}, ${input.kind}, ${hashToBuffer(input.tokenHashHex)}, ${input.expiresAt}, ${input.requireVerified}) AS id`.execute(trx);
+    return rows[0]?.id ?? null;
+  },
+  async registerProviderPerson(trx: Transaction, input: { displayName: string | null; emailNormalized: string; provider: 'google' | 'apple'; subject: string; emailVerified: boolean }): Promise<string | null> {
+    const { rows } = await sql<{ id: string | null }>`
+      SELECT trustwork.auth_register_provider_person(${input.displayName}, ${input.emailNormalized}, ${input.provider}, ${input.subject}, ${input.emailVerified}) AS id`.execute(trx);
+    return rows[0]?.id ?? null;
+  },
+  async claimUnverifiedBinding(trx: Transaction, input: { displayName: string | null; emailNormalized: string; provider: 'google' | 'apple'; subject: string }): Promise<string | null> {
+    const { rows } = await sql<{ id: string | null }>`
+      SELECT trustwork.auth_claim_unverified_binding(${input.displayName}, ${input.emailNormalized}, ${input.provider}, ${input.subject}) AS id`.execute(trx);
+    return rows[0]?.id ?? null;
+  },
+  /** Records one failure for a hashed subject; returns the count inside the window. */
+  async recordLoginFailure(trx: Transaction, subjectHashHex: string, windowSeconds: number, retentionSeconds: number): Promise<number> {
+    const { rows } = await sql<{ n: number }>`
+      SELECT trustwork.auth_record_login_failure(${hashToBuffer(subjectHashHex)}, make_interval(secs => ${windowSeconds}), make_interval(secs => ${retentionSeconds})) AS n`.execute(trx);
+    return rows[0]?.n ?? 0;
+  },
+  async throttleState(trx: Transaction, subjectHashHex: string, windowSeconds: number): Promise<ThrottleState> {
+    const { rows } = await sql<{ failures: number; seconds_since_last: number }>`
+      SELECT * FROM trustwork.auth_login_throttle(${hashToBuffer(subjectHashHex)}, make_interval(secs => ${windowSeconds}))`.execute(trx);
+    return { failures: rows[0]?.failures ?? 0, secondsSinceLast: Number(rows[0]?.seconds_since_last ?? 0) };
+  },
+  /** Current authorization epoch of a person (the value discloses nothing; used right after a definer created or changed it). */
+  async personEpoch(trx: Transaction, personId: string): Promise<number | null> {
+    const { rows } = await sql<{ authz_epoch: number }>`SELECT authz_epoch FROM trustwork.auth_person_epoch(${personId}::uuid)`.execute(trx);
+    return rows[0]?.authz_epoch ?? null;
+  },
+};
+
+/**
+ * Sets the verified identity inside an already open transaction (after pre-identity definer calls), with the same
+ * trusted setter as `withPrincipal`; a stale epoch fails closed (SQLSTATE 28000).
+ */
+export async function assumePrincipal(trx: Transaction, principal: { personId: string; authzEpoch: number }): Promise<void> {
+  try {
+    await sql`SELECT trustwork.set_principal(${principal.personId}::uuid, ${principal.authzEpoch}::integer)`.execute(trx);
+  } catch (error) {
+    const e = error as { code?: string; hint?: string; message?: string };
+    if (e && e.code === '28000') throw new PrincipalError(e.hint === 'access.stale_epoch' ? 'access.stale_epoch' : 'access.no_principal', e.message ?? 'principal rejected');
+    throw error;
+  }
+}
+
+/** Clears the account failure counters of the current person's verified addresses (identity required). */
+export async function clearOwnLoginFailures(trx: Transaction): Promise<number> {
+  const { rows } = await sql<{ n: number }>`SELECT trustwork.auth_clear_login_failures() AS n`.execute(trx);
+  return rows[0]?.n ?? 0;
+}

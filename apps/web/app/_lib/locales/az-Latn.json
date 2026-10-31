@@ -2252,6 +2252,7 @@
     "none": "Status təyin edilməyib"
   },
   "personPage": {
+    "unnamed": "Adsız iştirakçı",
     "nav": {
       "overview": "İcmal",
       "services": "Xidmətlər",
