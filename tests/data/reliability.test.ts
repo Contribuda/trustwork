@@ -54,6 +54,10 @@ test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip
     await assert.rejects(inTransaction(db.app, (trx) => trx.deleteFrom('outbox_event').execute()), (e: unknown) => sqlState(e) === '42501');
   });
 
+  // "Due now" for lease_jobs, which compares next_at with the database's now(): a timestamp from this process can
+  // lie in the database's future when the Docker VM clock lags by a few milliseconds, so use one in the past.
+  const due = () => new Date(Date.now() - 5_000);
+
   await t.test('job lease uses SKIP LOCKED and a fencing token that invalidates stale workers', async () => {
     await inTransaction(db.app, async (trx) => {
       for (const n of [1, 2, 3]) await jobs.enqueue(trx, { kind: 'embed', payload: { n }, max_attempts: 2 });
@@ -82,7 +86,7 @@ test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip
     const [job] = await inTransaction(worker, (trx) => trx.selectFrom('job').selectAll().where('kind', '=', 'embed').orderBy('id').limit(1).execute());
     assert.ok(job);
     // Reconciliation stand-in: an expired lease is explicitly re-queued by the maintenance identity, never by lease_jobs.
-    await withMaintenance(db.admin, (trx) => trx.updateTable('job').set({ state: 'queued', leased_until: null, leased_by: null, next_at: new Date() }).where('id', '=', job.id).execute());
+    await withMaintenance(db.admin, (trx) => trx.updateTable('job').set({ state: 'queued', leased_until: null, leased_by: null, next_at: due() }).where('id', '=', job.id).execute());
     assert.deepEqual(await inTransaction(worker, (trx) => jobs.lease(trx, ['embed'], 'worker-c', 30, 5)).then((r) => r.map((j) => [j.id, j.fencing_token, j.attempt])), [[job.id, '2', 2]]);
     assert.equal(await inTransaction(worker, (trx) => jobs.complete(trx, job.id, 1)), false, 'the stale worker is fenced out');
     assert.equal(await inTransaction(worker, (trx) => jobs.heartbeat(trx, job.id, 1, 30)), false);
@@ -94,11 +98,11 @@ test('outbox, job leases, idempotency, inbox and the frozen-row trigger', { skip
     const others = await inTransaction(worker, (trx) => trx.selectFrom('job').select(['id', 'fencing_token']).where('kind', '=', 'embed').where('state', '=', 'leased').execute());
     assert.equal(others.length, 2);
     const victim = others[0]!;
-    assert.equal(await inTransaction(worker, (trx) => jobs.fail(trx, victim.id, victim.fencing_token, 'pre-effect failure', new Date())), true);
+    assert.equal(await inTransaction(worker, (trx) => jobs.fail(trx, victim.id, victim.fencing_token, 'pre-effect failure', due())), true);
     assert.equal((await inTransaction(worker, (trx) => jobs.getById(trx, victim.id)))?.state, 'queued', 'first failure re-queues (max_attempts 2)');
     const again = await inTransaction(worker, (trx) => jobs.lease(trx, ['embed'], 'worker-d', 30, 5));
     assert.deepEqual(again.map((j) => [j.id, j.attempt, j.fencing_token]), [[victim.id, 2, '2']]);
-    assert.equal(await inTransaction(worker, (trx) => jobs.fail(trx, victim.id, 2, 'failed again', new Date())), true);
+    assert.equal(await inTransaction(worker, (trx) => jobs.fail(trx, victim.id, 2, 'failed again', due())), true);
     assert.equal((await inTransaction(worker, (trx) => jobs.getById(trx, victim.id)))?.state, 'dead', 'attempts exhausted: dead-letter, not silent retry');
     const unknown = others[1]!;
     assert.equal(await inTransaction(worker, (trx) => jobs.markOutcomeUnknown(trx, unknown.id, unknown.fencing_token, 'timeout after dispatch')), true);

@@ -5,7 +5,7 @@ import { createServer } from 'node:net';
 import pg from 'pg';
 import {
   acquireTestSlot, CONNECTION_HEADROOM, CONNECTIONS_PER_FILE, connectWithRetry, databaseLabel, postgresRequired, provisionTestDatabase,
-  SKIP_REASON, slotCount, sqlState, STALE_AFTER_MS, staleNames, stamp,
+  SKIP_REASON, slotCount, sqlState, STALE_AFTER_MS, staleNames, stamp, untilDatabaseTimePasses,
 } from './postgres.js';
 
 async function withEnv<T>(patch: Record<string, string | undefined>, fn: () => Promise<T>): Promise<T> {
@@ -142,6 +142,14 @@ test('cluster test slots, busy-connection retry and stale reaping against real P
     } finally {
       await db.admin.query(`DROP ROLE IF EXISTS ${role}`);
     }
+  });
+
+  await t.test('waiting for the database clock: returns once now() passed the instant, fails after the timeout', async () => {
+    const at = new Date(Date.now() + 150);
+    await untilDatabaseTimePasses(db.admin, at);
+    const { rows } = await db.admin.query<{ passed: boolean }>('SELECT now() > $1::timestamptz AS passed', [at.toISOString()]);
+    assert.equal(rows[0]?.passed, true, 'a transaction started afterwards sees the instant as past');
+    await assert.rejects(untilDatabaseTimePasses(db.admin, new Date(Date.now() + 3_600_000), 50), /did not pass/);
   });
 
   await t.test('stamped test databases older than the stale window are dropped by the next file; fresh ones stay', async () => {

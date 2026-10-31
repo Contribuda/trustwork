@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import pg from 'pg';
 import { computeDigest, type EgressRequest } from '@trustwork/contracts';
 import { admission, AdmissionGate, AdmissionLeaseExpiredError, admissionScopes, bindTransaction, createPool, withMaintenance, withPrincipal, type Principal } from '@trustwork/data';
-import { provisionTestDatabase, SKIP_REASON } from '../data/helpers/postgres.js';
+import { provisionTestDatabase, SKIP_REASON, untilDatabaseTimePasses } from '../data/helpers/postgres.js';
 import { principalFor, seedFixtures } from '../data/helpers/seed.js';
 
 const db = await provisionTestDatabase('admission');
@@ -82,8 +82,12 @@ test('common admission / revocation primitive: one linearization shared by two n
   await t.test('expiry, wrong provider/model/policy/data class, query-vs-document kind, tampered permit and digest mismatch fail closed', async () => {
     const anna = await principal(seed.people.anna);
     const issue = (ttlMs = 60_000) => withPrincipal(nodeA, anna, (trx) => admission.issue(trx, request(), { scopes, ttlMs }));
-    const expired = await issue(1);
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Expiry is computed from this process's clock and checked against the database's now(); the two may run tens of
+    // milliseconds apart (Docker VM), so wait for the database clock instead of a fixed sleep. A TTL below the skew
+    // would also violate admission_lease_window (expires_at > issued_at = now()).
+    const SHORT_TTL_MS = 250;
+    const expired = await issue(SHORT_TTL_MS);
+    await untilDatabaseTimePasses(db.admin, new Date(expired.expiresAt));
     assert.deepEqual(await withPrincipal(nodeB, anna, (trx) => admission.admit(trx, request(), expired, { leaseMs: 5_000 })), { admitted: false, reason: 'expired' });
     const variants: [string, EgressRequest][] = [
       ['provider', request({ providerId: 'other-provider' })],
@@ -104,8 +108,8 @@ test('common admission / revocation primitive: one linearization shared by two n
     const permit = await issue();
     const tampered = { ...permit, expiresAt: new Date(Date.now() + 3_600_000).toISOString() };
     assert.deepEqual(await withPrincipal(nodeB, anna, (trx) => admission.admit(trx, request(), tampered, { leaseMs: 5_000 })), { admitted: false, reason: 'permit_tampered' });
-    const shortLived = await issue(1);
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    const shortLived = await issue(SHORT_TTL_MS);
+    await untilDatabaseTimePasses(db.admin, new Date(shortLived.expiresAt));
     const dbTamper = await withPrincipal(nodeB, anna, (trx) => admission.admit(trx, request(), { ...shortLived, signature: undefined, expiresAt: tampered.expiresAt }, { leaseMs: 5_000 }));
     assert.deepEqual(dbTamper, { admitted: false, reason: 'expired' }, 'the database lease, not the permit text, is authoritative');
   });

@@ -259,6 +259,21 @@ async function clockSkewMs(client: pg.Client): Promise<number> {
   return Math.round(Number(rows[0]?.ms ?? before) - (before + after) / 2);
 }
 
+/**
+ * Waits until the database clock has passed `at`. Use it after creating anything whose expiry is computed from this
+ * process's clock but checked against now() in the database: a Docker VM clock runs tens of milliseconds apart, so a
+ * fixed sleep is either too short (the row is not yet expired for the database) or wastefully long.
+ */
+export async function untilDatabaseTimePasses(pool: pg.Pool, at: Date, timeoutMs = 10_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const { rows } = await pool.query<{ passed: boolean }>('SELECT clock_timestamp() > $1::timestamptz AS passed', [at.toISOString()]);
+    if (rows[0]?.passed) return;
+    if (Date.now() > deadline) throw new Error(`database clock did not pass ${at.toISOString()} within ${timeoutMs} ms`);
+    await sleep(10);
+  }
+}
+
 /** Server clocks further apart than this break tests that compare process time with now() (permit/lease expiry). */
 export const CLOCK_SKEW_WARN_MS = 250;
 
