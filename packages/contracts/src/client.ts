@@ -53,3 +53,5 @@ export * from './directory.js';
 export * from './profiles.js';
 // Sanctions compliance: jurisdiction gate, address primitives and holds (SANC-001, ADR 014).
 export * from './sanctions.js';
+// Deployment-location attestation: command, record, refusal rule and status (SANC-009, ADR 014 decisions 3 to 5).
+export * from './sanctions-attestation.js';

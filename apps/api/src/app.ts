@@ -172,7 +172,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     bodyLimit: 256 * 1024,
   });
   const files = options.files ?? filesOptionsFromEnv(env);
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files), adapter, { logger: new NestJsonLogger(logger) });
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured'), adapter, { logger: new NestJsonLogger(logger) });
   const fastify = app.getHttpAdapter().getInstance() as unknown as FastifyInstance;
   instrumentHttp(fastify, { config, logger, telemetry });
   // The per-route limit must be attached before @fastify/rate-limit's own onRoute hook reads `config.rateLimit`

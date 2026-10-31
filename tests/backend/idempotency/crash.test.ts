@@ -658,6 +658,17 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await exactlyOnce({ action: 'assistant.stop_release', client: petr, url: '/v1/assistant/stop/release', body: {}, effects: () => auditCount(h.db.admin, 'assistant.stop_released') });
   });
 
+  // SANC-009: the deployment-location attestation is a staff route behind an elevation. Runs after the jurisdiction
+  // hold subtest: anna (elevated above) becomes the node operator through the second-person path and attests.
+  await t.test('attesting the deployment location (staff route)', async () => {
+    assert.ok(adminWorld && elevatedAnna, 'the ADM-001 and support subtests ran first');
+    const { world, actors: staffActors } = adminWorld;
+    await staffActors.assignSensitive({ personId: seed.people.anna, role: 'node-operator', scope: { kind: 'node', nodeId: world.nodeId } });
+    const body = { operatorEntityCountry: 'US', operatorEntityRegion: 'US-DE', hostingCountry: 'US', hostingRegion: null, gateMode: 'upstream_gate', supersedes: null, statementVersion: 'deployment-location-1', confirmed: true, reason: 'Synthetic: exactly-once attestation' };
+    await exactlyOnce({ action: 'jurisdiction.attestation.attest', client: elevatedAnna, url: '/v1/admin/jurisdiction/attestation', body, effects: () => count(h.db.admin, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'jurisdiction.location_attested'") });
+    assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.deployment_location_attestation'), 1, 'one attestation');
+  });
+
   await t.test('every in-transaction route was crash-tested', () => {
     const expected = Object.entries(IDEMPOTENT_ROUTES).filter(([, mode]) => mode.kind === 'in_transaction').map(([action]) => action).sort();
     assert.deepEqual([...covered].sort(), expected);
