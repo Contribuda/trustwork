@@ -1,0 +1,11 @@
+{
+  "jurisdiction": {
+    "pageTitle": "No disponible en su ubicación",
+    "title": "Este sitio no está disponible en su ubicación",
+    "lead": "Lo sentimos. El operador de este sitio debe cumplir la legislación sobre sanciones y control de exportaciones, que no permite prestar este servicio a nadie que se encuentre en Rusia, Crimea, Sebastopol, las regiones de Donetsk y Luhansk de Ucrania, Cuba, Irán o Corea del Norte.",
+    "notPersonal": "No se trata de usted como persona ni es un juicio sobre usted. La norma se aplica a todas las personas en estos lugares, sin excepción.",
+    "nothingDeleted": "Si tiene una cuenta, no se borra nada de ella. Si inició sesión desde uno de estos lugares, su cuenta queda en pausa hasta que podamos confirmar que ya no se encuentra allí.",
+    "wrongPlace": "Si no se encuentra en ninguno de estos lugares, es posible que la comprobación de ubicación sea errónea. Comuníquese con el operador de este sitio mediante los datos de contacto que figuran en sus condiciones de servicio.",
+    "attribution": "Ubicación estimada: {attribution}"
+  }
+}
