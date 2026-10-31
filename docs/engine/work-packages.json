@@ -2122,19 +2122,23 @@
       "read": [
         "docs/data/model.md",
         "docs/engine/billing.md",
-        "docs/engine/country-specifics.md"
+        "docs/engine/country-specifics.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Add invoice, invoice_line, refund, payout_account (provider references only) and payout (packages/data/migrations/invoicing).",
         "Determine tax from country-pack rules or a tax adapter and store the rule reference and jurisdiction (US sales tax per state, county and city as the worked example, fake adapter).",
         "Screen payees with the compliance package before the first payout; payout fees come from a published price version.",
-        "Reconcile unknown outcomes; balanced ledger entries for every money movement."
+        "Reconcile unknown outcomes; balanced ledger entries for every money movement.",
+        "Invoice lines for agent usage, model and capability prices, credit packs and commissions name their price or fee version and meter; credit-pack purchases and refunds of unused credits go through the provider under the published refund policy, never through a stored balance (ADR 010 decisions 20 and 25)."
       ],
       "acceptance": [
         "Every tax amount names its jurisdiction and rule source; no hard-coded rate.",
         "A payment timeout never produces a second charge.",
         "Card and bank data never enter the database.",
-        "Ticket, course and consultation sales and payouts refuse through the screening gate for held, matched or unscreened parties (tested)."
+        "Ticket, course and consultation sales and payouts refuse through the screening gate for held, matched or unscreened parties (tested).",
+        "Every agent usage, credit-pack and commission invoice line names its price or fee version (tested).",
+        "No table or ledger account represents participants' money held by the hub or by Trustwork."
       ],
       "paths": [
         "apps/api/src/modules/invoicing",
@@ -2165,12 +2169,15 @@
         "Implement commission and fee versions on marketplace_fee_version with category scope, effective dates and no overlapping active versions.",
         "Second-person activation and an audit record; participants accept the version in force at booking or acceptance.",
         "Build the public price page from BIZ-001's design listing every active price, fee and commission and what payment never buys.",
-        "Comparison tests: ranking, matching, recommendations and reputation are identical with and without commissions."
+        "Comparison tests: ranking, matching, recommendations and reputation are identical with and without commissions.",
+        "The public price page also lists every active agent plan, model and capability price version and credit-pack version with its validity (ADR 010 decision 25)."
       ],
       "acceptance": [
         "A fee version cannot be activated by its drafter (tested).",
         "Every booking or acceptance records the fee version shown before confirmation.",
-        "The public price page lists every active version in every hub language."
+        "The public price page lists every active version in every hub language.",
+        "The public price page lists active agent plans, model and capability prices and credit packs as well as fees and commissions (tested).",
+        "No fee or commission configuration key can change ranking, matching, recommendations or reputation (schema test)."
       ],
       "paths": [
         "apps/api/src/modules/billing/fees",
@@ -2502,18 +2509,25 @@
       "read": [
         "docs/engine/hub-console/providers-and-models.md",
         "docs/engine/hub-console/README.md",
-        "docs/adr/004-delivery-and-providers.md"
+        "docs/adr/004-delivery-and-providers.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Implement the secret store port with envelope encryption and an external KMS or Vault adapter interface; fake adapter for tests.",
         "Implement connection tests that send only synthetic input.",
         "Implement route resolution with fallbacks and the egress decision function every model or provider call must pass.",
-        "Implement caps with a hard stop and kill switches with two-person release."
+        "Implement caps with a hard stop and kill switches with two-person release.",
+        "Scope model routes by job (task class) and optionally by agent module or extension, resolve the most specific active route (extension, then module, then job) and refuse a call without one; active routes name a pinned provider revision (ADR 010 decision 25).",
+        "Store versioned cost records per model (ModelPricingSchema with basis and observation date); a cost record feeds margins and dashboards and never changes a participant's sale price.",
+        "Record processing country and residency on every connection; refuse connections hosted in a restricted place; audit every connection, route, egress, cap and kill-switch change with actor, reason and before and after values."
       ],
       "acceptance": [
         "No API response, log line, audit event or outbox payload contains a secret value (tested by scanning).",
         "A call with a non-public data class to a connection without an allow rule is refused.",
-        "An exhausted cap blocks new paid calls."
+        "An exhausted cap blocks new paid calls.",
+        "Route resolution picks extension, then module, then job, and a call without an active route is refused (tested).",
+        "A route that may carry a non-public data class cannot be activated by its drafter alone, and a connection hosted in a restricted place cannot be saved (negative tests).",
+        "A new cost record leaves every active sale price unchanged (test)."
       ],
       "paths": [
         "packages/contracts/src/providers.ts",
@@ -3609,17 +3623,21 @@
       "read": [
         "docs/engine/hub-console/providers-and-models.md",
         "docs/engine/hub-console/automation-and-scheduling.md",
-        "docs/engine/hub-console/screens.md"
+        "docs/engine/hub-console/screens.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Build the integrations section with the write-only SecretField, ConnectionTestPanel, RoutingTable, EgressMatrix and KillSwitchControl.",
         "Build the automation section with CronField, run tables and logs.",
-        "Locale namespace for every engine language; Playwright and axe."
+        "Locale namespace for every engine language; Playwright and axe.",
+        "Build the model catalogue screen HC-106 (entries, pinned revisions, evaluation results on hub sample sets, rollout stages with both versions' rates, rollback, per-model kill switch), routing by job, module and extension, and latency and cohort dashboards (ADR 010 decision 25)."
       ],
       "acceptance": [
         "A DOM scan finds no secret value.",
         "The egress matrix is operable by keyboard and screen reader.",
-        "Kill-switch release shows the two-person requirement."
+        "Kill-switch release shows the two-person requirement.",
+        "Enabling a model without a passing evaluation is blocked on fixtures, and rollback is one action that names the pin it restores.",
+        "Dashboards render cohort counts under ten as suppressed and show no per-person rows."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/integrations",
@@ -3709,12 +3727,15 @@
       "steps": [
         "Build module sections including planner templates, marketplace rules and shared knowledge review.",
         "Build agent modules, policy (with per-jurisdiction disclosure, liability and limits from HUB-005), external agents, usage, abuse and the extension registry (declared actions, inputs, data classes, side effects, endpoints, costs, mandate kinds, safety-suite result, second-person activation).",
-        "Build billing (offers, prices with cost beside sale price, commissions, invoices, payouts, credits, tax) and communications sections; locale namespace; Playwright and axe."
+        "Build billing (offers, prices with cost beside sale price, commissions, invoices, payouts, credits, tax) and communications sections; locale namespace; Playwright and axe.",
+        "Add capability toggles per participant type and plan, hub defaults and maximums, offered job subscriptions, the preview shown before every activation, prices per model or capability (flat or markup materialized into a fixed version) and credit packs with validity (ADR 010 decision 25)."
       ],
       "acceptance": [
         "Cohort counts under ten are rendered as suppressed.",
         "Price, commission and extension activation need a second person.",
-        "No screen lists or manages individual participants' agents."
+        "No screen lists or manages individual participants' agents.",
+        "Every activation screen shows the stored preview with cohort counts and no named participants.",
+        "No screen offers a control that disables mandates, confirmations for commitments, sanctions gates, restricted places or payment neutrality."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/modules",
@@ -3802,21 +3823,25 @@
         "HUBC-007",
         "PIPE-001",
         "EDIT-001",
-        "MINE-001"
+        "MINE-001",
+        "MODEL-001"
       ],
       "handbook": "docs/engine/hub-console/providers-and-models.md",
       "goal": "Wire the M2 and M3 sections to the API.",
       "read": [
         "docs/engine/hub-console/providers-and-models.md",
-        "docs/engine/hub-console/autonomous-editorial.md"
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Implement the API adapter methods for providers, routes, egress, budgets, kill switches, pipelines, runs, editorial items, sources, datasets and links.",
-        "Run the M2 and M3 browser plans against the API."
+        "Run the M2 and M3 browser plans against the API.",
+        "Wire the model catalogue, evaluation runs, rollouts, rollback and the per-model kill switch to the API (MODEL-001)."
       ],
       "acceptance": [
         "A DOM and network scan finds no secret value.",
-        "Publishing still needs the review decision against the live API."
+        "Publishing still needs the review decision against the live API.",
+        "Enabling a model without a passing evaluation, or reaching 100 percent of a non-public route without a second person, is refused against the API."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/integrations",
@@ -3840,22 +3865,28 @@
         "PLAN-003",
         "AGT-003",
         "AGT-023",
-        "SANC-006"
+        "SANC-006",
+        "AGT-004",
+        "BILL-003"
       ],
       "handbook": "docs/engine/hub-console/support.md",
       "goal": "Wire the M4 and M5 sections to the API.",
       "read": [
         "docs/engine/hub-console/support.md",
         "docs/engine/hub-console/user-agents-admin.md",
-        "docs/engine/hub-console/modules.md"
+        "docs/engine/hub-console/modules.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Implement the API adapter methods for participants, claims, support, trust, modules, agent product, extensions and billing.",
-        "Run the M4 and M5 browser plans against the API with negative authorization."
+        "Run the M4 and M5 browser plans against the API with negative authorization.",
+        "Wire capability toggles, defaults and maximums, previews, model and capability price versions, credit packs and commissions to the API (AGT-003, AGT-004, BILL-003)."
       ],
       "acceptance": [
         "No impersonation path exists against the API (scan and test).",
-        "Extension activation needs a passing safety suite and a second person against the API."
+        "Extension activation needs a passing safety suite and a second person against the API.",
+        "A capability turned off in the console is refused through the interface, the agent and MCP against the API.",
+        "No staff API path reads or changes one participant's agent, mandates, settings, goals or connections (scan and negative tests)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/participants",
@@ -4056,18 +4087,26 @@
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/engine/hub-console/user-agents-admin.md",
-        "docs/engine/agents.md"
+        "docs/engine/agents.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Load module manifests shipped with the engine and the activated extension versions of AGT-023; reject hub settings that widen actions, tools or data classes beyond the manifest.",
         "Store the hub agent policy as the agents domain of hub_config_version with second-person activation; module eligibility (persons, company members, representative, verified companies only).",
         "Implement job subscriptions with schedule, event, deadline, goal and request triggers in the principal's time zone and hub calendar.",
-        "Implement node, hub, hub module, hub connections, company representative, person and connection kill switches through authorization epochs."
+        "Implement node, hub, hub module, hub connections, company representative, person and connection kill switches through authorization epochs.",
+        "Enable or disable individual capability registry entries per hub, participant type and plan (plan keys resolved through an entitlement port that AGT-004 implements); the check runs at the shared authority check, so the interface, the agent runtime and MCP refuse a disabled capability alike (ADR 010 decisions 23 and 25).",
+        "Store hub defaults and maximums for participants' agent settings (approval rules, outreach per week, schedules, report cadence, channels) and the job templates each module offers with default triggers and minimum intervals; a default never exceeds its maximum.",
+        "Add the agent_capability kill-switch scope as an additive extension of KillSwitchScopeSchema (shared contract, integrator agreement); compute and store a preview of every policy version (changed modules and capabilities, affected mandates, job subscriptions, connections and runs as cohort counts) so the second person approves what the drafter saw."
       ],
       "acceptance": [
         "Turning a job on creates only a mandate proposal; nothing runs until it is confirmed on the first-party form (tested).",
         "Each kill switch blocks the next action check; executing actions go to reconciliation.",
-        "No module code path branches on a country code (lint or test)."
+        "No module code path branches on a country code (lint or test).",
+        "A capability turned off for a hub, participant type or plan is refused identically through the interface, the agent runtime and MCP (parity test).",
+        "No hub configuration key exists that disables mandates, the person's confirmation for commitments, sanctions gates, restricted places or payment neutrality (schema test).",
+        "No staff endpoint reads or changes one participant's agent, mandates, settings, goals, job subscriptions or connections (negative authorization tests).",
+        "The preview stored with a policy version is the one its approver saw; activation with a stale preview fails."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules",
@@ -4091,18 +4130,23 @@
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/engine/hub-console/user-agents-admin.md",
-        "docs/engine/billing.md"
+        "docs/engine/billing.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Append usage records idempotently per run step, attempt and meter.",
         "Check quota windows per principal, module and meter; reserve estimates from the named platform budget beyond the included quota and settle on actuals.",
         "Implement agent plan versions and metered price versions (cost beside sale price) on offers, price versions and acceptances; protection limits stay independent of plans.",
-        "Cohort usage statistics with every count under ten suppressed; abuse signals open cases for staff."
+        "Cohort usage statistics with every count under ten suppressed; abuse signals open cases for staff.",
+        "Price agent usage per module unit, per capability or per catalogue model; a price is flat or a markup over the current cost record materialized once into a fixed sale price when the version is drafted; a new cost record recomputes margins and offers a draft version, never changes an active price (ADR 010 decision 25).",
+        "Let plan versions decide module and capability availability (the entitlement port used by AGT-003) and quotas per module and meter; consume prepaid credits under the validity and refund rules of BILL-004 (ADR 012 decision 33)."
       ],
       "acceptance": [
         "Replaying a step never charges twice; unknown billing outcomes reconcile.",
         "Without a platform budget a job stops at quota and asks.",
-        "Introduction quotas, alert timing and ranking are identical with and without paid entitlements (tests)."
+        "Introduction quotas, alert timing and ranking are identical with and without paid entitlements (tests).",
+        "A cost change never changes an active sale price; a markup version stores the computed sale price and the cost record it used (tests).",
+        "Model and capability price versions need a second person and an effective date, and every active one is published on the hub's price page."
       ],
       "paths": [
         "apps/api/src/modules/billing/agent-metering",
@@ -4130,12 +4174,15 @@
         "Contracts for an agent settings document per person (and per company representative) that compiles into existing objects: mandate proposals, job subscriptions, approval rules, channel grants, sharing rules and connection scopes; settings never authorize by themselves.",
         "Implement a dry-run preview: given the settings, list what the agent would do this week, which actions need approval and which jurisdiction limits (HUB-005) apply, with plain-language explanations.",
         "Validate every setting against the hub agent policy and jurisdiction limits; explain refusals.",
-        "Version settings with history and one-click revert; export one's own settings."
+        "Version settings with history and one-click revert; export one's own settings.",
+        "Start every participant from the hub defaults of AGT-003, refuse values above the hub maximums with an explanation, and accept any tightening; where the hub offers a choice of models for a module, show the choices with their published prices."
       ],
       "acceptance": [
         "Saving settings never widens authority without the structured mandate confirmation (tested).",
         "The preview matches what the runtime then does in a deterministic test.",
-        "Every setting has an explanation string in every engine language."
+        "Every setting has an explanation string in every engine language.",
+        "A setting above the hub maximum is refused with an explanation and a tighter setting is always accepted; a change of hub defaults never widens an existing mandate (tests).",
+        "No staff principal can read or change a participant's agent settings (negative authorization test)."
       ],
       "paths": [
         "packages/contracts/src/agent-settings.ts",
@@ -4169,13 +4216,16 @@
         "Contracts for an extension manifest: declared actions (mapped to mandate kinds), inputs, data classes read and sent, side effects, external endpoints, cost model, required mandate kinds, adapter and fake, and the safety-suite reference.",
         "Registry lifecycle draft, tested, active, suspended and retired: an extension activates only after its safety suite passed on the fake adapter (EVAL-001 harness) and a second person approved it; activation is a hub configuration version.",
         "Runtime enforcement: extension actions go through the same mandate, budget, approval, egress (KEYS-001) and kill-switch checks as built-in actions; endpoints in restricted places are refused; untrusted outputs never issue commands.",
-        "Audit every extension call by digest; suspend an extension automatically when its safety suite fails after an engine update."
+        "Audit every extension call by digest; suspend an extension automatically when its safety suite fails after an engine update.",
+        "Each extension names its extension-scoped model route (KEYS-001) and, when it charges, its metered price version (AGT-004); its manifest schema has no key that disables mandates, the person's confirmation, sanctions gates, restricted places or payment neutrality (ADR 010 decision 25)."
       ],
       "acceptance": [
         "An extension that declares an action without a mandate kind is rejected (tested).",
         "An extension call outside a valid mandate or above a budget is refused like a built-in action (negative tests).",
         "An endpoint in a restricted place cannot be registered.",
-        "Activation by the drafter alone fails."
+        "Activation by the drafter alone fails.",
+        "An extension declaring a guard-rail override or a confirmation policy weaker than the built-in action of the same mandate kind is rejected (tested).",
+        "An extension whose route would send a data class that the egress matrix denies cannot be activated."
       ],
       "paths": [
         "packages/contracts/src/agent-extensions.ts",
@@ -4202,24 +4252,74 @@
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
         "docs/engine/hub-console/providers-and-models.md",
-        "docs/engine/agents.md"
+        "docs/engine/agents.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
       ],
       "steps": [
         "Define the gateway contract: data class, allowed connections, retention requirement, residency, cost estimate, reservation id.",
         "Implement a deterministic fake provider; live adapters use KEYS-001 connections and are disabled by default.",
         "Reserve, settle or release platform budget per call; timeouts become outcome_unknown and go to reconciliation.",
-        "Exclude providers in restricted jurisdictions at configuration time."
+        "Exclude providers in restricted jurisdictions at configuration time.",
+        "Define a route-resolution port (resolved route, pinned model version, rollout stage) used by every call, with a default resolver over KEYS-001 routes; MODEL-001 plugs pinning, canary rollout and rollback into it.",
+        "Honour provider, model, job, module, capability and extension kill switches at call time; record per-call metadata (route, model version, rollout stage, latency, tokens, cost, fallback used, outcome) without bodies, and aggregate it by model version and by cohort (participant type, plan, module) with counts under ten suppressed."
       ],
       "acceptance": [
         "A private-class call to a connection not allowed for that class is refused (negative test).",
         "Concurrent calls cannot exceed a mandate's cost cap.",
-        "Logs contain no prompt or response bodies by default."
+        "Logs contain no prompt or response bodies by default.",
+        "A fallback or canary version is used only when the egress decision allows it for the call's data class (negative test).",
+        "Every call uses exactly the pinned revision of its resolved route; usage aggregates contain no per-person rows."
       ],
       "paths": [
         "packages/contracts/src/models.ts",
         "tests/contracts/models.test.ts",
         "apps/api/src/modules/models",
         "tests/models"
+      ]
+    },
+    {
+      "id": "MODEL-001",
+      "title": "Model catalogue per hub: pinned versions, evaluation before activation, canary rollout, rollback and per-model kill switch",
+      "area": "providers",
+      "status": "open",
+      "dependsOn": [
+        "KEYS-001",
+        "LLM-001",
+        "EVAL-001"
+      ],
+      "handbook": "docs/engine/hub-console/providers-and-models.md",
+      "goal": "Give the hub administrator complete control over which models serve the hub and how a new model version reaches service (ADR 010 decision 25): a governed catalogue, pinned revisions with one-action rollback, a safety suite and a quality check on hub samples before activation, canary and staged rollout with automatic stop, a per-model kill switch and cost and latency aggregates by cohort.",
+      "read": [
+        "docs/engine/hub-console/providers-and-models.md",
+        "docs/engine/hub-console/user-agents-admin.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/trust-safety-privacy.md",
+        "docs/architecture/retrieval.md"
+      ],
+      "steps": [
+        "Contracts in packages/contracts/src/model-catalog.ts: ModelCatalogEntrySchema (connection, provider model id, description per hub language, capabilities, context window, output and file-size limits, processing regions with their source, retention and training terms, status draft, evaluated, enabled, disabled, retired), ModelVersionPinSchema, ModelEvaluationRunSchema and ModelRolloutSchema; propose the additive model kill-switch scope to the integrator.",
+        "Catalogue lifecycle with an audit record per change: enabling a model that may receive non-public data needs a second person; retire is terminal; processing regions in restricted places are refused; provider end-of-life dates raise alerts and never substitute a model automatically.",
+        "Route validation: every model in an active route is an enabled catalogue entry with a pinned revision and limits within its context window; rollback reactivates the previous pin for the next call while in-flight calls finish on their version.",
+        "Evaluation before activation: run the EVAL-001 safety suite against the candidate on its route and data classes through the fake adapter, plus a quality check on hub-defined sample sets (public or synthetic data only) with thresholds compared with the version in service; results expire on an engine update or a provider revision change, and a version that fails after an engine release is suspended.",
+        "Staged rollout through the LLM-001 route-resolution port: assignment by a deterministic hash of the run or request id, administrator-chosen stages, guard thresholds that stop the rollout and return all calls to the current version; embeddings never canary; reaching 100 percent on a route carrying non-public data needs a second person.",
+        "Aggregates per model version and stage (latency median and 95th percentile, error, fallback, cost and safety-signal rates) and by cohort (participant type, plan, module) with counts under ten suppressed; a preview of every catalogue, pin or rollout change (affected routes and modules, estimated monthly cost)."
+      ],
+      "acceptance": [
+        "A route naming a model that is not an enabled catalogue entry, without a pinned revision or with limits above the model's context window cannot be activated (tested).",
+        "A model version without a passing safety suite and quality check serves no call (negative test).",
+        "Rollback restores the previous pin for the next call; in-flight calls finish on the version they started with (test with a fake clock).",
+        "A canary never carries a data class the current version may not carry, and crossing a guard threshold returns all calls to the current version (tests).",
+        "Sample sets reject records of a non-public data class; enabling a model for non-public data by its drafter alone fails.",
+        "Aggregates never contain a per-person row; the suite runs in npm run check without network access."
+      ],
+      "paths": [
+        "packages/contracts/src/model-catalog.ts",
+        "tests/contracts/model-catalog.test.ts",
+        "apps/api/src/modules/model-catalog",
+        "packages/data/migrations/model-catalog",
+        "packages/data/src/schema/model-catalog.ts",
+        "packages/data/src/repositories/model-catalog.ts",
+        "tests/model-catalog"
       ]
     },
     {

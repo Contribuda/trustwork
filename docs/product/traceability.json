@@ -864,6 +864,28 @@
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; ADR 014 and docs/engine/modules/sanctions-compliance.md are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R73",
+      "tasks": [
+        "KEYS-001",
+        "MODEL-001",
+        "LLM-001",
+        "AGT-003",
+        "AGT-004",
+        "AGT-022",
+        "AGT-023",
+        "BILL-002",
+        "BILL-003",
+        "BILL-004",
+        "HUBC-002",
+        "HUBC-005",
+        "HUBC-008",
+        "HUBC-009"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; ADR 010 decision 25, docs/engine/hub-console/providers-and-models.md and docs/engine/hub-console/user-agents-admin.md are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }

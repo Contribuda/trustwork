@@ -502,8 +502,8 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 
 ### HC-80 Agent modules — `/agents/modules`, `/agents/modules/[module]`
 - **Purpose**: the agent product catalogue.
-- **Data**: modules with status, actions, eligibility, routes, limits, metering, current price version with cost and sale price and margin, usage cohort stats.
-- **Actions**: create version, activate (second person for commitment actions), retire, draft price (activation by another person), engage module kill switch.
+- **Data**: modules with status, actions, eligibility, capabilities with their on or off state per participant type and plan, defaults and hub maximums, offered job subscriptions, routes, limits, metering, current price version with cost and sale price and margin, usage cohort stats.
+- **Actions**: create version, preview the effect (counts of affected mandates, subscriptions and connections, cohort-suppressed), activate (second person for commitment actions), retire, turn a capability off or on, draft price (activation by another person), engage module or capability kill switch.
 - **States**: negative margin → warning; commitment action without verified-company requirement → blocked.
 - **Locale**: `admin.agents.modules.*`
 
@@ -545,7 +545,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Data**: offers, plan versions (includes, trial days, payer), free minimum. **Actions**: draft, activate (another person). **Locale**: `admin.billing.offers.*`
 
 ### HC-91 Prices — `/billing/prices`
-- **Data**: price versions and metered price versions with cost price, sale price, margin, effective dates, acceptance text versions, acceptance counts. **Actions**: draft, request activation (second person), cancel draft. **States**: overlap or back-dating refused; activated versions read-only ("A published version cannot be changed; create a new one"). **Locale**: `admin.billing.prices.*`
+- **Data**: price versions and metered price versions (per module, capability or catalogue model; flat or markup materialized into a fixed sale price) with cost price, sale price, margin, effective dates, acceptance text versions, acceptance counts, notice status for existing payers. **Actions**: draft, preview the effect, request activation (second person), cancel draft; a cost change offers a draft new version, never an automatic price change. **States**: overlap or back-dating refused; activated versions read-only ("A published version cannot be changed; create a new one"). **Locale**: `admin.billing.prices.*`
 
 ### HC-92 Invoices — `/billing/invoices`
 - **Data**: invoice runs, states, totals by offer; e-invoicing status. **Actions**: retry failed issuance. **Locale**: `admin.billing.invoices.*`
@@ -554,7 +554,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Data**: payout batches to organizers, authors and experts with totals and states. **Actions**: request release (second person); reconcile unknown outcomes. **Locale**: `admin.billing.payouts.*`
 
 ### HC-94 Credits and refunds — `/billing/credits`
-- **Data**: credits issued within caps, refund policy versions. **Actions**: issue credit (within role cap, reason), edit refund policy. **Locale**: `admin.billing.credits.*`
+- **Data**: credits issued within caps, credit-pack versions with validity shown before purchase (never expiring silently, ADR 012 decision 33), refund policy versions. **Actions**: issue credit (within role cap, reason), edit refund policy. **Locale**: `admin.billing.credits.*`
 
 ### HC-95 Tax — `/billing/tax`
 - **Data**: tax treatment of hub fees with sources (US: state rules recorded per state), e-invoicing settings. **Actions**: edit (version). **Locale**: `admin.billing.tax.*`
@@ -570,7 +570,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Locale**: `admin.integrations.providers.*`
 
 ### HC-101 Routing — `/integrations/routing`
-- **Data**: job × route table with primary, fallbacks, allowed data classes, limits, cap, status, cost per unit. **Actions**: create version, reorder fallbacks (buttons), activate (second person if non-public classes). **States**: embeddings fallback refused; image route limited to public. **Locale**: `admin.integrations.routing.*`
+- **Data**: job × scope (job, agent module, extension) × route table with primary and fallbacks (catalogue models with pinned revisions), allowed data classes, limits, cap, status, cost per unit, rollout stage. **Actions**: create version, reorder fallbacks (buttons), activate (second person if non-public classes), roll back to the previous pin. **States**: embeddings fallback refused; image route limited to public; model not enabled in the catalogue or limits above its context window refused. **Locale**: `admin.integrations.routing.*`
 
 ### HC-102 Egress — `/integrations/egress`
 - **Purpose**: who may receive which data.
@@ -584,7 +584,14 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Data**: caps by scope with `BudgetMeter`, alerts, on-exhausted behaviour. **Actions**: create, edit. **Locale**: `admin.integrations.budgets.*`
 
 ### HC-104 Usage and costs — `/integrations/usage`
-- **Data**: aggregates by day, job, model, connection, pipeline, module; projections labelled as projections; error and fallback rates. **Actions**: change period and grouping; export aggregates. **Locale**: `admin.integrations.usage.*`
+- **Data**: aggregates by day, job, model version, connection, pipeline, module and cohort (participant type, plan; counts under ten suppressed); latency median and 95th percentile; projections labelled as projections; error and fallback rates. **Actions**: change period and grouping; export aggregates. **Locale**: `admin.integrations.usage.*`
+
+### HC-106 Model catalogue — `/integrations/models`, `/integrations/models/[model]`
+- **Purpose**: which models the hub uses and how a new version reaches service (ADR 010 decision 25, MODEL-001).
+- **Data**: catalogue entries with connection, description, capabilities, context window and size limits, processing regions, retention and training terms, cost price, status; pinned revisions per route; evaluation runs (safety suite and quality check on hub sample sets) with scores and thresholds; rollouts with stage, shares and both versions' error, latency, cost and safety-signal rates.
+- **Actions**: add, describe, run evaluation, request enable (second person for non-public data), disable, retire, start or widen a rollout, roll back, engage the model kill switch, manage sample sets (public or synthetic data only).
+- **States**: no passing evaluation → enable blocked; guard threshold crossed → rollout stopped with the reason; end-of-life announced → alert with the date; processing region in a restricted place → refused.
+- **Locale**: `admin.integrations.models.*`
 
 ### HC-105 Kill switches — `/integrations/kill-switches`
 - **Purpose**: stop things now.

@@ -8,6 +8,7 @@ Rules common to every module:
 - No control sets a score, a rank, a position, "featured" or a badge directly.
 - Every mutation calls the module's own use case with a reason and an audit record.
 - Settings are versioned configuration (`HubConfigVersionSchema`, domain per module).
+- Each module's agent capabilities can be turned off per hub, participant type and plan, the model each one uses is a route choice, and its prices are versioned price records: the complete control set of [ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 25 is in [agent product administration](user-agents-admin.md#the-complete-control-set-adr-010-decision-25) and [keys, providers and models](providers-and-models.md#the-administrators-complete-control-set). No module setting can switch off the guard rails listed there.
 
 ## People and companies
 
@@ -180,12 +181,12 @@ Guard rails: a credential is a checked fact, never a score; credentials are neve
 
 | | |
 |---|---|
-| **Sees** | Offers, plan versions, price and metered price versions (cost beside sale price), acceptances as counts, invoice runs, payout batches, credits issued |
-| **Does** | Draft prices (one person) and activate (another); issue credits within role caps; set refund policy versions; release payout batches (second person) |
-| **Settings** | Currency and accepted secondary currencies; tax treatment of the hub's own fees (US: state sales tax rules where platform fees are taxable, decided with tax advice); e-invoicing; free minimum and trial parameters |
+| **Sees** | Offers, plan versions, price and metered price versions (cost beside sale price), prices per model and per capability, credit-pack versions, commission and fee versions, acceptances as counts, invoice runs, payout batches, credits issued |
+| **Does** | Draft prices (one person) and activate (another), flat or as a markup over the cost price materialized into a fixed version; draft a new version when a cost change makes a margin negative (never an automatic price change); issue credits within role caps; set refund policy versions; release payout batches (second person) |
+| **Settings** | Currency and accepted secondary currencies; tax treatment of the hub's own fees (US: state sales tax rules where platform fees are taxable, decided with tax advice); e-invoicing; free minimum and trial parameters; credit validity and refund policy shown before purchase (ADR 012 decision 33); advance notice for price increases |
 | **Queues** | Payment outcomes unknown; refunds outside policy; payouts awaiting approval |
 | **Metrics** | Revenue by offer, refunds, credits, payouts (aggregate) |
-| **Guard rails** | No overlapping active versions; no back-dating; acceptances immutable; entitlements never change ranking or matching; credits are never hidden refunds |
+| **Guard rails** | No overlapping active versions; no back-dating; acceptances immutable; entitlements never change ranking, matching, recommendations or reputation; credits are never hidden refunds and never expire silently; every active price, fee and commission is on the public price page; Trustwork never holds participants' money (ADR 010 decision 20) |
 
 ## Search and knowledge
 

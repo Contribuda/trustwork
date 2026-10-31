@@ -1,6 +1,6 @@
 # Requirement traceability
 
-All 71 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
+All 73 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
 
 | Requirements | Modules | Primary decisions |
 |---|---|---|
@@ -30,5 +30,6 @@ All 71 accepted requirements are specified, not implemented end to end (R01–R0
 | R65–R67 | Public tenders worldwide, e-signatures and open BIM, mobile and offline | Modules [matching](../engine/modules/matching-and-partners.md), [integrations](../engine/modules/integrations.md), [mobile and offline](../engine/modules/mobile-and-offline.md) |
 | R68–R71 | Accessibility evidence, analytics without surveillance, data-broker readiness, financing referrals | Modules [accessibility](../engine/modules/accessibility.md), [analytics](../engine/modules/analytics.md), [trust and safety](../engine/modules/trust-safety-privacy-compliance.md), [getting paid](../engine/modules/getting-paid.md) |
 | R72 | Sanctions compliance engine: jurisdiction gate and holds, list screening, review, gates, re-screening, our own services, deployment attestation | [ADR 014](../adr/014-sanctions-compliance-engine.md), [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 24; module [sanctions compliance](../engine/modules/sanctions-compliance.md); SANC-001 … SANC-009 |
+| R73 | Complete administrator controls over models, prices and agent functionality, with guard rails no administrator can switch off | [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 25; [keys, providers and models](../engine/hub-console/providers-and-models.md#the-administrators-complete-control-set), [agent product administration](../engine/hub-console/user-agents-admin.md#the-complete-control-set-adr-010-decision-25); KEYS-001, MODEL-001, LLM-001, AGT-003, AGT-004, AGT-022, AGT-023, BILL-002 … BILL-004, HUBC-002, HUBC-005, HUBC-008, HUBC-009 |
 
 R31 maps to RAG-000, RAG-101, FND-002, DATA-001, BE-001, RAG-201, RAG-301, AST-001, WEB-003, RAG-401 and QA-001. See [retrieval evaluation](../quality/retrieval-evaluation.md). Fake-vector checks are not semantic-model or database evidence.

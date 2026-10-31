@@ -1,6 +1,6 @@
 # The agent and its runtime
 
-Module code `AGN`. Status: the assistant page and floating overlay with mandates, approvals and runs on demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Live in the API and the worker with fake providers only** (AST-001, [assistant module](../../../apps/api/src/modules/assistant/README.md)); goals, envelopes, the company representative, modules, metering, detailed settings, extensions, the model gateway, MCP and A2A connections are **Proposed**. Packages: AST-001, AGT-001 … AGT-023, LLM-001, EVAL-001, CHAN-001. Narrative: [Your agent](../agents.md), [Agent catalogue](../agent-catalog.md), [Capability registry](../capability-registry.md). Data: [§21 Assistant and agents](../../data/model.md#21-assistant-and-agents).
+Module code `AGN`. Status: the assistant page and floating overlay with mandates, approvals and runs on demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Live in the API and the worker with fake providers only** (AST-001, [assistant module](../../../apps/api/src/modules/assistant/README.md)); goals, envelopes, the company representative, modules, metering, detailed settings, extensions, the model gateway, MCP and A2A connections are **Proposed**. Packages: AST-001, AGT-001 … AGT-023, LLM-001, MODEL-001, EVAL-001, CHAN-001. Narrative: [Your agent](../agents.md), [Agent catalogue](../agent-catalog.md), [Capability registry](../capability-registry.md). Data: [§21 Assistant and agents](../../data/model.md#21-assistant-and-agents).
 
 ## Purpose
 
@@ -55,6 +55,9 @@ Every participant ([participants](../participants/README.md)); a company through
 | AGN-F26 | Every action has an audit record and an idempotency key; usage records are idempotent per run step and attempt | Designed | AST-001, AGT-004 |
 | AGN-F27 | Field-first channels (SMS, WhatsApp, voice notes) carry the agent to people on site under channel grants; inbound content is untrusted and nothing acts without a structured confirmation | Proposed | CHAN-001 |
 | AGN-F28 | A daily briefing summarises decisions waiting, deadlines, new opportunities with reasons and progress of goals, computed only from data the person may see | Proposed | AGT-018 |
+| AGN-F29 | The hub administrator controls the agent product completely ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 25): modules and individual capabilities per hub, participant type and plan; hub defaults and maximums that participants may tighten but never widen; offered job subscriptions; the model route per module and extension; extensions; kill switches (global, per module, per capability, per extension); every change audited and previewed before activation. A capability turned off is refused identically in the interface, the agent runtime and MCP | Proposed | AGT-003, AGT-022, AGT-023, KEYS-001, LLM-001 |
+| AGN-F30 | Models are a governed catalogue per hub: pinned provider revisions with one-action rollback, evaluation before activation (safety suite and a quality check on hub samples), canary and staged rollout with automatic stop, per-model kill switch, cost and latency dashboards by cohort | Proposed | MODEL-001, LLM-001, KEYS-001 |
+| AGN-F31 | No administrator setting can remove mandates or the person's confirmation for commitments, the sanctions gates, the restricted places, payment neutrality or the ban on impersonation, and staff never read or change one participant's agent, mandates, settings, goals, job subscriptions or connections | Proposed | AGT-003, AGT-022, AGT-023 |
 
 ## Agent capabilities
 
@@ -89,7 +92,7 @@ The `core` module's registry entries. Every other module lists its own on its pa
 
 ## Hub console settings
 
-Agent modules (enable, eligibility, models, limits, meters, cost and sale price versions), agent policy (allowed actions, outreach quotas, channels, disclosure), jurisdiction settings, extensions, external-agent policy, usage cohorts, abuse signals and kill switches ([agent product administration](../hub-console/user-agents-admin.md); console sections Agents and Keys and models).
+The complete control set of ADR 010 decision 25. Agent modules (enable, eligibility, capabilities per participant type and plan, defaults and maximums, offered job subscriptions, models, limits, meters, cost and sale price versions), the model catalogue (pinned versions, evaluation, canary rollout, rollback, per-model kill switch), agent policy (allowed actions, outreach quotas, channels, disclosure), jurisdiction settings, extensions, external-agent policy, usage cohorts, abuse signals and kill switches ([agent product administration](../hub-console/user-agents-admin.md); console sections Agents and Keys and models).
 
 ## Data entities
 
@@ -144,4 +147,4 @@ flowchart TD
 
 ## Open points
 
-Liability allocation and disclosure wording per jurisdiction need counsel ([ADR 012](../../adr/012-integrator-decisions-2026-10-31.md#questions-that-remain-for-the-owner-or-counsel), row 5); per-object public assistants await the owner's confirmation of decision 25; see also [conflicts to resolve](../conflicts-to-resolve.md).
+Liability allocation and disclosure wording per jurisdiction need counsel ([ADR 012](../../adr/012-integrator-decisions-2026-10-31.md#questions-that-remain-for-the-owner-or-counsel), row 5); per-object public assistants were decided by the owner in ADR 012 decision 32 (superseding ADR 012 decision 25); see also [conflicts to resolve](../conflicts-to-resolve.md).
