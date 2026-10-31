@@ -17,6 +17,7 @@ import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
 import { ExecutionModule } from './modules/execution/execution.module.js';
 import { TrustModule } from './modules/trust/trust.module.js';
+import { ReputationModule } from './modules/reputation/reputation.module.js';
 import { AssistantModule, assistantMandateStore } from './modules/assistant/assistant.module.js';
 import { MODULE_KEYS } from './modules/assistant/mandate-store.js';
 import { AgentsModule } from './modules/assistant-goals/agents.module.js';
@@ -36,6 +37,8 @@ export class HealthController {
  * profiles, tasks, execution and trust, platform administration, the assistant, agent goals and representation (AGT-001), the
  * deployment-location attestation (SANC-009, told the configured jurisdiction gate mode) and hubs (HUB-001) only when a
  * database is configured;
+ * profiles, tasks, execution and trust, the reputation builder, platform administration, the assistant and the deployment-location attestation
+ * (SANC-009, told the configured jurisdiction gate mode) only when a database is configured;
  * files (FILE-001) additionally only with a configured blob store. Every module's agent check goes to the one AST-001
  * mandate store (confirmed mandates); a caller-supplied mandate port in `files` still wins (tests).
  */
@@ -57,7 +60,7 @@ export class AppModule {
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks) }),
-        ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity),
+        ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity),
         PlatformAdminModule.forRoot(ctx, identity),
         AssistantModule.forRoot(ctx, identity),
         AgentsModule.forRoot(ctx, identity),

@@ -37,7 +37,9 @@ export type ModerationCaseStatus = 'open' | 'in_review' | 'decided' | 'appealed'
 export type ModerationDecision = 'no_action' | 'warning' | 'content_removed' | 'content_restored' | 'sanction';
 export type AppealSubjectKind =
   | 'sanction' | 'moderation_case' | 'verification_check' | 'review' | 'screening_result' | 'confirmation_response'
-  | 'timeliness_observation' | 'performance_observation' | 'passport_credential' | 'recommendation';
+  | 'timeliness_observation' | 'performance_observation' | 'passport_credential' | 'recommendation'
+  /** REP-001 (packages/data/migrations/reputation) adds automated limitations to the appeal subjects. */
+  | 'automated_limitation';
 export type AppealStatus = 'submitted' | 'in_review' | 'upheld' | 'overturned' | 'partially_overturned' | 'withdrawn';
 export type FlagEffect = 'ui' | 'behaviour' | 'content' | 'operations';
 export type KillSwitchScopeKind =
