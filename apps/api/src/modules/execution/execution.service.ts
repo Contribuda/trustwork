@@ -61,7 +61,7 @@ export function mapExecutionError(error: unknown): never {
 
 export interface ExecutionServiceOptions {
   /** The hub this API serves (TRUSTWORK_HUB_ID): disputes are decided by that hub's trust reviewers. */
-  hubId: string | null;
+  hubId: string | null | (() => string | null);
 }
 
 /**
@@ -266,11 +266,12 @@ export class ExecutionService {
   async openDispute(agreementId: string, input: In<typeof OpenDisputeCommandSchema>, state: RequestState): Promise<ExecutionView> {
     return this.run(state, async (trx, p) => {
       const { side, row } = await this.partyAgreement(trx, agreementId);
-      if (!this.options.hubId) throw new ApiError('validation.schema', 'disputes need the hub this API serves (TRUSTWORK_HUB_ID)', { reason: 'hub_not_configured' });
+      const hubId = typeof this.options.hubId === 'function' ? this.options.hubId() : this.options.hubId;
+      if (!hubId) throw new ApiError('validation.schema', 'disputes need the hub this API serves (TRUSTWORK_HUB_ID)', { reason: 'hub_not_configured' });
       if (!this.actsFor(p, input.opener)) throw new ApiError('access.forbidden', 'disputes are opened for a party you act for', { reason: 'not_authorised' });
       const opener = columnsOf(input.opener);
       const dispute = await executionDisputes.insert(trx, {
-        agreement_id: agreementId, hub_id: this.options.hubId, target_kind: input.target.kind, target_id: input.target.id, opened_by_person_id: p.personId, opener_person_id: opener.person,
+        agreement_id: agreementId, hub_id: hubId, target_kind: input.target.kind, target_id: input.target.id, opened_by_person_id: p.personId, opener_person_id: opener.person,
         opener_company_id: opener.company, reason: input.reason,
       });
       await this.audit(trx, p, state, 'execution.dispute_opened', 'execution_dispute', dispute.id, { agreementId, target: input.target });

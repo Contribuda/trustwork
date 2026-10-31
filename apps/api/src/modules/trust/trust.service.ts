@@ -50,7 +50,7 @@ const disputeState = (d: ExecutionDisputeRow | undefined): DisputeState => {
 
 export interface TrustServiceOptions {
   /** The hub this API serves (TRUSTWORK_HUB_ID): appeals are filed in that hub's queue. */
-  hubId: string | null;
+  hubId: string | null | (() => string | null);
 }
 
 /**
@@ -149,9 +149,10 @@ export class TrustService {
 
   async fileAppeal(input: In<typeof FileAppealCommandSchema>, state: RequestState) {
     return this.run(state, async (trx, p) => {
-      if (!this.options.hubId) throw new ApiError('validation.schema', 'appeals need the hub this API serves (TRUSTWORK_HUB_ID)', { reason: 'hub_not_configured' });
+      const hubId = typeof this.options.hubId === 'function' ? this.options.hubId() : this.options.hubId;
+      if (!hubId) throw new ApiError('validation.schema', 'appeals need the hub this API serves (TRUSTWORK_HUB_ID)', { reason: 'hub_not_configured' });
       if (!UUID.test(input.subject.id)) throw new ApiError('access.not_found');
-      const appeal = await trustAppeals.file(trx, { hubId: this.options.hubId, subjectKind: input.subject.kind, subjectId: input.subject.id, reason: input.reason });
+      const appeal = await trustAppeals.file(trx, { hubId, subjectKind: input.subject.kind, subjectId: input.subject.id, reason: input.reason });
       await this.audit(trx, p, state, 'trust.appeal_filed', 'appeal', appeal.id, { subject: input.subject });
       await this.event(trx, 'appeal', appeal.id, 'trust.appeal_filed', { appealId: appeal.id, subjectKind: input.subject.kind, subjectId: input.subject.id });
       return AppealViewSchema.parse({ id: appeal.id, subject: input.subject, status: appeal.status, filedAt: iso(appeal.filed_at) });

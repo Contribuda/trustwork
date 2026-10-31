@@ -13,7 +13,8 @@ export interface TrustModuleOptions {
 @Module({})
 export class TrustModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: TrustModuleOptions = {}): DynamicModule {
-    const hubId = options.hubId !== undefined ? options.hubId : staffHubFromEnv(process.env);
+    // Read at request time, so a hub configured after start (setup wizard, tests) is picked up.
+    const hubId = options.hubId !== undefined ? options.hubId : () => staffHubFromEnv(process.env);
     const service = new TrustService(ctx, identity.principals, { hubId });
     return { module: TrustModule, controllers: [TrustController, ReputationController], providers: [{ provide: TrustService, useValue: service }], exports: [TrustService] };
   }

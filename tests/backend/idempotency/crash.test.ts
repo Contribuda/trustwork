@@ -16,6 +16,7 @@ import { FilesystemBlobStore } from '../../../packages/data/src/files/index.js';
 import { randomUUID } from 'node:crypto';
 import { elevate, enrol } from '../second-factor/helpers.js';
 import { crashAdminRoutes } from '../../admin/crash-routes.js';
+import { artifactOn, buildAgreement, businessDate } from '../../trust/helpers.js';
 
 // FILE-001: the files routes are mounted only with a blob store; the storage fake keeps everything local.
 const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobStore({ root: mkdtempSync(join(tmpdir(), 'trustwork-crash-files-')) }) } });
@@ -529,6 +530,43 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await exactlyOnce({ action: 'task.review', client: petr, url: `${A}/reviews`, body: { rating: 5, text: 'Exactly once' }, effects: () => auditCount(h.db.admin, 'task.reviewed') });
     const fence = (await created(await petr.post('/v1/task-requests', { source: { projectId: project.id, itemKey: 'fence' }, audience: 'open', terms: terms('fence'), privateConstraint: null, actor: person }))) as unknown as Request;
     await exactlyOnce({ action: 'task.request_cancel', client: petr, url: `/v1/task-requests/${fence.request.id}/cancel`, body: { expectedRevision: fence.request.revision, reason: 'Exactly-once cancellation', actor: person }, effects: () => auditCount(h.db.admin, 'task.request_cancelled') });
+  });
+
+  await t.test('execution and trust (EXE-001): claims, evidence, decisions, defects, disputes, reviews, appeals and snapshots', async () => {
+    const hubId = '00000000-0000-4000-8000-0000000e0c01';
+    process.env.TRUSTWORK_HUB_ID = hubId;
+    const f = { admin: h.db.admin, app: h.db.app, people: { petr: seed.people.petr, boris: seed.people.boris, carl: seed.people.carl, xenia: seed.people.xenia, anna: seed.people.anna }, supplier: seed.companies.supplier, project: seed.project };
+    // The ADM-001 block below builds the administration world of this database, so the dispute is decided here by the
+    // owner role (the reviewer commands themselves are covered in tests/trust).
+    await withMaintenance(h.db.admin, (trx) => trx.insertInto('hub').values({ id: hubId, slug: 'synthetic-exe-crash', lifecycle: 'public' }).execute());
+    const boris = await as('boris');
+    const person = { via: 'person' };
+    const petrParty = { kind: 'person', id: seed.people.petr };
+    const supplierParty = { kind: 'company', id: seed.companies.supplier };
+    type View = { claims: { id: string }[]; defects: { id: string }[]; disputes: { id: string; revision: number }[] };
+    const A = await buildAgreement(f, businessDate(-2), 'Synthetic exactly once');
+    const E = `/v1/execution/agreements/${A.agreement.id}`;
+    const claim = (obligationId: string, kind: string, lines: unknown[]) => ({ obligationId, defectId: null, kind, claimant: supplierParty, lines, period: null, performedAt: new Date().toISOString(), statement: null, supersedesClaimId: null, actor: person });
+    const accept = { onBehalfOf: petrParty, decision: 'accepted', lines: [], note: null, stageCode: null };
+    let view = (await exactlyOnce({ action: 'execution.claim_record', client: boris, url: `${E}/claims`, body: claim(A.byKind.deliver.id, 'goods_delivery', [{ ref: 'q1', quantity: { value: '40', unit: 'm2' } }]), effects: () => auditCount(h.db.admin, 'execution.claim_recorded') })).body as View;
+    const claimId = view.claims[0]!.id;
+    const photo = await artifactOn(f, A.agreement.id, { company: seed.companies.supplier }, seed.people.boris);
+    await exactlyOnce({ action: 'execution.evidence_attach', client: boris, url: `${E}/evidence`, body: { target: { kind: 'claim', id: claimId }, artifactId: photo.id, artifactSha256: photo.sha256, kind: 'photo', observedAt: null, note: null, actor: person }, effects: () => auditCount(h.db.admin, 'execution.evidence_attached') });
+    await exactlyOnce({ action: 'execution.claim_decide', client: petr, url: `/v1/execution/claims/${claimId}/decision`, body: accept, effects: () => auditCount(h.db.admin, 'execution.claim_decided') });
+    view = (await exactlyOnce({ action: 'execution.defect_report', client: petr, url: `${E}/defects`, body: { reporter: petrParty, obligationId: null, claimId: null, severity: 'minor', location: null, description: 'Synthetic chipped edge', observedAt: new Date().toISOString(), actor: person }, effects: () => auditCount(h.db.admin, 'execution.defect_reported') })).body as View;
+    view = (await exactlyOnce({ action: 'execution.dispute_open', client: boris, url: `${E}/disputes`, body: { target: { kind: 'defect', id: view.defects[0]!.id }, opener: supplierParty, reason: 'Synthetic dispute' }, effects: () => auditCount(h.db.admin, 'execution.dispute_opened') })).body as View;
+    const decided = await withMaintenance(h.db.admin, (trx) => trx.updateTable('execution_dispute').set({ status: 'decided', decision: 'upheld', decided_by: seed.people.anna, decided_at: new Date(), decision_reason: 'Synthetic decision' })
+      .where('id', '=', view.disputes[0]!.id).returning(['id', 'revision']).executeTakeFirstOrThrow());
+    await exactlyOnce({ action: 'execution.dispute_appeal', client: petr, url: `/v1/execution/disputes/${decided.id}/appeal`, body: { expectedRevision: decided.revision, reason: 'Synthetic appeal' }, effects: () => auditCount(h.db.admin, 'execution.dispute_appealed') });
+    view = (await created(await boris.post(`${E}/claims`, claim(A.byKind.perform.id, 'work_performed', [])))) as unknown as View;
+    assert.equal((await petr.post(`/v1/execution/claims/${view.claims.at(-1)!.id}/decision`, accept)).status, 201);
+    const R = `/v1/trust/agreements/${A.agreement.id}/reviews`;
+    const reviews = (await exactlyOnce({ action: 'trust.review_submit', client: petr, url: R, body: { author: petrParty, ratings: { overall: 5 }, text: 'Exactly once', language: 'en', correctsReviewId: null }, effects: () => auditCount(h.db.admin, 'trust.review_published') })).body as { reviews: { id: string }[] };
+    const reviewId = reviews.reviews[0]!.id;
+    await exactlyOnce({ action: 'trust.review_respond', client: boris, url: `/v1/trust/reviews/${reviewId}/response`, body: { responder: supplierParty, text: 'Thank you' }, effects: () => auditCount(h.db.admin, 'trust.review_answered') });
+    await exactlyOnce({ action: 'trust.appeal_file', client: boris, url: '/v1/trust/appeals', body: { subject: { kind: 'review', id: reviewId }, reason: 'Synthetic appeal' }, effects: () => auditCount(h.db.admin, 'trust.appeal_filed') });
+    await exactlyOnce({ action: 'trust.snapshot_compute', client: boris, url: '/v1/reputation/snapshots', body: { subject: supplierParty }, effects: () => auditCount(h.db.admin, 'trust.snapshot_computed') });
+    delete process.env.TRUSTWORK_HUB_ID;
   });
 
   // BE-004: the support reset routes are staff routes behind an elevated session. Runs last: it enrols and elevates
