@@ -28,6 +28,7 @@ Everything the engine does and is designed to do, in one place. Every chapter st
 | [Learning and certificates](learning.md) | Courses, assessments, verifiable certificates, accreditation |
 | [Partners and matching](partners-and-matching.md) | Capability profiles, needs board, explainable matching, introductions |
 | [Buying and selling](commerce.md) | Needs, RFQs, quotes, comparison, negotiation, agreements, orders, catalogue |
+| [Procurement and supply](procurement-and-supply.md) | The company-side suite from plan step to payment: requisitions, approval routes, supplier base, bid levelling, AI document intake, budgets, receiving, stock, three-way match, payments through licensed providers, e-invoicing, analytics without surveillance; every operation also an agent capability |
 | [Execution, evidence and reputation](execution-and-reputation.md) | Claims and evidence, fair timing, explainable reputation; the reputation builder toolkit and the portable reputation passport |
 | [Your agent](agents.md) | Representation under mandates, detailed settings, goals, negotiation between agents, company representation, hub extensions, jurisdiction settings, safety |
 | [Agent catalogue](agent-catalog.md) | What the agent does for every participant type; modules, metering and hub pricing; flagship journeys "from plan to people" and "build and confirm your own reputation"; connecting your own agent over MCP and A2A |

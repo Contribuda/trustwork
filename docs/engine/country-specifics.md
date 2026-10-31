@@ -67,6 +67,8 @@ The engine does not submit bids to state portals; it helps people find and prepa
 
 Quote lines already carry `taxAmount` so totals are recomputed exactly; the tax rule comes from the pack and the parties' tax registration, never from a hard-coded rate.
 
+Procurement document types (tax forms, certificates of insurance, delivery and transport documents, lien waivers) and e-invoicing networks (for example Peppol with UBL in the EU, CFDI in Mexico, NF-e in Brazil; none mandatory in the US) are pack data used by [Procurement and supply](procurement-and-supply.md#documents-completeness-and-e-invoicing-networks) (proposed, PRC-012).
+
 ### Electronic identity and signatures
 
 | Pack records | Adapters | Hub configures |

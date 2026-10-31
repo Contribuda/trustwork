@@ -62,6 +62,14 @@ The engine uses a small set of words precisely. When a document, a contract or a
 | **Order** | A commitment under an agreement, possible only with authority and a budget reservation. |
 | **Catalogue offering** | A reusable, versioned description of goods, works or services. Changing the catalogue never changes a sent quote. |
 | **Introduction** | A double-opt-in connection between two parties proposed by a person, an agent or the matching engine. See [Partners and matching](partners-and-matching.md). |
+| **Requisition** | An internal request inside one company for materials, equipment or services, raised by whoever needs them and approved through an approval route before buying. See [Procurement and supply](procurement-and-supply.md) (proposed). |
+| **Approval route** | A company's versioned rules for who must approve a subject (requisition, award, invoice, payment proposal and others); each decision is a person's and binds the subject's digest. |
+| **Bid levelling sheet** | A buyer-private, versioned comparison over pinned quote versions with normalized units and labelled buyer adjustments; it never alters a quote. |
+| **Trade invoice** | An invoice between participants or from an external supplier, distinct from the hub's own fee invoice. |
+| **Three-way match** | Comparing an invoice line with the order and the goods receipts within the company's tolerances before approval. |
+| **Payment proposal** | A versioned list of approved invoices to pay, approved as a whole and executed only through a licensed provider or recorded as paid outside the platform. |
+| **External counterparty** | A supplier a company works with that is not on the platform; private to that company, never published and never given reputation. |
+| **Agent parity** | Every operation a person can do in the interface is also a capability of their agent, and vice versa, each with a kind (read, draft, commit), a mandate action and a confirmation policy (owner clarification of 2026-10-31). |
 
 ## Agents and authority
 

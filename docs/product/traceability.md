@@ -1,6 +1,6 @@
 # Requirement traceability
 
-All 51 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
+All 53 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
 
 | Requirements | Modules | Primary decisions |
 |---|---|---|
@@ -22,5 +22,7 @@ All 51 accepted requirements are specified, not implemented end to end (R01–R0
 | R46–R47 | No held funds; hub commissions | ADR 010 decisions 20–21; [billing](../engine/billing.md) |
 | R48–R50 | Jurisdiction settings, detailed agent settings, agent extensions | ADR 010 decision 22; ADR 012 decision 24; [your agent](../engine/agents.md) |
 | R51 | International by default: languages and country packs | ADR 012 decision 30; [countries and languages](../engine/localization.md) |
+| R52 | Complete, accurate and visual documentation in English | Owner rule of 2026-10-31; `npm run validate:docs` |
+| R53 | Procurement and supply suite with agent parity | Owner request of 2026-10-31; ADR 010 decision 23 (agent and interface parity); [procurement and supply](../engine/procurement-and-supply.md) |
 
 R31 maps to RAG-000, RAG-101, FND-002, DATA-001, BE-001, RAG-201, RAG-301, AST-001, WEB-003, RAG-401 and QA-001. See [retrieval evaluation](../quality/retrieval-evaluation.md). Fake-vector checks are not semantic-model or database evidence.

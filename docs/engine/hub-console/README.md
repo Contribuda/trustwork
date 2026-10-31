@@ -103,6 +103,7 @@ The console lives at `/admin` on the hub's origin, entered from the avatar menu 
 | | Learning `/modules/learning` | Course review, certificates, accreditation records |
 | | Matching `/modules/matching` | Needs board policy, introduction quotas, method versions |
 | | Commerce `/modules/commerce` | Category rules, flow counts, reconciliation of unknown outcomes, case-only access to deal objects |
+| | Procurement and supply `/modules/procurement` | Approval route templates, document types and requirement-set templates, e-invoicing networks, accounting and ERP integrations, AI intake settings, match tolerance and fraud-control defaults, benchmark and pooling policy (off by default), unit conversions ([Procurement and supply](../procurement-and-supply.md)) |
 | **Trust and safety** | Moderation `/trust/moderation` | Reports, cases, clause library, sanction ladder |
 | | Disputes `/trust/disputes` | Execution and review disputes with dispute-case grants |
 | | Reputation methods `/trust/reputation` | Method versions, local parameters within bounds, explanation texts, release |

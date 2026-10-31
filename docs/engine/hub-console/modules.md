@@ -124,6 +124,21 @@ Configured in the [editorial office](autonomous-editorial.md): sources, pipeline
 | **Metrics** | Flow counts and median durations (published RFQ to first quote, acceptance to order) |
 | **Guard rails** | Staff never see budgets, floors, private constraints or negotiation without a case grant (and `negotiation_private` is excluded even then); published RFQ versions and sent quote versions are immutable; no admin action changes accepted terms |
 
+## Procurement and supply
+
+The company-side suite from plan step to payment ([Procurement and supply](../procurement-and-supply.md), R53). Status: **Proposed** (HUBC-011: on fixtures first, then live). Companies own their routes, suppliers, budgets, documents and payments; the hub only publishes templates and policies and enables adapters.
+
+| | |
+|---|---|
+| **Sees** | Template and policy versions; adapter connections and modes; cohort counts (companies using the suite, documents processed by kind, median requisition-to-receipt and receipt-to-payment times across at least ten companies); unknown payment and e-document outcomes (identifiers and states only) |
+| **Does** | Publish **approval route templates** per company size and subject kind (requisition, award, order, invoice, payment proposal, document, substitution, budget change, payee change); bind the country pack's **document types** and publish **requirement-set templates** (supplier onboarding, order, receipt, invoice, handover); enable **e-invoicing networks** (for example Peppol with UBL in an EU hub, CFDI in a Mexican hub, NF-e in a Brazilian hub; none mandatory in a US hub) and **integrations** (accounting, ERP, project-tool imports, takeoff extensions) as fake, manual or live; reconcile unknown outcomes with evidence; open a case grant when a company asks for help |
+| **Settings** | **AI intake**: allowed extraction adapters and model routes per data class, default confidence thresholds, file retention, languages, external OCR on or off. **Match tolerances**: default policy versions. **Fraud-control defaults**: cooling-off for changed payee details (engine minimum, hub may lengthen), callback requirement, risk-signal rules. **Agent payments**: whether `release_payment` may use `ask_above` for matched invoices to long-unchanged payees (off by default). **Benchmarks**: off by default; minimum group sizes, dominance share, time lag, method version, counsel sign-off. **Demand pooling**: off by default; pool rules and maximum share, counsel sign-off. **Units**: packaging conversions with sources |
+| **Queues** | Template drafts awaiting a second person; adapter activations; unknown outcomes; benchmark cells flagged by the suppression check |
+| **Metrics** | Cohort counts and medians only, never per company and never per person |
+| **Guard rails** | Staff never see a company's routes, supplier base, levelling sheets, budgets, receipts, stock, invoices, payee details or payments without a case grant (and payee tokens are excluded even then); no template can remove the built-in segregation-of-duties rules or make an approval, a substitution decision or a risk-signal clearance automatic; no setting lets document text change a payee; benchmarks and pooling cannot be switched on without the counsel record; no Russian network, provider or software is offered |
+
+US example: no e-invoicing network enabled by default; requirement-set template "subcontractor onboarding" asks for the vendor tax form, a certificate of insurance with expiry and the state licence where the trade needs one; QuickBooks Online and Xero adapters in fake mode until the operator connects them; ACH through the hub's licensed processor for supplier payments. Samarkand example: the Uzbekistan pack's e-invoicing facet decides the network; payments through the hub's licensed local provider; Uzbek Latin and Russian labels from the locale files.
+
 ## Execution and reputation
 
 | | |

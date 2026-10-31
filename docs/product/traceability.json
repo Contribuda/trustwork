@@ -624,6 +624,42 @@
       "spec": "docs/product/specification.md",
       "verification": "npm run validate:docs (links, no Cyrillic) plus task acceptance",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R53",
+      "tasks": [
+        "PRC-000",
+        "PRC-001",
+        "PRC-002",
+        "PRC-003",
+        "PRC-004",
+        "PRC-005",
+        "PRC-006",
+        "PRC-007",
+        "PRC-008",
+        "PRC-009",
+        "PRC-010",
+        "PRC-011",
+        "PRC-012",
+        "PRC-013",
+        "PRC-014",
+        "PRC-015",
+        "PRC-016",
+        "PRC-017",
+        "PRC-018",
+        "PRC-019",
+        "PRC-020",
+        "PRC-021",
+        "PRC-022",
+        "PRC-023",
+        "WEB-011",
+        "WEB-012",
+        "HUBC-011",
+        "AGT-024"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }
