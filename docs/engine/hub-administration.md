@@ -1,6 +1,6 @@
 # Hub administration: the operator's console
 
-Requirements R37, R38, R20, R28. Status: administration permissions, audit events, case grants and second-person approvals are **Contract**; the platform administration surface is **Designed** (ADM-001…ADM-003); the hub console described here, its sources registry, verification recipes, screening configuration and launch checklist are **Proposed**.
+Requirements R37, R38, R20, R28. Status: administration permissions, audit events, case grants and second-person approvals are **Contract**; the platform administration backend is **Designed** (ADM-001); the hub console described here (built by ADM-002 and HUBC-002 … HUBC-010 under the HUB-002 umbrella; ADM-003 was superseded), its sources registry, verification recipes, screening configuration, launch checklist, jurisdiction settings (HUB-005), commission settings (BILL-003) and the agent extension registry (AGT-023) are **Proposed**. The project's own United States reference hub is described in [Hubs](hubs.md#the-reference-hub-united-states-decided).
 
 The complete console design (installation, setup wizard, keys and models, autonomous editorial office, data mining, automation, agent product, every module, support workspace, operations, data model view and screen contracts) is in [The hub console](hub-console/README.md); this chapter keeps the guard rails, roles and verification design it builds on.
 
@@ -199,7 +199,7 @@ Hosting policy, review requirements, ticketing on or off, marketplace fee price 
 
 ### Commerce and payments
 
-Currency and secondary currencies (from the pack), VAT and tax settings for the hub's own fees, e-invoicing provider, e-signature providers, payment providers, payouts to organizers and authors, hub offers, plans and price versions (second-person activation), credits within role caps.
+Currency and secondary currencies (from the pack), VAT and tax settings for the hub's own fees, e-invoicing provider, e-signature providers, payment providers, payouts to organizers and authors, hub offers, plans and price versions (second-person activation), credits within role caps. Payment providers must be licensed; no setting can route participants' funds through an operator account, because Trustwork and hub operators never hold participants' money ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 20). **Commissions and fees** (consultations, tasks, marketplace categories, events, courses, agent capacity) are versioned price records with second-person activation, an effective date and public disclosure, never inputs to ranking, matching, recommendations or reputation (decision 21, BILL-003, [Billing](billing.md#commissions-and-fees-are-hub-settings)). Sponsored content is off by default; a hub that turns it on shows it only in a labelled slot outside ranking ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 3).
 
 ### Agents policy
 
@@ -208,7 +208,9 @@ Currency and secondary currencies (from the pack), VAT and tax settings for the 
 | Allowed agent actions in the hub | For example commitments allowed only for verified companies; outreach only to platform participants |
 | Outreach quotas | Introduction requests per person per week |
 | External channels | Which messengers and e-mail integrations are allowed |
-| Disclosure text | How agent-generated messages are labelled, in each hub language |
+| Disclosure text | How agent-generated messages are labelled, in each hub language; part of the per-jurisdiction settings below |
+| Jurisdiction settings | Agent disclosure wording, liability allocation for agent commitments, consent, record-keeping and per-action limits, per hub and per jurisdiction inside it, from sourced country-pack defaults; stricter than a mandatory pack rule allowed, weaker never; wording reviewed by counsel (ADR 010 decision 22, HUB-005, [console](hub-console/user-agents-admin.md#jurisdiction-settings)) |
+| Modules and extensions | Which engine modules participants' agents may use, and capabilities added through the governed extension registry: declared actions, data classes, side effects, endpoints, costs and mandate kinds, a safety suite, an adapter with a fake and second-person activation; extensions can add actions but never bypass mandates, budgets, kill switches, privacy rules or restricted places (AGT-003, AGT-023, [console](hub-console/user-agents-admin.md#extensions-adding-capabilities-to-agents)) |
 | Model providers and egress | A matrix of data class × provider: allowed, denied, allowed only for public data; respects data residency |
 | Kill switch | Stops all agent dispatch in the hub immediately; release needs an incident note |
 

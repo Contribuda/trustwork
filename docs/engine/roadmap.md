@@ -1,8 +1,8 @@
 # Roadmap and work packages
 
-Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were generated from it on 2026-10-31 and may lag behind it.
+Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 179 packages: 18 done, 158 open, 2 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30.
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 182 packages: 19 done, 161 open, 1 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30 and 3 are documentation packages (DOC-001 … DOC-003).
 
 ## Rules that keep parallel work safe
 
@@ -42,7 +42,7 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
-| DATA-004 | Migration layout for parallel slices: one directory per module, schema mirror per module | open |  |
+| DATA-004 | Migration layout for parallel slices: one directory per module, schema mirror per module | done |  |
 | CI-001 | Harden the pipeline: required database tests, audits, drift and size checks | open |  |
 | OPS-001 | Production runtime baseline: configuration guard, structured logs, readiness, telemetry, security headers | open |  |
 | REL-001 | Outbox relay, durable job runner and scheduler in apps/worker | open | DATA-004 |
@@ -50,7 +50,7 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 | BE-003 | Account and directory completeness: company creation, handles, lists with pagination | open | DATA-004 |
 | MAIL-001 | Transactional mail through the outbox with localized templates and an SMTP adapter | open | REL-001, BE-002 |
 | BE-004 | Second factor, recovery codes and elevated sessions | open | MAIL-001 |
-| INTL-003 | Locale correctness and weight: request-scoped client locale, one dictionary per page, CLDR plurals, country-aware formats | open |  |
+| INTL-003 | Locale correctness and weight: request-scoped client locale, one dictionary per page, CLDR plurals, country-aware formats | done |  |
 | INTL-004 | Locale files per feature namespace | open | INTL-003 |
 | WEB-006 | Asynchronous data boundary in the web app | open | INTL-003 |
 | WEB-004 | Run the web app on the live API for accounts, companies and projects | open | WEB-006, BE-003, OPS-001 |
@@ -198,7 +198,7 @@ Events with tickets through payment providers, courses and certificates, explain
 
 ## Phase 7: search and retrieval
 
-Governed hybrid retrieval (ADR 007) with permission-separated ingestion, delivery fencing, cited answers and real quality, security, scale and recovery evidence. Earlier phases use structured data and a retrieval port with a fake (ADR 012 decision 20). WEB-005 waits for the owner's URL decision.
+Governed hybrid retrieval (ADR 007) with permission-separated ingestion, delivery fencing, cited answers and real quality, security, scale and recovery evidence. Earlier phases use structured data and a retrieval port with a fake (ADR 012 decision 20). WEB-005 implements the owner's URL decision (English unprefixed, other languages under `/<lang>/` with hreflang, no country in URLs; ADR 012 decision 27).
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
@@ -206,7 +206,7 @@ Governed hybrid retrieval (ADR 007) with permission-separated ingestion, deliver
 | RAG-301 | Governed hybrid retrieval and delivery fencing | open | RAG-201 |
 | WEB-003 | Search, cited answers and freshness states on the web | open | RAG-301, WEB-004 |
 | RAG-401 | Verify real RAG quality, security, scale and recovery | open | RAG-301, AST-001, WEB-003 |
-| WEB-005 | Cacheable, indexable and lighter public pages | blocked | WEB-004, INTL-004 |
+| WEB-005 | Cacheable, indexable and lighter public pages | open | WEB-004, INTL-004 |
 
 ## Phase 8: federation and the portable passport
 
@@ -269,6 +269,16 @@ International by default ([ADR 012 decision 30](../adr/012-integrator-decisions-
 | CTRY-IN | India country pack | open | CTRY-002 |
 | CTRY-AU | Australia country pack | open | CTRY-002 |
 
+## Documentation
+
+The handbook, the [guides for participants](../guides/README.md) and the ADRs are kept current in every pull request. Three documentation packages need working software first, so each waits for the packages that build what it documents.
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| DOC-001 | Operator guide: install a node and set up a hub with the real installer and setup wizard | open | INST-001, HUBC-007 |
+| DOC-002 | API reference generated from the Zod contracts (OpenAPI 3.1) and published as a docs page | open | BE-003, OPS-001 |
+| DOC-003 | In-product help texts for participant flows | open | WEB-004, WEB-007, WEB-008, AGT-018, LANG-ES |
+
 ## Release
 
 A standalone release candidate verified end to end before any public deployment proposal.
@@ -315,8 +325,8 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 |---|---|---|
 | Phase order, defaults and merged packages | Decided 2026-10-31 by the integrator ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md)) | Whole graph |
 | No held funds; commissions as hub settings; detailed configuration and extensions | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20–22) | PAY-001, BILL-002, BILL-003, HUB-005, AGT-022, AGT-023 |
-| Hosting and operator entity of the US demo hub; real sign-ups or demo only | Owner (ADR 012 questions 1–2) | QA-002 follow-up, any deployment |
-| Language and country in public URLs | Owner (ADR 012 question 3) | WEB-005 (blocked) |
+| US reference hub on Railway in a US region, operated by Contribuda; demo-only until QA-002, counsel review and the owner's switch | Decided 2026-10-31 by the owner and the conductor ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decisions 26 and 28) | OPS-003 targets, QA-002 follow-up, any deployment |
+| English default; other languages under `/<lang>/` with hreflang; no country in public URLs | Decided 2026-10-31 (ADR 012 decision 27) | WEB-005 (unblocked) |
 | Prices, trials, tiers and commission levels | Owner / hub operators | BILL-001, BILL-003 activation |
 | Reputation weights, windows, minimum samples | Owner | EXE-001, REP-001 public scores |
 | Agent liability and disclosure wording per jurisdiction; electronic agreement validity | Counsel per hub | HUB-005 defaults, COM-002 and AGT-008 live use |

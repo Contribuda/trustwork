@@ -1,6 +1,6 @@
 # Projects
 
-Requirements R04, R12, R28. Status: creation, leadership, publication, ownership transfer and participants are **Live**; public pages and the workspace project view are **Demo**; plans, baselines and dependencies are **Designed**.
+Requirements R04, R12, R28, R41–R43. Status: creation, leadership, publication, ownership transfer and participants are **Live** in the API; public pages and the workspace project view (including a plan tab with a baseline and changes) are **Demo**; baselines, plan changes and dependencies are **Designed**; versioned plans, plan items, plan sharing, consultations, tasks and shared knowledge (the flagship journey "from plan to people", [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 17) are **Proposed** (PLAN-000, PLAN-001, CONS-001, TASK-001, KNOW-001).
 
 A project is where work happens: a school, a facade renovation, a warehouse, someone's own flat. It is a first-class object, not a folder inside a company.
 
@@ -39,16 +39,66 @@ proposed → accepted_by_recipient → effective
 
 The recipient must be an authorized party (the person, or someone with authority in the receiving company). Every step requires step-up, carries an idempotency key and re-evaluates access when it becomes effective.
 
-## Planning and change (Designed)
+## Plans: from plan to people
 
-Construction plans change. The engine keeps both the plan that was agreed and every change to it, so nobody is blamed retroactively:
+Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 17). A project gets one **plan**, and the plan is what turns an idea into requests to people. The whole journey, with the agents' jobs and mandates, is in the [agent catalogue](agent-catalog.md#flagship-journey-from-plan-to-people); entities are in the [data model](../data/model.md#7-projects-and-plans) and states in the [lifecycles](../data/lifecycles.md#plans-and-plan-items). How a homeowner experiences it: [guide](../guides/homeowner.md).
 
-- **Baseline**: an approved version of the plan (milestones, dates, budgets, dependencies).
-- **Plan change**: what changed, why, who asked for it, which agreement covers it, and who is accountable.
-- **Dependencies**: finish-to-start and other types with lags; the graph must stay acyclic.
-- **Milestones** carry dates, scope and optional budgets; the budget is owner-private.
+```text
+project → plan (versions) → plan items → consultations (experts) | tasks (contractors, trades) | RFQs | do it myself
+        → progress, evidence and changes with reasons → completion → shared knowledge, with consent
+```
 
-When a client changes scope and the delivery date moves, the original and revised plans are both kept with the reason. Reputation then sees a client-caused change, not an unexplained supplier delay (see [Execution and reputation](execution-and-reputation.md)).
+### What a plan contains (Proposed, PLAN-001)
+
+Phases, tasks, the expertise and trades each step needs, materials with quantities and uncertainty, permits and inspections the jurisdiction usually requires, budget ranges with their basis, a timeline as ranges, risks and decision points, in plain language and in the owner's language. Each **plan item** has a kind (`phase`, `task`, `milestone`, `consultation`, `purchase`, `material`, `permit`, `inspection`, `decision`, `risk`, `self`), a stable key across versions and terms from the **plan-step taxonomy**. The taxonomy is open data under CC0 1.0 with predecessor relations and crosswalk slots to IFC and ETIM; proprietary classifications are licensed hub data and never ship in the repository ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 14, PLAN-000). Budget ranges use only cost data the hub licensed for display and model use, and never other participants' private quotes (ADR 012 decision 23). The plan is advice, not professional engineering or legal advice; where a licensed professional is required, the plan creates a consultation or a task for one.
+
+### Plan versions (Proposed, ADR 012 decision 13)
+
+```text
+draft → proposed → approved → superseded
+          ↘ draft (owner returns it; a new draft version)
+```
+
+- An agent may draft and propose a version only under a mandate; it never approves.
+- A **proposed** version is frozen and digest-bound; edits create a new draft version.
+- Only the plan owner, or a person the owner authorized, approves. The **approved** version is the **baseline** of the earlier designs (`plan_baseline` became `plan_version`; a project milestone is a plan item of kind `milestone`).
+- An approved version is never edited; a later approved version **supersedes** it. Original and revised versions are both kept.
+- The execution state of an item (`proposed`, `accepted`, `requested`, `in_progress`, `done`, `blocked`, `cancelled`, `skipped`) lives beside the frozen version, so linking a request never edits the plan.
+
+### Plan changes and fair timing (Designed)
+
+Construction plans change. A **plan change** records what changed, why, who asked for it, which agreement covers it and who is accountable, so nobody is blamed retroactively. Dependencies (finish-to-start and the other types, with lags) must stay acyclic. When a client changes scope and the delivery date moves, the original and revised plans are both kept with the reason, and timing reputation sees a client-caused change, not an unexplained supplier delay ([Execution and reputation](execution-and-reputation.md#fair-timing-who-caused-the-delay)). Milestone budgets are owner-private.
+
+### Sharing a plan item (Proposed, `plan_share`)
+
+The project and its plan are owner-private. The owner shares **one item at a time, with one audience at a time**, choosing the fields:
+
+| Audience | Sees |
+|---|---|
+| `public` (the needs board) | Only what the owner published: trade, scope summary, city or county, timing window; never the street address |
+| `invited` experts or contractors | Exactly the listed fields: scope, drawings attached to that item, quantities, schedule; the budget range only if the owner chose to share it |
+| `after_acceptance` | Address, contact details and site-access notes, after a booked site visit or an accepted task |
+
+Invitees never see private notes, exact budgets, other invitees, other offers, diary entries or files outside the shared item; hub staff see nothing without a case grant; nothing reaches shared knowledge until the owner consents at the end, field by field.
+
+### Consultations and tasks from plan items (Proposed)
+
+| The owner chooses | It becomes | Designed in |
+|---|---|---|
+| Advice | A **consultation**: an advice session, a review of drawings or quotes, a site visit or a mentoring series, booked from an expert's versioned offering; the booking is an agreement of kind `consultation`, delivered with a deliverable the client accepts (CONS-001; paid bookings CONS-002) | [Consultation](agent-catalog.md#consultation), [data model](../data/model.md#8-consultations-tasks-and-mentoring) |
+| Execution | A **task**: a scoped request to contractors and trades with immutable offers; acceptance creates an agreement of kind `task` and a task assignment with milestones (TASK-001) | [Task marketplace](agent-catalog.md#task-marketplace) |
+| A larger purchase | An RFQ ([Buying and selling](commerce.md)) | COM-001, COM-002 |
+| Do it myself | A checklist from shared knowledge | KNOW-001 |
+
+Both sides' agents automate matching, quoting, scheduling, negotiation within mandates, progress tracking and reporting; people accept, and a private person's commitments are always their own decision (consumer mode). For each step, explained recommendations of products, guides, courses, events and consultants come from the plan-step companion ([Search and knowledge](search-and-knowledge.md#plan-step-recommendations-proposed)). Payments for bookings and tasks go only through licensed providers ([Billing](billing.md#trustwork-never-holds-money)).
+
+### Permits, diaries and shared knowledge (Proposed)
+
+Permit records keep the permit type, authority, number, dates and inspection results per jurisdiction from the country pack; the engine never files permits. A project diary is private while the project runs. When the project completes, the owner's agent proposes (never publishes by itself) a diary, lessons learned, checklists, a plan template with private data removed, and Q&A; each becomes a publication only with the owner's consent and each named participant's consent or anonymization, under a licence the author chooses (KNOW-001, [data model](../data/model.md#9-knowledge-sharing)).
+
+### Hub administration of plans
+
+Planner templates, marketplace categories and commission settings are hub configuration ([console: plan to people](hub-console/modules.md#plan-to-people), PLAN-003, BILL-003).
 
 ## Everything else hangs on the project
 

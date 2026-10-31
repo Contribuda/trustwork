@@ -15,10 +15,11 @@ import {
 /**
  * Fake in-memory auth adapter behind the Next route handlers (`/api/auth/*`). It validates payloads with
  * the frozen contract schemas and answers with contract error envelopes; it never creates a session,
- * an account or sends mail. BE-001 replaces the handlers with the real `/v1/auth/*` proxy.
+ * an account or sends mail. The real `/v1/auth/*` API exists (BE-001) but these handlers do not call it yet;
+ * WEB-004 replaces them with the live sign-up, verification, login and recovery flows.
  *
  * Field-level validation issues are reported as `details.fields[{ path, code }]` so the UI can map them
- * to Russian copy; `details` never echoes submitted values.
+ * to localized copy in the reader's language; `details` never echoes submitted values.
  */
 
 export type FieldIssue = { path: string; code: 'required' | 'format' | 'too_short' | 'too_long' | 'invalid' };

@@ -444,7 +444,8 @@
         "LANG-ES",
         "DEMO-US",
         "HUB-004",
-        "QA-002"
+        "QA-002",
+        "DOC-001"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -457,7 +458,8 @@
         "PLAN-001",
         "TASK-001",
         "WEB-007",
-        "AGT-010"
+        "AGT-010",
+        "DOC-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
@@ -492,7 +494,8 @@
         "REP-002",
         "AGT-005",
         "WEB-008",
-        "CLM-001"
+        "CLM-001",
+        "DOC-003"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",

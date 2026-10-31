@@ -1,6 +1,6 @@
 # Your agent: representation under your direction
 
-Requirements R09–R11, R29, R35. Status: the assistant page and the floating overlay with mandates, approvals and runs from demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Designed** (AST-001); goals, agent-to-agent negotiation, company mandates and the standing company representative are **Proposed**.
+Requirements R09–R11, R29, R35. Status: the assistant page and the floating overlay with mandates, approvals and runs from demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Designed** (AST-001); goals, agent-to-agent negotiation, company mandates, the standing company representative, detailed participant agent settings, the governed extension registry and per-jurisdiction disclosure and liability settings are **Proposed** (AGT-001, AGT-022, AGT-023, HUB-005; [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 22; requirements R48–R50).
 
 Every participant keeps an agent that represents them in the industry. It looks for partners, presents their services, negotiates and pursues their goals, **under their direction and within limits they can read, change and revoke at any moment**. This chapter describes what the agent does, how its authority works, how agents of different participants deal with each other, and what keeps the whole thing safe.
 
@@ -29,6 +29,25 @@ The [agent catalogue](agent-catalog.md) (Proposed) details what the agent does f
 | **Report and propose** | Weekly summary of what it did; proposals of useful next steps for your backlog | Always allowed; proposals become drafts |
 
 The action vocabulary in the contracts is: `prepare`, `research`, `communicate`, `send_quote`, `negotiate`, `place_order`, `accept_order`, `generate_deliverable`. The catalogue proposes a v2 vocabulary that adds `introduce`, `schedule`, `maintain_profile`, `publish`, `register`, `record_evidence` and `confirm_execution` (never pre-authorizable), plus standing mandates over context selectors, structured conditions and approval policies ([Action vocabulary v2](agent-catalog.md#action-vocabulary-v2-proposed)).
+
+## Configure your agent in detail (Proposed)
+
+Owner decision 2026-10-31 (ADR 010 decision 22; AGT-022, shown on the assistant surface by AGT-018). Each participant configures their own agent in detail, on one settings page of their one agent, with a **preview** of what the agent would do and an **explanation** of every setting:
+
+| Setting | What you decide |
+|---|---|
+| Goals | What the agent pursues, with success criteria and horizon ([Goals](#goals-proposed)) |
+| Modules | Which abilities of the agent are on (for example `project_planner`, `consultation`, `reputation_builder`), within what the hub offers ([modules](agent-catalog.md#the-module-system)) |
+| Behaviour and tone | How it writes and how proactive it is; it never claims to be a human |
+| Mandates and limits per action | Which actions, in which contexts, up to which amounts, with which counterparties ([mandates](#authority-mandates)) |
+| Budgets | Which transaction and platform budgets it may reserve from |
+| Schedules | When it works, reports and reminds |
+| Channels | Which external channels it may use, each granted per scope ([External channels](#external-channels)) |
+| Approval rules | What it may do alone, what needs your approval each time, after the first few times, or above an amount |
+| Sharing | What it may share with whom (for example plan items, availability, credentials) |
+| External connections | Your own external agents connected over MCP or A2A, under the same mandates ([connect your own agent](agent-catalog.md#connect-your-own-agent-mcp-and-a2a)) |
+
+A setting can never give the agent more than you can do yourself, and nothing typed in the conversation changes a setting without a structured confirmation.
 
 ## Authority: mandates
 
@@ -138,8 +157,16 @@ Contract additions: a principal kind `company_representative` acting for the com
 
 ### Open questions
 
-- Who is liable for an agent's commitment in each country, and what makes an electronically formed agreement binding (O12).
-- How agent disclosure must be worded under each country's consumer and advertising law.
+- Who is liable for an agent's commitment in each country, and what makes an electronically formed agreement binding (O12). The engine makes both configurable per jurisdiction (HUB-005, [above](#jurisdiction-settings-disclosure-and-liability-per-hub-proposed)); the values need counsel.
+- How agent disclosure must be worded under each country's consumer and advertising law (the same settings; wording by counsel).
+
+## Extensions: capabilities added by the hub (Proposed)
+
+Owner decision 2026-10-31 (ADR 010 decision 22; [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 24; AGT-023). Modules ship with the engine. A hub administrator can **add** functions, tools, integrations and other capabilities through a **governed extension registry**. Each extension declares its actions (each mapped to a mandate kind), inputs, data classes, side effects, external endpoints, costs and required mandate kinds; ships with a safety test suite that passes on its fake adapter (EVAL-001 harness); runs only through an adapter with a fake; and is activated by a second person as a hub configuration version (`draft → tested → active → suspended → retired`). Extensions **can add actions but never bypass** mandates, budgets, approvals, kill switches, privacy rules, the restricted-places list or the rule that untrusted text never issues commands, and an extension never becomes a separate agent: participants see it as one more ability of their one agent. This supersedes the earlier catalogue rule that hubs cannot create new actions. Console design: [extensions](hub-console/user-agents-admin.md#extensions-adding-capabilities-to-agents).
+
+## Jurisdiction settings: disclosure and liability per hub (Proposed)
+
+Owner decision 2026-10-31 (ADR 010 decision 22; HUB-005). How agents must disclose themselves, who is liable for an agent's commitment, consent and record-keeping rules, limits per action type and the legal texts differ by country and state. They are per-hub and, inside a hub, **per-jurisdiction settings** that start from the country pack's sourced defaults, are versioned, audited and activated by a second person, and must exist in every hub language. A hub may be stricter than a mandatory pack rule, never weaker; when two jurisdictions apply (for example a buyer in Texas and a seller in Oklahoma), the most protective setting wins. The wording itself needs the hub's counsel and is an open question for the reference hub ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md#questions-that-remain-for-the-owner-or-counsel), rows 5 and 11). Console design: [jurisdiction settings](hub-console/user-agents-admin.md#jurisdiction-settings).
 
 ## External channels
 

@@ -1,6 +1,6 @@
 # Execution, evidence and reputation
 
-Requirements R12–R14. Status: project updates and published milestones are **Demo**; delivery claims, acceptance records and assertions are **Contract**; disputes, reviews and reputation snapshots are **Designed** (work package EXE-001).
+Requirements R12–R14, R44. Status: project updates and published milestones are **Demo**; delivery claims, acceptance records and assertions are **Contract**; disputes, reviews and reputation snapshots are **Designed** (work package EXE-001); the reputation builder toolkit (credentials, evidence portfolio, counterparty confirmations, contributions, timeliness, the portable reputation passport, coaching) is **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 18; REP-001, REP-002, AGT-005, WEB-008).
 
 Reputation is the reason the engine exists, and also the easiest thing to get wrong. A star rating that anyone can buy, inflate or weaponise is worse than none. The engine builds reputation from **evidence of what actually happened**, separates opinions from facts, and explains every number.
 
@@ -55,6 +55,27 @@ Commercial reviews can cite permitted facts from the transaction and subjective 
 - Payment, plans, sponsorship, advertising.
 - Staff decisions outside the method: staff can only confirm or dispute observations with evidence, exclude a disputed observation pending resolution, or release a new method version through a reviewed process. Every such action is attributed and visible in the explanation.
 - Another node: reputation is computed only by the home node of the subject and displayed elsewhere with attribution ([Federation](federation.md#authority-stays-home)).
+
+## The reputation builder toolkit
+
+Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 18). Status: **Proposed**. Reputation is not the platform watching people. **Every participant builds and confirms their own reputation** with tools: a worker, a professional, an expert, a company, a supplier, a client, an author and an organizer alike. The home hub still computes snapshots under a published method (above); the tools help a participant bring the evidence the method counts, and never change a score directly. What each kind of participant builds and the agent's `reputation_builder` jobs are in the [agent catalogue](agent-catalog.md#flagship-build-and-confirm-your-own-reputation); entities are in the [data model](../data/model.md#20-reputation) and states in the [lifecycles](../data/lifecycles.md#confirmation-requests-and-passport-credentials). A professional's view: [guide](../guides/professional.md).
+
+| Tool | What the participant builds | How it is confirmed | Package |
+|---|---|---|---|
+| **Credentials** | Verified identity; licences (for example state contractor or professional-engineer licences), insurance, professional and platform certificates | The hub's verification recipes record "checked on date by hub X"; documents are never shown publicly; expiry is tracked and reminded | REP-001, CLM-001, HUB-003 |
+| **Evidence portfolio** | Completed projects and tasks with photographs, acceptance acts, inspection results | Each entry links to execution records; "client confirmed" only when the owner or client confirmed it, otherwise "self-reported"; shown only with the project owner's consent; the address never | REP-001 |
+| **Counterparty confirmations** | Confirmed deliveries, accepted milestones, payments on time | A **confirmation request** tied to a real agreement, task, consultation or project; the counterparty's person answers `confirmed`, `declined` or `partially`; once plus one reminder, never with an incentive | REP-001 |
+| **Contributions** | Articles, expert answers, consultations delivered, mentoring, courses taught, checklists and templates others reused | Counted by outcome (a deliverable accepted, an answer confirmed useful through someone's own project, learners who completed), never by volume | REP-001, KNOW-001 |
+| **Timeliness** | Response time to invitations, on-time deliveries and payments | Computed by the home node from records against the plan as agreed, with sample sizes; client-caused changes excluded | REP-001 |
+| **Reputation passport** | A portable bundle of the above the participant owns and shows anywhere, inside or outside Trustwork | W3C Verifiable Credentials 2.0, compatible with Open Badges 3.0, issued by the home hub and signed with the node key, revocable through published status lists; the holder chooses what is included; issuing it is free ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 5) | REP-002 |
+| **Coaching** | Private suggestions from the participant's own agent ("two finished jobs are waiting for client confirmation", "your licence check expires in 30 days") | Limited to legitimate actions: never review swaps, incentives, splitting work to multiply reviews or asking people who were not counterparties | AGT-005 |
+| **Appeals** | Disputes of observations and appeals of reviews, with evidence; public responses to reviews | Decided by a different person than the original decider; a participant can respond to a fair negative observation and dispute it, never remove it | EXE-001, REP-001 |
+
+**Never for sale.** No plan, payment, sponsorship, commission or staff action changes a score, a badge, a passport credential or a position. Pass-through costs of a real check buy the check, not its result. Review rings and confirmation swaps open a case for a person to review; they never trigger automatic sanctions or silently change scores.
+
+**Across hubs.** Peers show passport credentials as "verified by hub X"; nobody re-issues or recomputes another hub's credentials ([Federation](federation.md#authority-stays-home)).
+
+**In the hub console.** Credential checks, confirmations, reputation methods and appeals are administered in the console's [reputation building](hub-console/modules.md#reputation-building-credentials-confirmations-methods-and-appeals) section; staff can never set a score.
 
 ## Method releases
 
