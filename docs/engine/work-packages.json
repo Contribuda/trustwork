@@ -2551,7 +2551,7 @@
       ],
       "steps": [
         "Contracts in packages/contracts/src/sanctions.ts: gate modes, refusal envelope (`jurisdiction.restricted`, `auth.jurisdiction_hold`), hold sources, hold record and clear command; tests.",
-        "Pure primitives in packages/compliance/src/jurisdiction: restricted place from the authoritative list, IPv4 and IPv6 parsing (IPv4-mapped IPv6 included), range-table lookup, the `ranges_file`, `edge_header`, `upstream_gate` and `fake` adapters, and a generator (packages/compliance/bin) that reduces an operator-supplied city-level CSV to the restricted ranges, region level for Ukraine; no network calls, no dataset shipped.",
+        "Pure primitives in packages/contracts/src/sanctions.ts (the web and both backend images ship the contracts package): restricted place from the injected authoritative list, IPv4 and IPv6 parsing (IPv4-mapped IPv6 included), range-table lookup, the `ranges_file`, `edge_header`, `upstream_gate` and `fake` adapters; a generator (packages/compliance/bin) that reduces an operator-supplied city-level CSV to the restricted ranges, region level for Ukraine; no network calls, no dataset shipped.",
         "Web proxy: before anything else, render /restricted in the visitor's language for pages (451 where possible, noindex) and answer 451 for other requests; open doors only for the refusal page, legal pages, health, provider webhooks and unsubscribe; the jurisdiction namespace in all six engine languages; dataset attribution on the page.",
         "API: onRequest hook before principal resolution with the trusted-proxy address; hold the person when a valid session is present; refuse held people on every request and at password, provider and second-factor sign-in with `auth.jurisdiction_hold`; production refuses to start without an explicit gate mode; count refusals per place and day.",
         "Persistence in packages/data/migrations/jurisdiction: jurisdiction_hold (one open hold per person, never deleted, clear columns whole), jurisdiction_refusal_count, a SECURITY DEFINER clear command authorized through admin_authorize with permission admin.screening.holds.clear, never by the subject, audited with admin_record; real-PostgreSQL negative and concurrency tests."
@@ -2567,7 +2567,6 @@
       "paths": [
         "packages/contracts/src/sanctions.ts",
         "tests/contracts/sanctions.test.ts",
-        "packages/compliance/src/jurisdiction",
         "packages/compliance/bin",
         "apps/web/proxy.ts",
         "apps/web/app/restricted",
@@ -2579,8 +2578,6 @@
         "apps/web/locales/hy/jurisdiction.json",
         "apps/web/locales/az-Latn/jurisdiction.json",
         "apps/api/src/app.ts",
-        "apps/api/src/config.ts",
-        "apps/api/src/deps/compliance.ts",
         "apps/api/src/modules/jurisdiction",
         "apps/api/src/modules/identity",
         "packages/data/migrations/jurisdiction",
