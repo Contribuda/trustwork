@@ -2,6 +2,8 @@
 
 Requirements R37, R38, R20, R28. Status: administration permissions, audit events, case grants and second-person approvals are **Contract**; the platform administration surface is **Designed** (ADM-001…ADM-003); the hub console described here, its sources registry, verification recipes, screening configuration and launch checklist are **Proposed**.
 
+The complete console design (installation, setup wizard, keys and models, autonomous editorial office, data mining, automation, agent product, every module, support workspace, operations, data model view and screen contracts) is in [The hub console](hub-console/README.md); this chapter keeps the guard rails, roles and verification design it builds on.
+
 The hub operator develops the platform for a country or a city. Complying with local law, they connect the territory's information sources, check counterparties against local registers and sanctions lists, publish legal documents, choose payment and signature providers, shape the taxonomy, lead the editorial team and set the rules for agents. This chapter designs the console that makes that possible without ever becoming a back door into anyone's private data.
 
 ## Two levels of administration
@@ -224,7 +226,7 @@ Peering agreements with levels and dates, data licences per class in the node ma
 
 ### Staff, audit and operations
 
-Staff roles and conflicts, audit browsing and signed export, jobs and reconciliation, provider states, index generations, feature flags (which can never widen access), maintenance mode, incidents and post-incident reviews.
+Detailed in [hub console operations](hub-console/operations.md). Staff roles and conflicts, audit browsing and signed export, jobs and reconciliation, provider states, index generations, feature flags (which can never widen access), maintenance mode, incidents and post-incident reviews.
 
 ## Data model (Proposed)
 
