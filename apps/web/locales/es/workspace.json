@@ -132,7 +132,14 @@
       "previewTitle": "Así ven los demás su página",
       "portraitHidden": "La foto está oculta en la página pública",
       "demoNote": "Demostración: los cambios no se guardan en el servidor.",
-      "portraitPending": "La foto aparece después de subir una imagen."
+      "portraitPending": "La foto aparece después de subir una imagen.",
+      "liveNote": "Los cambios se guardan en su cuenta. Ocultar la página retira su consentimiento y la quita de inmediato de las páginas públicas y del directorio.",
+      "saveFailed": "No se pudo guardar la página pública. Revise los campos y vuelva a intentarlo.",
+      "saving": "Guardando…",
+      "notice": {
+        "profilePublic": "Al publicar, acepto que mi nombre, mi titular y las partes que elija se muestren a todos. Puedo ocultar la página en cualquier momento.",
+        "portraitDisplay": "Acepto que mi foto se muestre en mi página pública. Solo aparece con un registro de licencia de la imagen y puedo retirar este consentimiento en cualquier momento."
+      }
     },
     "history": {
       "org": "Organización",

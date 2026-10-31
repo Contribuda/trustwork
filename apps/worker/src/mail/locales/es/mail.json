@@ -1,0 +1,66 @@
+{
+  "brand": {
+    "name": "Trustwork"
+  },
+  "layout": {
+    "greeting": "Hola:",
+    "linkFallback": "Si el botón no funciona, copie esta dirección en su navegador:",
+    "automated": "{brand} envió este mensaje automáticamente debido a una acción en su cuenta. Las respuestas a esta dirección no se leen.",
+    "signature": "El equipo de {brand}"
+  },
+  "verifyEmail": {
+    "subject": "Confirme su dirección de correo electrónico en {brand}",
+    "heading": "Confirme su dirección de correo electrónico",
+    "intro": "Alguien, esperamos que usted, creó una cuenta de {brand} con esta dirección de correo electrónico. Confirme la dirección para terminar el registro.",
+    "action": "Confirmar la dirección de correo",
+    "expiry": "El enlace funciona una sola vez y vence en {hours, plural, one {# hora} many {# horas} other {# horas}}.",
+    "ignore": "Si usted no creó una cuenta, ignore este mensaje. No pasará nada sin la confirmación."
+  },
+  "alreadyRegistered": {
+    "subject": "Su cuenta de {brand} ya existe",
+    "heading": "Usted ya tiene una cuenta",
+    "intro": "Alguien intentó crear una cuenta de {brand} con esta dirección de correo electrónico, pero ya existe una cuenta con ella.",
+    "action": "Iniciar sesión",
+    "recoverHint": "¿Olvidó su contraseña? Puede elegir una nueva:",
+    "recoverAction": "Restablecer la contraseña",
+    "ignore": "Si no fue usted, ignore este mensaje. Su cuenta no cambió."
+  },
+  "recovery": {
+    "subject": "Restablezca su contraseña de {brand}",
+    "heading": "Restablezca su contraseña",
+    "intro": "Recibimos una solicitud para restablecer la contraseña de su cuenta de {brand}.",
+    "action": "Elegir una contraseña nueva",
+    "expiry": "El enlace funciona una sola vez y vence en {minutes, plural, one {# minuto} many {# minutos} other {# minutos}}. Después del restablecimiento se cerrarán todas las sesiones.",
+    "ignore": "Si usted no lo solicitó, ignore este mensaje. Su contraseña sigue siendo la misma."
+  },
+  "emailChange": {
+    "subject": "Confirme su nueva dirección de correo electrónico en {brand}",
+    "heading": "Confirme su nueva dirección de correo electrónico",
+    "intro": "Usted pidió usar esta dirección para su cuenta de {brand}. Confírmela para terminar el cambio.",
+    "action": "Confirmar la nueva dirección",
+    "expiry": "El enlace funciona una sola vez y vence en {hours, plural, one {# hora} many {# horas} other {# horas}}.",
+    "ignore": "Si usted no lo solicitó, ignore este mensaje. La cuenta conserva su dirección actual."
+  },
+  "membershipInvitation": {
+    "subject": "{company} lo invita a unirse al equipo en {brand}",
+    "heading": "Invitación para unirse a {company}",
+    "intro": "Un colega lo invitó a unirse a {company} en {brand}. Inicie sesión con esta dirección de correo electrónico y acepte la invitación para ser miembro.",
+    "action": "Ver la invitación",
+    "expiry": "La invitación vence en {days, plural, one {# día} many {# días} other {# días}}.",
+    "ignore": "Si no esperaba esta invitación, ignore este mensaje. Nada cambia a menos que la acepte."
+  },
+  "securityNotice": {
+    "subject": "Aviso de seguridad de su cuenta de {brand}",
+    "heading": "Aviso de seguridad",
+    "events": {
+      "login_throttled": "Hubo varios intentos fallidos de iniciar sesión en su cuenta. Los siguientes intentos se harán más lentos por un tiempo. Su contraseña no se desactivó.",
+      "password_reset": "La contraseña de su cuenta se restableció con un enlace de recuperación y se cerraron todas las sesiones.",
+      "password_changed": "La contraseña de su cuenta se cambió y se cerraron sus demás sesiones.",
+      "email_change_requested": "Alguien pidió cambiar la dirección de correo electrónico de su cuenta. El cambio solo ocurre después de confirmar la nueva dirección.",
+      "provider_linked": "Se conectó el inicio de sesión con {provider} a su cuenta.",
+      "provider_unlinked": "Se desconectó el inicio de sesión con {provider} de su cuenta."
+    },
+    "notYou": "Si no fue usted, restablezca su contraseña ahora y revise sus sesiones activas.",
+    "action": "Restablecer la contraseña"
+  }
+}

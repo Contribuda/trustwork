@@ -41,7 +41,7 @@ draft → in_review (when the policy requires it) → scheduled | published → 
 - Home page with featured stories, an aggregated topic feed with in-place "load more", upcoming events and magazine teaser.
 - News and article lists with rubric and topic filters; detail pages with source, dates, author card, entity links and related items.
 - RSS feeds for news (`/news/feed.xml`) and the magazine (`/magazine/feed.xml`).
-- Every string, date and number follows the reader's language; demo content exists in six languages.
+- Every string, date and number follows the reader's language; demo content exists in seven languages.
 
 ## Editorial workflow (Designed)
 

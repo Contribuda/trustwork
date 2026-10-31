@@ -7,6 +7,7 @@ import { intlTagFor } from '@trustwork/ui/i18n';
 import { formatMoney, longDate, shortDate, t } from '../../../apps/web/app/_lib/i18n.js';
 import { FIXTURE_FILES } from '../../../apps/web/fixtures/schemas.js';
 import { probe } from '../../config/helpers.js';
+import { MAIL_LOCALES, renderMail, resolveLocale, type RenderConfig } from '../../../apps/worker/src/mail/index.js';
 import { REPO, appDictionary, layersFor, leaves, namespacesOf, uiDictionary } from '../i18n/helpers.js';
 
 /**
@@ -214,4 +215,21 @@ test('a fresh server start offers Spanish with no configuration and no code chan
   assert.ok(started.fixtureLanguages.includes('es'), 'the demo-content overrides are discovered by file name');
   assert.deepEqual(started.visitor, { country: 'US', locale: 'en', chosen: false }, 'English stays the default language of the US hub (ADR 012 decision 27)');
   assert.equal(new Intl.DisplayNames(['es'], { type: 'language' }).of('es'), 'español', 'the picker names the language by Intl');
+});
+
+test('transactional mail has a Spanish template set: chosen for a Spanish browser, Trustwork, es plurals', () => {
+  assert.ok(MAIL_LOCALES.includes('es'));
+  assert.equal(resolveLocale(['es-MX', 'en'], MAIL_LOCALES, 'en'), 'es');
+  const config: RenderConfig = {
+    defaultLocale: 'en', locales: MAIL_LOCALES, brandName: null, brandOverlay: 'stroyreputation-ru',
+    links: { origin: 'https://hub.example', paths: { verifyEmail: '/verify-email/{token}', emailChange: '/verify-email/{token}', recovery: '/recover/{token}', invitation: '/invitations/{membershipId}/{token}', signIn: '/login', recover: '/recover' } },
+  };
+  const verify = renderMail(config, { localePreferences: ['es-US'], template: 'verify_email', params: { hours: '24' }, secret: 'tok-verify' });
+  assert.equal(verify.locale, 'es');
+  assert.equal(verify.subject, 'Confirme su dirección de correo electrónico en Trustwork');
+  assert.match(verify.text, /vence en 24 horas/);
+  assert.match(verify.text, /https:\/\/hub\.example\/verify-email\/tok-verify\?lang=es/);
+  assert.ok(!CYRILLIC.test(verify.text) && !CYRILLIC.test(verify.html));
+  const recovery = renderMail(config, { localePreferences: ['es'], template: 'recovery', params: { minutes: '1' }, secret: 'tok-recovery' });
+  assert.match(recovery.text, /vence en 1 minuto\./);
 });
