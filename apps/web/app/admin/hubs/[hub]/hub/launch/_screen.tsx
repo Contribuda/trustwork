@@ -1,18 +1,12 @@
-import type { Metadata } from 'next';
 import { blockingGates, SOFT_LAUNCH_GATES } from '@trustwork/contracts/client';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
 import { dateTime, list } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, Panel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.launch.title') };
-}
+import { ConsoleHeader, Panel } from '../../../../_components/shell';
 
 const gateName = (g: string) => tDynamic(`admin.hub.launch.gates.${g}`, g);
 
@@ -107,10 +101,4 @@ async function Launch(ctx: HubContext) {
 }
 
 /** HC-17 Launch checklist: every gate with evidence; soft launch or public is requested only when gates pass, and needs a second person. */
-export default async function LaunchPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'launch' }}>
-      {(ctx) => Launch(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'launch', title: () => t('admin.hub.launch.title'), render: Launch };

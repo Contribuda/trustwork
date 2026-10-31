@@ -1,21 +1,15 @@
-import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { blockingGates, LAUNCH_GATES, providerBudgetState, SOFT_LAUNCH_GATES, type ConsolePermission } from '@trustwork/contracts/client';
 import { formatMoney, t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { approvalBlocker } from '../../_data/commands';
 import { submitConsoleCommand } from '../../_data/actions';
 import type { QueueId } from '../../_data/schemas';
 import { ConsoleForm } from '../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../_components/context';
+import type { HubContext } from '../../_components/context';
+import type { Screen } from '../../_components/screen';
 import { dateTime, number } from '../../_components/format';
-import { ConsoleHeader, HubConsolePage, KeyValues, Panel } from '../../_components/shell';
+import { ConsoleHeader, KeyValues, Panel } from '../../_components/shell';
 import { formLabels } from '../../_components/forms';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.overview.title') };
-}
 
 /** Each queue opens its section and counts only for viewers who may act on it (screens.md HC-01, "Navigation behaviour"). */
 const QUEUES: Record<QueueId, { path: string; act: readonly ConsolePermission[] }> = {
@@ -197,10 +191,4 @@ async function Overview(ctx: HubContext) {
 }
 
 /** HC-01 Overview: what needs a person today, and whether the hub is healthy and lawful. */
-export default async function OverviewPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'home', id: 'overview' }}>
-      {(ctx) => Overview(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'home', id: 'overview', title: () => t('admin.overview.title'), render: Overview };

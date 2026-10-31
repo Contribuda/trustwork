@@ -1,19 +1,13 @@
-import type { Metadata } from 'next';
 import { HUB_MODULES, MODULE_DEPENDENCIES, type HubModule } from '@trustwork/contracts/client';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import type { SectionStatus } from '../../../../_data/sections';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField } from '../../../../_components/forms';
 import { list } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, Panel, StatusLabel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.modules.title') };
-}
+import { ConsoleHeader, Panel, StatusLabel } from '../../../../_components/shell';
 
 /**
  * How far each product module is built in the engine (docs/engine/status.md), shown beside its switch so an operator
@@ -77,10 +71,4 @@ function Modules(ctx: HubContext) {
 }
 
 /** HC-12 Modules: which product modules are on, what each depends on, and how far the engine has built it. */
-export default async function ModulesPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'modules' }}>
-      {(ctx) => Modules(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'modules', title: () => t('admin.hub.modules.title'), render: Modules };

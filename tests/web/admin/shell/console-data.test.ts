@@ -1,4 +1,6 @@
 import test from 'node:test';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
 import {
   consoleApprovalBinds,
@@ -243,4 +245,14 @@ test('setup wizard: token required, no skipping ahead, blocking install check, s
     assert.equal(evaluateCommand(setupInput({ step: 'first_admin', secondFactor: 'webauthn', recoveryStored: 'on' }), { ...base, setup: run }).status, 'demo_not_saved');
     assert.equal(evaluateCommand(setupInput({ step: 'review' }), { ...base, setup: run }).status, 'demo_not_saved');
   });
+});
+
+test('every built section has its screen on the console route, and only built sections do', () => {
+  const registry = readFileSync(resolve('apps/web/app/admin/_components/screens.ts'), 'utf8');
+  for (const { group, section } of SECTIONS) {
+    const folder = section.path ? `apps/web/app/admin/hubs/[hub]/${section.path}` : 'apps/web/app/admin/hubs/[hub]';
+    const has = existsSync(resolve(folder, '_screen.tsx'));
+    assert.equal(has, section.status === 'demo', `${group.id}.${section.id}: a screen exists exactly when the status is demo`);
+    if (has) assert.ok(registry.includes(`'../hubs/[hub]${section.path ? `/${section.path}` : ''}/_screen'`), `${group.id}.${section.id} is registered in screens.ts`);
+  }
 });

@@ -1,18 +1,12 @@
-import type { Metadata } from 'next';
 import { getPack } from '@trustwork/country-packs';
 import { currentLocale, t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
 import { country, localized, number } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, KeyValues, Panel, StatusLabel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.country.title') };
-}
+import { ConsoleHeader, KeyValues, Panel, StatusLabel } from '../../../../_components/shell';
 
 const KINDS = ['identifier', 'register', 'licence_category', 'holiday', 'tax_fact', 'unit'] as const;
 
@@ -107,10 +101,4 @@ async function Country(ctx: HubContext) {
 }
 
 /** HC-15 Country base: the bound country pack (or generic profile) and the hub's local additions, each a candidate until confirmed. */
-export default async function CountryPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'country' }}>
-      {(ctx) => Country(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'country', title: () => t('admin.hub.country.title'), render: Country };

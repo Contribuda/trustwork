@@ -1,18 +1,12 @@
-import type { Metadata } from 'next';
 import { AUTOMATION_DOMAINS, blockingGates, HUB_LIFECYCLE, HUMAN_GATES, hubTransitionAllowed, modesViolations } from '@trustwork/contracts/client';
 import { t, tDynamic } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField } from '../../../../_components/forms';
 import { list, violationLabel } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, KeyValues, Panel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.modes.title') };
-}
+import { ConsoleHeader, KeyValues, Panel } from '../../../../_components/shell';
 
 const onOff = (value: boolean) => t(value ? 'admin.common.on' : 'admin.common.off');
 
@@ -139,10 +133,4 @@ function Modes(ctx: HubContext) {
 }
 
 /** HC-11 System modes: lifecycle, data mode, registration, moderation, automation with its human gates, indexing, maintenance. */
-export default async function ModesPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'modes' }}>
-      {(ctx) => Modes(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'modes', title: () => t('admin.hub.modes.title'), render: Modes };

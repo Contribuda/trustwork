@@ -1,20 +1,14 @@
-import type { Metadata } from 'next';
 import { getPack, regionName } from '@trustwork/country-packs';
 import type { HubTerritory } from '@trustwork/contracts/client';
 import { currentLocale, t } from '@/app/_lib/i18n';
 import { appLocales, coverage } from '@/app/_lib/locale-data';
-import { primeLocale } from '@/app/_lib/locale';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
-import type { HubContext, HubParams, PageSearchParams } from '../../../../_components/context';
+import type { HubContext } from '../../../../_components/context';
+import type { Screen } from '../../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
 import { country, languageName } from '../../../../_components/format';
-import { ConsoleHeader, HubConsolePage, KeyValues, Panel } from '../../../../_components/shell';
-
-export async function generateMetadata(): Promise<Metadata> {
-  await primeLocale();
-  return { title: t('admin.hub.identity.title') };
-}
+import { ConsoleHeader, KeyValues, Panel } from '../../../../_components/shell';
 
 /** A territory's display name: the country from `Intl`, a region from its pack (with the pack's language), a place by its key. */
 function territoryName(territory: HubTerritory): { text: string; lang?: string; code?: boolean } {
@@ -161,10 +155,4 @@ async function Identity(ctx: HubContext) {
 }
 
 /** HC-10 Identity and territory: who and where the hub is; changes become a new configuration version. */
-export default async function IdentityPage({ params, searchParams }: { params: HubParams; searchParams: PageSearchParams }) {
-  return (
-    <HubConsolePage params={params} searchParams={searchParams} section={{ group: 'hub', id: 'identity' }}>
-      {(ctx) => Identity(ctx)}
-    </HubConsolePage>
-  );
-}
+export const screen: Screen = { group: 'hub', id: 'identity', title: () => t('admin.hub.identity.title'), render: Identity };
