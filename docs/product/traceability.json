@@ -660,6 +660,35 @@
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R54",
+      "tasks": [
+        "AGT-016",
+        "MCP-001",
+        "MCP-002",
+        "MCP-003",
+        "MCP-004",
+        "MCP-005",
+        "MCP-010",
+        "MCP-011",
+        "MCP-012",
+        "MCP-020",
+        "MCP-021",
+        "MCP-030",
+        "MCP-031",
+        "MCP-032",
+        "MCP-040",
+        "MCP-050",
+        "MCP-060",
+        "MCP-070",
+        "MCP-071",
+        "MCP-080",
+        "MCP-090"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "tests/contracts/mcp.test.ts (contract invariants) plus task acceptance, the CI parity report and the MCP conformance and red-team suites; designs in docs/engine are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }

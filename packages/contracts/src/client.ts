@@ -31,6 +31,7 @@ export * from './agent-catalog.js';
 export * from './admin.js';
 export * from './hub.js';
 export * from './api.js';
+export * from './mcp.js';
 export {
   // Retrieval keeps its own `EvidenceState` identical to execution's; export the rest without the duplicate name.
   SourceKindSchema, AudienceSchema, SourceRefSchema, LocatorSchema, CitationSchema, TemporalModeSchema, DataClassSchema,

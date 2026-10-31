@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 211 packages: 20 done, 189 open, 1 blocked and 1 rejected (superseded); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004) and 28 are the procurement and supply suite (R53).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 231 packages: 24 done, 205 open, 1 blocked and 1 rejected (superseded); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004) and 28 are the procurement and supply suite (R53).
 
 ## Rules that keep parallel work safe
 
@@ -186,7 +186,7 @@ Hubs, territories and versioned configuration, jurisdiction settings (decision 2
 
 ## Phase 5: agents
 
-The durable agent runtime, goals, envelopes and the company representative, the module registry, metering, detailed participant agent settings with previews (AGT-022), the governed extension registry (AGT-023), the model gateway, the modules of the catalogue, MCP and A2A connections, the single assistant surface and the safety evaluation that must pass before any hub enables a module or extension.
+The durable agent runtime, goals, envelopes and the company representative, the module registry, metering, detailed participant agent settings with previews (AGT-022), the governed extension registry (AGT-023), the model gateway, the modules of the catalogue, the MCP server ([ADR 013](../adr/013-mcp-server.md): every participant uses the whole system from their own AI chat, through the same capability registry as the agent and the interface) and A2A connections, the single assistant surface and the safety evaluation that must pass before any hub enables a module or extension.
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
@@ -208,7 +208,27 @@ The durable agent runtime, goals, envelopes and the company representative, the 
 | AGT-013 | Delivery agent modules: project desk and execution clerk | open | AGT-003, EXE-001 |
 | AGT-014 | Content and community agent modules | open | AGT-003, EVT-001, LRN-001 |
 | AGT-015 | Hub operations assistant and the representative front desk | open | AGT-003 |
-| AGT-016 | External agent connections over MCP | open | AGT-003, BE-004 |
+| MCP-001 | Capability registry runtime, the MCP projection and the CI parity report | open | AGT-002, AGT-003 |
+| MCP-002 | Authorization server: metadata, client registration, PKCE, resource indicators, tokens and consent records | open | AGT-002, BE-004, OPS-001 |
+| MCP-003 | MCP transport and protocol layer | open | MCP-002, AGT-003 |
+| MCP-004 | Tool projection: contract-derived schemas, annotations, toolsets, data-class filtering, untrusted envelope, errors and messages | open | MCP-001, MCP-003, INTL-004, LANG-ES |
+| MCP-005 | Confirmation challenges, URL-mode elicitation, handoffs and long-running tasks | open | MCP-004, AST-001 |
+| MCP-010 | MCP read tools: account, agent, companies, projects, plans, consultations, tasks | open | MCP-004, BE-003, PPL-001, AGT-001, AGT-022, PLAN-001, CONS-001, TASK-001 |
+| MCP-011 | MCP read tools: catalogue, procurement, sales, orders, execution, reputation, billing | open | MCP-004, COM-002, EXE-001, REP-002, AGT-004 |
+| MCP-012 | MCP read tools: knowledge, learning, events, publications, matching, messages, notifications, files, hub | open | MCP-004, RAG-301, REC-001, LRN-001, EVT-001, CNT-003, MATCH-001, COMMS-001, FILE-001, HUB-001 |
+| MCP-020 | MCP draft tools: account, agent, companies, projects, plans, consultations, tasks, reputation | open | MCP-010, MCP-011, AGT-010 |
+| MCP-021 | MCP draft tools: catalogue, procurement, sales, knowledge, learning, events, publications, matching, messages, notifications, files | open | MCP-011, MCP-012 |
+| MCP-030 | MCP commit tools: profile, companies, projects, plans, consultations, tasks, execution, reputation | open | MCP-005, MCP-020 |
+| MCP-031 | MCP commit tools: catalogue, procurement, sales, orders | open | MCP-005, MCP-021, AGT-008 |
+| MCP-032 | MCP commit tools: knowledge, learning, events, publications, matching, messages | open | MCP-005, MCP-021 |
+| MCP-040 | MCP resources, resource templates, subscriptions and prompts | open | MCP-010, MCP-011, MCP-012 |
+| MCP-050 | Public read-only MCP surface | open | MCP-012 |
+| MCP-060 | Admin MCP surface for hub staff | open | MCP-005, ADM-001, HUB-001, AGT-015 |
+| MCP-070 | Participant screens: consent, Settings → Connections and the confirmation page | open | MCP-005, AGT-018 |
+| MCP-071 | Console: External agents policy for MCP (HC-82) | open | MCP-002, HUBC-009 |
+| MCP-080 | MCP conformance, negative authorization, concurrency and red-team suites with a fake MCP client | open | MCP-030, MCP-031, MCP-032, MCP-040, MCP-050, MCP-060, MCP-070, EVAL-001 |
+| MCP-090 | MCP client guides, runnable examples and connector listing material | open | MCP-080, MCP-071 |
+| AGT-016 | MCP server end-to-end acceptance (umbrella) | open | MCP-090 |
 | AGT-017 | A2A gateway mapped to agent envelopes | open | AGT-016, FED-001 |
 | AGT-018 | The single assistant surface on the live runtime: page, overlay, abilities, settings and connections | open | AGT-022, WEB-004 |
 | AGT-019 | Agent safety evaluation across modules, connections and extensions | open | AGT-007, AGT-008, AGT-010, AGT-017, AGT-023 |

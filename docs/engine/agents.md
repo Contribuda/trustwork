@@ -12,7 +12,7 @@ The [agent catalogue](agent-catalog.md) (Proposed) details what the agent does f
 - It lives on a full page and in an icon-only launcher in the bottom-right corner that opens a floating overlay. The overlay never shrinks or reflows the page; the full page and the overlay share one conversation and one state.
 - Internally the agent may use specialised workers (research, drafting, comparison, negotiation). Those are implementation details and stay invisible.
 - What the agent can do is packaged as **modules** ([catalogue](agent-catalog.md#the-module-system)). Modules are abilities of the one agent, never separate agents; the person sees them as jobs the agent offers and the mandates those jobs need.
-- A participant may connect their own external agent (for example Claude, ChatGPT or a custom agent). A **connection** is another hand of the same agent, acting under the same mandates, labels and kill switches; it can propose and act only inside mandates confirmed on the first-party surface, and never approve ([Connect your own agent](agent-catalog.md#connect-your-own-agent-mcp-and-a2a)).
+- A participant may connect their own external agent (for example Claude, ChatGPT or a custom agent). A **connection** is another hand of the same agent, acting under the same mandates, labels and kill switches; it can propose and act only inside mandates confirmed on the first-party surface, and never approve ([Connect your own agent](agent-catalog.md#connect-your-own-agent-mcp-and-a2a); the full design is [The MCP server](mcp-server.md)).
 
 ## What your agent can do for you
 

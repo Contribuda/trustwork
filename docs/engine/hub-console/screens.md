@@ -521,8 +521,8 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 
 ### HC-82 External agents — `/agents/external`
 - **Purpose**: MCP and A2A access policy.
-- **Data**: protocols on/off, default and maximum rate limits, modules available to external clients, registered client counts by protocol.
-- **Actions**: edit policy, engage external API kill switch.
+- **Data**: protocols on/off, default and maximum rate limits, modules available to external clients, registered client counts by protocol; for MCP the `McpHubPolicySchema` fields ([The MCP server](../mcp-server.md#per-hub-configuration-and-the-console)): endpoints, disabled tools, client trust and listed clients, dynamic registration, anonymous cited answers, token lifetimes, limits.
+- **Actions**: edit policy, engage external API kill switch; turning the admin MCP surface on needs a second person (MCP-071).
 - **States**: no list of individual clients outside a case grant.
 - **Locale**: `admin.agents.external.*`
 

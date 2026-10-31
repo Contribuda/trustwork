@@ -37,6 +37,7 @@ Add `?persona=reader`, `?persona=mixed` or `?persona=owner` to an address to see
 | [Event organizers](event-organizer.md) | Host events, registration, tickets, check-in and partner meetings |
 | [Authors and editors](author-editor.md) | Write, publish, correct, and run an editorial desk |
 | [Hub operators](hub-operator.md) | Run Trustwork for your country or city |
+| [Connect Trustwork to your AI chat](connect-your-ai-chat.md) | Everyone: use Trustwork from Claude, ChatGPT or another AI chat |
 
 ## Promises that hold in every guide
 
