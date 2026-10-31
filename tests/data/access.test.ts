@@ -76,7 +76,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       'files_hidden', 'files_register_upload', 'files_complete_upload', 'files_request_deletion', 'files_copy', 'files_move', // FILE-001 (API role)
       'files_scan_target', 'files_record_scan', 'files_deletion_target', 'files_request_erasure', 'files_finish_deletion', 'files_apply_tombstone', 'files_expired_uploads', 'files_discard_upload', // FILE-001 (worker role)
       'agreement_side', 'order_side', 'quote_side', 'transactions_quote_for_share', 'transactions_rfq_for_share', // COM-002
-      'profiles_company_people', 'profiles_consented_mentions', 'profiles_public_profile', // PPL-001
+      'profiles_company_people', 'profiles_consented_mentions', 'profiles_public_profile', 'profiles_public_consent', // PPL-001
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files

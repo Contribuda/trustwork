@@ -5,7 +5,7 @@ import { createPool, withMaintenance, withPrincipal, type DataPool, type Princip
 import { RESERVED_HANDLES } from '../../packages/contracts/src/directory.js';
 import { directory, type DirectoryPage, type DirectoryPosition } from '../../packages/data/src/repositories/directory.js';
 import { provisionTestDatabase, SKIP_REASON, sqlState } from '../data/helpers/postgres.js';
-import { principalFor, seedFixtures, type Seed } from '../data/helpers/seed.js';
+import { consentPublicProfiles, principalFor, seedFixtures, type Seed } from '../data/helpers/seed.js';
 
 const db = await provisionTestDatabase('directory_db');
 
@@ -30,6 +30,7 @@ test('directory persistence: handle permanence, definer authority, RLS visibilit
   };
   const newPeople = async (n: number, visibility: 'private' | 'public' = 'private'): Promise<string[]> => withMaintenance(db.admin, async (trx) => {
     const rows = await trx.insertInto('person').values(Array.from({ length: n }, (_, i) => ({ display_name: `Synthetic Person ${i}`, profile_visibility: visibility }))).returning('id').execute();
+    if (visibility === 'public') await consentPublicProfiles(trx, rows.map((r) => r.id));
     return rows.map((r) => r.id);
   });
 

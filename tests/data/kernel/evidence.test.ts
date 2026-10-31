@@ -5,7 +5,7 @@ import pg from 'pg';
 import { withMaintenance, withPrincipal, type Principal } from '@trustwork/data';
 import { evidenceArtifacts, type NewEvidenceInput } from '../../../packages/data/src/repositories/kernel.js';
 import { provisionTestDatabase, SKIP_REASON, sqlState } from '../helpers/postgres.js';
-import { principalFor, seedFixtures, type Seed } from '../helpers/seed.js';
+import { consentPublicProfiles, principalFor, seedFixtures, type Seed } from '../helpers/seed.js';
 
 /**
  * Evidence artifacts (DATA-003): access needs the authorized parent AND the artifact's own classification; content
@@ -114,7 +114,10 @@ test('evidence artifacts under the restricted runtime role', { skip: db ? false 
     const petrProfile = await upload(petr, { parent: { kind: 'person', id: petr.personId }, classification: 'public' });
     await markClean(petrProfile.id);
     assert.equal(await visible(seed.people.carl, petrProfile.id), false, 'public evidence on a private profile follows the profile');
-    await withMaintenance(db.admin, (trx) => trx.updateTable('person').set({ profile_visibility: 'public' }).where('id', '=', petr.personId).execute());
+    await withMaintenance(db.admin, async (trx) => {
+      await trx.updateTable('person').set({ profile_visibility: 'public' }).where('id', '=', petr.personId).execute();
+      await consentPublicProfiles(trx, [petr.personId]);
+    });
     try {
       assert.equal(await visible(seed.people.carl, petrProfile.id), true);
     } finally {

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
 import { expectError, SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
+import { consentPublicProfiles } from '../data/helpers/seed.js';
 
 const h = await startHarness('directory_api');
 
@@ -263,7 +264,11 @@ test('directory API: company creation, handles with redirects, keyset directorie
   });
 
   await t.test('BE-002: a public person without a display name is listed with displayName null and nothing private', async () => {
-    const id = await withMaintenance(admin, async (trx) => (await trx.insertInto('person').values({ display_name: null, profile_visibility: 'public' }).returning('id').executeTakeFirstOrThrow()).id);
+    const id = await withMaintenance(admin, async (trx) => {
+      const row = await trx.insertInto('person').values({ display_name: null, profile_visibility: 'public' }).returning('id').executeTakeFirstOrThrow();
+      await consentPublicProfiles(trx, [row.id]);
+      return row.id;
+    });
     const people = await walk<{ id: string; displayName: string | null }>(anonymous, '/v1/people', 100);
     keysOf(people, PERSON_KEYS);
     const nameless = people.find((p) => p.id === id);

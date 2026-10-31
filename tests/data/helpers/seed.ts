@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { sql } from 'kysely';
-import { withMaintenance, type DataPool, type Principal } from '@trustwork/data';
+import { withMaintenance, type DataPool, type Principal, type Transaction } from '@trustwork/data';
 
 /**
  * Seeds the synthetic contract fixtures (packages/contracts/fixtures) into a migrated database through the
@@ -11,6 +11,17 @@ import { withMaintenance, type DataPool, type Principal } from '@trustwork/data'
 interface FixtureFile { records: Record<string, Record<string, unknown>[]> }
 function fixture(name: string): FixtureFile {
   return JSON.parse(readFileSync(resolve(`packages/contracts/fixtures/${name}.json`), 'utf8')) as FixtureFile;
+}
+
+/**
+ * A public profile needs the person's live profile_public consent (PPL-001; the directory follow-up applies it to every
+ * public person listing and lookup). Synthetic fixtures made public through maintenance record that consent here.
+ */
+export async function consentPublicProfiles(trx: Transaction, personIds: readonly string[]): Promise<void> {
+  if (personIds.length === 0) return;
+  await sql`INSERT INTO trustwork.consent_record (subject_person_id, purpose, notice_version, evidence)
+    SELECT id, 'profile_public', 'profile_public.v1', jsonb_build_object('method', 'first_party_form', 'requestId', 'fixture-seed')
+    FROM unnest(${[...personIds]}::uuid[]) AS id`.execute(trx);
 }
 
 export interface Seed {
@@ -33,6 +44,7 @@ export async function seedFixtures(admin: DataPool): Promise<Seed> {
     const person = async (fixtureId: string, displayName: string, visibility: 'private' | 'public' = 'private') => {
       const row = await trx.insertInto('person').values({ display_name: displayName, profile_visibility: visibility }).returning('id').executeTakeFirstOrThrow();
       ids[fixtureId] = row.id;
+      if (visibility === 'public') await consentPublicProfiles(trx, [row.id]);
       return row.id;
     };
     const company = async (fixtureId: string, displayName: string, claim: 'unclaimed' | 'claimed' | 'verified', legal: unknown[] = []) => {
