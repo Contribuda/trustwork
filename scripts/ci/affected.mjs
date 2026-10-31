@@ -28,7 +28,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (event === 'pull_request') {
     try {
       // Two-dot diff needs only the two trees, so a shallow fetch is enough; a behind branch can only add files (run more).
-      execFileSync('git', ['fetch', '--no-tags', '--quiet', '--depth=1', 'origin', base, head]);
+      // Only an already shallow checkout (CI) fetches with --depth: on a full local clone --depth would make the
+      // shared repository shallow for every worktree.
+      const shallow = execFileSync('git', ['rev-parse', '--is-shallow-repository'], { encoding: 'utf8' }).trim() === 'true';
+      execFileSync('git', ['fetch', '--no-tags', '--quiet', ...(shallow ? ['--depth=1'] : []), 'origin', base, head]);
       files = execFileSync('git', ['diff', '--name-only', base, head], { encoding: 'utf8' }).split('\n').filter(Boolean);
     } catch (error) {
       console.error(`affected: could not diff ${base}..${head}, running every suite (${error.message})`);
