@@ -4755,20 +4755,20 @@
       "id": "WEB-005",
       "title": "Cacheable, indexable and lighter public pages",
       "area": "frontend",
-      "status": "blocked",
+      "status": "open",
       "dependsOn": [
         "WEB-004",
         "INTL-004"
       ],
       "handbook": "docs/engine/architecture.md",
-      "goal": "Serve published content from caches with per-language URLs and route-level CSS. Blocked until the owner decides whether language (and country) appear in public URLs (ADR 012, owner question).",
+      "goal": "Serve published content from caches with per-language URLs and route-level CSS: English without a prefix, other languages with a language prefix and hreflang alternates, no country in public URLs (ADR 012 decision 27).",
       "read": [
         "docs/product/information-architecture.md",
         "docs/research/architecture-audit-2026-10.md",
         "docs/adr/012-integrator-decisions-2026-10-31.md"
       ],
       "steps": [
-        "Implement the owner's URL decision for language (and country) in public paths with hreflang alternates.",
+        "Implement ADR 012 decision 27: English unprefixed, other languages under /<lang>/ with hreflang alternates and canonical URLs; the language cookie redirects only from unprefixed entry pages; no country segment.",
         "Remove the global force-dynamic; render published content statically or with revalidation; keep personalized parts dynamic.",
         "Split the public stylesheet into route-level CSS modules.",
         "Add Web Vitals budgets for the main public templates on a mobile profile."
