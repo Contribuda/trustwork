@@ -1,0 +1,26 @@
+{
+  "name": "@trustwork/data",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./migrate": "./src/migrate/runner.ts"
+  },
+  "bin": {
+    "trustwork-migrate": "./bin/migrate.mjs"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "migrate": "node bin/migrate.mjs"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "embedded-postgres": "18.3.0-beta.17"
+  },
+  "dependencies": {
+    "kysely": "0.29.7",
+    "pg": "8.23.1"
+  }
+}

@@ -1,0 +1,40 @@
+# ADR 010 — Gathering point, hubs, representative agents and the worldwide mesh
+
+Date: 2026-10-30. Status: **owner decisions recorded by the integrator 2026-10-30** (owner messages of 2026-10-30, author Dmitry Parshkov, repository owner). The decisions below are product direction and requirements. Every detailed design that implements them (the [engine handbook](../engine/README.md), [ADR 011](011-federation-mesh.md)) is **proposed** until it is reviewed and accepted task by task.
+
+## Owner decisions (2026-10-30)
+
+1. **The engine is a gathering point for the construction industry.** People come to read topical news and articles, to attend and to host events, to find partners, to match clients with contractors, and to keep their own agents that represent them in the industry. The goal is an engine that anyone can set up for their country or their city, that attracts an audience and partners, and that raises the quality of communication and of construction itself.
+2. **Events are a public section.** Participants attend events and host their own. The public navigation already carries «События» between «Статьи» and «Компании» (`packages/ui/locales/ru.json` `publicNav`, checked by `scripts/validate-docs.mjs`); this decision records it and supersedes the "exact seven sections" wording of R15 and of the information architecture.
+3. **Partners and matching are first-class.** Finding partners and matching clients (needs) with contractors and suppliers (offers) is a core journey, not a side effect of procurement.
+4. **Representative agents.** Each participant keeps an autonomous agent that represents them in the industry and works under their direction: it looks for partners, presents their services, negotiates and pursues their goals. This extends R09–R11 without contradicting them: every person still has **one** assistant surface; the agent acts only within structured, revocable mandates; a company is represented by the agents of its authorized people under company-granted mandates; there is no multi-agent management UI. The owner later decided that a company also has a standing representative (decision 9 below).
+5. **Hubs and hub operators.** The engine runs as hubs. A hub serves one country, or a region or city inside it. A hub operator is whoever chooses to develop the product for that territory. The operator, complying with local law, configures everything the territory needs: information sources, counterparty verification against local registers, sanctions screening, legal documents, payments, electronic signatures, taxonomy, editorial team and the agent policy. The engine supplies the switches, adapters, audit and guard rails; the operator supplies the legal judgement and the local connections.
+6. **Country specifics are designed in.** Countries differ in company registers and identifiers, construction licensing, building codes and standards, public procurement, taxes and electronic invoicing, electronic signatures, payment rails, calendars, languages and scripts, privacy and content law. These differences live in country packs (sourced facts, reviewed in the repository) and in hub configuration (operator decisions, versioned in the database), never in hard-coded engine logic.
+7. **One worldwide mesh.** Every deployment of the engine can join one network. Someone who opens the engine for a country and someone who opens it separately for a city in that country complement each other: their public content, directories and events flow between them, their participants can deal with each other, and together the deployments form a mesh that covers the world. The architecture, protocol and trust rules for this are [ADR 011](011-federation-mesh.md).
+8. **Complete, friendly documentation and an open invitation.** The repository carries a detailed handbook of everything the engine does and is designed to do, and a README that explains to the community, warmly and clearly, what we build and why, and invites people to share and develop the platform and the engine.
+
+## Owner answers of 2026-10-30 (second message)
+
+9. **A company has a standing representative** (owner decision). Besides the agents of its people, a company may enable one **company representative** that keeps representing it when employees change. It always has a named **accountable person** among the company's current members with authority, acts only under company mandates, never exceeds the company's current grants, labels every action, and suspends automatically when no accountable person or no confirmed mandate remains. One per company, configured on the company page; still no multi-agent management UI. Design: [Your agent](../engine/agents.md#company-representation).
+10. **Default federation data licences** — delegated by the owner to the integrator; decided by the integrator on 2026-10-30 as recorded in [Federation](../engine/federation.md#data-licences). Hub operators may choose stricter licences for their node; they cannot loosen privacy rules.
+11. **Company claim and verification evidence** — delegated by the owner to the integrator; decided by the integrator on 2026-10-30 as the reference recipes in [Hub administration](../engine/hub-administration.md#reference-recipes-for-the-launch-countries). Country register and signature providers named there are candidates until confirmed against official sources in the country packs.
+12. **Publication of the open-source engine** (O19). The engine is published as `Contribuddha/trustwork` with one clean exported commit produced by `scripts/export-open-source.mjs`. Security reports go through the channels in [SECURITY.md](../../SECURITY.md). The licence and the sanctions notice are as in `LICENSE` and `NOTICE`.
+13. **Attribution** (owner, 2026-10-30). The README and other appropriate places state that the engine is created and maintained by Contribuddha ([contribuddha.com](https://contribuddha.com)), to attract like-minded contributors and clients. Attribution is not a copyright claim: the copyright line stays as in `NOTICE`.
+
+## Reconciliation with earlier constraints
+
+| Earlier constraint | How it is preserved |
+|---|---|
+| R09 one personal assistant; no agent management UI (operating agreement) | "Your agent" is the same single assistant. Goals, mandates and runs are objects on the assistant page and on the objects they serve; there is no list of agents to configure. A company has at most one standing representative, configured on the company page with an accountable person (decision 9). |
+| R10 delegation only within explicit authority; R29 durable runs | Agent work, including agent-to-agent negotiation, moves only through structured platform objects (RFQ and quote versions, agreements, introductions) with digest-bound approvals, budgets and reconciliation. |
+| Untrusted content never issues commands | Messages from another participant's agent are untrusted content, exactly like e-mail or files. |
+| R14 payment cannot buy ranking | Matching, partner search, event listings and federation never accept payment for position. Sponsorship is labelled and does not change ranking. |
+| R15 sourced ≠ claimed ≠ verified | Hub verification adds evidence types; federation carries the badge together with the node and method that granted it. |
+| R28 projections | Only the `public` projection federates by default; `shared_party` data travels only between the nodes of the parties to a deal. |
+| ADR-009 sanctions | Hubs and mesh nodes in restricted places cannot exist or federate; screening stays mandatory. |
+
+## Consequences
+
+- The specification gains requirements R32–R39 ([specification](../product/specification.md)); the information architecture lists eight public sections plus search.
+- The [engine handbook](../engine/README.md) documents implemented, demo, designed and proposed functionality with an honest status for each.
+- New work packages are added to the task graph (events, learning, matching, agents, hubs, verification, country pack v2, federation).

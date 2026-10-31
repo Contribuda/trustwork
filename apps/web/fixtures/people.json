@@ -1,0 +1,1551 @@
+{
+  "synthetic": true,
+  "description": "Synthetic people for the demo. Names, roles and employers are invented; nobody here is a real person or customer.",
+  "people": [
+    {
+      "slug": "anna-primerova",
+      "person": {
+        "id": "person-anna",
+        "displayName": "Анна Примерова",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Руководитель проектов по фасадным системам",
+          "expertise": [
+            "вентилируемые фасады",
+            "закупки материалов"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "anna@example.invalid",
+            "verifiedAt": "2026-09-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": true,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 3,
+        "createdAt": "2026-09-01T09:00:00Z"
+      },
+      "roleLine": "Руководитель проектов, «Фасад-Пример»",
+      "region": "UZ-TK",
+      "topics": [
+        "materials",
+        "projects"
+      ],
+      "showEmployer": true,
+      "portraitConsent": true,
+      "experience": "Восемь лет на объектах с навесными фасадами: от подбора подсистемы до приёмки. Описание составлено самим специалистом.",
+      "publicationIds": [
+        "pub-art-2",
+        "pub-art-27"
+      ],
+      "projectIds": [
+        "project-school"
+      ],
+      "portrait": null,
+      "field": "management",
+      "profile": {
+        "about": "Веду фасадные проекты от подбора подсистемы до приёмки: согласование узлов с архитектором, график поставок, поэтапная приёмка скрытых работ с актами. Последние три года — школы и общественные здания в Ташкенте и области.\n\nСчитаю, что фасад принимается на этапе кронштейнов, а не облицовки, и настаиваю на фотофиксации каждого слоя. Пишу об этом на платформе.",
+        "since": 2018,
+        "geography": [
+          "Ташкент и область",
+          "Чирчик"
+        ],
+        "career": [
+          {
+            "id": "car-anna-1",
+            "company": "Фасад-Пример",
+            "companyId": "company-fasad",
+            "role": "Руководитель проектов",
+            "from": 2022,
+            "to": null,
+            "summary": "Школы и общественные здания, навесные фасады до 12 000 м²."
+          },
+          {
+            "id": "car-anna-2",
+            "company": "Монтажное бюро (пример)",
+            "companyId": null,
+            "role": "Инженер ПТО, затем прораб",
+            "from": 2018,
+            "to": 2022,
+            "summary": "Исполнительная документация, затем участок монтажа."
+          }
+        ],
+        "education": [
+          {
+            "id": "edu-anna-1",
+            "school": "Строительный университет (пример)",
+            "degree": "Промышленное и гражданское строительство",
+            "year": 2018
+          }
+        ],
+        "certificates": [
+          {
+            "id": "cert-anna-1",
+            "name": "Повышение квалификации: навесные фасадные системы (пример)",
+            "issuer": "Учебный центр (пример)",
+            "validUntil": "2028-05-31",
+            "evidence": "confirmed",
+            "kind": "education",
+            "number": null
+          }
+        ],
+        "services": [],
+        "portfolio": [
+          {
+            "id": "pf-anna-1",
+            "title": "Школа на набережной: фасад и остекление",
+            "kind": "Руководство проектом",
+            "year": 2026,
+            "description": "Навесной фасад 9 800 м², остекление атриума, поэтапная приёмка.",
+            "cover": "facade-window-grid",
+            "projectId": "project-school"
+          },
+          {
+            "id": "pf-anna-2",
+            "title": "Поликлиника в Чирчике (пример)",
+            "kind": "Руководство проектом",
+            "year": 2024,
+            "description": "Керамогранит на подсистеме, 6 200 м², сдача в срок.",
+            "cover": "highrise-windows",
+            "projectId": null
+          }
+        ],
+        "contacts": {
+          "email": null,
+          "phone": null,
+          "telegram": null
+        },
+        "faq": [
+          {
+            "q": "Берёте ли частные заказы?",
+            "a": "Нет, работаю в штате компании. По вопросам фасадных проектов пишите через платформу — отвечу или передам коллегам."
+          },
+          {
+            "q": "Можно ли позвать на экспертизу проекта?",
+            "a": "Да, как консультацию по узлам и приёмке: напишите, что за объект и какой срок."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "consulting",
+            "note": "Узлы НВФ и приёмка скрытых работ",
+            "until": null
+          }
+        ],
+        "accreditation": {
+          "verifiedAt": "2026-10-12",
+          "scope": [
+            "Личность",
+            "Место работы",
+            "Удостоверение о повышении квалификации"
+          ]
+        },
+        "platformCertificates": [
+          {
+            "id": "srcert-0001",
+            "courseId": "course-acceptance",
+            "issuedAt": "2026-10-14",
+            "score": 96
+          }
+        ]
+      }
+    },
+    {
+      "slug": "petr-obraztsov",
+      "person": {
+        "id": "person-petr",
+        "displayName": "Пётр Образцов",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Частный заказчик: строю дом и делюсь опытом",
+          "expertise": [
+            "частное строительство"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "petr@example.invalid",
+            "verifiedAt": "2026-09-10T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": true,
+          "selling": false,
+          "industryParticipation": true
+        },
+        "revision": 2,
+        "createdAt": "2026-09-10T09:00:00Z"
+      },
+      "roleLine": "Частный заказчик",
+      "region": "UZ-SA",
+      "topics": [
+        "materials",
+        "people"
+      ],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "Веду личный проект загородного дома и закупаю материалы напрямую у поставщиков.",
+      "publicationIds": [
+        "pub-art-28"
+      ],
+      "projectIds": [],
+      "portrait": null,
+      "field": "client",
+      "profile": {
+        "about": "Частный заказчик: строю загородный дом и веду проект на платформе, чтобы видеть этапы и акты подрядчиков.",
+        "since": null,
+        "geography": [
+          "Самарканд и область"
+        ],
+        "career": [],
+        "education": [],
+        "certificates": [],
+        "services": [],
+        "portfolio": [],
+        "contacts": null,
+        "faq": [],
+        "signals": [
+          {
+            "kind": "lookingForPartners",
+            "note": "Ищу подрядчика на кровлю загородного дома",
+            "until": "2026-12-31"
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": []
+      }
+    },
+    {
+      "slug": "olga-demova",
+      "person": {
+        "id": "person-olga",
+        "displayName": "Ольга Дёмова",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Инженер-технолог, пишу о материалах",
+          "expertise": [
+            "минеральная изоляция",
+            "технологии производства"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "olga@example.invalid",
+            "verifiedAt": "2026-09-15T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": false,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-09-15T09:00:00Z"
+      },
+      "roleLine": "Инженер-технолог, независимый автор",
+      "region": "UZ-BU",
+      "topics": [
+        "materials",
+        "technologies"
+      ],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "Пишу о производстве утеплителей и о том, как читать протоколы испытаний.",
+      "publicationIds": [
+        "pub-post-olga-1",
+        "pub-post-olga-2",
+        "pub-art-29"
+      ],
+      "projectIds": [],
+      "portrait": null,
+      "field": "engineering",
+      "profile": {
+        "about": "Инженер-технолог по теплоизоляции и фасадным материалам. Пятнадцать лет на производстве минеральной ваты, последние четыре года — независимый автор и консультант: читаю протоколы испытаний, помогаю выбирать материал под задачу и объясняю, что стоит за цифрами в паспортах.\n\nНе продаю материалы и не представляю производителей — это позволяет говорить прямо.",
+        "since": 2007,
+        "geography": [
+          "Бухарская область",
+          "онлайн"
+        ],
+        "career": [
+          {
+            "id": "car-olga-1",
+            "company": "Независимый специалист",
+            "companyId": null,
+            "role": "Технолог-консультант, автор",
+            "from": 2022,
+            "to": null,
+            "summary": "Консультации по выбору утеплителя, разбор протоколов, статьи."
+          },
+          {
+            "id": "car-olga-2",
+            "company": "Завод минеральной ваты (пример)",
+            "companyId": null,
+            "role": "Главный технолог",
+            "from": 2012,
+            "to": 2022,
+            "summary": "Линия минеральной ваты, контроль качества, паспорта изделий."
+          },
+          {
+            "id": "car-olga-3",
+            "company": "Завод минеральной ваты (пример)",
+            "companyId": null,
+            "role": "Инженер-технолог",
+            "from": 2007,
+            "to": 2012,
+            "summary": null
+          }
+        ],
+        "education": [
+          {
+            "id": "edu-olga-1",
+            "school": "Технологический университет (пример)",
+            "degree": "Химическая технология неорганических веществ",
+            "year": 2007
+          }
+        ],
+        "certificates": [
+          {
+            "id": "cert-olga-1",
+            "name": "Эксперт по теплоизоляционным материалам (пример)",
+            "issuer": "Отраслевая ассоциация (пример)",
+            "validUntil": null,
+            "evidence": "confirmed",
+            "kind": "membership",
+            "number": null
+          }
+        ],
+        "services": [
+          {
+            "id": "srv-olga-1",
+            "name": "Разбор протоколов испытаний",
+            "description": "Читаю протоколы и паспорта, объясняю, что подтверждено, а что нет, и какие строки сравнивать между поставщиками.",
+            "format": "remote",
+            "unit": "за документ"
+          },
+          {
+            "id": "srv-olga-2",
+            "name": "Подбор утеплителя под задачу",
+            "description": "Сравнение материалов по реальным условиям: влажность, нагрузка, монтаж. Письменное заключение.",
+            "format": "remote",
+            "unit": "за объект"
+          },
+          {
+            "id": "srv-olga-3",
+            "name": "Выезд на производство или объект",
+            "description": "Аудит входного контроля, хранения и монтажа теплоизоляции.",
+            "format": "onsite",
+            "unit": "за день"
+          }
+        ],
+        "portfolio": [
+          {
+            "id": "pf-olga-1",
+            "title": "Методика входного контроля утеплителя для подрядчика (пример)",
+            "kind": "Консультация",
+            "year": 2025,
+            "description": "Чек-лист и обучение прорабов, снижение брака при монтаже.",
+            "cover": "site-wall-measuring",
+            "projectId": null
+          }
+        ],
+        "contacts": {
+          "email": "olga@example.invalid",
+          "phone": null,
+          "telegram": "@olga_example"
+        },
+        "faq": [
+          {
+            "q": "Сколько стоит консультация?",
+            "a": "Зависит от объёма документов и срока. Отправьте запрос с описанием задачи — отвечу с оценкой в течение дня."
+          },
+          {
+            "q": "Работаете ли с производителями?",
+            "a": "Только как независимый эксперт: не продаю и не продвигаю конкретные марки."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "openToProjects",
+            "note": "Консультации и выезды, 2–3 объекта в месяц",
+            "until": null
+          },
+          {
+            "kind": "consulting",
+            "note": null,
+            "until": null
+          }
+        ],
+        "accreditation": {
+          "verifiedAt": "2026-10-10",
+          "scope": [
+            "Личность",
+            "Публикации на платформе"
+          ]
+        },
+        "platformCertificates": [
+          {
+            "id": "srcert-0004",
+            "courseId": "course-protocols",
+            "issuedAt": "2026-10-11",
+            "score": 100
+          }
+        ]
+      }
+    },
+    {
+      "slug": "ivan-mostov",
+      "person": {
+        "id": "person-ivan",
+        "displayName": "Иван Мостов",
+        "profileVisibility": "private",
+        "publicProfile": {
+          "headline": null,
+          "expertise": []
+        },
+        "emailBindings": [
+          {
+            "email": "ivan@example.invalid",
+            "verifiedAt": "2026-09-05T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": false
+        },
+        "revision": 1,
+        "createdAt": "2026-09-05T09:00:00Z"
+      },
+      "roleLine": "Менеджер по продажам",
+      "region": "UZ-TK",
+      "topics": [],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "",
+      "publicationIds": [],
+      "projectIds": [],
+      "portrait": null,
+      "field": "sales",
+      "profile": {
+        "about": "Менеджер по продажам в производителе бетона и ЖБИ. Помогаю подрядчикам подобрать марку и график поставки.",
+        "since": 2016,
+        "geography": [
+          "Ташкент и область"
+        ],
+        "career": [],
+        "education": [],
+        "certificates": [],
+        "services": [],
+        "portfolio": [],
+        "contacts": null,
+        "faq": [],
+        "signals": [],
+        "accreditation": null,
+        "platformCertificates": []
+      }
+    },
+    {
+      "slug": "igor-svetlov",
+      "person": {
+        "id": "person-igor",
+        "displayName": "Игорь Светлов",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Снабжение монтажной компании: сроки, поставщики, договоры",
+          "expertise": [
+            "закупки",
+            "логистика"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "igor@example.invalid",
+            "verifiedAt": "2026-09-15T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": true,
+          "selling": false,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-09-15T09:00:00Z"
+      },
+      "roleLine": "Руководитель снабжения",
+      "region": "UZ-TK",
+      "topics": [
+        "markets",
+        "materials"
+      ],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "Отвечаю за снабжение фасадных объектов: от запроса до разгрузки на площадке.",
+      "publicationIds": [
+        "pub-art-21"
+      ],
+      "projectIds": [],
+      "portrait": null,
+      "field": "procurement",
+      "profile": {
+        "about": "Руководитель снабжения в строительной компании. Веду закупки материалов для фасадов и кровли, договоры с производителями, логистику на объекты.",
+        "since": 2012,
+        "geography": [
+          "Ташкент и область"
+        ],
+        "career": [
+          {
+            "id": "car-igor-1",
+            "company": "Строительная компания (пример)",
+            "companyId": null,
+            "role": "Руководитель снабжения",
+            "from": 2019,
+            "to": null,
+            "summary": null
+          },
+          {
+            "id": "car-igor-2",
+            "company": "Дистрибьютор материалов (пример)",
+            "companyId": null,
+            "role": "Менеджер по закупкам",
+            "from": 2012,
+            "to": 2019,
+            "summary": null
+          }
+        ],
+        "education": [],
+        "certificates": [],
+        "services": [],
+        "portfolio": [],
+        "contacts": null,
+        "faq": [],
+        "signals": [
+          {
+            "kind": "lookingForPartners",
+            "note": "Производители утеплителя и крепежа для прямых поставок",
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": [
+          {
+            "id": "srcert-0008",
+            "courseId": "course-tender",
+            "issuedAt": "2026-10-09",
+            "score": 85
+          }
+        ]
+      }
+    },
+    {
+      "slug": "marina-krylova",
+      "person": {
+        "id": "person-marina",
+        "displayName": "Марина Крылова",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Логистика сборных конструкций и крупногабаритных поставок",
+          "expertise": [
+            "логистика",
+            "сборные конструкции"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "marina@example.invalid",
+            "verifiedAt": "2026-09-15T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-09-15T09:00:00Z"
+      },
+      "roleLine": "Логист, независимый специалист",
+      "region": "UZ-SA",
+      "topics": [
+        "markets",
+        "projects"
+      ],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "Планирую поставки сборных конструкций на объекты Ферганской долины.",
+      "publicationIds": [
+        "pub-art-31"
+      ],
+      "projectIds": [],
+      "portrait": null,
+      "field": "logistics",
+      "profile": {
+        "about": "Логист, независимый специалист. Организую доставку сборных конструкций и негабарита на объекты, считаю плечо и окна разгрузки.",
+        "since": 2015,
+        "geography": [
+          "Самарканд и область",
+          "Ферганская долина"
+        ],
+        "career": [
+          {
+            "id": "car-mar-1",
+            "company": "Независимый специалист",
+            "companyId": null,
+            "role": "Логист",
+            "from": 2021,
+            "to": null,
+            "summary": null
+          },
+          {
+            "id": "car-mar-2",
+            "company": "Транспортная компания (пример)",
+            "companyId": null,
+            "role": "Диспетчер, затем руководитель отдела",
+            "from": 2015,
+            "to": 2021,
+            "summary": null
+          }
+        ],
+        "education": [],
+        "certificates": [],
+        "services": [
+          {
+            "id": "srv-mar-1",
+            "name": "Схема доставки на объект",
+            "description": "Маршруты, окна разгрузки, выбор техники под негабарит.",
+            "format": "remote",
+            "unit": "за объект"
+          }
+        ],
+        "portfolio": [],
+        "contacts": {
+          "email": null,
+          "phone": null,
+          "telegram": "@marina_example"
+        },
+        "faq": [],
+        "signals": [
+          {
+            "kind": "openToProjects",
+            "note": null,
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": []
+      }
+    },
+    {
+      "slug": "denis-orlov",
+      "person": {
+        "id": "person-denis",
+        "displayName": "Денис Орлов",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Информационное моделирование и цифровые паспорта изделий",
+          "expertise": [
+            "информационное моделирование",
+            "данные"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "denis@example.invalid",
+            "verifiedAt": "2026-09-15T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": false,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-09-15T09:00:00Z"
+      },
+      "roleLine": "Инженер по информационному моделированию",
+      "region": "UZ-TK",
+      "topics": [
+        "technologies"
+      ],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "Внедряю обмен моделями между проектировщиком, подрядчиком и заказчиком.",
+      "publicationIds": [
+        "pub-art-32"
+      ],
+      "projectIds": [],
+      "portrait": null,
+      "field": "engineering",
+      "profile": {
+        "about": "Инженер по информационному моделированию. Собираю BIM-модели фасадов и инженерных систем, связываю их с графиком и ведомостями материалов. Пишу о цифровом паспорте изделия.",
+        "since": 2017,
+        "geography": [
+          "Ташкент",
+          "онлайн"
+        ],
+        "career": [
+          {
+            "id": "car-den-1",
+            "company": "Проектное бюро (пример)",
+            "companyId": null,
+            "role": "BIM-координатор",
+            "from": 2020,
+            "to": null,
+            "summary": null
+          },
+          {
+            "id": "car-den-2",
+            "company": "Проектное бюро (пример)",
+            "companyId": null,
+            "role": "Инженер-проектировщик",
+            "from": 2017,
+            "to": 2020,
+            "summary": null
+          }
+        ],
+        "education": [
+          {
+            "id": "edu-den-1",
+            "school": "Архитектурно-строительный университет (пример)",
+            "degree": "Информационные системы в строительстве",
+            "year": 2017
+          }
+        ],
+        "certificates": [],
+        "services": [
+          {
+            "id": "srv-den-1",
+            "name": "BIM-модель фасада",
+            "description": "Модель подсистемы и облицовки с ведомостью материалов и привязкой к этапам.",
+            "format": "remote",
+            "unit": "за объект"
+          },
+          {
+            "id": "srv-den-2",
+            "name": "Цифровой паспорт изделия",
+            "description": "Структура данных и шаблоны для производителя: что должно уйти проектировщику и подрядчику.",
+            "format": "both",
+            "unit": "за проект"
+          }
+        ],
+        "portfolio": [
+          {
+            "id": "pf-den-1",
+            "title": "Модель фасада школы с привязкой к графику (пример)",
+            "kind": "BIM",
+            "year": 2026,
+            "description": "Подсистема, облицовка, ведомости по этажам.",
+            "cover": "technical-drawing",
+            "projectId": "project-school"
+          }
+        ],
+        "contacts": {
+          "email": "denis@example.invalid",
+          "phone": null,
+          "telegram": null
+        },
+        "faq": [],
+        "signals": [
+          {
+            "kind": "openToProjects",
+            "note": "BIM-модели фасадов, удалённо",
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": [
+          {
+            "id": "srcert-0006",
+            "courseId": "course-passport",
+            "issuedAt": "2026-10-16",
+            "score": 94
+          }
+        ]
+      }
+    },
+    {
+      "slug": "sergey-mikhaylov",
+      "person": {
+        "id": "person-sergey",
+        "displayName": "Сергей Михайлов",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Монтаж фасадов: графики, захватки, приёмка",
+          "expertise": [
+            "монтаж фасадов"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "sergey@example.invalid",
+            "verifiedAt": "2026-09-15T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-09-15T09:00:00Z"
+      },
+      "roleLine": "Руководитель участка",
+      "region": "UZ-FA",
+      "topics": [
+        "projects",
+        "materials"
+      ],
+      "showEmployer": false,
+      "portraitConsent": true,
+      "experience": "Веду монтаж навесных фасадов на промышленных и общественных объектах.",
+      "publicationIds": [
+        "pub-art-30"
+      ],
+      "projectIds": [],
+      "portrait": null,
+      "field": "construction",
+      "profile": {
+        "about": "Руководитель участка на фасадных и кровельных работах. Начинал монтажником, десять лет на объектах Ферганской долины. Отвечаю за бригады, график и качество скрытых работ.",
+        "since": 2014,
+        "geography": [
+          "Ферганская долина"
+        ],
+        "career": [
+          {
+            "id": "car-ser-1",
+            "company": "Подрядная организация (пример)",
+            "companyId": null,
+            "role": "Руководитель участка",
+            "from": 2021,
+            "to": null,
+            "summary": null
+          },
+          {
+            "id": "car-ser-2",
+            "company": "Подрядная организация (пример)",
+            "companyId": null,
+            "role": "Бригадир монтажников",
+            "from": 2016,
+            "to": 2021,
+            "summary": null
+          },
+          {
+            "id": "car-ser-3",
+            "company": "Подрядная организация (пример)",
+            "companyId": null,
+            "role": "Монтажник фасадных систем",
+            "from": 2014,
+            "to": 2016,
+            "summary": null
+          }
+        ],
+        "education": [
+          {
+            "id": "edu-ser-1",
+            "school": "Строительный колледж (пример)",
+            "degree": "Строительство и эксплуатация зданий",
+            "year": 2013
+          }
+        ],
+        "certificates": [
+          {
+            "id": "cert-ser-1",
+            "name": "Допуск к работам на высоте, 3 группа (пример)",
+            "issuer": "Учебный центр (пример)",
+            "validUntil": "2027-09-30",
+            "evidence": "asserted",
+            "kind": "permit",
+            "number": "№ 0000-В3"
+          }
+        ],
+        "services": [],
+        "portfolio": [
+          {
+            "id": "pf-ser-1",
+            "title": "Торговый центр, фасад 14 000 м² (пример)",
+            "kind": "Руководство участком",
+            "year": 2025,
+            "description": "Керамогранит и композит, четыре бригады, сдача без замечаний.",
+            "cover": "scaffolding-poles",
+            "projectId": null
+          }
+        ],
+        "contacts": null,
+        "faq": [],
+        "signals": [
+          {
+            "kind": "hiring",
+            "note": "Монтажники НВФ в бригаду, Фергана",
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": []
+      }
+    },
+    {
+      "slug": "ruslan-kamenev",
+      "person": {
+        "id": "person-ruslan",
+        "displayName": "Руслан Каменев",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Бригадир монтажников навесных фасадов, бригада из шести человек",
+          "expertise": [
+            "монтаж НВФ",
+            "керамогранит",
+            "композитные панели"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "ruslan@example.invalid",
+            "verifiedAt": "2026-10-05T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-10-05T09:00:00Z"
+      },
+      "roleLine": "Бригадир монтажников фасадов, независимый",
+      "field": "construction",
+      "region": "UZ-TK",
+      "topics": [
+        "materials",
+        "technologies"
+      ],
+      "showEmployer": false,
+      "portraitConsent": false,
+      "portrait": null,
+      "experience": "Двенадцать лет на фасадах: от монтажника до бригадира. Работаем с подрядчиками по договору на объект.",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": {
+        "about": "Бригада из шести монтажников с собственным инструментом и допусками на высоту. Берём монтаж подсистемы и облицовки от 1 500 м², работаем по рабочей документации подрядчика, скрытые работы сдаём поэтапно с фото.\n\nНе занимаемся закупкой материалов: монтируем то, что поставляет подрядчик, и честно говорим, если материал не монтируется по проекту.",
+        "since": 2014,
+        "geography": [
+          "Ташкент и область",
+          "Ангрен"
+        ],
+        "career": [
+          {
+            "id": "car-rus-1",
+            "company": "Собственная бригада",
+            "companyId": null,
+            "role": "Бригадир",
+            "from": 2020,
+            "to": null,
+            "summary": "Монтаж НВФ для подрядчиков по договору на объект."
+          },
+          {
+            "id": "car-rus-2",
+            "company": "Фасадная компания (пример)",
+            "companyId": null,
+            "role": "Монтажник, затем звеньевой",
+            "from": 2014,
+            "to": 2020,
+            "summary": null
+          }
+        ],
+        "education": [],
+        "certificates": [
+          {
+            "id": "cert-rus-1",
+            "name": "Допуск к работам на высоте, 2 группа (пример)",
+            "issuer": "Учебный центр (пример)",
+            "validUntil": "2027-03-31",
+            "evidence": "asserted",
+            "kind": "permit",
+            "number": "№ 0000-В2"
+          },
+          {
+            "id": "cert-rus-2",
+            "name": "Удостоверение стропальщика (пример)",
+            "issuer": "Учебный центр (пример)",
+            "validUntil": "2026-12-31",
+            "evidence": "asserted",
+            "kind": "permit",
+            "number": null
+          }
+        ],
+        "services": [
+          {
+            "id": "srv-rus-1",
+            "name": "Монтаж подсистемы НВФ",
+            "description": "Кронштейны, утеплитель, ветрозащита, направляющие по проекту подрядчика.",
+            "format": "onsite",
+            "unit": "за м²"
+          },
+          {
+            "id": "srv-rus-2",
+            "name": "Монтаж облицовки",
+            "description": "Керамогранит на кляммерах или скрытом крепеже, композит, металлокассеты.",
+            "format": "onsite",
+            "unit": "за м²"
+          },
+          {
+            "id": "srv-rus-3",
+            "name": "Демонтаж старого фасада",
+            "description": "С сортировкой и вывозом силами заказчика.",
+            "format": "onsite",
+            "unit": "за м²"
+          }
+        ],
+        "portfolio": [
+          {
+            "id": "pf-rus-1",
+            "title": "Жилой дом, керамогранит 4 200 м² (пример)",
+            "kind": "Монтаж облицовки",
+            "year": 2026,
+            "description": "Скрытый крепёж, сдача по этажам, без замечаний надзора.",
+            "cover": "house-scaffolding",
+            "projectId": null
+          },
+          {
+            "id": "pf-rus-2",
+            "title": "Административное здание, композит 2 800 м² (пример)",
+            "kind": "Монтаж подсистемы и облицовки",
+            "year": 2025,
+            "description": "Сложные примыкания к витражам.",
+            "cover": "glass-steel-facade",
+            "projectId": null
+          },
+          {
+            "id": "pf-rus-3",
+            "title": "Склад, металлокассеты 6 000 м² (пример)",
+            "kind": "Монтаж облицовки",
+            "year": 2024,
+            "description": "Две бригады, 7 недель.",
+            "cover": "corrugated-building",
+            "projectId": null
+          }
+        ],
+        "contacts": {
+          "email": null,
+          "phone": "+7 (000) 000-00-21",
+          "telegram": null
+        },
+        "faq": [
+          {
+            "q": "Какой минимальный объём?",
+            "a": "От 1 500 м² облицовки. Меньше — если объект рядом с текущим."
+          },
+          {
+            "q": "Работаете с частниками?",
+            "a": "Да, если есть проект узлов и материал закуплен. Без проекта не берёмся."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "openToProjects",
+            "note": "Свободны с 15 декабря",
+            "until": null
+          },
+          {
+            "kind": "hiring",
+            "note": "Монтажник с опытом НВФ",
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": [
+          {
+            "id": "srcert-0005",
+            "courseId": "course-acceptance",
+            "issuedAt": "2026-10-24",
+            "score": 92
+          }
+        ]
+      }
+    },
+    {
+      "slug": "elena-sokolova",
+      "person": {
+        "id": "person-elena",
+        "displayName": "Елена Соколова",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Архитектор, проектирую общественные пространства и школы",
+          "expertise": [
+            "общественные здания",
+            "благоустройство",
+            "авторский надзор"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "elena@example.invalid",
+            "verifiedAt": "2026-10-06T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-10-06T09:00:00Z"
+      },
+      "roleLine": "Архитектор, независимый специалист",
+      "field": "design",
+      "region": "UZ-SA",
+      "topics": [
+        "projects",
+        "technologies"
+      ],
+      "showEmployer": false,
+      "portraitConsent": false,
+      "portrait": null,
+      "experience": "Пятнадцать лет в проектировании, последние пять — собственная практика.",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": {
+        "about": "Проектирую школы, детские сады и общественные пространства: от концепции до рабочей документации и авторского надзора. Работаю с небольшой командой инженеров по договору на проект.\n\nВерю, что хорошее здание начинается с вопросов к будущим пользователям, и трачу на это первые недели любого проекта.",
+        "since": 2011,
+        "geography": [
+          "Самарканд",
+          "Джизакская область",
+          "онлайн"
+        ],
+        "career": [
+          {
+            "id": "car-el-1",
+            "company": "Собственная практика",
+            "companyId": null,
+            "role": "Архитектор, руководитель",
+            "from": 2021,
+            "to": null,
+            "summary": null
+          },
+          {
+            "id": "car-el-2",
+            "company": "Архитектурное бюро (пример)",
+            "companyId": null,
+            "role": "Ведущий архитектор",
+            "from": 2014,
+            "to": 2021,
+            "summary": null
+          },
+          {
+            "id": "car-el-3",
+            "company": "Архитектурное бюро (пример)",
+            "companyId": null,
+            "role": "Архитектор",
+            "from": 2011,
+            "to": 2014,
+            "summary": null
+          }
+        ],
+        "education": [
+          {
+            "id": "edu-el-1",
+            "school": "Академия архитектуры (пример)",
+            "degree": "Архитектура",
+            "year": 2011
+          }
+        ],
+        "certificates": [
+          {
+            "id": "cert-el-1",
+            "name": "Членство в палате архитекторов (пример)",
+            "issuer": "Палата архитекторов (пример)",
+            "validUntil": null,
+            "evidence": "asserted",
+            "kind": "membership",
+            "number": null
+          }
+        ],
+        "services": [
+          {
+            "id": "srv-el-1",
+            "name": "Концепция и эскизный проект",
+            "description": "Объёмно-планировочные решения, визуализации, пояснительная записка.",
+            "format": "both",
+            "unit": "за проект"
+          },
+          {
+            "id": "srv-el-2",
+            "name": "Рабочая документация АР",
+            "description": "Совместно с инженерами по договору на проект.",
+            "format": "remote",
+            "unit": "за проект"
+          },
+          {
+            "id": "srv-el-3",
+            "name": "Авторский надзор",
+            "description": "Выезды на объект, журнал надзора, согласование замен.",
+            "format": "onsite",
+            "unit": "за выезд"
+          }
+        ],
+        "portfolio": [
+          {
+            "id": "pf-el-1",
+            "title": "Школа на 800 мест, концепция и АР (пример)",
+            "kind": "Проектирование",
+            "year": 2025,
+            "description": "Атриум, прозрачный первый этаж, фасад из керамики.",
+            "cover": "facade-window-grid",
+            "projectId": "project-school"
+          },
+          {
+            "id": "pf-el-2",
+            "title": "Павильон в парке (пример)",
+            "kind": "Проектирование",
+            "year": 2024,
+            "description": "Светопрозрачный павильон, 320 м².",
+            "cover": "glass-facade-panels",
+            "projectId": "project-park"
+          },
+          {
+            "id": "pf-el-3",
+            "title": "Детский сад на 220 мест (пример)",
+            "kind": "Проектирование и надзор",
+            "year": 2023,
+            "description": "Кирпич и дерево, внутренний двор.",
+            "cover": "brick-wall",
+            "projectId": null
+          }
+        ],
+        "contacts": {
+          "email": "elena@example.invalid",
+          "phone": null,
+          "telegram": null
+        },
+        "faq": [
+          {
+            "q": "Делаете ли частные дома?",
+            "a": "Редко и только если проект интересен: напишите, что за участок и задача."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "openToProjects",
+            "note": "Школы, детские сады, общественные пространства",
+            "until": null
+          },
+          {
+            "kind": "lookingForPartners",
+            "note": "Инженеры-конструкторы для совместных проектов",
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": [
+          {
+            "id": "srcert-0007",
+            "courseId": "course-tender",
+            "issuedAt": "2026-10-22",
+            "score": 90
+          }
+        ]
+      }
+    },
+    {
+      "slug": "timur-gazizov",
+      "person": {
+        "id": "person-timur",
+        "displayName": "Тимур Газизов",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Разнорабочий и подсобник на стройке, готов к вахте",
+          "expertise": [
+            "подсобные работы",
+            "демонтаж",
+            "разгрузка материалов"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "timur@example.invalid",
+            "verifiedAt": "2026-10-07T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-10-07T09:00:00Z"
+      },
+      "roleLine": "Разнорабочий, независимый",
+      "field": "construction",
+      "region": "UZ-BU",
+      "topics": [
+        "people"
+      ],
+      "showEmployer": false,
+      "portraitConsent": false,
+      "portrait": null,
+      "experience": "Четыре года на стройках Бухаре и области: подсобные работы, демонтаж, помощь монтажникам.",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": {
+        "about": "Работаю подсобником и разнорабочим: разгрузка материалов, подача на этаж, демонтаж, уборка площадки. Есть опыт помощи монтажникам фасадов и кровли. Без вредных привычек, готов к вахте и командировкам.",
+        "since": 2022,
+        "geography": [
+          "Бухарская область",
+          "готов к вахте"
+        ],
+        "career": [
+          {
+            "id": "car-tim-1",
+            "company": "Строительные бригады (пример)",
+            "companyId": null,
+            "role": "Разнорабочий",
+            "from": 2022,
+            "to": null,
+            "summary": "Объекты в Бухаре и области."
+          }
+        ],
+        "education": [],
+        "certificates": [
+          {
+            "id": "cert-tim-1",
+            "name": "Допуск к работам на высоте, 1 группа (пример)",
+            "issuer": "Учебный центр (пример)",
+            "validUntil": "2027-01-31",
+            "evidence": "asserted",
+            "kind": "permit",
+            "number": null
+          }
+        ],
+        "services": [
+          {
+            "id": "srv-tim-1",
+            "name": "Подсобные работы на объекте",
+            "description": "Разгрузка, подача материалов, уборка, помощь монтажникам.",
+            "format": "onsite",
+            "unit": "за смену"
+          },
+          {
+            "id": "srv-tim-2",
+            "name": "Демонтаж",
+            "description": "Демонтаж облицовки, перегородок, кровли с сортировкой мусора.",
+            "format": "onsite",
+            "unit": "за смену"
+          }
+        ],
+        "portfolio": [],
+        "contacts": {
+          "email": null,
+          "phone": "+7 (000) 000-00-22",
+          "telegram": null
+        },
+        "faq": [
+          {
+            "q": "Есть ли свой инструмент?",
+            "a": "Ручной инструмент и спецодежда свои, электроинструмент — объекта."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "openToWork",
+            "note": "Готов к вахте, выезд в любой регион",
+            "until": null
+          }
+        ],
+        "accreditation": null,
+        "platformCertificates": []
+      }
+    },
+    {
+      "slug": "natalya-berg",
+      "person": {
+        "id": "person-natalya",
+        "displayName": "Наталья Берг",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Инженер строительного контроля, независимый технадзор",
+          "expertise": [
+            "строительный контроль",
+            "приёмка скрытых работ",
+            "исполнительная документация"
+          ]
+        },
+        "emailBindings": [
+          {
+            "email": "natalya@example.invalid",
+            "verifiedAt": "2026-10-08T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": true,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-10-08T09:00:00Z"
+      },
+      "roleLine": "Инженер стройконтроля, независимый",
+      "field": "control",
+      "region": "UZ-TK",
+      "topics": [
+        "regulation",
+        "projects"
+      ],
+      "showEmployer": false,
+      "portraitConsent": false,
+      "portrait": null,
+      "experience": "Одиннадцать лет в техническом надзоре на объектах заказчика, последние три года — независимо.",
+      "publicationIds": [],
+      "projectIds": [],
+      "profile": {
+        "about": "Представляю интересы заказчика на стройке: проверяю скрытые работы, исполнительную документацию и соответствие проекту. Работаю по договору на объект или на этап, даю письменные заключения с фотофиксацией.",
+        "since": 2015,
+        "geography": [
+          "Ташкент и область"
+        ],
+        "career": [
+          {
+            "id": "car-nat-1",
+            "company": "Независимый специалист",
+            "companyId": null,
+            "role": "Инженер строительного контроля",
+            "from": 2023,
+            "to": null,
+            "summary": null
+          },
+          {
+            "id": "car-nat-2",
+            "company": "Технический заказчик (пример)",
+            "companyId": null,
+            "role": "Инженер технадзора",
+            "from": 2015,
+            "to": 2023,
+            "summary": "Школы, поликлиники, жилые комплексы."
+          }
+        ],
+        "education": [
+          {
+            "id": "edu-nat-1",
+            "school": "Строительный университет (пример)",
+            "degree": "Промышленное и гражданское строительство",
+            "year": 2014
+          }
+        ],
+        "certificates": [
+          {
+            "id": "cert-nat-1",
+            "name": "Включение в реестр специалистов по строительному контролю (пример)",
+            "issuer": "Минстрой (пример)",
+            "validUntil": null,
+            "evidence": "confirmed",
+            "kind": "membership",
+            "number": "С-00-000000"
+          }
+        ],
+        "services": [
+          {
+            "id": "srv-nat-1",
+            "name": "Приёмка скрытых работ",
+            "description": "Выезд, проверка, акт с фотофиксацией и замечаниями.",
+            "format": "onsite",
+            "unit": "за выезд"
+          },
+          {
+            "id": "srv-nat-2",
+            "name": "Проверка исполнительной документации",
+            "description": "Комплектность и соответствие проекту, перечень замечаний.",
+            "format": "remote",
+            "unit": "за комплект"
+          },
+          {
+            "id": "srv-nat-3",
+            "name": "Сопровождение объекта",
+            "description": "Регулярные выезды по графику этапов.",
+            "format": "onsite",
+            "unit": "за месяц"
+          }
+        ],
+        "portfolio": [
+          {
+            "id": "pf-nat-1",
+            "title": "Поликлиника, стройконтроль фасада и кровли (пример)",
+            "kind": "Технадзор",
+            "year": 2025,
+            "description": "Сорок выездов, двенадцать замечаний закрыто до сдачи.",
+            "cover": "aerial-site-foundations",
+            "projectId": null
+          }
+        ],
+        "contacts": {
+          "email": "natalya@example.invalid",
+          "phone": null,
+          "telegram": null
+        },
+        "faq": [
+          {
+            "q": "Чем вы отличаетесь от технадзора подрядчика?",
+            "a": "Я работаю на заказчика и независима от подрядчика: мои замечания не согласуются с тем, кого проверяю."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "openToProjects",
+            "note": "Два объекта в сопровождении, беру третий с ноября",
+            "until": null
+          },
+          {
+            "kind": "consulting",
+            "note": null,
+            "until": null
+          }
+        ],
+        "accreditation": {
+          "verifiedAt": "2026-10-19",
+          "scope": [
+            "Личность",
+            "Реестр специалистов по строительному контролю"
+          ]
+        },
+        "platformCertificates": [
+          {
+            "id": "srcert-0002",
+            "courseId": "course-acceptance",
+            "issuedAt": "2026-10-21",
+            "score": 100
+          },
+          {
+            "id": "srcert-0003",
+            "courseId": "course-tender",
+            "issuedAt": "2026-10-23",
+            "score": 88
+          }
+        ]
+      }
+    }
+  ]
+}

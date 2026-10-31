@@ -1,0 +1,51 @@
+Trustwork — construction-industry reputation engine (name decided by the owner on 2026-10-29, O18)
+Copyright (c) 2026 Dmitry Parshkov and the Trustwork contributors
+Created and maintained by Contribuddha (https://contribuddha.com).
+
+Licensed under the GNU Affero General Public License v3.0 only (LICENSE; owner decision 2026-10-29, O17).
+
+Sanctions and export-control notice (informational)
+---------------------------------------------------
+This notice adds no restriction to the licence. The software is licensed under
+AGPL-3.0-only, and section 7 of that licence does not allow further
+restrictions; nothing here is one.
+
+The project's owner is subject to United States sanctions and export-control
+law. For that reason Contribuddha (https://contribuddha.com) and the project
+maintainers do not provide services, support, accounts, hosting, collaborator
+rights or paid work to persons located in, or acting for, the following places,
+or to persons on a United States sanctions list:
+
+  RU     Russia
+  UA-43  Crimea
+  UA-40  Sevastopol
+  UA-14  Donetsk region of Ukraine
+  UA-09  Luhansk region of Ukraine
+  CU     Cuba
+  IR     Iran
+  KP     North Korea
+
+United States sanctions and export-control law may apply to you independently
+of this licence. Operators of deployments are responsible for their own
+compliance; a template for the sanctions section of a deployment's terms of
+service is in docs/legal/templates/terms-sanctions-and-export-controls.md.
+The software uses only standard, publicly available cryptography (Node.js and
+OpenSSL, Argon2 password hashing, PostgreSQL).
+
+Third-party components
+----------------------
+- Golos Text (Paratype), Noto Sans Georgian and Noto Sans Armenian (The Noto
+  Project Authors), PT Serif (ParaType): SIL Open Font License 1.1; texts and
+  provenance in packages/ui/fonts/.
+- Artworks: generated in-repo, see packages/ui/media/PROVENANCE.md.
+- Country dataset (packages/country-packs/countries/countries.json): derived from
+  https://github.com/mledoze/countries, Open Data Commons Open Database License
+  1.0 (packages/country-packs/countries/LICENSE-ODbL.txt).
+- npm dependencies: each under its own licence as recorded in package-lock.json.
+
+Marks: the name "Trustwork" and the three-squares mark are the owner's marks and
+ship with the engine as its identity; the licence grants no right to use them to
+imply endorsement or origin of a modified version. The name "Строй Репутация"
+and its localized forms (Build Reputation, Obroʻ qur, ააშენე რეპუტაცია,
+Կառուցիր համբավ, Nüfuz qur) belong to the reference deployment and are not part
+of the engine (docs/oss/BRAND.md).

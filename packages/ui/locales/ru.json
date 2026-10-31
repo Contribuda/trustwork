@@ -1,0 +1,440 @@
+{
+  "bootstrap": {
+    "title": "Trustwork",
+    "message": "Основа проекта подготовлена. Пользовательские функции ещё разрабатываются."
+  },
+  "publicNav": [
+    "Главная",
+    "Новости",
+    "Статьи",
+    "События",
+    "Компании",
+    "Люди",
+    "Проекты",
+    "Журнал"
+  ],
+  "workspaceNav": [
+    "Обзор",
+    "Моя страница",
+    "Компания",
+    "Проекты",
+    "Закупки",
+    "Продажи",
+    "Публикации",
+    "Помощник"
+  ],
+  "publicExit": "В отрасль",
+  "onboarding": [
+    "Закупаю",
+    "Поставляю",
+    "Участвую в жизни отрасли"
+  ],
+  "auth": {
+    "name": "Как вас зовут",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "login": {
+      "title": "Вход",
+      "subtitle": "Рады видеть вас снова"
+    },
+    "emailPlaceholder": "Введите почту",
+    "passwordPlaceholder": "Введите пароль",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "forgot": "Забыли пароль?",
+    "submitLogin": "Войти",
+    "submitting": "Входим…",
+    "or": "или",
+    "apple": "Войти через Apple",
+    "google": "Войти через Google",
+    "noAccount": "Ещё нет аккаунта?",
+    "register": "Зарегистрироваться",
+    "backHome": "На главную",
+    "sessionExpired": "Сессия завершена. Войдите снова.",
+    "error": {
+      "invalidCredentials": "Неверная почта или пароль",
+      "rateLimited": "Слишком много попыток. Попробуйте через {minutes, plural, one {# минуту} few {# минуты} many {# минут}}.",
+      "provider": "Не удалось войти через {provider}. Попробуйте ещё раз или используйте почту.",
+      "emailRequired": "Укажите электронную почту",
+      "emailFormat": "Проверьте адрес почты",
+      "passwordRequired": "Введите пароль"
+    },
+    "visual": {
+      "loginHeadline": "Хорошие решения. Надёжные партнёры.",
+      "loginSub": "Находите людей и компании, делитесь опытом и работайте над проектами."
+    }
+  },
+  "brand": {
+    "name": "Trustwork",
+    "wordmarkLine1": "trust",
+    "wordmarkLine2": "work",
+    "logoLabel": "Trustwork — на главную"
+  },
+  "common": {
+    "cancel": "Отмена",
+    "confirm": "Подтвердить",
+    "close": "Закрыть",
+    "save": "Сохранить",
+    "saved": "Сохранено",
+    "delete": "Удалить",
+    "edit": "Изменить",
+    "back": "Назад",
+    "next": "Далее",
+    "more": "Ещё",
+    "retry": "Повторить",
+    "loading": "Загрузка…",
+    "offline": "Нет соединения",
+    "corrected": "Исправлено",
+    "sectionLoadError": "Не удалось загрузить раздел",
+    "noAccessTitle": "Нет доступа",
+    "noAccessBody": "У вас нет прав для этого раздела. Если это ошибка, обратитесь к администратору компании.",
+    "externalLink": "внешняя ссылка",
+    "required": "обязательно",
+    "optional": "необязательное поле",
+    "selected": "Выбрано",
+    "remove": "Убрать",
+    "removeItem": "Убрать «{label}»",
+    "clear": "Очистить",
+    "noResults": "Ничего не найдено",
+    "filters": "Фильтры",
+    "pagination": "Страницы",
+    "page": "Страница {page}",
+    "previousPage": "Предыдущая страница",
+    "nextPage": "Следующая страница",
+    "currentPage": "Страница {page}, текущая",
+    "tableScrollHint": "Таблицу можно прокрутить по горизонтали",
+    "sortAscending": "сортировка по возрастанию",
+    "sortDescending": "сортировка по убыванию",
+    "sortNone": "без сортировки, нажмите для сортировки",
+    "openMenu": "Открыть меню",
+    "notifications": "Уведомления",
+    "breadcrumbs": "Навигация",
+    "stepOf": "Шаг {index} из {total}",
+    "stepDone": "выполнен",
+    "stepCurrent": "текущий",
+    "showMore": "Показать ещё",
+    "characters": "{count, plural, one {# символ} few {# символа} many {# символов}}",
+    "charactersLeft": "Осталось {count, plural, one {# символ} few {# символа} many {# символов}}",
+    "items": "{count, plural, one {# элемент} few {# элемента} many {# элементов}}",
+    "on": "Вкл.",
+    "off": "Выкл.",
+    "updated": "Обновлено {date}"
+  },
+  "form": {
+    "errorSummaryTitle": "Исправьте ошибки в форме",
+    "errorCount": "{count, plural, one {# ошибка} few {# ошибки} many {# ошибок}}",
+    "requiredMark": "обязательное поле",
+    "help": "Помощь по этому полю"
+  },
+  "status": {
+    "sourced": "По открытым источникам",
+    "claimed": "Заявлено компанией",
+    "verified": "Подтверждено"
+  },
+  "evidence": {
+    "asserted": "Заявлено",
+    "confirmed": "Подтверждено",
+    "disputed": "Оспаривается",
+    "superseded": "Заменено новой версией"
+  },
+  "kind": {
+    "goods": "Товар",
+    "works": "Работы",
+    "services": "Услуга",
+    "bundle": "Комплект"
+  },
+  "lifecycle": {
+    "draft": "Черновик",
+    "inReview": "На проверке",
+    "published": "Опубликовано",
+    "active": "Действует",
+    "paused": "Приостановлено",
+    "closed": "Закрыто",
+    "cancelled": "Отменено",
+    "expired": "Истекло",
+    "archived": "В архиве"
+  },
+  "run": {
+    "state": {
+      "proposed": "Предложено",
+      "authorized": "Разрешено",
+      "reserved": "Резерв бюджета",
+      "queued": "В очереди",
+      "executing": "Выполняется",
+      "pending": "Ожидает подтверждения",
+      "succeeded": "Выполнено",
+      "failed": "Не выполнено",
+      "outcomeUnknown": "Результат неизвестен",
+      "reconciling": "Идёт сверка",
+      "revoked": "Отозвано"
+    }
+  },
+  "publicShell": {
+    "tagline": "Отрасль. Люди. Практика.",
+    "about": "О платформе",
+    "signIn": "Войти в сервис",
+    "search": "Поиск",
+    "menu": "Меню",
+    "skipToContent": "Перейти к содержимому",
+    "navLabel": "Разделы",
+    "toWorkspace": "В рабочее пространство",
+    "closeMenu": "Закрыть меню",
+    "closeSearch": "Закрыть поиск"
+  },
+  "footer": {
+    "sections": "Разделы",
+    "editorial": "Редакция",
+    "platform": "Платформа",
+    "legal": "Правовая информация",
+    "privacy": "Конфиденциальность",
+    "terms": "Условия использования",
+    "help": "Помощь",
+    "copyright": "© Trustwork. Все права защищены.",
+    "tagline": "Полезное для людей, которые делают дело.",
+    "topics": "Темы",
+    "social": "Мы в соцсетях",
+    "aboutMagazine": "О журнале",
+    "aboutService": "О сервисе",
+    "signIn": "Войти"
+  },
+  "shell": {
+    "navLabel": "Рабочее пространство",
+    "collapse": "Свернуть меню",
+    "expand": "Развернуть меню",
+    "more": "Ещё",
+    "skipToContent": "К содержимому",
+    "openMenu": "Открыть меню",
+    "closeMenu": "Закрыть меню",
+    "search": "Поиск",
+    "notifications": "Уведомления",
+    "notificationsCount": "Уведомления, {count, plural, one {# новое} few {# новых} many {# новых}}",
+    "notificationsUnknown": "Уведомления, есть новые",
+    "noNotifications": "Новых уведомлений нет",
+    "allNotifications": "Все уведомления",
+    "account": "Аккаунт",
+    "menu": {
+      "myPage": "Моя страница",
+      "accountSettings": "Настройки аккаунта",
+      "security": "Безопасность и сессии",
+      "billing": "Оплата и тарифы",
+      "admin": "Администрирование",
+      "help": "Помощь",
+      "signOut": "Выйти"
+    },
+    "offline": "Нет соединения. Показаны сохранённые данные.",
+    "attention": "{count, plural, one {# требует решения} few {# требуют решения} many {# требуют решения}}",
+    "headerLabel": "Шапка рабочего пространства"
+  },
+  "assistant": {
+    "title": "Помощник",
+    "launcher": "Помощник",
+    "launcherUnread": "Помощник, {count, plural, one {# непрочитанное} few {# непрочитанных} many {# непрочитанных}}",
+    "launcherAction": "Помощник, требуется ваше решение",
+    "launcherOpen": "Помощник, окно открыто — закрыть",
+    "overlay": {
+      "label": "Окно помощника",
+      "openPage": "Открыть страницу",
+      "minimize": "Свернуть",
+      "close": "Закрыть",
+      "newMessages": "{count, plural, one {# новое сообщение} few {# новых сообщения} many {# новых сообщений}}",
+      "conversation": "Разговор с помощником",
+      "stateOnline": "На связи",
+      "stateOffline": "Нет соединения. Можно читать историю.",
+      "stateUnavailable": "Помощник временно недоступен. Поиск по точным данным работает."
+    },
+    "attention": "{count, plural, one {# решение ждёт вас} few {# решения ждут вас} many {# решений ждут вас}}",
+    "attentionOpen": "Открыть",
+    "composer": {
+      "label": "Сообщение помощнику",
+      "placeholder": "Спросите или опишите задачу",
+      "send": "Отправить",
+      "attach": "Прикрепить файл",
+      "hint": "Enter — отправить, Shift+Enter — новая строка"
+    },
+    "notSent": "Не отправлено",
+    "intro": "Помощник отвечает с указанием источников, готовит черновики и выполняет поручения только в рамках заданных вами полномочий.",
+    "messageFromUser": "Вы",
+    "messageFromAssistant": "Помощник"
+  },
+  "search": {
+    "placeholder": "Поиск по отрасли",
+    "title": "Результаты поиска",
+    "removeConstraint": "Убрать условие «{label}»",
+    "temporal": {
+      "label": "Период данных",
+      "current": "Текущие данные",
+      "asOf": "Версия на дату"
+    },
+    "historicalLabel": "Историческая версия от {date}",
+    "backToCurrent": "Вернуться к текущим данным",
+    "status": {
+      "complete": "Показаны все доступные результаты",
+      "partial": "Показаны не все результаты: {reason}",
+      "noAnswer": "По вашему запросу нет доступных материалов",
+      "unavailable": "Поиск временно недоступен",
+      "stale": "Данные обновляются, результаты могут быть неполными",
+      "previousShown": "Показаны предыдущие результаты"
+    },
+    "reason": {
+      "budget": "достигнут лимит объёма запроса",
+      "sourcesUnavailable": "часть источников временно недоступна",
+      "semanticOff": "смысловой поиск отключён, показаны точные совпадения"
+    },
+    "emptyQuery": "Введите запрос или откройте раздел",
+    "freshness": "Источник: {source}, данные от {observedAt}"
+  },
+  "answer": {
+    "facts": "Данные платформы",
+    "claims": "Из источников",
+    "supported": "Подтверждено источниками",
+    "qualified": "С оговорками: {reason}",
+    "abstain": "Недостаточно подтверждённых данных для ответа. Ниже — найденные материалы.",
+    "scopeIncomplete": "Неполный объём данных",
+    "statusLabel": "Статус ответа"
+  },
+  "citation": {
+    "open": "Источник {index}",
+    "title": "Источник",
+    "version": "Версия {version} от {date}",
+    "locator": {
+      "page": "Страница {page}",
+      "table": "Страница {page}, таблица {table}, строка {row}",
+      "text": "Фрагмент текста"
+    },
+    "openSource": "Открыть источник",
+    "unavailable": "Источник недоступен",
+    "unavailableShort": "недоступен",
+    "historicalShort": "историческая версия",
+    "unavailableReason": {
+      "revoked": "Доступ отозван",
+      "deleted": "Материал удалён",
+      "consent": "Согласие на публикацию отозвано",
+      "scope": "Доступ к источнику ограничен"
+    },
+    "close": "Закрыть источник",
+    "locatorLabel": "Место в источнике",
+    "evidenceLabel": "Статус сведений",
+    "projectionLabel": "Проекция"
+  },
+  "version": {
+    "label": "Версия",
+    "pickerLabel": "Выбор версии",
+    "item": "Версия {version}",
+    "current": "Версия {version} (текущая)",
+    "historical": "Версия {version} от {date}",
+    "stale": "Версия {version} (устарела)",
+    "selected": "Показана версия {version}"
+  },
+  "compare": {
+    "title": "Сравнение предложений",
+    "line": "Позиция",
+    "supplier": "Поставщик",
+    "notComparable": "Не сопоставимо",
+    "whyNotComparable": "Почему не сопоставимо",
+    "stale": "Устаревшее предложение",
+    "excluded": "Исключено из сравнения",
+    "total": "Итого",
+    "totalIncomplete": "Итог не рассчитан: не все позиции сопоставимы",
+    "select": "Выбрать",
+    "selectSupplier": "Выбрать поставщика «{supplier}»",
+    "reason": {
+      "unit": "Другая единица измерения",
+      "scope": "Другой объём",
+      "substitution": "Предложена замена",
+      "missingLine": "Позиция отсутствует"
+    },
+    "mobileSupplierSwitch": "Поставщик для сравнения",
+    "noOffer": "Предложения нет"
+  },
+  "timeline": {
+    "label": "История событий",
+    "baseline": "Исходный план",
+    "changed": "Изменение",
+    "disputed": "Оспаривается",
+    "outcomeUnknown": "Результат неизвестен",
+    "done": "Выполнено",
+    "pending": "Ожидается"
+  },
+  "onboardingFlow": {
+    "step": "Шаг {index} из {total}",
+    "stepsLabel": "Шаги регистрации",
+    "continue": "Продолжить",
+    "skip": "Пока осмотрюсь",
+    "back": "Назад",
+    "multiHint": "Можно выбрать несколько вариантов.",
+    "changeAnytime": "Выбор можно изменить в любой момент.",
+    "noAuthorityNote": "Это только настройки интересов. Они не дают прав в компании и не создают обязательств.",
+    "selectionLabel": "Что вам интересно на платформе?",
+    "selectedCount": "{count, plural, one {Выбран # вариант} few {Выбрано # варианта} many {Выбрано # вариантов}}"
+  },
+  "toast": {
+    "regionLabel": "Уведомления о действиях",
+    "dismiss": "Скрыть уведомление"
+  },
+  "dialog": {
+    "close": "Закрыть окно",
+    "loading": "Подождите, выполняем…"
+  },
+  "table": {
+    "regionLabel": "Таблица «{caption}»",
+    "empty": "Данных пока нет",
+    "error": "Не удалось загрузить таблицу",
+    "loading": "Загружаем таблицу…",
+    "rowActions": "Действия со строкой"
+  },
+  "avatar": {
+    "noPhoto": "Без фото"
+  },
+  "emptyState": {
+    "defaultTitle": "Здесь пока пусто"
+  },
+  "demo": {
+    "banner": "Демонстрация: синтетические данные, сервер не подключён.",
+    "persona": "Демонстрационный участник"
+  },
+  "magazine": {
+    "issue": "Выпуск № {number}",
+    "issueShort": "№ {number}",
+    "read": "Читать выпуск",
+    "archive": "Архив журнала",
+    "fresh": "Свежий выпуск",
+    "coverPrefix": "Обложка выпуска"
+  },
+  "decision": {
+    "kicker": "Нужно ваше решение",
+    "review": "На проверку",
+    "assistant": "Помощник ждёт решения",
+    "deadline": "Срок: {date}"
+  },
+  "entity": {
+    "company": "Компания",
+    "person": "Специалист",
+    "project": "Проект",
+    "open": "Открыть",
+    "openNamed": "Открыть: {name}"
+  },
+  "events": {
+    "upcoming": "Ближайшие события"
+  },
+  "media": {
+    "coverDecorative": "Иллюстрация к материалу",
+    "artworks": {
+      "concrete-grain": "Бетон: зерно и опалубочные стяжки",
+      "wood-lamellae": "Дерево: ламели",
+      "glass-grid": "Стекло: сетка фасада",
+      "steel-profile": "Сталь: двутавры",
+      "brick-bond": "Кирпич: ложковая перевязка",
+      "mineral-wool": "Минеральная вата: волокно и слои",
+      "facade-cassettes": "Фасад: ритм кассет",
+      "blueprint-lines": "Чертёж: план и размерные линии",
+      "iso-blocks": "Изометрия: сборка блоков",
+      "rebar-mesh": "Арматура: сетка и вязка",
+      "corrugated-sheet": "Профлист: волна и тень",
+      "terrazzo": "Терраццо: крошка в основе",
+      "wall-layers": "Стена в разрезе: слои ограждающей конструкции",
+      "timber-frame": "Каркас: стойки, обвязка, стропила",
+      "glass-night": "Стеклянный фасад вечером",
+      "formwork": "Опалубка: щиты и стяжки"
+    }
+  }
+}

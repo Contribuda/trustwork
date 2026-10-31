@@ -1,0 +1,342 @@
+/* ---------------------------------------------------------------- Locale switcher (header) */
+.lsw {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-caption-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lsw:hover {
+  border-color: var(--color-navy);
+}
+
+.lsw--dark {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: #fff;
+}
+
+.lsw__code {
+  letter-spacing: 0.08em;
+}
+
+.lsw__lang {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.lsw--dark .lsw__lang {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.lsw-pop {
+  z-index: 60;
+}
+
+.lsw-dialog {
+  width: min(92vw, 420px);
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 16px 48px rgba(15, 31, 61, 0.18);
+  outline: none;
+}
+
+.lsw-dialog__title {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.lsw-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lsw-item {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.lsw-item.is-active {
+  border-color: var(--color-navy);
+}
+
+.lsw-item__country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.lsw-item__code,
+.cg__code {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--color-accent-tint);
+  color: var(--color-navy);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.lsw-item__langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lsw-lang,
+.cg__lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--text-caption-size);
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.lsw-lang.is-active,
+.cg__lang.is-active {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+  color: #fff;
+}
+
+.lsw-lang__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b7791f;
+}
+
+.lsw-dialog__note,
+.cg__note {
+  margin: 10px 0 0;
+  font-size: var(--text-caption-size);
+  color: var(--color-text-subtle);
+}
+
+/* ---------------------------------------------------------------- First-visit country gate */
+.cg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(15, 31, 61, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.cg-modal {
+  width: min(100%, 640px);
+  outline: none;
+}
+
+.cg {
+  display: grid;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: 0 24px 64px rgba(15, 31, 61, 0.3);
+  outline: none;
+}
+
+.cg__kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.cg__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.cg__lede {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.cg__countries {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cg__country {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.cg__country.is-active {
+  border-color: var(--color-navy);
+  box-shadow: inset 0 0 0 1px var(--color-navy);
+}
+
+.cg__langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cg__partial {
+  margin-left: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.cg__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+@media (max-width: 479.98px) {
+  .cg {
+    padding: 20px;
+  }
+
+  .cg__countries {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .lsw {
+    min-height: 32px;
+    padding: 0 8px;
+  }
+
+  .lsw__lang {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Any country × any language (2026-10-29) */
+.lsw-dialog__current {
+  margin: -4px 0 6px;
+  font-weight: 700;
+}
+
+.lsw-featured {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.lsw-country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--text-caption-size);
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lsw-country.is-active {
+  border-color: var(--color-navy);
+  box-shadow: inset 0 0 0 1px var(--color-navy);
+}
+
+.lsw-select,
+.cg__select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-body-sm-size, 14px);
+}
+
+.lsw-select {
+  margin-bottom: 12px;
+}
+
+.lsw-select:focus-visible,
+.cg__select:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.cg__other {
+  display: grid;
+  gap: 6px;
+}
+
+.cg__other-label,
+.cg__section {
+  margin: 0;
+  font-size: var(--text-caption-size);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cg__chosen {
+  margin: -4px 0 0;
+  font-weight: 700;
+}

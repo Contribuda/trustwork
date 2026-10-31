@@ -1,0 +1,12 @@
+.git
+.claude
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/test-results
+**/playwright-report
+tests
+docs
+tasks
+infra/compose.yaml

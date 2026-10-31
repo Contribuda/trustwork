@@ -1,0 +1,79 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  border-radius: var(--radius-card);
+}
+
+.card {
+  background: var(--color-surface);
+  box-shadow:
+    var(--shadow-e1),
+    0 0 0 1px rgba(16, 24, 40, 0.04);
+}
+
+.plain {
+  padding: var(--space-6) var(--space-4);
+}
+
+.illustration {
+  width: min(220px, 60%);
+  margin-bottom: var(--space-2);
+}
+
+.illustrationFrame {
+  box-shadow: var(--shadow-e2);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-circle);
+  background: var(--color-surface-tint);
+  color: var(--color-accent);
+}
+
+.error .icon {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.denied .icon {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.error.card {
+  box-shadow:
+    var(--shadow-e1),
+    0 0 0 1px var(--color-danger-border);
+}
+
+.denied.card {
+  box-shadow:
+    var(--shadow-e1),
+    0 0 0 1px var(--color-warning-border);
+}
+
+.title {
+  color: var(--color-text);
+}
+
+.body {
+  max-width: 36rem;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}

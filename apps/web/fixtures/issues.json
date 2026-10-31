@@ -1,0 +1,466 @@
+{
+  "synthetic": true,
+  "description": "Synthetic magazine issues № 9–12: the current issue (№ 12) is a corrected second edition whose PDF is still pending; archived issues have PDF artifacts. Items reference existing publications; hashes are placeholders.",
+  "issues": [
+    {
+      "issue": {
+        "id": "issue-12",
+        "number": 12,
+        "date": "2026-10-24",
+        "status": "corrected",
+        "edition": 2,
+        "items": [
+          {
+            "position": 1,
+            "publicationId": "pub-mag-1",
+            "publicationVersion": 2,
+            "section": "practice"
+          },
+          {
+            "position": 2,
+            "publicationId": "pub-mag-2",
+            "publicationVersion": 1,
+            "section": "people"
+          },
+          {
+            "position": 3,
+            "publicationId": "pub-art-1",
+            "publicationVersion": 1,
+            "section": "analysis"
+          },
+          {
+            "position": 4,
+            "publicationId": "pub-art-30",
+            "publicationVersion": 1,
+            "section": "projectStory"
+          },
+          {
+            "position": 5,
+            "publicationId": "pub-art-33",
+            "publicationVersion": 1,
+            "section": "materials"
+          },
+          {
+            "position": 6,
+            "publicationId": "pub-art-co-1",
+            "publicationVersion": 1,
+            "section": "practice"
+          },
+          {
+            "position": 7,
+            "publicationId": "pub-mag-w12",
+            "publicationVersion": 1,
+            "section": "week"
+          },
+          {
+            "position": 8,
+            "publicationId": "pub-mag-n12",
+            "publicationVersion": 1,
+            "section": "numbers"
+          }
+        ],
+        "renderArtifacts": [
+          {
+            "format": "web",
+            "hash": "e000000000000000000000000000000000000000000000000000000000000002",
+            "sourceEdition": 2
+          }
+        ],
+        "revision": 3
+      },
+      "title": "Фасады перед зимой",
+      "lede": "Что ещё можно сделать на фасаде до морозов, как читать протоколы и почему приёмка по этапам снимает споры.",
+      "dateFrom": "2026-10-18",
+      "dateTo": "2026-10-24",
+      "releasedAt": "2026-10-24",
+      "pdf": {
+        "state": "pending"
+      },
+      "corrections": [
+        {
+          "correction": {
+            "id": "corr-12-1",
+            "subject": {
+              "kind": "issue",
+              "id": "issue-12",
+              "fromEdition": 1,
+              "toEdition": 2
+            },
+            "reason": "Исправлена нижняя граница температуры для клеевых составов в материале «Фасады зимой».",
+            "correctedBy": "person-editor",
+            "correctedAt": "2026-10-26T09:00:00Z"
+          },
+          "publicationId": "pub-mag-1",
+          "summary": "Уточнена температура применения клеевых составов"
+        }
+      ],
+      "poll": {
+        "question": "Что чаще всего срывает сроки фасадных работ у вас на объектах?",
+        "options": [
+          "Поставка материалов",
+          "Погода",
+          "Согласование узлов",
+          "Нехватка людей"
+        ],
+        "sample": [
+          41,
+          23,
+          27,
+          9
+        ]
+      },
+      "glossary": [
+        {
+          "term": "Вентилируемый фасад",
+          "definition": "Навесная система с воздушным зазором между утеплителем и облицовкой: влага отводится потоком воздуха."
+        },
+        {
+          "term": "Клеевой состав",
+          "definition": "Смесь для приклеивания утеплителя или облицовки; имеет нижнюю температурную границу применения."
+        },
+        {
+          "term": "Протокол испытаний",
+          "definition": "Документ лаборатории с условиями и методом испытания; сравнивать можно только протоколы по одному методу."
+        },
+        {
+          "term": "Скрытые работы",
+          "definition": "Этапы, которые после завершения закрываются следующими слоями; принимаются актом до закрытия."
+        },
+        {
+          "term": "Подсистема",
+          "definition": "Несущий каркас фасада: кронштейны, направляющие и крепёж, на которые ставится облицовка."
+        },
+        {
+          "term": "Поэтапная приёмка",
+          "definition": "Приёмка объекта по этапам с промежуточными актами вместо одной финальной."
+        }
+      ]
+    },
+    {
+      "issue": {
+        "id": "issue-11",
+        "number": 11,
+        "date": "2026-10-17",
+        "status": "released",
+        "edition": 1,
+        "items": [
+          {
+            "position": 1,
+            "publicationId": "pub-mag-3",
+            "publicationVersion": 1,
+            "section": "practice"
+          },
+          {
+            "position": 2,
+            "publicationId": "pub-art-4",
+            "publicationVersion": 1,
+            "section": "practice"
+          },
+          {
+            "position": 3,
+            "publicationId": "pub-art-2",
+            "publicationVersion": 1,
+            "section": "report"
+          },
+          {
+            "position": 4,
+            "publicationId": "pub-art-3",
+            "publicationVersion": 1,
+            "section": "interview"
+          },
+          {
+            "position": 5,
+            "publicationId": "pub-art-31",
+            "publicationVersion": 1,
+            "section": "analysis"
+          },
+          {
+            "position": 6,
+            "publicationId": "pub-mag-q11",
+            "publicationVersion": 1,
+            "section": "qa"
+          },
+          {
+            "position": 7,
+            "publicationId": "pub-mag-w11",
+            "publicationVersion": 1,
+            "section": "week"
+          }
+        ],
+        "renderArtifacts": [
+          {
+            "format": "web",
+            "hash": "e000000000000000000000000000000000000000000000000000000000000011",
+            "sourceEdition": 1
+          },
+          {
+            "format": "pdf",
+            "hash": "e000000000000000000000000000000000000000000000000000000000000012",
+            "sourceEdition": 1
+          }
+        ],
+        "revision": 1
+      },
+      "title": "Осень на стройке",
+      "lede": "Уход за бетоном при первых заморозках и чек-лист запроса поставщику.",
+      "dateFrom": "2026-10-11",
+      "dateTo": "2026-10-17",
+      "releasedAt": "2026-10-17",
+      "pdf": {
+        "state": "ready",
+        "size": "4,2 МБ",
+        "pages": 24
+      },
+      "corrections": [],
+      "poll": {
+        "question": "Как вы принимаете скрытые работы?",
+        "options": [
+          "Акт с фотографиями по этапам",
+          "Только итоговый акт",
+          "По доверию к подрядчику"
+        ],
+        "sample": [
+          58,
+          30,
+          12
+        ]
+      },
+      "glossary": [
+        {
+          "term": "Противоморозная добавка",
+          "definition": "Химическая добавка в бетон, снижающая температуру замерзания воды в смеси."
+        },
+        {
+          "term": "Гидратация",
+          "definition": "Реакция цемента с водой, при которой выделяется тепло и набирается прочность."
+        },
+        {
+          "term": "Запрос поставщику",
+          "definition": "Формализованная заявка с объёмами, сроками и условиями, по которой сравнивают предложения."
+        },
+        {
+          "term": "Чек-лист",
+          "definition": "Список обязательных пунктов, которые проверяют перед принятием решения или приёмкой."
+        }
+      ]
+    },
+    {
+      "issue": {
+        "id": "issue-10",
+        "number": 10,
+        "date": "2026-10-10",
+        "status": "released",
+        "edition": 1,
+        "items": [
+          {
+            "position": 1,
+            "publicationId": "pub-art-22",
+            "publicationVersion": 1,
+            "section": "report"
+          },
+          {
+            "position": 2,
+            "publicationId": "pub-art-20",
+            "publicationVersion": 1,
+            "section": "analysis"
+          },
+          {
+            "position": 3,
+            "publicationId": "pub-art-24",
+            "publicationVersion": 1,
+            "section": "materials"
+          },
+          {
+            "position": 4,
+            "publicationId": "pub-art-28",
+            "publicationVersion": 1,
+            "section": "people"
+          },
+          {
+            "position": 5,
+            "publicationId": "pub-art-23",
+            "publicationVersion": 1,
+            "section": "opinion"
+          },
+          {
+            "position": 6,
+            "publicationId": "pub-mag-n10",
+            "publicationVersion": 1,
+            "section": "numbers"
+          },
+          {
+            "position": 7,
+            "publicationId": "pub-mag-w10",
+            "publicationVersion": 1,
+            "section": "week"
+          }
+        ],
+        "renderArtifacts": [
+          {
+            "format": "web",
+            "hash": "e100000000000000000000000000000000000000000000000000000000000000",
+            "sourceEdition": 1
+          },
+          {
+            "format": "pdf",
+            "hash": "e10f000000000000000000000000000000000000000000000000000000000000",
+            "sourceEdition": 1
+          }
+        ],
+        "revision": 1
+      },
+      "title": "Сталь и дерево",
+      "lede": "Как устроено современное производство, почему материал выбирают под задачу и что передают мастера следующему поколению.",
+      "dateFrom": "2026-10-04",
+      "dateTo": "2026-10-10",
+      "releasedAt": "2026-10-10",
+      "pdf": {
+        "state": "ready",
+        "size": "5,1 МБ",
+        "pages": 28
+      },
+      "corrections": [],
+      "poll": {
+        "question": "Что важнее при выборе материала под задачу?",
+        "options": [
+          "Срок службы",
+          "Цена",
+          "Срок поставки",
+          "Опыт монтажников"
+        ],
+        "sample": [
+          34,
+          22,
+          19,
+          25
+        ]
+      },
+      "glossary": [
+        {
+          "term": "Входной контроль",
+          "definition": "Проверка сырья и материалов при поступлении на производство или объект."
+        },
+        {
+          "term": "Клеёный брус",
+          "definition": "Деревянная конструкция из склеенных ламелей с заданной прочностью."
+        },
+        {
+          "term": "Металлоконструкция",
+          "definition": "Несущий элемент из стального проката, изготовленный на заводе и смонтированный на площадке."
+        },
+        {
+          "term": "Спецификация",
+          "definition": "Перечень изделий и материалов проекта с характеристиками и количеством."
+        }
+      ]
+    },
+    {
+      "issue": {
+        "id": "issue-9",
+        "number": 9,
+        "date": "2026-10-03",
+        "status": "released",
+        "edition": 1,
+        "items": [
+          {
+            "position": 1,
+            "publicationId": "pub-art-32",
+            "publicationVersion": 1,
+            "section": "analysis"
+          },
+          {
+            "position": 2,
+            "publicationId": "pub-art-29",
+            "publicationVersion": 1,
+            "section": "projectStory"
+          },
+          {
+            "position": 3,
+            "publicationId": "pub-art-25",
+            "publicationVersion": 1,
+            "section": "practice"
+          },
+          {
+            "position": 4,
+            "publicationId": "pub-art-27",
+            "publicationVersion": 1,
+            "section": "people"
+          },
+          {
+            "position": 5,
+            "publicationId": "pub-art-21",
+            "publicationVersion": 1,
+            "section": "materials"
+          },
+          {
+            "position": 6,
+            "publicationId": "pub-mag-q9",
+            "publicationVersion": 1,
+            "section": "qa"
+          },
+          {
+            "position": 7,
+            "publicationId": "pub-mag-w9",
+            "publicationVersion": 1,
+            "section": "week"
+          }
+        ],
+        "renderArtifacts": [
+          {
+            "format": "web",
+            "hash": "e090000000000000000000000000000000000000000000000000000000000000",
+            "sourceEdition": 1
+          },
+          {
+            "format": "pdf",
+            "hash": "e09f000000000000000000000000000000000000000000000000000000000000",
+            "sourceEdition": 1
+          }
+        ],
+        "revision": 1
+      },
+      "title": "Чертёж как договор",
+      "lede": "Цифровой паспорт изделия, границы ответственности на площадке и вопросы, которые стоит задать поставщику до подписи.",
+      "dateFrom": "2026-09-27",
+      "dateTo": "2026-10-03",
+      "releasedAt": "2026-10-03",
+      "pdf": {
+        "state": "ready",
+        "size": "4,8 МБ",
+        "pages": 26
+      },
+      "corrections": [],
+      "poll": {
+        "question": "Нужен ли цифровой паспорт изделия на небольшом объекте?",
+        "options": [
+          "Да, всегда",
+          "Только для сложных узлов",
+          "Нет"
+        ],
+        "sample": [
+          47,
+          38,
+          15
+        ]
+      },
+      "glossary": [
+        {
+          "term": "Цифровой паспорт изделия",
+          "definition": "Структурированный набор данных об изделии: состав, производитель, испытания, дата, место установки."
+        },
+        {
+          "term": "Авторский надзор",
+          "definition": "Контроль проектировщика за соответствием стройки проекту; решения фиксируются в журнале."
+        },
+        {
+          "term": "Приоритет документов",
+          "definition": "Пункт договора, определяющий, какой документ главнее при расхождениях."
+        },
+        {
+          "term": "Срок поставки",
+          "definition": "Время от заказа до передачи материала на объект с учётом производства и логистики."
+        }
+      ]
+    }
+  ]
+}

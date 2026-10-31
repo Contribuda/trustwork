@@ -1,0 +1,94 @@
+.default {
+  color: var(--color-text);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.subtle {
+  color: var(--color-text-subtle);
+}
+
+.inverse {
+  color: var(--color-navy-text);
+}
+
+.inverseMuted {
+  color: var(--color-navy-text-muted);
+}
+
+.accent {
+  color: var(--color-accent);
+}
+
+.noBalance {
+  text-wrap: initial;
+}
+
+.weightRegular {
+  font-weight: var(--weight-regular);
+}
+
+.weightMedium {
+  font-weight: var(--weight-medium);
+}
+
+.weightSemibold {
+  font-weight: var(--weight-semibold);
+}
+
+.weightBold {
+  font-weight: var(--weight-bold);
+}
+
+.kickerAccent {
+  color: var(--color-accent);
+}
+
+.kickerMuted {
+  color: var(--color-text-muted);
+}
+
+.kickerInverse {
+  color: var(--color-navy-text-muted);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.5em;
+  row-gap: 0.125em;
+  min-width: 0;
+}
+
+.metaMuted {
+  color: var(--color-text-muted);
+}
+
+.metaDefault {
+  color: var(--color-text);
+}
+
+.metaInverse {
+  color: var(--color-navy-text-muted);
+}
+
+.metaIcon {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-width: 0;
+}
+
+.dot {
+  color: inherit;
+  opacity: 0.7;
+}

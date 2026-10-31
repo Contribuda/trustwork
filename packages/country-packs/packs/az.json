@@ -1,0 +1,777 @@
+{
+  "code": "AZ",
+  "name": {
+    "en": "Azerbaijan",
+    "az-Latn": "Azərbaycan",
+    "ru": "Азербайджан"
+  },
+  "enabled": true,
+  "status": "complete",
+  "locales": [
+    "az-Latn",
+    "en",
+    "ru"
+  ],
+  "defaultLocale": "az-Latn",
+  "currency": {
+    "code": "AZN",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 2,
+    "symbol": "₼"
+  },
+  "secondaryCurrencies": [
+    "USD"
+  ],
+  "formats": {
+    "timeZone": "Asia/Baku",
+    "phone": {
+      "callingCode": "+994",
+      "nationalLength": 9,
+      "example": "+994 12 500 00 00"
+    },
+    "postalCode": {
+      "pattern": "^AZ ?[0-9]{4}$",
+      "example": "AZ1000"
+    }
+  },
+  "registrationIdentifier": {
+    "kind": "AZ-VOEN",
+    "label": {
+      "en": "VÖEN (taxpayer identification number)",
+      "az-Latn": "VÖEN",
+      "ru": "VÖEN (налоговый номер)"
+    },
+    "pattern": "^[0-9]{10}$",
+    "example": "1234567891",
+    "issuer": {
+      "name": {
+        "en": "State Tax Service under the Ministry of Economy of the Republic of Azerbaijan",
+        "az-Latn": "Azərbaycan Respublikası İqtisadiyyat Nazirliyi yanında Dövlət Vergi Xidməti"
+      },
+      "url": "https://www.taxes.gov.az"
+    },
+    "verification": "secondary-sources; 10 digits with a check digit in position 9 and the legal-status digit (1 legal person, 2 natural person) in position 10; check-digit algorithm not enforced until confirmed officially",
+    "sources": [
+      {
+        "url": "https://arthurdejong.org/python-stdnum/doc/2.2/stdnum.az.voen",
+        "what": "python-stdnum VÖEN validator: 10 digits, check digit, status digit",
+        "accessed": "2026-10-29"
+      },
+      {
+        "url": "https://lookuptax.com/docs/tax-identification-number/azerbaijan-tax-id-guide",
+        "what": "VÖEN structure and issuer",
+        "accessed": "2026-10-29"
+      }
+    ]
+  },
+  "legalEntityTypes": [
+    {
+      "code": "MMC",
+      "name": {
+        "en": "Limited liability company (MMC)",
+        "az-Latn": "Məhdud məsuliyyətli cəmiyyət (MMC)",
+        "ru": "ООО (MMC)"
+      }
+    },
+    {
+      "code": "ASC",
+      "name": {
+        "en": "Open joint-stock company (ASC)",
+        "az-Latn": "Açıq səhmdar cəmiyyəti (ASC)",
+        "ru": "ОАО (ASC)"
+      }
+    },
+    {
+      "code": "QSC",
+      "name": {
+        "en": "Closed joint-stock company (QSC)",
+        "az-Latn": "Qapalı səhmdar cəmiyyəti (QSC)",
+        "ru": "ЗАО (QSC)"
+      }
+    },
+    {
+      "code": "FS",
+      "name": {
+        "en": "Individual entrepreneur",
+        "az-Latn": "Fərdi sahibkar",
+        "ru": "Индивидуальный предприниматель"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "code": "AZ-BA",
+      "name": {
+        "en": "Baku",
+        "az-Latn": "Bakı",
+        "ru": "Баку"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-NX",
+      "name": {
+        "en": "Nakhchivan Autonomous Republic",
+        "az-Latn": "Naxçıvan Muxtar Respublikası",
+        "ru": "Нахичеванская Автономная Республика"
+      },
+      "kind": "autonomous-republic"
+    },
+    {
+      "code": "AZ-GA",
+      "name": {
+        "en": "Ganja",
+        "az-Latn": "Gəncə",
+        "ru": "Гянджа"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-LA",
+      "name": {
+        "en": "Lankaran (city)",
+        "az-Latn": "Lənkəran şəhəri",
+        "ru": "Ленкорань (город)"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-MI",
+      "name": {
+        "en": "Mingachevir",
+        "az-Latn": "Mingəçevir",
+        "ru": "Мингячевир"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-NA",
+      "name": {
+        "en": "Naftalan",
+        "az-Latn": "Naftalan",
+        "ru": "Нафталан"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-NV",
+      "name": {
+        "en": "Nakhchivan (city)",
+        "az-Latn": "Naxçıvan şəhəri",
+        "ru": "Нахичевань (город)"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-SA",
+      "name": {
+        "en": "Shaki (city)",
+        "az-Latn": "Şəki şəhəri",
+        "ru": "Шеки (город)"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-SR",
+      "name": {
+        "en": "Shirvan",
+        "az-Latn": "Şirvan",
+        "ru": "Ширван"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-SM",
+      "name": {
+        "en": "Sumgayit",
+        "az-Latn": "Sumqayıt",
+        "ru": "Сумгаит"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-XA",
+      "name": {
+        "en": "Khankendi",
+        "az-Latn": "Xankəndi",
+        "ru": "Ханкенди"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-YE",
+      "name": {
+        "en": "Yevlakh (city)",
+        "az-Latn": "Yevlax şəhəri",
+        "ru": "Евлах (город)"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AZ-ABS",
+      "name": {
+        "en": "Absheron",
+        "az-Latn": "Abşeron"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-AGC",
+      "name": {
+        "en": "Aghjabadi",
+        "az-Latn": "Ağcabədi"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-AGM",
+      "name": {
+        "en": "Aghdam",
+        "az-Latn": "Ağdam"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-AGS",
+      "name": {
+        "en": "Agdash",
+        "az-Latn": "Ağdaş"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-AGA",
+      "name": {
+        "en": "Aghstafa",
+        "az-Latn": "Ağstafa"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-AGU",
+      "name": {
+        "en": "Aghsu",
+        "az-Latn": "Ağsu"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-AST",
+      "name": {
+        "en": "Astara",
+        "az-Latn": "Astara"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-BAB",
+      "name": {
+        "en": "Babek",
+        "az-Latn": "Babək"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-BAL",
+      "name": {
+        "en": "Balakan",
+        "az-Latn": "Balakən"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-BAR",
+      "name": {
+        "en": "Barda",
+        "az-Latn": "Bərdə"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-BEY",
+      "name": {
+        "en": "Beylagan",
+        "az-Latn": "Beyləqan"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-BIL",
+      "name": {
+        "en": "Bilasuvar",
+        "az-Latn": "Biləsuvar"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-CAB",
+      "name": {
+        "en": "Jabrayil",
+        "az-Latn": "Cəbrayıl"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-CAL",
+      "name": {
+        "en": "Jalilabad",
+        "az-Latn": "Cəlilabad"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-CUL",
+      "name": {
+        "en": "Julfa",
+        "az-Latn": "Culfa"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-DAS",
+      "name": {
+        "en": "Dashkasan",
+        "az-Latn": "Daşkəsən"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-FUZ",
+      "name": {
+        "en": "Fuzuli",
+        "az-Latn": "Füzuli"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-GAD",
+      "name": {
+        "en": "Gadabay",
+        "az-Latn": "Gədəbəy"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-GOR",
+      "name": {
+        "en": "Goranboy",
+        "az-Latn": "Goranboy"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-GOY",
+      "name": {
+        "en": "Goychay",
+        "az-Latn": "Göyçay"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-GYG",
+      "name": {
+        "en": "Goygol",
+        "az-Latn": "Göygöl"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-HAC",
+      "name": {
+        "en": "Hajigabul",
+        "az-Latn": "Hacıqabul"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-IMI",
+      "name": {
+        "en": "Imishli",
+        "az-Latn": "İmişli"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-ISM",
+      "name": {
+        "en": "Ismayilli",
+        "az-Latn": "İsmayıllı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-KAL",
+      "name": {
+        "en": "Kalbajar",
+        "az-Latn": "Kəlbəcər"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-KAN",
+      "name": {
+        "en": "Kangarli",
+        "az-Latn": "Kəngərli"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-KUR",
+      "name": {
+        "en": "Kurdamir",
+        "az-Latn": "Kürdəmir"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-LAC",
+      "name": {
+        "en": "Lachin",
+        "az-Latn": "Laçın"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-LAN",
+      "name": {
+        "en": "Lankaran",
+        "az-Latn": "Lənkəran"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-LER",
+      "name": {
+        "en": "Lerik",
+        "az-Latn": "Lerik"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-MAS",
+      "name": {
+        "en": "Masally",
+        "az-Latn": "Masallı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-NEF",
+      "name": {
+        "en": "Neftchala",
+        "az-Latn": "Neftçala"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-OGU",
+      "name": {
+        "en": "Oghuz",
+        "az-Latn": "Oğuz"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-ORD",
+      "name": {
+        "en": "Ordubad",
+        "az-Latn": "Ordubad"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QAX",
+      "name": {
+        "en": "Gakh",
+        "az-Latn": "Qax"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QAZ",
+      "name": {
+        "en": "Gazakh",
+        "az-Latn": "Qazax"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QAB",
+      "name": {
+        "en": "Gabala",
+        "az-Latn": "Qəbələ"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QOB",
+      "name": {
+        "en": "Gobustan",
+        "az-Latn": "Qobustan"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QBA",
+      "name": {
+        "en": "Guba",
+        "az-Latn": "Quba"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QBI",
+      "name": {
+        "en": "Gubadli",
+        "az-Latn": "Qubadlı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-QUS",
+      "name": {
+        "en": "Gusar",
+        "az-Latn": "Qusar"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAT",
+      "name": {
+        "en": "Saatly",
+        "az-Latn": "Saatlı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAB",
+      "name": {
+        "en": "Sabirabad",
+        "az-Latn": "Sabirabad"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SBN",
+      "name": {
+        "en": "Shabran",
+        "az-Latn": "Şabran"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAH",
+      "name": {
+        "en": "Shahbuz",
+        "az-Latn": "Şahbuz"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAL",
+      "name": {
+        "en": "Salyan",
+        "az-Latn": "Salyan"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SMI",
+      "name": {
+        "en": "Shamakhi",
+        "az-Latn": "Şamaxı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SMX",
+      "name": {
+        "en": "Samukh",
+        "az-Latn": "Samux"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAD",
+      "name": {
+        "en": "Sadarak",
+        "az-Latn": "Sədərək"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAK",
+      "name": {
+        "en": "Shaki",
+        "az-Latn": "Şəki"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SKR",
+      "name": {
+        "en": "Shamkir",
+        "az-Latn": "Şəmkir"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SAR",
+      "name": {
+        "en": "Sharur",
+        "az-Latn": "Şərur"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SIY",
+      "name": {
+        "en": "Siyazan",
+        "az-Latn": "Siyəzən"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-SUS",
+      "name": {
+        "en": "Shusha",
+        "az-Latn": "Şuşa"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-TAR",
+      "name": {
+        "en": "Tartar",
+        "az-Latn": "Tərtər"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-TOV",
+      "name": {
+        "en": "Tovuz",
+        "az-Latn": "Tovuz"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-UCA",
+      "name": {
+        "en": "Ujar",
+        "az-Latn": "Ucar"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-XAC",
+      "name": {
+        "en": "Khachmaz",
+        "az-Latn": "Xaçmaz"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-XIZ",
+      "name": {
+        "en": "Khizi",
+        "az-Latn": "Xızı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-XCI",
+      "name": {
+        "en": "Khojaly",
+        "az-Latn": "Xocalı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-XVD",
+      "name": {
+        "en": "Khojavend",
+        "az-Latn": "Xocavənd"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-YAR",
+      "name": {
+        "en": "Yardimli",
+        "az-Latn": "Yardımlı"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-YEV",
+      "name": {
+        "en": "Yevlakh",
+        "az-Latn": "Yevlax"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-ZAQ",
+      "name": {
+        "en": "Zagatala",
+        "az-Latn": "Zaqatala"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-ZAN",
+      "name": {
+        "en": "Zangilan",
+        "az-Latn": "Zəngilan"
+      },
+      "kind": "rayon"
+    },
+    {
+      "code": "AZ-ZAR",
+      "name": {
+        "en": "Zardab",
+        "az-Latn": "Zərdab"
+      },
+      "kind": "rayon"
+    }
+  ],
+  "address": {
+    "lines": [
+      "street",
+      "city",
+      "region",
+      "postalCode"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
+  "dataResidency": {
+    "required": false,
+    "note": {
+      "en": "Azerbaijan's Law on Personal Data (2010) regulates cross-border transfers; no general localization requirement was identified. Local-law compliance is for local counsel."
+    },
+    "sources": [
+      {
+        "url": "https://e-qanun.az/framework/19675",
+        "what": "Law of the Republic of Azerbaijan on Personal Data (2010)",
+        "accessed": "2026-10-29",
+        "verification": "pending counsel"
+      }
+    ]
+  },
+  "notes": [
+    "ISO 3166-2:AZ lists 78 subdivisions; Wikipedia marks AZ-SUS (Shusha) as removed in a newsletter while the table still carries it — verify against the ISO Online Browsing Platform before relying on it."
+  ],
+  "sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/ISO_3166-2:AZ",
+      "what": "ISO 3166-2:AZ subdivision codes (78 entries)",
+      "accessed": "2026-10-29"
+    }
+  ]
+}

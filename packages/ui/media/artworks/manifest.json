@@ -1,0 +1,250 @@
+{
+  "viewBox": [
+    1600,
+    1000
+  ],
+  "artworks": [
+    {
+      "id": "concrete-grain",
+      "file": "concrete-grain.svg",
+      "title": "Бетон: зерно и опалубочные стяжки",
+      "alt": "Бетон: зерно и опалубочные стяжки",
+      "tone": "light",
+      "dominant": "#cfd3d9",
+      "kinds": [
+        "material",
+        "concrete",
+        "texture"
+      ],
+      "bytes": 98716,
+      "seed": "trustwork-artwork-concrete-grain"
+    },
+    {
+      "id": "wood-lamellae",
+      "file": "wood-lamellae.svg",
+      "title": "Дерево: ламели",
+      "alt": "Дерево: ламели",
+      "tone": "light",
+      "dominant": "#c9b79a",
+      "kinds": [
+        "material",
+        "wood",
+        "texture"
+      ],
+      "bytes": 25135,
+      "seed": "trustwork-artwork-wood-lamellae"
+    },
+    {
+      "id": "glass-grid",
+      "file": "glass-grid.svg",
+      "title": "Стекло: сетка фасада",
+      "alt": "Стекло: сетка фасада",
+      "tone": "dark",
+      "dominant": "#0f1f3d",
+      "kinds": [
+        "facade",
+        "glass",
+        "company"
+      ],
+      "bytes": 9356,
+      "seed": "trustwork-artwork-glass-grid"
+    },
+    {
+      "id": "steel-profile",
+      "file": "steel-profile.svg",
+      "title": "Сталь: двутавры",
+      "alt": "Сталь: двутавры",
+      "tone": "light",
+      "dominant": "#f6f5f2",
+      "kinds": [
+        "material",
+        "steel",
+        "structure"
+      ],
+      "bytes": 10991,
+      "seed": "trustwork-artwork-steel-profile"
+    },
+    {
+      "id": "brick-bond",
+      "file": "brick-bond.svg",
+      "title": "Кирпич: ложковая перевязка",
+      "alt": "Кирпич: ложковая перевязка",
+      "tone": "light",
+      "dominant": "#e9e4da",
+      "kinds": [
+        "material",
+        "brick",
+        "texture"
+      ],
+      "bytes": 25523,
+      "seed": "trustwork-artwork-brick-bond"
+    },
+    {
+      "id": "mineral-wool",
+      "file": "mineral-wool.svg",
+      "title": "Минеральная вата: волокно и слои",
+      "alt": "Минеральная вата: волокно и слои",
+      "tone": "light",
+      "dominant": "#e9e4da",
+      "kinds": [
+        "material",
+        "insulation",
+        "supply"
+      ],
+      "bytes": 111447,
+      "seed": "trustwork-artwork-mineral-wool"
+    },
+    {
+      "id": "facade-cassettes",
+      "file": "facade-cassettes.svg",
+      "title": "Фасад: ритм кассет",
+      "alt": "Фасад: ритм кассет",
+      "tone": "light",
+      "dominant": "#cfd3d9",
+      "kinds": [
+        "facade",
+        "project",
+        "company"
+      ],
+      "bytes": 12308,
+      "seed": "trustwork-artwork-facade-cassettes"
+    },
+    {
+      "id": "blueprint-lines",
+      "file": "blueprint-lines.svg",
+      "title": "Чертёж: план и размерные линии",
+      "alt": "Чертёж: план и размерные линии",
+      "tone": "dark",
+      "dominant": "#0f1f3d",
+      "kinds": [
+        "drawing",
+        "document",
+        "article",
+        "news"
+      ],
+      "bytes": 8713,
+      "seed": "trustwork-artwork-blueprint-lines"
+    },
+    {
+      "id": "iso-blocks",
+      "file": "iso-blocks.svg",
+      "title": "Изометрия: сборка блоков",
+      "alt": "Изометрия: сборка блоков",
+      "tone": "light",
+      "dominant": "#f0f5ff",
+      "kinds": [
+        "project",
+        "supply",
+        "article"
+      ],
+      "bytes": 41042,
+      "seed": "trustwork-artwork-iso-blocks"
+    },
+    {
+      "id": "rebar-mesh",
+      "file": "rebar-mesh.svg",
+      "title": "Арматура: сетка и вязка",
+      "alt": "Арматура: сетка и вязка",
+      "tone": "light",
+      "dominant": "#e9e4da",
+      "kinds": [
+        "material",
+        "steel",
+        "site"
+      ],
+      "bytes": 18060,
+      "seed": "trustwork-artwork-rebar-mesh"
+    },
+    {
+      "id": "corrugated-sheet",
+      "file": "corrugated-sheet.svg",
+      "title": "Профлист: волна и тень",
+      "alt": "Профлист: волна и тень",
+      "tone": "light",
+      "dominant": "#cfd3d9",
+      "kinds": [
+        "material",
+        "steel",
+        "facade"
+      ],
+      "bytes": 2775,
+      "seed": "trustwork-artwork-corrugated-sheet"
+    },
+    {
+      "id": "terrazzo",
+      "file": "terrazzo.svg",
+      "title": "Терраццо: крошка в основе",
+      "alt": "Терраццо: крошка в основе",
+      "tone": "light",
+      "dominant": "#f6f5f2",
+      "kinds": [
+        "material",
+        "texture",
+        "article"
+      ],
+      "bytes": 61089,
+      "seed": "trustwork-artwork-terrazzo"
+    },
+    {
+      "id": "wall-layers",
+      "file": "wall-layers.svg",
+      "title": "Стена в разрезе: слои ограждающей конструкции",
+      "alt": "Стена в разрезе: слои ограждающей конструкции",
+      "tone": "light",
+      "dominant": "#f6f5f2",
+      "kinds": [
+        "structure",
+        "insulation",
+        "article"
+      ],
+      "bytes": 5817,
+      "seed": "trustwork-artwork-wall-layers"
+    },
+    {
+      "id": "timber-frame",
+      "file": "timber-frame.svg",
+      "title": "Каркас: стойки, обвязка, стропила",
+      "alt": "Каркас: стойки, обвязка, стропила",
+      "tone": "light",
+      "dominant": "#e6eefc",
+      "kinds": [
+        "structure",
+        "wood",
+        "project",
+        "site"
+      ],
+      "bytes": 2955,
+      "seed": "trustwork-artwork-timber-frame"
+    },
+    {
+      "id": "glass-night",
+      "file": "glass-night.svg",
+      "title": "Стеклянный фасад вечером",
+      "alt": "Стеклянный фасад вечером",
+      "tone": "dark",
+      "dominant": "#111827",
+      "kinds": [
+        "facade",
+        "glass",
+        "news"
+      ],
+      "bytes": 14120,
+      "seed": "trustwork-artwork-glass-night"
+    },
+    {
+      "id": "formwork",
+      "file": "formwork.svg",
+      "title": "Опалубка: щиты и стяжки",
+      "alt": "Опалубка: щиты и стяжки",
+      "tone": "light",
+      "dominant": "#d8d0c2",
+      "kinds": [
+        "site",
+        "concrete",
+        "material"
+      ],
+      "bytes": 47613,
+      "seed": "trustwork-artwork-formwork"
+    }
+  ]
+}

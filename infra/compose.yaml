@@ -1,0 +1,19 @@
+name: trustwork-local
+services:
+  postgres:
+    image: postgres:18.3
+    environment:
+      POSTGRES_DB: trustwork_dev
+      POSTGRES_USER: trustwork_dev
+      POSTGRES_PASSWORD: local_only_change_me
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustwork_dev -d trustwork_dev"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres_data:

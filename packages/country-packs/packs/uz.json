@@ -1,0 +1,273 @@
+{
+  "code": "UZ",
+  "name": {
+    "en": "Uzbekistan",
+    "uz-Latn": "Oʻzbekiston",
+    "ru": "Узбекистан"
+  },
+  "enabled": true,
+  "status": "complete",
+  "locales": [
+    "uz-Latn",
+    "en",
+    "ru"
+  ],
+  "defaultLocale": "uz-Latn",
+  "currency": {
+    "code": "UZS",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 0,
+    "symbol": "soʻm"
+  },
+  "secondaryCurrencies": [
+    "USD"
+  ],
+  "formats": {
+    "timeZone": "Asia/Tashkent",
+    "phone": {
+      "callingCode": "+998",
+      "nationalLength": 9,
+      "example": "+998 71 200 00 00"
+    },
+    "postalCode": {
+      "pattern": "^[0-9]{6}$",
+      "example": "100000"
+    }
+  },
+  "registrationIdentifier": {
+    "kind": "UZ-STIR",
+    "label": {
+      "en": "STIR (taxpayer identification number)",
+      "uz-Latn": "STIR",
+      "ru": "СТИР (налоговый номер)"
+    },
+    "pattern": "^[0-9]{9}$",
+    "example": "301234567",
+    "issuer": {
+      "name": {
+        "en": "Tax Committee of the Republic of Uzbekistan",
+        "uz-Latn": "Oʻzbekiston Respublikasi Soliq qoʻmitasi",
+        "ru": "Налоговый комитет Республики Узбекистан"
+      },
+      "url": "https://soliq.uz"
+    },
+    "verification": "secondary-sources; official format confirmation pending",
+    "sources": [
+      {
+        "url": "https://lookuptax.com/docs/tax-identification-number/uzbekistan-tax-id-guide",
+        "what": "Legal-entity STIR/INN is 9 digits; last digit is a check digit",
+        "accessed": "2026-10-29"
+      },
+      {
+        "url": "https://build.fhir.org/ig/uzinfocom-org/digital-health-ig/ru/NamingSystem-uzb-soliq.json.html",
+        "what": "Naming system for the tax authority identifier (soliq.uz)",
+        "accessed": "2026-10-29"
+      }
+    ]
+  },
+  "legalEntityTypes": [
+    {
+      "code": "MChJ",
+      "name": {
+        "en": "Limited liability company (MChJ)",
+        "uz-Latn": "Masʼuliyati cheklangan jamiyat (MChJ)",
+        "ru": "ООО (MChJ)"
+      }
+    },
+    {
+      "code": "AJ",
+      "name": {
+        "en": "Joint-stock company (AJ)",
+        "uz-Latn": "Aksiyadorlik jamiyati (AJ)",
+        "ru": "АО (AJ)"
+      }
+    },
+    {
+      "code": "XK",
+      "name": {
+        "en": "Private enterprise (XK)",
+        "uz-Latn": "Xususiy korxona (XK)",
+        "ru": "Частное предприятие (XK)"
+      }
+    },
+    {
+      "code": "YaTT",
+      "name": {
+        "en": "Individual entrepreneur (YaTT)",
+        "uz-Latn": "Yakka tartibdagi tadbirkor (YaTT)",
+        "ru": "Индивидуальный предприниматель (YaTT)"
+      }
+    },
+    {
+      "code": "DUK",
+      "name": {
+        "en": "State unitary enterprise (DUK)",
+        "uz-Latn": "Davlat unitar korxonasi (DUK)",
+        "ru": "ГУП (DUK)"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "code": "UZ-TK",
+      "name": {
+        "en": "Tashkent (city)",
+        "uz-Latn": "Toshkent shahri",
+        "ru": "Ташкент (город)"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "UZ-TO",
+      "name": {
+        "en": "Tashkent region",
+        "uz-Latn": "Toshkent viloyati",
+        "ru": "Ташкентская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-SA",
+      "name": {
+        "en": "Samarkand region",
+        "uz-Latn": "Samarqand viloyati",
+        "ru": "Самаркандская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-BU",
+      "name": {
+        "en": "Bukhara region",
+        "uz-Latn": "Buxoro viloyati",
+        "ru": "Бухарская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-AN",
+      "name": {
+        "en": "Andijan region",
+        "uz-Latn": "Andijon viloyati",
+        "ru": "Андижанская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-FA",
+      "name": {
+        "en": "Fergana region",
+        "uz-Latn": "Fargʻona viloyati",
+        "ru": "Ферганская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-NG",
+      "name": {
+        "en": "Namangan region",
+        "uz-Latn": "Namangan viloyati",
+        "ru": "Наманганская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-JI",
+      "name": {
+        "en": "Jizzakh region",
+        "uz-Latn": "Jizzax viloyati",
+        "ru": "Джизакская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-NW",
+      "name": {
+        "en": "Navoiy region",
+        "uz-Latn": "Navoiy viloyati",
+        "ru": "Навоийская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-QA",
+      "name": {
+        "en": "Qashqadaryo region",
+        "uz-Latn": "Qashqadaryo viloyati",
+        "ru": "Кашкадарьинская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-SI",
+      "name": {
+        "en": "Sirdaryo region",
+        "uz-Latn": "Sirdaryo viloyati",
+        "ru": "Сырдарьинская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-SU",
+      "name": {
+        "en": "Surkhondaryo region",
+        "uz-Latn": "Surxondaryo viloyati",
+        "ru": "Сурхандарьинская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-XO",
+      "name": {
+        "en": "Khorezm region",
+        "uz-Latn": "Xorazm viloyati",
+        "ru": "Хорезмская область"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "UZ-QR",
+      "name": {
+        "en": "Republic of Karakalpakstan",
+        "uz-Latn": "Qoraqalpogʻiston Respublikasi",
+        "ru": "Республика Каракалпакстан"
+      },
+      "kind": "republic"
+    }
+  ],
+  "address": {
+    "lines": [
+      "street",
+      "city",
+      "region",
+      "postalCode"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
+  "dataResidency": {
+    "required": true,
+    "note": {
+      "en": "Uzbekistan requires personal data of its citizens to be processed and stored on servers located in Uzbekistan (Law on Personal Data ZRU-547, art. 27-1 as amended in 2021). Local-law compliance is for local counsel; the engine only keeps storage per country possible."
+    },
+    "sources": [
+      {
+        "url": "https://lex.uz/docs/4396428",
+        "what": "Law of the Republic of Uzbekistan No. ZRU-547 'On Personal Data' (2019) with the 2021 localization amendment",
+        "accessed": "2026-10-29",
+        "verification": "pending official confirmation of article numbering"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/ISO_3166-2:UZ",
+      "what": "ISO 3166-2:UZ subdivision codes (14 entries)",
+      "accessed": "2026-10-29"
+    }
+  ]
+}

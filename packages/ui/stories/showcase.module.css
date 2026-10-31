@@ -1,0 +1,147 @@
+/* Layout helpers for the Showcase compositions (stories only; apps use their own page layouts). */
+.lead {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--size-gutter);
+  padding-top: var(--space-8);
+}
+
+.leadSide {
+  display: grid;
+  gap: var(--size-gutter);
+  align-content: start;
+}
+
+.cols2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--size-gutter);
+}
+
+.cols3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--size-gutter);
+}
+
+.cols4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.mainAside {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--size-gutter);
+}
+
+.aside {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.sectionGap {
+  margin-top: var(--space-6);
+}
+
+.magazine {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.magazineText {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 36rem;
+}
+
+.cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: end;
+}
+
+.ctaActions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.workspaceMain {
+  display: grid;
+  gap: var(--space-8);
+  max-width: var(--size-content-max);
+  padding: var(--space-8) var(--space-6) var(--space-16);
+}
+
+.articleHeader {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 52rem;
+}
+
+.articleBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-12);
+}
+
+.articleAside {
+  display: grid;
+  gap: var(--space-6);
+  align-content: start;
+}
+
+@media (max-width: 1023.98px) {
+  .cols4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cols3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .articleBody {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .lead,
+  .cols2,
+  .cols3,
+  .cols4,
+  .mainAside,
+  .magazine,
+  .cta {
+    grid-template-columns: 1fr;
+  }
+
+  .lead {
+    padding-top: var(--space-4);
+  }
+
+  .magazine {
+    justify-items: center;
+    gap: var(--space-6);
+  }
+
+  .ctaActions {
+    justify-content: flex-start;
+  }
+
+  .workspaceMain {
+    padding: var(--space-5) var(--space-4) var(--space-12);
+  }
+}

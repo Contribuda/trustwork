@@ -1,0 +1,63 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bone {
+  display: block;
+  background: linear-gradient(90deg, var(--color-surface-muted) 0%, var(--color-surface-warm) 50%, var(--color-surface-muted) 100%);
+  background-size: 200% 100%;
+  border-radius: var(--radius-control);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.text {
+  height: 1em;
+  width: 100%;
+}
+
+.card {
+  height: 8rem;
+  width: 100%;
+  border-radius: var(--radius-card);
+}
+
+.row {
+  height: var(--size-table-row);
+  width: 100%;
+}
+
+.circle {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-circle);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  min-height: var(--size-table-row);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

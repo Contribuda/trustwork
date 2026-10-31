@@ -1,0 +1,162 @@
+# Country specifics
+
+Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, legal entity types, regions, currency, formats, address order, legal template references, data-residency note, sources) is **Live** for Uzbekistan, Georgia, Armenia and Azerbaijan; the facets below and pack v2 are **Proposed**.
+
+Construction is local. What a valid company looks like, who may legally pour concrete for a school, which code a facade must meet, how an invoice must be issued, how a document is signed, what counts as a working day: all of this differs from country to country. The engine handles these differences with two layers and one rule.
+
+## Two layers and one rule
+
+| Layer | What it holds | Who changes it | How |
+|---|---|---|---|
+| **Country pack** | Facts about the country that are true for every hub there: identifier formats, registers and how to query them, licence categories, codes and standards, tax rates, e-invoicing and e-signature systems, holidays, scripts, legal facts. Every fact cites sources and states its verification level | Country-pack maintainers through reviewed pull requests | `packages/country-packs/packs/<cc>.json`, validated by schema and tests |
+| **Hub configuration** | Decisions of one operator: which providers are enabled, credentials, policies, legal document versions, local taxonomy additions | Hub staff in the console | Versioned records in the database with audit and, where sensitive, a second approver |
+
+**The rule:** engine logic stays country-agnostic. No code says `if (country === 'UZ')`. Code asks the pack for a fact or the hub for a decision, and an adapter does the country-specific talking to the outside world.
+
+## The facets
+
+Each facet lists what the pack records, what adapters may exist, and what the hub configures.
+
+### Companies, identifiers and registers
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| All identifier kinds (tax number, register number, VAT number, statistical codes) with label, pattern, check-digit rule, issuer, example | Register lookup (open data dump, API, or manual) | Which register providers are live, credentials, cadence |
+| Legal entity types | Beneficial ownership lookup where public | Verification recipes ([Hub administration](hub-administration.md#counterparty-verification)) |
+| Business register(s): name, URL, what can be queried, licence of the data | — | Source registration for directory imports |
+
+Pack v1 already has one identifier per country (`UZ-STIR`, `GE-IDC`, `AM-TIN`, `AZ-VOEN`); v2 allows several.
+
+### Construction licensing and professional qualifications
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| Which construction activities need a licence, permit or membership; categories or grades of contractors; issuing authority; public register | Licence register lookup | Which RFQ categories require which licence; recheck cadence |
+| Regulated professions (engineers, architects, surveyors, welders) and the bodies that certify them | Professional register lookup | Professional qualification checks for profiles |
+| Insurance requirements for contractors where mandatory | — | Whether insurance evidence is requested at onboarding |
+
+Platform course certificates are never presented as these qualifications ([Learning](learning.md)).
+
+### Building codes and standards
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| National code system and its naming, the standards body, adoption of international standards (for example Eurocodes) where it applies, where official texts are published and under what licence | Knowledge source import where licensed | Which code texts may be indexed, cited or only linked ([Search and knowledge](search-and-knowledge.md#hub-knowledge-sources-proposed)) |
+
+Articles and RFQ lines can reference a code clause as a structured link, so a reader in another country sees what it is and that it is foreign.
+
+### Public procurement
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| National e-procurement portal(s), thresholds, notice formats, open data availability | Procurement notice feed | Whether public notices appear as opportunities on the needs board, licence flags |
+
+The engine does not submit bids to state portals; it helps people find and prepare for them.
+
+### Tax and invoicing
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| VAT or sales tax: standard and reduced rates, zero-rated cases, registration threshold, invoice requirements | E-invoicing adapter (issue, receive, status) | Tax settings for the hub's own fees; which e-invoicing provider is live |
+| Mandatory e-invoicing system, scope (B2B, B2G, B2C), signature requirement | — | Whether quotes show prices with or without VAT by default |
+| Withholding taxes relevant to services from abroad | — | — |
+
+Quote lines already carry `taxAmount` so totals are recomputed exactly; the tax rule comes from the pack and the parties' tax registration, never from a hard-coded rate.
+
+### Electronic identity and signatures
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| National electronic signature schemes, their legal status, mobile ID, ID cards | Signature verification, signing service | Which schemes count as evidence for claims and authority, which can sign acceptance acts |
+| National electronic identity for sign-in where it exists | OIDC or national eID adapter | Whether national eID sign-in is offered |
+
+### Electronic documents in construction
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| Typical documents and their legal forms: acceptance acts of works, hidden-works acts, delivery notes, as-built documentation, statutory retention periods | E-document exchange where a national system exists | Templates for acceptance acts per country ([Execution and reputation](execution-and-reputation.md)) |
+
+### Payments
+
+| Pack records | Adapters | Hub configures |
+|---|---|---|
+| Domestic card schemes and instant payment systems, common wallets, currency controls relevant to cross-border payments | Payment provider adapters | Live providers, payouts, refunds |
+
+No provider is assumed to exist everywhere. Sanctioned banks and Russian payment rails are never integrated (ADR 009).
+
+### Money, numbers and units
+
+Currency, minor units and display rounding (already in v1), cash rounding rules, secondary currencies, the local names and symbols of units of measure (square metre, cubic metre, tonne, running metre) mapped to the engine's unit catalogue, and local estimate norms where they exist.
+
+### Calendar and time
+
+Time zones (v1), working week, public holidays (fixed and movable, published by year with sources), fiscal year, date and number formats (taken from `Intl`). Holidays affect delivery dates, RFQ deadlines and event scheduling.
+
+### Languages and scripts
+
+Official and common languages (v1 `locales`), scripts (Uzbek Latin and Cyrillic; Georgian; Armenian; Azerbaijani Latin), transliteration rules for search and names, personal name order and patronymics, typography rules (quotation marks, decimal separators come from `Intl`).
+
+### Addresses and geography
+
+Address format and order (v1), postal codes (v1), ISO 3166-2 regions (v1), cities and named places for territories, cadastral identifiers for land and buildings where they exist, preferred geocoding sources (OpenStreetMap by default).
+
+### Privacy and data
+
+Data-residency rules (v1 has a note), consent requirements, subject access deadlines, breach notification authority and deadline, rules for minors, cookie consent, retention periods for accounting and construction documents, cross-border transfer rules. The hub's data-residency decision is recorded in the console and drives storage and provider egress.
+
+### Content, media and consumer law
+
+Media registration for news outlets, defamation and right-of-reply rules, rules on reviews and testimonials, advertising labelling, copyright exceptions for quotation, takedown procedures, consumer protection for paid tickets and courses, distance-selling cooling-off rules. These map to the hub's moderation clause library and legal documents.
+
+### Sanctions and export controls
+
+Restricted places (engine-wide, in code), the engine baseline screening list, and national lists the hub must apply (for example a financial intelligence unit's list), each with source and update cadence.
+
+### Communications
+
+Sender registration for SMS, popular messengers and their business-use terms, e-mail deliverability expectations.
+
+## Pack v2 shape (Proposed)
+
+Pack v2 keeps every v1 field and adds `facets`, each with facts, sources and verification:
+
+```json
+{
+  "code": "UZ",
+  "facets": {
+    "identifiers": [{ "kind": "UZ-STIR", "...": "as in v1" }],
+    "registers": [{ "id": "uz-business-register", "name": {"en": "..."}, "url": "https://...", "query": "manual|open_data|api", "dataLicence": "...", "sources": [], "verification": "pending" }],
+    "licensing": { "activities": [], "professions": [], "sources": [], "verification": "pending" },
+    "standards": { "system": {"en": "..."}, "body": {"en": "..."}, "publications": "https://...", "sources": [] },
+    "procurement": { "portals": [{ "url": "https://...", "verification": "candidate" }], "sources": [] },
+    "tax": { "vat": { "standardRate": "12", "reducedRates": [], "registrationThreshold": null }, "eInvoicing": { "mandatory": true, "scope": ["B2B", "B2G"], "system": {"en": "..."} }, "sources": [], "verification": "secondary" },
+    "eSignature": { "schemes": [], "sources": [] },
+    "payments": { "schemes": [], "sources": [] },
+    "calendar": { "workingWeek": ["mon","tue","wed","thu","fri"], "holidays": { "2027": [] }, "sources": [] },
+    "scripts": { "uz": ["Latn", "Cyrl"] },
+    "privacy": { "dataResidency": "as in v1", "breachAuthority": null, "sources": [] },
+    "contentLaw": { "notes": [], "sources": [] },
+    "sanctions": { "nationalLists": [], "sources": [] }
+  }
+}
+```
+
+Validation rules: every facet with facts has at least one source; `verification` is one of `official`, `secondary`, `candidate`, `pending`; rates are decimal strings; nothing in a pack may enable a restricted place; adapters referenced by a facet must exist in the engine (possibly as fakes).
+
+## Starting points for the launch countries (secondary sources, pending confirmation)
+
+These are research leads for pack maintainers, gathered on 2026-10-30 from secondary sources. They are **not** pack facts until a maintainer confirms them against official sources and adds them to the pack with citations.
+
+| Topic | Uzbekistan | Georgia | Armenia | Azerbaijan |
+|---|---|---|---|---|
+| Standard VAT rate | 12% | 18% | 20% | 18% |
+| Mandatory e-invoicing | Yes, B2B and B2G since 2020, through the State Tax Committee's e-Faktura system; input VAT credit depends on a matching e-invoice | Yes, B2B since 2012 through the Revenue Service portal (rs.ge) | Yes, through the State Revenue Committee's electronic settlement documents platform (start date differs between sources) | Yes, for VAT payers since 2017 through the Internet Tax Office (e-taxes.gov.az), signed with an enhanced electronic signature such as Asan İmza |
+| E-procurement portal (candidate, not confirmed) | xarid.uzex.uz | tenders.procurement.gov.ge | armeps.am | etender.gov.az |
+| Electronic signature (candidate unless noted) | E-IMZO (not confirmed by the sources consulted) | ID card and mobile ID | ID card and mobile ID | Asan İmza (named by several sources) |
+| Data residency | Required for personal data of citizens (pack v1 note, pending article confirmation) | See pack | See pack | See pack |
+
+Sources consulted: [VAT policy in Uzbekistan 2025](https://www.vatupdate.com/2025/01/09/overview-of-vat-policy-changes-and-exemptions-in-uzbekistan-by-2025/), [Uzbekistan e-invoicing](https://www.vatupdate.com/2024/06/21/how-does-e-invoicing-works-in-uzebekistan), [Georgia e-invoicing overview](https://www.e-invoice.app/country/GE), [Georgia VAT guide](https://lappa.org/guides/vat/georgia-vat-for-international-businesses/), [Armenia electronic settlement documents](https://lookuptax.com/docs/einvoicing/electronic-settlement-documents-einvoicing-armenia), [Armenia VAT guide](https://lappa.org/guides/vat/armenia-vat-registration-and-compliance-guide/), [Azerbaijan State Tax Service: electronic invoice](https://taxes.gov.az/en/page/elektron-qaime-faktura), [Azerbaijan e-invoicing](https://www.vatupdate.com/2025/05/17/e-invoicing-in-azerbaijan/).
+
+## Adding a country
+
+The existing guide covers pack v1: [How to add a country](../country-packs/how-to-add-a-country.md). For v2 facets, start with identifiers and registers, then tax and e-invoicing, then licensing and standards; each facet is useful on its own, and partial packs are welcome as long as every fact is sourced and its verification level is honest.

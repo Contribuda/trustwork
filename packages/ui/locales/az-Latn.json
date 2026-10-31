@@ -1,0 +1,440 @@
+{
+  "bootstrap": {
+    "title": "Trustwork",
+    "message": "Layihənin təməli hazırdır. İstifadəçi funksiyaları hələ hazırlanır."
+  },
+  "publicNav": [
+    "Ana səhifə",
+    "Xəbərlər",
+    "Məqalələr",
+    "Tədbirlər",
+    "Şirkətlər",
+    "İnsanlar",
+    "Layihələr",
+    "Jurnal"
+  ],
+  "workspaceNav": [
+    "Ümumi baxış",
+    "Mənim səhifəm",
+    "Şirkət",
+    "Layihələr",
+    "Satınalmalar",
+    "Satışlar",
+    "Nəşrlər",
+    "Köməkçi"
+  ],
+  "publicExit": "Sahəyə",
+  "onboarding": [
+    "Alıram",
+    "Təchiz edirəm",
+    "Sahənin iştirakçısıyam"
+  ],
+  "auth": {
+    "name": "Adınız",
+    "email": "E-poçt",
+    "password": "Şifrə",
+    "login": {
+      "title": "Daxil ol",
+      "subtitle": "Sizi yenidən görməyə şadıq"
+    },
+    "emailPlaceholder": "E-poçtunuzu daxil edin",
+    "passwordPlaceholder": "Şifrənizi daxil edin",
+    "showPassword": "Şifrəni göstər",
+    "hidePassword": "Şifrəni gizlət",
+    "forgot": "Şifrəni unutmusunuz?",
+    "submitLogin": "Daxil ol",
+    "submitting": "Daxil olunur…",
+    "or": "və ya",
+    "apple": "Apple ilə davam et",
+    "google": "Google ilə davam et",
+    "noAccount": "Hələ hesabınız yoxdur?",
+    "register": "Hesab yarat",
+    "backHome": "Ana səhifəyə qayıt",
+    "sessionExpired": "Sessiya başa çatdı. Zəhmət olmasa, yenidən daxil olun.",
+    "error": {
+      "invalidCredentials": "E-poçt və ya şifrə səhvdir",
+      "rateLimited": "Həddindən çox cəhd. {minutes, plural, one {# dəqiqə} other {# dəqiqə}} sonra yenidən cəhd edin.",
+      "provider": "{provider} ilə daxil olmaq mümkün olmadı. Yenidən cəhd edin və ya e-poçtdan istifadə edin.",
+      "emailRequired": "E-poçtunuzu daxil edin",
+      "emailFormat": "E-poçt ünvanını yoxlayın",
+      "passwordRequired": "Şifrənizi daxil edin"
+    },
+    "visual": {
+      "loginHeadline": "Yaxşı qərarlar. Etibarlı tərəfdaşlar.",
+      "loginSub": "İnsanları və şirkətləri tapın, təcrübə bölüşün və layihələr üzərində birgə işləyin."
+    }
+  },
+  "brand": {
+    "name": "Trustwork",
+    "wordmarkLine1": "trust",
+    "wordmarkLine2": "work",
+    "logoLabel": "Trustwork — ana səhifə"
+  },
+  "common": {
+    "cancel": "Ləğv et",
+    "confirm": "Təsdiq et",
+    "close": "Bağla",
+    "save": "Yadda saxla",
+    "saved": "Yadda saxlanıldı",
+    "delete": "Sil",
+    "edit": "Redaktə et",
+    "back": "Geri",
+    "next": "Növbəti",
+    "more": "Daha çox",
+    "retry": "Yenidən cəhd et",
+    "loading": "Yüklənir…",
+    "offline": "Bağlantı yoxdur",
+    "corrected": "Düzəldilib",
+    "sectionLoadError": "Bu bölməni yükləmək mümkün olmadı",
+    "noAccessTitle": "Giriş yoxdur",
+    "noAccessBody": "Bu bölmə üçün hüququnuz yoxdur. Bu səhvdirsə, şirkətinizin administratoru ilə əlaqə saxlayın.",
+    "externalLink": "xarici keçid",
+    "required": "məcburi",
+    "optional": "istəyə bağlı",
+    "selected": "Seçilib",
+    "remove": "Çıxar",
+    "removeItem": "«{label}» çıxar",
+    "clear": "Təmizlə",
+    "noResults": "Heç nə tapılmadı",
+    "filters": "Filtrlər",
+    "pagination": "Səhifələr",
+    "page": "Səhifə {page}",
+    "previousPage": "Əvvəlki səhifə",
+    "nextPage": "Növbəti səhifə",
+    "currentPage": "Səhifə {page}, cari",
+    "tableScrollHint": "Cədvəl üfüqi sürüşür",
+    "sortAscending": "artan sıra ilə",
+    "sortDescending": "azalan sıra ilə",
+    "sortNone": "sıralanmayıb, sıralamaq üçün basın",
+    "openMenu": "Menyunu aç",
+    "notifications": "Bildirişlər",
+    "breadcrumbs": "Naviqasiya yolu",
+    "stepOf": "Addım {index} / {total}",
+    "stepDone": "tamamlanıb",
+    "stepCurrent": "cari",
+    "showMore": "Daha çox göstər",
+    "characters": "{count, plural, one {# simvol} other {# simvol}}",
+    "charactersLeft": "{count, plural, one {# simvol} other {# simvol}} qalıb",
+    "items": "{count, plural, one {# element} other {# element}}",
+    "on": "Aktiv",
+    "off": "Deaktiv",
+    "updated": "Yenilənib: {date}"
+  },
+  "form": {
+    "errorSummaryTitle": "Formadakı səhvləri düzəldin",
+    "errorCount": "{count, plural, one {# səhv} other {# səhv}}",
+    "requiredMark": "məcburi sahə",
+    "help": "Bu sahə üçün kömək"
+  },
+  "status": {
+    "sourced": "Açıq mənbələrdən",
+    "claimed": "Şirkət tərəfindən bəyan edilib",
+    "verified": "Təsdiqlənib"
+  },
+  "evidence": {
+    "asserted": "İddia edilib",
+    "confirmed": "Təsdiqlənib",
+    "disputed": "Mübahisəli",
+    "superseded": "Yeni versiya ilə əvəz olunub"
+  },
+  "kind": {
+    "goods": "Mallar",
+    "works": "İşlər",
+    "services": "Xidmət",
+    "bundle": "Paket"
+  },
+  "lifecycle": {
+    "draft": "Qaralama",
+    "inReview": "Yoxlamada",
+    "published": "Dərc edilib",
+    "active": "Aktiv",
+    "paused": "Dayandırılıb",
+    "closed": "Bağlanıb",
+    "cancelled": "Ləğv edilib",
+    "expired": "Müddəti bitib",
+    "archived": "Arxivlənib"
+  },
+  "run": {
+    "state": {
+      "proposed": "Təklif edilib",
+      "authorized": "İcazə verilib",
+      "reserved": "Büdcə ayrılıb",
+      "queued": "Növbədə",
+      "executing": "İcra olunur",
+      "pending": "Təsdiq gözlənilir",
+      "succeeded": "Tamamlanıb",
+      "failed": "Uğursuz",
+      "outcomeUnknown": "Nəticə məlum deyil",
+      "reconciling": "Uzlaşdırılır",
+      "revoked": "Geri çağırılıb"
+    }
+  },
+  "publicShell": {
+    "tagline": "Sahə. İnsanlar. Təcrübə.",
+    "about": "Platforma haqqında",
+    "signIn": "Daxil ol",
+    "search": "Axtarış",
+    "menu": "Menyu",
+    "skipToContent": "Məzmuna keç",
+    "navLabel": "Bölmələr",
+    "toWorkspace": "İş sahəsinə",
+    "closeMenu": "Menyunu bağla",
+    "closeSearch": "Axtarışı bağla"
+  },
+  "footer": {
+    "sections": "Bölmələr",
+    "editorial": "Redaksiya",
+    "platform": "Platforma",
+    "legal": "Hüquqi",
+    "privacy": "Məxfilik",
+    "terms": "İstifadə şərtləri",
+    "help": "Kömək",
+    "copyright": "© Trustwork. Bütün hüquqlar qorunur.",
+    "tagline": "Tikənlər üçün faydalıdır.",
+    "topics": "Mövzular",
+    "social": "Sosial şəbəkələr",
+    "aboutMagazine": "Jurnal haqqında",
+    "aboutService": "Xidmət haqqında",
+    "signIn": "Daxil ol"
+  },
+  "shell": {
+    "navLabel": "İş sahəsi",
+    "collapse": "Menyunu yığ",
+    "expand": "Menyunu aç",
+    "more": "Daha çox",
+    "skipToContent": "Məzmuna keç",
+    "openMenu": "Menyunu aç",
+    "closeMenu": "Menyunu bağla",
+    "search": "Axtarış",
+    "notifications": "Bildirişlər",
+    "notificationsCount": "Bildirişlər, {count, plural, one {# yeni} other {# yeni}}",
+    "notificationsUnknown": "Bildirişlər, yeniləri var",
+    "noNotifications": "Yeni bildiriş yoxdur",
+    "allNotifications": "Bütün bildirişlər",
+    "account": "Hesab",
+    "menu": {
+      "myPage": "Mənim səhifəm",
+      "accountSettings": "Hesab parametrləri",
+      "security": "Təhlükəsizlik və sessiyalar",
+      "billing": "Ödənişlər və planlar",
+      "admin": "İdarəetmə",
+      "help": "Kömək",
+      "signOut": "Çıxış"
+    },
+    "offline": "Bağlantı yoxdur. Yadda saxlanılmış məlumatlar göstərilir.",
+    "attention": "{count, plural, one {# qərar tələb edir} other {# qərar tələb edir}}",
+    "headerLabel": "İş sahəsinin başlığı"
+  },
+  "assistant": {
+    "title": "Köməkçi",
+    "launcher": "Köməkçi",
+    "launcherUnread": "Köməkçi, {count, plural, one {# oxunmamış} other {# oxunmamış}}",
+    "launcherAction": "Köməkçi, qərarınız lazımdır",
+    "launcherOpen": "Köməkçi, pəncərə açıqdır — bağla",
+    "overlay": {
+      "label": "Köməkçi pəncərəsi",
+      "openPage": "Səhifəni aç",
+      "minimize": "Kiçilt",
+      "close": "Bağla",
+      "newMessages": "{count, plural, one {# yeni mesaj} other {# yeni mesaj}}",
+      "conversation": "Köməkçi ilə söhbət",
+      "stateOnline": "Onlayn",
+      "stateOffline": "Bağlantı yoxdur. Tarixçəni oxuya bilərsiniz.",
+      "stateUnavailable": "Köməkçi müvəqqəti əlçatan deyil. Dəqiq məlumat axtarışı işləyir."
+    },
+    "attention": "{count, plural, one {# qərar sizi gözləyir} other {# qərar sizi gözləyir}}",
+    "attentionOpen": "Aç",
+    "composer": {
+      "label": "Köməkçiyə mesaj",
+      "placeholder": "Sual verin və ya tapşırığı təsvir edin",
+      "send": "Göndər",
+      "attach": "Fayl əlavə et",
+      "hint": "Enter — göndər, Shift+Enter — yeni sətir"
+    },
+    "notSent": "Göndərilmədi",
+    "intro": "Köməkçi mənbələrlə cavab verir, qaralamalar hazırlayır və tapşırıqları yalnız sizin müəyyən etdiyiniz səlahiyyət çərçivəsində yerinə yetirir.",
+    "messageFromUser": "Siz",
+    "messageFromAssistant": "Köməkçi"
+  },
+  "search": {
+    "placeholder": "Sahədə axtar",
+    "title": "Axtarış nəticələri",
+    "removeConstraint": "«{label}» şərtini çıxar",
+    "temporal": {
+      "label": "Məlumat dövrü",
+      "current": "Cari məlumatlar",
+      "asOf": "Tarixə görə versiya"
+    },
+    "historicalLabel": "{date} tarixli tarixi versiya",
+    "backToCurrent": "Cari məlumatlara qayıt",
+    "status": {
+      "complete": "Bütün mövcud nəticələr göstərilir",
+      "partial": "Bütün nəticələr göstərilmir: {reason}",
+      "noAnswer": "Sorğunuza uyğun material yoxdur",
+      "unavailable": "Axtarış müvəqqəti əlçatan deyil",
+      "stale": "Məlumatlar yenilənir; nəticələr natamam ola bilər",
+      "previousShown": "Əvvəlki nəticələr göstərilir"
+    },
+    "reason": {
+      "budget": "sorğu ölçüsü limitinə çatıldı",
+      "sourcesUnavailable": "bəzi mənbələr müvəqqəti əlçatan deyil",
+      "semanticOff": "semantik axtarış söndürülüb; dəqiq uyğunluqlar göstərilir"
+    },
+    "emptyQuery": "Sorğu daxil edin və ya bölmə açın",
+    "freshness": "Mənbə: {source}, məlumatlar {observedAt}"
+  },
+  "answer": {
+    "facts": "Platforma məlumatları",
+    "claims": "Mənbələrdən",
+    "supported": "Mənbələrlə təsdiqlənib",
+    "qualified": "Qeyd-şərtlə: {reason}",
+    "abstain": "Cavab üçün kifayət qədər təsdiqlənmiş məlumat yoxdur. Tapılan material aşağıdadır.",
+    "scopeIncomplete": "Natamam məlumat əhatəsi",
+    "statusLabel": "Cavabın statusu"
+  },
+  "citation": {
+    "open": "Mənbə {index}",
+    "title": "Mənbə",
+    "version": "Versiya {version}, {date}",
+    "locator": {
+      "page": "Səhifə {page}",
+      "table": "Səhifə {page}, cədvəl {table}, sətir {row}",
+      "text": "Mətn fraqmenti"
+    },
+    "openSource": "Mənbəni aç",
+    "unavailable": "Mənbə əlçatan deyil",
+    "unavailableShort": "əlçatan deyil",
+    "historicalShort": "tarixi versiya",
+    "unavailableReason": {
+      "revoked": "Giriş geri alınıb",
+      "deleted": "Material silinib",
+      "consent": "Dərc razılığı geri götürülüb",
+      "scope": "Mənbəyə giriş məhduddur"
+    },
+    "close": "Mənbəni bağla",
+    "locatorLabel": "Mənbədəki yer",
+    "evidenceLabel": "Sübut statusu",
+    "projectionLabel": "Proyeksiya"
+  },
+  "version": {
+    "label": "Versiya",
+    "pickerLabel": "Versiya seçin",
+    "item": "Versiya {version}",
+    "current": "Versiya {version} (cari)",
+    "historical": "Versiya {version}, {date}",
+    "stale": "Versiya {version} (köhnəlmiş)",
+    "selected": "Versiya {version} göstərilir"
+  },
+  "compare": {
+    "title": "Təkliflərin müqayisəsi",
+    "line": "Sətir",
+    "supplier": "Təchizatçı",
+    "notComparable": "Müqayisə olunmur",
+    "whyNotComparable": "Niyə müqayisə olunmur",
+    "stale": "Köhnəlmiş təklif",
+    "excluded": "Müqayisədən çıxarılıb",
+    "total": "Cəmi",
+    "totalIncomplete": "Cəmi hesablanmayıb: bütün sətirlər müqayisə olunmur",
+    "select": "Seç",
+    "selectSupplier": "«{supplier}» təchizatçısını seç",
+    "reason": {
+      "unit": "Fərqli ölçü vahidi",
+      "scope": "Fərqli həcm",
+      "substitution": "Əvəzləmə təklif edilib",
+      "missingLine": "Sətir yoxdur"
+    },
+    "mobileSupplierSwitch": "Müqayisə üçün təchizatçı",
+    "noOffer": "Təklif yoxdur"
+  },
+  "timeline": {
+    "label": "Hadisələrin tarixçəsi",
+    "baseline": "Baza planı",
+    "changed": "Dəyişiklik",
+    "disputed": "Mübahisəli",
+    "outcomeUnknown": "Nəticə məlum deyil",
+    "done": "Tamamlanıb",
+    "pending": "Gözlənilir"
+  },
+  "onboardingFlow": {
+    "step": "Addım {index} / {total}",
+    "stepsLabel": "Qeydiyyat addımları",
+    "continue": "Davam et",
+    "skip": "Əvvəlcə baxım",
+    "back": "Geri",
+    "multiHint": "Bir neçə variant seçə bilərsiniz.",
+    "changeAnytime": "Bunu istənilən vaxt dəyişə bilərsiniz.",
+    "noAuthorityNote": "Bunlar yalnız maraq parametrləridir. Şirkətdə hüquq vermir və öhdəlik yaratmır.",
+    "selectionLabel": "Platformada sizi nə maraqlandırır?",
+    "selectedCount": "{count, plural, one {# variant seçilib} other {# variant seçilib}}"
+  },
+  "toast": {
+    "regionLabel": "Əməliyyat bildirişləri",
+    "dismiss": "Bildirişi bağla"
+  },
+  "dialog": {
+    "close": "Pəncərəni bağla",
+    "loading": "Zəhmət olmasa, gözləyin…"
+  },
+  "table": {
+    "regionLabel": "«{caption}» cədvəli",
+    "empty": "Hələ məlumat yoxdur",
+    "error": "Cədvəli yükləmək mümkün olmadı",
+    "loading": "Cədvəl yüklənir…",
+    "rowActions": "Sətir əməliyyatları"
+  },
+  "avatar": {
+    "noPhoto": "Şəkil yoxdur"
+  },
+  "emptyState": {
+    "defaultTitle": "Burada hələ heç nə yoxdur"
+  },
+  "demo": {
+    "banner": "Demo: sintetik məlumatlar, server qoşulmayıb.",
+    "persona": "Demo iştirakçısı"
+  },
+  "magazine": {
+    "issue": "Nömrə {number}",
+    "issueShort": "№ {number}",
+    "read": "Nömrəni oxu",
+    "archive": "Jurnal arxivi",
+    "fresh": "Son nömrə",
+    "coverPrefix": "Nömrənin üz qabığı"
+  },
+  "decision": {
+    "kicker": "Qərarınız lazımdır",
+    "review": "Baxmaq üçün",
+    "assistant": "Köməkçi qərar gözləyir",
+    "deadline": "Müddət: {date}"
+  },
+  "entity": {
+    "company": "Şirkət",
+    "person": "Mütəxəssis",
+    "project": "Layihə",
+    "open": "Aç",
+    "openNamed": "Aç: {name}"
+  },
+  "events": {
+    "upcoming": "Qarşıdan gələn tədbirlər"
+  },
+  "media": {
+    "coverDecorative": "Materialın illüstrasiyası",
+    "artworks": {
+      "concrete-grain": "Beton: dənəvərlik və qəlib bağları",
+      "wood-lamellae": "Ağac: lamellər",
+      "glass-grid": "Şüşə: fasad toru",
+      "steel-profile": "Polad: ikitavrlı tirlər",
+      "brick-bond": "Kərpic: uzununa hörgü",
+      "mineral-wool": "Mineral pambıq: lif və qatlar",
+      "facade-cassettes": "Fasad: kasetlərin ritmi",
+      "blueprint-lines": "Çertyoj: plan və ölçü xətləri",
+      "iso-blocks": "İzometriya: blokların yığılması",
+      "rebar-mesh": "Armatur: tor və bağlama",
+      "corrugated-sheet": "Profilli vərəq: dalğa və kölgə",
+      "terrazzo": "Terrasso: əsasda qırıntılar",
+      "wall-layers": "Divar kəsiyi: qoruyucu konstruksiyanın qatları",
+      "timber-frame": "Karkas: dayaqlar, bağlama, dam tirləri",
+      "glass-night": "Axşam şüşə fasad",
+      "formwork": "Qəlib: lövhələr və bağlar"
+    }
+  }
+}

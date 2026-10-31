@@ -1,0 +1,2038 @@
+{
+  "synthetic": true,
+  "description": "Synthetic projects: a company project with an explicit public projection, a private company project, a private person-owned project with an invited supplier company, and a completed public project. Hashes are placeholders, not computed digests.",
+  "projects": [
+    {
+      "slug": "shkola-na-reke",
+      "project": {
+        "id": "project-school",
+        "owner": {
+          "kind": "company",
+          "id": "company-fasad"
+        },
+        "creatorPersonId": "person-anna",
+        "leaderPersonId": "person-anna",
+        "name": "Школа на набережной: фасад и остекление",
+        "summary": "Навесной фасад и светопрозрачные конструкции для новой школы на 800 мест.",
+        "status": "active",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "Проект стартовал весной: подобрана подсистема, согласован цвет панелей с архитектором. Летом смонтирован первый этаж, осенью — остекление атриума. Заказчик изменил график из-за переноса пусконаладки, поэтому срок фасада перенесён на месяц.",
+          "openNeedIds": ["rfq-fasad-1", "rfq-fasad-2"],
+          "publicParticipantIds": ["company-fasad", "person-anna", "company-beton"]
+        },
+        "milestones": [
+          {
+            "id": "ms-school-1",
+            "title": "Подсистема смонтирована",
+            "due": {
+              "date": "2026-09-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "225000000000",
+              "currency": "UZS"
+            },
+            "shared": true
+          },
+          {
+            "id": "ms-school-2",
+            "title": "Фасадные панели",
+            "due": {
+              "date": "2026-11-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "330000000000",
+              "currency": "UZS"
+            },
+            "shared": true
+          },
+          {
+            "id": "ms-school-3",
+            "title": "Остекление атриума",
+            "due": {
+              "date": "2026-12-20",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-school-4",
+            "title": "Резерв на гарантийные работы",
+            "due": {
+              "date": "2027-03-01",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "45000000000",
+              "currency": "UZS"
+            },
+            "shared": false
+          }
+        ],
+        "sharedFiles": [
+          {
+            "evidenceArtifactId": "artifact-school-plan",
+            "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+            "audience": "shared"
+          }
+        ],
+        "baselinePlanId": "baseline-school-1",
+        "budgets": [
+          {
+            "budgetId": "budget-school",
+            "limit": {
+              "minorUnits": "675000000000",
+              "currency": "UZS"
+            }
+          }
+        ],
+        "participantIds": ["company-beton", "person-anna"],
+        "privateFiles": [
+          {
+            "evidenceArtifactId": "artifact-school-contract",
+            "hash": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        ],
+        "privateNotes": "owner_private",
+        "revision": 6,
+        "createdAt": "2026-04-01T09:00:00Z"
+      },
+      "category": "education",
+      "region": "UZ-TK",
+      "participants": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-fasad"
+          },
+          "role": "owner",
+          "roleTitle": "Генеральный подрядчик по фасаду",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "generalContractor"
+        },
+        {
+          "party": {
+            "kind": "person",
+            "id": "person-anna"
+          },
+          "role": "leader",
+          "roleTitle": "Руководитель проекта",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "generalContractor"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-beton"
+          },
+          "role": "participant",
+          "roleTitle": "Поставщик бетона",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "supplier"
+        }
+      ],
+      "updates": [
+        {
+          "id": "upd-school-1",
+          "type": "result",
+          "title": "Подсистема смонтирована на двух этажах",
+          "date": "2026-09-28",
+          "evidence": "confirmed",
+          "isPublic": true
+        },
+        {
+          "id": "upd-school-2",
+          "type": "teamMessage",
+          "title": "Срок фасада перенесён по инициативе заказчика",
+          "date": "2026-10-12",
+          "evidence": "asserted",
+          "isPublic": true
+        },
+        {
+          "id": "upd-school-3",
+          "type": "discussion",
+          "title": "Цвет панелей атриума",
+          "date": "2026-10-18",
+          "evidence": "disputed",
+          "isPublic": true
+        },
+        {
+          "id": "upd-school-4",
+          "type": "teamMessage",
+          "title": "Внутренняя сверка бюджета",
+          "date": "2026-10-19",
+          "evidence": "asserted",
+          "isPublic": false
+        }
+      ],
+      "publishedMilestones": [
+        {
+          "milestoneId": "ms-school-1",
+          "baselineDue": "2026-09-30",
+          "changedDue": null,
+          "actual": "2026-09-28",
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-school-2",
+          "baselineDue": "2026-10-31",
+          "changedDue": "2026-11-30",
+          "actual": null,
+          "changedByClient": true
+        },
+        {
+          "milestoneId": "ms-school-3",
+          "baselineDue": "2026-12-20",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        }
+      ],
+      "publicationIds": ["pub-art-2", "pub-cpost-fasad-1"],
+      "projectionDate": "2026-10-18",
+      "updatedAt": "2026-10-19T10:00:00Z",
+      "files": [
+        {
+          "id": "file-school-1",
+          "name": "План фасада.pdf",
+          "audience": "participants"
+        },
+        {
+          "id": "file-school-2",
+          "name": "Договор с заказчиком.pdf",
+          "audience": "private"
+        },
+        {
+          "id": "file-school-3",
+          "name": "Фото монтажа.zip",
+          "audience": "public",
+          "kind": "archive"
+        }
+      ],
+      "budget": {
+        "reservedMinorUnits": "225000000000",
+        "settledMinorUnits": "135000000000"
+      },
+      "showcase": {
+        "gallery": [
+          {
+            "id": "g-school-1",
+            "photo": "facade-window-grid",
+            "caption": "Фасад корпуса после монтажа панелей первого этажа"
+          },
+          {
+            "id": "g-school-2",
+            "photo": "scaffolding-poles",
+            "caption": "Леса на восточном фасаде, сентябрь"
+          },
+          {
+            "id": "g-school-3",
+            "photo": "glass-facade-panels",
+            "caption": "Светопрозрачные конструкции атриума, пробный монтаж"
+          },
+          {
+            "id": "g-school-4",
+            "photo": "site-women-blueprints",
+            "caption": "Согласование раскладки панелей с архитектором"
+          }
+        ],
+        "video": null,
+        "highlights": [
+          {
+            "label": "Площадь фасада",
+            "value": "9 800 м²"
+          },
+          {
+            "label": "Этажей",
+            "value": "4"
+          },
+          {
+            "label": "Вместимость",
+            "value": "800 мест"
+          },
+          {
+            "label": "Срок фасада",
+            "value": "до 30 ноября 2026"
+          }
+        ],
+        "plans": [
+          {
+            "id": "pl-school-1",
+            "title": "Монтаж фасадных панелей третьего и четвёртого этажей",
+            "when": "ноябрь 2026"
+          },
+          {
+            "id": "pl-school-2",
+            "title": "Остекление атриума",
+            "when": "декабрь 2026"
+          },
+          {
+            "id": "pl-school-3",
+            "title": "Приёмка фасада техзаказчиком",
+            "when": "январь 2027"
+          }
+        ],
+        "partnerNote": "Проекту нужны поставщики стальных балок для атриума и подрядчик на монтаж остекления. Условия: поставка на объект в Ташкенте, оплата по этапам после приёмки, документы на партию обязательны. Предложения принимаем только через запросы на платформе — так все участники видят одинаковые условия.",
+        "contactPartyId": "person-anna",
+        "needs": [
+          {
+            "rfqId": "rfq-fasad-1",
+            "summary": "Балки для каркаса атриума по спецификации, доставка на объект, протоколы на партию.",
+            "quantity": "24",
+            "unit": "т"
+          },
+          {
+            "rfqId": "rfq-fasad-2",
+            "summary": "Монтаж витражного остекления атриума по рабочей документации, со своими лесами.",
+            "quantity": "640",
+            "unit": "м²"
+          }
+        ],
+        "passport": {
+          "address": "Ташкент, набережная (адрес площадки опубликован частично)",
+          "objectType": "Общеобразовательная школа, корпус на 800 мест",
+          "totalArea": "14 200 м²",
+          "floors": "4",
+          "siteArea": "2,1 га",
+          "designer": "Архитектурное бюро (пример)",
+          "commissioning": "лето 2027"
+        },
+        "openRoles": [
+          {
+            "id": "or-school-1",
+            "role": "subcontractor",
+            "title": "Подрядчик на монтаж остекления атриума",
+            "note": "Со своими лесами, старт в декабре",
+            "when": "декабрь 2026"
+          },
+          {
+            "id": "or-school-2",
+            "role": "supplier",
+            "title": "Поставщик стальных балок",
+            "note": "24 т по спецификации, протоколы на партию",
+            "when": "ноябрь 2026"
+          }
+        ],
+        "materials": [
+          {
+            "id": "mt-school-1",
+            "name": "Алюминиевая подсистема НВФ",
+            "supplierPartyId": "company-fasad",
+            "supplierName": null,
+            "status": "inUse"
+          },
+          {
+            "id": "mt-school-2",
+            "name": "Керамогранитные панели 600×1200",
+            "supplierPartyId": null,
+            "supplierName": "Производитель керамогранита (пример)",
+            "status": "approved"
+          },
+          {
+            "id": "mt-school-3",
+            "name": "Минераловатный утеплитель 150 мм",
+            "supplierPartyId": "company-beton",
+            "supplierName": null,
+            "status": "inUse"
+          },
+          {
+            "id": "mt-school-4",
+            "name": "Витражная система атриума",
+            "supplierPartyId": null,
+            "supplierName": null,
+            "status": "planned"
+          }
+        ],
+        "procurementPlan": [
+          {
+            "id": "pp-school-1",
+            "title": "Стальные балки атриума",
+            "kind": "goods",
+            "when": "ноябрь 2026",
+            "status": "open",
+            "rfqId": "rfq-fasad-1"
+          },
+          {
+            "id": "pp-school-2",
+            "title": "Монтаж остекления атриума",
+            "kind": "works",
+            "when": "декабрь 2026",
+            "status": "open",
+            "rfqId": "rfq-fasad-2"
+          },
+          {
+            "id": "pp-school-3",
+            "title": "Фасадные панели третьего и четвёртого этажей",
+            "kind": "goods",
+            "when": "октябрь 2026",
+            "status": "closed",
+            "rfqId": null
+          },
+          {
+            "id": "pp-school-4",
+            "title": "Благоустройство входной группы",
+            "kind": "works",
+            "when": "март 2027",
+            "status": "planned",
+            "rfqId": null
+          }
+        ],
+        "supplierTerms": [
+          "Документы на партию: паспорт качества и протоколы испытаний",
+          "Поставка на объект в Ташкенте, разгрузка силами поставщика",
+          "Оплата по этапам после приёмки, без аванса",
+          "Предложения только через запросы на платформе"
+        ],
+        "commercial": null,
+        "press": [
+          {
+            "id": "pr-school-1",
+            "title": "В районе строится школа на 800 мест: фасад смонтируют к зиме",
+            "source": "Городское издание (пример)",
+            "url": "https://example.invalid/press/school-facade",
+            "date": "2026-10-02"
+          }
+        ],
+        "documents": [
+          {
+            "id": "doc-school-1",
+            "kind": "permit",
+            "name": "Разрешение на строительство",
+            "number": "77-000-0000-2026",
+            "date": "2026-03-12",
+            "evidence": "confirmed"
+          },
+          {
+            "id": "doc-school-2",
+            "kind": "expertise",
+            "name": "Положительное заключение экспертизы проектной документации",
+            "number": "77-1-1-3-00000-2026",
+            "date": "2026-02-20",
+            "evidence": "asserted"
+          },
+          {
+            "id": "doc-school-3",
+            "kind": "contract",
+            "name": "Договор генподряда по фасаду",
+            "number": null,
+            "date": "2026-04-01",
+            "evidence": "asserted"
+          }
+        ]
+      },
+      "location": {
+        "lat": 55.76073,
+        "lng": 37.71138
+      }
+    },
+    {
+      "slug": "sklad-logistika",
+      "project": {
+        "id": "project-warehouse",
+        "owner": {
+          "kind": "company",
+          "id": "company-fasad"
+        },
+        "creatorPersonId": "person-ivan",
+        "leaderPersonId": null,
+        "name": "Склад логистического центра: сэндвич-панели",
+        "summary": "Внутренний проект компании без публичной проекции.",
+        "status": "planned",
+        "publicity": {
+          "enabled": false,
+          "publishedStory": null,
+          "openNeedIds": [],
+          "publicParticipantIds": []
+        },
+        "milestones": [
+          {
+            "id": "ms-wh-1",
+            "title": "Подписание договора",
+            "due": {
+              "date": "2026-11-15",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": false
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": null,
+        "budgets": [],
+        "participantIds": [],
+        "privateFiles": [],
+        "privateNotes": null,
+        "revision": 1,
+        "createdAt": "2026-10-15T09:00:00Z"
+      },
+      "category": "industrial",
+      "region": "UZ-TK",
+      "participants": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-fasad"
+          },
+          "role": "owner",
+          "roleTitle": "Подрядчик",
+          "isPublic": false,
+          "grant": "owner_private",
+          "partyRole": "generalContractor"
+        }
+      ],
+      "updates": [],
+      "publishedMilestones": [],
+      "publicationIds": [],
+      "projectionDate": null,
+      "updatedAt": "2026-10-15T09:00:00Z",
+      "files": [],
+      "budget": null,
+      "location": {
+        "lat": 55.76519,
+        "lng": 37.6775
+      }
+    },
+    {
+      "slug": "dacha-petra",
+      "project": {
+        "id": "project-dacha",
+        "owner": {
+          "kind": "person",
+          "id": "person-petr"
+        },
+        "creatorPersonId": "person-petr",
+        "leaderPersonId": "person-petr",
+        "name": "Загородный дом: фасад и окна",
+        "summary": "Личный проект без компании: утепление, фасад и замена окон.",
+        "status": "active",
+        "publicity": {
+          "enabled": false,
+          "publishedStory": null,
+          "openNeedIds": [],
+          "publicParticipantIds": []
+        },
+        "milestones": [
+          {
+            "id": "ms-dacha-1",
+            "title": "Утепление стен",
+            "due": {
+              "date": "2026-11-10",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "4500000000",
+              "currency": "UZS"
+            },
+            "shared": true
+          },
+          {
+            "id": "ms-dacha-2",
+            "title": "Монтаж окон",
+            "due": {
+              "date": "2026-11-25",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "6750000000",
+              "currency": "UZS"
+            },
+            "shared": true
+          },
+          {
+            "id": "ms-dacha-3",
+            "title": "Транш кредита",
+            "due": {
+              "date": "2026-11-01",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "7500000000",
+              "currency": "UZS"
+            },
+            "shared": false
+          }
+        ],
+        "sharedFiles": [
+          {
+            "evidenceArtifactId": "artifact-dacha-plan",
+            "hash": "3333333333333333333333333333333333333333333333333333333333333333",
+            "audience": "shared"
+          }
+        ],
+        "baselinePlanId": "baseline-dacha-1",
+        "budgets": [
+          {
+            "budgetId": "budget-dacha",
+            "limit": {
+              "minorUnits": "12000000000",
+              "currency": "UZS"
+            }
+          }
+        ],
+        "participantIds": ["company-fasad"],
+        "privateFiles": [
+          {
+            "evidenceArtifactId": "artifact-dacha-loan",
+            "hash": "4444444444444444444444444444444444444444444444444444444444444444"
+          }
+        ],
+        "privateNotes": "owner only",
+        "revision": 4,
+        "createdAt": "2026-10-01T09:00:00Z"
+      },
+      "category": "housing",
+      "region": "UZ-SA",
+      "participants": [
+        {
+          "party": {
+            "kind": "person",
+            "id": "person-petr"
+          },
+          "role": "owner",
+          "roleTitle": "Заказчик",
+          "isPublic": false,
+          "grant": "owner_private",
+          "partyRole": "client"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-fasad"
+          },
+          "role": "participant",
+          "roleTitle": "Подрядчик по фасаду",
+          "isPublic": false,
+          "grant": "shared_party",
+          "partyRole": "generalContractor"
+        }
+      ],
+      "updates": [
+        {
+          "id": "upd-dacha-1",
+          "type": "teamMessage",
+          "title": "Подрядчик приглашён в проект",
+          "date": "2026-10-05",
+          "evidence": "confirmed",
+          "isPublic": false
+        }
+      ],
+      "publishedMilestones": [],
+      "publicationIds": [],
+      "projectionDate": null,
+      "updatedAt": "2026-10-20T09:00:00Z",
+      "files": [
+        {
+          "id": "file-dacha-1",
+          "name": "План участка.pdf",
+          "audience": "participants"
+        },
+        {
+          "id": "file-dacha-2",
+          "name": "Кредитный договор.pdf",
+          "audience": "private"
+        }
+      ],
+      "budget": {
+        "reservedMinorUnits": "4500000000",
+        "settledMinorUnits": "0"
+      },
+      "location": {
+        "lat": 59.95453,
+        "lng": 30.27849
+      }
+    },
+    {
+      "slug": "park-u-zavoda",
+      "project": {
+        "id": "project-park",
+        "owner": {
+          "kind": "company",
+          "id": "company-steklo"
+        },
+        "creatorPersonId": "person-ivan",
+        "leaderPersonId": null,
+        "name": "Павильон в парке у завода",
+        "summary": "Светопрозрачный павильон для городского парка; проект завершён и опубликован как история.",
+        "status": "completed",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "Павильон собран из гнутых стеклопакетов на стальном каркасе. Работы заняли четыре месяца; приёмка прошла без замечаний по остеклению.",
+          "openNeedIds": [],
+          "publicParticipantIds": ["company-steklo"]
+        },
+        "milestones": [
+          {
+            "id": "ms-park-1",
+            "title": "Сдача объекта",
+            "due": {
+              "date": "2026-08-30",
+              "timeZone": "Asia/Yekaterinburg"
+            },
+            "budget": null,
+            "shared": true
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": null,
+        "budgets": [],
+        "participantIds": [],
+        "privateFiles": [],
+        "privateNotes": null,
+        "revision": 3,
+        "createdAt": "2026-03-01T09:00:00Z"
+      },
+      "category": "publicSpace",
+      "region": "UZ-FA",
+      "participants": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-steklo"
+          },
+          "role": "owner",
+          "roleTitle": "Генеральный подрядчик",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "generalContractor"
+        }
+      ],
+      "updates": [
+        {
+          "id": "upd-park-1",
+          "type": "result",
+          "title": "Объект сдан",
+          "date": "2026-08-30",
+          "evidence": "confirmed",
+          "isPublic": true
+        }
+      ],
+      "publishedMilestones": [
+        {
+          "milestoneId": "ms-park-1",
+          "baselineDue": "2026-08-30",
+          "changedDue": null,
+          "actual": "2026-08-30",
+          "changedByClient": false
+        }
+      ],
+      "publicationIds": [],
+      "projectionDate": "2026-09-05",
+      "updatedAt": "2026-09-05T09:00:00Z",
+      "files": [],
+      "budget": null,
+      "showcase": {
+        "gallery": [
+          {
+            "id": "g-park-1",
+            "photo": "glass-steel-facade",
+            "caption": "Павильон после сдачи"
+          },
+          {
+            "id": "g-park-2",
+            "photo": "steel-roof-beams",
+            "caption": "Каркас кровли"
+          },
+          {
+            "id": "g-park-3",
+            "photo": "workshop-metal-frame",
+            "caption": "Сборка конструкций на участке"
+          }
+        ],
+        "video": null,
+        "highlights": [
+          {
+            "label": "Площадь",
+            "value": "320 м²"
+          },
+          {
+            "label": "Конструкции",
+            "value": "алюминий и стекло"
+          },
+          {
+            "label": "Срок работ",
+            "value": "5 месяцев"
+          }
+        ],
+        "plans": [],
+        "partnerNote": "Проект завершён. Опыт и узлы доступны для обсуждения — пишите владельцу.",
+        "contactPartyId": "company-steklo",
+        "needs": [],
+        "passport": {
+          "address": "Фергана, парк у завода (пример)",
+          "objectType": "Светопрозрачный павильон",
+          "totalArea": "320 м²",
+          "floors": "1",
+          "siteArea": null,
+          "designer": "Собственная практика Елены Соколовой",
+          "commissioning": "октябрь 2026"
+        },
+        "openRoles": [],
+        "materials": [
+          {
+            "id": "mt-pk-1",
+            "name": "Алюминиевые витражные конструкции",
+            "supplierPartyId": "company-steklo",
+            "supplierName": null,
+            "status": "inUse"
+          }
+        ],
+        "procurementPlan": [],
+        "supplierTerms": [],
+        "commercial": null,
+        "press": [],
+        "documents": [
+          {
+            "id": "doc-pk-1",
+            "kind": "other",
+            "name": "Акт ввода павильона",
+            "number": null,
+            "date": "2026-10-05",
+            "evidence": "confirmed"
+          }
+        ]
+      },
+      "location": {
+        "lat": 56.79417,
+        "lng": 60.63632
+      }
+    },
+    {
+      "slug": "kvartal-u-parka",
+      "project": {
+        "id": "project-kvartal",
+        "owner": {
+          "kind": "company",
+          "id": "company-rechnoy"
+        },
+        "creatorPersonId": "person-elena",
+        "leaderPersonId": "person-elena",
+        "name": "Квартал у парка: школа и общественные пространства",
+        "summary": "Социальный блок жилого квартала: школа на 600 мест, детский сад и парк между корпусами.",
+        "status": "active",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "Квартал строится очередями. В 2026 году стартовал социальный блок: школа и детский сад с общим парком. Концепцию подготовила Елена Соколова, генподряд ведёт «ГенМонтаж». Сейчас идёт нулевой цикл школы, к весне планируется каркас. Застройщик ищет субподрядчиков на фасады и кровлю на 2027 год.",
+          "openNeedIds": ["rfq-kv-1"],
+          "publicParticipantIds": ["company-rechnoy", "person-elena", "company-genmontazh", "company-kontrol"]
+        },
+        "milestones": [
+          {
+            "id": "ms-kv-1",
+            "title": "Концепция и проект планировки",
+            "due": {
+              "date": "2026-06-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-kv-2",
+            "title": "Нулевой цикл школы",
+            "due": {
+              "date": "2026-12-15",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-kv-3",
+            "title": "Каркас школы",
+            "due": {
+              "date": "2027-05-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-kv-4",
+            "title": "Фасады и кровля",
+            "due": {
+              "date": "2027-10-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-kv-5",
+            "title": "Благоустройство парка",
+            "due": {
+              "date": "2028-05-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": "baseline-project-kvartal",
+        "budgets": [],
+        "participantIds": ["person-elena", "company-genmontazh", "company-kontrol"],
+        "privateFiles": [],
+        "privateNotes": "owner_private",
+        "revision": 1,
+        "createdAt": "2026-03-10T09:00:00Z"
+      },
+      "category": "education",
+      "region": "UZ-SA",
+      "participants": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-rechnoy"
+          },
+          "role": "owner",
+          "roleTitle": "Застройщик",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "developer"
+        },
+        {
+          "party": {
+            "kind": "person",
+            "id": "person-elena"
+          },
+          "role": "leader",
+          "roleTitle": "Архитектор проекта",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "designer"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-genmontazh"
+          },
+          "role": "participant",
+          "roleTitle": "Генеральный подрядчик",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "generalContractor"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-kontrol"
+          },
+          "role": "participant",
+          "roleTitle": "Технический заказчик",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "technicalClient"
+        }
+      ],
+      "updates": [
+        {
+          "id": "upd-kv-1",
+          "type": "result",
+          "title": "Проект планировки квартала утверждён",
+          "date": "2026-06-25",
+          "evidence": "confirmed",
+          "isPublic": true
+        },
+        {
+          "id": "upd-kv-2",
+          "type": "teamMessage",
+          "title": "Начат нулевой цикл школы: котлован и свайное поле",
+          "date": "2026-10-05",
+          "evidence": "asserted",
+          "isPublic": true
+        },
+        {
+          "id": "upd-kv-3",
+          "type": "discussion",
+          "title": "Материал фасадов: керамика или фиброцемент",
+          "date": "2026-10-20",
+          "evidence": "asserted",
+          "isPublic": true
+        }
+      ],
+      "publishedMilestones": [
+        {
+          "milestoneId": "ms-kv-1",
+          "baselineDue": "2026-06-30",
+          "changedDue": null,
+          "actual": "2026-06-25",
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-kv-2",
+          "baselineDue": "2026-12-15",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-kv-3",
+          "baselineDue": "2027-05-30",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-kv-4",
+          "baselineDue": "2027-10-30",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-kv-5",
+          "baselineDue": "2028-05-30",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        }
+      ],
+      "publicationIds": [],
+      "projectionDate": "2026-10-20",
+      "updatedAt": "2026-10-21T09:00:00Z",
+      "files": [
+        {
+          "id": "file-kv-1",
+          "name": "Презентация квартала для жителей.pdf",
+          "audience": "public",
+          "kind": "presentation"
+        },
+        {
+          "id": "file-kv-2",
+          "name": "Проект планировки.pdf",
+          "audience": "participants",
+          "kind": "drawing"
+        },
+        {
+          "id": "file-kv-3",
+          "name": "Планировки квартир первой очереди.pdf",
+          "audience": "public",
+          "kind": "drawing"
+        },
+        {
+          "id": "file-kv-4",
+          "name": "Коммерческие помещения: схемы и ТУ.pdf",
+          "audience": "public",
+          "kind": "drawing"
+        },
+        {
+          "id": "file-kv-5",
+          "name": "Памятка будущему жителю.pdf",
+          "audience": "public",
+          "kind": "brochure"
+        }
+      ],
+      "budget": null,
+      "showcase": {
+        "gallery": [
+          {
+            "id": "g-kv-1",
+            "photo": "aerial-site-foundations",
+            "caption": "Нулевой цикл школы, октябрь"
+          },
+          {
+            "id": "g-kv-2",
+            "photo": "aerial-site-excavator",
+            "caption": "Площадка детского сада"
+          },
+          {
+            "id": "g-kv-3",
+            "photo": "cranes-sky",
+            "caption": "Краны на площадке квартала"
+          }
+        ],
+        "video": null,
+        "highlights": [
+          {
+            "label": "Школа",
+            "value": "600 мест"
+          },
+          {
+            "label": "Детский сад",
+            "value": "220 мест"
+          },
+          {
+            "label": "Парк",
+            "value": "2,4 га"
+          },
+          {
+            "label": "Ввод",
+            "value": "2028"
+          }
+        ],
+        "plans": [
+          {
+            "id": "pl-kv-1",
+            "title": "Завершить нулевой цикл школы",
+            "when": "декабрь 2026"
+          },
+          {
+            "id": "pl-kv-2",
+            "title": "Выбрать подрядчиков на фасады и кровлю",
+            "when": "февраль 2027"
+          },
+          {
+            "id": "pl-kv-3",
+            "title": "Каркас школы",
+            "when": "до мая 2027"
+          }
+        ],
+        "partnerNote": "На 2027 год нужны подрядчики по навесным фасадам (около 11 000 м²) и кровле, поставщики керамических панелей. Приглашаем компании с опубликованными проектами на платформе: отбор пройдёт через запрос предложений в феврале, критерии опубликуем заранее.",
+        "contactPartyId": "company-genmontazh",
+        "needs": [
+          {
+            "rfqId": "rfq-kv-1",
+            "summary": "Навесные фасады школы: подсистема и облицовка керамикой, срок работ май–октябрь 2027.",
+            "quantity": "11 000",
+            "unit": "м²"
+          }
+        ],
+        "passport": {
+          "address": "Самарканд, участок у парка (пример)",
+          "objectType": "Жилой квартал с социальной инфраструктурой",
+          "totalArea": "96 000 м² жилья, 18 500 м² социальных объектов",
+          "floors": "9–14",
+          "siteArea": "7,8 га",
+          "designer": "Собственная практика Елены Соколовой",
+          "commissioning": "2028"
+        },
+        "openRoles": [
+          {
+            "id": "or-kv-1",
+            "role": "subcontractor",
+            "title": "Подрядчик по навесным фасадам школы",
+            "note": "Около 11 000 м², керамика, отбор через запрос в феврале",
+            "when": "февраль 2027"
+          },
+          {
+            "id": "or-kv-2",
+            "role": "subcontractor",
+            "title": "Подрядчик по кровле школы и сада",
+            "note": null,
+            "when": "март 2027"
+          },
+          {
+            "id": "or-kv-3",
+            "role": "supplier",
+            "title": "Поставщик керамических панелей",
+            "note": "Образцы и протоколы до января",
+            "when": "январь 2027"
+          }
+        ],
+        "materials": [
+          {
+            "id": "mt-kv-1",
+            "name": "Монолитный каркас",
+            "supplierPartyId": "company-genmontazh",
+            "supplierName": null,
+            "status": "inUse"
+          },
+          {
+            "id": "mt-kv-2",
+            "name": "Керамические фасадные панели",
+            "supplierPartyId": null,
+            "supplierName": null,
+            "status": "planned"
+          }
+        ],
+        "procurementPlan": [
+          {
+            "id": "pp-kv-1",
+            "title": "Навесные фасады школы",
+            "kind": "works",
+            "when": "февраль 2027",
+            "status": "open",
+            "rfqId": "rfq-kv-1"
+          },
+          {
+            "id": "pp-kv-2",
+            "title": "Кровля школы и детского сада",
+            "kind": "works",
+            "when": "март 2027",
+            "status": "planned",
+            "rfqId": null
+          },
+          {
+            "id": "pp-kv-3",
+            "title": "Оборудование детского сада",
+            "kind": "goods",
+            "when": "осень 2027",
+            "status": "planned",
+            "rfqId": null
+          }
+        ],
+        "supplierTerms": ["Опубликованный профиль компании на платформе с проектами", "Лицензия на СМР для подрядчиков по фасадам и кровле", "Готовность к поэтапной приёмке скрытых работ с фотофиксацией"],
+        "commercial": {
+          "offering": "Квартал у парка: жильё первой очереди в продаже, коммерческие помещения первых этажей сдаются с 2028 года, школа и детский сад передаются городу.",
+          "infrastructure": ["Школа на 600 мест", "Детский сад на 220 мест", "Парк 2,4 га", "Подземный паркинг", "Коммерческие первые этажи", "Велодорожки и площадки"],
+          "audiences": [
+            {
+              "id": "aud-kv-buyers",
+              "kind": "buyers",
+              "title": "Покупателям квартир",
+              "description": "Первая очередь: три корпуса на 9–14 этажей, отделка «белая коробка», ввод в 2027 году. Продажи по договорам участия в долевом строительстве с эскроу.",
+              "units": [
+                {
+                  "id": "u-kv-1",
+                  "title": "Студии",
+                  "detail": "24–28 м², окна во двор или на парк"
+                },
+                {
+                  "id": "u-kv-2",
+                  "title": "Однокомнатные",
+                  "detail": "36–42 м², кухня-гостиная"
+                },
+                {
+                  "id": "u-kv-3",
+                  "title": "Двухкомнатные",
+                  "detail": "54–63 м², часть с террасами"
+                },
+                {
+                  "id": "u-kv-4",
+                  "title": "Трёхкомнатные",
+                  "detail": "78–92 м², два санузла"
+                }
+              ],
+              "terms": ["Эскроу-счета, аккредитация в банках (пример)", "Рассрочка до ввода и ипотечные программы по запросу", "Срок передачи ключей: до 31 декабря 2027"],
+              "fileIds": ["file-kv-1", "file-kv-3"],
+              "faq": [
+                {
+                  "q": "Когда можно посмотреть площадку?",
+                  "a": "Показы по записи, офис продаж работает ежедневно. Запишитесь через платформу, менеджер подтвердит время."
+                },
+                {
+                  "q": "Какая отделка?",
+                  "a": "«Белая коробка»: стяжка, штукатурка, разводка инженерии до точек. Чистовая отделка — опция."
+                }
+              ],
+              "action": "viewing",
+              "commercialTerms": [
+                "Оплата: 100% через эскроу или рассрочка до ввода с первым взносом от 30%",
+                "Ипотека: аккредитация в банках-партнёрах, субсидированные программы по запросу",
+                "В стоимость входят: место для велосипеда, доступ к проекту на платформе; паркинг и кладовые — отдельно",
+                "Бронирование квартиры бесплатно на 5 рабочих дней"
+              ]
+            },
+            {
+              "id": "aud-kv-tenants",
+              "kind": "tenants",
+              "title": "Арендаторам коммерческих помещений",
+              "description": "Первые этажи трёх корпусов: помещения 60–240 м² с отдельными входами и витринами, передача в аренду с 2028 года. Приоритет — сервисы для жителей: продукты, аптека, кафе, детские студии.",
+              "units": [
+                {
+                  "id": "u-kv-5",
+                  "title": "Помещения 60–90 м²",
+                  "detail": "Для сервисов и небольших магазинов"
+                },
+                {
+                  "id": "u-kv-6",
+                  "title": "Помещения 120–240 м²",
+                  "detail": "Продукты, кафе, медицина; выделенная мощность и вытяжка"
+                }
+              ],
+              "terms": ["Долгосрочная аренда от 5 лет", "Технические условия и мощность согласуются до подписания", "Витрины и вывески по единому дизайн-коду квартала"],
+              "fileIds": ["file-kv-4"],
+              "faq": [
+                {
+                  "q": "Можно ли забронировать помещение сейчас?",
+                  "a": "Да, предварительные договоры на коммерческие помещения заключаются с 2027 года. Оставьте запрос, и отдел коммерческой недвижимости свяжется с вами."
+                }
+              ],
+              "action": "request",
+              "commercialTerms": [
+                "Ставка аренды фиксируется на 3 года, далее индексация по согласованию",
+                "Обеспечительный платёж — одна месячная ставка",
+                "Арендные каникулы на отделку до 3 месяцев при договоре от 5 лет",
+                "Эксплуатационные расходы — по фактическим затратам управляющей компании"
+              ]
+            },
+            {
+              "id": "aud-kv-residents",
+              "kind": "residents",
+              "title": "Будущим жителям",
+              "description": "Как будет устроена жизнь в квартале: управляющая компания, двор без машин, парк и школа в шаговой доступности. Жители получают доступ к проекту на платформе и видят ход работ.",
+              "units": [],
+              "terms": ["Управляющая компания выбирается на собрании первых жителей", "Двор без машин, паркинг под корпусами", "Школа и сад открываются вместе со второй очередью"],
+              "fileIds": ["file-kv-5"],
+              "faq": [
+                {
+                  "q": "Как следить за ходом стройки?",
+                  "a": "На этой странице публикуются этапы и обновления. Покупатели после сделки получают доступ к проекту с актами по этапам."
+                }
+              ],
+              "action": "join",
+              "commercialTerms": ["Тариф управляющей компании утверждается собранием жителей", "Паркинг и кладовые — покупка или долгосрочная аренда"]
+            }
+          ],
+          "note": "Цены и условия — по запросу в отдел продаж. Платформа не публикует цены и не ведёт сделки с недвижимостью.",
+          "contactPartyId": "company-rechnoy",
+          "salesOffice": "Офис продаж на площадке, ежедневно 10:00–20:00 (пример)"
+        },
+        "press": [
+          {
+            "id": "pr-kv-1",
+            "title": "Застройщик показал проект квартала со школой у парка",
+            "source": "Отраслевое издание (пример)",
+            "url": "https://example.invalid/press/kvartal",
+            "date": "2026-07-03"
+          }
+        ],
+        "documents": [
+          {
+            "id": "doc-kv-1",
+            "kind": "landPlan",
+            "name": "Проект планировки территории",
+            "number": "ППТ-0000-2026",
+            "date": "2026-06-25",
+            "evidence": "confirmed"
+          },
+          {
+            "id": "doc-kv-2",
+            "kind": "permit",
+            "name": "Разрешение на строительство школы",
+            "number": "78-000-0000-2026",
+            "date": "2026-09-18",
+            "evidence": "asserted"
+          }
+        ]
+      },
+      "location": {
+        "lat": 60.01771,
+        "lng": 30.2069
+      }
+    },
+    {
+      "slug": "proizvodstvennyj-korpus",
+      "project": {
+        "id": "project-korpus",
+        "owner": {
+          "kind": "company",
+          "id": "company-mera"
+        },
+        "creatorPersonId": "person-sergey",
+        "leaderPersonId": "person-sergey",
+        "name": "Производственный корпус: линия дозирования и фасад",
+        "summary": "Новый корпус для сборки дозирующего оборудования: каркас, сэндвич-панели, инженерные сети.",
+        "status": "active",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "Корпус площадью 4 000 м² строится рядом с действующим заводом. Каркас смонтирован, идёт обшивка сэндвич-панелями и монтаж инженерных сетей. Руководитель участка — Сергей Михайлов. Пуск линии запланирован на весну 2027 года.",
+          "openNeedIds": [],
+          "publicParticipantIds": ["company-mera", "person-sergey", "company-terra", "company-tehnologistik"]
+        },
+        "milestones": [
+          {
+            "id": "ms-ko-1",
+            "title": "Каркас корпуса",
+            "due": {
+              "date": "2026-08-31",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-ko-2",
+            "title": "Сэндвич-панели и кровля",
+            "due": {
+              "date": "2026-11-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-ko-3",
+            "title": "Инженерные сети",
+            "due": {
+              "date": "2027-01-31",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-ko-4",
+            "title": "Монтаж линии и пуск",
+            "due": {
+              "date": "2027-04-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": "baseline-project-korpus",
+        "budgets": [],
+        "participantIds": ["person-sergey", "company-terra", "company-tehnologistik"],
+        "privateFiles": [],
+        "privateNotes": "owner_private",
+        "revision": 1,
+        "createdAt": "2026-05-15T09:00:00Z"
+      },
+      "category": "industrial",
+      "region": "UZ-FA",
+      "participants": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-mera"
+          },
+          "role": "owner",
+          "roleTitle": "Заказчик и будущий оператор",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "client"
+        },
+        {
+          "party": {
+            "kind": "person",
+            "id": "person-sergey"
+          },
+          "role": "leader",
+          "roleTitle": "Руководитель участка",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "generalContractor"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-terra"
+          },
+          "role": "participant",
+          "roleTitle": "Поставщик панелей",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "supplier"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-tehnologistik"
+          },
+          "role": "participant",
+          "roleTitle": "Логистика и аренда техники",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "supplier"
+        }
+      ],
+      "updates": [
+        {
+          "id": "upd-ko-1",
+          "type": "result",
+          "title": "Каркас корпуса смонтирован",
+          "date": "2026-09-05",
+          "evidence": "confirmed",
+          "isPublic": true
+        },
+        {
+          "id": "upd-ko-2",
+          "type": "teamMessage",
+          "title": "Начата обшивка сэндвич-панелями, первая партия принята",
+          "date": "2026-10-10",
+          "evidence": "asserted",
+          "isPublic": true
+        }
+      ],
+      "publishedMilestones": [
+        {
+          "milestoneId": "ms-ko-1",
+          "baselineDue": "2026-08-31",
+          "changedDue": null,
+          "actual": "2026-09-05",
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-ko-2",
+          "baselineDue": "2026-11-30",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-ko-3",
+          "baselineDue": "2027-01-31",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-ko-4",
+          "baselineDue": "2027-04-30",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        }
+      ],
+      "publicationIds": [],
+      "projectionDate": "2026-10-22",
+      "updatedAt": "2026-10-22T09:00:00Z",
+      "files": [
+        {
+          "id": "file-ko-1",
+          "name": "Схема корпуса для подрядчиков.pdf",
+          "audience": "public",
+          "kind": "drawing"
+        }
+      ],
+      "budget": null,
+      "showcase": {
+        "gallery": [
+          {
+            "id": "g-ko-1",
+            "photo": "corrugated-building",
+            "caption": "Корпус после обшивки первого пролёта"
+          },
+          {
+            "id": "g-ko-2",
+            "photo": "steel-roof-beams",
+            "caption": "Каркас кровли"
+          },
+          {
+            "id": "g-ko-3",
+            "photo": "workshop-metal-frame",
+            "caption": "Участок сборки линии в действующем цехе"
+          }
+        ],
+        "video": null,
+        "highlights": [
+          {
+            "label": "Площадь",
+            "value": "4 000 м²"
+          },
+          {
+            "label": "Высота пролёта",
+            "value": "9 м"
+          },
+          {
+            "label": "Пуск линии",
+            "value": "весна 2027"
+          }
+        ],
+        "plans": [
+          {
+            "id": "pl-ko-1",
+            "title": "Закрыть контур корпуса",
+            "when": "ноябрь 2026"
+          },
+          {
+            "id": "pl-ko-2",
+            "title": "Инженерные сети и отопление",
+            "when": "зима 2026–2027"
+          }
+        ],
+        "partnerNote": "Ищем подрядчика на внутренние инженерные сети (вентиляция, электрика) с опытом промышленных объектов в Ферганской долине. Запрос предложений будет опубликован в ноябре.",
+        "contactPartyId": "person-sergey",
+        "needs": [],
+        "passport": {
+          "address": "Ферганская область, промплощадка (пример)",
+          "objectType": "Производственный корпус, одноэтажный",
+          "totalArea": "4 000 м²",
+          "floors": "1",
+          "siteArea": "1,2 га",
+          "designer": "Проектное бюро (пример)",
+          "commissioning": "весна 2027"
+        },
+        "openRoles": [
+          {
+            "id": "or-ko-1",
+            "role": "subcontractor",
+            "title": "Подрядчик по внутренним инженерным сетям",
+            "note": "Вентиляция и электрика промышленного объекта",
+            "when": "ноябрь 2026"
+          }
+        ],
+        "materials": [
+          {
+            "id": "mt-ko-1",
+            "name": "Сэндвич-панели 150 мм",
+            "supplierPartyId": "company-terra",
+            "supplierName": null,
+            "status": "inUse"
+          },
+          {
+            "id": "mt-ko-2",
+            "name": "Металлокаркас",
+            "supplierPartyId": null,
+            "supplierName": "Завод металлоконструкций (пример)",
+            "status": "inUse"
+          }
+        ],
+        "procurementPlan": [
+          {
+            "id": "pp-ko-1",
+            "title": "Внутренние инженерные сети",
+            "kind": "works",
+            "when": "ноябрь 2026",
+            "status": "planned",
+            "rfqId": null
+          },
+          {
+            "id": "pp-ko-2",
+            "title": "Ворота и окна корпуса",
+            "kind": "goods",
+            "when": "декабрь 2026",
+            "status": "planned",
+            "rfqId": null
+          }
+        ],
+        "supplierTerms": ["Опыт промышленных объектов в Ферганской долине", "Исполнительная документация по форме заказчика"],
+        "commercial": null,
+        "press": [],
+        "documents": [
+          {
+            "id": "doc-ko-1",
+            "kind": "permit",
+            "name": "Разрешение на строительство",
+            "number": "66-000-0000-2026",
+            "date": "2026-05-20",
+            "evidence": "asserted"
+          }
+        ]
+      },
+      "location": {
+        "lat": 56.81785,
+        "lng": 60.69349
+      }
+    },
+    {
+      "slug": "delovoj-centr-nevskij",
+      "project": {
+        "id": "project-nevskij",
+        "owner": {
+          "kind": "company",
+          "id": "company-rechnoy"
+        },
+        "creatorPersonId": "person-elena",
+        "leaderPersonId": "person-elena",
+        "name": "Деловой центр «Регистан»",
+        "summary": "Офисное здание класса B+ на 12 000 м² с коворкингом, кафе и подземным паркингом в центре Самарканда.",
+        "status": "active",
+        "publicity": {
+          "enabled": true,
+          "publishedStory": "Здание реконструируется из бывшего административного корпуса: сохранён каркас, полностью заменяются фасад, инженерия и планировки. Первые этажи отдаются под кафе и сервисы, выше — офисные этажи с открытыми планировками и коворкинг. Ввод и заселение арендаторов — второй квартал 2027 года.",
+          "openNeedIds": [],
+          "publicParticipantIds": ["company-rechnoy", "person-elena", "company-genmontazh", "company-steklo"]
+        },
+        "milestones": [
+          {
+            "id": "ms-nv-1",
+            "title": "Демонтаж и усиление каркаса",
+            "due": {
+              "date": "2026-07-31",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-nv-2",
+            "title": "Фасад и остекление",
+            "due": {
+              "date": "2026-12-20",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-nv-3",
+            "title": "Инженерные системы и отделка общих зон",
+            "due": {
+              "date": "2027-03-31",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          },
+          {
+            "id": "ms-nv-4",
+            "title": "Ввод и заселение арендаторов",
+            "due": {
+              "date": "2027-06-30",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": null,
+            "shared": true
+          }
+        ],
+        "sharedFiles": [],
+        "baselinePlanId": "baseline-project-nevskij",
+        "budgets": [],
+        "participantIds": ["company-genmontazh", "company-steklo", "person-elena"],
+        "privateFiles": [],
+        "privateNotes": "owner_private",
+        "revision": 1,
+        "createdAt": "2026-02-10T09:00:00Z"
+      },
+      "category": "infrastructure",
+      "region": "UZ-SA",
+      "participants": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-rechnoy"
+          },
+          "role": "owner",
+          "roleTitle": "Девелопер",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "developer"
+        },
+        {
+          "party": {
+            "kind": "person",
+            "id": "person-elena"
+          },
+          "role": "leader",
+          "roleTitle": "Архитектор проекта",
+          "isPublic": true,
+          "grant": "owner_private",
+          "partyRole": "designer"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-genmontazh"
+          },
+          "role": "participant",
+          "roleTitle": "Генеральный подрядчик",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "generalContractor"
+        },
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-steklo"
+          },
+          "role": "participant",
+          "roleTitle": "Светопрозрачные конструкции",
+          "isPublic": true,
+          "grant": "shared_party",
+          "partyRole": "subcontractor"
+        }
+      ],
+      "updates": [
+        {
+          "id": "upd-nv-1",
+          "type": "result",
+          "title": "Каркас усилен, получено заключение о несущей способности",
+          "date": "2026-07-28",
+          "evidence": "confirmed",
+          "isPublic": true
+        },
+        {
+          "id": "upd-nv-2",
+          "type": "teamMessage",
+          "title": "Начат монтаж витражного фасада",
+          "date": "2026-10-14",
+          "evidence": "asserted",
+          "isPublic": true
+        }
+      ],
+      "publishedMilestones": [
+        {
+          "milestoneId": "ms-nv-1",
+          "baselineDue": "2026-07-31",
+          "changedDue": null,
+          "actual": "2026-07-28",
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-nv-2",
+          "baselineDue": "2026-12-20",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-nv-3",
+          "baselineDue": "2027-03-31",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        },
+        {
+          "milestoneId": "ms-nv-4",
+          "baselineDue": "2027-06-30",
+          "changedDue": null,
+          "actual": null,
+          "changedByClient": false
+        }
+      ],
+      "publicationIds": [],
+      "projectionDate": "2026-10-20",
+      "updatedAt": "2026-10-23T09:00:00Z",
+      "files": [
+        {
+          "id": "file-nv-1",
+          "name": "Презентация для арендаторов.pdf",
+          "audience": "public",
+          "kind": "presentation"
+        },
+        {
+          "id": "file-nv-2",
+          "name": "Поэтажные планы и нарезка офисов.pdf",
+          "audience": "public",
+          "kind": "drawing"
+        },
+        {
+          "id": "file-nv-3",
+          "name": "Технические условия здания.pdf",
+          "audience": "public",
+          "kind": "other"
+        }
+      ],
+      "budget": null,
+      "showcase": {
+        "gallery": [
+          {
+            "id": "g-nv-1",
+            "photo": "highrise-windows",
+            "caption": "Витражный фасад, октябрь"
+          },
+          {
+            "id": "g-nv-2",
+            "photo": "office-laptop-work",
+            "caption": "Макет рабочего пространства коворкинга"
+          },
+          {
+            "id": "g-nv-3",
+            "photo": "glass-facade-panels",
+            "caption": "Светопрозрачные конструкции первого этажа"
+          }
+        ],
+        "video": null,
+        "highlights": [
+          {
+            "label": "Класс",
+            "value": "B+"
+          },
+          {
+            "label": "Площадь",
+            "value": "12 000 м²"
+          },
+          {
+            "label": "Этажей",
+            "value": "7"
+          },
+          {
+            "label": "Паркинг",
+            "value": "84 места"
+          }
+        ],
+        "plans": [
+          {
+            "id": "pl-nv-1",
+            "title": "Закрыть контур фасада",
+            "when": "декабрь 2026"
+          },
+          {
+            "id": "pl-nv-2",
+            "title": "Отделка общих зон и коворкинга",
+            "when": "март 2027"
+          },
+          {
+            "id": "pl-nv-3",
+            "title": "Заселение первых арендаторов",
+            "when": "июнь 2027"
+          }
+        ],
+        "partnerNote": "Подрядчики на инженерные системы и отделку общих зон выбраны. Открыт приём заявок на операторов кафе и сервисов первого этажа.",
+        "contactPartyId": "company-rechnoy",
+        "needs": [],
+        "passport": {
+          "address": "Самарканд, ул. Гагарина, 30 (пример)",
+          "objectType": "Офисное здание класса B+, реконструкция",
+          "totalArea": "12 000 м²",
+          "floors": "7",
+          "siteArea": "0,4 га",
+          "designer": "Собственная практика Елены Соколовой",
+          "commissioning": "II квартал 2027"
+        },
+        "openRoles": [
+          {
+            "id": "or-nv-1",
+            "role": "operator",
+            "title": "Оператор кафе на первом этаже",
+            "note": "Помещение 180 м² с витриной на проспект",
+            "when": "весна 2027"
+          }
+        ],
+        "materials": [
+          {
+            "id": "mt-nv-1",
+            "name": "Витражная система фасада",
+            "supplierPartyId": "company-steklo",
+            "supplierName": null,
+            "status": "inUse"
+          },
+          {
+            "id": "mt-nv-2",
+            "name": "Фальшполы и потолки офисных этажей",
+            "supplierPartyId": null,
+            "supplierName": null,
+            "status": "planned"
+          }
+        ],
+        "procurementPlan": [
+          {
+            "id": "pp-nv-1",
+            "title": "Фальшполы и потолочные системы",
+            "kind": "goods",
+            "when": "январь 2027",
+            "status": "planned",
+            "rfqId": null
+          },
+          {
+            "id": "pp-nv-2",
+            "title": "Мебель коворкинга",
+            "kind": "goods",
+            "when": "апрель 2027",
+            "status": "planned",
+            "rfqId": null
+          }
+        ],
+        "supplierTerms": ["Поставка в центр города с ночной разгрузкой", "Сертификаты пожарной безопасности на отделочные материалы"],
+        "commercial": {
+          "offering": "Офисные этажи от 150 м² до целого этажа 1 600 м², коворкинг с рабочими местами, помещения для кафе и сервисов на первом этаже. Заселение со второго квартала 2027 года.",
+          "infrastructure": ["Коворкинг на 120 мест", "Кафе и сервисы на первом этаже", "Подземный паркинг на 84 места", "Велопарковка и душевые", "Переговорные общего пользования", "Две минуты от метро (пример)"],
+          "audiences": [
+            {
+              "id": "aud-nv-tenants",
+              "kind": "tenants",
+              "title": "Арендаторам офисов",
+              "description": "Открытые планировки с шагом колонн 6×6 м, высота потолков 3,3 м, отделка под арендатора по согласованному стандарту. Договоры от 3 лет, предварительные соглашения заключаются уже сейчас.",
+              "units": [
+                {
+                  "id": "u-nv-1",
+                  "title": "Блоки от 150 м²",
+                  "detail": "Готовая нарезка со своим санузлом и кухней"
+                },
+                {
+                  "id": "u-nv-2",
+                  "title": "Пол-этажа, 800 м²",
+                  "detail": "Открытая планировка, две переговорные"
+                },
+                {
+                  "id": "u-nv-3",
+                  "title": "Целый этаж, 1 600 м²",
+                  "detail": "Отдельный вход с ресепшен, терраса на 5 этаже"
+                }
+              ],
+              "terms": ["Договор аренды от 3 лет, индексация по согласованию", "Отделка под арендатора входит в ставку при сроке от 5 лет", "Эксплуатационные расходы — по фактическим затратам, отчёт ежегодно"],
+              "fileIds": ["file-nv-1", "file-nv-2", "file-nv-3"],
+              "faq": [
+                {
+                  "q": "Когда можно заехать?",
+                  "a": "Передача помещений под отделку — с апреля 2027, заселение — с июня 2027."
+                },
+                {
+                  "q": "Можно ли посмотреть здание сейчас?",
+                  "a": "Да, показы проводятся на площадке по записи, в каске и с сопровождением."
+                }
+              ],
+              "action": "viewing",
+              "commercialTerms": [
+                "Ставка: за м² в год без НДС, фиксируется на 3 года",
+                "Обеспечительный платёж — две месячные ставки",
+                "Отделка под арендатора: базовый стандарт включён при договоре от 5 лет, выше — по смете",
+                "Парковочные места — отдельный договор, приоритет арендаторам от 800 м²"
+              ]
+            },
+            {
+              "id": "aud-nv-coworking",
+              "kind": "residents",
+              "title": "Резидентам коворкинга",
+              "description": "Рабочие места и мини-офисы на 2–6 человек по месячной подписке, переговорные по часам, доступ 24/7.",
+              "units": [
+                {
+                  "id": "u-nv-4",
+                  "title": "Рабочее место",
+                  "detail": "Закреплённое или незакреплённое"
+                },
+                {
+                  "id": "u-nv-5",
+                  "title": "Мини-офис на 2–6 человек",
+                  "detail": "Со стеклянными перегородками"
+                }
+              ],
+              "terms": ["Лист ожидания открыт, приоритет резидентам из проектов платформы"],
+              "fileIds": [],
+              "faq": [],
+              "action": "join",
+              "commercialTerms": ["Месячная подписка, оплата вперёд, без обеспечительного платежа", "Переговорные — по часам, включены 10 часов в месяц"]
+            },
+            {
+              "id": "aud-nv-operators",
+              "kind": "investors",
+              "title": "Операторам кафе и сервисов",
+              "description": "Первый этаж: помещение под кафе 180 м² с витриной на проспект и три сервисных блока по 40–60 м². Приоритет — операторам с опытом в деловых центрах.",
+              "units": [
+                {
+                  "id": "u-nv-6",
+                  "title": "Кафе, 180 м²",
+                  "detail": "Вытяжка, мощность 60 кВт"
+                },
+                {
+                  "id": "u-nv-7",
+                  "title": "Сервисные блоки 40–60 м²",
+                  "detail": "Химчистка, печать, аптека"
+                }
+              ],
+              "terms": ["Договор от 5 лет, льготный период на отделку"],
+              "fileIds": ["file-nv-3"],
+              "faq": [],
+              "action": "request",
+              "commercialTerms": ["Ставка с процентом от оборота по согласованию", "Льготный период на отделку до 4 месяцев", "Инженерные подключения — по техническим условиям здания"]
+            }
+          ],
+          "note": "Ставки аренды и условия — по запросу. Платформа не публикует цены и не ведёт сделки.",
+          "contactPartyId": "company-rechnoy",
+          "salesOffice": "Отдел аренды: показы на площадке по записи, пн–пт (пример)"
+        },
+        "press": [
+          {
+            "id": "pr-nv-1",
+            "title": "В центре Самарканда реконструируют административное здание под офисы",
+            "source": "Деловое издание (пример)",
+            "url": "https://example.invalid/press/nevskij-30",
+            "date": "2026-05-14"
+          }
+        ],
+        "documents": [
+          {
+            "id": "doc-nv-1",
+            "kind": "permit",
+            "name": "Разрешение на реконструкцию",
+            "number": "78-000-0001-2026",
+            "date": "2026-02-01",
+            "evidence": "confirmed"
+          },
+          {
+            "id": "doc-nv-2",
+            "kind": "expertise",
+            "name": "Заключение о техническом состоянии каркаса",
+            "number": null,
+            "date": "2026-07-28",
+            "evidence": "confirmed"
+          }
+        ]
+      },
+      "location": {
+        "lat": 59.88815,
+        "lng": 30.44583
+      }
+    }
+  ]
+}

@@ -1,0 +1,934 @@
+{
+  "synthetic": true,
+  "description": "Synthetic companies: two claimed records (one with members and a catalogue, one with a public project), eleven sourced directory records with provenance across project roles (developer, client, general contractor, contractors, designers, manufacturers, suppliers, equipment, services, logistics). Two verified records per owner decision 2026-10-27 (platform accreditation mark).",
+  "companies": [
+    {
+      "slug": "fasad-primer",
+      "company": {
+        "id": "company-fasad",
+        "name": "Фасад-Пример",
+        "status": "verified",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000001",
+            "status": "verified"
+          }
+        ],
+        "publicDescription": "Монтаж навесных вентилируемых фасадов и поставка подсистем. Компания одновременно закупает металл и продаёт монтажные работы.",
+        "verifiedDomains": ["example.invalid"],
+        "membershipRequests": [
+          {
+            "personId": "person-pending-1",
+            "requestedAt": "2026-10-20T09:00:00Z"
+          }
+        ],
+        "billingAccountId": null,
+        "internalNotes": "owner_private: не публикуется",
+        "revision": 4,
+        "createdAt": "2026-09-01T09:00:00Z"
+      },
+      "directions": ["Вентилируемые фасады", "Монтажные работы", "Подсистемы"],
+      "region": "UZ-TK",
+      "website": "https://example.invalid/fasad-primer",
+      "provenance": null,
+      "claimedAt": "2026-09-02T09:00:00Z",
+      "catalogue": {
+        "version": 7,
+        "publishedAt": "2026-10-10T09:00:00Z",
+        "entries": [
+          {
+            "id": "cat-fasad-1",
+            "name": "Монтаж вентилируемого фасада",
+            "kind": "works",
+            "unit": "m2",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": "37500000"
+          },
+          {
+            "id": "cat-fasad-2",
+            "name": "Подсистема алюминиевая, комплект",
+            "kind": "goods",
+            "unit": "set",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": "180000000"
+          },
+          {
+            "id": "cat-fasad-3",
+            "name": "Авторский надзор монтажа",
+            "kind": "services",
+            "unit": "pcs",
+            "priceOnRequest": true,
+            "isPublic": false,
+            "privateFloorMinorUnits": null
+          }
+        ]
+      },
+      "publicationIds": ["pub-cpost-fasad-1"],
+      "projectIds": ["project-school", "project-warehouse"],
+      "publicMemberPersonIds": ["person-anna"],
+      "kinds": ["contractor", "supplier"],
+      "profile": {
+        "tagline": "Навесные фасады под ключ: подсистема, монтаж, авторский надзор",
+        "about": "Компания монтирует навесные вентилируемые фасады на общественных и жилых объектах и поставляет алюминиевые подсистемы собственной комплектации. Работаем по проектам заказчика и по собственной рабочей документации: узлы примыканий, расчёт ветровых нагрузок, согласование цветовых решений с архитектором.\n\nБерём объекты от 2 000 м² фасада. Контролируем скрытые работы поэтапно: кронштейны, утеплитель, ветрозащита, направляющие, облицовка. По каждому этапу — акт с фотофиксацией, который доступен заказчику в проекте на платформе.\n\nЗакупаем металл и крепёж у производителей напрямую, поэтому одновременно выступаем покупателем и продавцом: это видно в наших запросах предложений и каталоге.",
+        "founded": 2016,
+        "geography": ["Ташкент и область", "Чирчик", "Ангрен"],
+        "certificates": [
+          {
+            "id": "cert-fasad-1",
+            "name": "Лицензия на строительно-монтажные работы (пример)",
+            "issuer": "Ассоциация строителей (пример)",
+            "validUntil": null,
+            "evidence": "confirmed",
+            "kind": "sro",
+            "number": "ЛИЦ-0000-01"
+          },
+          {
+            "id": "cert-fasad-2",
+            "name": "Техническое свидетельство на подсистему (пример)",
+            "issuer": "Испытательный центр (пример)",
+            "validUntil": "2028-03-31",
+            "evidence": "asserted",
+            "kind": "technical",
+            "number": "ТС 0000-26"
+          }
+        ],
+        "contacts": {
+          "email": "office@example.invalid",
+          "phone": "+7 (000) 000-00-01",
+          "address": "Ташкент, проспект Мустакиллик, 42, корп. 5, офис 310",
+          "hours": "Пн–Пт, 9:00–18:00 (Ташкент)"
+        },
+        "vacancies": [
+          {
+            "id": "vac-fasad-1",
+            "title": "Прораб фасадных работ",
+            "location": "Ташкент",
+            "format": "site",
+            "employment": "full",
+            "salaryFromMinorUnits": "1800000000",
+            "salaryToMinorUnits": "2400000000",
+            "postedAt": "2026-10-20T09:00:00Z",
+            "description": "Ведёте монтаж навесных фасадов на объекте от разметки до сдачи: бригады, график, скрытые работы, взаимодействие с техзаказчиком.",
+            "responsibilities": [
+              "Организация работы 2–3 бригад монтажников",
+              "Поэтапная приёмка скрытых работ с фотофиксацией",
+              "Заявки на материалы и контроль остатков на объекте",
+              "Исполнительная документация и акты по этапам"
+            ],
+            "requirements": ["Опыт на фасадных работах от 3 лет, НВФ обязательно", "Чтение рабочей документации узлов", "Готовность к работе на высоте и командировкам по области"],
+            "conditions": ["Оформление по Трудовому кодексу, оклад + премия за этап", "Объекты в Ташкенте и области, проезд компенсируется", "Спецодежда и инструмент за счёт компании"]
+          },
+          {
+            "id": "vac-fasad-2",
+            "title": "Инженер ПТО (фасады)",
+            "location": "Ташкент",
+            "format": "hybrid",
+            "employment": "full",
+            "salaryFromMinorUnits": "1350000000",
+            "salaryToMinorUnits": null,
+            "postedAt": "2026-10-14T09:00:00Z",
+            "description": "Готовите исполнительную документацию и ведёте учёт объёмов по фасадным объектам, работаете в связке с прорабами и сметчиком.",
+            "responsibilities": ["Исполнительная документация, акты скрытых работ", "Учёт объёмов и сверка с проектом", "Ведомости материалов и заявки", "Ведение проектов на платформе: этапы, файлы, акты"],
+            "requirements": ["Образование в строительстве или смежное", "Знание состава НВФ и типовых узлов", "AutoCAD, Excel; опыт с BIM будет плюсом"],
+            "conditions": ["Гибрид: офис 3 дня, объекты по необходимости", "Оклад обсуждается по итогам собеседования", "Обучение за счёт компании"]
+          }
+        ],
+        "updates": [
+          {
+            "id": "upd-fasad-1",
+            "date": "2026-10-22",
+            "kind": "certificate",
+            "title": "Добавлено техническое свидетельство на подсистему",
+            "href": null
+          },
+          {
+            "id": "upd-fasad-2",
+            "date": "2026-10-10",
+            "kind": "catalogue",
+            "title": "Опубликована версия 7 каталога: обновлены единицы измерения",
+            "href": null
+          },
+          {
+            "id": "upd-fasad-3",
+            "date": "2026-09-28",
+            "kind": "project",
+            "title": "Школа на набережной: смонтирована подсистема первого этажа",
+            "href": "/projects/shkola-na-reke"
+          }
+        ],
+        "faq": [
+          {
+            "q": "С какого объёма берёте объекты?",
+            "a": "От 2 000 м² фасада. Меньшие объёмы рассматриваем, если объект рядом с текущими площадками."
+          },
+          {
+            "q": "Делаете ли проект фасада?",
+            "a": "Рабочую документацию по узлам и расчёт подсистемы делаем сами, архитектурные решения — по проекту заказчика."
+          },
+          {
+            "q": "Как узнать цену?",
+            "a": "Цены в каталоге по запросу: отправьте запрос предложения с объёмом и сроками, ответим с расчётом."
+          }
+        ],
+        "signals": [
+          {
+            "kind": "hiring",
+            "note": "Прораб и инженер ПТО",
+            "until": null
+          },
+          {
+            "kind": "acceptingOrders",
+            "note": "Объекты от 2 000 м², старт с января",
+            "until": null
+          },
+          {
+            "kind": "lookingForSuppliers",
+            "note": "Утеплитель и крепёж напрямую от производителей",
+            "until": null
+          }
+        ],
+        "accreditation": {
+          "verifiedAt": "2026-10-15",
+          "scope": ["Реквизиты", "Домен сайта", "Лицензия на СМР", "Публичные участники"]
+        }
+      },
+      "location": {
+        "lat": 55.7859,
+        "lng": 37.71156
+      }
+    },
+    {
+      "slug": "beton-obraztsovyi",
+      "company": {
+        "id": "company-beton",
+        "name": "Бетон Образцовый",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000002",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Производство товарного бетона и ЖБИ. Запись создана по открытому источнику; компания данные не подтверждала.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-20T09:00:00Z"
+      },
+      "directions": ["Бетон и ЖБИ", "Доставка"],
+      "region": "UZ-BU",
+      "website": "https://example.invalid/beton",
+      "provenance": {
+        "source": "Открытый реестр производителей (пример)",
+        "observedAt": "2026-08-30T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": ["pub-art-5"],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "kinds": ["manufacturer", "supplier"],
+      "profile": {
+        "tagline": null,
+        "about": null,
+        "founded": null,
+        "geography": ["Бухарская область"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": [],
+        "signals": []
+      },
+      "location": {
+        "lat": 55.73553,
+        "lng": 49.13519
+      }
+    },
+    {
+      "slug": "steklo-demo",
+      "company": {
+        "id": "company-steklo",
+        "name": "Стекло-Демо",
+        "status": "claimed",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "0000000000003",
+            "status": "claimed"
+          }
+        ],
+        "publicDescription": "Остекление общественных зданий и светопрозрачные конструкции.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 2,
+        "createdAt": "2026-09-12T09:00:00Z"
+      },
+      "directions": ["Остекление", "Светопрозрачные конструкции"],
+      "region": "UZ-FA",
+      "website": null,
+      "provenance": null,
+      "claimedAt": "2026-09-14T09:00:00Z",
+      "catalogue": {
+        "version": 2,
+        "publishedAt": "2026-10-01T09:00:00Z",
+        "entries": []
+      },
+      "publicationIds": [],
+      "projectIds": ["project-park"],
+      "publicMemberPersonIds": [],
+      "kinds": ["contractor", "manufacturer"],
+      "profile": {
+        "tagline": "Остекление общественных зданий и светопрозрачные конструкции",
+        "about": "Проектируем и монтируем витражное остекление, зенитные фонари и светопрозрачные павильоны. Собственный участок сборки алюминиевых конструкций в Фергане.",
+        "founded": 2019,
+        "geography": ["Ферганская долина", "Наманганская область"],
+        "certificates": [
+          {
+            "id": "cert-steklo-1",
+            "name": "Декларация соответствия на витражные системы (пример)",
+            "issuer": "Орган по сертификации (пример)",
+            "validUntil": "2027-06-30",
+            "evidence": "asserted",
+            "kind": "declaration",
+            "number": "UZ.SMT-0000"
+          }
+        ],
+        "contacts": {
+          "email": "hello@example.invalid",
+          "phone": null,
+          "address": "Фергана, ул. Промышленная, 12 (пример)",
+          "hours": null
+        },
+        "vacancies": [
+          {
+            "id": "vac-steklo-1",
+            "title": "Монтажник светопрозрачных конструкций",
+            "location": "Фергана",
+            "format": "site",
+            "employment": "full",
+            "salaryFromMinorUnits": "1200000000",
+            "salaryToMinorUnits": "1650000000",
+            "postedAt": "2026-10-18T09:00:00Z",
+            "description": "Монтаж витражей, зенитных фонарей и светопрозрачных павильонов на объектах Ферганской долины.",
+            "responsibilities": ["Монтаж алюминиевых конструкций и стеклопакетов", "Герметизация и примыкания по технологии", "Работа по чертежам узлов"],
+            "requirements": ["Опыт монтажа светопрозрачных конструкций от 2 лет", "Допуск к работам на высоте", "Аккуратность и готовность к командировкам"],
+            "conditions": ["Вахта или постоянная занятость по согласованию", "Проживание на выезде за счёт компании", "Оплата сдельно-премиальная"]
+          }
+        ],
+        "updates": [
+          {
+            "id": "upd-steklo-1",
+            "date": "2026-10-05",
+            "kind": "project",
+            "title": "Павильон в парке у завода завершён и опубликован как история",
+            "href": "/projects/park-u-zavoda"
+          }
+        ],
+        "faq": [],
+        "signals": [
+          {
+            "kind": "acceptingOrders",
+            "note": null,
+            "until": null
+          },
+          {
+            "kind": "hiring",
+            "note": "Монтажник светопрозрачных конструкций",
+            "until": null
+          }
+        ]
+      },
+      "location": {
+        "lat": 56.83032,
+        "lng": 60.57383
+      }
+    },
+    {
+      "slug": "terrakontur-primer",
+      "company": {
+        "id": "company-terra",
+        "name": "ТерраКонтур (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000004",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Производство фасадных панелей и материалов для благоустройства. Запись создана по открытому каталогу производителей; компания данные не подтверждала.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-21T09:00:00Z"
+      },
+      "kinds": ["manufacturer", "supplier"],
+      "directions": ["Фасадные панели", "Благоустройство", "Материалы"],
+      "region": "UZ-TK",
+      "website": "https://example.invalid/terra",
+      "provenance": {
+        "source": "Открытый каталог производителей (пример)",
+        "observedAt": "2026-09-05T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "lookingForPartners",
+            "note": "Дилеры в регионах",
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 55.71069,
+        "lng": 37.67301
+      }
+    },
+    {
+      "slug": "modulnaya-sreda-primer",
+      "company": {
+        "id": "company-modul",
+        "name": "Модульная среда (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000005",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Проектирование и строительство модульных зданий: школы, общественные пространства, временные городки. Запись по открытому источнику.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-22T09:00:00Z"
+      },
+      "kinds": ["designer", "contractor"],
+      "directions": ["Модульные здания", "Проектирование", "Общественные пространства"],
+      "region": "UZ-SA",
+      "website": "https://example.invalid/modul",
+      "provenance": {
+        "source": "Открытый реестр подрядчиков (пример)",
+        "observedAt": "2026-09-08T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "lookingForProjects",
+            "note": null,
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 59.95058,
+        "lng": 30.24907
+      }
+    },
+    {
+      "slug": "meraprom-primer",
+      "company": {
+        "id": "company-mera",
+        "name": "МераПром (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000006",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Промышленное оборудование для производств стройматериалов: дозаторы, смесители, линии контроля. Запись по открытому источнику.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-23T09:00:00Z"
+      },
+      "kinds": ["equipment", "supplier"],
+      "directions": ["Оборудование", "Дозирование и смешивание", "Сервис линий"],
+      "region": "UZ-FA",
+      "website": "https://example.invalid/mera",
+      "provenance": {
+        "source": "Отраслевая выставка, каталог участников (пример)",
+        "observedAt": "2026-09-10T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "location": {
+        "lat": 56.83419,
+        "lng": 60.61863
+      }
+    },
+    {
+      "slug": "formasnab-primer",
+      "company": {
+        "id": "company-forma",
+        "name": "ФормаСнаб (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000007",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Комплектация объектов и поставка материалов: утеплитель, крепёж, подсистемы. Запись по открытому источнику.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-24T09:00:00Z"
+      },
+      "kinds": ["supplier"],
+      "directions": ["Комплектация объектов", "Утеплитель", "Крепёж"],
+      "region": "UZ-TK",
+      "website": null,
+      "provenance": {
+        "source": "Открытый реестр поставщиков (пример)",
+        "observedAt": "2026-09-12T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "lookingForSuppliers",
+            "note": "Крепёж и подсистемы",
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 55.79879,
+        "lng": 37.63272
+      }
+    },
+    {
+      "slug": "proektnoe-byuro-sever",
+      "company": {
+        "id": "company-sever",
+        "name": "Проектное бюро «Север» (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000008",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Архитектурное и конструктивное проектирование промышленных и общественных зданий, авторский надзор.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-25T09:00:00Z"
+      },
+      "kinds": ["designer", "services"],
+      "directions": ["Проектирование", "Авторский надзор", "Обследование зданий"],
+      "region": "UZ-NG",
+      "website": "https://example.invalid/sever",
+      "provenance": {
+        "source": "Реестр СРО проектировщиков (пример)",
+        "observedAt": "2026-09-15T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "acceptingOrders",
+            "note": null,
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 54.95471,
+        "lng": 82.99918
+      }
+    },
+    {
+      "slug": "yuglab-ispytaniya",
+      "company": {
+        "id": "company-yuglab",
+        "name": "ЮгЛаб испытания (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000009",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Испытательная лаборатория: пожарные и климатические испытания облицовки, протоколы для производителей и подрядчиков.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-26T09:00:00Z"
+      },
+      "kinds": ["services"],
+      "directions": ["Испытания материалов", "Протоколы", "Сертификация"],
+      "region": "UZ-QA",
+      "website": "https://example.invalid/yuglab",
+      "provenance": {
+        "source": "Реестр аккредитованных лабораторий (пример)",
+        "observedAt": "2026-09-18T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "paused",
+            "note": "Лаборатория на переаттестации",
+            "until": "2026-11-30"
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 45.08304,
+        "lng": 39.04641
+      }
+    },
+    {
+      "slug": "rechnoy-kvartal-development",
+      "company": {
+        "id": "company-rechnoy",
+        "name": "Девелопер «Речной квартал» (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000010",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Жилой и социальный девелопмент: кварталы со школами и общественными пространствами. Запись по открытому источнику.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-27T09:00:00Z"
+      },
+      "kinds": ["developer", "client"],
+      "directions": ["Жилая застройка", "Социальные объекты", "Благоустройство"],
+      "region": "UZ-TK",
+      "website": "https://example.invalid/rechnoy",
+      "provenance": {
+        "source": "Единый реестр застройщиков (пример)",
+        "observedAt": "2026-09-19T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "lookingForProjects",
+            "note": "Площадки под социальные объекты в Ташкенте и области",
+            "until": null
+          },
+          {
+            "kind": "lookingForSubcontractors",
+            "note": "Генподряд на школу, конкурс в декабре",
+            "until": "2026-12-20"
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 55.79011,
+        "lng": 37.46814
+      }
+    },
+    {
+      "slug": "genmontazh-genpodryad",
+      "company": {
+        "id": "company-genmontazh",
+        "name": "ГенМонтаж генподряд (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000011",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Генеральный подряд на общественных и промышленных объектах: управление субподрядчиками, график, приёмка скрытых работ.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-27T10:00:00Z"
+      },
+      "kinds": ["generalContractor", "contractor"],
+      "directions": ["Генподряд", "Монолит", "Инженерные системы"],
+      "region": "UZ-SA",
+      "website": "https://example.invalid/genmontazh",
+      "provenance": {
+        "source": "Реестр членов СРО строителей (пример)",
+        "observedAt": "2026-09-20T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Генеральный подряд на общественных и промышленных объектах",
+        "about": null,
+        "founded": 2011,
+        "geography": ["Самарканд и область", "Джизакская область"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [
+          {
+            "id": "vac-sm-1",
+            "title": "Руководитель проекта (генподряд)",
+            "location": "Самарканд",
+            "format": "office",
+            "employment": "full",
+            "salaryFromMinorUnits": "2700000000",
+            "salaryToMinorUnits": null,
+            "postedAt": "2026-10-21T09:00:00Z",
+            "description": "Руководите объектом генподряда: от мобилизации до ввода, с субподрядчиками, заказчиком и надзором.",
+            "responsibilities": ["Управление графиком и бюджетом объекта", "Координация субподрядчиков и поставок", "Приёмка этапов с техзаказчиком и надзором", "Отчётность руководству и заказчику"],
+            "requirements": ["Опыт руководства объектами от 5 лет", "Знание нормативной базы и исполнительной документации", "Навыки переговоров и работы с претензиями"],
+            "conditions": ["Офис в Самарканде, объекты в городе и области", "Оклад от 18 000 000 сум + KPI по объекту", "Медицинская страховка после испытательного срока"]
+          }
+        ],
+        "updates": [],
+        "faq": [],
+        "signals": [
+          {
+            "kind": "lookingForSubcontractors",
+            "note": "Фасады, кровля, инженерные системы на объектах 2027 года",
+            "until": null
+          },
+          {
+            "kind": "hiring",
+            "note": null,
+            "until": null
+          }
+        ]
+      },
+      "location": {
+        "lat": 59.8767,
+        "lng": 30.18334
+      }
+    },
+    {
+      "slug": "kontrol-standart-tehzakazchik",
+      "company": {
+        "id": "company-kontrol",
+        "name": "Технический заказчик «Контроль-Стандарт» (пример)",
+        "status": "verified",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000012",
+            "status": "verified"
+          }
+        ],
+        "publicDescription": "Функции технического заказчика и строительный контроль: экспертиза проектов, надзор, приёмка этапов. Запись подтверждена платформой.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-28T09:00:00Z"
+      },
+      "kinds": ["client", "services"],
+      "directions": ["Технический заказчик", "Строительный контроль", "Экспертиза"],
+      "region": "UZ-BU",
+      "website": null,
+      "provenance": null,
+      "claimedAt": "2026-10-18T09:00:00Z",
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "acceptingOrders",
+            "note": "Стройконтроль, 2 объекта в квартал",
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": [],
+        "accreditation": {
+          "verifiedAt": "2026-10-20",
+          "scope": ["Реквизиты", "Реестр организаций строительного контроля"]
+        }
+      },
+      "location": {
+        "lat": 55.75272,
+        "lng": 49.22724
+      }
+    },
+    {
+      "slug": "tehnologistik-arenda",
+      "company": {
+        "id": "company-tehnologistik",
+        "name": "ТехноЛогистик (пример)",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000013",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Аренда строительной техники и доставка материалов на объекты: автокраны, манипуляторы, негабарит.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-28T10:00:00Z"
+      },
+      "kinds": ["logistics", "equipment"],
+      "directions": ["Аренда техники", "Доставка материалов", "Негабаритные перевозки"],
+      "region": "UZ-QA",
+      "website": "https://example.invalid/tehnologistik",
+      "provenance": {
+        "source": "Открытый каталог перевозчиков (пример)",
+        "observedAt": "2026-09-22T09:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": null,
+        "signals": [
+          {
+            "kind": "acceptingOrders",
+            "note": null,
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": null,
+        "geography": [],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 44.97943,
+        "lng": 39.11198
+      }
+    }
+  ]
+}

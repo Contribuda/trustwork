@@ -1,0 +1,9 @@
+# ADR 004 — Durable intent and provider neutrality
+
+Date: 2026-10-26. Status: selected architecture; durable queue not implemented.
+
+Use PostgreSQL transactions for domain mutation plus audit/outbox intent. Lease queued jobs with row locking, TTL and fencing; deduplicate consumer receipts. At-least-once attempts are expected. Operation/attempt identity is persisted before dispatch. Acknowledgement means pending until action-specific final evidence. Expired executing leases and a crash after effect before result persistence enter reconciliation; fencing cannot stop old in-flight external calls. Each adapter documents idempotency scope/retention and lookup guarantees. Unknown external effect after timeout or crash retains reservation and requires provider lookup/manual reconciliation, not a blind second order or payment. Stable effect key survives retries; attempt IDs differ. A stale worker cannot settle a newer fenced lease.
+
+Adapters for model, mail/messenger/voice, storage and payment expose explicit capabilities and deterministic fakes. Bootstrap performs no external actions. Actual provider selection/keys/legal terms are unresolved and require specific authorization. This keeps product runtime independent from development-agent subscriptions and any external development-management platform.
+
+Alternative durable workflow engines or brokers may be justified by scale/operational evidence later. They introduce dependencies and costs now without a validated need. Evidence: [PostgreSQL SELECT locking](https://www.postgresql.org/docs/18/sql-select.html), [AWS outbox guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html). Tests must simulate crash before/after provider commit, duplicate/out-of-order webhook, cancellation, revocation and ambiguous timeout.

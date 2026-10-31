@@ -1,0 +1,46 @@
+{
+  "name": "trustwork",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.16.0",
+  "engines": {
+    "node": ">=24.18.0 <25",
+    "npm": ">=11.16.0 <12"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @trustwork/web",
+    "dev:api": "npm run dev -w @trustwork/api",
+    "worker:demo": "npm run demo -w @trustwork/worker",
+    "build": "npm run build -w @trustwork/contracts && npm run build -w @trustwork/data && npm run build -w @trustwork/api && npm run build -w @trustwork/worker && npm run build -w @trustwork/web",
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck -w @trustwork/web && npm run typecheck -w @trustwork/ui",
+    "lint": "eslint .",
+    "test": "node scripts/run-tests.mjs",
+    "validate:docs": "node scripts/validate-docs.mjs",
+    "work": "node scripts/work-packages.mjs list",
+    "check": "npm run lint && npm run typecheck && npm test && npm run test:ui && npm run validate:docs && npm run build && npm run smoke",
+    "infra:up": "docker compose -f infra/compose.yaml up -d --wait",
+    "infra:down": "docker compose -f infra/compose.yaml down",
+    "smoke": "node scripts/smoke.mjs",
+    "test:ui": "npm run test:unit -w @trustwork/ui",
+    "db:migrate": "node packages/data/bin/migrate.mjs up",
+    "db:status": "node packages/data/bin/migrate.mjs status",
+    "db:verify": "node packages/data/bin/migrate.mjs verify",
+    "test:e2e": "TRUSTWORK_E2E=1 node scripts/run-tests.mjs tests/web"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "tsx": "4.23.15",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.13.0",
+    "typescript-eslint": "8.72.1",
+    "prettier": "3.9.10"
+  }
+}

@@ -1,0 +1,300 @@
+/* Base styles for consumers of @trustwork/ui. Import after tokens.css and fonts.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: var(--text-body-line);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  hyphens: manual;
+  font-feature-settings: 'tnum' 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+/* Focus not obscured (WCAG 2.2 2.4.11): when a focused control is scrolled into view it lands below the sticky
+   header and above the fixed assistant launcher. Workspace scroll containers must repeat these two declarations. */
+html,
+.trustwork-scroll {
+  scroll-padding-top: calc(var(--size-header-height) + var(--space-2));
+  scroll-padding-bottom: calc(var(--size-launcher) + var(--size-launcher-offset) * 2);
+}
+
+/* Hyphenation only in long-form Russian copy (reader, article bodies, message bubbles); controls, links and cards stay manual. */
+.trustwork-prose {
+  hyphens: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--color-accent);
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+}
+
+:focus-visible,
+[data-focus-visible='true'] {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  transition: outline-offset var(--motion-fast) var(--motion-easing);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background: var(--color-accent-tint);
+  color: var(--color-text);
+}
+
+.trustwork-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Typography utilities. The `Text`/`Heading`/`Kicker` primitives apply the same classes; use the
+   classes directly on plain elements inside apps when a component is overkill.
+   --------------------------------------------------------------------------------------------- */
+.trustwork-display,
+.trustwork-h1,
+.trustwork-h2,
+.trustwork-h3,
+.trustwork-h4 {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  text-wrap: balance;
+}
+
+.trustwork-display {
+  font-size: var(--text-display-size);
+  line-height: var(--text-display-line);
+  letter-spacing: var(--text-display-tracking);
+  font-weight: var(--text-display-weight);
+}
+
+.trustwork-h1 {
+  font-size: var(--text-h1-size);
+  line-height: var(--text-h1-line);
+  letter-spacing: var(--text-h1-tracking);
+  font-weight: var(--text-h1-weight);
+}
+
+.trustwork-h2 {
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-line);
+  letter-spacing: var(--text-h2-tracking);
+  font-weight: var(--text-h2-weight);
+}
+
+.trustwork-h3 {
+  font-size: var(--text-h3-size);
+  line-height: var(--text-h3-line);
+  letter-spacing: var(--text-h3-tracking);
+  font-weight: var(--text-h3-weight);
+}
+
+.trustwork-h4 {
+  font-size: var(--text-h4-size);
+  line-height: var(--text-h4-line);
+  letter-spacing: var(--text-h4-tracking);
+  font-weight: var(--text-h4-weight);
+}
+
+.trustwork-body-lg {
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-line);
+}
+
+.trustwork-body {
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+}
+
+.trustwork-body-sm {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.trustwork-caption {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+}
+
+.trustwork-kicker {
+  font-size: var(--text-kicker-size);
+  line-height: var(--text-kicker-line);
+  letter-spacing: var(--text-kicker-tracking);
+  font-weight: var(--text-kicker-weight);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.trustwork-serif {
+  font-family: var(--font-serif);
+  font-size: var(--text-serif-size);
+  line-height: var(--text-serif-line);
+}
+
+.trustwork-muted {
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Layout: 1200 px container with 24 px gutters (16 px on mobile), 12-column grid, section rhythm.
+   --------------------------------------------------------------------------------------------- */
+.trustwork-container {
+  width: 100%;
+  max-width: calc(var(--size-public-max) + var(--size-gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--size-gutter);
+}
+
+.trustwork-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--size-gutter);
+}
+
+.trustwork-section {
+  padding-block: var(--space-section);
+}
+
+.trustwork-section-lg {
+  padding-block: var(--space-section-lg);
+}
+
+@media (max-width: 767.98px) {
+  .trustwork-container {
+    padding-inline: var(--size-gutter-mobile);
+  }
+
+  .trustwork-grid {
+    gap: var(--size-gutter-mobile);
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Motion utilities. `.trustwork-enter` fades and rises an element on mount (240 ms, ease-out); children
+   of `.trustwork-enter-group` stagger by 40 ms using their DOM order (up to 12) or `--enter-index`.
+   Everything is disabled under prefers-reduced-motion (durations become 0 ms and animations stop).
+   --------------------------------------------------------------------------------------------- */
+@keyframes trustwork-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.trustwork-enter {
+  animation: trustwork-enter var(--motion-enter) var(--motion-easing-out) both;
+  animation-delay: calc(var(--enter-index, 0) * var(--motion-stagger));
+}
+
+.trustwork-enter-group > * {
+  animation: trustwork-enter var(--motion-enter) var(--motion-easing-out) both;
+  animation-delay: calc(var(--enter-index, 0) * var(--motion-stagger));
+}
+
+.trustwork-enter-group > :nth-child(2) {
+  --enter-index: 1;
+}
+.trustwork-enter-group > :nth-child(3) {
+  --enter-index: 2;
+}
+.trustwork-enter-group > :nth-child(4) {
+  --enter-index: 3;
+}
+.trustwork-enter-group > :nth-child(5) {
+  --enter-index: 4;
+}
+.trustwork-enter-group > :nth-child(6) {
+  --enter-index: 5;
+}
+.trustwork-enter-group > :nth-child(7) {
+  --enter-index: 6;
+}
+.trustwork-enter-group > :nth-child(8) {
+  --enter-index: 7;
+}
+.trustwork-enter-group > :nth-child(9) {
+  --enter-index: 8;
+}
+.trustwork-enter-group > :nth-child(10) {
+  --enter-index: 9;
+}
+.trustwork-enter-group > :nth-child(11) {
+  --enter-index: 10;
+}
+.trustwork-enter-group > :nth-child(n + 12) {
+  --enter-index: 11;
+}
+
+@keyframes trustwork-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

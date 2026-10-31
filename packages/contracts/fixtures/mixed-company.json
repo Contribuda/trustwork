@@ -1,0 +1,694 @@
+{
+  "$fixture": "mixed-company",
+  "synthetic": true,
+  "description": "One company and one person buying (RFQ owner) and selling (quote to another buyer) at the same time; preferences and capabilities, not separate identities.",
+  "records": {
+    "Company": [
+      {
+        "id": "company-mixed-1",
+        "name": "Fixture Facades LLC",
+        "status": "claimed",
+        "legalIdentifiers": [
+          {
+            "kind": "UZ-STIR",
+            "value": "300000000",
+            "status": "claimed"
+          }
+        ],
+        "publicDescription": "Buys steel, sells facade installation.",
+        "verifiedDomains": [],
+        "membershipRequests": [
+          {
+            "personId": "person-pending-1",
+            "requestedAt": "2026-10-02T09:00:00Z"
+          }
+        ],
+        "billingAccountId": "billing-account-mixed-1",
+        "internalNotes": "owner_private",
+        "revision": 3,
+        "createdAt": "2026-10-01T09:00:00Z"
+      }
+    ],
+    "Membership": [
+      {
+        "id": "membership-anna",
+        "personId": "person-anna",
+        "companyId": "company-mixed-1",
+        "role": "administrator",
+        "permissions": [
+          "company.page.edit",
+          "company.members.manage",
+          "company.deals.manage",
+          "company.catalogue.edit"
+        ],
+        "status": "active",
+        "invitedBy": null,
+        "invitedAt": "2026-10-01T09:00:00Z",
+        "validFrom": "2026-10-01T09:00:00Z",
+        "endedAt": null,
+        "endedBy": null,
+        "endedReason": null,
+        "revision": 1
+      }
+    ],
+    "Principal": [
+      {
+        "personId": "person-anna",
+        "emailVerified": true,
+        "authenticatedAt": "2026-10-02T09:00:00Z",
+        "authzEpoch": 4,
+        "membership": {
+          "companyId": "company-mixed-1",
+          "membershipId": "membership-anna",
+          "role": "administrator",
+          "permissions": [
+            "company.page.edit",
+            "company.members.manage",
+            "company.deals.manage",
+            "company.catalogue.edit"
+          ],
+          "companyAuthzEpoch": 2
+        },
+        "staff": [],
+        "delegation": null
+      }
+    ],
+    "Rfq": [
+      {
+        "id": "rfq-mixed-1",
+        "owner": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "projectId": null,
+        "creatorPersonId": "person-anna",
+        "status": "published",
+        "currentVersion": 1,
+        "currentVersionId": "rfq-mixed-v1",
+        "revision": 2,
+        "publicProjection": {
+          "enabled": true,
+          "fields": [
+            "title",
+            "region",
+            "openUntil"
+          ]
+        },
+        "category": "steel",
+        "createdAt": "2026-10-01T09:00:00Z"
+      }
+    ],
+    "RfqVersion": [
+      {
+        "id": "rfq-mixed-v1",
+        "rfqId": "rfq-mixed-1",
+        "version": 1,
+        "status": "published",
+        "payload": {
+          "title": "Steel beams for fixture site",
+          "lines": [
+            {
+              "lineId": "line-steel",
+              "kind": "goods",
+              "description": "Steel beam I20",
+              "specification": {
+                "grade": "GOST 8239-89"
+              },
+              "quantity": {
+                "value": "12",
+                "unit": "t"
+              },
+              "alternativesAllowed": false
+            }
+          ],
+          "deliveryTerms": {
+            "location": {
+              "region": "fixture-region"
+            },
+            "window": {
+              "from": {
+                "date": "2026-11-01",
+                "timeZone": "Europe/Moscow"
+              },
+              "to": {
+                "date": "2026-11-15",
+                "timeZone": "Europe/Moscow"
+              }
+            }
+          },
+          "acceptanceCriteria": "Mill certificates attached.",
+          "paymentTermsRequested": null,
+          "currency": "UZS",
+          "responseDeadline": "2026-10-20T12:00:00Z",
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "2ebe4756a3df55d198cc432cd524fe20465c4df22d5e1b8d89711e7503a2167d"
+        },
+        "publishedAt": "2026-10-02T09:00:00Z",
+        "publishedBy": "person-anna",
+        "supersededBy": null,
+        "amendmentReason": null
+      },
+      {
+        "id": "rfq-other-v1",
+        "rfqId": "rfq-other-1",
+        "version": 1,
+        "status": "published",
+        "payload": {
+          "title": "Facade installation",
+          "lines": [
+            {
+              "lineId": "line-install",
+              "kind": "works",
+              "description": "Install ventilated facade",
+              "specification": {
+                "area": "400 m2"
+              },
+              "quantity": {
+                "value": "400",
+                "unit": "m2"
+              },
+              "alternativesAllowed": true
+            }
+          ],
+          "deliveryTerms": {
+            "location": {
+              "region": "fixture-region"
+            },
+            "window": {
+              "from": {
+                "date": "2026-12-01",
+                "timeZone": "Europe/Moscow"
+              },
+              "to": {
+                "date": "2026-12-20",
+                "timeZone": "Europe/Moscow"
+              }
+            }
+          },
+          "acceptanceCriteria": "Signed acceptance act.",
+          "paymentTermsRequested": "30 days",
+          "currency": "UZS",
+          "responseDeadline": "2026-10-25T12:00:00Z",
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "cdafcefe94dee81f676d5a5bb9df0b218ee91ff9ed33955ef89f591f00bdb3be"
+        },
+        "publishedAt": "2026-10-02T09:00:00Z",
+        "publishedBy": "person-other-buyer",
+        "supersededBy": null,
+        "amendmentReason": null
+      }
+    ],
+    "RfqPrivateConstraint": [
+      {
+        "rfqId": "rfq-mixed-1",
+        "ownerParty": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "budgetCeiling": {
+          "minorUnits": "900000000",
+          "currency": "UZS"
+        },
+        "evaluationWeights": {
+          "price": "0.7",
+          "lead_time": "0.3"
+        },
+        "internalNotes": "Never above ceiling.",
+        "shortlist": [],
+        "revision": 1
+      }
+    ],
+    "Quote": [
+      {
+        "id": "quote-mixed-1",
+        "rfqId": "rfq-other-1",
+        "seller": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "buyer": {
+          "kind": "company",
+          "id": "company-other-1"
+        },
+        "status": "sent",
+        "staleReason": null,
+        "currentVersion": 1,
+        "revision": 2,
+        "createdAt": "2026-10-02T09:00:00Z"
+      }
+    ],
+    "QuoteVersion": [
+      {
+        "id": "quote-mixed-v1",
+        "quoteId": "quote-mixed-1",
+        "version": 1,
+        "rfqVersion": {
+          "id": "rfq-other-v1",
+          "version": 1,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "cdafcefe94dee81f676d5a5bb9df0b218ee91ff9ed33955ef89f591f00bdb3be"
+          }
+        },
+        "status": "sent",
+        "payload": {
+          "currency": "UZS",
+          "lines": [
+            {
+              "lineId": "qline-install",
+              "rfqLineId": "line-install",
+              "kind": "works",
+              "specSnapshot": {
+                "system": "fixture rail system"
+              },
+              "offeringVersionRef": {
+                "offeringId": "offering-install",
+                "version": 2
+              },
+              "quantity": {
+                "value": "400",
+                "unit": "m2"
+              },
+              "unitPrice": {
+                "minorUnits": "250000",
+                "currency": "UZS"
+              },
+              "tax": {
+                "kind": "vat",
+                "ratePercent": "20",
+                "included": false
+              },
+              "taxAmount": {
+                "minorUnits": "20000000",
+                "currency": "UZS"
+              },
+              "lineTotal": {
+                "minorUnits": "100000000",
+                "currency": "UZS"
+              },
+              "substitution": null,
+              "options": []
+            }
+          ],
+          "totals": {
+            "net": {
+              "minorUnits": "100000000",
+              "currency": "UZS"
+            },
+            "tax": {
+              "minorUnits": "20000000",
+              "currency": "UZS"
+            },
+            "gross": {
+              "minorUnits": "120000000",
+              "currency": "UZS"
+            }
+          },
+          "deliveryTerms": {
+            "milestones": [
+              {
+                "description": "Mobilisation",
+                "due": {
+                  "date": "2026-12-01",
+                  "timeZone": "Europe/Moscow"
+                }
+              }
+            ],
+            "location": "fixture site"
+          },
+          "paymentTerms": "30 days after acceptance",
+          "validity": {
+            "until": "2026-11-30T00:00:00Z"
+          },
+          "exclusions": [
+            "scaffolding"
+          ],
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "b1f0b82968d01b0dcc777d226c0e4e18217f712bc3445eccc627d3b6d36ffa85"
+        },
+        "sentAt": "2026-10-05T09:00:00Z",
+        "sentBy": {
+          "personId": "person-anna",
+          "mandateId": null
+        },
+        "validUntil": "2026-11-30T00:00:00Z",
+        "staleReason": null,
+        "revalidatedFrom": null
+      }
+    ],
+    "QuotePrivateConstraint": [
+      {
+        "quoteId": "quote-mixed-1",
+        "ownerParty": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "floorPrices": {
+          "qline-install": {
+            "minorUnits": "220000",
+            "currency": "UZS"
+          }
+        },
+        "marginTargets": {
+          "qline-install": "0.12"
+        },
+        "costBasis": {
+          "qline-install": {
+            "minorUnits": "200000",
+            "currency": "UZS"
+          }
+        },
+        "negotiationNotes": "Hold at floor.",
+        "revision": 1
+      }
+    ],
+    "Offering": [
+      {
+        "id": "offering-install",
+        "owner": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "kind": "works",
+        "status": "active",
+        "currentVersion": 2,
+        "revision": 2
+      }
+    ],
+    "OfferingVersion": [
+      {
+        "offeringId": "offering-install",
+        "version": 2,
+        "status": "published",
+        "payload": {
+          "title": "Ventilated facade installation",
+          "description": "Per square metre",
+          "specification": {
+            "system": "fixture rail system"
+          },
+          "unit": "m2",
+          "listPrice": {
+            "minorUnits": "260000",
+            "currency": "UZS"
+          },
+          "options": [],
+          "availability": {
+            "state": "available",
+            "capacity": {
+              "value": "2000",
+              "unit": "m2"
+            },
+            "observedAt": "2026-10-05T09:00:00Z"
+          },
+          "components": []
+        },
+        "publicFields": [
+          "title",
+          "description",
+          "unit",
+          "availability"
+        ],
+        "privateKnowledge": {
+          "costBasis": {
+            "minorUnits": "200000",
+            "currency": "UZS"
+          },
+          "marginTarget": "0.12",
+          "notes": "private"
+        },
+        "publishedAt": "2026-10-02T09:00:00Z"
+      }
+    ],
+    "ObjectParticipation": [
+      {
+        "id": "participation-rfq-owner",
+        "resource": {
+          "kind": "rfq",
+          "id": "rfq-mixed-1"
+        },
+        "party": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "side": "owner",
+        "capabilities": [
+          "read.shared",
+          "read.party_private",
+          "read.owner_private",
+          "write.draft",
+          "publish",
+          "invite",
+          "negotiate",
+          "accept",
+          "commit_order",
+          "manage_participants",
+          "export"
+        ],
+        "audience": "owner_private",
+        "validFrom": "2026-10-01T09:00:00Z",
+        "validUntil": null,
+        "grantedBy": {
+          "personId": "person-anna",
+          "onBehalfOf": null
+        },
+        "revokedAt": null,
+        "revokedReason": null,
+        "revision": 1,
+        "caseRef": null
+      },
+      {
+        "id": "participation-quote-seller",
+        "resource": {
+          "kind": "quote",
+          "id": "quote-mixed-1"
+        },
+        "party": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "side": "seller",
+        "capabilities": [
+          "read.shared",
+          "read.party_private",
+          "write.draft",
+          "publish",
+          "negotiate"
+        ],
+        "audience": "party_private",
+        "validFrom": "2026-10-02T09:00:00Z",
+        "validUntil": null,
+        "grantedBy": {
+          "personId": "person-anna",
+          "onBehalfOf": null
+        },
+        "revokedAt": null,
+        "revokedReason": null,
+        "revision": 1,
+        "caseRef": null
+      }
+    ],
+    "Budget": [
+      {
+        "id": "budget-transaction-mixed",
+        "kind": "transaction",
+        "owner": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "scope": {
+          "projectId": null,
+          "employeePersonId": null
+        },
+        "period": {
+          "from": "2026-10-01T09:00:00Z",
+          "to": "2026-12-31T00:00:00Z"
+        },
+        "limit": {
+          "minorUnits": "1000000000",
+          "currency": "UZS"
+        },
+        "revision": 1
+      },
+      {
+        "id": "budget-platform-mixed",
+        "kind": "platform",
+        "owner": {
+          "kind": "company",
+          "id": "company-mixed-1"
+        },
+        "scope": {
+          "projectId": null,
+          "employeePersonId": "person-anna"
+        },
+        "period": {
+          "from": "2026-10-01T09:00:00Z",
+          "to": "2026-12-31T00:00:00Z"
+        },
+        "limit": {
+          "minorUnits": "5000000",
+          "currency": "UZS"
+        },
+        "revision": 1
+      }
+    ]
+  },
+  "expectations": {
+    "publicCompany": {
+      "id": "company-mixed-1",
+      "name": "Fixture Facades LLC",
+      "status": "claimed",
+      "legalIdentifiers": [
+        {
+          "kind": "UZ-STIR",
+          "value": "300000000",
+          "status": "claimed"
+        }
+      ],
+      "publicDescription": "Buys steel, sells facade installation."
+    },
+    "forbiddenInPublicCompany": [
+      "membershipRequests",
+      "billingAccountId",
+      "internalNotes",
+      "verifiedDomains"
+    ],
+    "publicRfq": {
+      "id": "rfq-mixed-1",
+      "title": "Steel beams for fixture site",
+      "region": "fixture-region",
+      "openUntil": "2026-10-20T12:00:00Z"
+    },
+    "forbiddenInPublicRfq": [
+      "budgetCeiling",
+      "internalNotes",
+      "evaluationWeights",
+      "lines",
+      "acceptanceCriteria"
+    ],
+    "sharedQuoteVersion": {
+      "quoteId": "quote-mixed-1",
+      "id": "quote-mixed-v1",
+      "version": 1,
+      "rfqVersion": {
+        "id": "rfq-other-v1",
+        "version": 1,
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "4b3e05f3f48978271b97f4f6f6dacfa1cd1b926123e7609b5e21e643512667c9"
+        }
+      },
+      "status": "sent",
+      "staleReason": null,
+      "lines": [
+        {
+          "lineId": "qline-install",
+          "rfqLineId": "line-install",
+          "kind": "works",
+          "specSnapshot": {
+            "system": "fixture rail system"
+          },
+          "quantity": {
+            "value": "400",
+            "unit": "m2"
+          },
+          "unitPrice": {
+            "minorUnits": "250000",
+            "currency": "UZS"
+          },
+          "tax": {
+            "kind": "vat",
+            "ratePercent": "20",
+            "included": false
+          },
+          "taxAmount": {
+            "minorUnits": "20000000",
+            "currency": "UZS"
+          },
+          "lineTotal": {
+            "minorUnits": "100000000",
+            "currency": "UZS"
+          },
+          "substitution": null,
+          "options": []
+        }
+      ],
+      "totals": {
+        "net": {
+          "minorUnits": "100000000",
+          "currency": "UZS"
+        },
+        "tax": {
+          "minorUnits": "20000000",
+          "currency": "UZS"
+        },
+        "gross": {
+          "minorUnits": "120000000",
+          "currency": "UZS"
+        }
+      },
+      "deliveryTerms": {
+        "milestones": [
+          {
+            "description": "Mobilisation",
+            "due": {
+              "date": "2026-12-01",
+              "timeZone": "Europe/Moscow"
+            }
+          }
+        ],
+        "location": "fixture site"
+      },
+      "paymentTerms": "30 days after acceptance",
+      "validUntil": "2026-11-30T00:00:00Z",
+      "exclusions": [
+        "scaffolding"
+      ],
+      "attachments": [],
+      "digest": {
+        "algorithm": "trustwork-digest-1",
+        "value": "2c00da5b8df859a58540a30209152f585149eaa8e22908dc0c991a4889964ded"
+      }
+    },
+    "forbiddenInSharedQuoteVersion": [
+      "floorPrices",
+      "marginTargets",
+      "costBasis",
+      "negotiationNotes",
+      "offeringVersionRef"
+    ],
+    "publicOfferingVersion": {
+      "offeringId": "offering-install",
+      "version": 2,
+      "fields": {
+        "title": "Ventilated facade installation",
+        "description": "Per square metre",
+        "unit": "m2",
+        "availability": {
+          "state": "available",
+          "capacity": {
+            "value": "2000",
+            "unit": "m2"
+          },
+          "observedAt": "2026-10-05T09:00:00Z"
+        }
+      }
+    },
+    "forbiddenInPublicOfferingVersion": [
+      "listPrice",
+      "privateKnowledge",
+      "costBasis",
+      "components"
+    ],
+    "budgetKindForPlaceOrder": "transaction",
+    "budgetKindForDeliverable": "platform"
+  }
+}

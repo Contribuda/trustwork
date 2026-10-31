@@ -1,0 +1,33 @@
+.root {
+  display: inline-flex;
+  flex: none;
+}
+
+.svg {
+  animation: spin 900ms linear infinite;
+}
+
+.track {
+  stroke: currentColor;
+  opacity: 0.2;
+}
+
+.arc {
+  stroke: currentColor;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg {
+    animation: none;
+  }
+
+  .arc {
+    stroke-dasharray: 14 70;
+  }
+}

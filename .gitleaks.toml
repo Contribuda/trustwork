@@ -1,0 +1,25 @@
+# gitleaks configuration for the engine and its open-source export (OSS-001).
+# Extends the default rules; the allowlist covers synthetic fixtures and documented hashes that are not secrets.
+title = "trustwork"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Synthetic demo data, contract fixtures, documentation and tests (paths are matched unanchored: dir mode reports absolute paths)"
+paths = [
+  '''packages/contracts/fixtures/[^/]+\.json$''',
+  '''apps/web/fixtures/.*\.json$''',
+  '''docs/.*\.md$''',
+  '''tests/.*\.(ts|mjs)$''',
+  '''package-lock\.json$''',
+]
+
+[[allowlists]]
+description = "Content hashes and keys that are identifiers, not credentials"
+regexes = [
+  '''tokenizerRevision''',
+  '''idempotencyKey''',
+  '''tokenHash''',
+  '''(digest|sha256|checksum)[A-Za-z]*["':\s=]+[0-9a-f]{40,64}''',
+]

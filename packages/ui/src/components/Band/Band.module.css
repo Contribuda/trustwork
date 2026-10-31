@@ -1,0 +1,62 @@
+.band {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.navy {
+  background: var(--color-navy);
+  color: var(--color-navy-text);
+}
+
+.navy a {
+  color: var(--color-navy-text);
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+}
+
+.navy a:hover,
+.navy a[data-hovered] {
+  color: var(--color-navy-link-hover);
+}
+
+.tint {
+  background: var(--color-surface-tint);
+  color: var(--color-text);
+}
+
+.warm {
+  background: var(--color-surface-warm);
+  color: var(--color-text);
+}
+
+.surface {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.padSm {
+  padding-block: var(--space-6);
+}
+
+.padMd {
+  padding-block: var(--space-section);
+}
+
+.padLg {
+  padding-block: var(--space-section-lg);
+}
+
+.fullBleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+.backdrop {
+  z-index: 0;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+}

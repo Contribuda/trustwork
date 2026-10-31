@@ -1,0 +1,150 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(1.2) blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--size-header-height);
+  padding: 0 var(--space-6);
+}
+
+.left {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Scoped to the header so the rule outranks the button's own display regardless of stylesheet order. */
+.header .menuButton {
+  display: none;
+}
+
+/* Search styled as a field (it is a button that opens the search dialog). */
+.searchField {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 18rem;
+  min-height: var(--size-control);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  text-align: left;
+  cursor: text;
+  transition:
+    border-color var(--motion-fast) var(--motion-easing),
+    background-color var(--motion-fast) var(--motion-easing),
+    box-shadow var(--motion-fast) var(--motion-easing);
+}
+
+.searchField[data-hovered] {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+}
+
+.searchField[data-focus-visible] {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  background: var(--color-surface);
+}
+
+.searchIconInField {
+  color: var(--color-text-subtle);
+}
+
+.searchLabel {
+  flex: 1 1 auto;
+}
+
+.searchHint {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-subtle);
+  font-family: var(--font-sans);
+  font-size: var(--text-caption-size);
+}
+
+.header .searchIcon {
+  display: none;
+}
+
+.bellWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.bellBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  pointer-events: none;
+}
+
+.offline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-6);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-top: 1px solid var(--color-warning-border);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+@media (max-width: 1023.98px) {
+  .searchField {
+    width: 12rem;
+  }
+
+  .searchHint {
+    display: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .bar {
+    padding: 0 var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .header .menuButton {
+    display: inline-flex;
+  }
+
+  .searchField {
+    display: none;
+  }
+
+  .header .searchIcon {
+    display: inline-flex;
+  }
+
+  .offline {
+    padding: var(--space-2) var(--space-4);
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "name": "@trustwork/ui",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "description": "Trustwork design system: tokens, locales, brand assets and accessible React components (React Aria Components + CSS Modules).",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./tokens/index.ts",
+    "./tokens.css": "./tokens/tokens.css",
+    "./fonts.css": "./fonts/fonts.css",
+    "./base.css": "./src/styles/base.css",
+    "./fonts/*": "./fonts/*",
+    "./brand/*": "./brand/*",
+    "./i18n": "./src/i18n/index.ts",
+    "./media": "./src/media/index.ts",
+    "./media/*": "./media/*",
+    "./locales/*.json": "./locales/*.json",
+    "./brand": "./src/brand/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "tokens:build": "node --import tsx tokens/build-css.ts",
+    "test": "npm run test:unit && npm run test:a11y",
+    "test:unit": "node ../../scripts/run-tests.mjs tests/unit",
+    "test:a11y": "npm run build:storybook && rm -rf dist/axe && playwright test && node tests/axe-summary.mjs",
+    "storybook": "storybook dev --port 6006 --host 127.0.0.1 --no-open",
+    "build:storybook": "storybook build --output-dir dist/storybook --quiet",
+    "media:build": "python3 media/tools/build-artworks.py && python3 media/tools/build-photos.py",
+    "screenshots": "node tests/screenshots/capture.mjs ../../docs/design/system/showcase && python3 tests/screenshots/optimize.py ../../docs/design/system/showcase"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "1.62.0",
+    "react-aria-components": "1.22.1",
+    "@trustwork/i18n-runtime": "0.1.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
+    "@storybook/addon-a11y": "10.6.4",
+    "@storybook/react-vite": "10.6.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "storybook": "10.6.4",
+    "vite": "7.3.7"
+  }
+}

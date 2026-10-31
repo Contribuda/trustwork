@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trustwork.local/schemas/retrieval/gold-item.schema.json",
+  "title": "Retrieval gold item (RAG-101 draft)",
+  "description": "One evaluation item for the hybrid retrieval benchmark. Labels attach to source versions and locators, not chunk ids. Synthetic items must set annotation.synthetic = true.",
+  "$comment": "Checker rules not expressible here (see README): text locators require start <= end; mustNotReturn must be disjoint from expected.sourceVersions[*].sourceId.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "specVersion", "stratum", "query", "temporal", "principal", "expected", "mustNotReturn", "citation", "injection", "annotation"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^gold-[a-z_]+-[0-9]{3}$" },
+    "specVersion": { "type": "integer", "const": 1 },
+    "stratum": {
+      "type": "string",
+      "enum": [
+        "public_discovery",
+        "exact_identifier",
+        "technical_spec",
+        "person_expertise",
+        "project_need_match",
+        "deal_party_private",
+        "evidence_status",
+        "cross_language",
+        "noisy_text",
+        "historical_asof",
+        "no_answer",
+        "access_adversarial",
+        "injection",
+        "complete_domain"
+      ]
+    },
+    "tags": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "default": [] },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "language", "kinds", "dataClass"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "language": { "type": "string", "enum": ["ru", "en", "mul"] },
+        "kinds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["company", "person", "catalogue", "rfq", "quote", "project", "publication", "file", "message", "execution", "conversation"] }
+        },
+        "dataClass": {
+          "type": "string",
+          "enum": ["public", "person_private", "company_private", "project_restricted", "deal_party_private"],
+          "description": "Classification of the query text itself (egress policy for the question)."
+        },
+        "noiseKind": { "type": "string", "enum": ["none", "typo", "ocr", "abbreviation", "transliteration", "confusable", "declension", "table"], "default": "none" }
+      }
+    },
+    "temporal": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["kind"], "properties": { "kind": { "const": "current" } } },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "versionIds", "asOf"],
+          "properties": { "kind": { "const": "versions" }, "versionIds": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "asOf": { "type": "string", "format": "date-time" } }
+        }
+      ]
+    },
+    "principal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "role"],
+      "properties": {
+        "fixtureId": { "type": "string", "description": "Fixture principal id (e.g. buyer, seller, employee, stranger, other). Never a real account." },
+        "role": {
+          "type": "string",
+          "enum": ["anonymous", "own_person", "own_company_no_object_grant", "project_participant", "buyer", "seller", "unrelated_company", "revoked_employee", "support_without_case_grant", "historical_reader"]
+        },
+        "policyEpochAtQuery": { "type": "integer", "minimum": 0 },
+        "revocationBeforeStage": {
+          "type": "string",
+          "enum": ["none", "candidates", "hydration", "provider_egress", "delivery", "citation"],
+          "default": "none",
+          "description": "Stage before which the fixture revokes access, for race items."
+        }
+      }
+    },
+    "requiredFilters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "regionId": { "type": "string" },
+        "exactIdentifier": { "type": "string" },
+        "rfqVersionId": { "type": "string" },
+        "requiredStandardIds": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      },
+      "default": {}
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["abstention", "status", "sourceVersions"],
+      "properties": {
+        "abstention": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["complete", "partial", "no_answer", "unavailable"] },
+        "sourceVersions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sourceId", "versionId", "grade"],
+            "properties": {
+              "sourceId": { "type": "string" },
+              "versionId": { "type": "string" },
+              "projectionId": { "type": "string" },
+              "grade": { "type": "integer", "minimum": 0, "maximum": 3 },
+              "locator": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "extractionId", "page"],
+                    "properties": {
+                      "kind": { "const": "page" },
+                      "extractionId": { "type": "string", "minLength": 1 },
+                      "page": { "type": "integer", "minimum": 1 }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "extractionId", "page", "table", "row", "columns"],
+                    "properties": {
+                      "kind": { "const": "table" },
+                      "extractionId": { "type": "string", "minLength": 1 },
+                      "page": { "type": "integer", "minimum": 1 },
+                      "table": { "type": "string", "minLength": 1 },
+                      "row": { "type": "string", "minLength": 1 },
+                      "columns": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "extractionId", "start", "end"],
+                    "$comment": "Checker rule: start <= end (not expressible in JSON Schema).",
+                    "properties": {
+                      "kind": { "const": "text" },
+                      "extractionId": { "type": "string", "minLength": 1 },
+                      "start": { "type": "integer", "minimum": 0 },
+                      "end": { "type": "integer", "minimum": 0 }
+                    }
+                  }
+                ]
+              },
+              "evidence": { "type": "string", "enum": ["asserted", "confirmed", "disputed", "superseded"] },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "structuredFact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "value", "authority", "complete"],
+          "properties": {
+            "field": { "type": "string" },
+            "value": { "type": "string" },
+            "unit": { "type": ["string", "null"] },
+            "authority": { "const": "canonical" },
+            "complete": { "type": "boolean" },
+            "pinnedVersionIds": { "type": "array", "items": { "type": "string" } }
+          },
+          "description": "Present for complete_domain items: the canonical answer that retrieval must not replace."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["abstention"], "properties": { "abstention": { "const": true } } },
+          "then": { "properties": { "sourceVersions": { "items": { "properties": { "grade": { "maximum": 1 } } } }, "status": { "enum": ["no_answer", "unavailable"] } } }
+        }
+      ]
+    },
+    "mustNotReturn": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string" },
+      "description": "Source ids (any version) whose appearance at any stage for this principal is a leak. Checker rule: disjoint from expected.sourceVersions[*].sourceId."
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expectation"],
+      "properties": {
+        "expectation": { "type": "string", "enum": ["required", "optional", "forbidden"] },
+        "mustSupportClaim": { "type": "string", "description": "The specific sentence/fact the citation must support. Not allowed when expectation is forbidden." }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["expectation"], "properties": { "expectation": { "const": "forbidden" } } },
+          "then": { "not": { "required": ["mustSupportClaim"] } }
+        }
+      ]
+    },
+    "injection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flag"],
+      "properties": {
+        "flag": { "type": "boolean" },
+        "payloadSourceIds": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "expectedMandateEffect": { "type": "string", "enum": ["none"], "default": "none" }
+      }
+    },
+    "completeDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["total", "minimum", "maximum", "count", "overdue_set"] },
+        "scopeFingerprint": { "type": "string" }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["synthetic", "annotators", "labelledAt"],
+      "properties": {
+        "synthetic": { "type": "boolean" },
+        "annotators": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "labelledAt": { "type": "string", "format": "date" },
+        "adjudicated": { "type": "boolean", "default": false },
+        "split": { "type": "string", "enum": ["tuning", "held_out", "plumbing"], "default": "plumbing" },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["stratum"], "properties": { "stratum": { "const": "complete_domain" } } },
+      "then": { "required": ["completeDomain"], "properties": { "expected": { "required": ["structuredFact"] } } }
+    },
+    {
+      "if": { "required": ["stratum"], "properties": { "stratum": { "const": "access_adversarial" } } },
+      "then": { "properties": { "mustNotReturn": { "minItems": 1 } } }
+    },
+    {
+      "if": { "required": ["stratum"], "properties": { "stratum": { "const": "injection" } } },
+      "then": { "properties": { "injection": { "required": ["flag", "payloadSourceIds"], "properties": { "flag": { "const": true }, "payloadSourceIds": { "minItems": 1 } } } } }
+    },
+    {
+      "if": { "required": ["expected"], "properties": { "expected": { "required": ["abstention"], "properties": { "abstention": { "const": true } } } } },
+      "then": { "properties": { "citation": { "properties": { "expectation": { "const": "forbidden" } } } } }
+    }
+  ]
+}

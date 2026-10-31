@@ -1,0 +1,440 @@
+{
+  "bootstrap": {
+    "title": "Trustwork",
+    "message": "Loyiha asosi tayyor. Foydalanuvchi funksiyalari hali ishlab chiqilmoqda."
+  },
+  "publicNav": [
+    "Bosh sahifa",
+    "Yangiliklar",
+    "Maqolalar",
+    "Tadbirlar",
+    "Kompaniyalar",
+    "Odamlar",
+    "Loyihalar",
+    "Jurnal"
+  ],
+  "workspaceNav": [
+    "Umumiy koʻrinish",
+    "Mening sahifam",
+    "Kompaniya",
+    "Loyihalar",
+    "Xaridlar",
+    "Sotuvlar",
+    "Nashrlar",
+    "Yordamchi"
+  ],
+  "publicExit": "Sohaga oʻtish",
+  "onboarding": [
+    "Xarid qilaman",
+    "Yetkazib beraman",
+    "Soha hayotida ishtirok etaman"
+  ],
+  "auth": {
+    "name": "Ismingiz",
+    "email": "Elektron pochta",
+    "password": "Parol",
+    "login": {
+      "title": "Kirish",
+      "subtitle": "Sizni yana koʻrganimizdan xursandmiz"
+    },
+    "emailPlaceholder": "Pochtangizni kiriting",
+    "passwordPlaceholder": "Parolni kiriting",
+    "showPassword": "Parolni koʻrsatish",
+    "hidePassword": "Parolni yashirish",
+    "forgot": "Parolni unutdingizmi?",
+    "submitLogin": "Kirish",
+    "submitting": "Kirilmoqda…",
+    "or": "yoki",
+    "apple": "Apple orqali kirish",
+    "google": "Google orqali kirish",
+    "noAccount": "Hali hisobingiz yoʻqmi?",
+    "register": "Roʻyxatdan oʻtish",
+    "backHome": "Bosh sahifaga",
+    "sessionExpired": "Seans tugadi. Qaytadan kiring.",
+    "error": {
+      "invalidCredentials": "Pochta yoki parol notoʻgʻri",
+      "rateLimited": "Urinishlar juda koʻp. {minutes, plural, one {# daqiqadan} other {# daqiqadan}} soʻng qayta urinib koʻring.",
+      "provider": "{provider} orqali kirib boʻlmadi. Qayta urinib koʻring yoki pochtadan foydalaning.",
+      "emailRequired": "Elektron pochtani kiriting",
+      "emailFormat": "Pochta manzilini tekshiring",
+      "passwordRequired": "Parolni kiriting"
+    },
+    "visual": {
+      "loginHeadline": "Toʻgʻri qarorlar. Ishonchli hamkorlar.",
+      "loginSub": "Odamlar va kompaniyalarni toping, tajriba almashing va loyihalar ustida birga ishlang."
+    }
+  },
+  "brand": {
+    "name": "Trustwork",
+    "wordmarkLine1": "trust",
+    "wordmarkLine2": "work",
+    "logoLabel": "Trustwork — bosh sahifa"
+  },
+  "common": {
+    "cancel": "Bekor qilish",
+    "confirm": "Tasdiqlash",
+    "close": "Yopish",
+    "save": "Saqlash",
+    "saved": "Saqlandi",
+    "delete": "Oʻchirish",
+    "edit": "Tahrirlash",
+    "back": "Orqaga",
+    "next": "Keyingi",
+    "more": "Yana",
+    "retry": "Qayta urinish",
+    "loading": "Yuklanmoqda…",
+    "offline": "Aloqa yoʻq",
+    "corrected": "Tuzatildi",
+    "sectionLoadError": "Boʻlimni yuklab boʻlmadi",
+    "noAccessTitle": "Ruxsat yoʻq",
+    "noAccessBody": "Bu boʻlim uchun sizda huquq yoʻq. Agar bu xato boʻlsa, kompaniya administratoriga murojaat qiling.",
+    "externalLink": "tashqi havola",
+    "required": "majburiy",
+    "optional": "ixtiyoriy maydon",
+    "selected": "Tanlangan",
+    "remove": "Olib tashlash",
+    "removeItem": "«{label}» ni olib tashlash",
+    "clear": "Tozalash",
+    "noResults": "Hech narsa topilmadi",
+    "filters": "Filtrlar",
+    "pagination": "Sahifalar",
+    "page": "{page}-sahifa",
+    "previousPage": "Oldingi sahifa",
+    "nextPage": "Keyingi sahifa",
+    "currentPage": "{page}-sahifa, joriy",
+    "tableScrollHint": "Jadvalni gorizontal aylantirish mumkin",
+    "sortAscending": "oʻsish tartibida",
+    "sortDescending": "kamayish tartibida",
+    "sortNone": "saralanmagan, saralash uchun bosing",
+    "openMenu": "Menyuni ochish",
+    "notifications": "Bildirishnomalar",
+    "breadcrumbs": "Navigatsiya",
+    "stepOf": "{total} dan {index}-qadam",
+    "stepDone": "bajarildi",
+    "stepCurrent": "joriy",
+    "showMore": "Yana koʻrsatish",
+    "characters": "{count, plural, one {# belgi} other {# belgi}}",
+    "charactersLeft": "{count, plural, one {# belgi} other {# belgi}} qoldi",
+    "items": "{count, plural, one {# element} other {# element}}",
+    "on": "Yoq.",
+    "off": "Oʻch.",
+    "updated": "Yangilandi: {date}"
+  },
+  "form": {
+    "errorSummaryTitle": "Shakldagi xatolarni tuzating",
+    "errorCount": "{count, plural, one {# xato} other {# xato}}",
+    "requiredMark": "majburiy maydon",
+    "help": "Bu maydon boʻyicha yordam"
+  },
+  "status": {
+    "sourced": "Ochiq manbalar boʻyicha",
+    "claimed": "Kompaniya tomonidan bildirilgan",
+    "verified": "Tasdiqlangan"
+  },
+  "evidence": {
+    "asserted": "Bildirilgan",
+    "confirmed": "Tasdiqlangan",
+    "disputed": "Bahsli",
+    "superseded": "Yangi versiya bilan almashtirilgan"
+  },
+  "kind": {
+    "goods": "Tovar",
+    "works": "Ishlar",
+    "services": "Xizmat",
+    "bundle": "Toʻplam"
+  },
+  "lifecycle": {
+    "draft": "Qoralama",
+    "inReview": "Tekshiruvda",
+    "published": "Eʼlon qilingan",
+    "active": "Amalda",
+    "paused": "Toʻxtatilgan",
+    "closed": "Yopilgan",
+    "cancelled": "Bekor qilingan",
+    "expired": "Muddati oʻtgan",
+    "archived": "Arxivda"
+  },
+  "run": {
+    "state": {
+      "proposed": "Taklif qilingan",
+      "authorized": "Ruxsat berilgan",
+      "reserved": "Byudjet band qilingan",
+      "queued": "Navbatda",
+      "executing": "Bajarilmoqda",
+      "pending": "Tasdiq kutilmoqda",
+      "succeeded": "Bajarildi",
+      "failed": "Bajarilmadi",
+      "outcomeUnknown": "Natija nomaʼlum",
+      "reconciling": "Solishtirilmoqda",
+      "revoked": "Bekor qilingan"
+    }
+  },
+  "publicShell": {
+    "tagline": "Soha. Odamlar. Amaliyot.",
+    "about": "Platforma haqida",
+    "signIn": "Kirish",
+    "search": "Qidiruv",
+    "menu": "Menyu",
+    "skipToContent": "Mazmunga oʻtish",
+    "navLabel": "Boʻlimlar",
+    "toWorkspace": "Ish maydoniga",
+    "closeMenu": "Menyuni yopish",
+    "closeSearch": "Qidiruvni yopish"
+  },
+  "footer": {
+    "sections": "Boʻlimlar",
+    "editorial": "Tahririyat",
+    "platform": "Platforma",
+    "legal": "Huquqiy maʼlumot",
+    "privacy": "Maxfiylik",
+    "terms": "Foydalanish shartlari",
+    "help": "Yordam",
+    "copyright": "© Trustwork. Barcha huquqlar himoyalangan.",
+    "tagline": "Ish qiladigan odamlar uchun foydali.",
+    "topics": "Mavzular",
+    "social": "Ijtimoiy tarmoqlarda",
+    "aboutMagazine": "Jurnal haqida",
+    "aboutService": "Xizmat haqida",
+    "signIn": "Kirish"
+  },
+  "shell": {
+    "navLabel": "Ish maydoni",
+    "collapse": "Menyuni yigʻish",
+    "expand": "Menyuni yoyish",
+    "more": "Yana",
+    "skipToContent": "Mazmunga",
+    "openMenu": "Menyuni ochish",
+    "closeMenu": "Menyuni yopish",
+    "search": "Qidiruv",
+    "notifications": "Bildirishnomalar",
+    "notificationsCount": "Bildirishnomalar, {count, plural, one {# yangi} other {# yangi}}",
+    "notificationsUnknown": "Bildirishnomalar, yangilari bor",
+    "noNotifications": "Yangi bildirishnomalar yoʻq",
+    "allNotifications": "Barcha bildirishnomalar",
+    "account": "Hisob",
+    "menu": {
+      "myPage": "Mening sahifam",
+      "accountSettings": "Hisob sozlamalari",
+      "security": "Xavfsizlik va seanslar",
+      "billing": "Toʻlov va tariflar",
+      "admin": "Boshqaruv",
+      "help": "Yordam",
+      "signOut": "Chiqish"
+    },
+    "offline": "Aloqa yoʻq. Saqlangan maʼlumotlar koʻrsatilmoqda.",
+    "attention": "{count, plural, one {# ta qaror talab qiladi} other {# ta qaror talab qiladi}}",
+    "headerLabel": "Ish maydoni sarlavhasi"
+  },
+  "assistant": {
+    "title": "Yordamchi",
+    "launcher": "Yordamchi",
+    "launcherUnread": "Yordamchi, {count, plural, one {# oʻqilmagan} other {# oʻqilmagan}}",
+    "launcherAction": "Yordamchi, qaroringiz kerak",
+    "launcherOpen": "Yordamchi, oyna ochiq — yopish",
+    "overlay": {
+      "label": "Yordamchi oynasi",
+      "openPage": "Sahifani ochish",
+      "minimize": "Yigʻish",
+      "close": "Yopish",
+      "newMessages": "{count, plural, one {# yangi xabar} other {# yangi xabar}}",
+      "conversation": "Yordamchi bilan suhbat",
+      "stateOnline": "Aloqada",
+      "stateOffline": "Aloqa yoʻq. Tarixni oʻqish mumkin.",
+      "stateUnavailable": "Yordamchi vaqtincha ishlamayapti. Aniq maʼlumotlar boʻyicha qidiruv ishlaydi."
+    },
+    "attention": "{count, plural, one {# ta qaror sizni kutmoqda} other {# ta qaror sizni kutmoqda}}",
+    "attentionOpen": "Ochish",
+    "composer": {
+      "label": "Yordamchiga xabar",
+      "placeholder": "Savol bering yoki vazifani tasvirlang",
+      "send": "Yuborish",
+      "attach": "Fayl biriktirish",
+      "hint": "Enter — yuborish, Shift+Enter — yangi qator"
+    },
+    "notSent": "Yuborilmadi",
+    "intro": "Yordamchi manbalarni koʻrsatib javob beradi, qoralamalar tayyorlaydi va topshiriqlarni faqat siz belgilagan vakolatlar doirasida bajaradi.",
+    "messageFromUser": "Siz",
+    "messageFromAssistant": "Yordamchi"
+  },
+  "search": {
+    "placeholder": "Soha boʻyicha qidiruv",
+    "title": "Qidiruv natijalari",
+    "removeConstraint": "«{label}» shartini olib tashlash",
+    "temporal": {
+      "label": "Maʼlumotlar davri",
+      "current": "Joriy maʼlumotlar",
+      "asOf": "Sanadagi versiya"
+    },
+    "historicalLabel": "{date} sanasidagi tarixiy versiya",
+    "backToCurrent": "Joriy maʼlumotlarga qaytish",
+    "status": {
+      "complete": "Barcha mavjud natijalar koʻrsatildi",
+      "partial": "Natijalar toʻliq emas: {reason}",
+      "noAnswer": "Soʻrovingiz boʻyicha mavjud materiallar yoʻq",
+      "unavailable": "Qidiruv vaqtincha ishlamayapti",
+      "stale": "Maʼlumotlar yangilanmoqda, natijalar toʻliq boʻlmasligi mumkin",
+      "previousShown": "Oldingi natijalar koʻrsatilmoqda"
+    },
+    "reason": {
+      "budget": "soʻrov hajmi chegarasiga yetildi",
+      "sourcesUnavailable": "baʼzi manbalar vaqtincha mavjud emas",
+      "semanticOff": "maʼnoviy qidiruv oʻchirilgan, aniq mosliklar koʻrsatilmoqda"
+    },
+    "emptyQuery": "Soʻrov kiriting yoki boʻlimni oching",
+    "freshness": "Manba: {source}, maʼlumotlar {observedAt} sanasidan"
+  },
+  "answer": {
+    "facts": "Platforma maʼlumotlari",
+    "claims": "Manbalardan",
+    "supported": "Manbalar bilan tasdiqlangan",
+    "qualified": "Izohlar bilan: {reason}",
+    "abstain": "Javob uchun tasdiqlangan maʼlumotlar yetarli emas. Quyida topilgan materiallar.",
+    "scopeIncomplete": "Maʼlumotlar hajmi toʻliq emas",
+    "statusLabel": "Javob holati"
+  },
+  "citation": {
+    "open": "{index}-manba",
+    "title": "Manba",
+    "version": "{version}-versiya, {date}",
+    "locator": {
+      "page": "{page}-sahifa",
+      "table": "{page}-sahifa, {table}-jadval, {row}-qator",
+      "text": "Matn parchasi"
+    },
+    "openSource": "Manbani ochish",
+    "unavailable": "Manba mavjud emas",
+    "unavailableShort": "mavjud emas",
+    "historicalShort": "tarixiy versiya",
+    "unavailableReason": {
+      "revoked": "Ruxsat bekor qilingan",
+      "deleted": "Material oʻchirilgan",
+      "consent": "Nashrga rozilik qaytarib olingan",
+      "scope": "Manbaga kirish cheklangan"
+    },
+    "close": "Manbani yopish",
+    "locatorLabel": "Manbadagi oʻrni",
+    "evidenceLabel": "Maʼlumot holati",
+    "projectionLabel": "Proyeksiya"
+  },
+  "version": {
+    "label": "Versiya",
+    "pickerLabel": "Versiyani tanlash",
+    "item": "{version}-versiya",
+    "current": "{version}-versiya (joriy)",
+    "historical": "{version}-versiya, {date}",
+    "stale": "{version}-versiya (eskirgan)",
+    "selected": "{version}-versiya koʻrsatilmoqda"
+  },
+  "compare": {
+    "title": "Takliflarni solishtirish",
+    "line": "Pozitsiya",
+    "supplier": "Yetkazib beruvchi",
+    "notComparable": "Solishtirib boʻlmaydi",
+    "whyNotComparable": "Nega solishtirib boʻlmaydi",
+    "stale": "Eskirgan taklif",
+    "excluded": "Solishtiruvdan chiqarilgan",
+    "total": "Jami",
+    "totalIncomplete": "Jami hisoblanmadi: hamma pozitsiyalar ham solishtirilmaydi",
+    "select": "Tanlash",
+    "selectSupplier": "«{supplier}» yetkazib beruvchini tanlash",
+    "reason": {
+      "unit": "Boshqa oʻlchov birligi",
+      "scope": "Boshqa hajm",
+      "substitution": "Almashtirish taklif qilingan",
+      "missingLine": "Pozitsiya yoʻq"
+    },
+    "mobileSupplierSwitch": "Solishtirish uchun yetkazib beruvchi",
+    "noOffer": "Taklif yoʻq"
+  },
+  "timeline": {
+    "label": "Voqealar tarixi",
+    "baseline": "Dastlabki reja",
+    "changed": "Oʻzgarish",
+    "disputed": "Bahsli",
+    "outcomeUnknown": "Natija nomaʼlum",
+    "done": "Bajarildi",
+    "pending": "Kutilmoqda"
+  },
+  "onboardingFlow": {
+    "step": "{total} dan {index}-qadam",
+    "stepsLabel": "Roʻyxatdan oʻtish qadamlari",
+    "continue": "Davom etish",
+    "skip": "Avval qarab chiqaman",
+    "back": "Orqaga",
+    "multiHint": "Bir nechta variantni tanlash mumkin.",
+    "changeAnytime": "Tanlovni istalgan vaqtda oʻzgartirish mumkin.",
+    "noAuthorityNote": "Bu faqat qiziqishlar sozlamasi. U kompaniyada huquq bermaydi va majburiyat yaratmaydi.",
+    "selectionLabel": "Platformada sizni nima qiziqtiradi?",
+    "selectedCount": "{count, plural, one {# variant tanlandi} other {# variant tanlandi}}"
+  },
+  "toast": {
+    "regionLabel": "Harakatlar haqida bildirishnomalar",
+    "dismiss": "Bildirishnomani yashirish"
+  },
+  "dialog": {
+    "close": "Oynani yopish",
+    "loading": "Kuting, bajarilmoqda…"
+  },
+  "table": {
+    "regionLabel": "«{caption}» jadvali",
+    "empty": "Hozircha maʼlumot yoʻq",
+    "error": "Jadvalni yuklab boʻlmadi",
+    "loading": "Jadval yuklanmoqda…",
+    "rowActions": "Qator bilan amallar"
+  },
+  "avatar": {
+    "noPhoto": "Suratsiz"
+  },
+  "emptyState": {
+    "defaultTitle": "Bu yer hozircha boʻsh"
+  },
+  "demo": {
+    "banner": "Namoyish: sintetik maʼlumotlar, server ulanmagan.",
+    "persona": "Namoyish ishtirokchisi"
+  },
+  "magazine": {
+    "issue": "{number}-son",
+    "issueShort": "№ {number}",
+    "read": "Sonni oʻqish",
+    "archive": "Jurnal arxivi",
+    "fresh": "Yangi son",
+    "coverPrefix": "Son muqovasi"
+  },
+  "decision": {
+    "kicker": "Qaroringiz kerak",
+    "review": "Tekshiruvga",
+    "assistant": "Yordamchi qaror kutmoqda",
+    "deadline": "Muddat: {date}"
+  },
+  "entity": {
+    "company": "Kompaniya",
+    "person": "Mutaxassis",
+    "project": "Loyiha",
+    "open": "Ochish",
+    "openNamed": "Ochish: {name}"
+  },
+  "events": {
+    "upcoming": "Yaqin tadbirlar"
+  },
+  "media": {
+    "coverDecorative": "Materialga illyustratsiya",
+    "artworks": {
+      "concrete-grain": "Beton: don va qolip bogʻlamlari",
+      "wood-lamellae": "Yogʻoch: lamellar",
+      "glass-grid": "Shisha: fasad toʻri",
+      "steel-profile": "Poʻlat: ikki tavrli balkalar",
+      "brick-bond": "Gʻisht: uzunasiga terish",
+      "mineral-wool": "Mineral paxta: tola va qatlamlar",
+      "facade-cassettes": "Fasad: kassetalar ritmi",
+      "blueprint-lines": "Chizma: reja va oʻlcham chiziqlari",
+      "iso-blocks": "Izometriya: bloklarni yigʻish",
+      "rebar-mesh": "Armatura: toʻr va bogʻlash",
+      "corrugated-sheet": "Profnastil: toʻlqin va soya",
+      "terrazzo": "Terrazzo: asosdagi mayda tosh",
+      "wall-layers": "Devor kesimi: toʻsiq konstruksiya qatlamlari",
+      "timber-frame": "Karkas: ustunlar, bogʻlov, stropilalar",
+      "glass-night": "Kechqurungi shisha fasad",
+      "formwork": "Qolip: qalqonlar va bogʻlamlar"
+    }
+  }
+}

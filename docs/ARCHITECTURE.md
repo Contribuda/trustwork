@@ -1,0 +1,13 @@
+# Architecture and capability map
+
+Scanner-readable entrypoint. **Current (2026-10-30):** identity, companies, memberships and projects are implemented in `apps/api` on PostgreSQL (`packages/data` migrations with forced row-level security); `apps/web` renders the whole public site and workspace on synthetic demo data in six languages; `packages/contracts` freezes every domain as Zod schemas; `packages/ui` is the accessible design system; `apps/worker` is a fake policy demonstration. There is no durable queue, commerce persistence or product assistant runtime yet. Status per area: [engine handbook](engine/status.md).
+
+**Planned:** independently hosted modular monolith with separately running web/API/workers and one product-owned PostgreSQL database. Modules: identity/company membership; project ownership/participation/plans; catalogue; procurement; sales/quotes/orders; execution/acceptance; evidence/reputation; publications/magazine; assistant mandates/runs; channels/notifications; billing/entitlements; platform administration. Object-level access and distinct private/shared/public projections span modules.
+
+Public web and authenticated workspace share UI infrastructure, not permissions. Product assistants use product authority and provider ports. An external development-management platform may manage source and review evidence through an optional external connection, but is never a required login, database, deployment or request-time dependency. No connection exists today. Any Orbit distribution compatibility decision is deferred to future onboarding after public deployment and explicit client approval; the current independent design system is not blocked.
+
+Detailed [architecture](architecture/overview.md), [data dictionary and ER model](data/model.md), [API plan](architecture/api.md), [ADRs](adr/README.md), [security](quality/security.md) and runbook (private repository record, not exported).
+
+## Required RAG preparation
+
+[Hybrid retrieval design](architecture/retrieval.md) is a first-class requirement (R31). Canonical structured facts remain authoritative; derived projections separate field audiences before embeddings or model egress. All derived answers inherit intersection of source permissions and recheck current rights at delivery. This preparation includes contracts and deterministic fixtures only; no model, vector extension, retrieval endpoint or production quality result is provisioned. Follow the RAG task dependencies and the unchanged standalone -> tests -> public deployment -> explicit client approval -> adoption by an external development-management platform.

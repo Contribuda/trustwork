@@ -1,0 +1,175 @@
+.frame {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-surface-warm);
+  min-width: 0;
+}
+
+.radiusMedia {
+  border-radius: var(--radius-media);
+}
+
+.radiusCard {
+  border-radius: var(--radius-card);
+}
+
+.radiusNone {
+  border-radius: 0;
+}
+
+.r1610 {
+  aspect-ratio: 16 / 10;
+}
+
+.r43 {
+  aspect-ratio: 4 / 3;
+}
+
+.r11 {
+  aspect-ratio: 1 / 1;
+}
+
+.r219 {
+  aspect-ratio: 21 / 9;
+}
+
+.r34 {
+  aspect-ratio: 3 / 4;
+}
+
+.rAuto {
+  aspect-ratio: auto;
+}
+
+.rFill {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+.placeholder {
+  position: absolute;
+  inset: -8px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(12px);
+  transform: scale(1.04);
+  transition: opacity var(--motion-slow) var(--motion-easing);
+}
+
+.frame[data-loaded] .placeholder {
+  opacity: 0;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transform: scale(1.001);
+  transition:
+    opacity var(--motion-slow) var(--motion-easing),
+    transform var(--motion-hover) var(--motion-easing);
+}
+
+.rAuto .image {
+  position: static;
+  height: auto;
+}
+
+.frame[data-loaded] .image {
+  opacity: 1;
+}
+
+.hoverScale .image {
+  will-change: transform;
+}
+
+:is(a, [data-hovered], .lifted):hover .hoverScale .image,
+.hoverScale:hover .image {
+  transform: scale(1.03);
+}
+
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scrimBottom::after {
+  background: var(--scrim-bottom);
+}
+
+.scrimLeft::after {
+  background: var(--scrim-left);
+}
+
+.scrimFull::after {
+  background: var(--scrim-full);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  color: var(--color-navy-text);
+  min-width: 0;
+  pointer-events: none;
+}
+
+.overlayInner {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  min-width: 0;
+  pointer-events: auto;
+}
+
+/* Text-anchored scrim: fades from 0 to 0.78 over --scrim-fade, then stays, whatever the frame height. */
+.overlayAnchored {
+  --scrim-fade: 56px;
+  padding-top: calc(var(--scrim-fade) + var(--space-2));
+  background: var(--scrim-text);
+}
+
+.overlayBottom {
+  justify-content: flex-end;
+}
+
+.overlayCenter {
+  justify-content: center;
+}
+
+.overlayTop {
+  justify-content: flex-start;
+}
+
+@media (max-width: 767.98px) {
+  .overlayInner {
+    padding: var(--space-4);
+  }
+
+  .overlayAnchored {
+    padding-top: calc(var(--scrim-fade) + var(--space-1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image,
+  .placeholder {
+    transition: none;
+  }
+
+  .hoverScale:hover .image {
+    transform: none;
+  }
+}

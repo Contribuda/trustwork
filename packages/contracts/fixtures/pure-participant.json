@@ -1,0 +1,130 @@
+{
+  "$fixture": "pure-participant",
+  "synthetic": true,
+  "description": "One persistent human without any company membership: reads, writes and has preferences but no commercial authority.",
+  "records": {
+    "Person": [
+      {
+        "id": "person-pure-1",
+        "displayName": "Fixture Participant",
+        "profileVisibility": "public",
+        "publicProfile": {
+          "headline": "Reader and author, no employer",
+          "expertise": ["facades"]
+        },
+        "emailBindings": [
+          {
+            "email": "pure@example.invalid",
+            "verifiedAt": "2026-10-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ],
+        "providerIdentities": [],
+        "preferences": {
+          "buying": false,
+          "selling": false,
+          "industryParticipation": true
+        },
+        "revision": 1,
+        "createdAt": "2026-10-01T09:00:00Z"
+      }
+    ],
+    "Principal": [
+      {
+        "personId": "person-pure-1",
+        "emailVerified": true,
+        "authenticatedAt": "2026-10-02T09:00:00Z",
+        "authzEpoch": 1,
+        "membership": null,
+        "staff": [],
+        "delegation": null
+      }
+    ],
+    "Session": [
+      {
+        "id": "session-pure-1",
+        "personId": "person-pure-1",
+        "tokenHash": "0000000000000000000000000000000000000000000000000000000000000001",
+        "createdAt": "2026-10-02T09:00:00Z",
+        "lastSeenAt": "2026-10-02T09:00:00Z",
+        "idleExpiresAt": "2026-10-16T09:00:00Z",
+        "absoluteExpiresAt": "2026-11-01T09:00:00Z",
+        "authenticatedAt": "2026-10-02T09:00:00Z",
+        "authMethod": "password",
+        "client": {
+          "userAgentFamily": "fixture",
+          "ipPrefix": "198.51.100.0/24"
+        },
+        "revokedAt": null,
+        "revokedReason": null
+      }
+    ],
+    "Publication": [
+      {
+        "id": "publication-pure-1",
+        "format": "personal_post",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "person-pure-1"
+            },
+            "credit": "Fixture Participant",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["topic-facades"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 2,
+        "createdAt": "2026-10-02T09:00:00Z"
+      }
+    ],
+    "PublicationVersion": [
+      {
+        "publicationId": "publication-pure-1",
+        "version": 1,
+        "title": "Facade panel observations",
+        "body": "Synthetic fixture body.",
+        "sourceRefs": [],
+        "eventTime": null,
+        "publishedAt": "2026-10-05T09:00:00Z",
+        "correctionOf": null,
+        "correctionNote": null,
+        "contentDigest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "6db0544aa2da256fa86a5f955d833988825a7c4036294f300c46ddcceb76fb5d"
+        }
+      }
+    ]
+  },
+  "expectations": {
+    "publicPerson": {
+      "id": "person-pure-1",
+      "displayName": "Fixture Participant",
+      "publicProfile": {
+        "headline": "Reader and author, no employer",
+        "expertise": ["facades"]
+      }
+    },
+    "sessionView": {
+      "id": "session-pure-1",
+      "createdAt": "2026-10-02T09:00:00Z",
+      "lastSeenAt": "2026-10-02T09:00:00Z",
+      "idleExpiresAt": "2026-10-16T09:00:00Z",
+      "absoluteExpiresAt": "2026-11-01T09:00:00Z",
+      "authenticatedAt": "2026-10-02T09:00:00Z",
+      "authMethod": "password",
+      "client": {
+        "userAgentFamily": "fixture",
+        "ipPrefix": "198.51.100.0/24"
+      },
+      "revokedAt": null,
+      "revokedReason": null
+    },
+    "forbiddenInPublicPerson": ["emailBindings", "providerIdentities", "preferences", "revision"],
+    "forbiddenInSessionView": ["tokenHash", "personId"]
+  }
+}

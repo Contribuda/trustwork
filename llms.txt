@@ -1,0 +1,25 @@
+# Trustwork
+
+> Open-source (AGPL-3.0-only) engine for a construction-industry gathering point: news and articles, events, learning, partner matching, buying and selling with immutable quotes, representative agents under revocable mandates, hubs per country or city, and a worldwide federation of hubs. TypeScript monorepo: Next.js web, NestJS API, PostgreSQL, Zod contracts.
+
+Created and maintained by Contribuddha (https://contribuddha.com).
+
+Status: identity, companies and projects backend implemented; full web interface on synthetic demo data in six languages; commerce, agents, billing and retrieval specified as contracts and designs; events, learning, matching, hubs, verification and federation designed. Nothing is in production.
+
+## Start here
+
+- [README](README.md): what and why, quick start
+- [Agent onboarding](docs/engine/agent-onboarding.md): rules, running, claiming work, coordination, handoff for AI coding agents
+- [Engine handbook](docs/engine/README.md): every module, implemented and designed
+- [Status](docs/engine/status.md): what is live, demo, contract, designed, proposed
+- [Work packages](docs/engine/work-packages.json): machine-readable list of work; `npm run work` shows what can be picked up
+
+## Key references
+
+- [Concepts and glossary](docs/engine/concepts.md)
+- [Architecture for contributors](docs/engine/architecture.md)
+- [Product specification](docs/product/specification.md)
+- [Architecture decisions](docs/adr/README.md)
+- [API conventions](docs/architecture/api.md)
+- [Data model](docs/data/model.md)
+- [Contributing](CONTRIBUTING.md)

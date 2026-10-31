@@ -1,0 +1,56 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-accent);
+  border-radius: 2px;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.root[data-hovered] {
+  color: var(--color-accent-hover);
+}
+
+.root[data-focus-visible] {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.inline {
+  display: inline;
+  text-decoration: underline;
+}
+
+.inline:visited {
+  color: var(--color-accent-active);
+}
+
+.standalone,
+.external {
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  min-height: var(--size-target-min);
+}
+
+.standalone[data-hovered],
+.external[data-hovered] {
+  text-decoration: underline;
+}
+
+.nav {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  min-height: var(--size-target-min);
+}
+
+.nav[data-current] {
+  color: var(--color-accent);
+}
+
+.root[data-disabled] {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}

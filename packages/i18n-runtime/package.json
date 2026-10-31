@@ -1,0 +1,14 @@
+{
+  "name": "@trustwork/i18n-runtime",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "react-server": "./src/server.ts",
+      "default": "./src/client.ts"
+    },
+    "./types": "./src/types.ts"
+  }
+}

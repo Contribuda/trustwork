@@ -1,0 +1,396 @@
+{
+  "synthetic": true,
+  "description": "Synthetic workspace state per demo persona: reader (no company, no commerce), mixed (company administrator who buys and sells), owner (personal project with personal procurement). Nothing here is a real deal, budget or person.",
+  "personas": {
+    "reader": {
+      "personId": "person-olga",
+      "companyId": null,
+      "pinned": {
+        "procurement": false,
+        "sales": false
+      },
+      "onboarding": "skipped"
+    },
+    "mixed": {
+      "personId": "person-anna",
+      "companyId": "company-fasad",
+      "pinned": {
+        "procurement": true,
+        "sales": true
+      },
+      "onboarding": "completed"
+    },
+    "owner": {
+      "personId": "person-petr",
+      "companyId": null,
+      "pinned": {
+        "procurement": true,
+        "sales": false
+      },
+      "onboarding": "completed"
+    }
+  },
+  "memberships": [
+    {
+      "id": "membership-anna",
+      "personId": "person-anna",
+      "companyId": "company-fasad",
+      "role": "administrator",
+      "permissions": ["company.page.edit", "company.publish", "company.members.manage", "company.deals.manage", "company.catalogue.edit"],
+      "status": "active",
+      "invitedBy": null,
+      "invitedAt": "2026-09-01T09:00:00Z",
+      "validFrom": "2026-09-01T09:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "membership-ivan",
+      "personId": "person-ivan",
+      "companyId": "company-fasad",
+      "role": "member",
+      "permissions": ["company.deals.manage"],
+      "status": "active",
+      "invitedBy": "person-anna",
+      "invitedAt": "2026-09-05T09:00:00Z",
+      "validFrom": "2026-09-06T09:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "membership-olga-ended",
+      "personId": "person-olga",
+      "companyId": "company-beton",
+      "role": "member",
+      "permissions": [],
+      "status": "ended",
+      "invitedBy": null,
+      "invitedAt": "2025-02-01T09:00:00Z",
+      "validFrom": "2025-02-01T09:00:00Z",
+      "endedAt": "2026-06-30T09:00:00Z",
+      "endedBy": "person-olga",
+      "endedReason": "Переход на независимую работу",
+      "revision": 2
+    }
+  ],
+  "rfqs": [
+    {
+      "id": "rfq-fasad-1",
+      "owner": {
+        "kind": "company",
+        "id": "company-fasad"
+      },
+      "title": "Стальные балки для школы на набережной",
+      "kind": "goods",
+      "version": 2,
+      "quotesCount": 3,
+      "deadline": "2026-11-02",
+      "operatorPersonId": "person-anna",
+      "status": "quotesCollected",
+      "projectId": "project-school",
+      "needsDecision": true
+    },
+    {
+      "id": "rfq-fasad-2",
+      "owner": {
+        "kind": "company",
+        "id": "company-fasad"
+      },
+      "title": "Монтаж остекления атриума",
+      "kind": "works",
+      "version": 1,
+      "quotesCount": 0,
+      "deadline": "2026-11-15",
+      "operatorPersonId": "person-ivan",
+      "status": "published",
+      "projectId": "project-school",
+      "needsDecision": false
+    },
+    {
+      "id": "rfq-fasad-3",
+      "owner": {
+        "kind": "company",
+        "id": "company-fasad"
+      },
+      "title": "Сэндвич-панели для склада",
+      "kind": "bundle",
+      "version": 1,
+      "quotesCount": 0,
+      "deadline": "2026-12-01",
+      "operatorPersonId": "person-anna",
+      "status": "needDraft",
+      "projectId": "project-warehouse",
+      "needsDecision": false
+    },
+    {
+      "id": "rfq-petr-1",
+      "owner": {
+        "kind": "person",
+        "id": "person-petr"
+      },
+      "title": "Окна для загородного дома",
+      "kind": "goods",
+      "version": 1,
+      "quotesCount": 2,
+      "deadline": "2026-11-05",
+      "operatorPersonId": "person-petr",
+      "status": "quotesCollected",
+      "projectId": "project-dacha",
+      "needsDecision": true
+    },
+    {
+      "id": "rfq-kv-1",
+      "owner": {
+        "kind": "company",
+        "id": "company-rechnoy"
+      },
+      "title": "Навесные фасады школы в квартале у парка",
+      "kind": "works",
+      "version": 1,
+      "quotesCount": 0,
+      "deadline": "2027-02-15",
+      "operatorPersonId": "person-elena",
+      "status": "published",
+      "projectId": "project-kvartal",
+      "needsDecision": false
+    }
+  ],
+  "leads": [
+    {
+      "id": "lead-1",
+      "companyId": "company-fasad",
+      "buyer": "Застройщик «Намуна-Уй»",
+      "request": "Монтаж вентилируемого фасада, 400 м²",
+      "source": "invitation",
+      "deadline": "2026-11-01",
+      "status": "drafting",
+      "quoteVersion": null,
+      "needsDecision": false
+    },
+    {
+      "id": "lead-2",
+      "companyId": "company-fasad",
+      "buyer": "Управляющая компания «Намуна»",
+      "request": "Подсистема и панели для жилого дома",
+      "source": "openNeed",
+      "deadline": "2026-10-30",
+      "status": "sent",
+      "quoteVersion": 2,
+      "needsDecision": false
+    },
+    {
+      "id": "lead-3",
+      "companyId": "company-fasad",
+      "buyer": "Пётр Образцов",
+      "request": "Фасад загородного дома",
+      "source": "direct",
+      "deadline": "2026-11-08",
+      "status": "negotiating",
+      "quoteVersion": 3,
+      "needsDecision": true
+    }
+  ],
+  "decisions": [
+    {
+      "id": "dec-anna-1",
+      "personId": "person-anna",
+      "kind": "quoteComparison",
+      "title": "Сравнение готово: стальные балки",
+      "context": "Закупка · 3 предложения на версию 2",
+      "due": "2026-11-02",
+      "href": "/app/procurement",
+      "action": "Сравнить",
+      "digestChanged": false
+    },
+    {
+      "id": "dec-anna-2",
+      "personId": "person-anna",
+      "kind": "orderAcceptance",
+      "title": "Заказчик выбрал версию 3: фасад загородного дома",
+      "context": "Продажи · принять или отклонить заказ",
+      "due": "2026-11-08",
+      "href": "/app/sales",
+      "action": "Открыть",
+      "digestChanged": false
+    },
+    {
+      "id": "dec-anna-3",
+      "personId": "person-anna",
+      "kind": "approvalDigest",
+      "title": "Помощник просит одобрить заказ подсистемы",
+      "context": "Поручение · условия изменились после запроса",
+      "due": "2026-10-29",
+      "href": "/app/assistant",
+      "action": "Проверить",
+      "digestChanged": true
+    },
+    {
+      "id": "dec-petr-1",
+      "personId": "person-petr",
+      "kind": "quoteComparison",
+      "title": "Сравнение готово: окна для дома",
+      "context": "Личная закупка · 2 предложения",
+      "due": "2026-11-05",
+      "href": "/app/procurement",
+      "action": "Сравнить",
+      "digestChanged": false
+    }
+  ],
+  "events": [
+    {
+      "id": "ev-1",
+      "personIds": ["person-anna"],
+      "date": "2026-10-30",
+      "title": "Срок действия предложения для УК «Намуна»",
+      "href": "/app/sales"
+    },
+    {
+      "id": "ev-2",
+      "personIds": ["person-anna"],
+      "date": "2026-11-02",
+      "title": "Крайний срок ответов: стальные балки",
+      "href": "/app/procurement"
+    },
+    {
+      "id": "ev-3",
+      "personIds": ["person-anna", "person-petr"],
+      "date": "2026-11-10",
+      "title": "Этап «Утепление стен» в проекте дома",
+      "href": "/app/projects/project-dacha"
+    },
+    {
+      "id": "ev-4",
+      "personIds": ["person-anna", "person-petr", "person-olga"],
+      "date": "2026-10-31",
+      "title": "Выход выпуска журнала № 13",
+      "href": "/magazine"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "ntf-1",
+      "personIds": ["person-anna"],
+      "kind": "decision",
+      "title": "Сравнение предложений по балкам готово",
+      "at": "2026-10-27T06:10:00Z",
+      "href": "/app/procurement",
+      "unread": true
+    },
+    {
+      "id": "ntf-2",
+      "personIds": ["person-anna"],
+      "kind": "assistant",
+      "title": "Условия заказа подсистемы изменились — требуется новое согласование",
+      "at": "2026-10-26T15:40:00Z",
+      "href": "/app/assistant",
+      "unread": true
+    },
+    {
+      "id": "ntf-3",
+      "personIds": ["person-anna"],
+      "kind": "project",
+      "title": "Поставщик бетона подтвердил этап на школе",
+      "at": "2026-10-25T11:00:00Z",
+      "href": "/app/projects/project-school",
+      "unread": false
+    },
+    {
+      "id": "ntf-4",
+      "personIds": ["person-petr"],
+      "kind": "quote",
+      "title": "Получено второе предложение на окна",
+      "at": "2026-10-26T09:00:00Z",
+      "href": "/app/procurement",
+      "unread": true
+    },
+    {
+      "id": "ntf-5",
+      "personIds": ["person-olga", "person-anna", "person-petr"],
+      "kind": "magazine",
+      "title": "Вышла исправленная редакция выпуска № 12",
+      "at": "2026-10-26T09:05:00Z",
+      "href": "/magazine/12",
+      "unread": false
+    }
+  ],
+  "assistant": [
+    {
+      "personId": "person-anna",
+      "running": 1,
+      "approvals": 1,
+      "unknown": 1,
+      "unread": 2,
+      "mandates": [
+        {
+          "id": "mandate-anna-1",
+          "action": "Выбрать поставщика подсистемы из приглашённых и разместить заказ",
+          "context": "Закупка «Стальные балки для школы», проект «Школа на набережной»",
+          "limitMinorUnits": "22500000000",
+          "validUntil": "2026-11-15",
+          "state": "active",
+          "version": 2,
+          "approval": "digest"
+        }
+      ],
+      "runs": [
+        {
+          "id": "run-anna-1",
+          "title": "Сбор уточнений у поставщиков балок",
+          "state": "executing",
+          "at": "2026-10-27T05:00:00Z"
+        },
+        {
+          "id": "run-anna-2",
+          "title": "Запрос коммерческого предложения через почту поставщика",
+          "state": "outcomeUnknown",
+          "at": "2026-10-26T14:00:00Z"
+        }
+      ]
+    },
+    {
+      "personId": "person-petr",
+      "running": 0,
+      "approvals": 0,
+      "unknown": 0,
+      "unread": 0,
+      "mandates": [],
+      "runs": []
+    },
+    {
+      "personId": "person-olga",
+      "running": 0,
+      "approvals": 0,
+      "unknown": 0,
+      "unread": 0,
+      "mandates": [],
+      "runs": []
+    }
+  ],
+  "sessions": [
+    {
+      "personId": "person-anna",
+      "device": "Браузер на компьютере",
+      "location": "Ташкент (приблизительно)",
+      "lastSeen": "2026-10-27T06:00:00Z",
+      "isCurrent": true
+    },
+    {
+      "personId": "person-petr",
+      "device": "Браузер на телефоне",
+      "location": "Самарканд (приблизительно)",
+      "lastSeen": "2026-10-27T05:30:00Z",
+      "isCurrent": true
+    },
+    {
+      "personId": "person-olga",
+      "device": "Браузер на компьютере",
+      "location": "Бухара (приблизительно)",
+      "lastSeen": "2026-10-26T20:00:00Z",
+      "isCurrent": true
+    }
+  ]
+}

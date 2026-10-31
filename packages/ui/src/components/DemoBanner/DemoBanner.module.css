@@ -1,0 +1,122 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--size-demo-banner-height);
+  padding: 0 var(--space-4);
+  background: var(--color-surface-warm);
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+}
+
+.message {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: none;
+  min-height: var(--size-target-min);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  cursor: pointer;
+}
+
+.switch[data-hovered] {
+  background: var(--color-surface);
+}
+
+.switch[data-focus-visible] {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.switchLabel {
+  color: var(--color-text-muted);
+}
+
+.switchValue {
+  font-weight: var(--weight-semibold);
+}
+
+.popover {
+  z-index: var(--z-dialog);
+  min-width: 16rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-popover);
+  animation: pop var(--motion-fast) var(--motion-easing);
+}
+
+.popover[data-exiting] {
+  animation: pop var(--motion-fast) var(--motion-easing) reverse;
+}
+
+.menu {
+  padding: var(--space-2);
+  outline: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--size-control);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text);
+  cursor: pointer;
+  outline: none;
+}
+
+.item[data-focused],
+.item[data-hovered] {
+  background: var(--color-surface-tint);
+}
+
+.item[data-selected] .itemLabel {
+  font-weight: var(--weight-semibold);
+}
+
+.check {
+  color: var(--color-accent);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .text {
+    white-space: normal;
+  }
+
+  .switchLabel {
+    display: none;
+  }
+}

@@ -1,0 +1,845 @@
+{
+  "synthetic": true,
+  "description": "Synthetic industry events: conferences, seminars, webinars, factory tours and community meetups with programs, speakers (demo people), free and paid tickets, two past events. Venues and organizers are examples.",
+  "events": [
+    {
+      "slug": "fasady-2026-praktika-i-nadzor",
+      "id": "evt-1",
+      "title": "Фасады 2026: практика и надзор",
+      "lede": "Трёхдневная конференция о навесных фасадах: новые требования к испытаниям, приёмка по этапам, опыт подрядчиков и производителей.",
+      "type": "conference",
+      "format": "hybrid",
+      "startsAt": "2026-11-12T07:00:00Z",
+      "endsAt": "2026-11-14T15:00:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Ташкент",
+      "region": "UZ-TK",
+      "venue": {
+        "name": "Конгресс-центр «Технополис»",
+        "address": "Ташкент, проспект Мустакиллик, 42, корп. 5"
+      },
+      "onlineNote": "Трансляция деловой программы для онлайн-участников, записи доступны неделю.",
+      "organizer": {
+        "kind": "editorial",
+        "name": "Редакция платформы",
+        "companySlug": null
+      },
+      "cover": "photo:meetup-speaker",
+      "topics": ["materials", "regulation", "technologies"],
+      "body": "Главная отраслевая встреча года о фасадах. Три дня, тридцать сессий, площадка для разговора проектировщиков, подрядчиков, производителей и надзора.\n\n## Кому полезно\n\nРуководителям проектов и участков, снабженцам, технологам производств, проектировщикам фасадов и специалистам технадзора.\n\n## Что будет\n\n- Разбор новых требований к пожарным испытаниям облицовки с представителями испытательных центров.\n- Практика поэтапной приёмки скрытых слоёв: акты, фотофиксация, споры.\n- Сессия производителей: паспорта изделий, протоколы на партию, сроки поставки.\n- Открытый микрофон подрядчиков: типовые ошибки монтажа и как их избежать.\n\n## Формат\n\nОчное участие с доступом ко всем сессиям и стендам или онлайн-участие с трансляцией деловой программы. Записи сессий доступны участникам неделю после события.",
+      "program": [
+        {
+          "time": "10:00",
+          "title": "Открытие. Что изменилось в требованиях к фасадам за год",
+          "speakerIds": ["sp-editorial"]
+        },
+        {
+          "time": "11:00",
+          "title": "Новая методика пожарных испытаний облицовки: разбор по пунктам",
+          "speakerIds": ["sp-lab"]
+        },
+        {
+          "time": "12:30",
+          "title": "Поэтапная приёмка фасада: опыт руководителя проекта",
+          "speakerIds": ["sp-anna"]
+        },
+        {
+          "time": "14:30",
+          "title": "Паспорт изделия и протокол на партию: что требовать у производителя",
+          "speakerIds": ["sp-olga"]
+        },
+        {
+          "time": "16:00",
+          "title": "Открытый микрофон: ошибки монтажа и как их избежать",
+          "speakerIds": ["sp-sergey", "sp-anna"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-editorial",
+          "name": "Редакция платформы",
+          "role": "Модераторы программы",
+          "personSlug": null,
+          "portrait": null
+        },
+        {
+          "id": "sp-lab",
+          "name": "Представитель испытательного центра",
+          "role": "Руководитель лаборатории фасадных систем",
+          "personSlug": null,
+          "portrait": null
+        },
+        {
+          "id": "sp-anna",
+          "name": "Анна Примерова",
+          "role": "Руководитель проектов, «Фасад-Пример»",
+          "personSlug": "anna-primerova",
+          "portrait": null
+        },
+        {
+          "id": "sp-olga",
+          "name": "Ольга Дёмова",
+          "role": "Инженер-технолог, независимый автор",
+          "personSlug": "olga-demova",
+          "portrait": null
+        },
+        {
+          "id": "sp-sergey",
+          "name": "Сергей Михайлов",
+          "role": "Руководитель участка",
+          "personSlug": "sergey-mikhaylov",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "stand",
+          "name": "Выставка и стенды",
+          "description": "Доступ к выставочной части все три дня без деловой программы.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": null,
+          "taken": 412,
+          "salesUntil": null
+        },
+        {
+          "id": "online",
+          "name": "Онлайн-участие",
+          "description": "Трансляция деловой программы и записи сессий на неделю.",
+          "priceMinorUnits": 52500000,
+          "currency": "UZS",
+          "quota": null,
+          "taken": 96,
+          "salesUntil": null
+        },
+        {
+          "id": "full",
+          "name": "Полное участие",
+          "description": "Все сессии, стенды, кофе-брейки и материалы конференции.",
+          "priceMinorUnits": 180000000,
+          "currency": "UZS",
+          "quota": 300,
+          "taken": 214,
+          "salesUntil": "2026-11-11T20:59:00Z"
+        }
+      ],
+      "capacity": 1200,
+      "registered": 722,
+      "featured": true,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["novye-trebovaniya-k-pozharnym-ispytaniyam", "priemka-fasada-po-etapam", "vystavka-stroitelnyh-tehnologij-moskva"],
+      "materialsHref": null
+    },
+    {
+      "slug": "vstrecha-snabzhencev-razbor-predlozhenij",
+      "id": "evt-2",
+      "title": "Разбор предложений: встреча снабженцев",
+      "lede": "Вечерняя встреча специалистов по закупкам: сравниваем реальные предложения поставщиков и собираем общий чек-лист запроса.",
+      "type": "meetup",
+      "format": "offline",
+      "startsAt": "2026-11-05T16:00:00Z",
+      "endsAt": "2026-11-05T18:30:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Ташкент",
+      "region": "UZ-TK",
+      "venue": {
+        "name": "Коворкинг «Цех»",
+        "address": "Ташкент, ул. Амира Темура, 36, стр. 2"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Сообщество снабженцев платформы",
+        "companySlug": null
+      },
+      "cover": "photo:office-laptop-work",
+      "topics": ["markets", "materials"],
+      "body": "Неформальная встреча для тех, кто каждый день сравнивает предложения поставщиков. Приносите обезличенные предложения, разбираем вместе.\n\n## Как проходит\n\nКороткое вступление, затем работа в группах по три-четыре человека: каждая группа разбирает одно предложение по чек-листу и рассказывает, что нашла.\n\n## Что взять с собой\n\n- Одно обезличенное предложение поставщика, которое вызывает вопросы.\n- Ноутбук или планшет для заметок.\n\n## Результат\n\nОбщий чек-лист запроса, который мы дополняем после каждой встречи и публикуем в разделе «Полезно под рукой».",
+      "program": [
+        {
+          "time": "19:00",
+          "title": "Знакомство и вводная: три причины, по которым предложения нельзя сравнить",
+          "speakerIds": ["sp-igor"]
+        },
+        {
+          "time": "19:30",
+          "title": "Работа в группах: разбор предложений по чек-листу",
+          "speakerIds": []
+        },
+        {
+          "time": "20:45",
+          "title": "Итоги и дополнения к чек-листу",
+          "speakerIds": ["sp-igor", "sp-anna"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-igor",
+          "name": "Игорь Светлов",
+          "role": "Руководитель снабжения",
+          "personSlug": "igor-svetlov",
+          "portrait": null
+        },
+        {
+          "id": "sp-anna",
+          "name": "Анна Примерова",
+          "role": "Руководитель проектов, «Фасад-Пример»",
+          "personSlug": "anna-primerova",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Участие",
+          "description": "Бесплатно по регистрации. Количество мест ограничено площадкой.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": 40,
+          "taken": 31,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 40,
+      "registered": 31,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["kak-sravnivat-predlozheniya-fasad", "cheklist-zaprosa-postavshchiku", "voprosy-postavshchiku"],
+      "materialsHref": null
+    },
+    {
+      "slug": "vebinar-cifrovoj-pasport-izdeliya",
+      "id": "evt-3",
+      "title": "Вебинар: цифровой паспорт изделия на практике",
+      "lede": "Какие данные о материале нужны проектировщику, подрядчику и эксплуатации и как привязать их к модели.",
+      "type": "webinar",
+      "format": "online",
+      "startsAt": "2026-11-19T08:00:00Z",
+      "endsAt": "2026-11-19T09:30:00Z",
+      "timezone": "Europe/Moscow",
+      "city": null,
+      "region": null,
+      "venue": null,
+      "onlineNote": "Ссылка на трансляцию придёт на почту за день до начала. Запись доступна зарегистрированным.",
+      "organizer": {
+        "kind": "editorial",
+        "name": "Редакция платформы",
+        "companySlug": null
+      },
+      "cover": "artwork:blueprint-lines",
+      "topics": ["technologies"],
+      "body": "Полтора часа о том, что должно быть в цифровом паспорте изделия, кто его заполняет и как не потерять через пять лет.\n\n## Программа\n\n- Минимальный состав паспорта: происхождение, характеристики, условия, срок службы.\n- Как привязать паспорт к элементу модели и позиции спецификации.\n- Вопросы и ответы.\n\n## Для кого\n\nИнженеры по информационному моделированию, проектировщики, специалисты эксплуатации.",
+      "program": [
+        {
+          "time": "11:00",
+          "title": "Состав паспорта и кому что нужно",
+          "speakerIds": ["sp-denis"]
+        },
+        {
+          "time": "11:45",
+          "title": "Привязка к модели: живой пример",
+          "speakerIds": ["sp-denis"]
+        },
+        {
+          "time": "12:15",
+          "title": "Вопросы и ответы",
+          "speakerIds": ["sp-denis"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-denis",
+          "name": "Денис Орлов",
+          "role": "Инженер по информационному моделированию",
+          "personSlug": "denis-orlov",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Онлайн-участие",
+          "description": "Бесплатно по регистрации. Ссылка и запись на почту.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": null,
+          "taken": 143,
+          "salesUntil": null
+        }
+      ],
+      "capacity": null,
+      "registered": 143,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["cifrovoj-pasport-izdeliya", "itogi-konferencii-bim"],
+      "materialsHref": null
+    },
+    {
+      "slug": "ekskursiya-na-zavod-mineralovatnyh-plit",
+      "id": "evt-4",
+      "title": "Экскурсия на завод минераловатных плит",
+      "lede": "Посмотрим производство от входного контроля сырья до выходного контроля партии. Группа до 25 человек.",
+      "type": "tour",
+      "format": "offline",
+      "startsAt": "2026-11-26T07:00:00Z",
+      "endsAt": "2026-11-26T11:00:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Бухара",
+      "region": "UZ-BU",
+      "venue": {
+        "name": "Производственная площадка (пример)",
+        "address": "Бухарская область, промышленная зона, сбор у проходной"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "company",
+        "name": "Бетон Образцовый",
+        "companySlug": "beton-obraztsovyj"
+      },
+      "cover": "photo:workshop-metal-frame",
+      "topics": ["materials", "technologies"],
+      "body": "Экскурсия по новой линии минераловатных плит: входной контроль сырья, линия, лаборатория выходного контроля, склад и отгрузка.\n\n## Маршрут\n\n- Сбор у проходной, инструктаж по технике безопасности.\n- Склад сырья и входной контроль.\n- Производственная линия.\n- Лаборатория и выходной контроль партии.\n- Вопросы технологам за чаем.\n\n## Важно\n\nНужна закрытая обувь. Каски и жилеты выдаются на месте. Фотосъёмка на линии по согласованию.",
+      "program": [
+        {
+          "time": "10:00",
+          "title": "Сбор, инструктаж",
+          "speakerIds": []
+        },
+        {
+          "time": "10:30",
+          "title": "Производство и лаборатория",
+          "speakerIds": ["sp-tech"]
+        },
+        {
+          "time": "13:00",
+          "title": "Вопросы технологам",
+          "speakerIds": ["sp-tech", "sp-olga"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-tech",
+          "name": "Главный технолог площадки",
+          "role": "Производитель (пример)",
+          "personSlug": null,
+          "portrait": null
+        },
+        {
+          "id": "sp-olga",
+          "name": "Ольга Дёмова",
+          "role": "Инженер-технолог, независимый автор",
+          "personSlug": "olga-demova",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Участие в экскурсии",
+          "description": "Бесплатно по регистрации. Группа до 25 человек.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": 25,
+          "taken": 25,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 25,
+      "registered": 25,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["zavod-tatarstan-minvata", "proizvodstvo-iznutri-ot-syrya-do-izdeliya"],
+      "materialsHref": null
+    },
+    {
+      "slug": "seminar-pozharnye-ispytaniya-oblicovki",
+      "id": "evt-5",
+      "title": "Семинар: новые требования к пожарным испытаниям облицовки",
+      "lede": "Полдня с представителями испытательного центра: методика, переходный период, типичные ошибки в протоколах.",
+      "type": "seminar",
+      "format": "offline",
+      "startsAt": "2026-12-03T07:00:00Z",
+      "endsAt": "2026-12-03T11:30:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Самарканд",
+      "region": "UZ-SA",
+      "venue": {
+        "name": "Отель «Афросиаб», зал «Зарафшан»",
+        "address": "Самарканд, ул. Регистан, 12"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "editorial",
+        "name": "Редакция платформы",
+        "companySlug": null
+      },
+      "cover": "photo:corrugated-wall",
+      "topics": ["regulation", "materials"],
+      "body": "Практический семинар для проектировщиков, производителей и подрядчиков: что меняется в испытаниях облицовки и как подготовиться.\n\n## Программа\n\n- Методика с открытым пламенем: что и как измеряется.\n- Протокол: обязательные строки и частые ошибки.\n- Переходный период и очередь в лаборатории.\n- Разбор протоколов участников (анонимно).\n\n## Что входит\n\nУчастие, раздаточные материалы, кофе-брейк, запись семинара на неделю.",
+      "program": [
+        {
+          "time": "10:00",
+          "title": "Методика: пункт за пунктом",
+          "speakerIds": ["sp-lab"]
+        },
+        {
+          "time": "11:30",
+          "title": "Протоколы: как читать и где ошибаются",
+          "speakerIds": ["sp-lab", "sp-olga"]
+        },
+        {
+          "time": "13:00",
+          "title": "Разбор протоколов участников",
+          "speakerIds": ["sp-lab"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-lab",
+          "name": "Представитель испытательного центра",
+          "role": "Руководитель лаборатории фасадных систем",
+          "personSlug": null,
+          "portrait": null
+        },
+        {
+          "id": "sp-olga",
+          "name": "Ольга Дёмова",
+          "role": "Инженер-технолог, независимый автор",
+          "personSlug": "olga-demova",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "seat",
+          "name": "Участие",
+          "description": "Очное участие, материалы, запись на неделю.",
+          "priceMinorUnits": 67500000,
+          "currency": "UZS",
+          "quota": 60,
+          "taken": 37,
+          "salesUntil": "2026-12-02T20:59:00Z"
+        }
+      ],
+      "capacity": 60,
+      "registered": 37,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["novye-trebovaniya-k-pozharnym-ispytaniyam", "trebovaniya-k-ispytaniyam-uteplitelya"],
+      "materialsHref": null
+    },
+    {
+      "slug": "vstrecha-montazhnikov-priemka-po-etapam",
+      "id": "evt-6",
+      "title": "Встреча монтажников: приёмка по этапам",
+      "lede": "Прорабы и руководители участков делятся, как устроена поэтапная приёмка фасада и какие акты реально работают.",
+      "type": "meetup",
+      "format": "offline",
+      "startsAt": "2026-12-10T13:00:00Z",
+      "endsAt": "2026-12-10T15:30:00Z",
+      "timezone": "Asia/Yekaterinburg",
+      "city": "Фергана",
+      "region": "UZ-FA",
+      "venue": {
+        "name": "Учебный центр производителя подсистем (пример)",
+        "address": "Фергана, ул. Машиностроителей, 19"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Сообщество монтажников платформы",
+        "companySlug": null
+      },
+      "cover": "photo:site-wall-measuring",
+      "topics": ["projects", "people"],
+      "body": "Встреча для тех, кто сдаёт фасады: форма актов, фотофиксация, споры с заказчиком и как их не допустить.\n\n## Как проходит\n\nДва коротких рассказа из практики, затем обсуждение формы актов, которую мы соберём в общий шаблон.\n\n## Результат\n\nШаблон поэтапных актов для скачивания в рабочем пространстве.",
+      "program": [
+        {
+          "time": "18:00",
+          "title": "Поэтапная приёмка: как мы к ней пришли",
+          "speakerIds": ["sp-anna"]
+        },
+        {
+          "time": "18:40",
+          "title": "Монтаж и график поставок: где теряются недели",
+          "speakerIds": ["sp-sergey"]
+        },
+        {
+          "time": "19:20",
+          "title": "Собираем шаблон актов",
+          "speakerIds": ["sp-anna", "sp-sergey"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-anna",
+          "name": "Анна Примерова",
+          "role": "Руководитель проектов, «Фасад-Пример»",
+          "personSlug": "anna-primerova",
+          "portrait": null
+        },
+        {
+          "id": "sp-sergey",
+          "name": "Сергей Михайлов",
+          "role": "Руководитель участка",
+          "personSlug": "sergey-mikhaylov",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Участие",
+          "description": "Бесплатно по регистрации.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": 50,
+          "taken": 18,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 50,
+      "registered": 18,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["priemka-fasada-po-etapam", "fasad-za-sezon-kak-planirovat-montazh"],
+      "materialsHref": null
+    },
+    {
+      "slug": "vebinar-kak-chitat-protokoly-ispytanij",
+      "id": "evt-7",
+      "title": "Вебинар: как читать протоколы испытаний утеплителя",
+      "lede": "Инженер-технолог разбирает реальные протоколы: какие строки читать первыми и что чаще всего путают.",
+      "type": "webinar",
+      "format": "online",
+      "startsAt": "2026-12-17T08:00:00Z",
+      "endsAt": "2026-12-17T09:00:00Z",
+      "timezone": "Europe/Moscow",
+      "city": null,
+      "region": null,
+      "venue": null,
+      "onlineNote": "Ссылка на трансляцию придёт на почту. Запись доступна зарегистрированным две недели.",
+      "organizer": {
+        "kind": "editorial",
+        "name": "Редакция платформы",
+        "companySlug": null
+      },
+      "cover": "artwork:mineral-wool",
+      "topics": ["materials", "technologies"],
+      "body": "Час о протоколах испытаний утеплителей: методика, кондиционирование, отбор образцов, разница между заявленным и измеренным.\n\n## Программа\n\n- Какие строки читать первыми.\n- Что путают: заявленное и измеренное, температура измерения.\n- Как запросить протокол на партию.\n\n## Для кого\n\nСнабженцы, проектировщики, технадзор.",
+      "program": [
+        {
+          "time": "11:00",
+          "title": "Разбор протоколов",
+          "speakerIds": ["sp-olga"]
+        },
+        {
+          "time": "11:40",
+          "title": "Вопросы и ответы",
+          "speakerIds": ["sp-olga"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-olga",
+          "name": "Ольга Дёмова",
+          "role": "Инженер-технолог, независимый автор",
+          "personSlug": "olga-demova",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Онлайн-участие",
+          "description": "Бесплатно по регистрации.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": null,
+          "taken": 88,
+          "salesUntil": null
+        }
+      ],
+      "capacity": null,
+      "registered": 88,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["intervyu-tehnolog-o-protokolah", "slovar-materialov"],
+      "materialsHref": null
+    },
+    {
+      "slug": "zimnyaya-shkola-inzhenerov-fasadov",
+      "id": "evt-8",
+      "title": "Зимняя школа инженеров фасадов",
+      "lede": "Три дня интенсива для инженеров и руководителей участков: расчёт узлов, выбор материалов, приёмка. Очно и онлайн.",
+      "type": "conference",
+      "format": "hybrid",
+      "startsAt": "2027-01-21T07:00:00Z",
+      "endsAt": "2027-01-23T15:00:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Ташкент",
+      "region": "UZ-TK",
+      "venue": {
+        "name": "Учебный центр платформы (пример)",
+        "address": "Ташкент, ул. Бунёдкор, 19"
+      },
+      "onlineNote": "Онлайн-поток с трансляцией лекций и проверкой домашних заданий.",
+      "organizer": {
+        "kind": "editorial",
+        "name": "Редакция платформы",
+        "companySlug": null
+      },
+      "cover": "photo:site-women-blueprints",
+      "topics": ["technologies", "people", "materials"],
+      "body": "Интенсив для тех, кто проектирует и монтирует фасады. Лекции утром, практика после обеда, разбор домашних заданий на следующий день.\n\n## Программа\n\n- День 1. Нагрузки и узлы крепления: расчёт и испытания анкеров.\n- День 2. Материалы: паспорта, протоколы, совместимость слоёв.\n- День 3. График, поставки и приёмка по этапам.\n\n## Что получат участники\n\nРабочие тетради, шаблоны актов и запросов, сертификат участника.",
+      "program": [
+        {
+          "time": "10:00",
+          "title": "Нагрузки и узлы крепления",
+          "speakerIds": ["sp-eng"]
+        },
+        {
+          "time": "14:00",
+          "title": "Практика: расчёт узла для реального объекта",
+          "speakerIds": ["sp-eng", "sp-sergey"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-eng",
+          "name": "Ведущий инженер проектного бюро",
+          "role": "Расчёт фасадных конструкций",
+          "personSlug": null,
+          "portrait": null
+        },
+        {
+          "id": "sp-sergey",
+          "name": "Сергей Михайлов",
+          "role": "Руководитель участка",
+          "personSlug": "sergey-mikhaylov",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "online",
+          "name": "Онлайн-поток",
+          "description": "Трансляция лекций, домашние задания, записи.",
+          "priceMinorUnits": 37500000,
+          "currency": "UZS",
+          "quota": null,
+          "taken": 12,
+          "salesUntil": null
+        },
+        {
+          "id": "full",
+          "name": "Очное участие",
+          "description": "Лекции, практика, тетради, сертификат.",
+          "priceMinorUnits": 225000000,
+          "currency": "UZS",
+          "quota": 40,
+          "taken": 9,
+          "salesUntil": "2027-01-18T20:59:00Z"
+        }
+      ],
+      "capacity": 40,
+      "registered": 21,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["material-pod-zadachu-kak-sdelat-vybor", "fasad-za-sezon-kak-planirovat-montazh"],
+      "materialsHref": null
+    },
+    {
+      "slug": "kruglyj-stol-logistika-sbornyh-konstrukcij",
+      "id": "evt-9",
+      "title": "Круглый стол: логистика сборных конструкций",
+      "lede": "Поставщики, перевозчики и подрядчики обсуждают, где теряются дни между заводом и монтажом.",
+      "type": "seminar",
+      "format": "offline",
+      "startsAt": "2027-02-04T12:00:00Z",
+      "endsAt": "2027-02-04T14:30:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Самарканд",
+      "region": "UZ-SA",
+      "venue": {
+        "name": "Деловой центр «Регистан»",
+        "address": "Самарканд, ул. Гагарина, 30"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Сообщество снабженцев платформы",
+        "companySlug": null
+      },
+      "cover": "photo:aerial-site-excavator",
+      "topics": ["markets", "projects"],
+      "body": "Круглый стол без докладов: участники по кругу называют своё слабое звено в цепочке поставки, затем ищем общие решения.\n\n## Кто участвует\n\nЛогисты, снабженцы, руководители проектов и представители перевозчиков.\n\n## Результат\n\nСписок договорных условий для поставок сборных конструкций.",
+      "program": [
+        {
+          "time": "15:00",
+          "title": "Круглый стол",
+          "speakerIds": ["sp-marina", "sp-igor"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-marina",
+          "name": "Марина Крылова",
+          "role": "Логист, независимый специалист",
+          "personSlug": "marina-krylova",
+          "portrait": null
+        },
+        {
+          "id": "sp-igor",
+          "name": "Игорь Светлов",
+          "role": "Руководитель снабжения",
+          "personSlug": "igor-svetlov",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Участие",
+          "description": "Бесплатно по регистрации.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": 30,
+          "taken": 6,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 30,
+      "registered": 6,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["logistika-sbornyh-konstrukcij", "chto-stoit-za-srokom-postavki"],
+      "materialsHref": null
+    },
+    {
+      "slug": "konferenciya-informacionnoe-modelirovanie-2026",
+      "id": "evt-10",
+      "title": "Конференция по информационному моделированию в строительстве",
+      "lede": "Два дня о моделях, уровне проработки и приёмке по модели. Материалы и итоги опубликованы.",
+      "type": "conference",
+      "format": "offline",
+      "startsAt": "2026-10-23T07:00:00Z",
+      "endsAt": "2026-10-24T15:00:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Ташкент",
+      "region": "UZ-TK",
+      "venue": {
+        "name": "Конгресс-центр «Технополис»",
+        "address": "Ташкент, проспект Мустакиллик, 42, корп. 5"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Оргкомитет конференции (пример)",
+        "companySlug": null
+      },
+      "cover": "photo:blueprints-spread",
+      "topics": ["technologies", "events"],
+      "body": "Конференция прошла 23–24 октября. Редакция подготовила итоги по трём темам: обмен моделями, уровень проработки и приёмка по модели.\n\n## Материалы\n\nЗаписи сессий и сводка предложений участников доступны по ссылке организаторов. Итоги редакции читайте в новостях.",
+      "program": [
+        {
+          "time": "10:00",
+          "title": "Обмен моделями между участниками",
+          "speakerIds": ["sp-denis"]
+        },
+        {
+          "time": "14:00",
+          "title": "Приёмка по модели: опыт заказчиков",
+          "speakerIds": []
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-denis",
+          "name": "Денис Орлов",
+          "role": "Инженер по информационному моделированию",
+          "personSlug": "denis-orlov",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "seat",
+          "name": "Участие",
+          "description": "Регистрация закрыта.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": 400,
+          "taken": 400,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 400,
+      "registered": 400,
+      "featured": false,
+      "registrationOpen": false,
+      "relatedPublicationSlugs": ["itogi-konferencii-bim"],
+      "materialsHref": "/news/itogi-konferencii-bim"
+    },
+    {
+      "slug": "osennyaya-vstrecha-soobshchestva",
+      "id": "evt-11",
+      "title": "Осенняя встреча сообщества",
+      "lede": "Первая офлайн-встреча читателей и авторов: знакомство, темы на зиму, запуск сообществ снабженцев и монтажников.",
+      "type": "meetup",
+      "format": "offline",
+      "startsAt": "2026-10-08T16:00:00Z",
+      "endsAt": "2026-10-08T18:30:00Z",
+      "timezone": "Europe/Moscow",
+      "city": "Ташкент",
+      "region": "UZ-TK",
+      "venue": {
+        "name": "Коворкинг «Цех»",
+        "address": "Ташкент, ул. Амира Темура, 36, стр. 2"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "editorial",
+        "name": "Редакция платформы",
+        "companySlug": null
+      },
+      "cover": "photo:meetup-speaker",
+      "topics": ["people", "events"],
+      "body": "Встреча прошла 8 октября. Договорились о двух сообществах и расписании встреч до конца года.\n\n## Итоги\n\n- Сообщество снабженцев: встречи раз в месяц, первая 5 ноября.\n- Сообщество монтажников: первая встреча 10 декабря в Фергане.",
+      "program": [
+        {
+          "time": "19:00",
+          "title": "Знакомство и планы",
+          "speakerIds": ["sp-editorial"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "sp-editorial",
+          "name": "Редакция платформы",
+          "role": "Организаторы",
+          "personSlug": null,
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Участие",
+          "description": "Регистрация закрыта.",
+          "priceMinorUnits": 0,
+          "currency": "UZS",
+          "quota": 60,
+          "taken": 54,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 60,
+      "registered": 54,
+      "featured": false,
+      "registrationOpen": false,
+      "relatedPublicationSlugs": [],
+      "materialsHref": null
+    }
+  ]
+}

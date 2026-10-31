@@ -1,0 +1,42 @@
+{
+  "synthetic": true,
+  "description": "Synthetic mini-courses of the platform academy; certificates are issued after a test. Titles and numbers are invented for the demo.",
+  "courses": [
+    {
+      "id": "course-acceptance",
+      "slug": "priemka-skrytyh-rabot",
+      "title": "Приёмка скрытых работ на фасаде",
+      "summary": "Пять этапов приёмки навесного фасада, акты и фотофиксация, типичные споры с подрядчиком.",
+      "durationMinutes": 90,
+      "modules": 5,
+      "topics": ["materials", "regulation"]
+    },
+    {
+      "id": "course-tender",
+      "slug": "uchastie-v-tendere",
+      "title": "Участие в тендере: документы и критерии",
+      "summary": "Как читать тендерную документацию, собирать пакет и не терять баллы на формальностях.",
+      "durationMinutes": 120,
+      "modules": 6,
+      "topics": ["markets", "regulation"]
+    },
+    {
+      "id": "course-protocols",
+      "slug": "chtenie-protokolov",
+      "title": "Чтение протоколов испытаний",
+      "summary": "Какие строки протокола сравнивать между поставщиками и что в них на самом деле подтверждено.",
+      "durationMinutes": 60,
+      "modules": 4,
+      "topics": ["materials", "technologies"]
+    },
+    {
+      "id": "course-passport",
+      "slug": "cifrovoj-pasport",
+      "title": "Цифровой паспорт изделия",
+      "summary": "Какие данные о материале нужны проектировщику, подрядчику и эксплуатации и как их передавать.",
+      "durationMinutes": 75,
+      "modules": 4,
+      "topics": ["technologies"]
+    }
+  ]
+}

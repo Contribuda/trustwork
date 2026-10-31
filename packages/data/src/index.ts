@@ -1,0 +1,11 @@
+export { APP_ROLE, OWNER_ROLE, SCHEMA, databaseConfigFromEnv, type DatabaseEnv } from './config.js';
+export { createPool, withPrincipal, withMaintenance, bindTransaction, PrincipalError, type DataPool, type Transaction, type Principal, type PrincipalErrorCode } from './pool.js';
+export * from './schema.js';
+export * as auth from './repositories/auth.js';
+export { persons, emailBindings, credentials, sessions, authTokens } from './repositories/identity.js';
+export { companies, memberships } from './repositories/company.js';
+export { participations, permissionGrants } from './repositories/access.js';
+export { projects, ownershipTransfers, leadershipAssignments } from './repositories/projects.js';
+export { auditEvents, outbox, jobs, idempotency, inbox, maintenance, type IdempotencyScope, type SweepReport, type SweepOptions } from './repositories/reliability.js';
+export { admission, admissionScopes, AdmissionGate, AdmissionLeaseExpiredError, permitSignature, type AdmissionCheck, type AdmissionDenyReason, type GateResult, type GateOptions } from './admission/index.js';
+export type { MembershipEnded } from './repositories/company.js';

@@ -1,0 +1,61 @@
+/* Self-hosted fonts. See PROVENANCE.md in this directory for sources, commits, checksums and licences.
+   Consumers that use next/font/local should point it at the same files instead of importing this stylesheet. */
+
+@font-face {
+  font-family: 'Golos Text';
+  src: url('./GolosText[wght].woff2') format('woff2-variations'), url('./GolosText[wght].woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PT Serif';
+  src: url('./PT_Serif-Web-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PT Serif';
+  src: url('./PT_Serif-Web-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PT Serif';
+  src: url('./PT_Serif-Web-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PT Serif';
+  src: url('./PT_Serif-Web-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Script fallbacks for Georgian and Armenian (INTL-GE, INTL-AM): loaded only when the page uses those scripts. */
+@font-face {
+  font-family: 'Noto Sans Georgian';
+  src: url('./NotoSansGeorgian-georgian.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0589, U+10A0-10FF, U+1C90-1CBA, U+1CBD-1CBF, U+205A, U+2D00-2D2F, U+2E31;
+}
+
+@font-face {
+  font-family: 'Noto Sans Armenian';
+  src: url('./NotoSansArmenian-armenian.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0308, U+0530-058F, U+2010, U+2024, U+25CC, U+FB13-FB17;
+}

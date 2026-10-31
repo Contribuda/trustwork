@@ -1,0 +1,42 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: var(--radius-circle);
+  overflow: hidden;
+  background: var(--color-accent-tint);
+  color: var(--color-info-text);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+/* Initials are rendered as generated content so that icon-only account buttons keep «Аккаунт» as their only name. */
+.initials::before {
+  content: attr(data-initials);
+}
+
+.image {
+  object-fit: cover;
+}
+
+.button {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-circle);
+  cursor: pointer;
+  min-width: var(--size-target-min);
+  min-height: var(--size-target-min);
+}
+
+.button[data-focus-visible] {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.button[data-hovered] .avatar {
+  box-shadow: 0 0 0 2px var(--color-accent);
+}

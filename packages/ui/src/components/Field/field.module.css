@@ -1,0 +1,203 @@
+/* Shared field anatomy: label, control, description, error. Used by TextField, TextArea, PasswordField, Select, ComboBox. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  display: inline-flex;
+  gap: var(--space-1);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.requiredMark {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-regular);
+}
+
+.control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--size-control);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  transition:
+    border-color var(--motion-fast) var(--motion-easing),
+    box-shadow var(--motion-fast) var(--motion-easing);
+}
+
+.control[data-hovered],
+.control:hover {
+  border-color: var(--color-accent);
+}
+
+.control[data-focus-within],
+.control:focus-within {
+  border-color: var(--color-accent);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.field[data-invalid] .control {
+  border-color: var(--color-danger-text);
+}
+
+.field[data-disabled] .control {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.field[data-readonly] .control {
+  background: var(--color-surface-muted);
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  min-height: calc(var(--size-control) - 2px);
+  padding: 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  border-radius: inherit;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.textarea {
+  resize: vertical;
+  padding: var(--space-2) var(--space-3);
+  min-height: calc(var(--size-control) * 2.4);
+}
+
+.leadingIcon {
+  flex: none;
+  margin-left: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.leadingIcon + .input {
+  padding-left: var(--space-2);
+}
+
+.trailing {
+  flex: none;
+  margin-right: var(--space-1);
+}
+
+.description {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+.error {
+  display: flex;
+  gap: var(--space-1);
+  align-items: flex-start;
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-danger-text);
+}
+
+.counter {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.selectButton {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: calc(var(--size-control) - 2px);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: inherit;
+  outline: none;
+}
+
+.selectValue[data-placeholder] {
+  color: var(--color-text-muted);
+}
+
+.chevron {
+  color: var(--color-text-muted);
+}
+
+.popover {
+  width: var(--trigger-width);
+  max-height: 20rem;
+  overflow: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-popover);
+  z-index: var(--z-dialog);
+}
+
+.listbox {
+  outline: none;
+  padding: var(--space-1);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-control);
+  padding: 0 var(--space-3);
+  border-radius: calc(var(--radius-control) - 2px);
+  cursor: pointer;
+  outline: none;
+  color: var(--color-text);
+}
+
+.option[data-focused] {
+  background: var(--color-surface-tint);
+}
+
+.option[data-focus-visible] {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.option[data-selected] {
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+}
+
+.option[data-disabled] {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.optionCheck {
+  margin-left: auto;
+}
+
+.empty {
+  padding: var(--space-3);
+  color: var(--color-text-muted);
+}

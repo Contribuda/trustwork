@@ -1,0 +1,21 @@
+.root,
+.link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text);
+  border-radius: var(--radius-control);
+}
+
+.link {
+  min-height: var(--size-target-min);
+  text-decoration: none;
+}
+
+.svg {
+  display: block;
+  height: auto;
+}
+
+.inverse {
+  color: #ffffff;
+}

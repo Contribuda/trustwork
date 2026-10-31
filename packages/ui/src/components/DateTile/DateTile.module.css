@@ -1,0 +1,120 @@
+.tile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-tint);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.sm {
+  width: 52px;
+  height: 52px;
+}
+
+.accent {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.day {
+  font-size: 1.5rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.sm .day {
+  font-size: 1.25rem;
+}
+
+.month {
+  margin-top: 4px;
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.sm .month {
+  margin-top: 3px;
+  font-size: 0.6875rem;
+}
+
+.accent .month {
+  color: var(--color-text-on-accent);
+  opacity: 0.85;
+}
+
+.warning .month {
+  color: var(--color-warning-text);
+}
+
+.list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  bottom: 26px;
+  left: 25px;
+  width: 2px;
+  background: var(--color-border);
+  z-index: 0;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  z-index: 1;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.title {
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.link[data-hovered] {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.link[data-focus-visible] {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}

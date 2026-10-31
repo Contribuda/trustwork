@@ -1,0 +1,1529 @@
+{
+  "schemaVersion": 1,
+  "source": "Generated from the core team task graph by scripts/work-packages.mjs; do not edit by hand.",
+  "packages": [
+    {
+      "id": "BE-000",
+      "title": "Resolve auth and multi-party access contracts",
+      "area": "backend-research",
+      "status": "done",
+      "dependsOn": [],
+      "handbook": "docs/engine/people-and-companies.md",
+      "goal": "Research secure classic authentication, owner/participant access and employment lifecycle before implementation.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/product/access-and-journeys.md",
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Review auth library/provider options with current official sources.",
+        "Propose account-link/recovery threat model and multi-party policy table.",
+        "Propose immutable RFQ/quote and grant transition contracts for FND-002."
+      ],
+      "acceptance": [
+        "Password primary and one name field preserved.",
+        "One employer UI, personally owned projects and counterpart private fields modeled.",
+        "RLS role/bypass and revocation risks explicitly tested in planned cases."
+      ],
+      "paths": []
+    },
+    {
+      "id": "DS-000",
+      "title": "Turn references into screen contracts",
+      "area": "design-research",
+      "status": "done",
+      "dependsOn": [],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Inventory current references and missing states before drawing or implementing full interfaces.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/product/information-architecture.md"
+      ],
+      "steps": [
+        "Review every selected reference and corrective note.",
+        "Define screen audience/data/actions/empty/error/mobile/focus contracts.",
+        "Submit latest workspace for explicit design review; preserve unapproved status until decision."
+      ],
+      "acceptance": [
+        "Exact seven public sections and stable workspace destinations.",
+        "Single avatar/one company/single floating assistant constraints preserved.",
+        "No synthetic customer/metric claims migrated to real seed data."
+      ],
+      "paths": [
+        "docs/design/screen-contracts"
+      ]
+    },
+    {
+      "id": "FND-002",
+      "title": "Freeze v1 domain and API contracts",
+      "area": "integrator-contracts",
+      "status": "done",
+      "dependsOn": [
+        "BE-000",
+        "DS-000",
+        "RAG-101"
+      ],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Create validated schemas and API examples that independently unblock backend and frontend.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/architecture/api.md",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Review research proposals and resolve blocking model decisions.",
+        "Define schema validation, API errors/revisions/idempotency, projections, exact money and immutable version contracts.",
+        "Publish contract fixtures for pure participant, mixed buyer/seller and personal project.",
+        "Integrator alone updates shared dependencies/configuration when necessary."
+      ],
+      "acceptance": [
+        "Published RFQ versions immutable; invitations and quote versions pin rfq_version_id.",
+        "Old quote against qty10 v1 cannot silently compare/accept as qty100 v2.",
+        "Unknown/acknowledged/final external outcomes and crash reconciliation distinct.",
+        "Runtime validation and forbidden-field contract tests pass.",
+        "Freeze retrieval schemas, audience intersections, model/generation IDs, structured complete-domain facts, citations and serialized egress/delivery policy with runtime validators."
+      ],
+      "paths": [
+        "packages/contracts",
+        "docs/architecture",
+        "docs/data",
+        "docs/adr",
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json"
+      ]
+    },
+    {
+      "id": "DATA-001",
+      "title": "Implement initial identity/access persistence",
+      "area": "data",
+      "status": "done",
+      "dependsOn": [
+        "FND-002"
+      ],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Deliver small executable SQL migrations and repository ports for identity/company/project participation.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Select typed query adapter with ADR proposal; request root dependency change through integrator.",
+        "Implement migration runner/checksum ledger and initial XOR-owner/active-membership/participation tables.",
+        "Create restricted runtime role and seed synthetic fixtures only.",
+        "Test empty/upgrade migrations and policy constraints under real runtime credentials."
+      ],
+      "acceptance": [
+        "No schema auto-sync or applied-migration editing.",
+        "Actual PostgreSQL tests cover cross-company/personal project/revoked member.",
+        "RLS bypass roles/views/definer functions explicitly considered.",
+        "Transfer exclusive packages/data ownership first to BE-001 for common admission/revocation, then to RAG-201 for retrieval migrations; no concurrent writers. Trusted transaction-local DB identity and missing/pool-reused identity denial tested."
+      ],
+      "paths": [
+        "packages/data"
+      ]
+    },
+    {
+      "id": "BE-001",
+      "title": "Implement identity and object policy slice",
+      "area": "backend",
+      "status": "done",
+      "dependsOn": [
+        "DATA-001"
+      ],
+      "handbook": "docs/engine/people-and-companies.md",
+      "goal": "Build classic auth and scoped project/company access using accepted contracts.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/product/access-and-journeys.md",
+        "docs/architecture/retrieval-api.md",
+        "docs/architecture/retrieval.md"
+      ],
+      "steps": [
+        "Implement auth/session/reset/link adapter using fakes for external providers.",
+        "Implement membership end, owner/leader separation and participation policy.",
+        "After DATA-001 acceptance, own the exclusive packages/data lease to implement the common admission/revocation primitive in packages/data/admission, its ordered migrations and identity-revocation integration. Bind bounded provider dispatch/delivery to current policy, exact payload digest, provider policy/model/data class; serialize admission with committed revocation.",
+        "Add public/private serializers and command authorization.",
+        "Wire modules through an integration request if composition path is outside lease."
+      ],
+      "acceptance": [
+        "No auto-link by unverified email; no privilege from buyer preference.",
+        "Former employee loses company authority; own identity persists.",
+        "Public projects expose no private attachments/prices/messages.",
+        "Object matrix and session/revocation tests pass.",
+        "Common admission primitive and identity revocation share one authoritative linearization contract, verified across API/worker nodes before RAG-201 may dispatch embeddings.",
+        "Revoke between preflight and actual embedding dispatch denies new admission; expiry, wrong provider/model/policy/data class/query-vs-document permit, replay and pooled missing identity fail closed. Already admitted bytes are explicitly outside recall guarantee."
+      ],
+      "paths": [
+        "apps/api/src/modules/identity",
+        "apps/api/src/modules/projects",
+        "tests/backend",
+        "packages/data"
+      ]
+    },
+    {
+      "id": "DS-001",
+      "title": "Create independent accessible design system",
+      "area": "design-system",
+      "status": "done",
+      "dependsOn": [
+        "DS-000"
+      ],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Create canonical editable logo, tokens and accessible components for standalone development.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/design/README.md",
+        "docs/quality/accessibility.md"
+      ],
+      "steps": [
+        "Recreate canonical editable brand under explicit design task with provenance.",
+        "Define typography/spacing/color and interaction states; keep Russian locale keys.",
+        "Build semantic accessible navigation/dialog/form/table primitives.",
+        "Validate desktop/mobile/focus/contrast; propose workspace review."
+      ],
+      "acceptance": [
+        "Three blue squares and black stacked Russian wordmark; no logo drift.",
+        "Accessible icon-only controls and overlay without page reflow.",
+        "Independent system now; Orbit compatibility deferred until post-client-approval handover.",
+        "Human approval evidence separate from implementation checks.",
+        "Specify Russian retrieval source/citation/current/historical/partial/no-answer/revoked states from frozen contracts."
+      ],
+      "paths": [
+        "packages/ui",
+        "docs/design/system"
+      ]
+    },
+    {
+      "id": "WEB-001",
+      "title": "Implement public and workspace shells",
+      "area": "frontend",
+      "status": "done",
+      "dependsOn": [
+        "FND-002",
+        "DS-001"
+      ],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Implement accepted navigation/layout and account/onboarding screens against contract fixtures.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/product/information-architecture.md"
+      ],
+      "steps": [
+        "Use shared tokens/locale and accepted schemas.",
+        "Build public resource shell and daily workspace with simultaneous buying/selling.",
+        "Implement classic login/signup/onboarding UI with fake API contract transport until backend integrated.",
+        "Cover responsive/empty/error/permission states and clearly label fixtures in development."
+      ],
+      "acceptance": [
+        "Exact public/workspace IA; no role/company switch, inbox or duplicated avatar.",
+        "Signup single name; skip optional onboarding; no forced INN.",
+        "Russian UI; mobile and keyboard checks; mock state never called live functionality."
+      ],
+      "paths": [
+        "apps/web/app",
+        "apps/web/components",
+        "tests/web"
+      ]
+    },
+    {
+      "id": "COM-001",
+      "title": "Implement paired RFQ/catalogue/quote agreement slice",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BE-001",
+        "FND-002"
+      ],
+      "handbook": "docs/engine/commerce.md",
+      "goal": "Deliver coherent buyer/seller flow with immutable requirement/quote snapshots and mixed goods/works/services.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/data/model.md",
+        "docs/architecture/api.md"
+      ],
+      "steps": [
+        "Propose scoped migration changes to data integrator.",
+        "Implement versioned RFQ invitation and reusable offerings.",
+        "Implement quote snapshots and comparison normalization with explicit exclusions.",
+        "Implement selection/agreement/order commands with authority and two-party projections."
+      ],
+      "acceptance": [
+        "Invitations/quotes bind exact RFQ version; amendment flags stale responses.",
+        "Catalogue edit cannot change sent quote or accepted agreement.",
+        "Buyer budget and seller floor private; shared terms exact.",
+        "Mixed supply/install/maintenance and optimistic concurrency tests pass."
+      ],
+      "paths": [
+        "apps/api/src/modules/catalogue",
+        "apps/api/src/modules/procurement",
+        "apps/api/src/modules/sales",
+        "apps/api/src/modules/transactions",
+        "tests/commerce"
+      ]
+    },
+    {
+      "id": "BILL-001",
+      "title": "Implement neutral offers/entitlements and two budget kinds",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "BE-001"
+      ],
+      "handbook": "docs/engine/billing.md",
+      "goal": "Separate platform service charges from commercial transaction budgets with versioned prices.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Define fake offer/price versions labelled synthetic, no invented real prices.",
+        "Implement entitlement checks, price acceptance and atomic reservation/ledger port.",
+        "Support personal/company payers and project/employee scopes.",
+        "Test concurrent reserve, refund/correction and expiry; route schema edits to integrator."
+      ],
+      "acceptance": [
+        "Transaction authority never implies paid-platform budget.",
+        "Concurrent reservations cannot exceed balance; no float money.",
+        "Free basic participation both sides; trial duration and journal policy remain unresolved.",
+        "No provider registration, payment or actual charge."
+      ],
+      "paths": [
+        "apps/api/src/modules/billing",
+        "tests/billing",
+        "docs/product/billing-policy"
+      ]
+    },
+    {
+      "id": "AST-001",
+      "title": "Implement durable mandate and action workflow with fakes",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "COM-001",
+        "BILL-001",
+        "RAG-301"
+      ],
+      "handbook": "docs/engine/agents.md",
+      "goal": "Deliver structured runs/actions/approvals and reconciliation without live paid providers.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Define mandate/action digest and current-right recheck.",
+        "Persist operation/attempt identity before dispatch, outbox/reservations and fencing.",
+        "Implement fake model/channel/order/payment ports and stateful reconciliation.",
+        "Exercise cancellation/revocation, asynchronous receipts and crash recovery."
+      ],
+      "acceptance": [
+        "Crash after external effect before result save leads to reconciliation by second worker, not blind replay.",
+        "Provider idempotency scope/retention documented; stale in-flight worker risk handled.",
+        "Acknowledged/pending is not final success; accepted-then-rejected outcome tested.",
+        "Unknown outcome retains reservations until definitive result; private constraints never leaked.",
+        "Only governed retrieval context; saved answers retain all source dependencies and current audience intersection; prompt text cannot alter mandates."
+      ],
+      "paths": [
+        "apps/api/src/modules/assistant",
+        "apps/worker/src",
+        "tests/assistant"
+      ]
+    },
+    {
+      "id": "WEB-002",
+      "title": "Build commercial and assistant experiences",
+      "area": "frontend-commerce",
+      "status": "open",
+      "dependsOn": [
+        "WEB-001",
+        "COM-001",
+        "AST-001"
+      ],
+      "handbook": "docs/engine/commerce.md",
+      "goal": "Implement complete buyer/seller flows and one personal assistant page/overlay.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/design/screen-contracts",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Build intake/clarification/compare/version/acceptance flow with exact snapshots.",
+        "Show structured authority, budget, approvals and unknown/pending outcomes.",
+        "Share assistant conversation state between page and floating overlay.",
+        "Validate mixed workflows and narrow-screen tables with real APIs in approved local fixture environment."
+      ],
+      "acceptance": [
+        "No docked reflowing panel or Agents navigation.",
+        "No unauthorized action from chat text; stop/revoke semantics honest.",
+        "Mobile/keyboard/empty/error/denial states verified; no approval claimed from screenshot."
+      ],
+      "paths": [
+        "apps/web/features",
+        "tests/web-flows"
+      ]
+    },
+    {
+      "id": "CNT-001",
+      "title": "Implement publications and curated issue proof",
+      "area": "content-magazine",
+      "status": "open",
+      "dependsOn": [
+        "BE-001",
+        "DS-001"
+      ],
+      "handbook": "docs/engine/publishing.md",
+      "goal": "Build sourced publication lifecycle and weekly magazine web/PDF slice.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/product/specification.md"
+      ],
+      "steps": [
+        "Implement shared publication store, authorship/topics/entity links and wall references.",
+        "Curate numbered/date issue with frozen content versions and archive.",
+        "Build responsive reader and separate PDF layout pipeline.",
+        "Validate correction/retraction, publication permissions and source licensing."
+      ],
+      "acceptance": [
+        "News source/time labels; author vs editor rights distinct.",
+        "Magazine is curated issue; mobile readable and PDF inspected page-by-page.",
+        "No invented recurring journal paywall or public traction claims."
+      ],
+      "paths": [
+        "apps/api/src/modules/content",
+        "apps/web/content",
+        "tests/content",
+        "docs/design/magazine"
+      ]
+    },
+    {
+      "id": "EXE-001",
+      "title": "Model project execution and fair reputation",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "COM-001"
+      ],
+      "handbook": "docs/engine/execution-and-reputation.md",
+      "goal": "Implement evidence-aware plans, partial fulfillment/acceptance and explainable reputation prototype.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/data/lifecycles.md"
+      ],
+      "steps": [
+        "Preserve baseline/change attribution and plan dependency validation.",
+        "Record claims/evidence/confirmation/dispute/supersession independently.",
+        "Support goods delivery and works/services acceptance/defects.",
+        "Prototype dimension/sample methodology and appeal workflow with fixtures."
+      ],
+      "acceptance": [
+        "Client-caused plan change cannot automatically penalize supplier.",
+        "Missing evidence not failure; subjective review distinct from fact.",
+        "Paying cannot improve reputation; private evidence not public by default."
+      ],
+      "paths": [
+        "apps/api/src/modules/execution",
+        "apps/api/src/modules/trust",
+        "tests/trust",
+        "docs/product/reputation-policy"
+      ]
+    },
+    {
+      "id": "QA-001",
+      "title": "Verify standalone release candidate",
+      "area": "qa-release",
+      "status": "open",
+      "dependsOn": [
+        "WEB-002",
+        "CNT-001",
+        "EXE-001",
+        "BILL-001",
+        "RAG-401",
+        "ADM-002"
+      ],
+      "handbook": "docs/engine/status.md",
+      "goal": "Produce real standalone acceptance evidence before public deployment proposal.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/architecture/overview.md",
+        "docs/quality/security.md",
+        "docs/quality/accessibility.md"
+      ],
+      "steps": [
+        "Run exact-head integrated checks and authorization/concurrency/fault suites.",
+        "Perform manual accessibility and browser journeys.",
+        "Restore synthetic data/objects with erasure replay and providers disabled.",
+        "Prove no required Contribuddha dependency; document release risks/providers/legal gates."
+      ],
+      "acceptance": [
+        "Named nonempty exact-head CI and independent review.",
+        "Restore/permission/unknown-outcome tests demonstrated, not asserted.",
+        "Production provider/jurisdiction/RPO/RTO gates resolved before release authorization."
+      ],
+      "paths": [
+        "tests/release",
+        "docs/quality/release"
+      ]
+    },
+    {
+      "id": "RAG-000",
+      "title": "Prepare first-class RAG architecture and deterministic contracts",
+      "area": "retrieval-preparation",
+      "status": "done",
+      "dependsOn": [],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Document the explicitly authorized RAG foundation without provisioning inference or claiming runtime quality.",
+      "read": [
+        "docs/architecture/retrieval.md",
+        "docs/data/knowledge-model.md",
+        "docs/quality/retrieval-evaluation.md",
+        "docs/architecture/retrieval-api.md"
+      ],
+      "steps": [
+        "Reconcile earlier vector deferral with required hybrid retrieval.",
+        "Define source/field/party authority, citations, egress and derived-data lifecycle.",
+        "Add deterministic fake fixtures and future evidence gates; submit exact candidate."
+      ],
+      "acceptance": [
+        "Architecture/source register/contracts/fixtures/DAG consistent; no source image changes.",
+        "Independent exact-head review and check required before integration; CI account blocker remains explicit.",
+        "One-off coordinator-authorized pre-main lease documented; INTG-000 scope unchanged."
+      ],
+      "paths": [
+        "README.md",
+        "docs/ARCHITECTURE.md",
+        "docs/architecture",
+        "docs/data",
+        "docs/adr",
+        "docs/product",
+        "docs/quality",
+        "packages/contracts/src/retrieval.ts",
+        "tests/retrieval",
+        "scripts/validate-docs.mjs"
+      ]
+    },
+    {
+      "id": "RAG-101",
+      "title": "Resolve corpus, model and retrieval evaluation contract",
+      "area": "retrieval",
+      "status": "done",
+      "dependsOn": [],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Specify rights-cleared gold corpus and model/config selection evidence before shared contracts freeze.",
+      "read": [
+        "docs/architecture/retrieval.md",
+        "docs/data/knowledge-model.md",
+        "docs/quality/retrieval-evaluation.md",
+        "docs/architecture/retrieval-api.md"
+      ],
+      "steps": [
+        "Inventory actual permitted source shapes and expected load.",
+        "Compare pinned multilingual model candidates using authorized resources only.",
+        "Document benchmark protocol and immutable configuration proposal for FND-002."
+      ],
+      "acceptance": [
+        "Corpus strata, rights, relevance labels, version/as-of and no-answer gold reviewed.",
+        "Model revisions/license/dimensions/limits/hardware/egress resolved or explicitly blocked; no fabricated real-model results.",
+        "Proposed quality/capacity thresholds reviewed; external vector store remains evidence-based."
+      ],
+      "paths": [
+        "tests/retrieval/gold-spec"
+      ]
+    },
+    {
+      "id": "RAG-201",
+      "title": "Implement permission-separated ingestion and index lifecycle",
+      "area": "retrieval-data",
+      "status": "open",
+      "dependsOn": [
+        "FND-002",
+        "DATA-001",
+        "BE-001"
+      ],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Build reproducible derived projections and pgvector generations under the accepted schema.",
+      "read": [
+        "docs/architecture/retrieval.md",
+        "docs/data/knowledge-model.md",
+        "docs/quality/retrieval-evaluation.md",
+        "docs/architecture/retrieval-api.md"
+      ],
+      "steps": [
+        "After BE-001 acceptance, the assigned data integrator takes exclusive packages/data ownership for retrieval migrations and registration; preserve the accepted common admission primitive.",
+        "Implement outbox projection/extraction/embedding fakes, then only separately authorized adapters reusing BE-001 admission/revocation; never duplicate the gate or substitute a preflight check.",
+        "Test quarantine, duplicate events, taint, backfill, deletion and rollback; record exact build."
+      ],
+      "acceptance": [
+        "No mixed-audience embedding; current purpose/egress rights before extraction/dispatch.",
+        "Idempotence, out-of-order changes, OCR/table locator quarantine, deletion/revocation and restore tombstone replay demonstrated.",
+        "Generation activation/rollback fenced by current policy/source watermark; model incompatibility rejected.",
+        "Embedding worker integration proves revoke between preflight and actual dispatch prevents new admission using the already accepted BE-001 gate; query/document and provider/model/data-class bindings are never interchangeable."
+      ],
+      "paths": [
+        "packages/data",
+        "apps/worker/src/retrieval",
+        "tests/retrieval/ingestion"
+      ]
+    },
+    {
+      "id": "RAG-301",
+      "title": "Implement governed hybrid retrieval and delivery fencing",
+      "area": "retrieval",
+      "status": "open",
+      "dependsOn": [
+        "RAG-201",
+        "BE-001",
+        "FND-002"
+      ],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Deliver structured and semantic plans with current field/party rights and grounded citations.",
+      "read": [
+        "docs/architecture/retrieval.md",
+        "docs/data/knowledge-model.md",
+        "docs/quality/retrieval-evaluation.md",
+        "docs/architecture/retrieval-api.md"
+      ],
+      "steps": [
+        "Implement typed runtime queries, structured resolver and hybrid fusion inside trusted boundary.",
+        "Reuse the accepted BE-001 common admission/revocation primitive for query embedding, reranking, answer dispatch and final response/citation delivery; implement current citation/dependency validation, not a second gate.",
+        "Exercise public-private taint, provider injection, no-answer, freshness and budget exhaustion."
+      ],
+      "acceptance": [
+        "Private authorized exact subsets and public-only certified ANN; measured plans and filtered recall.",
+        "Candidates, hydration/provider egress and serialized final admission fail closed on revoke; multi-node race and pool reuse tested.",
+        "Saved answers inherit intersection of source rights; exact identifiers, RFQ versions and complete-domain calculations bypass top-k."
+      ],
+      "paths": [
+        "apps/api/src/modules/retrieval",
+        "tests/retrieval/integration"
+      ]
+    },
+    {
+      "id": "WEB-003",
+      "title": "Implement search, cited answers and freshness states",
+      "area": "retrieval",
+      "status": "open",
+      "dependsOn": [
+        "WEB-001",
+        "DS-001",
+        "RAG-301"
+      ],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Expose understandable Russian search and citation experiences using frozen contracts.",
+      "read": [
+        "docs/architecture/retrieval.md",
+        "docs/data/knowledge-model.md",
+        "docs/quality/retrieval-evaluation.md",
+        "docs/architecture/retrieval-api.md"
+      ],
+      "steps": [
+        "Prepare fixture-based layouts after FND-002 and DS-001; final implementation depends on RAG-301.",
+        "Integrate search and source drawer through owned components; request app-route integration under frontend owner lease.",
+        "Test keyboard/mobile states, revoked citations and stale RFQ comparisons."
+      ],
+      "acceptance": [
+        "Search/citations honor current access without hidden counts or unauthorized previews.",
+        "Partial/no-answer/unavailable/historical/stale states readable and accessible.",
+        "Citations open exact permitted versions; denied/revoked answer history handled without cached employer text."
+      ],
+      "paths": [
+        "apps/web/retrieval",
+        "tests/retrieval/browser"
+      ]
+    },
+    {
+      "id": "RAG-401",
+      "title": "Verify real RAG quality, security, scale and recovery",
+      "area": "retrieval",
+      "status": "open",
+      "dependsOn": [
+        "RAG-301",
+        "AST-001",
+        "WEB-003"
+      ],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Produce actual model/database/adversarial/restore evidence before standalone release QA.",
+      "read": [
+        "docs/architecture/retrieval.md",
+        "docs/data/knowledge-model.md",
+        "docs/quality/retrieval-evaluation.md",
+        "docs/architecture/retrieval-api.md"
+      ],
+      "steps": [
+        "Run the evaluation protocol with pinned authorized model, DB and hardware.",
+        "Exercise adversarial boundary matrix and three 30-minute load runs per selected tier.",
+        "Record limitations, regressions, provider/cost policy and rollback drills for independent review."
+      ],
+      "acceptance": [
+        "Frozen held-out Russian/multilingual/no-answer corpus, quality and citation metrics reported per stratum.",
+        "Zero authorization leakage across candidate/context/provider/delivery/citation/cache/history tested with revocation races.",
+        "Exact-vs-ANN recall, selective workloads, bounded fallback and transaction impact measured; restore/erasure/model rollback rehearsed.",
+        "No acceptance inferred from fake fixtures; unresolved target failures block QA."
+      ],
+      "paths": [
+        "tests/retrieval/evaluation",
+        "docs/quality/retrieval-results"
+      ]
+    },
+    {
+      "id": "ADM-000",
+      "title": "Platform administration research and screen contracts",
+      "area": "product-research",
+      "status": "done",
+      "dependsOn": [],
+      "handbook": "docs/engine/search-and-knowledge.md",
+      "goal": "Define the essence, capability map, roles, screens, data/audit requirements, risks and implementation plan of the staff administration surface.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/product/information-architecture.md",
+        "docs/product/access-and-journeys.md",
+        "docs/architecture/overview.md"
+      ],
+      "steps": [
+        "Study comparable products and admin frameworks.",
+        "Map capabilities, roles and separation of duties.",
+        "Write screen contracts, data/audit requirements and the implementation proposal."
+      ],
+      "acceptance": [
+        "Separate staff surface; no implicit private access; no ranking controls; audited actions."
+      ],
+      "paths": []
+    },
+    {
+      "id": "DATA-002",
+      "title": "Administration persistence",
+      "area": "data",
+      "status": "open",
+      "dependsOn": [
+        "DATA-001"
+      ],
+      "handbook": "docs/engine/architecture.md",
+      "goal": "Add platform-admin-owned tables as reviewed migrations with append-only grants.",
+      "read": [
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Reuse the DATA-001 runner and runtime-role conventions.",
+        "Create audit/access tables with INSERT-only grants and raising triggers.",
+        "Create staff, case, moderation, claim, flag, config and incident tables."
+      ],
+      "acceptance": [
+        "Runtime role cannot update or delete audit rows.",
+        "No columns added to other modules tables."
+      ],
+      "paths": [
+        "packages/data/migrations/admin"
+      ]
+    },
+    {
+      "id": "ADM-001",
+      "title": "Platform administration backend module",
+      "area": "platform-admin-backend",
+      "status": "open",
+      "dependsOn": [
+        "DATA-002",
+        "BE-001",
+        "FND-002"
+      ],
+      "handbook": "docs/engine/hub-administration.md",
+      "goal": "Audited staff authority, SoD modes, case grants and the admin use-case facade calling other modules use cases only.",
+      "read": [
+        "docs/architecture/overview.md"
+      ],
+      "steps": [
+        "Materialise admin.* grants and SoD evaluation.",
+        "Elevation, second-person approval bound to digest, case and dispute-case grants.",
+        "Facade use cases for MVP capabilities with fakes for unaccepted modules.",
+        "Real-PostgreSQL negative tests."
+      ],
+      "acceptance": [
+        "Invariants pass under the runtime role.",
+        "No endpoint accepts ranking weight.",
+        "No module imports platform-admin."
+      ],
+      "paths": [
+        "apps/api/src/modules/platform-admin",
+        "tests/admin"
+      ]
+    },
+    {
+      "id": "ADM-002",
+      "title": "Administration web surface",
+      "area": "platform-admin-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-001",
+        "WEB-001",
+        "DS-001",
+        "CNT-001",
+        "BILL-001"
+      ],
+      "handbook": "docs/engine/hub-administration.md",
+      "goal": "The /admin shell and MVP admin screens with Chrome browser tests and Russian UI.",
+      "read": [
+        "docs/design/screen-contracts/workspace/administration.md"
+      ],
+      "steps": [
+        "Admin shell with elevation gate and permission-filtered navigation.",
+        "Core, editorial and commerce screen slices.",
+        "Playwright journeys including negative authorization and the no-ranking scan."
+      ],
+      "acceptance": [
+        "Browser plan passes; denied states on every screen; usable at 768 px.",
+        "No English product text; no ranking control."
+      ],
+      "paths": [
+        "apps/web/admin",
+        "packages/ui/locales/ru.admin.json",
+        "tests/admin-web"
+      ]
+    },
+    {
+      "id": "ADM-003",
+      "title": "Deferred administration screens",
+      "area": "platform-admin-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-002",
+        "RAG-201",
+        "AST-001"
+      ],
+      "handbook": "docs/engine/hub-administration.md",
+      "goal": "Sources, calendar, methodology, taxonomy, retrieval operations, providers, health, privacy and consent screens once their modules exist.",
+      "read": [],
+      "steps": [
+        "Build deferred screens S4, S6, S9, S12, S15–S19.",
+        "Browser tests with denied states."
+      ],
+      "acceptance": [
+        "Permission and audit contracts honoured; no ranking or surveillance control."
+      ],
+      "paths": [
+        "apps/web/admin/deferred",
+        "tests/admin-web/deferred"
+      ]
+    },
+    {
+      "id": "INTL-001",
+      "title": "Country-pack model, registration identifier and currency abstraction; remove Russia-only assumptions",
+      "area": "international",
+      "status": "in_review",
+      "dependsOn": [
+        "WEB-001",
+        "FND-002"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "A country-agnostic engine: packs carry locales, currency, registration identifier, entity types, regions, formats, legal templates and data residency; ИНН/ОГРН and RUB are gone outside the optional ru locale.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md",
+        "docs/architecture/overview.md"
+      ],
+      "steps": [
+        "Create packages/country-packs with a Zod schema, packs uz/ge/am/az, the restricted-places list and a validator test.",
+        "Replace RegionKey with ISO 3166-2 codes from the pack; replace inn/ogrn with pack identifier kinds; format money with Intl in the pack currency.",
+        "Re-base the demo fixtures on Uzbekistan (regions, STIR, UZS); keep data synthetic and labelled.",
+        "Remove Russian integrations and plans from code and docs."
+      ],
+      "acceptance": [
+        "No ИНН, ОГРН or RUB outside the optional ru locale.",
+        "packages/country-packs test validates every pack; restricted codes cannot be enabled.",
+        "npm run check green at the candidate SHA."
+      ],
+      "paths": [
+        "packages/country-packs",
+        "apps/web/fixtures",
+        "apps/web/app/_lib/data",
+        "packages/contracts/src/company.ts"
+      ]
+    },
+    {
+      "id": "INTL-002",
+      "title": "i18n engine and country selector",
+      "area": "international",
+      "status": "in_review",
+      "dependsOn": [
+        "INTL-001",
+        "DS-001"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Multilingual UI with English as default and fallback; the country is chosen on first visit, kept in the profile and URL, and switchable in the header.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md",
+        "docs/design/screen-contracts/README.md"
+      ],
+      "steps": [
+        "Request-scoped locale on the server, provider for client components, per-locale dictionaries with en fallback and a missing-key test.",
+        "Cookie plus ?country=/?lang= resolution in proxy.ts; first-visit selector listing enabled packs only; header switcher.",
+        "Fonts that render Georgian and Armenian; no RTL."
+      ],
+      "acceptance": [
+        "Every screen renders in each enabled locale without untranslated keys (test).",
+        "The selector never lists a restricted place.",
+        "Screenshots of the selector and switcher."
+      ],
+      "paths": [
+        "packages/ui/locales",
+        "packages/ui/src/i18n",
+        "apps/web/app/_lib/locales",
+        "apps/web/app/_lib/i18n.ts",
+        "apps/web/components/locale",
+        "apps/web/proxy.ts"
+      ]
+    },
+    {
+      "id": "INTL-UZ",
+      "title": "Uzbekistan pack end to end",
+      "area": "international",
+      "status": "in_review",
+      "dependsOn": [
+        "INTL-002"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Every screen in uz-Latn with native-quality copy, UZS everywhere, UZ registration identifier (STIR) and ISO 3166-2:UZ regions; demo data for Uzbekistan.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md"
+      ],
+      "steps": [
+        "Write the uz-Latn dictionaries for the design system and the app; review for native quality, no machine-translation placeholders.",
+        "Localize the demo fixtures for Uzbekistan.",
+        "Record screenshots of the UZ flow."
+      ],
+      "acceptance": [
+        "Screenshots of the UZ flow in uz-Latn.",
+        "No untranslated keys in uz-Latn.",
+        "Identifier and region facts cite their sources."
+      ],
+      "paths": [
+        "packages/country-packs/packs/uz.json",
+        "packages/ui/locales/uz-Latn.json",
+        "apps/web/app/_lib/locales/uz-Latn.json",
+        "apps/web/fixtures"
+      ]
+    },
+    {
+      "id": "INTL-GE",
+      "title": "Georgia pack",
+      "area": "international",
+      "status": "in_review",
+      "dependsOn": [
+        "INTL-UZ"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Georgia pack: ka locale, GEL, identification code, ISO 3166-2:GE regions.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md"
+      ],
+      "steps": [
+        "Complete the pack and the ka dictionaries; verify identifier facts against napr.gov.ge."
+      ],
+      "acceptance": [
+        "Pack validates; ka renders with Georgian-capable fonts; facts cite sources."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ge.json",
+        "packages/ui/locales/ka.json",
+        "apps/web/app/_lib/locales/ka.json"
+      ]
+    },
+    {
+      "id": "INTL-AM",
+      "title": "Armenia pack",
+      "area": "international",
+      "status": "in_review",
+      "dependsOn": [
+        "INTL-UZ"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Armenia pack: hy locale, AMD, TIN, ISO 3166-2:AM regions.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md"
+      ],
+      "steps": [
+        "Complete the pack and the hy dictionaries; verify identifier facts against src.am."
+      ],
+      "acceptance": [
+        "Pack validates; hy renders with Armenian-capable fonts; facts cite sources."
+      ],
+      "paths": [
+        "packages/country-packs/packs/am.json",
+        "packages/ui/locales/hy.json",
+        "apps/web/app/_lib/locales/hy.json"
+      ]
+    },
+    {
+      "id": "INTL-AZ",
+      "title": "Azerbaijan pack",
+      "area": "international",
+      "status": "in_review",
+      "dependsOn": [
+        "INTL-UZ"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Azerbaijan pack: az-Latn locale, AZN, VÖEN, ISO 3166-2:AZ regions.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md"
+      ],
+      "steps": [
+        "Complete the pack and the az-Latn dictionaries; verify identifier facts against taxes.gov.az."
+      ],
+      "acceptance": [
+        "Pack validates; facts cite sources."
+      ],
+      "paths": [
+        "packages/country-packs/packs/az.json",
+        "packages/ui/locales/az-Latn.json",
+        "apps/web/app/_lib/locales/az-Latn.json"
+      ]
+    },
+    {
+      "id": "INTL-SAN",
+      "title": "Sanctions terms template, partner SDN hook, removal of Russian integrations and plans",
+      "area": "compliance",
+      "status": "in_review",
+      "dependsOn": [
+        "INTL-001"
+      ],
+      "handbook": "docs/engine/trust-safety-privacy.md",
+      "goal": "Operators get a sanctions and export-controls terms section; partner onboarding carries an ownership declaration and an SDN screening hook; Russian integrations and plans are gone from docs and briefs.",
+      "read": [
+        "docs/adr/009-international-engine-and-open-source.md"
+      ],
+      "steps": [
+        "Write the terms template section mirroring Contribuddha Terms §3.",
+        "Add packages/compliance with the Consolidated Screening List adapter (key empty) and the ownership declaration contract.",
+        "Remove Russian integrations and plans from research, briefs and screen contracts."
+      ],
+      "acceptance": [
+        "No Russian-provider adapters remain.",
+        "Screening adapter refuses to run without a key and never fakes a clear result.",
+        "Terms section present in the template."
+      ],
+      "paths": [
+        "docs/legal/templates",
+        "packages/compliance"
+      ]
+    },
+    {
+      "id": "BE-002",
+      "title": "Identity hardening follow-ups",
+      "area": "backend",
+      "status": "open",
+      "dependsOn": [
+        "BE-001"
+      ],
+      "handbook": "docs/engine/people-and-companies.md",
+      "goal": "Close review follow-ups: provider-first e-mail squatting resolved by mailbox proof, scheduled sweeper, admission revoke scoping, provider callback 404 when disabled.",
+      "read": [],
+      "steps": [
+        "Mailbox proof revokes a squatting unverified binding.",
+        "Schedule sweep_expired from the worker.",
+        "Scope admission_revoke to the caller's own scopes or maintenance.",
+        "Provider callback answers 404 when providers are disabled."
+      ],
+      "acceptance": [
+        "Squatting scenario resolved by victim verification; tests pass on real PostgreSQL."
+      ],
+      "paths": [
+        "apps/api/src/modules/identity",
+        "packages/data/migrations",
+        "tests/backend"
+      ]
+    },
+    {
+      "id": "EVT-001",
+      "title": "Implement events: hosting, registration, tickets, check-in and partner meetings",
+      "area": "events",
+      "status": "open",
+      "dependsOn": [
+        "BE-001",
+        "CNT-001",
+        "BILL-001"
+      ],
+      "handbook": "docs/engine/events.md",
+      "goal": "Turn the demo events section into a real module: organizers host events under the hub policy, attendees register, buy tickets, check in and meet partners.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/events.md",
+        "docs/engine/billing.md"
+      ],
+      "steps": [
+        "Add event, session, speaker consent, ticket type, ticket price version, registration, ticket, check-in, waitlist and meeting tables through integrator-owned migrations.",
+        "Implement organizer use cases with hub hosting policy and review states.",
+        "Implement registration and ticket issuance with quota and capacity under concurrency; paid tickets reserve through billing adapters with fakes.",
+        "Implement offline-first check-in API and duplicate scan detection.",
+        "Implement opt-in meeting profiles and meeting requests with private declines.",
+        "Wire the existing web pages to the API behind the same projections."
+      ],
+      "acceptance": [
+        "Online links and attendee lists never appear in the public projection.",
+        "Quotas and capacity hold under concurrent registrations.",
+        "A sold ticket keeps its price version; unknown payment outcomes reconcile, never double-charge.",
+        "Speakers are shown only with recorded consent.",
+        "Sponsorship and payments never change listing order."
+      ],
+      "paths": [
+        "apps/api/src/modules/events",
+        "tests/events"
+      ]
+    },
+    {
+      "id": "LRN-001",
+      "title": "Implement courses, assessments and verifiable certificates",
+      "area": "learning",
+      "status": "open",
+      "dependsOn": [
+        "BE-001",
+        "CNT-001"
+      ],
+      "handbook": "docs/engine/learning.md",
+      "goal": "Courses with versions, assessments and certificates that anyone can check by number, shown on the personal profile.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/learning.md"
+      ],
+      "steps": [
+        "Model course, version, module, lesson, assessment, attempt, certificate and accreditation record.",
+        "Implement authoring with hub editorial review policy.",
+        "Implement certificate issuance, public check projection and revocation with reason.",
+        "Keep learning progress private to the learner; no employer view.",
+        "Connect «Моя страница» learning tab and /certificates/:id to the API."
+      ],
+      "acceptance": [
+        "A certificate names the course version and never changes; revocation is a status with reason.",
+        "No certificate shows an accreditation without a recorded source.",
+        "Progress is never exposed to employers or other members."
+      ],
+      "paths": [
+        "apps/api/src/modules/learning",
+        "tests/learning"
+      ]
+    },
+    {
+      "id": "MATCH-001",
+      "title": "Implement capability profiles, needs board, explainable matching and introductions",
+      "area": "matching",
+      "status": "open",
+      "dependsOn": [
+        "COM-001",
+        "RAG-301"
+      ],
+      "handbook": "docs/engine/partners-and-matching.md",
+      "goal": "Help clients, contractors, suppliers and partners find each other with explainable, payment-blind matching and double-opt-in introductions.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/search-and-knowledge.md"
+      ],
+      "steps": [
+        "Model capability profiles with per-field visibility, open needs, partner posts, match runs, candidates and introductions.",
+        "Implement hard eligibility (region, licence, sanctions) with pass/fail/unknown results.",
+        "Implement versioned ranking with explanations and uncertainty; requester-tunable weights.",
+        "Implement introductions with quotas shared by people and their agents, labelled agent requests, contact reveal on acceptance.",
+        "Add alerts for matching needs and invitations."
+      ],
+      "acceptance": [
+        "Rankings are identical with and without paid entitlements (test).",
+        "Matching never reads private quotes, budgets or floors.",
+        "Contact details appear only after an introduction is accepted.",
+        "Unknown eligibility is shown as unknown, not as failure."
+      ],
+      "paths": [
+        "apps/api/src/modules/matching",
+        "tests/matching"
+      ]
+    },
+    {
+      "id": "AGT-001",
+      "title": "Implement agent goals, agent-to-agent envelopes, negotiation sessions, company mandates and the company representative",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "AST-001",
+        "MATCH-001"
+      ],
+      "handbook": "docs/engine/agents.md",
+      "goal": "Let a participant direct their single agent with goals, let a company keep one standing representative with an accountable person, and let agents of different participants negotiate safely through structured objects.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/agents.md",
+        "docs/adr/003-snapshots-evidence-and-authority.md"
+      ],
+      "steps": [
+        "Model goal, goal progress, agent envelope, negotiation session and company mandate.",
+        "Implement goal creation that proposes the missing mandate changes in one structured confirmation.",
+        "Implement envelope delivery with intents, digests of referenced versions, mandate digest and untrusted note handling.",
+        "Implement negotiation sessions with round limits, expiry and escalation to humans.",
+        "Implement the company representative: one per company, accountable person, company mandates with re-confirmation within 7 days after the granting member leaves, automatic suspension, labels on every action, company budgets only.",
+        "Implement company mandates that stop when the executor's authority ends.",
+        "Add hub-level and node-level kill switches for agent dispatch."
+      ],
+      "acceptance": [
+        "No envelope note can change state; only structured intents after receiver mandate checks.",
+        "Private constraints never appear in envelopes, shared threads or logs visible to counterparties.",
+        "Agents of competing sellers never receive each other's pricing.",
+        "Revoking membership stops dependent company mandates in the same transaction.",
+        "There is still exactly one assistant surface per person and at most one representative per company; no agent management UI.",
+        "A company has at most one representative; it suspends when no accountable person or no confirmed mandate remains, and never exceeds the company's current grants."
+      ],
+      "paths": [
+        "apps/api/src/modules/assistant-goals",
+        "tests/assistant-goals"
+      ]
+    },
+    {
+      "id": "HUB-001",
+      "title": "Implement hubs, territories, hub-scoped staff and versioned hub configuration",
+      "area": "hubs",
+      "status": "open",
+      "dependsOn": [
+        "DATA-002",
+        "ADM-001"
+      ],
+      "handbook": "docs/engine/hubs.md",
+      "goal": "Make the hub a first-class object: territory, lifecycle, hub-scoped staff roles and configuration versions activated by a second person.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hubs.md",
+        "docs/engine/hub-administration.md"
+      ],
+      "steps": [
+        "Model hub, hub territory, hub config version, legal document version, counsel approval and launch gate (migrations through the integrator).",
+        "Scope staff role assignments and audit to a hub.",
+        "Implement second-person activation for sensitive configuration domains.",
+        "Implement the hub lifecycle with launch gates that block going public.",
+        "Refuse restricted territories at every entry point."
+      ],
+      "acceptance": [
+        "A hub cannot go public with an open launch gate.",
+        "A restricted territory is rejected.",
+        "Sensitive configuration changes require a different approver.",
+        "No hub setting widens data access."
+      ],
+      "paths": [
+        "apps/api/src/modules/hubs",
+        "tests/hubs"
+      ]
+    },
+    {
+      "id": "HUB-002",
+      "title": "Build the hub operator console",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "HUB-001",
+        "ADM-002"
+      ],
+      "handbook": "docs/engine/hub-administration.md",
+      "goal": "Give hub operators the console described in the handbook: overview, legal, country base, sources, verification, editorial, commerce, agents policy, communications, privacy, federation, staff and operations.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-administration.md",
+        "docs/design/screen-contracts/workspace/administration.md"
+      ],
+      "steps": [
+        "Write screen contracts for each console section.",
+        "Implement overview with launch checklist, queues and compliance status.",
+        "Implement legal documents with counsel approval records and activation.",
+        "Implement sources registry and import review queue.",
+        "Implement agents policy, communications, privacy and federation sections.",
+        "Localize every string in every hub language; axe and keyboard tests."
+      ],
+      "acceptance": [
+        "Every private object returns not found to staff without a case grant, through every console path.",
+        "Activating a legal document without counsel approval fails.",
+        "No console control sets a score, position or badge directly."
+      ],
+      "paths": [
+        "apps/web/app/admin/hub",
+        "tests/hub-console"
+      ]
+    },
+    {
+      "id": "HUB-003",
+      "title": "Implement counterparty verification adapters, recipes and sanctions list configuration",
+      "area": "verification",
+      "status": "open",
+      "dependsOn": [
+        "HUB-001",
+        "INTL-SAN"
+      ],
+      "handbook": "docs/engine/hub-administration.md",
+      "goal": "Turn local registers and sanctions lists into evidence: check adapters in fake, manual and live modes, recipes per subject and trigger, results with retention and appeals.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-administration.md",
+        "docs/engine/country-specifics.md",
+        "packages/compliance/src/index.ts"
+      ],
+      "steps": [
+        "Define check-type contracts (register match, officer match, tax status, licence, qualification, ownership, sanctions, domain, signature, call-back).",
+        "Implement adapters with deterministic fakes and a manual-review mode; live mode behind second-person activation and secret storage.",
+        "Implement recipes, result evidence records, expiry and re-check scheduling.",
+        "Implement potential-match review cases and appeals decided by a different reviewer.",
+        "Map results to badge categories and eligibility flags used by claims and matching."
+      ],
+      "acceptance": [
+        "Baseline sanctions screening cannot be disabled.",
+        "A potential match never auto-blocks or auto-clears.",
+        "Badges show categories, never documents.",
+        "Results expire and trigger re-checks per recipe."
+      ],
+      "paths": [
+        "apps/api/src/modules/verification",
+        "tests/verification"
+      ]
+    },
+    {
+      "id": "CTRY-002",
+      "title": "Country pack v2 facets with sourced facts for the launch countries",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "INTL-UZ",
+        "INTL-GE",
+        "INTL-AM",
+        "INTL-AZ"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "Extend packs with facets (registers, licensing, standards, procurement, tax and e-invoicing, e-signature, payments, calendar, scripts, privacy, content law, national sanctions lists), each sourced and honestly verified.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md"
+      ],
+      "steps": [
+        "Extend the Zod schema with facets and verification levels; keep v1 fields compatible.",
+        "Extend the validator: sources required, rates as decimal strings, adapters referenced must exist.",
+        "Research and add facets for UZ, GE, AM and AZ starting with registers, tax and e-invoicing.",
+        "Update the country guide with facet instructions."
+      ],
+      "acceptance": [
+        "Every fact has a source and a verification level.",
+        "No pack can enable a restricted place.",
+        "Engine code contains no country-specific branches."
+      ],
+      "paths": [
+        "packages/country-packs",
+        "tests/country-packs"
+      ]
+    },
+    {
+      "id": "FED-000",
+      "title": "Specify the mesh protocol and federation contracts",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FND-002"
+      ],
+      "handbook": "docs/engine/federation.md",
+      "goal": "Freeze the federation protocol of ADR 011 as contracts and conformance vectors before any implementation.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation.md",
+        "docs/adr/008-contracts-and-validation.md"
+      ],
+      "steps": [
+        "Define manifest, global identifier, envelope, feed page, inbox delivery, tombstone, peering record and link proposal schemas.",
+        "Specify signature base and key rotation; publish test vectors.",
+        "Specify which projections each object kind may carry and enforce it in the schema.",
+        "Write the protocol specification document for implementers outside this repository."
+      ],
+      "acceptance": [
+        "Envelopes with party_private or owner_private projections are rejected by schema.",
+        "Signature and digest vectors verify in tests.",
+        "Restricted jurisdictions are rejected at manifest validation."
+      ],
+      "paths": [
+        "packages/contracts/src/federation.ts",
+        "tests/federation/protocol"
+      ]
+    },
+    {
+      "id": "FED-001",
+      "title": "Implement node identity, manifest, signatures and peering records",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-000",
+        "HUB-001"
+      ],
+      "handbook": "docs/engine/federation.md",
+      "goal": "Each node gets a signing key, a signed manifest, key rotation and peering agreements with levels.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/federation.md"
+      ],
+      "steps": [
+        "Generate and store the node key; serve the signed manifest at /.well-known/trustwork/manifest.json.",
+        "Implement request signing and verification.",
+        "Implement peering agreements with levels and second-person approval for deal-routing and identity.",
+        "Implement defederation."
+      ],
+      "acceptance": [
+        "Unsigned or wrongly signed requests are rejected.",
+        "Peering above syndicate needs a second approver.",
+        "Defederation stops feeds and deliveries without rewriting history."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/node",
+        "tests/federation/node"
+      ]
+    },
+    {
+      "id": "FED-002",
+      "title": "Implement public syndication, replicas and tombstones",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-001",
+        "CNT-001",
+        "EVT-001"
+      ],
+      "handbook": "docs/engine/federation.md",
+      "goal": "Public publications, issues, events and directory records flow between peered nodes as signed replicas with provenance, licences and tombstones.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/federation.md"
+      ],
+      "steps": [
+        "Implement cursor feeds per stream on the home node.",
+        "Implement pulling, verification and storage of read-only replicas.",
+        "Respect syndication flags from source licences.",
+        "Apply tombstones within the agreed period and purge indexes and caches."
+      ],
+      "acceptance": [
+        "Replicas are read-only and never satisfy a write authorization.",
+        "Items with syndication none never leave their node.",
+        "Tombstones reach search indexes and caches."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/syndication",
+        "tests/federation/syndication"
+      ]
+    },
+    {
+      "id": "FED-003",
+      "title": "Implement directory federation and entity links",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-002",
+        "HUB-003"
+      ],
+      "handbook": "docs/engine/federation.md",
+      "goal": "Companies and people known to several nodes are linked, never merged, with canonical display by claim strength and attributed verification badges.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/federation.md",
+        "docs/engine/people-and-companies.md"
+      ],
+      "steps": [
+        "Implement link proposals from identifier matches and signed statements.",
+        "Implement data steward review on both nodes.",
+        "Display canonical records with field provenance.",
+        "Show peer verification badges only at trust-verifications level, labelled."
+      ],
+      "acceptance": [
+        "No automatic merge.",
+        "A peer badge is always labelled with the granting node.",
+        "Reputation is never recomputed on a replica."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/links",
+        "tests/federation/links"
+      ]
+    },
+    {
+      "id": "FED-004",
+      "title": "Implement cross-node deals and agent envelopes",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-003",
+        "COM-001",
+        "AGT-001"
+      ],
+      "handbook": "docs/engine/federation.md",
+      "goal": "Participants on different nodes exchange introductions, RFQ invitations, quote versions and agreements with identical digests on both sides.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/federation.md",
+        "docs/engine/commerce.md",
+        "docs/engine/agents.md"
+      ],
+      "steps": [
+        "Deliver shared_party envelopes to the counterparty's home node only.",
+        "Verify digests on both sides; bind acceptance to the same agreement digest.",
+        "Keep mandates, budgets and approvals on each party's own node.",
+        "Deliver agent envelopes with labels and rate limits per peering."
+      ],
+      "acceptance": [
+        "Both nodes hold identical accepted terms proven by the same digest.",
+        "Nothing on one node can authorize an action on the other.",
+        "No delivery is routed through a third node."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/deals",
+        "tests/federation/deals"
+      ]
+    },
+    {
+      "id": "FED-005",
+      "title": "Implement federated sign-in between peered nodes",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-001",
+        "BE-002"
+      ],
+      "handbook": "docs/engine/federation.md",
+      "goal": "A person can register for an event or answer an RFQ on a peered node without a second account, at identity peering level.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/federation.md",
+        "docs/adr/002-identity-and-access.md"
+      ],
+      "steps": [
+        "Implement nodes as OIDC providers and relying parties for each other.",
+        "Represent remote identities as (node, subject) pairs; never link by e-mail.",
+        "Limit what a remote identity may do to what the peering level allows."
+      ],
+      "acceptance": [
+        "No auto-linking by e-mail.",
+        "A remote identity never gains local company authority.",
+        "Ending peering at identity level ends remote sessions."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/identity",
+        "tests/federation/identity"
+      ]
+    }
+  ]
+}

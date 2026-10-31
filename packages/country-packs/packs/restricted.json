@@ -1,0 +1,17 @@
+{
+  "$comment": "Places the engine never serves (owner decision 2026-10-29, ADR-009; US sanctions programs administered by OFAC). ISO 3166-1 alpha-2 for countries, ISO 3166-2 for sub-national regions. A restricted code can never be enabled as a country pack and never appears in the country selector.",
+  "places": [
+    { "code": "RU", "name": { "en": "Russia" }, "basis": "Owner decision 2026-10-29; US sanctions programs (Russia-related) administered by OFAC" },
+    { "code": "UA-43", "name": { "en": "Crimea (Autonomous Republic of Crimea, Ukraine)" }, "basis": "Executive Order 13685 (Crimea region of Ukraine)" },
+    { "code": "UA-40", "name": { "en": "Sevastopol (Ukraine)" }, "basis": "Executive Order 13685 (Crimea region of Ukraine)" },
+    { "code": "UA-14", "name": { "en": "Donetsk region (Ukraine)" }, "basis": "Executive Order 14065 (covered regions of Ukraine)" },
+    { "code": "UA-09", "name": { "en": "Luhansk region (Ukraine)" }, "basis": "Executive Order 14065 (covered regions of Ukraine)" },
+    { "code": "CU", "name": { "en": "Cuba" }, "basis": "Cuban Assets Control Regulations, 31 CFR Part 515" },
+    { "code": "IR", "name": { "en": "Iran" }, "basis": "Iranian Transactions and Sanctions Regulations, 31 CFR Part 560" },
+    { "code": "KP", "name": { "en": "North Korea" }, "basis": "North Korea Sanctions Regulations, 31 CFR Part 510" }
+  ],
+  "sources": [
+    { "url": "https://ofac.treasury.gov/sanctions-programs-and-country-information", "what": "OFAC sanctions programs and country information", "accessed": "2026-10-29" },
+    { "url": "https://ofac.treasury.gov/sanctions-programs-and-country-information", "what": "Owner decision of 2026-10-29 (ADR-009 decision 2): the places under comprehensive US sanctions programs are never served", "accessed": "2026-10-29" }
+  ]
+}

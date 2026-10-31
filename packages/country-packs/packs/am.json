@@ -1,0 +1,237 @@
+{
+  "code": "AM",
+  "name": {
+    "en": "Armenia",
+    "hy": "Հայաստան",
+    "ru": "Армения"
+  },
+  "enabled": true,
+  "status": "complete",
+  "locales": [
+    "hy",
+    "en",
+    "ru"
+  ],
+  "defaultLocale": "hy",
+  "currency": {
+    "code": "AMD",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 0,
+    "symbol": "֏"
+  },
+  "secondaryCurrencies": [
+    "USD"
+  ],
+  "formats": {
+    "timeZone": "Asia/Yerevan",
+    "phone": {
+      "callingCode": "+374",
+      "nationalLength": 8,
+      "example": "+374 10 20 00 00"
+    },
+    "postalCode": {
+      "pattern": "^[0-9]{4}$",
+      "example": "0010"
+    }
+  },
+  "registrationIdentifier": {
+    "kind": "AM-TIN",
+    "label": {
+      "en": "TIN (taxpayer identification number)",
+      "hy": "ՀՎՀՀ",
+      "ru": "ՀՎՀՀ (налоговый номер)"
+    },
+    "pattern": "^[0-9]{8}$",
+    "example": "01234567",
+    "issuer": {
+      "name": {
+        "en": "State Revenue Committee of the Republic of Armenia",
+        "hy": "ՀՀ պետական եկամուտների կոմիտե"
+      },
+      "url": "https://src.am"
+    },
+    "verification": "secondary-sources plus OECD TIN sheet; official format confirmation pending",
+    "sources": [
+      {
+        "url": "https://search.oecd.org/tax/automatic-exchange/crs-implementation-and-assistance/tax-identification-numbers/Armenia-TIN.pdf",
+        "what": "OECD TIN information sheet for Armenia",
+        "accessed": "2026-10-29"
+      },
+      {
+        "url": "https://lookuptax.com/docs/tax-identification-number/armenia-tax-id-guide",
+        "what": "Legal-entity TIN is 8 digits issued by the State Revenue Committee",
+        "accessed": "2026-10-29"
+      }
+    ]
+  },
+  "legalEntityTypes": [
+    {
+      "code": "LLC",
+      "name": {
+        "en": "Limited liability company (ՍՊԸ)",
+        "hy": "Սահմանափակ պատասխանատվությամբ ընկերություն (ՍՊԸ)",
+        "ru": "ООО (ՍՊԸ)"
+      }
+    },
+    {
+      "code": "OJSC",
+      "name": {
+        "en": "Open joint-stock company (ԲԲԸ)",
+        "hy": "Բաց բաժնետիրական ընկերություն (ԲԲԸ)",
+        "ru": "ОАО (ԲԲԸ)"
+      }
+    },
+    {
+      "code": "CJSC",
+      "name": {
+        "en": "Closed joint-stock company (ՓԲԸ)",
+        "hy": "Փակ բաժնետիրական ընկերություն (ՓԲԸ)",
+        "ru": "ЗАО (ՓԲԸ)"
+      }
+    },
+    {
+      "code": "IE",
+      "name": {
+        "en": "Individual entrepreneur (ԱՁ)",
+        "hy": "Անհատ ձեռնարկատեր (ԱՁ)",
+        "ru": "Индивидуальный предприниматель (ԱՁ)"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "code": "AM-ER",
+      "name": {
+        "en": "Yerevan",
+        "hy": "Երևան",
+        "ru": "Ереван"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "AM-AG",
+      "name": {
+        "en": "Aragatsotn",
+        "hy": "Արագածոտն",
+        "ru": "Арагацотн"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-AR",
+      "name": {
+        "en": "Ararat",
+        "hy": "Արարատ",
+        "ru": "Арарат"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-AV",
+      "name": {
+        "en": "Armavir",
+        "hy": "Արմավիր",
+        "ru": "Армавир"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-GR",
+      "name": {
+        "en": "Gegharkunik",
+        "hy": "Գեղարքունիք",
+        "ru": "Гехаркуник"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-KT",
+      "name": {
+        "en": "Kotayk",
+        "hy": "Կոտայք",
+        "ru": "Котайк"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-LO",
+      "name": {
+        "en": "Lori",
+        "hy": "Լոռի",
+        "ru": "Лори"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-SH",
+      "name": {
+        "en": "Shirak",
+        "hy": "Շիրակ",
+        "ru": "Ширак"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-SU",
+      "name": {
+        "en": "Syunik",
+        "hy": "Սյունիք",
+        "ru": "Сюник"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-TV",
+      "name": {
+        "en": "Tavush",
+        "hy": "Տավուշ",
+        "ru": "Тавуш"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "AM-VD",
+      "name": {
+        "en": "Vayots Dzor",
+        "hy": "Վայոց Ձոր",
+        "ru": "Вайоц-Дзор"
+      },
+      "kind": "region"
+    }
+  ],
+  "address": {
+    "lines": [
+      "street",
+      "city",
+      "region",
+      "postalCode"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
+  "dataResidency": {
+    "required": false,
+    "note": {
+      "en": "Armenia's Law on Protection of Personal Data (2015) regulates transfers abroad but does not require local storage. Local-law compliance is for local counsel."
+    },
+    "sources": [
+      {
+        "url": "https://www.arlis.am/DocumentView.aspx?docid=98338",
+        "what": "Law of the Republic of Armenia on Protection of Personal Data (2015)",
+        "accessed": "2026-10-29",
+        "verification": "pending counsel"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/ISO_3166-2:AM",
+      "what": "ISO 3166-2:AM subdivision codes (11 entries)",
+      "accessed": "2026-10-29"
+    }
+  ]
+}

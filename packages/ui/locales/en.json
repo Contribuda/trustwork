@@ -1,0 +1,440 @@
+{
+  "bootstrap": {
+    "title": "Trustwork",
+    "message": "The project foundation is ready. User-facing features are still being built."
+  },
+  "publicNav": [
+    "Home",
+    "News",
+    "Articles",
+    "Events",
+    "Companies",
+    "People",
+    "Projects",
+    "Magazine"
+  ],
+  "workspaceNav": [
+    "Overview",
+    "My page",
+    "Company",
+    "Projects",
+    "Procurement",
+    "Sales",
+    "Publications",
+    "Assistant"
+  ],
+  "publicExit": "To the industry",
+  "onboarding": [
+    "I buy",
+    "I supply",
+    "I take part in the industry"
+  ],
+  "auth": {
+    "name": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Good to see you again"
+    },
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgot": "Forgot your password?",
+    "submitLogin": "Sign in",
+    "submitting": "Signing in…",
+    "or": "or",
+    "apple": "Continue with Apple",
+    "google": "Continue with Google",
+    "noAccount": "No account yet?",
+    "register": "Create an account",
+    "backHome": "Back to home",
+    "sessionExpired": "Your session has ended. Please sign in again.",
+    "error": {
+      "invalidCredentials": "Wrong email or password",
+      "rateLimited": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+      "provider": "Could not sign in with {provider}. Try again or use your email.",
+      "emailRequired": "Enter your email",
+      "emailFormat": "Check the email address",
+      "passwordRequired": "Enter your password"
+    },
+    "visual": {
+      "loginHeadline": "Good decisions. Reliable partners.",
+      "loginSub": "Find people and companies, share experience and work on projects together."
+    }
+  },
+  "brand": {
+    "name": "Trustwork",
+    "wordmarkLine1": "trust",
+    "wordmarkLine2": "work",
+    "logoLabel": "Trustwork — home"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "saved": "Saved",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "more": "More",
+    "retry": "Retry",
+    "loading": "Loading…",
+    "offline": "No connection",
+    "corrected": "Corrected",
+    "sectionLoadError": "Could not load this section",
+    "noAccessTitle": "No access",
+    "noAccessBody": "You do not have rights for this section. If that is a mistake, contact your company administrator.",
+    "externalLink": "external link",
+    "required": "required",
+    "optional": "optional",
+    "selected": "Selected",
+    "remove": "Remove",
+    "removeItem": "Remove “{label}”",
+    "clear": "Clear",
+    "noResults": "Nothing found",
+    "filters": "Filters",
+    "pagination": "Pages",
+    "page": "Page {page}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "currentPage": "Page {page}, current",
+    "tableScrollHint": "The table scrolls horizontally",
+    "sortAscending": "sorted ascending",
+    "sortDescending": "sorted descending",
+    "sortNone": "not sorted, press to sort",
+    "openMenu": "Open menu",
+    "notifications": "Notifications",
+    "breadcrumbs": "Breadcrumbs",
+    "stepOf": "Step {index} of {total}",
+    "stepDone": "done",
+    "stepCurrent": "current",
+    "showMore": "Show more",
+    "characters": "{count, plural, one {# character} other {# characters}}",
+    "charactersLeft": "{count, plural, one {# character} other {# characters}} left",
+    "items": "{count, plural, one {# item} other {# items}}",
+    "on": "On",
+    "off": "Off",
+    "updated": "Updated {date}"
+  },
+  "form": {
+    "errorSummaryTitle": "Fix the errors in the form",
+    "errorCount": "{count, plural, one {# error} other {# errors}}",
+    "requiredMark": "required field",
+    "help": "Help for this field"
+  },
+  "status": {
+    "sourced": "From open sources",
+    "claimed": "Claimed by the company",
+    "verified": "Verified"
+  },
+  "evidence": {
+    "asserted": "Asserted",
+    "confirmed": "Confirmed",
+    "disputed": "Disputed",
+    "superseded": "Superseded by a newer version"
+  },
+  "kind": {
+    "goods": "Goods",
+    "works": "Works",
+    "services": "Service",
+    "bundle": "Bundle"
+  },
+  "lifecycle": {
+    "draft": "Draft",
+    "inReview": "In review",
+    "published": "Published",
+    "active": "Active",
+    "paused": "Paused",
+    "closed": "Closed",
+    "cancelled": "Cancelled",
+    "expired": "Expired",
+    "archived": "Archived"
+  },
+  "run": {
+    "state": {
+      "proposed": "Proposed",
+      "authorized": "Authorized",
+      "reserved": "Budget reserved",
+      "queued": "Queued",
+      "executing": "Running",
+      "pending": "Awaiting confirmation",
+      "succeeded": "Done",
+      "failed": "Failed",
+      "outcomeUnknown": "Outcome unknown",
+      "reconciling": "Reconciling",
+      "revoked": "Revoked"
+    }
+  },
+  "publicShell": {
+    "tagline": "Industry. People. Practice.",
+    "about": "About the platform",
+    "signIn": "Sign in",
+    "search": "Search",
+    "menu": "Menu",
+    "skipToContent": "Skip to content",
+    "navLabel": "Sections",
+    "toWorkspace": "To the workspace",
+    "closeMenu": "Close menu",
+    "closeSearch": "Close search"
+  },
+  "footer": {
+    "sections": "Sections",
+    "editorial": "Editorial",
+    "platform": "Platform",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms of use",
+    "help": "Help",
+    "copyright": "© Trustwork. All rights reserved.",
+    "tagline": "Useful for people who get things built.",
+    "topics": "Topics",
+    "social": "Social",
+    "aboutMagazine": "About the magazine",
+    "aboutService": "About the service",
+    "signIn": "Sign in"
+  },
+  "shell": {
+    "navLabel": "Workspace",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "more": "More",
+    "skipToContent": "Skip to content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "search": "Search",
+    "notifications": "Notifications",
+    "notificationsCount": "Notifications, {count, plural, one {# new} other {# new}}",
+    "notificationsUnknown": "Notifications, there are new ones",
+    "noNotifications": "No new notifications",
+    "allNotifications": "All notifications",
+    "account": "Account",
+    "menu": {
+      "myPage": "My page",
+      "accountSettings": "Account settings",
+      "security": "Security and sessions",
+      "billing": "Billing and plans",
+      "admin": "Administration",
+      "help": "Help",
+      "signOut": "Sign out"
+    },
+    "offline": "No connection. Showing saved data.",
+    "attention": "{count, plural, one {# needs a decision} other {# need a decision}}",
+    "headerLabel": "Workspace header"
+  },
+  "assistant": {
+    "title": "Assistant",
+    "launcher": "Assistant",
+    "launcherUnread": "Assistant, {count, plural, one {# unread} other {# unread}}",
+    "launcherAction": "Assistant, your decision is needed",
+    "launcherOpen": "Assistant, window open — close",
+    "overlay": {
+      "label": "Assistant window",
+      "openPage": "Open page",
+      "minimize": "Minimize",
+      "close": "Close",
+      "newMessages": "{count, plural, one {# new message} other {# new messages}}",
+      "conversation": "Conversation with the assistant",
+      "stateOnline": "Online",
+      "stateOffline": "No connection. You can read the history.",
+      "stateUnavailable": "The assistant is temporarily unavailable. Exact-data search still works."
+    },
+    "attention": "{count, plural, one {# decision is waiting for you} other {# decisions are waiting for you}}",
+    "attentionOpen": "Open",
+    "composer": {
+      "label": "Message to the assistant",
+      "placeholder": "Ask a question or describe a task",
+      "send": "Send",
+      "attach": "Attach a file",
+      "hint": "Enter — send, Shift+Enter — new line"
+    },
+    "notSent": "Not sent",
+    "intro": "The assistant answers with sources, prepares drafts and carries out mandates only within the authority you set.",
+    "messageFromUser": "You",
+    "messageFromAssistant": "Assistant"
+  },
+  "search": {
+    "placeholder": "Search the industry",
+    "title": "Search results",
+    "removeConstraint": "Remove the condition “{label}”",
+    "temporal": {
+      "label": "Data period",
+      "current": "Current data",
+      "asOf": "Version as of a date"
+    },
+    "historicalLabel": "Historical version of {date}",
+    "backToCurrent": "Back to current data",
+    "status": {
+      "complete": "All available results are shown",
+      "partial": "Not all results are shown: {reason}",
+      "noAnswer": "No available material matches your query",
+      "unavailable": "Search is temporarily unavailable",
+      "stale": "Data is being updated; results may be incomplete",
+      "previousShown": "Previous results are shown"
+    },
+    "reason": {
+      "budget": "the query size limit was reached",
+      "sourcesUnavailable": "some sources are temporarily unavailable",
+      "semanticOff": "semantic search is off; exact matches are shown"
+    },
+    "emptyQuery": "Enter a query or open a section",
+    "freshness": "Source: {source}, data from {observedAt}"
+  },
+  "answer": {
+    "facts": "Platform data",
+    "claims": "From sources",
+    "supported": "Supported by sources",
+    "qualified": "With reservations: {reason}",
+    "abstain": "Not enough confirmed data to answer. The material found is below.",
+    "scopeIncomplete": "Incomplete data scope",
+    "statusLabel": "Answer status"
+  },
+  "citation": {
+    "open": "Source {index}",
+    "title": "Source",
+    "version": "Version {version} of {date}",
+    "locator": {
+      "page": "Page {page}",
+      "table": "Page {page}, table {table}, row {row}",
+      "text": "Text fragment"
+    },
+    "openSource": "Open the source",
+    "unavailable": "Source unavailable",
+    "unavailableShort": "unavailable",
+    "historicalShort": "historical version",
+    "unavailableReason": {
+      "revoked": "Access revoked",
+      "deleted": "Material deleted",
+      "consent": "Consent to publish withdrawn",
+      "scope": "Access to the source is restricted"
+    },
+    "close": "Close the source",
+    "locatorLabel": "Place in the source",
+    "evidenceLabel": "Evidence status",
+    "projectionLabel": "Projection"
+  },
+  "version": {
+    "label": "Version",
+    "pickerLabel": "Choose a version",
+    "item": "Version {version}",
+    "current": "Version {version} (current)",
+    "historical": "Version {version} of {date}",
+    "stale": "Version {version} (stale)",
+    "selected": "Showing version {version}"
+  },
+  "compare": {
+    "title": "Quote comparison",
+    "line": "Line",
+    "supplier": "Supplier",
+    "notComparable": "Not comparable",
+    "whyNotComparable": "Why not comparable",
+    "stale": "Stale quote",
+    "excluded": "Excluded from comparison",
+    "total": "Total",
+    "totalIncomplete": "Total not calculated: not every line is comparable",
+    "select": "Select",
+    "selectSupplier": "Select supplier “{supplier}”",
+    "reason": {
+      "unit": "Different unit of measure",
+      "scope": "Different scope",
+      "substitution": "Substitution offered",
+      "missingLine": "Line missing"
+    },
+    "mobileSupplierSwitch": "Supplier to compare",
+    "noOffer": "No offer"
+  },
+  "timeline": {
+    "label": "Event history",
+    "baseline": "Baseline plan",
+    "changed": "Change",
+    "disputed": "Disputed",
+    "outcomeUnknown": "Outcome unknown",
+    "done": "Done",
+    "pending": "Pending"
+  },
+  "onboardingFlow": {
+    "step": "Step {index} of {total}",
+    "stepsLabel": "Sign-up steps",
+    "continue": "Continue",
+    "skip": "I’ll look around first",
+    "back": "Back",
+    "multiHint": "You can pick several options.",
+    "changeAnytime": "You can change this at any time.",
+    "noAuthorityNote": "These are only interest settings. They grant no rights in a company and create no obligations.",
+    "selectionLabel": "What are you interested in on the platform?",
+    "selectedCount": "{count, plural, one {# option selected} other {# options selected}}"
+  },
+  "toast": {
+    "regionLabel": "Action notifications",
+    "dismiss": "Dismiss notification"
+  },
+  "dialog": {
+    "close": "Close window",
+    "loading": "Please wait…"
+  },
+  "table": {
+    "regionLabel": "Table “{caption}”",
+    "empty": "No data yet",
+    "error": "Could not load the table",
+    "loading": "Loading the table…",
+    "rowActions": "Row actions"
+  },
+  "avatar": {
+    "noPhoto": "No photo"
+  },
+  "emptyState": {
+    "defaultTitle": "Nothing here yet"
+  },
+  "demo": {
+    "banner": "Demo: synthetic data, no server connected.",
+    "persona": "Demo participant"
+  },
+  "magazine": {
+    "issue": "Issue No. {number}",
+    "issueShort": "No. {number}",
+    "read": "Read the issue",
+    "archive": "Magazine archive",
+    "fresh": "Latest issue",
+    "coverPrefix": "Cover of issue"
+  },
+  "decision": {
+    "kicker": "Your decision is needed",
+    "review": "To review",
+    "assistant": "The assistant is waiting for a decision",
+    "deadline": "Due: {date}"
+  },
+  "entity": {
+    "company": "Company",
+    "person": "Professional",
+    "project": "Project",
+    "open": "Open",
+    "openNamed": "Open: {name}"
+  },
+  "events": {
+    "upcoming": "Upcoming events"
+  },
+  "media": {
+    "coverDecorative": "Illustration for the material",
+    "artworks": {
+      "concrete-grain": "Concrete: grain and formwork ties",
+      "wood-lamellae": "Timber: lamellae",
+      "glass-grid": "Glass: façade grid",
+      "steel-profile": "Steel: I-beams",
+      "brick-bond": "Brick: stretcher bond",
+      "mineral-wool": "Mineral wool: fibre and layers",
+      "facade-cassettes": "Façade: rhythm of cassettes",
+      "blueprint-lines": "Drawing: plan and dimension lines",
+      "iso-blocks": "Isometric: block assembly",
+      "rebar-mesh": "Rebar: mesh and tying",
+      "corrugated-sheet": "Profiled sheet: wave and shadow",
+      "terrazzo": "Terrazzo: chips in the matrix",
+      "wall-layers": "Wall section: layers of the envelope",
+      "timber-frame": "Frame: studs, plates, rafters",
+      "glass-night": "Glass façade in the evening",
+      "formwork": "Formwork: panels and ties"
+    }
+  }
+}

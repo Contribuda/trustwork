@@ -1,0 +1,118 @@
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: var(--z-toast);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-accent-strong);
+  color: var(--color-text-on-strong);
+  border-radius: var(--radius-control);
+  transform: translateY(-200%);
+  text-decoration: none;
+}
+
+.skipLink:focus-visible {
+  transform: none;
+}
+
+.layout {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  height: 100dvh;
+  flex: 0 0 auto;
+  overflow-y: auto;
+  z-index: calc(var(--z-sticky) + 1);
+}
+
+.content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--size-content-max);
+  margin: 0 auto;
+  padding: var(--space-6);
+  padding-bottom: calc(var(--size-launcher) + var(--size-launcher-offset) * 2);
+}
+
+.offline {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-6);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-bottom: 1px solid var(--color-warning-border);
+  font-size: var(--text-body-sm-size);
+}
+
+.notificationList {
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.notification[data-unread] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-tint);
+}
+
+.notificationMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption-size);
+}
+
+/* Tablet: collapsed by default; an expanded sidebar floats over the content instead of pushing it. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .sidebar[data-expanded] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: var(--shadow-overlay);
+  }
+
+  /* Before hydration the preference is unknown: keep the tablet sidebar at the collapsed width so the page never overflows. */
+  .sidebar:not([data-restored]) {
+    max-width: var(--size-sidebar-width-collapsed);
+    overflow-x: hidden;
+  }
+
+  .sidebarSpacer {
+    flex: 0 0 var(--size-sidebar-width-collapsed);
+  }
+}
+
+@media (max-width: 767px) {
+  /* `.layout .sidebar` outranks the component's own `display: flex`; the sheet dialog carries the navigation here. */
+  .layout .sidebar {
+    display: none;
+  }
+
+  .main {
+    padding: var(--space-4);
+    padding-bottom: calc(var(--size-launcher-mobile) + var(--size-launcher-offset-mobile) * 2);
+  }
+}

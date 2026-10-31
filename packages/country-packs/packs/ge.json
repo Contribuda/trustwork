@@ -1,0 +1,58 @@
+{
+  "code": "GE",
+  "name": { "en": "Georgia", "ka": "საქართველო", "ru": "Грузия" },
+  "enabled": true,
+  "status": "complete",
+  "locales": ["ka", "en", "ru"],
+  "defaultLocale": "ka",
+  "currency": { "code": "GEL", "minorUnitDigits": 2, "displayFractionDigits": 2, "symbol": "₾" },
+  "secondaryCurrencies": ["USD"],
+  "formats": {
+    "timeZone": "Asia/Tbilisi",
+    "phone": { "callingCode": "+995", "nationalLength": 9, "example": "+995 32 200 00 00" },
+    "postalCode": { "pattern": "^[0-9]{4}$", "example": "0108" }
+  },
+  "registrationIdentifier": {
+    "kind": "GE-IDC",
+    "label": { "en": "Identification code", "ka": "საიდენტიფიკაციო კოდი", "ru": "Идентификационный код" },
+    "pattern": "^[0-9]{9}$",
+    "example": "405103034",
+    "issuer": { "name": { "en": "National Agency of Public Registry (NAPR)", "ka": "საჯარო რეესტრის ეროვნული სააგენტო" }, "url": "https://napr.gov.ge" },
+    "verification": "secondary-sources; official format confirmation pending",
+    "sources": [
+      {
+        "url": "https://lookuptax.com/docs/tax-identification-number/georgia-tax-id-guide",
+        "what": "Legal-entity identification code is 9 digits, assigned by the Public Registry at registration and used as the TIN",
+        "accessed": "2026-10-29"
+      },
+      { "url": "https://org-id.guide/list/GE-NAPR", "what": "NAPR as the company register (org-id list GE-NAPR)", "accessed": "2026-10-29" }
+    ]
+  },
+  "legalEntityTypes": [
+    { "code": "LLC", "name": { "en": "Limited liability company (შპს)", "ka": "შეზღუდული პასუხისმგებლობის საზოგადოება (შპს)", "ru": "ООО (შპს)" } },
+    { "code": "JSC", "name": { "en": "Joint-stock company (სს)", "ka": "სააქციო საზოგადოება (სს)", "ru": "АО (სს)" } },
+    { "code": "IE", "name": { "en": "Individual entrepreneur", "ka": "ინდივიდუალური მეწარმე", "ru": "Индивидуальный предприниматель" } }
+  ],
+  "regions": [
+    { "code": "GE-TB", "name": { "en": "Tbilisi", "ka": "თბილისი", "ru": "Тбилиси" }, "kind": "city" },
+    { "code": "GE-AJ", "name": { "en": "Adjara", "ka": "აჭარა", "ru": "Аджария" }, "kind": "autonomous-republic" },
+    { "code": "GE-GU", "name": { "en": "Guria", "ka": "გურია", "ru": "Гурия" }, "kind": "region" },
+    { "code": "GE-IM", "name": { "en": "Imereti", "ka": "იმერეთი", "ru": "Имеретия" }, "kind": "region" },
+    { "code": "GE-KA", "name": { "en": "Kakheti", "ka": "კახეთი", "ru": "Кахетия" }, "kind": "region" },
+    { "code": "GE-KK", "name": { "en": "Kvemo Kartli", "ka": "ქვემო ქართლი", "ru": "Квемо-Картли" }, "kind": "region" },
+    { "code": "GE-MM", "name": { "en": "Mtskheta-Mtianeti", "ka": "მცხეთა-მთიანეთი", "ru": "Мцхета-Мтианети" }, "kind": "region" },
+    { "code": "GE-RL", "name": { "en": "Racha-Lechkhumi and Kvemo Svaneti", "ka": "რაჭა-ლეჩხუმი და ქვემო სვანეთი", "ru": "Рача-Лечхуми и Квемо-Сванети" }, "kind": "region" },
+    { "code": "GE-SZ", "name": { "en": "Samegrelo-Zemo Svaneti", "ka": "სამეგრელო-ზემო სვანეთი", "ru": "Самегрело-Земо-Сванети" }, "kind": "region" },
+    { "code": "GE-SJ", "name": { "en": "Samtskhe-Javakheti", "ka": "სამცხე-ჯავახეთი", "ru": "Самцхе-Джавахети" }, "kind": "region" },
+    { "code": "GE-SK", "name": { "en": "Shida Kartli", "ka": "შიდა ქართლი", "ru": "Шида-Картли" }, "kind": "region" },
+    { "code": "GE-AB", "name": { "en": "Abkhazia", "ka": "აფხაზეთი", "ru": "Абхазия" }, "kind": "autonomous-republic" }
+  ],
+  "address": { "lines": ["street", "city", "region", "postalCode"], "cityFirst": false },
+  "legalTemplates": { "terms": "terms", "privacy": "privacy", "sanctions": "sanctions-and-export-controls" },
+  "dataResidency": {
+    "required": false,
+    "note": { "en": "Georgia's Law on Personal Data Protection (2023) regulates cross-border transfers but does not require local storage. Local-law compliance is for local counsel." },
+    "sources": [{ "url": "https://matsne.gov.ge/en/document/view/5827307", "what": "Law of Georgia on Personal Data Protection (2023)", "accessed": "2026-10-29", "verification": "pending counsel" }]
+  },
+  "sources": [{ "url": "https://en.wikipedia.org/wiki/ISO_3166-2:GE", "what": "ISO 3166-2:GE subdivision codes (12 entries)", "accessed": "2026-10-29" }]
+}

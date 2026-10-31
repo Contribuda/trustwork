@@ -1,0 +1,136 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+}
+
+.list::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 11px;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-circle);
+  border: 2px solid;
+  background: var(--color-surface);
+}
+
+.toneSuccess .marker {
+  color: var(--color-success-text);
+  border-color: var(--color-success-border);
+}
+
+.toneNeutral .marker {
+  color: var(--color-neutral-text);
+  border-color: var(--color-neutral-border);
+}
+
+.toneInfo .marker {
+  color: var(--color-info-text);
+  border-color: var(--color-info-border);
+}
+
+.toneWarning .marker {
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-weight: var(--weight-medium);
+}
+
+.markLabel {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  align-self: center;
+}
+
+.meta {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+.description {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.evidence {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.evidenceItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.evidenceItem:last-child {
+  border-bottom: 0;
+}
+
+.evidenceHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.evidenceTitle {
+  font-weight: var(--weight-medium);
+}
+
+.evidenceLink {
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+}

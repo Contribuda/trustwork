@@ -1,0 +1,754 @@
+{
+  "$fixture": "rfq-amendment",
+  "synthetic": true,
+  "description": "RFQ v1 (qty 10) amended to v2 (qty 100): the v1 quote is stale by version identity and cannot be accepted; the re-issued v2 quote can. Draft v3 restores qty 10 with an equal digest but a distinct id.",
+  "records": {
+    "Rfq": [
+      {
+        "id": "rfq-amend",
+        "owner": {
+          "kind": "company",
+          "id": "company-buyer-1"
+        },
+        "projectId": "project-buyer-1",
+        "creatorPersonId": "person-buyer",
+        "status": "published",
+        "currentVersion": 2,
+        "currentVersionId": "rfq-amend-v2",
+        "revision": 3,
+        "publicProjection": {
+          "enabled": false,
+          "fields": []
+        },
+        "category": "facades",
+        "createdAt": "2026-10-01T09:00:00Z"
+      }
+    ],
+    "RfqVersion": [
+      {
+        "id": "rfq-amend-v1",
+        "rfqId": "rfq-amend",
+        "version": 1,
+        "status": "superseded",
+        "payload": {
+          "title": "Facade panels",
+          "lines": [
+            {
+              "lineId": "line-panels",
+              "kind": "goods",
+              "description": "Facade panel 600x1200",
+              "specification": {
+                "finish": "fixture"
+              },
+              "quantity": {
+                "value": "10",
+                "unit": "pcs"
+              },
+              "alternativesAllowed": false
+            }
+          ],
+          "deliveryTerms": {
+            "location": {
+              "region": "fixture-region"
+            },
+            "window": {
+              "from": {
+                "date": "2026-11-01",
+                "timeZone": "Europe/Moscow"
+              },
+              "to": {
+                "date": "2026-11-30",
+                "timeZone": "Europe/Moscow"
+              }
+            }
+          },
+          "acceptanceCriteria": "Visual inspection.",
+          "paymentTermsRequested": null,
+          "currency": "UZS",
+          "responseDeadline": "2026-10-25T12:00:00Z",
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "883c49daa16ddfc107bf2fa955c672ba07f581c3931d9daf92926c033f929dec"
+        },
+        "publishedAt": "2026-10-01T09:00:00Z",
+        "publishedBy": "person-buyer",
+        "supersededBy": 2,
+        "amendmentReason": null
+      },
+      {
+        "id": "rfq-amend-v2",
+        "rfqId": "rfq-amend",
+        "version": 2,
+        "status": "published",
+        "payload": {
+          "title": "Facade panels",
+          "lines": [
+            {
+              "lineId": "line-panels",
+              "kind": "goods",
+              "description": "Facade panel 600x1200",
+              "specification": {
+                "finish": "fixture"
+              },
+              "quantity": {
+                "value": "100",
+                "unit": "pcs"
+              },
+              "alternativesAllowed": false
+            }
+          ],
+          "deliveryTerms": {
+            "location": {
+              "region": "fixture-region"
+            },
+            "window": {
+              "from": {
+                "date": "2026-11-01",
+                "timeZone": "Europe/Moscow"
+              },
+              "to": {
+                "date": "2026-11-30",
+                "timeZone": "Europe/Moscow"
+              }
+            }
+          },
+          "acceptanceCriteria": "Visual inspection.",
+          "paymentTermsRequested": null,
+          "currency": "UZS",
+          "responseDeadline": "2026-10-25T12:00:00Z",
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "9c94536f160dc4fcd22f858f5b85a218b5e7c436de681c3ae196a5cc39554092"
+        },
+        "publishedAt": "2026-10-05T09:00:00Z",
+        "publishedBy": "person-buyer",
+        "supersededBy": null,
+        "amendmentReason": "Quantity corrected from 10 to 100"
+      },
+      {
+        "id": "rfq-amend-v3",
+        "rfqId": "rfq-amend",
+        "version": 3,
+        "status": "draft",
+        "payload": {
+          "title": "Facade panels",
+          "lines": [
+            {
+              "lineId": "line-panels",
+              "kind": "goods",
+              "description": "Facade panel 600x1200",
+              "specification": {
+                "finish": "fixture"
+              },
+              "quantity": {
+                "value": "10",
+                "unit": "pcs"
+              },
+              "alternativesAllowed": false
+            }
+          ],
+          "deliveryTerms": {
+            "location": {
+              "region": "fixture-region"
+            },
+            "window": {
+              "from": {
+                "date": "2026-11-01",
+                "timeZone": "Europe/Moscow"
+              },
+              "to": {
+                "date": "2026-11-30",
+                "timeZone": "Europe/Moscow"
+              }
+            }
+          },
+          "acceptanceCriteria": "Visual inspection.",
+          "paymentTermsRequested": null,
+          "currency": "UZS",
+          "responseDeadline": "2026-10-25T12:00:00Z",
+          "attachments": []
+        },
+        "digest": null,
+        "publishedAt": null,
+        "publishedBy": null,
+        "supersededBy": null,
+        "amendmentReason": "Scope restored to 10 (draft, illustrates equal digest with distinct id)"
+      }
+    ],
+    "RfqInvitation": [
+      {
+        "id": "invitation-v1",
+        "rfqId": "rfq-amend",
+        "rfqVersion": {
+          "id": "rfq-amend-v1",
+          "version": 1,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "883c49daa16ddfc107bf2fa955c672ba07f581c3931d9daf92926c033f929dec"
+          }
+        },
+        "party": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        },
+        "channel": "platform",
+        "status": "responded",
+        "staleReason": "rfq_amended",
+        "sentAt": "2026-10-01T09:00:00Z",
+        "sentBy": {
+          "personId": "person-buyer",
+          "mandateId": null
+        }
+      }
+    ],
+    "Quote": [
+      {
+        "id": "quote-amend",
+        "rfqId": "rfq-amend",
+        "seller": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        },
+        "buyer": {
+          "kind": "company",
+          "id": "company-buyer-1"
+        },
+        "status": "sent",
+        "staleReason": null,
+        "currentVersion": 2,
+        "revision": 3,
+        "createdAt": "2026-10-02T09:00:00Z"
+      }
+    ],
+    "QuoteVersion": [
+      {
+        "id": "quote-amend-v1",
+        "quoteId": "quote-amend",
+        "version": 1,
+        "rfqVersion": {
+          "id": "rfq-amend-v1",
+          "version": 1,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "883c49daa16ddfc107bf2fa955c672ba07f581c3931d9daf92926c033f929dec"
+          }
+        },
+        "status": "sent",
+        "payload": {
+          "currency": "UZS",
+          "lines": [
+            {
+              "lineId": "qline-panels",
+              "rfqLineId": "line-panels",
+              "kind": "goods",
+              "specSnapshot": {
+                "finish": "fixture"
+              },
+              "offeringVersionRef": null,
+              "quantity": {
+                "value": "10",
+                "unit": "pcs"
+              },
+              "unitPrice": {
+                "minorUnits": "1500000",
+                "currency": "UZS"
+              },
+              "tax": {
+                "kind": "vat",
+                "ratePercent": "20",
+                "included": false
+              },
+              "taxAmount": {
+                "minorUnits": "3000000",
+                "currency": "UZS"
+              },
+              "lineTotal": {
+                "minorUnits": "15000000",
+                "currency": "UZS"
+              },
+              "substitution": null,
+              "options": []
+            }
+          ],
+          "totals": {
+            "net": {
+              "minorUnits": "15000000",
+              "currency": "UZS"
+            },
+            "tax": {
+              "minorUnits": "3000000",
+              "currency": "UZS"
+            },
+            "gross": {
+              "minorUnits": "18000000",
+              "currency": "UZS"
+            }
+          },
+          "deliveryTerms": {
+            "milestones": [],
+            "location": "fixture site"
+          },
+          "paymentTerms": "prepayment 50%",
+          "validity": {
+            "until": "2026-12-01T00:00:00Z"
+          },
+          "exclusions": [],
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "6e30810a086faa41dccf383fa6db94bacdddc972ba79e1303196f28011e693ba"
+        },
+        "sentAt": "2026-10-02T09:00:00Z",
+        "sentBy": {
+          "personId": "person-supplier",
+          "mandateId": null
+        },
+        "validUntil": "2026-12-01T00:00:00Z",
+        "staleReason": "rfq_amended",
+        "revalidatedFrom": null
+      },
+      {
+        "id": "quote-amend-v2",
+        "quoteId": "quote-amend",
+        "version": 2,
+        "rfqVersion": {
+          "id": "rfq-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "9c94536f160dc4fcd22f858f5b85a218b5e7c436de681c3ae196a5cc39554092"
+          }
+        },
+        "status": "sent",
+        "payload": {
+          "currency": "UZS",
+          "lines": [
+            {
+              "lineId": "qline-panels",
+              "rfqLineId": "line-panels",
+              "kind": "goods",
+              "specSnapshot": {
+                "finish": "fixture"
+              },
+              "offeringVersionRef": null,
+              "quantity": {
+                "value": "100",
+                "unit": "pcs"
+              },
+              "unitPrice": {
+                "minorUnits": "1500000",
+                "currency": "UZS"
+              },
+              "tax": {
+                "kind": "vat",
+                "ratePercent": "20",
+                "included": false
+              },
+              "taxAmount": {
+                "minorUnits": "30000000",
+                "currency": "UZS"
+              },
+              "lineTotal": {
+                "minorUnits": "150000000",
+                "currency": "UZS"
+              },
+              "substitution": null,
+              "options": []
+            }
+          ],
+          "totals": {
+            "net": {
+              "minorUnits": "150000000",
+              "currency": "UZS"
+            },
+            "tax": {
+              "minorUnits": "30000000",
+              "currency": "UZS"
+            },
+            "gross": {
+              "minorUnits": "180000000",
+              "currency": "UZS"
+            }
+          },
+          "deliveryTerms": {
+            "milestones": [],
+            "location": "fixture site"
+          },
+          "paymentTerms": "prepayment 50%",
+          "validity": {
+            "until": "2026-12-01T00:00:00Z"
+          },
+          "exclusions": [],
+          "attachments": []
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "f3e319f8235813e9ff5782652a84c38a16edb3d52b884af4b0bbe3aa09260470"
+        },
+        "sentAt": "2026-10-06T09:00:00Z",
+        "sentBy": {
+          "personId": "person-supplier",
+          "mandateId": null
+        },
+        "validUntil": "2026-12-01T00:00:00Z",
+        "staleReason": null,
+        "revalidatedFrom": 1
+      }
+    ],
+    "Agreement": [
+      {
+        "id": "agreement-amend",
+        "parties": {
+          "buyer": {
+            "kind": "company",
+            "id": "company-buyer-1"
+          },
+          "seller": {
+            "kind": "company",
+            "id": "company-supplier-1"
+          }
+        },
+        "acceptedTerms": {
+          "quoteVersion": {
+            "id": "quote-amend-v2",
+            "version": 2,
+            "digest": {
+              "algorithm": "trustwork-digest-1",
+              "value": "f3e319f8235813e9ff5782652a84c38a16edb3d52b884af4b0bbe3aa09260470"
+            }
+          },
+          "rfqVersion": {
+            "id": "rfq-amend-v2",
+            "version": 2,
+            "digest": {
+              "algorithm": "trustwork-digest-1",
+              "value": "9c94536f160dc4fcd22f858f5b85a218b5e7c436de681c3ae196a5cc39554092"
+            }
+          },
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "ffb771ad7693aed96ad0d10ae77da594183b1aa5d78f7540df1ba7af37ee14ea"
+          }
+        },
+        "acceptanceEventIds": [
+          "acceptance-1"
+        ],
+        "status": "accepted_by_buyer",
+        "supersededBy": null,
+        "obligations": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "company-supplier-1"
+            },
+            "kind": "deliver",
+            "due": "2026-11-30T00:00:00Z",
+            "amount": null,
+            "scope": {
+              "value": "100",
+              "unit": "pcs"
+            }
+          }
+        ],
+        "revision": 1,
+        "createdAt": "2026-10-06T09:00:00Z"
+      }
+    ],
+    "AgreementBuyerPrivate": [
+      {
+        "agreementId": "agreement-amend",
+        "ownerParty": {
+          "kind": "company",
+          "id": "company-buyer-1"
+        },
+        "transactionBudgetId": "budget-buyer-1",
+        "approvalRefs": [],
+        "notes": "buyer only",
+        "revision": 1
+      }
+    ],
+    "AgreementSellerPrivate": [
+      {
+        "agreementId": "agreement-amend",
+        "ownerParty": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        },
+        "fulfilmentPlan": [
+          {
+            "step": "Cut panels",
+            "internalOwnerPersonId": "person-supplier"
+          }
+        ],
+        "notes": "seller only",
+        "revision": 1
+      }
+    ],
+    "AcceptanceEvent": [
+      {
+        "id": "acceptance-1",
+        "agreementId": "agreement-amend",
+        "kind": "buyer_accepts_terms",
+        "quoteVersion": {
+          "id": "quote-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "f3e319f8235813e9ff5782652a84c38a16edb3d52b884af4b0bbe3aa09260470"
+          }
+        },
+        "rfqVersion": {
+          "id": "rfq-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "9c94536f160dc4fcd22f858f5b85a218b5e7c436de681c3ae196a5cc39554092"
+          }
+        },
+        "acceptedTermsDigest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "ffb771ad7693aed96ad0d10ae77da594183b1aa5d78f7540df1ba7af37ee14ea"
+        },
+        "actor": {
+          "personId": "person-buyer",
+          "onBehalfOf": {
+            "kind": "company",
+            "id": "company-buyer-1"
+          },
+          "mandate": null,
+          "approval": null
+        },
+        "authority": {
+          "transactionBudgetId": "budget-buyer-1",
+          "reservationId": "reservation-1",
+          "platformBudgetId": null
+        },
+        "occurredAt": "2026-10-06T09:00:00Z",
+        "idempotencyKey": "accept-amendment"
+      }
+    ]
+  },
+  "expectations": {
+    "v1QuoteStale": true,
+    "v2QuoteStale": false,
+    "invitationStale": true,
+    "acceptV1": "commercial.stale_version",
+    "acceptV2": "ok",
+    "rfqDigestsDiffer": true,
+    "v3DraftDigestEqualsV1": true,
+    "v3IdDiffersFromV1": true,
+    "comparable": [
+      "quote-amend-v2"
+    ],
+    "historical": [
+      "quote-amend-v1"
+    ],
+    "agreementDigest": {
+      "algorithm": "trustwork-digest-1",
+      "value": "7081f5de289a8dfa07d9a71a407b2bddaa7f20b4a967d0a601949db68577c835"
+    },
+    "sharedAgreement": {
+      "id": "agreement-amend",
+      "parties": {
+        "buyer": {
+          "kind": "company",
+          "id": "company-buyer-1"
+        },
+        "seller": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        }
+      },
+      "acceptedTerms": {
+        "quoteVersion": {
+          "id": "quote-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "cb12e4855a5857a7c988d265f65487dfdcbda24a49e299ae171eb5f4114064d1"
+          }
+        },
+        "rfqVersion": {
+          "id": "rfq-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "f72fa851de45db6cc7ebabc663aac122a954200a203a2357be5c61029ee7c1f1"
+          }
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "7081f5de289a8dfa07d9a71a407b2bddaa7f20b4a967d0a601949db68577c835"
+        }
+      },
+      "acceptanceEventIds": [
+        "acceptance-1"
+      ],
+      "status": "accepted_by_buyer",
+      "supersededBy": null,
+      "obligations": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-supplier-1"
+          },
+          "kind": "deliver",
+          "due": "2026-11-30T00:00:00Z",
+          "amount": null,
+          "scope": {
+            "value": "100",
+            "unit": "pcs"
+          }
+        }
+      ],
+      "revision": 1
+    },
+    "forbiddenInSharedAgreement": [
+      "transactionBudgetId",
+      "approvalRefs",
+      "fulfilmentPlan",
+      "notes"
+    ],
+    "buyerAgreement": {
+      "id": "agreement-amend",
+      "parties": {
+        "buyer": {
+          "kind": "company",
+          "id": "company-buyer-1"
+        },
+        "seller": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        }
+      },
+      "acceptedTerms": {
+        "quoteVersion": {
+          "id": "quote-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "cb12e4855a5857a7c988d265f65487dfdcbda24a49e299ae171eb5f4114064d1"
+          }
+        },
+        "rfqVersion": {
+          "id": "rfq-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "f72fa851de45db6cc7ebabc663aac122a954200a203a2357be5c61029ee7c1f1"
+          }
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "7081f5de289a8dfa07d9a71a407b2bddaa7f20b4a967d0a601949db68577c835"
+        }
+      },
+      "acceptanceEventIds": [
+        "acceptance-1"
+      ],
+      "status": "accepted_by_buyer",
+      "supersededBy": null,
+      "obligations": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-supplier-1"
+          },
+          "kind": "deliver",
+          "due": "2026-11-30T00:00:00Z",
+          "amount": null,
+          "scope": {
+            "value": "100",
+            "unit": "pcs"
+          }
+        }
+      ],
+      "revision": 1,
+      "buyerPrivate": {
+        "transactionBudgetId": "budget-buyer-1",
+        "approvalRefs": [],
+        "notes": "buyer only"
+      }
+    },
+    "forbiddenInBuyerAgreement": [
+      "fulfilmentPlan",
+      "internalOwnerPersonId",
+      "sellerPrivate"
+    ],
+    "sellerAgreement": {
+      "id": "agreement-amend",
+      "parties": {
+        "buyer": {
+          "kind": "company",
+          "id": "company-buyer-1"
+        },
+        "seller": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        }
+      },
+      "acceptedTerms": {
+        "quoteVersion": {
+          "id": "quote-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "cb12e4855a5857a7c988d265f65487dfdcbda24a49e299ae171eb5f4114064d1"
+          }
+        },
+        "rfqVersion": {
+          "id": "rfq-amend-v2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "f72fa851de45db6cc7ebabc663aac122a954200a203a2357be5c61029ee7c1f1"
+          }
+        },
+        "digest": {
+          "algorithm": "trustwork-digest-1",
+          "value": "7081f5de289a8dfa07d9a71a407b2bddaa7f20b4a967d0a601949db68577c835"
+        }
+      },
+      "acceptanceEventIds": [
+        "acceptance-1"
+      ],
+      "status": "accepted_by_buyer",
+      "supersededBy": null,
+      "obligations": [
+        {
+          "party": {
+            "kind": "company",
+            "id": "company-supplier-1"
+          },
+          "kind": "deliver",
+          "due": "2026-11-30T00:00:00Z",
+          "amount": null,
+          "scope": {
+            "value": "100",
+            "unit": "pcs"
+          }
+        }
+      ],
+      "revision": 1,
+      "sellerPrivate": {
+        "fulfilmentPlan": [
+          {
+            "step": "Cut panels",
+            "internalOwnerPersonId": "person-supplier"
+          }
+        ],
+        "notes": "seller only"
+      }
+    },
+    "forbiddenInSellerAgreement": [
+      "transactionBudgetId",
+      "approvalRefs",
+      "buyerPrivate"
+    ]
+  }
+}

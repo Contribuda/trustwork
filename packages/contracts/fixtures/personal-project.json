@@ -1,0 +1,203 @@
+{
+  "$fixture": "personal-project",
+  "synthetic": true,
+  "description": "Person-owned private project with an invited supplier company as a scoped participant; ownership transfer pending recipient consent.",
+  "records": {
+    "Project": [
+      {
+        "id": "project-personal-1",
+        "owner": {
+          "kind": "person",
+          "id": "person-petr"
+        },
+        "creatorPersonId": "person-petr",
+        "leaderPersonId": "person-petr",
+        "name": "Fixture summer house",
+        "summary": "Private personal build.",
+        "status": "active",
+        "publicity": {
+          "enabled": false,
+          "publishedStory": null,
+          "openNeedIds": [],
+          "publicParticipantIds": []
+        },
+        "milestones": [
+          {
+            "id": "milestone-foundation",
+            "title": "Foundation",
+            "due": {
+              "date": "2026-11-10",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "30000000",
+              "currency": "UZS"
+            },
+            "shared": true
+          },
+          {
+            "id": "milestone-finance",
+            "title": "Loan tranche",
+            "due": {
+              "date": "2026-11-01",
+              "timeZone": "Europe/Moscow"
+            },
+            "budget": {
+              "minorUnits": "50000000",
+              "currency": "UZS"
+            },
+            "shared": false
+          }
+        ],
+        "sharedFiles": [
+          {
+            "evidenceArtifactId": "artifact-site-plan",
+            "hash": "9e7468402197e39b45d0c5b47b909547600f9c45e3f4ade574f3fd6e75ccb163",
+            "audience": "shared"
+          }
+        ],
+        "baselinePlanId": "baseline-1",
+        "budgets": [
+          {
+            "budgetId": "budget-personal-1",
+            "limit": {
+              "minorUnits": "80000000",
+              "currency": "UZS"
+            }
+          }
+        ],
+        "participantIds": [
+          "company-supplier-1"
+        ],
+        "privateFiles": [
+          {
+            "evidenceArtifactId": "artifact-loan",
+            "hash": "e7ce9652c9dd8655ee3d596b109ceb7396332849ffe60dffaac99bc7d386768f"
+          }
+        ],
+        "privateNotes": "owner only",
+        "revision": 4,
+        "createdAt": "2026-10-01T09:00:00Z"
+      }
+    ],
+    "ObjectParticipation": [
+      {
+        "id": "participation-supplier",
+        "resource": {
+          "kind": "project",
+          "id": "project-personal-1"
+        },
+        "party": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        },
+        "side": "participant",
+        "capabilities": [
+          "read.shared",
+          "negotiate"
+        ],
+        "audience": "shared_party",
+        "validFrom": "2026-10-02T09:00:00Z",
+        "validUntil": "2027-01-01T00:00:00Z",
+        "grantedBy": {
+          "personId": "person-petr",
+          "onBehalfOf": null
+        },
+        "revokedAt": null,
+        "revokedReason": null,
+        "revision": 1,
+        "caseRef": null
+      }
+    ],
+    "OwnershipTransfer": [
+      {
+        "id": "transfer-1",
+        "projectId": "project-personal-1",
+        "from": {
+          "kind": "person",
+          "id": "person-petr"
+        },
+        "to": {
+          "kind": "company",
+          "id": "company-supplier-1"
+        },
+        "status": "proposed",
+        "proposedBy": "person-petr",
+        "proposedAt": "2026-10-05T09:00:00Z",
+        "recipientConsentAt": null,
+        "effectiveAt": null,
+        "expiresAt": "2026-10-20T00:00:00Z"
+      }
+    ],
+    "Budget": [
+      {
+        "id": "budget-personal-1",
+        "kind": "transaction",
+        "owner": {
+          "kind": "person",
+          "id": "person-petr"
+        },
+        "scope": {
+          "projectId": "project-personal-1",
+          "employeePersonId": null
+        },
+        "period": {
+          "from": "2026-10-01T09:00:00Z",
+          "to": "2027-01-01T00:00:00Z"
+        },
+        "limit": {
+          "minorUnits": "80000000",
+          "currency": "UZS"
+        },
+        "revision": 1
+      }
+    ]
+  },
+  "expectations": {
+    "publicProject": null,
+    "participantProject": {
+      "id": "project-personal-1",
+      "name": "Fixture summer house",
+      "summary": "Private personal build.",
+      "status": "active",
+      "publishedStory": null,
+      "openNeedIds": [],
+      "publicParticipantIds": [],
+      "owner": {
+        "kind": "person",
+        "id": "person-petr"
+      },
+      "leaderPersonId": "person-petr",
+      "milestones": [
+        {
+          "id": "milestone-foundation",
+          "title": "Foundation",
+          "due": {
+            "date": "2026-11-10",
+            "timeZone": "Europe/Moscow"
+          },
+          "shared": true
+        }
+      ],
+      "sharedFiles": [
+        {
+          "evidenceArtifactId": "artifact-site-plan",
+          "hash": "9e7468402197e39b45d0c5b47b909547600f9c45e3f4ade574f3fd6e75ccb163",
+          "audience": "shared"
+        }
+      ]
+    },
+    "forbiddenInParticipantProject": [
+      "budgets",
+      "budget",
+      "privateFiles",
+      "privateNotes",
+      "baselinePlanId",
+      "participantIds"
+    ],
+    "sharedMilestoneIds": [
+      "milestone-foundation"
+    ],
+    "transferEffectiveAllowedFromProposed": false
+  }
+}
