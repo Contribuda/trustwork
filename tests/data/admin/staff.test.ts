@@ -14,6 +14,7 @@ import {
   adminAudit, adminDigests, adminSetup, approvals, featureFlags, incidents, staffAssignments, staffConflicts, staffRoleDefinitions, type CommandContext,
 } from '../../../packages/data/src/repositories/admin.js';
 import { sessionElevations } from '../../../packages/data/src/repositories/identity.js';
+import { SCREENING_SECOND_PERSON_ACTIONS } from '../../../packages/contracts/src/sanctions.js';
 import { TABLE_COLUMNS } from '../../../packages/data/src/schema/admin.js';
 import { provisionTestDatabase, SKIP_REASON, untilDatabaseTimePasses } from '../helpers/postgres.js';
 import { actors, buildAdminWorld, rejects, settle, type AdminWorld } from './helpers.js';
@@ -93,7 +94,10 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
     assert.deepEqual(await q<string[]>('SELECT trustwork.admin_staff_roles() AS v'), [...HUB_STAFF_ROLES]);
     assert.deepEqual([...await q<string[]>('SELECT trustwork.admin_sensitive_roles() AS v')].sort(), [...SENSITIVE_HUB_STAFF_ROLES].sort());
     assert.deepEqual([...await q<string[]>('SELECT trustwork.admin_node_only_permissions() AS v')].sort(), [...NODE_ONLY_PERMISSIONS].sort());
-    assert.deepEqual(await q<string[]>('SELECT trustwork.admin_second_person_actions() AS v'), [...CONSOLE_SECOND_PERSON_ACTIONS]);
+    // SANC-003 registered its two screening actions in the data layer only (data integrator agreement); the frozen console
+    // vocabulary is unchanged, and the generic approval commands refuse them (no permission maps to them).
+    assert.deepEqual(await q<string[]>('SELECT trustwork.admin_second_person_actions() AS v'), [...CONSOLE_SECOND_PERSON_ACTIONS, ...SCREENING_SECOND_PERSON_ACTIONS]);
+    for (const action of SCREENING_SECOND_PERSON_ACTIONS) assert.equal(await q<string[] | null>('SELECT trustwork.admin_action_permissions($1) AS v', [action]), null, `${action} has no generic permission`);
     const vocabulary = new Set<string>(CONSOLE_PERMISSIONS);
     for (const action of CONSOLE_SECOND_PERSON_ACTIONS) {
       const perms = await q<string[] | null>('SELECT trustwork.admin_action_permissions($1) AS v', [action]);

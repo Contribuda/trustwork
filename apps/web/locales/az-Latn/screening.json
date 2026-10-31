@@ -1,0 +1,25 @@
+{
+  "screening": {
+    "pageTitle": "Uyğunluq",
+    "status": {
+      "clear": "Bu hesab üçün gözləyən uyğunluq yoxlaması yoxdur.",
+      "checking": "Adi uyğunluq yoxlaması aparılır.",
+      "nameNeeded": "Uyğunluq yoxlamasını başa çatdırmaq üçün tam rəsmi adınız lazımdır. Zəhmət olmasa, onu hesabınıza əlavə edin.",
+      "review": "Uyğunluq yoxlaması bir əməkdaşın baxışını tələb edir. Bu, adətən təxminən bir iş günü çəkir.",
+      "suspended": "Bu hesab hüquqi səbəblərə görə dayandırılıb.",
+      "appealPending": "Bu hesab hüquqi səbəblərə görə dayandırılıb. Şikayətinizə ilkin qərarı verməmiş əməkdaş baxır."
+    },
+    "paymentsPaused": "Yoxlama bitənə qədər ödənişlər, köçürmələr, satışlar və kommersiya öhdəlikləri dayandırılır. Hesabınızda heç nə silinmir.",
+    "contact": "Suallarınız varsa, bu saytın operatoru ilə onun istifadə şərtlərində göstərilən əlaqə məlumatları vasitəsilə əlaqə saxlayın.",
+    "appeal": {
+      "available": "Bu qərardan şikayət edə bilərsiniz. İlkin qərarı verməmiş əməkdaş cavab verəcək.",
+      "title": "Qərardan şikayət etmək",
+      "reasonLabel": "Qərarın səhv olduğunu niyə düşünürsünüz?",
+      "submit": "Şikayəti göndərin",
+      "submitted": "Şikayətiniz göndərildi. Nəticəni sizə bildirəcəyik."
+    },
+    "refusal": {
+      "suspended": "Bu hesab hüquqi səbəblərə görə dayandırılıb. Uyğunluq statusunuza baxa və şikayət edə bilərsiniz."
+    }
+  }
+}

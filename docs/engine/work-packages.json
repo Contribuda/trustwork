@@ -2636,7 +2636,7 @@
       "id": "SANC-003",
       "title": "Screening engine: persons and companies at registration, sign-in and change, matching, results and review cases",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SANC-002"
       ],

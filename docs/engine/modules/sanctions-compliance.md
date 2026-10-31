@@ -42,21 +42,21 @@ Keep every hub lawful under the sanctions and export-control rules that bind its
 | SNC-F07 | A restricted own-location declaration (residence, company places, payout country) refuses and holds; other place fields refuse only | Proposed | SANC-001, SANC-004 |
 | SNC-F08 | Every hub screens against the baseline OFAC lists (SDN and consolidated non-SDN), which cannot be disabled; additional lists come from country-pack facts and adapters; the CSL adapter runs only with a key | Live (baseline seeded and unpausable, `ofac-sls-xml` adapter, CSL adapter unchanged) | SANC-002 |
 | SNC-F09 | List versions are immutable with source, publication date, entry count and digest; ingestion modes `file`, `live` (second person) and `fake`; sanity bounds block a truncated version; stale baseline closes money and commitment gates | Live (versions, `file` and `fake` modes, sanity bounds, freshness and `screening_available`; `live` refuses until KEYS-001 supplies the egress fetcher and activations; the gates themselves: SANC-004) | SANC-002 |
-| SNC-F10 | Names are normalized deterministically (case, marks, punctuation, transliteration tables, sorted distinct tokens); persons match individuals and companies match entities by the engine rule; one-token names give `insufficient_name`, never `clear` | Live (name keys: ICAO 9303 Cyrillic, Georgian national 2002 and CLDR Latin tables); Proposed (matching: SANC-003) | SANC-002, SANC-003 |
-| SNC-F11 | A hub may add a fuzzy layer within engine bounds that only adds possible matches; no score ever clears | Proposed | SANC-003 |
-| SNC-F12 | Screening runs at registration, at sign-in when lists or names changed, on name and company changes, at claims, for sellers, counterparties, payees, organizers, peers and the operator | Proposed | SANC-003, SANC-004 |
-| SNC-F13 | Results are `clear`, `possible_match`, `insufficient_name` or `not_screened`; only `clear` or a decided `not_same_person` against fresh lists lets money move or commitments bind | Proposed | SANC-003, SANC-004 |
+| SNC-F10 | Names are normalized deterministically (case, marks, punctuation, transliteration tables, sorted distinct tokens); persons match individuals and companies match entities by the engine rule; one-token names give `insufficient_name`, never `clear` | Live (name keys: ICAO 9303 Cyrillic, Georgian national 2002 and CLDR Latin tables; the engine rule in `packages/compliance/src/matching`, matcher version recorded in every result) | SANC-002, SANC-003 |
+| SNC-F11 | A hub may add a fuzzy layer within engine bounds that only adds possible matches; no score ever clears | Live (Jaro-Winkler, threshold 0.85 to 0.99, off by default until the owner chooses a threshold: open question 3) | SANC-003 |
+| SNC-F12 | Screening runs at registration, at sign-in when lists or names changed, on name and company changes, at claims, for sellers, counterparties, payees, organizers, peers and the operator | Live (registration, sign-in when lists or names changed, person and company renames, company creation, the nightly names-digest sweep); Proposed (claims, sellers, counterparties, payees, organizers, peers, the operator: SANC-004, HUB-003, HUB-004) | SANC-003, SANC-004 |
+| SNC-F13 | Results are `clear`, `possible_match`, `insufficient_name` or `not_screened`; only `clear` or a decided `not_same_person` against fresh lists lets money move or commitments bind | Live (outcomes, the clear invariant and `money_held`; the gates that read them: SANC-004) | SANC-003, SANC-004 |
 | SNC-F14 | Money (payout accounts, payouts, sales) and commitments (quotes, orders, agreements, agent commits) refuse while a match is open or confirmed, the state is unknown or the baseline is stale; a gate without an answer refuses | Proposed | SANC-004, PAY-001, BILL-002 |
-| SNC-F15 | Possible matches open one review case per subject, late after the hub's service level; notifications to compliance staff cannot be muted and name nobody | Proposed | SANC-003, SANC-006 |
-| SNC-F16 | "Not the same person" needs two people, neither the subject nor conflicted; "confirmed" by one reviewer suspends the subject and prepares a report draft for the operator; appeals go to a different reviewer; reversals need two people | Proposed | SANC-003, SANC-006 |
+| SNC-F15 | Possible matches open one review case per subject, late after the hub's service level; notifications to compliance staff cannot be muted and name nobody | Live (one queue item per subject, late after the service level, an outbox notification that names nobody and cannot be muted); Proposed (console and staff mail: SANC-006, SANC-007) | SANC-003, SANC-006 |
+| SNC-F16 | "Not the same person" needs two people, neither the subject nor conflicted; "confirmed" by one reviewer suspends the subject and prepares a report draft for the operator; appeals go to a different reviewer; reversals need two people | Live (backend: decisions, second person through `second_person_approval`, report drafts, appeals by another reviewer); Proposed (console: SANC-006) | SANC-003, SANC-006 |
 | SNC-F17 | Every new active list version triggers a delta re-screen of every active subject; a weekly full run is the safety net; runs are idempotent per subject and list version | Proposed | SANC-005 |
-| SNC-F18 | Holds, results, matches, decisions and refusal counts are append-only, kept for the pack's record-keeping period through erasure (naming the tombstone), and never contain a network address | Proposed | SANC-001, SANC-003, PRV-001 |
+| SNC-F18 | Holds, results, matches, decisions and refusal counts are append-only, kept for the pack's record-keeping period through erasure (naming the tombstone), and never contain a network address | Live (holds; screening states, results, matches, decisions and report drafts append-only or guarded); Proposed (erasure ledger: PRV-001) | SANC-001, SANC-003, PRV-001 |
 | SNC-F19 | The subject is told only what the law allows; counterparties learn only that the other side cannot transact now | Proposed | SANC-004, SANC-007 |
 | SNC-F20 | Every visible string of this module is in every engine language; mail notices for holds, cleared holds and decisions | Proposed | SANC-001, SANC-007 |
 | SNC-F21 | Our own services (federation admission, update channel and registry, hub directory, support, hosted services) refuse restricted places using declared jurisdiction, attestation and our own geolocation | Proposed | SANC-008, FED-001 |
 | SNC-F22 | The setup wizard records a deployment-location attestation (operator entity country and region, hosting country and region, gate mode), refuses restricted places, audits it and requires renewal on change and yearly | Live as an API (wizard step Proposed) | SANC-009, HUB-004 |
 | SNC-F23 | The engine contains no code that geolocates the server it runs on or disables itself by location (owner decision, ADR 014 decision 3) | Designed | — |
-| SNC-F24 | Nothing in this module changes ranking, matching, recommendations or reputation; no screening outcome is public | Proposed | SANC-003 |
+| SNC-F24 | Nothing in this module changes ranking, matching, recommendations or reputation; no screening outcome is public | Live (projection tests: contracts, database functions, views and policies, and sources) | SANC-003 |
 
 ## Agent capabilities
 
@@ -64,11 +64,11 @@ Screening decisions are staff work and never reachable by an agent or a connecti
 
 | Identifier | Kind | Mandate kind | Confirmation | Surface |
 |---|---|---|---|---|
-| `core.compliance_status` | `read` | — | `none` | Settings → Account → Compliance |
-| `core.appeal_compliance_decision` | `govern` | — | `first_party_step_up` | The appeal form on the compliance page |
+| `core.compliance_status` | `read` | — | `none` | Settings → Account → Compliance (API `GET /v1/screening/me`, Live; page: SANC-007) |
+| `core.appeal_compliance_decision` | `govern` | — | `first_party_step_up` | The appeal form on the compliance page (API `POST /v1/screening/me/appeal`, Live; page: SANC-007) |
 | `core.explain_refusal` | `read` | — | `none` | The refusal message on a blocked payout, sale or commitment |
 
-An agent whose principal is held, or whose action is refused by a gate, reports the refusal in the person's decisions with the same words the interface uses; it never retries around a gate.
+A confirmed match suspends the subject: a person's sessions end and every mandate they gave stops (pending agent actions revoked); they can sign in again only to read their status, appeal and sign out (every other request answers `403 auth.compliance_suspended`). A company's mandates (its people's agents acting for it and its standing representative) stop. A possible match never blocks sign-in. An agent whose principal is held, or whose action is refused by a gate, reports the refusal in the person's decisions with the same words the interface uses; it never retries around a gate.
 
 ## Interface surfaces
 
@@ -101,7 +101,7 @@ Configured in [Hub administration](../hub-administration.md#sanctions-screening-
 
 ## Data entities
 
-[`restricted_place`](../../data/model.md#2-platform-kernel), [`jurisdiction_hold`, `jurisdiction_refusal_count`, `geolocation_dataset`, `screening_list`, `screening_list_version`, `screening_list_entry`, `screening_subject_state`, `screening_result`, `screening_match`, `screening_decision`, `screening_rescreen_run`, `deployment_location_attestation`](../../data/model.md#24a-sanctions-compliance).
+[`restricted_place`](../../data/model.md#2-platform-kernel), [`jurisdiction_hold`, `jurisdiction_refusal_count`, `geolocation_dataset`, `screening_list`, `screening_list_version`, `screening_list_entry`, `screening_subject_state`, `screening_result`, `screening_match`, `screening_decision`, `screening_report_draft`, `screening_rescreen_run`, `deployment_location_attestation`](../../data/model.md#24a-sanctions-compliance).
 
 ## Country and jurisdiction variations
 
@@ -131,7 +131,9 @@ Hub cohorts only: refusals per place and day; open holds and median time to clea
 | List download truncated | Sanity bounds stop activation; the previous version stays active; freshness ages keep running |
 | Baseline stale | Money and commitment gates refuse with "screening temporarily unavailable"; console alert |
 | One-word display name | `insufficient_name`; money waits for a reviewer or a fuller legal name |
-| Same entry flagged again after "not the same person" | Not flagged again unless the entry's normalized names change |
+| Same entry flagged again after "not the same person" | Not flagged again unless the entry's normalized names change (`entry_keys_digest`) |
+| New baseline list version activated | Every earlier `clear` is due for re-screening: money is held (`rescreen_due`) until the subject is screened again (at sign-in now; automatically for everyone with SANC-005) |
+| Display name changed by any path | The database appends `identity.name_changed` or `company.renamed` in the same transaction; the worker screens the new name; the nightly sweep catches anything missed |
 | Reviewer is the subject or conflicted | Refused by the database guard |
 | Gate cannot reach the screening store | Refuses; no money moves unscreened |
 | Company representative's accountable person held | The representative suspends (ADR 010 decision 9) |
