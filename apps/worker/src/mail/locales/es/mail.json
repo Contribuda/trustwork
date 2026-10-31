@@ -58,7 +58,16 @@
       "password_changed": "La contraseña de su cuenta se cambió y se cerraron sus demás sesiones.",
       "email_change_requested": "Alguien pidió cambiar la dirección de correo electrónico de su cuenta. El cambio solo ocurre después de confirmar la nueva dirección.",
       "provider_linked": "Se conectó el inicio de sesión con {provider} a su cuenta.",
-      "provider_unlinked": "Se desconectó el inicio de sesión con {provider} de su cuenta."
+      "provider_unlinked": "Se desconectó el inicio de sesión con {provider} de su cuenta.",
+      "second_factor_enabled": "Se activó la verificación en dos pasos con una aplicación de autenticación en su cuenta.",
+      "second_factor_removed": "Se quitó una aplicación de autenticación de la verificación en dos pasos de su cuenta.",
+      "recovery_codes_regenerated": "Se crearon nuevos códigos de recuperación para su cuenta. Los códigos anteriores sin usar ya no funcionan.",
+      "recovery_code_used": "Se usó uno de sus códigos de recuperación para confirmar un inicio de sesión o una acción delicada. Cada código funciona una sola vez.",
+      "second_factor_throttled": "Hubo varios códigos de verificación en dos pasos incorrectos en su cuenta. Los siguientes intentos se harán más lentos por un tiempo.",
+      "second_factor_reset_requested": "Se pidió a soporte restablecer la verificación en dos pasos de su cuenta. Nada cambia hasta que lo apruebe un segundo miembro del personal y pase un periodo de espera de al menos 72 horas.",
+      "second_factor_reset_approved": "Se aprobó el restablecimiento de la verificación en dos pasos de su cuenta. Entra en vigor después de un periodo de espera de al menos 72 horas; hasta entonces puede cancelarlo en la configuración de seguridad.",
+      "second_factor_reset_cancelled": "Se canceló el restablecimiento de la verificación en dos pasos de su cuenta. No cambió nada.",
+      "second_factor_reset_completed": "Soporte restableció la verificación en dos pasos de su cuenta y se cerraron todas las sesiones. Inicie sesión y vuelva a configurar la verificación en dos pasos."
     },
     "notYou": "Si no fue usted, restablezca su contraseña ahora y revise sus sesiones activas.",
     "action": "Restablecer la contraseña"
