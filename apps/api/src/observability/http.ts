@@ -24,8 +24,8 @@ export function recordRequestError(request: FastifyRequest, error: unknown): voi
   if (state && state.error === undefined) state.error = error;
 }
 
-/** API response headers. The API serves JSON only, so the CSP forbids everything and framing. HSTS only over https. */
-export function apiSecurityHeaders(config: Pick<ApiConfig, 'publicOrigin' | 'securityHeaders'>): Record<string, string> {
+/** API response headers. The API serves JSON only, so the CSP forbids everything and framing. HSTS only when configured (`TRUSTWORK_HSTS`). */
+export function apiSecurityHeaders(config: Pick<ApiConfig, 'securityHeaders'>): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
     'X-Content-Type-Options': 'nosniff',
@@ -35,9 +35,8 @@ export function apiSecurityHeaders(config: Pick<ApiConfig, 'publicOrigin' | 'sec
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
   };
-  if (config.publicOrigin.startsWith('https://') && config.securityHeaders.hstsMaxAgeSeconds > 0) {
-    headers['Strict-Transport-Security'] = `max-age=${config.securityHeaders.hstsMaxAgeSeconds}; includeSubDomains`;
-  }
+  // Opt-in only: HSTS binds the whole host (and maybe its subdomains) to HTTPS, the domain operator's decision.
+  if (config.securityHeaders.hsts) headers['Strict-Transport-Security'] = config.securityHeaders.hsts;
   return headers;
 }
 

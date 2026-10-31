@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from '../../apps/api/src/app.js';
+import { apiConfigFromEnv, ConfigError } from '../../apps/api/src/config.js';
 import { failingPool, SAME_ORIGIN } from './helpers.js';
 
 /**
@@ -10,18 +11,19 @@ import { failingPool, SAME_ORIGIN } from './helpers.js';
 interface WebProxyModule {
   proxy(request: unknown): Response;
   contentSecurityPolicy(nonce: string, options: { development: boolean; https: boolean }): string;
+  configuredHsts(raw?: string): string | null;
   MEDIA_CSP: string;
 }
 const PROXY_MODULE: string = '../../apps/web/proxy.ts';
 const NEXT_SERVER: string = 'next/server';
-const { proxy, contentSecurityPolicy, MEDIA_CSP } = (await import(PROXY_MODULE)) as WebProxyModule;
+const { proxy, contentSecurityPolicy, configuredHsts, MEDIA_CSP } = (await import(PROXY_MODULE)) as WebProxyModule;
 const { NextRequest } = (await import(NEXT_SERVER)) as { NextRequest: new (url: string, init?: { headers?: Record<string, string> }) => unknown };
 
 const API_HEADERS = ['content-security-policy', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy', 'cross-origin-resource-policy'];
 
-test('API: security headers on success, not-found and server-error responses; HSTS only for an https origin', async () => {
+test('API: security headers on success, not-found and server-error responses; no HSTS unless configured', async () => {
   const https = await createApp({ env: { PUBLIC_ORIGIN: 'https://hub.example.test' }, pool: failingPool(), logSink: () => undefined });
-  const http = await createApp({ logSink: () => undefined });
+  const pinned = await createApp({ env: { PUBLIC_ORIGIN: 'https://hub.example.test', TRUSTWORK_HSTS: 'max-age=63072000' }, logSink: () => undefined });
   try {
     const responses = [
       await https.fastify.inject({ method: 'GET', url: '/health' }),
@@ -31,18 +33,25 @@ test('API: security headers on success, not-found and server-error responses; HS
     assert.deepEqual(responses.map((r) => r.statusCode), [200, 404, 500]);
     for (const r of responses) {
       for (const name of API_HEADERS) assert.ok(r.headers[name], `${name} on ${r.statusCode}`);
-      assert.equal(r.headers['strict-transport-security'], 'max-age=31536000; includeSubDomains');
+      assert.equal(r.headers['strict-transport-security'], undefined, 'default: no HSTS even for an https origin (the domain operator decides)');
       assert.match(String(r.headers['content-security-policy']), /frame-ancestors 'none'/);
       assert.equal(r.headers['x-frame-options'], 'DENY');
       assert.equal(r.headers['referrer-policy'], 'no-referrer');
       assert.match(String(r.headers['permissions-policy']), /camera=\(\)/);
     }
-    const local = await http.fastify.inject({ method: 'GET', url: '/health' });
-    assert.equal(local.headers['strict-transport-security'], undefined, 'no HSTS on a plain-http development origin');
-    assert.ok(local.headers['content-security-policy']);
+    const configured = await pinned.fastify.inject({ method: 'GET', url: '/health' });
+    assert.equal(configured.headers['strict-transport-security'], 'max-age=63072000', 'configured: the exact value, no includeSubDomains or preload added');
   } finally {
     await https.close();
-    await http.close();
+    await pinned.close();
+  }
+});
+
+test('API: TRUSTWORK_HSTS must be a valid header value', () => {
+  assert.equal(apiConfigFromEnv({}).securityHeaders.hsts, null);
+  assert.equal(apiConfigFromEnv({ TRUSTWORK_HSTS: 'max-age=31536000; includeSubDomains; preload' }).securityHeaders.hsts, 'max-age=31536000; includeSubDomains; preload');
+  for (const bad of ['31536000', 'max-age=1; evil=1', 'max-age=abc', 'max-age=1\r\nSet-Cookie: x=1']) {
+    assert.throws(() => apiConfigFromEnv({ TRUSTWORK_HSTS: bad }), (e: unknown) => e instanceof ConfigError && /TRUSTWORK_HSTS/.test(e.message), bad);
   }
 });
 
@@ -68,6 +77,26 @@ test('web: every page gets a fresh nonce-based CSP that Next can read from the r
   assert.equal(first.headers.get('x-content-type-options'), 'nosniff');
   assert.equal(first.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
   assert.match(first.headers.get('permissions-policy') ?? '', /camera=\(\)/);
+  assert.equal(first.headers.get('strict-transport-security'), null, 'default: no HSTS (the hosted preview lives under a path of another domain)');
+});
+
+test('web: HSTS only when TRUSTWORK_HSTS is set, with exactly the configured value', () => {
+  const previous = process.env.TRUSTWORK_HSTS;
+  try {
+    process.env.TRUSTWORK_HSTS = 'max-age=86400';
+    const pinned = proxy(new NextRequest('http://internal:3000/', { headers: { 'x-forwarded-proto': 'https' } }));
+    assert.equal(pinned.headers.get('strict-transport-security'), 'max-age=86400', 'no includeSubDomains or preload added');
+    const redirect = proxy(new NextRequest('http://internal:3000/?lang=ru'));
+    assert.equal(redirect.headers.get('strict-transport-security'), 'max-age=86400');
+    process.env.TRUSTWORK_HSTS = 'max-age=1; evil';
+    assert.equal(proxy(new NextRequest('http://internal:3000/')).headers.get('strict-transport-security'), null, 'a malformed value is never sent');
+  } finally {
+    if (previous === undefined) delete process.env.TRUSTWORK_HSTS;
+    else process.env.TRUSTWORK_HSTS = previous;
+  }
+  assert.equal(configuredHsts(undefined), null);
+  assert.equal(configuredHsts(' max-age=31536000; includeSubDomains '), 'max-age=31536000; includeSubDomains');
+  assert.equal(configuredHsts('includeSubDomains'), null);
 });
 
 test('web: https requests add upgrade-insecure-requests; locale redirects carry the headers too; media is sandboxed', () => {

@@ -40,7 +40,12 @@ export interface ApiConfig {
   /** OpenTelemetry-compatible export (OTLP/HTTP JSON). `endpoint: null` means a no-op: nothing is buffered or sent. */
   telemetry: { endpoint: string | null; headers: Record<string, string>; serviceName: string; exportIntervalMs: number; traceSampleRatio: number };
   readiness: { timeoutMs: number; /** Directory with the migration files this build expects; null = discovered next to the sources. */ migrationsDir: string | null };
-  securityHeaders: { hstsMaxAgeSeconds: number };
+  /**
+   * Exact `Strict-Transport-Security` value from `TRUSTWORK_HSTS`, or null (default: no HSTS header). HSTS pins the
+   * whole host (and with `includeSubDomains` every subdomain) to HTTPS, which is the domain operator's decision: set
+   * it only when the app owns the whole host, never for an app served under a path of someone else's domain.
+   */
+  securityHeaders: { hsts: string | null };
 }
 export interface OidcClientConfig { clientId: string; clientSecret: string }
 export type LogLevelName = 'debug' | 'info' | 'warn' | 'error';
@@ -93,6 +98,11 @@ function isProxyAddress(entry: string): boolean {
   if (prefix === undefined) return true;
   const bits = Number(prefix);
   return Number.isInteger(bits) && bits >= 0 && bits <= (family === 4 ? 32 : 128) && /^\d+$/.test(prefix);
+}
+
+/** `max-age=<seconds>` optionally followed by `includeSubDomains` and/or `preload` (RFC 6797), nothing else. */
+export function isHstsValue(value: string): boolean {
+  return /^max-age=\d{1,10}(\s*;\s*(includeSubDomains|preload))*\s*;?$/i.test(value.trim());
 }
 
 /** `key1=value1,key2=value2` (OTEL_EXPORTER_OTLP_HEADERS format, values URL-encoded). */
@@ -153,7 +163,7 @@ const EnvSchema = z.object({
   OTEL_TRACES_SAMPLER_ARG: ratio(1),
   API_READINESS_TIMEOUT_MS: integer(2_000, { min: 100, max: 60_000 }),
   API_MIGRATIONS_DIR: optionalString,
-  API_HSTS_MAX_AGE_SECONDS: integer(31_536_000),
+  TRUSTWORK_HSTS: optionalString,
 });
 
 function hexKey(raw: string | undefined, name: string, issues: string[]): Buffer | null {
@@ -228,6 +238,7 @@ export function apiConfigFromEnv(env: NodeJS.ProcessEnv): ApiConfig {
   const telemetryHeaders = parseHeaderList(e.OTEL_EXPORTER_OTLP_HEADERS);
   if (telemetryHeaders === null) issues.push('OTEL_EXPORTER_OTLP_HEADERS must be a comma-separated list of key=value pairs');
   const pseudonymSecret = hexKey(e.API_LOG_PSEUDONYM_SECRET, 'API_LOG_PSEUDONYM_SECRET', issues);
+  if (e.TRUSTWORK_HSTS !== undefined && !isHstsValue(e.TRUSTWORK_HSTS)) issues.push('TRUSTWORK_HSTS must be a Strict-Transport-Security value: max-age=<seconds>[; includeSubDomains][; preload]');
   if (issues.length) throw new ConfigError(issues);
 
   const flowSecret = providedSecret ?? randomBytes(32);
@@ -290,7 +301,7 @@ export function apiConfigFromEnv(env: NodeJS.ProcessEnv): ApiConfig {
       traceSampleRatio: e.OTEL_TRACES_SAMPLER_ARG,
     },
     readiness: { timeoutMs: e.API_READINESS_TIMEOUT_MS, migrationsDir: e.API_MIGRATIONS_DIR ?? null },
-    securityHeaders: { hstsMaxAgeSeconds: e.API_HSTS_MAX_AGE_SECONDS },
+    securityHeaders: { hsts: e.TRUSTWORK_HSTS?.trim() ?? null },
   };
 }
 
