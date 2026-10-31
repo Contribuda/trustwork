@@ -21,6 +21,7 @@ import { AssistantModule, assistantMandateStore } from './modules/assistant/assi
 import { MODULE_KEYS } from './modules/assistant/mandate-store.js';
 import { AttestationModule } from './modules/jurisdiction/attestation/attestation.module.js';
 import type { ConfiguredGateMode } from './modules/jurisdiction/attestation/attestation.service.js';
+import { ConnectionsOAuthModule } from './modules/connections/oauth/oauth.module.js';
 
 @Controller()
 export class HealthController {
@@ -59,6 +60,8 @@ export class AppModule {
         AssistantModule.forRoot(ctx, identity),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FilesModule.forRoot(ctx, identity, { ...files, mandates: files.mandates ?? store.port(MODULE_KEYS.files) }),
+        // MCP-002: the hub authorization server for the MCP surfaces.
+        ConnectionsOAuthModule.forRoot(ctx, identity),
       ],
     };
   }
