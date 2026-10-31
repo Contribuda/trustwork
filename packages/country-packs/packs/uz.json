@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "code": "UZ",
   "name": {
     "en": "Uzbekistan",
@@ -34,6 +35,10 @@
       "example": "100000"
     }
   },
+  "timeZones": [
+    "Asia/Tashkent"
+  ],
+  "verificationLevel": "secondary",
   "registrationIdentifier": {
     "kind": "UZ-STIR",
     "label": {
@@ -52,6 +57,7 @@
       "url": "https://soliq.uz"
     },
     "verification": "secondary-sources; official format confirmation pending",
+    "verificationLevel": "secondary",
     "sources": [
       {
         "url": "https://lookuptax.com/docs/tax-identification-number/uzbekistan-tax-id-guide",
@@ -254,6 +260,7 @@
     "note": {
       "en": "Uzbekistan requires personal data of its citizens to be processed and stored on servers located in Uzbekistan (Law on Personal Data ZRU-547, art. 27-1 as amended in 2021). Local-law compliance is for local counsel; the engine only keeps storage per country possible."
     },
+    "verificationLevel": "pending",
     "sources": [
       {
         "url": "https://lex.uz/docs/4396428",
@@ -263,6 +270,434 @@
       }
     ]
   },
+  "facets": {
+    "registers": [
+      {
+        "id": "uz-unified-state-register",
+        "name": {
+          "en": "Unified State Register of Enterprises and Organizations (Statistics Agency)"
+        },
+        "url": "https://stat.uz/uz/",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "Statistics Agency register lookup (terms not reviewed)",
+          "Business registration front office new.birdarcha.uz (registration, not a lookup)"
+        ],
+        "sources": [
+          {
+            "url": "https://stat.uz/img/press-reliz-01_10_2024-eng_p88907.pdf",
+            "what": "Statistics Agency press release naming the Unified State Register of Enterprises and Organizations",
+            "accessed": "2026-10-31",
+            "verification": "Listed in search results; not opened"
+          },
+          {
+            "url": "https://stat.uz/uz/",
+            "what": "National Statistics Committee of the Republic of Uzbekistan (site title checked)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "A lead: the statistics register is reported to offer interactive lookups; its coverage of STIR, query terms and data licence are not checked. No live calls."
+      }
+    ],
+    "procurement": [
+      {
+        "type": "portal",
+        "id": "uz-state-procurement-portal",
+        "name": {
+          "en": "Special information portal for state procurement (xarid.uzex.uz)"
+        },
+        "url": "https://xarid.uzex.uz/",
+        "level": "national",
+        "openData": false,
+        "sources": [
+          {
+            "url": "https://xarid.uzex.uz/",
+            "what": "Special information portal for state procurement (Davlat xaridlari maxsus axborot portali), site title checked",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The portal itself was checked; open-data terms and any API were not reviewed, so openData stays false until they are."
+      }
+    ],
+    "tax": [
+      {
+        "type": "rate",
+        "id": "vat",
+        "taxKind": "vat",
+        "name": {
+          "en": "Value added tax (QQS)"
+        },
+        "standardRate": "12",
+        "reducedRates": [
+          {
+            "rate": "0",
+            "appliesTo": {
+              "en": "Export and equivalent operations listed in Tax Code chapter 36"
+            }
+          }
+        ],
+        "calculation": "rate",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/4674902",
+            "what": "Tax Code of the Republic of Uzbekistan (lex.uz, current edition): art. 258 VAT rate 12 percent (0 percent in the cases of chapter 36, exports); art. 47 invoices, as a rule issued electronically in the electronic invoice information system",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Registration and turnover-tax thresholds change often and are not recorded; registrationThreshold null means not recorded, not none."
+      },
+      {
+        "type": "e-invoicing",
+        "id": "e-invoicing",
+        "system": {
+          "en": "Electronic invoices (ESF) in the electronic invoice information system, exchanged through licensed operators and the roaming operator"
+        },
+        "mandatory": true,
+        "scope": [
+          "B2B",
+          "B2G"
+        ],
+        "signatureRequired": true,
+        "candidateAdapters": [
+          "an electronic invoice operator connected to the roaming operator (operator list not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/4674902",
+            "what": "Tax Code of the Republic of Uzbekistan (lex.uz, current edition): art. 258 VAT rate 12 percent (0 percent in the cases of chapter 36, exports); art. 47 invoices, as a rule issued electronically in the electronic invoice information system",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://lex.uz/docs/4386769",
+            "what": "Cabinet of Ministers Resolution No. 522 of 25.06.2019 and its Regulation on electronic invoices: exchange through operators and a roaming operator, every electronic invoice confirmed with an electronic digital signature (paras 4, 14 and 18)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Tax Code art. 47 and Resolution No. 522 checked on lex.uz. A seller that hands over a cash-register receipt need not issue an invoice (art. 47); invoices to natural persons are signed by the seller alone (Regulation para 18)."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "electronic-digital-signature",
+        "kind": "signature",
+        "name": {
+          "en": "Electronic digital signature (EDS) with a key certificate"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "Law No. ZRU-793 of 12.10.2022, art. 4: same effect as a handwritten signature on paper when the signature is valid, the certificate is in force and the signature is used for the certificate's purposes"
+        },
+        "candidateAdapters": [
+          "E-IMZO signing client (e-imzo.uz, not reachable when checked)"
+        ],
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6234904",
+            "what": "Law No. ZRU-793 of 12.10.2022 'On electronic digital signature' (in force 14.01.2023): art. 4, an electronic digital signature equals a handwritten signature when valid, its key certificate is in force and it is used for the certificate's purposes",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The law knows one electronic digital signature backed by a key certificate from a registration centre; it is recorded here as qualified because it carries handwritten-signature effect."
+      }
+    ],
+    "payments": [
+      {
+        "type": "scheme",
+        "id": "national-card-schemes",
+        "name": {
+          "en": "Uzcard and Humo national card payment systems"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "a licensed acquirer or payment organisation configured per hub"
+        ],
+        "sources": [
+          {
+            "url": "https://uzcard.uz/",
+            "what": "UZCARD payment system (site title checked)",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://humocard.uz/uz/",
+            "what": "HUMO national payment system (site title: HUMO milliy to'lov tizimi)",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://kun.uz/en/news/2024/01/26/integration-of-uzcard-and-humo-terminals-is-planned-to-be-completed-by-the-end-of-march-central-bank",
+            "what": "Central Bank on integrating Uzcard and Humo terminals",
+            "accessed": "2026-10-31",
+            "verification": "Secondary (news report)"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Operator sites and a news report; the Central Bank's own description was not reachable (cbu.uz refused the connection)."
+      },
+      {
+        "type": "scheme",
+        "id": "cbu-instant-payments",
+        "name": {
+          "en": "Central Bank of Uzbekistan instant payment system"
+        },
+        "rails": [
+          "instant-credit-transfer"
+        ],
+        "sources": [
+          {
+            "url": "https://cbu.uz/en/payment-systems/tariffs-for-payment-services",
+            "what": "Central Bank tariffs listing the Central Bank instant payment system",
+            "accessed": "2026-10-31",
+            "verification": "Listed in search results; not opened (connection refused)"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "A lead from the Central Bank tariff page as quoted in search results; not opened."
+      }
+    ],
+    "calendar": [
+      {
+        "type": "holiday",
+        "id": "new-year",
+        "name": {
+          "en": "New Year"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "womens-day",
+        "name": {
+          "en": "Women's Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "navruz",
+        "name": {
+          "en": "Navruz"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 21
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "remembrance-day",
+        "name": {
+          "en": "Day of Remembrance and Honour"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 9
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "independence-day",
+        "name": {
+          "en": "Independence Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 9,
+          "day": 1
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "teachers-day",
+        "name": {
+          "en": "Teachers' and Mentors' Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 10,
+          "day": 1
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "constitution-day",
+        "name": {
+          "en": "Constitution Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 8
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "eid-al-fitr",
+        "name": {
+          "en": "Ramazan Hayit (Eid al-Fitr), first day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "dates",
+          "dates": [
+            "2026-03-20"
+          ]
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://yep.uz/en/2026/02/ramadan-eid-al-fitr-uzbekistan/",
+            "what": "Ramazan Hayit 2026 on 20 March",
+            "accessed": "2026-10-31",
+            "verification": "Secondary (news report)"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Labour Code art. 208 makes the first day a holiday; the 2026 date comes from news reports, pending the official announcement. Later years are added when announced."
+      },
+      {
+        "type": "holiday",
+        "id": "eid-al-adha",
+        "name": {
+          "en": "Qurbon Hayit (Eid al-Adha), first day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "dates",
+          "dates": [
+            "2026-05-27"
+          ]
+        },
+        "observed": "next-weekday",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/6257288",
+            "what": "Labour Code of the Republic of Uzbekistan (28.10.2022): art. 208 non-working holidays; a weekly rest day that falls on a holiday moves to the next working day after the holiday",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://samarqand.davaktiv.uz/en/news/Qurbonhayiti-27-05",
+            "what": "Qurbon Hayit on 27 May 2026 (regional office of the State Assets Management Agency)",
+            "accessed": "2026-10-31",
+            "verification": "Listed in search results; not opened"
+          },
+          {
+            "url": "https://kun.uz/en/news/2025/12/25/president-signs-decree-approving-additional-days-off-and-holiday-shifts-for-2026",
+            "what": "Presidential decree on additional days off and shifts for 2026",
+            "accessed": "2026-10-31",
+            "verification": "Secondary (news report)"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Labour Code art. 208 makes the first day a holiday; the 2026 date (Muslim Board announcement) is taken from reports, pending the official text. Additional days off decreed for 2026 are not recorded as holidays."
+      }
+    ]
+  },
+  "notes": [
+    "CTRY-003, 2026-10-31: v2 facts for registers, procurement, VAT, e-invoicing, e-signature, payments and holidays. Facts at secondary or candidate level are labelled and await official confirmation.",
+    "The weekly rest-day rule of Labour Code art. 208 is recorded as next-weekday (a Saturday or Sunday holiday moves to Monday); six-day-week employers move only the Sunday. Working week (five or six days, art. 182) is employer-specific and not recorded.",
+    "No verification adapter exists for Uzbek registers; candidates are leads only and no register is called live."
+  ],
   "sources": [
     {
       "url": "https://en.wikipedia.org/wiki/ISO_3166-2:UZ",

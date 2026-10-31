@@ -60,10 +60,10 @@ Every fact in a pack cites a source and states how far it is verified ([Country 
 
 | Code | Country | Status | Package | Notes |
 |---|---|---|---|---|
-| `UZ` | Uzbekistan | Live (pack v1) | INTL-UZ; v2 facets CTRY-003 | Existing example |
-| `GE` | Georgia | Live (pack v1) | INTL-GE; v2 facets CTRY-003 | Existing example |
-| `AM` | Armenia | Live (pack v1) | INTL-AM; v2 facets CTRY-003 | Existing example |
-| `AZ` | Azerbaijan | Live (pack v1) | INTL-AZ; v2 facets CTRY-003 | Existing example |
+| `UZ` | Uzbekistan | Live (pack v2) | INTL-UZ; v2 facets CTRY-003 | Existing example |
+| `GE` | Georgia | Live (pack v2) | INTL-GE; v2 facets CTRY-003 | Existing example |
+| `AM` | Armenia | Live (pack v2) | INTL-AM; v2 facets CTRY-003 | Existing example |
+| `AZ` | Azerbaijan | Live (pack v2) | INTL-AZ; v2 facets CTRY-003 | Existing example |
 | `US` | United States | Live (pack v2, English) | INTL-US | The reference hub and the model v2 pack: every state, DC and the territories; California and San Diego County in depth; Spanish is offered (LANG-ES), English stays the default |
 | `CA` | Canada | Planned | CTRY-CA | English and French |
 | `MX` | Mexico | Planned | CTRY-MX | |

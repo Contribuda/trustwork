@@ -1,58 +1,764 @@
 {
+  "schemaVersion": 2,
   "code": "GE",
-  "name": { "en": "Georgia", "ka": "საქართველო", "ru": "Грузия" },
+  "name": {
+    "en": "Georgia",
+    "ka": "საქართველო",
+    "ru": "Грузия"
+  },
   "enabled": true,
   "status": "complete",
-  "locales": ["ka", "en", "ru"],
+  "locales": [
+    "ka",
+    "en",
+    "ru"
+  ],
   "defaultLocale": "ka",
-  "currency": { "code": "GEL", "minorUnitDigits": 2, "displayFractionDigits": 2, "symbol": "₾" },
-  "secondaryCurrencies": ["USD"],
+  "currency": {
+    "code": "GEL",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 2,
+    "symbol": "₾"
+  },
+  "secondaryCurrencies": [
+    "USD"
+  ],
   "formats": {
     "timeZone": "Asia/Tbilisi",
-    "phone": { "callingCode": "+995", "nationalLength": 9, "example": "+995 32 200 00 00" },
-    "postalCode": { "pattern": "^[0-9]{4}$", "example": "0108" }
+    "phone": {
+      "callingCode": "+995",
+      "nationalLength": 9,
+      "example": "+995 32 200 00 00"
+    },
+    "postalCode": {
+      "pattern": "^[0-9]{4}$",
+      "example": "0108"
+    }
   },
+  "timeZones": [
+    "Asia/Tbilisi"
+  ],
+  "verificationLevel": "secondary",
   "registrationIdentifier": {
     "kind": "GE-IDC",
-    "label": { "en": "Identification code", "ka": "საიდენტიფიკაციო კოდი", "ru": "Идентификационный код" },
+    "label": {
+      "en": "Identification code",
+      "ka": "საიდენტიფიკაციო კოდი",
+      "ru": "Идентификационный код"
+    },
     "pattern": "^[0-9]{9}$",
     "example": "405103034",
-    "issuer": { "name": { "en": "National Agency of Public Registry (NAPR)", "ka": "საჯარო რეესტრის ეროვნული სააგენტო" }, "url": "https://napr.gov.ge" },
+    "issuer": {
+      "name": {
+        "en": "National Agency of Public Registry (NAPR)",
+        "ka": "საჯარო რეესტრის ეროვნული სააგენტო"
+      },
+      "url": "https://napr.gov.ge"
+    },
     "verification": "secondary-sources; official format confirmation pending",
+    "verificationLevel": "secondary",
     "sources": [
       {
         "url": "https://lookuptax.com/docs/tax-identification-number/georgia-tax-id-guide",
         "what": "Legal-entity identification code is 9 digits, assigned by the Public Registry at registration and used as the TIN",
         "accessed": "2026-10-29"
       },
-      { "url": "https://org-id.guide/list/GE-NAPR", "what": "NAPR as the company register (org-id list GE-NAPR)", "accessed": "2026-10-29" }
+      {
+        "url": "https://org-id.guide/list/GE-NAPR",
+        "what": "NAPR as the company register (org-id list GE-NAPR)",
+        "accessed": "2026-10-29"
+      }
     ]
   },
   "legalEntityTypes": [
-    { "code": "LLC", "name": { "en": "Limited liability company (შპს)", "ka": "შეზღუდული პასუხისმგებლობის საზოგადოება (შპს)", "ru": "ООО (შპს)" } },
-    { "code": "JSC", "name": { "en": "Joint-stock company (სს)", "ka": "სააქციო საზოგადოება (სს)", "ru": "АО (სს)" } },
-    { "code": "IE", "name": { "en": "Individual entrepreneur", "ka": "ინდივიდუალური მეწარმე", "ru": "Индивидуальный предприниматель" } }
+    {
+      "code": "LLC",
+      "name": {
+        "en": "Limited liability company (შპს)",
+        "ka": "შეზღუდული პასუხისმგებლობის საზოგადოება (შპს)",
+        "ru": "ООО (შპს)"
+      }
+    },
+    {
+      "code": "JSC",
+      "name": {
+        "en": "Joint-stock company (სს)",
+        "ka": "სააქციო საზოგადოება (სს)",
+        "ru": "АО (სს)"
+      }
+    },
+    {
+      "code": "IE",
+      "name": {
+        "en": "Individual entrepreneur",
+        "ka": "ინდივიდუალური მეწარმე",
+        "ru": "Индивидуальный предприниматель"
+      }
+    }
   ],
   "regions": [
-    { "code": "GE-TB", "name": { "en": "Tbilisi", "ka": "თბილისი", "ru": "Тбилиси" }, "kind": "city" },
-    { "code": "GE-AJ", "name": { "en": "Adjara", "ka": "აჭარა", "ru": "Аджария" }, "kind": "autonomous-republic" },
-    { "code": "GE-GU", "name": { "en": "Guria", "ka": "გურია", "ru": "Гурия" }, "kind": "region" },
-    { "code": "GE-IM", "name": { "en": "Imereti", "ka": "იმერეთი", "ru": "Имеретия" }, "kind": "region" },
-    { "code": "GE-KA", "name": { "en": "Kakheti", "ka": "კახეთი", "ru": "Кахетия" }, "kind": "region" },
-    { "code": "GE-KK", "name": { "en": "Kvemo Kartli", "ka": "ქვემო ქართლი", "ru": "Квемо-Картли" }, "kind": "region" },
-    { "code": "GE-MM", "name": { "en": "Mtskheta-Mtianeti", "ka": "მცხეთა-მთიანეთი", "ru": "Мцхета-Мтианети" }, "kind": "region" },
-    { "code": "GE-RL", "name": { "en": "Racha-Lechkhumi and Kvemo Svaneti", "ka": "რაჭა-ლეჩხუმი და ქვემო სვანეთი", "ru": "Рача-Лечхуми и Квемо-Сванети" }, "kind": "region" },
-    { "code": "GE-SZ", "name": { "en": "Samegrelo-Zemo Svaneti", "ka": "სამეგრელო-ზემო სვანეთი", "ru": "Самегрело-Земо-Сванети" }, "kind": "region" },
-    { "code": "GE-SJ", "name": { "en": "Samtskhe-Javakheti", "ka": "სამცხე-ჯავახეთი", "ru": "Самцхе-Джавахети" }, "kind": "region" },
-    { "code": "GE-SK", "name": { "en": "Shida Kartli", "ka": "შიდა ქართლი", "ru": "Шида-Картли" }, "kind": "region" },
-    { "code": "GE-AB", "name": { "en": "Abkhazia", "ka": "აფხაზეთი", "ru": "Абхазия" }, "kind": "autonomous-republic" }
+    {
+      "code": "GE-TB",
+      "name": {
+        "en": "Tbilisi",
+        "ka": "თბილისი",
+        "ru": "Тбилиси"
+      },
+      "kind": "city"
+    },
+    {
+      "code": "GE-AJ",
+      "name": {
+        "en": "Adjara",
+        "ka": "აჭარა",
+        "ru": "Аджария"
+      },
+      "kind": "autonomous-republic"
+    },
+    {
+      "code": "GE-GU",
+      "name": {
+        "en": "Guria",
+        "ka": "გურია",
+        "ru": "Гурия"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-IM",
+      "name": {
+        "en": "Imereti",
+        "ka": "იმერეთი",
+        "ru": "Имеретия"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-KA",
+      "name": {
+        "en": "Kakheti",
+        "ka": "კახეთი",
+        "ru": "Кахетия"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-KK",
+      "name": {
+        "en": "Kvemo Kartli",
+        "ka": "ქვემო ქართლი",
+        "ru": "Квемо-Картли"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-MM",
+      "name": {
+        "en": "Mtskheta-Mtianeti",
+        "ka": "მცხეთა-მთიანეთი",
+        "ru": "Мцхета-Мтианети"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-RL",
+      "name": {
+        "en": "Racha-Lechkhumi and Kvemo Svaneti",
+        "ka": "რაჭა-ლეჩხუმი და ქვემო სვანეთი",
+        "ru": "Рача-Лечхуми и Квемо-Сванети"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-SZ",
+      "name": {
+        "en": "Samegrelo-Zemo Svaneti",
+        "ka": "სამეგრელო-ზემო სვანეთი",
+        "ru": "Самегрело-Земо-Сванети"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-SJ",
+      "name": {
+        "en": "Samtskhe-Javakheti",
+        "ka": "სამცხე-ჯავახეთი",
+        "ru": "Самцхе-Джавахети"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-SK",
+      "name": {
+        "en": "Shida Kartli",
+        "ka": "შიდა ქართლი",
+        "ru": "Шида-Картли"
+      },
+      "kind": "region"
+    },
+    {
+      "code": "GE-AB",
+      "name": {
+        "en": "Abkhazia",
+        "ka": "აფხაზეთი",
+        "ru": "Абхазия"
+      },
+      "kind": "autonomous-republic"
+    }
   ],
-  "address": { "lines": ["street", "city", "region", "postalCode"], "cityFirst": false },
-  "legalTemplates": { "terms": "terms", "privacy": "privacy", "sanctions": "sanctions-and-export-controls" },
+  "address": {
+    "lines": [
+      "street",
+      "city",
+      "region",
+      "postalCode"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
   "dataResidency": {
     "required": false,
-    "note": { "en": "Georgia's Law on Personal Data Protection (2023) regulates cross-border transfers but does not require local storage. Local-law compliance is for local counsel." },
-    "sources": [{ "url": "https://matsne.gov.ge/en/document/view/5827307", "what": "Law of Georgia on Personal Data Protection (2023)", "accessed": "2026-10-29", "verification": "pending counsel" }]
+    "note": {
+      "en": "Georgia's Law on Personal Data Protection (2023) regulates cross-border transfers but does not require local storage. Local-law compliance is for local counsel."
+    },
+    "verificationLevel": "pending",
+    "sources": [
+      {
+        "url": "https://matsne.gov.ge/en/document/view/5827307",
+        "what": "Law of Georgia on Personal Data Protection (2023)",
+        "accessed": "2026-10-29",
+        "verification": "pending counsel"
+      }
+    ]
   },
-  "sources": [{ "url": "https://en.wikipedia.org/wiki/ISO_3166-2:GE", "what": "ISO 3166-2:GE subdivision codes (12 entries)", "accessed": "2026-10-29" }]
+  "facets": {
+    "registers": [
+      {
+        "id": "napr-entrepreneurs-register",
+        "name": {
+          "en": "Registry of Entrepreneurs and Non-entrepreneurial (Non-commercial) Legal Entities (NAPR)"
+        },
+        "url": "https://enreg.reestri.gov.ge/main.php?m=new_index",
+        "query": "manual",
+        "covers": [
+          "GE-IDC"
+        ],
+        "candidateAdapters": [
+          "NAPR registry search (no API or data licence reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://enreg.reestri.gov.ge/main.php?m=new_index",
+            "what": "Registry of Entrepreneurs and Non-entrepreneurial (Non-commercial) Legal Entities, National Agency of Public Registry (site title checked)",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://org-id.guide/list/GE-NAPR",
+            "what": "NAPR as the company register (org-id list GE-NAPR)",
+            "accessed": "2026-10-31",
+            "verification": "Secondary"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "The register site was checked; that it answers for the 9-digit identification code rests on secondary sources. Search terms, any API and the data licence were not reviewed. No live calls."
+      }
+    ],
+    "procurement": [
+      {
+        "type": "portal",
+        "id": "ge-unified-electronic-procurement",
+        "name": {
+          "en": "Unified electronic state procurement system (State Procurement Agency)"
+        },
+        "url": "https://tenders.procurement.gov.ge/login.php",
+        "level": "national",
+        "openData": false,
+        "sources": [
+          {
+            "url": "https://tenders.procurement.gov.ge/login.php",
+            "what": "State Procurement Agency electronic procurement system (site title checked)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The portal itself was checked; open-data terms and any API were not reviewed, so openData stays false until they are."
+      }
+    ],
+    "tax": [
+      {
+        "type": "rate",
+        "id": "vat",
+        "taxKind": "vat",
+        "name": {
+          "en": "Value added tax (VAT)"
+        },
+        "standardRate": "18",
+        "registrationThreshold": {
+          "minorUnits": "10000000",
+          "currency": "GEL"
+        },
+        "calculation": "rate",
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1043717?page=2",
+            "what": "Tax Code of Georgia (Matsne, English consolidated text): art. 165 VAT registration from GEL 100 000 of taxable supplies in 12 months; art. 166 VAT rate 18%; art. 180 a tax invoice is issued in written or electronic form",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "e-invoicing",
+        "id": "tax-invoice",
+        "system": {
+          "en": "Tax invoice of a VAT payer (written or electronic form)"
+        },
+        "mandatory": false,
+        "scope": [
+          "B2B"
+        ],
+        "signatureRequired": false,
+        "candidateAdapters": [
+          "Revenue Service e-services portal (eservices.rs.ge; terms not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1043717?page=2",
+            "what": "Tax Code of Georgia (Matsne, English consolidated text): art. 165 VAT registration from GEL 100 000 of taxable supplies in 12 months; art. 166 VAT rate 18%; art. 180 a tax invoice is issued in written or electronic form",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://www.rs.ge/",
+            "what": "Revenue Service of Georgia (site title checked)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Tax Code art. 180 checked: a VAT payer issues a tax invoice to another taxable person, in written or electronic form; forms and procedures are set by the Minister of Finance, whose order was not reviewed and may require electronic issuance through the Revenue Service portal."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "qualified-electronic-signature",
+        "kind": "signature",
+        "name": {
+          "en": "Qualified electronic signature"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "Law of Georgia on Electronic Documents and Electronic Trust Services (2017), art. 3(1): same legal effect as a handwritten signature"
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/3654557?page=2",
+            "what": "Law of Georgia on Electronic Documents and Electronic Trust Services (2017), art. 3(1): a qualified electronic signature has the same legal effect as a handwritten signature",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Article 3(1) read in the Matsne English text (initial 2017 version shown); later consolidations were not compared."
+      }
+    ],
+    "payments": [
+      {
+        "type": "scheme",
+        "id": "cards",
+        "name": {
+          "en": "Payment cards (card payment systems overseen by the National Bank of Georgia)"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "a licensed card acquirer configured per hub"
+        ],
+        "sources": [
+          {
+            "url": "https://nbg.gov.ge/en/page/payment-systems",
+            "what": "National Bank of Georgia, payment systems: RTGS System, Card Payment Systems, Instant Payment System Project",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "scheme",
+        "id": "rtgs",
+        "name": {
+          "en": "Interbank credit transfers settled in the National Bank RTGS System"
+        },
+        "rails": [
+          "credit-transfer"
+        ],
+        "sources": [
+          {
+            "url": "https://nbg.gov.ge/en/page/payment-systems",
+            "what": "National Bank of Georgia, payment systems: RTGS System, Card Payment Systems, Instant Payment System Project",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The National Bank lists an Instant Payment System as a project; it is not recorded as live."
+      }
+    ],
+    "calendar": [
+      {
+        "type": "holiday",
+        "id": "new-year",
+        "name": {
+          "en": "New Year"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "new-year-2",
+        "name": {
+          "en": "New Year (second day)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 2
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "christmas",
+        "name": {
+          "en": "Christmas (7 January)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 7
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "epiphany",
+        "name": {
+          "en": "Epiphany"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 19
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "mothers-day",
+        "name": {
+          "en": "Mother's Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 3
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "womens-day",
+        "name": {
+          "en": "International Women's Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "national-unity-day",
+        "name": {
+          "en": "Day of the Restoration of Independence and National Unity"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 4,
+          "day": 9
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "victory-day",
+        "name": {
+          "en": "Victory Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 9
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "st-andrew-day",
+        "name": {
+          "en": "Day of St. Andrew the Apostle"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 12
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "family-day",
+        "name": {
+          "en": "Family Purity and Respect for Parents Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 17
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "independence-day",
+        "name": {
+          "en": "Independence Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 26
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "mariamoba",
+        "name": {
+          "en": "Assumption of the Virgin Mary (Mariamoba)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 8,
+          "day": 28
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "svetitskhovloba",
+        "name": {
+          "en": "Mtskhetoba (Svetitskhovloba)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 10,
+          "day": 14
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "st-george-day",
+        "name": {
+          "en": "St. George's Day (Giorgoba)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 23
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "easter",
+        "name": {
+          "en": "Easter holidays (Good Friday, Holy Saturday, Easter Sunday, Easter Monday)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "dates",
+          "dates": [
+            "2026-04-10",
+            "2026-04-11",
+            "2026-04-12",
+            "2026-04-13"
+          ]
+        },
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/1155567?page=2",
+            "what": "Organic Law of Georgia - Labour Code of Georgia (Matsne, consolidated to 16/04/2025), art. 30 holidays",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://pbservices.ge/blog/when-are-the-holidays-in-georgia-in-2026",
+            "what": "Georgian holidays in 2026: Easter holidays 10-13 April",
+            "accessed": "2026-10-31",
+            "verification": "Secondary (business services blog)"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Labour Code art. 30(1)(g) lists the four Easter days as a movable feast; the 2026 dates come from a secondary calendar, pending the official date. Later years are added when confirmed."
+      }
+    ]
+  },
+  "notes": [
+    "CTRY-003, 2026-10-31: v2 facts for the company register, procurement, VAT, tax invoices, e-signature, payments and holidays. Facts at pending, secondary or candidate level are labelled and await confirmation.",
+    "The Labour Code sets no rule for a holiday on a weekend (observed: none); the Government may add days off by ordinance (art. 30(3)). The working week is not set by law (40 hours, art. 24) and is not recorded.",
+    "No verification adapter exists for Georgian registers; candidates are leads only and no register is called live."
+  ],
+  "sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/ISO_3166-2:GE",
+      "what": "ISO 3166-2:GE subdivision codes (12 entries)",
+      "accessed": "2026-10-29"
+    }
+  ]
 }

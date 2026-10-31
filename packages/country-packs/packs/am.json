@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "code": "AM",
   "name": {
     "en": "Armenia",
@@ -34,6 +35,10 @@
       "example": "0010"
     }
   },
+  "timeZones": [
+    "Asia/Yerevan"
+  ],
+  "verificationLevel": "secondary",
   "registrationIdentifier": {
     "kind": "AM-TIN",
     "label": {
@@ -51,6 +56,7 @@
       "url": "https://src.am"
     },
     "verification": "secondary-sources plus OECD TIN sheet; official format confirmation pending",
+    "verificationLevel": "secondary",
     "sources": [
       {
         "url": "https://search.oecd.org/tax/automatic-exchange/crs-implementation-and-assistance/tax-identification-numbers/Armenia-TIN.pdf",
@@ -218,6 +224,7 @@
     "note": {
       "en": "Armenia's Law on Protection of Personal Data (2015) regulates transfers abroad but does not require local storage. Local-law compliance is for local counsel."
     },
+    "verificationLevel": "pending",
     "sources": [
       {
         "url": "https://www.arlis.am/DocumentView.aspx?docid=98338",
@@ -227,6 +234,473 @@
       }
     ]
   },
+  "facets": {
+    "registers": [
+      {
+        "id": "am-state-register-legal-entities",
+        "name": {
+          "en": "State Register of legal entities (Ministry of Justice e-register)"
+        },
+        "url": "https://e-register.moj.am/en/",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "Ministry of Justice e-register search (terms not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://e-register.moj.am/en/",
+            "what": "Ministry of Justice digital services platform for the justice sector (www.e-register.am redirects here; site title checked)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "A lead: the State Register of legal entities is reached through the Ministry of Justice platform; what it lists, its identifiers and terms were not reviewed. It is not the tax register (TIN). No live calls."
+      }
+    ],
+    "procurement": [
+      {
+        "type": "portal",
+        "id": "armeps",
+        "name": {
+          "en": "ARMEPS electronic public procurement system"
+        },
+        "url": "https://www.armeps.am/epps/home.do",
+        "level": "national",
+        "openData": false,
+        "sources": [
+          {
+            "url": "https://www.armeps.am/epps/home.do",
+            "what": "ARMEPS electronic procurement system (site title checked)",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The portal itself was checked; open-data terms and any API were not reviewed, so openData stays false until they are."
+      }
+    ],
+    "tax": [
+      {
+        "type": "rate",
+        "id": "vat",
+        "taxKind": "vat",
+        "name": {
+          "en": "Value added tax (VAT)"
+        },
+        "standardRate": "20",
+        "calculation": "rate",
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/145780",
+            "what": "Tax Code of the Republic of Armenia (HO-165-N, ARLIS) with its English translation PDF: art. 63 VAT rate 20%; art. 56(5) settlement documents issued in electronic form; art. 66 VAT payers issue tax invoices; art. 68 buyers confirm tax invoices by electronic signature",
+            "accessed": "2026-10-31",
+            "verification": "English translation reflects amendments to 2018; the current consolidated Armenian text was not compared"
+          },
+          {
+            "url": "https://taxsummaries.pwc.com/armenia/corporate/other-taxes",
+            "what": "PwC worldwide tax summaries, Armenia: VAT at 20%",
+            "accessed": "2026-10-31",
+            "verification": "Secondary; listed in search results, not opened"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Art. 63 read in the ARLIS English translation (amendments to 2018); pending confirmation against the current consolidated Code. The VAT threshold has changed several times and is not recorded (null means not recorded)."
+      },
+      {
+        "type": "e-invoicing",
+        "id": "e-invoicing",
+        "system": {
+          "en": "Electronic tax invoices of VAT payers, confirmed by the buyer with an electronic signature"
+        },
+        "mandatory": true,
+        "scope": [
+          "B2B"
+        ],
+        "signatureRequired": true,
+        "candidateAdapters": [
+          "State Revenue Committee e-invoicing system (www.e-invoicing.am, not reachable when checked)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/145780",
+            "what": "Tax Code of the Republic of Armenia (HO-165-N, ARLIS) with its English translation PDF: art. 63 VAT rate 20%; art. 56(5) settlement documents issued in electronic form; art. 66 VAT payers issue tax invoices; art. 68 buyers confirm tax invoices by electronic signature",
+            "accessed": "2026-10-31",
+            "verification": "English translation reflects amendments to 2018; the current consolidated Armenian text was not compared"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Arts. 56, 66 and 68 read in the ARLIS English translation (amendments to 2018); pending confirmation against the current consolidated Code and the State Revenue Committee system."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "national-e-signature",
+        "kind": "signature-and-identity",
+        "name": {
+          "en": "Electronic signature with the national ID card or Mobile ID (EKENG)"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "Described by EKENG as the digital equivalent of a handwritten signature; statutory basis to be confirmed"
+        },
+        "candidateAdapters": [
+          "EKENG ID card or Mobile ID signing (terms not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.ekeng.am/en/sub/digital_signature",
+            "what": "EKENG (e-Governance infrastructure implementation agency): the digital signature serves as the digital equivalent of a handwritten signature; Armenian ID cards use RSA",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://www.ekeng.am/en/",
+            "what": "EKENG: e-signature with a chip ID card and card reader, or with Mobile ID from a mobile operator",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Described by the state e-governance agency; the Law on Electronic Document and Electronic Digital Signature was not opened, pending confirmation of the legal basis and strength."
+      }
+    ],
+    "payments": [
+      {
+        "type": "scheme",
+        "id": "arca",
+        "name": {
+          "en": "ArCa national card payment system (Armenian Card CJSC)"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "a licensed card acquirer configured per hub"
+        ],
+        "sources": [
+          {
+            "url": "https://old.cba.am/EN/sitepages/pspspaymentcardsystems.aspx",
+            "what": "Central Bank of Armenia, payment card systems: the ArCa system introduced by Armenian banks and the Central Bank in 2001, owned and operated by Armenian Card CJSC, final settlement through participant banks' accounts with the Central Bank",
+            "accessed": "2026-10-31",
+            "verification": "Central Bank page (older site); date of last update not shown"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Read on the Central Bank's older site; current details may differ."
+      },
+      {
+        "type": "scheme",
+        "id": "arcapay",
+        "name": {
+          "en": "ArcaPay instant money transfers"
+        },
+        "rails": [
+          "instant-credit-transfer"
+        ],
+        "sources": [
+          {
+            "url": "https://www.araratbank.am/en/news/2025/10/03/araratbank-joins-arcaqr/767",
+            "what": "Bank news on ArCa's ArcaPay instant transfers and the ArcaQR national QR solution",
+            "accessed": "2026-10-31",
+            "verification": "Listed in search results; not opened"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "A lead from a bank's news item; not opened and not confirmed by the Central Bank."
+      }
+    ],
+    "calendar": [
+      {
+        "type": "holiday",
+        "id": "new-year-eve",
+        "name": {
+          "en": "New Year (31 December)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 31
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "new-year",
+        "name": {
+          "en": "New Year"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "new-year-2",
+        "name": {
+          "en": "New Year (second day)"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 2
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "christmas",
+        "name": {
+          "en": "Holy Nativity and Theophany"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 6
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "fallen-defenders-day",
+        "name": {
+          "en": "Day of Remembrance of Those Who Died Defending the Homeland"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 27
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "army-day",
+        "name": {
+          "en": "Army Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 28
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "womens-day",
+        "name": {
+          "en": "International Women's Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "genocide-remembrance-day",
+        "name": {
+          "en": "Armenian Genocide Remembrance Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 4,
+          "day": 24
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "labour-day",
+        "name": {
+          "en": "Labour Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 1
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "victory-day",
+        "name": {
+          "en": "Victory and Peace Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 9
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "republic-day",
+        "name": {
+          "en": "Republic Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 28
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "constitution-day",
+        "name": {
+          "en": "Constitution Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 7,
+          "day": 5
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "holiday",
+        "id": "independence-day",
+        "name": {
+          "en": "Independence Day"
+        },
+        "holiday": "public",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 9,
+          "day": 21
+        },
+        "sources": [
+          {
+            "url": "https://www.arlis.am/hy/acts/228539",
+            "what": "Law HO-200 'On holidays and memorial days of the Republic of Armenia', official incorporation in force from 24.07.2026 (after HO-345-N of 03.07.2026): non-working days",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official"
+      }
+    ]
+  },
+  "notes": [
+    "CTRY-003, 2026-10-31: v2 facts for procurement, VAT, e-invoicing, e-signature, payments and holidays. The Tax Code facts rest on the ARLIS English translation (to 2018) and stay secondary until checked against the current consolidated Armenian text.",
+    "Holidays: the thirteen non-working days of Law HO-200 as in force from 24.07.2026; memorial days that are working days are not recorded. Weekend rules and Government-declared extra days off (art. 39) are not recorded.",
+    "No verification adapter exists for Armenian registers; candidates are leads only and no register is called live."
+  ],
   "sources": [
     {
       "url": "https://en.wikipedia.org/wiki/ISO_3166-2:AM",
