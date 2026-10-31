@@ -37,6 +37,13 @@ for (const id of specIds) if (!traceIds.includes(id)) errors.push(`Missing requi
 for (const id of traceIds) if (!specIds.includes(id)) errors.push(`Unknown requirement trace ${id}`);
 for (const row of trace.requirements) for (const id of row.tasks) if (!packageIds.has(id)) errors.push(`Trace ${row.id}: unknown work package ${id}`);
 
+// Documentation is English only (owner rule, 2026-10-31): Russian is one interface language and lives in locale files and
+// the brand overlay, never in Markdown or plain-text docs.
+for (const file of files.filter((p) => p.endsWith('.md') || p.endsWith('.txt'))) {
+  const lines = readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, i) => { if (/[\u0400-\u04FF]/.test(line)) errors.push(`Cyrillic text in documentation: ${relative(root, file)}:${i + 1} (docs are English only; quote the English UI label and its locale key)`); });
+}
+
 for (const p of files.filter((f) => f.endsWith('.json'))) {
   try { JSON.parse(readFileSync(p, 'utf8')); } catch { errors.push(`Invalid JSON ${relative(root, p)}`); }
 }
