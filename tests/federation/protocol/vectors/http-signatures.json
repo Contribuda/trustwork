@@ -1,0 +1,86 @@
+{
+  "protocol": "trustwork-mesh/1",
+  "algorithm": "RFC 9421 HTTP Message Signatures, label \"tw\", alg \"ed25519\", tag \"trustwork-mesh/1\"; Content-Digest per RFC 9530 (sha-256)",
+  "vectors": [
+    {
+      "name": "inbox-post",
+      "description": "The city node pushes the quote version to the national node inbox.",
+      "publicKey": "_FHNjmIYoaONpH7QAjDwWAgW7RO6MwOsXeuRFUiQgCU",
+      "message": {
+        "method": "POST",
+        "targetUri": "https://build.example.org/federation/v1/inbox",
+        "headers": {
+          "Content-Type": "application/json",
+          "Content-Digest": "sha-256=:7c51udEDFrpXxp1kuV3BxyzACX9aZyI36LasxRyJC94=:"
+        },
+        "body": "{\"deliveryId\":\"dlv-0001\",\"item\":{\"envelope\":{\"agentGenerated\":false,\"audience\":{\"kind\":\"parties\",\"nodes\":[\"build.example.org\",\"austin.example.org\"],\"parties\":[\"trustwork://build.example.org/company/co-national-builder\",\"trustwork://austin.example.org/company/co-austin-glazing\"]},\"consent\":null,\"dataClass\":\"deal_data\",\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"55676157de06bdb8c90394ecfc7df090d15aa57d8bdbe75f9dc98cb04478210e\"},\"homeNode\":\"austin.example.org\",\"id\":\"trustwork://austin.example.org/quote_version/qv-1\",\"issuedAt\":\"2026-11-02T08:00:00.000Z\",\"kind\":\"quote_version\",\"payload\":{\"currency\":\"USD\",\"rfqVersion\":{\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"},\"id\":\"rfqv-2\",\"version\":2},\"totalMinorUnits\":\"1250000\",\"validUntil\":\"2026-12-01T00:00:00.000Z\"},\"projection\":\"shared_party\",\"protocol\":\"trustwork-mesh/1\",\"revision\":1,\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"a1\",\"value\":\"nRODRMwykaQQuKDsj9TUFaWkM8OmY9cZuMNiZTX2oDpancHXtyvgI5BS1TCsVfkUuP3bYTlWa0m30n1jV265BQ\"},\"subject\":\"trustwork://austin.example.org/company/co-austin-glazing\",\"syndication\":\"parties_only\"},\"type\":\"envelope\"},\"protocol\":\"trustwork-mesh/1\",\"recipientNode\":\"build.example.org\",\"senderNode\":\"austin.example.org\",\"sentAt\":\"2026-11-02T08:00:00.000Z\"}"
+      },
+      "components": [
+        "@method",
+        "@target-uri",
+        "content-digest",
+        "content-type"
+      ],
+      "params": {
+        "created": 1793606400,
+        "expires": 1793606700,
+        "keyid": "a1",
+        "nonce": "bm9uY2Utb2YtdGhlLWluYm94LXZlY3Rvcg"
+      },
+      "signatureBase": "\"@method\": POST\n\"@target-uri\": https://build.example.org/federation/v1/inbox\n\"content-digest\": sha-256=:7c51udEDFrpXxp1kuV3BxyzACX9aZyI36LasxRyJC94=:\n\"content-type\": application/json\n\"@signature-params\": (\"@method\" \"@target-uri\" \"content-digest\" \"content-type\");created=1793606400;expires=1793606700;keyid=\"a1\";alg=\"ed25519\";nonce=\"bm9uY2Utb2YtdGhlLWluYm94LXZlY3Rvcg\";tag=\"trustwork-mesh/1\"",
+      "signatureInput": "tw=(\"@method\" \"@target-uri\" \"content-digest\" \"content-type\");created=1793606400;expires=1793606700;keyid=\"a1\";alg=\"ed25519\";nonce=\"bm9uY2Utb2YtdGhlLWluYm94LXZlY3Rvcg\";tag=\"trustwork-mesh/1\"",
+      "signature": "tw=:BU5wR2arAKE/oFrbaMdaktucdiU86UYNmKYTIGXfM3gslM8ZmwMKiNaYf0AVL2MCqaCE6E8HvU8aJWD5r4MMBA==:"
+    },
+    {
+      "name": "feed-get",
+      "description": "The city node pulls the national publications feed.",
+      "publicKey": "_FHNjmIYoaONpH7QAjDwWAgW7RO6MwOsXeuRFUiQgCU",
+      "message": {
+        "method": "GET",
+        "targetUri": "https://build.example.org/federation/v1/feeds/publications?after=c1",
+        "headers": {},
+        "body": null
+      },
+      "components": [
+        "@method",
+        "@target-uri"
+      ],
+      "params": {
+        "created": 1793606400,
+        "expires": 1793606700,
+        "keyid": "a1",
+        "nonce": null
+      },
+      "signatureBase": "\"@method\": GET\n\"@target-uri\": https://build.example.org/federation/v1/feeds/publications?after=c1\n\"@signature-params\": (\"@method\" \"@target-uri\");created=1793606400;expires=1793606700;keyid=\"a1\";alg=\"ed25519\";tag=\"trustwork-mesh/1\"",
+      "signatureInput": "tw=(\"@method\" \"@target-uri\");created=1793606400;expires=1793606700;keyid=\"a1\";alg=\"ed25519\";tag=\"trustwork-mesh/1\"",
+      "signature": "tw=:CSNrh8SQDdO8jaQcI/IlM/JOdUL7ALwEPb+Sn4WC6/hAjRK2QZ7Kyh2wMJX5lWUsGAWhjJRjvZZpvUQnysmIBQ==:"
+    },
+    {
+      "name": "feed-response",
+      "description": "The national node answers the feed request with one envelope.",
+      "publicKey": "PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw",
+      "message": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json",
+          "Content-Digest": "sha-256=:k8eUKHp2PTP6R8WVq1hoxxl+EvABiMCDK2czdTScJm8=:"
+        },
+        "body": "{\"after\":null,\"generatedAt\":\"2026-11-02T08:00:00.000Z\",\"items\":[{\"envelope\":{\"agentGenerated\":false,\"audience\":{\"kind\":\"public\"},\"consent\":null,\"dataClass\":\"editorial_publications\",\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"75e22937c73e9a08960a77b4857e2e1c4e8d44896ce681b68f427d218cbcfe47\"},\"homeNode\":\"build.example.org\",\"id\":\"trustwork://build.example.org/publication/pub-7b0c\",\"issuedAt\":\"2026-11-02T08:00:00.000Z\",\"kind\":\"publication\",\"payload\":{\"authorDisplayName\":\"Editorial team\",\"canonicalUrl\":\"https://build.example.org/news/facade-fire-safety\",\"lede\":\"What changes for cladding on mid-rise buildings.\",\"publishedAt\":\"2026-11-01T09:00:00.000Z\",\"title\":\"Facade fire safety after the 2026 code cycle\",\"topics\":[\"facades\",\"fire-safety\"]},\"projection\":\"public\",\"protocol\":\"trustwork-mesh/1\",\"revision\":3,\"signature\":{\"algorithm\":\"ed25519\",\"keyId\":\"k2\",\"value\":\"7XkrT1hRxTq2YROMIeisTxl1eAH0ZtYC0_XGJmMFFIYuRpn2kEYpRW0R1AoyGNHm7XtrXt5t8IONE1fskas0Aw\"},\"subject\":null,\"syndication\":\"cc_by_4_0\"},\"type\":\"envelope\"}],\"next\":null,\"node\":\"build.example.org\",\"protocol\":\"trustwork-mesh/1\",\"stream\":\"publications\"}"
+      },
+      "components": [
+        "@status",
+        "content-digest",
+        "content-type"
+      ],
+      "params": {
+        "created": 1793606400,
+        "expires": 1793606700,
+        "keyid": "k2",
+        "nonce": null
+      },
+      "signatureBase": "\"@status\": 200\n\"content-digest\": sha-256=:k8eUKHp2PTP6R8WVq1hoxxl+EvABiMCDK2czdTScJm8=:\n\"content-type\": application/json\n\"@signature-params\": (\"@status\" \"content-digest\" \"content-type\");created=1793606400;expires=1793606700;keyid=\"k2\";alg=\"ed25519\";tag=\"trustwork-mesh/1\"",
+      "signatureInput": "tw=(\"@status\" \"content-digest\" \"content-type\");created=1793606400;expires=1793606700;keyid=\"k2\";alg=\"ed25519\";tag=\"trustwork-mesh/1\"",
+      "signature": "tw=:HBQKkadO3WDynnL0imaxD5/Cv7aKwgn6bcUifA1InkHEZxStU/3dth5HtJx82W40YkaxWiuLD1MMRd0p5UQRCw==:"
+    }
+  ]
+}

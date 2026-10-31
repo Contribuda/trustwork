@@ -90,6 +90,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | [Country specifics](country-specifics.md) | Facets of national difference, pack v2, shared layers such as the EU, starting points for the example countries |
 | [Countries and languages](localization.md) | Any country with any language, how strings resolve, adding a language |
 | [Federation: one worldwide mesh](federation.md) | Node identity, signed envelopes, peering, links not merges, deals across nodes |
+| [Mesh protocol `trustwork-mesh/1`](federation-protocol.md) | The wire protocol for implementers: manifest, keys, signatures, handshake, envelopes, feeds, inbox, tombstones, links, merge rule, conformance vectors |
 
 ## Building the engine
 

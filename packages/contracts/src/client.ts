@@ -56,3 +56,5 @@ export * from './profiles.js';
 export * from './sanctions.js';
 // Deployment-location attestation: command, record, refusal rule and status (SANC-009, ADR 014 decisions 3 to 5).
 export * from './sanctions-attestation.js';
+// Federation mesh protocol trustwork-mesh/1: manifest, global identifiers, envelopes, feeds, inbox, tombstones, peering, links (FED-000, ADR 011).
+export * from './federation.js';

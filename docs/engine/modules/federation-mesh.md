@@ -1,6 +1,6 @@
 # Federation mesh
 
-Module code `MSH`. Status: **Proposed** ([ADR 011](../../adr/011-federation-mesh.md); R39); data licences for peers are decided by the integrator under the owner's delegation (ADR 010 decision 10). Packages: FED-000 … FED-006, REP-002, AGT-017. Narrative: [Federation: one worldwide mesh](../federation.md). Data: [§26 Federation](../../data/model.md#26-federation).
+Module code `MSH`. Status: **Proposed** ([ADR 011](../../adr/011-federation-mesh.md); R39); data licences for peers are decided by the integrator under the owner's delegation (ADR 010 decision 10). Packages: FED-000 … FED-006, REP-002, AGT-017. Narrative: [Federation: one worldwide mesh](../federation.md). Wire protocol (Contract, FED-000): [Mesh protocol `trustwork-mesh/1`](../federation-protocol.md). Data: [§26 Federation](../../data/model.md#26-federation).
 
 ## Purpose
 
@@ -42,8 +42,8 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | MSH-F16 | Nodes and peers in restricted places cannot exist or federate; operators are screened before peering | Proposed | FED-001, INTL-SAN |
 | MSH-F17 | A community-run mesh directory may list nodes that ask to be listed; nothing depends on it | Proposed | FED-001 |
 | MSH-F18 | Search across the mesh indexes public replicas as a separate source class with licence flags; private queries never forwarded | Proposed | FED-002, RAG-201 |
-| MSH-F19 | The merge algorithm for links, tombstones and replica conflicts carries a method version from the first release | Proposed | FED-000 |
-| MSH-F20 | Protocol conformance tests let a node call itself compatible; conformance never certifies data quality or legal compliance | Proposed | FED-000 |
+| MSH-F19 | The merge algorithm for links, tombstones and replica conflicts carries a method version from the first release (`trustwork-merge-1`) | Contract | FED-000 |
+| MSH-F20 | Protocol conformance tests let a node call itself compatible; conformance never certifies data quality or legal compliance | Contract (vectors and schema tests in `tests/federation/protocol`) | FED-000 |
 
 ## Agent capabilities
 

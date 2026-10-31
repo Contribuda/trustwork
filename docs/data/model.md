@@ -708,7 +708,7 @@ Federated replicas are indexed as a separate source class with their licence fla
 
 ## 26. Federation
 
-Owner module: `federation`. Handbook: [Federation](../engine/federation.md); [ADR 011](../adr/011-federation-mesh.md). Contracts to be frozen by FED-000 (`packages/contracts/src/federation.ts`).
+Owner module: `federation`. Handbook: [Federation](../engine/federation.md); [ADR 011](../adr/011-federation-mesh.md). Contracts frozen by FED-000 (`packages/contracts/src/federation.ts`; wire protocol: [Mesh protocol `trustwork-mesh/1`](../engine/federation-protocol.md)).
 
 | Entity | Key fields | Layers | Invariants | Retention | Status |
 |---|---|---|---|---|---|

@@ -1,0 +1,84 @@
+{
+  "protocol": "trustwork-mesh/1",
+  "algorithm": "trustwork-digest-1 = lowercase hex SHA-256 of the UTF-8 bytes of RFC 8785 (JCS) canonical JSON",
+  "vectors": [
+    {
+      "name": "empty-object",
+      "description": "The empty payload.",
+      "input": {},
+      "canonical": "{}",
+      "digest": {
+        "algorithm": "trustwork-digest-1",
+        "value": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      }
+    },
+    {
+      "name": "key-order-and-escapes",
+      "description": "Keys sorted by UTF-16 code units, JSON.stringify escaping, integers, nested arrays, non-ASCII kept as is (NFC applied before).",
+      "input": {
+        "z": 1,
+        "a": [
+          true,
+          null,
+          "line\nbreak",
+          {
+            "y": "tab\t",
+            "b": "\"quoted\""
+          }
+        ],
+        "é": "Café",
+        "€": "euro",
+        "🏗": "crane",
+        "num": 100,
+        "neg": -7
+      },
+      "canonical": "{\"a\":[true,null,\"line\\nbreak\",{\"b\":\"\\\"quoted\\\"\",\"y\":\"tab\\t\"}],\"neg\":-7,\"num\":100,\"z\":1,\"é\":\"Café\",\"€\":\"euro\",\"🏗\":\"crane\"}",
+      "digest": {
+        "algorithm": "trustwork-digest-1",
+        "value": "a99a22f19e2afceff3586fbeb178880be0aaa9ee4bb0029a5cfa69734e6fc41f"
+      }
+    },
+    {
+      "name": "publication-payload",
+      "description": "The public payload of the publication envelope in signatures.json.",
+      "input": {
+        "title": "Facade fire safety after the 2026 code cycle",
+        "lede": "What changes for cladding on mid-rise buildings.",
+        "topics": [
+          "facades",
+          "fire-safety"
+        ],
+        "authorDisplayName": "Editorial team",
+        "publishedAt": "2026-11-01T09:00:00.000Z",
+        "canonicalUrl": "https://build.example.org/news/facade-fire-safety"
+      },
+      "canonical": "{\"authorDisplayName\":\"Editorial team\",\"canonicalUrl\":\"https://build.example.org/news/facade-fire-safety\",\"lede\":\"What changes for cladding on mid-rise buildings.\",\"publishedAt\":\"2026-11-01T09:00:00.000Z\",\"title\":\"Facade fire safety after the 2026 code cycle\",\"topics\":[\"facades\",\"fire-safety\"]}",
+      "digest": {
+        "algorithm": "trustwork-digest-1",
+        "value": "75e22937c73e9a08960a77b4857e2e1c4e8d44896ce681b68f427d218cbcfe47"
+      }
+    },
+    {
+      "name": "quote-version-payload",
+      "description": "The shared_party payload of the quote version envelope in signatures.json.",
+      "input": {
+        "rfqVersion": {
+          "id": "rfqv-2",
+          "version": 2,
+          "digest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        },
+        "currency": "USD",
+        "totalMinorUnits": "1250000",
+        "validUntil": "2026-12-01T00:00:00.000Z"
+      },
+      "canonical": "{\"currency\":\"USD\",\"rfqVersion\":{\"digest\":{\"algorithm\":\"trustwork-digest-1\",\"value\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"},\"id\":\"rfqv-2\",\"version\":2},\"totalMinorUnits\":\"1250000\",\"validUntil\":\"2026-12-01T00:00:00.000Z\"}",
+      "digest": {
+        "algorithm": "trustwork-digest-1",
+        "value": "55676157de06bdb8c90394ecfc7df090d15aa57d8bdbe75f9dc98cb04478210e"
+      }
+    }
+  ]
+}
