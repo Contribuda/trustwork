@@ -122,6 +122,7 @@ Try `?persona=mixed` for someone who buys and sells, `?persona=reader` for a rea
 
 ## Read more
 
+- **[How it works for you](docs/guides/README.md)**: short step-by-step guides for homeowners and clients, professionals and contractors, experts and mentors, companies, suppliers and manufacturers, event organizers, authors and editors, and hub operators, with an honest status for every step.
 - **[The engine handbook](docs/engine/README.md)**: every module, implemented and designed.
 - [Vision and principles](docs/engine/vision.md) · [Concepts](docs/engine/concepts.md) · [Roadmap](docs/engine/roadmap.md)
 - [Hubs](docs/engine/hubs.md) · [Hub administration](docs/engine/hub-administration.md) · [Country specifics](docs/engine/country-specifics.md) · [Federation](docs/engine/federation.md)

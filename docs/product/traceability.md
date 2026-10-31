@@ -1,6 +1,6 @@
 # Requirement traceability
 
-All 39 accepted requirements are specified, not implemented end to end. [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
+All 51 accepted requirements are specified, not implemented end to end (R01–R04 have live slices in the API; see [status](../engine/status.md)). [Machine-readable map](traceability.json) is checked for complete IDs and valid task references. Task briefs contain concrete evidence/tests; [ADRs](../adr/README.md) define engineering decisions.
 
 | Requirements | Modules | Primary decisions |
 |---|---|---|
@@ -15,5 +15,12 @@ All 39 accepted requirements are specified, not implemented end to end. [Machine
 | R32–R35 | Events, learning, partners and matching, representative agents | ADR 010; [engine handbook](../engine/README.md) |
 | R36–R38 | Hubs, hub administration, country specifics | ADR 009, ADR 010; handbook chapters on hubs, hub administration and country specifics |
 | R39 | Worldwide mesh federation | ADR 011; handbook chapter on federation |
+| R40 | Configurable engine with a United States reference hub | ADR 010 decision 16; ADR 012 decisions 11, 26–28; [hubs](../engine/hubs.md#the-reference-hub-united-states-decided) |
+| R41–R43 | Plan to people, consultations and mentoring, shared knowledge | ADR 010 decision 17; ADR 012 decisions 13, 14, 19; [projects](../engine/projects.md#plans-from-plan-to-people) |
+| R44 | Reputation building | ADR 010 decision 18; ADR 012 decision 5; [execution and reputation](../engine/execution-and-reputation.md#the-reputation-builder-toolkit) |
+| R45 | Plan-step knowledge from manufacturers and suppliers | ADR 010 decision 19; ADR 012 decision 3; [search and knowledge](../engine/search-and-knowledge.md#plan-step-recommendations-proposed) |
+| R46–R47 | No held funds; hub commissions | ADR 010 decisions 20–21; [billing](../engine/billing.md) |
+| R48–R50 | Jurisdiction settings, detailed agent settings, agent extensions | ADR 010 decision 22; ADR 012 decision 24; [your agent](../engine/agents.md) |
+| R51 | International by default: languages and country packs | ADR 012 decision 30; [countries and languages](../engine/localization.md) |
 
 R31 maps to RAG-000, RAG-101, FND-002, DATA-001, BE-001, RAG-201, RAG-301, AST-001, WEB-003, RAG-401 and QA-001. See [retrieval evaluation](../quality/retrieval-evaluation.md). Fake-vector checks are not semantic-model or database evidence.

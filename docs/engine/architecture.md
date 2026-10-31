@@ -12,14 +12,16 @@ flowchart LR
   Web -->|/v1/* same origin| API[apps/api · NestJS on Fastify]
   API --> DB[(PostgreSQL 18 · RLS forced)]
   DB --> Outbox[outbox + leased jobs]
-  Outbox --> Worker[apps/worker]
-  Worker --> Ports[provider ports with fakes:<br/>mail, payments, models, registers, e-signature, e-invoicing]
+  Outbox -. designed, REL-001 .-> Worker[apps/worker]
+  Worker -. designed .-> Ports[provider ports with fakes:<br/>mail, payments, models, registers, e-signature, e-invoicing]
   API -. future .-> Mesh[federation: manifest, feeds, inbox]
 ```
 
+Solid arrows exist today; dotted arrows are designed. Today the API writes outbox rows but **nothing consumes them**: the worker is a fixture demonstration, and the only provider port in code (mail) is an in-memory fake called directly from the request ([Data and reliability](#data-and-reliability)).
+
 - **apps/web**: public site (server-rendered for discovery) and the workspace; country and language selection; the brand overlay.
 - **apps/api**: domain modules with in-process authorization; today `identity` (accounts, sessions, providers, companies, memberships) and `projects`.
-- **apps/worker**: durable jobs and provider calls; today a fake policy demonstration.
+- **apps/worker**: durable jobs and provider calls (designed, REL-001); today a four-line fixture demonstration that evaluates one delegation and prints `durableQueue: 'not_implemented'`. It reads no outbox row and no job.
 - Microservices, a message broker, an external vector database and an external policy service are deliberately **not** used until measured need (ADR 001, 004, 007).
 
 ## Repository layout
@@ -48,8 +50,12 @@ Each module owns its tables and exposes use cases; others call those use cases, 
 
 - Reviewed, forward-only SQL migrations; no ORM schema sync; never edit an applied migration.
 - Money as integer minor units with ISO currency, serialized as strings; quantities as exact decimals with units; no floating point in accounting.
-- Aggregate change, audit event and outbox intent in one transaction; workers lease jobs with `FOR UPDATE SKIP LOCKED`, heartbeats and fencing tokens.
-- Provider effects are at-least-once attempts with stable idempotency keys; timeouts become `outcome_unknown` and go to reconciliation.
+- **The rule:** aggregate change, audit event and outbox intent in one transaction; workers lease jobs with `FOR UPDATE SKIP LOCKED`, heartbeats and fencing tokens; provider effects are at-least-once attempts with stable idempotency keys; timeouts become `outcome_unknown` and go to reconciliation.
+- **Where the code is today** (checked 2026-10-31):
+  - Memberships, projects and participation grants write the aggregate, the audit event and the outbox row in one transaction. E-mail verification, recovery completion, step-up, password and e-mail changes, logout, session revocation and provider unlinking write the change and its audit event (and an outbox row where one is emitted) in one transaction.
+  - Sign-up, login, failed-login and lockout bookkeeping, recovery requests and provider sign-in events write their audit event in a **separate** transaction after the change (`auth.service.ts`, `provider.service.ts`); no work package folds them in yet, so this is an open follow-up.
+  - Mail (verification, recovery, invitations, security notices) is sent from the request handler after commit through the in-memory `FakeMailbox`, not through the outbox; MAIL-001 moves it to outbox and worker.
+  - The outbox and job tables and their repositories (`claimUnpublished`, job leases) exist, but no process consumes them; REL-001 builds the relay, the job runner and the scheduler.
 
 ## Contracts first
 

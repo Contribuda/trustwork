@@ -16,7 +16,7 @@ We would rather under-promise. This page says, area by area, what you can run to
 
 | Area | Live | Demo | Contract | Designed / proposed |
 |---|---|---|---|---|
-| [Accounts and sign-in](people-and-companies.md) | Sign-up with e-mail verification (delivered to a fake mailbox until MAIL-001), login, logout, recovery, step-up, sessions list and revoke, password and e-mail change, Google and Apple linking (with a fake provider for tests) | Login, sign-up, recovery and onboarding screens | Person, session, provider identity, auth commands, error codes | Microsoft and generic OIDC providers (designed) |
+| [Accounts and sign-in](people-and-companies.md) | Sign-up with e-mail verification (live only with the in-memory fake mailbox: no mail transport exists, so a real person cannot receive the verification or recovery e-mail until MAIL-001), login, logout, recovery, step-up, sessions list and revoke, password and e-mail change, Google and Apple linking (with a fake provider for tests) | Login, sign-up, recovery and onboarding screens | Person, session, provider identity, auth commands, error codes | Microsoft and generic OIDC providers (designed) |
 | [People and companies](people-and-companies.md) | Public reads of people and companies; company memberships: invite, accept, change, end, one active employer | Directories, profiles, company page, «Моя страница» with public profile editor | Membership, claims, legal identifiers from country packs | Claims and verification with hub evidence recipes (proposed) |
 | [Projects](projects.md) | Create, read, assign leader, publish, ownership transfer with recipient consent, participants grant and revoke | Public project pages, workspace projects with tabs | Ownership XOR, milestones without budgets for participants | Plans with versions, changes and dependencies; plan items that become consultations and scoped tasks for invited experts and trades (proposed: plan to people, PLAN-001, CONS-001, TASK-001) |
 | [News and articles](publishing.md) | — | News and articles with sources, rubrics, topics, RSS feeds | Publication, version, authorship, corrections | Sources registry and imports per hub (proposed) |
@@ -32,19 +32,38 @@ We would rather under-promise. This page says, area by area, what you can run to
 | [Billing](billing.md) | — | Billing state in settings | Two budget kinds, price versions, acceptances | Offers, entitlements, payment adapters (designed); licensed payment providers only, Trustwork never holds funds; hub commissions as versioned, disclosed settings (proposed: PAY-001, BILL-003) |
 | [Countries and languages](localization.md) | Country packs UZ, GE, AM, AZ; restricted places; any country with a generic profile | Country selector, six languages (en, ru, uz-Latn, ka, hy, az-Latn), every visible string localized including demo content | Pack schema v1 | Pack v2 facets, United States pack, Spanish, configuration over code (proposed: CTRY-002, INTL-US, LANG-ES, CFG-001); eleven more languages with right-to-left, CJK and Devanagari support and honest review status, an EU layer and fourteen more country packs (planned: ADR 012 decision 30, [languages and countries](localization.md#languages-and-countries)) |
 | Manufacturer and supplier knowledge on plan steps | — | — | — | Sourced pages and explained, never-paid recommendations per plan step (proposed: MAT-001, REC-001) |
-| [Hubs](hubs.md) | — | — | — | Hub model, territories, launch checklist (proposed) |
-| [Hub administration](hub-administration.md) | — | — | Admin permissions, audit events, case grants; hub console schemas in `hub.ts` (proposed, frozen by HUBC-000) | Hub console with setup wizard, keys and models, editorial office, data mining, jurisdiction settings (proposed); platform administration (designed) |
+| [Hubs](hubs.md) | — | — | — | Hub model, territories, launch checklist (proposed); the United States reference hub on Railway, operated by Contribuda, demo-only until QA-002, counsel review and the owner's switch (decided, not deployed: [reference hub](hubs.md#the-reference-hub-united-states-decided)) |
+| [Hub administration](hub-administration.md) | — | — | Admin permissions, audit events, case grants; hub console schemas in `hub.ts` (proposed; HUBC-000 reviews and freezes them) | Hub console with setup wizard, keys and models, editorial office, data mining, jurisdiction settings (proposed); platform administration (designed) |
 | [Country specifics](country-specifics.md) | Identifier formats, regions, currencies, residency notes in packs | — | — | Registers, licensing, codes, tax, signatures, payments (proposed) |
 | [Federation](federation.md) | — | — | — | Mesh protocol (proposed, [ADR 011](../adr/011-federation-mesh.md)) |
 | Sanctions | Restricted places in packs and compliance package; ownership declaration checks | Restricted places never offered | Screening adapter for the US Consolidated Screening List (needs a key) | Hub screening recipes (proposed) |
-| Design system | Accessible React components on React Aria, tokens, brand mark and localized wordmarks, Storybook, axe tests (not yet run by CI; CI-001) | — | — | — |
+| Design system | Accessible React components on React Aria, tokens, brand mark and localized wordmarks, Storybook. Its axe suite (`npm run test:a11y -w @trustwork/ui`) exists but no gate runs it: neither `npm run check` nor CI calls it until CI-001 (the web app's own axe checks do run in the CI browser job) | — | — | — |
 
 ## What this means if you try it
 
 - `npm run dev:web` shows the whole public site and workspace on synthetic data set in Uzbekistan, in six languages; a synthetic United States demo hub replaces it in the platform phase (DEMO-US). Personas are chosen with `?persona=reader|mixed|owner`.
 - `npm run dev:api` with the local database and the restricted runtime role printed by `npm run seed:dev -w @trustwork/api` runs the live identity, company and project API under `/v1/*` ([agent onboarding](agent-onboarding.md#3-install-and-run) has the exact commands).
 - The web app does not yet call the live API; WEB-006 and WEB-004 in the platform phase of the [roadmap](roadmap.md) connect them.
-- No payment, e-mail, model or registry provider is connected. Adapters exist as ports with fakes.
+- No payment, e-mail, model or registry provider is connected. Mail is an in-memory fake called from the request (no transport exists); Google and Apple sign-in have a fake mode and a live mode that needs keys nobody has configured; the sanctions screening adapter needs a key; payment, model, registry, storage and channel providers are designed ports with fakes.
+- The worker consumes nothing yet: the API writes outbox rows that no process reads (REL-001 builds the relay and the job runner).
+- What each kind of participant can try today, step by step: [How it works for you](../guides/README.md).
+
+## Accuracy checked on 2026-10-31
+
+The statements on this page, in [Architecture](architecture.md), in [API conventions](../architecture/api.md) and in `.env.example` were checked against the code at the head of `main` on 2026-10-31, closing the documentation-versus-code findings of the [architecture audit](../research/architecture-audit-2026-10.md#4-documentation-accuracy-versus-code):
+
+| Finding | Checked against | Result |
+|---|---|---|
+| E-mail verification listed as Live | `apps/api/src/modules/identity/ports.ts` (only `FakeMailbox`), `auth.service.ts` | Live only through the fake mailbox; stated above |
+| Design-system axe tests | Root `check` script, `.github/workflows/check.yml`, `packages/ui/package.json` | Suite exists, not gated until CI-001; stated above |
+| "Next web work packages" | `work-packages.json` | Named: WEB-006 and WEB-004 |
+| One transaction for change, audit and outbox | `auth.service.ts`, `provider.service.ts`, `membership.service.ts`, `projects.service.ts` | True for memberships, projects and grants; several identity audits and all mail are outside it; [Architecture](architecture.md#data-and-reliability) says so |
+| Outbox feeding the worker | `apps/worker/src/main.ts` | The worker consumes nothing; the diagram marks it as designed |
+| "Routes are not implemented" | `docs/architecture/api.md` | Reworded: routes not listed as implemented are contract only |
+| Health contract | `packages/contracts/src/api.ts`, `apps/api/src/app.module.ts` | The controller reports `disabled`, `fake` or `live`; the frozen schema still says `disabled` (OPS-001 aligns it); documented in API conventions |
+| `.env.example` | `apps/api/src/config.ts`, `apps/api/src/app.ts`, `packages/data/src/config.ts`, `apps/web` | Four unread variables removed; `API_DATABASE_URL`, `PUBLIC_ORIGIN`, `AUTH_FLOW_SECRET` and the other read variables added |
+| Data boundary and fake auth comments | `apps/web/app/_lib/data/index.ts`, `apps/web/app/_lib/auth-fake.ts` | Comments now say the swap and the real auth proxy belong to WEB-006 and WEB-004 |
+| Roadmap date and statuses | `work-packages.json` | Statuses and counts regenerated from the file on 2026-10-31 (UTC, the date convention of the repository) |
 
 ## What has not been validated
 

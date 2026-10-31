@@ -1,6 +1,6 @@
 # News, articles and walls
 
-Requirements R15, R16. Status: reading experience, rubrics, topics and RSS feeds are **Demo**; the publication model, lifecycle and corrections are **Contract**; editorial workflow is **Designed**; hub source registry, multilingual editions and comments are **Proposed**.
+Requirements R15, R16. Status: reading experience, rubrics, topics and RSS feeds are **Demo**; the publication model, lifecycle and corrections are **Contract**; editorial workflow is **Designed**; hub source registry, manufacturer and supplier sources, multilingual editions, shared knowledge formats and comments are **Proposed** (SRC-001, EDIT-001, MAT-001, KNOW-001).
 
 Content is what brings people back every day. The engine treats it with the discipline of a good newsroom: sources are named, dates are honest, corrections are visible, and authorship is never confused with editing rights.
 
@@ -65,6 +65,22 @@ A hub's news desk does not start from an empty page. The hub operator registers 
 - **Cadence** and **observed-at semantics** (when the source says something happened versus when we saw it).
 
 Imported items arrive as **drafts in a review queue**, never published automatically. An editor turns them into news items with the source attached, or discards them. An agent may draft a summary for the editor; the editor publishes.
+
+## Manufacturer and supplier sources (Proposed)
+
+Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 19). Manufacturers and suppliers are a source of practical knowledge, not only sellers. Within the hub's legal basis and each site's licence and robots rules, the editorial office discovers them and registers their public sites as sources of a special kind: catalogues and product pages, installation guides, data sheets, training, technical articles and events. From them it builds **sourced** company pages and product and learning-resource entries labelled "from sources", with per-field provenance; full texts are stored only where the licence allows it (MAT-001, [autonomous editorial office](hub-console/autonomous-editorial.md#11-manufacturer-and-supplier-knowledge-adr-010-decision-19)).
+
+- Nothing is published automatically: the same review queue and human gates apply as for news sources.
+- Once the company claims its page (CLM-001) its representative or members publish catalogues, guides, training and events as **company-authored** publications under an explicit licence; sourced facts they correct keep their provenance.
+- Manufacturers' answers to plan-step questions are labelled as coming from a party with a commercial interest.
+- These items feed explained [plan-step recommendations](search-and-knowledge.md#plan-step-recommendations-proposed). They are never paid for; a hub that allows **sponsored content** (off by default, [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 3) shows it only in a separate, labelled slot that never affects ranking, matching, recommendations or reputation.
+- A takedown request removes the item and propagates tombstones.
+
+How a manufacturer experiences it: [guide](../guides/supplier-manufacturer.md).
+
+## Shared knowledge from completed projects (Proposed)
+
+With the project owner's consent, a completed project becomes publications in the knowledge formats `diary`, `lesson`, `checklist`, `template` and expert `answer`, linked to the source plan version, under a licence the author chooses (for example CC BY 4.0), after a redaction review that strips budgets, prices, addresses, faces and counterparties' private data. Named participants consent or are anonymized; withdrawing consent unpublishes or re-anonymizes the item (KNOW-001, [data model](../data/model.md#9-knowledge-sharing), [projects](projects.md#permits-diaries-and-shared-knowledge-proposed)).
 
 ## Multilingual publishing (Proposed)
 

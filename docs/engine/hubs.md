@@ -1,6 +1,6 @@
 # Hubs: the engine for your country or your city
 
-Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub lifecycle and launch checklist are **Proposed**.
+Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub lifecycle and launch checklist are **Proposed**; the United States reference hub (hosting, operator, demo-only start) is **decided** and not deployed.
 
 The engine is not one website. It is something people run for a place they care about. A **hub** is the platform for one territory: a country, a region, or a city. Whoever runs it is the **hub operator**: an industry association, a trade publisher, a chamber of commerce, a university, an entrepreneur, a community of engineers. The operator brings local knowledge, legal responsibility and people; the engine brings everything else.
 
@@ -43,15 +43,15 @@ Operators of overlapping hubs are encouraged to sign a short **cooperation agree
 | Area | Configured in the [hub console](hub-administration.md) |
 |---|---|
 | Identity | Name, brand overlay with localized lettering, domain, languages, default language |
-| Legal | Operator legal entity, terms, privacy notice, sanctions section, imprint, data-residency choice |
+| Legal | Operator legal entity, terms, privacy notice, sanctions section, imprint, data-residency choice; jurisdiction settings for agent disclosure, liability, consent, record-keeping and per-action limits (HUB-005) |
 | People | Hub staff roles, editorial team, trust reviewers, moderators, support |
 | Country base | Country pack version, hub taxonomy extensions, units, holidays |
 | Information sources | News feeds, registers, procurement portals, standards, statistics |
 | Counterparty verification | Verification recipes and provider adapters, sanctions screening |
-| Money | Currency, payment providers, e-invoicing, hub price versions |
+| Money | Currency, licensed payment providers (the hub never holds participants' funds), e-invoicing, hub price versions, commissions and fees as versioned, disclosed settings ([Billing](billing.md#commissions-and-fees-are-hub-settings)) |
 | Content policy | Editorial policy, community rules, moderation clause library, comments on or off |
 | Events and learning | Hosting policy, ticketing, accreditation records |
-| Agents | Allowed actions in the territory, outreach quotas, model providers and egress, kill switch |
+| Agents | Allowed actions in the territory, modules, outreach quotas, model providers and egress, extensions through the governed registry ([Your agent](agents.md#extensions-capabilities-added-by-the-hub-proposed)), kill switch |
 | Federation | Peering agreements, data licences per class, defederation list |
 
 ## Hub lifecycle
@@ -95,6 +95,21 @@ The engine helps; people grow a community. A playbook distilled from the design:
 6. **Learn in public.** Short courses on local practice (hidden-works acceptance, winter concreting under local codes).
 7. **Federate.** Peer with the national or neighbouring hubs so your participants see a bigger market from day one.
 8. **Never fake it.** No invented members, reviews or traffic. Trust is the product.
+
+## The reference hub: United States (decided)
+
+The project's own reference and demo deployment is a **United States hub** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 16; [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decisions 26–28). It is the primary worked example of this handbook; every other country is configured the same way (ADR 012 decision 30).
+
+| Question | Answer | Status |
+|---|---|---|
+| Where it runs | On Railway in a United States region, the same way as the current hosted preview | Decided (decision 26); no reference hub is deployed by any work package |
+| Who operates it | Contribuda (public references keep contribuddha.com until the company completes its move to the new name) | Decided (decision 26) |
+| Recovery targets | Recovery point objective 24 hours, recovery time objective 8 hours for the demo; OPS-003 may tighten them | Decided (decision 26) |
+| Configuration | English by default with Spanish second, USD, US states and territories, EIN and state registrations, state contractor licensing, state sales tax, ESIGN/UETA, card and ACH through licensed providers, US federal holidays | Proposed (INTL-US, LANG-ES, DEMO-US, CFG-001) |
+| Public URLs | English pages without a prefix; other languages under `/<lang>/` with `hreflang` alternates and a canonical URL; no country in public URLs ([Countries and languages](localization.md#public-urls-decided)) | Decided (decision 27); implemented by WEB-005 |
+| Data and sign-ups | **Demo-only with synthetic, labelled data** (decision 12). Real sign-ups open only after the platform release candidate QA-002 passes, counsel has reviewed the US privacy and agreement questions, and the owner switches them on; the switch is a hub setting, not a code change | Decided (decision 28) |
+
+Today no hub, including the reference hub, accepts real users; the demo web app still runs on synthetic data set in Uzbekistan until DEMO-US replaces it ([status](status.md)).
 
 ## Help with launching
 

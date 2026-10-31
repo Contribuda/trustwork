@@ -8,6 +8,18 @@ Trustwork is international by default ([ADR 012 decision 30](../adr/012-integrat
 
 The choice is stored in two cookies, `trustwork.country` and `trustwork.locale`, on the deployment's base path. It is set from the first-visit window, the header switcher, or query parameters on any address (for example `?country=GE&lang=ka`), so links can carry a country and a language.
 
+## Public URLs (decided)
+
+[ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 27 (owner, 2026-10-31). **English is the default language** of the reference hub and of the engine's public URLs. Status: decided; implemented by WEB-005 (today the language lives only in the cookie and query parameters above).
+
+| Rule | Example |
+|---|---|
+| English pages have no language prefix | `/news/winter-concreting` |
+| Every other language uses a prefix | `/es/news/winter-concreting`, `/ru/news/winter-concreting` |
+| Every page lists its language versions as `hreflang` alternates and names one canonical URL | `<link rel="alternate" hreflang="es" href="…/es/news/…">` |
+| The country is never part of a public URL | A hub defines its territory; a country selector never changes the address |
+| The language cookie stays a preference | It redirects only from unprefixed entry pages, so a shared `/es/…` link always opens in Spanish |
+
 ## Languages and countries
 
 Live means it works in the web app today; planned means a work package exists in the [roadmap](roadmap.md#languages-and-country-packs) and nothing is implemented yet. Run `node scripts/work-packages.mjs show <ID>` for any package.

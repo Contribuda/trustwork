@@ -6188,6 +6188,117 @@
         "packages/country-packs/packs/au.json",
         "tests/country-packs/au"
       ]
+    },
+    {
+      "id": "DOC-001",
+      "title": "Operator guide: install a node and set up a hub with the real installer and setup wizard",
+      "area": "documentation",
+      "status": "open",
+      "dependsOn": [
+        "INST-001",
+        "HUBC-007"
+      ],
+      "handbook": "docs/engine/hub-console/installation.md",
+      "goal": "Give a future hub operator who has never seen the code a tested, step-by-step guide from an empty server to a configured draft hub, written against the installer and setup wizard as they were actually built, not against the design.",
+      "read": [
+        "docs/engine/hub-console/installation.md",
+        "docs/engine/hub-console/setup-wizard.md",
+        "docs/engine/hubs.md",
+        "docs/guides/hub-operator.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Run INST-001 on a clean machine and on one platform recipe that INST-001 marked as tested; record every command, prompt, output and duration exactly as observed.",
+        "Walk through every setup wizard step of HUBC-007 with the US reference configuration and with one non-US example (generic profile or an example pack); capture screenshots in English and one other engine language.",
+        "Write docs/operators/install-and-setup.md: prerequisites, sizing as measured, install, setup token, each wizard step with what to decide and why, providers in fake mode first, launch checklist gates, upgrades with backup first, uninstall; link to the console design for depth.",
+        "Mark every step the guide cannot verify (for example an untested platform recipe) as untested, and update the statuses in docs/guides/hub-operator.md for the steps that became Live."
+      ],
+      "acceptance": [
+        "A second person follows the guide on a clean machine without help and reaches a draft hub with a first administrator holding a second factor (recorded in the pull request).",
+        "Every command in the guide was run at the head commit of the pull request; no secret, token or real personal data appears in the text or screenshots.",
+        "No step claims a capability the installer or wizard does not have; statuses follow the handbook labels."
+      ],
+      "paths": [
+        "docs/operators",
+        "docs/guides/hub-operator.md"
+      ]
+    },
+    {
+      "id": "DOC-002",
+      "title": "API reference generated from the Zod contracts (OpenAPI 3.1) and published as a docs page",
+      "area": "documentation",
+      "status": "open",
+      "dependsOn": [
+        "BE-003",
+        "OPS-001"
+      ],
+      "handbook": "docs/architecture/api.md",
+      "goal": "Replace the hand-listed routes in apps/api/src/openapi/generate.ts with a reference generated from the Zod contracts and the routes the API actually registers, and publish it as a readable, versioned API reference.",
+      "read": [
+        "docs/architecture/api.md",
+        "docs/adr/008-contracts-and-validation.md",
+        "docs/research/architecture-audit-2026-10.md"
+      ],
+      "steps": [
+        "Derive the OpenAPI 3.1 paths from a route registry the Nest modules expose (method, path, command and response schemas, auth, step-up, idempotency, CSRF) instead of a hand-written list; keep components from contractJsonSchemas().",
+        "Add a build script (npm run openapi -w @trustwork/api) that writes apps/api/openapi/openapi.json deterministically and a test that fails when a registered route is missing from the document or a documented route is not registered.",
+        "Render docs/reference/api.md (and an optional static HTML page with no external scripts) from the document: every route with its purpose, authentication, headers, request and response shapes, error codes from ERROR_CODES and their HTTP statuses, and the note that refinements are enforced at runtime only.",
+        "Link the reference from docs/architecture/api.md and the handbook; state the implemented-versus-contract boundary from the generated data, not by hand."
+      ],
+      "acceptance": [
+        "Every route the API registers appears in the generated document and every documented route is registered (tested).",
+        "Regenerating on an unchanged tree produces byte-identical output.",
+        "The published page lists error codes and HTTP statuses taken from the contracts, and contains no secret, cookie value or private field example."
+      ],
+      "paths": [
+        "apps/api/src/openapi",
+        "apps/api/openapi",
+        "docs/reference",
+        "tests/backend/openapi"
+      ]
+    },
+    {
+      "id": "DOC-003",
+      "title": "In-product help texts for participant flows",
+      "area": "documentation",
+      "status": "open",
+      "dependsOn": [
+        "WEB-004",
+        "WEB-007",
+        "WEB-008",
+        "AGT-018",
+        "LANG-ES"
+      ],
+      "handbook": "docs/guides/README.md",
+      "goal": "Explain the participant flows where people use them: short, contextual help for sign-up, company membership, projects and plans, consultations and tasks, the reputation builder and agent settings, in every engine language, consistent with the guides and honest about what is demo.",
+      "read": [
+        "docs/guides/README.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/localization.md",
+        "docs/design/system/README.md"
+      ],
+      "steps": [
+        "Inventory the screens of WEB-004, WEB-007, WEB-008 and AGT-018 and list the decisions a participant makes on each (sharing a plan item, accepting an offer, granting a mandate, requesting a confirmation, building the passport).",
+        "Write help texts in a new help namespace (apps/web/locales/<locale>/help.json for every engine language) with plain-language explanations of each decision, what stays private and what cannot be undone; machine-assisted translations are labelled until reviewed.",
+        "Add an accessible contextual help component (disclosure or popover from the design system, keyboard and screen-reader tested, usable at 375 px) and attach it to the inventoried decisions; link to the matching guide in docs/guides.",
+        "Link each help text to the matching guide in docs/guides and list in the pull request every guide status that the accepted flows now contradict, for a documentation follow-up."
+      ],
+      "acceptance": [
+        "Every inventoried decision has a help text in every engine language; a missing key fails the locale parity test.",
+        "Help never claims a capability the screen does not have and never contains the brand name outside the brand files.",
+        "Keyboard, screen reader and narrow-screen checks pass on the help component."
+      ],
+      "paths": [
+        "apps/web/components/help",
+        "apps/web/locales/en/help.json",
+        "apps/web/locales/ru/help.json",
+        "apps/web/locales/uz-Latn/help.json",
+        "apps/web/locales/ka/help.json",
+        "apps/web/locales/hy/help.json",
+        "apps/web/locales/az-Latn/help.json",
+        "apps/web/locales/es/help.json",
+        "tests/web/help"
+      ]
     }
   ]
 }
