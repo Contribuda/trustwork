@@ -4326,7 +4326,7 @@
       "id": "EVAL-001",
       "title": "Agent safety suite harness mapped to OWASP LLM and Agentic Top 10",
       "area": "qa-security",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "AST-001"
       ],
