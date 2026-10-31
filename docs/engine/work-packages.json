@@ -2033,7 +2033,7 @@
       "id": "BILL-001",
       "title": "Neutral offers, entitlements and two budget kinds",
       "area": "billing",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-004"
       ],
