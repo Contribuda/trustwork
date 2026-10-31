@@ -56,7 +56,7 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 | WEB-004 | Run the web app on the live API for accounts, companies and projects | open | WEB-006, BE-003, OPS-001 |
 | CTRY-002 | Country pack v2 schema: facets, subdivisions, several time zones and identifiers, unit catalogue | done |  |
 | CTRY-003 | Sourced v2 facets for Uzbekistan, Georgia, Armenia and Azerbaijan | open | CTRY-002 |
-| CFG-001 | Configuration over code: runtime country packs, languages, defaults and brand | open | CTRY-002, INTL-004, OPS-001, WEB-006 |
+| CFG-001 | Configuration over code: runtime country packs, languages, defaults and brand | done | CTRY-002, INTL-004, OPS-001, WEB-006 |
 | LANG-ES | Spanish (es) as the seventh engine language | open | CFG-001, INTL-004 |
 | INTL-US | United States country pack | open | CTRY-002 |
 | DEMO-US | United States demo hub: defaults and synthetic demo data | open | INTL-US, CFG-001, LANG-ES, WEB-006 |

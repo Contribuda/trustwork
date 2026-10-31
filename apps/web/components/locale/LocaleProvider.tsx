@@ -3,11 +3,22 @@
 import { createContext, use, useEffect, useMemo, type ReactNode } from 'react';
 import { LocaleScope } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
-import { registerBrandOverlay } from '@trustwork/ui/brand';
-import { brandOverlay } from '@/brand';
+import { brandOverlay, registerBrandOverlay, type BrandOverlay } from '@trustwork/ui/brand';
+import { installPacks, type CountryPack } from '@trustwork/country-packs';
 
-// The client bundle registers the deployment brand once so <Brand /> letters it in every locale.
-registerBrandOverlay(brandOverlay);
+type WordmarkLines = BrandOverlay['wordmarks'][string];
+
+/**
+ * The deployment's brand overlay is runtime configuration (CFG-001), so the browser learns it from the server: the
+ * root layout hands over the overlay's wordmark for this document's language, and it is added here (never removed:
+ * one deployment has one overlay, so concurrent server renders in different languages only ever add entries).
+ */
+function registerWordmark(locale: string, wordmark: WordmarkLines | null | undefined): void {
+  if (!wordmark) return;
+  const current = brandOverlay();
+  if (current?.wordmarks[locale] === wordmark) return;
+  registerBrandOverlay({ wordmarks: { ...current?.wordmarks, [locale]: wordmark }, messages: current?.messages ?? {} });
+}
 
 /**
  * The messages a document has received, grouped so that nested route groups can add theirs (INTL-004):
@@ -61,7 +72,20 @@ function Scope({ received, children }: { received: Received; children: ReactNode
  * `LocaleScope` keeps them request-scoped during server rendering, so concurrent visitors in different
  * languages never mix; `<html lang>` follows on the client.
  */
-export function LocaleProvider({ locale, country, brand, namespaces, layers, ui, children }: { locale: string; country: string; brand: Messages[]; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
+/**
+ * Country packs from the deployment's data directory, for region labels and currency in client components. They are
+ * only ever added (the deployment's packs do not change while it runs), so concurrent renders never remove one.
+ */
+const deploymentPacks = new Map<string, CountryPack>();
+function registerPack(pack: CountryPack | null | undefined): void {
+  if (!pack || deploymentPacks.has(pack.code)) return;
+  deploymentPacks.set(pack.code, pack);
+  installPacks([...deploymentPacks.values()]);
+}
+
+export function LocaleProvider({ locale, country, brand, wordmark, pack, namespaces, layers, ui, children }: { locale: string; country: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
+  registerWordmark(locale, wordmark);
+  registerPack(pack);
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);

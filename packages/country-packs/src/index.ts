@@ -1,13 +1,8 @@
 import { z } from 'zod';
 import { isRestricted } from './restricted.js';
 import type { CountryPack } from './schema.js';
-import { validatePack } from './validate.js';
 import { findIdentifierKind } from './facts.js';
-import uz from '../packs/uz.json' with { type: 'json' };
-import ge from '../packs/ge.json' with { type: 'json' };
-import am from '../packs/am.json' with { type: 'json' };
-import az from '../packs/az.json' with { type: 'json' };
-import us from '../packs/us.json' with { type: 'json' };
+import { BUILT_IN_PACKS, getPack, packs } from './registry.js';
 import countriesJson from '../countries/countries.json' with { type: 'json' };
 
 /**
@@ -24,26 +19,19 @@ export * from './adapters.js';
 export { facetProblems, levelFromNotes, packProblems, scopeChain, upgradePack, validatePack, type FacetCheckContext, type PackCheck } from './validate.js';
 export * from './facts.js';
 export * from './calendar.js';
+export { BUILT_IN_PACKS, checkPackFile, enabledPacks, getPack, installPacks, packs, resetPacks, type PackFileCheck } from './registry.js';
 
 export type CountryCode = CountryPack['code'];
 
-const RAW_PACKS = [uz, ge, am, az, us];
+/**
+ * The packs that ship with the engine (`packages/country-packs/packs`). A deployment's own packs join them at start
+ * (`packs()`, `getPack()` and `enabledPacks()` in `registry.ts`). There is no default country here or anywhere in
+ * the engine (ADR 012 decision 11): the deployment configuration names one, or visitors choose.
+ */
+export const PACKS: readonly CountryPack[] = BUILT_IN_PACKS;
 
-export const PACKS: readonly CountryPack[] = RAW_PACKS.map((raw) => validatePack(raw));
-const BY_CODE = new Map(PACKS.map((p) => [p.code, p]));
-
-export function getPack(code: string): CountryPack | null {
-  return BY_CODE.get(code.toUpperCase()) ?? null;
-}
-
-/** Packs offered in the country selector: enabled and, by construction, never restricted. */
-export function enabledPacks(): readonly CountryPack[] {
-  return PACKS.filter((p) => p.enabled);
-}
-
-export const DEFAULT_COUNTRY = 'UZ';
 export const FALLBACK_LOCALE = 'en';
-/** Every locale any pack can switch to, plus the engine fallback; `ru` is optional and never a default. */
+/** Every locale a built-in pack lists, plus the engine fallback; `ru` is optional and never a default. The languages a deployment offers are configuration (`@trustwork/config`). */
 export const ALL_LOCALES: readonly string[] = [...new Set([FALLBACK_LOCALE, ...PACKS.flatMap((p) => p.locales)])];
 
 export function isLocale(value: string): boolean {
@@ -68,7 +56,7 @@ export function validateIdentifier(pack: CountryPack, value: string, kind: strin
 
 /** Money from contract minor units in the pack's currency, formatted for the locale (no hard-coded currency anywhere). */
 export function formatMoney(minorUnits: string, currency: string, locale: string, options: { fractionDigits?: number | undefined } = {}): string {
-  const pack = PACKS.find((p) => p.currency.code === currency);
+  const pack = packs().find((p) => p.currency.code === currency);
   const meta = pack?.currency ?? currencyMeta(currency);
   const digits = meta.minorUnitDigits;
   const major = Number(minorUnits) / 10 ** digits;
@@ -156,7 +144,8 @@ const genericPacks = new Map<string, CountryPack>();
 export function genericPack(country: Country): CountryPack {
   const cached = genericPacks.get(country.code);
   if (cached) return cached;
-  const currency = currencyMeta(country.currency ?? 'USD');
+  // XXX is ISO 4217 "no currency": a country the dataset gives no currency is never assigned another country's.
+  const currency = currencyMeta(country.currency ?? 'XXX');
   const callingCode = country.callingCode && /^\+\d{1,4}$/.test(country.callingCode) ? country.callingCode : '+0';
   const pack: CountryPack = {
     schemaVersion: 2,

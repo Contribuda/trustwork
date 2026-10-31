@@ -8,13 +8,24 @@ A country pack tells the engine everything that differs between markets: languag
 
 Every country that is not a restricted place can be selected today with a generic profile (currency, calling code, time zone and names from `packages/country-packs/countries/countries.json`; no regions, a free-form registration number, English as the suggested language). A pack replaces that profile with real registration formats, regions, legal entity types, legal notes and a native dictionary.
 
+## The happy path needs no code (CFG-001)
+
+A deployment adds a country without changing or rebuilding the engine ([Deployment configuration](configuration.md)):
+
+1. Write the pack (sections 1 to 2a below) and save it as `<dataDir>/country-packs/<code>.json` in the deployment's data directory (`TRUSTWORK_DATA_DIR`).
+2. Add the dictionaries of any new language as `<dataDir>/locales/<tag>/` and `<dataDir>/ui-locales/<tag>.json` (section 3), and optionally demo-content overrides as `<dataDir>/fixtures/i18n/<tag>.json` (section 4).
+3. Optionally make it the starting country (`"countries": { "default": "<CODE>" }` in `trustwork.config.json`, or `TRUSTWORK_DEFAULT_COUNTRY`) and feature it (`countries.featured`).
+4. Restart the server. It validates every file with the schemas below and refuses to start on any problem (a restricted place, a fact without sources, a malformed file), listing them all in one log line.
+
+Sharing the pack with everyone (section 6) is the same file in `packages/country-packs/packs` plus one import line in `packages/country-packs/src/registry.ts`, because the repository's packs ship inside the browser bundle.
+
 ## 1. Check eligibility
 
 Restricted places (`packages/country-packs/packs/restricted.json`, ADR-009 decision 2) cannot have a pack and are rejected by the validator. Everything else is welcome.
 
 ## 2. Create the pack
 
-Copy `packages/country-packs/packs/uz.json` to `packs/<code>.json` (lower-case ISO 3166-1 alpha-2), add `"schemaVersion": 2` and fill every field. The schema is `CountryPackSchema` in `packages/country-packs/src/schema.ts`; the facets are in `src/facets.ts`:
+Copy `packages/country-packs/packs/us.json` (the model v2 pack) or `uz.json` (a small v1 pack) to `<code>.json` (lower-case ISO 3166-1 alpha-2) in your data directory's `country-packs/` (or in `packages/country-packs/packs/` for a contribution), set `"schemaVersion": 2` and fill every field. The schema is `CountryPackSchema` in `packages/country-packs/src/schema.ts`; the facets are in `src/facets.ts`:
 
 | Field | What to put | Source required |
 |---|---|---|
@@ -88,12 +99,13 @@ A federal country puts national facts on the pack and per-state facts on each re
 
 - `packages/ui/locales/<tag>.json`: the design-system dictionary; copy `en.json` and translate every key (plural forms follow CLDR for your language).
 - `apps/web/locales/<tag>/`: the application dictionary, one file per namespace ([Namespaces](../engine/localization.md#namespaces)); copy `apps/web/locales/en/` and keep every file. A `complete` pack translates every key; a `partial` pack translates at least the namespaces `core`, `demo` and `public` and the status enums, and leaves the keys it has not translated out of the other files (they fall back to English).
+- In a deployment, put them in the data directory instead (`<dataDir>/locales/<tag>/`, `<dataDir>/ui-locales/<tag>.json`); a file there replaces the built-in file of the same name.
 - No registration in code: the web server discovers both dictionaries from their files, and the language picker names the language through `Intl.DisplayNames`. A browser receives only the active language and only the namespaces its route uses. Formats need no registration either: the `Intl` tag is derived from the language and the visitor's country. See [Adding a language](../engine/localization.md#adding-a-language).
 - If your script is not covered by Golos Text (Latin, Cyrillic), add an OFL font subset with `unicode-range` as done for Georgian and Armenian (`packages/ui/fonts/PROVENANCE.md`, `apps/web/app/layout.tsx`) and regenerate the wordmark with `packages/ui/brand/tools/build-logo.py` if the deployment brand is localized.
 
 ## 4. Localize the demo content (optional)
 
-Demo fixtures are Russian base content with per-locale overrides in `apps/web/fixtures/i18n/<tag>.json` (`{ "<file>": { "json/pointer/path": "text" } }`). Resolution is per string: the locale's own override, then the English layer, then the base text. English must cover every base string, so a reader outside the Russian locale never sees Russian demo content (ADR-009 owner decision 10). `tests/web/fixtures.test.ts` checks that every pointer exists and parses, that the English layer is complete and that every other engine language overrides every English string, so no reader gets an English fallback either; `tests/web/locale-leak.spec.ts` renders every public page in each non-Russian locale and fails on any Cyrillic text.
+Demo fixtures are Russian base content with per-locale overrides in `apps/web/fixtures/i18n/<tag>.json` or a deployment's `<dataDir>/fixtures/i18n/<tag>.json` (`{ "<file>": { "json/pointer/path": "text" } }`), discovered by file name. Resolution is per string: the locale's own override, then the English layer, then the base text. English must cover every base string, so a reader outside the Russian locale never sees Russian demo content (ADR-009 owner decision 10). `tests/web/fixtures.test.ts` checks that every pointer exists and parses, that the English layer is complete and that every other engine language overrides every English string, so no reader gets an English fallback either; `tests/web/locale-leak.spec.ts` renders every public page in each non-Russian locale and fails on any Cyrillic text.
 
 ## 5. Validate
 
@@ -103,8 +115,10 @@ node --import tsx scripts/validate-country-packs.ts packs/xx.json
 npm test                                                         # pack, locale and fixture tests
 ```
 
-The validator (`packProblems` in `packages/country-packs/src/validate.ts`, also used by the script) lists every problem at once. It rejects restricted places as a pack, region or parent; identifier examples that do not match their pattern and duplicate identifier kinds; duplicate or foreign region codes and broken parent chains; invalid IANA time zones; facts without sources or verification level; rates that are not decimal strings between 0 and 100; adapters that do not exist in the engine; unknown unit codes; v2 fields in a file without `"schemaVersion": 2`; and a `complete` pack without dictionaries.
+For a deployment's data directory, starting the server is the check: `apps/web/instrumentation.ts` validates the configuration and every pack file with the same validator and stops with a list of problems (`tests/config/restart.test.ts` shows the cases).
+
+The validator (`packProblems` in `packages/country-packs/src/validate.ts`, also used by the script and the start-up check) lists every problem at once. It rejects restricted places as a pack, region or parent; identifier examples that do not match their pattern and duplicate identifier kinds; duplicate or foreign region codes and broken parent chains; invalid IANA time zones; facts without sources or verification level; rates that are not decimal strings between 0 and 100; adapters that do not exist in the engine; unknown unit codes; v2 fields in a file without `"schemaVersion": 2`; and a `complete` pack without dictionaries.
 
 ## 6. Open a pull request
 
-Use the "Add or update a country pack" issue template first, then a PR with the pack, dictionaries, tests and screenshots of the home page and a company page in the pack's default language (desktop 1440 px and phone 390 px). Country-pack maintainers (GOVERNANCE.md) review facts; the integrator reviews the engine changes.
+To share a pack with every deployment, add it to `packages/country-packs/packs/<code>.json` and its import to `BUILT_IN_PACKS` in `packages/country-packs/src/registry.ts`. Use the "Add or update a country pack" issue template first, then a PR with the pack, dictionaries, tests and screenshots of the home page and a company page in the pack's default language (desktop 1440 px and phone 390 px). Country-pack maintainers (GOVERNANCE.md) review facts; the integrator reviews the engine changes.

@@ -38,6 +38,7 @@ Solid arrows exist today; dotted arrows are designed. The API writes outbox rows
 | `packages/ui` | Design system: tokens, React Aria components, brand mark and wordmarks, media registry, locale dictionaries, Storybook |
 | `packages/i18n-runtime` | Request-scoped message store shared by server and client |
 | `packages/country-packs` | Country packs, restricted places, ISO country dataset, formatting helpers |
+| `packages/config` | Deployment configuration: the `trustwork.config.json` schema, environment overrides and the data-directory loader ([Deployment configuration](../country-packs/configuration.md)) |
 | `packages/compliance` | Ownership declaration and sanctions screening adapter |
 | `infra` | Local PostgreSQL compose file and the web Dockerfile |
 | `scripts` | Test runner, smoke test, docs validator, country-pack validator, open-source export |

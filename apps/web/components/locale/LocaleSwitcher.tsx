@@ -44,33 +44,36 @@ export function CountrySelect({ countries, value, onChange, className, id }: { c
 /**
  * Header control: the active country and language. Any country that is not a restricted place can be
  * combined with any engine language (owner decision 2026-10-29): the platform's own packs are one click
- * away, every other country sits in the select, and the language row is independent of the country.
+ * away, every other country sits in the select, and the language row is independent of the country. Without a
+ * country (none chosen and none configured, ADR 012 decision 11) the control says "Country" and asks for one.
  */
 export function LocaleSwitcher({ countries, languages, country, locale, tone = 'light' }: { countries: SwitcherCountry[]; languages: SwitcherLanguage[]; country: string; locale: string; tone?: 'light' | 'dark' }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const current = countries.find((c) => c.code === country) ?? countries[0];
+  const current = countries.find((c) => c.code === country) ?? null;
   const choose = (code: string, tag: string) => {
     writeLocaleCookies(code, tag);
     setOpen(false);
     startTransition(() => router.refresh());
   };
-  if (!current) return null;
+  if (!countries.length) return null;
   const featured = countries.filter((c) => c.featured);
+  const code = current ? current.code : t('locale.country');
+  const name = current ? current.name : t('locale.chooseCountry');
   return (
     <DialogTrigger isOpen={open} onOpenChange={setOpen}>
       {/* The accessible name starts with the visible text (WCAG 2.5.3) and then names the control. */}
-      <AriaButton className={`lsw lsw--${tone}`} aria-label={`${current.code} ${localeName(locale)} — ${t('locale.switcherLabel', { country: current.name, language: localeName(locale) })}`} isDisabled={pending}>
+      <AriaButton className={`lsw lsw--${tone}`} aria-label={`${code} ${localeName(locale)} — ${t('locale.switcherLabel', { country: name, language: localeName(locale) })}`} isDisabled={pending}>
         <Globe size={16} strokeWidth={2} aria-hidden="true" />
-        <span className="lsw__code">{current.code}</span>{' '}
+        <span className="lsw__code">{code}</span>{' '}
         <span className="lsw__lang">{localeName(locale)}</span>
         <ChevronDown size={14} strokeWidth={2} aria-hidden="true" />
       </AriaButton>
       <Popover placement="bottom end" offset={8} className="lsw-pop">
         <Dialog className="lsw-dialog" aria-label={t('locale.dialogLabel')}>
           <p className="lsw-dialog__title">{t('locale.country')}</p>
-          <p className="lsw-dialog__current">{current.name}</p>
+          <p className="lsw-dialog__current">{name}</p>
           <div className="lsw-featured" role="group" aria-label={t('locale.featured')}>
             {featured.map((c) => {
               const active = c.code === country;
