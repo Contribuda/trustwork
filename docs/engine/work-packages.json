@@ -526,7 +526,7 @@
       "id": "DATA-004",
       "title": "Migration layout for parallel slices: one directory per module, schema mirror per module",
       "area": "data",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/engine/architecture.md",
       "goal": "Let several packages add migrations at the same time without sharing a directory: the runner reads one subdirectory per module in global timestamp order, and the schema mirror is split per module.",

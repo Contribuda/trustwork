@@ -8,12 +8,16 @@ Status: DATA-001 delivered the first migrations (not applied to any shared envir
 
 | Path | Contents |
 |---|---|
-| `migrations/*.sql` | Immutable, timestamp-prefixed migrations (`YYYYMMDDHHMMSS_snake_name.sql`); seven files; `…120500_access_hardening.sql` and `…120600_membership_hardening.sql` carry the PR #13 review rounds |
+| `migrations/*.sql` | Foundation: the twelve applied, immutable, timestamp-prefixed migrations (`YYYYMMDDHHMMSS_snake_name.sql`); `…120500_access_hardening.sql` and `…120600_membership_hardening.sql` carry the PR #13 review rounds. They never move (their names and checksums are in every ledger) |
+| `migrations/<module>/*.sql` | Later slices, one directory per owning module (see "Parallel slices") |
 | `bin/migrate.mjs` | Runner CLI (`status`, `up`, `verify`) loading the TypeScript sources through `tsx` |
 | `src/migrate/` | Runner (`loadMigrations`, `migrateUp`, `verifyMigrations`, `migrationStatus`), directive parser, statement splitter |
 | `src/config.ts` | Connection options from `DATABASE_URL` or `TRUSTWORK_DATABASE_*`; `.env` is never read implicitly |
 | `src/pool.ts` | `createPool`, `withPrincipal`, `withMaintenance`, `PrincipalError` |
-| `src/schema.ts` | Hand-written Kysely `Database` model plus `SCHEMA_COLUMNS`, the runtime mirror a test diffs against the live catalogue |
+| `src/schema/index.ts` | Kysely `Database` (extends the foundation tables; module files merge theirs in by augmentation), `columnsOf`, `TableColumns`, `FOUNDATION_COLUMNS` |
+| `src/schema/foundation.ts` | Hand-written model of the foundation tables and its `TABLE_COLUMNS` runtime mirror |
+| `src/schema/<module>.ts` | One file per module slice: its tables and `TABLE_COLUMNS`; a test discovers the files by listing the directory and diffs their union against the live catalogue |
+| `src/schema.ts` | Compatibility re-export of `src/schema/index.ts` |
 | `src/repositories/` | `auth` (pre-identity definer calls incl. provider-first signup), `persons`/`emailBindings`/`credentials`/`sessions`/`authTokens`, `companies` (incl. `getPrivate`/`upsertPrivate`)/`memberships`, `participations`/`permissionGrants`, `projects` (incl. `applyOwnershipTransfer`)/`ownershipTransfers`/`leadershipAssignments`, `auditEvents`/`outbox`/`jobs` (incl. `expireLeases`, `reconcile`)/`idempotency`/`inbox` |
 
 Package entries: `@trustwork/data` (ports and model) and `@trustwork/data/migrate` (runner API). Sources are consumed directly like `@trustwork/contracts`; `npm run build -w @trustwork/data` emits `dist/` for packaging checks.
@@ -26,7 +30,37 @@ DATABASE_URL=... node packages/data/bin/migrate.mjs up
 DATABASE_URL=... node packages/data/bin/migrate.mjs verify      # exit 1 when an applied file was edited or removed
 ```
 
-`TRUSTWORK_DATABASE_HOST/PORT/NAME/USER/PASSWORD` is accepted instead of the URL; `--dir <path>` or `TRUSTWORK_MIGRATIONS_DIR` points at another directory (tests only). Exit codes: 0 ok, 1 failure or inconsistent ledger, 2 usage/configuration.
+`TRUSTWORK_DATABASE_HOST/PORT/NAME/USER/PASSWORD` is accepted instead of the URL; `--dir <path>` or `TRUSTWORK_MIGRATIONS_DIR` points at another directory (tests only). Exit codes: 0 ok, 1 failure or inconsistent ledger, 2 usage/configuration. The root scripts `npm run db:migrate`, `db:status` and `db:verify` wrap the three commands.
+
+## Parallel slices: one directory per module
+
+Several work packages add migrations at the same time without sharing a directory or a file (DATA-004, [ADR 012](../../docs/adr/012-integrator-decisions-2026-10-31.md) decision 15):
+
+```text
+packages/data/migrations/
+  20261027120000_core_functions.sql …     foundation: the twelve applied files, never moved or edited
+  admin/20261101090000_admin_roles.sql   DATA-002
+  plans/20261102090000_plan.sql          PLAN-…
+```
+
+- **Loading.** `loadMigrations` reads the SQL files of the root plus exactly one level of module directories (lower-case `[a-z][a-z0-9_-]*`) and orders all of them globally by file name, that is by the 14-digit timestamp; a module file can therefore run between two root files or between files of another module.
+- **Ledger identity.** The ledger keeps the bare file name (no directory) and the SHA-256 of the content, exactly as before: the foundation files load and verify unchanged on every existing database, and moving an unchanged file between module directories is not a re-application. File names must therefore be unique across the whole tree.
+- **Fail loudly.** A nested directory (`<module>/<sub>/`), a non-SQL file, a malformed file or module name, a symlink or other special entry, or the same file name in two directories (two modules, or a module and the root) aborts `status`, `verify` and `up` before anything is applied. Only `.gitkeep` and `.DS_Store` are ignored. Forward-only and out-of-order detection are unchanged and span all directories: a pending module file that sorts before the last applied migration is refused, so a slice whose timestamp was overtaken by a merged slice gets a new timestamp from the integrator before it merges.
+- **Ownership rule.** A package owns `packages/data/migrations/<module>/`, `packages/data/src/schema/<module>.ts` and `packages/data/src/repositories/<module>.ts`. It never edits another module's files, the foundation files or a shared file (`src/schema/index.ts`, `src/index.ts`); exporting a repository from the package entry is integrator bookkeeping. The data integrator still assigns timestamps at merge and owns the root.
+- **Schema mirror per module.** `src/schema/<module>.ts` exports its table interfaces, a `<Module>Database` interface, `TABLE_COLUMNS` built with `columnsOf<<Module>Database>()` (compile-time exhaustive) and merges its tables into the shared Kysely model by augmentation, so `Transaction` sees them without editing `index.ts`:
+
+  ```ts
+  import { columnsOf, type TableColumns } from './index.js';
+  export interface PlansDatabase { plan: PlanTable }
+  declare module './index.js' {
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- merges the module's tables into Database
+    interface Database extends PlansDatabase {}
+  }
+  const columns = columnsOf<PlansDatabase>();
+  export const TABLE_COLUMNS: TableColumns<PlansDatabase> = { plan: columns('plan', ['id', 'title', 'created_at']) };
+  ```
+
+  The module's repository imports `../schema/<module>.js`, which brings the augmentation into every program that uses it. `tests/data/migrations.test.ts` lists `src/schema/`, imports every file except `index.ts`, requires `TABLE_COLUMNS`, refuses a table mirrored by two files and compares the union with `information_schema` for every live table.
 
 Semantics:
 
@@ -83,7 +117,7 @@ The runtime role cannot read `credential.password_hash` (column privilege), cann
 
 `TRUSTWORK_TEST_PG_BACKEND=docker|embedded|none` forces a backend. Test files run in parallel processes, so `compose up` is retried when two files start the stack at the same time (the backend is the same for every file of a run). Each file creates and drops its own database (`trustwork_test_<name>_<hex>`) and a login role that is a member of `trustwork_app`; the cluster-level roles `trustwork_owner`/`trustwork_app` remain in the local compose cluster and the compose stack is deliberately left running afterwards (it is the developer's database); stop it with `npm run infra:down` (volume retained).
 
-Coverage (41 tests): migrate from empty, idempotent re-run, upgrade from the previous schema, checksum tamper (runner, `verify` CLI exit 1, `up` refusal), missing/out-of-order files, `expect-rows` rollback, owner without maintenance flag sees 0 rows, `no-transaction` concurrent index, failing migration leaves no ledger row, live schema vs `SCHEMA_COLUMNS`; RL-01, RL-03, RL-04, RL-05/05b/05c, RL-06, RL-07, RL-08, RL-12, RL-16, RL-17, RL-18 from the RLS plan; pooled connection after commit/rollback/error; concurrent `withPrincipal` isolation; single active employer (second active fails, ended → new allowed, reassignment and revival refused); stale epoch after membership end and after participation changes; cross-company denial, personal-project participant allowed, former member denied; capability vocabulary from the frozen contracts; XOR owner and transfer transitions; private company data and private projects closed without identity and to outsiders; every self-escalation path (self-join as administrator or with permissions, self-activation of a request, self-invitation through the employer branch, inviting without `company.members.manage`, self-promotion, widening/extending one's own participation, forged or duplicate owner rows, self-granted permissions, direct owner-column writes, manager self-transfer, consent by a non-recipient, expired transfers, verification columns); revision stability under epoch bumps; future `valid_from` gives no company context; append-only audit; definer lookups (minimal columns, dummy row, single-use tokens, duplicate registration, unverified recovery refused); outbox claim/publish with SKIP LOCKED; job lease, fencing (runtime role cannot move the token), retry, dead-letter, outcome_unknown, lease expiry parking and reconciliation (direct re-queue refused); provider-first signup; idempotency uniqueness; inbox deduplication; frozen-row trigger.
+Coverage: migrate from empty, idempotent re-run, upgrade from the previous schema, module layout (root plus module directories in global timestamp order; nested directory, non-SQL file, malformed names and duplicate names rejected; the twelve applied foundation files keep their names and checksums; an existing ledger is unchanged after upgrading the runner and a module migration is applied by `npm run db:migrate`; forward-only ordering across modules), checksum tamper (runner, `verify` CLI exit 1, `up` refusal), missing/out-of-order files, `expect-rows` rollback, owner without maintenance flag sees 0 rows, `no-transaction` concurrent index, failing migration leaves no ledger row, live schema vs the `TABLE_COLUMNS` of every `src/schema/` module file; RL-01, RL-03, RL-04, RL-05/05b/05c, RL-06, RL-07, RL-08, RL-12, RL-16, RL-17, RL-18 from the RLS plan; pooled connection after commit/rollback/error; concurrent `withPrincipal` isolation; single active employer (second active fails, ended → new allowed, reassignment and revival refused); stale epoch after membership end and after participation changes; cross-company denial, personal-project participant allowed, former member denied; capability vocabulary from the frozen contracts; XOR owner and transfer transitions; private company data and private projects closed without identity and to outsiders; every self-escalation path (self-join as administrator or with permissions, self-activation of a request, self-invitation through the employer branch, inviting without `company.members.manage`, self-promotion, widening/extending one's own participation, forged or duplicate owner rows, self-granted permissions, direct owner-column writes, manager self-transfer, consent by a non-recipient, expired transfers, verification columns); revision stability under epoch bumps; future `valid_from` gives no company context; append-only audit; definer lookups (minimal columns, dummy row, single-use tokens, duplicate registration, unverified recovery refused); outbox claim/publish with SKIP LOCKED; job lease, fencing (runtime role cannot move the token), retry, dead-letter, outcome_unknown, lease expiry parking and reconciliation (direct re-queue refused); provider-first signup; idempotency uniqueness; inbox deduplication; frozen-row trigger.
 
 ## Migration policy
 

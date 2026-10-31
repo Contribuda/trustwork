@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, rmSync, copyFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, copyFileSync, readdirSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { DEFAULT_MIGRATIONS_DIR, loadMigrations, migrationStatus, verifyMigrations, migrateUp } from '@trustwork/data/migrate';
 import { parseDirectives, splitStatements } from '../../packages/data/src/migrate/sql.js';
-import { SCHEMA_COLUMNS } from '@trustwork/data';
+import { FOUNDATION_COLUMNS } from '@trustwork/data';
 import { provisionTestDatabase, SKIP_REASON, sqlState } from './helpers/postgres.js';
 
 test('statement splitter keeps dollar-quoted bodies, strings and comments intact', () => {
@@ -35,6 +37,120 @@ test('repository migrations have canonical names, no transaction-free files and 
   for (const f of files) assert.equal(f.directives.noTransaction, false, `${f.filename} must be transactional`);
 });
 
+/**
+ * The twelve migrations applied before the module layout existed (DATA-001, BE-001, RAG-201). Their bare file names
+ * are the ledger identity and their SHA-256 checksums are recorded in every existing database: they must never move
+ * out of the flat root or change by a single byte.
+ */
+const APPLIED_FOUNDATION = [
+  ['20261027120000_core_functions.sql', '11d290467b110b7f0a0703a3e3aca4ecae2a69b8139ee881d380e201d94da149'],
+  ['20261027120100_identity.sql', '31c90b770defc347bd89f56ae8e2c8f68637fd0550d71e89f00ac0bf210fe575'],
+  ['20261027120200_company_access.sql', 'd2469d4703a056312ef0bdffd42933266e599fc655fda744449f2f923ab22240'],
+  ['20261027120300_projects.sql', '15998ca5a2974abf9809a60684d241aa5b6cf37d19f9fc872b7a200940d14a09'],
+  ['20261027120400_reliability.sql', 'b86b4dae3ce8187a93c70d968c72dfb992613df9ed771e313d840e81d693ccaf'],
+  ['20261027120500_access_hardening.sql', '9b8f3149d35e2d2995b4e5dc7429e9ef25f5ecf6086e8121ddc54e47e44ddd29'],
+  ['20261027120600_membership_hardening.sql', '257878898fc48c00303325c36263f02f18cbebdf94959a17b634ce60b0d63842'],
+  ['20261027120700_principal_mac.sql', '954e0ed1e133d15cb8b8a22e9c34839a829c523ce06574e924ebd64a0530cf04'],
+  ['20261027120800_admission.sql', '557e9b5982aa5854ea25a36f7476fccbc9d14c3b1433380081dd49ac6e4f67b0'],
+  ['20261027120900_identity_commands.sql', '21d49ec8d797c125f54e1824a7cbef52a00e4b7bfec105af77d5ac1063814886'],
+  ['20261027121000_public_reads.sql', 'a848629faea42cfd8d95c422c9eb6786a68a43e260c86587a12a923d9ed7b056'],
+  ['20261027121100_sweeper_and_review_fixes.sql', '9e0ff534f240f037b3f06e09f6a3a7257d7fdb9f545ff511c7555d773e59933f'],
+] as const;
+
+/** Verbatim behaviour of the loader before DATA-004 (flat directory, `.sql` only, sorted, SHA-256 of the UTF-8 text). */
+function previousRunnerLoad(directory: string): { filename: string; checksum: string }[] {
+  return readdirSync(directory).filter((name) => name.endsWith('.sql')).sort().map((filename) => ({ filename, checksum: createHash('sha256').update(readFileSync(join(directory, filename), 'utf8')).digest('hex') }));
+}
+
+/** Writes a migration tree: a copy of the repository tree (same layout) plus `{ 'module/file.sql': sql }` entries. */
+function writeTree(directory: string, extra: Record<string, string>, { repository = true } = {}): void {
+  rmSync(directory, { recursive: true, force: true });
+  mkdirSync(directory, { recursive: true });
+  if (repository) {
+    for (const f of loadMigrations(DEFAULT_MIGRATIONS_DIR)) {
+      mkdirSync(join(directory, f.module ?? ''), { recursive: true });
+      copyFileSync(f.path, join(directory, f.module ?? '', f.filename));
+    }
+  }
+  for (const [relative, sql] of Object.entries(extra)) {
+    const target = join(directory, ...relative.split('/'));
+    mkdirSync(join(target, '..'), { recursive: true });
+    writeFileSync(target, sql);
+  }
+}
+
+test('the twelve applied foundation migrations keep their root location, ledger names and checksums', () => {
+  const files = loadMigrations(DEFAULT_MIGRATIONS_DIR);
+  const byName = new Map(files.map((f) => [f.filename, f]));
+  for (const [filename, checksum] of APPLIED_FOUNDATION) {
+    const file = byName.get(filename);
+    assert.ok(file, `${filename} is still loaded`);
+    assert.equal(file.module, null, `${filename} stays in the flat root`);
+    assert.equal(file.path, join(DEFAULT_MIGRATIONS_DIR, filename));
+    assert.equal(file.checksum, checksum, `${filename} is byte-identical to the applied version`);
+  }
+  const root = files.filter((f) => f.module === null).map(({ filename, checksum }) => ({ filename, checksum }));
+  assert.deepEqual(root, previousRunnerLoad(DEFAULT_MIGRATIONS_DIR), 'the root loads exactly as the previous runner loaded it');
+});
+
+test('module layout: root plus one level of module directories, ordered globally by timestamp', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'trustwork-layout-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  writeTree(dir, {
+    '20300101000300_root_late.sql': 'SELECT 3;\n',
+    'plans/20300101000200_plan.sql': 'SELECT 2;\n',
+    'plans/20300101000400_plan_more.sql': 'SELECT 4;\n',
+    'knowledge/20300101000100_article.sql': '-- trustwork:expect-rows 0\nSELECT 1;\n',
+    'knowledge/.gitkeep': '',
+    'empty_module/.gitkeep': '',
+  }, { repository: false });
+  const files = loadMigrations(dir);
+  assert.deepEqual(files.map((f) => [f.module, f.filename]), [
+    ['knowledge', '20300101000100_article.sql'],
+    ['plans', '20300101000200_plan.sql'],
+    [null, '20300101000300_root_late.sql'],
+    ['plans', '20300101000400_plan_more.sql'],
+  ]);
+  assert.equal(files[0]?.path, join(dir, 'knowledge', '20300101000100_article.sql'));
+  assert.deepEqual(files[0]?.directives, { noTransaction: false, expectRows: { kind: 'exact', value: 0 } });
+  assert.equal(files[1]?.checksum, createHash('sha256').update('SELECT 2;\n').digest('hex'), 'checksum covers the file content only, not its directory');
+});
+
+test('module layout: nested directories, non-SQL files, malformed names and duplicate names fail loudly', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'trustwork-layout-bad-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const cases: [string, Record<string, string>, RegExp][] = [
+    ['two levels deep', { 'plans/v2/20300101000000_deep.sql': 'SELECT 1;\n' }, /Nested migration directory .*: plans\/v2/],
+    ['non-SQL file in a module', { 'plans/notes.md': '# notes\n' }, /Non-SQL file in the migrations directory: plans\/notes\.md/],
+    ['non-SQL file in the root', { 'README.txt': 'x\n' }, /Non-SQL file in the migrations directory: README\.txt/],
+    ['malformed file name in a module', { 'plans/2030_plan.sql': 'SELECT 1;\n' }, /not <timestamp>_<name>\.sql: plans\/2030_plan\.sql/],
+    ['malformed file name in the root', { '20300101000000_Upper.sql': 'SELECT 1;\n' }, /not <timestamp>_<name>\.sql: 20300101000000_Upper\.sql/],
+    ['malformed module name', { 'Plans/20300101000000_plan.sql': 'SELECT 1;\n' }, /module directory name .*: Plans/],
+    ['same name in two modules', { 'plans/20300101000000_shared.sql': 'SELECT 1;\n', 'knowledge/20300101000000_shared.sql': 'SELECT 2;\n' }, /Duplicate migration file name 20300101000000_shared\.sql in module knowledge and module plans/],
+    ['module file shadowing a root file', { 'plans/20261027120000_core_functions.sql': 'SELECT 1;\n' }, /Duplicate migration file name 20261027120000_core_functions\.sql in the root and module plans/],
+  ];
+  for (const [label, extra, expected] of cases) {
+    writeTree(dir, extra, { repository: label.includes('root file') });
+    assert.throws(() => loadMigrations(dir), expected, label);
+  }
+});
+
+test('every live table has exactly one mirror among the schema module files (discovered by listing the directory)', async () => {
+  const schemaDir = fileURLToPath(new URL('../../packages/data/src/schema/', import.meta.url));
+  const modules = readdirSync(schemaDir).filter((name) => name.endsWith('.ts') && !name.endsWith('.d.ts') && name !== 'index.ts').sort();
+  assert.ok(modules.includes('foundation.ts'));
+  const owners = new Map<string, string>();
+  for (const name of modules) {
+    const exported = (await import(pathToFileURL(join(schemaDir, name)).href)) as { TABLE_COLUMNS?: Record<string, readonly string[]> };
+    assert.ok(exported.TABLE_COLUMNS, `${name} exports TABLE_COLUMNS`);
+    for (const table of Object.keys(exported.TABLE_COLUMNS)) {
+      assert.equal(owners.get(table), undefined, `table ${table} is mirrored by both ${owners.get(table)} and ${name}`);
+      owners.set(table, name);
+    }
+  }
+  assert.deepEqual(Object.keys(FOUNDATION_COLUMNS).every((table) => owners.get(table) === 'foundation.ts'), true);
+});
+
 const db = await provisionTestDatabase('migrations');
 
 test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASON }, async (t) => {
@@ -45,7 +161,7 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
 
   await t.test('applies the package migrations from an empty database, then again as a no-op', async () => {
     const applied = await db.migrate();
-    assert.deepEqual(applied, readdirSync(DEFAULT_MIGRATIONS_DIR).filter((n) => n.endsWith('.sql')).sort());
+    assert.deepEqual(applied, loadMigrations(DEFAULT_MIGRATIONS_DIR).map((f) => f.filename));
     assert.deepEqual(await db.migrate(), []);
     const client = await db.admin.connect();
     try {
@@ -63,20 +179,108 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
     }
   });
 
-  await t.test('the hand-written Kysely model matches the live schema (tables and columns)', async () => {
+  await t.test('the hand-written Kysely model matches the live schema (tables and columns of every schema module file)', async () => {
+    const schemaDir = fileURLToPath(new URL('../../packages/data/src/schema/', import.meta.url));
+    const mirror: Record<string, readonly string[]> = {};
+    for (const name of readdirSync(schemaDir).filter((n) => n.endsWith('.ts') && !n.endsWith('.d.ts') && n !== 'index.ts')) {
+      const { TABLE_COLUMNS } = (await import(pathToFileURL(join(schemaDir, name)).href)) as { TABLE_COLUMNS: Record<string, readonly string[]> };
+      Object.assign(mirror, TABLE_COLUMNS);
+    }
     const { rows } = await db.admin.query<{ table_name: string; column_name: string }>(
       "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = 'trustwork' ORDER BY table_name, ordinal_position",
     );
     const live = new Map<string, string[]>();
     for (const row of rows) live.set(row.table_name, [...(live.get(row.table_name) ?? []), row.column_name]);
-    assert.deepEqual([...live.keys()].sort(), Object.keys(SCHEMA_COLUMNS).sort());
-    for (const [table, columns] of Object.entries(SCHEMA_COLUMNS)) assert.deepEqual([...(live.get(table) ?? [])].sort(), [...columns].sort(), `columns of ${table}`);
+    assert.deepEqual([...live.keys()].sort(), Object.keys(mirror).sort());
+    for (const [table, columns] of Object.entries(mirror)) assert.deepEqual([...(live.get(table) ?? [])].sort(), [...columns].sort(), `columns of ${table}`);
+  });
+
+  await t.test('upgrading the runner keeps the ledger of an existing database; a module migration is applied by npm run db:migrate', async () => {
+    type Row = { filename: string; checksum: string; applied_at: Date; applied_by: string; duration_ms: number; transactional: boolean };
+    const ledger = async () => (await db.admin.query<Row>('SELECT filename, checksum, applied_at, applied_by, duration_ms, transactional FROM trustwork.migration_ledger ORDER BY filename')).rows;
+    const before = await ledger();
+    // The existing database holds exactly what the previous (flat) runner recorded for the foundation files.
+    const previous = new Map(previousRunnerLoad(DEFAULT_MIGRATIONS_DIR).map((f) => [f.filename, f.checksum]));
+    const foundationRows = before.filter((r) => previous.has(r.filename));
+    assert.deepEqual(foundationRows.map((r) => [r.filename, r.checksum]), [...previous]);
+    assert.deepEqual(foundationRows.slice(0, APPLIED_FOUNDATION.length).map((r) => [r.filename, r.checksum]), APPLIED_FOUNDATION.map(([f, c]) => [f, c]));
+
+    const dir = join(scratch, 'modules');
+    writeTree(dir, {
+      'plans_probe/20991231000400_module_probe.sql': 'CREATE TABLE trustwork.module_probe (id uuid PRIMARY KEY DEFAULT trustwork.new_uuid());\nREVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;\n',
+      'plans_probe/.gitkeep': '',
+    });
+    const client = await db.admin.connect();
+    try {
+      const status = await migrationStatus(client, dir);
+      assert.deepEqual([status.mismatched, status.missing, status.outOfOrder], [[], [], []], 'no checksum mismatch, nothing missing, nothing out of order');
+      assert.deepEqual(status.pending.map((f) => [f.module, f.filename]), [['plans_probe', '20991231000400_module_probe.sql']], 'nothing is re-applied');
+    } finally {
+      client.release();
+    }
+    const env = { ...process.env, DATABASE_URL: db.adminConfig.connectionString as string };
+    const npm = process.env.npm_execpath ? [process.execPath, [process.env.npm_execpath]] as const : ['npm', []] as const;
+    const run = spawnSync(npm[0], [...npm[1], 'run', '--silent', 'db:migrate', '--', '--dir', dir], { encoding: 'utf8', env });
+    assert.equal(run.status, 0, run.stderr);
+    assert.match(run.stdout, /applying 20991231000400_module_probe\.sql[\s\S]*applied 1 migration\(s\)/);
+    const after = await ledger();
+    assert.deepEqual(after.slice(0, before.length), before, 'existing ledger rows are untouched (same names, checksums, timestamps)');
+    assert.deepEqual(after.slice(before.length).map((r) => r.filename), ['20991231000400_module_probe.sql']);
+    const probe = await db.admin.query("SELECT to_regclass('trustwork.module_probe') IS NOT NULL AS present");
+    assert.equal(probe.rows[0]?.present, true);
+    const verify = spawnSync(process.execPath, ['packages/data/bin/migrate.mjs', 'verify', '--dir', dir], { encoding: 'utf8', env });
+    assert.equal(verify.status, 0, verify.stderr);
+    assert.match(verify.stdout, new RegExp(`verified ${before.length + 1} applied migration\\(s\\); 0 pending`));
+    const again = spawnSync(process.execPath, ['packages/data/bin/migrate.mjs', 'up', '--dir', dir], { encoding: 'utf8', env });
+    assert.equal(again.status, 0, again.stderr);
+    assert.match(again.stdout, /nothing to apply/);
+    await db.admin.query('DROP TABLE trustwork.module_probe');
+    await db.admin.query("DELETE FROM trustwork.migration_ledger WHERE filename = '20991231000400_module_probe.sql'");
+  });
+
+  await t.test('a migration two levels deep or a name shared by two modules makes the runner fail without applying anything', async () => {
+    const env = { ...process.env, DATABASE_URL: db.adminConfig.connectionString as string };
+    const count = async () => (await db.admin.query<{ n: number }>('SELECT count(*)::int AS n FROM trustwork.migration_ledger')).rows[0]?.n;
+    const before = await count();
+    const deep = join(scratch, 'deep');
+    writeTree(deep, { 'plans/20991231000500_ok.sql': 'SELECT 1;\n', 'plans/v2/20991231000600_deep.sql': 'SELECT 1;\n' });
+    const nested = spawnSync(process.execPath, ['packages/data/bin/migrate.mjs', 'up', '--dir', deep], { encoding: 'utf8', env });
+    assert.equal(nested.status, 1);
+    assert.match(nested.stderr, /Nested migration directory .*plans\/v2/);
+    const duplicate = join(scratch, 'duplicate');
+    writeTree(duplicate, { 'plans/20991231000700_same.sql': 'SELECT 1;\n', 'knowledge/20991231000700_same.sql': 'SELECT 1;\n' });
+    const client = await db.admin.connect();
+    try {
+      await assert.rejects(migrateUp(client, duplicate), /Duplicate migration file name 20991231000700_same\.sql in module knowledge and module plans/);
+      await assert.rejects(migrationStatus(client, deep), /Nested migration directory/);
+    } finally {
+      client.release();
+    }
+    assert.equal(await count(), before, 'nothing was recorded');
+  });
+
+  await t.test('forward-only ordering spans module directories: a module file older than an applied one is refused', async () => {
+    const dir = join(scratch, 'module-order');
+    writeTree(dir, { 'plans/20991231000800_applied.sql': 'SELECT 1;\n' });
+    assert.deepEqual(await db.migrate(dir), ['20991231000800_applied.sql']);
+    writeTree(dir, { 'plans/20991231000800_applied.sql': 'SELECT 1;\n', 'knowledge/20991231000750_late_merge.sql': 'SELECT 1;\n' });
+    const client = await db.admin.connect();
+    try {
+      const status = await migrationStatus(client, dir);
+      assert.deepEqual(status.outOfOrder, ['20991231000750_late_merge.sql']);
+      await assert.rejects(migrateUp(client, dir), /20991231000750_late_merge\.sql sorts before an already applied migration/);
+      writeTree(dir, { 'knowledge/20991231000800_applied.sql': 'SELECT 1;\n' });
+      const moved = await migrationStatus(client, dir);
+      assert.deepEqual([moved.mismatched, moved.missing, moved.pending], [[], [], []], 'the ledger identity is the file name, so moving an unchanged file between modules is not a re-application');
+    } finally {
+      client.release();
+    }
+    await db.admin.query("DELETE FROM trustwork.migration_ledger WHERE filename LIKE '2099%'");
   });
 
   await t.test('applying from the previous schema: a later migration only adds its own objects', async () => {
     const dir = join(scratch, 'upgrade');
     rmSync(dir, { recursive: true, force: true });
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(dir);
     for (const f of loadMigrations(DEFAULT_MIGRATIONS_DIR)) copyFileSync(f.path, join(dir, f.filename));
     writeFileSync(join(dir, '20991231000000_follow_up.sql'), "CREATE TABLE trustwork.follow_up (id uuid PRIMARY KEY DEFAULT trustwork.new_uuid());\n");
@@ -87,7 +291,6 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
 
   await t.test('a tampered applied migration is detected by status and verify, and up refuses', async () => {
     const dir = join(scratch, 'tamper');
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(dir);
     const files = loadMigrations(DEFAULT_MIGRATIONS_DIR);
     for (const f of files) copyFileSync(f.path, join(dir, f.filename));
@@ -116,7 +319,6 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
 
   await t.test('a missing applied file and an out-of-order pending file are refused', async () => {
     const dir = join(scratch, 'order');
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(dir);
     const files = loadMigrations(DEFAULT_MIGRATIONS_DIR);
     for (const f of files.slice(1)) copyFileSync(f.path, join(dir, f.filename));
@@ -134,7 +336,6 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
 
   await t.test('expect-rows aborts and rolls back a data migration that touched the wrong number of rows', async () => {
     const dir = join(scratch, 'rows');
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(dir);
     for (const f of loadMigrations(DEFAULT_MIGRATIONS_DIR)) copyFileSync(f.path, join(dir, f.filename));
     writeFileSync(join(dir, '20991231000100_seed_three.sql'), "-- trustwork:expect-rows 3\nINSERT INTO trustwork.company (display_name) VALUES ('Rows A'), ('Rows B');\n");
@@ -185,7 +386,6 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
 
   await t.test('a no-transaction migration runs statement by statement (CREATE INDEX CONCURRENTLY)', async () => {
     const dir = join(scratch, 'concurrent');
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(dir);
     for (const f of loadMigrations(DEFAULT_MIGRATIONS_DIR)) copyFileSync(f.path, join(dir, f.filename));
     writeFileSync(join(dir, '20991231000200_concurrent_index.sql'), '-- trustwork:no-transaction\nCREATE INDEX CONCURRENTLY IF NOT EXISTS company_display_name_idx ON trustwork.company (display_name);\nCREATE INDEX CONCURRENTLY IF NOT EXISTS company_claim_idx ON trustwork.company (claim_status);\n');
@@ -202,7 +402,6 @@ test('migration runner against real PostgreSQL', { skip: db ? false : SKIP_REASO
 
   await t.test('a failing migration leaves the ledger untouched and the transaction rolled back', async () => {
     const dir = join(scratch, 'failing');
-    const { mkdirSync } = await import('node:fs');
     mkdirSync(dir);
     for (const f of loadMigrations(DEFAULT_MIGRATIONS_DIR)) copyFileSync(f.path, join(dir, f.filename));
     writeFileSync(join(dir, '20991231000300_broken.sql'), "CREATE TABLE trustwork.half (id int);\nINSERT INTO trustwork.half VALUES ('not an int');\n");
