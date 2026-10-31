@@ -8,7 +8,9 @@ import { expectError, SKIP_REASON, startHarness, type Client } from '../../backe
 import { login, PASSWORDS, seedPersonas } from '../../backend/helpers/personas.js';
 import { elevate, enrol } from '../../backend/second-factor/helpers.js';
 import { lockWaiters, until } from '../../backend/idempotency/helpers.js';
-import { draft, ok } from '../../assistant/helpers.js';
+import { draft, ok, workerLogin } from '../../assistant/helpers.js';
+import { baselineIds } from '../../screening-lists/helpers.js';
+import { activateList, CONS_ENTRIES, screen, SDN_ENTRIES } from '../../screening/helpers.js';
 import { FakeEgress } from '../../../apps/api/src/modules/connections/oauth/oauth.module.js';
 import {
   authorizeCode, authorizeUrl, bearer, call, consent, exchange, form, get, locationOf, MCP, MCP_ADMIN, ORIGIN, pkce, REDIRECT, refresh, registerClient, requestHandle,
@@ -325,7 +327,24 @@ test('the MCP authorization server', { skip: h ? false : SKIP_REASON, timeout: 3
     const xenia = await signedIn('xenia');
     const tokens = await tokensFor(h, xenia, clientId, { prompt: 'consent' });
     const page = locationOf(await xenia.get(authorizeUrl({ clientId, challenge: pkce().challenge, prompt: 'consent' })));
-    await withMaintenance(h.db.admin, (trx) => trx.insertInto('screening_subject_state').values({ subject_person_id: people.xenia, names_digest: 'a'.repeat(64), money_held: true, suspended: true }).execute());
+    // A real possible match from the SANC-003 matcher (synthetic list entry and name), then the confirmation's effect on
+    // the records (the staff decision flow itself is covered by tests/screening).
+    const workers = await workerLogin(h);
+    try {
+      const worker = workers.pool(2);
+      await withMaintenance(h.db.admin, (trx) => trx.updateTable('screening_list').set({ min_entries: 1, max_drop_share: '0.99' }).where('baseline', '=', true).execute());
+      const lists = await baselineIds(h.db.admin);
+      await activateList(worker, lists.sdn, SDN_ENTRIES);
+      await activateList(worker, lists.cons, CONS_ENTRIES);
+      await withMaintenance(h.db.admin, (trx) => trx.updateTable('person').set({ display_name: 'Milo Fictivsky' }).where('id', '=', people.xenia).execute());
+      assert.equal((await screen(worker, { kind: 'person', id: people.xenia }, undefined, 'name_change')).outcome, 'possible_match');
+    } finally {
+      await workers.close();
+    }
+    await withMaintenance(h.db.admin, async (trx) => {
+      await trx.updateTable('screening_match').set({ state: 'confirmed', decided_at: new Date() }).where('subject_person_id', '=', people.xenia).execute();
+      await trx.updateTable('screening_subject_state').set({ suspended: true, money_held: true }).where('subject_person_id', '=', people.xenia).execute();
+    });
     assert.equal((await call(server, '/mcp', bearer(tokens.access_token))).status, 401);
     assert.equal((await refresh(h, clientId, tokens.refresh_token)).body.error, 'invalid_grant');
     expectError(await xenia.post('/v1/oauth/requests/decision', { request: requestHandle(page), decision: 'allow', consentTextVersion: 1 }, { idempotencyKey: null }), 403, 'auth.compliance_suspended');
