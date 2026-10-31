@@ -543,53 +543,50 @@ test('editorial items: only a person approves; AI images labelled; blockers from
   assert.deepEqual(codes(c.editorialApprovalBlockers(licensedImage, source.allowedUses)), ['licence_forbids_image_reuse']);
 });
 
-/* ---------- Agent product ---------- */
+/* ---------- Agent product: AGT-002 owns the vocabulary, the console adds hub-side concerns ---------- */
 
-const agentModule: c.AgentModuleVersion = { id: 'am1', hubId: 'hub-us', key: 'rfq_responder', version: 1, actions: ['prepare', 'send_quote', 'communicate'], eligibility: { principals: ['company_member', 'company_representative'], requireVerifiedCompany: false }, modelRoutes: [{ job: 'agent_drafting', routeId: 'r2' }], limits: { runsPerDay: 50, actionsPerDay: 20, maxConcurrentRuns: 2, tokensPerMonth: 2_000_000, outreachPerWeek: 20 }, metering: { unit: 'run', freeUnitsPerMonth: 30 }, status: 'active', draftedBy: 'p-1', activatedBy: 'p-1', approvalId: null };
-test('agent modules: commitments only for verified companies and with two people; outreach quotas; activation recorded', () => {
-  ok(c.AgentModuleVersionSchema, agentModule);
-  bad(c.AgentModuleVersionSchema, { ...agentModule, limits: { ...agentModule.limits, outreachPerWeek: null } }, 'communicating modules carry an outreach quota');
-  bad(c.AgentModuleVersionSchema, { ...agentModule, activatedBy: null }, 'activation is recorded');
-  const commit = { ...agentModule, key: 'order_desk', actions: ['place_order' as const] };
-  bad(c.AgentModuleVersionSchema, commit, 'commitment actions are available only to verified companies');
-  bad(c.AgentModuleVersionSchema, { ...commit, eligibility: { ...agentModule.eligibility, requireVerifiedCompany: true } }, 'enabling commitment actions needs a second person');
-  ok(c.AgentModuleVersionSchema, { ...commit, eligibility: { ...agentModule.eligibility, requireVerifiedCompany: true }, activatedBy: 'p-2', approvalId: 'ap-7' });
+test('agent product: no parallel schemas; plans, meter rates, manifests, policy and connections come from AGT-002', () => {
+  const exported = c as unknown as Record<string, unknown>;
+  for (const parallel of ['AgentModuleVersionSchema', 'MeteredPriceVersionSchema', 'AgentPlanVersionSchema', 'ExternalAgentClientSchema', 'MeteringUnitSchema', 'meteredVersionsOverlap']) {
+    assert.equal(exported[parallel], undefined, `${parallel} is not part of the console contract`);
+  }
+  assert.ok(exported.SubscriptionPlanVersionSchema && exported.MeterRateVersionSchema && exported.AgentModuleManifestSchema && exported.ExternalConnectionSchema && exported.HubAgentPolicySchema);
+  for (const name of ['AgentModuleVersion', 'MeteredPriceVersion', 'AgentPlanVersion', 'ExternalAgentClient', 'HubAgentPolicy']) assert.equal(name in c.HUB_CONSOLE_SCHEMAS, false, name);
+  const connection = c.AGENT_CATALOG_EXAMPLES.ExternalConnection[0]!;
+  ok(c.ExternalConnectionSchema, connection, 'AGT-002 example connection');
+  for (const scope of ['read.public', 'read.private', 'act']) ok(c.ConnectionScopeSchema, scope);
+  for (const scope of ['read_public', 'act_under_mandate']) refused(c.ConnectionScopeSchema, scope, `${scope} is not a connection scope`);
 });
 
-test('metered prices: cost vs sale, margin, second-person activation, no back-dating or overlap; plans cannot buy ranking', () => {
-  const p: c.MeteredPriceVersion = { id: 'mp1', hubId: 'hub-us', offerId: 'off-agent', moduleKey: 'rfq_responder', unit: 'run', version: 1, currency: 'USD', costPricePerUnitMinor: '3.25', costBasis: 'measured_average', salePricePerUnitMinor: '10', effectiveFrom: '2026-11-15T00:00:00Z', effectiveTo: null, acceptanceTextVersion: 'agent-terms-1', status: 'active', draftedBy: 'p-5', activatedBy: 'p-1', activatedAt: at };
-  ok(c.MeteredPriceVersionSchema, p);
-  assert.equal(c.unitMargin(p), '6.75');
+test('agent policy changes: enabling a commitment module or an extension needs a second person', () => {
+  const policy = c.AGENT_CATALOG_EXAMPLES.HubAgentPolicy[0]! as c.HubAgentPolicy;
+  ok(c.HubAgentPolicySchema, policy, 'AGT-002 example policy');
+  const manifests = [
+    { key: 'rfq_responder', version: '1.0.0', actions: ['prepare', 'send_quote', 'communicate'] as c.MandateActionV2[] },
+    { key: 'order_desk', version: '1.0.0', actions: ['place_order', 'accept_order'] as c.MandateActionV2[] },
+  ];
+  const base = { enabledModules: [{ moduleKey: 'rfq_responder', moduleVersion: '1.0.0', freeQuota: [], settings: {} }], activeExtensionVersionIds: [] as string[] };
+  assert.deepEqual(c.agentPolicySecondPersonActions(base, base, manifests), [], 'no change needs nobody');
+  const withOrders = { ...base, enabledModules: [...base.enabledModules, { moduleKey: 'order_desk', moduleVersion: '1.0.0', freeQuota: [], settings: {} }] };
+  assert.deepEqual(c.agentPolicySecondPersonActions(base, withOrders, manifests), ['agents.enable_commitment_module']);
+  assert.deepEqual(c.agentPolicySecondPersonActions(null, base, manifests), [], 'a non-commitment module is one person');
+  assert.deepEqual(c.agentPolicySecondPersonActions(withOrders, withOrders, manifests), [], 'already enabled');
+  assert.deepEqual(c.agentPolicySecondPersonActions(base, { ...base, activeExtensionVersionIds: ['extv-1'] }, manifests), ['agents.activate_extension']);
+  assert.deepEqual(c.agentPolicySecondPersonActions(null, { ...withOrders, activeExtensionVersionIds: ['extv-1'] }, manifests), ['agents.enable_commitment_module', 'agents.activate_extension']);
+  assert.deepEqual([...c.COMMITMENT_MANDATE_KINDS], ['place_order', 'accept_order']);
+});
+
+test('cost beside sale price: operator cost estimates for AGT-002 meter rates and the unit margin', () => {
+  const estimate = { id: 'mc1', hubId: 'hub-us', meterRateVersionId: 'mr-1', currency: 'USD', costPerThousandUnitsMinor: '3.25', costBasis: 'measured_average', observedAt: at };
+  ok(c.MeterCostEstimateSchema, estimate);
+  bad(c.MeterCostEstimateSchema, { ...estimate, costPerThousandUnitsMinor: '-1' }, 'a cost estimate is non-negative');
+  refused(c.MeterCostEstimateSchema, { ...estimate, salePrice: '10' }, 'the sale price lives in the meter rate version');
+  assert.equal(c.unitMargin({ costPricePerUnitMinor: '3.25', salePricePerUnitMinor: '10' }), '6.75');
   assert.equal(c.unitMargin({ costPricePerUnitMinor: '12.5', salePricePerUnitMinor: '10' }), '-2.5');
   assert.equal(c.unitMargin({ costPricePerUnitMinor: '0.1', salePricePerUnitMinor: '0.1' }), '0');
-  bad(c.MeteredPriceVersionSchema, { ...p, activatedBy: 'p-5' }, 'activator must differ from drafter');
-  bad(c.MeteredPriceVersionSchema, { ...p, activatedAt: null }, 'non-draft versions record activation');
-  bad(c.MeteredPriceVersionSchema, { ...p, effectiveFrom: at }, 'effectiveFrom must be after activation (no back-dating)');
-  bad(c.MeteredPriceVersionSchema, { ...p, salePricePerUnitMinor: '-1' }, 'prices are non-negative');
-  bad(c.MeteredPriceVersionSchema, { ...p, effectiveTo: '2026-11-14T00:00:00Z' }, 'effectiveTo after effectiveFrom');
-  assert.ok(c.meteredVersionsOverlap(p, { ...p, id: 'mp2', version: 2 }));
-  assert.equal(c.meteredVersionsOverlap(p, { ...p, id: 'mp2', unit: 'action' }), false);
-  assert.equal(c.meteredVersionsOverlap(p, { ...p, id: 'mp2', effectiveFrom: '2026-12-01T00:00:00Z', effectiveTo: null, status: 'superseded' }), false);
-  const plan: c.AgentPlanVersion = { id: 'pl1', hubId: 'hub-us', offerId: 'off-pro', version: 1, payer: 'company', includes: [{ moduleKey: 'rfq_responder', unitsPerMonth: 200 }], trialDays: 14, status: 'active', draftedBy: 'p-5', activatedBy: 'p-1' };
-  ok(c.AgentPlanVersionSchema, plan);
-  refused(c.AgentPlanVersionSchema, { ...plan, rankingBoost: 2 }, 'no field can touch ranking');
-  bad(c.AgentPlanVersionSchema, { ...plan, activatedBy: 'p-5' }, 'activated by a different person');
-  bad(c.AgentPlanVersionSchema, { ...plan, includes: [...plan.includes, plan.includes[0]] }, 'each module once');
 });
 
-const externalClient: c.ExternalAgentClient = { id: 'ext-1', hubId: 'hub-us', actingFor: { personId: 'p-9', onBehalfOf: { kind: 'company', id: 'co-1' } }, protocol: 'mcp', label: 'Desktop agent', scopes: ['read_public', 'act_under_mandate'], privateDataClasses: [], privateOptInAt: null, credentialRef: secretRef, mandateRequired: true, rateLimit: { requestsPerMinute: 60, actionsPerDay: 100 }, status: 'active', createdAt: at, revokedAt: null };
-test('external agents act only for a person under mandates; private classes only by explicit opt-in; statistics are cohorts', () => {
-  ok(c.ExternalAgentClientSchema, externalClient);
-  refused(c.ExternalAgentClientSchema, { ...externalClient, mandateRequired: false }, 'mandates are always required');
-  refused(c.ExternalAgentClientSchema, { ...externalClient, scopes: ['staff_read'] }, 'never staff scopes');
-  bad(c.ExternalAgentClientSchema, { ...externalClient, status: 'revoked' }, 'revocation time recorded');
-  const optIn = 'private data reaches an external agent only after an explicit opt-in of the person, per class';
-  bad(c.ExternalAgentClientSchema, { ...externalClient, privateDataClasses: ['person_private'] }, optIn);
-  bad(c.ExternalAgentClientSchema, { ...externalClient, privateDataClasses: ['person_private'], privateOptInAt: at }, optIn);
-  const opted = { ...externalClient, scopes: ['read_public' as const, 'read_own' as const], privateDataClasses: ['person_private' as const], privateOptInAt: at };
-  ok(c.ExternalAgentClientSchema, opted);
-  bad(c.ExternalAgentClientSchema, { ...opted, privateDataClasses: ['person_private', 'person_private'] }, 'each data class once');
-  refused(c.ExternalAgentClientSchema, { ...opted, privateDataClasses: ['public'] }, 'public is not a private class');
+test('agent statistics are cohorts', () => {
   const stat = { hubId: 'hub-us', from: at, to: later, moduleKey: 'rfq_responder', activePrincipals: null, runs: 120, actionsSucceeded: 40, actionsEscalatedToHumans: 12, outcomeUnknown: 1, cost: { minorUnits: '3900', currency: 'USD' }, revenue: { minorUnits: '12000', currency: 'USD' } };
   ok(c.AgentUsageStatSchema, stat);
   refused(c.AgentUsageStatSchema, { ...stat, activePrincipals: 3 }, 'small cohorts are suppressed');
@@ -615,37 +612,22 @@ test('jurisdiction settings: a sensitive configuration domain with sourced pack 
   assert.ok(c.consoleActionNeedsSecondPerson('jurisdiction.activate_settings'));
 });
 
-const agentPolicy: c.HubAgentPolicy = {
-  hubId: 'hub-us', version: 1,
-  participantSettings: { areas: [...c.AGENT_SETTING_AREAS], previewShown: true, explanationShown: true, settingsAuthorizeByThemselves: false },
-  outreachPerPersonPerWeek: 20, channels: ['platform', 'email'], commitmentsOnlyForVerifiedCompanies: true, competitorsExchangePrices: false,
-  externalAgents: { defaultPrivateDataClasses: [], anonymousA2a: 'public_read_only' }, disclosureFrom: 'jurisdiction_settings',
-};
-test('hub agent policy: participants configure every area of their own agent; settings never authorize; external agents get no private data by default', () => {
-  ok(c.HubAgentPolicySchema, agentPolicy);
-  bad(c.HubAgentPolicySchema, { ...agentPolicy, participantSettings: { ...agentPolicy.participantSettings, areas: ['goals', 'modules'] } }, 'participants configure every area of their own agent; a hub cannot remove one');
-  bad(c.HubAgentPolicySchema, { ...agentPolicy, channels: ['email'] }, 'the platform channel is always available');
-  refused(c.HubAgentPolicySchema, { ...agentPolicy, participantSettings: { ...agentPolicy.participantSettings, settingsAuthorizeByThemselves: true } }, 'settings never authorize');
-  refused(c.HubAgentPolicySchema, { ...agentPolicy, externalAgents: { ...agentPolicy.externalAgents, defaultPrivateDataClasses: ['person_private'] } }, 'no private class by default');
-  refused(c.HubAgentPolicySchema, { ...agentPolicy, competitorsExchangePrices: true }, 'competitors never exchange prices');
-  refused(c.HubAgentPolicySchema, { ...agentPolicy, agentsListPerPerson: true }, 'no multi-agent management field');
-});
-
 const extension: c.AgentExtensionVersionRef = {
   id: 'extv-1', extensionId: 'ext-permits', hubId: 'hub-us', key: 'permit_lookup', version: 1, manifestDigest: digest,
-  declaredActions: [{ key: 'lookup_permit_status', mandateKind: 'research' }], dataClassesRead: ['public'], dataClassesSent: ['public'],
+  capabilityIds: ['permit_lookup.status'], dataClassesRead: ['public'], dataClassesSent: ['public'],
   endpoints: [{ host: 'permits.example.org', country: 'US' }], adapterId: 'permits_http', hasFakeAdapter: true,
   guards: { mandates: true, budgets: true, approvals: true, killSwitches: true, egress: true, privacyRules: true, restrictedPlaces: true, untrustedTextNeverCommands: true },
   safetySuite: { runId: 'eval-1', onFakeAdapter: true, passed: true, engineVersion: '0.1.0', at }, status: 'active', draftedBy: 'p-1', approvedBy: 'p-2', approvalId: 'ap-8', activatedConfigVersionId: 'cv-ext-1',
 };
-test('agent extensions: every action maps to a mandate kind; guards cannot be switched off; activation needs a passed suite, a second person and a config version', () => {
+test('agent extensions: AGT-002 capabilities with mandate kinds; guards cannot be switched off; activation needs a passed suite, a second person and a config version', () => {
   ok(c.AgentExtensionVersionRefSchema, extension);
   ok(c.AgentExtensionVersionRefSchema, { ...extension, status: 'draft', safetySuite: null, approvedBy: null, approvalId: null, activatedConfigVersionId: null });
-  refused(c.AgentExtensionVersionRefSchema, { ...extension, declaredActions: [{ key: 'lookup_permit_status' }] }, 'an action without a mandate kind is rejected');
-  refused(c.AgentExtensionVersionRefSchema, { ...extension, declaredActions: [{ key: 'pay_invoice', mandateKind: 'move_money' }] }, 'only existing mandate kinds');
+  refused(c.AgentExtensionVersionRefSchema, { ...extension, capabilityIds: [] }, 'an extension adds at least one capability');
+  refused(c.AgentExtensionVersionRefSchema, { ...extension, capabilityIds: ['Permit Lookup'] }, 'capability id grammar');
+  bad(c.AgentExtensionVersionRefSchema, { ...extension, capabilityIds: ['other_ext.status'] }, 'capability ids are prefixed with the extension key');
   for (const guard of Object.keys(extension.guards)) refused(c.AgentExtensionVersionRefSchema, { ...extension, guards: { ...extension.guards, [guard]: false } }, `guard ${guard} cannot be bypassed`);
   refused(c.AgentExtensionVersionRefSchema, { ...extension, hasFakeAdapter: false }, 'an adapter with a fake');
-  bad(c.AgentExtensionVersionRefSchema, { ...extension, declaredActions: [...extension.declaredActions, extension.declaredActions[0]] }, 'each declared action once');
+  bad(c.AgentExtensionVersionRefSchema, { ...extension, capabilityIds: ['permit_lookup.status', 'permit_lookup.status'] }, 'each capability once');
   const suite = 'tested and active extensions passed their safety suite on the fake adapter';
   bad(c.AgentExtensionVersionRefSchema, { ...extension, safetySuite: { ...extension.safetySuite!, passed: false } }, suite);
   bad(c.AgentExtensionVersionRefSchema, { ...extension, status: 'tested', safetySuite: null, approvedBy: null, approvalId: null, activatedConfigVersionId: null }, suite);
@@ -654,6 +636,14 @@ test('agent extensions: every action maps to a mandate kind; guards cannot be sw
   bad(c.AgentExtensionVersionRefSchema, { ...extension, approvalId: null }, activation);
   bad(c.AgentExtensionVersionRefSchema, { ...extension, activatedConfigVersionId: null }, activation);
   bad(c.AgentExtensionVersionRefSchema, { ...extension, endpoints: [] }, 'data sent goes to a declared endpoint');
+  const source = { kind: 'extension' as const, extensionId: 'ext-permits', extensionVersion: 1 };
+  const cap = { id: 'permit_lookup.status', source, kind: 'commit' as const, mandateAction: 'research' as const };
+  assert.deepEqual(c.extensionCapabilityViolations(extension, [cap]), []);
+  assert.deepEqual(c.extensionCapabilityViolations(extension, []), ['capability_missing:permit_lookup.status']);
+  assert.deepEqual(c.extensionCapabilityViolations(extension, [{ ...cap, mandateAction: null }]), ['commit_without_mandate_kind:permit_lookup.status'], 'an action without a mandate kind is rejected');
+  assert.deepEqual(c.extensionCapabilityViolations(extension, [{ ...cap, source: { ...source, extensionVersion: 2 } }]), ['capability_not_from_this_extension:permit_lookup.status']);
+  assert.deepEqual(c.extensionCapabilityViolations(extension, [{ ...cap, source: { kind: 'module', moduleKey: 'permit_lookup', moduleVersion: '1.0.0' } }]), ['capability_not_from_this_extension:permit_lookup.status']);
+  assert.deepEqual(c.extensionCapabilityViolations(extension, [{ ...cap, kind: 'govern', mandateAction: null }]), ['extension_adds_governance:permit_lookup.status']);
   assert.deepEqual(c.restrictedPlaceViolations({ extensions: [{ ...extension, endpoints: [{ host: 'permits.example.org', country: 'RU' }] }] }, isRestricted), ['extension:extv-1:permits.example.org']);
   const privateExt = { ...extension, dataClassesSent: ['public', 'person_private'] as c.DataClass[] };
   ok(c.AgentExtensionVersionRefSchema, privateExt);
@@ -817,6 +807,10 @@ test('operations: backups are encrypted; a passed restore drill passed every che
 test('commands: strict, versioned, idempotent, with a reason; results name pending approvals', () => {
   const activate = { ...cmd, target: { record: 'marketplace_fee_version', id: 'fee-1' }, expectedRevision: 1, approvalId: 'ap-1', effectiveFrom: '2026-11-15T00:00:00Z' };
   ok(c.ActivateVersionCommandSchema, activate);
+  bad(c.ActivateVersionCommandSchema, { ...activate, approvalId: null }, 'prices, plans, meter rates, fees and extensions are activated only under a second-person approval');
+  for (const record of ['meter_rate_version', 'subscription_plan_version', 'price_version', 'agent_extension_version']) bad(c.ActivateVersionCommandSchema, { ...activate, target: { record, id: 'x' }, approvalId: null }, 'prices, plans, meter rates, fees and extensions are activated only under a second-person approval');
+  ok(c.ActivateVersionCommandSchema, { ...activate, target: { record: 'recommendation_rule', id: 'rr1' }, approvalId: null }, 'content-dependent records are decided by the owning use case');
+  for (const record of ['agent_module_version', 'metered_price_version', 'agent_plan_version']) refused(c.ActivateVersionCommandSchema, { ...activate, target: { record, id: 'x' } }, `${record} is not a console record`);
   refused(c.ActivateVersionCommandSchema, { ...activate, target: { record: 'reputation_snapshot', id: 'x' } }, 'reputation is never activated from the console');
   refused(c.ActivateVersionCommandSchema, { ...activate, reason: '' }, 'a reason is required');
   refused(c.ActivateVersionCommandSchema, { ...activate, contractVersion: undefined }, 'versioned');
@@ -863,7 +857,7 @@ function properties(name: string): { key: string; schema: Json; parent: Json; pa
 }
 
 test('JSON Schema: every console schema generates draft 2020-12 with a versioned id', () => {
-  assert.ok(Object.keys(jsonSchemas).length >= 60);
+  assert.ok(Object.keys(jsonSchemas).length >= 55, `${Object.keys(jsonSchemas).length} schemas`);
   for (const [name, schema] of Object.entries(jsonSchemas)) {
     assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema', name);
     assert.equal(schema.$id, `urn:trustwork:hub-console:${V}:${name}`);
@@ -923,7 +917,7 @@ test('no permission or field can set a score, position, badge or ranking weight'
 test('coverage: every refinement message and violation code of hub.ts was produced by a negative test above', () => {
   const constants: Record<string, unknown> = c as unknown as Record<string, unknown>;
   const messages = [...hubSource.matchAll(/message: (?:'([^']+)'|`([^`]+)`)/g)].map((m) => (m[1] ?? m[2]!).replace(/\$\{(\w+)\}/g, (_, k: string) => String(constants[k])));
-  assert.ok(messages.length >= 120, `found ${messages.length} messages`);
+  assert.ok(messages.length >= 110, `found ${messages.length} messages`);
   assert.equal(new Set(messages).size, messages.length, 'refinement messages are unique so each invariant is traceable');
   const missing = messages.filter((m) => !seenMessages.has(m));
   if (missing.length) console.log(missing);
