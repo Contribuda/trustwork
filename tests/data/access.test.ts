@@ -7,6 +7,16 @@ import { auth, auditEvents, companies, memberships, ownershipTransfers, particip
 import { provisionTestDatabase, SKIP_REASON, sqlState } from './helpers/postgres.js';
 import { principalFor, seedFixtures, type Seed } from './helpers/seed.js';
 
+// DATA-002 (packages/data/migrations/admin): staff commands and policy helpers executable by the runtime role, and
+// SECURITY DEFINER trigger functions (gap-free audit sequence, audit and access-log consistency) nobody may call.
+const ADMIN_DEFINERS = ['admin_add_case_note', 'admin_add_requester_note', 'admin_apply_sanction', 'admin_assign_role', 'admin_cancel_maintenance', 'admin_case_evidence',
+  'admin_case_grant_covers', 'admin_consume_approval', 'admin_decide_appeal', 'admin_decide_approval', 'admin_decide_case_grant', 'admin_decide_moderation_case', 'admin_declare_conflict',
+  'admin_end_conflict', 'admin_engage_kill_switch', 'admin_file_appeal', 'admin_has_any_permission', 'admin_has_permission', 'admin_lift_sanction',
+  'admin_may_audit', 'admin_may_log_access', 'admin_open_incident', 'admin_open_moderation_case', 'admin_open_own_support_case', 'admin_open_support_case', 'admin_release_kill_switch',
+  'admin_report_content', 'admin_request_approval', 'admin_request_case_grant', 'admin_requester_update_case', 'admin_revoke_case_grant', 'admin_revoke_role', 'admin_schedule_maintenance',
+  'admin_set_feature_flag', 'admin_update_incident', 'admin_update_support_case', 'admin_withdraw_approval'];
+const ADMIN_TRIGGER_DEFINERS = ['admin_access_log_guard', 'admin_audit_guard', 'admin_next_sequence'];
+
 const db = await provisionTestDatabase('access');
 
 test('identity and access persistence under the restricted runtime role', { skip: db ? false : SKIP_REASON }, async (t) => {
@@ -57,7 +67,9 @@ test('identity and access persistence under the restricted runtime role', { skip
     const profiles = ['bookmark', 'consent_record', 'experience_entry', 'follow', 'media_licence', 'person_preference', 'person_profile', 'portrait', 'profile_tombstone', 'reading_progress']; // PPL-001
     const secondFactor = ['recovery_code', 'second_factor', 'second_factor_challenge', 'second_factor_reset', 'session_elevation']; // BE-004
     const tasks = ['task_assignment', 'task_execution_record', 'task_invitation', 'task_offer', 'task_offer_private', 'task_request', 'task_request_private', 'task_request_version', 'task_review']; // TASK-001
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks].sort());
+    const admin = ['access_log_entry', 'admin_audit_event', 'admin_node', 'admin_sequence', 'appeal', 'case_access_grant', 'feature_flag', 'incident', 'kill_switch', 'maintenance_window', 'moderation_case',
+      'moderation_report', 'sanction', 'second_person_approval', 'staff_conflict_declaration', 'staff_role_assignment', 'staff_role_definition_version', 'support_case', 'support_case_note']; // DATA-002
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -82,12 +94,13 @@ test('identity and access persistence under the restricted runtime role', { skip
       'auth_clear_second_factor_failures', 'auth_lookup_second_factor_challenge', 'second_factor_reset_approve', 'second_factor_reset_cancel', 'second_factor_reset_execute', // BE-004
       'second_factor_reset_subject_addresses', 'second_factor_use_recovery_code', // BE-004
       'task_assignment_close_request', 'task_assignment_side', 'task_assignment_site', 'task_request_flag_stale', 'task_request_owned', 'task_request_visible', 'tasks_offer_for_share', // TASK-001
+      ...ADMIN_DEFINERS, ...ADMIN_TRIGGER_DEFINERS, // DATA-002
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files
     // worker entry points.
     const workerOnly = new Set(['ensure_monthly_partitions', 'release_job', 'worker_sweep_expired', 'sweep_expired', 'lease_jobs', 'reconcile_job',
-      'files_scan_target', 'files_record_scan', 'files_deletion_target', 'files_request_erasure', 'files_finish_deletion', 'files_apply_tombstone', 'files_expired_uploads', 'files_discard_upload']);
+      'files_scan_target', 'files_record_scan', 'files_deletion_target', 'files_request_erasure', 'files_finish_deletion', 'files_apply_tombstone', 'files_expired_uploads', 'files_discard_upload', ...ADMIN_TRIGGER_DEFINERS]);
     for (const row of rows) {
       assert.ok(row.proconfig?.some((c) => c === 'search_path=trustwork, pg_temp'), `${row.proname} pins search_path`);
       assert.equal(row.app_exec, !row.proname.startsWith('bump_') && !workerOnly.has(row.proname), `${row.proname} executable by trustwork_app only when allowlisted`);

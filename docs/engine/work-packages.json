@@ -1331,7 +1331,7 @@
       "id": "DATA-002",
       "title": "Administration persistence",
       "area": "data",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-003"
       ],
