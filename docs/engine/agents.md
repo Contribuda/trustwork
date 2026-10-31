@@ -1,5 +1,7 @@
 # Your agent: representation under your direction
 
+Normative requirements: [The agent and its runtime](modules/agent.md), [The capability registry](capability-registry.md). Participants: [who uses what](participants/README.md).
+
 Requirements R09–R11, R29, R35. Status: the assistant page and the floating overlay with mandates, approvals and runs from demo data are **Demo**; mandates, approvals, action states, external outcomes and reconciliation are **Contract**; the durable runtime is **Designed** (AST-001); goals, agent-to-agent negotiation, company mandates, the standing company representative, detailed participant agent settings, the governed extension registry and per-jurisdiction disclosure and liability settings are **Proposed** (AGT-001, AGT-022, AGT-023, HUB-005; [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 22; requirements R48–R50).
 
 Every participant keeps an agent that represents them in the industry. It looks for partners, presents their services, negotiates and pursues their goals, **under their direction and within limits they can read, change and revoke at any moment**. This chapter describes what the agent does, how its authority works, how agents of different participants deal with each other, and what keeps the whole thing safe.
@@ -63,7 +65,7 @@ A **mandate** is a structured, inspectable grant from you to your agent:
 | Approval policy | Which actions need your explicit approval and which are pre-authorized |
 | Escalation | What to do when a condition is missing: ask you, ask a named colleague, or stop |
 | Valid until | Expiry |
-| Revision and status | `draft → active → suspended | revoked | expired` |
+| Revision and status | `draft → active → suspended \| revoked \| expired` |
 
 Rules that never bend:
 

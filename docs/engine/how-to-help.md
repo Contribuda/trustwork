@@ -1,5 +1,7 @@
 # How to help
 
+Normative requirements: [Open-source governance and contribution](modules/open-source-governance.md). Participants: [who uses what](participants/README.md).
+
 Trustwork gets better every time someone who knows something shares it. You do not need to be a programmer, and you do not need permission to start: pick what matches what you know, and open an issue or a pull request. Everything is reviewed kindly and carefully.
 
 ## If you write code

@@ -1,5 +1,7 @@
 # Federation: one worldwide mesh
 
+Normative requirements: [Federation mesh](modules/federation-mesh.md). Participants: [who uses what](participants/README.md).
+
 Requirement R39. Status: **Proposed**. Architecture decision: [ADR 011](../adr/011-federation-mesh.md).
 
 Imagine a trade association that opens the engine for the United States, and a group of engineers who separately open it for Austin. With federation they do not compete for the same people; they complement each other. Austin's meetups appear in the national calendar, the national magazine reaches Austin readers, an Austin client can hire a Houston contractor, a supplier on a Mexico hub can answer a Texas request, and an engineer in Nairobi can read what a hub in Munich publishes on facade fire safety. Every deployment that joins makes every other one more useful. Together they form a mesh that can cover the world, with no central owner.

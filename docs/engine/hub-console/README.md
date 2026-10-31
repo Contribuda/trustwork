@@ -1,5 +1,7 @@
 # The hub console
 
+Normative requirements: [Hubs and the hub console](../modules/hubs-and-console.md), [Data mining and sources](../modules/data-mining-and-sources.md).
+
 Requirements R20, R28, R31, R36–R39 and ADR 010 decisions 5, 6, 9, 11, 19–22. Status: **Proposed** design (owner decisions of 2026-10-30 and 2026-10-31); the console contracts in [`packages/contracts/src/hub.ts`](../../../packages/contracts/src/hub.ts) are a **Contract**, frozen as version **1.0.0** by HUBC-000 ([Frozen contract](#frozen-contract)), with unit tests ([`tests/contracts/hub.test.ts`](../../../tests/contracts/hub.test.ts)). Nothing else in this folder is implemented. It extends [Hub administration](../hub-administration.md), which stays the source of the console's guard rails, staff roles and the counterparty-verification design.
 
 The hub console is what a person uses after installing Trustwork for their country or city. It must let an industry association, a trade publisher or one determined engineer go from an empty server to a lawful, useful, well-run hub **without writing code**: choose a country pack (or start from the generic profile), add regions and cities, languages, currency, identifiers and registers, connect their own keys and models, switch modules on, let an AI-assisted editorial office fill the hub with sourced content, mine public registers lawfully, price the agent product, serve users, and keep the whole system healthy. Every country-specific behaviour is data (packs, hub configuration) or an adapter; the console is where that data is edited.

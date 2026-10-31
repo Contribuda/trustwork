@@ -126,6 +126,25 @@ The engine uses a small set of words precisely. When a document, a contract or a
 | **Reputation passport** | A portable, verifiable bundle of a participant's credentials, portfolio, contributions and current snapshot, issued by the home hub as W3C Verifiable Credentials 2.0 (Open Badges 3.0 compatible), signed with the node key and revocable through status lists. The holder chooses what it contains. |
 | **Appeal** | A request to reconsider a review, an observation or a decision, decided by a different person than the original decider. |
 
+## Specification and agent parity
+
+| Term | Meaning |
+|---|---|
+| **Module specification** | The normative page of one module in [modules](modules/README.md): numbered requirements with status and packages, user stories, agent capabilities, interface surfaces, console settings, data, country variations, privacy, metrics, edge cases and a flow. |
+| **Requirement identifier** | `<module code>-F<nn>` (for example `PLN-F07`) for a module requirement; never reused; distinct from product requirements (`R41`) and work packages (`PLAN-001`). |
+| **Capability registry** | The one registry of operations (`<module>.<operation>`) that the interface, the agent runtime, MCP and A2A all use ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 23; contract in `agent-catalog.ts`). See [The capability registry](capability-registry.md). |
+| **Capability kind** | `read` (no change), `draft` (inert, owner-private), `commit` (shared state under a mandate) or `govern` (the person's own authority or account, performed only on the first-party form). |
+| **Confirmation (registry)** | How a capability is confirmed: `none`, `mandate` (the mandate's approval policy), `person_each` or `person_each_step_up` (a person every time), `first_party_form` or `first_party_step_up` (governance). |
+| **Parity report** | The CI report of capabilities missing the interface or the agent surface, or missing their MCP projection. |
+| **Handoff** | What the agent or an MCP client gets for a governance step: a link to the exact first-party page, never the power to perform it. |
+| **Participant type** | A lens for suggestions derived from preferences and activity; never a role and never shown to others. See [Participants](participants/README.md). |
+| **Request receipt** | What a client sees after sending a request: exactly which professionals received it and why; each recipient sees it was not sold and how many others received it (Proposed, MATCH-002). |
+| **Named-performer confirmation** | A licensed or certified person named on an offer or work record confirms it personally from their own account; otherwise the name shows "not confirmed" (Proposed, PERF-001). |
+| **Worker credential card** | A holder-presented, offline-verifiable credential (identity level, trainings, licences); verification is the holder's act and is never logged as attendance or location (Proposed, CRED-001). |
+| **Ranking statement** | A public statement per ranked surface of its main parameters and that payment has no influence, generated from configuration (Proposed, RANK-001). |
+| **Fair subscription controls** | Engine rules for paid hub plans: recurring price shown first, renewal reminders, cancel online as easily as joining, no termination fees, notice for price increases, no silently expiring credits (Proposed, BILL-004). |
+| **Statutory partner check** | Documents a client must legally check before contracting in a country (tax and pension status, insurance, registration), listed in the pack and shared by the contractor by consent (Proposed, PREQ-001). |
+
 ## Configuration and administration
 
 | Term | Meaning |

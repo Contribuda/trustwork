@@ -1,5 +1,7 @@
 # Hub administration: the operator's console
 
+Normative requirements: [Hubs and the hub console](modules/hubs-and-console.md), [Trust, safety, privacy and compliance](modules/trust-safety-privacy-compliance.md). Participants: [who uses what](participants/README.md).
+
 Requirements R37, R38, R20, R28. Status: administration permissions, audit events, case grants and second-person approvals are **Contract**; the platform administration backend is **Designed** (ADM-001); the hub console described here (built by ADM-002 and HUBC-002 … HUBC-010 under the HUB-002 umbrella; ADM-003 was superseded), its sources registry, verification recipes, screening configuration, launch checklist, jurisdiction settings (HUB-005), commission settings (BILL-003) and the agent extension registry (AGT-023) are **Proposed**. The project's own United States reference hub is described in [Hubs](hubs.md#the-reference-hub-united-states-decided).
 
 The complete console design (installation, setup wizard, keys and models, autonomous editorial office, data mining, automation, agent product, every module, support workspace, operations, data model view and screen contracts) is in [The hub console](hub-console/README.md); this chapter keeps the guard rails, roles and verification design it builds on.
