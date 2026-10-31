@@ -3674,10 +3674,10 @@
         },
         "sources": [
           {
-            "url": "https://www.uniformlaws.org/committees/community-home?CommunityKey=2c04b76c-2b7d-4399-977e-d5876ba7e034",
-            "what": "Uniform Law Commission, Electronic Transactions Act committee page",
+            "url": "https://www.uniformlaws.org/acts/catalog/current/e",
+            "what": "Uniform Law Commission catalogue: the Uniform Electronic Transactions Act (UETA) validates electronic records and signatures",
             "accessed": "2026-10-31",
-            "verification": "Enactment map not machine-read"
+            "verification": "The enactment map was not machine-read"
           }
         ],
         "verification": "secondary",
