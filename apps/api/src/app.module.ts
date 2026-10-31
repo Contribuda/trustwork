@@ -29,6 +29,7 @@ import { AttestationModule } from './modules/jurisdiction/attestation/attestatio
 import type { ConfiguredGateMode } from './modules/jurisdiction/attestation/attestation.service.js';
 import { HubsModule } from './modules/hubs/hubs.module.js';
 import { CommunicationsModule, type CommunicationsModuleOptions } from './modules/communications/communications.module.js';
+import { ConnectionsOAuthModule } from './modules/connections/oauth/oauth.module.js';
 
 @Controller()
 export class HealthController {
@@ -84,6 +85,8 @@ export class AppModule {
         FilesModule.forRoot(ctx, identity, { ...files, mandates: files.mandates ?? store.port(MODULE_KEYS.files) }),
         // COMMS-001: agent-written messages need a confirmed `communicate` mandate of the person's assistant.
         CommunicationsModule.forRoot(ctx, identity, { ...communications.options, mandates: communications.options.mandates ?? store.port(['correspondence']) }, communications.env),
+        // MCP-002: the hub authorization server for the MCP surfaces.
+        ConnectionsOAuthModule.forRoot(ctx, identity),
       ],
     };
   }

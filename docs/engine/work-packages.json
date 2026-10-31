@@ -4663,7 +4663,7 @@
       "id": "MCP-002",
       "title": "Authorization server: metadata, client registration, PKCE, resource indicators, tokens and consent records",
       "area": "assistant",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "AGT-002",
         "BE-004",
