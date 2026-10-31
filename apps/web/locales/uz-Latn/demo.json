@@ -6,7 +6,9 @@
       "anonymous": "Mehmon",
       "reader": "Kompaniyasiz oʻquvchi va muallif",
       "mixed": "Kompaniya xodimi: xarid qiladi va sotadi",
-      "owner": "Shaxsiy loyiha egasi"
+      "owner": "Shaxsiy loyiha egasi",
+      "seller": "Biznes egasi: ishlar va xizmatlarni sotadi",
+      "buyer": "Xaridor: loyihalar uchun xarid qiladi"
     },
     "noEmailSent": "Namoyish: xatlar yuborilmaydi, hisob yaratilmaydi.",
     "noAccountCreated": "Namoyish: hisob yaratilmaydi va kirish bajarilmaydi.",

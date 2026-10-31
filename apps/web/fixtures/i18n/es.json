@@ -233,7 +233,9 @@
     "sessions/1/device": "Navegador del teléfono",
     "sessions/1/location": "Samarcanda (aproximado)",
     "sessions/2/device": "Navegador de escritorio",
-    "sessions/2/location": "Bujará (aproximado)"
+    "sessions/2/location": "Bujará (aproximado)",
+    "leads/3/buyer": "Promotora de vivienda (ejemplo)",
+    "leads/3/request": "Acristalamiento de balcones, 120 ventanas"
   },
   "issues": {
     "issues/0/corrections/0/correction/reason": "Se corrigió el límite inferior de temperatura de los adhesivos en el artículo “Fachadas en invierno”.",

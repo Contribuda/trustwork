@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { E2E_DEFAULT_COUNTRY } from './demo-us/e2e-config.js';
 
 /**
  * Deployment configuration in the browser (CFG-001). The suite's main server runs like the hosted preview
@@ -65,6 +66,7 @@ test.describe('no default country configured', () => {
 });
 
 test.describe('hosted preview configuration', () => {
+  test.skip(E2E_DEFAULT_COUNTRY !== 'US', 'checks the hosted-preview configuration (TRUSTWORK_DEFAULT_COUNTRY=US)');
   test.use({ locale: 'en-US', storageState: { cookies: [], origins: [] } });
 
   test('English: a first visit starts in the United States, preselected in the gate', async ({ page }) => {
@@ -87,8 +89,8 @@ test.describe('country gate on a phone', () => {
       await page.goto('/');
       const gate = page.getByRole('dialog');
       await expect(gate).toBeVisible();
-      // The reference hub's default country is the first card.
-      await expect(gate.getByRole('radio').first()).toContainText('US');
+      // The configured default country (the reference hub's US unless TRUSTWORK_E2E_DEFAULT_COUNTRY says otherwise) is the first card.
+      await expect(gate.getByRole('radio').first()).toContainText(E2E_DEFAULT_COUNTRY);
       const confirm = gate.locator('.cg__actions .pub-btn');
       await expect(confirm).toBeEnabled();
       await expect(confirm).toBeInViewport({ ratio: 1 });
@@ -98,7 +100,7 @@ test.describe('country gate on a phone', () => {
       const box = await gate.boundingBox();
       expect(box && box.y + box.height).toBeLessThanOrEqual(viewport.height);
       await confirm.click();
-      await expect.poll(() => countryCookie(page)).toBe('US');
+      await expect.poll(() => countryCookie(page)).toBe(E2E_DEFAULT_COUNTRY);
     });
   }
 });

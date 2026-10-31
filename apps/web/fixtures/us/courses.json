@@ -1,0 +1,33 @@
+{
+  "synthetic": true,
+  "description": "Synthetic mini-courses of the United States demo hub's academy. Titles, durations and modules are invented for the demo; no certificate in this dataset has been issued.",
+  "courses": [
+    {
+      "id": "us-course-permit-set",
+      "slug": "reading-a-permit-set",
+      "title": "Reading a permit set",
+      "summary": "Site plan, structural sheets, details and schedules: where to find what an inspector will check.",
+      "durationMinutes": 75,
+      "modules": 5,
+      "topics": ["regulation", "projects"]
+    },
+    {
+      "id": "us-course-public-bids",
+      "slug": "bidding-on-public-work",
+      "title": "Bidding on public work: documents and deadlines",
+      "summary": "How to read a public solicitation, prepare the required forms and avoid losing on formalities.",
+      "durationMinutes": 90,
+      "modules": 6,
+      "topics": ["markets", "regulation"]
+    },
+    {
+      "id": "us-course-daily-logs",
+      "slug": "daily-logs-and-photo-evidence",
+      "title": "Daily logs and photo evidence",
+      "summary": "What to record every day so that changes, delays and disputes can be settled from the record.",
+      "durationMinutes": 45,
+      "modules": 3,
+      "topics": ["projects"]
+    }
+  ]
+}

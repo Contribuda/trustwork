@@ -1,5 +1,6 @@
 import { CompaniesFileSchema, IssuesFileSchema, PeopleFileSchema, ProjectsFileSchema, PublicationsFileSchema, WorkspaceFileSchema, EventsFileSchema, CoursesFileSchema } from '@/fixtures/schemas';
 import { localeTag } from '@trustwork/ui/i18n';
+import { getLocaleStore } from '@trustwork/i18n-runtime';
 import peopleJson from '@/fixtures/people.json';
 import companiesJson from '@/fixtures/companies.json';
 import projectsJson from '@/fixtures/projects.json';
@@ -8,42 +9,62 @@ import issuesJson from '@/fixtures/issues.json';
 import workspaceJson from '@/fixtures/workspace.json';
 import eventsJson from '@/fixtures/events.json';
 import coursesJson from '@/fixtures/courses.json';
+import usPeopleJson from '@/fixtures/us/people.json';
+import usCompaniesJson from '@/fixtures/us/companies.json';
+import usProjectsJson from '@/fixtures/us/projects.json';
+import usPublicationsJson from '@/fixtures/us/publications.json';
+import usIssuesJson from '@/fixtures/us/issues.json';
+import usWorkspaceJson from '@/fixtures/us/workspace.json';
+import usEventsJson from '@/fixtures/us/events.json';
+import usCoursesJson from '@/fixtures/us/courses.json';
 import { readFileSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { currentDeployment, dataPath, languageFiles } from '@trustwork/config/server';
+import { DATASETS, selectDataset, type DatasetId } from '@/fixtures/datasets';
+
+export { DATASETS, DATASET_IDS, datasetForCountry, selectDataset, type DatasetId } from '@/fixtures/datasets';
 
 /**
- * Fixture store: every file is parsed with its Zod envelope at module load, so an invalid fixture
- * fails `next build` (and `tests/web/fixtures.test.ts`) instead of rendering wrong data.
+ * Fixture store: every file is parsed with its Zod envelope at first use, so an invalid fixture fails
+ * `next build` (and `tests/web/fixtures.test.ts`, `tests/web/demo-us`) instead of rendering wrong data.
  * Server-only: fixtures never ship to the browser as a whole; pages pass projected view models.
  *
- * Demo content is written once (the base files, Russian) and localized by overrides in
- * `fixtures/i18n/<locale>.json`: `{ file: { "json/pointer/path": "text" } }`. Resolution is per string:
- * the locale's own override, then the English override, then the base text. English must cover every
- * base string (tests/web/fixtures.test.ts), so a reader outside the Russian locale never sees Russian
- * demo content (owner decision 2026-10-29, ADR-009 owner decision 10).
+ * Demo datasets (DEMO-US, `@/fixtures/datasets`): the United States reference hub (`us`, English base files in
+ * `fixtures/us`) and the original example hub (`example`, Russian base files in `fixtures`), both synthetic. Each request
+ * reads the dataset `selectDataset` picks from the visitor's country and the deployment's default country (CFG-001).
  *
- * Override files are data, discovered by name (CFG-001): every `fixtures/i18n/<tag>.json`, plus the deployment's
- * `<dataDir>/fixtures/i18n/<tag>.json` (which replaces a built-in file of the same language). A language with demo
- * content therefore needs no code change; the files are read once per process.
+ * Localization is per string: the locale's own override, then the English override, then the base text. The English
+ * layer covers every base string of the Russian-written dataset (tests/web/fixtures.test.ts), so a reader outside the
+ * Russian locale never sees Russian demo content (owner decision 2026-10-29, ADR-009 owner decision 10); the US
+ * dataset is English already and every other engine language carries its own copy (tests/web/demo-us).
+ *
+ * Override files are data, discovered by name (CFG-001): every built-in `<dataset>/i18n/<tag>.json`, plus the
+ * deployment's `<dataDir>/fixtures/i18n/<tag>.json` for the example dataset and `<dataDir>/fixtures/us/i18n/<tag>.json`
+ * for the US dataset (each replaces a built-in file of the same language). A language with demo content therefore
+ * needs no code change; the files are read once per process.
  */
 type Overrides = Record<string, Record<string, string>>;
-const fromApp = process.cwd().endsWith(`${sep}apps${sep}web`);
-const FIXTURE_I18N_DIR = resolve(process.cwd(), fromApp ? 'fixtures/i18n' : 'apps/web/fixtures/i18n');
-const OVERRIDES: Record<string, Overrides> = Object.fromEntries(
-  [...languageFiles(FIXTURE_I18N_DIR), ...languageFiles(dataPath(currentDeployment(), 'fixtures'))].map(([tag, path]) => [tag, JSON.parse(readFileSync(path, 'utf8')) as Overrides]),
-);
 
-const BASE_FILES = {
-  people: peopleJson,
-  companies: companiesJson,
-  projects: projectsJson,
-  publications: publicationsJson,
-  issues: issuesJson,
-  workspace: workspaceJson,
-  events: eventsJson,
-  courses: coursesJson,
-} as const;
+type FixtureFile = 'people' | 'companies' | 'projects' | 'publications' | 'issues' | 'workspace' | 'events' | 'courses';
+
+/** The base files of each dataset (static imports, so `next build` bundles and validates them). */
+const FILES: Record<DatasetId, Readonly<Record<FixtureFile, unknown>>> = {
+  example: { people: peopleJson, companies: companiesJson, projects: projectsJson, publications: publicationsJson, issues: issuesJson, workspace: workspaceJson, events: eventsJson, courses: coursesJson },
+  us: { people: usPeopleJson, companies: usCompaniesJson, projects: usProjectsJson, publications: usPublicationsJson, issues: usIssuesJson, workspace: usWorkspaceJson, events: usEventsJson, courses: usCoursesJson },
+};
+
+const fromApp = process.cwd().endsWith(`${sep}apps${sep}web`);
+const FIXTURES_DIR = resolve(process.cwd(), fromApp ? 'fixtures' : 'apps/web/fixtures');
+
+function readOverrides(dataset: DatasetId): Record<string, Overrides> {
+  const { dir } = DATASETS[dataset];
+  const builtIn = join(FIXTURES_DIR, dir, 'i18n');
+  const deploymentDir = dataPath(currentDeployment(), 'fixtures');
+  const fromDeployment = deploymentDir && dir ? join(dirname(deploymentDir), dir, 'i18n') : deploymentDir;
+  return Object.fromEntries([...languageFiles(builtIn), ...languageFiles(fromDeployment)].map(([tag, path]) => [tag, JSON.parse(readFileSync(path, 'utf8')) as Overrides]));
+}
+
+const OVERRIDES: Record<DatasetId, Record<string, Overrides>> = { example: readOverrides('example'), us: readOverrides('us') };
 
 function applyOverrides(file: string, base: unknown, overrides: Record<string, string> | undefined): unknown {
   if (!overrides) return base;
@@ -62,16 +83,18 @@ function applyOverrides(file: string, base: unknown, overrides: Record<string, s
 }
 
 /** The override map for one file in one locale: the English layer first, the locale's own strings on top. */
-function overridesFor(locale: string, file: string): Record<string, string> | undefined {
-  const own = OVERRIDES[locale]?.[file];
-  if (locale === 'en' || locale === 'ru') return own;
-  const english = OVERRIDES.en?.[file];
+function overridesFor(dataset: DatasetId, locale: string, file: string): Record<string, string> | undefined {
+  const all = OVERRIDES[dataset];
+  const own = all[locale]?.[file];
+  if (locale === 'en' || locale === DATASETS[dataset].baseLanguage) return own;
+  const english = all.en?.[file];
   if (!english && !own) return undefined;
   return { ...(english ?? {}), ...(own ?? {}) };
 }
 
-function parseAll(locale: string) {
-  const pick = <T>(file: keyof typeof BASE_FILES, parse: (raw: unknown) => T): T => parse(applyOverrides(file, BASE_FILES[file], overridesFor(locale, file)));
+function parseAll(dataset: DatasetId, locale: string) {
+  const files = FILES[dataset];
+  const pick = <T>(file: FixtureFile, parse: (raw: unknown) => T): T => parse(applyOverrides(file, files[file], overridesFor(dataset, locale, file)));
   return {
     people: pick('people', (raw) => PeopleFileSchema.parse(raw).people),
     companies: pick('companies', (raw) => CompaniesFileSchema.parse(raw).companies),
@@ -88,27 +111,40 @@ type Parsed = ReturnType<typeof parseAll>;
 const cache = new Map<string, Parsed>();
 
 /**
- * The fixtures for a locale (base content plus the English layer plus that locale's overrides), parsed once
- * per locale. A locale without its own override file reads the English content, never the Russian base.
+ * The fixtures of a dataset for a locale (base content plus the English layer plus that locale's overrides), parsed
+ * once per dataset and locale. A locale without its own override file reads the English content, never the Russian
+ * base. Without a dataset: the example dataset (tools and the configuration probe).
  */
-export function fixturesFor(locale: string): Parsed {
-  const key = locale in OVERRIDES ? locale : locale === 'ru' ? 'ru' : 'en';
+export function fixturesFor(locale: string, dataset: DatasetId = 'example'): Parsed {
+  const base: string = DATASETS[dataset].baseLanguage;
+  const tag = locale in OVERRIDES[dataset] ? locale : locale === base ? base : 'en';
+  const key = `${dataset}:${tag}`;
   let parsed = cache.get(key);
   if (!parsed) {
-    parsed = parseAll(key);
+    parsed = parseAll(dataset, tag);
     cache.set(key, parsed);
   }
   return parsed;
 }
 
-/** The fixtures for the active locale; property access resolves the locale at call time (request-scoped on the server). */
+/** The dataset of the active request (request-scoped on the server): see `selectDataset`. */
+export function activeDataset(): DatasetId {
+  return selectDataset(getLocaleStore().country, currentDeployment().countries.default);
+}
+
+/** The fixtures for the active locale and dataset; property access resolves both at call time (request-scoped on the server). */
 export const fixtures: Parsed = new Proxy({} as Parsed, {
   get(_target, property) {
-    return fixturesFor(localeTag())[property as keyof Parsed];
+    return fixturesFor(localeTag(), activeDataset())[property as keyof Parsed];
   },
 });
 
-/** Locales that carry fixture overrides (the base content is Russian). */
-export const FIXTURE_LOCALES = ['ru', ...Object.keys(OVERRIDES)] as const;
+/** Locales that carry demo content for a dataset: its base language plus every override file. */
+export function fixtureLocales(dataset: DatasetId): string[] {
+  return [...new Set<string>([DATASETS[dataset].baseLanguage, ...Object.keys(OVERRIDES[dataset])])];
+}
+
+/** Locales that carry demo content in the example dataset (the base content is Russian). */
+export const FIXTURE_LOCALES = fixtureLocales('example');
 
 export const DATA_SOURCE = 'fixtures' as const;

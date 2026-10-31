@@ -1,0 +1,592 @@
+{
+  "synthetic": true,
+  "description": "Synthetic events of the United States demo hub (San Diego County). Venues are fictitious and have no real addresses; organizers are the demo editors, a demo guild or a demo company. No ticket is sold and no registration is counted: every registration and ticket counter is zero.",
+  "events": [
+    {
+      "slug": "building-better-adus-forum-2026",
+      "id": "us-evt-1",
+      "title": "Building Better ADUs: a forum for homeowners and builders",
+      "lede": "One day on backyard homes: plans and permits, bids that compare, and what builders and inspectors wish owners knew.",
+      "type": "conference",
+      "format": "hybrid",
+      "startsAt": "2026-11-14T17:00:00Z",
+      "endsAt": "2026-11-15T00:00:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "San Diego",
+      "region": "US-CA",
+      "venue": {
+        "name": "Harbor Demo Hall (fictitious venue)",
+        "address": "San Diego, CA (demo venue, no real address)"
+      },
+      "onlineNote": "The main stage is streamed for online participants; recordings stay available for a week.",
+      "organizer": {
+        "kind": "editorial",
+        "name": "Trustwork demo editorial team",
+        "companySlug": null
+      },
+      "cover": "photo:meetup-speaker",
+      "topics": ["projects", "regulation", "markets"],
+      "body": "A one-day forum for people building a backyard home and the people who build them.\n\n## Who it is for\n\nHomeowners planning an ADU, designers, general contractors, trades and anyone who has been through plan check.\n\n## What is on\n\n- From idea to plan: phases, permits and decision points.\n- Comparing bids that do not describe the same house.\n- An inspector's view of the first framing inspection.\n- Open questions to builders and trades.\n\n## Format\n\nIn person with access to all sessions and the builders' tables, or online with the main stage streamed. This is a demo event: no tickets are sold.",
+      "program": [
+        {
+          "time": "9:00 AM",
+          "title": "Welcome: what changed for backyard homes this year",
+          "speakerIds": ["us-sp-ed"]
+        },
+        {
+          "time": "9:45 AM",
+          "title": "From idea to plan: phases, permits and decisions",
+          "speakerIds": ["us-sp-alex"]
+        },
+        {
+          "time": "11:00 AM",
+          "title": "Comparing three bids for the same lot",
+          "speakerIds": ["us-sp-dana"]
+        },
+        {
+          "time": "1:30 PM",
+          "title": "The first framing inspection, from the inspector's side",
+          "speakerIds": ["us-sp-jordan"]
+        },
+        {
+          "time": "3:00 PM",
+          "title": "Open questions to builders and trades",
+          "speakerIds": ["us-sp-dana", "us-sp-luis"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp-ed",
+          "name": "Trustwork demo editorial team",
+          "role": "Program hosts",
+          "personSlug": null,
+          "portrait": null
+        },
+        {
+          "id": "us-sp-alex",
+          "name": "Alex Exampleby",
+          "role": "Architect, independent practice",
+          "personSlug": "alex-exampleby",
+          "portrait": null
+        },
+        {
+          "id": "us-sp-dana",
+          "name": "Dana Sampleton",
+          "role": "Project manager, Sample Coast Builders",
+          "personSlug": "dana-sampleton",
+          "portrait": null
+        },
+        {
+          "id": "us-sp-jordan",
+          "name": "Jordan Sketchley",
+          "role": "Retired building inspector",
+          "personSlug": "jordan-sketchley",
+          "portrait": null
+        },
+        {
+          "id": "us-sp-luis",
+          "name": "Luis Ejemplo",
+          "role": "Tile and stone setter",
+          "personSlug": "luis-ejemplo",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "tables",
+          "name": "Builders' tables",
+          "description": "Access to the builders' and trades' tables, no sessions.",
+          "priceMinorUnits": 0,
+          "currency": "USD",
+          "quota": null,
+          "taken": 0,
+          "salesUntil": null
+        },
+        {
+          "id": "online",
+          "name": "Online",
+          "description": "Main stage stream and recordings for a week.",
+          "priceMinorUnits": 2500,
+          "currency": "USD",
+          "quota": null,
+          "taken": 0,
+          "salesUntil": null
+        },
+        {
+          "id": "full",
+          "name": "Full day",
+          "description": "All sessions, the builders' tables and lunch.",
+          "priceMinorUnits": 9500,
+          "currency": "USD",
+          "quota": 250,
+          "taken": 0,
+          "salesUntil": "2026-11-13T07:59:00Z"
+        }
+      ],
+      "capacity": 250,
+      "registered": 0,
+      "featured": true,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["how-to-compare-three-adu-bids", "where-an-adu-budget-goes"],
+      "materialsHref": null
+    },
+    {
+      "slug": "estimators-meetup-reading-bids",
+      "id": "us-evt-2",
+      "title": "Estimators' meetup: reading bids side by side",
+      "lede": "An evening of bid leveling: bring a real (anonymized) bid package, leave with a comparison template.",
+      "type": "meetup",
+      "format": "offline",
+      "startsAt": "2026-11-06T01:30:00Z",
+      "endsAt": "2026-11-06T03:30:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "San Diego",
+      "region": "US-CA",
+      "venue": {
+        "name": "Harbor Demo Hall (fictitious venue)",
+        "address": "San Diego, CA (demo venue, no real address)"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Sample Bay Builders Guild",
+        "companySlug": null
+      },
+      "cover": "photo:office-laptop-work",
+      "topics": ["markets"],
+      "body": "Estimators and project managers compare how they level bids. Bring an anonymized package; we will work through two of them together.\n\nThis is a demo event: nothing is booked.",
+      "program": [
+        {
+          "time": "5:30 PM",
+          "title": "Two packages, leveled live",
+          "speakerIds": ["us-sp2-dana"]
+        },
+        {
+          "time": "6:30 PM",
+          "title": "Open table",
+          "speakerIds": []
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp2-dana",
+          "name": "Dana Sampleton",
+          "role": "Project manager, Sample Coast Builders",
+          "personSlug": "dana-sampleton",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Free entry",
+          "description": "Registration needed so we know how many chairs to set.",
+          "priceMinorUnits": 0,
+          "currency": "USD",
+          "quota": 40,
+          "taken": 0,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 40,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["how-to-compare-three-adu-bids"],
+      "materialsHref": null
+    },
+    {
+      "slug": "webinar-rain-protection-open-framing",
+      "id": "us-evt-3",
+      "title": "Webinar: rain protection for open framing",
+      "lede": "How to keep a wood frame dry through the first storms: sequencing, temporary protection and what to log.",
+      "type": "webinar",
+      "format": "online",
+      "startsAt": "2026-11-19T20:00:00Z",
+      "endsAt": "2026-11-19T21:00:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": null,
+      "region": null,
+      "venue": null,
+      "onlineNote": "Online; the link is shown to registered participants. Demo: no link is sent.",
+      "organizer": {
+        "kind": "company",
+        "name": "Sample Coast Builders",
+        "companySlug": "sample-coast-builders"
+      },
+      "cover": "photo:timber-framing",
+      "topics": ["projects", "technologies"],
+      "body": "A one-hour webinar from the general contractor of Mesa Example Commons on keeping framing dry before the roof and windows are in.\n\n## Topics\n\n- Sequencing roof sheathing and the weather barrier.\n- Temporary protection that actually stays on.\n- What to record in the daily log after a storm.",
+      "program": [
+        {
+          "time": "12:00 PM",
+          "title": "Keeping a four-story frame dry",
+          "speakerIds": ["us-sp3-chris"]
+        },
+        {
+          "time": "12:40 PM",
+          "title": "Questions",
+          "speakerIds": ["us-sp3-chris", "us-sp3-dana"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp3-chris",
+          "name": "Chris Draftman",
+          "role": "Site superintendent, Sample Coast Builders",
+          "personSlug": "chris-draftman",
+          "portrait": null
+        },
+        {
+          "id": "us-sp3-dana",
+          "name": "Dana Sampleton",
+          "role": "Project manager, Sample Coast Builders",
+          "personSlug": "dana-sampleton",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Free",
+          "description": "Live webinar and recording.",
+          "priceMinorUnits": 0,
+          "currency": "USD",
+          "quota": null,
+          "taken": 0,
+          "salesUntil": null
+        }
+      ],
+      "capacity": null,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["framing-four-floors-before-the-rains", "a-daily-log-that-settles-disputes"],
+      "materialsHref": null
+    },
+    {
+      "slug": "bilingual-safety-walk-for-site-crews",
+      "id": "us-evt-4",
+      "title": "Bilingual safety walk for site crews",
+      "lede": "A morning safety walk on a demo site in Spanish and English: fall protection, trenches and heat.",
+      "type": "seminar",
+      "format": "offline",
+      "startsAt": "2026-12-05T15:00:00Z",
+      "endsAt": "2026-12-05T18:00:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "Chula Vista",
+      "region": "US-CA",
+      "venue": {
+        "name": "Demo training yard (fictitious)",
+        "address": "Chula Vista, CA (demo venue, no real address)"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Sample Bay Builders Guild",
+        "companySlug": null
+      },
+      "cover": "photo:scaffolding-poles",
+      "topics": ["people", "regulation"],
+      "body": "A practical safety walk for crew leads and new workers, held in Spanish and English.\n\n## What we cover\n\n- Fall protection on scaffolds and roofs.\n- Trench safety and spoil piles.\n- Heat illness: water, rest and shade.\n\nDemo event: nothing is booked and no certificate is issued.",
+      "program": [
+        {
+          "time": "7:00 AM",
+          "title": "Morning talk in Spanish and English",
+          "speakerIds": ["us-sp4-rosa"]
+        },
+        {
+          "time": "8:00 AM",
+          "title": "Walk: scaffolds, trenches, shade",
+          "speakerIds": ["us-sp4-rosa"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp4-rosa",
+          "name": "Rosa Muestra",
+          "role": "Concrete finishing crew lead",
+          "personSlug": "rosa-muestra",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Free",
+          "description": "Hard hat and vest required.",
+          "priceMinorUnits": 0,
+          "currency": "USD",
+          "quota": 30,
+          "taken": 0,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 30,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": [],
+      "materialsHref": null
+    },
+    {
+      "slug": "tour-demo-precast-yard",
+      "id": "us-evt-5",
+      "title": "Tour: a demo precast concrete yard",
+      "lede": "See how precast site elements are cast, cured and shipped, and what to ask a supplier before ordering.",
+      "type": "tour",
+      "format": "offline",
+      "startsAt": "2026-12-10T17:00:00Z",
+      "endsAt": "2026-12-10T19:30:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "El Cajon",
+      "region": "US-CA",
+      "venue": {
+        "name": "Demo precast yard (fictitious)",
+        "address": "El Cajon, CA (demo venue, no real address)"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "editorial",
+        "name": "Trustwork demo editorial team",
+        "companySlug": null
+      },
+      "cover": "photo:concrete-wall",
+      "topics": ["materials"],
+      "body": "A guided walk through a precast yard: molds, curing, quality checks and loading.\n\nDemo event: the yard is fictitious and nothing is booked.",
+      "program": [
+        {
+          "time": "9:00 AM",
+          "title": "Molds and casting",
+          "speakerIds": ["us-sp5-ed"]
+        },
+        {
+          "time": "10:00 AM",
+          "title": "Curing, testing and shipping",
+          "speakerIds": ["us-sp5-ed"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp5-ed",
+          "name": "Trustwork demo editorial team",
+          "role": "Tour hosts",
+          "personSlug": null,
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "tour",
+          "name": "Tour",
+          "description": "Closed shoes required.",
+          "priceMinorUnits": 1500,
+          "currency": "USD",
+          "quota": 20,
+          "taken": 0,
+          "salesUntil": "2026-12-08T07:59:00Z"
+        }
+      ],
+      "capacity": 20,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": [],
+      "materialsHref": null
+    },
+    {
+      "slug": "winter-school-site-superintendents",
+      "id": "us-evt-6",
+      "title": "Winter school for site superintendents",
+      "lede": "Two days for new and future superintendents: logs, inspections, trades and the owner's meeting.",
+      "type": "conference",
+      "format": "hybrid",
+      "startsAt": "2027-01-21T16:00:00Z",
+      "endsAt": "2027-01-23T00:00:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "San Diego",
+      "region": "US-CA",
+      "venue": {
+        "name": "Harbor Demo Hall (fictitious venue)",
+        "address": "San Diego, CA (demo venue, no real address)"
+      },
+      "onlineNote": "Sessions are streamed; workshops are in person only.",
+      "organizer": {
+        "kind": "community",
+        "name": "Sample Bay Builders Guild",
+        "companySlug": null
+      },
+      "cover": "photo:site-women-blueprints",
+      "topics": ["people", "projects"],
+      "body": "Two days of practice for people who run sites or want to.\n\n## Program\n\n- Day one: the daily log, inspections and special inspections.\n- Day two: trades, deliveries and the weekly owner's meeting.",
+      "program": [
+        {
+          "time": "8:00 AM",
+          "title": "The daily log as evidence",
+          "speakerIds": ["us-sp6-chris"]
+        },
+        {
+          "time": "10:30 AM",
+          "title": "Inspections without surprises",
+          "speakerIds": ["us-sp6-jordan"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp6-chris",
+          "name": "Chris Draftman",
+          "role": "Site superintendent",
+          "personSlug": "chris-draftman",
+          "portrait": null
+        },
+        {
+          "id": "us-sp6-jordan",
+          "name": "Jordan Sketchley",
+          "role": "Retired building inspector",
+          "personSlug": "jordan-sketchley",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "online",
+          "name": "Online",
+          "description": "Streamed sessions.",
+          "priceMinorUnits": 4000,
+          "currency": "USD",
+          "quota": null,
+          "taken": 0,
+          "salesUntil": null
+        },
+        {
+          "id": "full",
+          "name": "Full",
+          "description": "Sessions and workshops, both days.",
+          "priceMinorUnits": 19500,
+          "currency": "USD",
+          "quota": 60,
+          "taken": 0,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 60,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": true,
+      "relatedPublicationSlugs": ["a-daily-log-that-settles-disputes", "an-inspection-is-a-conversation"],
+      "materialsHref": null
+    },
+    {
+      "slug": "digital-plans-and-models-2026",
+      "id": "us-evt-7",
+      "title": "Digital plans and models 2026",
+      "lede": "Builders and designers on sharing models, plans and changes without losing track.",
+      "type": "conference",
+      "format": "offline",
+      "startsAt": "2026-10-22T16:00:00Z",
+      "endsAt": "2026-10-23T00:00:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "San Diego",
+      "region": "US-CA",
+      "venue": {
+        "name": "Harbor Demo Hall (fictitious venue)",
+        "address": "San Diego, CA (demo venue, no real address)"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "editorial",
+        "name": "Trustwork demo editorial team",
+        "companySlug": null
+      },
+      "cover": "photo:blueprints-spread",
+      "topics": ["technologies"],
+      "body": "A one-day conference on digital plans and models in small and mid-size projects.\n\nThe event has taken place. Demo event: the program is invented.",
+      "program": [
+        {
+          "time": "9:00 AM",
+          "title": "One plan, many versions",
+          "speakerIds": ["us-sp7-alex"]
+        }
+      ],
+      "speakers": [
+        {
+          "id": "us-sp7-alex",
+          "name": "Alex Exampleby",
+          "role": "Architect, independent practice",
+          "personSlug": "alex-exampleby",
+          "portrait": null
+        }
+      ],
+      "tickets": [
+        {
+          "id": "full",
+          "name": "Full day",
+          "description": "All sessions.",
+          "priceMinorUnits": 7500,
+          "currency": "USD",
+          "quota": null,
+          "taken": 0,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 150,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": false,
+      "relatedPublicationSlugs": [],
+      "materialsHref": null
+    },
+    {
+      "slug": "fall-community-meetup-2026",
+      "id": "us-evt-8",
+      "title": "Fall meetup of the demo hub community",
+      "lede": "Members met to talk about winter work, open requests and the new academy courses.",
+      "type": "meetup",
+      "format": "offline",
+      "startsAt": "2026-10-09T01:00:00Z",
+      "endsAt": "2026-10-09T03:00:00Z",
+      "timezone": "America/Los_Angeles",
+      "city": "San Diego",
+      "region": "US-CA",
+      "venue": {
+        "name": "Harbor Demo Hall (fictitious venue)",
+        "address": "San Diego, CA (demo venue, no real address)"
+      },
+      "onlineNote": null,
+      "organizer": {
+        "kind": "community",
+        "name": "Sample Bay Builders Guild",
+        "companySlug": null
+      },
+      "cover": "photo:meetup-speaker",
+      "topics": ["people", "events"],
+      "body": "An evening meetup of the demo hub's members.\n\nThe event has taken place. Demo event: nothing was recorded.",
+      "program": [
+        {
+          "time": "6:00 PM",
+          "title": "Open floor",
+          "speakerIds": []
+        }
+      ],
+      "speakers": [],
+      "tickets": [
+        {
+          "id": "free",
+          "name": "Free entry",
+          "description": "Open to members.",
+          "priceMinorUnits": 0,
+          "currency": "USD",
+          "quota": null,
+          "taken": 0,
+          "salesUntil": null
+        }
+      ],
+      "capacity": 80,
+      "registered": 0,
+      "featured": false,
+      "registrationOpen": false,
+      "relatedPublicationSlugs": [],
+      "materialsHref": null
+    }
+  ]
+}

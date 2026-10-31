@@ -1,0 +1,715 @@
+{
+  "synthetic": true,
+  "description": "Synthetic companies of the United States demo hub (San Diego County): three claimed records (a general contractor, a property owner that buys, a sole proprietorship that sells) and seven sourced directory records across project roles. Every name contains Sample, Example or Demo; identifiers are deliberately invalid (EIN prefix 00, which the IRS never issues), phone numbers use the 555-01xx range reserved for fiction, and every domain is example.invalid. No record is verified.",
+  "companies": [
+    {
+      "slug": "sample-coast-builders",
+      "company": {
+        "id": "us-company-samplecoast",
+        "name": "Sample Coast Builders",
+        "status": "claimed",
+        "legalIdentifiers": [
+          {
+            "kind": "US-EIN",
+            "value": "00-0000101",
+            "status": "claimed"
+          }
+        ],
+        "publicDescription": "General contractor for multifamily, school and residential work in San Diego County. Builds, buys trades and materials, and sells construction services.",
+        "verifiedDomains": [],
+        "membershipRequests": [
+          {
+            "personId": "us-person-rosa",
+            "requestedAt": "2026-10-22T16:00:00Z"
+          }
+        ],
+        "billingAccountId": null,
+        "internalNotes": "owner_private: not published",
+        "revision": 5,
+        "createdAt": "2026-08-18T16:00:00Z"
+      },
+      "kinds": ["generalContractor", "contractor"],
+      "directions": ["General contracting", "Multifamily", "School modernization", "ADUs and remodels"],
+      "region": "US-CA",
+      "website": "https://example.invalid/sample-coast-builders",
+      "provenance": null,
+      "claimedAt": "2026-08-19T16:00:00Z",
+      "catalogue": {
+        "version": 3,
+        "publishedAt": "2026-10-12T16:00:00Z",
+        "entries": [
+          {
+            "id": "us-cat-sc-1",
+            "name": "Design-build of a detached ADU, permit to final inspection",
+            "kind": "bundle",
+            "unit": "set",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": "16500000"
+          },
+          {
+            "id": "us-cat-sc-2",
+            "name": "Wood framing, multifamily (per square meter of floor)",
+            "kind": "works",
+            "unit": "m2",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": "21000"
+          },
+          {
+            "id": "us-cat-sc-3",
+            "name": "Summer-break classroom modernization package",
+            "kind": "works",
+            "unit": "set",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": null
+          },
+          {
+            "id": "us-cat-sc-4",
+            "name": "Owner change-order estimating",
+            "kind": "services",
+            "unit": "pcs",
+            "priceOnRequest": true,
+            "isPublic": false,
+            "privateFloorMinorUnits": null
+          }
+        ]
+      },
+      "publicationIds": ["us-pub-art-5", "us-pub-cpost-1"],
+      "projectIds": ["us-project-school", "us-project-commons"],
+      "publicMemberPersonIds": ["us-person-dana", "us-person-chris"],
+      "profile": {
+        "tagline": "General contractor for homes, schools and multifamily buildings across San Diego County",
+        "signals": [
+          {
+            "kind": "hiring",
+            "note": "Assistant superintendent for a four-story wood-frame building",
+            "until": "2026-12-15"
+          },
+          {
+            "kind": "lookingForSubcontractors",
+            "note": "Tile, storefront glazing and landscaping for 2027",
+            "until": null
+          }
+        ],
+        "about": "We build multifamily housing, modernize school campuses during summer breaks and take on a limited number of backyard homes (ADUs) each year. Our crews self-perform framing and concrete; everything else is bought from trades and suppliers through requests on the platform, so we appear here both as a buyer and as a seller.\n\nEvery project gets a shared plan: phases, inspections, open trade packages and the decision points where the owner has to choose. Daily logs with photos go to the owner each week.\n\nWe are a demo company: the name, the people and the numbers are invented for the Trustwork demo hub.",
+        "founded": 2012,
+        "geography": ["San Diego", "Chula Vista", "Escondido", "Oceanside"],
+        "certificates": [
+          {
+            "id": "us-cert-sc-1",
+            "kind": "permit",
+            "name": "State general building contractor licence (example)",
+            "issuer": "State contractor licensing board (example)",
+            "number": "DEMO-B-000101",
+            "validUntil": "2027-08-31",
+            "evidence": "asserted"
+          },
+          {
+            "id": "us-cert-sc-2",
+            "kind": "other",
+            "name": "General liability insurance certificate (example)",
+            "issuer": "Insurance carrier (example)",
+            "number": null,
+            "validUntil": "2027-03-31",
+            "evidence": "asserted"
+          },
+          {
+            "id": "us-cert-sc-3",
+            "kind": "other",
+            "name": "Workers' compensation insurance certificate (example)",
+            "issuer": "Insurance carrier (example)",
+            "number": null,
+            "validUntil": "2027-03-31",
+            "evidence": "asserted"
+          }
+        ],
+        "contacts": {
+          "email": "office@example.invalid",
+          "phone": "+1 619-555-0101",
+          "address": "San Diego, CA (demo address)",
+          "hours": "Mon–Fri, 7 a.m.–4 p.m. Pacific"
+        },
+        "vacancies": [
+          {
+            "id": "us-vac-sc-1",
+            "title": "Assistant superintendent, multifamily",
+            "location": "San Diego",
+            "format": "site",
+            "employment": "full",
+            "salaryFromMinorUnits": "8500000",
+            "salaryToMinorUnits": "10500000",
+            "postedAt": "2026-10-20T16:00:00Z",
+            "description": "Help run a four-story wood-frame building from framing to finishes: trades, schedule, inspections and the daily log.",
+            "responsibilities": [
+              "Coordinate three to five trade crews a day",
+              "Walk inspections with the city inspector and record the results",
+              "Keep the daily log with photos and weather",
+              "Track open items and deliveries"
+            ],
+            "requirements": ["Three years on multifamily or commercial sites", "Comfortable reading a permit set", "Spanish is a plus"],
+            "conditions": ["Annual salary range shown above", "Health insurance and paid time off", "Company truck for site visits"]
+          }
+        ],
+        "updates": [
+          {
+            "id": "us-upd-sc-1",
+            "date": "2026-10-28",
+            "kind": "project",
+            "title": "Framing of the fourth floor finished at Mesa Example Commons",
+            "href": "/projects/mesa-example-commons"
+          },
+          {
+            "id": "us-upd-sc-2",
+            "date": "2026-10-12",
+            "kind": "catalogue",
+            "title": "Catalogue updated: ADU design-build package",
+            "href": null
+          },
+          {
+            "id": "us-upd-sc-3",
+            "date": "2026-09-30",
+            "kind": "team",
+            "title": "Chris Draftman joined as site superintendent",
+            "href": "/people/chris-draftman"
+          }
+        ],
+        "faq": [
+          {
+            "q": "Do you take single-family remodels?",
+            "a": "Only backyard homes (ADUs) and whole-house remodels, a few per year. Send a request through the platform with your plan and timeline."
+          },
+          {
+            "q": "How do trades get on your bid list?",
+            "a": "Publish a company page with licence and insurance, then answer one of our open requests. We invite repeat trades directly."
+          }
+        ]
+      },
+      "location": {
+        "lat": 32.7353,
+        "lng": -117.149
+      }
+    },
+    {
+      "slug": "mesa-example-properties",
+      "company": {
+        "id": "us-company-mesa",
+        "name": "Mesa Example Properties",
+        "status": "claimed",
+        "legalIdentifiers": [
+          {
+            "kind": "US-EIN",
+            "value": "00-0000102",
+            "status": "claimed"
+          }
+        ],
+        "publicDescription": "Owns and develops small mixed-use buildings in San Diego. Buys design, construction and services for its own projects; sells nothing on the platform.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 2,
+        "createdAt": "2026-08-25T16:00:00Z"
+      },
+      "kinds": ["developer", "client"],
+      "directions": ["Mixed-use development", "Rental housing", "Ground-floor retail"],
+      "region": "US-CA",
+      "website": "https://example.invalid/mesa-example-properties",
+      "provenance": null,
+      "claimedAt": "2026-08-26T16:00:00Z",
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": ["us-project-commons"],
+      "publicMemberPersonIds": ["us-person-priya"],
+      "profile": {
+        "tagline": "Small mixed-use buildings with homes above neighborhood shops",
+        "signals": [
+          {
+            "kind": "lookingForSuppliers",
+            "note": "Storefront glazing and landscaping for Mesa Example Commons",
+            "until": "2027-01-31"
+          }
+        ],
+        "about": "We develop and keep small mixed-use buildings: rental apartments above shops on the ground floor. We hire one general contractor per building and buy the owner's packages ourselves: storefronts, landscaping, inspections and furnishings.\n\nAll our requests are published with drawings, quantities and the criteria we use to choose, so trades know what a winning quote looks like before they start.\n\nA demo company: invented for the Trustwork demo hub.",
+        "founded": 2016,
+        "geography": ["San Diego"],
+        "certificates": [],
+        "contacts": {
+          "email": "projects@example.invalid",
+          "phone": "+1 619-555-0102",
+          "address": null,
+          "hours": "Mon–Fri, 8 a.m.–5 p.m. Pacific"
+        },
+        "vacancies": [],
+        "updates": [
+          {
+            "id": "us-upd-mesa-1",
+            "date": "2026-10-24",
+            "kind": "project",
+            "title": "Request for storefront glazing published",
+            "href": "/projects/mesa-example-commons"
+          }
+        ],
+        "faq": [
+          {
+            "q": "How do you choose between quotes?",
+            "a": "Price is one of four criteria, next to schedule, scope completeness and references from finished projects. Each request lists the weights."
+          }
+        ]
+      },
+      "location": {
+        "lat": 32.7488,
+        "lng": -117.1298
+      }
+    },
+    {
+      "slug": "ejemplo-tile-stone",
+      "company": {
+        "id": "us-company-ejemplo",
+        "name": "Ejemplo Tile & Stone",
+        "status": "claimed",
+        "legalIdentifiers": [],
+        "publicDescription": "Sole proprietorship: tile and stone setting for bathrooms, kitchens and entries. One owner-operator with a helper on larger jobs.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 2,
+        "createdAt": "2026-09-08T16:00:00Z"
+      },
+      "kinds": ["contractor"],
+      "directions": ["Tile setting", "Stone counters", "Shower waterproofing"],
+      "region": "US-CA",
+      "website": null,
+      "provenance": null,
+      "claimedAt": "2026-09-08T16:00:00Z",
+      "catalogue": {
+        "version": 2,
+        "publishedAt": "2026-10-05T16:00:00Z",
+        "entries": [
+          {
+            "id": "us-cat-ej-1",
+            "name": "Floor and wall tile setting",
+            "kind": "works",
+            "unit": "m2",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": "9500"
+          },
+          {
+            "id": "us-cat-ej-2",
+            "name": "Shower pan waterproofing with flood test",
+            "kind": "works",
+            "unit": "pcs",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": "65000"
+          },
+          {
+            "id": "us-cat-ej-3",
+            "name": "Kitchen backsplash, small",
+            "kind": "works",
+            "unit": "set",
+            "priceOnRequest": true,
+            "isPublic": true,
+            "privateFloorMinorUnits": null
+          }
+        ]
+      },
+      "publicationIds": ["us-pub-art-2"],
+      "projectIds": ["us-project-commons"],
+      "publicMemberPersonIds": ["us-person-luis"],
+      "profile": {
+        "tagline": "Tile and stone by the owner himself, from flat slab to sealed grout",
+        "signals": [
+          {
+            "kind": "acceptingOrders",
+            "note": "Bathrooms and kitchens from January 2027",
+            "until": null
+          }
+        ],
+        "about": "I am Luis Ejemplo and this is my sole proprietorship: no partners, no sales team. I set tile and stone in bathrooms, kitchens and entries, and I waterproof showers with a flood test before any tile goes on.\n\nFor apartment buildings I work as a subcontractor to general contractors; for homeowners I quote directly. Quotes list the substrate prep separately so you can see what is tile and what is fixing the floor.\n\nA demo business: invented for the Trustwork demo hub.",
+        "founded": 2015,
+        "geography": ["San Diego", "Chula Vista", "National City"],
+        "certificates": [
+          {
+            "id": "us-cert-ej-1",
+            "kind": "permit",
+            "name": "Specialty tile contractor licence (example)",
+            "issuer": "State contractor licensing board (example)",
+            "number": "DEMO-C-000103",
+            "validUntil": "2027-05-31",
+            "evidence": "asserted"
+          },
+          {
+            "id": "us-cert-ej-2",
+            "kind": "education",
+            "name": "Waterproofing membrane installer course (example)",
+            "issuer": "Trade training center (example)",
+            "number": null,
+            "validUntil": null,
+            "evidence": "asserted"
+          }
+        ],
+        "contacts": {
+          "email": "luis@example.invalid",
+          "phone": "+1 619-555-0103",
+          "address": null,
+          "hours": "Mon–Sat, 7 a.m.–3 p.m. Pacific"
+        },
+        "vacancies": [],
+        "updates": [
+          {
+            "id": "us-upd-ej-1",
+            "date": "2026-10-05",
+            "kind": "catalogue",
+            "title": "Prices on request for shower waterproofing",
+            "href": null
+          }
+        ],
+        "faq": [
+          {
+            "q": "Do you supply the tile?",
+            "a": "Usually the owner chooses and buys the tile; I supply setting materials and membranes and list them in the quote."
+          },
+          {
+            "q": "Do you speak Spanish?",
+            "a": "Yes. Quotes and the job diary can be in Spanish or English."
+          }
+        ]
+      },
+      "location": {
+        "lat": 32.6781,
+        "lng": -117.0992
+      }
+    },
+    {
+      "slug": "demo-canyon-concrete",
+      "company": {
+        "id": "us-company-canyon",
+        "name": "Demo Canyon Concrete",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "US-EIN",
+            "value": "00-0000104",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Ready-mix concrete and precast site elements for San Diego County projects.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-20T16:00:00Z"
+      },
+      "kinds": ["manufacturer", "supplier"],
+      "directions": ["Ready-mix concrete", "Precast site elements"],
+      "region": "US-CA",
+      "website": "https://example.invalid/demo-canyon-concrete",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-19T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": ["us-project-commons"],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Ready-mix and precast for county job sites",
+        "about": null,
+        "founded": 1998,
+        "geography": ["San Diego County"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 32.8328,
+        "lng": -116.9727
+      }
+    },
+    {
+      "slug": "sample-pacific-lumber",
+      "company": {
+        "id": "us-company-lumber",
+        "name": "Sample Pacific Lumber",
+        "status": "sourced",
+        "legalIdentifiers": [],
+        "publicDescription": "Lumber yard and framing packages for builders: dimensional lumber, engineered beams, sheathing.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-20T16:00:00Z"
+      },
+      "kinds": ["supplier"],
+      "directions": ["Framing lumber", "Engineered wood", "Sheathing"],
+      "region": "US-CA",
+      "website": "https://example.invalid/sample-pacific-lumber",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-19T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": ["us-pub-news-2"],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Framing packages delivered to the job site",
+        "about": null,
+        "founded": 1987,
+        "geography": ["San Diego County", "Imperial County"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 32.7891,
+        "lng": -117.2301
+      }
+    },
+    {
+      "slug": "demo-harbor-glazing",
+      "company": {
+        "id": "us-company-glazing",
+        "name": "Demo Harbor Glazing",
+        "status": "sourced",
+        "legalIdentifiers": [
+          {
+            "kind": "US-EIN",
+            "value": "00-0000106",
+            "status": "sourced"
+          }
+        ],
+        "publicDescription": "Tempered and insulated glass, storefront systems and window replacement for commercial buildings.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-21T16:00:00Z"
+      },
+      "kinds": ["manufacturer", "contractor"],
+      "directions": ["Insulated glass units", "Storefront systems", "Window replacement"],
+      "region": "US-CA",
+      "website": "https://example.invalid/demo-harbor-glazing",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-20T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": ["us-pub-news-3"],
+      "projectIds": ["us-project-school"],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Glass and storefronts for schools, shops and offices",
+        "signals": [
+          {
+            "kind": "acceptingOrders",
+            "note": "New tempering line: shorter lead times",
+            "until": null
+          }
+        ],
+        "about": null,
+        "founded": 2004,
+        "geography": ["San Diego County"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 32.5733,
+        "lng": -116.9826
+      }
+    },
+    {
+      "slug": "demo-studio-architects",
+      "company": {
+        "id": "us-company-studio",
+        "name": "Demo Studio Architects",
+        "status": "sourced",
+        "legalIdentifiers": [],
+        "publicDescription": "Architecture studio for multifamily and mixed-use buildings.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-22T16:00:00Z"
+      },
+      "kinds": ["designer", "services"],
+      "directions": ["Architecture", "Permit drawings", "Construction administration"],
+      "region": "US-CA",
+      "website": "https://example.invalid/demo-studio-architects",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-21T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": ["us-project-commons"],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Mixed-use and multifamily architecture",
+        "about": null,
+        "founded": 2009,
+        "geography": ["San Diego"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 32.7157,
+        "lng": -117.1611
+      }
+    },
+    {
+      "slug": "sample-geotech-testing",
+      "company": {
+        "id": "us-company-geotech",
+        "name": "Sample Geotech & Testing",
+        "status": "sourced",
+        "legalIdentifiers": [],
+        "publicDescription": "Soils reports, compaction testing and special inspections for concrete and framing.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-22T16:00:00Z"
+      },
+      "kinds": ["services"],
+      "directions": ["Soils reports", "Compaction testing", "Special inspections"],
+      "region": "US-CA",
+      "website": "https://example.invalid/sample-geotech-testing",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-21T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Soils, compaction and special inspections",
+        "about": null,
+        "founded": 2001,
+        "geography": ["San Diego County"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 32.8801,
+        "lng": -117.1453
+      }
+    },
+    {
+      "slug": "demo-lift-rentals",
+      "company": {
+        "id": "us-company-lifts",
+        "name": "Demo Lift & Equipment Rentals",
+        "status": "sourced",
+        "legalIdentifiers": [],
+        "publicDescription": "Scissor lifts, boom lifts, telehandlers and site delivery.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-23T16:00:00Z"
+      },
+      "kinds": ["equipment", "logistics"],
+      "directions": ["Aerial lifts", "Telehandlers", "Site delivery"],
+      "region": "US-CA",
+      "website": "https://example.invalid/demo-lift-rentals",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-22T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": ["us-project-school"],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Lifts and telehandlers delivered next day",
+        "about": null,
+        "founded": 2010,
+        "geography": ["San Diego County", "Riverside County"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 33.1192,
+        "lng": -117.0864
+      }
+    },
+    {
+      "slug": "example-steel-fab",
+      "company": {
+        "id": "us-company-steel",
+        "name": "Example Steel Fab",
+        "status": "sourced",
+        "legalIdentifiers": [],
+        "publicDescription": "Structural and miscellaneous steel: moment frames, stairs, railings.",
+        "verifiedDomains": [],
+        "membershipRequests": [],
+        "billingAccountId": null,
+        "internalNotes": null,
+        "revision": 1,
+        "createdAt": "2026-09-23T16:00:00Z"
+      },
+      "kinds": ["manufacturer"],
+      "directions": ["Moment frames", "Steel stairs", "Railings"],
+      "region": "US-CA",
+      "website": "https://example.invalid/example-steel-fab",
+      "provenance": {
+        "source": "Synthetic directory listing (demo)",
+        "observedAt": "2026-09-22T16:00:00Z"
+      },
+      "claimedAt": null,
+      "catalogue": null,
+      "publicationIds": [],
+      "projectIds": [],
+      "publicMemberPersonIds": [],
+      "profile": {
+        "tagline": "Structural and miscellaneous steel",
+        "about": null,
+        "founded": 1995,
+        "geography": ["San Diego County"],
+        "certificates": [],
+        "contacts": null,
+        "vacancies": [],
+        "updates": [],
+        "faq": []
+      },
+      "location": {
+        "lat": 32.8102,
+        "lng": -117.1302
+      }
+    }
+  ]
+}

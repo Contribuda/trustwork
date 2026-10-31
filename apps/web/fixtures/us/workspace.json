@@ -1,0 +1,705 @@
+{
+  "synthetic": true,
+  "description": "Synthetic workspace state of the United States demo hub per demo persona: mixed (Dana Sampleton, project manager of a general contractor who buys and sells), seller (Luis Ejemplo, sole-proprietor tile subcontractor), owner (Morgan Demoworth, homeowner with a personal project and personal procurement), buyer (Priya Mockford, procurement manager at a property owner) and reader (Jordan Sketchley, author without a company). Nothing here is a real deal, budget, mandate or person.",
+  "personas": {
+    "reader": {
+      "personId": "us-person-jordan",
+      "companyId": null,
+      "pinned": {
+        "procurement": false,
+        "sales": false
+      },
+      "onboarding": "skipped"
+    },
+    "mixed": {
+      "personId": "us-person-dana",
+      "companyId": "us-company-samplecoast",
+      "pinned": {
+        "procurement": true,
+        "sales": true
+      },
+      "onboarding": "completed"
+    },
+    "owner": {
+      "personId": "us-person-morgan",
+      "companyId": null,
+      "pinned": {
+        "procurement": true,
+        "sales": false
+      },
+      "onboarding": "completed"
+    },
+    "seller": {
+      "personId": "us-person-luis",
+      "companyId": "us-company-ejemplo",
+      "pinned": {
+        "procurement": false,
+        "sales": true
+      },
+      "onboarding": "completed"
+    },
+    "buyer": {
+      "personId": "us-person-priya",
+      "companyId": "us-company-mesa",
+      "pinned": {
+        "procurement": true,
+        "sales": false
+      },
+      "onboarding": "completed"
+    }
+  },
+  "memberships": [
+    {
+      "id": "us-membership-dana",
+      "personId": "us-person-dana",
+      "companyId": "us-company-samplecoast",
+      "role": "administrator",
+      "permissions": ["company.page.edit", "company.publish", "company.members.manage", "company.deals.manage", "company.catalogue.edit"],
+      "status": "active",
+      "invitedBy": null,
+      "invitedAt": "2026-08-19T16:00:00Z",
+      "validFrom": "2026-08-19T16:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "us-membership-kim",
+      "personId": "us-person-kim",
+      "companyId": "us-company-samplecoast",
+      "role": "member",
+      "permissions": ["company.deals.manage"],
+      "status": "active",
+      "invitedBy": "us-person-dana",
+      "invitedAt": "2026-08-21T16:00:00Z",
+      "validFrom": "2026-08-21T16:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "us-membership-chris",
+      "personId": "us-person-chris",
+      "companyId": "us-company-samplecoast",
+      "role": "member",
+      "permissions": [],
+      "status": "active",
+      "invitedBy": "us-person-dana",
+      "invitedAt": "2026-09-30T16:00:00Z",
+      "validFrom": "2026-09-30T16:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "us-membership-luis",
+      "personId": "us-person-luis",
+      "companyId": "us-company-ejemplo",
+      "role": "administrator",
+      "permissions": ["company.page.edit", "company.publish", "company.members.manage", "company.deals.manage", "company.catalogue.edit"],
+      "status": "active",
+      "invitedBy": null,
+      "invitedAt": "2026-09-08T16:00:00Z",
+      "validFrom": "2026-09-08T16:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "us-membership-priya",
+      "personId": "us-person-priya",
+      "companyId": "us-company-mesa",
+      "role": "administrator",
+      "permissions": ["company.page.edit", "company.publish", "company.deals.manage"],
+      "status": "active",
+      "invitedBy": null,
+      "invitedAt": "2026-08-26T16:00:00Z",
+      "validFrom": "2026-08-26T16:00:00Z",
+      "endedAt": null,
+      "endedBy": null,
+      "endedReason": null,
+      "revision": 1
+    },
+    {
+      "id": "us-membership-rosa-ended",
+      "personId": "us-person-rosa",
+      "companyId": "us-company-samplecoast",
+      "role": "member",
+      "permissions": [],
+      "status": "ended",
+      "invitedBy": "us-person-dana",
+      "invitedAt": "2025-03-03T16:00:00Z",
+      "validFrom": "2025-03-03T16:00:00Z",
+      "endedAt": "2026-06-30T16:00:00Z",
+      "endedBy": "us-person-rosa",
+      "endedReason": "Moved to running her own crew",
+      "revision": 2
+    }
+  ],
+  "rfqs": [
+    {
+      "id": "us-rfq-sc-1",
+      "owner": {
+        "kind": "company",
+        "id": "us-company-samplecoast"
+      },
+      "title": "Replacement windows for fourteen classrooms",
+      "kind": "goods",
+      "version": 2,
+      "quotesCount": 3,
+      "deadline": "2026-11-20",
+      "operatorPersonId": "us-person-dana",
+      "status": "quotesCollected",
+      "projectId": "us-project-school",
+      "needsDecision": true
+    },
+    {
+      "id": "us-rfq-sc-2",
+      "owner": {
+        "kind": "company",
+        "id": "us-company-samplecoast"
+      },
+      "title": "Bathroom tile for 48 apartments",
+      "kind": "works",
+      "version": 1,
+      "quotesCount": 1,
+      "deadline": "2026-12-04",
+      "operatorPersonId": "us-person-kim",
+      "status": "published",
+      "projectId": "us-project-commons",
+      "needsDecision": false
+    },
+    {
+      "id": "us-rfq-sc-3",
+      "owner": {
+        "kind": "company",
+        "id": "us-company-samplecoast"
+      },
+      "title": "Framing lumber package, fourth floor",
+      "kind": "goods",
+      "version": 3,
+      "quotesCount": 4,
+      "deadline": "2026-09-12",
+      "operatorPersonId": "us-person-dana",
+      "status": "closed",
+      "projectId": "us-project-commons",
+      "needsDecision": false
+    },
+    {
+      "id": "us-rfq-morgan-1",
+      "owner": {
+        "kind": "person",
+        "id": "us-person-morgan"
+      },
+      "title": "General contractor for a backyard ADU, about 60 m² (640 sq ft)",
+      "kind": "works",
+      "version": 2,
+      "quotesCount": 3,
+      "deadline": "2026-11-20",
+      "operatorPersonId": "us-person-morgan",
+      "status": "quotesCollected",
+      "projectId": "us-project-adu",
+      "needsDecision": true
+    },
+    {
+      "id": "us-rfq-morgan-2",
+      "owner": {
+        "kind": "person",
+        "id": "us-person-morgan"
+      },
+      "title": "Bathroom and kitchen tile for the ADU",
+      "kind": "works",
+      "version": 1,
+      "quotesCount": 1,
+      "deadline": "2027-03-15",
+      "operatorPersonId": "us-person-morgan",
+      "status": "published",
+      "projectId": "us-project-adu",
+      "needsDecision": false
+    },
+    {
+      "id": "us-rfq-mesa-1",
+      "owner": {
+        "kind": "company",
+        "id": "us-company-mesa"
+      },
+      "title": "Storefront glazing for five shops",
+      "kind": "bundle",
+      "version": 1,
+      "quotesCount": 2,
+      "deadline": "2026-12-11",
+      "operatorPersonId": "us-person-priya",
+      "status": "published",
+      "projectId": "us-project-commons",
+      "needsDecision": false
+    },
+    {
+      "id": "us-rfq-mesa-2",
+      "owner": {
+        "kind": "company",
+        "id": "us-company-mesa"
+      },
+      "title": "Landscaping and drip irrigation",
+      "kind": "works",
+      "version": 1,
+      "quotesCount": 0,
+      "deadline": "2027-03-05",
+      "operatorPersonId": "us-person-priya",
+      "status": "needDraft",
+      "projectId": "us-project-commons",
+      "needsDecision": false
+    },
+    {
+      "id": "us-rfq-mesa-3",
+      "owner": {
+        "kind": "company",
+        "id": "us-company-mesa"
+      },
+      "title": "Owner's inspection services, first quarter 2027",
+      "kind": "services",
+      "version": 1,
+      "quotesCount": 3,
+      "deadline": "2026-11-10",
+      "operatorPersonId": "us-person-priya",
+      "status": "quotesCollected",
+      "projectId": "us-project-commons",
+      "needsDecision": true
+    }
+  ],
+  "leads": [
+    {
+      "id": "us-lead-sc-1",
+      "companyId": "us-company-samplecoast",
+      "buyer": "Homeowner in Chula Vista",
+      "request": "Backyard ADU, design-build, about 60 m²",
+      "source": "invitation",
+      "deadline": "2026-11-20",
+      "status": "sent",
+      "quoteVersion": 2,
+      "needsDecision": false
+    },
+    {
+      "id": "us-lead-sc-2",
+      "companyId": "us-company-samplecoast",
+      "buyer": "Mesa Example Properties",
+      "request": "Owner change order: lobby finishes",
+      "source": "direct",
+      "deadline": "2026-11-06",
+      "status": "negotiating",
+      "quoteVersion": 3,
+      "needsDecision": true
+    },
+    {
+      "id": "us-lead-sc-3",
+      "companyId": "us-company-samplecoast",
+      "buyer": "Homeowners association (example)",
+      "request": "Exterior repaint and dry-rot repair, 24 units",
+      "source": "email",
+      "deadline": "2026-11-25",
+      "status": "new",
+      "quoteVersion": null,
+      "needsDecision": false
+    },
+    {
+      "id": "us-lead-ej-1",
+      "companyId": "us-company-ejemplo",
+      "buyer": "Sample Coast Builders",
+      "request": "Bathroom tile for 48 apartments",
+      "source": "openNeed",
+      "deadline": "2026-12-04",
+      "status": "drafting",
+      "quoteVersion": null,
+      "needsDecision": false
+    },
+    {
+      "id": "us-lead-ej-2",
+      "companyId": "us-company-ejemplo",
+      "buyer": "Homeowner in Chula Vista",
+      "request": "ADU bathroom and kitchen tile",
+      "source": "invitation",
+      "deadline": "2027-03-15",
+      "status": "sent",
+      "quoteVersion": 1,
+      "needsDecision": false
+    },
+    {
+      "id": "us-lead-ej-3",
+      "companyId": "us-company-ejemplo",
+      "buyer": "Private homeowner (example)",
+      "request": "Shower remodel, about 6 m²",
+      "source": "direct",
+      "deadline": "2026-10-20",
+      "status": "won",
+      "quoteVersion": 2,
+      "needsDecision": true
+    }
+  ],
+  "decisions": [
+    {
+      "id": "us-dec-dana-1",
+      "personId": "us-person-dana",
+      "kind": "quoteComparison",
+      "title": "Comparison ready: classroom windows",
+      "context": "Procurement · 3 quotes on version 2",
+      "due": "2026-11-20",
+      "href": "/app/procurement",
+      "action": "Compare",
+      "digestChanged": false
+    },
+    {
+      "id": "us-dec-dana-2",
+      "personId": "us-person-dana",
+      "kind": "approvalDigest",
+      "title": "Change order for lobby finishes: owner's counter-offer",
+      "context": "Sales · version 3 of the quote",
+      "due": "2026-11-06",
+      "href": "/app/sales",
+      "action": "Review",
+      "digestChanged": true
+    },
+    {
+      "id": "us-dec-morgan-1",
+      "personId": "us-person-morgan",
+      "kind": "quoteComparison",
+      "title": "Comparison ready: three builders for your ADU",
+      "context": "Procurement · 3 quotes on version 2",
+      "due": "2026-11-20",
+      "href": "/app/procurement",
+      "action": "Compare",
+      "digestChanged": false
+    },
+    {
+      "id": "us-dec-luis-1",
+      "personId": "us-person-luis",
+      "kind": "orderAcceptance",
+      "title": "Homeowner accepted your shower quote",
+      "context": "Sales · accept or decline the order",
+      "due": "2026-11-03",
+      "href": "/app/sales",
+      "action": "Open",
+      "digestChanged": false
+    },
+    {
+      "id": "us-dec-priya-1",
+      "personId": "us-person-priya",
+      "kind": "quoteComparison",
+      "title": "Comparison ready: owner's inspection services",
+      "context": "Procurement · 3 quotes",
+      "due": "2026-11-10",
+      "href": "/app/procurement",
+      "action": "Compare",
+      "digestChanged": false
+    },
+    {
+      "id": "us-dec-jordan-1",
+      "personId": "us-person-jordan",
+      "kind": "publicationReview",
+      "title": "Editor's comments on your inspection column",
+      "context": "Publications · 2 comments",
+      "due": "2026-11-04",
+      "href": "/app/publications",
+      "action": "Open",
+      "digestChanged": false
+    }
+  ],
+  "events": [
+    {
+      "id": "us-wev-1",
+      "personIds": ["us-person-dana"],
+      "date": "2026-11-06",
+      "title": "Owner meeting: lobby change order",
+      "href": "/app/sales"
+    },
+    {
+      "id": "us-wev-2",
+      "personIds": ["us-person-dana", "us-person-kim"],
+      "date": "2026-11-20",
+      "title": "Quotes due: classroom windows",
+      "href": "/app/procurement"
+    },
+    {
+      "id": "us-wev-3",
+      "personIds": ["us-person-morgan"],
+      "date": "2026-11-20",
+      "title": "Choose a builder for the ADU",
+      "href": "/app/procurement"
+    },
+    {
+      "id": "us-wev-4",
+      "personIds": ["us-person-luis"],
+      "date": "2026-12-04",
+      "title": "Quote due: tile for 48 apartments",
+      "href": "/app/sales"
+    },
+    {
+      "id": "us-wev-5",
+      "personIds": ["us-person-priya"],
+      "date": "2026-12-11",
+      "title": "Quotes due: storefront glazing",
+      "href": "/app/procurement"
+    },
+    {
+      "id": "us-wev-6",
+      "personIds": ["us-person-dana", "us-person-luis", "us-person-jordan", "us-person-morgan"],
+      "date": "2026-11-14",
+      "title": "Building Better ADUs forum",
+      "href": "/events/building-better-adus-forum-2026"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "us-ntf-1",
+      "personIds": ["us-person-dana"],
+      "kind": "decision",
+      "title": "Window quotes are ready to compare",
+      "at": "2026-10-30T15:10:00Z",
+      "href": "/app/procurement",
+      "unread": true
+    },
+    {
+      "id": "us-ntf-2",
+      "personIds": ["us-person-dana"],
+      "kind": "assistant",
+      "title": "The owner's counter-offer changes the lobby quote: your approval is needed",
+      "at": "2026-10-29T22:40:00Z",
+      "href": "/app/assistant",
+      "unread": true
+    },
+    {
+      "id": "us-ntf-3",
+      "personIds": ["us-person-dana", "us-person-chris"],
+      "kind": "project",
+      "title": "Framing of the fourth floor recorded at Mesa Example Commons",
+      "at": "2026-10-28T23:00:00Z",
+      "href": "/app/projects/us-project-commons",
+      "unread": false
+    },
+    {
+      "id": "us-ntf-4",
+      "personIds": ["us-person-morgan"],
+      "kind": "quote",
+      "title": "Third builder quote received for your ADU",
+      "at": "2026-10-29T19:00:00Z",
+      "href": "/app/procurement",
+      "unread": true
+    },
+    {
+      "id": "us-ntf-5",
+      "personIds": ["us-person-luis"],
+      "kind": "decision",
+      "title": "A homeowner accepted your shower quote",
+      "at": "2026-10-30T17:30:00Z",
+      "href": "/app/sales",
+      "unread": true
+    },
+    {
+      "id": "us-ntf-6",
+      "personIds": ["us-person-priya"],
+      "kind": "quote",
+      "title": "Two storefront quotes received",
+      "at": "2026-10-30T20:15:00Z",
+      "href": "/app/procurement",
+      "unread": true
+    },
+    {
+      "id": "us-ntf-7",
+      "personIds": ["us-person-jordan"],
+      "kind": "publication",
+      "title": "The editor commented on your column",
+      "at": "2026-10-30T18:00:00Z",
+      "href": "/app/publications",
+      "unread": true
+    },
+    {
+      "id": "us-ntf-8",
+      "personIds": ["us-person-dana", "us-person-luis", "us-person-morgan", "us-person-priya", "us-person-jordan"],
+      "kind": "magazine",
+      "title": "Issue 2 is out: building through the rainy season",
+      "at": "2026-10-30T18:00:00Z",
+      "href": "/magazine/2",
+      "unread": false
+    }
+  ],
+  "assistant": [
+    {
+      "personId": "us-person-dana",
+      "running": 1,
+      "approvals": 1,
+      "unknown": 1,
+      "unread": 2,
+      "mandates": [
+        {
+          "id": "us-mandate-dana-1",
+          "action": "Collect clarifications from window suppliers and prepare a comparison",
+          "context": "Request for classroom windows, Example Valley school modernization",
+          "limitMinorUnits": null,
+          "validUntil": "2026-11-30",
+          "state": "active",
+          "version": 2,
+          "approval": "digest"
+        },
+        {
+          "id": "us-mandate-dana-2",
+          "action": "Answer owner change-order requests up to the agreed markup",
+          "context": "Mesa Example Commons",
+          "limitMinorUnits": "2500000",
+          "validUntil": "2026-12-31",
+          "state": "active",
+          "version": 1,
+          "approval": "escalate"
+        }
+      ],
+      "runs": [
+        {
+          "id": "us-run-dana-1",
+          "title": "Asking window suppliers about delivery dates",
+          "state": "executing",
+          "at": "2026-10-30T16:00:00Z"
+        },
+        {
+          "id": "us-run-dana-2",
+          "title": "Sending the revised lobby quote through the owner's e-mail",
+          "state": "outcomeUnknown",
+          "at": "2026-10-29T21:00:00Z"
+        },
+        {
+          "id": "us-run-dana-3",
+          "title": "Comparison of window quotes, version 2",
+          "state": "succeeded",
+          "at": "2026-10-30T15:00:00Z"
+        }
+      ]
+    },
+    {
+      "personId": "us-person-morgan",
+      "running": 0,
+      "approvals": 1,
+      "unknown": 0,
+      "unread": 1,
+      "mandates": [
+        {
+          "id": "us-mandate-morgan-1",
+          "action": "Invite licensed builders, collect quotes and line them up by phase",
+          "context": "Backyard home for my parents",
+          "limitMinorUnits": "18000000",
+          "validUntil": "2026-11-30",
+          "state": "active",
+          "version": 1,
+          "approval": "digest"
+        }
+      ],
+      "runs": [
+        {
+          "id": "us-run-morgan-1",
+          "title": "Lined up three builder quotes by phase",
+          "state": "succeeded",
+          "at": "2026-10-29T19:30:00Z"
+        }
+      ]
+    },
+    {
+      "personId": "us-person-luis",
+      "running": 0,
+      "approvals": 0,
+      "unknown": 0,
+      "unread": 1,
+      "mandates": [
+        {
+          "id": "us-mandate-luis-1",
+          "action": "Draft quotes for open tile requests from my catalogue",
+          "context": "Ejemplo Tile & Stone",
+          "limitMinorUnits": null,
+          "validUntil": "2027-01-31",
+          "state": "active",
+          "version": 1,
+          "approval": "escalate"
+        }
+      ],
+      "runs": [
+        {
+          "id": "us-run-luis-1",
+          "title": "Draft quote: bathroom tile for 48 apartments",
+          "state": "proposed",
+          "at": "2026-10-30T16:30:00Z"
+        }
+      ]
+    },
+    {
+      "personId": "us-person-priya",
+      "running": 1,
+      "approvals": 0,
+      "unknown": 0,
+      "unread": 1,
+      "mandates": [
+        {
+          "id": "us-mandate-priya-1",
+          "action": "Collect storefront quotes and check them against the request",
+          "context": "Storefront glazing, Mesa Example Commons",
+          "limitMinorUnits": null,
+          "validUntil": "2026-12-15",
+          "state": "active",
+          "version": 1,
+          "approval": "digest"
+        }
+      ],
+      "runs": [
+        {
+          "id": "us-run-priya-1",
+          "title": "Checking the second storefront quote against the request",
+          "state": "executing",
+          "at": "2026-10-30T20:20:00Z"
+        }
+      ]
+    },
+    {
+      "personId": "us-person-jordan",
+      "running": 0,
+      "approvals": 0,
+      "unknown": 0,
+      "unread": 0,
+      "mandates": [],
+      "runs": []
+    }
+  ],
+  "sessions": [
+    {
+      "personId": "us-person-dana",
+      "device": "Browser on a computer",
+      "location": "San Diego (approximate)",
+      "lastSeen": "2026-10-30T16:00:00Z",
+      "isCurrent": true
+    },
+    {
+      "personId": "us-person-morgan",
+      "device": "Browser on a phone",
+      "location": "Chula Vista (approximate)",
+      "lastSeen": "2026-10-29T19:40:00Z",
+      "isCurrent": true
+    },
+    {
+      "personId": "us-person-luis",
+      "device": "Browser on a phone",
+      "location": "National City (approximate)",
+      "lastSeen": "2026-10-30T17:35:00Z",
+      "isCurrent": true
+    },
+    {
+      "personId": "us-person-priya",
+      "device": "Browser on a computer",
+      "location": "San Diego (approximate)",
+      "lastSeen": "2026-10-30T20:30:00Z",
+      "isCurrent": true
+    },
+    {
+      "personId": "us-person-jordan",
+      "device": "Browser on a tablet",
+      "location": "San Diego (approximate)",
+      "lastSeen": "2026-10-30T18:10:00Z",
+      "isCurrent": true
+    }
+  ]
+}

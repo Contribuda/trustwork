@@ -59,7 +59,7 @@ Make what exists real and deployable before adding domains (ADR 012 decision 9).
 | CFG-001 | Configuration over code: runtime country packs, languages, defaults and brand | done | CTRY-002, INTL-004, OPS-001, WEB-006 |
 | LANG-ES | Spanish (es) as the seventh engine language | done | CFG-001, INTL-004 |
 | INTL-US | United States country pack | open | CTRY-002 |
-| DEMO-US | United States demo hub: defaults and synthetic demo data | open | INTL-US, CFG-001, LANG-ES, WEB-006 |
+| DEMO-US | United States demo hub: defaults and synthetic demo data | done | INTL-US, CFG-001, LANG-ES, WEB-006 |
 | OPS-002 | Container images and a full local stack with same-origin routing | open | OPS-001, REL-001 |
 | DATA-003 | Shared kernel persistence: files, units, jurisdictions, taxonomy, exchange rates and the hub anchor | open | DATA-004, CTRY-002 |
 | FILE-001 | Object storage port and attachments | open | REL-001, DATA-003 |

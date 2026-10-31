@@ -6,7 +6,9 @@
       "anonymous": "Qonaq",
       "reader": "Şirkətsiz oxucu və müəllif",
       "mixed": "Şirkət əməkdaşı: alır və satır",
-      "owner": "Şəxsi layihənin sahibi"
+      "owner": "Şəxsi layihənin sahibi",
+      "seller": "Biznes sahibi: işlər və xidmətlər satır",
+      "buyer": "Alıcı: layihələr üçün satınalma edir"
     },
     "noEmailSent": "Demo: məktub göndərilmir və hesab yaradılmır.",
     "noAccountCreated": "Demo: hesab yaradılmır və giriş baş vermir.",

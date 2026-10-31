@@ -1,0 +1,1312 @@
+{
+  "synthetic": true,
+  "description": "Synthetic news, articles, magazine pieces and posts of the United States demo hub. Every organization, survey, quote and number is invented; sources point at example.invalid; no real person, company, agency or brand is quoted.",
+  "publications": [
+    {
+      "slug": "demo-plan-check-pilot-backyard-homes",
+      "publication": {
+        "id": "us-pub-news-1",
+        "format": "news",
+        "status": "corrected",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["regulation", "projects"],
+        "entityLinks": [],
+        "currentVersion": 2,
+        "revision": 3,
+        "createdAt": "2026-10-26T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-news-1",
+          "version": 1,
+          "title": "A demo building department pilots online plan check for backyard homes",
+          "body": "First version of the news item.",
+          "sourceRefs": [
+            {
+              "uri": "https://example.invalid/news/plan-check-pilot",
+              "sourceTime": "2026-10-25T20:00:00Z",
+              "observedAt": "2026-10-26T15:00:00Z",
+              "license": null
+            }
+          ],
+          "eventTime": "2026-10-25T20:00:00Z",
+          "publishedAt": "2026-10-26T17:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000001"
+          }
+        },
+        {
+          "publicationId": "us-pub-news-1",
+          "version": 2,
+          "title": "A demo building department pilots online plan check for backyard homes",
+          "body": "A building department in the demo hub's county will let applicants for detached accessory dwelling units (ADUs) book a video meeting with a plan checker before they resubmit corrections. The first version of this item said the target for a first review was 10 business days; the notice says 15. The editors corrected the number after checking the notice.\n\n## What changes for applicants\n\n- A 30-minute video meeting can be booked after the first round of corrections.\n- The applicant, the designer and the builder can join the same call.\n- Corrections agreed in the meeting are recorded in the permit file the same day.\n\n## Why it matters\n\nMost delays on small projects come from a second or third round of corrections. A short conversation often settles what a written comment could not.\n\n> \"Half of our resubmittals were about one detail drawn two different ways,\" says an architect who tried the meeting during the trial.\n\n## What is next\n\nThe pilot runs until spring. The editors will report on how long reviews take when it ends.\n\nThis is synthetic demo news: the department, the notice and the quote are invented.",
+          "sourceRefs": [
+            {
+              "uri": "https://example.invalid/news/plan-check-pilot",
+              "sourceTime": "2026-10-25T20:00:00Z",
+              "observedAt": "2026-10-26T15:00:00Z",
+              "license": null
+            }
+          ],
+          "eventTime": "2026-10-25T20:00:00Z",
+          "publishedAt": "2026-10-27T16:30:00Z",
+          "correctionOf": 1,
+          "correctionNote": "Corrected the review target: 15 business days, not 10.",
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000002"
+          }
+        }
+      ],
+      "lede": "Applicants for detached ADUs can book a video plan-check meeting; the pilot runs until spring.",
+      "articleFormat": null,
+      "topics": ["regulation", "projects"],
+      "source": {
+        "name": "Demo building department notice (example)",
+        "url": "https://example.invalid/news/plan-check-pilot",
+        "type": "industryMedia"
+      },
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": true,
+      "utility": false,
+      "readMinutes": 2,
+      "updatedAt": "2026-10-27T16:30:00Z"
+    },
+    {
+      "slug": "lumber-prices-ease-third-month",
+      "publication": {
+        "id": "us-pub-news-2",
+        "format": "news",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["markets", "materials"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-lumber"
+            },
+            "relation": "source"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-29T15:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-news-2",
+          "version": 1,
+          "title": "Lumber prices ease for a third month, a demo supplier reports",
+          "body": "Framing lumber in the demo supplier's price list fell for the third month in a row, and delivery times for framing packages are back to about a week, Sample Pacific Lumber told the editors.\n\n## What builders see\n\n- Dimensional lumber and plywood are cheaper than in the summer.\n- Engineered beams still take two to three weeks.\n- Suppliers hold quotes for 15 days instead of 7.\n\nFor homeowners comparing ADU quotes, the change is small next to labor, but it shortens the wait for a framing package.\n\nSynthetic demo news: the supplier and the numbers are invented.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-29T15:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000003"
+          }
+        }
+      ],
+      "lede": "Delivery times for framing packages are back to about a week; engineered beams still take longer.",
+      "articleFormat": null,
+      "topics": ["markets", "materials"],
+      "source": {
+        "name": "Sample Pacific Lumber (demo company)",
+        "url": "https://example.invalid/sample-pacific-lumber",
+        "type": "manufacturer"
+      },
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 2,
+      "updatedAt": "2026-10-29T15:00:00Z"
+    },
+    {
+      "slug": "glass-supplier-adds-tempering-line",
+      "publication": {
+        "id": "us-pub-news-3",
+        "format": "news",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["materials", "markets"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-glazing"
+            },
+            "relation": "subject"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-22T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-news-3",
+          "version": 1,
+          "title": "A glass supplier adds a tempering line in the South Bay",
+          "body": "Demo Harbor Glazing has started a second tempering line at its plant, which it says cuts lead times for tempered and insulated glass from six weeks to about four.\n\nSchools and shops that need safety glass in large quantities are the first customers. The company is bidding on window packages for the next summer break.\n\nSynthetic demo news: the company and the figures are invented.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-22T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000004"
+          }
+        }
+      ],
+      "lede": "Lead times for tempered and insulated glass drop to about four weeks.",
+      "articleFormat": null,
+      "topics": ["materials", "markets"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-22T16:00:00Z"
+    },
+    {
+      "slug": "builders-guild-apprenticeship-cohort",
+      "publication": {
+        "id": "us-pub-news-4",
+        "format": "news",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["people", "events"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-20T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-news-4",
+          "version": 1,
+          "title": "A builders guild opens a spring apprenticeship cohort",
+          "body": "The Sample Bay Builders Guild, a demo trade association, is taking applications for a spring cohort of carpentry and concrete apprentices. Apprentices work four days on member sites and spend one day in class.\n\nClasses are taught in English and Spanish. Members can offer site places through the guild's page on the platform.\n\nSynthetic demo news: the guild and the program are invented.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-20T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000005"
+          }
+        }
+      ],
+      "lede": "Four days on site, one day in class, taught in English and Spanish.",
+      "articleFormat": null,
+      "topics": ["people", "events"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-20T16:00:00Z"
+    },
+    {
+      "slug": "electrical-panel-lead-times",
+      "publication": {
+        "id": "us-pub-news-5",
+        "format": "news",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["markets", "materials"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-15T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-news-5",
+          "version": 1,
+          "title": "Contractors report longer lead times for electrical panels",
+          "body": "In a small poll of demo hub members, electricians and general contractors said that residential electrical panels now take four to ten weeks to arrive. Two in three said they now order panels when the permit is issued rather than at rough-in.\n\n## What to do\n\n- Put the panel on the procurement plan at the permit stage.\n- Ask suppliers for a written delivery date, not an estimate.\n- Keep the old panel's spec in case an alternate is needed.\n\nSynthetic demo news: the poll and the answers are invented.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-15T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000006"
+          }
+        }
+      ],
+      "lede": "Order the panel at permit, not at rough-in, members of the demo hub advise.",
+      "articleFormat": null,
+      "topics": ["markets", "materials"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": true,
+      "utility": false,
+      "readMinutes": 2,
+      "updatedAt": "2026-10-15T16:00:00Z"
+    },
+    {
+      "slug": "mesa-example-commons-tops-out-framing",
+      "publication": {
+        "id": "us-pub-news-6",
+        "format": "news",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["projects"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-samplecoast"
+            },
+            "relation": "subject"
+          },
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-mesa"
+            },
+            "relation": "subject"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-30T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-news-6",
+          "version": 1,
+          "title": "Mesa Example Commons frames its fourth floor before the storms",
+          "body": "The general contractor of Mesa Example Commons, a demo mixed-use building, finished framing the fourth floor on October 28, two weeks before the revised date. The owner's balcony change had moved the milestone into November.\n\nNext come the roof, the windows and the weather barrier. The owner has an open request for storefront glazing on the project page.\n\nSynthetic demo news about a demo project.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-30T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000007"
+          }
+        }
+      ],
+      "lede": "The roof and windows come next; storefront glazing is out for quotes.",
+      "articleFormat": null,
+      "topics": ["projects"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-30T16:00:00Z"
+    },
+    {
+      "slug": "how-to-compare-three-adu-bids",
+      "publication": {
+        "id": "us-pub-art-1",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["projects", "markets"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-28T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-1",
+          "version": 1,
+          "title": "How to compare three bids for a backyard ADU",
+          "body": "Three builders, three prices, and none of them describe the same house. Before you compare totals, make the bids comparable.\n\n## Line them up\n\n- Put every bid into the same list of phases: design, permits, foundation, framing and roof, rough trades, finishes, site work.\n- Mark what each bid excludes. Utility connections and the sewer lateral are the usual gaps.\n- Note allowances: an allowance of a few thousand dollars for fixtures is a placeholder, not a price.\n\n## Ask the same questions\n\n- Who pulls the permit and who attends inspections?\n- What happens if the plan checker asks for changes?\n- How are progress payments tied to inspections passed?\n\n## Then compare\n\nWhen the scopes match, the price difference usually shrinks. What is left tells you how each builder sees the risk on your lot.\n\nYour assistant can line up the bids for you, but it never accepts one: the choice and the signature stay with you.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-28T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000008"
+          }
+        }
+      ],
+      "lede": "Make the scopes match first: phases, exclusions, allowances and who handles inspections.",
+      "shortTitle": "Comparing ADU bids",
+      "articleFormat": "practice",
+      "topics": ["projects", "markets"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": true,
+      "utility": true,
+      "readMinutes": 4,
+      "updatedAt": "2026-10-28T16:00:00Z",
+      "quiz": [
+        {
+          "question": "What should you do before comparing bid totals?",
+          "options": ["Pick the cheapest", "Put every bid into the same list of phases", "Ask for a discount"],
+          "answer": 1,
+          "explanation": "Only bids with the same scope can be compared on price."
+        },
+        {
+          "question": "What is an allowance in a bid?",
+          "options": ["A fixed price", "A placeholder amount for items not yet chosen", "A discount"],
+          "answer": 1,
+          "explanation": "Allowances are placeholders; the final cost depends on what you choose."
+        }
+      ]
+    },
+    {
+      "slug": "what-i-check-on-a-slab-before-tile",
+      "publication": {
+        "id": "us-pub-art-2",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "us-person-luis"
+            },
+            "credit": "Luis Ejemplo",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["materials", "people"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-ejemplo"
+            },
+            "relation": "employer"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-21T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-2",
+          "version": 1,
+          "title": "What I check on a slab before I set a single tile",
+          "body": "Most tile failures I am called to fix were decided before the first tile went down. Here is my checklist.\n\n## Flatness\n\nI lay a three-meter straightedge in several directions. Large-format tile needs a flat floor; a dip you cannot see becomes a lippage you cannot miss.\n\n## Moisture and cracks\n\nNew slabs need time to dry. I tape plastic sheets down overnight and look for condensation. Cracks get an anti-fracture membrane, never just thinset.\n\n## Slope to the drain\n\nIn showers I check the slope with a level before waterproofing. Water that sits under tile finds a way out somewhere you will not like.\n\n## Flood test\n\nEvery shower pan gets a flood test before tile: water in, mark the level, check again the next day.\n\nIf a quote does not mention substrate prep, ask about it. It is the cheapest part of the job to do right and the most expensive to redo.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-21T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000009"
+          }
+        }
+      ],
+      "lede": "Flatness, moisture, slope and a flood test: the four checks that decide whether tile lasts.",
+      "articleFormat": "experience",
+      "topics": ["materials", "people"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Luis Ejemplo",
+      "authorSlug": "luis-ejemplo",
+      "featured": false,
+      "utility": false,
+      "readMinutes": 3,
+      "updatedAt": "2026-10-21T16:00:00Z"
+    },
+    {
+      "slug": "where-an-adu-budget-goes",
+      "publication": {
+        "id": "us-pub-art-3",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["projects", "markets"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-24T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-3",
+          "version": 1,
+          "title": "Where an ADU budget goes: a line-by-line look at a synthetic build",
+          "body": "We split the budget of a synthetic one-bedroom ADU of about 60 m² (640 sq ft) into the phases of its plan. The figures are invented for the demo, but the proportions follow what builders in the demo hub describe.\n\n## The shares\n\n- Design, engineering and permit fees: about 12 percent.\n- Foundation, framing and roof: about 43 percent.\n- Rough plumbing, electrical and mechanical with insulation and drywall: about 23 percent.\n- Finishes, tile, cabinets and fixtures: about 22 percent.\n\n## What moves the total\n\nUtility connections and the distance to the sewer line change budgets more than finishes do. A steep lot or a narrow side yard adds labor to every phase.\n\n## How to use it\n\nUse shares, not totals, to read bids: a bid whose framing share is far below the others probably leaves something out.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-24T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b00000000000000000000000000000000000000000000000000000000000000a"
+          }
+        }
+      ],
+      "lede": "Shares of a synthetic budget by phase, and what really moves the total.",
+      "articleFormat": "analysis",
+      "topics": ["projects", "markets"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": true,
+      "utility": false,
+      "readMinutes": 4,
+      "updatedAt": "2026-10-24T16:00:00Z"
+    },
+    {
+      "slug": "a-buyers-view-on-subcontractor-quotes",
+      "publication": {
+        "id": "us-pub-art-4",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["markets", "people"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "person",
+              "id": "us-person-priya"
+            },
+            "relation": "interviewee"
+          },
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-mesa"
+            },
+            "relation": "employer"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-27T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-4",
+          "version": 1,
+          "title": "A buyer's view: what makes a subcontractor quote easy to accept",
+          "body": "Priya Mockford buys owner packages for a demo property owner. We asked her what separates a quote she can accept from one she has to send back.\n\n## What do you read first?\n\nThe exclusions. If they are missing, I assume the bidder has not read the drawings.\n\n## What makes you trust a number?\n\nA quote that follows the structure of our request, line by line, with labor and materials separate. And references from finished projects, ideally ones I can open on the platform.\n\n## Do you always take the lowest price?\n\nNo. Price is one of four criteria, and the weights are in the request. I tell every bidder the result and the main reason.\n\n## What would you tell a sole proprietor?\n\nYou do not need a big company page. A licence, an insurance certificate and three finished jobs with photos are enough to be taken seriously.\n\nA synthetic interview with a demo persona.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-27T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b00000000000000000000000000000000000000000000000000000000000000b"
+          }
+        }
+      ],
+      "lede": "Exclusions first, the request's structure followed line by line, and references you can open.",
+      "articleFormat": "interview",
+      "topics": ["markets", "people"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 3,
+      "updatedAt": "2026-10-27T16:00:00Z"
+    },
+    {
+      "slug": "framing-four-floors-before-the-rains",
+      "publication": {
+        "id": "us-pub-art-5",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "company",
+              "id": "us-company-samplecoast"
+            },
+            "credit": "Sample Coast Builders",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["projects"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-mesa"
+            },
+            "relation": "client"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-29T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-5",
+          "version": 1,
+          "title": "Mesa Example Commons: framing four floors before the rains",
+          "body": "We framed four floors of wood over a concrete podium between July and October. Here is how the plan held up.\n\n## The plan\n\nThe owner's plan had framing ending in mid-October. When balconies were added on the street side in September, we moved the milestone to mid-November and told every trade the same day.\n\n## What helped\n\n- Lumber was bought floor by floor, so the price drop in October helped the last package.\n- Shear-wall inspections were booked a week ahead and walked with the inspector.\n- The daily log recorded every delivery and every inspection with photos.\n\n## What we would change\n\nWe would order the balcony steel earlier. It was the only item that waited for the crane.\n\nNext: roof, windows and the weather barrier before January.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-29T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b00000000000000000000000000000000000000000000000000000000000000c"
+          }
+        }
+      ],
+      "lede": "How the plan held up when the owner added balconies in September.",
+      "articleFormat": "projectStory",
+      "topics": ["projects"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Sample Coast Builders",
+      "authorSlug": "sample-coast-builders",
+      "featured": false,
+      "utility": false,
+      "readMinutes": 3,
+      "updatedAt": "2026-10-29T16:00:00Z"
+    },
+    {
+      "slug": "an-inspection-is-a-conversation",
+      "publication": {
+        "id": "us-pub-art-6",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "us-person-jordan"
+            },
+            "credit": "Jordan Sketchley",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["regulation", "people"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-19T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-6",
+          "version": 1,
+          "title": "An inspection is a conversation, not an exam",
+          "body": "For twenty-five years I watched contractors treat inspections like exams: hide what you are unsure about and hope. The best ones did the opposite.\n\n## Show the hard part first\n\nIf a detail worried you, show it to me before I find it. We will both save time.\n\n## Have the documents at hand\n\nThe approved set, the engineer's letters and the special inspection reports, on site, not in the office.\n\n## Ask what I will look for next time\n\nInspectors are allowed to tell you. A question at framing can save a failed insulation inspection.\n\nAn inspection is the one meeting where the builder, the owner and the jurisdiction look at the same thing at the same time. Use it.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-19T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b00000000000000000000000000000000000000000000000000000000000000d"
+          }
+        }
+      ],
+      "lede": "Show the hard part first, keep the approved set on site and ask what comes next.",
+      "articleFormat": "opinion",
+      "topics": ["regulation", "people"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Jordan Sketchley",
+      "authorSlug": "jordan-sketchley",
+      "featured": false,
+      "utility": false,
+      "readMinutes": 2,
+      "updatedAt": "2026-10-19T16:00:00Z"
+    },
+    {
+      "slug": "ten-words-of-a-permit-set",
+      "publication": {
+        "id": "us-pub-art-7",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["regulation"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-17T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-7",
+          "version": 1,
+          "title": "Ten words of a permit set, explained",
+          "body": "A permit set uses words that mean something precise. Here are the ones homeowners ask about most.\n\n## Drawings and documents\n\n- **Site plan**: the lot with the buildings, setbacks and utilities.\n- **Plan check**: the jurisdiction's review of the drawings before a permit is issued.\n- **Corrections**: comments from the plan checker that must be answered.\n- **Deferred submittal**: a part designed later, such as trusses, reviewed separately.\n\n## On site\n\n- **Rough-in**: pipes, wires and ducts installed before the walls are closed.\n- **Special inspection**: an inspection by an independent inspector, for example of concrete strength.\n- **Final inspection**: the last inspection before the building may be used.\n\n## Money and paper\n\n- **Allowance**: a placeholder amount in a bid.\n- **Change order**: an agreed change to scope, price or time.\n- **Lien release**: a document confirming that a payment was received.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-17T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b00000000000000000000000000000000000000000000000000000000000000e"
+          }
+        }
+      ],
+      "lede": "Plan check, rough-in, deferred submittal, lien release: the words homeowners ask about most.",
+      "shortTitle": "Permit set glossary",
+      "articleFormat": "overview",
+      "topics": ["regulation"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": true,
+      "readMinutes": 4,
+      "updatedAt": "2026-10-17T16:00:00Z"
+    },
+    {
+      "slug": "a-daily-log-that-settles-disputes",
+      "publication": {
+        "id": "us-pub-art-8",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "us-person-chris"
+            },
+            "credit": "Chris Draftman",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["projects", "people"],
+        "entityLinks": [
+          {
+            "party": {
+              "kind": "company",
+              "id": "us-company-samplecoast"
+            },
+            "relation": "employer"
+          }
+        ],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-14T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-8",
+          "version": 1,
+          "title": "A daily log that settles disputes: a superintendent's template",
+          "body": "If it is not in the log with a photo, it did not happen. This is the template I use every day.\n\n## Every day\n\n- Weather and site conditions in the morning and at noon.\n- Crews on site: company, trade and headcount.\n- Deliveries received, with photos of the delivery tickets.\n- Inspections: who, what and the result.\n\n## When something changes\n\n- What changed, who asked for it and when.\n- Photos before and after.\n- Which milestone it might move.\n\nThe log is shared with the owner every week. Disputes end quickly when both sides read the same record.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-14T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b00000000000000000000000000000000000000000000000000000000000000f"
+          }
+        }
+      ],
+      "lede": "Weather, crews, deliveries, inspections and changes: what to record every day.",
+      "shortTitle": "Daily log template",
+      "articleFormat": "practice",
+      "topics": ["projects", "people"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Chris Draftman",
+      "authorSlug": "chris-draftman",
+      "featured": false,
+      "utility": true,
+      "readMinutes": 2,
+      "updatedAt": "2026-10-14T16:00:00Z"
+    },
+    {
+      "slug": "stucco-or-fiber-cement-near-the-coast",
+      "publication": {
+        "id": "us-pub-art-9",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "us-person-alex"
+            },
+            "credit": "Alex Exampleby",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["materials", "technologies"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-16T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-9",
+          "version": 1,
+          "title": "Stucco or fiber cement? Exterior finishes for homes near the coast",
+          "body": "Most small homes in the demo hub get one of two finishes: three-coat stucco or fiber-cement siding. Both work near the coast if the details are right.\n\n## Stucco\n\nDurable and familiar to inspectors. It needs a good weather barrier and weep screeds at the bottom; cracks are normal and should be sealed, not ignored.\n\n## Fiber cement\n\nFaster to install and easy to repaint. Joints and cut edges need care, and fasteners must be rated for salt air.\n\n## How I choose\n\nNear the water, I look at maintenance first: who will repaint or reseal, and how often. Then at the budget and the look the owner wants.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-16T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000010"
+          }
+        }
+      ],
+      "lede": "Both work near the coast when the weather barrier and the details are right.",
+      "articleFormat": "analysis",
+      "topics": ["materials", "technologies"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Alex Exampleby",
+      "authorSlug": "alex-exampleby",
+      "featured": false,
+      "utility": false,
+      "readMinutes": 3,
+      "updatedAt": "2026-10-16T16:00:00Z"
+    },
+    {
+      "slug": "from-plan-to-people-with-your-agent",
+      "publication": {
+        "id": "us-pub-art-10",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": true
+          }
+        ],
+        "editors": [],
+        "topicIds": ["projects", "technologies"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-30T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-10",
+          "version": 1,
+          "title": "From plan to people: planning a remodel with your agent",
+          "body": "Trustwork gives every participant one assistant that works for them. Here is how a homeowner in the demo hub uses it to go from an idea to a plan and to the people who will build it.\n\n## From idea to plan\n\nYou describe the project. The assistant drafts a plan: phases, permits and inspections, the trades and expertise each phase needs, a budget range and the decisions you will have to make.\n\n## From plan to people\n\nEach plan item can become a request: a consultation with an architect or engineer, a review of a quote, or a scoped task for a contractor. The assistant prepares the request; you publish it.\n\n## What the assistant may do\n\nOnly what you allow in a mandate, within a budget you set. It can collect and compare quotes; it cannot accept one or pay anyone without your confirmation.\n\nEverything in this demo is synthetic: no request is sent and no money moves.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-30T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000011"
+          }
+        }
+      ],
+      "lede": "Phases, permits, trades and decisions first; then consultations and scoped tasks, under your mandate.",
+      "articleFormat": "practice",
+      "topics": ["projects", "technologies"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 3,
+      "updatedAt": "2026-10-30T16:00:00Z"
+    },
+    {
+      "slug": "five-questions-for-a-structural-engineer",
+      "publication": {
+        "id": "us-pub-art-11",
+        "format": "article",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "us-person-sam"
+            },
+            "credit": "Sam Fictora",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["technologies", "regulation"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-12T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-art-11",
+          "version": 1,
+          "title": "Five questions to ask a structural engineer before you sign",
+          "body": "An engineer's proposal is short, and that is where the surprises hide. Ask these five questions.\n\n- Does the fee include answering plan-check corrections?\n- Are site visits included, and how many?\n- Who designs the deferred submittals, such as trusses?\n- Is a soils report needed, and who orders it?\n- How fast do you answer questions from the builder during construction?\n\nThe answers belong in the proposal, not in an e-mail thread.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-12T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000012"
+          }
+        }
+      ],
+      "lede": "Corrections, site visits, deferred submittals, soils and response times.",
+      "shortTitle": "Questions for an engineer",
+      "articleFormat": "practice",
+      "topics": ["technologies", "regulation"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Sam Fictora",
+      "authorSlug": "sam-fictora",
+      "featured": false,
+      "utility": true,
+      "readMinutes": 2,
+      "updatedAt": "2026-10-12T16:00:00Z"
+    },
+    {
+      "slug": "week-in-building-oct-24-30",
+      "publication": {
+        "id": "us-pub-mag-w2",
+        "format": "magazine_piece",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["markets", "projects"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-30T18:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-mag-w2",
+          "version": 1,
+          "title": "The week in San Diego building, October 24–30",
+          "body": "- A demo building department started video meetings for ADU corrections.\n- Lumber prices eased for a third month at a demo supplier.\n- Mesa Example Commons framed its fourth floor before the storms.\n- The owner of Mesa Example Commons asked for storefront glazing quotes.\n\nAll items are synthetic demo news.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-30T18:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000013"
+          }
+        }
+      ],
+      "lede": "Plan-check meetings, lumber prices and a framed fourth floor.",
+      "articleFormat": null,
+      "topics": ["markets", "projects"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-30T18:00:00Z"
+    },
+    {
+      "slug": "numbers-of-the-week-oct-24-30",
+      "publication": {
+        "id": "us-pub-mag-n2",
+        "format": "magazine_piece",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["markets"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-30T18:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-mag-n2",
+          "version": 1,
+          "title": "Numbers of the week",
+          "body": "- 15 business days: the demo department's target for a first plan review.\n- 4 weeks: the new lead time for tempered glass at a demo supplier.\n- 48 apartments: Mesa Example Commons, framed to the roof.\n- 2 in 3: demo members who order electrical panels at permit.\n\nAll numbers are synthetic.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-30T18:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000014"
+          }
+        }
+      ],
+      "lede": "Review targets, lead times and a framed building, in four numbers.",
+      "articleFormat": null,
+      "topics": ["markets"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-30T18:00:00Z"
+    },
+    {
+      "slug": "week-in-building-oct-17-23",
+      "publication": {
+        "id": "us-pub-mag-w1",
+        "format": "magazine_piece",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["markets", "people"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-23T18:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-mag-w1",
+          "version": 1,
+          "title": "The week in San Diego building, October 17–23",
+          "body": "- A demo glass supplier added a tempering line.\n- A demo builders guild opened a spring apprenticeship cohort.\n- Contractors in the demo hub reported longer lead times for electrical panels.\n\nAll items are synthetic demo news.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-23T18:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000015"
+          }
+        }
+      ],
+      "lede": "A tempering line, an apprenticeship cohort and electrical panels.",
+      "articleFormat": null,
+      "topics": ["markets", "people"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-23T18:00:00Z"
+    },
+    {
+      "slug": "reader-question-who-calls-for-inspections",
+      "publication": {
+        "id": "us-pub-mag-q1",
+        "format": "magazine_piece",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "editorial"
+            },
+            "credit": "Editorial team",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["regulation"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-23T18:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-mag-q1",
+          "version": 1,
+          "title": "Reader question: who calls for inspections, the homeowner or the builder?",
+          "body": "Usually whoever holds the permit. When a licensed contractor pulls the permit, the contractor schedules inspections and meets the inspector. When a homeowner pulls an owner-builder permit, the homeowner does, and takes on the responsibilities that come with it.\n\nCheck your jurisdiction's rules before you decide who applies: they differ from place to place. This answer is general information from the demo editors, not legal advice.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-23T18:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000016"
+          }
+        }
+      ],
+      "lede": "Usually whoever holds the permit; check your jurisdiction's rules.",
+      "articleFormat": null,
+      "topics": ["regulation"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Editorial team",
+      "authorSlug": null,
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-23T18:00:00Z"
+    },
+    {
+      "slug": "site-notes-framing-inspections-october",
+      "publication": {
+        "id": "us-pub-post-1",
+        "format": "personal_post",
+        "status": "published",
+        "authorship": [
+          {
+            "author": {
+              "kind": "person",
+              "id": "us-person-jordan"
+            },
+            "credit": "Jordan Sketchley",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["regulation"],
+        "entityLinks": [],
+        "currentVersion": 1,
+        "revision": 1,
+        "createdAt": "2026-10-25T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-post-1",
+          "version": 1,
+          "title": "Site notes: three things I saw on framing inspections this month",
+          "body": "Three things from mentoring walks this month: hold-downs installed before the inspector arrived but without the engineer's letter on site; nailing that matched the plan on the first floor and not on the second; a beautiful log of every delivery that nobody showed me. Bring the paper, check every floor, and show your log.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": "2026-10-25T16:00:00Z",
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000017"
+          }
+        }
+      ],
+      "lede": "Hold-down letters, second-floor nailing and a log nobody showed.",
+      "articleFormat": null,
+      "topics": ["regulation"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Jordan Sketchley",
+      "authorSlug": "jordan-sketchley",
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-25T16:00:00Z"
+    },
+    {
+      "slug": "sample-coast-builders-is-hiring",
+      "publication": {
+        "id": "us-pub-cpost-1",
+        "format": "company_post",
+        "status": "in_review",
+        "authorship": [
+          {
+            "author": {
+              "kind": "company",
+              "id": "us-company-samplecoast"
+            },
+            "credit": "Sample Coast Builders",
+            "assistantAssisted": false
+          }
+        ],
+        "editors": [],
+        "topicIds": ["people"],
+        "entityLinks": [],
+        "currentVersion": null,
+        "revision": 1,
+        "createdAt": "2026-10-30T16:00:00Z"
+      },
+      "versions": [
+        {
+          "publicationId": "us-pub-cpost-1",
+          "version": 1,
+          "title": "Sample Coast Builders is hiring an assistant superintendent",
+          "body": "We are looking for an assistant superintendent for Mesa Example Commons. Three years on multifamily or commercial sites; Spanish is a plus. Details are on our company page.",
+          "sourceRefs": [],
+          "eventTime": null,
+          "publishedAt": null,
+          "correctionOf": null,
+          "correctionNote": null,
+          "contentDigest": {
+            "algorithm": "trustwork-digest-1",
+            "value": "b000000000000000000000000000000000000000000000000000000000000018"
+          }
+        }
+      ],
+      "lede": "An assistant superintendent for a four-story wood-frame building.",
+      "articleFormat": null,
+      "topics": ["people"],
+      "source": null,
+      "region": "US-CA",
+      "authorLabel": "Sample Coast Builders",
+      "authorSlug": "sample-coast-builders",
+      "featured": false,
+      "utility": false,
+      "readMinutes": 1,
+      "updatedAt": "2026-10-30T16:00:00Z"
+    }
+  ]
+}
