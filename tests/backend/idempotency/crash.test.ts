@@ -259,6 +259,64 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     });
   });
 
+  await t.test('commerce (COM-001): catalogue, needs, RFQs, invitations', async () => {
+    const reference = await kernelReference.fromRepository();
+    await withMaintenance(h.db.admin, (trx) => kernelSync.apply(trx, reference));
+    const me = { kind: 'person', id: seed.people.petr };
+    const person = { via: 'person' };
+    type Offering = { offering: { id: string; revision: number }; versions: { id: string; version: number }[] };
+    const offeringPayload = (title: string) => ({ title, description: null, specification: { size: '60 mm' }, unit: 'm2', listPrice: null, options: [], availability: { state: 'unknown', capacity: null, observedAt: '2026-10-31T10:00:00.000Z' }, components: [] });
+    const draft = (title: string) => ({ payload: offeringPayload(title), publicFields: ['title'], privateKnowledge: { costBasis: null, marginTarget: null, notes: null } });
+    let offering = (await exactlyOnce({ action: 'offering.create', client: petr, url: '/v1/catalogue', body: { owner: me, kind: 'goods', draft: draft('Exactly-once pavers'), actor: person }, effects: () => auditCount(h.db.admin, 'offering.created') })).body as Offering;
+    const O = `/v1/catalogue/${offering.offering.id}`;
+    offering = (await exactlyOnce({ action: 'offering.version_publish', client: petr, url: `${O}/versions/${offering.versions[0]!.id}/publish`, body: { expectedRevision: offering.offering.revision, actor: person }, effects: () => auditCount(h.db.admin, 'offering.version_published') })).body as Offering;
+    offering = (await exactlyOnce({ action: 'offering.draft_open', client: petr, url: `${O}/versions`, body: { expectedRevision: offering.offering.revision, actor: person }, effects: () => auditCount(h.db.admin, 'offering.draft_opened') })).body as Offering;
+    const v2 = offering.versions.find((v) => v.version === 2)!;
+    offering = (await exactlyOnce({ action: 'offering.draft_save', client: petr, url: `${O}/versions/${v2.id}`, body: { expectedRevision: offering.offering.revision, draft: draft('Exactly-once pavers v2'), actor: person }, effects: () => auditCount(h.db.admin, 'offering.draft_saved') })).body as Offering;
+    offering = (await exactlyOnce({ action: 'offering.private_save', client: petr, url: `${O}/versions/${v2.id}/private`, body: { expectedRevision: offering.offering.revision, privateKnowledge: { costBasis: null, marginTarget: null, notes: 'once' } }, effects: () => auditCount(h.db.admin, 'offering.private_knowledge_saved') })).body as Offering;
+    await exactlyOnce({ action: 'offering.archive', client: petr, url: `${O}/archive`, body: { expectedRevision: offering.offering.revision, reason: 'Exactly-once archive' }, effects: () => auditCount(h.db.admin, 'offering.archived') });
+
+    const bdate = (date: string) => ({ date, timeZone: 'America/Los_Angeles' });
+    const fields = { title: 'Exactly-once need', description: null, region: 'US-CA', window: { from: bdate('2027-04-01'), to: bdate('2027-04-30') }, acceptanceCriteria: 'Owner check', lines: [{ kind: 'goods', description: 'Pavers', quantity: { value: '30', unit: 'm2' }, specification: {}, alternativesAllowed: false, evidence: null }] };
+    let need = (await exactlyOnce({ action: 'need.create', client: petr, url: '/v1/needs', body: { owner: me, projectId: null, source: 'manual', fields, actor: person }, effects: () => auditCount(h.db.admin, 'need.created') })).body as { id: string; revision: number };
+    need = (await exactlyOnce({ action: 'need.save', client: petr, url: `/v1/needs/${need.id}`, body: { expectedRevision: need.revision, fields: { ...fields, title: 'Saved once' }, actor: person }, effects: () => auditCount(h.db.admin, 'need.saved') })).body as { id: string; revision: number };
+    await exactlyOnce({
+      action: 'need.convert', client: petr, url: `/v1/needs/${need.id}/convert`, effects: () => auditCount(h.db.admin, 'need.converted'),
+      body: { expectedRevision: need.revision, rfq: { currency: 'USD', responseDeadline: '2027-03-01T00:00:00.000Z', paymentTermsRequested: null, attachments: [], category: null }, privateConstraint: null, actor: person },
+    });
+
+    type Rfq = { rfq: { id: string; revision: number; currentVersionId: string | null }; versions: { id: string; version: number; status: string }[]; privateConstraint: { revision: number }; invitations: { id: string; revision: number; party: { id: string } }[] };
+    const payload = (quantity: string) => ({
+      title: 'Exactly-once RFQ', lines: [{ lineId: 'l1', kind: 'goods', description: 'Pavers', specification: {}, quantity: { value: quantity, unit: 'm2' }, alternativesAllowed: false }],
+      deliveryTerms: { location: { region: 'US-CA' }, window: { from: bdate('2027-03-01'), to: bdate('2027-03-31') } }, acceptanceCriteria: 'Owner check', paymentTermsRequested: null, currency: 'USD', responseDeadline: '2027-02-15T17:00:00.000Z', attachments: [],
+    });
+    let rfq = (await exactlyOnce({
+      action: 'rfq.create', client: petr, url: '/v1/rfqs', effects: () => auditCount(h.db.admin, 'rfq.created'),
+      body: { owner: me, projectId: null, payload: payload('10'), category: null, publicProjection: { enabled: false, fields: [] }, privateConstraint: null, source: null, actor: person },
+    })).body as Rfq;
+    const R = `/v1/rfqs/${rfq.rfq.id}`;
+    rfq = (await exactlyOnce({ action: 'rfq.draft_save', client: petr, url: `${R}/versions/${rfq.versions[0]!.id}`, body: { expectedRevision: rfq.rfq.revision, payload: payload('12'), actor: person }, effects: () => auditCount(h.db.admin, 'rfq.draft_saved') })).body as Rfq;
+    rfq = (await exactlyOnce({
+      action: 'rfq.private_save', client: petr, url: `${R}/private`, effects: () => auditCount(h.db.admin, 'rfq.private_constraint_saved'),
+      body: { expectedRevision: rfq.privateConstraint.revision, budgetCeiling: { minorUnits: '500000', currency: 'USD' }, evaluationWeights: {}, internalNotes: 'once', shortlist: [] },
+    })).body as Rfq;
+    rfq = (await exactlyOnce({ action: 'rfq.version_publish', client: petr, url: `${R}/publish`, body: { rfqId: rfq.rfq.id, version: 1, expectedRevision: rfq.rfq.revision, amendmentReason: null, actor: person }, effects: () => auditCount(h.db.admin, 'rfq.version_published') })).body as Rfq;
+    const invitation = (await exactlyOnce({
+      action: 'rfq.invite', client: petr, url: `${R}/invitations`, effects: () => auditCount(h.db.admin, 'rfq.invitation_sent'),
+      body: { rfqId: rfq.rfq.id, rfqVersionId: rfq.rfq.currentVersionId, party: { kind: 'person', id: seed.people.carl }, channel: 'platform', actor: person },
+    })).body as { id: string; revision: number };
+    await exactlyOnce({ action: 'rfq.invitation_respond', client: carl, url: `/v1/rfq-invitations/${invitation.id}/respond`, body: { status: 'viewed' }, effects: () => auditCount(h.db.admin, 'rfq.invitation_viewed') });
+    rfq = (await petr.get(R)).body as Rfq;
+    rfq = (await exactlyOnce({ action: 'rfq.amendment_open', client: petr, url: `${R}/versions`, body: { expectedRevision: rfq.rfq.revision, amendmentReason: 'Exactly-once amendment', actor: person }, effects: () => auditCount(h.db.admin, 'rfq.amendment_opened') })).body as Rfq;
+    rfq = (await created(await petr.post(`${R}/publish`, { rfqId: rfq.rfq.id, version: 2, expectedRevision: rfq.rfq.revision, amendmentReason: 'Exactly-once amendment', actor: person }))) as unknown as Rfq;
+    const renewed = (await exactlyOnce({ action: 'rfq.invitation_revalidate', client: petr, url: `${R}/invitations/${invitation.id}/revalidate`, body: { actor: person }, effects: () => auditCount(h.db.admin, 'rfq.invitation_revalidated') })).body as { id: string; revision: number };
+    await exactlyOnce({ action: 'rfq.invitation_withdraw', client: petr, url: `${R}/invitations/${renewed.id}/withdraw`, body: { reason: 'Exactly-once withdrawal' }, effects: () => auditCount(h.db.admin, 'rfq.invitation_withdrawn') });
+    rfq = (await petr.get(R)).body as Rfq;
+    rfq = (await exactlyOnce({ action: 'rfq.projection_set', client: petr, url: `${R}/projection`, body: { expectedRevision: rfq.rfq.revision, publicProjection: { enabled: true, fields: ['title'] }, category: null }, effects: () => auditCount(h.db.admin, 'rfq.projection_set') })).body as Rfq;
+    await exactlyOnce({ action: 'rfq.close', client: petr, url: `${R}/close`, body: { expectedRevision: rfq.rfq.revision, outcome: 'closed', reason: 'Exactly-once close' }, effects: () => auditCount(h.db.admin, 'rfq.closed') });
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.rfq_invitation WHERE rfq_id = $1 AND stale_reason IS NOT NULL", [rfq.rfq.id]), 2, 'both invitations are flagged once');
+  });
+
   await t.test('every in-transaction route was crash-tested', () => {
     const expected = Object.entries(IDEMPOTENT_ROUTES).filter(([, mode]) => mode.kind === 'in_transaction').map(([action]) => action).sort();
     assert.deepEqual([...covered].sort(), expected);

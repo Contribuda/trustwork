@@ -35,9 +35,7 @@
 
 | File | Package | Contents | Note |
 |---|---|---|---|
-| `20261028010000_commerce_catalogue.sql` | COM-001 | offering, offering_version, bundle_component, offering_version_private | On branch `draft/com-001-commerce-migrations`, not merged |
-| `20261028020000_commerce_procurement.sql` | COM-001 | need, need_line, rfq, rfq_version, rfq_private_constraint, rfq_invitation | Same branch |
-| `20261028030000_*` (planned in the draft) | COM-001 | ownership helpers for commercial kinds | Referenced by the draft, not yet written |
+| `commerce/20261031180000_commerce_catalogue_procurement.sql` | COM-001 | offering, offering_version, bundle_component, offering_version_private, need, need_line, rfq, rfq_version, rfq_private_constraint, rfq_invitation; ownership helpers for the `rfq` kind (`owns_resource`, `rfq_can`, `rfq_invitee`) | In the COM-001 pull request; supersedes the unmerged draft files of PR #36 (`20261028010000_*`, `20261028020000_*`), which were reviewed and rewritten. The integrator assigns the final timestamp at merge |
 
 ## Planned slices
 
@@ -49,8 +47,8 @@ Phases group slices that can proceed in parallel once their dependencies are mer
 |---|---|---|---|---|
 | A1 `kernel` | DATA-003 (proposed) | evidence_artifact, exchange_rate_snapshot, unit, unit_conversion_rule, jurisdiction, taxonomy_term, step_term_relation, taxonomy_release, hub (anchor), hub_territory (anchor) | Live | restricted jurisdiction rejected; attachment requires parent and classification; unit mismatch fails |
 | A2 `admin_core` | DATA-002 | staff_role_definition_version, staff_role_assignment (with hub scope), staff_conflict_declaration, session_elevation, second_person_approval, case_access_grant, admin_audit_event, access_log_entry, support_case, support_case_note, moderation_report, moderation_case, sanction, appeal, feature_flag, maintenance_window, incident, kill_switch | A1 | runtime role cannot update or delete audit rows; requester ≠ approver; grant ≤ 72 h; gap-free sequence |
-| A3 `commerce_catalogue_procurement` | COM-001 | the draft files above, rebased after A1 | A1 | frozen columns; invitations pin versions; buyer-private never joined |
-| A4 `commerce_sales_transactions` | COM-001 | quote, quote_version, quote_line, quote_private_constraint, tax_determination, negotiation_round, amendment_request, agreement (+ `terms_kind` column defaulting to `rfq_quote`), agreement_buyer_private, agreement_seller_private, acceptance_event, order, order_change, obligation, rfq_clarification, supplier_candidate, evaluation | A3 | digest equality trigger; quote only against current RFQ version; acceptance recomputes digests |
+| A3 `commerce_catalogue_procurement` | COM-001 | the file above (catalogue, needs, RFQs, invitations) | A1 | frozen columns; invitations pin versions; amendments flag stale in the same transaction; buyer-private never joined |
+| A4 `commerce_sales_transactions` | COM-002 | quote, quote_version, quote_line, quote_private_constraint, tax_determination, negotiation_round, amendment_request, agreement (+ `terms_kind` column defaulting to `rfq_quote`), agreement_buyer_private, agreement_seller_private, acceptance_event, order, order_change, obligation, rfq_clarification, supplier_candidate, evaluation | A3 | digest equality trigger; quote only against current RFQ version; acceptance recomputes digests |
 
 ### Phase B: money, agents and communication
 

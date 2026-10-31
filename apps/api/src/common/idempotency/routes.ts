@@ -58,6 +58,28 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'project.location_set': IN_TRANSACTION,
   'project.permit_record': IN_TRANSACTION,
   'project.diary_add': IN_TRANSACTION,
+  // Catalogue, needs, RFQs and invitations (COM-001): every route runs in one PrincipalService.runAs transaction (the
+  // invitation outbox event included) and returns its result unchanged.
+  'offering.create': IN_TRANSACTION,
+  'offering.draft_open': IN_TRANSACTION,
+  'offering.draft_save': IN_TRANSACTION,
+  'offering.private_save': IN_TRANSACTION,
+  'offering.version_publish': IN_TRANSACTION,
+  'offering.archive': IN_TRANSACTION,
+  'need.create': IN_TRANSACTION,
+  'need.save': IN_TRANSACTION,
+  'need.convert': IN_TRANSACTION,
+  'rfq.create': IN_TRANSACTION,
+  'rfq.draft_save': IN_TRANSACTION,
+  'rfq.amendment_open': IN_TRANSACTION,
+  'rfq.version_publish': IN_TRANSACTION,
+  'rfq.private_save': IN_TRANSACTION,
+  'rfq.invite': IN_TRANSACTION,
+  'rfq.invitation_revalidate': IN_TRANSACTION,
+  'rfq.invitation_withdraw': IN_TRANSACTION,
+  'rfq.invitation_respond': IN_TRANSACTION,
+  'rfq.close': IN_TRANSACTION,
+  'rfq.projection_set': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

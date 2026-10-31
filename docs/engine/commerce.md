@@ -2,7 +2,7 @@
 
 Normative requirements: [Procurement and supply](modules/procurement-and-supply.md), [Sales](modules/sales.md), [Catalogue and manufacturer knowledge](modules/catalogue-and-manufacturer-knowledge.md). Participants: [who uses what](participants/README.md).
 
-Requirements R05–R08, R10. Status: procurement and sales lists and the decisions panel are **Demo**; RFQ and quote versions, digests, staleness, agreements, acceptance and comparison are **Contract** with tests and database rules specified; the full flows are **Designed** (work package COM-001).
+Requirements R05–R08, R10. Status: the catalogue (versioned offerings, private knowledge, public fields), needs, RFQs with immutable digested versions, buyer-private constraints, invitations pinned to the exact version and amendments that flag them stale are **Live** in the API (COM-001, [procurement module](../../apps/api/src/modules/procurement/README.md), [catalogue module](../../apps/api/src/modules/catalogue/README.md)); procurement and sales lists and the decisions panel are **Demo**; quote versions, agreements, acceptance and comparison are **Contract** with tests and database rules specified; their flows are **Designed** (COM-002).
 
 A company buys and sells at the same time, often on the same day: it buys facade panels and sells installation work. The engine gives both sides one honest workflow in which nothing that was sent can silently change.
 
