@@ -8916,7 +8916,10 @@
                 "data-steward",
                 "ops-engineer",
                 "privacy-officer",
-                "auditor"
+                "auditor",
+                "hub-owner",
+                "compliance-officer",
+                "node-operator"
               ]
             }
           },
