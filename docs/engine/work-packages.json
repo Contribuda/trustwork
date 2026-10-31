@@ -2314,7 +2314,7 @@
       "id": "HUBC-000",
       "title": "Review and freeze the hub console contracts",
       "area": "integrator-contracts",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/engine/hub-console/README.md",
       "goal": "Accept packages/contracts/src/hub.ts as the console contract: hub, modes, launch gates, configuration versions, providers and secret references, routing, egress, budgets, kill switches, sources, datasets, links, schedules, pipelines, runs, editorial items, agent product, plan to people, credentials, recommendations, setup and support.",

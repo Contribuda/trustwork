@@ -414,8 +414,8 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 
 ### HC-62 Marketplace — `/modules/marketplace`
 - **Purpose**: consultation and task categories.
-- **Data**: category rules, commission offers and their price versions, open requests and engagements (counts), disputes, refunds, providers paused for expired licences.
-- **Actions**: edit rule (version), draft commission price (activation by another person), decide refund, open dispute grant.
+- **Data**: category rules, commission fee versions per category, open requests and engagements (counts), disputes, refunds, providers paused for expired licences.
+- **Actions**: edit rule (version), draft a commission fee version (activation by another person, `billing.activate_fee_version`), decide refund, open dispute grant.
 - **Locale**: `admin.modules.marketplace.*`
 
 ### HC-63 Shared knowledge — `/modules/knowledge-sharing`

@@ -1,14 +1,14 @@
 # Operations: staff, audit, backups, updates, health
 
-Status: **Proposed**. Contract: `HubStaffAssignmentSchema`, `HUB_STAFF_ROLES`, `ConsolePermissionSchema`, `HUB_SECOND_PERSON_ACTIONS`, `consoleActionNeedsSecondPerson`, `BackupRecordSchema`, `RestoreDrillSchema`, `KillSwitchSchema`, `LaunchGateSchema` in [`hub.ts`](../../../packages/contracts/src/hub.ts); `StaffRoleDefinitionSchema`, `SecondPersonApprovalSchema`, `AdminAuditEventSchema`, `AccessLogEntrySchema`, `auditSequenceContinuous` in `admin.ts`. Screens HC-01…HC-03, HC-150…HC-166 and NC-01…NC-09 in [screens](screens.md). Backends: ADM-001, HUB-001, proposed OPS-001. The [operations runbook](../../operations/runbook.md) remains the release and recovery procedure; this chapter designs the console around it.
+Status: **Proposed**. Contract (console contract 1.0.0): `ScopedStaffRoleAssignmentSchema`, `ScopedStaffRoleDefinitionSchema`, `StaffScopeSchema`, `HUB_STAFF_ROLES`, `ConsolePermissionSchema`, `CONSOLE_SECOND_PERSON_ACTIONS`, `ConsoleSecondPersonApprovalSchema`, `ConsoleAuditEventSchema`, `consoleActionNeedsSecondPerson`, `BackupRecordSchema`, `RestoreDrillSchema`, `KillSwitchSchema`, `LaunchGateSchema` in [`hub.ts`](../../../packages/contracts/src/hub.ts); `StaffRoleDefinitionSchema`, `SecondPersonApprovalSchema`, `AdminAuditEventSchema`, `AccessLogEntrySchema`, `auditSequenceContinuous` in `admin.ts`. Screens HC-01…HC-03, HC-150…HC-166 and NC-01…NC-09 in [screens](screens.md). Backends: ADM-001, HUB-001, proposed OPS-001. The [operations runbook](../../operations/runbook.md) remains the release and recovery procedure; this chapter designs the console around it.
 
 ## Staff and roles
 
-- **Roles** are scoped to one hub or to the node (`HubStaffAssignmentSchema`). A person keeps one identity; a staff role is not an employer and does not change their ordinary membership.
+- **Roles** are scoped to the platform, one node or one hub (`ScopedStaffRoleAssignmentSchema`, ADR 012 decision 1). A person keeps one identity; a staff role is not an employer and does not change their ordinary membership.
 - **Joining**: invitation by a staff admin; the invitee must have a verified e-mail (or the setup-time invitation link), a **second factor**, and accept the staff terms. Sensitive roles need a second approver.
 - **Elevated sessions**: the console opens only after step-up (password within ten minutes and second factor); elevation expires after inactivity (proposal: 30 minutes) and on closing the browser.
 - **Conflicts of interest**: staff declare their employer and other interests; the console blocks them from deciding claims, disputes, moderation or support cases about their own company or close relations, and routes those to another person.
-- **Break-glass**: a time-boxed elevated role (hours, not days) for incidents, requested with an incident reference, approved by a second person, every action marked break-glass and reviewed after the incident.
+- **Break-glass**: a time-boxed elevated role (hours, not days: at most `BREAKGLASS_MAX_HOURS`, 12) for incidents, requested with an incident reference, approved by a second person, every action marked break-glass and reviewed after the incident.
 - **Separation-of-duties mode**: `reduced` below five staff (only actor ≠ approver), `full` from five (hard role conflicts too); switching is itself a two-person action.
 - **Leaving**: revoking a role ends elevation and pending approvals by that person immediately; their past actions stay attributed.
 
