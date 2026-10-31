@@ -12,7 +12,7 @@ import { z } from 'zod';
  * Nothing here decides anything by itself; the decision belongs to the operator's review queue.
  */
 
-/** Places where the platform is not offered (ADR-009 decision 2). ISO 3166-1 codes plus region markers. */
+/** Places where the platform is not offered (ADR-009 decision 2). Must equal packages/country-packs/packs/restricted.json, the authoritative list (tests/compliance/restricted-parity.test.ts). */
 export const RESTRICTED_PLACES = ['RU', 'CU', 'IR', 'KP', 'UA-43', 'UA-40', 'UA-14', 'UA-09'] as const;
 
 export const OwnershipDeclarationSchema = z.strictObject({
