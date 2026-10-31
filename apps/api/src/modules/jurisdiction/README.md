@@ -45,7 +45,7 @@ DB-IP "IP to City Lite" (CC BY 4.0, no account or key) is the recommended source
 
 ## Not in this slice
 
-Self-declared places and the payout-country check (SANC-004), list screening (SANC-002, SANC-003), console screens (SANC-006), mail notices to the person when a hold is placed or cleared (SANC-007), our own services (SANC-008) and the deployment attestation (SANC-009).
+Self-declared places and the payout-country check (SANC-004), list screening (SANC-002, SANC-003), console screens (SANC-006), mail notices to the person when a hold is placed or cleared (SANC-007), our own services (SANC-008). The deployment-location attestation (SANC-009) lives in [`attestation/`](attestation/README.md).
 
 ## Tests
 

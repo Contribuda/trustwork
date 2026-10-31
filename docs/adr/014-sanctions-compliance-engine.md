@@ -136,4 +136,5 @@ Trustwork today has the authoritative restricted-places list (`packages/country-
 |---|---|
 | Restricted places list in code, packs, configuration, kernel and console contracts | Live |
 | Ownership declaration and CSL adapter that never fakes clear (`packages/compliance`) | Live |
+| Deployment-location attestation: storage, refusal of restricted places, audit, renewal and status API (SANC-009; the wizard step is HUB-004) | Live (API, not deployed) |
 | Everything else in this ADR | Proposed (SANC-001 … SANC-009) |

@@ -2867,7 +2867,7 @@
       "id": "SANC-009",
       "title": "Deployment-location attestation in the setup wizard",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SANC-001",
         "DATA-002"

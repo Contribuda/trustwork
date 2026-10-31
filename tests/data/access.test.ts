@@ -78,7 +78,8 @@ test('identity and access persistence under the restricted runtime role', { skip
     const assistant = ['action_attempt', 'action_intent', 'action_outcome', 'approval', 'assistant_note', 'conversation_turn', 'mandate', 'mandate_context', 'mandate_proposal', 'mandate_revision',
       'mandate_use', 'participant_stop', 'reconciliation', 'run', 'run_step', 'service_backlog_item']; // AST-001
     const screeningLists = ['screening_list', 'screening_list_entry', 'screening_list_version']; // SANC-002
-    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin, ...execution, ...jurisdiction, ...assistant, ...screeningLists].sort());
+    const attestation = ['deployment_location_attestation']; // SANC-009
+    assert.deepEqual(forced, ['auth_token', 'company', 'company_private', 'credential', 'directory_handle', 'email_binding', 'login_failure', 'membership', 'object_participation', 'ownership_transfer', 'permission_grant', 'person', 'project', 'session', ...kernel, ...billing, ...plans, ...commerce, ...files, ...transactions, ...profiles, ...secondFactor, ...tasks, ...admin, ...execution, ...jurisdiction, ...assistant, ...screeningLists, ...attestation].sort());
   });
 
   await t.test('RL-12: the SECURITY DEFINER allowlist is exactly the reviewed set with a pinned search_path', async () => {
@@ -112,6 +113,7 @@ test('identity and access persistence under the restricted runtime role', { skip
       ...ASSISTANT_WORKER_DEFINERS, // AST-001 (worker role)
       'screening_list_set_status', 'screening_list_confirm_version', 'screening_list_freshness', 'screening_available', // SANC-002 (API role)
       ...SCREENING_LIST_WORKER, // SANC-002 (worker role)
+      'attestation_attest', 'attestation_record_refusal', 'attestation_current', 'attestation_in_force', 'attestation_reader', // SANC-009
     ].sort());
     // REL-001: worker-only entry points (trustwork_worker), never executable by the API role. BE-002: the API role
     // also lost the caller-chosen sweep and the job lease/reconcile helpers the worker owns. FILE-001 adds the files
