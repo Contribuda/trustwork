@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { FilesystemBlobStore } from '../../../packages/data/src/files/index.js';
 import { randomUUID } from 'node:crypto';
 import { elevate, enrol } from '../second-factor/helpers.js';
+import { crashAdminRoutes } from '../../admin/crash-routes.js';
 
 // FILE-001: the files routes are mounted only with a blob store; the storage fake keeps everything local.
 const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobStore({ root: mkdtempSync(join(tmpdir(), 'trustwork-crash-files-')) }) } });
@@ -550,6 +551,10 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await h.db.admin.query("UPDATE trustwork.second_factor_reset SET requested_at = requested_at - interval '73 hours', approved_at = approved_at - interval '73 hours', effective_at = effective_at - interval '73 hours' WHERE id = $1", [id]);
     await exactlyOnce({ action: 'support.second_factor_reset.execute', client: lead, url: `${base}/${id}/execute`, body: {}, effects: () => auditCount(h.db.admin, 'support.second_factor_reset_completed') });
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.outbox_event WHERE type = 'identity.second_factor_reset_completed' AND aggregate_id = $1", [seed.people.pure]), 1, 'one completion intent');
+  });
+
+  await t.test('platform administration (ADM-001): staff, approvals, case grants, moderation, appeals, flags', async () => {
+    await crashAdminRoutes(h, exactlyOnce);
   });
 
   await t.test('every in-transaction route was crash-tested', () => {
