@@ -17,7 +17,8 @@ test('live adapter, transport and demo-mode switch (adapter.probe.tsx)', () => {
     // NODE_TEST_CONTEXT would make the child report into this runner and exit 0 whatever happens.
     env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'NODE_TEST_CONTEXT')), TSX_TSCONFIG_PATH: join(here, 'tsconfig.json'), TRUSTWORK_DEMO_MODE: '', TRUSTWORK_DEMO_PERSONA: 'owner' },
   });
-  assert.match(result.stdout, /# pass [1-9]/, 'the probe ran its tests');
+  assert.match(result.stdout, /ℹ pass [1-9]/, 'the probe ran its tests');
+  assert.match(result.stdout, /ℹ fail 0/);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
