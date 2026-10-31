@@ -67,7 +67,7 @@ Hosting is a capability, not a role: a person can host a meetup without any comp
 ### Money
 
 - Ticket prices are **price versions** in the hub currency (for example USD, MXN, EUR or INR), immutable once a ticket is sold.
-- Payment goes through the hub's payment adapter. Where the hub acts as a marketplace, ticket revenue is paid out to the organizer minus the hub's fee from the hub's published price version; taxes on tickets follow the country facets ([Country specifics](country-specifics.md#tax-and-invoicing)).
+- Payment goes through the hub's payment adapter. Where the hub acts as a marketplace, ticket payments go through the licensed provider's connected accounts directly to the organizer, and the hub's fee from its published price version is taken as an application fee by the provider; neither the engine nor the hub ever holds ticket money (ADR 010 decision 20); taxes on tickets follow the country facets ([Country specifics](country-specifics.md#tax-and-invoicing)).
 - Refund rules are part of the organizer's terms, shown before payment; cancellation by the organizer refunds automatically through the provider.
 - A payment whose outcome is unknown is reconciled, never charged twice (same reliability rules as orders).
 

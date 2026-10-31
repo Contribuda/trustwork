@@ -20,14 +20,14 @@ draft → curated → review → released → corrected edition (new revision)
 
 | Surface | What it does |
 |---|---|
-| Magazine home | Latest issue cover with the hub's localized brand lockup, contents, previous issues |
+| Magazine home | Latest issue cover with the hub's brand lockup (Trustwork, or the hub's registered overlay), set in the reader's script, contents, previous issues |
 | Issue page | Hero, editor's letter, contents by section, materials count |
 | Reader (`/magazine/:issue/read`) | Page-by-page reading; desktop may show spreads, mobile is a single readable column |
 | Archive | Issues by year and month |
 | Rubric pages | Every article of one rubric across issues |
 | Feed | `/magazine/feed.xml` |
 
-Covers use generated artworks from the engine; a deployment can register its own licensed photographs. The cover lettering follows the reader's language.
+Covers use generated artworks from the engine; a deployment can register its own licensed photographs. The cover typography follows the reader's script; the brand name stays Trustwork unless the hub registers its own overlay.
 
 ## The PDF (Designed)
 
