@@ -31,13 +31,6 @@ function href(format: string, topic: string | undefined): string {
   return query ? `/articles?${query}` : '/articles';
 }
 
-function plural(n: number, one: string, few: string, many: string): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  const word = mod10 === 1 && mod100 !== 11 ? one : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? few : many;
-  return `${n} ${word}`;
-}
-
 /**
  * Articles section: lead article in a tinted panel, search, two filter rows (format, topic), the feed of rows with
  * a meta column (format, author, date, read time), a sticky aside («Полезно под рукой», «Пишут для нас», the
@@ -229,7 +222,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pag
                           <span className="pub-authors__name">{author.label}</span>
                           <span className="pub-authors__role">{author.role}</span>
                         </span>
-                        <span className="pub-authors__count">{plural(author.count, t('articles.materialsOne'), t('articles.materialsFew'), t('articles.materialsMany'))}</span>
+                        <span className="pub-authors__count">{t('articles.materialsCount', { count: author.count })}</span>
                       </>
                     );
                     return (

@@ -10,8 +10,8 @@ import { AppRouterProvider } from '@/components/AppRouterProvider';
 import { DemoBanner } from '@/components/DemoBanner';
 import { defaultPersona } from '@/app/_lib/persona';
 import { t } from '@/app/_lib/i18n';
-import { primeLocale } from '@/app/_lib/locale';
-import { appLayers } from '@/app/_lib/locale-data';
+import { localeLayers, primeLocale } from '@/app/_lib/locale';
+import { DATA_SOURCE } from '@/app/_lib/data';
 import { LocaleProvider } from '@/components/locale/LocaleProvider';
 import { FirstVisitGate } from '@/components/locale/LocaleControls';
 
@@ -76,11 +76,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang={active.locale} className={`${golos.variable} ${notoGeorgian.variable} ${notoArmenian.variable} ${ptSerif.variable}`}>
       <body>
         {/* The banner is last in DOM order (keyboard order starts at the shell) and first visually (CSS order). */}
-        <LocaleProvider locale={active.locale} country={active.country} layers={appLayers(active.locale)}>
+        <LocaleProvider locale={active.locale} country={active.country} layers={localeLayers(active.locale)}>
           <UiProvider>
             <AppRouterProvider>
               {children}
-              <DemoBanner defaultPersona={defaultPersona()} />
+              {DATA_SOURCE === 'fixtures' ? <DemoBanner defaultPersona={defaultPersona()} /> : null}
               <FirstVisitGate />
             </AppRouterProvider>
           </UiProvider>

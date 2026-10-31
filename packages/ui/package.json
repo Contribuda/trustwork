@@ -17,6 +17,7 @@
     "./fonts/*": "./fonts/*",
     "./brand/*": "./brand/*",
     "./i18n": "./src/i18n/index.ts",
+    "./i18n/dictionaries": "./src/i18n/dictionaries.ts",
     "./media": "./src/media/index.ts",
     "./media/*": "./media/*",
     "./locales/*.json": "./locales/*.json",

@@ -818,7 +818,7 @@
       "id": "INTL-003",
       "title": "Locale correctness and weight: request-scoped client locale, one dictionary per page, CLDR plurals, country-aware formats",
       "area": "international",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/engine/localization.md",
       "goal": "Fix cross-request locale mixing, ship only the active dictionary and format numbers and dates for language plus country.",

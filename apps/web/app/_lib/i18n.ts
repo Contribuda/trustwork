@@ -1,13 +1,14 @@
-import { getLocaleStore } from '@trustwork/i18n-runtime';
-import { formatDate, formatMessage, formatNumber, localeTag, messageOrUndefined as uiMessage, type LocaleParams } from '@trustwork/ui/i18n';
+import { formatDate, formatMessage, formatNumber, intlTag, localeTag, messageOrUndefined, type LocaleParams } from '@trustwork/ui/i18n';
 import { formatMoney as packMoney } from '@trustwork/country-packs';
-import { appLayers } from './locale-data';
 
 /**
  * Application i18n (ADR-009): keys are dot paths into `locales/en.json` (the reference) layered over the
  * design-system dictionary. The active locale and its message layers live in the request-scoped store
  * primed by `primeLocale()` (server) and the `LocaleProvider` (client); a locale falls back to English per
  * key. No product copy is written in TSX: every string comes through `t()`.
+ *
+ * This module is shared by server and client components, so it imports no dictionary: the layers arrive
+ * with the store (only the active locale's), and the dictionaries stay on the server (`locale-data.ts`).
  */
 
 type Primitive = string | number;
@@ -29,26 +30,9 @@ type AdditionKeys = Exclude<PathsOf<Additions>, '$comment'>;
 type UiKeys = PathsOf<typeof import('@trustwork/ui/locales/en.json')>;
 export type LocaleKey = UiKeys | AdditionKeys;
 
-function readPath(root: unknown, key: string): unknown {
-  let node: unknown = root;
-  for (const part of key.split('.')) {
-    if (Array.isArray(node)) node = node[Number(part)];
-    else if (node && typeof node === 'object') node = (node as Record<string, unknown>)[part];
-    else return undefined;
-  }
-  return node;
-}
-
-/** Before any request primes the store (static prerender of the global error page, build-time metadata) the engine default applies. */
-const DEFAULT_LAYERS = appLayers('en');
-
+/** The store's layers in order (brand overlay, app locale, app English fallback, design-system locale), then the design system's English reference. */
 function lookup(key: string): string | undefined {
-  const layers = getLocaleStore().layers;
-  for (const layer of layers.length ? layers : DEFAULT_LAYERS) {
-    const found = readPath(layer, key);
-    if (typeof found === 'string') return found;
-  }
-  return uiMessage(key);
+  return messageOrUndefined(key);
 }
 
 /** Raw message by key: app layers (locale, then English) win over the design-system dictionary; unknown keys throw so missing copy fails loudly. */
@@ -84,9 +68,9 @@ export function longDate(value: string | Date): string {
   return formatDate(value, 'long');
 }
 
-/** Money from contract minor units in the given currency and the active locale (no hard-coded currency). */
+/** Money from contract minor units in the given currency and the active language and country (no hard-coded currency). */
 export function formatMoney(minorUnits: string, currency: string): string {
-  return packMoney(minorUnits, currency, localeTag());
+  return packMoney(minorUnits, currency, intlTag());
 }
 
 /** The active locale tag for the current render. */

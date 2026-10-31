@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { setLocaleStore } from '@trustwork/i18n-runtime';
+// Registers every engine language's design-system dictionary (only English is built into the bundle).
+import '../../src/i18n/dictionaries';
 import { formatDate, formatMessage, locale, t, uiDictionary, uiLocales } from '../../src/i18n/index';
 
 function strings(node: unknown, path: string[] = []): Array<[string, string]> {

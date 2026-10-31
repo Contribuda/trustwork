@@ -1,5 +1,6 @@
 import { data } from '@/app/_lib/data';
-import { primeLocale } from '@/app/_lib/locale';
+import { t } from '@/app/_lib/i18n';
+import { withRequestLocale } from '@/app/_lib/locale';
 
 const stamp = (iso: string) => iso.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 const escape = (s: string) =>
@@ -8,13 +9,12 @@ const escape = (s: string) =>
     .replace(/\n/g, '\\n')
     .replace(/[,;]/g, (m) => `\\${m}`);
 
-/** iCalendar file for one event (UTC timestamps; calendar apps convert to the user's zone). */
-export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) {
-  await primeLocale();
+/** iCalendar file for one event in the visitor's language (UTC timestamps; calendar apps convert to the user's zone). */
+export const GET = withRequestLocale(async (_request: Request, context: { params: Promise<{ slug: string }> }) => {
   const { slug } = await context.params;
   const event = data.getEvent(slug);
   if (!event) return new Response('Not found', { status: 404 });
-  const location = event.format === 'online' ? 'Онлайн' : [event.venue?.name, event.venue?.address].filter(Boolean).join(', ');
+  const location = event.format === 'online' ? t('events.online') : [event.venue?.name, event.venue?.address].filter(Boolean).join(', ');
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -34,4 +34,4 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     'END:VCALENDAR',
   ];
   return new Response(lines.join('\r\n') + '\r\n', { headers: { 'Content-Type': 'text/calendar; charset=utf-8', 'Content-Disposition': `attachment; filename="${slug}.ics"` } });
-}
+});

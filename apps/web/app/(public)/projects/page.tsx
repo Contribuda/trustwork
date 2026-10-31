@@ -34,14 +34,6 @@ type Sort = (typeof SORTS)[number];
 type Filters = { q?: string; category?: Category; stage?: ProjectStatus; region?: RegionKey; needs?: '1'; sort?: Sort; show?: number; view?: 'map'; bbox?: string };
 type Facet = 'category' | 'stage' | 'region' | 'needs';
 
-function plural(n: number, one: string, few: string, many: string): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
-  return many;
-}
-
 function href(f: Partial<Filters>): string {
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(f)) if (v && !(k === 'show' && v === PAGE) && !(k === 'sort' && v === 'recent')) params.set(k, String(v));
@@ -303,7 +295,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
           <div aria-label={t('projects.title')}>
             <div className="ev-results" role="status">
               <span className="ev-results__count">
-                {t('projects.found')}: <strong>{items.length}</strong> {plural(items.length, t('projects.foundOne'), t('projects.foundFew'), t('projects.foundMany'))}
+                {t('projects.found')}: <strong>{items.length}</strong> {t('projects.foundNoun', { count: items.length })}
               </span>
               <span className="ms-toggle" role="group" aria-label={t('map.viewMap')}>
                 <NextLink href={href({ ...filters, view: undefined, bbox: undefined, show: undefined })} className="ms-toggle__btn" aria-current={filters.view ? undefined : 'true'} scroll={false}>

@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DemoBanner as DemoStrip } from '@trustwork/ui';
-import { DATA_SOURCE } from '@/app/_lib/data';
 import { PERSONAS, resolveDemoContext, type Persona } from '@/app/_lib/persona';
 import { t } from '@/app/_lib/i18n';
 
@@ -12,17 +11,17 @@ function personaLabel(id: Persona): string {
 }
 
 /**
- * 32 px demo strip (`@trustwork/ui` DemoBanner) shown whenever the fixture adapter is the data source:
- * synthetic data must never masquerade as real customers or a working backend. The persona switch is a
- * menu button; choosing an entry navigates to the current path with `?persona=` (cookie-less, see persona.ts)
- * and drops any demo scenario. The strip is last in DOM order (keyboard order starts at the shell) and first
- * visually (`order: -1` on the body flex column).
+ * 32 px demo strip (`@trustwork/ui` DemoBanner) that the root layout renders whenever the fixture adapter is
+ * the data source: synthetic data must never masquerade as real customers or a working backend. The layout
+ * decides, so this client module never imports the fixtures (their demo content in every language would
+ * otherwise ship to every browser). The persona switch is a menu button; choosing an entry navigates to the
+ * current path with `?persona=` (cookie-less, see persona.ts) and drops any demo scenario. The strip is last
+ * in DOM order (keyboard order starts at the shell) and first visually (`order: -1` on the body flex column).
  */
 export function DemoBanner({ defaultPersona }: { defaultPersona: Persona }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  if (DATA_SOURCE !== 'fixtures') return null;
   const ctx = resolveDemoContext(params, defaultPersona);
   const onChange = (id: string) => {
     const next = new URLSearchParams(params.toString());

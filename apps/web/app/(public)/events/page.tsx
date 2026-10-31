@@ -39,14 +39,6 @@ const DAY_MS = 86_400_000;
 type Filters = { q?: string; scope: 'upcoming' | 'past'; type?: EventType; format?: EventFormat; price?: 'free' | 'paid'; city?: string; date?: 'next7' | 'next30'; month?: string; day?: string };
 type FacetKey = 'type' | 'format' | 'price' | 'city' | 'time';
 
-function plural(n: number, one: string, few: string, many: string): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
-  return many;
-}
-
 /** Builds a shareable `/events?…` link; empty values drop out so URLs stay short. */
 function href(f: Partial<Filters>): string {
   const params = new URLSearchParams();
@@ -131,7 +123,7 @@ function MonthCalendar({ events, year, month, filters, nowDay }: { events: Event
               className={cls}
               scroll={false}
               aria-current={selected ? 'date' : undefined}
-              title={`${fullDate(year, month, day)}: ${count} ${plural(count, t('events.foundOne'), t('events.foundFew'), t('events.foundMany'))}`}
+              title={`${fullDate(year, month, day)}: ${count} ${t('events.foundNoun', { count })}`}
             >
               {day}
               {count > 1 ? <span className="ev-cal__dot" aria-hidden="true" /> : null}
@@ -395,7 +387,7 @@ export default async function EventsPage({ searchParams }: { searchParams: PageS
 
             <div className="ev-results" role="status">
               <span className="ev-results__count">
-                {t('events.found')}: <strong>{items.length}</strong> {plural(items.length, t('events.foundOne'), t('events.foundFew'), t('events.foundMany'))}
+                {t('events.found')}: <strong>{items.length}</strong> {t('events.foundNoun', { count: items.length })}
               </span>
               {chips.length ? (
                 <span className="ev-active">
