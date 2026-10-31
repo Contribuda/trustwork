@@ -71,5 +71,9 @@
     },
     "notYou": "Agar bu siz bo‘lmasangiz, hoziroq parolingizni tiklang va faol seanslaringizni tekshiring.",
     "action": "Parolni tiklash"
+  },
+  "notification": {
+    "action": "{brand} platformasida ochish",
+    "footer": "Siz bu xatni {brand} platformasidagi ushbu ishda ishtirok etganingiz uchun oldingiz. Qaysi bildirishnomalar elektron pochtaga kelishini bildirishnoma sozlamalarida tanlashingiz mumkin."
   }
 }

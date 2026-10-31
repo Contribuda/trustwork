@@ -52,6 +52,10 @@ const PROVIDER_NAMES: Readonly<Record<string, string>> = { google: 'Google', app
 
 type Block =
   | { kind: 'paragraph'; key: string }
+  /** Pre-rendered text from a delivery parameter (COMMS-001 notification texts), escaped like every value. */
+  | { kind: 'text'; param: string }
+  /** A link to a workspace path carried by the delivery (validated `/app/...`), labelled from the dictionary. */
+  | { kind: 'pathAction'; key: string; param: string }
   | { kind: 'action'; key: string; link: LinkKind }
   | { kind: 'secondary'; hintKey: string; actionKey: string; link: LinkKind };
 
@@ -64,6 +68,8 @@ export interface TemplateSpec {
   numeric: readonly string[];
   /** Whether the delivery carries a sealed one-time token (the action link embeds it). */
   secret: boolean;
+  /** Subject and heading come from this parameter instead of the dictionary (pre-rendered notification texts). */
+  subjectParam?: string;
   blocks(params: Readonly<Record<string, string>>): Block[];
 }
 
@@ -81,7 +87,12 @@ export const TEMPLATE_SPECS: Readonly<Record<MailTemplateName, TemplateSpec>> = 
     blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'invitation' }, p('expiry'), p('ignore')] },
   security_notice: { template: 'security_notice', namespace: 'securityNotice', required: ['event'], numeric: [], secret: false,
     blocks: (params) => [p(`events.${params.event}`), p('notYou'), { kind: 'action', key: 'action', link: 'recover' }] },
+  // COMMS-001: a notification rendered from the hub's active template version in the recipient's language.
+  notification: { template: 'notification', namespace: 'notification', required: ['subject', 'body', 'path'], numeric: [], secret: false, subjectParam: 'subject',
+    blocks: () => [{ kind: 'text', param: 'body' }, { kind: 'pathAction', key: 'action', param: 'path' }, p('footer')] },
 };
+/** Workspace paths a notification may link to (the same rule as `comms_enqueue_mail`). */
+export const NOTIFICATION_PATH = /^\/app\/[A-Za-z0-9/_.?=&-]{0,255}$/;
 
 export interface LinkConfig {
   /** Public origin of the web application, for example `https://hub.example`. */
@@ -181,6 +192,11 @@ function validate(spec: TemplateSpec, input: RenderInput): MessageParams {
       values.provider = PROVIDER_NAMES[provider];
     }
   }
+  if (spec.template === 'notification') {
+    if (!NOTIFICATION_PATH.test(String(input.params.path))) throw new TemplateParameterError('notification links stay inside the workspace');
+    if (/[\r\n]/.test(String(input.params.subject)) || String(input.params.subject).length > 200) throw new TemplateParameterError('notification subject is one short line');
+    if (String(input.params.body).length > 4000) throw new TemplateParameterError('notification body is too long');
+  }
   if (spec.secret && !input.secret) throw new TemplateParameterError(`template ${spec.template} needs its one-time token`);
   if (!spec.secret && input.secret) throw new TemplateParameterError(`template ${spec.template} must not carry a token`);
   return values;
@@ -199,8 +215,8 @@ export function renderMail(config: RenderConfig, input: RenderInput): RenderedMa
   const linkValues = { ...input.params, ...(input.secret ? { token: input.secret } : {}) };
   const t = (key: string) => formatMessage(lookup(locale, key), params, locale);
   const ns = (key: string) => t(`${spec.namespace}.${key}`);
-  const subject = ns('subject').replace(/[\r\n]+/g, ' ');
-  const heading = ns('heading');
+  const subject = (spec.subjectParam ? String(input.params[spec.subjectParam]) : ns('subject')).replace(/[\r\n]+/g, ' ');
+  const heading = spec.subjectParam ? subject : ns('heading');
   const dir = /^(ar|fa|he|ur|ps|yi|dv|ku-Arab)(-|$)/.test(locale) ? 'rtl' : 'ltr';
 
   const text: string[] = [t('layout.greeting'), '', heading, ''];
@@ -210,6 +226,17 @@ export function renderMail(config: RenderConfig, input: RenderInput): RenderedMa
       const body = ns(block.key);
       text.push(body, '');
       html.push(`<p style="margin:0 0 16px">${escapeHtml(body)}</p>`);
+    } else if (block.kind === 'text') {
+      for (const paragraph of String(input.params[block.param]).split(/\n{2,}/)) {
+        text.push(paragraph, '');
+        html.push(`<p style="margin:0 0 16px;white-space:pre-line">${escapeHtml(paragraph)}</p>`);
+      }
+    } else if (block.kind === 'pathAction') {
+      const label = ns(block.key);
+      const url = new URL(String(input.params[block.param]), config.links.origin);
+      if (locale !== config.defaultLocale) url.searchParams.set('lang', locale);
+      text.push(`${label}:`, url.toString(), '');
+      html.push(`<p style="margin:24px 0"><a href="${escapeHtml(url.toString())}" style="background:#1d4ed8;border-radius:6px;color:#ffffff;display:inline-block;font-weight:600;padding:12px 20px;text-decoration:none">${escapeHtml(label)}</a></p>`);
     } else if (block.kind === 'action') {
       const label = ns(block.key);
       const url = buildLink(config, block.link, locale, linkValues);

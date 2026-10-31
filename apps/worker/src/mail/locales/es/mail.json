@@ -71,5 +71,9 @@
     },
     "notYou": "Si no fue usted, restablezca su contraseña ahora y revise sus sesiones activas.",
     "action": "Restablecer la contraseña"
+  },
+  "notification": {
+    "action": "Abrir en {brand}",
+    "footer": "Recibe este mensaje porque participa en este trabajo en {brand}. Puede elegir qué notificaciones le llegan por correo en la configuración de notificaciones."
   }
 }

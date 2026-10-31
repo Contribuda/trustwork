@@ -11,7 +11,9 @@
       "project": "Project",
       "publication": "Publication",
       "assistant": "Assistant",
-      "magazine": "Magazine"
+      "magazine": "Magazine",
+      "message": "Message",
+      "account": "Account"
     },
     "unread": "Unread",
     "unreadOne": "new",
@@ -27,7 +29,14 @@
     },
     "settingsTitle": "What to notify about",
     "settingsHint": "Decisions, assistant runs, publications and new magazine issues are set in the preferences.",
-    "demoNote": "Demo: read marks are not saved."
+    "demoNote": "Demo: read marks are not saved.",
+    "template": {
+      "threadOpened": "{authorName} started a conversation: {threadSubject}",
+      "threadMessage": "{authorName} wrote in “{threadSubject}”",
+      "securityNotice": "Security notice for your account"
+    },
+    "markAllRead": "Mark all as read",
+    "markFailed": "The read mark was not saved. Try again."
   },
   "overview": {
     "title": "Overview",
