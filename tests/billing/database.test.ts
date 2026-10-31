@@ -6,8 +6,8 @@ import { createPool, type DataPool } from '@trustwork/data';
 import {
   billingAccounts, budgets, catalogue, creditGrants, entitlements, ledger, priceAcceptances, reservations, subscriptions, usageRecords,
 } from '../../packages/data/src/repositories/billing.js';
-import { provisionTestDatabase, SKIP_REASON } from '../data/helpers/postgres.js';
-import { actor, buildWorld, days, inSeconds, rejects, settle, sleep, type BillingWorld } from './helpers.js';
+import { provisionTestDatabase, SKIP_REASON, untilDatabaseTimePasses } from '../data/helpers/postgres.js';
+import { actor, buildWorld, days, inSeconds, rejects, settle, type BillingWorld } from './helpers.js';
 
 const db = await provisionTestDatabase('billing_db');
 
@@ -45,7 +45,7 @@ test('billing persistence: versions, acceptances, two budget kinds, atomic reser
 
   await t.test('price versions: born as drafts, activated by a second person, never back-dated, frozen and never overlapping', async () => {
     await rejects(owner((trx) => trx.insertInto('price_version').values({ offer_id: offer.id, version: 99, amount_minor: '1', currency: 'USD', effective_from: days(1), acceptance_text_version: 't1', drafted_by: p.drafter, status: 'active', activated_by: p.activator, activated_at: new Date() }).execute()), '23514', 'billing.version_not_draft');
-    const draft = await owner((trx) => catalogue.draftPriceVersion(trx, { offerId: offer.id, amountMinor: '100', currency: 'USD', effectiveFrom: inSeconds(2), acceptanceTextVersion: 'terms-1', draftedBy: p.drafter }));
+    const draft = await owner((trx) => catalogue.draftPriceVersion(trx, { offerId: offer.id, amountMinor: '100', currency: 'USD', effectiveFrom: inSeconds(5), acceptanceTextVersion: 'terms-1', draftedBy: p.drafter }));
     await rejects(owner((trx) => catalogue.activatePriceVersion(trx, draft.id, p.drafter)), '23514', 'billing.activator_is_drafter');
     const past = await owner((trx) => catalogue.draftPriceVersion(trx, { offerId: offer.id, amountMinor: '100', currency: 'USD', effectiveFrom: days(-1), acceptanceTextVersion: 'terms-1', draftedBy: p.drafter }));
     await rejects(owner((trx) => catalogue.activatePriceVersion(trx, past.id, p.activator)), '23514', 'billing.backdated');
@@ -101,7 +101,7 @@ test('billing persistence: versions, acceptances, two budget kinds, atomic reser
 
   // Priced offer for acceptance and budgets, effective in a moment.
   const priced = await owner((trx) => catalogue.createOffer(trx, { hubId: w.hubId, code: 'synthetic_plan', name: 'Synthetic plan', kind: 'plan', createdBy: p.drafter, status: 'active' }));
-  const priceDraft = await owner((trx) => catalogue.draftPriceVersion(trx, { offerId: priced.id, amountMinor: '100', currency: 'USD', effectiveFrom: inSeconds(1), acceptanceTextVersion: 'terms-plan-1', draftedBy: p.drafter }));
+  const priceDraft = await owner((trx) => catalogue.draftPriceVersion(trx, { offerId: priced.id, amountMinor: '100', currency: 'USD', effectiveFrom: inSeconds(5), acceptanceTextVersion: 'terms-plan-1', draftedBy: p.drafter }));
   const price = await owner((trx) => catalogue.activatePriceVersion(trx, priceDraft.id, p.activator));
   const soloAccount = await as(p.solo, (trx) => billingAccounts.open(trx, { hubId: w.hubId, owner: { kind: 'person', id: p.solo }, currency: 'USD', createdBy: p.solo }));
   const companyAccount = await as(p.admin, (trx) => billingAccounts.open(trx, { hubId: w.hubId, owner: { kind: 'company', id: w.company }, currency: 'USD', createdBy: p.admin }));
@@ -119,7 +119,6 @@ test('billing persistence: versions, acceptances, two budget kinds, atomic reser
   });
 
   await t.test('price acceptance: exact version, amount and text; immutable; payer-only; price changes never alter it', async () => {
-    await sleep(1100);
     const base = { priceVersionId: price.id, billingAccountId: soloAccount.id, payer: { kind: 'person' as const, id: p.solo }, acceptedBy: p.solo, currency: 'USD', acceptanceTextVersion: 'terms-plan-1' };
     await rejects(as(p.solo, (trx) => priceAcceptances.accept(trx, { ...base, amountMinor: '99' })), '23514', 'billing.acceptance_mismatch');
     await rejects(as(p.solo, (trx) => priceAcceptances.accept(trx, { ...base, amountMinor: '100', acceptanceTextVersion: 'terms-plan-0' })), '23514', 'billing.acceptance_mismatch');
@@ -268,7 +267,7 @@ test('billing persistence: versions, acceptances, two budget kinds, atomic reser
     const budget = await as(p.solo, (trx) => budgets.grant(trx, { kind: 'transaction', owner: 'person', projectId: null, employeePersonId: null, ...window, limitMinor: '500', currency: 'USD' }));
     const short = await as(p.solo, (trx) => reservations.reserve(trx, { budgetId: budget, kind: 'transaction', amountMinor: '500', currency: 'USD', actionIntentId: intent(), correlationKey: `exp-${intent()}`, projectId: null, ttlSeconds: 1 }));
     await rejects(as(p.solo, (trx) => reservations.reserve(trx, { budgetId: budget, kind: 'transaction', amountMinor: '1', currency: 'USD', actionIntentId: intent(), correlationKey: `exp-${intent()}`, projectId: null, ttlSeconds: 600 })), '23514', 'commercial.budget_insufficient');
-    await sleep(1200);
+    await untilDatabaseTimePasses(db.admin, short.expires_at);
     await rejects(as(p.solo, (trx) => reservations.settle(trx, short.id, '500', 'outcome:late')), '23514', 'billing.reservation_expired');
     const [swept, settledLate] = await Promise.all([owner((trx) => reservations.expireDue(trx)), settle(as(p.solo, (trx) => reservations.settle(trx, short.id, '500', 'outcome:late')))]);
     assert.ok(swept >= 1);
@@ -295,7 +294,7 @@ test('billing persistence: versions, acceptances, two budget kinds, atomic reser
 
   await t.test('usage records: idempotent per run step, attempt and meter; overage needs a rate and a platform reservation', async () => {
     const rate = await owner(async (trx) => {
-      const d = await catalogue.draftMeterRate(trx, { hubId: w.hubId, meter: 'agent_actions', providerClass: null, currency: 'USD', pricePerThousandMinor: '1', passThrough: false, effectiveFrom: inSeconds(1), draftedBy: p.drafter });
+      const d = await catalogue.draftMeterRate(trx, { hubId: w.hubId, meter: 'agent_actions', providerClass: null, currency: 'USD', pricePerThousandMinor: '1', passThrough: false, effectiveFrom: inSeconds(5), draftedBy: p.drafter });
       return catalogue.activateMeterRate(trx, d.id, p.activator);
     });
     const step = { runId: randomUUID(), runStepId: randomUUID(), attemptId: randomUUID() };
