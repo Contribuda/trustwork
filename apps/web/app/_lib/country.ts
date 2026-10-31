@@ -1,6 +1,7 @@
-import { DEFAULT_COUNTRY, formatMoney as packMoney, getCountryPack, pick, regionName, type CountryPack } from '@trustwork/country-packs';
+import { formatMoney as packMoney, getCountryPack, pick, regionName, type CountryPack } from '@trustwork/country-packs';
 import { localeTag } from '@trustwork/ui/i18n';
 import { getLocaleStore } from '@trustwork/i18n-runtime';
+import { defaultCountryCode } from './locale-negotiation';
 
 /**
  * Active country pack and locale for the app (ADR-009): both come from the request-scoped store primed by
@@ -8,8 +9,8 @@ import { getLocaleStore } from '@trustwork/i18n-runtime';
  * never from a hard-coded list.
  */
 export function activePack(): CountryPack {
-  const pack = getCountryPack(getLocaleStore().country) ?? getCountryPack(DEFAULT_COUNTRY);
-  if (!pack) throw new Error(`Default country pack ${DEFAULT_COUNTRY} is missing`);
+  const pack = getCountryPack(getLocaleStore().country) ?? getCountryPack(defaultCountryCode());
+  if (!pack) throw new Error(`Default country pack ${defaultCountryCode()} is missing`);
   return pack;
 }
 

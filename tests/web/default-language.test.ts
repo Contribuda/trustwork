@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_COUNTRY, getCountryPack } from '@trustwork/country-packs';
-import { negotiate } from '../../apps/web/app/_lib/locale-negotiation.js';
+import { defaultCountryCode, negotiate } from '../../apps/web/app/_lib/locale-negotiation.js';
 
 const fallbackPack = getCountryPack(DEFAULT_COUNTRY)!;
 const georgia = getCountryPack('GE')!;
@@ -21,4 +21,11 @@ test('a supported browser language still wins, exactly or by base language', () 
 test('a visitor who chose a country falls back to that country\'s default language', () => {
   assert.equal(negotiate('de-DE', georgia, true), georgia.defaultLocale);
   assert.equal(negotiate(null, georgia, true), georgia.defaultLocale);
+});
+
+test('the deployment chooses its default country by configuration; invalid or restricted values fall back', () => {
+  assert.equal(defaultCountryCode({ TRUSTWORK_DEFAULT_COUNTRY: 'US' }), 'US');
+  assert.equal(defaultCountryCode({ TRUSTWORK_DEFAULT_COUNTRY: ' us ' }), 'US');
+  assert.equal(defaultCountryCode({}), DEFAULT_COUNTRY);
+  for (const bad of ['RU', 'IR', 'KP', 'CU', 'XX', 'USA', '']) assert.equal(defaultCountryCode({ TRUSTWORK_DEFAULT_COUNTRY: bad }), DEFAULT_COUNTRY, bad);
 });

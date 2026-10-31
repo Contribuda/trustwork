@@ -1,4 +1,4 @@
-import { ALL_LOCALES, FALLBACK_LOCALE, type CountryPack } from '@trustwork/country-packs';
+import { ALL_LOCALES, DEFAULT_COUNTRY, FALLBACK_LOCALE, getCountryPack, isRestricted, type CountryPack } from '@trustwork/country-packs';
 
 /** Languages a visitor may pick for any country: the pack's default first, then the engine fallback, then every other engine language (owner decision 2026-10-29: any country × any language). */
 export function localesFor(pack: CountryPack): string[] {
@@ -24,4 +24,15 @@ export function negotiate(acceptLanguage: string | null, pack: CountryPack, coun
     if (byBase) return byBase;
   }
   return countryChosen ? pack.defaultLocale : FALLBACK_LOCALE;
+}
+
+/**
+ * The deployment's default country for visitors who have not chosen one: `TRUSTWORK_DEFAULT_COUNTRY` (an ISO 3166-1
+ * alpha-2 code, read at request time) when it names a country that is not a restricted place, otherwise the engine
+ * fallback. The reference hub sets it to US (ADR 012, decisions 26 and 31).
+ */
+export function defaultCountryCode(env: Record<string, string | undefined> = process.env): string {
+  const wanted = env.TRUSTWORK_DEFAULT_COUNTRY?.trim().toUpperCase();
+  if (wanted && /^[A-Z]{2}$/.test(wanted) && !isRestricted(wanted) && getCountryPack(wanted)) return wanted;
+  return DEFAULT_COUNTRY;
 }
