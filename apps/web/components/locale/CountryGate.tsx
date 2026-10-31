@@ -22,7 +22,8 @@ export function CountryGate({ countries, languages, suggested, suggestedLocale }
   const [open, setOpen] = useState(true);
   const [pending, startTransition] = useTransition();
   const current = countries.find((c) => c.code === country);
-  const featured = countries.filter((c) => c.featured);
+  // The deployment's default country leads the cards (the reference hub's US first), the rest keep their order.
+  const featured = countries.filter((c) => c.featured).sort((a, b) => Number(b.code === suggested) - Number(a.code === suggested));
   const confirm = () => {
     if (!current) return;
     const tag = languages.some((l) => l.tag === locale) ? locale : (languages[0]?.tag ?? 'en');
