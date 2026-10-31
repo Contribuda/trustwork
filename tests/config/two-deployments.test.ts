@@ -9,7 +9,8 @@ import { REPO, WEB, dataDirectory, syntheticPack } from './helpers.js';
 
 /**
  * CFG-001 acceptance against a real production build: one build (one image) serves two deployments with different
- * default countries, brands and data directories. It needs a build of apps/web and is skipped without one:
+ * default countries, brands and data directories, both in demo mode like the hosted preview (WEB-004). It needs a
+ * build of apps/web and is skipped without one:
  *
  *   cd apps/web && NEXT_DIST_DIR=.next-e2e npx next build --webpack
  *   TRUSTWORK_CONFIG_BUILD=.next-e2e node --import tsx --test tests/config/two-deployments.test.ts
@@ -35,7 +36,7 @@ async function start(env: Record<string, string>): Promise<{ url: string; child:
   const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('TRUSTWORK_') && !key.startsWith('NEXT_PUBLIC_')));
   const child = spawn(process.execPath, [join(REPO, 'node_modules/next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: WEB,
-    env: { ...clean, NEXT_DIST_DIR: build!, NEXT_TELEMETRY_DISABLED: '1', ...env },
+    env: { ...clean, NEXT_DIST_DIR: build!, NEXT_TELEMETRY_DISABLED: '1', TRUSTWORK_DEMO_MODE: '1', ...env },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   const url = `http://127.0.0.1:${port}`;
