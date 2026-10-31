@@ -9,13 +9,14 @@ import {
 import { provisionTestDatabase, SKIP_REASON, untilDatabaseTimePasses } from '../data/helpers/postgres.js';
 import { actor, buildWorld, days, inSeconds, rejects, settle, type BillingWorld } from './helpers.js';
 
-const db = await provisionTestDatabase('billing_db');
+// Weight 2: the runtime pool below holds up to ten connections for the concurrency tests (CI-001 test slots).
+const db = await provisionTestDatabase('billing_db', { weight: 2 });
 
 test('billing persistence: versions, acceptances, two budget kinds, atomic reservations and the ledger under the runtime role', { skip: db ? false : SKIP_REASON }, async (t) => {
   if (!db) return;
   await db.migrate();
   await db.createAppLogin();
-  const runtime: DataPool = createPool({ ...db.appConfig, max: 24 });
+  const runtime: DataPool = createPool({ ...db.appConfig, max: 10 });
   t.after(async () => { await runtime.end(); await db.close(); });
   const w: BillingWorld = await buildWorld(db.admin);
   const { as, owner } = actor(db.admin, runtime);
