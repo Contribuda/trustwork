@@ -18,7 +18,7 @@ Additional negative tests prove a nested failing test fails the gate, unknown gr
 
 Dependabot (`.github/dependabot.yml`) proposes weekly npm and GitHub Actions updates as pull requests that pass the same gates.
 
-Database test files share a PostgreSQL cluster safely: each file uses its own database and login role and first takes one of a bounded number of cluster-wide test slots (advisory locks sized from `max_connections`; override with `TRUSTWORK_TEST_PG_SLOTS`), so several checkouts running suites at once queue instead of exhausting connections. Leaked test databases and roles older than six hours are dropped by later runs.
+Database test files share a PostgreSQL cluster safely: each file uses its own database and login role and first takes one of a bounded number of cluster-wide test slots (advisory locks sized from `max_connections`; override with `TRUSTWORK_TEST_PG_SLOTS`), so several checkouts running suites at once queue instead of exhausting connections; files that open several worker pools take two slots. Leaked test databases and roles older than six hours are dropped by later runs. Tests that compare a time computed in the test process with the database's `now()` wait for the database clock (`untilDatabaseTimePasses`) or measure from a database timestamp, because a Docker VM clock runs tens of milliseconds apart from the host.
 
 ## Product testing as slices arrive
 

@@ -18,7 +18,9 @@ export interface WorkerTestDatabase {
 
 /** Real PostgreSQL with the package migrations, an API login and a worker login; null when no backend is available. */
 export async function provisionWorkerDatabase(label: string): Promise<WorkerTestDatabase | null> {
-  const db = await provisionTestDatabase(label);
+  // Worker files open several worker pools and child processes (measured peaks of 9 to 16 connections), so they take
+  // two cluster test slots (tests/data/helpers/postgres.ts) instead of one.
+  const db = await provisionTestDatabase(label, { weight: 2 });
   if (!db) return null;
   await db.migrate();
   await db.createAppLogin();

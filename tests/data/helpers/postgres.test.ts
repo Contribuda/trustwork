@@ -89,8 +89,8 @@ test('cluster test slots, busy-connection retry and stale reaping against real P
     const a = await acquireTestSlot(url, 'a', { slots: 2 });
     const b = await acquireTestSlot(url, 'b', { slots: 2 });
     try {
-      assert.notEqual(a.slot, b.slot);
-      await assert.rejects(acquireTestSlot(url, 'c', { slots: 2, timeoutMs: 400 }), /no free test slot among 2/);
+      assert.notDeepEqual(a.held, b.held);
+      await assert.rejects(acquireTestSlot(url, 'c', { slots: 2, timeoutMs: 400 }), /no 1 free test slot\(s\) among 2/);
     } finally {
       await a.release();
       await b.release();
@@ -106,9 +106,23 @@ test('cluster test slots, busy-connection retry and stale reaping against real P
     assert.equal(settled, false, 'the second file waits while the only slot is held');
     await a.release();
     const b = await waiting;
-    assert.equal(b.slot, 0);
+    assert.deepEqual(b.held, [0]);
     await b.release();
     await a.release();
+  });
+
+  await t.test('weighted files take several slots all or nothing and never hold a partial set while waiting', async () => {
+    const heavy = await acquireTestSlot(url, 'heavy', { slots: 3, weight: 2 });
+    try {
+      assert.equal(heavy.held.length, 2);
+      await assert.rejects(acquireTestSlot(url, 'heavy-2', { slots: 3, weight: 2, timeoutMs: 400 }), /no 2 free test slot\(s\) among 3/);
+      const light = await acquireTestSlot(url, 'light', { slots: 3, timeoutMs: 2_000 });
+      assert.equal(light.held.length, 1, 'the failed heavy attempt released its partial slot');
+      assert.ok(!heavy.held.includes(light.held[0]!));
+      await light.release();
+    } finally {
+      await heavy.release();
+    }
   });
 
   await t.test('a killed holder (connection gone) frees its slot without cleanup code running', async () => {

@@ -24,7 +24,8 @@ test('REL-001 fault injection on real PostgreSQL: crash, duplicate delivery, sta
   appendFileSync(ledger, '');
   const effects = () => readFileSync(ledger, 'utf8').split('\n').filter(Boolean);
   const jobRow = (id: string) => env.db.admin.query<{ state: string; attempt: number; fencing_token: string; last_error: string | null; delay: number }>(
-    'SELECT state, attempt, fencing_token, last_error, extract(epoch FROM next_at - now())::float8 AS delay FROM trustwork.job WHERE id = $1', [id]).then((r) => r.rows[0]!);
+    // delay is measured from the failure (updated_at is set with next_at), not from this query, so load cannot shrink it.
+    'SELECT state, attempt, fencing_token, last_error, extract(epoch FROM next_at - updated_at)::float8 AS delay FROM trustwork.job WHERE id = $1', [id]).then((r) => r.rows[0]!);
   const enqueue = (kind: string, payload: object = {}) => tx(env.db.admin, (trx) => trx.insertInto('job').values({ kind, payload: JSON.stringify(payload) }).returning('id').executeTakeFirstOrThrow()).then((r) => r.id);
   const receipts = (account: string) => env.db.admin.query<{ n: number }>("SELECT count(*)::int AS n FROM trustwork.inbox_receipt WHERE provider = 'crash' AND account = $1", [account]).then((r) => r.rows[0]!.n);
   const leaseExpired = (id: string) => waitFor(async () => (await env.db.admin.query("SELECT 1 FROM trustwork.job WHERE id = $1 AND state = 'leased' AND leased_until < now()", [id])).rowCount === 1, 15_000, 'lease expiry');

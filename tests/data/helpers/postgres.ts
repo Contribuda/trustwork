@@ -157,14 +157,22 @@ export function slotCount(availableConnections: number, override: string | undef
   return Math.max(1, Math.floor((availableConnections - CONNECTION_HEADROOM) / CONNECTIONS_PER_FILE));
 }
 
-export interface TestSlot { slot: number; slots: number; waitedMs: number; release(): Promise<void> }
+export interface TestSlot {
+  /** Slot numbers held (one per unit of weight). */
+  held: number[];
+  slots: number;
+  waitedMs: number;
+  release(): Promise<void>;
+}
 
 /**
- * Takes one of the cluster-wide test slots: a session advisory lock (SLOT_LOCK_CLASS, n) held on a dedicated
- * connection until release(). The lock disappears with the connection, so a crashed or killed test file never
- * leaks a slot. Waiting files poll with jitter; after `timeoutMs` the file fails with an explicit message.
+ * Takes `weight` of the cluster-wide test slots (default 1): session advisory locks (SLOT_LOCK_CLASS, n) held on a
+ * dedicated connection until release(). A file that opens several worker pools declares a larger weight. Slots are
+ * taken all or nothing, so two heavy files never each hold part of what they need. The locks disappear with the
+ * connection, so a crashed or killed test file never leaks a slot. Waiting files poll with jitter; after `timeoutMs`
+ * the file fails with an explicit message.
  */
-export async function acquireTestSlot(adminUrl: string, label: string, options: { timeoutMs?: number; slots?: number } = {}): Promise<TestSlot> {
+export async function acquireTestSlot(adminUrl: string, label: string, options: { timeoutMs?: number; slots?: number; weight?: number } = {}): Promise<TestSlot> {
   const client = await connectWithRetry(adminUrl);
   // An idle slot connection that the server closes only gives up the slot; it must not crash the test file.
   client.on('error', (error) => console.warn(`[trustwork-data] ${label}: test slot connection lost (${error.message})`));
@@ -172,31 +180,37 @@ export async function acquireTestSlot(adminUrl: string, label: string, options: 
     const slots = options.slots ?? slotCount((await client.query<{ n: number }>(`SELECT current_setting('max_connections')::int
       - current_setting('superuser_reserved_connections')::int
       - coalesce(current_setting('reserved_connections', true)::int, 0) AS n`)).rows[0]?.n ?? 0);
+    const weight = Math.min(slots, Math.max(1, Math.floor(options.weight ?? 1)));
     const started = Date.now();
     const deadline = started + (options.timeoutMs ?? Number(process.env.TRUSTWORK_TEST_PG_SLOT_TIMEOUT_MS ?? 15 * 60_000));
+    const unlock = (slot: number) => client.query('SELECT pg_advisory_unlock($1, $2)', [SLOT_LOCK_CLASS, slot]);
     let announced = false;
     for (;;) {
       const order = Array.from({ length: slots }, (_, n) => n).sort(() => Math.random() - 0.5);
+      const held: number[] = [];
       for (const slot of order) {
+        if (held.length === weight) break;
         const { rows } = await client.query<{ ok: boolean }>('SELECT pg_try_advisory_lock($1, $2) AS ok', [SLOT_LOCK_CLASS, slot]);
-        if (rows[0]?.ok) {
-          let released = false;
-          return {
-            slot,
-            slots,
-            waitedMs: Date.now() - started,
-            async release() {
-              if (released) return;
-              released = true;
-              await client.query('SELECT pg_advisory_unlock($1, $2)', [SLOT_LOCK_CLASS, slot]).catch(() => undefined);
-              await client.end().catch(() => undefined);
-            },
-          };
-        }
+        if (rows[0]?.ok) held.push(slot);
       }
-      if (Date.now() >= deadline) throw new Error(`[trustwork-data] ${label}: no free test slot among ${slots} after ${Date.now() - started} ms; another run holds the cluster (raise TRUSTWORK_TEST_PG_SLOT_TIMEOUT_MS or stop stale runs)`);
+      if (held.length === weight) {
+        let released = false;
+        return {
+          held: held.sort((a, b) => a - b),
+          slots,
+          waitedMs: Date.now() - started,
+          async release() {
+            if (released) return;
+            released = true;
+            for (const slot of held) await unlock(slot).catch(() => undefined);
+            await client.end().catch(() => undefined);
+          },
+        };
+      }
+      for (const slot of held) await unlock(slot);
+      if (Date.now() >= deadline) throw new Error(`[trustwork-data] ${label}: no ${weight} free test slot(s) among ${slots} after ${Date.now() - started} ms; another run holds the cluster (raise TRUSTWORK_TEST_PG_SLOT_TIMEOUT_MS or stop stale runs)`);
       if (!announced) {
-        console.log(`[trustwork-data] ${label}: all ${slots} cluster test slots are busy (other runs share this PostgreSQL); waiting`);
+        console.log(`[trustwork-data] ${label}: waiting for ${weight} of ${slots} cluster test slots (other runs share this PostgreSQL)`);
         announced = true;
       }
       await sleep(150 + Math.floor(Math.random() * 350));
@@ -287,14 +301,14 @@ export function databaseLabel(label: string): string {
  * Returns null when no PostgreSQL backend is available (the caller must skip explicitly), or throws when
  * TRUSTWORK_REQUIRE_PG=1 so CI cannot pass with skipped database suites.
  */
-export async function provisionTestDatabase(label: string): Promise<TestDatabase | null> {
+export async function provisionTestDatabase(label: string, provision: { weight?: number } = {}): Promise<TestDatabase | null> {
   const server = await startServer();
   if (!server) {
     if (postgresRequired()) throw new Error(`[trustwork-data] ${label}: TRUSTWORK_REQUIRE_PG=1 but ${SKIP_REASON.replace(/^SKIPPED: /, '')}`);
     console.warn(`[trustwork-data] ${label}: ${SKIP_REASON}. Set TRUSTWORK_REQUIRE_PG=1 to make this a failure.`);
     return null;
   }
-  const slot = server.backend === 'embedded' ? null : await acquireTestSlot(server.adminUrl, label);
+  const slot = server.backend === 'embedded' ? null : await acquireTestSlot(server.adminUrl, label, { weight: provision.weight ?? 1 });
   const suffix = randomBytes(4).toString('hex');
   const created = stamp();
   const databaseName = `trustwork_test_${databaseLabel(label)}_${created}_${suffix}`;
@@ -325,7 +339,7 @@ export async function provisionTestDatabase(label: string): Promise<TestDatabase
   const appConfig: pg.PoolConfig = { host: parsed.hostname, port: Number(parsed.port || 5432), database: databaseName, user: appLoginRole, password: appPassword, options, max: 6 };
   const app = new pg.Pool(appConfig);
   let loginCreated = false;
-  const slotNote = slot ? ` slot=${slot.slot + 1}/${slot.slots}${slot.waitedMs > 1_000 ? ` waited_ms=${slot.waitedMs}` : ''}` : '';
+  const slotNote = slot ? ` slots=${slot.held.map((n) => n + 1).join('+')}/${slot.slots}${slot.waitedMs > 1_000 ? ` waited_ms=${slot.waitedMs}` : ''}` : '';
   console.log(`[trustwork-data] backend=${server.backend} server_version=${serverVersion} database=${databaseName}${slotNote} clock_skew_ms=${skew}`);
   if (Math.abs(skew) > CLOCK_SKEW_WARN_MS) {
     console.warn(`[trustwork-data] ${label}: the database clock is ${skew} ms off this process; tests comparing process time with now() may fail (resync the Docker VM clock)`);
