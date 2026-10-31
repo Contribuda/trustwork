@@ -42,6 +42,22 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'project.transfer_apply': IN_TRANSACTION,
   'project.participant_grant': IN_TRANSACTION,
   'project.participant_revoke': IN_TRANSACTION,
+  // Project plans and owner-private project records (PLAN-001): every route runs in one PrincipalService.runAs
+  // transaction and returns its result unchanged.
+  'plan.create': IN_TRANSACTION,
+  'plan.draft_create': IN_TRANSACTION,
+  'plan.draft_save': IN_TRANSACTION,
+  'plan.version_propose': IN_TRANSACTION,
+  'plan.version_approve': IN_TRANSACTION,
+  'plan.version_return': IN_TRANSACTION,
+  'plan.item_state': IN_TRANSACTION,
+  'plan.change_record': IN_TRANSACTION,
+  'plan.change_decide': IN_TRANSACTION,
+  'plan.item_share': IN_TRANSACTION,
+  'plan.share_revoke': IN_TRANSACTION,
+  'project.location_set': IN_TRANSACTION,
+  'project.permit_record': IN_TRANSACTION,
+  'project.diary_add': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
