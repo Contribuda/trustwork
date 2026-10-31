@@ -1296,7 +1296,7 @@
       "id": "FILE-001",
       "title": "Object storage port and attachments",
       "area": "platform",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "REL-001",
         "DATA-003"

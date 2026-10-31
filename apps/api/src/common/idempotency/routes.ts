@@ -80,6 +80,13 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'rfq.invitation_respond': IN_TRANSACTION,
   'rfq.close': IN_TRANSACTION,
   'rfq.projection_set': IN_TRANSACTION,
+  // Files (FILE-001): every route runs in one PrincipalService.runAs transaction (audit and outbox intent included) and
+  // returns its result unchanged; signed URLs are computed locally, never a provider call inside the request.
+  'file.upload_start': IN_TRANSACTION,
+  'file.upload_complete': IN_TRANSACTION,
+  'file.copy': IN_TRANSACTION,
+  'file.move': IN_TRANSACTION,
+  'file.delete': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
