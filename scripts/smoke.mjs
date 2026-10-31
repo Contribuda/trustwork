@@ -28,11 +28,14 @@ const apiPort = await availablePort();
 await smoke(['apps/api/dist/apps/api/src/main.js'], apiPort, '/health', async (r) => assert.deepEqual(await r.json(), { status: 'ok', mode: 'bootstrap', externalProviders: 'disabled' }), { API_PORT: String(apiPort), API_HOST: '127.0.0.1' });
 const webPort = await availablePort();
 await smoke(['node_modules/next/dist/bin/next', 'start', 'apps/web', '--hostname', '127.0.0.1', '--port', String(webPort)], webPort, '/', async (r) => {
-  // Default pack without cookies is Uzbekistan in uz-Latn (ADR-009); the Russian locale stays reachable by cookie.
-  // The title is the brand name: the deployment overlay's («Obroʻ qur», «Строй Репутация») or the engine's (Trustwork).
-  const html = await r.text(); assert.match(html, /lang="uz-Latn"/); assert.match(html, /<title>(Obroʻ qur|Trustwork)<\/title>/);
+  // Without cookies or a supported browser language the page is English (ADR 012, decision 27); a chosen country
+  // keeps its default language and the Russian locale stays reachable by cookie. The title is the brand name: the
+  // Russian overlay's (only in the Russian interface) or the engine's (Trustwork).
+  const html = await r.text(); assert.match(html, /lang="en"/); assert.match(html, /<title>Trustwork<\/title>/);
+  const uz = await fetch(`http://127.0.0.1:${webPort}/`, { headers: { cookie: 'trustwork.country=UZ' }, signal: AbortSignal.timeout(5000) });
+  assert.equal(uz.status, 200); assert.match(await uz.text(), /lang="uz-Latn"/);
   const ru = await fetch(`http://127.0.0.1:${webPort}/`, { headers: { cookie: 'trustwork.country=UZ; trustwork.locale=ru' }, signal: AbortSignal.timeout(5000) });
   assert.equal(ru.status, 200);
   const ruHtml = await ru.text(); assert.match(ruHtml, /lang="ru"/); assert.match(ruHtml, /<title>(Строй Репутация|Trustwork)<\/title>/);
 });
-console.log('API health and the localized web home page (uz-Latn default, ru by cookie) passed loopback smoke checks; owned processes stopped.');
+console.log('API health and the localized web home page (English default, a chosen country in its language, ru by cookie) passed loopback smoke checks; owned processes stopped.');
