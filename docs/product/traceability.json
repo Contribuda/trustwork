@@ -612,6 +612,18 @@
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R52",
+      "tasks": [
+        "DOC-001",
+        "DOC-002",
+        "DOC-003",
+        "DOC-004"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "npm run validate:docs (links, no Cyrillic) plus task acceptance",
+      "status": "specified_not_implemented"
     }
   ]
 }

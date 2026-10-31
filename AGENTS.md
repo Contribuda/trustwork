@@ -43,4 +43,4 @@ Pull request from the template (the "PR description" check enforces it) with: wh
 
 Country packs and hub configuration for any country or city are welcome contributions and follow the same flow (onboarding section 5).
 
-Conversation with your human may be in any language; code, comments, commit messages and documentation are in English; product copy lives in locale files.
+Conversation with your human may be in any language; code, comments, commit messages and documentation are in English; product copy lives in locale files. Documentation contains no Cyrillic at all (checked by `npm run validate:docs`): quote the English interface label and its locale key instead.

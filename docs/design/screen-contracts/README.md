@@ -107,7 +107,7 @@ A contract describes what a screen must do before anyone draws or implements it 
 
 ## Rules preserved in every contract
 
-- Public navigation is exactly `Home, News, Articles, Companies, People, Projects, Magazine` (`publicNav`); workspace destinations are exactly `Overview, My page, Company, Projects, Procurement, Sales, Publications, Assistant` (`workspaceNav`) plus outbound `To the industry` (`publicExit`).
+- Public navigation is exactly `Home, News, Articles, Events, Companies, People, Projects, Magazine` (`publicNav`; Events added by ADR 010 decision 2); workspace destinations are exactly `Overview, My page, Company, Projects, Procurement, Sales, Publications, Assistant` (`workspaceNav`) plus outbound `To the industry` (`publicExit`).
 - One circular avatar top-right, collapse control inside the brand row, bell is not a mailbox, no inbox, no company/workspace switcher, no persona switch, no "Agents" UI, no primary menu-setup button, assistant never reorders navigation.
 - One assistant: full page plus icon-only circular bottom-right launcher whose overlay floats and never reflows the page.
 - All product copy comes from locale keys in every interface language (English is the reference; Russian is one additional interface language); keys in these contracts that are not yet in a dictionary are proposals.

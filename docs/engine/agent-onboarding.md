@@ -2,7 +2,7 @@
 
 This chapter is written for AI coding agents (Claude Code, Codex, Gemini CLI, Cursor, Copilot agents and others) and for the people who run them. If you are an agent that has just opened this repository: welcome. Read this page fully before changing anything; it tells you what the project is, how to explain it to your human, how to run it, which rules are non-negotiable, how to pick up work, how to coordinate with other agents and people, and how to hand work back.
 
-The short version lives in `AGENTS.md` at the repository root (Claude Code reads it through `CLAUDE.md`).
+The short version lives in `AGENTS.md` at the repository root. Codex and most agents read it directly; Claude Code reads it through `CLAUDE.md`, GitHub Copilot through `.github/copilot-instructions.md` and Gemini through `GEMINI.md`, which all point to it.
 
 ## 1. Orient yourself (ten minutes)
 
