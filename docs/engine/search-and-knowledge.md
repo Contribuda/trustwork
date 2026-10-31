@@ -1,5 +1,7 @@
 # Search and knowledge
 
+Normative requirements: [Search and cited answers](modules/search-and-cited-answers.md), [Catalogue and manufacturer knowledge](modules/catalogue-and-manufacturer-knowledge.md). Participants: [who uses what](participants/README.md).
+
 Requirement R31. Status: keyword search over public demo cards is **Demo** (`/search`); retrieval contracts (index generations, embedding configuration, citations) are **Contract** with deterministic fixtures; governed hybrid retrieval is **Designed** ([ADR 007](../adr/007-hybrid-retrieval.md), [retrieval architecture](../architecture/retrieval.md)); multilingual and federated retrieval, manufacturer and supplier knowledge and plan-step recommendations are **Proposed** (MAT-001, REC-001, AGT-021; [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 19).
 
 People ask questions like "who installed ventilated facades on schools in Texas in the last two years?" or "what does the new standard say about anchors?". Your agent asks harder ones while working for you. The engine answers from **permitted facts with citations**, never from a model's imagination and never from data the asker may not see.

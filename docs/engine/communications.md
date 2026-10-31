@@ -1,5 +1,7 @@
 # Communications and notifications
 
+Normative requirements: [Communications and notifications](modules/communications-and-notifications.md), [Mobile and offline](modules/mobile-and-offline.md). Participants: [who uses what](participants/README.md).
+
 Requirement R08. Status: notifications page and bell are **Demo**; context threads, channel grants and templates are **Designed**; messenger channels and hub sender identities are **Proposed**.
 
 ## Conversations belong to the work

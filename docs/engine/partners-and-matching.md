@@ -1,5 +1,7 @@
 # Partners and matching
 
+Normative requirements: [Matching and partners](modules/matching-and-partners.md). Participants: [who uses what](participants/README.md).
+
 Requirement R34 (with R05 discovery and R14). Status: directories with filters are **Demo**; discovery candidates and eligibility are **Contract** inside procurement; the needs board, explainable matching and introductions are **Proposed**.
 
 The most valuable thing a gathering point can do is help the right people find each other: a client with a good contractor, a contractor with a reliable supplier, a designer with a manufacturer, two firms that together can bid for a bigger job. Matching is a core journey of the engine, and it must be explainable and fair.

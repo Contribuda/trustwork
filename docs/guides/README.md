@@ -12,7 +12,7 @@ Short, friendly guides for the people a Trustwork hub serves. Each guide walks t
 | **Designed** | An accepted design describes it; no code yet. |
 | **Proposed** | A new design from the owner's decisions of 2026-10-30 and 2026-10-31, open for review; no code yet. |
 
-Package IDs such as PLAN-001 point to the [work packages](../engine/roadmap.md) that will build a step. The overall picture is in [What works today](../engine/status.md).
+Package IDs such as PLAN-001 point to the [work packages](../engine/roadmap.md) that will build a step. The specification behind these guides, with every capability per participant and numbered requirements per module, is [Participants and their journeys](../engine/participants/README.md). The overall picture is in [What works today](../engine/status.md).
 
 ## Try the demo
 

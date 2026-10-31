@@ -1,5 +1,7 @@
 # Buying and selling
 
+Normative requirements: [Procurement and supply](modules/procurement-and-supply.md), [Sales](modules/sales.md), [Catalogue and manufacturer knowledge](modules/catalogue-and-manufacturer-knowledge.md). Participants: [who uses what](participants/README.md).
+
 Requirements R05–R08, R10. Status: procurement and sales lists and the decisions panel are **Demo**; RFQ and quote versions, digests, staleness, agreements, acceptance and comparison are **Contract** with tests and database rules specified; the full flows are **Designed** (work package COM-001).
 
 A company buys and sells at the same time, often on the same day: it buys facade panels and sells installation work. The engine gives both sides one honest workflow in which nothing that was sent can silently change.

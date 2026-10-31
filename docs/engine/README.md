@@ -1,8 +1,20 @@
-# The Trustwork engine handbook
+# The Trustwork engine handbook and specification
 
 Trustwork is created and maintained by [Contribuddha](https://contribuddha.com) together with its contributors.
 
-Everything the engine does and is designed to do, in one place. Every chapter starts with an honest status line: **Live** (implemented with tests), **Demo** (interface on synthetic data), **Contract** (frozen schemas), **Designed** (accepted design) or **Proposed** (new design open for review). The overview is [What works today](status.md).
+Everything the engine does and is designed to do, current and future, in one place. Every chapter and every requirement carries an honest status: **Live** (implemented with tests), **Demo** (interface on synthetic data), **Contract** (frozen schemas), **Designed** (accepted design) or **Proposed** (new design open for review). Nothing marked Designed or Proposed works yet; the overview is [What works today](status.md).
+
+## How this handbook is organised
+
+| Layer | What it is | Where |
+|---|---|---|
+| **Narrative chapters** | Why a part of the engine works the way it does, with examples and the reasoning behind each rule | The chapters linked in the tables below |
+| **Module specifications** | The normative requirements of every module, numbered (`PLN-F07`), each with a status and its work packages, user stories, agent capabilities, interface surfaces, console settings, data entities, country variations, privacy rules, metrics, edge cases and a flow diagram | [Module specifications](modules/README.md) |
+| **Participants** | Every kind of participant, what they come for, which capabilities they use, their journeys end to end and what can never happen to them | [Participants and their journeys](participants/README.md) |
+| **The hub console** | How an operator installs and runs a hub without code | [The hub console](hub-console/README.md) |
+| **Decisions** | Owner and integrator decisions that every page follows | [ADRs](../adr/README.md), especially [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) and [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) |
+| **Plan** | Work packages, phases and dependencies | [Roadmap](roadmap.md), [work-packages.json](work-packages.json) |
+| **Open items** | Ideas from research, and contradictions found while writing the specification | [Ideas ranked by impact](ideas.md), [Conflicts to resolve](conflicts-to-resolve.md) |
 
 ## Start here
 
@@ -10,37 +22,68 @@ Everything the engine does and is designed to do, in one place. Every chapter st
 |---|---|
 | [Vision](vision.md) | Why the engine exists, who it is for, the principles we keep and what we will never build |
 | [What works today](status.md) | Status of every area |
-| [How it works for you](../guides/README.md) | Step-by-step guides for every kind of participant and for hub operators, with the status of each step |
 | [Concepts and glossary](concepts.md) | The words we use precisely |
+| [Participants and their journeys](participants/README.md) | Homeowners and clients, professionals, experts, companies, suppliers and manufacturers, authors and editors, organizers, educators, hub operators, contributors |
+| [How it works for you](../guides/README.md) | Friendly step-by-step guides for every kind of participant, with the status of each step |
+| [Module specifications](modules/README.md) | The template, the module index and the cross-cutting rules every module keeps |
 | [Roadmap and work packages](roadmap.md) | Phases, dependencies and every work package |
+| [Ideas ranked by impact](ideas.md) | Proposed ideas from the [worldwide competitive landscape](../research/competitive-landscape-2026-11.md) and the specification work |
+| [Conflicts to resolve](conflicts-to-resolve.md) | Contradictions flagged for the owner and the integrator |
 | [How to help](how-to-help.md) | Ways to contribute for developers, translators, lawyers, practitioners, designers, hub operators |
 | [Onboarding for AI coding agents](agent-onboarding.md) | Rules, running, claiming work, coordination and handoff for agents and the people who run them |
 
-## The gathering point
+## The agent at the center
 
-| Chapter | What it covers |
-|---|---|
-| [People and companies](people-and-companies.md) | Lifelong personal identity, sign-in, profiles, companies, memberships, sourced / claimed / verified |
-| [Projects](projects.md) | Ownership, participants, publication as a projection, transfers; plans with versions, sharing per item, consultations and tasks from plan items (from plan to people) |
-| [News, articles and walls](publishing.md) | Publications, sources, corrections, editorial workflow, hub sources, multilingual publishing, community |
-| [The weekly magazine](magazine.md) | Issues, reader, PDF, archive, cross-hub digests |
-| [Events](events.md) | Attending and hosting, tickets, check-in, partner meetings |
-| [Learning and certificates](learning.md) | Courses, assessments, verifiable certificates, accreditation |
-| [Partners and matching](partners-and-matching.md) | Capability profiles, needs board, explainable matching, introductions |
-| [Buying and selling](commerce.md) | Needs, RFQs, quotes, comparison, negotiation, agreements, orders, catalogue |
-| [Procurement and supply](procurement-and-supply.md) | The company-side suite from plan step to payment: requisitions, approval routes, supplier base, bid levelling, AI document intake, budgets, receiving, stock, three-way match, payments through licensed providers, e-invoicing, analytics without surveillance; every operation also an agent capability |
-| [Execution, evidence and reputation](execution-and-reputation.md) | Claims and evidence, fair timing, explainable reputation; the reputation builder toolkit and the portable reputation passport |
-| [Your agent](agents.md) | Representation under mandates, detailed settings, goals, negotiation between agents, company representation, hub extensions, jurisdiction settings, safety |
-| [Agent catalogue](agent-catalog.md) | What the agent does for every participant type; modules, metering and hub pricing; flagship journeys "from plan to people" and "build and confirm your own reputation"; connecting your own agent over MCP and A2A |
-| [Search and knowledge](search-and-knowledge.md) | Keyword search, structured filters, cited answers, governed retrieval; manufacturer and supplier knowledge and explained plan-step recommendations |
-| [Communications](communications.md) | Context threads, external channels, notifications, templates |
-| [Billing, plans and budgets](billing.md) | Free participation, two budget kinds, versioned prices; licensed payment providers only (Trustwork never holds money); commissions and fees as disclosed hub settings |
+Each person has one agent, their representative; every participant-facing capability is available through that agent and directly in the interface ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 23).
+
+| Chapter | Specification | What it covers |
+|---|---|---|
+| [Your agent](agents.md) | [AGN](modules/agent.md) | Representation under mandates, detailed settings, goals, negotiation between agents, company representation, hub extensions, jurisdiction settings, safety |
+| [The capability registry](capability-registry.md) | [AGN-F12](modules/agent.md) | One registry of operations used by the interface, the agent runtime, MCP and A2A; kinds, confirmations, parity report |
+| [Agent catalogue](agent-catalog.md) | [AGN](modules/agent.md) | What the agent does for every participant type; modules, metering and hub pricing; flagship journeys; connecting your own agent over MCP and A2A |
+| [API and MCP](modules/api-and-mcp.md) | [API](modules/api-and-mcp.md) | The public API, webhooks, the MCP server for the person's own AI chat, the A2A gateway |
+
+## Modules
+
+| Module | Specification | Narrative chapter |
+|---|---|---|
+| Identity and accounts | [IDN](modules/identity-and-accounts.md) | [People and companies](people-and-companies.md#a-person-is-one-human-for-life) |
+| People and companies | [PCO](modules/people-and-companies.md) | [People and companies](people-and-companies.md) |
+| Projects and plans (from plan to people) | [PLN](modules/projects-and-plans.md) | [Projects](projects.md) |
+| Consultations | [CNS](modules/consultations.md) | [Agent catalogue: consultation](agent-catalog.md#consultation) |
+| Tasks and mentoring | [TSK](modules/tasks-and-mentoring.md) | [Agent catalogue: task marketplace](agent-catalog.md#task-marketplace) |
+| Knowledge sharing | [KNW](modules/knowledge-sharing.md) | [Agent catalogue: knowledge sharing](agent-catalog.md#knowledge-sharing) |
+| Procurement and supply (requisition to pay) | [PRC](modules/procurement-and-supply.md) | [Procurement and supply](procurement-and-supply.md), [Buying and selling](commerce.md) |
+| Sales | [SAL](modules/sales.md) | [Buying and selling](commerce.md#the-sales-journey) |
+| Catalogue and manufacturer knowledge | [CAT](modules/catalogue-and-manufacturer-knowledge.md) | [Buying and selling: catalogue](commerce.md#the-catalogue), [Search and knowledge](search-and-knowledge.md#manufacturer-and-supplier-knowledge-proposed) |
+| Matching and partners | [MCH](modules/matching-and-partners.md) | [Partners and matching](partners-and-matching.md) |
+| Reputation builder and passport | [REP](modules/reputation-and-passport.md) | [Execution, evidence and reputation](execution-and-reputation.md) |
+| Execution and field evidence | [EXE](modules/execution-and-field-evidence.md) | [Execution, evidence and reputation](execution-and-reputation.md) |
+| Getting paid | [PAY](modules/getting-paid.md) | [Billing: never holding money](billing.md#trustwork-never-holds-money) |
+| Billing and commissions | [BIL](modules/billing-and-commissions.md) | [Billing, plans and budgets](billing.md) |
+| Events | [EVT](modules/events.md) | [Events](events.md) |
+| Learning and certificates | [LRN](modules/learning-and-certificates.md) | [Learning and certificates](learning.md) |
+| News, articles, the magazine and the autonomous editorial office | [PUB](modules/publishing-and-editorial.md) | [News, articles and walls](publishing.md), [The weekly magazine](magazine.md), [Autonomous editorial office](hub-console/autonomous-editorial.md) |
+| Search and cited answers (RAG) | [SCH](modules/search-and-cited-answers.md) | [Search and knowledge](search-and-knowledge.md) |
+| Communications and notifications | [MSG](modules/communications-and-notifications.md) | [Communications](communications.md) |
+| Hubs and the hub console | [HBC](modules/hubs-and-console.md) | [Hubs](hubs.md), [Hub administration](hub-administration.md), [The hub console](hub-console/README.md) |
+| Data mining and sources | [DMS](modules/data-mining-and-sources.md) | [Local data mining](hub-console/data-mining.md), [Automation and scheduling](hub-console/automation-and-scheduling.md) |
+| Country packs and localization | [LOC](modules/country-packs-and-localization.md) | [Countries and languages](localization.md), [Country specifics](country-specifics.md) |
+| Federation mesh | [MSH](modules/federation-mesh.md) | [Federation: one worldwide mesh](federation.md) |
+| Trust, safety, privacy and compliance | [TSP](modules/trust-safety-privacy-compliance.md) | [Security, trust and privacy](trust-safety-privacy.md) |
+| Security architecture | [SEC](modules/security-architecture.md) | [Architecture](architecture.md), [Security, trust and privacy](trust-safety-privacy.md) |
+| Integrations | [INT](modules/integrations.md) | [Keys, providers and models](hub-console/providers-and-models.md) |
+| Mobile and offline | [MOB](modules/mobile-and-offline.md) | [Communications](communications.md) |
+| Accessibility | [ACC](modules/accessibility.md) | [Accessibility acceptance](../quality/accessibility.md) |
+| Analytics | [ANL](modules/analytics.md) | [Vision: how we will know it works](vision.md#how-we-will-know-it-works) |
+| Operations | [OPR](modules/operations.md) | [Runbook](../operations/runbook.md), [Console operations](hub-console/operations.md) |
+| Open-source governance and contribution | [OSS](modules/open-source-governance.md) | [How to help](how-to-help.md), [GOVERNANCE.md](../../GOVERNANCE.md) |
 
 ## Running the engine for a territory
 
 | Chapter | What it covers |
 |---|---|
-| [Hubs](hubs.md) | Nodes and hubs, territories, how country and city hubs complement each other, launch checklist, growing a hub |
+| [Hubs](hubs.md) | Nodes and hubs, territories, how country and city hubs complement each other, launch checklist, growing a hub, the San Diego reference hub |
 | [Hub administration](hub-administration.md) | The operator's console: legal, sources, counterparty verification, sanctions, editorial, commerce, agents policy, privacy, federation |
 | [The hub console](hub-console/README.md) | Installing the engine and running a hub without code: setup wizard, keys and models, autonomous editorial office, data mining, scheduling, agent product, every module, support, operations, screen contracts |
 | [Country specifics](country-specifics.md) | Facets of national difference, pack v2, shared layers such as the EU, starting points for the example countries |
@@ -56,10 +99,11 @@ Everything the engine does and is designed to do, in one place. Every chapter st
 
 ## Deeper references
 
-- [Product specification](../product/specification.md) and [information architecture](../product/information-architecture.md)
-- [Architecture decisions](../adr/README.md), including [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) (gathering point, hubs, agents, mesh) and [ADR 011](../adr/011-federation-mesh.md) (federation)
+- [Product specification](../product/specification.md) (requirements R01 onwards) and [information architecture](../product/information-architecture.md)
+- [Architecture decisions](../adr/README.md), including [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) (gathering point, hubs, agents, mesh), [ADR 011](../adr/011-federation-mesh.md) (federation) and [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) (integrator and owner decisions of 2026-10-31)
 - [System architecture](../architecture/overview.md), [API conventions](../architecture/api.md), [retrieval](../architecture/retrieval.md)
-- [Data dictionary](../data/model.md) and [lifecycles](../data/lifecycles.md)
-- [Design system](../design/system/README.md)
+- [Data dictionary](../data/model.md), [lifecycles](../data/lifecycles.md) and [retention and privacy](../data/retention-and-privacy.md)
+- [Design system](../design/system/README.md) and [screen contracts](../design/screen-contracts/README.md)
 - [Quality: security, accessibility, validation](../quality/validation.md)
+- [Research notes](../research/README.md): architecture audit, US market scan, worldwide competitive landscape
 - [Legal templates](../legal/templates/README.md) and [how to add a country](../country-packs/how-to-add-a-country.md)

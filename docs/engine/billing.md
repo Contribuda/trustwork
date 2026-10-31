@@ -1,5 +1,7 @@
 # Billing, plans and budgets
 
+Normative requirements: [Billing and commissions](modules/billing-and-commissions.md), [Getting paid](modules/getting-paid.md). Participants: [who uses what](participants/README.md).
+
 Requirements R19, R20, R46, R47. Status: billing state in settings is **Demo**; budgets, price versions and acceptances are **Contract**; offers, entitlements, usage and payment adapters are **Designed** (work package BILL-001); licensed payment providers only (Trustwork never holds money), hub commissions and fees as versioned, disclosed settings and other hub-level commercial settings are **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20 and 21; PAY-001, BILL-002, BILL-003, PAY-002).
 
 ## Free to participate, fair to pay

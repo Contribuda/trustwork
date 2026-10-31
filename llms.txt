@@ -4,7 +4,7 @@
 
 Created and maintained by Contribuddha (https://contribuddha.com).
 
-Status: identity, companies and projects backend implemented; full web interface on synthetic demo data in six languages; commerce, agents, billing and retrieval specified as contracts and designs; events, learning, matching, hubs, verification and federation designed. Nothing is in production.
+Status: identity, companies and projects backend implemented; background worker implemented; full web interface on synthetic demo data in six languages; commerce, agents (including the capability registry), billing and retrieval specified as contracts and designs; procurement and supply, events, learning, matching, hubs, verification and federation designed or proposed, with numbered requirements per module. Nothing is in production; the reference hub (San Diego, United States) is decided and demo-only.
 
 ## Start here
 
@@ -12,6 +12,10 @@ Status: identity, companies and projects backend implemented; full web interface
 - [Agent onboarding](docs/engine/agent-onboarding.md): rules, running, claiming work, coordination, handoff for AI coding agents
 - [Engine handbook](docs/engine/README.md): every module, implemented and designed
 - [Status](docs/engine/status.md): what is live, demo, contract, designed, proposed
+- [Module specifications](docs/engine/modules/README.md): normative, numbered requirements per module with status and work packages; agent capabilities per module
+- [Participants](docs/engine/participants/README.md): every participant type, the capabilities they use and their journeys
+- [Capability registry](docs/engine/capability-registry.md): one registry for the agent, the interface, MCP and A2A (ADR 010 decision 23)
+- [Conflicts to resolve](docs/engine/conflicts-to-resolve.md) and [ideas ranked by impact](docs/engine/ideas.md)
 - [Work packages](docs/engine/work-packages.json): machine-readable list of work; `npm run work -- --json` shows what can be picked up
 
 ## For AI coding agents
