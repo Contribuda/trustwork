@@ -7,6 +7,7 @@ import { t } from '@/app/_lib/i18n';
 import { artwork } from '@/app/_lib/media';
 import { safeNext } from '@/app/_lib/safe-next';
 import { primeLocale } from '@/app/_lib/locale';
+import { demoModeEnabled } from '@/app/_lib/persona';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
@@ -30,7 +31,7 @@ export default async function LoginPage({ searchParams }: { searchParams: PageSe
         { icon: 'magazine', text: t('auth.points.magazine') },
       ]}
     >
-      <LoginForm next={next} reason={typeof params.reason === 'string' ? params.reason : null} />
+      <LoginForm next={next} reason={typeof params.reason === 'string' ? params.reason : null} demoMode={demoModeEnabled()} />
     </AuthFrame>
   );
 }

@@ -39,7 +39,8 @@ export default defineConfig({
     url: `http://127.0.0.1:${port}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
-    env: { NEXT_TELEMETRY_DISABLED: '1' },
+    // These suites exercise the synthetic demo (fixtures and `?persona=`); the live API suite is tests/web/live-api (WEB-004).
+    env: { NEXT_TELEMETRY_DISABLED: '1', TRUSTWORK_DEMO_MODE: '1' },
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } }, testIgnore: /responsive\.spec\.ts/ },

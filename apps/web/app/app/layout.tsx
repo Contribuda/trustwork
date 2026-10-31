@@ -5,7 +5,7 @@ import './workspace.css';
 import { WorkspaceShell, type ShellData } from '@/components/workspace/WorkspaceShell';
 import { HeaderLocaleSwitcher } from '@/components/locale/LocaleControls';
 import { data } from '@/app/_lib/data';
-import { PERSONAS, defaultPersona, type Persona } from '@/app/_lib/persona';
+import { LIVE_CONTEXT, PERSONAS, defaultPersona, demoModeEnabled, type Persona } from '@/app/_lib/persona';
 import { t } from '@/app/_lib/i18n';
 import { clientLayers, primeLocale } from '@/app/_lib/locale';
 import { LocaleNamespaces } from '@/components/locale/LocaleProvider';
@@ -22,10 +22,12 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function WorkspaceLayout({ children }: { children: ReactNode }) {
   const active = await primeLocale();
-  const fallback = defaultPersona();
+  const demoMode = demoModeEnabled();
+  const fallback = defaultPersona(demoMode);
   const shells: Partial<Record<Persona, ShellData>> = {};
-  for (const persona of PERSONAS) {
-    const principal = await data.principalFor({ persona, scenario: 'default', fromQuery: persona !== fallback, defaultPersona: fallback });
+  // Demo: one shell per persona, the client picks by `?persona=`. Live: the session's shell under the default key only.
+  for (const persona of demoMode ? PERSONAS : [fallback]) {
+    const principal = await data.principalFor(demoMode ? { persona, scenario: 'default', fromQuery: persona !== fallback, defaultPersona: fallback } : LIVE_CONTEXT);
     if (!principal) continue;
     shells[persona] = {
       name: principal.displayName,
@@ -38,7 +40,7 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
   }
   return (
     <LocaleNamespaces {...clientLayers(active.locale, 'workspace')}>
-      <WorkspaceShell shells={shells} defaultPersona={fallback} localeControl={<HeaderLocaleSwitcher />}>
+      <WorkspaceShell shells={shells} defaultPersona={fallback} demoMode={demoMode} localeControl={<HeaderLocaleSwitcher />}>
         {children}
       </WorkspaceShell>
     </LocaleNamespaces>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, ArrowUpRight, Briefcase, Building2, ChevronDown, Clock, FileCheck2, FileText, FolderOpen, Globe, Mail, MapPin, MessageSquareText, Package, Phone, ShieldCheck, Sparkles, Users } from 'lucide-react';
-import { Breadcrumb, ButtonLink, KindBadge, MediaFrame, RecordStatusChip } from '@/components/ui';
+import { Breadcrumb, ButtonLink, KindBadge, MediaFrame } from '@/components/ui';
 import { CompanyAssistant, type CompanyBrief } from '@/components/public/agent/company';
 import { AgentTrigger } from '@/components/public/agent/PublicAssistant';
 import { CompanyMark } from '@/components/public/CompanyMark';
@@ -11,7 +11,7 @@ import { SRLogo, SRMark } from '@/components/public/SRMark';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
 import { SectionNav } from '@/components/public/SectionNav';
 import { ShareRow } from '@/components/public/ShareRow';
-import { EvidenceChip, ProjectStatusChip, formatLabel, regionLabel, topicLabel } from '@/components/public/parts';
+import { CompanyStatusChip, EvidenceChip, ProjectStatusChip, formatLabel, regionLabel, topicLabel } from '@/components/public/parts';
 import { data } from '@/app/_lib/data';
 import type { CompanyUpdate } from '@/app/_lib/data/types';
 import { projectCover, storyCover } from '@/app/_lib/media';
@@ -145,7 +145,7 @@ export default async function CompanyPage({ params, searchParams }: Params) {
             <div className="cp-identity__text">
               <p className="co-row__tags">
                 <span title={statusHint}>
-                  <RecordStatusChip status={company.status} />
+                  <CompanyStatusChip status={company.status} />
                 </span>
                 {company.kinds.map((k) => (
                   <NextLink key={k} href={`/companies?kind=${k}`} className="co-tag">
@@ -630,7 +630,7 @@ export default async function CompanyPage({ params, searchParams }: Params) {
                   <div>
                     <p className="cp-doc__name">{t('companies.statusLabel')}</p>
                     <p className="cp-doc__value">
-                      <RecordStatusChip status={company.status} size="sm" /> <span>{statusHint}</span>
+                      <CompanyStatusChip status={company.status} size="sm" /> <span>{statusHint}</span>
                     </p>
                   </div>
                 </div>

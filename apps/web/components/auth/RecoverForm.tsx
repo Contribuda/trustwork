@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { RecoveryRequestCommandSchema } from '@trustwork/contracts/client';
 import NextLink from 'next/link';
 import { MailCheck } from 'lucide-react';
 import { Button, Form, FormActions, FormAlert, TextField } from '@trustwork/ui';
@@ -10,11 +11,15 @@ import { typo } from '@/app/_lib/typo';
 
 const FIELD_MAP = { email: { required: 'auth.error.emailRequired', format: 'auth.error.emailFormat', invalid: 'auth.error.emailFormat' } } as const;
 
-/** Recovery request: neutral confirmation regardless of whether the address exists; e-mail prefilled from login. */
-export function RecoverForm({ initialEmail }: { initialEmail: string }) {
+/**
+ * Recovery request (`POST /v1/auth/recovery`): the API answers the same neutral `202` whether or not the address
+ * exists, and so does the form; e-mail prefilled from login. «Send again» repeats the request.
+ */
+export function RecoverForm({ initialEmail, demoMode }: { initialEmail: string; demoMode: boolean }) {
   const [email, setEmail] = useState(initialEmail);
   const [sent, setSent] = useState(false);
   const form = useAuthForm();
+  const again = useAuthForm();
 
   if (sent) {
     return (
@@ -28,10 +33,20 @@ export function RecoverForm({ initialEmail }: { initialEmail: string }) {
           </h1>
           <FormAlert tone="success" autoFocus>
             {t('auth.recover.sent')}
-            <p className="au-form__note">{t('demo.noEmailSent')}</p>
+            {demoMode ? <p className="au-form__note">{t('demo.noEmailSent')}</p> : null}
           </FormAlert>
+          {again.alert ? <FormAlert tone={again.alert.tone}>{again.alert.text}</FormAlert> : null}
           <FormActions>
-            <Button variant="secondary" isDisabled>
+            <Button
+              variant="secondary"
+              isDisabled={demoMode}
+              isLoading={again.busy}
+              pendingLabel={t('auth.recover.sending')}
+              onPress={async () => {
+                const response = await again.submit({ path: '/v1/auth/recovery', payload: { email } });
+                if (response.kind === 'ok') again.setAlert({ tone: 'success', text: t('auth.recover.sentAgain') });
+              }}
+            >
               {t('auth.recover.resend')}
             </Button>
             <NextLink href="/login" className="au-link">
@@ -62,8 +77,8 @@ export function RecoverForm({ initialEmail }: { initialEmail: string }) {
         isBusy={form.busy}
         onSubmit={async (event) => {
           event.preventDefault();
-          const response = await form.submit('/api/auth/recover', { email }, (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP));
-          if (response.kind === 'ok') setSent(true);
+          const response = await form.submit({ path: '/v1/auth/recovery', payload: { email }, schema: RecoveryRequestCommandSchema, demo: demoMode, onError: (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP) });
+          if (response.kind === 'ok' || response.kind === 'demo') setSent(true);
         }}
       >
         <div className="au-form__fields">

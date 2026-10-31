@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { ArrowRight, ArrowUpRight, Building2, EyeOff, Globe, Users } from 'lucide-react';
-import { KindBadge, RecordStatusChip, StatusChip } from '@/components/ui';
+import { KindBadge, StatusChip } from '@/components/ui';
 import { CompanyTabs } from '@/components/public/CompanyTabs';
 import { CompanyMark } from '@/components/public/CompanyMark';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
@@ -9,7 +9,10 @@ import { regionLabel } from '@/components/public/parts';
 import { SRMark } from '@/components/public/SRMark';
 import { DecisionList, PageHeader, ProjectRows } from '@/components/workspace/parts';
 import { PublicationListRow } from '@/components/workspace/WorkRows';
-import { data } from '@/app/_lib/data';
+import { DATA_SOURCE, data } from '@/app/_lib/data';
+import { CompanyStatusChip } from '@/components/public/parts';
+import { CompanyCreateForm } from './_components/CompanyCreateForm';
+import { InviteMemberForm } from './_components/InviteMemberForm';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { formatMoney, longDate, t, tDynamic } from '@/app/_lib/i18n';
 import { currencyCode, identifierLabel } from '@/app/_lib/country';
@@ -24,11 +27,14 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * «Компания»: shared hub for the one current employer (no switcher). Without a company: purposeful empty
  * state with optional join/create; the rest of the workspace keeps working. Private floors only with the grant.
+ * Live API (WEB-004): the empty state creates the company page, administrators with `company.members.manage`
+ * invite colleagues, and the member list shows names only of public profiles.
  */
 export default async function CompanyWorkspacePage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/company');
   const view = await data.getCompanyWorkspace(principal);
+  const live = DATA_SOURCE === 'api';
   if (!view) {
     return (
       <>
@@ -37,14 +43,18 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
           <div className="ws-empty">
             <strong>{t('company.empty.title')}</strong>
             <span>{typo(t('company.empty.body'))}</span>
-            <span className="ws-actions">
-              <NextLink href={hrefFor(principal, '/app/company#join')} className="pub-btn">
-                {t('company.empty.join')}
-              </NextLink>
-              <NextLink href={hrefFor(principal, '/app/company#create')} className="pub-btn pub-btn--ghost">
-                {t('company.empty.create')}
-              </NextLink>
-            </span>
+            {live ? (
+              <span className="ws-note">{t('company.empty.invitationByEmail')}</span>
+            ) : (
+              <span className="ws-actions">
+                <NextLink href={hrefFor(principal, '/app/company#join')} className="pub-btn">
+                  {t('company.empty.join')}
+                </NextLink>
+                <NextLink href={hrefFor(principal, '/app/company#create')} className="pub-btn pub-btn--ghost">
+                  {t('company.empty.create')}
+                </NextLink>
+              </span>
+            )}
             <span className="ws-note">{t('company.empty.policyNote')}</span>
           </div>
           <div className="ws-card ws-card--navy">
@@ -56,10 +66,12 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
             </NextLink>
           </div>
         </div>
+        {live ? <CompanyCreateForm /> : null}
       </>
     );
   }
   const isAdmin = view.myRole === 'administrator';
+  const canInvite = live && view.permissions.includes('company.members.manage');
   const c = view.company;
   const publicMembers = view.members.filter((m) => m.isPublic).length;
   const activeMembers = view.members.filter((m) => m.status === 'active').length;
@@ -105,7 +117,7 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
             <div className="ws-card">
               <h3 className="ws-h2">{t('company.claim.title')}</h3>
               <span className="ws-hero__chips">
-                <RecordStatusChip status={c.status} size="sm" />
+                <CompanyStatusChip status={c.status} size="sm" />
                 {c.verified ? <SRMark compact size="sm" /> : null}
               </span>
               <p className="ws-muted">{typo(t(`company.claim.${c.status}`))}</p>
@@ -165,9 +177,9 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
           <ul className="ws-list ws-grid--2" style={{ display: 'grid' }}>
             {view.members.map((m) => (
               <li key={m.id} className="ws-person">
-                <PersonAvatar name={m.name} portrait={null} size={40} />
+                <PersonAvatar name={m.name || t('company.member.privateName')} portrait={null} size={40} />
                 <span className="ws-row__main">
-                  <span className="ws-row__title">{m.name}</span>
+                  <span className="ws-row__title">{m.name || t('company.member.privateName')}</span>
                   <span className="ws-row__meta">
                     <StatusChip size="sm" tone={m.role === 'administrator' ? 'info' : 'neutral'}>
                       {t(`role.${m.role}`)}
@@ -184,11 +196,12 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
               </li>
             ))}
           </ul>
-          {isAdmin ? <p className="ws-note">{t('company.member.inviteNote')}</p> : null}
+          {canInvite ? <InviteMemberForm companyId={c.id} /> : isAdmin ? <p className="ws-note">{t('company.member.inviteNote')}</p> : null}
         </div>
       ) : (
         <div className="ws-empty">
           <strong>{t('company.membersEmpty')}</strong>
+          {canInvite ? <InviteMemberForm companyId={c.id} /> : null}
         </div>
       ),
     },
@@ -287,7 +300,7 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
               </NextLink>
             </span>
             <span className="ws-identity__signals">
-              <RecordStatusChip status={c.status} size="sm" />
+              <CompanyStatusChip status={c.status} size="sm" />
               <span className="ws-chip ws-chip--sm">{t(`role.${view.myRole}`)}</span>
               {isAdmin && view.pendingRequests ? <span className="ws-chip ws-chip--sm ws-chip--accent">{t('company.claim.pendingRequests', { count: view.pendingRequests })}</span> : null}
             </span>

@@ -49,7 +49,7 @@ function apply(list: ProjectCard[], f: Filters, except?: Facet): ProjectCard[] {
     if (except !== 'region' && f.region && p.region !== f.region) return false;
     if (except !== 'needs' && f.needs && p.openNeedsCount === 0) return false;
     if (q) {
-      const hay = [p.name, p.summary ?? '', p.owner.label, ...p.publicParticipants.map((x) => x.label), regionLabel(p.region), t(`projects.category.${p.category}`)].join(' ').toLowerCase();
+      const hay = [p.name, p.summary ?? '', p.owner.label, ...p.publicParticipants.map((x) => x.label), regionLabel(p.region), p.category ? t(`projects.category.${p.category}`) : ''].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -127,7 +127,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
       id: p.id,
       href: p.href,
       title: p.name,
-      kicker: t(`projects.category.${p.category}`),
+      kicker: p.category ? t(`projects.category.${p.category}`) : '',
       subtitle: `${t('projects.owner')}: ${p.owner.label}`,
       description: p.summary,
       lat: p.location!.lat,
@@ -142,7 +142,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
         { icon: 'region', label: regionLabel(p.region) },
         ...(p.openNeedsCount ? [{ icon: 'needs' as const, label: t('projects.needsCount', { count: p.openNeedsCount }) }] : []),
         ...(p.publicParticipants.length ? [{ icon: 'people' as const, label: t('map.participantsCount', { count: p.publicParticipants.length }) }] : []),
-        { icon: 'updated', label: t('projects.updatedLine', { date: shortDate(p.updatedAt) }) },
+        ...(p.updatedAt ? [{ icon: 'updated' as const, label: t('projects.updatedLine', { date: shortDate(p.updatedAt) }) }] : []),
       ],
       progress: p.progressPercent,
       agentHref: `${p.href}#rep-title`,
@@ -173,7 +173,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
             </div>
             <div className="news-lead__panel">
               <span className="pub-kicker">
-                {t('projects.featured')} · {t(`projects.category.${featured.category}`)}
+                {t('projects.featured')}{featured.category ? ` · ${t(`projects.category.${featured.category}`)}` : ''}
               </span>
               <h2 className="news-lead__title" id="featured-title">
                 <NextLink href={featured.href}>{typo(featured.name)}</NextLink>
@@ -353,7 +353,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
                       </span>
                     </NextLink>
                     <div className="pj-card__body">
-                      <span className="pub-kicker">{t(`projects.category.${p.category}`)}</span>
+                      {p.category ? <span className="pub-kicker">{t(`projects.category.${p.category}`)}</span> : null}
                       <h3 className="pj-card__title">
                         <NextLink href={p.href} className="pj-card__link">
                           {typo(p.name)}
@@ -369,10 +369,12 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pag
                             </NextLink>
                           ) : null}
                         </span>
-                        <span>
-                          {t('projects.owner')}: {p.owner.label}
-                        </span>
-                        <span>{t('projects.updatedLine', { date: shortDate(p.updatedAt) })}</span>
+                        {p.owner.label ? (
+                          <span>
+                            {t('projects.owner')}: {p.owner.label}
+                          </span>
+                        ) : null}
+                        {p.updatedAt ? <span>{t('projects.updatedLine', { date: shortDate(p.updatedAt) })}</span> : null}
                       </p>
                       {p.summary ? <p className="pj-card__summary">{typo(p.summary)}</p> : null}
                       <div className="pj-progress">

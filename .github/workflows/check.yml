@@ -103,6 +103,40 @@ jobs:
       - name: Licence allowlist (scripts/ci/license-policy.json)
         run: node scripts/ci/licenses.mjs
 
+  live-browser:
+    # WEB-004: the web app with demo mode off against the real API and a migrated database (tests/web/live-api).
+    name: live API browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18.3
+        env:
+          POSTGRES_DB: trustwork_dev
+          POSTGRES_USER: trustwork_dev
+          POSTGRES_PASSWORD: local_only_change_me
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U trustwork_dev -d trustwork_dev"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      TRUSTWORK_TEST_PG_BACKEND: external
+      TRUSTWORK_TEST_DATABASE_URL: postgresql://trustwork_dev:local_only_change_me@localhost:5432/trustwork_dev
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: NEXT_DIST_DIR=.next-live TRUSTWORK_API_ORIGIN=http://127.0.0.1:3471 npx next build --webpack
+        working-directory: apps/web
+      - run: NEXT_DIST_DIR=.next-live npx playwright test -c ../../tests/web/live-api/playwright.config.ts
+        working-directory: apps/web
+
   dco:
     name: DCO sign-off
     if: github.event_name == 'pull_request'

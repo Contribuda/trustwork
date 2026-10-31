@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { LoginCommandSchema } from '@trustwork/contracts/client';
 import NextLink from 'next/link';
 import { Button, Form, FormActions, FormAlert, PasswordField, TextField } from '@trustwork/ui';
 import { ProviderButtons } from './ProviderButtons';
 import { mapFieldErrors, useAuthForm } from './useAuthForm';
 import { t } from '@/app/_lib/i18n';
 import { safeNext } from '@/app/_lib/safe-next';
+import { withBase } from '@/app/_lib/base-path';
 
 const FIELD_MAP = {
   email: { required: 'auth.error.emailRequired', format: 'auth.error.emailFormat', invalid: 'auth.error.emailFormat' },
@@ -14,11 +16,13 @@ const FIELD_MAP = {
 } as const;
 
 /**
- * Classic e-mail/password login (R21). Validation on submit through the contract route; invalid credentials clear the
- * password and keep the e-mail; «Забыли пароль?» carries the e-mail to `/recover` (WCAG 2.2 3.3.7). The e-mail typed
- * at signup is prefilled once from the browser session (WCAG 2.2 3.3.7), never from other users.
+ * Classic e-mail/password login (R21) against `POST /v1/auth/login` (WEB-004): contract validation in the browser,
+ * then the API sets the session cookie and the browser opens `next` (or the workspace) with a full navigation so every
+ * server component renders for the new session. Invalid credentials clear the password and keep the e-mail; «Forgot
+ * the password?» carries the e-mail to `/recover` (WCAG 2.2 3.3.7). The e-mail typed at signup is prefilled once from
+ * the browser session, never from other users. Demo deployments validate only and say that nobody signs in there.
  */
-export function LoginForm({ next, reason }: { next: string | null; reason: string | null }) {
+export function LoginForm({ next, reason, demoMode }: { next: string | null; reason: string | null; demoMode: boolean }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const form = useAuthForm();
@@ -50,7 +54,6 @@ export function LoginForm({ next, reason }: { next: string | null; reason: strin
             .map(([k, v]) => ({ id: `login-${k}`, label: v! }))}
         >
           {form.alert.text}
-          {form.alert.code === 'auth.invalid_credentials' ? <p className="au-form__note">{t('demo.noAccountCreated')}</p> : null}
         </FormAlert>
       ) : null}
       <Form
@@ -60,8 +63,10 @@ export function LoginForm({ next, reason }: { next: string | null; reason: strin
         isBusy={form.busy}
         onSubmit={async (event) => {
           event.preventDefault();
-          const response = await form.submit('/api/auth/login', { email, password }, (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP));
-          if (response.kind === 'error' && response.error.code === 'auth.invalid_credentials') setPassword('');
+          const response = await form.submit({ path: '/v1/auth/login', payload: { email, password }, schema: LoginCommandSchema, demo: demoMode, onError: (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP) });
+          if (response.kind === 'demo') form.setAlert({ tone: 'info', text: t('demo.noAccountCreated') });
+          else if (response.kind === 'ok') window.location.assign(withBase(safeNext(next) ?? '/app'));
+          else if (response.kind === 'error' && response.error.code === 'auth.invalid_credentials') setPassword('');
         }}
       >
         <div className="au-form__fields">

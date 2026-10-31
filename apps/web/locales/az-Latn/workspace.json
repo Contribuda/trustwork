@@ -184,7 +184,8 @@
       "find": "Kataloqda şirkət tap",
       "policyNote": "Qoşulmanı şirkət təsdiqləyir.",
       "findHint": "Yoxlanılmış səhifələri, kataloqları və layihələri olan şirkətlər.",
-      "lede": "İş sahəsi şirkətsiz də işləyir; istənilən vaxt qoşula və ya səhifə yarada bilərsiniz."
+      "lede": "İş sahəsi şirkətsiz də işləyir; istənilən vaxt qoşula və ya səhifə yarada bilərsiniz.",
+      "invitationByEmail": "Şirkətin dəvətləri e-poçta gəlir."
     },
     "join": {
       "code": "Dəvət kodu və ya keçidi",
@@ -205,7 +206,8 @@
       "status_ended": "Bitib",
       "sinceDate": "{date}-dən",
       "hidden": "İctimai səhifədə göstərilmir",
-      "inviteNote": "Dəvətlər və iştirakın bitirilməsi növbəti mərhələdə gələcək."
+      "inviteNote": "Dəvətlər və iştirakın bitirilməsi növbəti mərhələdə gələcək.",
+      "privateName": "Qapalı profil"
     },
     "membersEmpty": "Hələ əməkdaş yoxdur",
     "wallEmpty": "Hələ şirkət nəşri yoxdur",
@@ -233,7 +235,8 @@
       "sourced": "Açıq mənbədən yaradılıb",
       "claimed": "Bəyan edilib, yoxlama gözləyir",
       "verified": "Yoxlanılıb",
-      "pendingRequests": "{count, plural, one {# qoşulma sorğusu} other {# qoşulma sorğusu}}"
+      "pendingRequests": "{count, plural, one {# qoşulma sorğusu} other {# qoşulma sorğusu}}",
+      "registered": "Platformada qeydiyyatdan keçib, hələ təsdiqlənməyib və yoxlanılmayıb"
     },
     "projectsEmpty": "Sizə əlçatan şirkət layihəsi hələ yoxdur",
     "reputationNote": "Sövdələşmələr üzrə daxili sübutlar ilk yerinə yetirilmiş sifarişlərdən sonra görünəcək.",
@@ -260,7 +263,44 @@
       }
     },
     "peopleHint": "Şirkətin əməkdaşları və onların rolları. İctimai olmaq hər kəsin öz qərarıdır.",
-    "website": "Şirkətin veb-saytı"
+    "website": "Şirkətin veb-saytı",
+    "create": {
+      "title": "Şirkət səhifəsi yaratmaq",
+      "body": "Siz onun administratoru olacaqsınız. Səhifə «qeydiyyatdan keçib» statusu ilə yaradılır: təsdiq və yoxlama ayrı addımlardır.",
+      "name": "Şirkətin adı",
+      "handle": "Səhifə ünvanı (istəyə görə)",
+      "handleHint": "3-dən 40-a qədər kiçik latın hərfi, rəqəm və defis, məsələn acme-build.",
+      "description": "İctimai təsvir (istəyə görə)",
+      "descriptionHint": "Şirkətin ictimai səhifəsində göstərilir.",
+      "submit": "Səhifəni yarat",
+      "pending": "Yaradılır…",
+      "statusNote": "İnsan eyni vaxtda bir şirkətdə işləyir: səhifə yaratmaq üçün aktiv işəgötürəniniz olmamalıdır.",
+      "error": {
+        "nameRequired": "Şirkətin adını daxil edin",
+        "nameTooLong": "Ad çox uzundur",
+        "handleInvalid": "3-dən 40-a qədər kiçik latın hərfi, rəqəm və defisdən istifadə edin; yalnız rəqəmlər yox.",
+        "handleTaken": "Bu ünvan tutulub. Başqasını seçin.",
+        "handleLimit": "Səhifənin ünvanı həddindən çox dəyişdirilib.",
+        "descriptionTooLong": "Təsvir çox uzundur"
+      }
+    },
+    "inviteForm": {
+      "title": "Həmkarı dəvət etmək",
+      "body": "Dəvət e-poçta gedəcək. Ünvanın hesabı olub-olmadığını göstərmirik.",
+      "permissions": "Hüquqlar",
+      "submit": "Dəvəti göndər",
+      "pending": "Göndərilir…",
+      "sent": "Ünvan təsdiqlənmiş hesaba aiddirsə, dəvət artıq yoldadır."
+    },
+    "permissionLabel": {
+      "pageEdit": "Şirkət səhifəsini redaktə etmək",
+      "publish": "Şirkət adından dərc etmək",
+      "membersManage": "Əməkdaşları idarə etmək",
+      "dealsManage": "Layihə və sövdələşmələri aparmaq",
+      "catalogueEdit": "Kataloqu redaktə etmək",
+      "billingView": "Ödənişlərə baxmaq",
+      "billingManage": "Ödənişləri idarə etmək"
+    }
   },
   "projectsWs": {
     "title": "Layihələr",
@@ -426,6 +466,36 @@
       "privateCount": "{count, plural, one {# şəxsi} other {# şəxsi}}",
       "purchases": "Layihə satınalmaları",
       "purchasesCount": "{count, plural, =0 {sorğu yoxdur} one {# sorğu} other {# sorğu}}"
+    },
+    "createForm": {
+      "title": "Yeni layihə",
+      "body": "Layihə siz dərc edənə qədər qapalıdır.",
+      "name": "Layihənin adı",
+      "summary": "Qısa təsvir (istəyə görə)",
+      "owner": "Sahibi",
+      "ownerMe": "Mən (şəxsi layihə)",
+      "ownerCompany": "Şirkət: {name}",
+      "submit": "Layihəni yarat",
+      "pending": "Yaradılır…",
+      "cancel": "Ləğv et",
+      "error": {
+        "nameRequired": "Layihənin adını daxil edin",
+        "nameTooLong": "Ad çox uzundur",
+        "summaryTooLong": "Təsvir çox uzundur"
+      }
+    },
+    "publish": {
+      "title": "Layihəni dərc etmək",
+      "body": "Hamı adı, qısa təsviri, statusu və aşağıdakı hekayəni görəcək. Büdcələr, fayllar, qeydlər və iştirakçılar qapalı qalacaq.",
+      "story": "Layihə haqqında hekayə",
+      "storyHint": "Nə tikirsiniz, nə üçün və işlər necə gedir.",
+      "submit": "Dərc et",
+      "pending": "Dərc olunur…",
+      "notAllowed": "Layihəni yalnız onun sahibi dərc edə bilər.",
+      "error": {
+        "storyRequired": "Layihə haqqında bir neçə söz yazın",
+        "storyTooLong": "Hekayə çox uzundur"
+      }
     }
   },
   "ws": {

@@ -93,7 +93,7 @@ export default async function ProjectPage({ params, searchParams }: Params) {
   const brief: ProjectBrief = {
     name: project.name,
     handle: project.handle,
-    category: t(`projects.category.${project.category}`),
+    category: project.category ? t(`projects.category.${project.category}`) : '',
     region: regionLabel(project.region),
     status: t(`projectStatus.${project.status}`),
     owner: project.owner,
@@ -105,7 +105,7 @@ export default async function ProjectPage({ params, searchParams }: Params) {
       total: project.progress.total,
       current: project.progress.current?.title ?? null,
       nextDue: nextDue ? shortDate(nextDue) : null,
-      started: shortDate(project.startedAt),
+      started: project.startedAt ? shortDate(project.startedAt) : '',
     },
     milestones: project.milestones.map((m) => ({ title: m.title, state: t(`projectPage.${m.state}`), date: shortDate(m.actual ?? m.changedDue ?? m.baselineDue) })),
     participants: project.participants.map((p) => ({ label: p.label, role: `${t(`projectPage.partyRole.${p.partyRole}`)} · ${p.roleTitle}`, href: p.href })),
@@ -183,7 +183,7 @@ export default async function ProjectPage({ params, searchParams }: Params) {
           <div className="pj-head">
             <p className="pj-head__chips">
               <ProjectStatusChip status={project.status} />
-              <span className="co-tag">{t(`projects.category.${project.category}`)}</span>
+              {project.category ? <span className="co-tag">{t(`projects.category.${project.category}`)}</span> : null}
               <span className="co-tag">
                 <MapPin size={12} strokeWidth={2} aria-hidden="true" /> {regionLabel(project.region)}
               </span>
@@ -205,9 +205,11 @@ export default async function ProjectPage({ params, searchParams }: Params) {
                   <span className="pj-progress__fill" style={{ width: `${project.progress.percent}%` }} />
                 </div>
                 <div className="pj-progress__row">
-                  <span>
-                    <Calendar size={12} strokeWidth={2} aria-hidden="true" /> {t('projectPage.started', { date: shortDate(project.startedAt) })}
-                  </span>
+                  {project.startedAt ? (
+                    <span>
+                      <Calendar size={12} strokeWidth={2} aria-hidden="true" /> {t('projectPage.started', { date: shortDate(project.startedAt) })}
+                    </span>
+                  ) : null}
                   {project.status === 'completed' && lastMs?.actual ? (
                     <span>{t('projectPage.completedAt', { date: shortDate(lastMs.actual) })}</span>
                   ) : lastMs ? (

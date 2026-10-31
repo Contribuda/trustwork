@@ -13,6 +13,7 @@
     "scenario": {
       "error": "Yuklash xatosi",
       "offline": "Aloqa yoʻq"
-    }
+    },
+    "noPasswordChanged": "Demo: parol o‘zgartirilmaydi."
   }
 }

@@ -3,7 +3,8 @@ import NextLink from 'next/link';
 import { Button } from '@/components/ui';
 import { PageHeader } from '@/components/workspace/parts';
 import { ProjectRow } from '@/components/workspace/ProjectRow';
-import { data } from '@/app/_lib/data';
+import { DATA_SOURCE, data } from '@/app/_lib/data';
+import { ProjectCreateForm, type ProjectOwnerOption } from './_components/ProjectCreateForm';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { t } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';
@@ -19,6 +20,7 @@ const ROLES = ['owner', 'leader', 'participant'] as const;
 /**
  * Workspace projects: own, led and participated projects only; a personal project needs no company.
  * Filters are plain links (status, my role) so the list stays shareable and works without JavaScript.
+ * Live API (WEB-004): «Create a project» opens the creation dialog; the demo keeps the disabled button.
  */
 export default async function WorkspaceProjectsPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
@@ -32,6 +34,11 @@ export default async function WorkspaceProjectsPage({ searchParams }: { searchPa
     const q = [s !== 'all' ? `status=${s}` : '', r !== 'all' ? `role=${r}` : ''].filter(Boolean).join('&');
     return hrefFor(principal, `/app/projects${q ? `?${q}` : ''}`);
   };
+  const live = DATA_SOURCE === 'api';
+  const owners: ProjectOwnerOption[] = [
+    { kind: 'person', id: principal.personId, label: principal.displayName },
+    ...(principal.company?.permissions.includes('company.deals.manage') ? [{ kind: 'company' as const, id: principal.company.id, label: principal.company.name }] : []),
+  ];
   const stats = {
     total: all.length,
     active: all.filter((r) => r.status === 'active').length,
@@ -44,9 +51,13 @@ export default async function WorkspaceProjectsPage({ searchParams }: { searchPa
         title={t('projectsWs.title')}
         lede={t('projectsWs.lede')}
         actions={
-          <Button variant="accent" isDisabled aria-describedby="projects-create-note">
-            {t('projectsWs.create')}
-          </Button>
+          live ? (
+            <ProjectCreateForm owners={owners} />
+          ) : (
+            <Button variant="accent" isDisabled aria-describedby="projects-create-note">
+              {t('projectsWs.create')}
+            </Button>
+          )
         }
       />
       {all.length === 0 ? (
@@ -114,9 +125,11 @@ export default async function WorkspaceProjectsPage({ searchParams }: { searchPa
           )}
         </div>
       )}
-      <p id="projects-create-note" className="ws-note" style={{ marginTop: 24 }}>
-        {t('projectsWs.createDisabled')}
-      </p>
+      {live ? null : (
+        <p id="projects-create-note" className="ws-note" style={{ marginTop: 24 }}>
+          {t('projectsWs.createDisabled')}
+        </p>
+      )}
     </>
   );
 }

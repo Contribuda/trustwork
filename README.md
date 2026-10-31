@@ -115,10 +115,10 @@ You need Node 24.18.0 and npm 11.16.0 (`nvm install && nvm use`).
 ```sh
 npm ci
 npm run check      # lint, types, tests, docs, builds, smoke test
-npm run dev:web    # http://localhost:3000 on demo data
+TRUSTWORK_DEMO_MODE=1 npm run dev:web    # http://localhost:3000 on demo data
 ```
 
-Try `?persona=mixed` for someone who buys and sells, `?persona=reader` for a reader, and `?country=GE&lang=ka` for Georgian. The live API, the local database and browser tests are described in the [agent onboarding guide](docs/engine/agent-onboarding.md#3-install-and-run), which is just as useful for humans.
+Without `TRUSTWORK_DEMO_MODE=1` the web app runs on the live API (`npm run dev:api`, see below). In the demo, try `?persona=mixed` for someone who buys and sells, `?persona=reader` for a reader, and `?country=GE&lang=ka` for Georgian. The live API, the local database and browser tests are described in the [agent onboarding guide](docs/engine/agent-onboarding.md#3-install-and-run), which is just as useful for humans.
 
 ## Read more
 

@@ -24,14 +24,14 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { Button, ButtonLink, EmptyState, MediaFrame, RecordStatusChip, TextField } from '@/components/ui';
+import { Button, ButtonLink, EmptyState, MediaFrame, TextField } from '@/components/ui';
 import { CompanyMark, initials } from '@/components/public/CompanyMark';
 import { SignalBadge, signalLabel } from '@/components/public/SignalBadge';
 import { SRLogo, SRMark } from '@/components/public/SRMark';
 import { Dropdown } from '@/components/public/Dropdown';
 import { FilterBar } from '@/components/public/FilterBar';
 import { MapSearch, type MapItem, type MapLegendEntry } from '@/components/public/MapSearch';
-import { formatLabel, regionLabel } from '@/components/public/parts';
+import { CompanyStatusChip, formatLabel, regionLabel } from '@/components/public/parts';
 import { data } from '@/app/_lib/data';
 import type { CompanyCard, CompanyKind, CompanySignalKind, CompanyStatus, RegionKey } from '@/app/_lib/data/types';
 import { projectCover, storyCover } from '@/app/_lib/media';
@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const KINDS: CompanyKind[] = ['developer', 'client', 'generalContractor', 'contractor', 'designer', 'manufacturer', 'supplier', 'equipment', 'services', 'logistics'];
 const REGIONS: RegionKey[] = regionCodes();
-const STATUSES: CompanyStatus[] = ['verified', 'claimed', 'sourced'];
+const STATUSES: CompanyStatus[] = ['verified', 'claimed', 'registered', 'sourced'];
 const SIGNALS: CompanySignalKind[] = ['hiring', 'acceptingOrders', 'lookingForSubcontractors', 'lookingForSuppliers', 'lookingForPartners', 'lookingForProjects', 'paused'];
 const KIND_ICON = {
   developer: Building2,
@@ -459,7 +459,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pa
                                 <SRMark compact size="sm" />
                               ) : (
                                 <span className="co-row__status" title={t(`companies.statusHint${c.status.charAt(0).toUpperCase()}${c.status.slice(1)}` as 'companies.statusHintSourced')}>
-                                  <RecordStatusChip status={c.status} size="sm" />
+                                  <CompanyStatusChip status={c.status} size="sm" />
                                 </span>
                               )}
                             </h3>

@@ -4,7 +4,9 @@ import { ArrowRight, KeyRound, Laptop, Mail, ShieldCheck, Smartphone } from 'luc
 import { Button, StatusChip } from '@/components/ui';
 import { SettingsPreferences } from '@/components/workspace/SettingsPreferences';
 import { PageHeader } from '@/components/workspace/parts';
-import { data } from '@/app/_lib/data';
+import { DEFAULT_PASSWORD_POLICY } from '@trustwork/contracts/client';
+import { DATA_SOURCE, data } from '@/app/_lib/data';
+import { SecurityPanel, type LiveSession } from './_components/SecurityPanel';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { longDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
@@ -17,11 +19,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const SECTIONS = ['account', 'security', 'preferences', 'channels', 'billing'] as const;
 
-/** Settings entry reached from the avatar menu (never the sidebar): account, security and sessions, preferences, channels, billing state. */
+/**
+ * Settings entry reached from the avatar menu (never the sidebar): account, security and sessions, preferences, channels, billing state.
+ * Live API (WEB-004): the session list, ending sessions and the password change work through `/v1/me/*` (step-up where
+ * the API asks for it); the demo shows the example list with disabled controls.
+ */
 export default async function SettingsPage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/settings');
   const s = await data.getSettings(principal);
+  const live = DATA_SOURCE === 'api';
+  const liveSessions: LiveSession[] = s.sessions.flatMap((x) => (x.id ? [{ id: x.id, device: x.device, location: x.location, lastSeen: x.lastSeen, isCurrent: x.isCurrent }] : []));
   return (
     <>
       <PageHeader title={t('settings.title')} lede={t('settings.lede')} />
@@ -65,7 +73,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
                 {t('settings.account.deleteAccount')}
               </Button>
             </div>
-            <p className="ws-note">{t('settings.account.demoNote')}</p>
+            <p className="ws-note">{live ? t('settings.account.liveNote') : t('settings.account.demoNote')}</p>
           </section>
 
           <section id="security" aria-labelledby="s-security" className="ws-card">
@@ -96,15 +104,20 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
                       </span>
                     </span>
                   </span>
-                  <span className="ws-row__side">
-                    <Button variant="secondary" size="sm" isDisabled>
-                      {p.key === 'password' ? t('settings.security.changePassword') : p.on ? t('settings.security.unlink') : t('settings.security.link')}
-                    </Button>
-                  </span>
+                  {live && p.key === 'password' ? null : (
+                    <span className="ws-row__side">
+                      <Button variant="secondary" size="sm" isDisabled>
+                        {p.key === 'password' ? t('settings.security.changePassword') : p.on ? t('settings.security.unlink') : t('settings.security.link')}
+                      </Button>
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
             <h3 className="ws-head__kicker">{t('settings.security.sessions')}</h3>
+            {live ? <SecurityPanel sessions={liveSessions} minPassword={DEFAULT_PASSWORD_POLICY.minLength} /> : null}
+            {live ? null : (
+            <>
             <ul className="ws-list">
               {s.sessions.map((session, i) => (
                 <li key={i} className="ws-row">
@@ -141,6 +154,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
               </Button>
             </div>
             <p className="ws-note">{t('settings.security.demoSession')}</p>
+            </>
+            )}
           </section>
 
           <section id="preferences" aria-labelledby="s-preferences" className="ws-card">

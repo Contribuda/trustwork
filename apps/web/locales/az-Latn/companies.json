@@ -151,7 +151,8 @@
     "statusHintVerified": "Qeydiyyat məlumatları və domen platforma tərəfindən təsdiqlənib",
     "openProjectTitle": "Layihə: {name}",
     "signalLabel": "Status",
-    "signalAll": "İstənilən status"
+    "signalAll": "İstənilən status",
+    "statusHintRegistered": "Səhifəni platformada şirkət nümayəndəsi yaradıb; o hələ təsdiqlənməyib və yoxlanılmayıb."
   },
   "companyPage": {
     "nav": {

@@ -5,6 +5,7 @@ import type { PageSearchParams } from '@/app/_lib/principal';
 import { t } from '@/app/_lib/i18n';
 import { artwork } from '@/app/_lib/media';
 import { primeLocale } from '@/app/_lib/locale';
+import { demoModeEnabled } from '@/app/_lib/persona';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
@@ -26,7 +27,7 @@ export default async function RecoverPage({ searchParams }: { searchParams: Page
   const email = typeof params.email === 'string' && params.email.length <= 254 ? params.email : '';
   return (
     <AuthFrame headline={t('auth.visual.recoverHeadline')} subline={t('auth.visual.recoverSub')} media={artwork('blueprint-lines')} points={points()}>
-      <RecoverForm initialEmail={email} />
+      <RecoverForm initialEmail={email} demoMode={demoModeEnabled()} />
     </AuthFrame>
   );
 }

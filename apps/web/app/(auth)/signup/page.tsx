@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { AuthFrame } from '@/components/auth/AuthFrame';
 import { SignupForm } from '@/components/auth/SignupForm';
-import { fakeAuth } from '@/app/_lib/auth-fake';
+import { DEFAULT_PASSWORD_POLICY } from '@trustwork/contracts/client';
 import { getPrincipal, hrefFor, type PageSearchParams } from '@/app/_lib/principal';
 import { t } from '@/app/_lib/i18n';
 import { artwork } from '@/app/_lib/media';
 import { safeNext } from '@/app/_lib/safe-next';
 import { primeLocale } from '@/app/_lib/locale';
+import { demoModeEnabled } from '@/app/_lib/persona';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
@@ -30,7 +31,7 @@ export default async function SignupPage({ searchParams }: { searchParams: PageS
         { icon: 'trust', text: t('auth.points.trust') },
       ]}
     >
-      <SignupForm minPassword={fakeAuth.policy.minLength} next={safeNext(params.next)} />
+      <SignupForm minPassword={DEFAULT_PASSWORD_POLICY.minLength} next={safeNext(params.next)} demoMode={demoModeEnabled()} />
     </AuthFrame>
   );
 }

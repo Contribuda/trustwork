@@ -78,7 +78,7 @@ function apply(list: PersonCard[], f: Filters, except?: Facet): PersonCard[] {
     if (except !== 'verified' && f.verified && !p.verified) return false;
     if (except !== 'cert' && f.cert && p.platformCertificatesCount === 0) return false;
     if (q) {
-      const hay = [p.displayName, p.roleLine, p.headline ?? '', p.employer?.name ?? '', ...p.expertise, regionLabel(p.region), t(`people.fields.${p.field}`)].join(' ').toLowerCase();
+      const hay = [p.displayName, p.roleLine, p.headline ?? '', p.employer?.name ?? '', ...p.expertise, regionLabel(p.region), p.field ? t(`people.fields.${p.field}`) : ''].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;

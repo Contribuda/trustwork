@@ -11,6 +11,7 @@ import { initials } from '@/components/public/CompanyMark';
 import { RfqList } from '@/components/workspace/parts';
 import { DateTile } from '@/components/workspace/ProjectRow';
 import { data, type WorkspaceParticipant } from '@/app/_lib/data';
+import { PublishProjectForm } from '../_components/PublishProjectForm';
 import { projectCover } from '@/app/_lib/media';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { longDate, shortDate, t, tDynamic } from '@/app/_lib/i18n';
@@ -436,6 +437,23 @@ export default async function WorkspaceProjectPage({ params, searchParams }: Par
             })}
           </ul>
           <p className="ws-note">{t('projectsWs.publication.note')}</p>
+          {project.live && !project.publicity.enabled ? (
+            project.live.canPublish && project.live.revision !== null ? (
+              principal.emailVerified === false ? (
+                <p className="ws-note">{t('error.auth.email_unverified')}</p>
+              ) : (
+                <PublishProjectForm projectId={project.id} revision={project.live.revision} />
+              )
+            ) : (
+              <p className="ws-note">{t('projectsWs.publish.notAllowed')}</p>
+            )
+          ) : null}
+          {project.live?.publishedStory && project.publicity.enabled ? (
+            <div className="ws-card">
+              <h3 className="ws-h2">{t('projectsWs.publish.story')}</h3>
+              <p>{typo(project.live.publishedStory)}</p>
+            </div>
+          ) : null}
           {project.publicity.publicHref ? (
             <div>
               <NextLink href={project.publicity.publicHref} className="pub-btn">

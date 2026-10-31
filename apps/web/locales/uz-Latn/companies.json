@@ -151,7 +151,8 @@
     "statusHintVerified": "Rekvizitlar va domen platforma tomonidan tasdiqlangan",
     "openProjectTitle": "Loyiha: {name}",
     "signalLabel": "Holat",
-    "signalAll": "Istalgan holat"
+    "signalAll": "Istalgan holat",
+    "statusHintRegistered": "Sahifani platformada kompaniya vakili yaratgan; u hali tasdiqlanmagan va tekshirilmagan."
   },
   "companyPage": {
     "nav": {

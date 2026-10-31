@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { SignupCommandSchema } from '@trustwork/contracts/client';
 import NextLink from 'next/link';
 import { ArrowRight, CheckCircle2, MailCheck } from 'lucide-react';
 import { Button, Checkbox, Form, FormActions, FormAlert, PasswordField, TextField } from '@trustwork/ui';
@@ -9,6 +10,7 @@ import { ProviderButtons } from './ProviderButtons';
 import { mapFieldErrors, useAuthForm } from './useAuthForm';
 import { t } from '@/app/_lib/i18n';
 
+/** Terms version the person accepts (the API records it; the legal text is still a draft, see ADR 012). */
 const TERMS_VERSION = 'draft-2026-10';
 
 const FIELD_MAP = {
@@ -21,16 +23,19 @@ const FIELD_MAP = {
 /**
  * Signup with exactly one name field (`auth.name`, no surname), e-mail, password with the policy hint and a
  * non-blocking strength meter, terms checkbox whose links are separate tab stops, and a «what happens next» list.
- * A valid payload answers `auth.email_unverified`: the demo shows the «Подтвердите почту» state with an explicit
- * note that nothing was created or sent, keeps the name and e-mail, and offers the onboarding preview.
+ * `POST /v1/auth/signup` answers `202 verification_sent` for new and existing addresses alike (no account
+ * enumeration, no session before verification): the form shows «Confirm your email» and can send the message
+ * again. A demo deployment validates only, says that nothing was created or sent and offers the onboarding preview.
  */
-export function SignupForm({ minPassword, next }: { minPassword: number; next: string | null }) {
+export function SignupForm({ minPassword, next, demoMode }: { minPassword: number; next: string | null; demoMode: boolean }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [terms, setTerms] = useState(false);
   const [verifyPending, setVerifyPending] = useState(false);
   const form = useAuthForm();
+  const resend = useAuthForm();
+  const payload = (): Record<string, unknown> => ({ name, email, password, ...(terms ? { acceptedTermsVersion: TERMS_VERSION } : {}) });
 
   if (verifyPending) {
     return (
@@ -44,8 +49,9 @@ export function SignupForm({ minPassword, next }: { minPassword: number; next: s
           </h1>
           <FormAlert tone="info" autoFocus>
             {t('auth.verify.body', { email })}
-            <p className="au-form__note">{t('demo.noEmailSent')}</p>
+            {demoMode ? <p className="au-form__note">{t('demo.noEmailSent')}</p> : null}
           </FormAlert>
+          {resend.alert ? <FormAlert tone={resend.alert.tone}>{resend.alert.text}</FormAlert> : null}
           <ol className="au-steps">
             <li>
               <CheckCircle2 size={16} strokeWidth={2} aria-hidden="true" />
@@ -61,17 +67,28 @@ export function SignupForm({ minPassword, next }: { minPassword: number; next: s
             </li>
           </ol>
           <FormActions>
-            <Button variant="secondary" isDisabled>
+            <Button
+              variant="secondary"
+              isDisabled={demoMode}
+              isLoading={resend.busy}
+              pendingLabel={t('auth.submitting')}
+              onPress={async () => {
+                const response = await resend.submit({ path: '/v1/auth/signup', payload: payload() });
+                if (response.kind === 'ok') resend.setAlert({ tone: 'success', text: t('auth.verify.resent') });
+              }}
+            >
               {t('auth.verify.resend')}
             </Button>
             <Button variant="ghost" onPress={() => setVerifyPending(false)}>
               {t('auth.verify.changeEmail')}
             </Button>
           </FormActions>
-          <NextLink href="/onboarding?persona=reader&created=1" className="au-link au-link--demo">
-            {t('auth.verify.demoOnboarding')}
-            <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
-          </NextLink>
+          {demoMode ? (
+            <NextLink href="/onboarding?persona=reader&created=1" className="au-link au-link--demo">
+              {t('auth.verify.demoOnboarding')}
+              <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
+            </NextLink>
+          ) : null}
         </div>
       </div>
     );
@@ -103,10 +120,8 @@ export function SignupForm({ minPassword, next }: { minPassword: number; next: s
         isBusy={form.busy}
         onSubmit={async (event) => {
           event.preventDefault();
-          const payload: Record<string, unknown> = { name, email, password };
-          if (terms) payload.acceptedTermsVersion = TERMS_VERSION;
-          const response = await form.submit('/api/auth/signup', payload, (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP, { min: minPassword }));
-          if (response.kind === 'error' && response.error.code === 'auth.email_unverified') {
+          const response = await form.submit({ path: '/v1/auth/signup', payload: payload(), schema: SignupCommandSchema, demo: demoMode, onError: (error) => mapFieldErrors(form.fieldIssues(error), FIELD_MAP, { min: minPassword }) });
+          if (response.kind === 'ok' || response.kind === 'demo') {
             form.setAlert(null);
             try {
               window.sessionStorage.setItem('trustwork.signup.email', email);

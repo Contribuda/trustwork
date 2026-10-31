@@ -26,7 +26,8 @@
   },
   "status": {
     "sourcedHint": "Yozuv ochiq manba boʻyicha yaratilgan; kompaniya maʼlumotlarni hali tasdiqlamagan.",
-    "claimedHint": "Maʼlumotlar kompaniya vakili tomonidan bildirilgan va tasdiqlashni kutmoqda."
+    "claimedHint": "Maʼlumotlar kompaniya vakili tomonidan bildirilgan va tasdiqlashni kutmoqda.",
+    "registered": "Platformada ro‘yxatdan o‘tgan"
   },
   "provenance": {
     "source": "Manba: {source}, yangilangan {date}",

@@ -136,7 +136,8 @@ export type PersonCard = {
   handle: string;
   href: string;
   displayName: string;
-  field: PersonField;
+  /** Null when the source does not say (the live API has no field yet; never guessed). */
+  field: PersonField | null;
   /** Works in a company (employer shown) or independently. */
   independent: boolean;
   signals: Signal<PersonSignalKind>[];
@@ -191,7 +192,8 @@ export type ProjectCard = {
   name: string;
   summary: string | null;
   status: ProjectStatus;
-  category: 'housing' | 'education' | 'industrial' | 'publicSpace' | 'infrastructure';
+  /** Null when the source does not say (the live API has no category yet; never guessed). */
+  category: 'housing' | 'education' | 'industrial' | 'publicSpace' | 'infrastructure' | null;
   region: RegionKey;
   owner: { label: string; href: string | null; kind: 'person' | 'company' };
   publicParticipants: Array<{ label: string; href: string | null; roleTitle: string }>;
@@ -395,7 +397,8 @@ export type AssistantSummary = { running: number; approvals: number; unknown: nu
 
 export type AuthenticatedPrincipal = {
   kind: 'person';
-  persona: Exclude<Persona, 'anonymous'>;
+  /** The demo persona, or `session` for a principal resolved from the live API session (WEB-004). */
+  persona: Exclude<Persona, 'anonymous'> | 'session';
   demo: DemoContext;
   personId: string;
   displayName: string;
@@ -409,6 +412,8 @@ export type AuthenticatedPrincipal = {
   notifications: NotificationView[];
   assistant: AssistantSummary;
   isPlatformAdmin: boolean;
+  /** Live sessions only: whether the primary e-mail is verified (publishing and invitations need it). */
+  emailVerified?: boolean;
 };
 export type AnonymousPrincipal = { kind: 'anonymous'; persona: 'anonymous'; demo: DemoContext };
 export type Principal = AuthenticatedPrincipal | AnonymousPrincipal;
@@ -518,6 +523,8 @@ export type WorkspaceProjectDetail = {
   canSeeBudget: boolean;
   nextMilestone: { title: string; due: string; changed: boolean } | null;
   updatedAt: string;
+  /** Live API only (WEB-004): the revision publishing must name, the published story and whether this person may publish. */
+  live?: { revision: number | null; publishedStory: string | null; canPublish: boolean };
 };
 
 export type CompanyWorkspaceView = {
@@ -561,7 +568,8 @@ export type SettingsView = {
   name: string;
   email: string;
   providers: { apple: boolean; google: boolean; password: boolean };
-  sessions: Array<{ device: string; location: string; lastSeen: string; isCurrent: boolean }>;
+  /** `id` and `authMethod` come with live sessions (WEB-004) and enable revoking a session. */
+  sessions: Array<{ id?: string; device: string; location: string; lastSeen: string; isCurrent: boolean; authMethod?: string }>;
   pinned: { procurement: boolean; sales: boolean };
   preferences: AuthenticatedPrincipal['preferences'];
   canSeeCompanyBilling: boolean;

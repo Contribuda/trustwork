@@ -18,7 +18,8 @@
       "language": "İnterfeys dili",
       "languageLabel": "İnterfeys dili",
       "languageValue": "Azərbaycan dili",
-      "demoNote": "Demo: e-poçtun dəyişdirilməsi və hesabın silinməsi serverlə birlikdə gələcək."
+      "demoNote": "Demo: e-poçtun dəyişdirilməsi və hesabın silinməsi serverlə birlikdə gələcək.",
+      "liveNote": "E-poçtun dəyişdirilməsi və hesabın silinməsi növbəti mərhələdə əlavə olunacaq."
     },
     "security": {
       "changePassword": "Parolu dəyiş",
@@ -42,7 +43,16 @@
       "sessionsCaption": "Sessiya siyahısı",
       "google": "Google",
       "lastSeenAt": "Fəaliyyət: {date}",
-      "apple": "Apple"
+      "apple": "Apple",
+      "unknownDevice": "Naməlum cihaz",
+      "endPending": "Bitirilir…",
+      "ended": "Seans bitirildi.",
+      "othersEnded": "{count, plural, =0 {Başqa aktiv seans yox idi.} other {Başqa # seans bitirildi.}}",
+      "passwordChanged": "Parol dəyişdirildi. Digər seanslarınız bitirildi.",
+      "passwordHint": "Ən azı {min} simvol. Parol menecerindən parol yapışdıra bilərsiniz.",
+      "passwordTooShort": "Parol çox qısadır",
+      "passwordTooLong": "Parol çox uzundur",
+      "saving": "Saxlanılır…"
     },
     "preferences": {
       "interests": "Maraqlar",
@@ -79,6 +89,13 @@
       "invoices": "Hesab-fakturalar",
       "noInvoices": "Hesab-faktura yoxdur"
     },
-    "profileLink": "Profil və ictimai səhifə"
+    "profileLink": "Profil və ictimai səhifə",
+    "stepUp": {
+      "title": "Bunun siz olduğunuzu təsdiqləyin",
+      "body": "Davam etmək üçün parolu daxil edin. Vacib dəyişikliklər üçün bu yaxınlarda daxil olmaq lazımdır.",
+      "confirm": "Təsdiqlə",
+      "cancel": "Ləğv et",
+      "pending": "Yoxlanılır…"
+    }
   }
 }

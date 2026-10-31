@@ -13,6 +13,7 @@
     "scenario": {
       "error": "Yükləmə səhvi",
       "offline": "Bağlantı yoxdur"
-    }
+    },
+    "noPasswordChanged": "Demo: parol dəyişdirilmir."
   }
 }

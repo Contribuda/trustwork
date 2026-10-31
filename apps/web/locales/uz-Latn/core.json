@@ -16,15 +16,59 @@
       },
       "recovery": {
         "on_hold": "Tiklash soʻrovi qabul qilindi va korporativ pochta siyosati boʻyicha tekshiruvga qoʻyildi. Qaror haqida xabar beramiz."
-      }
+      },
+      "provider": {
+        "already_linked": "Bu kirish usuli allaqachon akkauntga bog‘langan.",
+        "state_mismatch": "Kirish juda uzoq davom etdi yoki to‘xtatildi. Qaytadan boshlang."
+      },
+      "email_taken": "Bu pochta boshqa akkauntda allaqachon ishlatilmoqda."
     },
     "access": {
       "not_found": "Sahifa topilmadi",
-      "forbidden": "Ruxsat yoʻq"
+      "forbidden": "Ruxsat yoʻq",
+      "participation_expired": "Bu obyektga kirish huquqingiz tugadi.",
+      "mandate_revoked": "Yordamchining bu amal uchun vakolati bekor qilingan.",
+      "mandate_scope": "Bu amal yordamchi vakolatidan tashqarida.",
+      "staff_no_case": "Xodim kirishi uchun ochiq murojaat kerak.",
+      "approval_required": "Bu amal uchun avval tasdiq kerak.",
+      "approval_digest_mismatch": "Tasdiq boshqa versiya uchun berilgan. Joriy versiyani tasdiqlang.",
+      "second_approver_required": "Bu amalni ikkinchi shaxs tasdiqlashi kerak."
     },
     "validation": {
       "schema": "Maydonlarni toʻldirishni tekshiring",
-      "unknown_field": "Soʻrovda nomaʼlum maydonlar bor"
+      "unknown_field": "Soʻrovda nomaʼlum maydonlar bor",
+      "revision_conflict": "Siz ishlayotganingizda bu o‘zgartirildi. Sahifani yangilab, qayta urinib ko‘ring.",
+      "idempotency_conflict": "Bu so‘rov allaqachon boshqa ma’lumotlar bilan yuborilgan. Sahifani yangilab, qayta urinib ko‘ring.",
+      "idempotency_in_progress": "Oldingi so‘rov hali qayta ishlanmoqda. Biroz kuting va qayta urinib ko‘ring.",
+      "unit_mismatch": "Turli birlikdagi miqdorlarni qo‘shib bo‘lmaydi.",
+      "not_canonicalizable": "Ma’lumotlarni bu shaklda yozib bo‘lmaydi. Maydonlarni tekshiring.",
+      "payload_too_large": "So‘rov juda katta."
+    },
+    "network": "Aloqa yo‘q. Tarmoqni tekshirib, qayta urinib ko‘ring.",
+    "commercial": {
+      "version_immutable": "Bu versiya yakuniy va o‘zgartirilmaydi.",
+      "rfq_version_not_current": "So‘rovning yangiroq versiyasi bor. Taklifni joriy versiya uchun tayyorlang.",
+      "rfq_version_mismatch": "Taklif so‘rovning boshqa versiyasiga tegishli.",
+      "stale_version": "Bu versiya eskirgan. Joriysini oching.",
+      "digest_mismatch": "Hujjat qayd etilgan versiyaga mos kelmaydi. Sahifani yangilab, tekshiring.",
+      "totals_mismatch": "Jami summalar mos kelmaydi. Summalarni tekshiring.",
+      "currency_mismatch": "Turli valyutadagi summalarni qo‘shib bo‘lmaydi.",
+      "quote_not_acceptable": "Bu taklifni hozirgi holatida qabul qilib bo‘lmaydi.",
+      "quote_expired": "Taklifning amal qilish muddati tugagan.",
+      "budget_insufficient": "Bu amal uchun byudjet yetarli emas.",
+      "authority_missing": "Sizda bu majburiyatni olish vakolati yo‘q.",
+      "outcome_unknown": "Natija hali noma’lum. Biz uni tekshirmoqdamiz; amalni takrorlamang.",
+      "transfer_consent_pending": "Qabul qiluvchi hali topshirishga rozilik bermagan."
+    },
+    "membership": {
+      "already_employed": "Siz allaqachon kompaniyada ishlaysiz. Insonning bir vaqtda bitta amaldagi ish beruvchisi bo‘ladi.",
+      "last_administrator": "Kompaniyada kamida bitta administrator bo‘lishi kerak.",
+      "invitation_expired": "Taklif muddati tugagan. Yangisini so‘rang.",
+      "ended": "Kompaniyadagi bu a’zolik tugagan.",
+      "permission_missing": "Kompaniyadagi rolingiz bunga ruxsat bermaydi."
+    },
+    "internal": {
+      "error": "Bizning tomonimizda nimadir noto‘g‘ri ketdi. Keyinroq urinib ko‘ring."
     }
   },
   "taxonomy": {

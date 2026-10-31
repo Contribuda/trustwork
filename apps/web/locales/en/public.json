@@ -26,7 +26,8 @@
   },
   "status": {
     "sourcedHint": "The record was created from an open source; the company has not confirmed the data yet.",
-    "claimedHint": "The data was claimed by a company representative and awaits verification."
+    "claimedHint": "The data was claimed by a company representative and awaits verification.",
+    "registered": "Registered on the platform"
   },
   "provenance": {
     "source": "Source: {source}, updated {date}",

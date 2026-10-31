@@ -198,7 +198,7 @@ export function CompanyEntity({ company, layout = 'vertical', headingLevel = 3, 
       name={company.name}
       href={company.href}
       description={company.description ? typo(company.description) : company.directions.join(', ')}
-      status={company.status}
+      status={company.status === 'registered' ? undefined : company.status}
       media={entityCover('company', company.id)}
       facts={[
         { label: t('companies.factRegion'), value: regionLabel(company.region) },
@@ -208,6 +208,7 @@ export function CompanyEntity({ company, layout = 'vertical', headingLevel = 3, 
       meta={[
         company.provenance ? t('provenance.source', { source: company.provenance.source, date: shortDate(company.provenance.observedAt) }) : null,
         company.claimedAt ? t('provenance.claimedBy', { date: shortDate(company.claimedAt) }) : null,
+        company.status === 'registered' ? t('status.registered') : null,
       ].filter(Boolean)}
       layout={layout}
       headingLevel={headingLevel}
@@ -255,7 +256,7 @@ export function ProjectEntity({ project, layout = 'vertical', headingLevel = 3, 
       kind="project"
       name={project.name}
       href={project.href}
-      description={project.summary ? typo(project.summary) : t(`projects.category.${project.category}`)}
+      description={project.summary ? typo(project.summary) : project.category ? t(`projects.category.${project.category}`) : undefined}
       media={entityCover('project', project.id)}
       facts={[
         { label: t('projects.factStage'), value: t(`projectStatus.${project.status}`) },
@@ -263,7 +264,7 @@ export function ProjectEntity({ project, layout = 'vertical', headingLevel = 3, 
         { label: t('projects.factOwner'), value: project.owner.label },
         ...(project.openNeedsCount ? [{ label: t('projects.factNeeds'), value: String(project.openNeedsCount) }] : []),
       ]}
-      meta={[t(`projects.category.${project.category}`), project.projectionDate ? t('projects.publishedVersion', { date: shortDate(project.projectionDate) }) : null]}
+      meta={[project.category ? t(`projects.category.${project.category}`) : null, project.projectionDate ? t('projects.publishedVersion', { date: shortDate(project.projectionDate) }) : null]}
       layout={layout}
       headingLevel={headingLevel}
       enterIndex={enterIndex}
@@ -343,8 +344,17 @@ export function EvidenceChip({ state }: { state: 'asserted' | 'confirmed' | 'dis
   return <EvidenceLabel state={state} size="sm" />;
 }
 
-export function RecordChip({ status, size }: { status: CompanyCard['status']; size?: 'sm' | 'md' }) {
+/**
+ * Company record status. `registered` (created on the platform by its administrator, WEB-004) is neither sourced nor
+ * claimed nor verified, so it gets its own neutral chip instead of borrowing one of the record states.
+ */
+export function CompanyStatusChip({ status, size }: { status: CompanyCard['status']; size?: 'sm' | 'md' }) {
+  if (status === 'registered') return <StatusChip tone="neutral" size={size}>{t('status.registered')}</StatusChip>;
   return <RecordStatusChip status={status} size={size} />;
+}
+
+export function RecordChip({ status, size }: { status: CompanyCard['status']; size?: 'sm' | 'md' }) {
+  return <CompanyStatusChip status={status} size={size} />;
 }
 
 /** GET search form built from design-system controls; works without JavaScript (native submit to the list route). */
