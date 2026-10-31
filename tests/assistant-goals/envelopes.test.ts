@@ -179,7 +179,7 @@ test('envelopes: structured intents only, untrusted notes, no spoofing, privacy,
     const carlMandate = ok<{ id: string }>(await carl.post('/v1/assistant/mandates', ownDraft(w.rfq.rfq.id, ['negotiate'], { contexts: [carlCtx] })), 201).id;
     const petrQuoteMandate = ok<{ id: string }>(await petr.post('/v1/assistant/mandates', ownDraft(w.rfq.rfq.id, ['negotiate'], { contexts: [carlCtx] })), 201).id;
     const strict = new EnvelopesService(h.created.ctx!, h.services().principals, assistantPolicySettings({ hubId: null }), { ...agentsSettingsFromEnv({}), maxNegotiationRounds: 3 });
-    const opened = await strict.send(envelope({ actingAs: { kind: 'own_agent', mandateId: carlMandate }, to: w.petrParty, context: carlCtx, intent: 'propose', refs: [w.carlQuote] }) as SendEnvelopeCommand, await stateOf(h, carl, 'req-open'));
+    const opened = await strict.send(envelope({ actingAs: { kind: 'own_agent', mandateId: carlMandate }, to: w.petrParty, context: carlCtx, intent: 'propose', refs: [w.carlQuote] }) as unknown as SendEnvelopeCommand, await stateOf(h, carl, 'req-open'));
     assert.equal(opened.session!.maxRounds, 3);
     const id = opened.session!.id;
     ok(await send(petr, { actingAs: { kind: 'own_agent', mandateId: petrQuoteMandate }, to: w.carlParty, context: carlCtx, intent: 'counter', refs: [w.carlQuote], negotiationSessionId: id }));
@@ -193,7 +193,7 @@ test('envelopes: structured intents only, untrusted notes, no spoofing, privacy,
 
   await t.test('expiry: an expired session is not continued and escalates; concurrent moves count one round', async () => {
     const quick = new EnvelopesService(h.created.ctx!, h.services().principals, assistantPolicySettings({ hubId: null }), { ...agentsSettingsFromEnv({}), sessionTtlSeconds: 1 });
-    const opened = await quick.send(envelope({ actingAs: rep, to: w.petrParty, context: rfqCtx, intent: 'propose', refs: [w.supplierQuote] }) as SendEnvelopeCommand, await stateOf(h, boris, 'req-quick'));
+    const opened = await quick.send(envelope({ actingAs: rep, to: w.petrParty, context: rfqCtx, intent: 'propose', refs: [w.supplierQuote] }) as unknown as SendEnvelopeCommand, await stateOf(h, boris, 'req-quick'));
     await new Promise((resolve) => setTimeout(resolve, 1200));
     const late = ok<SendResult>(await send(petr, { actingAs: { kind: 'own_agent', mandateId: petrMandate }, to: w.supplier, context: rfqCtx, intent: 'counter', refs: [w.supplierQuote], negotiationSessionId: opened.session!.id }));
     assert.deepEqual([late.status, late.reason, late.session!.status], ['not_delivered', 'session_expired', 'expired']);
