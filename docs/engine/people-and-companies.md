@@ -21,7 +21,7 @@ Optional and skippable. A person may say what they want to do (read, publish, bu
 
 ### The personal profile (Demo)
 
-«Моя страница» has two faces that are always kept apart:
+"My page" (`me.title`) has two faces that are always kept apart:
 
 - **The private view**: decisions waiting for you, your projects by role, your agent's mandates, your publications, interests, learning (reading progress, bookmarks, courses, certificates) and history.
 - **The public profile**: what anyone can see, edited with a live preview. A person chooses whether the profile is public at all (`profileVisibility`), whether to show the current employer, and whether a portrait is shown (portraits need consent and a licence record).

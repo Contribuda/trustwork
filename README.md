@@ -169,7 +169,7 @@ Get in touch at [contribuddha.com](https://contribuddha.com). Contribuddha does 
 ## Licence, brand and sanctions
 
 - **Licence**: AGPL-3.0-only ([LICENSE](LICENSE)). Run it, change it, build services around it; if you offer a modified engine as a network service, publish your modifications.
-- **Brand**: Trustwork in every language; the Russian interface shows «Строй Репутация». The engine ships without photographs. To use your own name, lettering and licensed images, see [docs/oss/BRAND.md](docs/oss/BRAND.md).
+- **Brand**: Trustwork in every language; the Russian interface shows a Russian-language name and wordmark, defined in `apps/web/brand` and shown only there. The engine ships without photographs. To use your own name, lettering and licensed images, see [docs/oss/BRAND.md](docs/oss/BRAND.md).
 - **Sanctions**: the project's owner is subject to US sanctions and export-control law, so Contribuddha and the maintainers do not provide services, support, accounts, hosting or collaborator rights to persons in the places listed in [NOTICE](NOTICE). This is information about how we work, not a restriction in the licence.
 - **Security**: report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 - **Governance**: [GOVERNANCE.md](GOVERNANCE.md) · **Conduct**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)

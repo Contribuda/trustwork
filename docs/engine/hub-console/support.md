@@ -79,7 +79,7 @@ What support uses instead:
 |---|---|
 | "What does my page look like to others?" | **View public projection**: renders exactly what an anonymous visitor sees |
 | "Why can't my colleague see this project?" | **Access explainer**: for a principal and an object, returns the policy decision as reason codes (no participation, membership ended, grant expired, mandate revoked, projection not published) without showing the object's private content (`PolicyDecisionSchema` reasons) |
-| "Something is broken on my screen" | **Diagnostic snapshot**: the person clicks «Share diagnostics with support» in their own session; it attaches page id, versions, feature flags, recent error codes and request ids to the case, and only the objects the person explicitly selects |
+| "Something is broken on my screen" | **Diagnostic snapshot**: the person clicks "Share diagnostics with support" in their own session; it attaches page id, versions, feature flags, recent error codes and request ids to the case, and only the objects the person explicitly selects |
 | "Please fix my settings" | **Guided task** the person performs, or a servicing action from the table above |
 | "Look at my RFQ, the supplier says they never got it" | **Case grant** on the named RFQ and invitation with the diagnostic projection |
 | "Reproduce the bug" | A **demo hub** or fixtures with synthetic data; never the person's account |

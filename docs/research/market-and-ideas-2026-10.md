@@ -235,7 +235,7 @@ This keeps the engine free of proprietary dependencies while letting US professi
 
 ### Recommended model
 
-A **reputation builder** on «My page» and on the company page, made of things the participant can do, not things the platform watches:
+A **reputation builder** on "My page" and on the company page, made of things the participant can do, not things the platform watches:
 
 1. **Evidence wallet.** Licences (sourced from the board, with status and date), insurance certificates (uploaded, then confirmed by the broker or insurer where possible, with expiry reminders), certificates and course completions, safety programme documents, completed projects with photos and acceptance records. Each item is labelled sourced, claimed or verified.
 2. **Attestations from real counterparties, only after real work.** When an agreement on Trustwork reaches acceptance (or a project the person participated in is closed), each party may give a structured attestation (on time, as specified, paid on time, cooperative) plus an optional written review. No attestations without a recorded relationship; no endorsements of skills by strangers; no reviews from employees or family; no incentives for reviews. A person can also **import** a past project by inviting the former client to confirm it, which creates evidence only if the client confirms.

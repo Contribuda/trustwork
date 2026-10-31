@@ -4,7 +4,7 @@ Status: **Proposed**, no visual reference (`no reference` in the sense of the [s
 
 ## Conventions for every screen
 
-**Shell.** `AdminShell` with the band «Администрирование» / "Administration", the hub name and lifecycle stage, grouped navigation filtered by read permissions, return link to the workspace, Help in the same position on every page. Demo data, maintenance and engaged kill switches show as bands under the header on every page.
+**Shell.** `AdminShell` with the band "Administration", the hub name and lifecycle stage, grouped navigation filtered by read permissions, return link to the workspace, Help in the same position on every page. Demo data, maintenance and engaged kill switches show as bands under the header on every page.
 
 **Default states** (each screen lists only what differs):
 
@@ -13,16 +13,16 @@ Status: **Proposed**, no visual reference (`no reference` in the sense of the [s
 | Loading | Skeleton of the screen's layout; no layout shift when data arrives |
 | Empty | `EmptyState` that teaches: what fills this screen and a link to the setting that starts it |
 | Error | Inline error with the request id and Retry; the rest of the page keeps working |
-| Denied | The section is absent from navigation; a direct address renders `EmptyState tone="denied"` inside the shell: «Нет доступа к этому разделу» with the role that grants it; private objects without a grant render **not found**, never "forbidden", so existence is not disclosed |
+| Denied | The section is absent from navigation; a direct address renders `EmptyState tone="denied"` inside the shell: "You do not have access to this section" with the role that grants it; private objects without a grant render **not found**, never "forbidden", so existence is not disclosed |
 | Offline | Read-only with the shell's offline banner; mutations disabled with an explanation |
-| Stale | "Updated {time}" on aggregates; a version changed by someone else since opening → «Изменено другим сотрудником; обновите» and the form keeps the user's input |
-| Demo | Fixture mode: every mutation shows «Демонстрация: изменения не сохраняются» |
+| Stale | "Updated {time}" on aggregates; a version changed by someone else since opening → "Changed by another staff member; refresh" and the form keeps the user's input |
+| Demo | Fixture mode: every mutation shows "Demo: changes are not saved" |
 
 **Mutations.** Every mutation form has a required `ReasonField` and the `AuditNote`. Second-person actions open `SecondPersonRequest` showing the exact change and its digest; the requester cannot approve. Confirmation dialogs focus Cancel.
 
-**Tables.** `DataTable` with filters and saved views; below 768 px rows become cards with the three most important fields and a «Подробнее» disclosure; on tablet a «Показать столбцы» control.
+**Tables.** `DataTable` with filters and saved views; below 768 px rows become cards with the three most important fields and a "Details" disclosure; on tablet a "Show columns" control.
 
-**Mobile.** Supported for every screen: queues, approvals, kill switches, run history and alerts are first-class at 375 px; complex editors (egress matrix, step lists, template trees, calendar grid) show «Удобнее на широком экране» and remain operable with list layouts.
+**Mobile.** Supported for every screen: queues, approvals, kill switches, run history and alerts are first-class at 375 px; complex editors (egress matrix, step lists, template trees, calendar grid) show "More comfortable on a wide screen" and remain operable with list layouts.
 
 **Keyboard and focus.** Skip link → band → navigation → page heading → filters → content. After navigation focus moves to the page `h1`; after a mutation to the toast and then back to the changed row. No drag-only interaction: reordering uses move up / move down buttons with announcements.
 
@@ -32,14 +32,14 @@ Status: **Proposed**, no visual reference (`no reference` in the sense of the [s
 
 ## Setup wizard
 
-Route `/admin/setup/[step]`; requires a valid setup token; after setup finishes every route returns not found. Shell: minimal (no navigation), `Stepper` with nine steps, «Сохранить и продолжить позже». Locale namespace `admin.setup.*`. Mobile: one column; the step list collapses to "Step 3 of 9" with a disclosure.
+Route `/admin/setup/[step]`; requires a valid setup token; after setup finishes every route returns not found. Shell: minimal (no navigation), `Stepper` with nine steps, "Save and continue later". Locale namespace `admin.setup.*`. Mobile: one column; the step list collapses to "Step 3 of 9" with a disclosure.
 
 | Id | Step | Purpose and data | Actions | Specific states |
 |---|---|---|---|---|
 | SW-1 | Install check (`admin.setup.check`) | Results of address, database, object storage, worker, clock and secret-store checks | Re-run checks | Blocking failure: explanation and link to [installation](installation.md); no Continue |
 | SW-2 | Node identity (`admin.setup.node`) | Node name, domain, jurisdiction (restricted places never offered), generated public key and fingerprint | Generate key, continue | Key generation failure: retry; never shows the private key |
-| SW-3 | Hub identity (`admin.setup.hub`) | Starting point (country pack or generic profile with the "no pack yet" note), territories (country, regions, places), name per language, languages and default, currency, time zone, identifiers, brand overlay; "Start from an example" (US or Samarkand, marked as example) | Add region or place, add identifier definition, continue | Restricted code → inline error «Эта территория недоступна» without listing why; incomplete language shows completeness percentage |
-| SW-4 | Operator (`admin.setup.operator`) | Legal name, form, identifier, address, legal and abuse contacts, ownership declaration, screening result (labelled "fake" when fake) | Screen, continue | Potential match → «Требуется проверка» and continue in draft; cannot be cleared by the operator |
+| SW-3 | Hub identity (`admin.setup.hub`) | Starting point (country pack or generic profile with the "no pack yet" note), territories (country, regions, places), name per language, languages and default, currency, time zone, identifiers, brand overlay; "Start from an example" (US or Samarkand, marked as example) | Add region or place, add identifier definition, continue | Restricted code → inline error "This territory is not available" without listing why; incomplete language shows completeness percentage |
+| SW-4 | Operator (`admin.setup.operator`) | Legal name, form, identifier, address, legal and abuse contacts, ownership declaration, screening result (labelled "fake" when fake) | Screen, continue | Potential match → "Review required" and continue in draft; cannot be cleared by the operator |
 | SW-5 | First administrator (`admin.setup.admin`) | Name, e-mail, password, verification, second factor (TOTP or passkey), recovery codes shown once | Verify, enroll, confirm codes stored | Cannot continue without a second factor |
 | SW-6 | Storage and residency (`admin.setup.residency`) | Residency country, service regions, privacy regime | Save | Region contradicting residency → warning with the service named |
 | SW-7 | Providers (`admin.setup.providers`) | Each capability with fake / manual / later; e-mail may be prepared and tested | Test e-mail, continue | Test failure shows outcome code; live enabling explained as a later two-person step |
@@ -54,7 +54,7 @@ Route `/admin/node/*`; node-scoped roles only. Locale namespace `admin.node.*`.
 - **Purpose**: state of the installation at a glance.
 - **Data**: hubs with lifecycle stage; engine version and update availability; last backup and last passed drill; node health tiles; engaged node switches.
 - **Actions**: open a hub's console; go to updates, backups, kill switches.
-- **States**: no hubs → «Создайте первый хаб» linking NC-02.
+- **States**: no hubs → "Create your first hub" linking NC-02.
 - **Mobile**: tiles stack; hubs as cards.
 - **Locale**: `admin.node.overview.*`
 
@@ -87,7 +87,7 @@ Route `/admin/node/*`; node-scoped roles only. Locale namespace `admin.node.*`.
 
 ### NC-06 Backups and restore — `/admin/node/backups`
 - **Purpose**: prove the data can come back.
-- **Data**: schedule, backup records (kind, time, size, encrypted, off-host, state), drills (date, checks, measured recovery time and data-loss window, performer, witness, outcome), targets (RPO/RTO as recorded, or «не заданы»).
+- **Data**: schedule, backup records (kind, time, size, encrypted, off-host, state), drills (date, checks, measured recovery time and data-loss window, performer, witness, outcome), targets (RPO/RTO as recorded, or "not set").
 - **Actions**: edit schedule; start a drill in an isolated environment; record the drill; request restore (second person, maintenance mode, workers stay disconnected).
 - **States**: no off-host copy → warning blocking the launch gate; failed drill → follow-up required.
 - **Mobile**: records and drill results readable; starting a restore requires confirming on a wide screen note but is possible.
@@ -118,7 +118,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: what needs a person today, and is the hub healthy and lawful.
 - **Data**: launch checklist progress (gates open/passed); queues the viewer can act on with counts (claims, review items, link proposals, reports, support cases, grant requests, privacy requests with nearest deadline, unknown outcomes, alerts); approvals waiting for the viewer; compliance status (legal documents due, screening list age, expiring source licences, fake providers in use); health tiles; spend against caps; "next five things" while draft or preparing.
 - **Actions**: open any queue; engage a kill switch from the health panel (with reason).
-- **States**: nothing waiting → «Сегодня ничего не требует вашего решения»; reduced SoD mode → permanent note asking for a second staff member.
+- **States**: nothing waiting → "Nothing needs your decision today"; reduced SoD mode → permanent note asking for a second staff member.
 - **Mobile**: queues first, then approvals, then health; checklist collapsed.
 - **Locale**: `admin.overview.*`
 
@@ -126,7 +126,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: second-person decisions.
 - **Data**: requests for me (action, requester, reason, exact diff, digest, expiry), my pending requests, recent decisions.
 - **Actions**: approve, decline with reason, ask a question in the request thread; withdraw my own request.
-- **States**: own request → approve disabled with «Нельзя подтверждать собственный запрос»; changed since request → void, «Действие изменилось; требуется новый запрос»; expired.
+- **States**: own request → approve disabled with "You cannot approve your own request"; changed since request → void, "The action changed; a new request is required"; expired.
 - **Mobile**: full support; diff shown as a list of changed fields.
 - **Locale**: `admin.approvals.*`
 
@@ -251,7 +251,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: find whom to help.
 - **Data**: search by exact e-mail, name, company, identifier or id; results show name, masked e-mail, account state; each lookup asks for (or creates) the case it serves.
 - **Actions**: open account card, open company card, create case.
-- **States**: no result → «Ничего не найдено» (same wording whether or not the account exists for non-support viewers, who cannot reach this screen anyway).
+- **States**: no result → "Nothing found" (same wording whether or not the account exists for non-support viewers, who cannot reach this screen anyway).
 - **Mobile**: full support.
 - **Locale**: `admin.support.lookup.*`
 
@@ -259,7 +259,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: diagnose and service an account without impersonation.
 - **Data**: `SupportAccountSummary` (masked e-mail, state, second factor, session count, recovery, employer, entitlements and usage against quotas, consents, open cases); communications history as delivery metadata; servicing actions in progress with cooling-off end.
 - **Actions**: resend verification, unlock, revoke all sessions, require password reset, request recovery rebind or second-factor reset (evidence, second person, 72 h cooling-off), open export or deletion request, send guided task, view public projection, open access explainer.
-- **States**: own account → every action disabled «Нельзя обслуживать собственную учётную запись»; erased account → tombstone notice only.
+- **States**: own account → every action disabled "You cannot service your own account"; erased account → tombstone notice only.
 - **Mobile**: card sections stacked; actions in a menu.
 - **Locale**: `admin.support.account.*`
 
@@ -317,7 +317,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: ingestion, drafting, translation and assembly pipelines.
 - **Data**: list (kind, automation level, schedule, cap, last run, status); detail with versions, `StepListEditor` (steps, model routes per step, settings), sources, thresholds, cap, schedule link, metrics.
 - **Actions**: create version, activate, pause, dry run (fakes or models), raise automation level (second person for supervised autonomy).
-- **States**: invalid step order → contract error explained («После переписывания нужна проверка сходства»); no cap → cannot activate.
+- **States**: invalid step order → contract error explained ("A rewrite must be followed by a similarity check"); no cap → cannot activate.
 - **Mobile**: list; editor wide-screen note.
 - **Locale**: `admin.editorial.pipelines.*`
 
@@ -367,7 +367,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: lawful mining configuration.
 - **Data**: subject, sources, purpose, legal basis, personal data categories, impact assessment, retention, outputs, public display, subject notice, schedule, status, last refresh counts.
 - **Actions**: propose, edit (new version), activate (person; second person with personal data), pause, retire.
-- **States**: subject rules violated → explained per rule (for example «Записи о физических лицах в судебных делах не отображаются»).
+- **States**: subject rules violated → explained per rule (for example "Records about private individuals in court cases are not shown").
 - **Locale**: `admin.data.datasets.*`
 
 ### HC-51 Import batches — `/data/batches`
@@ -422,7 +422,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: publish consented project knowledge.
 - **Data**: shares with kind, project (public title only), consent status per party, review status.
 - **Actions**: review, return, publish, withdraw.
-- **States**: missing consent → publish disabled with the party named («Нет согласия: компания …»).
+- **States**: missing consent → publish disabled with the party named ("No consent: company …").
 - **Locale**: `admin.modules.knowledgeSharing.*`
 
 ### HC-64 Events — `/modules/events`
@@ -520,7 +520,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 
 ### HC-83 Usage — `/agents/usage`
 - **Purpose**: is the agent product useful, safe and affordable.
-- **Data**: per module and period: active principals, runs, actions succeeded, escalated to humans, outcome unknown, cost, revenue; `CohortCount` renders suppressed values as «менее 10».
+- **Data**: per module and period: active principals, runs, actions succeeded, escalated to humans, outcome unknown, cost, revenue; `CohortCount` renders suppressed values as "fewer than 10".
 - **Actions**: export aggregates.
 - **Locale**: `admin.agents.usage.*`
 
@@ -536,7 +536,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Data**: offers, plan versions (includes, trial days, payer), free minimum. **Actions**: draft, activate (another person). **Locale**: `admin.billing.offers.*`
 
 ### HC-91 Prices — `/billing/prices`
-- **Data**: price versions and metered price versions with cost price, sale price, margin, effective dates, acceptance text versions, acceptance counts. **Actions**: draft, request activation (second person), cancel draft. **States**: overlap or back-dating refused; activated versions read-only («Опубликованную версию изменить нельзя; создайте новую»). **Locale**: `admin.billing.prices.*`
+- **Data**: price versions and metered price versions with cost price, sale price, margin, effective dates, acceptance text versions, acceptance counts. **Actions**: draft, request activation (second person), cancel draft. **States**: overlap or back-dating refused; activated versions read-only ("A published version cannot be changed; create a new one"). **Locale**: `admin.billing.prices.*`
 
 ### HC-92 Invoices — `/billing/invoices`
 - **Data**: invoice runs, states, totals by offer; e-invoicing status. **Actions**: retry failed issuance. **Locale**: `admin.billing.invoices.*`
@@ -567,7 +567,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: who may receive which data.
 - **Data**: `EgressMatrix` (data classes × connections), each cell allow/deny with residency and retention requirements and the effective decision with reason; the "private data can reach" sentence.
 - **Actions**: change a cell (allowing non-public data needs a second person); sign off the sentence for the launch gate.
-- **States**: training vendor cell for private class shows deny with «Поставщик обучает модели на данных» and no allow option.
+- **States**: training vendor cell for private class shows deny with "This provider trains models on submitted data" and no allow option.
 - **Mobile**: one connection at a time as a list of classes.
 - **Locale**: `admin.integrations.egress.*`
 
@@ -590,7 +590,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Data**: schedules with plain-language cron, next five runs in schedule and viewer time zones, windows, quotas, retries, concurrency, alerts, paused state. **Actions**: edit (`CronField`, `WindowEditor`), pause with reason, resume (catch-up option). **Locale**: `admin.automation.schedules.*`
 
 ### HC-111 Runs — `/automation/runs`, `/automation/runs/[run]`
-- **Data**: runs with state, trigger, version, counts, cost, duration; detail with step log and links to what was proposed. **Actions**: run now, dry run (fakes or models), backfill, cancel queued or running, retry failed (new run). **States**: dry run banner «Пробный запуск: ничего не сохранено». **Mobile**: full support. **Locale**: `admin.automation.runs.*`
+- **Data**: runs with state, trigger, version, counts, cost, duration; detail with step log and links to what was proposed. **Actions**: run now, dry run (fakes or models), backfill, cancel queued or running, retry failed (new run). **States**: dry run banner "Dry run: nothing was saved". **Mobile**: full support. **Locale**: `admin.automation.runs.*`
 
 ### HC-112 Alerts — `/automation/alerts`
 - **Data**: open and acknowledged alerts with suggested action. **Actions**: acknowledge, resolve with note. **Locale**: `admin.automation.alerts.*`
@@ -668,38 +668,38 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 ### HC-166 Accessibility — `/ops/accessibility`
 - **Data**: brand overlay contrast per language, automated check results for the deployed version, manual checklist with dates. **Actions**: record manual check. **Locale**: `admin.ops.accessibility.*`
 
-## Proposed locale keys (sample, Russian)
+## Proposed locale keys (sample, English reference)
 
-| Key | Russian |
+| Key | English |
 |---|---|
-| `admin.nav.home` | Главная |
-| `admin.nav.hub` | Хаб |
-| `admin.nav.participants` | Участники |
-| `admin.nav.support` | Поддержка |
-| `admin.nav.editorial` | Редакция |
-| `admin.nav.data` | Данные |
-| `admin.nav.modules` | Модули |
-| `admin.nav.trust` | Доверие и безопасность |
-| `admin.nav.agents` | Агенты |
-| `admin.nav.billing` | Тарифы и оплата |
-| `admin.nav.integrations` | Ключи и модели |
-| `admin.nav.automation` | Автоматизация |
-| `admin.nav.communications` | Коммуникации |
-| `admin.nav.federation` | Федерация |
-| `admin.nav.privacy` | Приватность |
-| `admin.nav.staff` | Сотрудники и журнал |
-| `admin.nav.ops` | Эксплуатация |
-| `admin.overview.nothingWaiting` | Сегодня ничего не требует вашего решения |
-| `admin.approvals.ownRequest` | Нельзя подтверждать собственный запрос |
-| `admin.approvals.actionChanged` | Действие изменилось; требуется новый запрос |
-| `admin.integrations.providers.secretSaved` | Ключ сохранён. Отпечаток: {fingerprint} |
-| `admin.integrations.providers.noReveal` | Сохранённые ключи не показываются |
-| `admin.integrations.egress.trainingDenied` | Поставщик обучает модели на данных — передача закрытых данных невозможна |
-| `admin.automation.runs.dryRunBanner` | Пробный запуск: ничего не сохранено |
-| `admin.editorial.review.similarityBlocked` | Слишком близко к источнику: {overlap} при пороге {threshold} |
-| `admin.editorial.review.aiImageLabel` | Иллюстрация создана ИИ |
-| `admin.support.account.ownAccount` | Нельзя обслуживать собственную учётную запись |
-| `admin.support.account.coolingOff` | Вступит в силу {date}; владелец учётной записи уведомлён |
-| `admin.agents.usage.suppressed` | менее 10 |
-| `admin.common.wideScreenNote` | Удобнее на широком экране |
-| `admin.common.demoNotSaved` | Демонстрация: изменения не сохраняются |
+| `admin.nav.home` | Home |
+| `admin.nav.hub` | Hub |
+| `admin.nav.participants` | Participants |
+| `admin.nav.support` | Support |
+| `admin.nav.editorial` | Editorial office |
+| `admin.nav.data` | Data |
+| `admin.nav.modules` | Modules |
+| `admin.nav.trust` | Trust and safety |
+| `admin.nav.agents` | Agents |
+| `admin.nav.billing` | Plans and payments |
+| `admin.nav.integrations` | Keys and models |
+| `admin.nav.automation` | Automation |
+| `admin.nav.communications` | Communications |
+| `admin.nav.federation` | Federation |
+| `admin.nav.privacy` | Privacy |
+| `admin.nav.staff` | Staff and audit |
+| `admin.nav.ops` | Operations |
+| `admin.overview.nothingWaiting` | Nothing needs your decision today |
+| `admin.approvals.ownRequest` | You cannot approve your own request |
+| `admin.approvals.actionChanged` | The action changed; a new request is required |
+| `admin.integrations.providers.secretSaved` | Key saved. Fingerprint: {fingerprint} |
+| `admin.integrations.providers.noReveal` | Saved keys are never shown |
+| `admin.integrations.egress.trainingDenied` | This provider trains models on submitted data; private data cannot be sent to it |
+| `admin.automation.runs.dryRunBanner` | Dry run: nothing was saved |
+| `admin.editorial.review.similarityBlocked` | Too close to the source: {overlap} against a threshold of {threshold} |
+| `admin.editorial.review.aiImageLabel` | Illustration generated by AI |
+| `admin.support.account.ownAccount` | You cannot service your own account |
+| `admin.support.account.coolingOff` | Takes effect on {date}; the account owner has been notified |
+| `admin.agents.usage.suppressed` | fewer than 10 |
+| `admin.common.wideScreenNote` | More comfortable on a wide screen |
+| `admin.common.demoNotSaved` | Demo: changes are not saved |

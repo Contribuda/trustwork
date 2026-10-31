@@ -9,7 +9,7 @@ All mutations: authenticated session, `X-Trustwork-Request` + same-origin metada
 `POST /v1/projects` with `CreateProjectCommand`:
 
 ```json
-{ "owner": { "kind": "person", "id": "<own person id>" }, "name": "Летний дом", "summary": "Частная стройка", "leaderPersonId": null }
+{ "owner": { "kind": "person", "id": "<own person id>" }, "name": "Summer house", "summary": "Private build", "leaderPersonId": null }
 ```
 
 -> `201 Project` (owner_private). A personal project is owned by its creator; a company project requires an active membership in the owner company with `company.deals.manage`. The owner participation row (`side: owner`, every non-staff capability, `owner_private`) is materialised in the same transaction; a leader distinct from the owner receives a `participant` row with `read.shared` + `lead` (shared_party) and a `leadership_assignment` row.
@@ -25,7 +25,7 @@ All mutations: authenticated session, `X-Trustwork-Request` + same-origin metada
 Example public projection:
 
 ```json
-{ "projection": "public", "project": { "id": "…", "name": "Фасады: общественный проект", "summary": "Строим", "status": "planned", "publishedStory": "Опубликованная история", "openNeedIds": [], "publicParticipantIds": [] } }
+{ "projection": "public", "project": { "id": "…", "name": "Facades: a community project", "summary": "We are building", "status": "planned", "publishedStory": "Published story", "openNeedIds": [], "publicParticipantIds": [] } }
 ```
 
 ## Commands

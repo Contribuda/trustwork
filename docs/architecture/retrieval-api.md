@@ -28,7 +28,7 @@ Internal ingest/reindex/cancel/activate commands are restricted operations, not 
 
 ```json
 {
-  "query": "Поставщики фасадных панелей с монтажом в Казани",
+  "query": "Facade panel suppliers with installation in Austin",
   "kinds": ["company", "catalogue"],
   "filters": {"regionId": "fixture-kazan", "requiredStandardIds": []},
   "temporal": {"kind": "current"},
