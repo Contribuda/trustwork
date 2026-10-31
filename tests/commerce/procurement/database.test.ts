@@ -97,7 +97,10 @@ test('commerce database: RLS, frozen versions, private records, pinned invitatio
     assert.equal(anonymous.rows.length, 1, 'anonymous callers read the public catalogue');
     const fields = anonymous.rows[0].fields as Record<string, unknown>;
     assert.deepEqual(Object.keys(fields).sort(), ['specification', 'title', 'unit'], 'only allowlisted keys');
-    const json = JSON.stringify(anonymous.rows);
+    // Ids and timestamps are random; strip them so a number like 900 inside a uuid or a time is not mistaken for a leak.
+    const json = JSON.stringify(anonymous.rows)
+      .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
+      .replace(/\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:?\d{2})?/g, '');
     for (const secret of ['1500', 'listPrice', 'PRIVATE-', '900', 'costBasis', 'Kiln-dried']) assert.ok(!json.includes(secret), `${secret} is not public`);
     assert.equal((await db.app.query('SELECT count(*)::int AS n FROM trustwork.offering_version')).rows[0].n, 0, 'raw rows stay closed without identity');
   });
