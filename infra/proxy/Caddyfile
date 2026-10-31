@@ -1,0 +1,40 @@
+# Trustwork single-origin reverse proxy (OPS-002). One public origin: /v1/* goes to the API, everything else to the
+# web app (docs/architecture/api.md, "Single public origin"). TLS is terminated in front of this proxy (the host's
+# edge in production, nothing on the local stack), so it listens on plain HTTP and keeps no state.
+#   TRUSTWORK_PROXY_PORT   listen port (default 8080)
+#   TRUSTWORK_API_UPSTREAM host:port of the API (default api:3001)
+#   TRUSTWORK_WEB_UPSTREAM host:port of the web app (default web:3000)
+#   TRUSTWORK_PROXY_TRUSTED_RANGES  CIDRs of an edge in front of this proxy whose X-Forwarded-For is kept
+#                          (default 127.0.0.1/32, that is none: a client-supplied X-Forwarded-For is replaced by the
+#                          peer address, so nobody can spoof an address). Locally the API trusts exactly this one hop
+#                          (API_TRUSTED_PROXY_HOPS=1); behind a hosting edge see docs/operations/images.md.
+{
+	admin off
+	auto_https off
+	persist_config off
+	servers {
+		trusted_proxies static {$TRUSTWORK_PROXY_TRUSTED_RANGES:127.0.0.1/32}
+	}
+	log {
+		output stdout
+		format json
+	}
+}
+
+:{$TRUSTWORK_PROXY_PORT:8080} {
+	header -Server
+
+	# Liveness of the proxy itself; it never touches an upstream.
+	handle /proxy/health {
+		respond "ok" 200
+	}
+
+	@api path /v1 /v1/*
+	handle @api {
+		reverse_proxy {$TRUSTWORK_API_UPSTREAM:api:3001}
+	}
+
+	handle {
+		reverse_proxy {$TRUSTWORK_WEB_UPSTREAM:web:3000}
+	}
+}

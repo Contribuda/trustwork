@@ -1225,7 +1225,7 @@
       "id": "OPS-002",
       "title": "Container images and a full local stack with same-origin routing",
       "area": "platform",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "OPS-001",
         "REL-001"

@@ -6,6 +6,8 @@
 
 Use README setup and optional `npm run infra:up` for the isolated PostgreSQL service at loopback port 54329. Credentials are local demo values only. No business migration is applied. `npm run infra:down` stops the service while preserving its volume. Never point examples at an existing production database or run `down -v` as routine cleanup. Web/API startup is loopback-only. The API answers `GET /health/live` (process liveness, never touches the database) and `GET /health/ready` (200 only when the database answers and the migration ledger matches the migrations the build ships; 503 with states and file names only, never error text). A ledger ahead of the build (rolling deploy) stays ready. Job/outbox readiness is future work (worker).
 
+Container images (web, API, worker, migrate job, proxy), the full local stack on one origin (`docker compose -f infra/compose.yaml --profile stack up --build -d`), image policy, SBOMs and a documentation-only Railway deployment plan: [container images](images.md).
+
 ## Release gate
 
 1. Maintainers accept the work packages in the release; clean candidate commit, lockfile and migration checksums.
