@@ -32,8 +32,7 @@ export class AppModule {
       module: AppModule,
       controllers: [HealthController],
       providers: [{ provide: API_CONFIG, useValue: config }],
-      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity), SalesModule.forRoot(ctx, identity), TransactionsModule.forRoot(ctx, identity), FilesModule.forRoot(ctx, identity, files)] : [],
-      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity), ProfilesModule.forRoot(ctx, identity), FilesModule.forRoot(ctx, identity, files)] : [],
+      imports: ctx && identity ? [IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity), PlansModule.forRoot(ctx, identity), CatalogueModule.forRoot(ctx, identity), ProcurementModule.forRoot(ctx, identity), SalesModule.forRoot(ctx, identity), TransactionsModule.forRoot(ctx, identity), ProfilesModule.forRoot(ctx, identity), FilesModule.forRoot(ctx, identity, files)] : [],
     };
   }
 }
