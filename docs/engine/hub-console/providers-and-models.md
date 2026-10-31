@@ -21,7 +21,7 @@ A **connection** is one configured adapter: what it can do (capabilities), how i
 | `tax_calculation`, `e_invoicing` | Sales tax engines; national e-invoicing systems | State and local sales tax calculation | e-Faktura (candidate, from the pack) |
 | `e_signature` | Signature platforms; national schemes | ESIGN/UETA-compliant e-signature platform | E-IMZO (candidate) |
 | `register_lookup` | Business registers, licence boards | State Secretary of State business search, state contractor licence boards, SAM.gov entity data | Tax committee services (candidate) |
-| `sanctions_list` | Baseline US Consolidated Screening List (cannot be disabled); additional lists | OFAC lists are part of the baseline | UN list and national lists |
+| `sanctions_list` | Baseline OFAC SDN and consolidated non-SDN lists in `file` mode (cannot be disabled, no key); additional lists, including the Consolidated Screening List with a key ([ADR 014](../../adr/014-sanctions-compliance-engine.md)) | Baseline plus, if the operator decides, the Consolidated Screening List | UN Security Council list and national lists from the pack |
 | `maps_geocoding` | OpenStreetMap-based geocoders by default | Same | Same |
 | `object_storage` | S3-compatible stores (usually a node-level connection) | US region | In-country |
 

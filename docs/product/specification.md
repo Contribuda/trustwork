@@ -110,6 +110,7 @@ Owner request of 2026-10-31: specify the full functionality of the system, inclu
 | R69 | Analytics without surveillance: participants see their own metrics, companies see peer aggregates above minimum group sizes, hubs see cohorts of at least ten; no third-party trackers | No per-person behaviour views for staff or employers; opt-outs and Global Privacy Control honoured |
 | R70 | Data-broker readiness: before people data from sources is enabled, a hub records whether it may be a data broker and processes deletion platforms where the law requires | People datasets stay off by default; deletions propagate as tombstones |
 | R71 | Financing partner referrals: hubs may list licensed trade-credit and project-finance partners with disclosed referral fees | Never influences ranking, matching, recommendations or reputation; no consumer lending unless the partner is licensed for it; Trustwork never holds funds |
+| R72 | Sanctions compliance engine: every hub refuses restricted places at every door with visitor geolocation and jurisdiction holds, screens persons, companies, counterparties and payees against the baseline OFAC lists and the hub's lists with deterministic matching and human review, gates money and commitments, re-screens on every list update and keeps the records (ADR 010 decision 24, ADR 014) | Parity with Contribuda's engine; no kill switch in the engine; never fakes "clear"; gates fail closed; not-same-person needs two people; no network address stored; no influence on ranking or reputation |
 
 ## Identity, company and public pages
 

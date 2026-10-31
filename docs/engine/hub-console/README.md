@@ -133,7 +133,7 @@ The console lives at `/admin` on the hub's origin, entered from the avatar menu 
 | | Disputes `/trust/disputes` | Execution and review disputes with dispute-case grants |
 | | Reputation methods `/trust/reputation` | Method versions, local parameters within bounds, explanation texts, release |
 | | Appeals `/trust/appeals` | Appeals against verification, credentials, moderation and observations |
-| | Screening `/trust/screening` | Sanctions lists, potential matches, re-screening |
+| | Screening `/trust/screening` | Sanctions lists and freshness, geolocation dataset, matches queue, jurisdiction holds, re-screening, metrics ([ADR 014](../../adr/014-sanctions-compliance-engine.md)) |
 | | Confirmations `/trust/confirmations` | Abuse controls for confirmation requests |
 | **Agents** | Modules `/agents/modules` | Agent module catalogue: actions, eligibility, models, limits, metering, prices |
 | | Policy `/agents/policy` | Allowed actions in the hub, outreach quotas, channels, disclosure text; per-jurisdiction disclosure wording, liability allocation, consent, record-keeping and per-action limits with country-pack defaults (ADR 010 decision 22, HUB-005) |

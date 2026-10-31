@@ -39,7 +39,7 @@ Route `/admin/setup/[step]`; requires a valid setup token; after setup finishes 
 | SW-1 | Install check (`admin.setup.check`) | Results of address, database, object storage, worker, clock and secret-store checks | Re-run checks | Blocking failure: explanation and link to [installation](installation.md); no Continue |
 | SW-2 | Node identity (`admin.setup.node`) | Node name, domain, jurisdiction (restricted places never offered), generated public key and fingerprint | Generate key, continue | Key generation failure: retry; never shows the private key |
 | SW-3 | Hub identity (`admin.setup.hub`) | Starting point (country pack or generic profile with the "no pack yet" note), territories (country, regions, places), name per language, languages and default, currency, time zone, identifiers, brand overlay; "Start from an example" (US or Samarkand, marked as example) | Add region or place, add identifier definition, continue | Restricted code → inline error "This territory is not available" without listing why; incomplete language shows completeness percentage |
-| SW-4 | Operator (`admin.setup.operator`) | Legal name, form, identifier, address, legal and abuse contacts, ownership declaration, screening result (labelled "fake" when fake) | Screen, continue | Potential match → "Review required" and continue in draft; cannot be cleared by the operator |
+| SW-4 | Operator (`admin.setup.operator`) | Legal name, form, identifier, address, legal and abuse contacts, deployment-location attestation (entity country, hosting country and region, gate mode), ownership declaration, screening result (labelled "fake" when fake) | Attest, screen, continue | Potential match → "Review required" and continue in draft; cannot be cleared by the operator |
 | SW-5 | First administrator (`admin.setup.admin`) | Name, e-mail, password, verification, second factor (TOTP or passkey), recovery codes shown once | Verify, enroll, confirm codes stored | Cannot continue without a second factor |
 | SW-6 | Storage and residency (`admin.setup.residency`) | Residency country, service regions, privacy regime | Save | Region contradicting residency → warning with the service named |
 | SW-7 | Providers (`admin.setup.providers`) | Each capability with fake / manual / later; e-mail may be prepared and tested | Test e-mail, continue | Test failure shows outcome code; live enabling explained as a later two-person step |
@@ -486,9 +486,10 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Locale**: `admin.trust.appeals.*`
 
 ### HC-74 Screening — `/trust/screening`
-- **Purpose**: sanctions screening.
-- **Data**: baseline list (always on), additional lists, potential matches, re-screening runs.
-- **Actions**: add list, review potential match (clear or confirm with evidence; never automatic).
+- **Purpose**: sanctions compliance ([ADR 014](../../adr/014-sanctions-compliance-engine.md), [module](../modules/sanctions-compliance.md); SANC-006).
+- **Data**: baseline lists (always on, no switch) and additional lists with mode, last version, publication date, entry count and freshness (fresh, warning, stale); the geolocation dataset, mode and age; the matches queue (one item per subject, late after the service level) with the list entry and the screened names side by side under the case; open jurisdiction holds with place, source, dataset and time; re-screen runs with progress; cohort metrics (refusals per place and day, holds, matches, not-same-person share).
+- **Actions**: add a list from a pack fact (live mode needs a second person); confirm a match; propose "not the same person" (completed by a second person in Approvals); decide an appeal (not the original decider); clear a hold with reason and evidence category; start a manual re-screen.
+- **States**: stale baseline → banner "Screening unavailable: payments and commitments are paused"; no control loosens matching, pauses a baseline list or clears without a reason.
 - **Locale**: `admin.trust.screening.*`
 
 ### HC-75 Confirmations — `/trust/confirmations`

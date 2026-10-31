@@ -47,7 +47,8 @@ A **"Start from an example"** button prefills the US or the Samarkand example wi
 ### 4. Operator legal entity (`operator`)
 
 - Legal name, form (for example LLC, corporation, nonprofit association), registration identifier (EIN for the US example, STIR for Uzbekistan), address, contact for legal notices and for abuse and takedowns.
-- **Ownership declaration** and **sanctions screening** of the operator through the engine baseline list (US Consolidated Screening List via `packages/compliance`). With the fake screening adapter the result is labelled "fake: not a real screening"; the `operator_recorded_and_screened` gate passes only with a real result later. A potential match never auto-blocks; it opens a review the operator cannot close themselves.
+- **Deployment-location attestation** ([ADR 014](../../adr/014-sanctions-compliance-engine.md) decision 4, SANC-009): the country of the operator's legal entity and the hosting country (and region where the pack has regions) and the jurisdiction-gate mode (`ranges_file`, `edge_header` or `upstream_gate`). A restricted place is refused; the attestation is audited, renewed when either location changes and at least yearly, and an expired one reopens the `sanctions_screening_configured` gate.
+- **Ownership declaration** and **sanctions screening** of the operator through the engine baseline lists (OFAC lists through the screening engine, SANC-003). With the fake screening adapter the result is labelled "fake: not a real screening"; the `operator_recorded_and_screened` gate passes only with a real result later. A potential match never auto-blocks; it opens a review the operator cannot close themselves.
 
 ### 5. First administrator (`first_admin`)
 
