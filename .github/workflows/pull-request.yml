@@ -6,10 +6,12 @@ name: pull request
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize, ready_for_review]
+  # A merge-queue group reports this required check as passed: each description was checked on its pull request.
+  merge_group:
 permissions:
   contents: read
 concurrency:
-  group: pull-request-${{ github.event.pull_request.number }}
+  group: pull-request-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -18,19 +20,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Merge-queue group
+        if: github.event_name == 'merge_group'
+        run: echo "Descriptions were checked on each pull request in this group."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request'
         with:
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: github.event_name == 'pull_request'
         with:
           node-version-file: .nvmrc
       # On `edited` events the base and head in the payload can be commits the checkout did not fetch (the base branch
       # moved, or checkout fetched only the pull request ref); fetch both by SHA so the changed-file diff always works.
       - name: Fetch the base and head commits
+        if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: git fetch --no-tags --quiet origin "$BASE_SHA" "$HEAD_SHA"
       - name: Check the description
+        if: github.event_name == 'pull_request'
         run: node scripts/claims.mjs pr --event "$GITHUB_EVENT_PATH"
