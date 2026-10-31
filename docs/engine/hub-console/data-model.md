@@ -1,6 +1,6 @@
 # Data model view of the console
 
-Status: **Proposed**. This view maps every console section to the entities it **reads** and **writes** and the **projection layer** it may use. The project-wide data model is [`docs/data/model.md`](../../data/model.md) (being completed in a separate work stream); this view follows its conventions and does not redefine its entities:
+Status: **Proposed** design over the frozen console contract 1.0.0 ([Frozen contract](README.md#frozen-contract)). This view maps every console section to the entities it **reads** and **writes** and the **projection layer** it may use. The project-wide data model is [`docs/data/model.md`](../../data/model.md) (being completed in a separate work stream); this view follows its conventions and does not redefine its entities:
 
 - Tables are `snake_case`; contract fields are `camelCase` (`HubSourceSchema.allowedUses` ↔ `source.allowed_uses`).
 - **Five projection layers** for customer data: `public`, `shared_party`, `party_private`, `owner_private`, `staff_case` (`ProjectionLayerSchema`). Staff use `public` and, only under a case or dispute grant, `staff_case` (a diagnostic subset ranked beside `shared_party`, never a superset). The console never uses `party_private` or `owner_private` for customer objects.
@@ -15,11 +15,13 @@ Status: **Proposed**. This view maps every console section to the entities it **
 |---|---|---|---|
 | `hub` | `HubSchema` | node, slug, name per locale, lifecycle, country pack binding, default locale, locales, time zone, currency, brand overlay, revision | hubs |
 | `hub_territory` | `HubTerritorySchema` | hub, level, code, wikidata, osm relation | hubs |
-| `hub_config_version` | `HubConfigVersionSchema` | hub, domain, version, payload, payload digest, status, reason, drafted_by, activated_by, approval_id, effective_from | hubs |
+| `hub_config_version` | `HubConfigVersionSchema` | hub, domain, version, payload, payload digest, status, reason, drafted_by, activated_by, approval_id, effective_from; domains include `jurisdiction` (`JurisdictionSettingsRefSchema`, full payload HUB-005), `payments` (`HubPaymentSettingsSchema`), `agents` (`HubAgentPolicySchema`) and `agent_extensions` | hubs |
 | `hub_modes_version` | `HubModesSchema` (payload of `hub_config_version` domain `modes`) | data mode, registration, modules, moderation, automation per domain, indexing, maintenance | hubs |
 | `launch_gate` | `LaunchGateSchema` | hub, gate, state, evidence ref, checked_by, checked_at | hubs |
 | `setup_state` | `SetupStateSchema` | node, completed steps, current, setup token hash, expiry, first admin | hubs |
-| `hub_staff_assignment` | `HubStaffAssignmentSchema` | person, role, scope (node XOR hub), granted_by, approved_by, validity, revoked_at | platform-admin |
+| `staff_role_assignment` (scope extended) | `ScopedStaffRoleAssignmentSchema`, `ScopedStaffRoleDefinitionSchema` | person, role, scope (`platform`, `node` + node id, or `hub` + hub id), definition version, granted_by, approved_by, breakglass, incident ref, validity, revoked_at, revoked_by | platform-admin |
+| `second_person_approval` (action set and scope extended) | `ConsoleSecondPersonApprovalSchema` | action from `CONSOLE_SECOND_PERSON_ACTIONS`, scope, action digest, requested_by, approved_by, approved_at, expires_at (at most 72 hours), revoked_at | platform-admin |
+| `admin_audit_event` (console form) | `ConsoleAuditEventSchema` | sequence, actor, scoped role, scope, console permission, elevation, approver and approval digest, action, object, before/after digests, reason, outcome | platform-admin |
 | `secret_ref` / `secret_version` | `SecretRefSchema` | store, ref, keyed fingerprint, version; ciphertext and wrapped data key in `secret_version` (never readable through any API) | providers |
 | `provider_connection` | `ProviderConnectionSchema` | scope (node XOR hub), adapter, capabilities, mode, endpoint, secret ref, hosting, status, enabled_by, approval_id | providers |
 | `connection_test` | `ConnectionTestResultSchema` | connection, at, by, outcome, latency, models listed, cost | providers |
@@ -41,9 +43,11 @@ Status: **Proposed**. This view maps every console section to the entities it **
 | `agent_module_version` | `AgentModuleVersionSchema` | hub, key, version, actions, eligibility, routes, limits, metering, status, drafted_by, activated_by, approval_id | agent-product |
 | `metered_price_version` | `MeteredPriceVersionSchema` | hub, offer, module, unit, version, currency, cost price, cost basis, sale price, effective dates, acceptance text version, status, drafted_by, activated_by | billing |
 | `agent_plan_version` | `AgentPlanVersionSchema` | hub, offer, version, payer kind, includes, trial days, status | billing |
-| `external_agent_client` | `ExternalAgentClientSchema` | hub, acting person (+ optional party), protocol, scopes, credential ref, rate limits, status | external-agents |
+| `marketplace_fee_version` | `MarketplaceFeeVersionSchema` | hub, kind (consultation, task, ticket, course, agent capacity), category, version, currency, basis points, fixed amount, payer, effective dates, disclosure, status, drafted_by, activated_by, approval_id | billing (BILL-003) |
+| `agent_extension_version` (reference) | `AgentExtensionVersionRefSchema` | extension, hub, key, version, manifest digest, declared actions with mandate kinds, data classes read and sent, endpoints with country, adapter, safety suite result, status, drafted_by, approved_by, approval_id, activated config version | agent-extensions (AGT-023) |
+| `external_agent_client` | `ExternalAgentClientSchema` | hub, acting person (+ optional party), protocol, scopes, private data classes (opt-in, empty by default), opt-in time, credential ref, rate limits, status | external-agents |
 | `plan_template_version` | `PlanTemplateVersionSchema` | hub, key, version, country, project type, phases and items, references, authors, reviewed_by, status | planner |
-| `marketplace_category_rule` | `MarketplaceCategoryRuleSchema` | hub, category, kind, who may offer, recipe, licence category, pricing, commission offer, refunds, agent automation, version | marketplace |
+| `marketplace_category_rule` | `MarketplaceCategoryRuleSchema` | hub, category, kind, who may offer, recipe, licence category, pricing, refunds, agent automation, version | marketplace |
 | `knowledge_share` | `KnowledgeShareSchema` | hub, kind, project, owner party, named parties, consents, status, reviewed_by, publication | shared-knowledge |
 | `procurement_template` | `ProcurementTemplateSchema` (payload of `hub_config_version` domain `procurement`) | hub, kind (approval route, document requirement set, match tolerance, fraud-control defaults, intake settings, benchmark policy, pooling rules), key, version, payload, counsel sign-off ref (benchmarks, pooling), status, drafted_by, activated_by | procurement (PRC-001, PRC-010, PRC-011, PRC-012, PRC-019, PRC-022) |
 | `recommendation_rule` | `RecommendationRuleSchema` | hub, version, plan category, item kinds, recommends, signals, status | recommendations |
@@ -85,7 +89,7 @@ Existing or already-designed entities the console uses (defined in [`docs/data/m
 | Data: recommendations | `recommendation_rule`, `sponsored_content_policy`, taxonomy mapping, quality aggregates | rules and policy versions | config, aggregate |
 | Modules: projects | published project projections, counts, transfer disputes | holds, dispute decisions | public; `staff_case` under dispute grants |
 | Modules: planner | `plan_template_version` | same | config (templates hold no customer data) |
-| Modules: marketplace | `marketplace_category_rule`, request and engagement counts, payouts, disputes | rules, refund decisions, commission price versions | config, aggregate; `staff_case` under dispute grants |
+| Modules: marketplace | `marketplace_category_rule`, request and engagement counts, payouts, disputes | rules, refund decisions, commission fee versions (`marketplace_fee_version`) | config, aggregate; `staff_case` under dispute grants |
 | Modules: shared knowledge | `knowledge_share`, consent records, the draft publication | review decisions, publication | public after consent; drafts visible to reviewers as consented material |
 | Modules: events | `event`, `ticket_type`, `ticket_price_version`, registration and check-in counts, payouts, refunds | reviews, holds, refunds, payout release requests | public, aggregate; `staff_case` for attendee data under a case |
 | Modules: learning | `course` versions, `certificate`, accreditation records | reviews, revocations, accreditations | public |
@@ -115,3 +119,34 @@ Existing or already-designed entities the console uses (defined in [`docs/data/m
 4. `link_proposal.effect` is always `link`; no table supports merging two parties.
 5. No table stores a score, rank or position set by staff; reputation snapshots are computed from evidence by a released method.
 6. Aggregates about participants suppress cohorts under ten at the query layer, not only in the UI.
+
+## Naming reconciliation (HUBC-000)
+
+HUBC-000 compared the console contract with [`docs/data/model.md`](../../data/model.md) (snake_case tables, projection layers, Party XOR, versioned records). Conventions already agree: tables are snake_case and contract fields camelCase; owners and holders are `PartySchema`; configuration, prices and policies are versioned records with `drafted_by`, `activated_by`, `approval_id` and `effective_from`; console configuration is staff configuration with no customer projection. The differences below are recorded with their resolution. "Contract" means the console contract keeps its name and the data model row is updated by the package that writes the migration; "data model" means the contract was changed in HUBC-000.
+
+| Contract | Data model | Difference | Resolution |
+|---|---|---|---|
+| `ScopedStaffRoleAssignmentSchema` (was `HubStaffAssignmentSchema`) | `staff_role_assignment` | Console had its own table name and only node or hub scope | Data model: one `staff_role_assignment` with scope `platform`, `node` or `hub` (ADR 012 decision 1); `breakglass`, `incidentRef`, `revokedBy` and `definitionVersion` added to the contract |
+| `ConsoleSecondPersonApprovalSchema` | `second_person_approval` | Action enum limited to the frozen A+2 set; no scope | Contract: action set is `CONSOLE_SECOND_PERSON_ACTIONS`, plus a scope; the frozen `SecondPersonApprovalSchema` in `admin.ts` stays for the A+2 actions |
+| `ConsoleAuditEventSchema` | `admin_audit_event` | Frozen audit schema accepts only `ADMIN_PERMISSIONS` and platform roles | Contract: the console form uses `ConsolePermissionSchema`, `HubStaffRoleSchema` and the scope; ADM-001 stores both forms in `admin_audit_event` |
+| `HubSchema.slug`, `.lifecycle`, `.countryPack`, `.brandOverlay` | `hub.key`, `.status`, `pack_code` + `pack_version`, `brand_ref` | Names differ; `successor_hub_global_id` exists only in the data model | Contract names (`lifecycle` avoids one more generic `status`); HUB-001 names the columns after the contract; the successor id is added when hub closing is implemented |
+| `HubTerritorySchema` level `place` | `hub_territory.level` `city` + `place_key` | Contract places cover cities, counties and districts; code grammar is `JurisdictionCodeSchema` | Contract |
+| `LaunchGateSchema` states `open`, `passed`, `invalidated` | `launch_gate.state` `open`, `satisfied`, `invalidated` | Contract had no invalidation; names differ (`passed` and `satisfied`); 14 gates against "12 checklist gates" | Data model's `invalidated` adopted (with `invalidatedAt` and `invalidationReason`); contract keeps `passed` and the 14 gates (two proposed by the console) |
+| `HUB_CONFIG_DOMAINS` | `hub_config_version.domain` | Data model has `events_learning`; contract splits `events` and `learning` and adds `modes`, `residency`, `country`, `screening`, `matching`, `providers`, `routing`, `egress`, `budgets` | Contract; HUBC-000 added the data model's `tax` and `jurisdiction` and the decision 20 and 22 domains `payments` and `agent_extensions` (`jurisdiction`, `payments` and `agent_extensions` are sensitive) |
+| `SecretRefSchema` | `provider_credential_ref` (section 24), `secret_ref` / `secret_version` (this view) | Two names for the reference | Contract: `secret_ref` with `secret_version` ciphertext; `provider_connection.secret_ref` replaces `provider_credential_ref` (KEYS-001) |
+| `ProviderBudgetSchema` | `provider_cost_budget` | `hard_stop bool` against `onExhausted` `pause` or `deny_new` | Contract (there is no overspend state, so no flag is needed); table `provider_budget` |
+| `ModelRouteSchema` + `EgressRuleSchema` | `model_route` | The data model row mixes routing and the data-class decision | Contract: routing (job to models, fallbacks, limits) and egress (data class by connection, default deny) are separate records |
+| `HubSourceSchema` | `source` + `crawl_policy` | Kind and purpose enums differ (`website_crawl` against `sitemap` and `web_page`; `news` against `news_desk`); robots and terms are embedded checks in the contract | Contract enums; SRC-001 stores the checks as the latest `crawl_policy` row and maps them into the read model |
+| `DatasetSchema` | `dataset` | Data model has one `source_id` and a record `kind`; contract has `sourceIds`, `subject` and the legal flags | Contract |
+| `LinkProposalSchema` | `record_link_proposal` (sources), `entity_link` (federation) | Evidence names differ (`subject_confirmation` against `person_confirmed`); proposer is a person or a pipeline run against `import`, `peer`, `person`; evidence `score` | Contract names; evidence `score` renamed `similarity` in HUBC-000 (a matching measure, never a reputation score) |
+| `ScheduleSchema` | `pipeline_schedule` | Name | Data model table name; contract keeps `Schedule` |
+| `PipelineRunSchema.trigger` | `pipeline_run.trigger` | `schedule`, `manual`, `dry_run`, `retry`, `backfill`, `event` against `scheduled`, `manual`, `retry` | Contract |
+| `AgentModuleVersionSchema` | `agent_module_version` | Data model row is the engine manifest released by maintainers; contract is a hub's configured version (limits, metering, routes) | Open for AGT-003: the hub record pins the engine manifest version it configures |
+| `AgentPlanVersionSchema` | `subscription_plan_version` | Renamed in the data model to avoid "plan" (project plans) | Data model table name; the contract name stays until BILL-001 freezes billing |
+| `MeteredPriceVersionSchema` | `meter_rate_version` | Data model prices per thousand units by provider class; contract prices per metering unit with cost beside sale price | Open for AGT-004 and BILL-001 |
+| `MarketplaceFeeVersionSchema` | `marketplace_fee_version` | Data model points at a `price_version`; kinds lack agent capacity | Contract: the fee version is itself the versioned price record (activation, approval, disclosure); kinds include `agent_capacity` (ADR 010 decision 21) |
+| `MarketplaceCategoryRuleSchema.commissionOfferId` | none | Commission pointer on the rule | Removed in HUBC-000: commissions are fee versions keyed by category |
+| `ExternalAgentClientSchema` | `external_connection` | Scope names (`read_public` against `read.public`); private data classes | Contract scope names; `privateDataClasses` with opt-in time added in HUBC-000 (ADR 012 decision 23) |
+| `IssuedCredentialSchema` | `passport_credential` | Contract is the hub's issuance record (digest, status list index); the data model row is the credential document | Both: REP-002 owns the document; the console reads the issuance record |
+| `KillSwitchScopeSchema` kinds | `kill_switch.scope` | Data model includes `person_stop`, `company_representative`, `federation`, `payments` | Contract covers the console's switches and adds `agent_extension`; the participant's own stop and the representative switch are product controls (assistant); federation and payment switches are added by their packages as a minor version |
+

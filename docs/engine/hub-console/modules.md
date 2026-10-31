@@ -55,8 +55,8 @@ US example: "Single-family house, new build" with phases design, permits, site p
 | | |
 |---|---|
 | **Sees** | Category rules (`MarketplaceCategoryRuleSchema`); counts of open requests and accepted engagements per category; payout and dispute queues |
-| **Does** | Edit category rules; set commission offers whose prices are **price versions** (second-person activation); decide refunds within policy; handle disputes with a dispute grant |
-| **Settings** | Per category: consultation or task; who may offer (verified company, verified professional, either, or claimed); verification recipe and licence category (required for licensed categories); pricing model (fixed, hourly, quote-based); platform commission offer; cancellation window and dispute window; agent automation (may draft requests, may draft offers, may accept within mandate with verified counterparties only, requests per week) |
+| **Does** | Edit category rules; set commissions as **fee versions** per category (`MarketplaceFeeVersionSchema`, second-person activation, public disclosure); decide refunds within policy; handle disputes with a dispute grant |
+| **Settings** | Per category: consultation or task; who may offer (verified company, verified professional, either, or claimed); verification recipe and licence category (required for licensed categories); pricing model (fixed, hourly, quote-based); the category's fee version (`marketplace_fee_version`); cancellation window and dispute window; agent automation (may draft requests, may draft offers, may accept within mandate with verified counterparties only, requests per week) |
 | **Queues** | Disputes; refund requests outside policy; providers whose licence expired (automatically paused in that category) |
 | **Metrics** | Requests, matches, acceptances, completions, refunds, disputes per category (cohort counts); median time to first offer; commission revenue |
 | **Guard rails** | Commission and plans never affect who is matched or in which order; licensed work only to verified licence holders; payment outcomes that are unknown go to reconciliation; experts' private rates and floors stay private |
