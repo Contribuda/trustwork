@@ -97,8 +97,8 @@ test('FILE-001 database: roles, policies and owner-run commands', { skip: env ? 
   await t.test('the database classification rule equals the contract policy for every parent kind', async () => {
     for (const kind of FILE_PARENT_KINDS) {
       for (const classification of FILE_CLASSIFICATIONS) {
-        const { rows } = await env.db.admin.query<{ ok: boolean }>('SELECT trustwork.files_classification_allowed($1, $2) AS ok', [kind, classification]);
-        assert.equal(rows[0]?.ok, (allowedClassifications(kind) as string[]).includes(classification), `${kind}/${classification}`);
+        const result: { rows: { ok: boolean }[] } = await env.db.admin.query<{ ok: boolean }>('SELECT trustwork.files_classification_allowed($1, $2) AS ok', [kind, classification]);
+        assert.equal(result.rows[0]?.ok, (allowedClassifications(kind) as string[]).includes(classification), `${kind}/${classification}`);
       }
     }
   });
