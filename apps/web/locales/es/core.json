@@ -21,7 +21,8 @@
         "already_linked": "Este método de inicio de sesión ya está vinculado a una cuenta.",
         "state_mismatch": "El inicio de sesión tardó demasiado o se interrumpió. Empiece de nuevo."
       },
-      "email_taken": "Este correo electrónico ya lo usa otra cuenta."
+      "email_taken": "Este correo electrónico ya lo usa otra cuenta.",
+      "jurisdiction_hold": "Esta cuenta está en pausa porque se usó desde un lugar donde la legislación sobre sanciones no permite este servicio. No se ha borrado nada de ella. Si ya no se encuentra allí, comuníquese con el operador de este sitio; cuando un revisor levante la pausa, podrá volver a iniciar sesión."
     },
     "access": {
       "not_found": "Página no encontrada",
@@ -69,6 +70,9 @@
     },
     "internal": {
       "error": "Algo salió mal de nuestro lado. Vuelva a intentarlo más tarde."
+    },
+    "jurisdiction": {
+      "restricted": "Este sitio no está disponible en su ubicación."
     }
   },
   "taxonomy": {
