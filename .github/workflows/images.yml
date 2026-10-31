@@ -58,20 +58,22 @@ jobs:
           migrate=trustwork-migrate:local proxy=trustwork-proxy:local
 
       - name: The hosted preview build arguments still produce a working image (infra/Dockerfile)
+        # English and the US default, Russian (with the Russian overlay title) by cookie, Georgian by country cookie and
+        # the companies directory, under the preview's base path (infra/images/web-smoke.mjs).
         run: |
           docker build -f infra/Dockerfile -t trustwork-web:preview \
             --build-arg NEXT_PUBLIC_BASE_PATH=/trustwork \
             --build-arg NEXT_PUBLIC_SITE_URL=https://example.invalid/trustwork \
             --build-arg TRUSTWORK_ALLOWED_ORIGINS=example.invalid .
-          docker run -d --name preview -p 127.0.0.1:3999:3000 trustwork-web:preview
+          docker run -d --name preview -p 127.0.0.1:3999:3000 -e TRUSTWORK_DEFAULT_COUNTRY=US trustwork-web:preview
           for i in $(seq 1 60); do
             status=$(docker inspect --format '{{.State.Health.Status}}' preview)
             [ "$status" = healthy ] && break
             [ "$status" = unhealthy ] && break
             sleep 2
           done
-          docker inspect --format '{{.State.Health.Status}}' preview | grep -qx healthy
-          curl -fsS -o /dev/null http://127.0.0.1:3999/trustwork
+          docker inspect --format '{{.State.Health.Status}}' preview | grep -qx healthy || { docker logs preview; exit 1; }
+          node infra/images/web-smoke.mjs http://127.0.0.1:3999/trustwork preview || { docker logs preview; exit 1; }
           docker rm -f preview
 
       - name: SBOM per image (SPDX JSON)
@@ -96,7 +98,9 @@ jobs:
       - name: Stack smoke on one origin (sign-up and login through the proxy)
         env:
           TRUSTWORK_STACK_ORIGIN: http://localhost:8080
-        run: node infra/images/stack-smoke.mjs
+        run: |
+          node infra/images/stack-smoke.mjs
+          node infra/images/web-smoke.mjs http://localhost:8080
       - name: Stack logs on failure
         if: failure()
         run: $COMPOSE logs --no-color --timestamps
