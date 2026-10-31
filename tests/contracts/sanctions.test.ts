@@ -120,3 +120,43 @@ test('records: a hold is cleared whole or not at all, never by its subject; the 
   assert.ok(!JurisdictionStatusSchema.safeParse({ held: true, place: 'RU' }).success, 'the subject is not told the place');
   assert.deepEqual(JURISDICTION_ERROR_STATUS, { 'jurisdiction.restricted': 451, 'auth.jurisdiction_hold': 403 });
 });
+
+/* ---------- SANC-002: screening lists ---------- */
+
+test('screening lists: the baseline applies to every hub, stays active and is stale within the engine bound', async () => {
+  const { ScreeningListSchema, BASELINE_LIST_CODES, BASELINE_STALE_AFTER_MAX_SECONDS } = await import('../../packages/contracts/src/sanctions.js');
+  const base = {
+    id: 'list-1', hubId: null, code: 'ofac-sdn', name: 'SDN', authority: 'OFAC', sourceUrl: 'https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.XML', adapter: 'ofac-sls-xml',
+    mode: 'file', cadenceSeconds: 86_400, warnAfterSeconds: 3 * 86_400, staleAfterSeconds: 7 * 86_400, maxDropShare: 0.1, minEntries: 1000, baseline: true, status: 'active',
+  } as const;
+  assert.ok(ScreeningListSchema.safeParse(base).success);
+  assert.deepEqual(BASELINE_LIST_CODES, ['ofac-sdn', 'ofac-cons']);
+  assert.ok(!ScreeningListSchema.safeParse({ ...base, status: 'paused' }).success, 'a baseline list is never paused');
+  assert.ok(!ScreeningListSchema.safeParse({ ...base, staleAfterSeconds: BASELINE_STALE_AFTER_MAX_SECONDS + 1 }).success);
+  assert.ok(!ScreeningListSchema.safeParse({ ...base, hubId: 'hub-1' }).success, 'a baseline list is not a hub list');
+  assert.ok(ScreeningListSchema.safeParse({ ...base, hubId: 'hub-1', baseline: false, code: 'un-sc', status: 'paused', staleAfterSeconds: 30 * 86_400 }).success, 'an additional list may pause and age longer');
+  assert.ok(!ScreeningListSchema.safeParse({ ...base, warnAfterSeconds: 8 * 86_400 }).success, 'cadence <= warning < stale');
+  assert.ok(!ScreeningListSchema.safeParse({ ...base, sourceUrl: 'http://example.invalid/list.xml' }).success, 'https only');
+  assert.ok(!ScreeningListSchema.safeParse({ ...base, mode: 'scrape' }).success);
+});
+
+test('screening list versions, entries and the activation event', async () => {
+  const { ScreeningListVersionSchema, ScreeningListEntrySchema, ScreeningListVersionActivatedEventSchema, NameKeySchema, checkListSanity } = await import('../../packages/contracts/src/sanctions.js');
+  const sanity = checkListSanity({ parsedCount: 6, declaredCount: 6, previousCount: null, maxDropShare: 0.1, minEntries: 1 });
+  const version = {
+    id: 'v-1', listId: 'list-1', version: 1, publishedOn: '2026-10-28', fetchedAt: '2026-10-30T08:00:00Z', mode: 'file', sourceDigest: 'a'.repeat(64), entryCount: 6, digest: 'b'.repeat(64),
+    state: 'active', sanity, stagedAt: '2026-10-30T08:00:01Z', activatedAt: '2026-10-30T08:00:02Z', activatedBy: null, rejectedReason: null,
+  } as const;
+  assert.ok(ScreeningListVersionSchema.safeParse(version).success);
+  assert.ok(!ScreeningListVersionSchema.safeParse({ ...version, activatedAt: null }).success, 'active means activated');
+  assert.ok(!ScreeningListVersionSchema.safeParse({ ...version, state: 'rejected' }).success, 'a rejected version names its reason and was never activated');
+  assert.ok(ScreeningListVersionSchema.safeParse({ ...version, state: 'rejected', activatedAt: null, rejectedReason: 'declared_count_mismatch' }).success);
+  const entry = { entryUid: '910001', entryType: 'individual', primaryName: 'Anna Demonova TESTOVA', programs: ['SYNTHETIC-A'], nameKeys: ['anna demonova testova'], attributes: { aliases: ['Анна Тестова'] }, entryDigest: 'c'.repeat(64) } as const;
+  assert.ok(ScreeningListEntrySchema.safeParse(entry).success);
+  assert.ok(!ScreeningListEntrySchema.safeParse({ ...entry, nameKeys: [] }).success, 'an entry has at least one key');
+  assert.ok(!ScreeningListEntrySchema.safeParse({ ...entry, entryUid: 'uid with spaces' }).success);
+  assert.ok(!ScreeningListEntrySchema.safeParse({ ...entry, attributes: { score: 1 } }).success, 'attributes are the published ones only');
+  for (const bad of ['Anna Testova', 'anna  testova', ' anna', 'anna,testova', '']) assert.ok(!NameKeySchema.safeParse(bad).success, bad);
+  assert.ok(NameKeySchema.safeParse('7 synthetic voyager').success);
+  assert.ok(ScreeningListVersionActivatedEventSchema.safeParse({ listId: 'list-1', listCode: 'ofac-sdn', hubId: null, baseline: true, versionId: 'v-1', version: 1, previousVersionId: null, entryCount: 6, digest: 'b'.repeat(64), publishedOn: '2026-10-28', confirmedBy: null }).success);
+});

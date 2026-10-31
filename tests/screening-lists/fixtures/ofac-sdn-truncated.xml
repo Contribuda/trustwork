@@ -1,0 +1,115 @@
+<?xml version="1.0" standalone="yes"?>
+<!-- Synthetic test data in the layout of the OFAC Sanctions List Service SDN.XML export. Every name, number and place
+     below is invented for tests; none is, or is meant to resemble, a listed person, company, vessel or aircraft. -->
+<sdnList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/XML">
+  <publshInformation>
+    <Publish_Date>10/28/2026</Publish_Date>
+    <Record_Count>6</Record_Count>
+  </publshInformation>
+  <sdnEntry>
+    <uid>910001</uid>
+    <firstName>Anna Demonova</firstName>
+    <lastName>TESTOVA</lastName>
+    <sdnType>Individual</sdnType>
+    <programList>
+      <program>SYNTHETIC-A</program>
+    </programList>
+    <idList>
+      <id>
+        <uid>9100011</uid>
+        <idType>Passport</idType>
+        <idNumber>X0000001</idNumber>
+        <idCountry>Synthetica</idCountry>
+      </id>
+    </idList>
+    <akaList>
+      <aka>
+        <uid>9100012</uid>
+        <type>a.k.a.</type>
+        <category>strong</category>
+        <lastName>ТЕСТОВА</lastName>
+        <firstName>Анна Демонова</firstName>
+      </aka>
+      <aka>
+        <uid>9100013</uid>
+        <type>a.k.a.</type>
+        <category>weak</category>
+        <lastName>TESTOVÁ</lastName>
+        <firstName>Ánna</firstName>
+      </aka>
+    </akaList>
+    <addressList>
+      <address>
+        <uid>9100014</uid>
+        <city>Example City</city>
+        <country>Synthetica</country>
+      </address>
+    </addressList>
+    <nationalityList>
+      <nationality>
+        <uid>9100015</uid>
+        <country>Synthetica</country>
+        <mainEntry>true</mainEntry>
+      </nationality>
+    </nationalityList>
+    <citizenshipList>
+      <citizenship>
+        <uid>9100016</uid>
+        <country>Synthetica</country>
+        <mainEntry>true</mainEntry>
+      </citizenship>
+    </citizenshipList>
+    <dateOfBirthList>
+      <dateOfBirthItem>
+        <uid>9100017</uid>
+        <dateOfBirth>01 Jan 1970</dateOfBirth>
+        <mainEntry>true</mainEntry>
+      </dateOfBirthItem>
+    </dateOfBirthList>
+    <placeOfBirthList>
+      <placeOfBirthItem>
+        <uid>9100018</uid>
+        <placeOfBirth>Example City, Synthetica</placeOfBirth>
+        <mainEntry>true</mainEntry>
+      </placeOfBirthItem>
+    </placeOfBirthList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>910002</uid>
+    <firstName>Ivo</firstName>
+    <lastName>PLACEHOLDER-SAMPLEMAN</lastName>
+    <title>Synthetic Director</title>
+    <sdnType>Individual</sdnType>
+    <programList>
+      <program>SYNTHETIC-A</program>
+      <program>SYNTHETIC-B</program>
+    </programList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>910003</uid>
+    <lastName>EXAMPLE SYNTHETIC TRADING LLC</lastName>
+    <sdnType>Entity</sdnType>
+    <programList>
+      <program>SYNTHETIC-B</program>
+    </programList>
+    <akaList>
+      <aka>
+        <uid>9100031</uid>
+        <type>f.k.a.</type>
+        <category>strong</category>
+        <lastName>EXAMPLE SYNTHETIC TRADING COMPANY &amp; PARTNERS</lastName>
+      </aka>
+    </akaList>
+    <addressList>
+      <address>
+        <uid>9100032</uid>
+        <address1>1 Example Street</address1>
+        <city>Example City</city>
+        <postalCode>00000</postalCode>
+        <country>Synthetica</country>
+      </address>
+    </addressList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>910004</uid>
+    <lastName>DEMO FICTI

@@ -85,11 +85,15 @@ COPY --from=deps /out/worker/node_modules ./node_modules
 COPY --from=build /src/.image-build/apps/worker ./apps/worker
 COPY --from=build /src/.image-build/packages/contracts ./packages/contracts
 COPY --from=build /src/.image-build/packages/data ./packages/data
+# SANC-002 (ADR 014 decision 19): sanctions list parsers and name normalization, imported by the worker's screening-lists
+# module; only the compiled files it imports exist (zod comes with the contracts' dependencies).
+COPY --from=build /src/.image-build/packages/compliance ./packages/compliance
 COPY --from=build /src/infra/images/runtime-layout.mjs /tmp/layout/
 COPY --from=build /src/apps/worker/package.json /tmp/layout/apps/worker/package.json
 COPY --from=build /src/packages/contracts/package.json /tmp/layout/packages/contracts/package.json
 COPY --from=build /src/packages/data/package.json /tmp/layout/packages/data/package.json
-RUN node /tmp/layout/runtime-layout.mjs /tmp/layout /app apps/worker packages/contracts packages/data && rm -rf /tmp/layout
+COPY --from=build /src/packages/compliance/package.json /tmp/layout/packages/compliance/package.json
+RUN node /tmp/layout/runtime-layout.mjs /tmp/layout /app apps/worker packages/contracts packages/data packages/compliance && rm -rf /tmp/layout
 USER 1000:1000
 # /metrics and /health/live stay on loopback inside the container; the health check reads them there.
 ENV WORKER_METRICS_HOST=127.0.0.1 WORKER_METRICS_PORT=9464
