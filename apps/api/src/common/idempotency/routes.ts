@@ -179,6 +179,18 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'admin.flag.set': IN_TRANSACTION,
   'moderation.report': IN_TRANSACTION,
   'moderation.appeal_file': IN_TRANSACTION,
+  // Execution, evidence, reviews, appeals and snapshots (EXE-001): every route runs in one PrincipalService.runAs
+  // transaction (observations are materialized inside it) and returns its result unchanged.
+  'execution.claim_record': IN_TRANSACTION,
+  'execution.evidence_attach': IN_TRANSACTION,
+  'execution.defect_report': IN_TRANSACTION,
+  'execution.dispute_open': IN_TRANSACTION,
+  'execution.claim_decide': IN_TRANSACTION,
+  'execution.dispute_appeal': IN_TRANSACTION,
+  'trust.review_submit': IN_TRANSACTION,
+  'trust.review_respond': IN_TRANSACTION,
+  'trust.appeal_file': IN_TRANSACTION,
+  'trust.snapshot_compute': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
