@@ -82,6 +82,7 @@ Consumer mode and jurisdiction settings may raise a confirmation at run time (fo
 | LOC | [Country packs and localization](country-packs-and-localization.md) | Live packs v1 and six languages; Contract pack v2 schema; Proposed v2 facts and more languages | CTRY-*, LANG-*, INTL-* |
 | MSH | [Federation mesh](federation-mesh.md) | Proposed | FED-000 … FED-006 |
 | TSP | [Trust, safety, privacy and compliance](trust-safety-privacy-compliance.md) | Live projections; Designed moderation and privacy operations | PRV-001, PRV-002, REV-001, RANK-001, DSA-001, WORD-001 |
+| SNC | [Sanctions compliance](sanctions-compliance.md) | Live restricted places and the ownership declaration; Proposed jurisdiction gate, holds, list screening, review, gates and re-screening (ADR 014) | INTL-SAN (done), SANC-001 … SANC-009 |
 | SEC | [Security architecture](security-architecture.md) | Live identity hardening; Designed the rest | BE-002, BE-004, OPS-001, CI-001 |
 | INT | [Integrations](integrations.md) | Proposed | INTEG-001, ESIG-001, BIM-001, PRC-012, PRC-013 |
 | MOB | [Mobile and offline](mobile-and-offline.md) | Demo responsive web; Proposed offline | CHAN-001, MOB-001 |

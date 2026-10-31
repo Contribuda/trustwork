@@ -170,11 +170,13 @@ Sources consulted: [Georgia company register (NAPR)](https://napr.gov.ge/en/news
 
 | Setting | Notes |
 |---|---|
-| Baseline list | The US Consolidated Screening List through `packages/compliance` (the engine's author is a US person); cannot be disabled |
+| Baseline lists | OFAC's SDN list and consolidated non-SDN lists from the Sanctions List Service, ingested by the worker (no key needed; the engine's author and the reference operator are US persons); cannot be disabled ([ADR 014](../adr/014-sanctions-compliance-engine.md) decision 10). The Consolidated Screening List through `packages/compliance` is an additional list when the operator provides a key |
 | Additional lists | For example the UN Security Council consolidated list and national lists the operator must apply; each with source, update cadence and matching rules |
-| Matching | Name normalisation, transliteration variants, threshold for "potential match"; every potential match goes to review |
+| Matching | The engine rule (normalized name keys, transliteration tables) always; an optional fuzzy threshold within engine bounds that only adds possible matches; every possible match goes to review; no score clears |
 | Ownership declaration | The partner declaration (organised in, operates in, 50% ownership by listed persons, appears on list) is mandatory for sellers and event organizers who take payments |
-| Re-screening | On list update and on schedule |
+| Re-screening | On every activated list version (delta) and weekly |
+| Visitor gate | Geolocation adapter (`ranges_file`, `edge_header`, `upstream_gate`) and its dataset; holds for signed-in people seen in restricted places; places the hub's law adds (add only, second person) |
+| Review | Service level in business days; two people to clear a possible match; appeals to a different reviewer |
 
 ### Claims and trust
 

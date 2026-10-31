@@ -2073,7 +2073,8 @@
       "status": "open",
       "dependsOn": [
         "BILL-001",
-        "REL-001"
+        "REL-001",
+        "SANC-004"
       ],
       "handbook": "docs/engine/billing.md",
       "goal": "Connect charges, escrow and payouts to a provider-neutral port that a hub configures with licensed providers (cards and ACH for the US hub); Trustwork records instructions, references, evidence and reconciliation and never holds, pools or moves funds itself (ADR 010 decision 20).",
@@ -2093,7 +2094,8 @@
         "Duplicate and out-of-order webhooks never double-settle (tests).",
         "A timeout leaves the payment in outcome_unknown until reconciliation.",
         "No code path credits a balance held by Trustwork or the hub operator (test and review checklist).",
-        "Ranking, matching, recommendation and reputation code has no dependency on payment state (tested)."
+        "Ranking, matching, recommendation and reputation code has no dependency on payment state (tested).",
+        "Payout account creation and every payout ask the screening gate (SANC-004) and refuse while money is held or the answer is unknown; a restricted payout country is refused before the provider is called (tested)."
       ],
       "paths": [
         "packages/contracts/src/payments.ts",
@@ -2131,7 +2133,8 @@
       "acceptance": [
         "Every tax amount names its jurisdiction and rule source; no hard-coded rate.",
         "A payment timeout never produces a second charge.",
-        "Card and bank data never enter the database."
+        "Card and bank data never enter the database.",
+        "Ticket, course and consultation sales and payouts refuse through the screening gate for held, matched or unscreened parties (tested)."
       ],
       "paths": [
         "apps/api/src/modules/invoicing",
@@ -2458,7 +2461,8 @@
       "status": "open",
       "dependsOn": [
         "HUB-001",
-        "BE-004"
+        "BE-004",
+        "SANC-009"
       ],
       "handbook": "docs/engine/hub-console/setup-wizard.md",
       "goal": "Turn a fresh node into a configured draft hub: setup token, node identity, hub identity from a country pack or the generic profile (a country is required; ADR 012), operator screening, first administrator with a second factor, residency, fake providers, modes.",
@@ -2476,7 +2480,8 @@
       "acceptance": [
         "A second setup cannot start after setup finished (tested).",
         "A restricted country, region or place is refused.",
-        "The first administrator cannot finish without a second factor."
+        "The first administrator cannot finish without a second factor.",
+        "Setup cannot finish without a valid deployment-location attestation (SANC-009) and a configured jurisdiction-gate mode (tested)."
       ],
       "paths": [
         "apps/api/src/modules/hubs/setup",
@@ -2522,32 +2527,409 @@
       ]
     },
     {
+      "id": "SANC-001",
+      "title": "Jurisdiction gate and holds: restricted visitors refused at the web proxy and the API, sightings hold the person",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "DATA-002",
+        "BE-004",
+        "CFG-001",
+        "OPS-001"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Refuse every request from a restricted place at every door with kind words in every language, and hold a signed-in person seen there until a compliance reviewer clears the hold (ADR 014 decisions 2 and 6 to 9; Contribuda parity).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/adr/009-international-engine-and-open-source.md",
+        "docs/adr/002-identity-and-access.md",
+        "docs/data/model.md",
+        "docs/engine/trust-safety-privacy.md",
+        "apps/api/src/modules/identity/README.md",
+        "packages/compliance/src/index.ts",
+        "packages/data/README.md"
+      ],
+      "steps": [
+        "Contracts in packages/contracts/src/sanctions.ts: gate modes, refusal envelope (`jurisdiction.restricted`, `auth.jurisdiction_hold`), hold sources, hold record and clear command; tests.",
+        "Pure primitives in packages/compliance/src/jurisdiction: restricted place from the authoritative list, IPv4 and IPv6 parsing (IPv4-mapped IPv6 included), range-table lookup, the `ranges_file`, `edge_header`, `upstream_gate` and `fake` adapters, and a generator (packages/compliance/bin) that reduces an operator-supplied city-level CSV to the restricted ranges, region level for Ukraine; no network calls, no dataset shipped.",
+        "Web proxy: before anything else, render /restricted in the visitor's language for pages (451 where possible, noindex) and answer 451 for other requests; open doors only for the refusal page, legal pages, health, provider webhooks and unsubscribe; the jurisdiction namespace in all six engine languages; dataset attribution on the page.",
+        "API: onRequest hook before principal resolution with the trusted-proxy address; hold the person when a valid session is present; refuse held people on every request and at password, provider and second-factor sign-in with `auth.jurisdiction_hold`; production refuses to start without an explicit gate mode; count refusals per place and day.",
+        "Persistence in packages/data/migrations/jurisdiction: jurisdiction_hold (one open hold per person, never deleted, clear columns whole), jurisdiction_refusal_count, a SECURITY DEFINER clear command authorized through admin_authorize with permission admin.screening.holds.clear, never by the subject, audited with admin_record; real-PostgreSQL negative and concurrency tests."
+      ],
+      "acceptance": [
+        "A request from a restricted place is refused by the web proxy and by the API alike, including a path the proxy does not know (tested with the fake adapter and documentation address ranges).",
+        "A refused request with a valid session holds the person; concurrent sightings leave exactly one open hold (tested on PostgreSQL).",
+        "A held person is refused on every request and at every sign-in path, and cannot clear their own hold; a reviewer without the permission or without an elevation is refused (tested under the runtime role).",
+        "No network address is written to any table, log line or outbox payload (scan and test).",
+        "The API refuses to start in production without an explicit gate mode; the `fake` adapter is refused in production.",
+        "Every string of the refusal page and the sign-in refusal exists in every engine language."
+      ],
+      "paths": [
+        "packages/contracts/src/sanctions.ts",
+        "tests/contracts/sanctions.test.ts",
+        "packages/compliance/src/jurisdiction",
+        "packages/compliance/bin",
+        "apps/web/proxy.ts",
+        "apps/web/app/restricted",
+        "apps/web/app/_lib/jurisdiction.ts",
+        "apps/web/locales/en/jurisdiction.json",
+        "apps/web/locales/ru/jurisdiction.json",
+        "apps/web/locales/uz-Latn/jurisdiction.json",
+        "apps/web/locales/ka/jurisdiction.json",
+        "apps/web/locales/hy/jurisdiction.json",
+        "apps/web/locales/az-Latn/jurisdiction.json",
+        "apps/api/src/app.ts",
+        "apps/api/src/config.ts",
+        "apps/api/src/deps/compliance.ts",
+        "apps/api/src/modules/jurisdiction",
+        "apps/api/src/modules/identity",
+        "packages/data/migrations/jurisdiction",
+        "packages/data/src/schema/jurisdiction.ts",
+        "packages/data/src/repositories/jurisdiction.ts",
+        "tests/jurisdiction"
+      ]
+    },
+    {
+      "id": "SANC-002",
+      "title": "Sanctions list ingestion and freshness through the worker",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-001",
+        "REL-001"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Keep the baseline OFAC lists and each hub's additional lists as immutable, fresh list versions ingested by the worker, with normalized name keys, so screening never runs against a missing, truncated or stale list (ADR 014 decisions 10 and 11).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/data/model.md",
+        "docs/engine/hub-administration.md",
+        "packages/country-packs/src/facets.ts",
+        "packages/compliance/src/index.ts",
+        "apps/worker/README.md"
+      ],
+      "steps": [
+        "Extend the sanctions contracts with list, list version, entry and freshness shapes; name normalization in packages/compliance/src/names (case, marks, punctuation, ICAO 9303 Cyrillic and further script tables as sourced data, sorted distinct tokens).",
+        "Parsers in packages/compliance/src/lists for the OFAC Sanctions List Service exports (SDN and consolidated non-SDN, primary names and aliases, entry type, programs, published date) and a fake list with synthetic entries; adapters for additional lists named by country-pack sanctions facts register in ENGINE_ADAPTERS.",
+        "Worker jobs (apps/worker/src/screening-lists): `file` mode reads official exports from the data directory, `live` mode is wired but refuses without a provider activated by a second person (KEYS-001), `fake` for tests; stage, check sanity bounds (entry-count drop), activate, emit `screening.list_version_activated`.",
+        "Freshness: cadence, warning and stale ages per list; a stale baseline marks screening unavailable; a monthly check of the geolocation range table age with an operations warning past two months.",
+        "Persistence in packages/data/migrations/screening-lists: screening_list, screening_list_version (immutable once staged, one active per list), screening_list_entry; baseline rows cannot be paused."
+      ],
+      "acceptance": [
+        "A truncated or malformed export is never activated and the previous version stays active (tested).",
+        "The baseline lists cannot be paused or deleted by the runtime role or a console path (tested).",
+        "Normalization maps the same name written in Latin with marks, in another order or in Cyrillic to the same key (tested with synthetic names, never real listed people in fixtures beyond the published list format).",
+        "No network call happens in tests or without an activated live provider.",
+        "A list past its stale age is reported stale and makes `screening_available` false (clock test)."
+      ],
+      "paths": [
+        "packages/contracts/src/sanctions.ts",
+        "tests/contracts/sanctions.test.ts",
+        "packages/compliance/src/names",
+        "packages/compliance/src/lists",
+        "packages/country-packs/src/adapters.ts",
+        "apps/worker/src/screening-lists",
+        "packages/data/migrations/screening-lists",
+        "packages/data/src/schema/screening-lists.ts",
+        "packages/data/src/repositories/screening-lists.ts",
+        "tests/screening-lists"
+      ]
+    },
+    {
+      "id": "SANC-003",
+      "title": "Screening engine: persons and companies at registration, sign-in and change, matching, results and review cases",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-002"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Screen every person and company against the active lists with the deterministic engine rule and an optional fuzzy layer, record honest outcomes, open review cases with separation of duties, and expose the screening state other modules gate on (ADR 014 decisions 11 to 15).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/data/model.md",
+        "docs/engine/hub-administration.md",
+        "docs/engine/hub-console/README.md",
+        "packages/data/migrations/admin/20261101180000_admin_staff.sql",
+        "packages/contracts/src/admin.ts"
+      ],
+      "steps": [
+        "Matcher in packages/compliance/src/matching: persons against individuals, companies against entities, the engine rule (all tokens with at most one more on the entry side, or the entry equals the subject minus one token for three or more tokens), `insufficient_name` for one-token names, an optional token-similarity layer within bounds that only adds matches; matcher version in every result.",
+        "Worker screening jobs (apps/worker/src/screening) from `identity.person_registered`, `identity.session_started` (only when newer list versions exist or names changed), `company.created` and new name-change events (`identity.name_changed`, `company.renamed`, ownership declaration changes) added minimally in identity and directory; a nightly names-digest sweep as the safety net.",
+        "Persistence in packages/data/migrations/screening: screening_subject_state, screening_result, screening_match, screening_decision with guards: decider never the subject or a member of the subject company, no declared conflict, not-same-person and reversals need a second person (register `screening.clear_match` and `screening.reverse_confirmation` as second-person actions with the data integrator's agreement), appeals by a different reviewer; money_held recomputed in the same transaction.",
+        "API module apps/api/src/modules/screening: the subject's own status (`core.compliance_status`), the appeal command, staff queue and decision routes under elevation, the internal `screeningState(subject)` port for gates; queue items late after the hub service level; staff notifications that name nobody and cannot be muted.",
+        "Confirmed matches suspend the person or company through the existing standing paths, stop their agent and connections, and produce a report draft for the operator; nothing reaches ranking, matching, recommendations or reputation."
+      ],
+      "acceptance": [
+        "A possible match never auto-clears or auto-blocks sign-in; money_held is true while it is open (tested).",
+        "Only `clear` against the active baseline versions or a decided not-same-person sets money_held false; `insufficient_name` and `not_screened` keep it true (tested).",
+        "The subject, a member of the subject company or a conflicted reviewer cannot decide; not-same-person without a second person fails; two concurrent approvals produce one decision (tested on PostgreSQL under the runtime role).",
+        "A decided entry is not flagged again for the same subject unless its normalized names change (tested).",
+        "No screening field appears in any public, counterparty, search, federation or agent projection (projection tests)."
+      ],
+      "paths": [
+        "packages/contracts/src/sanctions.ts",
+        "tests/contracts/sanctions.test.ts",
+        "packages/compliance/src/matching",
+        "apps/worker/src/screening",
+        "apps/api/src/modules/screening",
+        "apps/api/src/modules/identity",
+        "apps/api/src/modules/directory",
+        "packages/data/migrations/screening",
+        "packages/data/src/schema/screening.ts",
+        "packages/data/src/repositories/screening.ts",
+        "tests/screening"
+      ]
+    },
+    {
+      "id": "SANC-004",
+      "title": "Screening gates for money, commercial commitments, counterparties and agents",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-003",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "No money moves and no commitment binds for a subject who is held, matched, unscreened or screened against stale lists; the gate fails closed (ADR 014 decision 13; Contribuda parity for payouts).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/engine/commerce.md",
+        "docs/engine/billing.md",
+        "docs/engine/modules/getting-paid.md",
+        "docs/engine/agents.md"
+      ],
+      "steps": [
+        "Gate port in apps/api/src/modules/screening-gates: `requireTransactable(subjects, purpose)` reading screening state and holds, refusing with `screening.review_pending`, `screening.unavailable` or `jurisdiction.restricted`, failing closed when the state cannot be read.",
+        "Wire the gate into quote sending, order acceptance and agreement binding for both parties (sales, procurement, transactions modules) and into agent commits through the mandate evaluation path.",
+        "Payee and payout-country helpers for PAY-001 and BILL-002: a restricted payout country is refused before any provider is called and holds the declaring person (`payout_country`).",
+        "Counterparty words: the other side learns only that the party cannot transact now; the subject sees the status words of SANC-003.",
+        "Negative and concurrency tests: a decision racing a commitment never lets the commitment bind on a stale answer."
+      ],
+      "acceptance": [
+        "A quote, order or agreement involving a held, matched, unscreened or stale-screened party is refused (tested for each party side).",
+        "When the screening store is unavailable the gate refuses (tested).",
+        "A restricted payout country is refused before the provider fake is called (tested).",
+        "Counterparty responses contain no screening detail (projection test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/screening-gates",
+        "apps/api/src/modules/sales",
+        "apps/api/src/modules/procurement",
+        "apps/api/src/modules/transactions",
+        "tests/screening-gates"
+      ]
+    },
+    {
+      "id": "SANC-005",
+      "title": "Re-screening on every list update and on schedule",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-003"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Every active person and company is screened again against each newly activated list version, with a weekly safety net, idempotently and with progress the console can show (ADR 014 decision 12).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/engine/hub-console/automation-and-scheduling.md",
+        "apps/worker/README.md"
+      ],
+      "steps": [
+        "On `screening.list_version_activated` enqueue a delta run: subjects whose names could meet changed or added entries first, then all active subjects; batch through the job runner with backpressure.",
+        "Weekly scheduled full run (the `sanctions_rescreen` schedule kind of the console contract) and a manual trigger for compliance staff.",
+        "Persistence in packages/data/migrations/rescreen: screening_rescreen_run with counts and state; idempotency per (subject, list version); resumable after failure.",
+        "Metrics: run duration, subjects per minute, matches opened; an alert when a run fails or exceeds its window."
+      ],
+      "acceptance": [
+        "A new list version that adds an entry matching an existing subject opens a review case for that subject without any other trigger (tested).",
+        "Running the same delta twice opens no duplicate matches (tested).",
+        "A run interrupted half-way resumes without re-screening finished subjects (tested)."
+      ],
+      "paths": [
+        "apps/worker/src/rescreen",
+        "packages/data/migrations/rescreen",
+        "packages/data/src/schema/rescreen.ts",
+        "packages/data/src/repositories/rescreen.ts",
+        "tests/rescreen"
+      ]
+    },
+    {
+      "id": "SANC-006",
+      "title": "Console: screening section, holds and matches queue, compliance panel on people and companies",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "SANC-003",
+        "SANC-005",
+        "HUBC-004",
+        "ADM-001",
+        "LANG-ES"
+      ],
+      "handbook": "docs/engine/hub-console/screens.md",
+      "goal": "Give compliance staff the screens to run the engine: Trust then Screening (lists and freshness, geolocation table, matches queue, holds, re-screen runs, metrics) and a compliance panel on person and company pages with decisions under a second person (ADR 014 decisions 14 and 18).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/engine/modules/sanctions-compliance.md",
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/hub-console/README.md"
+      ],
+      "steps": [
+        "HC-74 Screening on the API: baseline lists shown always on, additional lists, freshness, geolocation dataset and age, re-screen runs, cohort metrics.",
+        "Matches queue: one item per subject with lateness; the case view shows list entry and screened names side by side; confirm, propose not-same-person (second person through the approvals inbox), appeals to a different reviewer.",
+        "Holds: open holds with place, source, dataset and time; clear with reason and evidence category; history.",
+        "Compliance panel on person and company pages; notifications that name nobody; the screening namespace in every engine language; keyboard and screen-reader checks."
+      ],
+      "acceptance": [
+        "No control can disable a baseline list, loosen matching below the engine rule or clear without a reason (scan and test).",
+        "A not-same-person decision cannot complete without a second person against the API (end-to-end test).",
+        "The subject's own account never sees the console paths (negative test)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/trust/screening",
+        "apps/web/app/admin/hubs/[hub]/participants/compliance",
+        "apps/web/locales/en/screening.json",
+        "apps/web/locales/ru/screening.json",
+        "apps/web/locales/uz-Latn/screening.json",
+        "apps/web/locales/ka/screening.json",
+        "apps/web/locales/hy/screening.json",
+        "apps/web/locales/az-Latn/screening.json",
+        "apps/web/locales/es/screening.json",
+        "tests/web/admin/screening"
+      ]
+    },
+    {
+      "id": "SANC-007",
+      "title": "Refusal and notice copy in every language, legal sections and the participant's compliance page",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-003",
+        "LANG-ES",
+        "MAIL-001"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Say every refusal and notice kindly, truthfully and only as far as the law allows, in every engine language, and let a participant see their own status and appeal (ADR 014 decision 15).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/legal/templates/terms-sanctions-and-export-controls.md",
+        "docs/engine/localization.md",
+        "docs/oss/BRAND.md"
+      ],
+      "steps": [
+        "Spanish (and every later engine language) for the jurisdiction namespace; native-speaker review flags for every language.",
+        "Mail templates for a hold, a cleared hold, a review pending, a decision and an appeal outcome through the outbox (no list or entry named).",
+        "Privacy-notice section \"Location and sanctions compliance\" and updates to the terms template section, as drafts for counsel; geolocation dataset attribution text.",
+        "Settings, Account, Compliance: own status words and the appeal form (`core.compliance_status`, `core.appeal_compliance_decision`), keyboard and screen-reader accessible."
+      ],
+      "acceptance": [
+        "Every key of the jurisdiction and screening namespaces exists in every engine language (test).",
+        "No notice names a list, an entry or another person (test over templates).",
+        "The appeal needs a fresh step-up and reaches a reviewer other than the original decider (tested)."
+      ],
+      "paths": [
+        "apps/web/locales/es/jurisdiction.json",
+        "apps/web/app/app/settings/account/compliance",
+        "apps/worker/src/mail/templates/screening",
+        "docs/legal/templates",
+        "tests/web/compliance"
+      ]
+    },
+    {
+      "id": "SANC-008",
+      "title": "Our own services refuse restricted places: federation admission, update channel, registry, hub directory and support",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-001"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Enforce on what we control instead of a kill switch in the engine (owner decision 2026-10-31, ADR 014 decision 4): a shared admission check from declared jurisdiction, deployment attestation and geolocation on our side, used by federation and by the services Contribuda operates.",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation.md",
+        "NOTICE"
+      ],
+      "steps": [
+        "Admission check in packages/compliance/src/admission: refuse when the manifest jurisdiction or territories, the attested operator-entity or hosting country, or the observed server address (resolved on our side through the geolocation port) is a restricted place; result records place and dataset, never the address.",
+        "Runbook docs/operations/sanctions-our-services.md for the update and release channel, container registry pulls, the public hub directory, support channels and hosted services: which control applies where, who reviews refusals.",
+        "Tests with fake manifests, attestations and documentation addresses; FED-001 calls the check at handshake."
+      ],
+      "acceptance": [
+        "A peer whose manifest, attestation or observed address is restricted is refused, and the refusal record contains no address (tested).",
+        "The engine gains no code that geolocates its own server or disables itself by location (review checklist item)."
+      ],
+      "paths": [
+        "packages/compliance/src/admission",
+        "docs/operations/sanctions-our-services.md",
+        "tests/compliance/admission"
+      ]
+    },
+    {
+      "id": "SANC-009",
+      "title": "Deployment-location attestation in the setup wizard",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [
+        "SANC-001",
+        "DATA-002"
+      ],
+      "handbook": "docs/engine/modules/sanctions-compliance.md",
+      "goal": "Record where the operator's legal entity and the hosting are, refuse restricted places, audit it and require renewal on change and yearly, complementing the configuration, pack and kernel refusals (owner decision 2026-10-31, ADR 014 decision 4).",
+      "read": [
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/engine/hub-console/setup-wizard.md",
+        "docs/engine/hub-console/screens.md"
+      ],
+      "steps": [
+        "Contract for the attestation (operator entity country, hosting country and region, gate mode, attesting person, expiry) in the sanctions contracts.",
+        "Persistence in packages/data/migrations/attestation: deployment_location_attestation, append-only, superseding rows; a definer command under admin_authorize with an elevation; restricted places refused through the kernel.",
+        "API in apps/api/src/modules/jurisdiction/attestation: current attestation, attest, renewal reminders; the node manifest reads the jurisdiction from it (FED-001).",
+        "HUB-004 calls it as a required wizard step; an expired attestation reopens the launch gate."
+      ],
+      "acceptance": [
+        "A restricted entity or hosting country or region is refused (tested).",
+        "An attestation older than a year or contradicted by a configuration change is reported expired and reopens the gate (clock test).",
+        "Every attestation is audited with the attesting person and elevation (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/jurisdiction/attestation",
+        "packages/data/migrations/attestation",
+        "packages/data/src/schema/attestation.ts",
+        "packages/data/src/repositories/attestation.ts",
+        "tests/attestation"
+      ]
+    },
+    {
       "id": "HUB-003",
-      "title": "Counterparty verification adapters, recipes and sanctions list configuration",
+      "title": "Counterparty verification adapters and recipes (sanctions screening through the SANC engine)",
       "area": "verification",
       "status": "open",
       "dependsOn": [
         "HUB-001",
-        "KEYS-001"
+        "KEYS-001",
+        "SANC-003"
       ],
       "handbook": "docs/engine/hub-administration.md",
-      "goal": "Turn local registers and sanctions lists into evidence: check adapters in fake, manual and live modes, recipes per subject and trigger, results with retention and appeals.",
+      "goal": "Turn local registers into evidence: check adapters in fake, manual and live modes, recipes per subject and trigger, results with retention and appeals; the sanctions check calls the screening engine of ADR 014 (SANC-003) instead of keeping its own lists.",
       "read": [
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/hub-administration.md",
         "docs/engine/country-specifics.md",
-        "packages/compliance/src/index.ts"
+        "packages/compliance/src/index.ts",
+        "docs/adr/014-sanctions-compliance-engine.md"
       ],
       "steps": [
         "Define check-type contracts (register match, officer match, tax status, licence, qualification, ownership, sanctions, domain, signature, call-back).",
         "Implement adapters with deterministic fakes and a manual-review mode; live mode behind second-person activation and KEYS-001 secret references.",
-        "Implement recipes, result evidence records, expiry and re-check scheduling (packages/data/migrations/verification).",
-        "Implement potential-match review cases and appeals decided by a different reviewer; map results to badge categories and eligibility flags."
+        "Implement recipes, result evidence records, expiry and re-check scheduling (packages/data/migrations/verification); the `sanctions_screening` check reads and triggers SANC-003 screening and stores only a reference to its result.",
+        "Implement review cases and appeals for non-sanctions checks decided by a different reviewer (sanctions matches are reviewed in SANC-003); map results to badge categories and eligibility flags."
       ],
       "acceptance": [
-        "Baseline sanctions screening cannot be disabled.",
-        "A potential match never auto-blocks or auto-clears.",
+        "Baseline sanctions screening cannot be disabled; recipes cannot drop the sanctions check (tested).",
+        "A potential sanctions match never auto-blocks or auto-clears and blocks the claim until SANC-003 decides it.",
         "Badges show categories, never documents; results expire and trigger re-checks per recipe."
       ],
       "paths": [
@@ -3460,7 +3842,8 @@
         "CLM-001",
         "PLAN-003",
         "AGT-003",
-        "AGT-023"
+        "AGT-023",
+        "SANC-006"
       ],
       "handbook": "docs/engine/hub-console/support.md",
       "goal": "Wire the M4 and M5 sections to the API.",
@@ -5059,7 +5442,8 @@
         "Quotas and capacity hold under concurrent registrations (tested).",
         "A sold ticket keeps its price version; unknown payment outcomes reconcile, never double-charge.",
         "Speakers are shown only with recorded consent; sponsorship and payments never change listing order.",
-        "A hosted-buyer meeting needs both sides' acceptance; the optimiser never double-books a person (test)."
+        "A hosted-buyer meeting needs both sides' acceptance; the optimiser never double-books a person (test).",
+        "Organizers taking payments pass the screening gate before ticketing opens (tested)."
       ],
       "paths": [
         "apps/api/src/modules/events",
@@ -5542,7 +5926,8 @@
       "status": "open",
       "dependsOn": [
         "FED-000",
-        "HUB-001"
+        "HUB-001",
+        "SANC-008"
       ],
       "handbook": "docs/engine/federation.md",
       "goal": "Each node gets a signing key, a signed manifest, key rotation and peering agreements with levels.",
@@ -5560,7 +5945,8 @@
       "acceptance": [
         "Unsigned or wrongly signed requests are rejected.",
         "Peering above syndicate needs a second approver.",
-        "Defederation stops feeds and deliveries without rewriting history."
+        "Defederation stops feeds and deliveries without rewriting history.",
+        "A peer whose manifest, attestation or observed server location is a restricted place is refused at handshake through the SANC-008 admission check (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/node",

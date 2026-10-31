@@ -847,6 +847,23 @@
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R72",
+      "tasks": [
+        "SANC-001",
+        "SANC-002",
+        "SANC-003",
+        "SANC-004",
+        "SANC-005",
+        "SANC-006",
+        "SANC-007",
+        "SANC-008",
+        "SANC-009"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; ADR 014 and docs/engine/modules/sanctions-compliance.md are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }

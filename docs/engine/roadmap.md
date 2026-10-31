@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 247 packages: 26 done, 219 open, 1 blocked and 1 rejected (superseded); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 257 packages (49 done when the sanctions packages were added); 9 of them are the sanctions compliance engine of [ADR 014](../adr/014-sanctions-compliance-engine.md) (SANC-001 … SANC-009); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71).
 
 ## Rules that keep parallel work safe
 
@@ -97,7 +97,7 @@ Billing with two budget kinds, a provider-neutral payment port that only license
 |---|---|---|---|
 | BIZ-001 | Hub business-model playbook and the public price-transparency page design | open |  |
 | BILL-001 | Neutral offers, entitlements and two budget kinds | open | DATA-004 |
-| PAY-001 | Payment provider port: licensed providers only, webhook inbox and reconciliation | open | BILL-001, REL-001 |
+| PAY-001 | Payment provider port: licensed providers only, webhook inbox and reconciliation | open | BILL-001, REL-001, SANC-004 |
 | BILL-002 | Invoices, tax determinations, refunds and payouts through licensed providers | open | PAY-001, DATA-003 |
 | BILL-003 | Hub commissions and fees as versioned, disclosed settings | open | BILL-001, HUB-001, WEB-004 |
 | CONS-002 | Paid consultations and mentoring through the payment provider | open | CONS-001, PAY-001, BILL-003 |
@@ -151,9 +151,9 @@ Hubs, territories and versioned configuration, jurisdiction settings (decision 2
 | HUBC-000 | Review and freeze the hub console contracts | done |  |
 | HUB-001 | Hubs, territories, hub-scoped staff and versioned hub configuration | open | DATA-002, ADM-001, HUBC-000, CFG-001 |
 | HUB-005 | Jurisdiction settings: agent disclosure, liability, consent, record-keeping and per-action limits | open | HUB-001, CTRY-002 |
-| HUB-004 | Setup wizard backend and first run | open | HUB-001, BE-004 |
+| HUB-004 | Setup wizard backend and first run | open | HUB-001, BE-004, SANC-009 |
 | KEYS-001 | Provider connections, secret store, model routes, egress, spending caps and kill switches | open | HUB-001, REL-001 |
-| HUB-003 | Counterparty verification adapters, recipes and sanctions list configuration | open | HUB-001, KEYS-001 |
+| HUB-003 | Counterparty verification adapters and recipes (sanctions screening through the SANC engine) | open | HUB-001, KEYS-001, SANC-003 |
 | CLM-001 | Company identifiers, registrations, licences, claims and per-hub verification badges | open | HUB-003, BE-003, REP-001 |
 | SUP-001 | Support workspace and account servicing without impersonation | open | ADM-001 |
 | PRV-001 | Privacy operations: requests, exports, erasure ledger, legal holds, retention and state privacy rights | open | ADM-001, HUB-001 |
@@ -180,7 +180,7 @@ Hubs, territories and versioned configuration, jurisdiction settings (decision 2
 | HUBC-006 | Console M6: federation, privacy, staff, audit, operations and node console on fixtures | open | ADM-002 |
 | HUBC-007 | Console live wiring: shell, setup, hub settings, approvals and staff | open | ADM-002, HUB-004, HUB-005 |
 | HUBC-008 | Console live wiring: keys, models, automation, editorial and data | open | HUBC-002, HUBC-003, HUBC-007, PIPE-001, EDIT-001, MINE-001 |
-| HUBC-009 | Console live wiring: participants, support, trust, modules, agents and billing | open | HUBC-004, HUBC-005, HUBC-007, SUP-001, CLM-001, PLAN-003, AGT-003, AGT-023 |
+| HUBC-009 | Console live wiring: participants, support, trust, modules, agents and billing | open | HUBC-004, HUBC-005, HUBC-007, SUP-001, CLM-001, PLAN-003, AGT-003, AGT-023, SANC-006 |
 | HUBC-010 | Console live wiring: federation, privacy, operations and node console | open | HUBC-006, HUBC-007, PRV-001, OPS-004, FED-001 |
 | HUB-002 | Hub operator console (umbrella): end-to-end acceptance of every section | open | HUBC-008, HUBC-009, HUBC-010 |
 
@@ -271,7 +271,7 @@ The mesh of ADR 011: protocol, node identity, syndication, directory links, cros
 | ID | Title | Status | Depends on |
 |---|---|---|---|
 | FED-000 | Specify the mesh protocol and federation contracts | open |  |
-| FED-001 | Node identity, manifest, signatures and peering records | open | FED-000, HUB-001 |
+| FED-001 | Node identity, manifest, signatures and peering records | open | FED-000, HUB-001, SANC-008 |
 | FED-002 | Public syndication, replicas and tombstones | open | FED-001, EVT-001 |
 | FED-003 | Directory federation and entity links | open | FED-002, CLM-001 |
 | FED-004 | Cross-node deals and agent envelopes | open | FED-003, AGT-001 |
@@ -301,6 +301,22 @@ Packages for capabilities the [module specifications](modules/README.md) added f
 | ANL-001 | Privacy-preserving analytics: own metrics, cohorts and aggregate readership | 4 (hubs) | open | REL-001, HUB-001, WEB-004 |
 | PRV-002 | Data-broker readiness and deletion-platform adapters | 4 (data mining and privacy) | open | PRV-001, MINE-001 |
 | FIN-001 | Financing partner referrals: licensed, labelled, never ranking | 3 (payments) | open | BILL-003, HUB-003 |
+
+## Sanctions compliance engine (ADR 014)
+
+Owner decision 24 of [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md): the same engine as Contribuda, configurable per hub; no kill switch in the engine, enforcement on what we control ([ADR 014](../adr/014-sanctions-compliance-engine.md)). SANC-001 can start now; SANC-002 to SANC-005 follow in order; PAY-001, FED-001, HUB-004 and HUBC-009 wait for the slices they call; HUB-003 calls the screening engine for its sanctions check.
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| SANC-001 | Jurisdiction gate and holds: restricted visitors refused at the web proxy and the API, sightings hold the person | open | DATA-002, BE-004, CFG-001, OPS-001 |
+| SANC-002 | Sanctions list ingestion and freshness through the worker | open | SANC-001, REL-001 |
+| SANC-003 | Screening engine: persons and companies at registration, sign-in and change, matching, results and review cases | open | SANC-002 |
+| SANC-004 | Screening gates for money, commercial commitments, counterparties and agents | open | SANC-003, COM-002 |
+| SANC-005 | Re-screening on every list update and on schedule | open | SANC-003 |
+| SANC-006 | Console: screening section, holds and matches queue, compliance panel on people and companies | open | SANC-003, SANC-005, HUBC-004, ADM-001, LANG-ES |
+| SANC-007 | Refusal and notice copy in every language, legal sections and the participant's compliance page | open | SANC-003, LANG-ES, MAIL-001 |
+| SANC-008 | Our own services refuse restricted places: federation admission, update channel, registry, hub directory and support | open | SANC-001 |
+| SANC-009 | Deployment-location attestation in the setup wizard | open | SANC-001, DATA-002 |
 
 ## Languages and country packs
 
@@ -414,3 +430,4 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 | Practitioner interview programme | Owner | AGT-020 (blocked) |
 | Personalized journal policy | Owner | Not scheduled |
 | International by default: language and country-pack roadmap, honest review status | Decided 2026-10-31 by the owner ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 30) | LANG-PT … LANG-JA, INTL-005 … INTL-007, CTRY-EU, CTRY-CA … CTRY-AU |
+| Full sanctions-compliance engine with Contribuda parity; no kill switch in the engine, enforcement on our own services, deployment attestation, trademark | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 24, [ADR 014](../adr/014-sanctions-compliance-engine.md)); lists, geolocation adapter, thresholds and counsel wording open | SANC-001 … SANC-009, HUB-003, PAY-001, FED-001, HUB-004 |
