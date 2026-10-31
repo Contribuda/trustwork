@@ -19,7 +19,7 @@ import { AgentModuleKeySchema, LocaleTagSchema, type KillSwitch } from './hub.js
  *
  * Invariants carried by these schemas and pure functions:
  * - chat text, connections and agents never create, confirm or widen a mandate (`mandateChangeAllowed`);
- * - `confirm_execution` is human-only: no schema-valid mandate pre-authorizes it (`evaluateMandateV2`);
+ * - `confirm_execution` and `approve` are human-only: no schema-valid mandate pre-authorizes them (`evaluateMandateV2`);
  * - a note-kind (free text) condition is display-only and forces ask-each;
  * - money commitments need a budget of the right kind;
  * - a capability marked `commit` names a mandate kind and a confirmation policy (`capabilityViolations`);
@@ -60,16 +60,23 @@ export type FirstPartyConfirmation = z.infer<typeof FirstPartyConfirmationSchema
 
 /* ---------- Mandate v2 ---------- */
 
-/** v1 verbs plus the catalogue verbs. This is the "mandate kind" that capabilities and extensions declare. */
+/**
+ * v1 verbs plus the catalogue verbs. This is the "mandate kind" that capabilities and extensions declare.
+ * `approve`, `release_payment` and `maintain_records` were appended by the procurement and supply contracts (PRC-000,
+ * ADR 012 decision 36): `approve` is human-only, `release_payment` spends the transaction budget, `maintain_records`
+ * changes the principal company's own internal records and needs no budget. Appending verbs keeps every v1 and v2
+ * mandate valid.
+ */
 export const MANDATE_ACTIONS_V2 = [
   ...MandateActionSchema.options,
   'introduce', 'schedule', 'maintain_profile', 'publish', 'register', 'record_evidence', 'confirm_execution',
+  'approve', 'release_payment', 'maintain_records',
 ] as const;
 export const MandateActionV2Schema = z.enum(MANDATE_ACTIONS_V2);
 export type MandateActionV2 = z.infer<typeof MandateActionV2Schema>;
 
 /** Action classes that can never be pre-authorized, whatever a mandate or a hub policy says. */
-export const HUMAN_ONLY_ACTIONS: readonly MandateActionV2[] = ['confirm_execution'];
+export const HUMAN_ONLY_ACTIONS: readonly MandateActionV2[] = ['confirm_execution', 'approve'];
 export function isHumanOnlyAction(action: MandateActionV2): boolean {
   return HUMAN_ONLY_ACTIONS.includes(action);
 }
@@ -79,6 +86,7 @@ export const BUDGET_KIND_BY_ACTION: Readonly<Record<MandateActionV2, BudgetKind 
   prepare: null, research: null, communicate: null, send_quote: null, negotiate: null,
   place_order: 'transaction', accept_order: 'transaction', generate_deliverable: 'platform',
   introduce: null, schedule: null, maintain_profile: null, publish: null, register: 'transaction', record_evidence: null, confirm_execution: null,
+  approve: null, release_payment: 'transaction', maintain_records: null,
 };
 /** Actions that commit the principal's money: a mandate covering them names a budget of the matching kind and a ceiling. */
 export const MONEY_ACTIONS: readonly MandateActionV2[] = MANDATE_ACTIONS_V2.filter((a) => BUDGET_KIND_BY_ACTION[a] !== null);
@@ -144,7 +152,7 @@ export const DEFAULT_APPROVAL_BY_ACTION: Readonly<Record<MandateActionV2, Approv
   send_quote: { mode: 'ask_each' }, negotiate: { mode: 'ask_each' }, place_order: { mode: 'ask_each' }, accept_order: { mode: 'ask_each' },
   generate_deliverable: { mode: 'ask_each' }, introduce: { mode: 'ask_first', count: 3 }, schedule: { mode: 'ask_each' },
   maintain_profile: { mode: 'ask_each' }, publish: { mode: 'ask_each' }, register: { mode: 'ask_each' }, record_evidence: { mode: 'ask_first', count: 5 },
-  confirm_execution: { mode: 'ask_each' },
+  confirm_execution: { mode: 'ask_each' }, approve: { mode: 'ask_each' }, release_payment: { mode: 'ask_each' }, maintain_records: { mode: 'ask_first', count: 5 },
 };
 
 /** Company approvers: e.g. two of the named members above USD 350,000. `above: null` applies to every action. */
