@@ -21,7 +21,8 @@
         "already_linked": "This sign-in method is already linked to an account.",
         "state_mismatch": "The sign-in took too long or was interrupted. Start again."
       },
-      "email_taken": "This email is already used by another account."
+      "email_taken": "This email is already used by another account.",
+      "jurisdiction_hold": "This account is paused because it was used from a place where sanctions law does not allow this service. Nothing in it is deleted. If you are no longer there, contact the operator of this site; once a reviewer has lifted the pause, you can sign in again."
     },
     "access": {
       "not_found": "Page not found",
@@ -69,6 +70,9 @@
     },
     "internal": {
       "error": "Something went wrong on our side. Try again later."
+    },
+    "jurisdiction": {
+      "restricted": "This site is not available in your location."
     }
   },
   "taxonomy": {

@@ -21,7 +21,8 @@
         "already_linked": "Bu giriş üsulu artıq hesaba bağlanıb.",
         "state_mismatch": "Giriş çox uzun çəkdi və ya kəsildi. Yenidən başlayın."
       },
-      "email_taken": "Bu e-poçt artıq başqa hesabda istifadə olunur."
+      "email_taken": "Bu e-poçt artıq başqa hesabda istifadə olunur.",
+      "jurisdiction_hold": "Bu hesab dayandırılıb, çünki ondan sanksiyalar qanununun bu xidmətin göstərilməsinə icazə vermədiyi yerdən istifadə olunub. Orada heç nə silinməyib. Artıq orada deyilsinizsə, saytın operatoru ilə əlaqə saxlayın; yoxlayan şəxs dayandırmanı aradan qaldırdıqdan sonra yenidən daxil ola bilərsiniz."
     },
     "access": {
       "not_found": "Səhifə tapılmadı",
@@ -69,6 +70,9 @@
     },
     "internal": {
       "error": "Bizim tərəfimizdə nəsə səhv getdi. Sonra yenidən cəhd edin."
+    },
+    "jurisdiction": {
+      "restricted": "Bu sayt olduğunuz yerdə əlçatan deyil."
     }
   },
   "taxonomy": {

@@ -1,0 +1,11 @@
+{
+  "jurisdiction": {
+    "pageTitle": "Olduğunuz yerdə əlçatan deyil",
+    "title": "Bu sayt olduğunuz yerdə əlçatan deyil",
+    "lead": "Təəssüf edirik. Bu saytın operatoru sanksiyalar və ixrac nəzarəti qanunlarına əməl etməlidir: bu qanunlar Rusiyada, Krımda, Sevastopolda, Ukraynanın Donetsk və Luqansk vilayətlərində, Kubada, İranda və ya Şimali Koreyada olan hər kəsə bu xidmətin göstərilməsinə icazə vermir.",
+    "notPersonal": "Bu, şəxsən sizinlə bağlı deyil və sizin haqqınızda qiymət deyil. Qayda bu yerlərdə olan hər kəsə istisnasız tətbiq olunur.",
+    "nothingDeleted": "Hesabınız varsa, orada heç nə silinmir. Bu yerlərdən birindən daxil olmusunuzsa, artıq orada olmadığınızı təsdiqləyənə qədər hesabınız dayandırılır.",
+    "wrongPlace": "Bu yerlərin heç birində deyilsinizsə, yer yoxlaması səhv ola bilər. Zəhmət olmasa, saytın operatoru ilə onun istifadə şərtlərində göstərilən əlaqə vasitələri ilə əlaqə saxlayın.",
+    "attribution": "Yerin təxmini: {attribution}"
+  }
+}

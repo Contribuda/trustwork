@@ -6,7 +6,7 @@ import {
 } from '../../../deps/contracts.js';
 import { Authenticated, CsrfExempt, Req, ReqState, type RequestState, type TrustworkRequest } from '../../../common/request.js';
 import { Body, Params, Query } from '../../../common/zod.js';
-import { ApiError } from '../../../common/errors.js';
+import { ApiError, LocalApiError } from '../../../common/errors.js';
 import { AuthService } from '../auth.service.js';
 import { ReqLocales } from '../mail.js';
 import { APP_CONTEXT, type AppContext } from '../context.js';
@@ -77,7 +77,14 @@ export class AuthController {
   /** Top-level navigation from the provider; protected by `state` + the signed flow cookie, not by the CSRF header. */
   @Get(':provider/callback') @CsrfExempt()
   async callback(@Params(ProviderParams) params: z.infer<typeof ProviderParams>, @Query(CallbackQuery) query: z.infer<typeof CallbackQuery>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res() reply: FastifyReply, @ReqLocales() locales: string[]) {
-    const outcome = await this.providers.callback(params.provider, query, state, request, reply, locales);
+    let outcome: string;
+    try {
+      outcome = await this.providers.callback(params.provider, query, state, request, reply, locales);
+    } catch (error) {
+      // A held person (SANC-001) comes back to the sign-in page with the reason, not an error envelope.
+      if (!(error instanceof LocalApiError && error.code === 'auth.jurisdiction_hold')) throw error;
+      outcome = 'jurisdiction_hold';
+    }
     const target = new URL(this.ctx.config.authReturnPath, this.ctx.config.publicOrigin);
     target.searchParams.set('auth', outcome);
     reply.header('Cache-Control', 'no-store').header('Referrer-Policy', 'no-referrer').redirect(target.toString(), 303);

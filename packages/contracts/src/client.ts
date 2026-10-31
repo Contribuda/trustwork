@@ -51,3 +51,5 @@ export type {
 export * from './directory.js';
 // Profiles, consent records, portraits and experience (PPL-001); the web reads public profiles through the live adapter.
 export * from './profiles.js';
+// Sanctions compliance: jurisdiction gate, address primitives and holds (SANC-001, ADR 014).
+export * from './sanctions.js';

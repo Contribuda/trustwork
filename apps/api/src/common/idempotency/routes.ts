@@ -135,6 +135,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'support.second_factor_reset.approve': IN_TRANSACTION,
   'support.second_factor_reset.cancel': IN_TRANSACTION,
   'support.second_factor_reset.execute': IN_TRANSACTION,
+  // Jurisdiction holds (SANC-001): the clear and its audit row commit in the request transaction.
+  'jurisdiction.hold.clear': IN_TRANSACTION,
   // Scoped tasks from plan items (TASK-001): every route runs in one PrincipalService.runAs transaction (acceptance
   // events, the assignment, obligations, the request closing trigger and outbox events included) and returns its result
   // unchanged.

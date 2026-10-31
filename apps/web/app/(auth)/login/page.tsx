@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: { searchParams: PageSe
         { icon: 'magazine', text: t('auth.points.magazine') },
       ]}
     >
-      <LoginForm next={next} reason={typeof params.reason === 'string' ? params.reason : null} demoMode={demoModeEnabled()} secondFactor={params.auth === 'second_factor_required'} />
+      <LoginForm next={next} reason={params.auth === 'jurisdiction_hold' ? 'jurisdiction_hold' : typeof params.reason === 'string' ? params.reason : null} demoMode={demoModeEnabled()} secondFactor={params.auth === 'second_factor_required'} />
     </AuthFrame>
   );
 }

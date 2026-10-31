@@ -7,7 +7,7 @@ import { Button, Form, FormActions, FormAlert, PasswordField, TextField } from '
 import { ProviderButtons } from './ProviderButtons';
 import { SecondFactorStep } from './SecondFactorStep';
 import { mapFieldErrors, useAuthForm } from './useAuthForm';
-import { t } from '@/app/_lib/i18n';
+import { errorMessage, t } from '@/app/_lib/i18n';
 import { safeNext } from '@/app/_lib/safe-next';
 import { withBase } from '@/app/_lib/base-path';
 
@@ -53,6 +53,7 @@ export function LoginForm({ next, reason, demoMode, secondFactor = false }: { ne
         <p className="au-form__sub">{t('auth.login.subtitle')}</p>
       </div>
       {reason === 'expired' ? <FormAlert tone="info">{t('auth.sessionExpired')}</FormAlert> : null}
+      {reason === 'jurisdiction_hold' && !form.alert ? <FormAlert tone="warning">{errorMessage('auth.jurisdiction_hold')}</FormAlert> : null}
       {form.alert ? (
         <FormAlert
           tone={form.alert.tone}

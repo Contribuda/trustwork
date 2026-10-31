@@ -2530,7 +2530,7 @@
       "id": "SANC-001",
       "title": "Jurisdiction gate and holds: restricted visitors refused at the web proxy and the API, sightings hold the person",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "DATA-002",
         "BE-004",

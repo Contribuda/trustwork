@@ -2,7 +2,8 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { PrincipalSchema, type Principal } from '../../deps/contracts.js';
 import { auth, companies, emailBindings, memberships, persons, PrincipalError, sessions, withPrincipal, type Transaction } from '../../deps/data.js';
 import { clearSessionCookie, readCookie, sessionCookieName, setSessionCookie } from '../../common/cookies.js';
-import { ApiError } from '../../common/errors.js';
+import { ApiError, LocalApiError } from '../../common/errors.js';
+import { jurisdictionHolds } from '../jurisdiction/deps.js';
 import { completeInTransaction } from '../../common/idempotency/completion.js';
 import type { RequestState, SessionState, TrustworkRequest } from '../../common/request.js';
 import type { AppContext } from './context.js';
@@ -141,6 +142,8 @@ export class PrincipalService {
    * its audit row and its outbox intent commit together. The raw token is returned for `setCookie` after COMMIT.
    */
   async createSession(trx: Transaction, request: FastifyRequest, personId: string, authMethod: 'password' | 'google' | 'apple' | 'recovery'): Promise<{ sessionId: string; token: string }> {
+    // A person held after a sighting in a restricted place is refused at every sign-in path, by name (SANC-001).
+    if (await jurisdictionHolds.callerHeld(trx)) throw new LocalApiError('auth.jurisdiction_hold', 'this account is paused for a location check');
     const now = this.ctx.clock.now();
     const token = randomToken();
     const absolute = new Date(now.getTime() + this.ctx.config.session.absoluteMs);

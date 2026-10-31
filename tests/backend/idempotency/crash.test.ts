@@ -571,7 +571,7 @@ test('exactly-once completion: crash before and after the handler commit, for ev
 
   // BE-004: the support reset routes are staff routes behind an elevated session. Runs last: it enrols and elevates
   // two staff members, and the subject (`pure`) is used by no other subtest.
-  await t.test('support reset of a second factor: request, cancel, approve, execute', async () => {
+  await t.test('support reset of a second factor and clearing a jurisdiction hold (staff routes)', async () => {
     h.staff.set(seed.people.anna, ['support-agent']);
     h.staff.set(seed.people.boris, ['support-lead']);
     const agent = await as('anna');
@@ -589,6 +589,16 @@ test('exactly-once completion: crash before and after the handler commit, for ev
     await h.db.admin.query("UPDATE trustwork.second_factor_reset SET requested_at = requested_at - interval '73 hours', approved_at = approved_at - interval '73 hours', effective_at = effective_at - interval '73 hours' WHERE id = $1", [id]);
     await exactlyOnce({ action: 'support.second_factor_reset.execute', client: lead, url: `${base}/${id}/execute`, body: {}, effects: () => auditCount(h.db.admin, 'support.second_factor_reset_completed') });
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.outbox_event WHERE type = 'identity.second_factor_reset_completed' AND aggregate_id = $1", [seed.people.pure]), 1, 'one completion intent');
+
+    // SANC-001: clearing a jurisdiction hold is a staff route behind the same elevation; anna is made a compliance
+    // officer of the node and clears a synthetic hold of `pure`.
+    const holdId = await withMaintenance(h.db.admin, async (trx) => {
+      const node = await trx.insertInto('admin_node').values({ label: 'Synthetic crash-test node' }).returning('id').executeTakeFirstOrThrow();
+      await trx.insertInto('staff_role_definition_version').values({ role: 'compliance-officer', version: 1, scopes: ['node'], permissions: ['admin.claims.read'], grant_max_hours: 72, sod_mode: 'reduced' }).execute();
+      await trx.insertInto('staff_role_assignment').values({ person_id: seed.people.anna, role: 'compliance-officer', scope_kind: 'node', node_id: node.id, definition_version: 1, granted_by: null, reason: 'Synthetic setup', setup_bootstrap: true }).execute();
+      return (await trx.insertInto('jurisdiction_hold').values({ person_id: seed.people.pure, place: 'CU', source: 'geolocation', dataset: 'fake' }).returning('id').executeTakeFirstOrThrow()).id;
+    });
+    await exactlyOnce({ action: 'jurisdiction.hold.clear', client: agent, url: `/v1/admin/jurisdiction/holds/${holdId}/clear`, body: { reason: 'Synthetic: confirmed at home by a call', evidence: 'call' }, effects: () => count(h.db.admin, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'jurisdiction.hold_cleared'") });
   });
 
   await t.test('platform administration (ADM-001): staff, approvals, case grants, moderation, appeals, flags', async () => {
