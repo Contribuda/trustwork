@@ -1,12 +1,12 @@
 # Agent product administration
 
-Status: **Proposed**. Contract: `AgentModuleVersionSchema`, `MeteredPriceVersionSchema`, `unitMargin`, `meteredVersionsOverlap`, `AgentPlanVersionSchema`, `ExternalAgentClientSchema`, `AgentUsageStatSchema`, `suppressSmallCount`, `AGGREGATE_MIN_COHORT`, `KillSwitchSchema`, `ProviderBudgetSchema`, `HubAgentPolicySchema`, `JurisdictionSettingsRefSchema`, `AgentExtensionVersionRefSchema`, `MarketplaceFeeVersionSchema` (console contract 1.0.0) in [`hub.ts`](../../../packages/contracts/src/hub.ts); mandates and actions in `assistant.ts`; offers, price versions and budgets in `billing.ts`. Screens HC-80…HC-84 in [screens](screens.md#agents). Backend: proposed AGTP-001 on top of AST-001 and BILL-001.
+Status: **Proposed**. Contract: the agent-product vocabulary is AGT-002's [`agent-catalog.ts`](../../../packages/contracts/src/agent-catalog.ts) (`AgentModuleManifestSchema`, `HubAgentPolicySchema`, `SubscriptionPlanVersionSchema`, `MeterRateVersionSchema`, `ExternalConnectionSchema`); the hub-side parts are `agentPolicySecondPersonActions`, `MeterCostEstimateSchema`, `unitMargin`, `AgentUsageStatSchema`, `suppressSmallCount`, `AGGREGATE_MIN_COHORT`, `KillSwitchSchema`, `ProviderBudgetSchema`, `JurisdictionSettingsRefSchema`, `AgentExtensionVersionRefSchema`, `MarketplaceFeeVersionSchema` (console contract 1.0.0) in [`hub.ts`](../../../packages/contracts/src/hub.ts); mandates and actions in `assistant.ts`; offers, price versions and budgets in `billing.ts`. Screens HC-80…HC-84 in [screens](screens.md#agents). Backend: proposed AGTP-001 on top of AST-001 and BILL-001.
 
 Every participant has **one** agent ([Your agent](../agents.md)); a company may have **one** standing representative. This section of the console configures the agent **product** in the hub: what the agent can do here, with which models, within which limits, at what price, and how outside agents may connect. It is not a place to manage anyone's agent, read their conversations or see their mandates. There is no list of bots, in the product or in the console.
 
 ## Modules: what agents can do in this hub
 
-A **module** is a capability bundle of the participant's agent, versioned per hub (`AgentModuleVersionSchema`). Examples (the operator defines the real catalogue):
+A **module** is a capability bundle of the participant's agent, shipped as an engine manifest (`AgentModuleManifestSchema`, AGT-002) and enabled per hub in the hub agent policy (`HubAgentPolicySchema`). Examples (the operator defines the real catalogue):
 
 | Module key | Actions (mandate verbs) | Typical eligibility | Notes |
 |---|---|---|---|
@@ -70,7 +70,7 @@ US example: `rfq_responder` run, cost 3.25 cents (measured average), sale 10 cen
 
 ## Plans, tiers and trials
 
-A **plan version** (`AgentPlanVersionSchema`) buys capacity: units per month per module, a trial length (0–90 days), payer kind (person, company, either). It has no field that could change ranking, matching, reputation or verification, by construction; the console says so on the plan editor. Free minimum participation stays free ([billing](../billing.md#free-to-participate-fair-to-pay)); trial lengths and tiers are each hub's decision (open question O03).
+A **plan version** (`SubscriptionPlanVersionSchema`, AGT-002) buys capacity: units per month per module, a trial length (0–90 days), payer kind (person, company, either). It has no field that could change ranking, matching, reputation or verification, by construction; the console says so on the plan editor. Free minimum participation stays free ([billing](../billing.md#free-to-participate-fair-to-pay)); trial lengths and tiers are each hub's decision (open question O03).
 
 ## External agents (MCP and A2A)
 

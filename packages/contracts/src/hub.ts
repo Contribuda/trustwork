@@ -7,6 +7,7 @@ import { IanaTimeZoneSchema, IdSchema, NameSchema, RevisionSchema, ShortTextSche
 import { IdempotencyKeySchema } from './common/idempotency.js';
 import { CurrencySchema, NonNegativeMinorUnitsSchema, NonNegativeMoneySchema } from './common/money.js';
 import { DecimalSchema, decimalToScaled } from './common/quantity.js';
+import type { AgentCapability, AgentModuleManifest, HubAgentPolicy } from './agent-catalog.js';
 import { DataClassSchema } from './retrieval.js';
 
 /**
@@ -14,8 +15,8 @@ import { DataClassSchema } from './retrieval.js';
  * section "Frozen contract"). Configuration of one hub on one node: identity, modes, launch gates, versioned
  * configuration, scoped staff and second-person approvals, provider connections with secret references (never secret
  * values), model routing, egress, budgets, kill switches, ingestion and data-mining pipelines, schedules and runs,
- * editorial items, the participant-agent product (modules, extension references, hub agent policy), metered prices,
- * marketplace fees, payment settings, plan to people, credentials, recommendations, setup, support and operations.
+ * editorial items, hub-side agent-product concerns (extension references, cost estimates, policy approvals; the
+ * vocabulary itself is AGT-002's `agent-catalog.ts`), marketplace fees, payment settings, plan to people, credentials, recommendations, setup, support and operations.
  *
  * Conventions (docs/data/model.md): field names are camelCase here and snake_case in tables (the mapping and the recorded
  * naming differences are in docs/engine/hub-console/data-model.md); owners are `PartySchema` (person XOR company);
@@ -1172,80 +1173,58 @@ export function editorialApprovalBlockers(item: EditorialItem, allowedUses: Allo
   return out;
 }
 
-/* ---------- Participant-agent product: modules, metered prices, plans, external clients ---------- */
-
-export const AgentModuleKeySchema = z.string().regex(/^[a-z][a-z0-9_]{1,40}$/);
-export const MeteringUnitSchema = z.enum(['run', 'thousand_tokens', 'action', 'deliverable', 'api_call', 'month']);
-const COMMITMENT_ACTIONS = ['place_order', 'accept_order'] as const;
-/** A capability bundle of the one agent every participant has; never a separate bot. */
-export const AgentModuleVersionSchema = z.strictObject({
-  id: IdSchema,
-  hubId: IdSchema,
-  key: AgentModuleKeySchema,
-  version: z.int().min(1),
-  actions: z.array(MandateActionSchema).min(1),
-  eligibility: z.strictObject({
-    principals: z.array(z.enum(['person', 'company_member', 'company_representative', 'external_agent_client'])).min(1),
-    requireVerifiedCompany: z.boolean(),
-  }),
-  modelRoutes: z.array(z.strictObject({ job: ModelJobSchema, routeId: IdSchema })),
-  limits: z.strictObject({
-    runsPerDay: z.int().min(0),
-    actionsPerDay: z.int().min(0),
-    maxConcurrentRuns: z.int().min(1).max(20),
-    tokensPerMonth: z.int().min(0),
-    outreachPerWeek: z.int().min(0).nullable(),
-  }),
-  metering: z.strictObject({ unit: MeteringUnitSchema, freeUnitsPerMonth: z.int().min(0) }),
-  status: z.enum(['draft', 'beta', 'active', 'retired']),
-  draftedBy: IdSchema,
-  activatedBy: IdSchema.nullable(),
-  approvalId: IdSchema.nullable(),
-})
-  .refine((m) => !m.actions.some((a) => (COMMITMENT_ACTIONS as readonly string[]).includes(a)) || m.eligibility.requireVerifiedCompany, {
-    message: 'commitment actions are available only to verified companies',
-    path: ['eligibility'],
-  })
-  .refine((m) => !m.actions.some((a) => (COMMITMENT_ACTIONS as readonly string[]).includes(a)) || m.status === 'draft' || (m.approvalId !== null && m.activatedBy !== m.draftedBy), {
-    message: 'enabling commitment actions needs a second person',
-    path: ['approvalId'],
-  })
-  .refine((m) => !m.actions.includes('communicate') || m.limits.outreachPerWeek !== null, { message: 'communicating modules carry an outreach quota', path: ['limits'] })
-  .refine((m) => m.status === 'draft' || m.activatedBy !== null, { message: 'activation is recorded', path: ['activatedBy'] });
-export type AgentModuleVersion = z.infer<typeof AgentModuleVersionSchema>;
+/* ---------- Participant-agent product: hub-side concerns only (vocabulary from AGT-002, agent-catalog.ts) ---------- */
 
 /**
- * Metered price: cost price (what the hub pays, estimated) beside sale price (what the participant pays). Both are
- * exact decimals in minor units per metering unit; invoice totals round half-even to whole minor units. Same activation
- * rules as `PriceVersionSchema`: a different activator, no back-dating, no overlap.
+ * The agent-product vocabulary is AGT-002's (`agent-catalog.ts`): module manifests (`AgentModuleManifestSchema`), the
+ * hub agent policy (`HubAgentPolicySchema`, payload of the `agents` configuration domain), subscription plans
+ * (`SubscriptionPlanVersionSchema`), meter rates (`MeterRateVersionSchema`), usage records and external connections
+ * (`ExternalConnectionSchema`, dotted scopes `read.public` … `act`). This section keeps only what the hub console adds:
+ * the shared module key, the operator's cost beside the sale price, second-person rules for policy changes, and cohort
+ * statistics. `agent-catalog.ts` imports from this file, so this file imports from it for types only (no runtime cycle).
  */
-export const MeteredPriceVersionSchema = z.strictObject({
+export const AgentModuleKeySchema = z.string().regex(/^[a-z][a-z0-9_]{1,40}$/);
+
+/** Mandate kinds that commit money; a module or extension that uses one needs a second person to enable. */
+export const COMMITMENT_MANDATE_KINDS = ['place_order', 'accept_order'] as const;
+/**
+ * Second-person actions a change of the hub agent policy needs: enabling a module whose manifest declares a commitment
+ * action (`agents.enable_commitment_module`) and activating an extension version (`agents.activate_extension`).
+ * Unknown modules are reported by AGT-002's `hubPolicyViolations`, not here.
+ */
+export function agentPolicySecondPersonActions(
+  before: Pick<HubAgentPolicy, 'enabledModules' | 'activeExtensionVersionIds'> | null,
+  after: Pick<HubAgentPolicy, 'enabledModules' | 'activeExtensionVersionIds'>,
+  manifests: readonly Pick<AgentModuleManifest, 'key' | 'version' | 'actions'>[],
+): ConsoleSecondPersonAction[] {
+  const out = new Set<ConsoleSecondPersonAction>();
+  const enabledBefore = new Set((before?.enabledModules ?? []).map((m) => `${m.moduleKey}@${m.moduleVersion}`));
+  for (const m of after.enabledModules) {
+    if (enabledBefore.has(`${m.moduleKey}@${m.moduleVersion}`)) continue;
+    const manifest = manifests.find((x) => x.key === m.moduleKey && x.version === m.moduleVersion);
+    if (manifest?.actions.some((a) => (COMMITMENT_MANDATE_KINDS as readonly string[]).includes(a))) out.add('agents.enable_commitment_module');
+  }
+  const extensionsBefore = new Set(before?.activeExtensionVersionIds ?? []);
+  if (after.activeExtensionVersionIds.some((id) => !extensionsBefore.has(id))) out.add('agents.activate_extension');
+  return [...out];
+}
+
+/**
+ * What one unit of an AGT-002 meter rate costs the hub (the operator's own provider cost, estimated), shown beside the
+ * sale price of the `MeterRateVersion` it belongs to. Exact decimals in minor units per thousand meter units.
+ */
+export const MeterCostEstimateSchema = z.strictObject({
   id: IdSchema,
   hubId: IdSchema,
-  offerId: IdSchema,
-  moduleKey: AgentModuleKeySchema.nullable(),
-  unit: MeteringUnitSchema,
-  version: z.int().min(1),
+  meterRateVersionId: IdSchema,
   currency: CurrencySchema,
-  costPricePerUnitMinor: DecimalSchema,
+  costPerThousandUnitsMinor: DecimalSchema,
   costBasis: z.enum(['model_list_price', 'measured_average', 'contract']),
-  salePricePerUnitMinor: DecimalSchema,
-  effectiveFrom: TimestampSchema,
-  effectiveTo: TimestampSchema.nullable(),
-  acceptanceTextVersion: z.string().min(1).max(40),
-  status: z.enum(['draft', 'active', 'superseded', 'cancelled']),
-  draftedBy: IdSchema,
-  activatedBy: IdSchema.nullable(),
-  activatedAt: TimestampSchema.nullable(),
-})
-  .refine((p) => !p.costPricePerUnitMinor.startsWith('-') && !p.salePricePerUnitMinor.startsWith('-'), { message: 'prices are non-negative', path: ['salePricePerUnitMinor'] })
-  .refine((p) => p.status === 'draft' || p.status === 'cancelled' || (p.activatedBy !== null && p.activatedAt !== null), { message: 'non-draft versions record activation', path: ['activatedBy'] })
-  .refine((p) => p.activatedBy === null || p.activatedBy !== p.draftedBy, { message: 'activator must differ from drafter', path: ['activatedBy'] })
-  .refine((p) => p.activatedAt === null || Date.parse(p.effectiveFrom) > Date.parse(p.activatedAt), { message: 'effectiveFrom must be after activation (no back-dating)', path: ['effectiveFrom'] })
-  .refine((p) => p.effectiveTo === null || Date.parse(p.effectiveTo) > Date.parse(p.effectiveFrom), { message: 'effectiveTo after effectiveFrom', path: ['effectiveTo'] });
-export type MeteredPriceVersion = z.infer<typeof MeteredPriceVersionSchema>;
+  observedAt: TimestampSchema,
+}).refine((e) => !e.costPerThousandUnitsMinor.startsWith('-'), { message: 'a cost estimate is non-negative', path: ['costPerThousandUnitsMinor'] });
+export type MeterCostEstimate = z.infer<typeof MeterCostEstimateSchema>;
 /** Sale minus cost per unit, as a decimal string; negative means the hub subsidises the unit (allowed, shown as a warning). */
-export function unitMargin(p: Pick<MeteredPriceVersion, 'costPricePerUnitMinor' | 'salePricePerUnitMinor'>): string {
+export function unitMargin(p: { costPricePerUnitMinor: string; salePricePerUnitMinor: string }): string {
   const sale = decimalToScaled(p.salePricePerUnitMinor);
   const cost = decimalToScaled(p.costPricePerUnitMinor);
   const scale = Math.max(sale.scale, cost.scale);
@@ -1257,57 +1236,6 @@ export function unitMargin(p: Pick<MeteredPriceVersion, 'costPricePerUnitMinor' 
   const text = fraction ? `${whole}.${fraction}` : whole;
   return negative && text !== '0' ? `-${text}` : text;
 }
-export function meteredVersionsOverlap(a: MeteredPriceVersion, b: MeteredPriceVersion): boolean {
-  if (a.offerId !== b.offerId || a.unit !== b.unit || a.status !== 'active' || b.status !== 'active') return false;
-  const end = (p: MeteredPriceVersion) => (p.effectiveTo === null ? Number.POSITIVE_INFINITY : Date.parse(p.effectiveTo));
-  return Date.parse(a.effectiveFrom) < end(b) && Date.parse(b.effectiveFrom) < end(a);
-}
-
-/** A plan tier buys capacity (module quotas, trials). It has no field that could touch ranking, matching or reputation. */
-export const AgentPlanVersionSchema = z.strictObject({
-  id: IdSchema,
-  hubId: IdSchema,
-  offerId: IdSchema,
-  version: z.int().min(1),
-  payer: z.enum(['person', 'company', 'either']),
-  includes: z.array(z.strictObject({ moduleKey: AgentModuleKeySchema, unitsPerMonth: z.int().min(0) })).min(1),
-  trialDays: z.int().min(0).max(90),
-  status: z.enum(['draft', 'active', 'retired']),
-  draftedBy: IdSchema,
-  activatedBy: IdSchema.nullable(),
-})
-  .refine((p) => new Set(p.includes.map((i) => i.moduleKey)).size === p.includes.length, { message: 'each module once', path: ['includes'] })
-  .refine((p) => p.status === 'draft' || (p.activatedBy !== null && p.activatedBy !== p.draftedBy), { message: 'activated by a different person', path: ['activatedBy'] });
-export type AgentPlanVersion = z.infer<typeof AgentPlanVersionSchema>;
-
-/**
- * An external agent (MCP or A2A client, or a plain REST integration) that a participant connects. It acts as that
- * participant's agent: only under their mandates, labelled, rate-limited, its inputs untrusted. It never has staff scopes.
- */
-export const ExternalAgentClientSchema = z.strictObject({
-  id: IdSchema,
-  hubId: IdSchema,
-  actingFor: z.strictObject({ personId: IdSchema, onBehalfOf: PartySchema.nullable() }),
-  protocol: z.enum(['mcp', 'a2a', 'rest']),
-  label: NameSchema,
-  scopes: z.array(z.enum(['read_public', 'search_public', 'read_own', 'act_under_mandate', 'receive_envelopes'])).min(1),
-  /** Private data classes the person opted in to, one by one, after a residency warning; empty by default (ADR 012 decision 23). */
-  privateDataClasses: z.array(DataClassSchema.exclude(['public'])),
-  privateOptInAt: TimestampSchema.nullable(),
-  credentialRef: SecretRefSchema,
-  mandateRequired: z.literal(true),
-  rateLimit: z.strictObject({ requestsPerMinute: z.int().min(1).max(600), actionsPerDay: z.int().min(0).max(10_000) }),
-  status: z.enum(['active', 'suspended', 'revoked']),
-  createdAt: TimestampSchema,
-  revokedAt: TimestampSchema.nullable(),
-})
-  .refine((c) => c.status !== 'revoked' || c.revokedAt !== null, { message: 'revocation time recorded', path: ['revokedAt'] })
-  .refine((c) => c.privateDataClasses.length === 0 || (c.privateOptInAt !== null && c.scopes.includes('read_own')), {
-    message: 'private data reaches an external agent only after an explicit opt-in of the person, per class',
-    path: ['privateOptInAt'],
-  })
-  .refine((c) => new Set(c.privateDataClasses).size === c.privateDataClasses.length, { message: 'each data class once', path: ['privateDataClasses'] });
-export type ExternalAgentClient = z.infer<typeof ExternalAgentClientSchema>;
 
 /** Aggregate agent statistics: every participant count is a cohort of at least AGGREGATE_MIN_COHORT or suppressed. */
 export const AgentUsageStatSchema = z.strictObject({
@@ -1325,7 +1253,7 @@ export const AgentUsageStatSchema = z.strictObject({
 });
 export type AgentUsageStat = z.infer<typeof AgentUsageStatSchema>;
 
-/* ---------- ADR 010 decision 22: jurisdiction settings, hub agent policy, extension references ---------- */
+/* ---------- ADR 010 decision 22: jurisdiction settings and extension references ---------- */
 
 /** What the `jurisdiction` configuration domain covers; the full payload schema belongs to HUB-005 (`jurisdiction.ts`). */
 export const JURISDICTION_SETTING_AREAS = ['agent_disclosure', 'liability_allocation', 'consent', 'record_keeping', 'action_limits', 'legal_texts'] as const;
@@ -1364,50 +1292,15 @@ export function disclosureLocalesMissing(ref: Pick<JurisdictionSettingsRef, 'are
   return ref.areas.includes('agent_disclosure') ? hub.locales.filter((l) => !ref.disclosureLocales.includes(l)) : [];
 }
 
-/** What participants configure about their own agent (ADR 010 decision 22, AGT-022); the hub cannot remove an area. */
-export const AGENT_SETTING_AREAS = [
-  'goals', 'modules', 'behaviour_and_tone', 'action_limits', 'budgets', 'schedules', 'channels', 'approval_rules', 'sharing', 'external_connections',
-] as const;
-export const AgentSettingAreaSchema = z.enum(AGENT_SETTING_AREAS);
-/**
- * Payload of the `agents` configuration domain: hub-wide bounds for every participant's one agent. Participant settings
- * themselves are owner-private (`agent_settings`) and never reach the console; they compile into mandate proposals and
- * never authorize by themselves.
- */
-export const HubAgentPolicySchema = z.strictObject({
-  hubId: IdSchema,
-  version: z.int().min(1),
-  participantSettings: z.strictObject({
-    areas: z.array(AgentSettingAreaSchema),
-    previewShown: z.literal(true),
-    explanationShown: z.literal(true),
-    settingsAuthorizeByThemselves: z.literal(false),
-  }),
-  outreachPerPersonPerWeek: z.int().min(0).max(500),
-  channels: z.array(z.enum(['platform', 'email', 'sms', 'messenger'])).min(1),
-  commitmentsOnlyForVerifiedCompanies: z.literal(true),
-  competitorsExchangePrices: z.literal(false),
-  externalAgents: z.strictObject({
-    defaultPrivateDataClasses: z.array(DataClassSchema).max(0),
-    anonymousA2a: z.enum(['off', 'public_read_only']),
-  }),
-  disclosureFrom: z.literal('jurisdiction_settings'),
-})
-  .refine((p) => AGENT_SETTING_AREAS.every((a) => p.participantSettings.areas.includes(a)), {
-    message: 'participants configure every area of their own agent; a hub cannot remove one',
-    path: ['participantSettings'],
-  })
-  .refine((p) => p.channels.includes('platform'), { message: 'the platform channel is always available', path: ['channels'] });
-export type HubAgentPolicy = z.infer<typeof HubAgentPolicySchema>;
-
 export const AgentExtensionStatusSchema = z.enum(['draft', 'tested', 'active', 'suspended', 'retired']);
 /** Hostname of an extension endpoint (no scheme, no path), with the country it is served from. */
 const EndpointHostSchema = z.string().regex(/^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/);
 /**
  * The console's reference to one version of a governed agent extension (AGT-023 owns the full manifest in
- * `agent-extensions.ts`). Every declared action maps to a mandate kind; the guards are literals because no extension
- * can switch them off; activation needs a passed safety suite on the fake adapter, a second person and a hub
- * configuration version of domain `agent_extensions`.
+ * `agent-extensions.ts`). The actions an extension adds are AGT-002 `AgentCapability` records with an `extension`
+ * source, listed here by id; `extensionCapabilityViolations` checks them (every commit names its mandate kind, no
+ * governance). The guards are literals because no extension can switch them off; activation needs a passed safety suite
+ * on the fake adapter, a second person and a hub configuration version of domain `agent_extensions`.
  */
 export const AgentExtensionVersionRefSchema = z.strictObject({
   id: IdSchema,
@@ -1416,7 +1309,7 @@ export const AgentExtensionVersionRefSchema = z.strictObject({
   key: z.string().regex(/^[a-z][a-z0-9_]{1,40}$/),
   version: z.int().min(1),
   manifestDigest: DigestSchema,
-  declaredActions: z.array(z.strictObject({ key: z.string().regex(/^[a-z][a-z0-9_]{1,60}$/), mandateKind: MandateActionSchema })).min(1).max(50),
+  capabilityIds: z.array(z.string().regex(/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/).max(100)).min(1).max(50),
   dataClassesRead: z.array(DataClassSchema),
   dataClassesSent: z.array(DataClassSchema),
   endpoints: z.array(z.strictObject({ host: EndpointHostSchema, country: z.string().regex(/^[A-Z]{2}$/) })).max(20),
@@ -1433,7 +1326,8 @@ export const AgentExtensionVersionRefSchema = z.strictObject({
   approvalId: IdSchema.nullable(),
   activatedConfigVersionId: IdSchema.nullable(),
 })
-  .refine((e) => new Set(e.declaredActions.map((a) => a.key)).size === e.declaredActions.length, { message: 'each declared action once', path: ['declaredActions'] })
+  .refine((e) => new Set(e.capabilityIds).size === e.capabilityIds.length, { message: 'each capability once', path: ['capabilityIds'] })
+  .refine((e) => e.capabilityIds.every((id) => id.startsWith(`${e.key}.`)), { message: 'capability ids are prefixed with the extension key', path: ['capabilityIds'] })
   .refine((e) => e.status === 'draft' || e.status === 'retired' || e.status === 'suspended' || e.safetySuite?.passed === true, {
     message: 'tested and active extensions passed their safety suite on the fake adapter',
     path: ['safetySuite'],
@@ -1444,6 +1338,28 @@ export const AgentExtensionVersionRefSchema = z.strictObject({
   })
   .refine((e) => e.dataClassesSent.length === 0 || e.endpoints.length > 0, { message: 'data sent goes to a declared endpoint', path: ['endpoints'] });
 export type AgentExtensionVersionRef = z.infer<typeof AgentExtensionVersionRefSchema>;
+/**
+ * Cross-checks an extension version against the AGT-002 capabilities it registers: each listed id exists, comes from this
+ * extension version, and every commit names the mandate kind it needs; governance is never added by an extension.
+ * Empty means consistent (AGT-002's `capabilityViolations` still applies to each capability).
+ */
+export function extensionCapabilityViolations(
+  ref: Pick<AgentExtensionVersionRef, 'extensionId' | 'version' | 'capabilityIds'>,
+  capabilities: readonly Pick<AgentCapability, 'id' | 'source' | 'kind' | 'mandateAction'>[],
+): string[] {
+  const out: string[] = [];
+  for (const id of ref.capabilityIds) {
+    const cap = capabilities.find((c) => c.id === id);
+    if (!cap) {
+      out.push(`capability_missing:${id}`);
+      continue;
+    }
+    if (cap.source.kind !== 'extension' || cap.source.extensionId !== ref.extensionId || cap.source.extensionVersion !== ref.version) out.push(`capability_not_from_this_extension:${id}`);
+    if (cap.kind === 'commit' && cap.mandateAction === null) out.push(`commit_without_mandate_kind:${id}`);
+    if (cap.kind === 'govern') out.push(`extension_adds_governance:${id}`);
+  }
+  return out;
+}
 
 /* ---------- ADR 010 decisions 20 and 21: no held funds, commissions as hub settings ---------- */
 
@@ -1474,7 +1390,8 @@ export const HubPaymentSettingsSchema = z.strictObject({
   .refine((p) => p.escrowAndRetainage === 'off' || p.providers.length > 0, { message: 'escrow and retainage are held by a provider', path: ['escrowAndRetainage'] });
 export type HubPaymentSettings = z.infer<typeof HubPaymentSettingsSchema>;
 
-export const MARKETPLACE_FEE_KINDS = ['consultation', 'task', 'ticket', 'course', 'agent_capacity'] as const;
+/** Agent capacity is priced by AGT-002 subscription plans and meter rates, not by marketplace fees. */
+export const MARKETPLACE_FEE_KINDS = ['consultation', 'task', 'ticket', 'course'] as const;
 export const MarketplaceFeeKindSchema = z.enum(MARKETPLACE_FEE_KINDS);
 /**
  * `marketplace_fee_version`: a commission or fee the hub administrator sets (ADR 010 decision 21). Versioned, activated by
@@ -1900,17 +1817,33 @@ export function restrictedPlaceViolations(
 
 /** Versioned records the console activates; every one is immutable once active and superseded by a new version. */
 export const CONSOLE_VERSIONED_RECORDS = [
-  'hub_config_version', 'model_route', 'egress_rule', 'pipeline_version', 'dataset', 'agent_module_version', 'agent_extension_version',
-  'metered_price_version', 'agent_plan_version', 'marketplace_fee_version', 'plan_template_version', 'marketplace_category_rule',
+  'hub_config_version', 'model_route', 'egress_rule', 'pipeline_version', 'dataset', 'agent_extension_version', 'price_version',
+  'subscription_plan_version', 'meter_rate_version', 'marketplace_fee_version', 'plan_template_version', 'marketplace_category_rule',
   'recommendation_rule', 'sponsored_content_policy', 'content_type_mapping', 'credential_type', 'confirmation_policy',
 ] as const;
 export const ConsoleVersionedRecordSchema = z.enum(CONSOLE_VERSIONED_RECORDS);
+export type ConsoleVersionedRecord = z.infer<typeof ConsoleVersionedRecordSchema>;
+/**
+ * Records whose activation always needs a second person, whatever their content. Others need one depending on content
+ * (sensitive configuration domains, non-public routes and egress, personal or court and debt datasets), decided by the
+ * owning use case with the same vocabulary.
+ */
+export const ACTIVATION_SECOND_PERSON_ACTIONS: Readonly<Partial<Record<ConsoleVersionedRecord, ConsoleSecondPersonAction>>> = {
+  price_version: 'commerce.activate_price_version',
+  subscription_plan_version: 'commerce.activate_price_version',
+  meter_rate_version: 'commerce.activate_price_version',
+  marketplace_fee_version: 'billing.activate_fee_version',
+  agent_extension_version: 'agents.activate_extension',
+};
 /** Activate one drafted version. The server decides whether the record needs a second person; if so `approvalId` is required. */
 export const ActivateVersionCommandSchema = consoleCommand({
   target: z.strictObject({ record: ConsoleVersionedRecordSchema, id: IdSchema }),
   expectedRevision: RevisionSchema,
   approvalId: IdSchema.nullable(),
   effectiveFrom: TimestampSchema,
+}).refine((c) => ACTIVATION_SECOND_PERSON_ACTIONS[c.target.record] === undefined || c.approvalId !== null, {
+  message: 'prices, plans, meter rates, fees and extensions are activated only under a second-person approval',
+  path: ['approvalId'],
 });
 export type ActivateVersionCommand = z.infer<typeof ActivateVersionCommandSchema>;
 /** Ask a second person: the request carries the exact action digest the approver will see and bind. */
@@ -1962,9 +1895,8 @@ export const HUB_CONSOLE_SCHEMAS = {
   EgressRule: EgressRuleSchema, ProviderBudget: ProviderBudgetSchema, UsageAggregate: UsageAggregateSchema, KillSwitch: KillSwitchSchema,
   HubSource: HubSourceSchema, Dataset: DatasetSchema, LinkProposal: LinkProposalSchema, Schedule: ScheduleSchema, PipelineVersion: PipelineVersionSchema,
   PipelineRun: PipelineRunSchema, EditorialItem: EditorialItemSchema,
-  AgentModuleVersion: AgentModuleVersionSchema, MeteredPriceVersion: MeteredPriceVersionSchema, AgentPlanVersion: AgentPlanVersionSchema,
-  ExternalAgentClient: ExternalAgentClientSchema, AgentUsageStat: AgentUsageStatSchema,
-  JurisdictionSettingsRef: JurisdictionSettingsRefSchema, HubAgentPolicy: HubAgentPolicySchema, AgentExtensionVersionRef: AgentExtensionVersionRefSchema,
+  MeterCostEstimate: MeterCostEstimateSchema, AgentUsageStat: AgentUsageStatSchema,
+  JurisdictionSettingsRef: JurisdictionSettingsRefSchema, AgentExtensionVersionRef: AgentExtensionVersionRefSchema,
   HubPaymentSettings: HubPaymentSettingsSchema, MarketplaceFeeVersion: MarketplaceFeeVersionSchema,
   PlanTemplateVersion: PlanTemplateVersionSchema, MarketplaceCategoryRule: MarketplaceCategoryRuleSchema, KnowledgeShare: KnowledgeShareSchema,
   ContentTypeMapping: ContentTypeMappingSchema, RecommendationRule: RecommendationRuleSchema, SponsoredContentPolicy: SponsoredContentPolicySchema,
