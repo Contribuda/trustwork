@@ -99,6 +99,9 @@ flowchart LR
 | FED-003 | Directory federation and entity links | open | FED-002, HUB-003 |
 | FED-004 | Cross-node deals and agent envelopes | open | FED-003, COM-001, AGT-001 |
 | FED-005 | Federated sign-in between peered nodes | open | FED-001, BE-002 |
+| INTL-US | United States country pack, complete | open | INTL-002 |
+| DEMO-US | United States demo hub: defaults and demo data | open | INTL-US |
+| LANG-ES | Spanish (es) as an engine language | open | INTL-002 |
 | QA-001 | Standalone release candidate | open | WEB-002, CNT-001, EXE-001, BILL-001, RAG-401, ADM-002 |
 
 ## Open decisions that shape the roadmap
