@@ -10,11 +10,11 @@ Status: **Live** for local use and CI (OPS-002). Nothing is deployed by this rep
 | api | [`infra/images/backend.Dockerfile`](../../infra/images/backend.Dockerfile), target `api` | compiled `apps/api`, `packages/contracts`, `packages/data`, the SQL migrations (readiness compares the ledger with them), production dependencies of those workspaces | `node apps/api/src/main.js` | `API_PORT`, default 3001 on `::` | `GET /health/live` |
 | worker | same file, target `worker` | compiled `apps/worker`, `packages/contracts`, `packages/data` | `node apps/worker/src/main.js` | none public; `/metrics` and `/health/live` on 127.0.0.1:9464 inside the container | `GET /health/live` on the metrics port |
 | migrate | same file, target `migrate` | compiled `packages/data`, `packages/contracts`, `packages/country-packs`, the migrations, `data/taxonomy`, [`migrate-job.mjs`](../../infra/images/migrate-job.mjs) | `node bin/migrate-job.mjs release` (one-shot) | none | none (exit code) |
-| proxy | [`infra/proxy/Dockerfile`](../../infra/proxy/Dockerfile) | Caddy 2.11 with [`infra/proxy/Caddyfile`](../../infra/proxy/Caddyfile) | `caddy run` | `TRUSTWORK_PROXY_PORT`, default 8080 | `GET /proxy/health` |
+| proxy | [`infra/proxy/Dockerfile`](../../infra/proxy/Dockerfile) | the Caddy 2.11 binary on Alpine 3.24 with [`infra/proxy/Caddyfile`](../../infra/proxy/Caddyfile) | `caddy run` | `TRUSTWORK_PROXY_PORT`, default 8080 | `GET /proxy/health` |
 
 Shared properties, enforced in CI by [`check-images.mjs`](../../infra/images/check-images.mjs):
 
-- **Non-root.** Every image sets `USER 1000:1000` (numeric, so `runAsNonRoot` checks work) and the check starts each image and requires a non-zero uid. Application files are owned by root and read-only for the process; the compose stack also runs the containers with a read-only root filesystem, all capabilities dropped (the proxy keeps the Caddy binary's own bind capability) and `no-new-privileges`.
+- **Non-root.** Every image sets `USER 1000:1000` (numeric, so `runAsNonRoot` checks work) and the check starts each image and requires a non-zero uid. Application files are owned by root and read-only for the process; the compose stack also runs the containers with a read-only root filesystem, all capabilities dropped and `no-new-privileges` (the proxy image copies the Caddy binary without the bind capability the upstream image sets, since it listens on port 8080).
 - **Nothing for development.** Multi-stage builds: the build stages compile and install, the final stage copies only compiled JavaScript and production dependencies. The check fails when any devDependency of the root or of a workspace (that is not also a production dependency somewhere) is present, when `/app` contains tests, `*.test.*`/`*.spec.*` files, Markdown, TypeScript sources or a package manager (`npm`, `npx`, `yarn`, `corepack`). Node images are the Node binary on plain Alpine 3.24 with `libstdc++` and `tini` (PID 1, forwards SIGTERM so the worker drains and the API closes cleanly); there is no npm or yarn in them. One exception is intentional: the migrate image carries a one-line `packages/country-packs/src/index.ts` that re-exports the compiled `index.js`, because the kernel sync loads the country packs by a source-relative URL with a `.ts` extension (`packages/data/src/repositories/kernel.ts`); Node's built-in type stripping loads it.
 - **No configuration inside.** No image contains a connection string, key, origin or `.env` file; everything is a runtime variable (below). The only build-time values are the web app's `NEXT_PUBLIC_*` variables and `TRUSTWORK_ALLOWED_ORIGINS`, which Next freezes into the standalone build.
 - **Size budgets.** [`budgets.json`](../../infra/images/budgets.json) caps the root filesystem of each image (`du -skx /` inside the container, the same on every image store). Measured values are in "Measured sizes" below.
@@ -83,7 +83,7 @@ Root filesystem (`du -skx /`) of the local linux/arm64 build on 2026-10-31; the 
 | api | 154.3 MiB | 200 MiB | about 130 MiB |
 | worker | 138.3 MiB | 180 MiB | about 130 MiB |
 | migrate | 139.3 MiB | 180 MiB | about 130 MiB |
-| proxy | 58.8 MiB | 80 MiB | Caddy's own Alpine image |
+| proxy | 52 MiB | 80 MiB | Alpine 3.24 and the Caddy binary |
 
 ## Deploying the same images on Railway (documentation only)
 
