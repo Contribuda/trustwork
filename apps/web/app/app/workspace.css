@@ -584,7 +584,7 @@ a.ws-row__title:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #0f8a5f;
+  color: #0b7650;
   font-size: var(--text-body-sm-size);
   font-weight: 600;
 }
