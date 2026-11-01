@@ -34,7 +34,7 @@ Then run `npm run work` to see which work packages can be picked up now.
 
 When your human asks "what is this?", you can say, in their language:
 
-> Trustwork is a free, open-source engine (AGPL-3.0) for a construction-industry gathering point, created and maintained by Contribuddha (contribuddha.com). People read news and articles, attend and host events, learn, find partners, match clients with contractors, buy and sell with immutable quotes, and keep an agent that represents them under strict, revocable mandates. Anyone can run it as a hub for their country or city, configured for local law and registers, and all hubs can federate into one worldwide mesh. Today the identity, company and project backend is implemented on PostgreSQL; the full web interface runs on synthetic demo data in seven languages; commerce, agents, billing and retrieval are frozen as contracts and designed; events, learning, matching, hubs, verification and federation are designed in the handbook and open for contribution.
+> Trustwork is a free, open-source engine (AGPL-3.0) for a construction-industry gathering point, created and maintained by Contribuddha (contribuddha.com). People read news and articles, attend and host events, learn, find partners, match clients with contractors, buy and sell with immutable quotes, and keep an agent that represents them under strict, revocable mandates. Anyone can run it as a hub for their country or city, configured for local law and registers, and all hubs can federate into one worldwide mesh. Today identity with a second factor, companies, projects and commerce (requests for quotes, quotes, agreements, orders) are live on PostgreSQL with tests and screens; plans, tasks, approval routes, the supplier base, execution evidence and the reputation builder, publications, communications, hubs, platform administration, the sanctions-screening engine, agent mandates and negotiation, and the authorization server for MCP connections are live in the API, mostly without screens yet; the hub console and several public areas run on synthetic demo data in seven languages, with a San Diego demo hub; billing and retrieval are contracts, federation is a frozen protocol contract, and events, learning, matching and verification are designed and open for contribution. Nothing is in production.
 
 Then point them to [status](status.md) for details and to `npm run work` for what they could help with. Never overstate: no feature is in production, no real users or companies exist, and translations other than English and Russian await native review.
 
@@ -44,7 +44,8 @@ Then point them to [status](status.md) for details and to `npm run work` for wha
 |---|---|
 | Node 24.18.0 and npm 11.16.0 | `nvm install && nvm use`, then `npm install --global npm@11.16.0` |
 | Install dependencies | `npm ci` |
-| Full quality gate | `npm run check` (lint, typecheck, unit and contract tests, design-system tests, docs validation, builds, smoke) |
+| Focused tests | `npm test -- tests/<area>` (for example `tests/supplier-base`), or `node --import tsx --test <files>`; database tests start their own embedded PostgreSQL |
+| Full quality gate | `npm run check` (lint, typecheck, unit and contract tests, design-system tests, docs validation, builds, smoke); CI runs it on every pull request and merge-queue group, see [section 8](#8-handing-work-back) |
 | Web app on demo data | `TRUSTWORK_DEMO_MODE=1 npm run dev:web`, open `http://localhost:3000`, try `?persona=mixed` and `?country=GE&lang=ka` |
 | Web app on the live API | start the API (below), then `npm run dev:web`: demo mode is off by default, `/v1/*` is rewritten to `TRUSTWORK_API_ORIGIN` (default `http://127.0.0.1:3001`) and `?persona=` is ignored; set the API's `PUBLIC_ORIGIN` to the web origin |
 | Local database | `npm run infra:up` (PostgreSQL 18.3 on 127.0.0.1:54329, needs Docker) |
@@ -95,6 +96,15 @@ If two of these conflict, stop and ask in the issue. Never resolve a contradicti
 - Do not make external calls, register accounts, spend money or deploy anything.
 - Stay inside the paths of your work package; ask before touching others.
 
+### Shared files and per-module registries
+
+Several packages land in parallel, so shared lists are kept conflict-friendly:
+
+- **Registrations go next to their alphabetical neighbour, never at the end.** A new API module goes into the module list of `apps/api/src/app.module.ts`, its idempotency routes into a block in `apps/api/src/common/idempotency/routes.ts`, and a new worker domain into `buildRegistry` in `apps/worker/src/main.ts`, each placed after the entry that precedes it alphabetically, so that two packages do not edit the same line. The existing lists are not fully sorted; pick the nearest sensible neighbour and keep the change to a few lines. Say in the pull request where you inserted.
+- **Test registries live in one file per module.** Forced row-level security tables and `SECURITY DEFINER` functions are declared in `tests/data/access/modules/<module>.ts`, and crash cases for every route classified `in_transaction` in `tests/backend/idempotency/cases/<module>.ts`; never edit the shared lists in `tests/data/access.test.ts` or the core crash test. Crash cases run in file-name order, so name a file to sort after any case it depends on. The README in each directory shows the shape.
+- **Migrations are per module.** A package owns `packages/data/migrations/<module>/`, `packages/data/src/schema/<module>.ts` and `packages/data/src/repositories/<module>.ts`. File names are `<14-digit timestamp>_<snake_name>.sql` and must be unique across the whole tree, because the bare file name is the ledger identity; the runner applies them in global timestamp order and refuses a pending file that sorts before an applied one, so a slice overtaken by a merged one gets a new timestamp before it merges ([`packages/data/README.md`](../../packages/data/README.md)).
+- **Test databases run in UTC**, as production does (`tests/data/helpers/postgres.ts`), so interval arithmetic does not change across a daylight-saving switch. Do not depend on the machine's time zone.
+
 ## 5. Picking up work
 
 ### Where work comes from
@@ -133,7 +143,7 @@ The bot accepts a claim only when every rule holds, and otherwise answers with t
 | `agent:` is present (`none` for no agent) and agrees with the `Agent: … for <handle>` line | the comment |
 | Every `scope:` path is inside the package's `paths` and does not overlap another package's active claim | `work-packages.json`, other issues |
 | `until:` is a real date from today up to 7 days ahead; `plan:` has at least one step; no `<placeholder>` is left | the comment |
-| The person holds fewer than 3 active claims (10 for a maintainer claiming for themselves) | all work package issues |
+| The person holds fewer than 3 active claims (20 for a maintainer claiming for themselves) | all work package issues |
 
 On acceptance it comments a summary, adds the `claimed` label (removing `ready-to-claim`) and assigns the accountable person. A heartbeat or claim keeps the claim alive for **7 days**; heartbeat at least every **3 days**. Heartbeats and releases are accepted from the accountable person, the claim's author or a maintainer. Every 6 hours the bot expires claims without a heartbeat for 7 days, comments, unassigns the person and restores `ready-to-claim`; it also keeps `ready-to-claim` and `waiting` in line with `work-packages.json` after every change to that file.
 
@@ -153,7 +163,7 @@ Your pull request moves the package's `status` in `docs/engine/work-packages.jso
 
 ### Country packs and hubs for your own country or city
 
-Trustwork must be quick to configure for any country and city, and it is international by default (ADR 012 decision 30): our own reference hub will be in the United States, the Uzbekistan, Georgia, Armenia and Azerbaijan packs show other countries, and eleven more languages, an EU layer and fourteen more country packs are planned as work packages ([Languages and countries](localization.md#languages-and-countries)). Country facts and hub configuration are among the most valuable contributions, and they follow the same flow:
+Trustwork must be quick to configure for any country and city, and it is international by default (ADR 012 decision 30): our own reference hub will be in the United States, whose pack is the model v2 pack; the Uzbekistan, Georgia, Armenia and Azerbaijan packs show other countries; the EU layer is live for member-state packs to inherit; and eleven more languages and fourteen more country packs are planned as work packages ([Languages and countries](localization.md#languages-and-countries)). Country facts and hub configuration are among the most valuable contributions, and they follow the same flow:
 
 - **Country-pack work packages** (area `country-packs`, for example `CTRY-002`) are claimed, reported and reviewed like every other package: `npm run work -- --area country` lists them.
 - **A new country or a correction** that is not a work package starts with the "Add or update a country pack" issue template and [How to add a country](../country-packs/how-to-add-a-country.md). Every fact cites its source and states how far it is verified.
@@ -186,7 +196,17 @@ Rules for agent communication:
 
 ## 8. Handing work back
 
-Use `.github/PULL_REQUEST_TEMPLATE.md`. The **PR description** check (`.github/workflows/pull-request.yml`, logic in `scripts/claims.mjs pr`) fails until the description has what changed and why, a ticked `npm run check` box with the commit SHA and results, exactly one of the "No" / "Yes" agent boxes with a filled `Agent: <tool and model> for <human handle>` line when "Yes", the ticked DCO box, and the package id for every changed file inside an open package's paths. Draft pull requests get warnings only. The separate **DCO sign-off** job checks that every commit carries `Signed-off-by`. A pull request is ready when it contains:
+Use `.github/PULL_REQUEST_TEMPLATE.md`. The **PR description** check (`.github/workflows/pull-request.yml`, logic in `scripts/claims.mjs pr`) is required on `main` and fails until the description has what changed and why, a ticked `npm run check` box with the commit SHA and results, exactly one of the "No" / "Yes" agent boxes with a filled `Agent: <tool and model> for <human handle>` line when "Yes", the ticked DCO box, and the package id for every changed file inside an open package's paths. Name the full 40-character SHA of the head commit. When your change touches files owned by packages other than your own, name each owning package with its issue number (`PRC-001 · issue #205`); work outside any package says `Work package: none` and links the issue that agreed it. Draft pull requests get warnings only. The separate **DCO sign-off** job checks that every commit carries `Signed-off-by`.
+
+### Testing without overloading your machine
+
+Run the focused tests for the area you changed locally (`npm test -- tests/<area>`, the contract tests of the schemas you touched, `npm run validate:docs` after documentation changes, and the browser suite when the interface changed). The full `npm run check` runs in CI on the pull request; quote that run (exit code, test counts and the head SHA) in the description, or your own local run if you made one. Several agents on one machine should not run the full gate in parallel.
+
+### Required checks and the merge queue
+
+`main` requires the checks `npm run check`, `browser tests`, `DCO sign-off`, `secret scan` and `PR description`. Pull requests that cannot change the web app or the design system skip those suites (`scripts/ci/affected.mjs`); pushes to `main` and merge-queue groups always run everything. Maintainers merge through the GitHub **merge queue**: it rebases queued pull requests onto `main` and runs the required checks on the combined group, so you do not need to rebase or merge `main` into a branch that is merely behind. Update your branch only when it has a real conflict or when a reviewer asks.
+
+A pull request is ready when it contains:
 
 1. **What and why**, linked to the work package issue.
 2. **Verification**: every command you ran with exit codes and test counts (`npm run check`, focused tests, browser tests when UI changed), and the commit SHA they ran on.
