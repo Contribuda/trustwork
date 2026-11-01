@@ -1,3 +1,4 @@
+import { minimizeScreeningReplay } from './screening-replay.js';
 import { Injectable, type CallHandler, type ExecutionContext, type NestInterceptor } from '@nestjs/common';
 import { HTTP_CODE_METADATA } from '@nestjs/common/constants.js';
 import { Reflector } from '@nestjs/core';
@@ -75,8 +76,9 @@ export class IdempotencyInterceptor implements NestInterceptor {
     // bookkeeping writes run without the transaction identity, independent of epoch bumps caused by the handler.
     const claimed = await this.claim(scope, payloadDigest);
     if ('replay' in claimed) {
-      reply.status(claimed.replay.httpStatus);
-      return claimed.replay.body;
+      const replay = minimizeScreeningReplay(options.action, claimed.replay);
+      reply.status(replay.httpStatus);
+      return replay.body;
     }
     const { recordId, lease } = claimed;
     const retainUntil = () => new Date(this.clock.now().getTime() + this.config.idempotency.retentionMs);

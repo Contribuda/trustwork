@@ -133,7 +133,17 @@ test('screening through the API', { skip: h ? false : SKIP_REASON, timeout: 240_
     const options = { idempotencyKey: 'sanc007-concurrent-appeal' };
     const concurrent = await Promise.all([fresh.post('/v1/screening/me/appeal', body, options), fresh.post('/v1/screening/me/appeal', body, options)]);
     assert.ok(concurrent.every((r) => r.status === 200 || r.status === 409));
-    const appealed = ok<OwnStatus>(await fresh.post('/v1/screening/me/appeal', body, options));
+    // A replay answers with the same generic receipt, never the status (SANC-007); the status is read again.
+    assert.deepEqual(ok(await fresh.post('/v1/screening/me/appeal', body, options)), { recorded: true });
+    for (const response of concurrent) if (response.status === 200) assert.deepEqual(response.body, { recorded: true });
+    // A success stored before SANC-007 held the detailed status; its replay is minimized to the receipt without
+    // running the command again (still one appeal).
+    const legacy = { httpStatus: 200, body: { subject: { kind: 'person', id: people.petr }, status: 'appeal_pending', paymentsPaused: true, canAppeal: false, messageKeys: ['legacy'] } };
+    const rewritten = await h.db.admin.query("UPDATE trustwork.idempotency_record SET result = $1 WHERE action = 'screening.appeal_file' AND state = 'completed' RETURNING id", [JSON.stringify(legacy)]);
+    assert.ok(rewritten.rows.length >= 1);
+    assert.deepEqual(ok(await fresh.post('/v1/screening/me/appeal', body, options)), { recorded: true });
+    assert.equal((await h.db.admin.query("SELECT id FROM trustwork.screening_decision WHERE match_id = $1 AND kind = 'appeal'", [matchId])).rows.length, 1);
+    const appealed = ok<OwnStatus>(await fresh.get('/v1/screening/me'));
     const once = await h.db.admin.query("SELECT id FROM trustwork.screening_decision WHERE match_id = $1 AND kind = 'appeal'", [matchId]);
     assert.equal(once.rows.length, 1, 'concurrent/replayed submission records one appeal and one assignment');
     assert.deepEqual([appealed.status, appealed.canAppeal], ['appeal_pending', false]);

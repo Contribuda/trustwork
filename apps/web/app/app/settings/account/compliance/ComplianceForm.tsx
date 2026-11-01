@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button, Form, FormAlert, TextArea } from '@trustwork/ui';
-import { OwnComplianceStatusSchema, AppealComplianceDecisionCommandSchema, type OwnComplianceStatus } from '@trustwork/contracts/client';
+import { OwnComplianceStatusSchema, ComplianceAppealReceiptSchema, AppealComplianceDecisionCommandSchema, type OwnComplianceStatus } from '@trustwork/contracts/client';
 import { t } from '@/app/_lib/i18n';
 import { withBase } from '@/app/_lib/base-path';
 import { useStepUp } from '@/components/auth/StepUp';
@@ -50,11 +50,11 @@ export function ComplianceForm({ live }: { live: boolean }) {
         try {
           const response = await stepUp.guard(() => form.submit({ path: '/v1/screening/me/appeal', payload, schema: AppealComplianceDecisionCommandSchema, idempotent: true }));
           if (response.kind === 'ok') {
-            const parsed = OwnComplianceStatusSchema.safeParse(response.body);
-            if (!parsed.success) { setFailed(true); return; }
-            setOwn(parsed.data);
+            // The appeal answers with a generic receipt; the current status is read again.
+            if (!ComplianceAppealReceiptSchema.safeParse(response.body).success) { setFailed(true); return; }
             setReason('');
             setSubmitted(true);
+            setReload((n) => n + 1);
           }
         } finally { setPending(false); }
       }}>

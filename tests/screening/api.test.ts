@@ -111,7 +111,9 @@ test('screening through the API', { skip: h ? false : SKIP_REASON, timeout: 240_
     expectError(await back.post('/v1/screening/me/appeal', { companyId: null, reason: 'Synthetic: that is not me' }), 403, 'auth.step_up_required');
     const fresh = h.client();
     await login(fresh, 'petr');
-    const appealed = ok<OwnStatus>(await fresh.post('/v1/screening/me/appeal', { companyId: null, reason: 'Synthetic: that is not me' }));
+    // The appeal answers with a generic receipt; the status is read again (SANC-007).
+    assert.deepEqual(ok(await fresh.post('/v1/screening/me/appeal', { companyId: null, reason: 'Synthetic: that is not me' })), { recorded: true });
+    const appealed = ok<OwnStatus>(await fresh.get('/v1/screening/me'));
     assert.deepEqual([appealed.status, appealed.canAppeal], ['appeal_pending', false]);
   });
 
