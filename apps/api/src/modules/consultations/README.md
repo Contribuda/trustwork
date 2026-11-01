@@ -51,7 +51,7 @@ The authenticated confirmation creates or finds the agreement context thread thr
 
 The worker's [reminder module](../../../../worker/src/consultations/README.md) produces due reminders in that existing thread. It uses the existing system author, governed `thread.message` template and `messages` preferences. Message, notification fanout, local receipt, mail intents/channel jobs and reminder `sent` marking commit together. `sent` here proves the local context write, not external delivery. Cancellation, current context access, pinned licence and applicable sanctions restrictions are checked again at final fake channel/mail dispatch. No worker borrows the booking principal.
 
-The operator must activate the existing template in all seven engine languages; absent/incomplete templates leave reminders scheduled. No live notification provider or production template activation was performed. CONS-001 remains in review until maintainer acceptance; exact-head full CI is reported separately in the PR.
+The operator must activate the existing template in all seven engine languages; absent/incomplete templates leave reminders scheduled. No live notification provider or production template activation was performed. The conductor reviewed the implemented CONS-001 scope and its negative authorization/concurrency evidence for acceptance through this pull request. Exact-head full CI and merge remain required before the accepted package state reaches main. This does not accept an operational template, provider delivery or deployment.
 
 Other follow-ups: recurring windows, open requests through matching (MATCH), video and recording adapters, paid consultations (CONS-002), the public mentoring count with both consents, consultation pages in the workspace.
 
