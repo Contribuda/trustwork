@@ -1,4 +1,5 @@
 import { sql } from 'kysely';
+import { consultationCommunications } from '../../../../packages/data/src/repositories/communications.js';
 import { deriveMailSecretKey, inbox, jobs, MAIL_AGGREGATE, MAIL_REQUESTED, mailDeliveries, suppressions, unsealMailSecret, type DataPool, type MailDelivery, type Transaction } from '@trustwork/data';
 import { inTransaction } from '../db.js';
 import { PermanentJobError, RetryableJobError, type HandlerRegistry, type JobContext } from '../handlers.js';
@@ -224,8 +225,17 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
         headers: { 'X-Entity-Ref-ID': delivery.id },
       };
       try {
-        const receipt = await transport.send(mail, context.signal);
-        await inTransaction(pool, (trx) => mailDeliveries.markSent(trx, delivery.id, receipt.providerMessageId));
+        const sent = await inTransaction(pool, async (trx) => {
+          if (!(await consultationCommunications.mailAllowed(trx, delivery.id))) {
+            await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'consultation access revoked');
+            return false;
+          }
+          context.signal.throwIfAborted();
+          const receipt = await transport.send(mail, context.signal);
+          await mailDeliveries.markSent(trx, delivery.id, receipt.providerMessageId);
+          return true;
+        });
+        if (!sent) { count(delivery.template, 'suppressed'); return; }
         count(delivery.template, 'sent');
         log('info', 'mail sent', { deliveryId: delivery.id, template: delivery.template, locale: rendered.locale, transport: transport.name });
       } catch (error) {

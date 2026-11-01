@@ -1,0 +1,9 @@
+{
+  "en": { "subject": "Agreement reminder", "body": "Please open your agreement to check the upcoming appointment." },
+  "es": { "subject": "Recordatorio del acuerdo", "body": "Abre tu acuerdo para consultar la próxima cita." },
+  "ru": { "subject": "Напоминание по соглашению", "body": "Откройте соглашение, чтобы проверить предстоящую встречу." },
+  "uz-Latn": { "subject": "Kelishuv eslatmasi", "body": "Yaqinlashayotgan uchrashuvni tekshirish uchun kelishuvingizni oching." },
+  "ka": { "subject": "შეთანხმების შეხსენება", "body": "გახსენით შეთანხმება მომავალი შეხვედრის შესამოწმებლად." },
+  "hy": { "subject": "Համաձայնագրի հիշեցում", "body": "Բացեք համաձայնագիրը՝ առաջիկա հանդիպումը ստուգելու համար։" },
+  "az-Latn": { "subject": "Razılaşma xatırlatması", "body": "Qarşıdakı görüşü yoxlamaq üçün razılaşmanızı açın." }
+}
