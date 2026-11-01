@@ -29,7 +29,22 @@ export default {
       effectiveFrom: '2020-01-01T00:00:00.000Z', effectiveUntil: '2099-01-01T00:00:00.000Z',
     }));
     const body = { evidenceDigest: evidence.digest, reason: 'Synthetic crash review' };
-    const proposal = await exactlyOnce({ action: 'jurisdiction.applicability_propose', client: clients.owner, url: `/v1/admin/jurisdiction-applicability/evidence/${evidence.id}/review`, body, effects: count('jurisdiction_applicability_review') });
-    await exactlyOnce({ action: 'jurisdiction.applicability_activate', client: clients.officer, url: `/v1/admin/jurisdiction-applicability/reviews/${(proposal.body as { reviewId: string }).reviewId}/activate`, body, effects: count('jurisdiction_applicability_activation') });
+    const atomicEffects = async (table: string, action: string) => {
+      const read = async () => {
+        const mutation = await count(table)();
+        const audit = (await h.db.admin.query<{ n: number }>('SELECT count(*)::int n FROM trustwork.admin_audit_event WHERE action=$1', [action])).rows[0]!.n;
+        const outbox = (await h.db.admin.query<{ n: number }>('SELECT count(*)::int n FROM trustwork.outbox_event WHERE type=$1', [action])).rows[0]!.n;
+        return { mutation, audit, outbox };
+      };
+      const baseline = await read();
+      return async () => {
+        const now = await read(), delta = now.mutation - baseline.mutation;
+        assert.equal(now.audit - baseline.audit, delta, 'shared ADM audit commits exactly with the mutation');
+        assert.equal(now.outbox - baseline.outbox, delta, 'opaque outbox commits exactly with the mutation');
+        return now.mutation;
+      };
+    };
+    const proposal = await exactlyOnce({ action: 'jurisdiction.applicability_propose', client: clients.owner, url: `/v1/admin/jurisdiction-applicability/evidence/${evidence.id}/review`, body, effects: await atomicEffects('jurisdiction_applicability_review', 'jurisdiction.applicability_proposed') });
+    await exactlyOnce({ action: 'jurisdiction.applicability_activate', client: clients.officer, url: `/v1/admin/jurisdiction-applicability/reviews/${(proposal.body as { reviewId: string }).reviewId}/activate`, body, effects: await atomicEffects('jurisdiction_applicability_activation', 'jurisdiction.applicability_activated') });
   },
 } satisfies CrashCase;

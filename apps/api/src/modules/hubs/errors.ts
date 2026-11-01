@@ -8,6 +8,7 @@ import { ApiError } from '../../common/errors.js';
  * This module never imports platform-admin (tested), so the administration hints it meets are listed here too.
  */
 const HINTS: Readonly<Record<string, ErrorCode>> = {
+  'hubs.authority_busy': 'validation.revision_conflict',
   'admin.not_found': 'access.not_found',
   'admin.forbidden': 'access.forbidden',
   'admin.elevation_required': 'access.forbidden',
