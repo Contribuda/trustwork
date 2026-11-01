@@ -686,6 +686,30 @@ Amendments to HC-40 … HC-49 and the new editorial screens HC-170 … HC-191 (i
 ### HC-166 Accessibility — `/ops/accessibility`
 - **Data**: brand overlay contrast per language, automated check results for the deployed version, manual checklist with dates. **Actions**: record manual check. **Locale**: `admin.ops.accessibility.*`
 
+## Additions of 2026-11-01
+
+Designed in [console design](console-design.md); the full contracts follow the conventions above.
+
+### HC-210 … HC-215 Statistics — `/statistics/...`
+- **Purpose**: the mandatory statistics area: dashboards per domain, the metric catalogue, segments and funnels, reports and scheduled exports, access and retention, metric detail ([console design, section 7](console-design.md#7-statistics-management)).
+- **Data**: cohort aggregates only; every count under ten suppressed after segmentation, with secondary suppression; money flows as recorded instructions to the licensed provider, never held funds.
+- **Actions**: change period, comparison and segments; export (signed, suppressed); schedule reports to staff who hold the permission; edit access and retention as a configuration version.
+- **States**: no person-level rows and no per-staff views exist; a metric whose source is not live shows its status label instead of a number.
+- **Locale**: `consoleStats.*`
+
+### HC-05 Approvals inbox — `/inbox`
+- **Purpose**: decisions and work assigned to the viewer, as typed items (never messages).
+- **Data**: tabs Waiting for me (approvals, case grants, recovery escalations, access-review items, Agent team review items), My requests, Assigned to me (cases, appeals, incidents, alerts), Done; each row with action, scope, requester, reason, diff summary, expiry and why it is the viewer's.
+- **Actions**: approve, decline with reason, ask a question, withdraw own request, execute an approved own request; HC-02 becomes the Waiting for me tab.
+- **Mobile**: first-class at 375 px.
+- **Locale**: `consoleNav.inbox.*`
+
+### HC-151 Roles and permissions, HC-152 Invitations, HC-154 Access reviews, HC-155 Service accounts and AI clients — `/staff/roles`, `/staff/invitations`, `/staff/reviews`, `/staff/clients` (Users area)
+- Role catalogue with the permission matrix and effective access; invitations with expiry and second-person approval for sensitive roles; access-review campaigns with keep or remove decisions; admin MCP clients and system principals ([console design, sections 4.2 to 5](console-design.md#42-staff)). **Locale**: `admin.staff.*` and `consoleNav.access.*`.
+
+### HC-200 … HC-206 Agent team — `/agent-team/...`
+- Roster, roles, grants, runs, review queue, budgets and evaluations of the operator's internal agents ([console design, section 8](console-design.md#8-the-agent-team-adr-010-decision-26)). Human-only decisions appear as locked rows. **Locale**: `agentTeam.*`.
+
 ## Proposed locale keys (sample, English reference)
 
 | Key | English |
