@@ -7,21 +7,27 @@ BEGIN
   END IF;
   PERFORM set_config('lock_timeout','3s',true);
   PERFORM pg_advisory_xact_lock(hashtextextended('trustwork.jurisdiction.authority',0));
+EXCEPTION WHEN lock_not_available THEN
+  RAISE EXCEPTION 'jurisdiction authority is busy' USING ERRCODE='55P03',HINT='hubs.authority_busy';
 END $$;
 
 -- Row locks serialize against the actual identity/session revokers, without changing those owning modules.
 -- Call AFTER domain waits. The exact authenticated session is provided by the server, never by an HTTP body.
+-- Owning revokers have different row orders (role -> elevation, recovery elevation -> session).
+-- Never wait while retaining another current-authority row: refuse this transaction without refreshing/retrying.
 CREATE FUNCTION trustwork.jurisdiction_require_actor(p_session uuid) RETURNS uuid
 LANGUAGE plpgsql VOLATILE SET search_path=trustwork,pg_temp AS $$
 DECLARE actor uuid := trustwork.current_person_id(); epoch integer; sess trustwork.session%ROWTYPE;
 BEGIN
-  SELECT authz_epoch INTO epoch FROM trustwork.person WHERE id=actor FOR SHARE;
-  SELECT * INTO sess FROM trustwork.session WHERE id=p_session AND person_id=actor FOR SHARE;
+  SELECT authz_epoch INTO epoch FROM trustwork.person WHERE id=actor FOR SHARE NOWAIT;
+  SELECT * INTO sess FROM trustwork.session WHERE id=p_session AND person_id=actor FOR SHARE NOWAIT;
   IF actor IS NULL OR epoch IS DISTINCT FROM trustwork.current_authz_epoch() OR sess.id IS NULL
     OR sess.revoked_at IS NOT NULL OR sess.idle_expires_at<=clock_timestamp() OR sess.absolute_expires_at<=clock_timestamp() THEN
     RAISE EXCEPTION 'current exact session required' USING ERRCODE='42501';
   END IF;
   RETURN actor;
+EXCEPTION WHEN lock_not_available THEN
+  RAISE EXCEPTION 'current authority is busy' USING ERRCODE='55P03',HINT='hubs.authority_busy';
 END $$;
 
 -- Legacy key-only policies remain valid configuration but cannot authorize consent-bearing execution.

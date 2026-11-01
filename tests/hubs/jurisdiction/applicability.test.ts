@@ -49,6 +49,13 @@ test('owning staged evidence review uses exact current two-person authority', { 
     });
     const r = await clients.owner.post(path, { evidenceDigest: e.digest, reason: 'Synthetic review' });
     assert.equal(r.status, 200, JSON.stringify(r.body));
+    const reviewId = (r.body as { reviewId: string }).reviewId;
+    const audit = await h.db.admin.query('SELECT * FROM trustwork.admin_audit_event WHERE object_id=$1 AND action=$2', [reviewId, 'jurisdiction.applicability_proposed']);
+    assert.equal(audit.rowCount, 1, 'a private review is not the shared administration audit');
+    assert.equal(audit.rows[0]!.actor_person_id, p.owner);
+    assert.equal(audit.rows[0]!.hub_id, f.hubId);
+    assert.equal(audit.rows[0]!.reason_text, 'Synthetic review');
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.outbox_event WHERE aggregate_id=$1 AND type=$2', [reviewId, 'jurisdiction.applicability_proposed'])).rowCount, 1);
     await t.test('resolved activation does not refresh changed request authority', async () => {
       await staleRequest(h, () => clients.officer.post(`/v1/admin/jurisdiction-applicability/reviews/${(r.body as { reviewId: string }).reviewId}/activate`, { evidenceDigest: e.digest, reason: 'Synthetic stale activation' }));
     });

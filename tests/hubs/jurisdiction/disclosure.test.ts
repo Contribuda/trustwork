@@ -14,8 +14,17 @@ test('immutable complete-language disclosure port; no OUTR runtime or activation
   const current = await db.admin.query("SELECT version_id FROM trustwork.hub_config_current WHERE hub_id=$1 AND domain='jurisdiction'", [f.hubId]);
   const versionId = current.rows[0]!.version_id as string;
   const ctx = await f.a.elevate(f.p.owner);
+  const readLogBefore = (await db.admin.query('SELECT count(*)::int n FROM trustwork.access_log_entry')).rows[0]!.n;
   const bundle = await f.a.as(f.p.owner, trx => jurisdictionDisclosure.current(trx, f.world.sessions.owner, ctx, versionId));
   assert.deepEqual(bundle.locales, LOCALES);
+  // This port reads public counsel documents, not private evidence under a case grant. Never invent a grant/log.
+  assert.equal((await db.admin.query('SELECT count(*)::int n FROM trustwork.access_log_entry')).rows[0]!.n, readLogBefore);
+  for (const binding of bundle.bindings) {
+    assert.deepEqual(Object.keys(binding).sort(), ['body', 'bodyDigest', 'documentId', 'jurisdiction', 'key', 'locale', 'version']);
+    assert.ok(!JSON.stringify(binding).includes(f.p.outsider));
+  }
+  const foreign = await f.a.elevate(f.p.otherOwner);
+  await assert.rejects(f.a.as(f.p.otherOwner, trx => jurisdictionDisclosure.current(trx, f.world.sessions.otherOwner, foreign, versionId)), { code: '42501' });
   const content = { id: versionId, version: 1, policyVersionId: versionId, policyDigest: bundle.policyDigest,
     variants: bundle.bindings.map(b => ({ jurisdiction: b.jurisdiction, locale: b.locale, blocks: [
       { kind: 'automated_assistant', locked: true, text: b.body, documentId: b.documentId, bodyDigest: b.bodyDigest },
