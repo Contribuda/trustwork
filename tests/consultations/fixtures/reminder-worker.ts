@@ -46,5 +46,8 @@ process.on('message', (command: Command) => {
     return execute!(command);
   })().then((result) => {
     process.send!({ id: command.id, result }, () => { if (command.action === 'close') process.disconnect(); });
-  }).catch(() => { process.send!({ id: command.id, error: 'recording worker command failed' }); });
+  }).catch((error: unknown) => {
+    const pg = error as { code?: string; constraint?: string };
+    process.send!({ id: command.id, error: ['recording worker command failed', pg.code, pg.constraint].filter(Boolean).join(': ') });
+  });
 });
