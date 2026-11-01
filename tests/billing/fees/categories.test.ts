@@ -2,8 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { publicFeeCategory } from '../../../apps/web/app/(public)/[lang]/pricing/categories.js';
+import { FeeTermsSchema } from '../../../packages/contracts/src/billing-fees.js';
+import { syntheticTerms } from './helpers.js';
 
 test('pricing resolves actual consultation and task registry labels in every language without exposing unknown keys',()=>{
+  assert.ok(FeeTermsSchema.safeParse(syntheticTerms({kind:'task',categoryKey:'work.envelope.roofing'})).success);
+  for (const categoryKey of ['work..roofing','work.roofing.','.work.roofing','work.Roofing','x'.repeat(62)]) {
+    assert.equal(FeeTermsSchema.safeParse(syntheticTerms({kind:'task',categoryKey})).success,false);
+  }
   for(const locale of ['en','es','ru','uz-Latn','ka','hy','az-Latn']) {
     const consultations=JSON.parse(readFileSync(`apps/web/locales/${locale}/consultations.json`,'utf8')).consultations.kind;
     const pricing=JSON.parse(readFileSync(`apps/web/locales/${locale}/pricing.json`,'utf8')).pricing;
