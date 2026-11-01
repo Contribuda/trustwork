@@ -203,7 +203,7 @@
       },
       "listControls": {
         "title": "Əlavə siyahıların konfiqurasiyası",
-        "boundary": "Əsas siyahılar həmişə aktivdir. Fayl idxalı ölkə paketinin qeydiyyatdan keçmiş faktları və işlək adapterlərindən istifadə edir. Dəqiq konfiqurasiyanı başqa uyğunluq əməkdaşı təsdiqləyir. Canlı endirmə provayderin ayrıca səlahiyyətini tələb edir və burada əlçatan deyil.",
+        "boundary": "Əsas siyahılar həmişə aktiv qalır. Qeydiyyatdan keçmiş mənbəni seçin və dəyişiklik səbəbini göstərin. Başqa uyğunluq əməkdaşı dəqiq konfiqurasiyanı təsdiqləməlidir. Burada avtomatik yükləmələr mövcud deyil.",
         "propose": "Fayl siyahısı konfiqurasiyasını təklif et",
         "source": "Qeydiyyatlı mənbə",
         "cadence": "Yeniləmə intervalı (saniyə)",
@@ -211,7 +211,7 @@
         "stale": "Köhnəlmə müddəti (saniyə)",
         "exportEvidence": "Rəsmi ixrac yoxlanılıb",
         "reviewEvidence": "Mənbə faktı yoxlanılıb",
-        "noSources": "Uyğun ixrac mənbəyi qeydiyyatdan keçməyib. Sorğu adapterləri və yoxlanılmamış faktlar siyahı idxalı üçün istifadə edilə bilməz.",
+        "noSources": "Fayl idxalı üçün qeydiyyatdan keçmiş mənbə mövcud deyil.",
         "history": "Konfiqurasiya tarixçəsi",
         "approve": "Konfiqurasiyanı təsdiqlə",
         "pause": "Əlavə siyahını dayandır",

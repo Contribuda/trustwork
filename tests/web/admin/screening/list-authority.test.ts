@@ -28,6 +28,9 @@ test('file list registration is current-authority, digest-bound, independently a
  const url=`/v1/admin/screening/list-authority?hubId=${w.hubId}`;
  const read=async()=>ScreeningListAuthoritySchema.parse((await w.first.get(url)).body);
  const source=(await read()).sources[0]!;
+ assert.equal(source.name,'Synthetic local export');
+ assert.equal(source.authority,'Synthetic test authority');
+ assert.equal(source.sourceUrl,'https://ofac.treasury.gov/synthetic-test-only');
  const body={hubId:w.hubId,sourceId:source.id,cadenceSeconds:86400,warnAfterSeconds:259200,staleAfterSeconds:604800,reason:'Synthetic source configuration',evidence:'source_review'};
  await t.test('read/write denials and no arbitrary URL/path/adapter/mode authority',async()=>{
   expectError(await w.h.client().get(url),401,'auth.session_invalid');
@@ -43,6 +46,10 @@ test('file list registration is current-authority, digest-bound, independently a
  const proposed=await w.first.post('/v1/admin/screening/list-proposals',body);assert.equal(proposed.status,200,JSON.stringify(proposed.body));
  const id=(proposed.body as {id:string}).id;
  const proposal=(await read()).proposals.find(p=>p.id===id)!;
+ assert.equal(proposal.source.name,source.name);
+ assert.equal(proposal.source.authority,source.authority);
+ assert.equal(proposal.source.sourceUrl,source.sourceUrl);
+ assert.equal(proposal.source.sourceDigest,source.sourceDigest);
  const decision={decision:'approve',actionDigest:proposal.actionDigest,reason:'Synthetic independent source review'};
  await t.test('self and mismatched digest denied; concurrent second approval applies exactly once',async()=>{
   expectError(await w.first.post(`/v1/admin/screening/list-proposals/${id}/decision`,decision),403,'access.second_approver_required');

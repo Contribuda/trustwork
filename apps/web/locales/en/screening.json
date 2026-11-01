@@ -203,7 +203,7 @@
       },
       "listControls": {
         "title": "Additional list configuration",
-        "boundary": "The baseline stays on. File imports use registered country-pack facts and implemented adapters. Another compliance officer approves the exact configuration. Live downloads require separate provider authority and are unavailable here.",
+        "boundary": "Baseline lists stay on. Choose a registered source and provide the reason for the change. Another compliance officer must approve the exact configuration. Automatic downloads are unavailable here.",
         "propose": "Propose file list configuration",
         "source": "Registered source",
         "cadence": "Refresh interval (seconds)",
@@ -211,7 +211,7 @@
         "stale": "Stale age (seconds)",
         "exportEvidence": "Official export checked",
         "reviewEvidence": "Source fact reviewed",
-        "noSources": "No eligible export source is registered. Query adapters and unreviewed facts cannot be used as list imports.",
+        "noSources": "No registered source is available for file imports.",
         "history": "Configuration history",
         "approve": "Approve list configuration",
         "pause": "Pause additional list",
