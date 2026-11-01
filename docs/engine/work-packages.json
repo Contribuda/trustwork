@@ -2010,7 +2010,7 @@
       "id": "BIZ-001",
       "title": "Hub business-model playbook and the public price-transparency page design",
       "area": "billing",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "handbook": "docs/engine/billing.md",
       "goal": "Document acceptable and forbidden revenue options for hubs under ADR 010 decisions 20 and 21 and design the public page that lists every active price version, fee and commission and what payment never buys.",
