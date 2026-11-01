@@ -6,6 +6,8 @@ Requirement R38 (with ADR 009). Status: country pack v1 (identifier format, lega
 
 The United Kingdom pack is **Live** as pack data (CTRY-GB): four nations and 217 child subdivision entries from a secondary CLDR snapshot, sourced national and nation-specific facts, and published 2026-2028 bank holidays. Current ISO and counsel checks remain labelled.
 
+The Canada pack is **Live** as partial v2 data (CTRY-CA: all provinces and territories; English enabled, French awaits LANG-FR; [evidence and limitations](../../tests/country-packs/ca/README.md)).
+
 Construction is local. What a valid company looks like, who may legally pour concrete for a school, which code a facade must meet, how an invoice must be issued, how a document is signed, what counts as a working day: all of this differs from country to country. The engine handles these differences with two layers and one rule.
 
 ## Two layers and one rule
@@ -174,7 +176,7 @@ Each planned pack has a work package that lists the facets to source for its cou
 
 | Region | Packages |
 |---|---|
-| Americas | INTL-US (live), CTRY-CA, CTRY-MX, CTRY-BR |
+| Americas | INTL-US (live), CTRY-CA (partial data live), CTRY-MX, CTRY-BR |
 | Europe | CTRY-GB; CTRY-EU, then CTRY-DE, CTRY-FR, CTRY-ES, CTRY-IT, CTRY-PL; CTRY-UA (government-controlled territory only) |
 | Middle East | CTRY-TR, CTRY-AE |
 | Asia-Pacific | CTRY-IN, CTRY-AU |

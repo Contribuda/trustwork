@@ -12,7 +12,7 @@ test('every pack file on disk validates and is loaded', () => {
 test('launch markets are present and Uzbekistan is complete and first', () => {
   assert.deepEqual(
     PACKS.map((p) => p.code),
-    ['UZ', 'GE', 'AM', 'AZ', 'US', 'GB'],
+    ['UZ', 'GE', 'AM', 'AZ', 'US', 'GB', 'CA'],
   );
   assert.equal(getPack('uz')?.status, 'complete');
   assert.equal(getPack('UZ')?.defaultLocale, 'uz-Latn');
