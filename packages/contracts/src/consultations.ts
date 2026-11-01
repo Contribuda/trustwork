@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PublicFeeSchema } from './billing-fees.js';
 import { PartySchema } from './access.js';
 import { AgentModuleManifestSchema, type AgentCapability, type AgentModuleManifest, type ContractRef } from './agent-catalog.js';
 import { AttachmentRefSchema, IanaTimeZoneSchema, IdSchema, NameSchema, RevisionSchema, ShortTextSchema, TextSchema, TimestampSchema } from './common/ids.js';
@@ -191,6 +192,10 @@ export function priceAmount(price: ConsultationPrice): Money | null {
  * one, the answer is `none_published` and nothing is added: there are no hidden fees.
  */
 export const CommissionQuoteSchema = z.discriminatedUnion('status', [
+  z.strictObject({
+    status: z.literal('versioned_fees'), buyerFee: PublicFeeSchema, sellerFee: PublicFeeSchema,
+    buyerAmount: NonNegativeMoneySchema, sellerAmount: NonNegativeMoneySchema,
+  }),
   z.strictObject({ status: z.literal('none_published') }),
   z.strictObject({
     status: z.literal('published'),
@@ -222,6 +227,15 @@ export const PricingSummarySchema = z.strictObject({
 export type PricingSummary = z.infer<typeof PricingSummarySchema>;
 export function pricingSummary(price: ConsultationPrice, commission: CommissionQuote): PricingSummary {
   const amount = priceAmount(price);
+  if (commission.status === 'versioned_fees') {
+    const base = amount ?? { minorUnits: '0', currency: commission.buyerAmount.currency };
+    if (base.currency !== commission.buyerAmount.currency || base.currency !== commission.sellerAmount.currency
+      || BigInt(commission.sellerAmount.minorUnits) > BigInt(base.minorUnits)) throw new RangeError('fee currency or expert proceeds invalid');
+    return PricingSummarySchema.parse({ price, commission,
+      clientTotal: { minorUnits: (BigInt(base.minorUnits)+BigInt(commission.buyerAmount.minorUnits)).toString(), currency: base.currency },
+      expertAmount: { minorUnits: (BigInt(base.minorUnits)-BigInt(commission.sellerAmount.minorUnits)).toString(), currency: base.currency },
+    });
+  }
   if (amount === null) return { price, commission: { status: 'none_published' }, clientTotal: null, expertAmount: null };
   const fee = commission.status === 'published' ? BigInt(commission.amount.minorUnits) : 0n;
   const payer = commission.status === 'published' ? commission.payer : 'client';

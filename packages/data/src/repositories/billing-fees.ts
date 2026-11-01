@@ -42,7 +42,7 @@ export const bookingFees = {
 
 export const feePricingReaders = {
   async hubAvailable(trx: Transaction, hubId: string): Promise<boolean> {
-    const r = await sql<{ available: boolean }>`SELECT EXISTS(SELECT 1 FROM trustwork.hub WHERE id=${hubId}::uuid AND lifecycle<>'closed') AS available`.execute(trx);
+    const r = await sql<{ available: boolean }>`SELECT trustwork.billing_fee_hub_available(${hubId}::uuid) AS available`.execute(trx);
     return r.rows[0]?.available === true;
   },
   async publishedPlans(trx: Transaction, hubId: string) {

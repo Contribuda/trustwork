@@ -3,7 +3,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { withMaintenance, withPrincipal, type Transaction } from '@trustwork/data';
 import { createApp } from '../../../../apps/api/src/app.js';
 import { approvals, staffAssignments, staffRoleDefinitions, type CommandContext } from '../../../../packages/data/src/repositories/admin.js';
-import { sessionElevations } from '../../../../packages/data/src/repositories/second-factor.js';
+import { sessionElevations } from '../../../../packages/data/src/repositories/identity.js';
 import { principalFor } from '../../../data/helpers/seed.js';
 import { Client, type Harness } from '../../helpers/app.js';
 import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';

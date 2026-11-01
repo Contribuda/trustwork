@@ -20,6 +20,10 @@ test('BILL-003 fee authority on real PostgreSQL', { skip: db ? false : SKIP_REAS
   t.after(async () => { await runtime.end(); await db.close(); });
   const { a, p, hubA, hubB, draft, approve, activate } = await feeWorld(db.admin, runtime);
   await withMaintenance(db.admin, (trx) => trx.updateTable('person').set({ profile_visibility: 'public' }).where('id', 'in', [p.owner, p.outsider]).execute());
+  for (const id of [p.owner,p.outsider]) await a.as(id, (trx) => trx.insertInto('consent_record').values({
+    subject_person_id:id,purpose:'profile_public',target_kind:null,target_id:null,notice_version:'profile_public.v1',
+    evidence:JSON.stringify({method:'first_party_form',requestId:'synthetic-fee-neutrality'}),
+  }).execute());
   const peopleBefore = await a.as(p.outsider, (trx) => directory.publicPeople(trx, { after: null, limit: 100 }));
   assert.ok(peopleBefore.length >= 2);
   const neutralBefore = neutralOutputs(p.outsider);

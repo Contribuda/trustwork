@@ -115,3 +115,10 @@ GRANT EXECUTE ON FUNCTION trustwork.billing_fee_draft(jsonb,uuid,jsonb), trustwo
 
 -- Anonymous and participant readers must use the explicit public serializer, never raw staff metadata.
 DROP POLICY marketplace_fee_version_read ON trustwork.marketplace_fee_version;
+
+CREATE FUNCTION trustwork.billing_fee_hub_available(p_hub uuid) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
+ SELECT EXISTS(SELECT 1 FROM trustwork.hub WHERE id=p_hub AND lifecycle<>'closed')
+$$;
+REVOKE ALL ON FUNCTION trustwork.billing_fee_hub_available(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION trustwork.billing_fee_hub_available(uuid) TO trustwork_app;

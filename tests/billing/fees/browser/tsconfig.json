@@ -1,0 +1,16 @@
+{
+  "extends": "../../../../apps/web/tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "incremental": false
+  },
+  "include": [
+    "../../../../apps/**/*.ts",
+    "../../../../apps/**/*.tsx",
+    "../../../../packages/**/*.ts",
+    "../../../../packages/**/*.tsx",
+    "../../../../tests/**/*"
+  ],
+  "exclude": []
+}

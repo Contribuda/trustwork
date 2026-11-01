@@ -9,14 +9,15 @@ import {
 } from './consultations.controller.js';
 import { ConsultationsService } from './consultations.service.js';
 import { NoConsultationMandates, type ConsultationMandatePort } from './mandates.js';
-import { NoPublishedCommission, ScreeningCommitmentGate, type ConsultationCommissionPort, type ConsultationScreeningGate } from './ports.js';
+import { VersionedConsultationFees } from '../billing/fees/consultation-adapter.js';
+import { ScreeningCommitmentGate, type ConsultationCommissionPort, type ConsultationScreeningGate } from './ports.js';
 
 export interface ConsultationsModuleOptions {
   /** Agent mandate check; defaults to "no mandate store", which refuses every agent request. */
   mandates?: ConsultationMandatePort;
   /** The hub's electronic-records policy; defaults to consent required with the engine's generic disclosure. */
   electronicRecords?: ElectronicRecordsPolicySource;
-  /** The hub commission (BILL-003); defaults to "none published". */
+  /** The hub commission (BILL-003); defaults to the fail-closed BILL-003 adapter. */
   commission?: ConsultationCommissionPort;
   /** The screening gate (SANC-004); defaults to SANC-004's transactional commitment gate, failing closed. */
   screening?: ConsultationScreeningGate;
@@ -27,7 +28,7 @@ export class ConsultationsModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: ConsultationsModuleOptions = {}, env: NodeJS.ProcessEnv = process.env): DynamicModule {
     const service = new ConsultationsService(
       ctx, identity.principals, options.mandates ?? new NoConsultationMandates(), options.electronicRecords ?? new ConfiguredElectronicRecords(),
-      options.commission ?? new NoPublishedCommission(), options.screening ?? new ScreeningCommitmentGate(), staffHubFromEnv(env),
+      options.commission ?? new VersionedConsultationFees(staffHubFromEnv(env)), options.screening ?? new ScreeningCommitmentGate(), staffHubFromEnv(env),
     );
     return {
       module: ConsultationsModule,

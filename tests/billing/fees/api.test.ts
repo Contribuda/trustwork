@@ -4,6 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { withMaintenance } from '@trustwork/data';
 import { startHarness, SKIP_REASON } from '../../backend/helpers/app.js';
 import { PublicPricingSchema, type PublicFee } from '../../../packages/contracts/src/billing-fees.js';
+import { catalogue } from '../../../packages/data/src/repositories/billing.js';
+import { SubscriptionPlanVersionSchema } from '../../../packages/contracts/src/agent-catalog.js';
 import { feeHttpWorld } from './http-helpers.js';
 import { syntheticTerms } from './helpers.js';
 
@@ -62,8 +64,39 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.deepEqual(p.fees, [f]); assert.equal(p.hubId, w.hubA);
     for (const privateValue of [w.p.owner, w.p.officer, approvalId, 'drafted_by', 'approval_id']) assert.ok(!JSON.stringify(p).includes(privateValue));
   });
+  await t.test('public catalogue projects actual active plan and service versions, hides draft, other hub and unimplemented credit validity',async()=>{
+    const versions=await withMaintenance(h.db.admin,async(trx)=>{
+      const create=async(code:string,kind:'plan'|'deliverable'|'credit_pack',hubId=w.hubA,active=true)=>{
+        const offer=await catalogue.createOffer(trx,{hubId,code,name:'Synthetic '+code,kind,createdBy:w.p.owner,status:'active'});
+        const price=await catalogue.draftPriceVersion(trx,{offerId:offer.id,amountMinor:'12345',currency:'USD',
+          effectiveFrom:new Date(Date.now()+3600000),effectiveTo:new Date(Date.now()+7200000),acceptanceTextVersion:'synthetic-prices-1',draftedBy:w.p.owner});
+        if(active)await catalogue.activatePriceVersion(trx,price.id,w.p.officer);
+        return {offer,price};
+      };
+      const plan=await create('synthetic_plan','plan');
+      const planId=randomUUID();
+      const payload=SubscriptionPlanVersionSchema.parse({id:planId,offerId:plan.offer.id,version:1,payerKind:'person',moduleKeys:['consultation'],includedQuota:[],
+        connections:1,channels:0,representativeIncluded:false,priceVersionId:plan.price.id,status:'draft'});
+      await trx.insertInto('subscription_plan_version').values({id:planId,offer_id:plan.offer.id,version:1,payer_kind:'person',payload:JSON.stringify(payload),price_version_id:plan.price.id,drafted_by:w.p.owner}).execute();
+      await catalogue.activatePlanVersion(trx,planId,w.p.officer);
+      const service=await create('synthetic_service','deliverable');
+      await create('synthetic_draft','deliverable',w.hubA,false);await create('synthetic_other_hub','deliverable',w.hubB);
+      await create('synthetic_credit_without_validity','credit_pack');
+      return {plan,planId,service};
+    });
+    const view=PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body);
+    assert.deepEqual(view.prices.map(p=>p.code),['synthetic_plan','synthetic_service']);
+    assert.deepEqual(view.prices[0]?.planVersion,{id:versions.planId,version:1});
+    assert.equal(view.prices[0]?.id,versions.plan.price.id);
+    assert.equal(view.prices[1]?.id,versions.service.price.id);
+    assert.equal(view.prices[0]?.effectiveTo,versions.plan.price.effective_to?.toISOString());
+    assert.ok(view.unavailable.includes('credit_packs'));assert.ok(view.unavailable.includes('models'));assert.ok(view.unavailable.includes('capabilities'));
+    assert.ok(!view.unavailable.includes('plans'));
+    assert.ok(!JSON.stringify(view).includes(w.p.owner));
+  });
   await t.test('closed served hub never publishes its fees', async () => {
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('hub').set({ lifecycle: 'closed' }).where('id', '=', w.hubA).execute());
-    assert.deepEqual(PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body).fees, []);
+    const closed=PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body);
+    assert.deepEqual(closed.fees, []);assert.deepEqual(closed.prices, []);
   });
 });

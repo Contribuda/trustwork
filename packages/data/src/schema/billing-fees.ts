@@ -16,7 +16,9 @@ export interface FeeBindingTable {
   id: GeneratedUuid; confirmation_id: string; booking_id: string; source_digest: string; person_id: string; source_hub_id: string;
   local_fee_id: string; counterparty_fee_id: string; created_at: GeneratedTimestamp;
 }
+export interface ConsultationOriginTable { source_kind: 'offering' | 'request'; source_id: string; hub_id: string; created_at: GeneratedTimestamp }
 export interface BillingFeesDatabase {
+  billing_consultation_origin: ConsultationOriginTable;
   billing_fee_scope: FeeScopeTable;
   billing_fee_disclosure: FeeDisclosureTable;
   billing_fee_confirmation: FeeConfirmationTable;
@@ -29,6 +31,7 @@ declare module './index.js' {
 export type FeeScopeRow = Selectable<FeeScopeTable>;
 const columns = columnsOf<BillingFeesDatabase>();
 export const TABLE_COLUMNS: TableColumns<BillingFeesDatabase> = {
+  billing_consultation_origin: columns('billing_consultation_origin', ['source_kind','source_id','hub_id','created_at']),
   billing_fee_scope: columns('billing_fee_scope', ['id', 'source_kind', 'source_id', 'source_digest', 'fee_kind', 'category_key', 'buyer_person_id', 'buyer_company_id', 'seller_person_id', 'seller_company_id', 'buyer_hub_id', 'seller_hub_id', 'created_at']),
   billing_fee_disclosure: columns('billing_fee_disclosure', ['id', 'scope_id', 'person_id', 'source_hub_id', 'side', 'buyer_fee_id', 'seller_fee_id', 'snapshot', 'digest', 'created_at']),
   billing_fee_confirmation: columns('billing_fee_confirmation', ['id', 'disclosure_id', 'person_id', 'created_at']),

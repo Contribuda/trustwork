@@ -31,9 +31,12 @@ import { createLogger, messageLogger, type Logger, type LogSink } from './observ
 import { createTelemetry, type Telemetry, type TelemetryExporter } from './observability/telemetry.js';
 import { jurisdictionGateFor, jurisdictionHook, loadRestrictedPlaces } from './modules/jurisdiction/gate.js';
 import { suspensionHook } from './modules/screening/suspension.js';
+import type { ConsultationCommissionPort } from './modules/consultations/ports.js';
 import type { JurisdictionGate } from './modules/jurisdiction/deps.js';
 
 export interface CreateAppOptions {
+  /** Explicit consultation commission test adapter; production uses governed BILL-003 prices. */
+  consultationCommission?: ConsultationCommissionPort;
   config?: Partial<ApiConfig>;
   env?: NodeJS.ProcessEnv;
   /** Runtime pool (a login role that is a member of trustwork_app). Without it only /health is served. */
@@ -176,7 +179,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     bodyLimit: 256 * 1024,
   });
   const files = options.files ?? filesOptionsFromEnv(env);
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }), adapter, { logger: new NestJsonLogger(logger) });
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }, options.consultationCommission), adapter, { logger: new NestJsonLogger(logger) });
   const fastify = app.getHttpAdapter().getInstance() as unknown as FastifyInstance;
   instrumentHttp(fastify, { config, logger, telemetry });
   // The per-route limit must be attached before @fastify/rate-limit's own onRoute hook reads `config.rateLimit`

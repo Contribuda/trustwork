@@ -86,6 +86,8 @@ BEGIN
  SELECT * INTO s FROM trustwork.billing_fee_scope WHERE id=p_scope;
  IF NOT FOUND THEN RAISE EXCEPTION 'fee scope unavailable' USING ERRCODE='P0002',HINT='admin.not_found'; END IF;
  side:=trustwork.billing_fee_side(s,p_hub);
+ IF EXISTS(SELECT 1 FROM trustwork.hub WHERE id IN(s.buyer_hub_id,s.seller_hub_id) AND lifecycle='closed') THEN
+  RAISE EXCEPTION 'source hub unavailable' USING ERRCODE='23514',HINT='billing.unavailable'; END IF;
  -- One global order for both home hubs, shared by disclosures, confirmation and consumption.
  FOR k IN SELECT unnest(ARRAY[s.buyer_hub_id::text||':'||s.fee_kind||':buyer',s.seller_hub_id::text||':'||s.fee_kind||':seller']) ORDER BY 1 LOOP
    PERFORM pg_advisory_xact_lock(hashtext('trustwork.billing.fee'),hashtext(k));
@@ -108,6 +110,8 @@ BEGIN
  SELECT * INTO d FROM trustwork.billing_fee_disclosure WHERE id=p_id AND person_id=trustwork.current_person_id() AND source_hub_id=p_hub;
  IF NOT FOUND THEN RAISE EXCEPTION 'disclosure unavailable' USING ERRCODE='P0002',HINT='admin.not_found'; END IF;
  SELECT * INTO s FROM trustwork.billing_fee_scope WHERE id=d.scope_id;
+ IF EXISTS(SELECT 1 FROM trustwork.hub WHERE id IN(s.buyer_hub_id,s.seller_hub_id) AND lifecycle='closed') THEN
+  RAISE EXCEPTION 'source hub unavailable' USING ERRCODE='23514',HINT='billing.unavailable'; END IF;
  IF trustwork.billing_fee_side(s,p_hub)<>d.side THEN RAISE EXCEPTION 'authority changed' USING ERRCODE='42501',HINT='admin.forbidden'; END IF;
  IF p_digest IS DISTINCT FROM d.digest OR trustwork.admin_digest(d.snapshot)<>d.digest THEN
   RAISE EXCEPTION 'disclosure digest mismatch' USING ERRCODE='42501',HINT='admin.approval_mismatch'; END IF;

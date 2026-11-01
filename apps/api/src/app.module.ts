@@ -24,6 +24,7 @@ import { ProvidersModule } from './modules/providers/providers.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
 import { RecordingModerationTargets } from './modules/platform-admin/ports.js';
+import type { ConsultationCommissionPort } from './modules/consultations/ports.js';
 import { ConsultationsModule } from './modules/consultations/consultations.module.js';
 import { ContentModule } from './modules/content/content.module.js';
 import { ContentModerationTargets } from './modules/content/moderation.js';
@@ -59,7 +60,7 @@ export class HealthController {
 @Module({})
 export class AppModule {
   static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured',
-    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }): DynamicModule {
+    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort): DynamicModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     return {
@@ -86,7 +87,7 @@ export class AppModule {
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
-        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']) }, communications.env),
+        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
         ContentModule.forRoot(ctx, identity),
         AssistantModule.forRoot(ctx, identity),
         AgentsModule.forRoot(ctx, identity),
