@@ -3,7 +3,7 @@
 Agent: Codex CLI (OpenAI) for Parshkov
 
 Status: in_progress. This draft is not acceptance and unlocks no dependent package.
-Implementation SHA: `282201efed0d9d2dc0c9ade45365bc27cc22e7d0`. This report publication is documentation-only; the PR body records the current full publication SHA and exact-head gate results.
+Physical-drill implementation SHA: `282201efed0d9d2dc0c9ade45365bc27cc22e7d0`. A subsequent composition-root repair is described below; the PR body records its current full publication SHA and exact-head gate results.
 
 Foundation #471 was observed MERGED at 2026-11-01T05:12:47Z, merge commit `72f7c62c7c80f30b476b2e64a72c36c58bbe8cbb`.
 The continuation branch starts at that actual main commit. The original branch and reviewed journal are preserved.
@@ -96,3 +96,11 @@ At full implementation SHA `282201efed0d9d2dc0c9ade45365bc27cc22e7d0`, [physical
 The full npm check and browser jobs had started at this evidence capture and were not yet complete. Final publication checks must be read from [the draft PR checks](https://github.com/Contribuda/trustwork/pull/502/checks) and its exact-head evidence comment, rather than inferred from a prior implementation SHA. This documentation-only report update does not change implementation, migrations, fixtures or tests. PRV-001 remains in_progress regardless of CI success because the engineering gaps above remain.
 
 No new owner-only product decision is required. The active-owner seams remain pending conductor coordination; absence of a response does not authorize edits to their active files. The original branch, all upstream work-package objects, the existing accepted claim and independently provisioned journal protocol are preserved.
+
+## Screening boundary repair after the full gate
+
+Full check at `13630f18a4391b74e19ce83cd11e289ad5884dce` ran 2471 tests: 2466 passed, 1 failed, 4 opt-in skips, exit 1. The sole failure was the unchanged screening architecture test: the root exporter imported screening repository access outside its owning boundary. The repair supplies the existing ScreeningSelfController.status projection from app.ts through a typed composition port, preserving the export's locked principal transaction. No active SANC file, projection, authorization rule or boundary test changed.
+
+The 4 full-check skips are the two-deployment build, optional local S3 service, physical restore and Playwright launcher. On that same SHA the separate physical workflow passed (1 test, all eight privacy checks), live API browser suite passed (13 tests), browser suite passed (278 tests, 56 skips), and image/stack checks passed. These remain prior-head evidence for the composition-root repair, whose full check must pass separately.
+
+Repair verification before commit: `node --import tsx --test --test-concurrency=1 tests/privacy/privacy.test.ts tests/screening/projections.test.ts tests/admin/boundaries.test.ts tests/support/boundaries.test.ts tests/billing/policy.test.ts`, exit 0, 37 passed, 0 failed/skipped. Root TypeScript, changed-file ESLint, docs and diff checks each exit 0. No full local gate was run. The full CI checkbox stays unchecked until the new exact head succeeds.

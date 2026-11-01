@@ -3,7 +3,6 @@ import { OAuthService } from './modules/connections/oauth/oauth.service.js';
 import { oauthSettingsFromEnv } from './modules/connections/oauth/config.js';
 import { legalDocuments } from '../../../packages/data/src/repositories/hubs.js';
 import { toAcceptance } from './modules/hubs/views.js';
-import { screeningSubjects, ownComplianceStatus } from './modules/screening/deps.js';
 import { FilesService } from './modules/files/files.service.js';
 import { NoFileMandates } from './modules/files/mandates.js';
 import type { FilesModuleOptions } from './modules/files/config.js';
@@ -44,6 +43,7 @@ import { exportOwnBilling } from './modules/billing/privacy-export.js';
 import type { PrivacySubject } from '../../../packages/contracts/src/privacy.js';
 
 export interface PrivacyOwningPorts {
+  compliance(principals: PrincipalService, state: RequestState, subject: PrivacySubject): Promise<unknown>;
   support(principals: PrincipalService): {
     ownCase(state: RequestState, id: string): Promise<unknown>;
     ownActions(state: RequestState): Promise<unknown>;
@@ -80,8 +80,7 @@ export async function composeModuleExports(input: {
     data.connections = await oauth.listConnections(state);
     data.hubs = { legalAcceptances: (await legalDocuments.acceptances(trx)).map(toAcceptance) };
   }
-  const compliance = await screeningSubjects.own(trx, subject.kind === 'company' ? subject.id : null);
-  data.screening = ownComplianceStatus(compliance.state, compliance.appealable);
+  data.screening = await owningPorts.compliance(principals, state, subject);
   if (fileOptions.store) {
     const files = new FilesService(ctx, principals, identity.participations, { store: fileOptions.store, mandates: new NoFileMandates() });
     const artifacts = await trx.selectFrom('evidence_artifact').selectAll().where(subject.kind === 'person' ? 'owner_person_id' : 'owner_company_id', '=', subject.id).orderBy('id').execute();
