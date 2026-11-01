@@ -1,21 +1,28 @@
+import { randomUUID } from 'node:crypto';
 import { jobs, type DataPool, type Transaction } from '@trustwork/data';
 import { consultationCommunications as comms } from '../../../../packages/data/src/repositories/communications.js';
 import { renderTemplateText } from '../../../../packages/contracts/src/communications.js';
-import { FakeChannelAdapter, type ChannelOutcome, type OutboundChannelMessage } from '../../../api/src/modules/communications/channels.js';
+import type { ChannelOutcome, OutboundChannelMessage } from '../../../api/src/modules/communications/channels.js';
 import { inTransaction } from '../db.js';
 import type { HandlerRegistry } from '../handlers.js';
 import type { ScheduledTask } from '../scheduler.js';
 import { brandFor, type RenderConfig } from '../mail/templates.js';
 
 export const CONSULTATION_NOTIFY = 'consultation.notify';
-/** Recording fake with stable delivery identity, including a retry after an unknown outcome. */
-export class ReminderChannelFake extends FakeChannelAdapter {
+/** Worker-owned recording fake: the worker image contains no API runtime files. Types are shared only at compile time. */
+export class ReminderChannelFake {
+  readonly sent: OutboundChannelMessage[] = [];
+  private readonly scripted: ChannelOutcome[] = [];
   private readonly outcomes = new Map<string, ChannelOutcome>();
-  override async send(message: OutboundChannelMessage): Promise<ChannelOutcome> {
+  script(...outcomes: ChannelOutcome[]): void { this.scripted.push(...outcomes); }
+  async send(message: OutboundChannelMessage): Promise<ChannelOutcome> {
     const previous = this.outcomes.get(message.deliveryId);
     if (previous) return previous;
-    const outcome = await super.send(message);
-    if (outcome.kind !== 'failed') this.outcomes.set(message.deliveryId, outcome);
+    const outcome = this.scripted.shift() ?? { kind: 'accepted' as const, providerRef: `fake-${randomUUID()}` };
+    if (outcome.kind !== 'failed') {
+      this.sent.push(message);
+      this.outcomes.set(message.deliveryId, outcome);
+    }
     return outcome;
   }
 }
