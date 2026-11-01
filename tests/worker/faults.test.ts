@@ -142,7 +142,11 @@ test('REL-001 fault injection on real PostgreSQL: crash, duplicate delivery, sta
     assert.equal(await survivor.relay.relayOnce(), 0, 'rows locked by the first relay are skipped (SKIP LOCKED)');
     await child.kill();
     assert.equal(await receipts('relay'), 0);
-    assert.equal(await survivor.relay.relayOnce(), 1);
+    // The server ends the killed relay's backend (and its row lock) only once it notices the dropped connection, so
+    // the survivor keeps skipping the row until then; it must still deliver it exactly once.
+    let delivered = 0;
+    await waitFor(async () => (delivered += await survivor.relay.relayOnce()) > 0, 15_000, 'the killed relay to release its row lock');
+    assert.equal(delivered, 1);
     assert.equal(await survivor.relay.relayOnce(), 0);
     assert.equal(await receipts('relay'), 1);
     const unpublished = await env.db.admin.query("SELECT 1 FROM trustwork.outbox_event WHERE type = 'crash.event' AND published_at IS NULL");
