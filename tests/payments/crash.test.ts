@@ -7,7 +7,7 @@ import { IDEMPOTENCY_TAKEOVER_LEASE_MS } from '../../apps/api/src/common/idempot
 import paymentCases from '../backend/idempotency/cases/payments.js';
 
 const h = await startHarness('payments_crash');
-test('PAY-001: all five HTTP commands survive crashes before/after commit without repeating effects', { skip: h ? false : SKIP_REASON }, async (t) => {
+test('PAY-001: all twelve HTTP commands survive crashes before/after commit without repeating effects', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
   const seed = await seedPersonas(h);
@@ -39,5 +39,5 @@ test('PAY-001: all five HTTP commands survive crashes before/after commit withou
       } finally { await crash.clear(); h.clock.reset(); }
     },
   });
-  assert.deepEqual(covered.sort(), ['payments.confirm', 'payments.connected_account', 'payments.create', 'payments.payout', 'payments.refund']);
+  assert.deepEqual(covered.sort(), ['payments.authorization_accept', 'payments.authorization_draft', 'payments.confirm', 'payments.connected_account', 'payments.create', 'payments.payout', 'payments.refund', 'payments.source_challenge', 'payments.source_review_activate', 'payments.source_review_material', 'payments.source_revoke', 'payments.source_staff_revoke']);
 });

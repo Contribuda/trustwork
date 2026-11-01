@@ -4,6 +4,7 @@ import { payments } from '../../../../packages/data/src/repositories/payments.js
 import { inTransaction } from '../db.js';
 import type { ScheduledTask } from '../scheduler.js';
 import type { HandlerRegistry } from '../handlers.js';
+import type { PaymentSourceRuntime } from './source-adapter.js';
 import { PaymentProviders, awaitPaymentProvider } from './provider.js';
 
 export interface PaymentRuntime {
@@ -11,6 +12,7 @@ export interface PaymentRuntime {
   providers: PaymentProviders;
   /** Separate trusted verifier identity. Never grant this command to the raw app/worker role. */
   receiptPool?: DataPool;
+  source?: PaymentSourceRuntime;
 }
 
 function recordEvidence(runtime: PaymentRuntime, evidence: Parameters<typeof payments.receipt>[1]): Promise<string> {

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PAYMENT_SOURCE_PERMISSIONS, PAYMENT_SOURCE_SECOND_PERSON_ACTIONS } from './payment-sources.js';
 import { PartySchema } from './access.js';
 import { A_PLUS_2_ACTIONS, ADMIN_PERMISSIONS, SENSITIVE_STAFF_ROLES, SodModeSchema, STAFF_ROLES } from './admin.js';
 import { MandateActionSchema } from './assistant.js';
@@ -259,7 +260,7 @@ export const HUB_SECOND_PERSON_ACTIONS = [
 ] as const;
 export const HubSecondPersonActionSchema = z.enum(HUB_SECOND_PERSON_ACTIONS);
 /** The merged second-person vocabulary: the frozen A+2 actions plus the console actions. */
-export const CONSOLE_SECOND_PERSON_ACTIONS = [...A_PLUS_2_ACTIONS, ...HUB_SECOND_PERSON_ACTIONS] as const;
+export const CONSOLE_SECOND_PERSON_ACTIONS = [...A_PLUS_2_ACTIONS, ...HUB_SECOND_PERSON_ACTIONS, ...PAYMENT_SOURCE_SECOND_PERSON_ACTIONS] as const;
 export const ConsoleSecondPersonActionSchema = z.enum(CONSOLE_SECOND_PERSON_ACTIONS);
 export type ConsoleSecondPersonAction = z.infer<typeof ConsoleSecondPersonActionSchema>;
 export function consoleActionNeedsSecondPerson(action: string): boolean {
@@ -291,7 +292,7 @@ export const HUB_CONSOLE_PERMISSIONS = [
   'admin.recommendations.rules.edit', 'admin.sponsored.policy.edit',
 ] as const;
 /** The merged admin vocabulary every console role definition, assignment and audit event uses. */
-export const CONSOLE_PERMISSIONS = [...ADMIN_PERMISSIONS, ...HUB_CONSOLE_PERMISSIONS] as const;
+export const CONSOLE_PERMISSIONS = [...ADMIN_PERMISSIONS, ...HUB_CONSOLE_PERMISSIONS, ...PAYMENT_SOURCE_PERMISSIONS] as const;
 export const ConsolePermissionSchema = z.enum(CONSOLE_PERMISSIONS);
 export type ConsolePermission = z.infer<typeof ConsolePermissionSchema>;
 /**
