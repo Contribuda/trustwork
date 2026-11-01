@@ -1,0 +1,987 @@
+{
+  "adminParticipants": {
+    "common": {
+      "name": "Ism",
+      "company": "Kompaniya",
+      "category": "Toifa",
+      "reasonCategory": "Sabab toifasi",
+      "support": "Yordam xizmati",
+      "noData": "Bu hab uchun hali maʼlumot yoʻq.",
+      "cohortNote": "Oʻndan kichik sonlar hech qachon koʻrsatilmaydi, shunda hech kimni ajratib boʻlmaydi.",
+      "updated": "Yangilangan: {date}",
+      "version": "{version}-versiya",
+      "yes": "Ha",
+      "no": "Yoʻq",
+      "suppressed": "10 dan kam"
+    },
+    "errors": {
+      "own_account": "Oʻz hisobingizga xizmat koʻrsata olmaysiz.",
+      "account_erased": "Bu hisob oʻchirib tashlangan; faqat oʻchirilganlik belgisi qolgan.",
+      "evidence_required": "Avval dalilni qayd eting.",
+      "cooling_off_active": "72 soatlik kutish muddati hali tugamagan.",
+      "conflict_of_interest": "Siz bu kompaniya bilan manfaatlar toʻqnashuvini bildirgansiz; boshqa tekshiruvchi qaror qiladi.",
+      "sanctions_match": "Sanksiyalar roʻyxatidagi ehtimoliy moslik tekshiruv ishi hal boʻlguncha tasdiqlashni toʻsadi.",
+      "steps_incomplete": "Retseptning majburiy qadamlari hali oʻtilmagan.",
+      "recipe_missing": "Tekshiriladigan daʼvo uchun turni yoqishdan oldin tekshiruv retsepti kerak.",
+      "out_of_bounds": "Bu qiymat ruxsat etilgan oraliqdan tashqarida.",
+      "original_decider": "Dastlabki qarorni siz qabul qilgansiz; shikoyatni boshqa odam hal qiladi.",
+      "grant_too_long": "Ish boʻyicha ruxsat koʻpi bilan 72 soat davom etadi.",
+      "too_many_objects": "Ish boʻyicha ruxsat bir turdagi koʻpi bilan 100 ta obyektni nomlaydi.",
+      "case_required": "Avval shu hisob haqidagi ochiq ishni tanlang.",
+      "case_closed": "Bu ish yopilgan.",
+      "baseline_locked": "Bu himoya doim yoqilgan va oʻzgartirilmaydi.",
+      "objection_received": "Hisob egasi eʼtiroz bildirdi; oʻzgarish bekor qilindi.",
+      "not_verified": "Bu kompaniya tekshirilmagan.",
+      "no_representative": "Bu kompaniyaning faol vakili yoʻq.",
+      "already_decided": "Bu allaqachon hal qilingan.",
+      "type_inactive": "Bu guvohnoma turi faol emas.",
+      "release_permission": "Metodika versiyalarini faqat hab egasi roli chiqaradi."
+    },
+    "outcomes": {
+      "saved": "Namoyish: oʻzgarishlar saqlanmaydi.",
+      "second_person": "Namoyish: bu «{action}» uchun ikkinchi odamga soʻrov yaratardi; hech narsa saqlanmaydi.",
+      "pending_second": "Namoyish: buni ikkinchi odam Tasdiqlashlar boʻlimida yakunlardi; hech narsa saqlanmaydi.",
+      "grant_requested": "Namoyish: ruxsat soʻrovi tasdiqlash uchun boshqa yordam xizmati rahbariga borardi; hech narsa saqlanmaydi.",
+      "cooling_off": "Namoyish: bu {date} kuni kuchga kirardi; hisob egasiga barcha tasdiqlangan kanallar orqali xabar berilardi. Hech narsa saqlanmaydi.",
+      "notified": "Namoyish: tegishli odamga xabar berilardi; hech narsa saqlanmaydi.",
+      "version": "Namoyish: bu yangi versiya sifatida saqlanardi; hech narsa saqlanmaydi.",
+      "case_opened": "Namoyish: ish ochilardi; hech narsa saqlanmaydi."
+    },
+    "accountStates": {
+      "active": "Faol",
+      "pending_verification": "Tasdiqlash kutilmoqda",
+      "locked": "Bloklangan",
+      "suspended": "Toʻxtatilgan",
+      "deletion_requested": "Oʻchirish soʻralgan",
+      "erased": "Oʻchirib tashlangan"
+    },
+    "trades": {
+      "electrician": "Elektrik",
+      "roofer": "Tom ustasi",
+      "general_contractor": "Bosh pudratchi",
+      "architect": "Meʼmor",
+      "plumber": "Santexnik",
+      "tile_setter": "Kafel ustasi",
+      "client": "Buyurtmachi"
+    },
+    "companyStates": {
+      "sourced": "Manbalardan",
+      "claimed": "Egasi tasdiqlagan",
+      "verified": "Tekshirilgan"
+    },
+    "companyKinds": {
+      "contractor": "Pudratchi",
+      "manufacturer": "Ishlab chiqaruvchi",
+      "supplier": "Yetkazib beruvchi"
+    },
+    "repStates": {
+      "active": "Vakil faol",
+      "suspended": "Vakil toʻxtatilgan",
+      "accountable_missing": "Masʼul shaxs tayinlanmagan",
+      "none": "Vakil yoʻq"
+    },
+    "identifiers": {
+      "ein": "Soliq raqami (EIN)",
+      "state_licence": "Shtat litsenziyasi"
+    },
+    "categories": {
+      "general_contractor": "Bosh pudrat",
+      "remodeling": "Taʼmirlash va qayta rejalash",
+      "electrical": "Elektr ishlari",
+      "roofing": "Tom yopish",
+      "lumber": "Yogʻoch materiallar",
+      "tile": "Kafel",
+      "training": "Oʻqitish va qoʻllanmalar"
+    },
+    "subjects": {
+      "person": "Shaxs",
+      "company": "Kompaniya"
+    },
+    "steps": {
+      "register_match": "Shtat reyestri bilan solishtirish",
+      "ein_letter": "Soliq raqamini tasdiqlovchi xat",
+      "signatory_tie": "Imzo chekuvchi bilan bogʻliqlik (elektron imzo yoki qayta qoʻngʻiroq)",
+      "domain": "Domen tekshiruvi",
+      "call_back": "Roʻyxatdagi telefonga qayta qoʻngʻiroq",
+      "screening": "Sanksiyalar tekshiruvi",
+      "ownership": "Egalik deklaratsiyasi",
+      "licence_board": "Shtat litsenziya kengashida tekshirish",
+      "identity_document": "Shaxsni tasdiqlovchi hujjat tekshiruvi"
+    },
+    "stepResults": {
+      "pass": "Oʻtdi",
+      "fail": "Oʻtmadi",
+      "pending": "Kutilmoqda",
+      "potential_match": "Ehtimoliy moslik"
+    },
+    "evidence": {
+      "register_extract": "Reyestrdan koʻchirma",
+      "irs_letter": "Soliq xizmati xati",
+      "esign_record": "Elektron imzo yozuvi",
+      "licence_record": "Litsenziya yozuvi",
+      "ownership_declaration": "Egalik deklaratsiyasi",
+      "call_back_record": "Qayta qoʻngʻiroq yozuvi"
+    },
+    "modes": {
+      "fake": "Taqlid (sintetik)",
+      "file": "Fayldan import",
+      "live": "Ishchi"
+    },
+    "legalBases": {
+      "contract": "Shartnoma",
+      "legal_obligation": "Qonuniy majburiyat",
+      "legitimate_interest": "Qonuniy manfaat",
+      "consent": "Rozilik"
+    },
+    "people": {
+      "title": "Odamlar",
+      "lede": "Bu habdagi odamlar jamoatchilik koʻrganidek, holatlar boʻyicha hisoblar soni bilan. Yopiq profillar bu yerda koʻrinmaydi.",
+      "accountStates": "Holatlar boʻyicha hisoblar",
+      "problems": "Rozilik va portret muammolari",
+      "consentWithdrawn": "Rozilik qaytarib olingan, nashrdan olinishi kutilmoqda",
+      "portraitMissing": "Litsenziyasiz portret",
+      "profiles": "Ochiq profillar",
+      "publicOnly": "Faqat ochiq profillar koʻrsatiladi. Xodimlar hech qachon odamning profilini tahrirlamaydi; uni moderatsiyaga belgilashi mumkin.",
+      "noProfiles": "Bu habda hali ochiq profillar yoʻq.",
+      "trade": "Kasb",
+      "place": "Joy",
+      "employer": "Ish beruvchi",
+      "portrait": "Portret",
+      "portraitStates": {
+        "licensed": "Litsenziyali",
+        "missing": "Litsenziya yoʻq",
+        "none": "Portretsiz"
+      },
+      "consentProblem": "Rozilik muammosi",
+      "openInSupport": "Yordam xizmatida topish",
+      "supportOnly": "Faqat yordam xizmati uchun",
+      "flag": "Moderatsiyaga belgilash",
+      "profile": "Ochiq profil",
+      "flagCategories": {
+        "misleading_claim": "Chalgʻituvchi daʼvo",
+        "impersonation_report": "Oʻzini boshqa odam deb koʻrsatayotgani haqida shikoyat",
+        "portrait_without_licence": "Litsenziyasiz portret",
+        "harassment": "Taʼqib",
+        "spam": "Spam"
+      },
+      "flagNote": "Belgilash moderatsiya ishini ochadi; profil mazmuni odam yozganidek qoladi."
+    },
+    "companies": {
+      "title": "Kompaniyalar",
+      "lede": "Xodimlar boshqaradigan kompaniyalar katalogi: manbalardan olingan, egasi tasdiqlagan va tekshirilgan kompaniyalar, identifikatorlar, qayta tekshiruvlar va vakillar.",
+      "directory": "Katalog",
+      "badgeRule": "Identifikator hech qachon kompaniya holatini oshirmaydi: tekshiruv faqat retsept boʻyicha hal qilingan arizadan keladi. Tekshirilgan degani yaxshi degani emas.",
+      "none": "Bu habda hali kompaniyalar yoʻq.",
+      "state": "Holat",
+      "verifiedAt": "Tekshirilgan sana",
+      "categories": "Toifalar",
+      "recheckOverdue": "muddati oʻtgan",
+      "representative": "Vakil",
+      "openClaims": "Arizalar navbatini ochish",
+      "linkProposals": "Bogʻlanish takliflari",
+      "sourced": "Manbalardan olingan ishlab chiqaruvchi va yetkazib beruvchi sahifalari",
+      "sourcedNote": "Habning huquqiy asosi doirasida ochiq manbalardan tuzilgan; kompaniya ularni tasdiqlaguncha «manbalardan» belgisi bilan qoladi.",
+      "noSourced": "Manbalardan olingan sahifalar hali yoʻq.",
+      "kind": "Tur",
+      "source": "Manba",
+      "takedown": "Olib tashlash",
+      "takedownPending": "Olib tashlash kutilmoqda",
+      "takedownBanner": "Manbalardan olingan sahifani olib tashlash talabi koʻrib chiqilmoqda:",
+      "revoke": "Tekshiruvni bekor qilish",
+      "revokeNote": "Kompaniyaga xabar beriladi; ochiq sahifada faqat sabab toifasi koʻrinadi.",
+      "triggerRecheck": "Reyestr bilan qayta solishtirishni boshlash",
+      "suspendRep": "Xavfsizlik uchun vakilni toʻxtatish",
+      "suspendRepNote": "Kompaniyaga xabar beriladi; uning administratorlari sababni bartaraf etib, vakilni qayta faollashtirishi mumkin.",
+      "verification": "Tekshiruv",
+      "verifiedOn": "Tekshirilgan sana: {date}",
+      "recheckOn": "Qayta solishtirish muddati: {date}"
+    },
+    "claims": {
+      "title": "Arizalar",
+      "lede": "Kompaniya arizalarini hab retsepti va dalillar asosida qadamma-qadam hal qiling.",
+      "queue": "Arizalar navbati",
+      "recipeRule": "Egasi tasdiqlagan sifatida tasdiqlash reyestr bilan solishtirish va imzo chekuvchi bilan bogʻliqlikdan keyin; tekshirilgan sifatida faqat barcha majburiy qadamlar oʻtganda.",
+      "empty": "Kutilayotgan arizalar yoʻq.",
+      "states": {
+        "open": "Ochiq",
+        "clarification": "Aniqlik kiritish kutilmoqda",
+        "appeal": "Shikoyat",
+        "decided": "Hal qilingan"
+      },
+      "target": "Soʻralgan holat",
+      "recipe": "Retsept",
+      "submitted": "Topshirilgan",
+      "steps": "Retsept qadamlari",
+      "optional": "ixtiyoriy",
+      "evidence": "Dalillar",
+      "evidenceItem": "{category}: {count}",
+      "evidenceViewer": "Arizani koʻrib chiqish ruxsati boʻyicha dalillarni koʻrish",
+      "sanctionsBlock": "Sanksiyalar roʻyxatidagi ehtimoliy moslik: tekshiruv ishi hal boʻlguncha bu arizani tasdiqlab boʻlmaydi.",
+      "openScreeningCase": "Sanksiyalar tekshiruvi navbatini ochish",
+      "conflicts": "Bildirilgan manfaatlar toʻqnashuvi:",
+      "appealNote": "Rad etishga shikoyat, muddat {deadline}. Dastlabki qaror egasi:",
+      "routeAppeal": "Shikoyatni yoʻnaltirish",
+      "reviewer": "Tekshiruvchi",
+      "decide": "Qarorni yozish",
+      "decision": "Qaror",
+      "decisions": {
+        "claimed": "Egasi tasdiqlagan sifatida tasdiqlash",
+        "verified": "Tekshirilgan sifatida tasdiqlash",
+        "clarify": "Aniqlik kiritishni soʻrash",
+        "reject": "Rad etish"
+      },
+      "recordCheck": "Qoʻlda tekshiruvni yozish",
+      "step": "Qadam",
+      "result": "Natija",
+      "evidenceCategory": "Dalil toifasi"
+    },
+    "verification": {
+      "title": "Tekshiruv",
+      "lede": "Hab arizalarni tekshirish uchun foydalanadigan retseptlar, tekshiruv provayderlari va sanksiyalar roʻyxatlari.",
+      "recipes": "Retseptlar",
+      "noRecipes": "Retseptlar hali yoʻq.",
+      "recipe": "Retsept",
+      "newRecipeVersion": "Yangi versiya sifatida tahrirlash",
+      "screeningAlwaysOn": "Asosiy sanksiyalar tekshiruvi har bir retseptga kiradi va uni oʻchirib boʻlmaydi.",
+      "checks": "Tekshiruv turlari va provayderlar",
+      "noChecks": "Tekshiruvlar hali sozlanmagan.",
+      "check": "Tekshiruv",
+      "provider": "Provayder",
+      "mode": "Rejim",
+      "quotaUse": "{quota} dan {used}",
+      "days": "{days, plural, one {# kun} other {# kun}}",
+      "costNote": "Hab tekshiruv narxini olishi mumkin, lekin hech qachon uning natijasi uchun emas.",
+      "setMode": "Provayder rejimini belgilash",
+      "liveNote": "Provayderni ishchi rejimga oʻtkazish ikkinchi odamni talab qiladi.",
+      "lists": "Sanksiyalar roʻyxatlari",
+      "noLists": "Sanksiyalar roʻyxatlari hali yoʻq.",
+      "list": "Roʻyxat",
+      "kind": "Tur",
+      "baselineAlwaysOn": "Asosiy, doim yoqilgan",
+      "additional": "Qoʻshimcha",
+      "lastUpdate": "Oxirgi yangilanish",
+      "addList": "Mamlakat paketidan roʻyxat qoʻshish",
+      "packList": "Mamlakat paketidagi roʻyxat",
+      "costAndUse": "Narx va shu oydagi sarf",
+      "retentionAndBasis": "Saqlash va huquqiy asos"
+    },
+    "credentials": {
+      "title": "Guvohnomalar",
+      "lede": "Hab beradigan tekshiriladigan guvohnomalar: egalari saqlaydigan va istalgan joyda koʻrsatadigan tekshirilgan faktlar.",
+      "notAScore": "Guvohnoma tekshirilgan fakt, hech qachon ball emas va hech qachon sotilmaydi.",
+      "types": "Guvohnoma turlari",
+      "noTypes": "Guvohnoma turlari hali yoʻq.",
+      "typeTitle": "Nomi",
+      "claim": "Daʼvo",
+      "claims": {
+        "identity": "Shaxs",
+        "licence": "Litsenziya",
+        "insurance": "Sugʻurta",
+        "qualification": "Malaka",
+        "certificate": "Sertifikat",
+        "membership": "Aʼzolik",
+        "completed_work": "Bajarilgan ish",
+        "counterparty_confirmation": "Kontragent tasdigʻi",
+        "knowledge_contribution": "Bilimga hissa"
+      },
+      "subject": "Egasi",
+      "recipe": "Tekshiruv retsepti",
+      "noRecipe": "Retseptsiz",
+      "validity": "Amal qilish muddati",
+      "noExpiry": "Muddatsiz",
+      "portable": "Boshqa hablarda ham amal qiladi",
+      "statuses": {
+        "draft": "Qoralama",
+        "active": "Faol",
+        "retired": "Chiqarilgan"
+      },
+      "saveType": "Turni yangi versiya sifatida saqlash",
+      "type": "Guvohnoma turi",
+      "recipeRule": "Bu daʼvolar tekshiriladi va yoqishdan oldin retsept talab qiladi: {claims}.",
+      "activation": "Yoqish",
+      "keepDraft": "Qoralama sifatida qoldirish",
+      "activate": "Yoqish",
+      "issued": "Berilgan guvohnomalar",
+      "issuedStates": {
+        "valid": "Amalda",
+        "expired": "Muddati oʻtgan",
+        "suspended": "Toʻxtatilgan",
+        "revoked": "Bekor qilingan"
+      },
+      "noneIssued": "Hali guvohnoma berilmagan.",
+      "holderSearch": "Ish ichida egasi boʻyicha qidirish",
+      "statusList": "Holatlar roʻyxati va imzo kaliti",
+      "published": "Oxirgi eʼlon",
+      "entries": "Yozuvlar",
+      "signature": "Imzo",
+      "signatureValid": "Haqiqiy",
+      "signingKey": "Joriy imzo kaliti",
+      "issue": "Guvohnoma berish",
+      "decision": "Dalilli qaror",
+      "issueRule": "Guvohnoma faqat dalillar bilan yozilgan qaror asosida beriladi.",
+      "evidenceCount": "{count, plural, one {# ta dalil} other {# ta dalil}}",
+      "revokeOrSuspend": "Bekor qilish yoki toʻxtatish",
+      "credentialId": "Guvohnoma raqami",
+      "credentialIdHelp": "Ishdan; egalari faqat ish ichida qidiriladi.",
+      "revoke": "Bekor qilish",
+      "suspend": "Toʻxtatish",
+      "reasons": {
+        "evidence_withdrawn": "Dalil qaytarib olingan",
+        "evidence_expired": "Dalil muddati oʻtgan",
+        "fraud": "Firibgarlik",
+        "source_changed": "Manba oʻzgargan",
+        "holder_request": "Egasining iltimosi",
+        "legal_order": "Qonuniy koʻrsatma"
+      },
+      "revokeNote": "Bekor qilish hab holatlar roʻyxatidagi yozuvdir; ochiq sabab faqat toifa boʻladi."
+    },
+    "consents": {
+      "title": "Roziliklar",
+      "lede": "Rozilik va portret litsenziyasi yozuvlari hamda nashrdan olinishi kutilayotgan qaytarib olishlar.",
+      "records": "Tur, versiya va holat boʻyicha yozuvlar",
+      "none": "Rozilik yozuvlari hali yoʻq.",
+      "kind": "Tur",
+      "kinds": {
+        "profile_publication": "Profilni eʼlon qilish",
+        "portrait_licence": "Portret litsenziyasi",
+        "marketing_email": "Reklama xatlari",
+        "knowledge_sharing": "Bilim almashish"
+      },
+      "version": "Versiya",
+      "given": "Berilgan",
+      "withdrawn": "Qaytarib olingan",
+      "withdrawals": "Nashrdan olinishi kutilayotgan qaytarib olishlar",
+      "noWithdrawals": "Kutilayotgan qaytarib olishlar yoʻq.",
+      "requested": "Soʻralgan",
+      "unpublishBy": "Nashrdan olish muddati",
+      "process": "Qaytarib olishni qayta ishlash",
+      "withdrawal": "Qaytarib olish",
+      "processNote": "Material nashrdan olinadi va bajarilgach odamga xabar beriladi.",
+      "record": "Rozilikni yozish",
+      "subject": "Shaxs raqami",
+      "subjectHelp": "Yordam ishi yoki arizadagi raqam.",
+      "evidence": "Dalil",
+      "evidenceKinds": {
+        "signed_form": "Imzolangan shakl",
+        "in_product_record": "Mahsulotdagi yozuv",
+        "email_confirmation": "Pochta orqali tasdiq",
+        "recorded_call": "Yozib olingan qoʻngʻiroq"
+      },
+      "portrait": "Portret litsenziyasini yozish",
+      "scope": "Litsenziya doirasi",
+      "scopes": {
+        "profile_only": "Faqat profil",
+        "profile_and_articles": "Profil va maqolalar",
+        "magazine": "Jurnal"
+      }
+    }
+  },
+  "adminSupport": {
+    "channels": {
+      "email": "Pochta",
+      "sms": "SMS xabar",
+      "in_app": "Mahsulot ichida"
+    },
+    "actions": {
+      "resend_verification": "Tasdiqlashni qayta yuborish",
+      "unlock_after_lockout": "Bloklashdan keyin ochish",
+      "revoke_all_sessions": "Barcha seanslarni yakunlash",
+      "require_password_reset": "Keyingi kirishda parolni almashtirishni talab qilish",
+      "rebind_recovery_email": "Tiklash pochtasini almashtirish",
+      "reset_second_factor": "Ikkinchi omilni tiklash",
+      "start_data_export": "Maʼlumotlarni eksport qilishni boshlash",
+      "open_deletion_request": "Oʻchirish soʻrovini ochish",
+      "send_guided_task": "Qadamma-qadam vazifa yuborish"
+    },
+    "lookup": {
+      "title": "Yordam xizmatida qidirish",
+      "lede": "Yordam berayotgan odam yoki kompaniyani toping. Har bir qidiruv ishga xizmat qiladi va kirish jurnaliga yoziladi.",
+      "search": "Qidiruv",
+      "by": "Qidirish usuli",
+      "kinds": {
+        "email": "Aniq pochta manzili",
+        "name": "Ism",
+        "company": "Kompaniya nomi",
+        "identifier": "Yuridik identifikator",
+        "id": "Raqam"
+      },
+      "query": "Nimani qidirish",
+      "forCase": "Ish uchun",
+      "chooseCase": "Ishni tanlang",
+      "find": "Topish",
+      "logged": "Pochta manzillari aniq solishtiriladi va hech qachon toʻliq koʻrsatilmaydi.",
+      "results": "Natijalar",
+      "needsCase": "Bu qidiruv xizmat qiladigan ishni tanlang; ishsiz hech narsa qidirilmaydi.",
+      "loggedFor": "{case} ishi uchun kirish jurnaliga yozildi.",
+      "nothing": "Hech narsa topilmadi.",
+      "open": "Ochish",
+      "openAccount": "Hisob kartasini ochish",
+      "openCompany": "Kompaniya kartasini ochish"
+    },
+    "account": {
+      "title": "Hisob kartasi",
+      "lede": "Hisobni oʻsha odamga aylanmasdan tahlil qiling va xizmat koʻrsating: faqat ruxsat etilgan faktlar, shaxsiy mazmunsiz.",
+      "noImpersonation": "Ishtirokchi nomidan kirish yoki uning vakolati bilan harakat qilishning iloji yoʻq, xodimlar esa hech qachon ishtirokchining oʻz yordamchisi, topshiriqlari, sozlamalari, maqsadlari yoki ulanishlarini boshqarmaydi. Quyidagi muqobillardan foydalaning.",
+      "ownAccount": "Oʻz hisobingizga xizmat koʻrsata olmaysiz.",
+      "erased": "Bu hisob oʻchirib tashlangan. Faqat shu belgi qolgan.",
+      "email": "Pochta",
+      "verified": "tasdiqlangan",
+      "unverified": "tasdiqlanmagan",
+      "state": "Holat",
+      "secondFactor": "Ikkinchi omil",
+      "factorMethods": "{count, plural, one {# usul ulangan} other {# usul ulangan}}",
+      "noFactor": "Ulanmagan",
+      "sessions": "Faol seanslar",
+      "recovery": "Tiklash",
+      "recoveryStates": {
+        "none": "Yoʻq",
+        "requested": "Soʻralgan",
+        "held_for_review": "Tekshiruv uchun ushlab turilgan",
+        "cooling_off": "Kutish muddati"
+      },
+      "employer": "Ish beruvchi",
+      "openCases": "Ochiq ishlar",
+      "allowlist": "Faqat shu faktlar koʻrsatiladi. Hech qachon xabar matnlari, yopiq loyihalar, byudjetlar, seans tokenlari, manzillar yoki joylashuv tarixi emas.",
+      "entitlements": "Huquqlar va sarf",
+      "noEntitlements": "Huquqlar yoʻq.",
+      "offer": "Taklif",
+      "validUntil": "Amal qiladi",
+      "noEnd": "Tugash sanasi yoʻq",
+      "noUsage": "Bu davrda sarf yoʻq.",
+      "meter": "Hisoblagich",
+      "meters": {
+        "agent_runs": "Yordamchi ishga tushirishlari",
+        "plan_drafts": "Reja qoralamalari"
+      },
+      "usage": "Sarf",
+      "usageOf": "Kiritilgan {included} dan {used}",
+      "period": "Davr",
+      "consents": "Roziliklar",
+      "noConsents": "Roziliklar yozilmagan.",
+      "consentStates": {
+        "given": "Berilgan",
+        "withdrawn": "Qaytarib olingan"
+      },
+      "date": "Sana",
+      "memberships": "Aʼzolik tarixi",
+      "noMemberships": "Aʼzolik yoʻq.",
+      "role": "Rol",
+      "now": "hozir",
+      "communications": "Xabarlar tarixi",
+      "metadataOnly": "Faqat yetkazish maʼlumotlari: shablon va uning versiyasi, hech qachon xabar matni yoki shaxsiy qiymatlar emas.",
+      "noCommunications": "Xabar yuborilmagan.",
+      "template": "Shablon",
+      "templates": {
+        "verification_email": "Tasdiqlash xati",
+        "project_invitation": "Loyihaga taklif",
+        "lockout_notice": "Bloklash haqida xabar",
+        "recovery_change_notice": "Tiklash usuli oʻzgargani haqida xabar"
+      },
+      "channel": "Kanal",
+      "delivery": "Yetkazish",
+      "deliveryStates": {
+        "delivered": "Yetkazildi",
+        "bounced": "Qaytdi",
+        "queued": "Navbatda"
+      },
+      "inProgress": "Jarayondagi xizmat",
+      "openRecovery": "Tiklash soʻrovlarini ochish",
+      "service": "Xizmat amallari",
+      "serviceSubmit": "Amalni soʻrash",
+      "action": "Amal",
+      "case": "Ish",
+      "needsCase": "Avval shu hisob haqida ish oching.",
+      "guidedTask": "Qadamma-qadam vazifa (yuborilsa)",
+      "guidedTaskHelp": "Odam qadamlarni oʻz seansida oʻzi bajaradi.",
+      "tasks": {
+        "reinvite_colleague": "Hamkasbingizni qayta taklif qiling",
+        "verify_email_again": "Pochtangizni yana tasdiqlang",
+        "share_diagnostics": "Diagnostikani yordam xizmatiga yuboring",
+        "enrol_second_factor": "Ikkinchi omilni ulang"
+      },
+      "evidenceRecorded": "Shaxsni tasdiqlovchi dalil tekshirildi va yozildi (tiklash pochtasini almashtirish yoki ikkinchi omilni tiklash uchun kerak)",
+      "coolingOffRule": "Tiklash pochtasi yoki ikkinchi omilni almashtirish dalil, boshqa tasdiqlovchi va 72 soatlik kutishni talab qiladi; odamga barcha tasdiqlangan kanallar orqali xabar beriladi va u eʼtiroz bildirishi mumkin.",
+      "alternatives": "Odam nomidan harakat qilish oʻrniga",
+      "viewPublic": "Ochiq koʻrinishni koʻrish",
+      "noPublic": "Bu odamning ochiq profili yoʻq.",
+      "openExplainer": "Kirish izohini ochish",
+      "ownAgent": "Odam oʻzi uchun bajarilishini istagan har qanday narsa: agar xohlasa, oʻz topshirigʻi bilan oʻz yordamchisi.",
+      "publicProjection": "Anonim tashrif buyuruvchi nimani koʻradi"
+    },
+    "company": {
+      "title": "Kompaniya kartasi",
+      "lede": "Kompaniyaga yordam bering: uning ochiq sahifasi, ariza va tekshiruv holati, ochiq aʼzolar va vakil.",
+      "publicOnly": "Hech qachon koʻrsatilmaydi: yopiq loyihalar, narx soʻrovlari, takliflar, byudjetlar yoki xabarlar.",
+      "members": "Koʻrinishni tanlagan aʼzolar",
+      "noMembers": "Hech bir aʼzo koʻrinishni tanlamagan.",
+      "actions": "Bu kompaniyaga yordam berish",
+      "requestGrant": "Nomlangan obyektlarga ish boʻyicha ruxsat soʻrash"
+    },
+    "cases": {
+      "title": "Yordam ishlari",
+      "lede": "Ishlar va ular boʻyicha ruxsatlar. Yozishma ish ichida qoladi; umumiy kiruvchi xatlar qutisi yoʻq.",
+      "list": "Ishlar",
+      "empty": "Yordam ishlari yoʻq.",
+      "case": "Ish",
+      "subject": "Kim haqida",
+      "reason": "Sabab",
+      "reasons": {
+        "access": "Kirish huquqi",
+        "sign_in": "Tizimga kirish",
+        "data_request": "Maʼlumot soʻrovi",
+        "billing_question": "Toʻlov haqida savol",
+        "bug": "Nimadir buzilgan"
+      },
+      "states": {
+        "open": "Ochiq",
+        "waiting_on_person": "Odamning javobi kutilmoqda",
+        "closed": "Yopilgan"
+      },
+      "opened": "Ochilgan",
+      "detailTitle": "{id} ishi",
+      "detailLede": "Odam bilan yozishma, u yuborgan diagnostika, ruxsatlar va ular boʻyicha har bir oʻqish.",
+      "back": "Barcha ishlar",
+      "assignee": "Masʼul",
+      "thread": "Odam bilan yozishma",
+      "threadNote": "Xabarlar shu ish ichida qoladi.",
+      "fromPerson": "Odam",
+      "reply": "Javob berish",
+      "message": "Xabar",
+      "snapshots": "Odam yuborgan diagnostika",
+      "snapshotNote": "Odam oʻz seansidan, faqat oʻzi tanlagan obyektlar bilan yuborgan.",
+      "noSnapshots": "Diagnostika yuborilmagan.",
+      "page": "Sahifa",
+      "versions": "Versiyalar",
+      "errors": "Xato kodlari va soʻrovlar",
+      "selected": "Odam tanlagan obyektlar",
+      "accessLog": "Shu ish boʻyicha kirish jurnali",
+      "noReads": "Ruxsat boʻyicha hali oʻqishlar yoʻq.",
+      "readAt": "Oʻqilgan vaqt",
+      "reader": "Kim oʻqigan",
+      "assign": "Tayinlash",
+      "close": "Ishni yopish",
+      "create": "Ish yaratish",
+      "subjectKind": "Kim haqida",
+      "subjectId": "Raqam",
+      "subjectIdHelp": "Qidiruvdagi shaxs yoki kompaniya raqami."
+    },
+    "grants": {
+      "title": "Ish boʻyicha ruxsatlar",
+      "rule": "Ruxsat bir turdagi 100 tagacha obyektni, koʻrinish sinfini va maqsadni nomlaydi, koʻpi bilan {hours} soat davom etadi va boshqa odam tomonidan tasdiqlanadi. Har bir oʻqish yoziladi.",
+      "request": "{id} ruxsat soʻrovi",
+      "awaiting": "Boshqa tasdiqlovchi kutilmoqda",
+      "requestedBy": "Soʻragan",
+      "objects": "Obyektlar",
+      "projection": "Koʻrinish sinfi",
+      "projections": {
+        "diagnostic": "Diagnostik",
+        "support_private_limited": "Yopiq, cheklangan",
+        "evidence": "Dalillar"
+      },
+      "purpose": "Maqsad",
+      "duration": "Davomiyligi, soatlarda",
+      "hours": "{hours, plural, one {# soat} other {# soat}}",
+      "digest": "Soʻrov izi",
+      "excluded": "Doim chiqarib tashlanadi: muzokaralarning yopiq shartlari, hisob maʼlumotlari va toʻlov rekvizitlari.",
+      "decide": "Qarorni yozish",
+      "bindsDigest": "Qaroringiz aynan shu soʻrovga bogʻlanadi; oʻzgargan soʻrov yangisini talab qiladi.",
+      "none": "Bu ish boʻyicha ruxsatlar yoʻq.",
+      "approvedBy": "Tasdiqlagan",
+      "expires": "Tugaydi",
+      "active": "Amalda",
+      "expired": "Muddati oʻtgan",
+      "revoked": "Bekor qilingan",
+      "notFoundAgain": "Obyektlar yana topilmaydi.",
+      "revoke": "Ruxsatni bekor qilish",
+      "grant": "Ruxsat",
+      "requestTitle": "Ish boʻyicha ruxsat soʻrash",
+      "requestSubmit": "Boshqa odamdan tasdiqlashni soʻrash",
+      "objectType": "Obyekt turi",
+      "objectTypes": {
+        "rfq": "Narx soʻrovi",
+        "project": "Loyiha",
+        "quote_invitation": "Taklif berishga chaqiruv",
+        "company_membership": "Kompaniyadagi aʼzolik",
+        "notification": "Bildirishnoma",
+        "account_recovery": "Hisobni tiklash soʻrovi"
+      },
+      "ids": "Obyekt raqamlari",
+      "idsHelp": "Bir turdagi 100 tagacha raqam, vergul yoki boʻsh joy bilan ajratilgan.",
+      "durationHelp": "Koʻpi bilan {hours} soat."
+    },
+    "recovery": {
+      "title": "Tiklash soʻrovlari",
+      "lede": "Jarayondagi kirish omillari oʻzgarishlari: tiklash pochtasini almashtirish va ikkinchi omilni tiklash.",
+      "rule": "Har bir oʻzgarish dalil va boshqa tasdiqlovchini talab qiladi, soʻng {hours} soat kutadi, bu vaqtda barcha tasdiqlangan kanallarga xabar beriladi. Hisob egasining eʼtirozi uni bekor qiladi.",
+      "requests": "Soʻrovlar",
+      "empty": "Tiklash soʻrovlari yoʻq.",
+      "states": {
+        "awaiting_approval": "Boshqa tasdiqlovchi kutilmoqda",
+        "cooling_off": "Kutish muddati",
+        "ready": "Yakunlashga tayyor",
+        "cancelled": "Bekor qilingan"
+      },
+      "evidence": "Dalil",
+      "evidenceStates": {
+        "recorded": "Yozilgan",
+        "missing": "Yoʻq"
+      },
+      "approver": "Tasdiqlovchi",
+      "coolingOff": "Kuchga kiradi",
+      "afterApproval": "Tasdiqlashdan {hours} soat keyin",
+      "coolingOffEnds": "Kutish muddati tugaydi: {date}",
+      "notified": "Xabar berilgan kanallar",
+      "objection": "Hisob egasi eʼtiroz bildirdi: oʻzgarish avtomatik bekor qilindi va belgilandi.",
+      "approve": "Tasdiqlash",
+      "approveNote": "Tasdiqlash {hours} soatlik kutishni boshlaydi; hisob egasiga barcha tasdiqlangan kanallar orqali xabar beriladi.",
+      "complete": "Oʻzgarishni yakunlash",
+      "cancel": "Bekor qilish"
+    },
+    "explain": {
+      "title": "Kirish izohi",
+      "lede": "«Nega u buni koʻra olmaydi yoki qila olmaydi» degan savolga siyosat qarori bilan javob bering, hech qachon obyekt mazmuni bilan emas.",
+      "ask": "Kim va nima",
+      "principal": "Shaxs",
+      "object": "Obyekt",
+      "choose": "Tanlang",
+      "explain": "Izohlash",
+      "objectKinds": {
+        "project": "Loyiha",
+        "rfq": "Narx soʻrovi",
+        "company_page": "Kompaniya sahifasi"
+      },
+      "decision": "Qaror",
+      "effect": "Natija",
+      "effects": {
+        "allow": "Ruxsat etilgan",
+        "deny": "Ruxsat etilmagan"
+      },
+      "rule": "Qoida",
+      "reasons": {
+        "no_participation": "U bunda ishtirok etmaydi.",
+        "capability_missing": "Uning roli bu amalni oʻz ichiga olmaydi.",
+        "membership_permission_missing": "Uning kompaniyadagi roli bu huquqni oʻz ichiga olmaydi.",
+        "participation_expired": "Uning ishtiroki muddati tugagan.",
+        "participation_revoked": "Uning ishtiroki bekor qilingan.",
+        "membership_ended": "Uning kompaniyadagi aʼzoligi tugagan.",
+        "mandate_revoked": "Topshiriq bekor qilingan.",
+        "mandate_scope": "Topshiriq buni qamrab olmaydi.",
+        "email_unverified": "Uning pochtasi hali tasdiqlanmagan.",
+        "step_up_required": "Avval bu oʻzi ekanini tasdiqlashi kerak.",
+        "lifecycle": "Obyekt bunga ruxsat bermaydigan holatda.",
+        "staff_no_case": "Xodimlarga ish boʻyicha ruxsat kerak.",
+        "public_projection": "Eʼlon qilingan ochiq versiyani hamma koʻradi.",
+        "participation": "U bunda ishtirok etadi."
+      },
+      "noContent": "Obyekt mazmuni bu yerda hech qachon koʻrsatilmaydi.",
+      "noDecision": "Bu juftlik uchun qaror yozilmagan.",
+      "copy": "Izohni ish boʻyicha javobga qoʻshish"
+    }
+  },
+  "adminTrust": {
+    "common": {
+      "id": "Raqam",
+      "state": "Holat",
+      "received": "Qabul qilingan",
+      "items": "{count, plural, one {# ta element} other {# ta element}}",
+      "progress": "Jarayon",
+      "progressOf": "{total} dan {done}",
+      "started": "Boshlangan",
+      "runStates": {
+        "done": "Tayyor",
+        "running": "Bajarilmoqda",
+        "queued": "Navbatda"
+      }
+    },
+    "clauses": {
+      "harassment": "Taʼqib",
+      "false_claims": "Yolgʻon daʼvolar",
+      "privacy": "Shaxsiy hayot",
+      "spam": "Spam"
+    },
+    "moderation": {
+      "title": "Moderatsiya",
+      "lede": "Mahalliy qonunga moslashtirilgan hab hamjamiyat qoidalari boʻyicha hal qilinadigan shikoyatlar va ishlar.",
+      "reports": "Shikoyatlar",
+      "noReports": "Shikoyatlar yoʻq.",
+      "target": "Obyekt",
+      "targets": {
+        "profile": "Profil",
+        "publication": "Nashr",
+        "review": "Fikr-mulohaza",
+        "company_page": "Kompaniya sahifasi"
+      },
+      "clause": "Band",
+      "source": "Manba",
+      "sources": {
+        "participant": "Ishtirokchi",
+        "anonymous": "Anonim",
+        "automated": "Avtomatik tekshiruv"
+      },
+      "reportStates": {
+        "new": "Yangi",
+        "in_case": "Ishda"
+      },
+      "openCase": "Ish ochish",
+      "report": "Shikoyat",
+      "cases": "Ishlar",
+      "noCases": "Moderatsiya ishlari yoʻq.",
+      "evidence": "Dalillar",
+      "decision": "Qaror",
+      "decisions": {
+        "pending": "Kutilmoqda",
+        "no_action": "Chorasiz",
+        "sanction": "Jazo"
+      },
+      "level": "{level}-daraja",
+      "appeal": "Shikoyat",
+      "appealStates": {
+        "none": "Yoʻq",
+        "filed": "Topshirilgan",
+        "decided": "Hal qilingan"
+      },
+      "decide": "Ishni hal qilish",
+      "case": "Ish",
+      "sanctionLevel": "Jazo darajasi",
+      "levelRule": "1–3-darajalar darhol qoʻllanadi; 4-daraja ikkinchi odamni talab qiladi.",
+      "levels": {
+        "1": "Ogohlantirish",
+        "2": "Material ushlab turilgan",
+        "3": "Vaqtincha cheklov",
+        "4": "Hisobni toʻxtatish"
+      },
+      "nothingToDecide": "Qaror kutayotgan ish yoʻq.",
+      "emergency": "Shoshilinch ushlab turish yoki muzlatish",
+      "emergencyKind": "Tur",
+      "emergencyKinds": {
+        "hold": "Materialni ushlab turish",
+        "freeze": "Hisobni muzlatish"
+      },
+      "emergencySubmit": "Hozir qoʻllash",
+      "clauseLibrary": "Bandlar kutubxonasi",
+      "law": "Qoida va qonun",
+      "ladder": "Jazolar zinapoyasi",
+      "secondPerson": "ikkinchi odam kerak"
+    },
+    "disputes": {
+      "title": "Nizolar",
+      "lede": "Nizo ruxsati doirasida dalillar asosida hal qilinadigan bajarish va fikr-mulohaza nizolari.",
+      "rule": "Maʼlumot yoʻqligi muvaffaqiyatsizlik emas, nomaʼlum deb hisoblanadi va toʻlov hech qachon taʼsir qilmaydi.",
+      "queue": "Nizolar",
+      "empty": "Nizolar yoʻq.",
+      "assertions": {
+        "delivery_late": "Yetkazib berish kechikdi",
+        "work_incomplete": "Ish tugallanmadi",
+        "payment_late": "Toʻlov kechikdi"
+      },
+      "states": {
+        "open": "Ochiq",
+        "excluded_pending": "Kuzatuv hal boʻlguncha chiqarilgan",
+        "decided": "Hal qilingan"
+      },
+      "observation": "Kuzatuv",
+      "partyA": "Birinchi tomon",
+      "partyB": "Ikkinchi tomon",
+      "evidence": "Dalillar",
+      "evidenceGrant": "Nizo ruxsati boʻyicha dalillarni koʻrish",
+      "statements": "Bayonotlar",
+      "record": "Xulosani yozish",
+      "stance": "Xulosa",
+      "stances": {
+        "confirm": "Kuzatuvni tasdiqlash",
+        "dispute": "Kuzatuvga eʼtiroz bildirish"
+      },
+      "exclude": "Nizo davomida chiqarish",
+      "excludeNote": "Nizo hal boʻlguncha kuzatuv hisobga olinmaydi.",
+      "decide": "Hal qilish",
+      "decision": "Qaror",
+      "decisions": {
+        "observation_stands": "Kuzatuv oʻz kuchida qoladi",
+        "observation_corrected": "Kuzatuv tuzatiladi",
+        "observation_removed": "Kuzatuv olib tashlanadi"
+      }
+    },
+    "reputation": {
+      "title": "Obroʻ metodikalari",
+      "lede": "Tushuntiriladigan metodika versiyalari: qoralama, tekshiruv, hab egasi tomonidan chiqarish va har bir hab tilida izoh.",
+      "noScore": "Bu yerdagi hech bir boshqaruv elementi ballni oʻzgartirmaydi. Obroʻ faqat mahalliy parametrlari dvigatel chegaralarida qoladigan chiqarilgan metodika versiyalari orqali oʻzgaradi.",
+      "versions": "Metodika versiyalari",
+      "noVersions": "Metodika versiyalari hali yoʻq.",
+      "version": "Versiya",
+      "states": {
+        "draft": "Qoralama",
+        "in_review": "Tekshiruvda",
+        "released": "Chiqarilgan",
+        "superseded": "Almashtirilgan"
+      },
+      "parameters": {
+        "windowMonths": "Oyna, oylarda",
+        "minimumSamples": "Eng kam kuzatuvlar",
+        "confirmationDays": "Tasdiqlash muddati, kunlarda"
+      },
+      "explanations": "Izohlar",
+      "released": "Chiqarilgan",
+      "missingExplanations": "Izoh yoʻq tillar: {languages}",
+      "bounds": "Dvigatel chegaralari",
+      "range": "Ruxsat: {min} dan {max} gacha",
+      "draft": "Yangi versiya qoralamasini yaratish",
+      "reviewAndRelease": "Tekshiruv va chiqarish",
+      "review": "Tekshirilgan deb belgilash",
+      "release": "Chiqarish",
+      "releaseRule": "Versiyani faqat hab egasi roli chiqaradi.",
+      "nothingToRelease": "Chiqarishni kutayotgan versiya yoʻq.",
+      "publishExplanation": "Izohni eʼlon qilish",
+      "language": "Til",
+      "jobs": "Qayta hisoblash vazifalari",
+      "noJobs": "Qayta hisoblash vazifalari yoʻq.",
+      "localParameters": "Mahalliy parametrlar"
+    },
+    "appeals": {
+      "title": "Shikoyatlar",
+      "lede": "Arizalar, guvohnomalar, moderatsiya qarorlari va kuzatuvlar ustidan shikoyatlar uchun yagona navbat.",
+      "queue": "Muddat boʻyicha shikoyatlar",
+      "empty": "Shikoyatlar yoʻq.",
+      "against": "Shikoyat obyekti: {kind}",
+      "kinds": {
+        "claim": "ariza boʻyicha qaror",
+        "credential": "guvohnoma boʻyicha qaror",
+        "moderation": "moderatsiya qarori",
+        "observation": "kuzatuv"
+      },
+      "states": {
+        "open": "Ochiq",
+        "information_requested": "Maʼlumot soʻralgan"
+      },
+      "ref": "Qaror",
+      "originalDecider": "Dastlabki qaror egasi",
+      "filed": "Topshirilgan",
+      "deadline": "Muddat",
+      "soon": "muddat yaqin",
+      "decide": "Hal qilish",
+      "decision": "Qaror",
+      "decisions": {
+        "upheld": "Oʻz kuchida qoldirildi",
+        "overturned": "Bekor qilindi",
+        "partly_overturned": "Qisman bekor qilindi"
+      },
+      "requestInfo": "Maʼlumot soʻrash"
+    },
+    "screening": {
+      "title": "Sanksiyalar tekshiruvi",
+      "lede": "Sanksiyalarga rioya qilish: roʻyxatlar, odamlar hal qiladigan mosliklar, hududiy ushlab turishlar va qayta tekshiruvlar.",
+      "stale": "Tekshiruv mavjud emas: asosiy roʻyxatlar yana yangilanmaguncha toʻlovlar va majburiyatlar toʻxtatilgan.",
+      "rule": "Hech bir boshqaruv elementi solishtirishni yumshatmaydi, asosiy roʻyxatni toʻxtatmaydi yoki ushlab turishni sababsiz olib tashlamaydi.",
+      "lists": "Roʻyxatlar",
+      "version": "Versiya",
+      "entries": "Yozuvlar",
+      "freshness": "Yangilik",
+      "freshnessStates": {
+        "fresh": "Yangi",
+        "warning": "Eskirmoqda",
+        "stale": "Eskirgan"
+      },
+      "geo": "Geolokatsiya maʼlumotlar toʻplami",
+      "dataset": "Maʼlumotlar toʻplami",
+      "geoModes": {
+        "ranges_file": "Diapazonlar fayli",
+        "fake": "Taqlid (sintetik)"
+      },
+      "age": "Yoshi",
+      "ageDays": "{days, plural, one {# kun} other {# kun}}",
+      "matches": "Mosliklar",
+      "noMatches": "Kutilayotgan mosliklar yoʻq.",
+      "matchStates": {
+        "open": "Ochiq",
+        "appeal": "Shikoyat"
+      },
+      "late": "Xizmat muddati oʻtgan",
+      "underCase": "Ismlar yonma-yon, {case} ishi ichida",
+      "screenedName": "Tekshirilgan ism",
+      "listEntry": "Roʻyxat yozuvi",
+      "strength": "Oʻxshashlik",
+      "strengths": {
+        "strong": "Kuchli",
+        "weak": "Kuchsiz"
+      },
+      "confirm": "Moslikni tasdiqlash",
+      "notSamePerson": "«Bu boshqa odam» deb taklif qilish",
+      "decideAppeal": "Shikoyatni hal qilish",
+      "appealDecisions": {
+        "uphold": "Moslikni qoldirish",
+        "reverse": "Moslikni bekor qilish"
+      },
+      "holds": "Hududiy ushlab turishlar",
+      "noHolds": "Ochiq ushlab turishlar yoʻq.",
+      "place": "Joy",
+      "source": "Manba",
+      "sources": {
+        "geolocation": "Geolokatsiya",
+        "edge_header": "Chegara tugunining sarlavhasi",
+        "self_declared": "Oʻzi bildirgan",
+        "payout_country": "Toʻlov mamlakati",
+        "staff_report": "Xodim xabari"
+      },
+      "hold": "Ushlab turish",
+      "holdEvidence": {
+        "document": "Hujjat",
+        "call": "Qoʻngʻiroq",
+        "travel_record": "Safar maʼlumoti",
+        "other": "Boshqa"
+      },
+      "clearHold": "Ushlab turishni olib tashlash",
+      "runs": "Qayta tekshiruvlar",
+      "noRuns": "Qayta tekshiruvlar yoʻq.",
+      "trigger": "Sabab",
+      "triggers": {
+        "list_version": "Roʻyxatning yangi versiyasi",
+        "weekly": "Haftalik",
+        "manual": "Qoʻlda"
+      },
+      "rescreen": "Qoʻlda qayta tekshiruvni boshlash",
+      "metrics": "Guruh koʻrsatkichlari",
+      "refusals": "Shu haftadagi rad etishlar",
+      "holdCount": "Ushlab turishlar",
+      "matchCount": "Mosliklar",
+      "notSameShare": "Boshqa odam",
+      "publishedOn": "Eʼlon qilingan: {date}"
+    },
+    "confirmations": {
+      "title": "Tasdiqlar",
+      "lede": "Halol tasdiq soʻrovlari: faqat bogʻlangan bitimlar yoki loyihalarning haqiqiy kontragentlaridan, cheklangan hajmda.",
+      "policy": "Tasdiqlar siyosati",
+      "noPolicy": "Tasdiqlar siyosati hali yoʻq.",
+      "fields": {
+        "requireLink": "Bogʻlangan bitim yoki loyiha talab qilinadi",
+        "maxOpen": "Bir soʻrovchiga ochiq soʻrovlar",
+        "perCounterparty": "Bir kontragentga oyiga soʻrovlar",
+        "cooldown": "Rad etishdan keyingi tanaffus",
+        "reciprocal": "Oʻzaro tasdiqlar belgilanadi",
+        "agentsRequest": "Yordamchilar soʻrashi mumkin",
+        "agentsConfirm": "Yordamchilar tasdiqlashi mumkin"
+      },
+      "locked": "dvigatel belgilagan",
+      "save": "Yangi versiya sifatida saqlash",
+      "agentsNever": "Yordamchilar tasdiq soʻrashi mumkin, lekin hech qachon tasdiqlamaydi; bu odamlarning ishi boʻlib qoladi.",
+      "counts": "Soʻrovlar va qabul qilishlar",
+      "countKinds": {
+        "requested": "Soʻralgan",
+        "accepted": "Qabul qilingan",
+        "declined": "Rad etilgan"
+      },
+      "patterns": "Belgilangan qonuniyatlar",
+      "patternsNote": "Qonuniyatlar undagi odamlar boʻyicha emas, shakli boʻyicha tavsiflanadi; ular ish ochish orqali koʻrib chiqiladi.",
+      "noPatterns": "Belgilangan qonuniyatlar yoʻq.",
+      "kind": "Qonuniyat",
+      "kinds": {
+        "reciprocal": "Oʻzaro tasdiqlar",
+        "burst": "Soʻrovlar toʻlqini",
+        "new_accounts": "Yangi hisoblar bir-birini tasdiqlamoqda"
+      },
+      "size": "Hisoblar",
+      "accounts": "{count, plural, one {# ta hisob} other {# ta hisob}}",
+      "window": "Oyna",
+      "detected": "Aniqlangan",
+      "pattern": "Qonuniyat"
+    }
+  }
+}

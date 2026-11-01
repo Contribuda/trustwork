@@ -1,0 +1,987 @@
+{
+  "adminParticipants": {
+    "common": {
+      "name": "Ad",
+      "company": "Şirkət",
+      "category": "Kateqoriya",
+      "reasonCategory": "Səbəb kateqoriyası",
+      "support": "Dəstək",
+      "noData": "Bu hab üçün hələ məlumat yoxdur.",
+      "cohortNote": "Ondan kiçik saylar heç vaxt göstərilmir ki, heç kəsi ayırd etmək mümkün olmasın.",
+      "updated": "Yeniləndi: {date}",
+      "version": "Versiya {version}",
+      "yes": "Bəli",
+      "no": "Xeyr",
+      "suppressed": "10-dan az"
+    },
+    "errors": {
+      "own_account": "Öz hesabınıza xidmət göstərə bilməzsiniz.",
+      "account_erased": "Bu hesab silinib; yalnız silinmə qeydi qalıb.",
+      "evidence_required": "Əvvəlcə sübutu qeyd edin.",
+      "cooling_off_active": "72 saatlıq gözləmə müddəti hələ bitməyib.",
+      "conflict_of_interest": "Bu şirkətlə maraqlar toqquşması bildirmisiniz; başqa yoxlayıcı qərar verir.",
+      "sanctions_match": "Sanksiya siyahısında ehtimal olunan uyğunluq yoxlama işi həll olunana qədər təsdiqi bloklayır.",
+      "steps_incomplete": "Reseptin məcburi addımları hələ keçilməyib.",
+      "recipe_missing": "Yoxlanılan iddia üçün növü aktivləşdirməzdən əvvəl yoxlama resepti lazımdır.",
+      "out_of_bounds": "Bu dəyər icazə verilən aralıqdan kənardadır.",
+      "original_decider": "İlkin qərarı siz vermisiniz; şikayəti başqa şəxs həll edir.",
+      "grant_too_long": "İş üzrə giriş ən çoxu 72 saat davam edir.",
+      "too_many_objects": "İş üzrə giriş bir növdən ən çoxu 100 obyekti adlandırır.",
+      "case_required": "Əvvəlcə bu hesab haqqında açıq işi seçin.",
+      "case_closed": "Bu iş bağlanıb.",
+      "baseline_locked": "Bu qoruma həmişə aktivdir və dəyişdirilmir.",
+      "objection_received": "Hesab sahibi etiraz etdi; dəyişiklik ləğv edildi.",
+      "not_verified": "Bu şirkət yoxlanılmayıb.",
+      "no_representative": "Bu şirkətin aktiv nümayəndəsi yoxdur.",
+      "already_decided": "Bu artıq həll olunub.",
+      "type_inactive": "Bu vəsiqə növü aktiv deyil.",
+      "release_permission": "Metodika versiyalarını yalnız hab sahibi rolu buraxır."
+    },
+    "outcomes": {
+      "saved": "Nümayiş: dəyişikliklər saxlanılmır.",
+      "second_person": "Nümayiş: bu «{action}» üçün ikinci şəxsə sorğu yaradardı; heç nə saxlanılmır.",
+      "pending_second": "Nümayiş: bunu ikinci şəxs Təsdiqlər bölməsində tamamlayardı; heç nə saxlanılmır.",
+      "grant_requested": "Nümayiş: giriş sorğusu təsdiq üçün başqa dəstək rəhbərinə gedərdi; heç nə saxlanılmır.",
+      "cooling_off": "Nümayiş: bu {date} tarixində qüvvəyə minərdi; hesab sahibinə bütün təsdiqlənmiş kanallarla xəbər verilərdi. Heç nə saxlanılmır.",
+      "notified": "Nümayiş: aidiyyəti olan şəxsə bildiriş gedərdi; heç nə saxlanılmır.",
+      "version": "Nümayiş: bu yeni versiya kimi saxlanılardı; heç nə saxlanılmır.",
+      "case_opened": "Nümayiş: iş açılardı; heç nə saxlanılmır."
+    },
+    "accountStates": {
+      "active": "Aktiv",
+      "pending_verification": "Təsdiq gözləyir",
+      "locked": "Bloklanıb",
+      "suspended": "Dayandırılıb",
+      "deletion_requested": "Silinmə istənilib",
+      "erased": "Silinib"
+    },
+    "trades": {
+      "electrician": "Elektrik",
+      "roofer": "Dam ustası",
+      "general_contractor": "Baş podratçı",
+      "architect": "Memar",
+      "plumber": "Santexnik",
+      "tile_setter": "Kafel ustası",
+      "client": "Sifarişçi"
+    },
+    "companyStates": {
+      "sourced": "Mənbələrdən",
+      "claimed": "Sahibi təsdiqləyib",
+      "verified": "Yoxlanılıb"
+    },
+    "companyKinds": {
+      "contractor": "Podratçı",
+      "manufacturer": "İstehsalçı",
+      "supplier": "Təchizatçı"
+    },
+    "repStates": {
+      "active": "Nümayəndə aktivdir",
+      "suspended": "Nümayəndə dayandırılıb",
+      "accountable_missing": "Məsul şəxs təyin olunmayıb",
+      "none": "Nümayəndə yoxdur"
+    },
+    "identifiers": {
+      "ein": "Vergi nömrəsi (EIN)",
+      "state_licence": "Ştat lisenziyası"
+    },
+    "categories": {
+      "general_contractor": "Baş podrat",
+      "remodeling": "Təmir və yenidənqurma",
+      "electrical": "Elektrik işləri",
+      "roofing": "Dam örtüyü",
+      "lumber": "Taxta materiallar",
+      "tile": "Kafel",
+      "training": "Təlim və bələdçilər"
+    },
+    "subjects": {
+      "person": "Şəxs",
+      "company": "Şirkət"
+    },
+    "steps": {
+      "register_match": "Ştat reyestri ilə tutuşdurma",
+      "ein_letter": "Vergi nömrəsini təsdiqləyən məktub",
+      "signatory_tie": "İmza sahibi ilə əlaqə (elektron imza və ya geri zəng)",
+      "domain": "Domen yoxlaması",
+      "call_back": "Qeydiyyatdakı telefona geri zəng",
+      "screening": "Sanksiya yoxlaması",
+      "ownership": "Sahiblik bəyannaməsi",
+      "licence_board": "Ştat lisenziya şurasında yoxlama",
+      "identity_document": "Şəxsiyyət sənədinin yoxlanması"
+    },
+    "stepResults": {
+      "pass": "Keçdi",
+      "fail": "Keçmədi",
+      "pending": "Gözləyir",
+      "potential_match": "Ehtimal olunan uyğunluq"
+    },
+    "evidence": {
+      "register_extract": "Reyestrdən çıxarış",
+      "irs_letter": "Vergi xidmətinin məktubu",
+      "esign_record": "Elektron imza qeydi",
+      "licence_record": "Lisenziya qeydi",
+      "ownership_declaration": "Sahiblik bəyannaməsi",
+      "call_back_record": "Geri zəng qeydi"
+    },
+    "modes": {
+      "fake": "İmitasiya (sintetik)",
+      "file": "Fayldan idxal",
+      "live": "İşlək"
+    },
+    "legalBases": {
+      "contract": "Müqavilə",
+      "legal_obligation": "Hüquqi öhdəlik",
+      "legitimate_interest": "Qanuni maraq",
+      "consent": "Razılıq"
+    },
+    "people": {
+      "title": "İnsanlar",
+      "lede": "Bu habın insanları ictimaiyyətin gördüyü kimi, vəziyyətlərə görə hesabların sayı ilə. Qapalı profillər burada görünmür.",
+      "accountStates": "Vəziyyətlərə görə hesablar",
+      "problems": "Razılıq və portret problemləri",
+      "consentWithdrawn": "Razılıq geri götürülüb, dərcdən çıxarılmağı gözləyir",
+      "portraitMissing": "Lisenziyasız portret",
+      "profiles": "Açıq profillər",
+      "publicOnly": "Yalnız açıq profillər göstərilir. Əməkdaşlar heç vaxt şəxsin profilini redaktə etmir; onu moderasiyaya işarələyə bilərlər.",
+      "noProfiles": "Bu habda hələ açıq profil yoxdur.",
+      "trade": "Peşə",
+      "place": "Yer",
+      "employer": "İşəgötürən",
+      "portrait": "Portret",
+      "portraitStates": {
+        "licensed": "Lisenziyalı",
+        "missing": "Lisenziya yoxdur",
+        "none": "Portretsiz"
+      },
+      "consentProblem": "Razılıq problemi",
+      "openInSupport": "Dəstəkdə tapmaq",
+      "supportOnly": "Yalnız dəstək əməkdaşları üçün",
+      "flag": "Moderasiyaya işarələmək",
+      "profile": "Açıq profil",
+      "flagCategories": {
+        "misleading_claim": "Yanıldıcı iddia",
+        "impersonation_report": "Özünü başqası kimi təqdim etməsi barədə şikayət",
+        "portrait_without_licence": "Lisenziyasız portret",
+        "harassment": "Təqib",
+        "spam": "Arzuolunmaz mesajlar"
+      },
+      "flagNote": "İşarələmə moderasiya işi açır; profilin məzmunu şəxsin yazdığı kimi qalır."
+    },
+    "companies": {
+      "title": "Şirkətlər",
+      "lede": "Əməkdaşların idarə etdiyi şirkətlər kataloqu: mənbələrdən olan, sahibi təsdiqləyən və yoxlanılmış şirkətlər, identifikatorlar, təkrar yoxlamalar və nümayəndələr.",
+      "directory": "Kataloq",
+      "badgeRule": "İdentifikator heç vaxt şirkətin statusunu yüksəltmir: yoxlama yalnız reseptə görə həll edilmiş müraciətdən gəlir. Yoxlanılıb yaxşı deməkdir demək deyil.",
+      "none": "Bu habda hələ şirkət yoxdur.",
+      "state": "Vəziyyət",
+      "verifiedAt": "Yoxlama tarixi",
+      "categories": "Kateqoriyalar",
+      "recheckOverdue": "vaxtı keçib",
+      "representative": "Nümayəndə",
+      "openClaims": "Müraciətlər növbəsini açmaq",
+      "linkProposals": "Əlaqə təklifləri",
+      "sourced": "Mənbələrdən olan istehsalçı və təchizatçı səhifələri",
+      "sourcedNote": "Habın hüquqi əsası daxilində açıq mənbələrdən qurulub; şirkət onları təsdiqləyənə qədər «mənbələrdən» işarəsi ilə qalır.",
+      "noSourced": "Mənbələrdən olan səhifə hələ yoxdur.",
+      "kind": "Növ",
+      "source": "Mənbə",
+      "takedown": "Götürülmə",
+      "takedownPending": "Götürülmə gözləyir",
+      "takedownBanner": "Mənbələrdən olan səhifənin götürülməsi tələbi baxılmaqdadır:",
+      "revoke": "Yoxlamanı ləğv etmək",
+      "revokeNote": "Şirkətə bildiriş gedir; açıq səhifədə yalnız səbəb kateqoriyası görünür.",
+      "triggerRecheck": "Reyestrlə təkrar tutuşdurmanı başlatmaq",
+      "suspendRep": "Təhlükəsizlik üçün nümayəndəni dayandırmaq",
+      "suspendRepNote": "Şirkətə bildiriş gedir; onun inzibatçıları səbəbi aradan qaldırıb nümayəndəni bərpa edə bilərlər.",
+      "verification": "Yoxlama",
+      "verifiedOn": "Yoxlanılıb: {date}",
+      "recheckOn": "Təkrar tutuşdurma tarixi: {date}"
+    },
+    "claims": {
+      "title": "Müraciətlər",
+      "lede": "Şirkət müraciətlərini habın resepti və sübutlar əsasında addım-addım həll edin.",
+      "queue": "Müraciətlər növbəsi",
+      "recipeRule": "Sahibi təsdiqləyən kimi təsdiq — reyestrlə tutuşdurma və imza sahibi ilə əlaqədən sonra; yoxlanılmış kimi — yalnız bütün məcburi addımlar keçildikdə.",
+      "empty": "Gözləyən müraciət yoxdur.",
+      "states": {
+        "open": "Açıq",
+        "clarification": "Dəqiqləşdirmə gözləyir",
+        "appeal": "Şikayət",
+        "decided": "Həll olunub"
+      },
+      "target": "İstənilən vəziyyət",
+      "recipe": "Resept",
+      "submitted": "Təqdim olunub",
+      "steps": "Resept addımları",
+      "optional": "könüllü",
+      "evidence": "Sübutlar",
+      "evidenceItem": "{category}: {count}",
+      "evidenceViewer": "Müraciətə baxış girişi ilə sübutlara baxış",
+      "sanctionsBlock": "Sanksiya siyahısında ehtimal olunan uyğunluq: yoxlama işi həll olunana qədər bu müraciət təsdiqlənə bilməz.",
+      "openScreeningCase": "Sanksiya yoxlaması növbəsini açmaq",
+      "conflicts": "Bildirilmiş maraqlar toqquşması:",
+      "appealNote": "İmtinaya şikayət, son tarix {deadline}. İlkin qərarı verən:",
+      "routeAppeal": "Şikayəti yönləndirmək",
+      "reviewer": "Yoxlayıcı",
+      "decide": "Qərarı qeyd etmək",
+      "decision": "Qərar",
+      "decisions": {
+        "claimed": "Sahibi təsdiqləyən kimi təsdiqləmək",
+        "verified": "Yoxlanılmış kimi təsdiqləmək",
+        "clarify": "Dəqiqləşdirmə istəmək",
+        "reject": "Rədd etmək"
+      },
+      "recordCheck": "Əl ilə yoxlamanı qeyd etmək",
+      "step": "Addım",
+      "result": "Nəticə",
+      "evidenceCategory": "Sübut kateqoriyası"
+    },
+    "verification": {
+      "title": "Yoxlama",
+      "lede": "Habın müraciətləri yoxlamaq üçün istifadə etdiyi reseptlər, yoxlama provayderləri və sanksiya siyahıları.",
+      "recipes": "Reseptlər",
+      "noRecipes": "Hələ resept yoxdur.",
+      "recipe": "Resept",
+      "newRecipeVersion": "Yeni versiya kimi redaktə etmək",
+      "screeningAlwaysOn": "Əsas sanksiya yoxlaması hər reseptin bir hissəsidir və onu söndürmək olmur.",
+      "checks": "Yoxlama növləri və provayderlər",
+      "noChecks": "Yoxlamalar hələ qurulmayıb.",
+      "check": "Yoxlama",
+      "provider": "Provayder",
+      "mode": "Rejim",
+      "quotaUse": "{quota}-dan {used}",
+      "days": "{days, plural, one {# gün} other {# gün}}",
+      "costNote": "Hab yoxlamanın xərcini ala bilər, amma heç vaxt onun nəticəsi üçün yox.",
+      "setMode": "Provayder rejimini təyin etmək",
+      "liveNote": "Provayderi işlək rejimə keçirmək ikinci şəxs tələb edir.",
+      "lists": "Sanksiya siyahıları",
+      "noLists": "Hələ sanksiya siyahısı yoxdur.",
+      "list": "Siyahı",
+      "kind": "Növ",
+      "baselineAlwaysOn": "Əsas, həmişə aktiv",
+      "additional": "Əlavə",
+      "lastUpdate": "Son yeniləmə",
+      "addList": "Ölkə paketindən siyahı əlavə etmək",
+      "packList": "Ölkə paketindəki siyahı",
+      "costAndUse": "Qiymət və bu ayki istifadə",
+      "retentionAndBasis": "Saxlama və hüquqi əsas"
+    },
+    "credentials": {
+      "title": "Vəsiqələr",
+      "lede": "Habın verdiyi yoxlanıla bilən vəsiqələr: sahiblərinin saxladığı və istənilən yerdə təqdim etdiyi yoxlanılmış faktlar.",
+      "notAScore": "Vəsiqə yoxlanılmış faktdır, heç vaxt bal deyil və heç vaxt satılmır.",
+      "types": "Vəsiqə növləri",
+      "noTypes": "Hələ vəsiqə növü yoxdur.",
+      "typeTitle": "Başlıq",
+      "claim": "İddia",
+      "claims": {
+        "identity": "Şəxsiyyət",
+        "licence": "Lisenziya",
+        "insurance": "Sığorta",
+        "qualification": "İxtisas",
+        "certificate": "Sertifikat",
+        "membership": "Üzvlük",
+        "completed_work": "Görülmüş iş",
+        "counterparty_confirmation": "Kontragentin təsdiqi",
+        "knowledge_contribution": "Biliyə töhfə"
+      },
+      "subject": "Sahibi",
+      "recipe": "Yoxlama resepti",
+      "noRecipe": "Reseptsiz",
+      "validity": "Etibarlılıq müddəti",
+      "noExpiry": "Müddətsiz",
+      "portable": "Digər hablarda da etibarlıdır",
+      "statuses": {
+        "draft": "Qaralama",
+        "active": "Aktiv",
+        "retired": "Dövriyyədən çıxarılıb"
+      },
+      "saveType": "Növü yeni versiya kimi saxlamaq",
+      "type": "Vəsiqə növü",
+      "recipeRule": "Bu iddialar yoxlanılır və aktivləşdirmədən əvvəl resept tələb edir: {claims}.",
+      "activation": "Aktivləşdirmə",
+      "keepDraft": "Qaralama kimi saxlamaq",
+      "activate": "Aktivləşdirmək",
+      "issued": "Verilmiş vəsiqələr",
+      "issuedStates": {
+        "valid": "Etibarlı",
+        "expired": "Vaxtı keçib",
+        "suspended": "Dayandırılıb",
+        "revoked": "Ləğv edilib"
+      },
+      "noneIssued": "Hələ vəsiqə verilməyib.",
+      "holderSearch": "İş daxilində sahibə görə axtarış",
+      "statusList": "Status siyahısı və imza açarı",
+      "published": "Son dərc",
+      "entries": "Qeydlər",
+      "signature": "İmza",
+      "signatureValid": "Etibarlı",
+      "signingKey": "İstifadədəki imza açarı",
+      "issue": "Vəsiqə vermək",
+      "decision": "Sübutlu qərar",
+      "issueRule": "Vəsiqə yalnız sübutlarla qeyd edilmiş qərar əsasında verilir.",
+      "evidenceCount": "{count, plural, one {# sübut} other {# sübut}}",
+      "revokeOrSuspend": "Ləğv etmək və ya dayandırmaq",
+      "credentialId": "Vəsiqə nömrəsi",
+      "credentialIdHelp": "İşdən; sahiblər yalnız iş daxilində axtarılır.",
+      "revoke": "Ləğv etmək",
+      "suspend": "Dayandırmaq",
+      "reasons": {
+        "evidence_withdrawn": "Sübut geri götürülüb",
+        "evidence_expired": "Sübutun vaxtı keçib",
+        "fraud": "Fırıldaq",
+        "source_changed": "Mənbə dəyişib",
+        "holder_request": "Sahibin xahişi",
+        "legal_order": "Hüquqi göstəriş"
+      },
+      "revokeNote": "Ləğv habın status siyahısında qeyddir; açıq səbəb yalnız kateqoriyadır."
+    },
+    "consents": {
+      "title": "Razılıqlar",
+      "lede": "Razılıq və portret lisenziyası qeydləri, eləcə də dərcdən çıxarılmağı gözləyən geri götürmələr.",
+      "records": "Növ, versiya və vəziyyətə görə qeydlər",
+      "none": "Hələ razılıq qeydi yoxdur.",
+      "kind": "Növ",
+      "kinds": {
+        "profile_publication": "Profilin dərci",
+        "portrait_licence": "Portret lisenziyası",
+        "marketing_email": "Reklam məktubları",
+        "knowledge_sharing": "Bilik paylaşımı"
+      },
+      "version": "Versiya",
+      "given": "Verilib",
+      "withdrawn": "Geri götürülüb",
+      "withdrawals": "Dərcdən çıxarılmağı gözləyən geri götürmələr",
+      "noWithdrawals": "Gözləyən geri götürmə yoxdur.",
+      "requested": "İstənilib",
+      "unpublishBy": "Dərcdən çıxarma tarixi",
+      "process": "Geri götürməni emal etmək",
+      "withdrawal": "Geri götürmə",
+      "processNote": "Material dərcdən çıxarılır və tamamlandıqda şəxsə xəbər verilir.",
+      "record": "Razılığı qeyd etmək",
+      "subject": "Şəxsin nömrəsi",
+      "subjectHelp": "Dəstək işindən və ya müraciətdən nömrə.",
+      "evidence": "Sübut",
+      "evidenceKinds": {
+        "signed_form": "İmzalanmış forma",
+        "in_product_record": "Məhsuldakı qeyd",
+        "email_confirmation": "Poçtla təsdiq",
+        "recorded_call": "Yazılmış zəng"
+      },
+      "portrait": "Portret lisenziyasını qeyd etmək",
+      "scope": "Lisenziyanın əhatəsi",
+      "scopes": {
+        "profile_only": "Yalnız profil",
+        "profile_and_articles": "Profil və məqalələr",
+        "magazine": "Jurnal"
+      }
+    }
+  },
+  "adminSupport": {
+    "channels": {
+      "email": "Poçt",
+      "sms": "SMS mesajı",
+      "in_app": "Məhsulun daxilində"
+    },
+    "actions": {
+      "resend_verification": "Təsdiqi yenidən göndərmək",
+      "unlock_after_lockout": "Bloklanmadan sonra açmaq",
+      "revoke_all_sessions": "Bütün seansları bitirmək",
+      "require_password_reset": "Növbəti girişdə parolun dəyişdirilməsini tələb etmək",
+      "rebind_recovery_email": "Bərpa poçtunu dəyişmək",
+      "reset_second_factor": "İkinci amili sıfırlamaq",
+      "start_data_export": "Məlumat ixracına başlamaq",
+      "open_deletion_request": "Silinmə sorğusu açmaq",
+      "send_guided_task": "Addım-addım tapşırıq göndərmək"
+    },
+    "lookup": {
+      "title": "Dəstəkdə axtarış",
+      "lede": "Kömək etdiyiniz şəxsi və ya şirkəti tapın. Hər axtarış bir işə xidmət edir və giriş jurnalına yazılır.",
+      "search": "Axtarış",
+      "by": "Axtarış üsulu",
+      "kinds": {
+        "email": "Dəqiq poçt ünvanı",
+        "name": "Ad",
+        "company": "Şirkətin adı",
+        "identifier": "Hüquqi identifikator",
+        "id": "Nömrə"
+      },
+      "query": "Nəyi axtarmaq",
+      "forCase": "İş üçün",
+      "chooseCase": "İşi seçin",
+      "find": "Tapmaq",
+      "logged": "Poçt ünvanları dəqiq tutuşdurulur və heç vaxt tam göstərilmir.",
+      "results": "Nəticələr",
+      "needsCase": "Bu axtarışın xidmət etdiyi işi seçin; iş olmadan heç nə axtarılmır.",
+      "loggedFor": "{case} işi üçün giriş jurnalına yazıldı.",
+      "nothing": "Heç nə tapılmadı.",
+      "open": "Açmaq",
+      "openAccount": "Hesab kartını açmaq",
+      "openCompany": "Şirkət kartını açmaq"
+    },
+    "account": {
+      "title": "Hesab kartı",
+      "lede": "Hesabı həmin şəxsə çevrilmədən təhlil edin və xidmət göstərin: yalnız icazəli faktlar, şəxsi məzmun olmadan.",
+      "noImpersonation": "İştirakçı kimi daxil olmaq və ya onun səlahiyyəti ilə hərəkət etmək mümkün deyil, əməkdaşlar isə heç vaxt iştirakçının öz köməkçisini, tapşırıqlarını, ayarlarını, məqsədlərini və ya qoşulmalarını idarə etmir. Aşağıdakı alternativlərdən istifadə edin.",
+      "ownAccount": "Öz hesabınıza xidmət göstərə bilməzsiniz.",
+      "erased": "Bu hesab silinib. Yalnız bu qeyd qalıb.",
+      "email": "Poçt",
+      "verified": "təsdiqlənib",
+      "unverified": "təsdiqlənməyib",
+      "state": "Vəziyyət",
+      "secondFactor": "İkinci amil",
+      "factorMethods": "{count, plural, one {# üsul qoşulub} other {# üsul qoşulub}}",
+      "noFactor": "Qoşulmayıb",
+      "sessions": "Aktiv seanslar",
+      "recovery": "Bərpa",
+      "recoveryStates": {
+        "none": "Yoxdur",
+        "requested": "İstənilib",
+        "held_for_review": "Yoxlama üçün saxlanılıb",
+        "cooling_off": "Gözləmə müddəti"
+      },
+      "employer": "İşəgötürən",
+      "openCases": "Açıq işlər",
+      "allowlist": "Yalnız bu faktlar göstərilir. Heç vaxt mesaj mətnləri, qapalı layihələr, büdcələr, seans tokenləri, ünvanlar və ya yer tarixçəsi yox.",
+      "entitlements": "Hüquqlar və istifadə",
+      "noEntitlements": "Hüquq yoxdur.",
+      "offer": "Təklif",
+      "validUntil": "Etibarlıdır",
+      "noEnd": "Bitmə tarixi yoxdur",
+      "noUsage": "Bu dövrdə istifadə yoxdur.",
+      "meter": "Sayğac",
+      "meters": {
+        "agent_runs": "Köməkçinin işə salınmaları",
+        "plan_drafts": "Plan qaralamaları"
+      },
+      "usage": "İstifadə",
+      "usageOf": "Daxil olan {included}-dan {used}",
+      "period": "Dövr",
+      "consents": "Razılıqlar",
+      "noConsents": "Razılıq qeyd olunmayıb.",
+      "consentStates": {
+        "given": "Verilib",
+        "withdrawn": "Geri götürülüb"
+      },
+      "date": "Tarix",
+      "memberships": "Üzvlük tarixçəsi",
+      "noMemberships": "Üzvlük yoxdur.",
+      "role": "Rol",
+      "now": "indi",
+      "communications": "Mesajlar tarixçəsi",
+      "metadataOnly": "Yalnız çatdırılma məlumatları: şablon və onun versiyası, heç vaxt mesaj mətni və ya şəxsi dəyərlər.",
+      "noCommunications": "Mesaj göndərilməyib.",
+      "template": "Şablon",
+      "templates": {
+        "verification_email": "Təsdiq məktubu",
+        "project_invitation": "Layihəyə dəvət",
+        "lockout_notice": "Bloklanma bildirişi",
+        "recovery_change_notice": "Bərpa üsulunun dəyişməsi bildirişi"
+      },
+      "channel": "Kanal",
+      "delivery": "Çatdırılma",
+      "deliveryStates": {
+        "delivered": "Çatdırıldı",
+        "bounced": "Geri qayıtdı",
+        "queued": "Növbədə"
+      },
+      "inProgress": "Davam edən xidmət",
+      "openRecovery": "Bərpa sorğularını açmaq",
+      "service": "Xidmət əməliyyatları",
+      "serviceSubmit": "Əməliyyatı istəmək",
+      "action": "Əməliyyat",
+      "case": "İş",
+      "needsCase": "Əvvəlcə bu hesab haqqında iş açın.",
+      "guidedTask": "Addım-addım tapşırıq (göndərilərsə)",
+      "guidedTaskHelp": "Şəxs addımları öz seansında özü yerinə yetirir.",
+      "tasks": {
+        "reinvite_colleague": "Həmkarınızı yenidən dəvət edin",
+        "verify_email_again": "Poçtunuzu yenidən təsdiqləyin",
+        "share_diagnostics": "Diaqnostikanı dəstəklə paylaşın",
+        "enrol_second_factor": "İkinci amili qoşun"
+      },
+      "evidenceRecorded": "Şəxsiyyət sübutu yoxlanılıb və qeyd edilib (bərpa poçtunu dəyişmək və ya ikinci amili sıfırlamaq üçün lazımdır)",
+      "coolingOffRule": "Bərpa poçtunu və ya ikinci amili dəyişmək sübut, başqa təsdiqləyici və 72 saatlıq gözləmə tələb edir; şəxsə bütün təsdiqlənmiş kanallarla xəbər verilir və o, etiraz edə bilər.",
+      "alternatives": "Şəxsin adından hərəkət etmək əvəzinə",
+      "viewPublic": "Açıq görünüşə baxmaq",
+      "noPublic": "Bu şəxsin açıq profili yoxdur.",
+      "openExplainer": "Giriş izahını açmaq",
+      "ownAgent": "Şəxsin onun üçün görülməsini istədiyi hər şey: istəsə, öz tapşırığı ilə öz köməkçisi.",
+      "publicProjection": "Anonim ziyarətçi nə görür"
+    },
+    "company": {
+      "title": "Şirkət kartı",
+      "lede": "Şirkətə kömək edin: onun açıq səhifəsi, müraciət və yoxlama vəziyyəti, açıq üzvləri və nümayəndəsi.",
+      "publicOnly": "Heç vaxt göstərilmir: qapalı layihələr, qiymət sorğuları, təkliflər, büdcələr və ya mesajlar.",
+      "members": "Görünməyi seçmiş üzvlər",
+      "noMembers": "Heç bir üzv görünməyi seçməyib.",
+      "actions": "Bu şirkətə kömək etmək",
+      "requestGrant": "Adlandırılmış obyektlərə iş üzrə giriş istəmək"
+    },
+    "cases": {
+      "title": "Dəstək işləri",
+      "lede": "İşlər və onlar üzrə girişlər. Yazışma iş daxilində qalır; ümumi gələnlər qutusu yoxdur.",
+      "list": "İşlər",
+      "empty": "Dəstək işi yoxdur.",
+      "case": "İş",
+      "subject": "Kim haqqında",
+      "reason": "Səbəb",
+      "reasons": {
+        "access": "Giriş hüququ",
+        "sign_in": "Sistemə giriş",
+        "data_request": "Məlumat sorğusu",
+        "billing_question": "Ödəniş sualı",
+        "bug": "Nəsə işləmir"
+      },
+      "states": {
+        "open": "Açıq",
+        "waiting_on_person": "Şəxsin cavabı gözlənilir",
+        "closed": "Bağlanıb"
+      },
+      "opened": "Açılıb",
+      "detailTitle": "İş {id}",
+      "detailLede": "Şəxslə yazışma, onun paylaşdığı diaqnostika, girişlər və onlar üzrə hər oxunuş.",
+      "back": "Bütün işlər",
+      "assignee": "Məsul",
+      "thread": "Şəxslə yazışma",
+      "threadNote": "Mesajlar bu işin daxilində qalır.",
+      "fromPerson": "Şəxs",
+      "reply": "Cavab vermək",
+      "message": "Mesaj",
+      "snapshots": "Şəxsin paylaşdığı diaqnostika",
+      "snapshotNote": "Şəxs tərəfindən öz seansından, yalnız seçdiyi obyektlərlə paylaşılıb.",
+      "noSnapshots": "Diaqnostika paylaşılmayıb.",
+      "page": "Səhifə",
+      "versions": "Versiyalar",
+      "errors": "Xəta kodları və sorğular",
+      "selected": "Şəxsin seçdiyi obyektlər",
+      "accessLog": "Bu iş üzrə giriş jurnalı",
+      "noReads": "Giriş üzrə hələ oxunuş yoxdur.",
+      "readAt": "Oxunma vaxtı",
+      "reader": "Kim oxuyub",
+      "assign": "Təyin etmək",
+      "close": "İşi bağlamaq",
+      "create": "İş yaratmaq",
+      "subjectKind": "Kim haqqında",
+      "subjectId": "Nömrə",
+      "subjectIdHelp": "Axtarışdakı şəxsin və ya şirkətin nömrəsi."
+    },
+    "grants": {
+      "title": "İş üzrə girişlər",
+      "rule": "Giriş bir növdən 100-ə qədər obyekti, görünüş sinfini və məqsədi adlandırır, ən çoxu {hours} saat davam edir və başqa şəxs tərəfindən təsdiqlənir. Hər oxunuş qeyd olunur.",
+      "request": "Giriş sorğusu {id}",
+      "awaiting": "Başqa təsdiqləyici gözlənilir",
+      "requestedBy": "İstəyən",
+      "objects": "Obyektlər",
+      "projection": "Görünüş sinfi",
+      "projections": {
+        "diagnostic": "Diaqnostik",
+        "support_private_limited": "Qapalı, məhdud",
+        "evidence": "Sübutlar"
+      },
+      "purpose": "Məqsəd",
+      "duration": "Müddət, saatla",
+      "hours": "{hours, plural, one {# saat} other {# saat}}",
+      "digest": "Sorğunun izi",
+      "excluded": "Həmişə istisna edilir: danışıqların qapalı şərtləri, hesab məlumatları və ödəniş rekvizitləri.",
+      "decide": "Qərarı qeyd etmək",
+      "bindsDigest": "Qərarınız məhz bu sorğuya bağlanır; dəyişmiş sorğu yenisini tələb edir.",
+      "none": "Bu iş üzrə giriş yoxdur.",
+      "approvedBy": "Təsdiqləyən",
+      "expires": "Bitir",
+      "active": "Aktiv",
+      "expired": "Vaxtı keçib",
+      "revoked": "Ləğv edilib",
+      "notFoundAgain": "Obyektlər yenə tapılmır.",
+      "revoke": "Girişi ləğv etmək",
+      "grant": "Giriş",
+      "requestTitle": "İş üzrə giriş istəmək",
+      "requestSubmit": "Başqa şəxsdən təsdiq istəmək",
+      "objectType": "Obyekt növü",
+      "objectTypes": {
+        "rfq": "Qiymət sorğusu",
+        "project": "Layihə",
+        "quote_invitation": "Təklifə dəvət",
+        "company_membership": "Şirkətdə üzvlük",
+        "notification": "Bildiriş",
+        "account_recovery": "Hesabın bərpası sorğusu"
+      },
+      "ids": "Obyekt nömrələri",
+      "idsHelp": "Bir növdən 100-ə qədər nömrə, vergül və ya boşluqla ayrılmış.",
+      "durationHelp": "Ən çoxu {hours} saat."
+    },
+    "recovery": {
+      "title": "Bərpa sorğuları",
+      "lede": "Davam edən giriş amilləri dəyişiklikləri: bərpa poçtunun dəyişdirilməsi və ikinci amilin sıfırlanması.",
+      "rule": "Hər dəyişiklik sübut və başqa təsdiqləyici tələb edir, sonra {hours} saat gözləyir və bu müddətdə bütün təsdiqlənmiş kanallara xəbər verilir. Hesab sahibinin etirazı onu ləğv edir.",
+      "requests": "Sorğular",
+      "empty": "Bərpa sorğusu yoxdur.",
+      "states": {
+        "awaiting_approval": "Başqa təsdiqləyici gözlənilir",
+        "cooling_off": "Gözləmə müddəti",
+        "ready": "Tamamlamağa hazırdır",
+        "cancelled": "Ləğv edilib"
+      },
+      "evidence": "Sübut",
+      "evidenceStates": {
+        "recorded": "Qeyd edilib",
+        "missing": "Yoxdur"
+      },
+      "approver": "Təsdiqləyici",
+      "coolingOff": "Qüvvəyə minir",
+      "afterApproval": "Təsdiqdən {hours} saat sonra",
+      "coolingOffEnds": "Gözləmə müddəti bitir: {date}",
+      "notified": "Xəbər verilən kanallar",
+      "objection": "Hesab sahibi etiraz etdi: dəyişiklik avtomatik ləğv edildi və işarələndi.",
+      "approve": "Təsdiqləmək",
+      "approveNote": "Təsdiq {hours} saatlıq gözləməni başladır; hesab sahibinə bütün təsdiqlənmiş kanallarla xəbər verilir.",
+      "complete": "Dəyişikliyi tamamlamaq",
+      "cancel": "Ləğv etmək"
+    },
+    "explain": {
+      "title": "Giriş izahı",
+      "lede": "«Niyə bunu görə və ya edə bilmir» sualına siyasət qərarı ilə cavab verin, heç vaxt obyektin məzmunu ilə yox.",
+      "ask": "Kim və nə",
+      "principal": "Şəxs",
+      "object": "Obyekt",
+      "choose": "Seçin",
+      "explain": "İzah etmək",
+      "objectKinds": {
+        "project": "Layihə",
+        "rfq": "Qiymət sorğusu",
+        "company_page": "Şirkət səhifəsi"
+      },
+      "decision": "Qərar",
+      "effect": "Nəticə",
+      "effects": {
+        "allow": "İcazə verilir",
+        "deny": "İcazə verilmir"
+      },
+      "rule": "Qayda",
+      "reasons": {
+        "no_participation": "O, bunda iştirak etmir.",
+        "capability_missing": "Onun rolu bu əməliyyatı əhatə etmir.",
+        "membership_permission_missing": "Onun şirkətdəki rolu bu icazəni əhatə etmir.",
+        "participation_expired": "Onun iştirakının vaxtı bitib.",
+        "participation_revoked": "Onun iştirakı ləğv edilib.",
+        "membership_ended": "Onun şirkətdəki üzvlüyü bitib.",
+        "mandate_revoked": "Tapşırıq ləğv edilib.",
+        "mandate_scope": "Tapşırıq bunu əhatə etmir.",
+        "email_unverified": "Onun poçtu hələ təsdiqlənməyib.",
+        "step_up_required": "Əvvəlcə bunun o olduğunu təsdiqləməlidir.",
+        "lifecycle": "Obyekt buna imkan verməyən vəziyyətdədir.",
+        "staff_no_case": "Əməkdaşlara iş üzrə giriş lazımdır.",
+        "public_projection": "Dərc edilmiş açıq versiyanı hamı görür.",
+        "participation": "O, bunda iştirak edir."
+      },
+      "noContent": "Obyektin məzmunu burada heç vaxt göstərilmir.",
+      "noDecision": "Bu cüt üçün qərar qeyd olunmayıb.",
+      "copy": "İzahı iş üzrə cavaba əlavə etmək"
+    }
+  },
+  "adminTrust": {
+    "common": {
+      "id": "Nömrə",
+      "state": "Vəziyyət",
+      "received": "Alınıb",
+      "items": "{count, plural, one {# element} other {# element}}",
+      "progress": "Gediş",
+      "progressOf": "{total}-dan {done}",
+      "started": "Başlayıb",
+      "runStates": {
+        "done": "Hazırdır",
+        "running": "İcra olunur",
+        "queued": "Növbədə"
+      }
+    },
+    "clauses": {
+      "harassment": "Təqib",
+      "false_claims": "Yalan iddialar",
+      "privacy": "Şəxsi həyat",
+      "spam": "Arzuolunmaz mesajlar"
+    },
+    "moderation": {
+      "title": "Moderasiya",
+      "lede": "Yerli qanuna uyğunlaşdırılmış hab icma qaydalarına əsasən həll edilən şikayətlər və işlər.",
+      "reports": "Şikayətlər",
+      "noReports": "Şikayət yoxdur.",
+      "target": "Obyekt",
+      "targets": {
+        "profile": "Profil",
+        "publication": "Nəşr",
+        "review": "Rəy",
+        "company_page": "Şirkət səhifəsi"
+      },
+      "clause": "Bənd",
+      "source": "Mənbə",
+      "sources": {
+        "participant": "İştirakçı",
+        "anonymous": "Anonim",
+        "automated": "Avtomatik yoxlama"
+      },
+      "reportStates": {
+        "new": "Yeni",
+        "in_case": "İşdə"
+      },
+      "openCase": "İş açmaq",
+      "report": "Şikayət",
+      "cases": "İşlər",
+      "noCases": "Moderasiya işi yoxdur.",
+      "evidence": "Sübutlar",
+      "decision": "Qərar",
+      "decisions": {
+        "pending": "Gözləyir",
+        "no_action": "Tədbirsiz",
+        "sanction": "Sanksiya"
+      },
+      "level": "Səviyyə {level}",
+      "appeal": "Şikayət",
+      "appealStates": {
+        "none": "Yoxdur",
+        "filed": "Verilib",
+        "decided": "Həll olunub"
+      },
+      "decide": "İşi həll etmək",
+      "case": "İş",
+      "sanctionLevel": "Sanksiya səviyyəsi",
+      "levelRule": "1–3-cü səviyyələr dərhal tətbiq olunur; 4-cü səviyyə ikinci şəxs tələb edir.",
+      "levels": {
+        "1": "Xəbərdarlıq",
+        "2": "Material saxlanılıb",
+        "3": "Müvəqqəti məhdudiyyət",
+        "4": "Hesabın dayandırılması"
+      },
+      "nothingToDecide": "Qərar gözləyən iş yoxdur.",
+      "emergency": "Təcili saxlama və ya dondurma",
+      "emergencyKind": "Növ",
+      "emergencyKinds": {
+        "hold": "Materialı saxlamaq",
+        "freeze": "Hesabı dondurmaq"
+      },
+      "emergencySubmit": "İndi tətbiq etmək",
+      "clauseLibrary": "Bəndlər kitabxanası",
+      "law": "Qayda və qanun",
+      "ladder": "Sanksiyalar pilləkəni",
+      "secondPerson": "ikinci şəxs lazımdır"
+    },
+    "disputes": {
+      "title": "Mübahisələr",
+      "lede": "Mübahisə girişi çərçivəsində sübutlara əsasən həll edilən icra və rəy mübahisələri.",
+      "rule": "Məlumatın olmaması uğursuzluq yox, naməlum sayılır və ödəniş heç vaxt təsir etmir.",
+      "queue": "Mübahisələr",
+      "empty": "Mübahisə yoxdur.",
+      "assertions": {
+        "delivery_late": "Çatdırılma gecikib",
+        "work_incomplete": "İş tamamlanmayıb",
+        "payment_late": "Ödəniş gecikib"
+      },
+      "states": {
+        "open": "Açıq",
+        "excluded_pending": "Müşahidə həll olunana qədər çıxarılıb",
+        "decided": "Həll olunub"
+      },
+      "observation": "Müşahidə",
+      "partyA": "Birinci tərəf",
+      "partyB": "İkinci tərəf",
+      "evidence": "Sübutlar",
+      "evidenceGrant": "Mübahisə girişi ilə sübutlara baxış",
+      "statements": "Bəyanatlar",
+      "record": "Nəticəni qeyd etmək",
+      "stance": "Nəticə",
+      "stances": {
+        "confirm": "Müşahidəni təsdiqləmək",
+        "dispute": "Müşahidəyə etiraz etmək"
+      },
+      "exclude": "Mübahisə müddətində çıxarmaq",
+      "excludeNote": "Mübahisə həll olunana qədər müşahidə nəzərə alınmır.",
+      "decide": "Həll etmək",
+      "decision": "Qərar",
+      "decisions": {
+        "observation_stands": "Müşahidə qüvvədə qalır",
+        "observation_corrected": "Müşahidə düzəldilir",
+        "observation_removed": "Müşahidə silinir"
+      }
+    },
+    "reputation": {
+      "title": "Reputasiya metodikaları",
+      "lede": "İzah oluna bilən metodika versiyaları: qaralama, yoxlama, hab sahibi tərəfindən buraxılış və hər hab dilində izah.",
+      "noScore": "Buradakı heç bir idarəetmə elementi balı dəyişmir. Reputasiya yalnız yerli parametrləri mühərrikin hədləri daxilində qalan buraxılmış metodika versiyaları ilə dəyişir.",
+      "versions": "Metodika versiyaları",
+      "noVersions": "Hələ metodika versiyası yoxdur.",
+      "version": "Versiya",
+      "states": {
+        "draft": "Qaralama",
+        "in_review": "Yoxlamada",
+        "released": "Buraxılıb",
+        "superseded": "Əvəz edilib"
+      },
+      "parameters": {
+        "windowMonths": "Pəncərə, aylarla",
+        "minimumSamples": "Minimum müşahidə",
+        "confirmationDays": "Təsdiq müddəti, günlərlə"
+      },
+      "explanations": "İzahlar",
+      "released": "Buraxılıb",
+      "missingExplanations": "İzahı olmayan dillər: {languages}",
+      "bounds": "Mühərrikin hədləri",
+      "range": "İcazəli: {min} ilə {max} arası",
+      "draft": "Yeni versiya qaralaması yaratmaq",
+      "reviewAndRelease": "Yoxlama və buraxılış",
+      "review": "Yoxlanılmış kimi qeyd etmək",
+      "release": "Buraxmaq",
+      "releaseRule": "Versiyanı yalnız hab sahibi rolu buraxır.",
+      "nothingToRelease": "Buraxılış gözləyən versiya yoxdur.",
+      "publishExplanation": "İzahı dərc etmək",
+      "language": "Dil",
+      "jobs": "Yenidən hesablama tapşırıqları",
+      "noJobs": "Yenidən hesablama tapşırığı yoxdur.",
+      "localParameters": "Yerli parametrlər"
+    },
+    "appeals": {
+      "title": "Şikayətlər",
+      "lede": "Müraciətlər, vəsiqələr, moderasiya qərarları və müşahidələr üzrə şikayətlər üçün vahid növbə.",
+      "queue": "Son tarixə görə şikayətlər",
+      "empty": "Şikayət yoxdur.",
+      "against": "Şikayət obyekti: {kind}",
+      "kinds": {
+        "claim": "müraciət üzrə qərar",
+        "credential": "vəsiqə üzrə qərar",
+        "moderation": "moderasiya qərarı",
+        "observation": "müşahidə"
+      },
+      "states": {
+        "open": "Açıq",
+        "information_requested": "Məlumat istənilib"
+      },
+      "ref": "Qərar",
+      "originalDecider": "İlkin qərarı verən",
+      "filed": "Verilib",
+      "deadline": "Son tarix",
+      "soon": "son tarix yaxındır",
+      "decide": "Həll etmək",
+      "decision": "Qərar",
+      "decisions": {
+        "upheld": "Qüvvədə saxlanılıb",
+        "overturned": "Ləğv edilib",
+        "partly_overturned": "Qismən ləğv edilib"
+      },
+      "requestInfo": "Məlumat istəmək"
+    },
+    "screening": {
+      "title": "Sanksiya yoxlaması",
+      "lede": "Sanksiyalara riayət: siyahılar, insanların həll etdiyi uyğunluqlar, ərazi üzrə saxlamalar və təkrar yoxlamalar.",
+      "stale": "Yoxlama əlçatan deyil: əsas siyahılar yenidən təzələnənə qədər ödənişlər və öhdəliklər dayandırılıb.",
+      "rule": "Heç bir idarəetmə elementi tutuşdurmanı yumşaltmır, əsas siyahını dayandırmır və saxlamanı səbəbsiz götürmür.",
+      "lists": "Siyahılar",
+      "version": "Versiya",
+      "entries": "Qeydlər",
+      "freshness": "Təzəlik",
+      "freshnessStates": {
+        "fresh": "Təzə",
+        "warning": "Köhnəlir",
+        "stale": "Köhnəlib"
+      },
+      "geo": "Geolokasiya məlumat dəsti",
+      "dataset": "Məlumat dəsti",
+      "geoModes": {
+        "ranges_file": "Diapazonlar faylı",
+        "fake": "İmitasiya (sintetik)"
+      },
+      "age": "Yaş",
+      "ageDays": "{days, plural, one {# gün} other {# gün}}",
+      "matches": "Uyğunluqlar",
+      "noMatches": "Gözləyən uyğunluq yoxdur.",
+      "matchStates": {
+        "open": "Açıq",
+        "appeal": "Şikayət"
+      },
+      "late": "Xidmət müddəti keçib",
+      "underCase": "Adlar yan-yana, {case} işi daxilində",
+      "screenedName": "Yoxlanılan ad",
+      "listEntry": "Siyahı qeydi",
+      "strength": "Oxşarlıq",
+      "strengths": {
+        "strong": "Güclü",
+        "weak": "Zəif"
+      },
+      "confirm": "Uyğunluğu təsdiqləmək",
+      "notSamePerson": "«Bu başqa şəxsdir» təklif etmək",
+      "decideAppeal": "Şikayəti həll etmək",
+      "appealDecisions": {
+        "uphold": "Uyğunluğu saxlamaq",
+        "reverse": "Uyğunluğu ləğv etmək"
+      },
+      "holds": "Ərazi üzrə saxlamalar",
+      "noHolds": "Açıq saxlama yoxdur.",
+      "place": "Yer",
+      "source": "Mənbə",
+      "sources": {
+        "geolocation": "Geolokasiya",
+        "edge_header": "Kənar qovşağın başlığı",
+        "self_declared": "Özü bildirib",
+        "payout_country": "Ödəniş ölkəsi",
+        "staff_report": "Əməkdaşın məlumatı"
+      },
+      "hold": "Saxlama",
+      "holdEvidence": {
+        "document": "Sənəd",
+        "call": "Zəng",
+        "travel_record": "Səfər qeydi",
+        "other": "Digər"
+      },
+      "clearHold": "Saxlamanı götürmək",
+      "runs": "Təkrar yoxlamalar",
+      "noRuns": "Təkrar yoxlama yoxdur.",
+      "trigger": "Səbəb",
+      "triggers": {
+        "list_version": "Siyahının yeni versiyası",
+        "weekly": "Həftəlik",
+        "manual": "Əl ilə"
+      },
+      "rescreen": "Əl ilə təkrar yoxlamaya başlamaq",
+      "metrics": "Qrup göstəriciləri",
+      "refusals": "Bu həftəki imtinalar",
+      "holdCount": "Saxlamalar",
+      "matchCount": "Uyğunluqlar",
+      "notSameShare": "Başqa şəxs",
+      "publishedOn": "Dərc olunub: {date}"
+    },
+    "confirmations": {
+      "title": "Təsdiqlər",
+      "lede": "Dürüst təsdiq sorğuları: yalnız bağlı əqdlərin və ya layihələrin real kontragentlərindən, məhdud həcmdə.",
+      "policy": "Təsdiq siyasəti",
+      "noPolicy": "Hələ təsdiq siyasəti yoxdur.",
+      "fields": {
+        "requireLink": "Bağlı əqd və ya layihə tələb olunur",
+        "maxOpen": "Bir sorğuçuya açıq sorğular",
+        "perCounterparty": "Bir kontragentə ayda sorğular",
+        "cooldown": "İmtinadan sonra fasilə",
+        "reciprocal": "Qarşılıqlı təsdiqlər işarələnir",
+        "agentsRequest": "Köməkçilər istəyə bilər",
+        "agentsConfirm": "Köməkçilər təsdiqləyə bilər"
+      },
+      "locked": "mühərrik tərəfindən müəyyən edilib",
+      "save": "Yeni versiya kimi saxlamaq",
+      "agentsNever": "Köməkçilər təsdiq istəyə bilər, amma heç vaxt təsdiqləmir; bu, insanların işi olaraq qalır.",
+      "counts": "Sorğular və qəbullar",
+      "countKinds": {
+        "requested": "İstənilib",
+        "accepted": "Qəbul edilib",
+        "declined": "Rədd edilib"
+      },
+      "patterns": "İşarələnmiş qanunauyğunluqlar",
+      "patternsNote": "Qanunauyğunluqlar içindəki insanlara görə yox, formasına görə təsvir olunur; onlara iş açmaqla baxılır.",
+      "noPatterns": "İşarələnmiş qanunauyğunluq yoxdur.",
+      "kind": "Qanunauyğunluq",
+      "kinds": {
+        "reciprocal": "Qarşılıqlı təsdiqlər",
+        "burst": "Sorğu dalğası",
+        "new_accounts": "Yeni hesablar bir-birini təsdiqləyir"
+      },
+      "size": "Hesablar",
+      "accounts": "{count, plural, one {# hesab} other {# hesab}}",
+      "window": "Pəncərə",
+      "detected": "Aşkarlanıb",
+      "pattern": "Qanunauyğunluq"
+    }
+  }
+}

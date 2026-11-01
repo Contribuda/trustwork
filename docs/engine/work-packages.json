@@ -3709,7 +3709,7 @@
       "id": "HUBC-004",
       "title": "Console M4: participants, support and trust screens on fixtures",
       "area": "hubs-web",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "ADM-002"
       ],

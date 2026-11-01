@@ -22,6 +22,7 @@ export const PEOPLE = [
   person('p-data-steward', 'Synthetic Data Steward'),
   person('p-trust', 'Synthetic Trust Reviewer'),
   person('p-support', 'Synthetic Support Lead'),
+  person('p-support-agent', 'Synthetic Support Agent'),
   person('p-commercial', 'Synthetic Commercial Admin'),
   person('p-ops', 'Synthetic Ops Engineer'),
   person('p-privacy', 'Synthetic Privacy Officer'),
@@ -72,13 +73,17 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
   },
   moderator: {
     scopes: ['platform', 'node', 'hub'],
-    permissions: ['admin.moderation.read', 'admin.moderation.case.open', 'admin.moderation.decide', 'admin.moderation.review.confirm', 'admin.publications.hold', 'admin.people.consent.read'],
+    permissions: [
+      'admin.moderation.read', 'admin.moderation.case.open', 'admin.moderation.decide', 'admin.moderation.review.confirm', 'admin.moderation.emergency.hold',
+      'admin.moderation.emergency.freeze', 'admin.publications.hold', 'admin.people.consent.read', 'admin.people.flag',
+    ],
   },
   'trust-reviewer': {
     scopes: ['platform', 'node', 'hub'],
     permissions: [
       'admin.claims.read', 'admin.claims.decide', 'admin.claims.clarify', 'admin.claims.revoke', 'admin.trust.evidence.decide', 'admin.trust.exclude',
-      'admin.trust.appeals.decide', 'admin.credentials.issue', 'admin.credentials.revoke', 'admin.people.consent.read', 'admin.matching.read',
+      'admin.trust.appeals.decide', 'admin.credentials.types.edit', 'admin.credentials.issue', 'admin.credentials.revoke', 'admin.people.consent.read',
+      'admin.people.consent.record', 'admin.people.portrait.licence', 'admin.people.flag', 'admin.matching.read',
     ],
   },
   'support-agent': { scopes: ['platform', 'node', 'hub'], permissions: SUPPORT_AGENT },
@@ -186,6 +191,8 @@ export const STAFF: StaffFixture = StaffFixtureSchema.parse({
     assignment('a-moderator-us', 'p-trust', 'moderator', us, 'p-staff-admin', null),
     assignment('a-support-lead-us', 'p-support', 'support-lead', us, 'p-staff-admin', null),
     assignment('a-support-agent-samarkand', 'p-support', 'support-agent', samarkand, 'p-node-operator', null),
+    // HUBC-004: a support agent on the US hub, so the case-grant journey has a requester and a different approver.
+    assignment('a-support-agent-us', 'p-support-agent', 'support-agent', us, 'p-staff-admin', null),
     assignment('a-commercial-us', 'p-commercial', 'commercial-admin', us, 'p-staff-admin', 'p-hub-owner'),
     assignment('a-ops-node', 'p-ops', 'ops-engineer', node, 'p-node-operator', null),
     assignment('a-privacy-us', 'p-privacy', 'privacy-officer', us, 'p-staff-admin', 'p-hub-owner'),
@@ -209,6 +216,7 @@ export const STAFF_PERSONAS = {
   'data-steward': 'p-data-steward',
   'trust-reviewer': 'p-trust',
   support: 'p-support',
+  'support-agent': 'p-support-agent',
   commercial: 'p-commercial',
   ops: 'p-ops',
   privacy: 'p-privacy',

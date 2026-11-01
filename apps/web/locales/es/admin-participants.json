@@ -1,0 +1,987 @@
+{
+  "adminParticipants": {
+    "common": {
+      "name": "Nombre",
+      "company": "Empresa",
+      "category": "Categoría",
+      "reasonCategory": "Categoría del motivo",
+      "support": "Soporte",
+      "noData": "Todavía no hay datos para este hub.",
+      "cohortNote": "Las cifras menores de diez nunca se muestran, para que nadie pueda ser identificado.",
+      "updated": "Actualizado el {date}",
+      "version": "Versión {version}",
+      "yes": "Sí",
+      "no": "No",
+      "suppressed": "menos de 10"
+    },
+    "errors": {
+      "own_account": "No puede atender su propia cuenta.",
+      "account_erased": "Esta cuenta fue borrada; solo queda el aviso de eliminación.",
+      "evidence_required": "Registre primero la evidencia.",
+      "cooling_off_active": "El periodo de espera de 72 horas aún no ha terminado.",
+      "conflict_of_interest": "Usted declaró un conflicto de interés con esta empresa; decide otro revisor.",
+      "sanctions_match": "Una posible coincidencia en listas de sanciones bloquea la aprobación hasta que se decida el caso de verificación.",
+      "steps_incomplete": "Los pasos obligatorios de la receta aún no se han superado.",
+      "recipe_missing": "Una afirmación verificada necesita una receta de verificación antes de activar el tipo.",
+      "out_of_bounds": "Este valor está fuera del rango permitido.",
+      "original_decider": "Usted tomó la decisión original; otra persona decide la apelación.",
+      "grant_too_long": "Un acceso por caso dura como máximo 72 horas.",
+      "too_many_objects": "Un acceso por caso nombra como máximo 100 objetos de un mismo tipo.",
+      "case_required": "Elija primero un caso abierto sobre esta cuenta.",
+      "case_closed": "Este caso está cerrado.",
+      "baseline_locked": "Esta protección está siempre activa y no se puede cambiar.",
+      "objection_received": "La persona titular se opuso; el cambio se canceló.",
+      "not_verified": "Esta empresa no está verificada.",
+      "no_representative": "Esta empresa no tiene un representante activo.",
+      "already_decided": "Esto ya se decidió.",
+      "type_inactive": "Este tipo de credencial no está activo.",
+      "release_permission": "Solo el rol de propietario del hub publica versiones del método."
+    },
+    "outcomes": {
+      "saved": "Demostración: los cambios no se guardan.",
+      "second_person": "Demostración: esto crearía una solicitud a una segunda persona para «{action}»; no se guarda nada.",
+      "pending_second": "Demostración: una segunda persona completaría esto en Aprobaciones; no se guarda nada.",
+      "grant_requested": "Demostración: la solicitud de acceso iría a otra persona líder de soporte para su aprobación; no se guarda nada.",
+      "cooling_off": "Demostración: esto entraría en vigor el {date}; se avisaría a la persona titular por todos los canales verificados. No se guarda nada.",
+      "notified": "Demostración: se avisaría a la persona afectada; no se guarda nada.",
+      "version": "Demostración: esto se guardaría como una versión nueva; no se guarda nada.",
+      "case_opened": "Demostración: se abriría un caso; no se guarda nada."
+    },
+    "accountStates": {
+      "active": "Activa",
+      "pending_verification": "Pendiente de verificación",
+      "locked": "Bloqueada",
+      "suspended": "Suspendida",
+      "deletion_requested": "Eliminación solicitada",
+      "erased": "Borrada"
+    },
+    "trades": {
+      "electrician": "Electricista",
+      "roofer": "Techador",
+      "general_contractor": "Contratista general",
+      "architect": "Arquitecto",
+      "plumber": "Plomero",
+      "tile_setter": "Azulejero",
+      "client": "Cliente"
+    },
+    "companyStates": {
+      "sourced": "De fuentes",
+      "claimed": "Reclamada",
+      "verified": "Verificada"
+    },
+    "companyKinds": {
+      "contractor": "Contratista",
+      "manufacturer": "Fabricante",
+      "supplier": "Proveedor"
+    },
+    "repStates": {
+      "active": "Representante activo",
+      "suspended": "Representante suspendido",
+      "accountable_missing": "Sin persona responsable designada",
+      "none": "Sin representante"
+    },
+    "identifiers": {
+      "ein": "Número fiscal EIN",
+      "state_licence": "Licencia estatal"
+    },
+    "categories": {
+      "general_contractor": "Contratación general",
+      "remodeling": "Remodelación",
+      "electrical": "Trabajos eléctricos",
+      "roofing": "Techos",
+      "lumber": "Madera",
+      "tile": "Azulejos",
+      "training": "Formación y guías"
+    },
+    "subjects": {
+      "person": "Persona",
+      "company": "Empresa"
+    },
+    "steps": {
+      "register_match": "Coincidencia con el registro estatal",
+      "ein_letter": "Carta de confirmación del número fiscal",
+      "signatory_tie": "Vínculo con el firmante (firma electrónica o devolución de llamada)",
+      "domain": "Comprobación del dominio",
+      "call_back": "Devolución de llamada al teléfono registrado",
+      "screening": "Verificación de sanciones",
+      "ownership": "Declaración de titularidad",
+      "licence_board": "Comprobación en la junta estatal de licencias",
+      "identity_document": "Comprobación del documento de identidad"
+    },
+    "stepResults": {
+      "pass": "Superado",
+      "fail": "No superado",
+      "pending": "Pendiente",
+      "potential_match": "Posible coincidencia"
+    },
+    "evidence": {
+      "register_extract": "Extracto del registro",
+      "irs_letter": "Carta de la agencia tributaria",
+      "esign_record": "Registro de firma electrónica",
+      "licence_record": "Registro de licencia",
+      "ownership_declaration": "Declaración de titularidad",
+      "call_back_record": "Registro de devolución de llamada"
+    },
+    "modes": {
+      "fake": "Simulado (sintético)",
+      "file": "Importación de archivo",
+      "live": "Real"
+    },
+    "legalBases": {
+      "contract": "Contrato",
+      "legal_obligation": "Obligación legal",
+      "legitimate_interest": "Interés legítimo",
+      "consent": "Consentimiento"
+    },
+    "people": {
+      "title": "Personas",
+      "lede": "Las personas de este hub tal como las ve el público, con el número de cuentas por estado. Los perfiles privados nunca aparecen aquí.",
+      "accountStates": "Cuentas por estado",
+      "problems": "Problemas de consentimiento y retrato",
+      "consentWithdrawn": "Consentimiento retirado, pendiente de despublicar",
+      "portraitMissing": "Retrato sin licencia",
+      "profiles": "Perfiles públicos",
+      "publicOnly": "Solo se listan perfiles públicos. El personal nunca edita el perfil de una persona; puede marcarlo para moderación.",
+      "noProfiles": "Todavía no hay perfiles públicos en este hub.",
+      "trade": "Oficio",
+      "place": "Lugar",
+      "employer": "Empleador",
+      "portrait": "Retrato",
+      "portraitStates": {
+        "licensed": "Con licencia",
+        "missing": "Falta la licencia",
+        "none": "Sin retrato"
+      },
+      "consentProblem": "Problema de consentimiento",
+      "openInSupport": "Buscar en soporte",
+      "supportOnly": "Solo personal de soporte",
+      "flag": "Marcar para moderación",
+      "profile": "Perfil público",
+      "flagCategories": {
+        "misleading_claim": "Afirmación engañosa",
+        "impersonation_report": "Denunciado por hacerse pasar por otra persona",
+        "portrait_without_licence": "Retrato sin licencia",
+        "harassment": "Acoso",
+        "spam": "Correo no deseado"
+      },
+      "flagNote": "Marcar abre un caso de moderación; el contenido del perfil queda tal como lo escribió la persona."
+    },
+    "companies": {
+      "title": "Empresas",
+      "lede": "El directorio de empresas tal como lo gestiona el personal: empresas de fuentes, reclamadas y verificadas, identificadores, nuevas comprobaciones y representantes.",
+      "directory": "Directorio",
+      "badgeRule": "Un identificador nunca mejora la condición de una empresa: la verificación solo llega con una reclamación decidida según su receta. Verificada nunca significa buena.",
+      "none": "Todavía no hay empresas en este hub.",
+      "state": "Estado",
+      "verifiedAt": "Verificada el",
+      "categories": "Categorías",
+      "recheckOverdue": "vencida",
+      "representative": "Representante",
+      "openClaims": "Abrir la cola de reclamaciones",
+      "linkProposals": "Propuestas de vínculo",
+      "sourced": "Páginas de fabricantes y proveedores de fuentes",
+      "sourcedNote": "Creadas a partir de fuentes públicas dentro de la base legal del hub; siguen marcadas como de fuentes hasta que la empresa las reclama.",
+      "noSourced": "Todavía no hay páginas de fuentes.",
+      "kind": "Tipo",
+      "source": "Fuente",
+      "takedown": "Retirada",
+      "takedownPending": "Retirada pendiente",
+      "takedownBanner": "Hay una solicitud de retirada pendiente para una página de fuentes:",
+      "revoke": "Revocar la verificación",
+      "revokeNote": "Se avisa a la empresa; la página pública muestra solo la categoría del motivo.",
+      "triggerRecheck": "Iniciar una nueva comprobación del registro",
+      "suspendRep": "Suspender al representante por seguridad",
+      "suspendRepNote": "Se avisa a la empresa; sus administradores pueden reanudar al representante tras corregir la causa.",
+      "verification": "Verificación",
+      "verifiedOn": "Verificada el {date}",
+      "recheckOn": "Nueva comprobación antes del {date}"
+    },
+    "claims": {
+      "title": "Reclamaciones",
+      "lede": "Decida las reclamaciones de empresas paso a paso con la receta del hub y la evidencia.",
+      "queue": "Cola de reclamaciones",
+      "recipeRule": "Aprobar como reclamada tras la coincidencia con el registro y el vínculo con el firmante; como verificada solo cuando se han superado todos los pasos obligatorios.",
+      "empty": "No hay reclamaciones en espera.",
+      "states": {
+        "open": "Abierta",
+        "clarification": "Esperando aclaración",
+        "appeal": "Apelación",
+        "decided": "Decidida"
+      },
+      "target": "Estado solicitado",
+      "recipe": "Receta",
+      "submitted": "Presentada",
+      "steps": "Pasos de la receta",
+      "optional": "opcional",
+      "evidence": "Evidencia",
+      "evidenceItem": "{category}: {count}",
+      "evidenceViewer": "Visor de evidencia con el acceso de revisión de la reclamación",
+      "sanctionsBlock": "Posible coincidencia en listas de sanciones: esta reclamación no se puede aprobar hasta que se decida el caso de verificación.",
+      "openScreeningCase": "Abrir la cola de verificación",
+      "conflicts": "Conflicto de interés declarado:",
+      "appealNote": "Apelación contra un rechazo, plazo {deadline}. Decisión original de:",
+      "routeAppeal": "Asignar la apelación",
+      "reviewer": "Revisor",
+      "decide": "Registrar la decisión",
+      "decision": "Decisión",
+      "decisions": {
+        "claimed": "Aprobar como reclamada",
+        "verified": "Aprobar como verificada",
+        "clarify": "Pedir aclaración",
+        "reject": "Rechazar"
+      },
+      "recordCheck": "Registrar una comprobación manual",
+      "step": "Paso",
+      "result": "Resultado",
+      "evidenceCategory": "Categoría de evidencia"
+    },
+    "verification": {
+      "title": "Verificación",
+      "lede": "Recetas, proveedores de comprobaciones y listas de sanciones que el hub usa para verificar reclamaciones.",
+      "recipes": "Recetas",
+      "noRecipes": "Todavía no hay recetas.",
+      "recipe": "Receta",
+      "newRecipeVersion": "Editar como versión nueva",
+      "screeningAlwaysOn": "La verificación básica de sanciones forma parte de cada receta y no tiene interruptor.",
+      "checks": "Tipos de comprobación y proveedores",
+      "noChecks": "Todavía no hay comprobaciones configuradas.",
+      "check": "Comprobación",
+      "provider": "Proveedor",
+      "mode": "Modo",
+      "quotaUse": "{used} de {quota}",
+      "days": "{days, plural, one {# día} other {# días}}",
+      "costNote": "Un hub puede cobrar el costo de una comprobación, nunca su resultado.",
+      "setMode": "Fijar el modo del proveedor",
+      "liveNote": "Pasar un proveedor a modo real requiere una segunda persona.",
+      "lists": "Listas de sanciones",
+      "noLists": "Todavía no hay listas de sanciones.",
+      "list": "Lista",
+      "kind": "Tipo",
+      "baselineAlwaysOn": "Básica, siempre activa",
+      "additional": "Adicional",
+      "lastUpdate": "Última actualización",
+      "addList": "Añadir una lista del paquete del país",
+      "packList": "Lista del paquete del país",
+      "costAndUse": "Costo y uso este mes",
+      "retentionAndBasis": "Conservación y base legal"
+    },
+    "credentials": {
+      "title": "Credenciales",
+      "lede": "Credenciales verificables que emite el hub: hechos comprobados que sus titulares guardan y presentan en cualquier lugar.",
+      "notAScore": "Una credencial es un hecho comprobado, nunca una puntuación, y nunca se vende.",
+      "types": "Tipos de credencial",
+      "noTypes": "Todavía no hay tipos de credencial.",
+      "typeTitle": "Título",
+      "claim": "Afirmación",
+      "claims": {
+        "identity": "Identidad",
+        "licence": "Licencia",
+        "insurance": "Seguro",
+        "qualification": "Cualificación",
+        "certificate": "Certificado",
+        "membership": "Membresía",
+        "completed_work": "Trabajo realizado",
+        "counterparty_confirmation": "Confirmación de la contraparte",
+        "knowledge_contribution": "Aporte de conocimiento"
+      },
+      "subject": "Titular",
+      "recipe": "Receta de verificación",
+      "noRecipe": "Sin receta",
+      "validity": "Validez",
+      "noExpiry": "Sin vencimiento",
+      "portable": "Válida en otros hubs",
+      "statuses": {
+        "draft": "Borrador",
+        "active": "Activo",
+        "retired": "Retirado"
+      },
+      "saveType": "Guardar el tipo como versión nueva",
+      "type": "Tipo de credencial",
+      "recipeRule": "Estas afirmaciones se comprueban y necesitan una receta antes de activarse: {claims}.",
+      "activation": "Activación",
+      "keepDraft": "Mantener como borrador",
+      "activate": "Activar",
+      "issued": "Credenciales emitidas",
+      "issuedStates": {
+        "valid": "Válidas",
+        "expired": "Vencidas",
+        "suspended": "Suspendidas",
+        "revoked": "Revocadas"
+      },
+      "noneIssued": "Todavía no se han emitido credenciales.",
+      "holderSearch": "Búsqueda por titular dentro de un caso",
+      "statusList": "Lista de estados y clave de firma",
+      "published": "Última publicación",
+      "entries": "Entradas",
+      "signature": "Firma",
+      "signatureValid": "Válida",
+      "signingKey": "Clave de firma en uso",
+      "issue": "Emitir una credencial",
+      "decision": "Decisión con evidencia",
+      "issueRule": "Una credencial solo se emite a partir de una decisión registrada con evidencia.",
+      "evidenceCount": "{count, plural, one {# elemento de evidencia} other {# elementos de evidencia}}",
+      "revokeOrSuspend": "Revocar o suspender",
+      "credentialId": "Identificador de la credencial",
+      "credentialIdHelp": "Del caso; los titulares solo se buscan dentro de un caso.",
+      "revoke": "Revocar",
+      "suspend": "Suspender",
+      "reasons": {
+        "evidence_withdrawn": "Evidencia retirada",
+        "evidence_expired": "Evidencia vencida",
+        "fraud": "Fraude",
+        "source_changed": "La fuente cambió",
+        "holder_request": "A petición del titular",
+        "legal_order": "Orden legal"
+      },
+      "revokeNote": "La revocación es una entrada en la lista de estados del hub; el motivo público es solo la categoría."
+    },
+    "consents": {
+      "title": "Consentimientos",
+      "lede": "Registros de consentimiento y de licencias de retrato, y retiradas pendientes de despublicar.",
+      "records": "Registros por tipo, versión y estado",
+      "none": "Todavía no hay registros de consentimiento.",
+      "kind": "Tipo",
+      "kinds": {
+        "profile_publication": "Publicación del perfil",
+        "portrait_licence": "Licencia de retrato",
+        "marketing_email": "Correo de marketing",
+        "knowledge_sharing": "Compartir conocimiento"
+      },
+      "version": "Versión",
+      "given": "Otorgado",
+      "withdrawn": "Retirado",
+      "withdrawals": "Retiradas pendientes de despublicar",
+      "noWithdrawals": "No hay retiradas en espera.",
+      "requested": "Solicitado",
+      "unpublishBy": "Despublicar antes de",
+      "process": "Procesar la retirada",
+      "withdrawal": "Retirada",
+      "processNote": "El contenido se despublica y se avisa a la persona cuando está hecho.",
+      "record": "Registrar un consentimiento",
+      "subject": "Identificador de la persona",
+      "subjectHelp": "El identificador del caso de soporte o de la reclamación.",
+      "evidence": "Evidencia",
+      "evidenceKinds": {
+        "signed_form": "Formulario firmado",
+        "in_product_record": "Registro en el producto",
+        "email_confirmation": "Confirmación por correo",
+        "recorded_call": "Llamada grabada"
+      },
+      "portrait": "Registrar una licencia de retrato",
+      "scope": "Alcance de la licencia",
+      "scopes": {
+        "profile_only": "Solo el perfil",
+        "profile_and_articles": "Perfil y artículos",
+        "magazine": "Revista"
+      }
+    }
+  },
+  "adminSupport": {
+    "channels": {
+      "email": "Correo",
+      "sms": "Mensaje de texto",
+      "in_app": "En el producto"
+    },
+    "actions": {
+      "resend_verification": "Reenviar la verificación",
+      "unlock_after_lockout": "Desbloquear tras un bloqueo",
+      "revoke_all_sessions": "Cerrar todas las sesiones",
+      "require_password_reset": "Exigir cambio de contraseña en el próximo inicio de sesión",
+      "rebind_recovery_email": "Cambiar el correo de recuperación",
+      "reset_second_factor": "Restablecer el segundo factor",
+      "start_data_export": "Iniciar una exportación de datos",
+      "open_deletion_request": "Abrir una solicitud de eliminación",
+      "send_guided_task": "Enviar una tarea guiada"
+    },
+    "lookup": {
+      "title": "Búsqueda de soporte",
+      "lede": "Encuentre a la persona o empresa a la que ayuda. Cada búsqueda sirve a un caso y queda en el registro de accesos.",
+      "search": "Buscar",
+      "by": "Buscar por",
+      "kinds": {
+        "email": "Correo exacto",
+        "name": "Nombre",
+        "company": "Nombre de la empresa",
+        "identifier": "Identificador legal",
+        "id": "Identificador"
+      },
+      "query": "Buscar",
+      "forCase": "Para el caso",
+      "chooseCase": "Elija un caso",
+      "find": "Buscar",
+      "logged": "Los correos se comparan de forma exacta y nunca se muestran completos.",
+      "results": "Resultados",
+      "needsCase": "Elija el caso al que sirve esta búsqueda; sin caso no se busca nada.",
+      "loggedFor": "Registrado en el registro de accesos del caso {case}.",
+      "nothing": "No se encontró nada.",
+      "open": "Abrir",
+      "openAccount": "Abrir la ficha de la cuenta",
+      "openCompany": "Abrir la ficha de la empresa"
+    },
+    "account": {
+      "title": "Ficha de la cuenta",
+      "lede": "Diagnostique y atienda una cuenta sin convertirse en la persona: una lista cerrada de hechos, sin contenido privado.",
+      "noImpersonation": "No hay forma de iniciar sesión como participante ni de actuar con su autoridad, y el personal nunca gestiona el propio asistente de un participante, sus mandatos, ajustes, objetivos ni conexiones. Use las alternativas de abajo.",
+      "ownAccount": "No puede atender su propia cuenta.",
+      "erased": "Esta cuenta fue borrada. Solo queda este aviso.",
+      "email": "Correo",
+      "verified": "verificado",
+      "unverified": "sin verificar",
+      "state": "Estado",
+      "secondFactor": "Segundo factor",
+      "factorMethods": "{count, plural, one {# método activado} other {# métodos activados}}",
+      "noFactor": "Sin activar",
+      "sessions": "Sesiones activas",
+      "recovery": "Recuperación",
+      "recoveryStates": {
+        "none": "Ninguna",
+        "requested": "Solicitada",
+        "held_for_review": "Retenida para revisión",
+        "cooling_off": "Periodo de espera"
+      },
+      "employer": "Empleador",
+      "openCases": "Casos abiertos",
+      "allowlist": "Se muestran solo estos hechos. Nunca cuerpos de mensajes, proyectos privados, presupuestos, tokens de sesión, direcciones ni un historial de ubicaciones.",
+      "entitlements": "Derechos y uso",
+      "noEntitlements": "Sin derechos.",
+      "offer": "Oferta",
+      "validUntil": "Válido hasta",
+      "noEnd": "Sin fecha de fin",
+      "noUsage": "Sin uso medido en este periodo.",
+      "meter": "Medidor",
+      "meters": {
+        "agent_runs": "Ejecuciones del asistente",
+        "plan_drafts": "Borradores de planes"
+      },
+      "usage": "Uso",
+      "usageOf": "{used} de {included} incluidos",
+      "period": "Periodo",
+      "consents": "Consentimientos",
+      "noConsents": "No hay consentimientos registrados.",
+      "consentStates": {
+        "given": "Otorgado",
+        "withdrawn": "Retirado"
+      },
+      "date": "Fecha",
+      "memberships": "Historial de membresías",
+      "noMemberships": "Sin membresías.",
+      "role": "Rol",
+      "now": "ahora",
+      "communications": "Historial de comunicaciones",
+      "metadataOnly": "Solo datos de entrega: la plantilla y su versión, nunca el cuerpo del mensaje ni valores privados.",
+      "noCommunications": "No se enviaron mensajes.",
+      "template": "Plantilla",
+      "templates": {
+        "verification_email": "Correo de verificación",
+        "project_invitation": "Invitación a un proyecto",
+        "lockout_notice": "Aviso de bloqueo",
+        "recovery_change_notice": "Aviso de cambio de recuperación"
+      },
+      "channel": "Canal",
+      "delivery": "Entrega",
+      "deliveryStates": {
+        "delivered": "Entregado",
+        "bounced": "Rebotado",
+        "queued": "En cola"
+      },
+      "inProgress": "Gestiones en curso",
+      "openRecovery": "Abrir las escalaciones de recuperación",
+      "service": "Acciones de atención",
+      "serviceSubmit": "Solicitar la acción",
+      "action": "Acción",
+      "case": "Caso",
+      "needsCase": "Abra primero un caso sobre esta cuenta.",
+      "guidedTask": "Tarea guiada (si envía una)",
+      "guidedTaskHelp": "La persona realiza los pasos en su propia sesión.",
+      "tasks": {
+        "reinvite_colleague": "Vuelva a invitar a su colega",
+        "verify_email_again": "Verifique de nuevo su correo",
+        "share_diagnostics": "Comparta el diagnóstico con soporte",
+        "enrol_second_factor": "Active un segundo factor"
+      },
+      "evidenceRecorded": "Se comprobó y registró la evidencia de identidad (necesaria para cambiar el correo de recuperación o restablecer el segundo factor)",
+      "coolingOffRule": "Cambiar el correo de recuperación o el segundo factor requiere evidencia, otra persona que apruebe y un periodo de espera de 72 horas; se avisa a la persona por todos los canales verificados y puede oponerse.",
+      "alternatives": "En lugar de actuar como la persona",
+      "viewPublic": "Ver la proyección pública",
+      "noPublic": "Esta persona no tiene un perfil público.",
+      "openExplainer": "Abrir el explicador de accesos",
+      "ownAgent": "Cualquier cosa que la persona quiera que se haga por ella: su propio asistente, con su propio mandato, si así lo decide.",
+      "publicProjection": "Lo que ve un visitante anónimo"
+    },
+    "company": {
+      "title": "Ficha de la empresa",
+      "lede": "Ayude a una empresa: su página pública, el estado de reclamación y verificación, los miembros públicos y el representante.",
+      "publicOnly": "Nunca se muestran: proyectos privados, solicitudes de cotización, cotizaciones, presupuestos ni mensajes.",
+      "members": "Miembros que eligieron aparecer",
+      "noMembers": "Ningún miembro eligió aparecer.",
+      "actions": "Ayudar a esta empresa",
+      "requestGrant": "Solicitar un acceso por caso a objetos concretos"
+    },
+    "cases": {
+      "title": "Casos de soporte",
+      "lede": "Casos y sus accesos. La conversación permanece dentro del caso; no hay una bandeja de entrada general.",
+      "list": "Casos",
+      "empty": "No hay casos de soporte.",
+      "case": "Caso",
+      "subject": "Sujeto",
+      "reason": "Motivo",
+      "reasons": {
+        "access": "Acceso",
+        "sign_in": "Inicio de sesión",
+        "data_request": "Solicitud de datos",
+        "billing_question": "Pregunta de facturación",
+        "bug": "Algo no funciona"
+      },
+      "states": {
+        "open": "Abierto",
+        "waiting_on_person": "Esperando a la persona",
+        "closed": "Cerrado"
+      },
+      "opened": "Abierto el",
+      "detailTitle": "Caso {id}",
+      "detailLede": "La conversación con la persona, el diagnóstico que compartió, los accesos y cada lectura hecha con ellos.",
+      "back": "Todos los casos",
+      "assignee": "Responsable",
+      "thread": "Conversación con la persona",
+      "threadNote": "Los mensajes permanecen dentro de este caso.",
+      "fromPerson": "La persona",
+      "reply": "Responder",
+      "message": "Mensaje",
+      "snapshots": "Diagnóstico que compartió la persona",
+      "snapshotNote": "Compartido por la persona desde su propia sesión, solo con los objetos que eligió.",
+      "noSnapshots": "No se compartió diagnóstico.",
+      "page": "Página",
+      "versions": "Versiones",
+      "errors": "Códigos de error y solicitudes",
+      "selected": "Objetos que eligió la persona",
+      "accessLog": "Registro de accesos de este caso",
+      "noReads": "Todavía no hay lecturas con un acceso.",
+      "readAt": "Leído el",
+      "reader": "Leído por",
+      "assign": "Asignar",
+      "close": "Cerrar el caso",
+      "create": "Crear un caso",
+      "subjectKind": "Sujeto",
+      "subjectId": "Identificador del sujeto",
+      "subjectIdHelp": "El identificador de la persona o empresa obtenido en la búsqueda."
+    },
+    "grants": {
+      "title": "Accesos por caso",
+      "rule": "Un acceso nombra hasta 100 objetos de un mismo tipo, una clase de proyección y un propósito, dura como máximo {hours} horas y lo aprueba otra persona. Cada lectura queda registrada.",
+      "request": "Solicitud de acceso {id}",
+      "awaiting": "Esperando a otra persona que apruebe",
+      "requestedBy": "Solicitado por",
+      "objects": "Objetos",
+      "projection": "Clase de proyección",
+      "projections": {
+        "diagnostic": "Diagnóstico",
+        "support_private_limited": "Privada, limitada",
+        "evidence": "Evidencia"
+      },
+      "purpose": "Propósito",
+      "duration": "Duración en horas",
+      "hours": "{hours, plural, one {# hora} other {# horas}}",
+      "digest": "Huella de la solicitud",
+      "excluded": "Siempre excluidos: condiciones privadas de negociación, credenciales y referencias de pago.",
+      "decide": "Registrar la decisión",
+      "bindsDigest": "Su decisión queda ligada a esta solicitud exacta; una solicitud modificada necesita una nueva.",
+      "none": "No hay accesos en este caso.",
+      "approvedBy": "Aprobado por",
+      "expires": "Vence",
+      "active": "Activo",
+      "expired": "Vencido",
+      "revoked": "Revocado",
+      "notFoundAgain": "Los objetos vuelven a no encontrarse.",
+      "revoke": "Revocar el acceso",
+      "grant": "Acceso",
+      "requestTitle": "Solicitar un acceso por caso",
+      "requestSubmit": "Pedir a otra persona que apruebe",
+      "objectType": "Tipo de objeto",
+      "objectTypes": {
+        "rfq": "Solicitud de cotización",
+        "project": "Proyecto",
+        "quote_invitation": "Invitación a cotizar",
+        "company_membership": "Membresía en la empresa",
+        "notification": "Notificación",
+        "account_recovery": "Solicitud de recuperación de cuenta"
+      },
+      "ids": "Identificadores de objetos",
+      "idsHelp": "Hasta 100 identificadores de un mismo tipo, separados por comas o espacios.",
+      "durationHelp": "Como máximo {hours} horas."
+    },
+    "recovery": {
+      "title": "Escalaciones de recuperación",
+      "lede": "Cambios de factores de inicio de sesión en curso: cambios del correo de recuperación y restablecimientos del segundo factor.",
+      "rule": "Cada cambio requiere evidencia y otra persona que apruebe, y luego espera {hours} horas mientras se avisa por todos los canales verificados. Una oposición de la persona titular lo cancela.",
+      "requests": "Solicitudes",
+      "empty": "No hay solicitudes de recuperación.",
+      "states": {
+        "awaiting_approval": "Esperando a otra persona que apruebe",
+        "cooling_off": "Periodo de espera",
+        "ready": "Listo para completar",
+        "cancelled": "Cancelado"
+      },
+      "evidence": "Evidencia",
+      "evidenceStates": {
+        "recorded": "Registrada",
+        "missing": "Falta"
+      },
+      "approver": "Quien aprueba",
+      "coolingOff": "Entra en vigor",
+      "afterApproval": "{hours} horas después de la aprobación",
+      "coolingOffEnds": "El periodo de espera termina el {date}",
+      "notified": "Avisado por",
+      "objection": "La persona titular se opuso: el cambio se canceló automáticamente y quedó marcado.",
+      "approve": "Aprobar",
+      "approveNote": "La aprobación inicia el periodo de espera de {hours} horas; se avisa a la persona titular por todos los canales verificados.",
+      "complete": "Completar el cambio",
+      "cancel": "Cancelar"
+    },
+    "explain": {
+      "title": "Explicador de accesos",
+      "lede": "Responda «¿por qué no puede ver o hacer esto?» con la decisión de la política, nunca con el contenido del objeto.",
+      "ask": "Quién y qué",
+      "principal": "Persona",
+      "object": "Objeto",
+      "choose": "Elegir",
+      "explain": "Explicar",
+      "objectKinds": {
+        "project": "Proyecto",
+        "rfq": "Solicitud de cotización",
+        "company_page": "Página de empresa"
+      },
+      "decision": "Decisión",
+      "effect": "Resultado",
+      "effects": {
+        "allow": "Permitido",
+        "deny": "No permitido"
+      },
+      "rule": "Regla",
+      "reasons": {
+        "no_participation": "No participa en ello.",
+        "capability_missing": "Su rol no incluye esta acción.",
+        "membership_permission_missing": "Su rol en la empresa no incluye este permiso.",
+        "participation_expired": "Su participación venció.",
+        "participation_revoked": "Su participación fue revocada.",
+        "membership_ended": "Su membresía en la empresa terminó.",
+        "mandate_revoked": "El mandato fue revocado.",
+        "mandate_scope": "El mandato no cubre esto.",
+        "email_unverified": "Su correo aún no está verificado.",
+        "step_up_required": "Primero debe confirmar que es quien dice ser.",
+        "lifecycle": "El objeto no está en un estado que lo permita.",
+        "staff_no_case": "El personal necesita un acceso por caso.",
+        "public_projection": "Todos ven la versión pública publicada.",
+        "participation": "Participa en ello."
+      },
+      "noContent": "El contenido del objeto nunca se muestra aquí.",
+      "noDecision": "No hay una decisión registrada para este par.",
+      "copy": "Añadir la explicación a la respuesta del caso"
+    }
+  },
+  "adminTrust": {
+    "common": {
+      "id": "Identificador",
+      "state": "Estado",
+      "received": "Recibido",
+      "items": "{count, plural, one {# elemento} other {# elementos}}",
+      "progress": "Progreso",
+      "progressOf": "{done} de {total}",
+      "started": "Iniciado",
+      "runStates": {
+        "done": "Terminado",
+        "running": "En ejecución",
+        "queued": "En cola"
+      }
+    },
+    "clauses": {
+      "harassment": "Acoso",
+      "false_claims": "Afirmaciones falsas",
+      "privacy": "Privacidad",
+      "spam": "Correo no deseado"
+    },
+    "moderation": {
+      "title": "Moderación",
+      "lede": "Denuncias y casos decididos según las normas de la comunidad del hub, vinculadas a la ley local.",
+      "reports": "Denuncias",
+      "noReports": "No hay denuncias.",
+      "target": "Objetivo",
+      "targets": {
+        "profile": "Perfil",
+        "publication": "Publicación",
+        "review": "Reseña",
+        "company_page": "Página de empresa"
+      },
+      "clause": "Cláusula",
+      "source": "Origen",
+      "sources": {
+        "participant": "Participante",
+        "anonymous": "Anónimo",
+        "automated": "Comprobación automática"
+      },
+      "reportStates": {
+        "new": "Nueva",
+        "in_case": "En un caso"
+      },
+      "openCase": "Abrir un caso",
+      "report": "Denuncia",
+      "cases": "Casos",
+      "noCases": "No hay casos de moderación.",
+      "evidence": "Evidencia",
+      "decision": "Decisión",
+      "decisions": {
+        "pending": "Pendiente",
+        "no_action": "Sin medidas",
+        "sanction": "Sanción"
+      },
+      "level": "Nivel {level}",
+      "appeal": "Apelación",
+      "appealStates": {
+        "none": "Ninguna",
+        "filed": "Presentada",
+        "decided": "Decidida"
+      },
+      "decide": "Decidir un caso",
+      "case": "Caso",
+      "sanctionLevel": "Nivel de sanción",
+      "levelRule": "Los niveles 1 a 3 se aplican de inmediato; el nivel 4 requiere una segunda persona.",
+      "levels": {
+        "1": "Advertencia",
+        "2": "Contenido retenido",
+        "3": "Restricción temporal",
+        "4": "Suspensión de la cuenta"
+      },
+      "nothingToDecide": "Ningún caso espera una decisión.",
+      "emergency": "Retención o congelación de emergencia",
+      "emergencyKind": "Tipo",
+      "emergencyKinds": {
+        "hold": "Retener el contenido",
+        "freeze": "Congelar la cuenta"
+      },
+      "emergencySubmit": "Aplicar ahora",
+      "clauseLibrary": "Biblioteca de cláusulas",
+      "law": "Norma y ley",
+      "ladder": "Escala de sanciones",
+      "secondPerson": "requiere una segunda persona"
+    },
+    "disputes": {
+      "title": "Disputas",
+      "lede": "Disputas de ejecución y de reseñas decididas con evidencia bajo el acceso de la disputa.",
+      "rule": "La falta de datos cuenta como desconocida, nunca como un fallo, y el pago nunca influye.",
+      "queue": "Disputas",
+      "empty": "No hay disputas.",
+      "assertions": {
+        "delivery_late": "La entrega llegó tarde",
+        "work_incomplete": "El trabajo no se terminó",
+        "payment_late": "El pago llegó tarde"
+      },
+      "states": {
+        "open": "Abierta",
+        "excluded_pending": "Observación excluida hasta resolverse",
+        "decided": "Decidida"
+      },
+      "observation": "Observación",
+      "partyA": "Primera parte",
+      "partyB": "Segunda parte",
+      "evidence": "Evidencia",
+      "evidenceGrant": "Visor de evidencia con el acceso de la disputa",
+      "statements": "Declaraciones",
+      "record": "Registrar una conclusión",
+      "stance": "Conclusión",
+      "stances": {
+        "confirm": "Confirmar la observación",
+        "dispute": "Impugnar la observación"
+      },
+      "exclude": "Excluir mientras se disputa",
+      "excludeNote": "La observación deja de contar hasta que se resuelva la disputa.",
+      "decide": "Decidir",
+      "decision": "Decisión",
+      "decisions": {
+        "observation_stands": "La observación se mantiene",
+        "observation_corrected": "La observación se corrige",
+        "observation_removed": "La observación se elimina"
+      }
+    },
+    "reputation": {
+      "title": "Métodos de reputación",
+      "lede": "Versiones de método explicables: redactadas, revisadas, publicadas por el propietario del hub y explicadas en cada idioma del hub.",
+      "noScore": "Ningún control de aquí modifica una puntuación. La reputación solo cambia mediante versiones publicadas del método cuyos parámetros locales se mantienen dentro de los límites del motor.",
+      "versions": "Versiones del método",
+      "noVersions": "Todavía no hay versiones del método.",
+      "version": "Versión",
+      "states": {
+        "draft": "Borrador",
+        "in_review": "En revisión",
+        "released": "Publicada",
+        "superseded": "Sustituida"
+      },
+      "parameters": {
+        "windowMonths": "Ventana en meses",
+        "minimumSamples": "Muestras mínimas",
+        "confirmationDays": "Periodo de confirmación en días"
+      },
+      "explanations": "Explicaciones",
+      "released": "Publicada",
+      "missingExplanations": "Falta la explicación en: {languages}",
+      "bounds": "Límites del motor",
+      "range": "Permitido: de {min} a {max}",
+      "draft": "Redactar una versión nueva",
+      "reviewAndRelease": "Revisión y publicación",
+      "review": "Marcar como revisada",
+      "release": "Publicar",
+      "releaseRule": "Solo el rol de propietario del hub publica una versión.",
+      "nothingToRelease": "Ninguna versión espera publicación.",
+      "publishExplanation": "Publicar una explicación",
+      "language": "Idioma",
+      "jobs": "Trabajos de recálculo",
+      "noJobs": "No hay trabajos de recálculo.",
+      "localParameters": "Parámetros locales"
+    },
+    "appeals": {
+      "title": "Apelaciones",
+      "lede": "Una sola cola de apelaciones contra reclamaciones, credenciales, decisiones de moderación y observaciones.",
+      "queue": "Apelaciones por plazo",
+      "empty": "No hay apelaciones.",
+      "against": "Apelación contra: {kind}",
+      "kinds": {
+        "claim": "decisión sobre una reclamación",
+        "credential": "decisión sobre una credencial",
+        "moderation": "decisión de moderación",
+        "observation": "observación"
+      },
+      "states": {
+        "open": "Abierta",
+        "information_requested": "Información solicitada"
+      },
+      "ref": "Decisión",
+      "originalDecider": "Decisión original de",
+      "filed": "Presentada",
+      "deadline": "Plazo",
+      "soon": "vence pronto",
+      "decide": "Decidir",
+      "decision": "Decisión",
+      "decisions": {
+        "upheld": "Confirmada",
+        "overturned": "Revocada",
+        "partly_overturned": "Revocada en parte"
+      },
+      "requestInfo": "Solicitar información"
+    },
+    "screening": {
+      "title": "Verificación de sanciones",
+      "lede": "Cumplimiento de sanciones: listas, coincidencias decididas por personas, retenciones por jurisdicción y nuevas verificaciones.",
+      "stale": "Verificación no disponible: los pagos y compromisos quedan en pausa hasta que las listas básicas vuelvan a estar al día.",
+      "rule": "Ningún control relaja la comparación, pausa una lista básica ni levanta una retención sin un motivo.",
+      "lists": "Listas",
+      "version": "Versión",
+      "entries": "Entradas",
+      "freshness": "Actualidad",
+      "freshnessStates": {
+        "fresh": "Al día",
+        "warning": "Envejeciendo",
+        "stale": "Desactualizada"
+      },
+      "geo": "Conjunto de datos de geolocalización",
+      "dataset": "Conjunto de datos",
+      "geoModes": {
+        "ranges_file": "Archivo de rangos",
+        "fake": "Simulado (sintético)"
+      },
+      "age": "Antigüedad",
+      "ageDays": "{days, plural, one {# día} other {# días}}",
+      "matches": "Coincidencias",
+      "noMatches": "No hay coincidencias en espera.",
+      "matchStates": {
+        "open": "Abierta",
+        "appeal": "Apelación"
+      },
+      "late": "Fuera del nivel de servicio",
+      "underCase": "Nombres lado a lado, dentro del caso {case}",
+      "screenedName": "Nombre verificado",
+      "listEntry": "Entrada de la lista",
+      "strength": "Similitud",
+      "strengths": {
+        "strong": "Fuerte",
+        "weak": "Débil"
+      },
+      "confirm": "Confirmar la coincidencia",
+      "notSamePerson": "Proponer «no es la misma persona»",
+      "decideAppeal": "Decidir la apelación",
+      "appealDecisions": {
+        "uphold": "Mantener la coincidencia",
+        "reverse": "Revertir la coincidencia"
+      },
+      "holds": "Retenciones por jurisdicción",
+      "noHolds": "No hay retenciones abiertas.",
+      "place": "Lugar",
+      "source": "Origen",
+      "sources": {
+        "geolocation": "Geolocalización",
+        "edge_header": "Encabezado del borde",
+        "self_declared": "Declarado por la persona",
+        "payout_country": "País de cobro",
+        "staff_report": "Informe del personal"
+      },
+      "hold": "Retención",
+      "holdEvidence": {
+        "document": "Documento",
+        "call": "Llamada",
+        "travel_record": "Registro de viaje",
+        "other": "Otro"
+      },
+      "clearHold": "Levantar la retención",
+      "runs": "Nuevas verificaciones",
+      "noRuns": "No hay nuevas verificaciones.",
+      "trigger": "Motivo",
+      "triggers": {
+        "list_version": "Nueva versión de la lista",
+        "weekly": "Semanal",
+        "manual": "Manual"
+      },
+      "rescreen": "Iniciar una verificación manual",
+      "metrics": "Métricas por grupo",
+      "refusals": "Rechazos esta semana",
+      "holdCount": "Retenciones",
+      "matchCount": "Coincidencias",
+      "notSameShare": "No es la misma persona",
+      "publishedOn": "Publicada el {date}"
+    },
+    "confirmations": {
+      "title": "Confirmaciones",
+      "lede": "Solicitudes de confirmación honestas: solo contrapartes reales de transacciones o proyectos vinculados, en volumen limitado.",
+      "policy": "Política de confirmaciones",
+      "noPolicy": "Todavía no hay una política de confirmaciones.",
+      "fields": {
+        "requireLink": "Requiere una transacción o un proyecto vinculado",
+        "maxOpen": "Solicitudes abiertas por solicitante",
+        "perCounterparty": "Solicitudes por contraparte al mes",
+        "cooldown": "Pausa tras un rechazo",
+        "reciprocal": "Se marcan las confirmaciones recíprocas",
+        "agentsRequest": "Los asistentes pueden solicitar",
+        "agentsConfirm": "Los asistentes pueden confirmar"
+      },
+      "locked": "fijado por el motor",
+      "save": "Guardar como versión nueva",
+      "agentsNever": "Los asistentes pueden solicitar confirmaciones, pero nunca confirmar; eso queda en manos de las personas.",
+      "counts": "Solicitudes y aceptaciones",
+      "countKinds": {
+        "requested": "Solicitadas",
+        "accepted": "Aceptadas",
+        "declined": "Rechazadas"
+      },
+      "patterns": "Patrones marcados",
+      "patternsNote": "Los patrones se describen por su forma, no por las personas que los forman; se revisan abriendo un caso.",
+      "noPatterns": "No hay patrones marcados.",
+      "kind": "Patrón",
+      "kinds": {
+        "reciprocal": "Confirmaciones recíprocas",
+        "burst": "Ráfaga de solicitudes",
+        "new_accounts": "Cuentas nuevas que se confirman entre sí"
+      },
+      "size": "Cuentas",
+      "accounts": "{count, plural, one {# cuenta} other {# cuentas}}",
+      "window": "Ventana",
+      "detected": "Detectado",
+      "pattern": "Patrón"
+    }
+  }
+}

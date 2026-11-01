@@ -1,0 +1,987 @@
+{
+  "adminParticipants": {
+    "common": {
+      "name": "Name",
+      "company": "Company",
+      "category": "Category",
+      "reasonCategory": "Reason category",
+      "support": "Support",
+      "noData": "No data for this hub yet.",
+      "cohortNote": "Counts below ten are never shown, so no one can be singled out.",
+      "updated": "Updated {date}",
+      "version": "Version {version}",
+      "yes": "Yes",
+      "no": "No",
+      "suppressed": "fewer than 10"
+    },
+    "errors": {
+      "own_account": "You cannot service your own account.",
+      "account_erased": "This account was erased; only the tombstone notice remains.",
+      "evidence_required": "Record the evidence first.",
+      "cooling_off_active": "The 72-hour cooling-off period has not ended yet.",
+      "conflict_of_interest": "You declared a conflict of interest with this company; another reviewer decides.",
+      "sanctions_match": "A potential sanctions match blocks approval until the screening case is decided.",
+      "steps_incomplete": "Required recipe steps have not passed yet.",
+      "recipe_missing": "A checked claim needs a verification recipe before the type can be activated.",
+      "out_of_bounds": "This value is outside the allowed range.",
+      "original_decider": "You made the original decision; a different person decides the appeal.",
+      "grant_too_long": "A case grant lasts at most 72 hours.",
+      "too_many_objects": "A case grant names at most 100 objects of one type.",
+      "case_required": "Choose an open case about this account first.",
+      "case_closed": "This case is closed.",
+      "baseline_locked": "This safeguard is always on and cannot be changed.",
+      "objection_received": "The account owner objected; the change was cancelled.",
+      "not_verified": "This company is not verified.",
+      "no_representative": "This company has no active representative.",
+      "already_decided": "This was already decided.",
+      "type_inactive": "This credential type is not active.",
+      "release_permission": "Only the hub owner role releases method versions."
+    },
+    "outcomes": {
+      "saved": "Demo: changes are not saved.",
+      "second_person": "Demo: this would create a second-person request to “{action}”; nothing is saved.",
+      "pending_second": "Demo: a second person would complete this in Approvals; nothing is saved.",
+      "grant_requested": "Demo: the grant request would go to a different support lead for approval; nothing is saved.",
+      "cooling_off": "Demo: this would take effect on {date}; the account owner would be told on every verified channel. Nothing is saved.",
+      "notified": "Demo: the person concerned would be notified; nothing is saved.",
+      "version": "Demo: this would be saved as a new version; nothing is saved.",
+      "case_opened": "Demo: a case would be opened; nothing is saved."
+    },
+    "accountStates": {
+      "active": "Active",
+      "pending_verification": "Pending verification",
+      "locked": "Locked",
+      "suspended": "Suspended",
+      "deletion_requested": "Deletion requested",
+      "erased": "Erased"
+    },
+    "trades": {
+      "electrician": "Electrician",
+      "roofer": "Roofer",
+      "general_contractor": "General contractor",
+      "architect": "Architect",
+      "plumber": "Plumber",
+      "tile_setter": "Tile setter",
+      "client": "Client"
+    },
+    "companyStates": {
+      "sourced": "Sourced",
+      "claimed": "Claimed",
+      "verified": "Verified"
+    },
+    "companyKinds": {
+      "contractor": "Contractor",
+      "manufacturer": "Manufacturer",
+      "supplier": "Supplier"
+    },
+    "repStates": {
+      "active": "Representative active",
+      "suspended": "Representative suspended",
+      "accountable_missing": "No accountable person named",
+      "none": "No representative"
+    },
+    "identifiers": {
+      "ein": "EIN",
+      "state_licence": "State licence"
+    },
+    "categories": {
+      "general_contractor": "General contracting",
+      "remodeling": "Remodeling",
+      "electrical": "Electrical work",
+      "roofing": "Roofing",
+      "lumber": "Lumber",
+      "tile": "Tile",
+      "training": "Training and guides"
+    },
+    "subjects": {
+      "person": "Person",
+      "company": "Company"
+    },
+    "steps": {
+      "register_match": "Secretary of State register match",
+      "ein_letter": "EIN confirmation letter",
+      "signatory_tie": "Signatory tie (e-signature or call-back)",
+      "domain": "Domain check",
+      "call_back": "Call-back to the registered phone",
+      "screening": "Sanctions screening",
+      "ownership": "Ownership declaration",
+      "licence_board": "State licence board check",
+      "identity_document": "Identity document check"
+    },
+    "stepResults": {
+      "pass": "Passed",
+      "fail": "Failed",
+      "pending": "Pending",
+      "potential_match": "Potential match"
+    },
+    "evidence": {
+      "register_extract": "Register extract",
+      "irs_letter": "IRS letter",
+      "esign_record": "E-signature record",
+      "licence_record": "Licence record",
+      "ownership_declaration": "Ownership declaration",
+      "call_back_record": "Call-back record"
+    },
+    "modes": {
+      "fake": "Fake (synthetic)",
+      "file": "File import",
+      "live": "Live"
+    },
+    "legalBases": {
+      "contract": "Contract",
+      "legal_obligation": "Legal obligation",
+      "legitimate_interest": "Legitimate interest",
+      "consent": "Consent"
+    },
+    "people": {
+      "title": "People",
+      "lede": "People in this hub as the public sees them, with account-state counts. Private profiles never appear here.",
+      "accountStates": "Accounts by state",
+      "problems": "Consent and portrait problems",
+      "consentWithdrawn": "Consent withdrawn, waiting for unpublication",
+      "portraitMissing": "Portrait without a licence",
+      "profiles": "Public profiles",
+      "publicOnly": "Only public profiles are listed. Staff never edit a person's profile; they can flag it for moderation.",
+      "noProfiles": "No public profiles in this hub yet.",
+      "trade": "Trade",
+      "place": "Place",
+      "employer": "Employer",
+      "portrait": "Portrait",
+      "portraitStates": {
+        "licensed": "Licensed",
+        "missing": "Licence missing",
+        "none": "No portrait"
+      },
+      "consentProblem": "Consent problem",
+      "openInSupport": "Find in support",
+      "supportOnly": "Support staff only",
+      "flag": "Flag for moderation",
+      "profile": "Public profile",
+      "flagCategories": {
+        "misleading_claim": "Misleading claim",
+        "impersonation_report": "Reported as pretending to be someone else",
+        "portrait_without_licence": "Portrait without a licence",
+        "harassment": "Harassment",
+        "spam": "Spam"
+      },
+      "flagNote": "Flagging opens a moderation case; the profile content stays as the person wrote it."
+    },
+    "companies": {
+      "title": "Companies",
+      "lede": "The company directory as staff manage it: sourced, claimed and verified companies, identifiers, re-checks and representatives.",
+      "directory": "Directory",
+      "badgeRule": "An identifier never upgrades a company: verification comes only from a claim decided with its recipe. Verified never means good.",
+      "none": "No companies in this hub yet.",
+      "state": "State",
+      "verifiedAt": "Verified on",
+      "categories": "Categories",
+      "recheckOverdue": "overdue",
+      "representative": "Representative",
+      "openClaims": "Open the claims queue",
+      "linkProposals": "Link proposals",
+      "sourced": "Sourced manufacturer and supplier pages",
+      "sourcedNote": "Built from public sources within the hub's legal basis; they stay labelled sourced until the company claims them.",
+      "noSourced": "No sourced pages yet.",
+      "kind": "Kind",
+      "source": "Source",
+      "takedown": "Takedown",
+      "takedownPending": "Takedown pending",
+      "takedownBanner": "A takedown request is pending for a sourced page:",
+      "revoke": "Revoke verification",
+      "revokeNote": "The company is notified; the public page shows the reason category only.",
+      "triggerRecheck": "Trigger a register re-check",
+      "suspendRep": "Suspend the representative for safety",
+      "suspendRepNote": "The company is notified; its administrators can resume the representative after fixing the cause.",
+      "verification": "Verification",
+      "verifiedOn": "Verified on {date}",
+      "recheckOn": "Re-check due {date}"
+    },
+    "claims": {
+      "title": "Claims",
+      "lede": "Decide company claims step by step with the hub's recipe and the evidence.",
+      "queue": "Claim queue",
+      "recipeRule": "Approve to claimed after the register match and the signatory tie; to verified only when every required step has passed.",
+      "empty": "No claims are waiting.",
+      "states": {
+        "open": "Open",
+        "clarification": "Waiting for clarification",
+        "appeal": "Appeal",
+        "decided": "Decided"
+      },
+      "target": "Requested state",
+      "recipe": "Recipe",
+      "submitted": "Submitted",
+      "steps": "Recipe steps",
+      "optional": "optional",
+      "evidence": "Evidence",
+      "evidenceItem": "{category}: {count}",
+      "evidenceViewer": "Evidence viewer under the claim review grant",
+      "sanctionsBlock": "Potential sanctions match: this claim cannot be approved until the screening case is decided.",
+      "openScreeningCase": "Open the screening queue",
+      "conflicts": "Declared conflict of interest:",
+      "appealNote": "Appeal against a rejection, deadline {deadline}. Original decider:",
+      "routeAppeal": "Route the appeal",
+      "reviewer": "Reviewer",
+      "decide": "Record the decision",
+      "decision": "Decision",
+      "decisions": {
+        "claimed": "Approve as claimed",
+        "verified": "Approve as verified",
+        "clarify": "Ask for clarification",
+        "reject": "Reject"
+      },
+      "recordCheck": "Record a manual check",
+      "step": "Step",
+      "result": "Result",
+      "evidenceCategory": "Evidence category"
+    },
+    "verification": {
+      "title": "Verification",
+      "lede": "Recipes, check providers and screening lists the hub uses to verify claims.",
+      "recipes": "Recipes",
+      "noRecipes": "No recipes yet.",
+      "recipe": "Recipe",
+      "newRecipeVersion": "Edit as a new version",
+      "screeningAlwaysOn": "Baseline sanctions screening is part of every recipe and has no switch.",
+      "checks": "Check types and providers",
+      "noChecks": "No checks configured yet.",
+      "check": "Check",
+      "provider": "Provider",
+      "mode": "Mode",
+      "quotaUse": "{used} of {quota}",
+      "days": "{days, plural, one {# day} other {# days}}",
+      "costNote": "A hub may charge for the cost of a check, never for its result.",
+      "setMode": "Set the provider mode",
+      "liveNote": "Switching a provider to live needs a second person.",
+      "lists": "Screening lists",
+      "noLists": "No screening lists yet.",
+      "list": "List",
+      "kind": "Kind",
+      "baselineAlwaysOn": "Baseline, always on",
+      "additional": "Additional",
+      "lastUpdate": "Last update",
+      "addList": "Add a list from the country pack",
+      "packList": "List from the country pack",
+      "costAndUse": "Cost and use this month",
+      "retentionAndBasis": "Retention and legal basis"
+    },
+    "credentials": {
+      "title": "Credentials",
+      "lede": "Verifiable credentials the hub issues: checked facts that holders keep and present anywhere.",
+      "notAScore": "A credential is a checked fact, never a score, and is never sold.",
+      "types": "Credential types",
+      "noTypes": "No credential types yet.",
+      "typeTitle": "Title",
+      "claim": "Claim",
+      "claims": {
+        "identity": "Identity",
+        "licence": "Licence",
+        "insurance": "Insurance",
+        "qualification": "Qualification",
+        "certificate": "Certificate",
+        "membership": "Membership",
+        "completed_work": "Completed work",
+        "counterparty_confirmation": "Counterparty confirmation",
+        "knowledge_contribution": "Knowledge contribution"
+      },
+      "subject": "Holder",
+      "recipe": "Verification recipe",
+      "noRecipe": "No recipe",
+      "validity": "Validity",
+      "noExpiry": "No expiry",
+      "portable": "Portable across hubs",
+      "statuses": {
+        "draft": "Draft",
+        "active": "Active",
+        "retired": "Retired"
+      },
+      "saveType": "Save the type as a new version",
+      "type": "Credential type",
+      "recipeRule": "These claims are checked and need a recipe before activation: {claims}.",
+      "activation": "Activation",
+      "keepDraft": "Keep as draft",
+      "activate": "Activate",
+      "issued": "Issued credentials",
+      "issuedStates": {
+        "valid": "Valid",
+        "expired": "Expired",
+        "suspended": "Suspended",
+        "revoked": "Revoked"
+      },
+      "noneIssued": "No credentials issued yet.",
+      "holderSearch": "Search by holder within a case",
+      "statusList": "Status list and signing key",
+      "published": "Last published",
+      "entries": "Entries",
+      "signature": "Signature",
+      "signatureValid": "Valid",
+      "signingKey": "Signing key in use",
+      "issue": "Issue a credential",
+      "decision": "Decision with evidence",
+      "issueRule": "A credential is issued only from a recorded decision with evidence.",
+      "evidenceCount": "{count, plural, one {# evidence item} other {# evidence items}}",
+      "revokeOrSuspend": "Revoke or suspend",
+      "credentialId": "Credential id",
+      "credentialIdHelp": "From the case; holders are found only within a case.",
+      "revoke": "Revoke",
+      "suspend": "Suspend",
+      "reasons": {
+        "evidence_withdrawn": "Evidence withdrawn",
+        "evidence_expired": "Evidence expired",
+        "fraud": "Fraud",
+        "source_changed": "Source changed",
+        "holder_request": "Holder's request",
+        "legal_order": "Legal order"
+      },
+      "revokeNote": "Revocation is an entry in the hub's status list; the public reason is the category only."
+    },
+    "consents": {
+      "title": "Consents",
+      "lede": "Consent and portrait licence records, and withdrawals waiting for unpublication.",
+      "records": "Records by kind, version and state",
+      "none": "No consent records yet.",
+      "kind": "Kind",
+      "kinds": {
+        "profile_publication": "Profile publication",
+        "portrait_licence": "Portrait licence",
+        "marketing_email": "Marketing e-mail",
+        "knowledge_sharing": "Knowledge sharing"
+      },
+      "version": "Version",
+      "given": "Given",
+      "withdrawn": "Withdrawn",
+      "withdrawals": "Withdrawals waiting for unpublication",
+      "noWithdrawals": "No withdrawals are waiting.",
+      "requested": "Requested",
+      "unpublishBy": "Unpublish by",
+      "process": "Process the withdrawal",
+      "withdrawal": "Withdrawal",
+      "processNote": "The content is unpublished and the person is told when it is done.",
+      "record": "Record a consent",
+      "subject": "Person id",
+      "subjectHelp": "The id from the support case or the claim.",
+      "evidence": "Evidence",
+      "evidenceKinds": {
+        "signed_form": "Signed form",
+        "in_product_record": "Record in the product",
+        "email_confirmation": "E-mail confirmation",
+        "recorded_call": "Recorded call"
+      },
+      "portrait": "Record a portrait licence",
+      "scope": "Licence scope",
+      "scopes": {
+        "profile_only": "Profile only",
+        "profile_and_articles": "Profile and articles",
+        "magazine": "Magazine"
+      }
+    }
+  },
+  "adminSupport": {
+    "channels": {
+      "email": "E-mail",
+      "sms": "SMS",
+      "in_app": "In the product"
+    },
+    "actions": {
+      "resend_verification": "Resend verification",
+      "unlock_after_lockout": "Unlock after lockout",
+      "revoke_all_sessions": "Revoke all sessions",
+      "require_password_reset": "Require a password reset at next sign-in",
+      "rebind_recovery_email": "Change the recovery e-mail",
+      "reset_second_factor": "Reset the second factor",
+      "start_data_export": "Start a data export",
+      "open_deletion_request": "Open a deletion request",
+      "send_guided_task": "Send a guided task"
+    },
+    "lookup": {
+      "title": "Support lookup",
+      "lede": "Find the person or company you are helping. Every lookup serves a case and is recorded in the access log.",
+      "search": "Search",
+      "by": "Search by",
+      "kinds": {
+        "email": "Exact e-mail",
+        "name": "Name",
+        "company": "Company name",
+        "identifier": "Legal identifier",
+        "id": "Id"
+      },
+      "query": "Search for",
+      "forCase": "For case",
+      "chooseCase": "Choose a case",
+      "find": "Find",
+      "logged": "E-mail addresses are matched exactly and never shown in full.",
+      "results": "Results",
+      "needsCase": "Choose the case this lookup serves; nothing is searched without one.",
+      "loggedFor": "Recorded in the access log for case {case}.",
+      "nothing": "Nothing found.",
+      "open": "Open",
+      "openAccount": "Open the account card",
+      "openCompany": "Open the company card"
+    },
+    "account": {
+      "title": "Account card",
+      "lede": "Diagnose and service an account without becoming the person: an allowlist of facts, no private content.",
+      "noImpersonation": "There is no way to sign in as a participant or act with their authority, and staff never manage a participant's own agent, mandates, settings, goals or connections. Use the alternatives below.",
+      "ownAccount": "You cannot service your own account.",
+      "erased": "This account was erased. Only this notice remains.",
+      "email": "E-mail",
+      "verified": "verified",
+      "unverified": "not verified",
+      "state": "State",
+      "secondFactor": "Second factor",
+      "factorMethods": "{count, plural, one {# method enrolled} other {# methods enrolled}}",
+      "noFactor": "Not enrolled",
+      "sessions": "Active sessions",
+      "recovery": "Recovery",
+      "recoveryStates": {
+        "none": "None",
+        "requested": "Requested",
+        "held_for_review": "Held for review",
+        "cooling_off": "Cooling off"
+      },
+      "employer": "Employer",
+      "openCases": "Open cases",
+      "allowlist": "Shown: only these facts. Never message bodies, private projects, budgets, session tokens, addresses or a location trail.",
+      "entitlements": "Entitlements and usage",
+      "noEntitlements": "No entitlements.",
+      "offer": "Offer",
+      "validUntil": "Valid until",
+      "noEnd": "No end date",
+      "noUsage": "No metered usage this period.",
+      "meter": "Meter",
+      "meters": {
+        "agent_runs": "Agent runs",
+        "plan_drafts": "Plan drafts"
+      },
+      "usage": "Usage",
+      "usageOf": "{used} of {included} included",
+      "period": "Period",
+      "consents": "Consents",
+      "noConsents": "No consents recorded.",
+      "consentStates": {
+        "given": "Given",
+        "withdrawn": "Withdrawn"
+      },
+      "date": "Date",
+      "memberships": "Membership history",
+      "noMemberships": "No memberships.",
+      "role": "Role",
+      "now": "now",
+      "communications": "Communications history",
+      "metadataOnly": "Delivery metadata only: the template and its version, never the message body or private values.",
+      "noCommunications": "No messages sent.",
+      "template": "Template",
+      "templates": {
+        "verification_email": "Verification e-mail",
+        "project_invitation": "Project invitation",
+        "lockout_notice": "Lockout notice",
+        "recovery_change_notice": "Recovery change notice"
+      },
+      "channel": "Channel",
+      "delivery": "Delivery",
+      "deliveryStates": {
+        "delivered": "Delivered",
+        "bounced": "Bounced",
+        "queued": "Queued"
+      },
+      "inProgress": "Servicing in progress",
+      "openRecovery": "Open recovery escalations",
+      "service": "Servicing actions",
+      "serviceSubmit": "Request the action",
+      "action": "Action",
+      "case": "Case",
+      "needsCase": "Open a case about this account first.",
+      "guidedTask": "Guided task (when sending one)",
+      "guidedTaskHelp": "The person performs the steps in their own session.",
+      "tasks": {
+        "reinvite_colleague": "Re-invite your colleague",
+        "verify_email_again": "Verify your e-mail again",
+        "share_diagnostics": "Share diagnostics with support",
+        "enrol_second_factor": "Enrol a second factor"
+      },
+      "evidenceRecorded": "Identity evidence was checked and recorded (needed to change the recovery e-mail or reset the second factor)",
+      "coolingOffRule": "Changing the recovery e-mail or the second factor needs evidence, a different approver and a 72-hour cooling-off; the person is told on every verified channel and can object.",
+      "alternatives": "Instead of acting as the person",
+      "viewPublic": "View the public projection",
+      "noPublic": "This person has no public profile.",
+      "openExplainer": "Open the access explainer",
+      "ownAgent": "Anything the person wants done for them: their own agent, under their own mandate, if they choose.",
+      "publicProjection": "What an anonymous visitor sees"
+    },
+    "company": {
+      "title": "Company card",
+      "lede": "Help a company: its public page, claim and verification state, public members and representative.",
+      "publicOnly": "Never shown: private projects, requests for quotes, quotes, budgets or messages.",
+      "members": "Members who chose to appear",
+      "noMembers": "No members chose to appear.",
+      "actions": "Help this company",
+      "requestGrant": "Request a case grant on named objects"
+    },
+    "cases": {
+      "title": "Support cases",
+      "lede": "Cases and their grants. A case thread stays inside the case; there is no general inbox.",
+      "list": "Cases",
+      "empty": "No support cases.",
+      "case": "Case",
+      "subject": "Subject",
+      "reason": "Reason",
+      "reasons": {
+        "access": "Access",
+        "sign_in": "Signing in",
+        "data_request": "Data request",
+        "billing_question": "Billing question",
+        "bug": "Something is broken"
+      },
+      "states": {
+        "open": "Open",
+        "waiting_on_person": "Waiting for the person",
+        "closed": "Closed"
+      },
+      "opened": "Opened",
+      "detailTitle": "Case {id}",
+      "detailLede": "The thread with the person, diagnostics they shared, grants and every read under them.",
+      "back": "All cases",
+      "assignee": "Assignee",
+      "thread": "Thread with the person",
+      "threadNote": "Messages stay inside this case.",
+      "fromPerson": "The person",
+      "reply": "Reply",
+      "message": "Message",
+      "snapshots": "Diagnostics the person shared",
+      "snapshotNote": "Shared by the person from their own session, with only the objects they selected.",
+      "noSnapshots": "No diagnostics shared.",
+      "page": "Page",
+      "versions": "Versions",
+      "errors": "Error codes and requests",
+      "selected": "Objects the person selected",
+      "accessLog": "Access log for this case",
+      "noReads": "No reads under a grant yet.",
+      "readAt": "Read at",
+      "reader": "Read by",
+      "assign": "Assign",
+      "close": "Close the case",
+      "create": "Create a case",
+      "subjectKind": "Subject",
+      "subjectId": "Subject id",
+      "subjectIdHelp": "The person's or company's id from the lookup."
+    },
+    "grants": {
+      "title": "Case grants",
+      "rule": "A grant names up to 100 objects of one type, a projection class and a purpose, lasts at most {hours} hours and is approved by a different person. Every read is logged.",
+      "request": "Grant request {id}",
+      "awaiting": "Waiting for a different approver",
+      "requestedBy": "Requested by",
+      "objects": "Objects",
+      "projection": "Projection class",
+      "projections": {
+        "diagnostic": "Diagnostic",
+        "support_private_limited": "Private, limited",
+        "evidence": "Evidence"
+      },
+      "purpose": "Purpose",
+      "duration": "Duration in hours",
+      "hours": "{hours, plural, one {# hour} other {# hours}}",
+      "digest": "Request digest",
+      "excluded": "Always excluded: private negotiation terms, credentials and payment references.",
+      "decide": "Record the decision",
+      "bindsDigest": "Your decision binds this exact request; a changed request needs a new one.",
+      "none": "No grants on this case.",
+      "approvedBy": "Approved by",
+      "expires": "Expires",
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked",
+      "notFoundAgain": "The objects are not found again.",
+      "revoke": "Revoke the grant",
+      "grant": "Grant",
+      "requestTitle": "Request a case grant",
+      "requestSubmit": "Ask a different person to approve",
+      "objectType": "Object type",
+      "objectTypes": {
+        "rfq": "Request for quotes",
+        "project": "Project",
+        "quote_invitation": "Quote invitation",
+        "company_membership": "Company membership",
+        "notification": "Notification",
+        "account_recovery": "Account recovery request"
+      },
+      "ids": "Object ids",
+      "idsHelp": "Up to 100 ids of one type, separated by commas or spaces.",
+      "durationHelp": "At most {hours} hours."
+    },
+    "recovery": {
+      "title": "Recovery escalations",
+      "lede": "Sign-in factor changes in progress: recovery e-mail changes and second-factor resets.",
+      "rule": "Every change needs evidence and a different approver, then waits {hours} hours while every verified channel is told. An objection from the account owner cancels it.",
+      "requests": "Requests",
+      "empty": "No recovery requests.",
+      "states": {
+        "awaiting_approval": "Waiting for a different approver",
+        "cooling_off": "Cooling off",
+        "ready": "Ready to complete",
+        "cancelled": "Cancelled"
+      },
+      "evidence": "Evidence",
+      "evidenceStates": {
+        "recorded": "Recorded",
+        "missing": "Missing"
+      },
+      "approver": "Approver",
+      "coolingOff": "Takes effect",
+      "afterApproval": "{hours} hours after approval",
+      "coolingOffEnds": "Cooling-off ends {date}",
+      "notified": "Told on",
+      "objection": "The account owner objected: the change was cancelled automatically and flagged.",
+      "approve": "Approve",
+      "approveNote": "Approval starts the {hours}-hour cooling-off; the account owner is told on every verified channel.",
+      "complete": "Complete the change",
+      "cancel": "Cancel"
+    },
+    "explain": {
+      "title": "Access explainer",
+      "lede": "Answer “why can't they see or do this” with the policy decision, never the object's content.",
+      "ask": "Who and what",
+      "principal": "Person",
+      "object": "Object",
+      "choose": "Choose",
+      "explain": "Explain",
+      "objectKinds": {
+        "project": "Project",
+        "rfq": "Request for quotes",
+        "company_page": "Company page"
+      },
+      "decision": "Decision",
+      "effect": "Effect",
+      "effects": {
+        "allow": "Allowed",
+        "deny": "Not allowed"
+      },
+      "rule": "Rule",
+      "reasons": {
+        "no_participation": "They do not take part in it.",
+        "capability_missing": "Their role does not include this action.",
+        "membership_permission_missing": "Their company role does not include this permission.",
+        "participation_expired": "Their participation expired.",
+        "participation_revoked": "Their participation was revoked.",
+        "membership_ended": "Their company membership ended.",
+        "mandate_revoked": "The mandate was revoked.",
+        "mandate_scope": "The mandate does not cover this.",
+        "email_unverified": "Their e-mail is not verified yet.",
+        "step_up_required": "They need to confirm it is them first.",
+        "lifecycle": "The object is not in a state that allows this.",
+        "staff_no_case": "Staff need a case grant.",
+        "public_projection": "Everyone sees the published public version.",
+        "participation": "They take part in it."
+      },
+      "noContent": "The object's content is never shown here.",
+      "noDecision": "No decision recorded for this pair.",
+      "copy": "Add the explanation to the case reply"
+    }
+  },
+  "adminTrust": {
+    "common": {
+      "id": "Id",
+      "state": "State",
+      "received": "Received",
+      "items": "{count, plural, one {# item} other {# items}}",
+      "progress": "Progress",
+      "progressOf": "{done} of {total}",
+      "started": "Started",
+      "runStates": {
+        "done": "Done",
+        "running": "Running",
+        "queued": "Queued"
+      }
+    },
+    "clauses": {
+      "harassment": "Harassment",
+      "false_claims": "False claims",
+      "privacy": "Privacy",
+      "spam": "Spam"
+    },
+    "moderation": {
+      "title": "Moderation",
+      "lede": "Reports and cases decided under the hub's community rules, mapped to local law.",
+      "reports": "Reports",
+      "noReports": "No reports.",
+      "target": "Target",
+      "targets": {
+        "profile": "Profile",
+        "publication": "Publication",
+        "review": "Review",
+        "company_page": "Company page"
+      },
+      "clause": "Clause",
+      "source": "Source",
+      "sources": {
+        "participant": "Participant",
+        "anonymous": "Anonymous",
+        "automated": "Automated check"
+      },
+      "reportStates": {
+        "new": "New",
+        "in_case": "In a case"
+      },
+      "openCase": "Open a case",
+      "report": "Report",
+      "cases": "Cases",
+      "noCases": "No moderation cases.",
+      "evidence": "Evidence",
+      "decision": "Decision",
+      "decisions": {
+        "pending": "Pending",
+        "no_action": "No action",
+        "sanction": "Sanction"
+      },
+      "level": "Level {level}",
+      "appeal": "Appeal",
+      "appealStates": {
+        "none": "None",
+        "filed": "Filed",
+        "decided": "Decided"
+      },
+      "decide": "Decide a case",
+      "case": "Case",
+      "sanctionLevel": "Sanction level",
+      "levelRule": "Levels 1 to 3 apply at once; level 4 needs a second person.",
+      "levels": {
+        "1": "Warning",
+        "2": "Content held",
+        "3": "Temporary restriction",
+        "4": "Account suspension"
+      },
+      "nothingToDecide": "No case is waiting for a decision.",
+      "emergency": "Emergency hold or freeze",
+      "emergencyKind": "Kind",
+      "emergencyKinds": {
+        "hold": "Hold the content",
+        "freeze": "Freeze the account"
+      },
+      "emergencySubmit": "Apply now",
+      "clauseLibrary": "Clause library",
+      "law": "Rule and law",
+      "ladder": "Sanction ladder",
+      "secondPerson": "needs a second person"
+    },
+    "disputes": {
+      "title": "Disputes",
+      "lede": "Execution and review disputes decided on evidence under the dispute grant.",
+      "rule": "Missing data counts as unknown, never as a failure, and payment never weighs.",
+      "queue": "Disputes",
+      "empty": "No disputes.",
+      "assertions": {
+        "delivery_late": "Delivery was late",
+        "work_incomplete": "Work was not completed",
+        "payment_late": "Payment was late"
+      },
+      "states": {
+        "open": "Open",
+        "excluded_pending": "Observation excluded until resolved",
+        "decided": "Decided"
+      },
+      "observation": "Observation",
+      "partyA": "First party",
+      "partyB": "Second party",
+      "evidence": "Evidence",
+      "evidenceGrant": "Evidence viewer under the dispute grant",
+      "statements": "Statements",
+      "record": "Record a finding",
+      "stance": "Finding",
+      "stances": {
+        "confirm": "Confirm the observation",
+        "dispute": "Dispute the observation"
+      },
+      "exclude": "Exclude while disputed",
+      "excludeNote": "The observation stops counting until the dispute is resolved.",
+      "decide": "Decide",
+      "decision": "Decision",
+      "decisions": {
+        "observation_stands": "The observation stands",
+        "observation_corrected": "The observation is corrected",
+        "observation_removed": "The observation is removed"
+      }
+    },
+    "reputation": {
+      "title": "Reputation methods",
+      "lede": "Explainable method versions: drafted, reviewed, released by the hub owner and explained in every hub language.",
+      "noScore": "No control here edits a score. Reputation changes only through released method versions whose local parameters stay inside the engine's bounds.",
+      "versions": "Method versions",
+      "noVersions": "No method versions yet.",
+      "version": "Version",
+      "states": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "released": "Released",
+        "superseded": "Superseded"
+      },
+      "parameters": {
+        "windowMonths": "Window in months",
+        "minimumSamples": "Minimum samples",
+        "confirmationDays": "Confirmation period in days"
+      },
+      "explanations": "Explanations",
+      "released": "Released",
+      "missingExplanations": "Explanation missing in: {languages}",
+      "bounds": "Engine bounds",
+      "range": "Allowed: {min} to {max}",
+      "draft": "Draft a new version",
+      "reviewAndRelease": "Review and release",
+      "review": "Mark as reviewed",
+      "release": "Release",
+      "releaseRule": "Only the hub owner role releases a version.",
+      "nothingToRelease": "No version is waiting for release.",
+      "publishExplanation": "Publish an explanation",
+      "language": "Language",
+      "jobs": "Recomputation jobs",
+      "noJobs": "No recomputation jobs.",
+      "localParameters": "Local parameters"
+    },
+    "appeals": {
+      "title": "Appeals",
+      "lede": "One queue for appeals against claims, credentials, moderation decisions and observations.",
+      "queue": "Appeals by deadline",
+      "empty": "No appeals.",
+      "against": "Appeal against: {kind}",
+      "kinds": {
+        "claim": "claim decision",
+        "credential": "credential decision",
+        "moderation": "moderation decision",
+        "observation": "observation"
+      },
+      "states": {
+        "open": "Open",
+        "information_requested": "Information requested"
+      },
+      "ref": "Decision",
+      "originalDecider": "Original decider",
+      "filed": "Filed",
+      "deadline": "Deadline",
+      "soon": "due soon",
+      "decide": "Decide",
+      "decision": "Decision",
+      "decisions": {
+        "upheld": "Upheld",
+        "overturned": "Overturned",
+        "partly_overturned": "Partly overturned"
+      },
+      "requestInfo": "Request information"
+    },
+    "screening": {
+      "title": "Screening",
+      "lede": "Sanctions compliance: lists, matches decided by people, jurisdiction holds and re-screening.",
+      "stale": "Screening unavailable: payments and commitments are paused until the baseline lists are fresh again.",
+      "rule": "No control loosens matching, pauses a baseline list or clears a hold without a reason.",
+      "lists": "Lists",
+      "version": "Version",
+      "entries": "Entries",
+      "freshness": "Freshness",
+      "freshnessStates": {
+        "fresh": "Fresh",
+        "warning": "Ageing",
+        "stale": "Stale"
+      },
+      "geo": "Geolocation dataset",
+      "dataset": "Dataset",
+      "geoModes": {
+        "ranges_file": "Ranges file",
+        "fake": "Fake (synthetic)"
+      },
+      "age": "Age",
+      "ageDays": "{days, plural, one {# day} other {# days}}",
+      "matches": "Matches",
+      "noMatches": "No matches are waiting.",
+      "matchStates": {
+        "open": "Open",
+        "appeal": "Appeal"
+      },
+      "late": "Past the service level",
+      "underCase": "Names side by side, under case {case}",
+      "screenedName": "Screened name",
+      "listEntry": "List entry",
+      "strength": "Similarity",
+      "strengths": {
+        "strong": "Strong",
+        "weak": "Weak"
+      },
+      "confirm": "Confirm the match",
+      "notSamePerson": "Propose “not the same person”",
+      "decideAppeal": "Decide the appeal",
+      "appealDecisions": {
+        "uphold": "Uphold the match",
+        "reverse": "Reverse the match"
+      },
+      "holds": "Jurisdiction holds",
+      "noHolds": "No open holds.",
+      "place": "Place",
+      "source": "Source",
+      "sources": {
+        "geolocation": "Geolocation",
+        "edge_header": "Edge header",
+        "self_declared": "Self-declared",
+        "payout_country": "Payout country",
+        "staff_report": "Staff report"
+      },
+      "hold": "Hold",
+      "holdEvidence": {
+        "document": "Document",
+        "call": "Call",
+        "travel_record": "Travel record",
+        "other": "Other"
+      },
+      "clearHold": "Clear the hold",
+      "runs": "Re-screen runs",
+      "noRuns": "No re-screen runs.",
+      "trigger": "Trigger",
+      "triggers": {
+        "list_version": "New list version",
+        "weekly": "Weekly",
+        "manual": "Manual"
+      },
+      "rescreen": "Start a manual re-screen",
+      "metrics": "Cohort metrics",
+      "refusals": "Refusals this week",
+      "holdCount": "Holds",
+      "matchCount": "Matches",
+      "notSameShare": "Not the same person",
+      "publishedOn": "Published {date}"
+    },
+    "confirmations": {
+      "title": "Confirmations",
+      "lede": "Honest confirmation requests: only real counterparties of linked transactions or projects, in bounded volume.",
+      "policy": "Confirmation policy",
+      "noPolicy": "No confirmation policy yet.",
+      "fields": {
+        "requireLink": "Requires a linked transaction or project",
+        "maxOpen": "Open requests per requester",
+        "perCounterparty": "Requests per counterparty per month",
+        "cooldown": "Cool-down after a decline",
+        "reciprocal": "Reciprocal confirmations flagged",
+        "agentsRequest": "Agents may request",
+        "agentsConfirm": "Agents may confirm"
+      },
+      "locked": "fixed by the engine",
+      "save": "Save as a new version",
+      "agentsNever": "Agents may request confirmations but never confirm; that stays with people.",
+      "counts": "Requests and acceptances",
+      "countKinds": {
+        "requested": "Requested",
+        "accepted": "Accepted",
+        "declined": "Declined"
+      },
+      "patterns": "Flagged patterns",
+      "patternsNote": "Patterns are described by their shape, not by the people in them; opening a case is how they are reviewed.",
+      "noPatterns": "No flagged patterns.",
+      "kind": "Pattern",
+      "kinds": {
+        "reciprocal": "Reciprocal confirmations",
+        "burst": "Burst of requests",
+        "new_accounts": "New accounts confirming each other"
+      },
+      "size": "Accounts",
+      "accounts": "{count, plural, one {# account} other {# accounts}}",
+      "window": "Window",
+      "detected": "Detected",
+      "pattern": "Pattern"
+    }
+  }
+}
