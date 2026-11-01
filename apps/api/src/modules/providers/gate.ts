@@ -34,7 +34,8 @@ export class ProviderCallGate {
     let secret: SecretValue | null = null;
     if (sealed.ciphertext && sealed.iv && sealed.auth_tag && sealed.wrapped_key && sealed.kek_id) {
       if (!this.sealer) throw new SecretStoreError('unconfigured');
-      secret = await this.sealer.open({ ciphertext: sealed.ciphertext, iv: sealed.iv, authTag: sealed.auth_tag, wrappedKey: sealed.wrapped_key, kekId: sealed.kek_id });
+      secret = await this.sealer.open({ ciphertext: sealed.ciphertext, iv: sealed.iv, authTag: sealed.auth_tag, wrappedKey: sealed.wrapped_key, kekId: sealed.kek_id },
+        { connectionId, version: sealed.secret_version ?? 0 });
     } else if (sealed.credential_store && sealed.credential_ref) {
       secret = await this.external.read(sealed.credential_store, sealed.credential_ref);
     }

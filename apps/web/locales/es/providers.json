@@ -8,6 +8,7 @@
       "secret_store_unconfigured": "El almacén de secretos aún no tiene una clave de cifrado de claves, así que no se puede guardar ningún secreto.",
       "secret_required": "Una conexión real con un proveedor necesita su secreto antes de activarse.",
       "secret_not_found": "No se pudo leer el secreto de su almacén.",
+      "secret_unreadable": "El secreto guardado no pertenece a esta conexión o fue alterado, así que no se usó.",
       "credential_not_active": "La referencia de credencial vinculada no está activa en este hub.",
       "test_required": "Pruebe la configuración actual antes de activarla.",
       "test_failed": "La última prueba de conexión no se superó.",

@@ -19,7 +19,7 @@ import { activateResidency, actors, buildProvidersWorld, rejects, SELF_US, setUp
 // Weight 2: the runtime pool races concurrent paid authorizations against one cap.
 const db = await provisionTestDatabase('providers_core', { weight: 2 });
 
-const sealed = () => ({ fingerprint: randomBytes(6).toString('hex'), ciphertext: randomBytes(48), iv: randomBytes(12), authTag: randomBytes(16), wrappedKey: randomBytes(60), kekId: 'test:kek-synthetic' });
+const sealed = (version = 1) => ({ version, fingerprint: randomBytes(6).toString('hex'), ciphertext: randomBytes(48), iv: randomBytes(12), authTag: randomBytes(16), wrappedKey: randomBytes(60), kekId: 'test:kek-synthetic' });
 const PROBE = 'a'.repeat(64);
 
 /**
@@ -58,7 +58,7 @@ test('providers: connections, secrets, egress, routes, caps, kill switches and c
   const sqlDigest = async (fn: string, id: string) => (await q<{ d: string }>(`SELECT trustwork.${fn}($1) AS d`, [id]))[0]!.d;
   /** Enables a live connection: test, secret (vendor), the officer approves the owner's request. */
   const enableLive = async (row: ProviderConnectionRow): Promise<ProviderConnectionRow> => {
-    if (row.hosting_kind === 'vendor') await a.cmd(p.owner, (trx, ctx) => providerConnections.storeSecret(trx, ctx, row.id, row.revision, sealed(), 24));
+    if (row.hosting_kind === 'vendor') await a.cmd(p.owner, async (trx, ctx) => providerConnections.storeSecret(trx, ctx, row.id, row.revision, sealed(await providerConnections.nextSecretVersion(trx, row.id)), 24));
     await recordTest(p.owner, row.id);
     const current = await fresh(row.id);
     const approval = await approveDigest(p.owner, p.officer, 'providers.enable_non_fake', current.hub_id, await sqlDigest('providers_connection_digest', row.id));
@@ -127,11 +127,13 @@ test('providers: connections, secrets, egress, routes, caps, kill switches and c
     // No runtime role can read ciphertext, whatever its staff role.
     await rejects(a.as(p.owner, (trx) => trx.selectFrom('secret_version').selectAll().execute()), '42501');
     // A stale revision is refused; fake connections never hold secrets.
-    await rejects(a.cmd(p.owner, (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, conn.revision, sealed(), 24)), '23514', 'providers.revision_conflict');
+    await rejects(a.cmd(p.owner, (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, conn.revision, sealed(2), 24)), '23514', 'providers.revision_conflict');
+    // Ciphertext bound to another version (its AAD names the version) is refused even with the current revision.
+    await rejects(a.cmd(p.owner, async (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, sealed(5), 24)), '23514', 'providers.revision_conflict');
     const fake = await create(p.owner, hubA, { adapterId: 'fake', mode: 'fake', label: 'Synthetic fake model', endpoint: null });
     await rejects(a.cmd(p.owner, (trx, ctx) => providerConnections.storeSecret(trx, ctx, fake.id, fake.revision, sealed(), 24)), '23514', 'providers.fake_holds_no_secret');
 
-    const v2 = await a.cmd(p.owner, async (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, sealed(), 1));
+    const v2 = await a.cmd(p.owner, async (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, sealed(2), 1));
     const refs = await a.as(p.owner, (trx) => providerConnections.secretRefs(trx, hubA));
     const mine = refs.filter((r) => r.connection_id === conn.id);
     assert.deepEqual(mine.map((r) => [r.version, r.status]), [[2, 'active'], [1, 'grace']]);
@@ -160,7 +162,7 @@ test('providers: connections, secrets, egress, routes, caps, kill switches and c
     await rejects(a.cmd(p.owner, async (trx, ctx) => providerConnections.enable(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, null)), '23514', 'providers.test_failed');
     await recordTest(p.owner, conn.id);
     await rejects(a.cmd(p.owner, async (trx, ctx) => providerConnections.enable(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, null)), '23514', 'providers.secret_required');
-    await a.cmd(p.owner, async (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, sealed(), 24));
+    await a.cmd(p.owner, async (trx, ctx) => providerConnections.storeSecret(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, sealed(1), 24));
     await rejects(a.cmd(p.owner, async (trx, ctx) => providerConnections.enable(trx, ctx, conn.id, (await providerConnections.get(trx, conn.id))!.revision, null)), '23514', 'providers.test_required');
     await recordTest(p.owner, conn.id);
     const tested = await fresh(conn.id);

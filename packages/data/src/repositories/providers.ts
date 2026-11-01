@@ -40,9 +40,11 @@ export interface ConnectionInput {
   credentialRefId: string | null;
 }
 /** A secret sealed by the API (envelope encryption); the plaintext never reaches this layer. */
-export interface SealedSecretInput { fingerprint: string; ciphertext: Buffer; iv: Buffer; authTag: Buffer; wrappedKey: Buffer; kekId: string }
+/** `version` is the version the ciphertext is bound to (the next version of the connection's secret). */
+export interface SealedSecretInput { fingerprint: string; ciphertext: Buffer; iv: Buffer; authTag: Buffer; wrappedKey: Buffer; kekId: string; version: number }
 export interface SealedSecretRow {
   secret_ref_id: string | null;
+  secret_version: number | null;
   ciphertext: Buffer | null;
   iv: Buffer | null;
   auth_tag: Buffer | null;
@@ -106,7 +108,7 @@ export const providerConnections = {
   },
   /** Stores a sealed secret as the next version; the previous version enters its grace period (0 hours destroys it). */
   storeSecret(trx: Transaction, ctx: CommandContext, connectionId: string, expectedRevision: number, sealed: SealedSecretInput, graceHours: number): Promise<SecretRefRow> {
-    return one(sql<SecretRefRow>`SELECT * FROM trustwork.providers_store_secret(${ctxJson(ctx)}::jsonb, ${connectionId}::uuid, ${expectedRevision}::integer, ${sealed.fingerprint}::text,
+    return one(sql<SecretRefRow>`SELECT * FROM trustwork.providers_store_secret(${ctxJson(ctx)}::jsonb, ${connectionId}::uuid, ${expectedRevision}::integer, ${sealed.version}::integer, ${sealed.fingerprint}::text,
       ${sealed.ciphertext}::bytea, ${sealed.iv}::bytea, ${sealed.authTag}::bytea, ${sealed.wrappedKey}::bytea, ${sealed.kekId}::text, ${graceHours}::integer)`.execute(trx), 'providers_store_secret');
   },
   revokeSecret(trx: Transaction, ctx: CommandContext, connectionId: string, expectedRevision: number): Promise<ProviderConnectionRow> {
@@ -133,6 +135,11 @@ export const providerConnections = {
   },
   get(trx: Transaction, connectionId: string): Promise<ProviderConnectionRow | undefined> {
     return trx.selectFrom('provider_connection').selectAll().where('id', '=', connectionId).executeTakeFirst();
+  },
+  /** The version the next secret of a connection takes (the API binds the ciphertext to it before storing). */
+  async nextSecretVersion(trx: Transaction, connectionId: string): Promise<number> {
+    const row = await trx.selectFrom('secret_ref').select((eb) => eb.fn.max('version').as('v')).where('connection_id', '=', connectionId).executeTakeFirst();
+    return Number(row?.v ?? 0) + 1;
   },
   secretRefs(trx: Transaction, hubId: string): Promise<SecretRefRow[]> {
     return trx.selectFrom('secret_ref').selectAll().where('hub_id', '=', hubId).orderBy('connection_id').orderBy('version', 'desc').execute();

@@ -235,7 +235,8 @@ export class ProvidersService {
     const value = new SecretValue(body.value);
     return this.staff(e, body, { hubId, permission: 'admin.providers.secret.write', action: 'providers.secret_written', objectType: 'secret_ref', objectId: connectionId }, async (trx, cmd) => {
       await this.connectionOf(trx, hubId, connectionId);
-      const sealed = await sealer.seal(value);
+      // Bound to this connection and the version it will take; the database refuses another version.
+      const sealed = await sealer.seal(value, { connectionId, version: await providerConnections.nextSecretVersion(trx, connectionId) });
       const ref = await providerConnections.storeSecret(trx, cmd, connectionId, body.expectedRevision, sealed, body.graceHours);
       const connection = await this.connectionOf(trx, hubId, connectionId);
       return {
@@ -272,14 +273,17 @@ export class ProvidersService {
         try {
           if (material.ciphertext && material.iv && material.auth_tag && material.wrapped_key && material.kek_id) {
             if (!this.runtime.sealer) throw new SecretStoreError('unconfigured');
-            secret = await this.runtime.sealer.open({ ciphertext: material.ciphertext, iv: material.iv, authTag: material.auth_tag, wrappedKey: material.wrapped_key, kekId: material.kek_id });
+            secret = await this.runtime.sealer.open({ ciphertext: material.ciphertext, iv: material.iv, authTag: material.auth_tag, wrappedKey: material.wrapped_key, kekId: material.kek_id },
+              { connectionId, version: material.secret_version ?? 0 });
           } else if (material.credential_store && material.credential_ref) {
             secret = await this.runtime.external.read(material.credential_store, material.credential_ref);
           }
           report = AdapterTestReportSchema.parse(await withTimeout(resolved.adapter.test({ probes, endpoint: c.endpoint, secret }), this.runtime.testTimeoutMs));
         } catch (error) {
           // Never the error's message: an adapter's error could quote what it was given.
-          reason = error instanceof SecretStoreError ? (error.code === 'unconfigured' ? 'secret_store_unconfigured' : 'secret_not_found') : error instanceof TimeoutError ? 'timeout' : 'adapter_error';
+          reason = error instanceof SecretStoreError
+            ? (error.code === 'unconfigured' ? 'secret_store_unconfigured' : error.code === 'unreadable' || error.code === 'kek_mismatch' ? 'secret_unreadable' : 'secret_not_found')
+            : error instanceof TimeoutError ? 'timeout' : 'adapter_error';
           report = { outcome: error instanceof TimeoutError ? 'unreachable' : 'error', latencyMs: null, modelsListed: null, costMinorUnits: null };
         }
       }

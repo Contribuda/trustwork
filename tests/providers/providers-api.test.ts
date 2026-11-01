@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { withMaintenance } from '@trustwork/data';
 import { computeDigest, ConsoleCommandResultSchema, HUB_CONSOLE_CONTRACT_VERSION, SecretRefSchema } from '@trustwork/contracts';
 import { createApp, type CreatedApp } from '../../apps/api/src/app.js';
 import { FakeProviderAdapter, ProviderAdapterRegistry } from '../../apps/api/src/modules/providers/adapters.js';
@@ -135,6 +136,22 @@ test('providers API', { skip: h ? false : SKIP_REASON }, async (t) => {
     ok(await command('officer', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: tested.connection.enable.actionDigest }));
     const enabled = ok(await command('owner', `${base}/connections/${connectionId}/enable`, { expectedRevision: tested.connection.revision, approvalId })) as unknown as { connection: { status: string } };
     assert.equal(enabled.connection.status, 'enabled');
+  });
+
+  await t.test('negative: a sealed row copied to another connection does not open, and no adapter is called', async () => {
+    const other = ok(await command('owner', `${base}/connections`, { ...connectionBody, label: 'Synthetic second vendor', endpoint: 'https://attacker.synthetic.example/v1' }), 201) as unknown as { connection: { id: string } };
+    // Someone with database write access copies the active sealed secret of the first connection to the second one.
+    await withMaintenance(h.db.admin, async (trx) => {
+      const source = await trx.selectFrom('secret_ref as r').innerJoin('secret_version as v', 'v.secret_ref_id', 'r.id').selectAll('v').select(['r.keyed_fingerprint'])
+        .where('r.connection_id', '=', connectionId).where('r.status', '=', 'active').executeTakeFirstOrThrow();
+      const ref = await trx.insertInto('secret_ref').values({ connection_id: other.connection.id, hub_id: hubA, ref: `connection:${other.connection.id}:v1`, keyed_fingerprint: source.keyed_fingerprint,
+        version: 1, created_by: w.people.owner }).returning('id').executeTakeFirstOrThrow();
+      await trx.insertInto('secret_version').values({ secret_ref_id: ref.id, ciphertext: source.ciphertext, iv: source.iv, auth_tag: source.auth_tag, wrapped_key: source.wrapped_key, kek_id: source.kek_id }).execute();
+    });
+    const calls = live.received.length;
+    const tested = ok(await command('owner', `${base}/connections/${other.connection.id}/test`, { connectionId: other.connection.id, syntheticInputOnly: true })) as unknown as { test: { outcome: string }; reason: string };
+    assert.deepEqual([tested.test.outcome, tested.reason], ['error', 'secret_unreadable']);
+    assert.equal(live.received.length, calls, 'the adapter was never called with the moved key');
   });
 
   await t.test('egress, a non-public route and the call gate: default deny, two people, the gate refuses without an allow cell', async () => {

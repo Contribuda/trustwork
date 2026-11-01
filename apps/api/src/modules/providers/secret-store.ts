@@ -40,15 +40,17 @@ export class SecretValue {
 /** Wraps and unwraps data keys with the node's key-encryption key. */
 export interface KeyEncryptionPort {
   readonly kekId: string;
-  wrap(dataKey: Buffer): Promise<Buffer>;
-  unwrap(wrapped: Buffer, kekId: string): Promise<Buffer>;
+  /** `context` binds the wrapped key to its owner (connection and version); unwrapping with another context fails. */
+  wrap(dataKey: Buffer, context: string): Promise<Buffer>;
+  unwrap(wrapped: Buffer, kekId: string, context: string): Promise<Buffer>;
 }
 
 /** An external KMS or Vault transit key (adapter interface; no real client ships with the engine). */
 export interface KmsClient {
   readonly keyId: string;
-  encrypt(plaintext: Buffer): Promise<Buffer>;
-  decrypt(ciphertext: Buffer): Promise<Buffer>;
+  /** `context` is the encryption context (additional authenticated data) the KMS binds to the ciphertext. */
+  encrypt(plaintext: Buffer, context: string): Promise<Buffer>;
+  decrypt(ciphertext: Buffer, context: string): Promise<Buffer>;
 }
 
 const GCM_IV = 12;
@@ -76,13 +78,13 @@ export class LocalKeyEncryption implements KeyEncryptionPort {
     this.#kek = Buffer.from(kek);
     this.kekId = `local:${createHash('sha256').update('trustwork-kek-id').update(kek).digest('hex').slice(0, 16)}`;
   }
-  async wrap(dataKey: Buffer): Promise<Buffer> {
-    const { iv, tag, ciphertext } = gcmSeal(this.#kek, dataKey, this.kekId);
+  async wrap(dataKey: Buffer, context: string): Promise<Buffer> {
+    const { iv, tag, ciphertext } = gcmSeal(this.#kek, dataKey, `${this.kekId}|${context}`);
     return Buffer.concat([iv, tag, ciphertext]);
   }
-  async unwrap(wrapped: Buffer, kekId: string): Promise<Buffer> {
+  async unwrap(wrapped: Buffer, kekId: string, context: string): Promise<Buffer> {
     if (kekId !== this.kekId) throw new SecretStoreError('kek_mismatch');
-    return gcmOpen(this.#kek, { iv: wrapped.subarray(0, GCM_IV), tag: wrapped.subarray(GCM_IV, GCM_IV + GCM_TAG), ciphertext: wrapped.subarray(GCM_IV + GCM_TAG) }, kekId);
+    return gcmOpen(this.#kek, { iv: wrapped.subarray(0, GCM_IV), tag: wrapped.subarray(GCM_IV, GCM_IV + GCM_TAG), ciphertext: wrapped.subarray(GCM_IV + GCM_TAG) }, `${kekId}|${context}`);
   }
   /** The fingerprint key, derived so that it is never the KEK itself. */
   fingerprintKey(): Buffer {
@@ -96,12 +98,12 @@ export class KmsKeyEncryption implements KeyEncryptionPort {
   constructor(private readonly client: KmsClient) {
     this.kekId = `kms:${client.keyId}`;
   }
-  wrap(dataKey: Buffer): Promise<Buffer> {
-    return this.client.encrypt(dataKey);
+  wrap(dataKey: Buffer, context: string): Promise<Buffer> {
+    return this.client.encrypt(dataKey, context);
   }
-  async unwrap(wrapped: Buffer, kekId: string): Promise<Buffer> {
+  async unwrap(wrapped: Buffer, kekId: string, context: string): Promise<Buffer> {
     if (kekId !== this.kekId) throw new SecretStoreError('kek_mismatch');
-    return this.client.decrypt(wrapped);
+    return this.client.decrypt(wrapped, context);
   }
 }
 
@@ -110,18 +112,18 @@ export class FakeKms implements KmsClient {
   readonly calls: ('encrypt' | 'decrypt')[] = [];
   readonly #key = randomBytes(32);
   constructor(readonly keyId = 'fake-kms-key') {}
-  async encrypt(plaintext: Buffer): Promise<Buffer> {
+  async encrypt(plaintext: Buffer, context: string): Promise<Buffer> {
     this.calls.push('encrypt');
-    const { iv, tag, ciphertext } = gcmSeal(this.#key, plaintext, this.keyId);
+    const { iv, tag, ciphertext } = gcmSeal(this.#key, plaintext, `${this.keyId}|${context}`);
     return Buffer.concat([iv, tag, ciphertext]);
   }
-  async decrypt(ciphertext: Buffer): Promise<Buffer> {
+  async decrypt(ciphertext: Buffer, context: string): Promise<Buffer> {
     this.calls.push('decrypt');
-    return gcmOpen(this.#key, { iv: ciphertext.subarray(0, GCM_IV), tag: ciphertext.subarray(GCM_IV, GCM_IV + GCM_TAG), ciphertext: ciphertext.subarray(GCM_IV + GCM_TAG) }, this.keyId);
+    return gcmOpen(this.#key, { iv: ciphertext.subarray(0, GCM_IV), tag: ciphertext.subarray(GCM_IV, GCM_IV + GCM_TAG), ciphertext: ciphertext.subarray(GCM_IV + GCM_TAG) }, `${this.keyId}|${context}`);
   }
 }
 
-export type SecretStoreErrorCode = 'unconfigured' | 'kek_mismatch' | 'store_unavailable' | 'ref_invalid';
+export type SecretStoreErrorCode = 'unconfigured' | 'kek_mismatch' | 'store_unavailable' | 'ref_invalid' | 'unreadable';
 /** A refusal of the secret store; its message never contains a value. */
 export class SecretStoreError extends Error {
   constructor(readonly code: SecretStoreErrorCode) {
@@ -130,8 +132,18 @@ export class SecretStoreError extends Error {
   }
 }
 
-export interface SealedSecret { fingerprint: string; ciphertext: Buffer; iv: Buffer; authTag: Buffer; wrappedKey: Buffer; kekId: string }
+export interface SealedSecret { fingerprint: string; ciphertext: Buffer; iv: Buffer; authTag: Buffer; wrappedKey: Buffer; kekId: string; version: number }
+/** The owner a sealed secret is bound to: its connection and its version (slot). */
+export interface SecretBinding { connectionId: string; version: number }
 const AAD = 'trustwork-provider-secret-v1';
+/**
+ * The additional authenticated data of both the ciphertext and the wrapped data key: a sealed row copied to another
+ * connection or another version fails to open, so database write access alone cannot send a key to another endpoint.
+ */
+export function bindingContext(b: SecretBinding): string {
+  if (!/^[0-9a-f-]{36}$/i.test(b.connectionId) || !Number.isInteger(b.version) || b.version < 1) throw new SecretStoreError('ref_invalid');
+  return `connection:${b.connectionId.toLowerCase()}:v${b.version}`;
+}
 
 /** Seals and opens provider secrets (envelope encryption) and computes keyed fingerprints. */
 export class SecretSealer {
@@ -143,19 +155,29 @@ export class SecretSealer {
   fingerprint(value: SecretValue): string {
     return createHmac('sha256', this.#fingerprintKey).update(value.reveal(), 'utf8').digest('hex').slice(0, 12);
   }
-  async seal(value: SecretValue): Promise<SealedSecret> {
+  async seal(value: SecretValue, binding: SecretBinding): Promise<SealedSecret> {
+    const context = bindingContext(binding);
     const dataKey = randomBytes(32);
     try {
-      const { iv, tag, ciphertext } = gcmSeal(dataKey, Buffer.from(value.reveal(), 'utf8'), AAD);
-      return { fingerprint: this.fingerprint(value), ciphertext, iv, authTag: tag, wrappedKey: await this.kek.wrap(dataKey), kekId: this.kek.kekId };
+      const { iv, tag, ciphertext } = gcmSeal(dataKey, Buffer.from(value.reveal(), 'utf8'), `${AAD}|${context}`);
+      return { fingerprint: this.fingerprint(value), ciphertext, iv, authTag: tag, wrappedKey: await this.kek.wrap(dataKey, context), kekId: this.kek.kekId, version: binding.version };
     } finally {
       dataKey.fill(0);
     }
   }
-  async open(sealed: { ciphertext: Buffer; iv: Buffer; authTag: Buffer; wrappedKey: Buffer; kekId: string }): Promise<SecretValue> {
-    const dataKey = await this.kek.unwrap(sealed.wrappedKey, sealed.kekId);
+  /** Opens a sealed secret for exactly the owner it was sealed for; anything else (moved, swapped, tampered) is `unreadable`. */
+  async open(sealed: { ciphertext: Buffer; iv: Buffer; authTag: Buffer; wrappedKey: Buffer; kekId: string }, binding: SecretBinding): Promise<SecretValue> {
+    const context = bindingContext(binding);
+    let dataKey: Buffer;
     try {
-      return new SecretValue(gcmOpen(dataKey, { iv: sealed.iv, tag: sealed.authTag, ciphertext: sealed.ciphertext }, AAD).toString('utf8'));
+      dataKey = await this.kek.unwrap(sealed.wrappedKey, sealed.kekId, context);
+    } catch (error) {
+      throw error instanceof SecretStoreError && error.code === 'kek_mismatch' ? error : new SecretStoreError('unreadable');
+    }
+    try {
+      return new SecretValue(gcmOpen(dataKey, { iv: sealed.iv, tag: sealed.authTag, ciphertext: sealed.ciphertext }, `${AAD}|${context}`).toString('utf8'));
+    } catch {
+      throw new SecretStoreError('unreadable');
     } finally {
       dataKey.fill(0);
     }

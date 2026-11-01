@@ -8,6 +8,7 @@
       "secret_store_unconfigured": "Gizli açarlar anbarında hələ açarların şifrələnməsi açarı yoxdur, ona görə də gizli açarı yadda saxlamaq olmaz.",
       "secret_required": "Təchizatçı ilə real qoşulmanın aktivləşdirilməzdən əvvəl öz gizli açarı olmalıdır.",
       "secret_not_found": "Gizli açarı anbardan oxumaq mümkün olmadı.",
+      "secret_unreadable": "Saxlanmış gizli açar bu qoşulmaya aid deyil və ya dəyişdirilib, ona görə də istifadə edilmədi.",
       "credential_not_active": "Bağlı giriş məlumatları istinadı bu habda aktiv deyil.",
       "test_required": "Aktivləşdirməzdən əvvəl cari konfiqurasiyanı yoxlayın.",
       "test_failed": "Son qoşulma yoxlaması uğursuz oldu.",

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inspect } from 'node:util';
@@ -25,21 +25,29 @@ test('secret store: envelope encryption round trip, keyed fingerprints, no plain
   const local = new LocalKeyEncryption(kek);
   const sealer = new SecretSealer(local, local.fingerprintKey());
   const value = new SecretValue(`sk-synthetic-${randomBytes(16).toString('hex')}`);
-  const sealed = await sealer.seal(value);
+  const owner = { connectionId: randomUUID(), version: 1 };
+  const sealed = await sealer.seal(value, owner);
   assert.match(sealed.fingerprint, /^[a-f0-9]{12}$/);
   assert.equal(sealed.fingerprint, sealer.fingerprint(value), 'the fingerprint is stable for a value');
   assert.notEqual(sealed.fingerprint, sealer.fingerprint(new SecretValue('another-synthetic-value')));
   assert.equal(sealed.iv.length, 12);
   assert.equal(sealed.authTag.length, 16);
   for (const part of [sealed.ciphertext, sealed.wrappedKey]) assert.ok(!part.toString('latin1').includes(value.reveal()), 'no plaintext in the sealed parts');
-  assert.equal((await sealer.open(sealed)).reveal(), value.reveal());
+  assert.equal((await sealer.open(sealed, owner)).reveal(), value.reveal());
+  // Bound to its owner: the same sealed row under another connection or another version does not open.
+  const unreadable = (e: unknown) => e instanceof SecretStoreError && e.code === 'unreadable';
+  await assert.rejects(sealer.open(sealed, { connectionId: randomUUID(), version: 1 }), unreadable);
+  await assert.rejects(sealer.open(sealed, { ...owner, version: 2 }), unreadable);
+  // A data key wrapped for another owner does not open this ciphertext either (both layers are bound).
+  const foreign = await sealer.seal(value, { connectionId: randomUUID(), version: 1 });
+  await assert.rejects(sealer.open({ ...sealed, wrappedKey: foreign.wrappedKey }, owner), unreadable);
   // Two seals of one value differ (fresh data key and IV each time).
-  const again = await sealer.seal(value);
+  const again = await sealer.seal(value, owner);
   assert.notDeepEqual(again.ciphertext, sealed.ciphertext);
   // Tampering fails closed; another KEK cannot open it.
-  await assert.rejects(sealer.open({ ...sealed, ciphertext: Buffer.concat([sealed.ciphertext.subarray(0, -1), Buffer.from([sealed.ciphertext.at(-1)! ^ 1])]) }));
+  await assert.rejects(sealer.open({ ...sealed, ciphertext: Buffer.concat([sealed.ciphertext.subarray(0, -1), Buffer.from([sealed.ciphertext.at(-1)! ^ 1])]) }, owner), unreadable);
   const other = new LocalKeyEncryption(randomBytes(32));
-  await assert.rejects(new SecretSealer(other, other.fingerprintKey()).open(sealed), (e: unknown) => e instanceof SecretStoreError && e.code === 'kek_mismatch');
+  await assert.rejects(new SecretSealer(other, other.fingerprintKey()).open(sealed, owner), (e: unknown) => e instanceof SecretStoreError && e.code === 'kek_mismatch');
   // The value never renders.
   assert.equal(String(value), '[secret]');
   assert.equal(JSON.stringify({ value }), '{"value":"[secret]"}');
@@ -49,10 +57,13 @@ test('secret store: envelope encryption round trip, keyed fingerprints, no plain
 test('secret store: an external KMS adapter interface with a fake, and credential references outside the database', async () => {
   const kms = new FakeKms('synthetic-key');
   const sealer = kmsSecretSealer(kms, randomBytes(32));
-  const sealed = await sealer.seal(new SecretValue('synthetic-kms-protected-value'));
+  const owner = { connectionId: randomUUID(), version: 3 };
+  const sealed = await sealer.seal(new SecretValue('synthetic-kms-protected-value'), owner);
   assert.equal(sealed.kekId, 'kms:synthetic-key');
-  assert.equal((await sealer.open(sealed)).reveal(), 'synthetic-kms-protected-value');
+  assert.equal((await sealer.open(sealed, owner)).reveal(), 'synthetic-kms-protected-value');
   assert.deepEqual(kms.calls, ['encrypt', 'decrypt']);
+  // The KMS encryption context binds the wrapped key to its owner as well.
+  await assert.rejects(sealer.open(sealed, { ...owner, connectionId: randomUUID() }), (e: unknown) => e instanceof SecretStoreError && e.code === 'unreadable');
 
   const reader = new ExternalSecretReader({ SYNTHETIC_PROVIDER_KEY: 'synthetic-env-value' }, new FakeVault({ 'kv/synthetic': 'synthetic-vault-value' }));
   assert.equal((await reader.read('env', 'SYNTHETIC_PROVIDER_KEY')).reveal(), 'synthetic-env-value');
