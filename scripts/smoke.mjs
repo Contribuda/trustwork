@@ -15,11 +15,15 @@ async function smoke(args, port, path, verify, extraEnv = {}) {
     for (let attempt = 0; attempt < 80; attempt++) {
       if (child.exitCode !== null) throw new Error(`Server exited: ${output}`);
       let response;
-      try { response = await fetch(`http://127.0.0.1:${port}${path}`, { signal: AbortSignal.timeout(1000) }); } catch { /* Startup may still be in progress. */ }
+      // The deadline covers the streamed response body as well as startup headers.
+      // A one-second readiness probe can abort a healthy cold server during verification.
+      try { response = await fetch(`http://127.0.0.1:${port}${path}`, { signal: AbortSignal.timeout(10000) }); } catch { /* Startup may still be in progress. */ }
       if (response) { assert.equal(response.status, 200); await verify(response); return; }
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
     throw new Error(`Server startup timed out: ${output}`);
+  } catch (error) {
+    throw new Error(`Smoke failed for ${args.join(' ')} at ${path}: ${output}`, { cause: error });
   } finally {
     if (child.exitCode === null) { const ended = once(child, 'exit'); child.kill('SIGTERM'); await ended; }
   }
