@@ -68,6 +68,11 @@ export class CapabilityAuthority {
     return typeof this.hub === 'function' ? this.hub() : this.hub;
   }
 
+  /** Bind a check to proven request/connection provenance, preserving the owning entitlement and extension ports. */
+  forHub(hubId: string): CapabilityAuthority {
+    return new CapabilityAuthority({ hubId, extensions: this.extensions, entitlements: this.entitlements, manifests: this.manifests });
+  }
+
   registry(): Promise<ModuleRegistry> {
     return loadRegistry(this.extensions, this.manifests);
   }

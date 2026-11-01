@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
+import { sql } from 'kysely';
 import {
   DEFAULT_APPROVAL_BY_ACTION, mandateChangeAllowed, MandateV2Schema, type ApprovalPolicy, type JobTrigger, type MandateActionV2, type MandateContext, type Principal,
 } from '../../deps/contracts.js';
 import { auditEvents, type Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
+import { completionRecordId } from '../../common/idempotency/completion.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import { mapDatabaseError } from '../procurement/common.js';
@@ -15,6 +17,7 @@ import {
 } from './contracts.js';
 import { agentJobs, mandateDigest, mandateProposals, type AgentJobRequestRow, type AgentJobScheduleRow } from './deps.js';
 import { agentModulesRefusal } from './policy.service.js';
+import { servingHub } from './serving-hub.js';
 
 const iso = (v: Date | string | null): string | null => (v === null ? null : new Date(v).toISOString());
 const APPROVAL_RANK: Record<ApprovalMode, number> = { ask_each: 0, ask_first: 1, ask_above: 2, pre_authorized: 3 };
@@ -102,10 +105,10 @@ export class AgentJobsService {
   }
 
   /** Why this person cannot turn the template on: the module, or a verb with no available capability. */
-  private async templateRefusal(trx: Transaction, actor: AgentActor, t: JobTemplate) {
-    const registry = await this.authority.registry();
-    const { document } = await this.authority.policy(trx, registry);
-    const principal = await this.authority.principalOf(trx, actor);
+  private async templateRefusal(trx: Transaction, actor: AgentActor, t: JobTemplate, authority = this.authority) {
+    const registry = await authority.registry();
+    const { document } = await authority.policy(trx, registry);
+    const principal = await authority.principalOf(trx, actor);
     const module = moduleRefusal(document, registry, t.moduleKey, principal);
     if (module === 'module.unregistered') return { reason: 'module.not_enabled' as const, messageKey: REFUSAL_MESSAGE_KEYS['module.not_enabled'], capabilityId: `${t.moduleKey}.job`, moduleKey: t.moduleKey, allowed: false as const, blockedBy: null };
     if (module !== null) return { reason: module, messageKey: REFUSAL_MESSAGE_KEYS[module], capabilityId: `${t.moduleKey}.job`, moduleKey: t.moduleKey, allowed: false as const, blockedBy: null };
@@ -116,7 +119,7 @@ export class AgentJobsService {
       let first = null;
       let ok = false;
       for (const c of backing) {
-        const d = await this.authority.check(trx, actor, c.id, action);
+        const d = await authority.check(trx, actor, c.id, action);
         if (d.allowed) {
           ok = true;
           break;
@@ -134,13 +137,17 @@ export class AgentJobsService {
    */
   turnOn(state: RequestState, body: TurnOnJobCommand) {
     return this.run(state, async (trx, p) => {
+      const binding = await servingHub(trx, this.ctx.config.publicOrigin);
+      const authority = this.authority.forHub(binding.hubId);
+      const operationId = completionRecordId(state);
+      if (!operationId || !state.session) throw new ApiError('access.forbidden', 'a committed first-party operation is required', { reason: 'operation_identity_missing' });
       const actor = this.actor(p, body.actingFor);
       const now = this.ctx.clock.now();
-      const registry = await this.authority.registry();
-      const { document } = await this.authority.policy(trx, registry);
+      const registry = await authority.registry();
+      const { document } = await authority.policy(trx, registry);
       const template = document.jobTemplates.find((t) => t.moduleKey === body.moduleKey && t.templateKey === body.templateKey);
       if (!template) throw new ApiError('access.not_found', 'the hub offers no such job', { reason: 'template_not_offered' });
-      const refusal = await this.templateRefusal(trx, actor, template);
+      const refusal = await this.templateRefusal(trx, actor, template, authority);
       if (refusal) throw refusalError(refusal);
       const trigger: JobTrigger = body.trigger ?? template.defaultTrigger;
       const problems = jobTriggerViolations(template, trigger, document.participantSettings.scheduleMinIntervalMinutes);
@@ -169,9 +176,10 @@ export class AgentJobsService {
       });
       const firstDue = trigger.kind === 'schedule' ? nextScheduleOccurrence(trigger, now, now, document.calendar, template.onClosedDay) : null;
       const request = await agentJobs.insertRequest(trx, {
-        principal_person_id: p.personId, on_behalf_company_id: actor.onBehalfCompanyId, hub_id: this.authority.hubId, module_key: template.moduleKey, template_key: template.templateKey,
+        principal_person_id: p.personId, on_behalf_company_id: actor.onBehalfCompanyId, hub_id: binding.hubId, module_key: template.moduleKey, template_key: template.templateKey,
         trigger, goal_id: goalId, on_closed_day: template.onClosedDay, proposal_id: proposal.id, first_due_at: firstDue,
       });
+      await sql`SELECT trustwork.agent_modules_bind_request(${request.id}::uuid, ${binding.id}::uuid, ${state.session.id}::uuid, ${operationId}::uuid)`.execute(trx);
       await auditEvents.append(trx, {
         actor_person_id: p.personId, on_behalf_of_company_id: actor.onBehalfCompanyId, action: 'agents.job_proposed', object_kind: 'agent_job_request', object_id: request.id,
         request_id: state.requestId, authz_epoch: p.authzEpoch, basis: { moduleKey: template.moduleKey, templateKey: template.templateKey, proposalId: proposal.id, trigger: trigger.kind },

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { sql } from 'kysely';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { hash } from '@node-rs/argon2';
 import { withMaintenance, withPrincipal, type Transaction } from '@trustwork/data';
@@ -51,6 +52,7 @@ export default {
       await trx.insertInto('credential').values({ person_id: participant, kind: 'password', password_hash: passwordHash }).execute();
       const hub = await trx.insertInto('hub').values({ slug: `synthetic-agt3-${randomBytes(3).toString('hex')}`, lifecycle: 'draft' }).returning('id').executeTakeFirstOrThrow();
       await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: founder.node, name: { en: 'Synthetic agent modules hub' }, default_locale: 'en', locales: ['en'], time_zone: 'America/New_York', currency: 'USD', created_by: founder.person_id }).execute();
+      await sql`INSERT INTO trustwork.agent_serving_hub (origin, hub_id) VALUES (${h.created.config.publicOrigin}, ${hub.id}::uuid)`.execute(trx);
       return { drafter: await person('Synthetic Agent Policy Drafter'), activator: await person('Synthetic Agent Policy Activator'), participant, hubId: hub.id };
     });
     for (const [personId, role] of [[ids.drafter, 'ops-engineer'], [ids.activator, 'trust-reviewer']] as const) {

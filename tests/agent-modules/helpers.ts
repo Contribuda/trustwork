@@ -64,6 +64,8 @@ export async function buildAgentWorld(h: Harness): Promise<AgentWorld> {
   const a = actors(h.db.admin, h.pool, w);
   await a.assignSensitive({ personId: w.people.operator, role: 'node-operator', scope: { kind: 'node', nodeId: w.nodeId } });
   const hubId = (await a.createHub(`synthetic-agents-${randomBytes(3).toString('hex')}`, { ...US_HUB, timeZone: 'America/New_York' })).hub_id;
+  await withMaintenance(h.db.admin, (trx) => sql`INSERT INTO trustwork.agent_serving_hub (origin, hub_id)
+    VALUES (${h.created.config.publicOrigin}, ${hubId}::uuid)`.execute(trx));
   await a.assignSensitive({ personId: w.people.owner, role: 'hub-owner', scope: { kind: 'hub', hubId } });
   await a.assignSensitive({ personId: w.people.officer, role: 'compliance-officer', scope: { kind: 'hub', hubId } });
   await a.assign({ personId: w.people.moderator, role: 'moderator', scope: { kind: 'hub', hubId } });
