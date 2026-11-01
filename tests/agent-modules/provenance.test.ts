@@ -8,7 +8,7 @@ import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
 import { as, fails, workerLogin } from '../assistant/helpers.js';
 import { activatePolicy, buildAgentWorld, ok } from './helpers.js';
-import { usHubPolicy } from './fixtures.js';
+import { runtimeHubPolicy } from './fixtures.js';
 
 const h = await startHarness('agent_modules_provenance');
 test('first-party serving provenance is explicit, immutable and independent of process defaults', { skip: h ? false : SKIP_REASON }, async (t) => {
@@ -17,7 +17,7 @@ test('first-party serving provenance is explicit, immutable and independent of p
   t.after(async () => { await worker.close(); await h.close(); });
   const world = await buildAgentWorld(h);
   const seed = await seedPersonas(h);
-  await activatePolicy(h, world, usHubPolicy(world.hubId));
+  await activatePolicy(h, world, runtimeHubPolicy(world.hubId));
   const client = h.client();
   await login(client, 'petr');
   const body = { actingFor: 'self', moduleKey: 'project_planner', templateKey: 'weekly_plan_review', trigger: null, validUntil: new Date(Date.now() + 86_400_000 * 30).toISOString() };

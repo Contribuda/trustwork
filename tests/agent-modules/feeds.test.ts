@@ -11,7 +11,7 @@ import { sql } from 'kysely';
 import { goals } from '../../packages/data/src/repositories/agents.js';
 import { setTimeout as delay } from 'node:timers/promises';
 import { activatePolicy, buildAgentWorld, ok } from './helpers.js';
-import { usHubPolicy } from './fixtures.js';
+import { runtimeHubPolicy } from './fixtures.js';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -26,7 +26,7 @@ test('persisted source hub cannot be replaced by an API or worker argument', { s
   t.after(async () => { await worker.close(); await h.close(); });
   const world = await buildAgentWorld(h);
   const seed = await seedPersonas(h);
-  await activatePolicy(h, world, usHubPolicy(world.hubId));
+  await activatePolicy(h, world, runtimeHubPolicy(world.hubId));
   const client = h.client();
   await login(client, 'petr');
   const proposed = ok<{ request: { id: string }; confirmation: { proposalId: string; digest: unknown } }>(await client.post('/v1/assistant/jobs', {
@@ -49,7 +49,7 @@ test('persisted source hub cannot be replaced by an API or worker argument', { s
   await assert.rejects(fire(randomUUID()), (e: unknown) => (e as { hint?: string }).hint === 'agents.hub_mismatch', 'even a duplicate cannot bypass provenance validation');
 
   const feed = new GoalOccurrenceFeed();
-  const draft = usHubPolicy(world.hubId);
+  const draft = runtimeHubPolicy(world.hubId);
   draft.jobTemplates[0]!.triggerKinds = ['schedule', 'request', 'event', 'goal', 'deadline'];
   await activatePolicy(h, world, draft);
   const goal = ok<{ goal: { id: string }; confirmation: { digest: unknown } }>(await client.post('/v1/assistant/goals', {

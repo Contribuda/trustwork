@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createApp } from '../../../apps/api/src/app.js';
@@ -108,6 +109,11 @@ try {
   await db.migrate();
   // Reference data (units, restricted places) as a deployment loads it; without it every place code is refused (fail closed).
   await withMaintenance(db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
+  // Explicit synthetic serving authority for governed service and anonymous public projection tests.
+  await withMaintenance(db.admin, async trx => {
+    const hub = await trx.insertInto('hub').values({ slug: 'synthetic-live-api', lifecycle: 'draft' }).returning('id').executeTakeFirstOrThrow();
+    await sql`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES(${WEB_ORIGIN},${hub.id}::uuid)`.execute(trx);
+  });
   await db.createAppLogin();
   pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
   mailbox = new CommittedMailbox(db.admin, Buffer.from(mailKeyHex, 'hex'));

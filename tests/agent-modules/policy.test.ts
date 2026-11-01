@@ -18,7 +18,7 @@ import { AssistantService, DEFAULT_RUNTIME_SETTINGS } from '../../apps/api/src/m
 import { assistantPolicySettings } from '../../apps/api/src/modules/assistant/assistant.module.js';
 import { UnavailableModel, UnavailableRetrieval } from '../../apps/api/src/modules/assistant/ports.js';
 import { stateOf } from '../assistant/helpers.js';
-import { PLANNER_COMMIT, PROFILE, usHubPolicy, withSwitch } from './fixtures.js';
+import { PLANNER_COMMIT, PROFILE, runtimeHubPolicy, usHubPolicy, withSwitch } from './fixtures.js';
 import { buildAgentWorld, command, documentFor, ok, type AgentWorld } from './helpers.js';
 
 /**
@@ -226,6 +226,8 @@ test('agent product administration: policy versions with previews, second person
   });
 
   await t.test('no staff endpoint or database path reads or changes one participant\'s agent, mandates, settings, goals, job subscriptions or connections', async () => {
+    // Enable Core explicitly before testing owning isolation through governed goal reads.
+    ok(await activate((await draft(runtimeHubPolicy(hubId))).version));
     // Routes: no admin route of the whole API names a participant's agent objects.
     const files = (dir: string): string[] => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? files(join(dir, n)) : [join(dir, n)])).filter((p) => /controllers?\.ts$/.test(p));
     const adminRoutes: string[] = [];
