@@ -121,7 +121,7 @@ test('tasks database: frozen offers, isolation, private halves, staleness, agree
     assert.equal((await as(xenia, (trx) => trx.selectFrom('task_request_version').select('id').execute())).length, 0);
   });
 
-  await t.test('task agreements: only the owner, only stored digests, only sent offers on the current version; consultations stay refused', async () => {
+  await t.test('task agreements: only the owner, only stored digests, only sent offers on the current version; consultation agreements pin consultation requests', async () => {
     const versionRow = await as(petr, (trx) => trx.selectFrom('task_request_version').selectAll().where('id', '=', request.request.currentVersionId!).executeTakeFirstOrThrow());
     const offerRow = await as(petr, (trx) => trx.selectFrom('task_offer').selectAll().where('id', '=', carlSent.id).executeTakeFirstOrThrow());
     const row = (over: Record<string, unknown> = {}) => ({
@@ -133,7 +133,8 @@ test('tasks database: frozen offers, isolation, private halves, staleness, agree
     await fails(as(petr, (trx) => trx.insertInto('agreement').values(row({ offer_digest: 'b'.repeat(64) })).execute()), 'commercial.digest_mismatch');
     await fails(as(petr, (trx) => trx.insertInto('agreement').values(row({ seller_person_id: xenia })).execute()), 'commerce.not_authorised');
     await fails(as(petr, (trx) => trx.insertInto('agreement').values(row({ status: 'accepted_by_both' })).execute()), 'commerce.invalid_transition');
-    await fails(as(petr, (trx) => trx.insertInto('agreement').values(row({ terms_kind: 'consultation' })).execute()), 'transactions.terms_kind_unavailable');
+    // A consultation agreement (CONS-001) pins a consultation request of the client, never a task request version.
+    await fails(as(petr, (trx) => trx.insertInto('agreement').values(row({ terms_kind: 'consultation' })).execute()), 'commerce.not_authorised');
     const borisRow = await as(boris, (trx) => trx.selectFrom('task_offer').selectAll().where('id', '=', borisDraft.id).executeTakeFirstOrThrow());
     await fails(as(petr, (trx) => trx.insertInto('agreement').values(row({ offer_ref_id: borisRow.id, seller_person_id: null, seller_company_id: seed.companies.supplier, offer_digest: 'c'.repeat(64) })).execute()), 'commercial.rfq_version_mismatch');
   });
