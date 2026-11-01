@@ -1,8 +1,12 @@
 # ADR 020 — Agent job execution and authoritative hub attribution
 
-Date: 2026-11-01. Status: **Proposed; not accepted**. ADR 019 is reserved for the separate admin UI proposal.
+Date: 2026-11-01. Status: **Accepted technical architecture, 2026-11-01**. ADR 019 is reserved for the separate admin UI proposal.
 
 Agent: Codex CLI (OpenAI) for Parshkov. Decision owner: maintainer for architecture, contracts, migrations and coordinated scope. Product-policy changes are not proposed.
+
+## Maintainer decision
+
+The delegated conductor accepted option 3 and the technical decisions below in [PR #445](https://github.com/Contribuda/trustwork/pull/445#issuecomment-6552887365), merged as `17850921c556a30841d34181462fe0967b7900b2`. This records architecture acceptance, not implementation acceptance. Scope allocation, isolated additive migrations, feed inventory and legacy disposition remain implementation review obligations. The conductor coordinates them under the existing handoff. No historical catch-up, expanded standing mandate, external provider or launch is authorized.
 
 ## Context
 
@@ -38,7 +42,7 @@ Paths below are relative to A; line numbers refer to its pinned commit.
 2. Keep readiness-only behavior and declare AGT-003 complete. Rejected: the requested implementation and trigger/parity acceptance remain unmet.
 3. **Recommended: narrowly typed occurrence execution on the existing worker, with stored provenance, owner-module authorization and per-operation hub attribution.** Preserve public trigger and mandate contracts; add only the internal coordination records and worker entry points needed. Review those cross-module authority changes through this ADR. No generic automation executor or new workflow product.
 
-## Proposed decisions
+## Accepted technical decisions
 
 ### 1. One durable occurrence, one run
 
@@ -88,7 +92,7 @@ Reuse AST-001 operation IDs, stable correlation keys, attempts, leases and recon
 
 Preserve full participant capability parity. Inventory every implemented operation, its capability, action, object authorizer and UI/agent/MCP adapter. Apply the shared gate on real service entry points before reads/writes, and again at durable dispatch; an availability endpoint is not enforcement. Human-only govern actions retain first-party handoffs; a handoff never invokes the action.
 
-Within AGT-003, test identical decisions through actual participant service execution, agent invocation and the MCP adapter, including scope differences as explicit inputs. Record transport end-to-end tests as pending until MCP-001/003 connect the adapter. Do not call adapter tests full MCP transport acceptance. Maintainer must record the dependency boundary: AGT-003 supplies and proves the shared authority and trigger runtime; MCP packages consume it and prove transport parity. If the maintainer considers actual transport execution part of AGT-003 acceptance, agree a coordinated dependency/scope change before marking anything done. This draft neither changes the graph nor opens dependent work.
+Within AGT-003, test identical decisions through actual participant service execution, agent invocation and the MCP adapter, including scope differences as explicit inputs. Record transport end-to-end tests as pending until MCP-001/003 connect the adapter. Do not call adapter tests full MCP transport acceptance. Maintainer must record the dependency boundary: AGT-003 supplies and proves the shared authority and trigger runtime; MCP packages consume it and prove transport parity. If the maintainer considers actual transport execution part of AGT-003 acceptance, agree a coordinated dependency/scope change before marking anything done. The maintainer accepts this boundary: AGT-003 proves shared service/agent/MCP-adapter authority and all five durable triggers; MCP-001/003 prove actual transport integration. The package graph is unchanged, and unfinished AGT-003 does not open dependent work.
 
 ## Work possible without a new ADR
 
@@ -121,7 +125,7 @@ These are proposed tests, **not tests run in this review**:
 - Actual service mutation/read, agent path and MCP adapter return equivalent capability refusals. A transport test remains explicitly pending until that owner integrates it; no baseline masks an ungoverned operation.
 - Forbidden-field projections cover event/deadline feeds, logs, outbox, reports and external adapter input. Fakes prove egress denial without providers.
 
-## Consequences and outstanding decisions
+## Consequences and implementation coordination
 
 This reuses the existing durable runtime and keeps authority at domain boundaries, at the cost of several narrow cross-module migrations and negative/concurrency tests. It avoids a broker, generic automation service and broader standing mandates.
 
