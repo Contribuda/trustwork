@@ -14,7 +14,7 @@ const enabled = process.env.TRUSTWORK_RESTORE_DRILL === '1';
 
 test('OPS-003 restore drill: PITR into an isolated project, tombstone replay, reconciliation, measured RPO and RTO', { skip: enabled ? false : 'SKIPPED: set TRUSTWORK_RESTORE_DRILL=1 (needs Docker; CI runs it in the restore-drill workflow)', timeout: 900_000 }, async () => {
   const evidencePath = process.env.TRUSTWORK_RESTORE_DRILL_EVIDENCE ?? null;
-  const evidence = await runDrill({ ...DEFAULT_DRILL, evidencePath, log: (line) => console.log(`[drill] ${line}`) });
+  const evidence = await runDrill({ ...DEFAULT_DRILL, evidencePath, privacyFixture: true, log: (line) => console.log(`[drill] ${line}`) });
   const failed = evidence.checks.filter((c) => !c.ok);
   assert.deepEqual(failed, [], 'every drill check passed');
   assert.equal(RestoreDrillSchema.parse(evidence.drill).outcome, 'passed');

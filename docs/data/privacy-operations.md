@@ -1,39 +1,51 @@
 # Privacy implementation coverage
 
-PRV-001 / issue #93. Status: **partial, pending conductor review and integration**. The work package is not complete. The operational contracts in `packages/contracts/src/privacy.ts` cover only the implemented intake and local journal shapes. Two-person erasure execution, module-owned suppression consumers, remaining exports and production journal integration remain implementation work. They are not owner-only permission blockers; this session is bounded to the journal/restore repair.
+PRV-001 / issue #93. Status: **partial, pending conductor review and integration**. The work package is not complete. The continuation adds public marketing suppression, proof-bound source intake, configured fake DROP intake, a two-person subject-plan protocol, broader owning projections, durable propagation intents and local restore CLI integration. Whole-subject erasure, complete exports and remaining owning consumers are still engineering work, not owner-only permission blockers.
 
 ## Implemented runtime paths
 
 Requests, preferences, export metadata, legal holds and replay receipts use PostgreSQL with forced RLS and narrow security-definer commands. The requester is the authenticated person; another person's id is refused. A company request requires a current administrator membership. Company data still passes through each existing module's finer permissions; administration is not a way to bypass a deal permission. A staff case grant never becomes a subject-export credential.
 
-Exports are currently **partial** and say `complete: false`. The composition root invokes existing profile, project, catalogue, procurement, quote, agreement and company serializers in the real principal transaction. The delivery route checks current authority, locks the person's authorization row, checks company membership and recomposes; possession of an export id grants nothing. Local FILE/blob storage verifies the generated JSON digest, then removes the temporary bytes. There are no signed download URLs, caller-supplied paths or provider calls. Billing and paid-plan state are not consulted. Tests demonstrate an unpaid person and ownership revocation at delivery; an ended subscription fixture is not yet covered.
+Exports are currently **partial** and say `complete: false`. The composition root invokes existing profile, project, catalogue, procurement, quote, agreement and company serializers in the real principal transaction. The delivery route checks current authority, locks the person's authorization row, checks company membership and recomposes; possession of an export id grants nothing. Local FILE/blob storage verifies the generated JSON digest, then removes the temporary bytes. There are no signed download URLs, caller-supplied paths or provider calls. Billing and paid-plan state are not consulted. Tests demonstrate an unpaid person, an exactly ended paid subscription, counterparty private-budget exclusion and ownership revocation at delivery.
 
 ## Export and erasure inventory
 
-| Module | Export in this slice | Erasure/replay in this slice |
+| Implemented API module | Export status and scope | Subject deletion capability |
 |---|---|---|
-| Agreements and orders | Current authorized buyer/seller projections, including shared records; history incomplete | Unsupported; immutable terms and lawful evidence require owner commands |
-| Assistant and agent goals | Unsupported; active AST/LLM integration seam | Unsupported |
-| Billing | Unsupported; active BILL integration seam | Unsupported |
-| Catalogue | Current offering owner projection; historical versions incomplete | Unsupported |
-| Communications and mail | Unsupported; active CONS integration seam | No queued-message cancellation or delivery barrier wired |
-| Company | Existing member projection; directory and other company records incomplete | Unsupported |
-| Content | Unsupported | Unsupported |
-| Execution and trust | Unsupported | Unsupported |
-| Files | Binary export not composed | Existing FILE commands and file journal remain intact; subject-wide composition not wired |
-| Identity | Profile identity subset; e-mail/session/exportable identity records incomplete; secrets excluded | Unsupported; no account erasure executor |
-| Plans | Unsupported | Unsupported |
-| Privacy | Own request and preference records | Privacy-owned correction redaction, restrictive restored reads and suppression replay only |
-| Procurement | Own needs and RFQ projections; invitation and historical coverage incomplete | Unsupported |
-| Profiles | Existing owner profile, consent, licence, portrait, experience and private attention views | Unsupported |
-| Projects | Owned project projections; participation-only enumeration incomplete | Unsupported |
-| Reputation | Unsupported | Unsupported |
-| Sales | Current authorized quote projections; history incomplete | Unsupported |
-| Sources | Unsupported; nonparticipant proof and correction not wired | Do-not-collect keys are persisted, but refresh does not consult them yet |
-| Support | Unsupported; requires case-specific export | Unsupported |
-| Tasks | Unsupported | Unsupported |
+| approval-routes | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| assistant | unsupported: requires owning-module exporter | Unavailable; exact gap recorded in the plan |
+| assistant-goals | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| billing | partial: own accounts, subscriptions, accepted prices, budgets and reservations; ledger and usage history pending | Unavailable; exact gap recorded in the plan |
+| catalogue | partial: authorized offering view; historical versions not yet composed | Unavailable; exact gap recorded in the plan |
+| communications | partial: project/agreement threads, paginated own notifications, preferences and channels; other contexts pending | Unavailable; exact gap recorded in the plan |
+| connections | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| consultations | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| content | unsupported: requires owning-module exporter | Unavailable; exact gap recorded in the plan |
+| directory | partial: existing member projection; member directory not included | Unavailable; exact gap recorded in the plan |
+| execution | partial: authorized confirmed agreement execution projections; full audit history pending | Unavailable; exact gap recorded in the plan |
+| files | unsupported: binary artifact export not composed | Unavailable; exact gap recorded in the plan |
+| hubs | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| identity | partial: person serializer, email bindings, provider identities and memberships; session history pending | Unavailable; exact gap recorded in the plan |
+| jurisdiction | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| models | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| plans | partial: owner plans, all versions, item states, changes, timing, shares, locations, permits and diary; participation-only enumeration pending | Unavailable; exact gap recorded in the plan |
+| platform-admin | partial: own request and preference records | Unavailable; exact gap recorded in the plan |
+| procurement | partial: own needs and RFQs; supplier invitation views not yet composed | Unavailable; exact gap recorded in the plan |
+| profiles | supported: owner profile, consents, licences, portraits, experience, preferences, follows, bookmarks and reading progress | Unavailable; exact gap recorded in the plan |
+| projects | partial: owned project projections; participation-only projects not yet composed | Unavailable; exact gap recorded in the plan |
+| providers | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| reputation | partial: own reputation builder and confirmation inbox; historical credentials pending | Unavailable; exact gap recorded in the plan |
+| sales | partial: authorized buyer/seller quote views; historical versions not yet composed | Unavailable; exact gap recorded in the plan |
+| screening | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| screening-gates | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| sources | unsupported: nonparticipant identity proof and sourced-record projection seam pending | Unavailable; exact gap recorded in the plan |
+| supplier-base | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
+| support | partial: all own cases through case serializer, own actions and access records; historical diagnostics pending | Unavailable; exact gap recorded in the plan |
+| tasks | partial: own requests, offers, assignments and invitations; historical version coverage pending | Unavailable; exact gap recorded in the plan |
+| transactions | partial: current authorized agreement/order projections; historical events not yet composed | Unavailable; exact gap recorded in the plan |
+| trust | partial: confirmed agreement reviews and responses; historical reputation snapshots pending | Unavailable; exact gap recorded in the plan |
 
-This inventory is intentionally incomplete; empty fixture data is not evidence that an unsupported module is exported or erased.
+The inventory covers every implemented API module directory and is checked against the filesystem. Empty fixtures do not establish completeness. Only the privacy-owned correction replay adapter exists; a receipt never means the whole subject was erased.
 
 ## Country policy and rights
 
@@ -41,11 +53,15 @@ No actual country deadline, retention period or regulator schedule is invented. 
 
 Correction intake stores a protected proposal; it does not mutate an owning module or rewrite provenance. GPC, sale/share opt-outs, sensitive-data limits and direct-marketing objections persist as data. Objections create minimal hashes of the subject's verified addresses; concurrent preference updates cannot clear them. Collection and delivery enforcement are not complete until their owning paths consume the barrier.
 
-The `data_broker_registration` table is schema only. Fake DROP polling/intake, country-pack registry scheduling, public nonparticipant form/letter/e-mail proof and minimal identity-tie verification remain unimplemented. They are not described as live adapters.
+A public marketing objection requires no registration and returns the same acknowledgement for known and unknown addresses. It writes only the existing MAIL namespaced hash and unsubscribe barrier. The worker contact-lock port is tested in both race orders; its final MAIL hook is still a coordinated SANC seam.
+
+Nonparticipant source intake uses an opaque capability tied to a source-field digest, exact action, current case grant and an internal verification note authored by the human verifier. A generic address cannot obtain it. Correction/erasure requests remain pending owning resolution; an objection immediately records do-not-collect, and the actual SRC staging table refuses refresh/import of that record. Source history is not rewritten.
+
+The typed fake DROP adapter and bounded registry intake use only configured pack polling intervals and deadlines, preserve UNKNOWN/unavailable states, serialize concurrent polling and reject conflicting external references. Registry receipt is intake requiring proof, never deletion authority. No scheduler contacts an external regulator.
 
 ## Erasure and restore limits
 
-Legal holds are platform-scoped, elevated and audited with category reasons. They share a subject advisory lock with erasure readiness and replay. Readiness returns `legal_hold`, `country_policy_UNKNOWN` or `module_erasure_adapters_unavailable`; there is no successful erasure response. A tombstone schema rejects identical executor/approver ids, but this is not a runtime second-person approval protocol. The existing administration approval mechanism still needs a complete erasure plan/digest integration.
+Legal holds are platform-scoped, elevated and audited with category reasons. They share a subject advisory lock with erasure readiness and replay. Readiness returns `legal_hold`, `country_policy_UNKNOWN` or `module_erasure_adapters_unavailable`; there is no successful erasure response. The subject-plan API now uses the existing administration second-person approval operation. It binds the complete module inventory, subject revision/authz epoch, privacy record versions, policy, holds and each reviewer's current authority/grant. Execute rechecks these under the same transaction locks. Changed inputs invalidate the plan. Missing owning operations return named gaps without consuming the approval or creating a deletion receipt. The plan is not a successful erasure executor; source/version inventories for unavailable owning modules are explicitly absent capabilities.
 
 ### Retained journal foundation (local proof only)
 
@@ -65,13 +81,15 @@ Local filesystem durability is a fake with explicit trust assumptions: the autho
 
 The existing OPS-003 CLI and physical drill are preserved for installations that have **never enabled PRV-001 subject erasure**. This release has no runtime subject-erasure executor or activation path. The CLI no longer constructs a mandatory filesystem privacy ledger (which formerly rejected every production configuration). Its existing FILE-001 tombstone workflow is unchanged. A real PostgreSQL test runs the existing CLI with a production environment and no privacy storage, reconciles and lifts only that test's runtime fence.
 
-The local replay entry point is separate from the CLI. No flag selects a legacy fallback after privacy enablement. The default CLI is **not recovery for an erasure-enabled installation**; a database with no receipts cannot establish that an external journal never existed. Enabling production erasure remains blocked until an independently retained installation registry binds every normal start, writer and restore to the same authoritative journal. Out-of-tree or previously enabled erasure installations are unsupported and must stay fenced; this patch does not establish their compatibility.
+The explicitly local `runLocalPrivacyRestoreCli` uses the existing CLI authorization flow with a binding supplied by independent provisioning. It never derives the pin from the journal, database, environment or operator flags. Missing authority refuses authorization. No flag selects a legacy fallback after privacy enablement. The default CLI is **not recovery for an erasure-enabled installation**; a database with no receipts cannot establish that an external journal never existed. Enabling production erasure remains blocked until an independently retained installation registry binds every normal start, writer and restore to the same authoritative journal. Out-of-tree or previously enabled erasure installations are unsupported and must stay fenced; this patch does not establish their compatibility.
 
 Once a local journal has decisions, its authority, checkpoint, identity, records and seal must survive every database/object restore for as long as any backup or peer could resurrect data. Selecting a fresh directory, supplying a fresh ledger object, removing receipts or choosing a new UUID cannot satisfy the original binding. Missing or uncertain retained authority means no local restore authorization. Full production activation must make this lifetime obligation irreversible before any real erasure decision commits.
 
-Only the `privacy` replay adapter exists: correction redaction, restrictive restored reads and suppression/do-not-collect replay. Unsupported modules, conflicting receipts and retained legal holds abort replay. The synthetic drill restores old privacy rows; it does not prove whole-subject erasure, no-outreach/no-reimport acceptance or a physical backup recovery. Existing export, legal-hold and UNKNOWN lawful-retention authority checks remain intact.
+Only the `privacy` replay adapter exists: correction redaction, restrictive restored reads and suppression/do-not-collect replay. Unsupported modules, conflicting receipts and retained legal holds abort replay. The physical drill has an explicit synthetic privacy fixture, provisioned before backup, with a retained decision after the recovery point. It uses the local CLI for archive-end and earlier PITR authorization and checks redaction and restored suppression. Exact-head physical execution is a CI check, not a local claim. It does not prove whole-subject erasure or every delivery/projection consumer. Existing export, legal-hold and UNKNOWN lawful-retention authority checks remain intact.
 
-Whole-subject erasure, digest-bound two-person authorization/execution, suppression consumers, remaining module exports, retrieval/federation dispatch, production immutable storage and production restore integration are incomplete. PRV-001 stays `in_progress`; dependent work remains locked until full acceptance. No production or provider action was performed.
+Replay also writes typed retrieval/federation propagation intents in the same database transaction. The isolated consumers serialize by operation ID, commit outcome_unknown before any adapter effect, reconcile after process death, and accept only the exact digest receipt. No adapter is enabled by default. Owning index/federation ID/revision mapping, signing and runtime registration remain gaps; pending intents are not fabricated send success.
+
+Whole-subject erasure, remaining suppression consumers, complete module exports, retrieval/federation runtime dispatch, production immutable storage and production restore integration are incomplete. PRV-001 stays `in_progress`; dependent work remains locked until full acceptance. No production or provider action was performed.
 
 ## Coordination seams
 

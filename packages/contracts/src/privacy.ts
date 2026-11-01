@@ -39,6 +39,18 @@ export const PrivacyRegistryEntrySchema = z.object({
   externalRef: z.string().min(1).max(128), contactDigest: z.string().regex(/^[a-f0-9]{64}$/),
 }).strict();
 export const PrivacyRegistryBatchSchema = z.array(PrivacyRegistryEntrySchema).max(100);
+export const PrivacySourceProofSchema = z.object({
+  sourceFieldId: z.uuid(), grantId: z.uuid(), action: z.enum(['correction', 'erasure', 'objection']),
+  tokenHash: z.string().regex(/^[a-f0-9]{64}$/),
+  method: z.enum(['signed_statement', 'record_control', 'verified_representative']), evidenceRef: z.uuid(),
+}).strict();
+export const PrivacySourceSubmissionSchema = z.object({
+  proof: z.string().regex(/^[a-f0-9]{64}$/), action: z.enum(['correction', 'erasure', 'objection']),
+  proposedValue: z.string().min(1).max(2000).nullable().default(null),
+}).strict().refine((r) => (r.action === 'correction') === (r.proposedValue !== null));
+export const PrivacyPlanProposeSchema = z.object({ requestId: z.uuid(), grantId: z.uuid() }).strict();
+export const PrivacyPlanApproveSchema = z.object({ grantId: z.uuid(), digest: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
+export const PrivacyPlanExecuteSchema = z.object({ digest: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
 
 /** No production pack is supplied here. A verified pack must carry its source and reviewed values. */
 export const PrivacyPolicySchema = z.object({
@@ -47,3 +59,11 @@ export const PrivacyPolicySchema = z.object({
   deadlineDays: z.number().int().positive().nullable(), retentionDays: z.number().int().nonnegative().nullable(),
   registryPollHours: z.number().int().positive().nullable(), registryDeadlineDays: z.number().int().positive().nullable(),
 }).strict().refine((p) => p.review !== 'verified' || (p.sources.length > 0 && p.deadlineDays !== null && p.retentionDays !== null), { message: 'verified policy requires sourced deadlines and retention' });
+
+/** Internal delivery instruction; the owning adapter must resolve real index/federation identifiers and revisions. */
+export const PrivacyPropagationSchema = z.object({
+  version: z.literal(1), id: z.uuid(), requestId: z.uuid(), target: z.enum(['retrieval', 'federation']),
+  subject: PrivacySubjectSchema, digest: z.string().regex(/^[a-f0-9]{64}$/), modules: z.array(z.string()).min(1),
+  operation: z.literal('apply_retained_redaction'),
+}).strict();
+export type PrivacyPropagation = z.infer<typeof PrivacyPropagationSchema>;

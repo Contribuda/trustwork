@@ -4,6 +4,19 @@ import type { LegalHoldRow, PrivacyExportRow, PrivacyPreferenceRow, PrivacyReque
 import type { CommandContext } from './admin.js';
 
 export const privacy = {
+  async proposePlan(trx: Transaction, ctx: CommandContext, requestId: string, grantId: string): Promise<{ id: string; digest: string; approvalId: string; state: 'proposed'; snapshot: Record<string, unknown> }> {
+    return (await sql<{ result: { id: string; digest: string; approvalId: string; state: 'proposed'; snapshot: Record<string, unknown> } }>`SELECT trustwork.privacy_plan_propose(${JSON.stringify(ctx)}::jsonb, ${requestId}::uuid, ${grantId}::uuid) AS result`.execute(trx)).rows[0]!.result;
+  },
+  async approvePlan(trx: Transaction, ctx: CommandContext, id: string, grantId: string, digest: string): Promise<{ id: string; digest: string; state: 'approved'; executable: false }> {
+    return (await sql<{ result: { id: string; digest: string; state: 'approved'; executable: false } }>`SELECT trustwork.privacy_plan_approve(${JSON.stringify(ctx)}::jsonb, ${id}::uuid, ${grantId}::uuid, ${digest}) AS result`.execute(trx)).rows[0]!.result;
+  },
+  async executePlan(trx: Transaction, ctx: CommandContext, id: string, digest: string): Promise<{ status: 'blocked' | 'invalidated'; complete: false; reason: string; gaps: { module: string; action: string; gap: string }[] }> {
+    return (await sql<{ result: { status: 'blocked' | 'invalidated'; complete: false; reason: string; gaps: { module: string; action: string; gap: string }[] } }>`SELECT trustwork.privacy_plan_execute(${JSON.stringify(ctx)}::jsonb, ${id}::uuid, ${digest}) AS result`.execute(trx)).rows[0]!.result;
+  },
+  async sourceProof(trx: Transaction, ctx: CommandContext, input: { sourceFieldId: string; grantId: string; action: string; tokenHash: string; method: string; evidenceRef: string }): Promise<string> {
+    return (await sql<{ id: string }>`SELECT trustwork.privacy_source_prove(${JSON.stringify(ctx)}::jsonb, ${input.sourceFieldId}::uuid, ${input.grantId}::uuid,
+      ${input.action}, ${input.tokenHash}, ${input.method}, ${input.evidenceRef}::uuid) AS id`.execute(trx)).rows[0]!.id;
+  },
   async registryReceive(trx: Transaction, ctx: CommandContext, registrationId: string, items: unknown): Promise<{ status: 'UNKNOWN' | 'not_due' | 'received'; received: number; nextPollAt: string | null }> {
     return (await sql<{ result: { status: 'UNKNOWN' | 'not_due' | 'received'; received: number; nextPollAt: string | null } }>`SELECT trustwork.privacy_registry_receive(${JSON.stringify(ctx)}::jsonb, ${registrationId}::uuid, ${JSON.stringify(items)}::jsonb) AS result`.execute(trx)).rows[0]!.result;
   },

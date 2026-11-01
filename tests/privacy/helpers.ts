@@ -24,11 +24,13 @@ export async function privacyWorld(h: Harness) {
   };
   const people = await withMaintenance(h.db.admin, async (trx) => {
     await staffRoleDefinitions.release(trx, { version: 137, role: 'privacy-officer', scopes: ['platform'],
-      permissions: ['admin.privacy.hold', 'admin.privacy.erasure.execute', 'admin.privacy.request.read', 'admin.privacy.export'],
+      permissions: ['admin.privacy.hold', 'admin.privacy.erasure.execute', 'admin.privacy.request.read', 'admin.privacy.export',
+        'admin.support.case.create', 'admin.support.grant.request', 'admin.support.grant.approve', 'admin.sources.manage', 'admin.sources.import.activate'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 24 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     const officer = await trx.insertInto('person').values({ display_name: 'Synthetic Privacy Officer' }).returning('id').executeTakeFirstOrThrow();
     const subject = await trx.insertInto('person').values({ display_name: 'Synthetic Privacy Subject' }).returning('id').executeTakeFirstOrThrow();
-    return { officer: officer.id, subject: subject.id };
+    const reviewer = await trx.insertInto('person').values({ display_name: 'Synthetic Second Privacy Officer' }).returning('id').executeTakeFirstOrThrow();
+    return { officer: officer.id, subject: subject.id, reviewer: reviewer.id };
   });
   const ownerCtx = await context(owner); const adminCtx = await context(admin);
   const scope = { kind: 'platform' as const };
@@ -36,14 +38,23 @@ export async function privacyWorld(h: Harness) {
   const approval = await as(owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest }));
   await as(admin, (trx) => approvals.decide(trx, adminCtx, approval.id, 'approve', digest));
   await as(owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: people.officer, role: 'privacy-officer', scope, definitionVersion: 137, approvalId: approval.id }));
+  const reviewerDigest = adminDigests.assignment({ personId: people.reviewer, role: 'privacy-officer', scope, definitionVersion: 137, breakglass: false });
+  const reviewerApproval = await as(owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: reviewerDigest }));
+  await as(admin, (trx) => approvals.decide(trx, adminCtx, reviewerApproval.id, 'approve', reviewerDigest));
+  await as(owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: people.reviewer, role: 'privacy-officer', scope, definitionVersion: 137, approvalId: reviewerApproval.id }));
   h.staff.set(people.officer, ['privacy-officer']);
+  h.staff.set(people.reviewer, ['privacy-officer']);
   const email = (id: string) => `synthetic-${id}@example.invalid`;
-  await addLogins(h, [[people.officer, email(people.officer)], [people.subject, email(people.subject)]]);
-  const officer = h.client(); const subject = h.client();
-  await signIn(officer, email(people.officer)); await signIn(subject, email(people.subject));
+  await addLogins(h, [[people.officer, email(people.officer)], [people.subject, email(people.subject)], [people.reviewer, email(people.reviewer)]]);
+  const officer = h.client(); const subject = h.client(); const reviewer = h.client();
+  await signIn(officer, email(people.officer)); await signIn(subject, email(people.subject)); await signIn(reviewer, email(people.reviewer));
   const secret = await enrolNow(h, officer);
   h.clock.advance(30_000);
   const elevated = await officer.post('/v1/admin/session/elevate', { proof: { method: 'totp', code: codeNow(h, secret) } }, { idempotencyKey: null });
   assert.equal(elevated.status, 200, JSON.stringify(elevated.body)); h.clock.reset();
-  return { people, officer, subject, as, context };
+  const reviewerSecret = await enrolNow(h, reviewer);
+  h.clock.advance(30_000);
+  const reviewerElevated = await reviewer.post('/v1/admin/session/elevate', { proof: { method: 'totp', code: codeNow(h, reviewerSecret) } }, { idempotencyKey: null });
+  assert.equal(reviewerElevated.status, 200, JSON.stringify(reviewerElevated.body)); h.clock.reset();
+  return { people, officer, reviewer, subject, as, context };
 }

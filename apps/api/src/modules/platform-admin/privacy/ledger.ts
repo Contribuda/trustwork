@@ -3,7 +3,7 @@ import { mkdir, open, readFile, readdir, rename, rmdir, realpath } from 'node:fs
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { z } from 'zod';
 import type pg from 'pg';
-import { PrivacyTombstoneSchema, type PrivacyTombstone } from '../../../../../../packages/contracts/src/privacy.js';
+import { PrivacyPropagationSchema, PrivacyTombstoneSchema, type PrivacyTombstone } from '../../../../../../packages/contracts/src/privacy.js';
 
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
 const EMPTY = '0'.repeat(64);
@@ -107,6 +107,10 @@ export class PrivacyErasureLedger {
     return this.exclusive(async () => (await this.verify()).entries);
   }
   async record(input: PrivacyTombstone): Promise<void> {
+    await this.withDecision(input, async () => undefined);
+  }
+  /** Local owning executor boundary: journal/checkpoint first, then DB commit, retaining the lock on any uncertainty. */
+  async withDecision<T>(input: PrivacyTombstone, operation: (entry: PrivacyLedgerEntry) => Promise<T>): Promise<T> {
     const record = PrivacyTombstoneSchema.parse(input);
     return this.exclusive(async () => {
       const { checkpoint, entries } = await this.verify();
@@ -114,7 +118,7 @@ export class PrivacyErasureLedger {
       const prior = entries.find((e) => e.record.requestId === record.requestId);
       if (prior) {
         if (prior.digest !== hash(JSON.stringify(record))) throw new Error('conflicting irreversible privacy decision');
-        return;
+        return operation(prior);
       }
       const sequence = checkpoint.sequence + 1;
       const body = JSON.stringify({ version: 1, journalId: checkpoint.journalId, sequence, previous: checkpoint.head, record });
@@ -123,6 +127,7 @@ export class PrivacyErasureLedger {
       await replaceDurable(this.checkpointPath, JSON.stringify({ ...checkpoint, sequence, head: hash(body) }));
       await this.onDurableStep?.('checkpoint_synced');
       await this.verify();
+      return operation({ record, digest: hash(JSON.stringify(record)) });
     });
   }
   /** The freeze spans snapshot, DB replay/commit and fence lift. Seal prevents later unfenced decisions. */
@@ -173,9 +178,22 @@ export async function replayPrivacyLedger(client: pg.PoolClient, entries: readon
     await client.query(`UPDATE trustwork.privacy_request SET correction='{"redacted":true}'::jsonb WHERE subject_kind=$1 AND subject_id=$2 AND correction IS NOT NULL`, [record.subject.kind, record.subject.id]);
     await client.query('INSERT INTO trustwork.privacy_replay_receipt(request_id,subject_kind,subject_id,ledger_digest) VALUES($1,$2,$3,$4) ON CONFLICT(request_id) DO NOTHING',
       [record.requestId, record.subject.kind, record.subject.id, hash]);
-    for (const key of record.suppressionDigests) {
+    for (const target of ['retrieval', 'federation'] as const) {
+      const id = randomUUID();
+      const payload = PrivacyPropagationSchema.parse({ version: 1, id, requestId: record.requestId, target, subject: record.subject,
+        digest: hash, modules: record.modules, operation: 'apply_retained_redaction' });
+      await client.query(`INSERT INTO trustwork.privacy_propagation(id,request_id,target,decision_digest,payload) VALUES($1,$2,$3,$4,$5)
+        ON CONFLICT(request_id,target) DO NOTHING`, [id, record.requestId, target, hash, JSON.stringify(payload)]);
+      const stored = (await client.query<{ decision_digest: string }>('SELECT decision_digest FROM trustwork.privacy_propagation WHERE request_id=$1 AND target=$2', [record.requestId, target])).rows[0];
+      if (stored?.decision_digest !== hash) throw new Error('privacy propagation conflicts with retained decision');
+    }
+    for (const key of [...record.suppressionDigests].sort()) {
+      await client.query('SELECT trustwork.privacy_contact_lock($1)', [key]);
       await client.query(`INSERT INTO trustwork.privacy_suppression(digest,marketing,do_not_collect) VALUES($1,true,true)
         ON CONFLICT(digest) DO UPDATE SET marketing=true,do_not_collect=true`, [key]);
+      // Includes the existing mail adapter's hash namespace when recorded by the owning decision.
+      // Legacy opaque keys remain harmless suppression entries; no address or send is reconstructed.
+      await client.query('SELECT trustwork.privacy_marketing_object($1)', [key]);
     }
   }
   return entries.length;

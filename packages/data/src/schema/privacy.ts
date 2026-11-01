@@ -28,6 +28,24 @@ export interface DataBrokerRegistrationTable {
   id: Generated<string>; country: string; registry: 'fake_drop'; registration_ref: string; last_polled_at: Date | null; next_poll_at: Date | null;
 }
 export interface PrivacyDatabase {
+  privacy_propagation: {
+    id: Generated<string>; request_id: string; target: 'retrieval' | 'federation'; decision_digest: string; payload: unknown;
+    state: Generated<'pending' | 'outcome_unknown' | 'acknowledged'>; receipt: string | null; created_at: Generated<Date>; acknowledged_at: Date | null;
+  };
+  privacy_subject_plan: {
+    id: Generated<string>; request_id: string; proposed_by: string; proposer_grant_id: string; proposer_authority_digest: string;
+    reviewer_grant_id: string | null; reviewer_authority_digest: string | null; approval_id: string; snapshot: unknown; digest: string;
+    state: Generated<'proposed' | 'approved' | 'blocked' | 'invalidated'>; created_at: Generated<Date>;
+  };
+  privacy_source_proof: {
+    id: Generated<string>; token_hash: string; source_field_id: string; source_digest: string; action: 'correction' | 'erasure' | 'objection';
+    grant_id: string; verified_by: string; evidence_ref: string; method: 'signed_statement' | 'record_control' | 'verified_representative';
+    expires_at: Date; used_at: Date | null; created_at: Generated<Date>;
+  };
+  privacy_source_request: {
+    id: Generated<string>; proof_id: string; source_field_id: string; action: 'correction' | 'erasure' | 'objection'; proposed_value: string | null;
+    state: Generated<'received' | 'objection_applied' | 'resolved'>; created_at: Generated<Date>;
+  };
   privacy_registry_intake: {
     id: Generated<string>; registration_id: string; external_ref: string; contact_digest: string;
     received_at: Generated<Date>; policy_version: string | null; deadline_at: Date | null; state: Generated<'received' | 'proof_required'>;
@@ -51,6 +69,10 @@ export type PrivacyExportRow = Selectable<PrivacyExportTable>;
 export type LegalHoldRow = Selectable<LegalHoldTable>;
 const c = columnsOf<PrivacyDatabase>();
 export const TABLE_COLUMNS: TableColumns<PrivacyDatabase> = {
+  privacy_propagation: c('privacy_propagation', ['id', 'request_id', 'target', 'decision_digest', 'payload', 'state', 'receipt', 'created_at', 'acknowledged_at']),
+  privacy_subject_plan: c('privacy_subject_plan', ['id', 'request_id', 'proposed_by', 'proposer_grant_id', 'proposer_authority_digest', 'reviewer_grant_id', 'reviewer_authority_digest', 'approval_id', 'snapshot', 'digest', 'state', 'created_at']),
+  privacy_source_proof: c('privacy_source_proof', ['id', 'token_hash', 'source_field_id', 'source_digest', 'action', 'grant_id', 'verified_by', 'evidence_ref', 'method', 'expires_at', 'used_at', 'created_at']),
+  privacy_source_request: c('privacy_source_request', ['id', 'proof_id', 'source_field_id', 'action', 'proposed_value', 'state', 'created_at']),
   privacy_registry_intake: c('privacy_registry_intake', ['id', 'registration_id', 'external_ref', 'contact_digest', 'received_at', 'policy_version', 'deadline_at', 'state']),
   data_broker_registration: c('data_broker_registration', ['id', 'country', 'registry', 'registration_ref', 'last_polled_at', 'next_poll_at']),
   legal_hold: c('legal_hold', ['id', 'request_id', 'subject_kind', 'subject_id', 'reason_code', 'evidence_ref', 'placed_by', 'placed_at', 'released_by', 'released_at']),

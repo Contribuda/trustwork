@@ -5,7 +5,8 @@ import { Body, Params } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
-  PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema, PrivacyMarketingObjectionSchema,
+  PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema, PrivacyMarketingObjectionSchema, PrivacySourceProofSchema, PrivacySourceSubmissionSchema,
+  PrivacyPlanProposeSchema, PrivacyPlanApproveSchema, PrivacyPlanExecuteSchema,
 } from '../../../../../../packages/contracts/src/privacy.js';
 import { PrivacyService } from './privacy.service.js';
 
@@ -17,6 +18,8 @@ export class PrivacyPublicController {
   object(@Body(PrivacyMarketingObjectionSchema) body: z.infer<typeof PrivacyMarketingObjectionSchema>) {
     return this.privacy.objectToMarketing(body.address);
   }
+  @Post('sourced-requests') @HttpCode(202) @Header('Cache-Control', 'no-store')
+  submit(@Body(PrivacySourceSubmissionSchema) body: z.infer<typeof PrivacySourceSubmissionSchema>) { return this.privacy.sourceSubmission(body); }
 }
 
 @Controller('v1/privacy')
@@ -43,6 +46,20 @@ export class PrivacyController {
 @UseGuards(ElevationGuard)
 export class PrivacyStaffController {
   constructor(@Inject(PrivacyService) private readonly privacy: PrivacyService) {}
+  @Post('plans') @HttpCode(201) @Idempotent('privacy.plan_propose')
+  proposePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacyPlanProposeSchema) body: z.infer<typeof PrivacyPlanProposeSchema>) {
+    return this.privacy.proposePlan(state, elevation.id, body.requestId, body.grantId);
+  }
+  @Post('plans/:id/approve') @HttpCode(200) @Idempotent('privacy.plan_approve', 'id')
+  approvePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>,
+    @Body(PrivacyPlanApproveSchema) body: z.infer<typeof PrivacyPlanApproveSchema>) { return this.privacy.approvePlan(state, elevation.id, params.id, body.grantId, body.digest); }
+  @Post('plans/:id/execute') @HttpCode(200) @Idempotent('privacy.plan_execute', 'id')
+  executePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>,
+    @Body(PrivacyPlanExecuteSchema) body: z.infer<typeof PrivacyPlanExecuteSchema>) { return this.privacy.executePlan(state, elevation.id, params.id, body.digest); }
+  @Post('source-proofs') @HttpCode(201) @Header('Cache-Control', 'no-store') @Idempotent('privacy.source_proof')
+  proof(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacySourceProofSchema) body: z.infer<typeof PrivacySourceProofSchema>) {
+    return this.privacy.sourceProof(state, elevation.id, body);
+  }
   @Post('holds') @HttpCode(201) @Idempotent('privacy.hold_place')
   hold(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacyHoldCommandSchema) body: z.infer<typeof PrivacyHoldCommandSchema>) {
     return this.privacy.hold(state, elevation.id, body);
