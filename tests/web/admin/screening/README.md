@@ -21,7 +21,7 @@ Holds show place, source, dataset, time and retained clearing evidence. Every wr
 - `GET /v1/admin/screening/metrics?hubId=...`: explicit unknowns for unavailable hub cohorts, plus separately labelled node-wide operational durations of completed re-screen runs. A run appears only when its actual recorded items prove at least ten distinct person principals. Companies and event counts do not stand in for people. Suppressed rows never leave the repository.
 - Re-screen GET and POST responses use `ScreeningConsoleRunSchema`: only operational state/time and nullable progress. Both suppress participant counters until the recorded run cohort proves ten distinct people; raw outcomes and counters are never included. The underlying SANC-005 command, transactional idempotency and authority are unchanged.
 
-Every new read requires authentication, elevation and the existing database `jurisdiction_staff_reader()` authority (node compliance officer or auditor); lookup failures remain not found. The list freshness function is SECURITY DEFINER, so the explicit staff check runs before it. Tables still use their existing forced RLS. No new permission, schema migration, provider or list-writing command was introduced.
+Every new read requires authentication, elevation and the existing database `jurisdiction_staff_reader()` authority (node compliance officer or auditor); lookup failures remain not found. The list freshness function is SECURITY DEFINER, so the explicit staff check runs before it. Tables retain forced RLS. The preserved #407 read surface introduced no permission, migration, provider or list-writing command; the continuation adds only the list authority migration and commands described below.
 
 ## Remaining dependencies and concrete data proposal
 
