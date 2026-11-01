@@ -1,0 +1,47 @@
+import { Controller, Get, Header, HttpCode, Inject, Post, UseGuards } from '@nestjs/common';
+import type { z } from 'zod';
+import { Authenticated, Idempotent, ReqState, type RequestState } from '../../../common/request.js';
+import { Body, Params } from '../../../common/zod.js';
+import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
+import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
+import {
+  PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema,
+} from '../../../../../../packages/contracts/src/privacy.js';
+import { PrivacyService } from './privacy.service.js';
+
+@Controller('v1/privacy')
+@Authenticated()
+export class PrivacyController {
+  constructor(@Inject(PrivacyService) private readonly privacy: PrivacyService) {}
+  @Get('requests') @Header('Cache-Control', 'no-store')
+  requests(@ReqState() state: RequestState) { return this.privacy.requests(state); }
+  @Post('requests') @HttpCode(201) @Idempotent('privacy.request_create')
+  request(@ReqState() state: RequestState, @Body(PrivacyRequestCommandSchema) body: z.infer<typeof PrivacyRequestCommandSchema>) { return this.privacy.request(state, body); }
+  @Get('preferences') @Header('Cache-Control', 'no-store')
+  preferences(@ReqState() state: RequestState) { return this.privacy.preferences(state); }
+  @Post('preferences') @HttpCode(200) @Idempotent('privacy.preference_set')
+  preference(@ReqState() state: RequestState, @Body(PrivacyPreferenceCommandSchema) body: z.infer<typeof PrivacyPreferenceCommandSchema>) { return this.privacy.preference(state, body); }
+  @Post('exports') @HttpCode(201) @Idempotent('privacy.export_create')
+  createExport(@ReqState() state: RequestState, @Body(PrivacyExportCommandSchema) body: z.infer<typeof PrivacyExportCommandSchema>) { return this.privacy.createExport(state, body.subject); }
+  @Get('exports/:id') @Header('Cache-Control', 'no-store')
+  download(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>) { return this.privacy.download(state, params.id); }
+}
+
+/** Platform privacy permission and a live elevation; no subject payload is returned to staff. */
+@Controller('v1/admin/privacy')
+@Authenticated()
+@UseGuards(ElevationGuard)
+export class PrivacyStaffController {
+  constructor(@Inject(PrivacyService) private readonly privacy: PrivacyService) {}
+  @Post('holds') @HttpCode(201) @Idempotent('privacy.hold_place')
+  hold(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacyHoldCommandSchema) body: z.infer<typeof PrivacyHoldCommandSchema>) {
+    return this.privacy.hold(state, elevation.id, body);
+  }
+  @Post('holds/:id/release') @HttpCode(200) @Idempotent('privacy.hold_release', 'id')
+  release(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>,
+    @Body(PrivacyHoldReleaseSchema) body: z.infer<typeof PrivacyHoldReleaseSchema>) { return this.privacy.releaseHold(state, elevation.id, params.id, body.reasonCode); }
+  @Post('requests/:id/erasure-readiness') @HttpCode(200)
+  erasureCheck(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>) {
+    return this.privacy.erasureCheck(state, elevation.id, params.id);
+  }
+}

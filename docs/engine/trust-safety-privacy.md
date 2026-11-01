@@ -2,7 +2,7 @@
 
 Normative requirements: [Trust, safety, privacy and compliance](modules/trust-safety-privacy-compliance.md), [Security architecture](modules/security-architecture.md). Participants: [who uses what](participants/README.md).
 
-Requirements R13–R15, R28, R29 and ADR 002, 008, 009. Status: identity security, row-level security and projection serializers are **Live** for the identity, company and project slice; file storage with signed URLs, quarantine, classified attachments and tombstoned deletion is **Live** in the API and worker (FILE-001, no interface yet); moderation, privacy operations and incident tooling are **Designed**; hub-level privacy settings are **Proposed**. Deeper references: [security](../quality/security.md), [accessibility](../quality/accessibility.md), [validation](../quality/validation.md).
+Requirements R13–R15, R28, R29 and ADR 002, 008, 009. Status: identity security, row-level security and projection serializers are **Live** for the identity, company and project slice; file storage with signed URLs, quarantine, classified attachments and tombstoned deletion is **Live** in the API and worker (FILE-001, no interface yet); privacy operations have a **partial API implementation** (PRV-001, [coverage and blockers](../data/privacy-operations.md)), not full erasure/export acceptance; moderation and incident tooling are **Designed**; hub-level privacy settings are **Proposed**. Deeper references: [security](../quality/security.md), [accessibility](../quality/accessibility.md), [validation](../quality/validation.md).
 
 ## How access is decided
 
