@@ -129,7 +129,7 @@ export const StandardsFactSchema = fact({
 /* ---------- Public procurement ---------- */
 
 export const ProcurementFactSchema = z.discriminatedUnion('type', [
-  fact({ type: z.literal('portal'), name: FactText, url: z.string().url(), level: z.enum(['national', 'federal', 'state', 'regional', 'local']), openData: z.boolean(), ...ADAPTER_FIELDS }),
+  fact({ type: z.literal('portal'), name: FactText, url: z.string().url(), level: z.enum(['supranational', 'national', 'federal', 'state', 'regional', 'local']), openData: z.boolean(), ...ADAPTER_FIELDS }),
   fact({ type: z.literal('threshold'), summary: FactText, amount: MoneySchema }),
 ]);
 
@@ -178,6 +178,16 @@ export const PAYMENT_RAILS = ['card', 'credit-transfer', 'instant-credit-transfe
 export const PaymentFactSchema = z.discriminatedUnion('type', [
   fact({ type: z.literal('scheme'), name: FactText, rails: z.array(z.enum(PAYMENT_RAILS)).min(1), ...ADAPTER_FIELDS }),
   fact({ type: z.literal('currency-control'), summary: FactText }),
+  /**
+   * Statutory payment terms for commercial transactions (for example a late-payment law): the longest payment period
+   * that applies unless the contract expressly agrees otherwise, between businesses and where a public authority pays.
+   */
+  fact({
+    type: z.literal('payment-terms'),
+    summary: FactText,
+    businessMaxDays: z.int().min(1).max(365).optional(),
+    publicAuthorityMaxDays: z.int().min(1).max(365).optional(),
+  }),
 ]);
 
 /* ---------- Calendar and holidays ---------- */

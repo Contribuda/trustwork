@@ -16,7 +16,7 @@ export * from './facets.js';
 export * from './schema.js';
 export * from './restricted.js';
 export * from './adapters.js';
-export { facetProblems, levelFromNotes, packProblems, scopeChain, upgradePack, validatePack, type FacetCheckContext, type PackCheck } from './validate.js';
+export { facetProblems, levelFromNotes, packProblems, scopeChain, upgradePack, validatePack, type FacetCheckContext, type LayerResolution, type PackCheck, type PackCheckOptions } from './validate.js';
 export * from './facts.js';
 export * from './calendar.js';
 export { BUILT_IN_PACKS, checkPackFile, enabledPacks, getPack, installPacks, packs, resetPacks, type PackFileCheck } from './registry.js';

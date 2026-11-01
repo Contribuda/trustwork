@@ -138,8 +138,20 @@ function identifierKindsOf(pack: CountryPackInput): string[] {
 
 export type PackCheck = { pack: CountryPack | null; problems: string[] };
 
+/** Facts a pack inherits from shared layers, and the problems found resolving them (`layerResolver` in `layers.ts`). */
+export type LayerResolution = { wider: { facet: FacetName; fact: AnyFact }[]; problems: string[] };
+
+export type PackCheckOptions = {
+  adapters?: readonly EngineAdapter[];
+  /**
+   * Resolves the shared layers a pack lists (CTRY-EU). Without it a pack that lists layers is refused, so a layer can
+   * never be skipped silently; packs that list no layer never call it.
+   */
+  layers?: (pack: CountryPackInput) => LayerResolution;
+};
+
 /** Every problem of a pack file (v1 or v2). `pack` is the upgraded v2 pack when there are no problems. */
-export function packProblems(raw: unknown, options: { adapters?: readonly EngineAdapter[] } = {}): PackCheck {
+export function packProblems(raw: unknown, options: PackCheckOptions = {}): PackCheck {
   const parsed = CountryPackSchema.safeParse(raw);
   if (!parsed.success) {
     const code = typeof raw === 'object' && raw && 'code' in raw && typeof raw.code === 'string' ? raw.code : null;
@@ -183,6 +195,7 @@ export function packProblems(raw: unknown, options: { adapters?: readonly Engine
     if (pack.verificationLevel || pack.registrationIdentifier.verificationLevel || pack.dataResidency.verificationLevel) problems.push(`verificationLevel ${V2_ONLY}`);
     if (pack.address.lines.includes('street2')) problems.push(`address line street2 ${V2_ONLY}`);
     for (const region of pack.regions) if (region.parent || region.timeZones || region.facets) problems.push(`region ${region.code}: parent, timeZones and facets ${V2_ONLY}`);
+    if (pack.layers) problems.push(`layers ${V2_ONLY}`);
   } else {
     if (!pack.verificationLevel) problems.push('verificationLevel is required in v2 (for formats, currency, entity types and regions)');
     if (!pack.registrationIdentifier.verificationLevel) problems.push('registrationIdentifier.verificationLevel is required in v2');
@@ -220,13 +233,24 @@ export function packProblems(raw: unknown, options: { adapters?: readonly Engine
   const kindSet = new Set(kinds);
   if (kindSet.size !== kinds.length) problems.push(`identifier kinds repeat: ${kinds.filter((k, i) => kinds.indexOf(k) !== i).join(', ')}`);
 
+  // Shared layers (CTRY-EU): their facts are wider than the country; resolving them needs the layer registry.
+  let inherited: LayerResolution['wider'] = [];
+  if (pack.layers) {
+    if (!options.layers) problems.push(`lists layers ${pack.layers.join(', ')}; validate it with the layer registry (validateLayeredPack in layers.ts)`);
+    else {
+      const resolved = options.layers(pack);
+      inherited = resolved.wider;
+      problems.push(...resolved.problems);
+    }
+  }
+
   // Facts at country and subdivision scope.
   const adapters = options.adapters ? { adapters: options.adapters } : {};
-  problems.push(...facetProblems(pack.facets, { scope: pack.code, wider: [], identifierKinds: kindSet, countryScope: true, ...adapters }));
+  problems.push(...facetProblems(pack.facets, { scope: pack.code, wider: inherited, identifierKinds: kindSet, countryScope: true, ...adapters }));
   for (const region of pack.regions) {
     if (!region.facets) continue;
     const chain = scopeChain(pack, region.code).slice(0, -1);
-    const wider = chain.flatMap((s) => listFacts(s.facets));
+    const wider = [...inherited, ...chain.flatMap((s) => listFacts(s.facets))];
     problems.push(...facetProblems(region.facets, { scope: region.code, wider, identifierKinds: kindSet, countryScope: false, ...adapters }));
   }
 
@@ -234,7 +258,7 @@ export function packProblems(raw: unknown, options: { adapters?: readonly Engine
 }
 
 /** Parses and cross-checks a pack; any problem throws, so a restricted or malformed pack can never ship. */
-export function validatePack(raw: unknown, options: { adapters?: readonly EngineAdapter[] } = {}): CountryPack {
+export function validatePack(raw: unknown, options: PackCheckOptions = {}): CountryPack {
   const { pack, problems } = packProblems(raw, options);
   if (!pack) {
     const code = typeof raw === 'object' && raw && 'code' in raw ? String(raw.code) : '?';

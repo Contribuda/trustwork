@@ -69,7 +69,7 @@ Be conservative: a level is never higher than what you checked. v1 facts upgrade
 ```
 
 - `id` is lower-case letters, digits and hyphens, unique within its scope (the country, or one region).
-- A region fact with the same `id` as a country fact (or as a fact of an enclosing region) replaces it for that region; it must be the same facet and kind, and it cites its own sources. This is how a state overrides a national default, and how a member pack will override a shared layer (CTRY-EU).
+- A region fact with the same `id` as a country fact (or as a fact of an enclosing region) replaces it for that region; it must be the same facet and kind, and it cites its own sources. This is how a state overrides a national default, and how a member pack overrides a shared layer (see 2b).
 - Text shown to people (`name`, `summary`, `label`) is localized and needs at least `en`.
 - Rates are percentages as decimal strings (`"6.25"`, never `6.25`), between 0 and 100. Amounts are money objects in integer minor units (`{ "minorUnits": "10000000", "currency": "USD" }`).
 - `adapter` names an adapter that exists in engine code, as `{ "capability": "<provider capability>", "id": "<adapter id>" }` from `ENGINE_ADAPTERS` in `src/adapters.ts`; the validator refuses any other. An adapter that does not exist yet goes into `candidateAdapters` as a plain name. Facts never call anything: they describe the world, and the hub decides what to switch on.
@@ -81,10 +81,10 @@ Be conservative: a level is never higher than what you checked. v1 facts upgrade
 | `registers` | `name`, `url`, `query` (`manual`, `open_data`, `api`), `dataLicence`, `covers` (identifier kinds) | — |
 | `licensing` | `activity` (authority, `required`, `register`, `identifierKind`, `categories`), `profession` (certifying body), `insurance` (`mandatory`) | — |
 | `standards` | Code `system`, standards `body`, `publications`, `textLicence`, `adopts` | — |
-| `procurement` | `portal` (`level`: national, federal, state, regional, local; `openData`), `threshold` (money) | — |
+| `procurement` | `portal` (`level`: supranational, national, federal, state, regional, local; `openData`), `threshold` (money) | `supranational` is for a layer's portal (for example TED) |
 | `tax` | `rate` (`taxKind`: vat, gst, sales, use, excise, withholding, other; `standardRate` or `null`; `reducedRates`; `localRates`: none or additive; `registrationThreshold`; `calculation`: rate or adapter), `e-invoicing` (`system`, `mandatory`, `scope`: B2B, B2G, B2C; `signatureRequired`) | `calculation: "adapter"` needs `adapter` or `candidateAdapters`; the engine never hard-codes a tax computation |
 | `eSignature` | `kind` (signature, identity, both), `strength` (simple, advanced, qualified), `legalBasis` | — |
-| `payments` | `scheme` (`rails`: card, credit-transfer, instant-credit-transfer, direct-debit, wallet, cash, other), `currency-control` | No sanctioned bank or Russian payment rail, ever |
+| `payments` | `scheme` (`rails`: card, credit-transfer, instant-credit-transfer, direct-debit, wallet, cash, other), `currency-control`, `payment-terms` (statutory payment periods: `businessMaxDays`, `publicAuthorityMaxDays`) | No sanctioned bank or Russian payment rail, ever |
 | `calendar` | `working-week`, `fiscal-year`, `holiday` (`rule`: `fixed` month and day, `nth-weekday` with `nth` 1 to 4 or -1 for the last, or published `dates`; `observed`: none, nearest-weekday, next-weekday, sunday-to-monday; `holiday`: public, federal, state, bank, observance; `nonWorking`) | Movable holidays are published per year with sources. `holidaysInYear(pack, year, region)` computes dates and observed dates |
 | `units` | `system` (metric, imperial, us-customary, mixed; `common` catalogue units), `local-name` (a local name for a catalogue unit) | Unit codes come from the catalogue in `packages/contracts/src/common/units.ts` (metric and inch-pound units with exact conversion factors); unknown codes are refused |
 | `scripts` | `language`, ISO 15924 `scripts`, `direction`, `transliteration` | — |
@@ -94,6 +94,20 @@ Be conservative: a level is never higher than what you checked. v1 facts upgrade
 | `agentLaw` | Defaults for agent disclosure, liability, consent, record keeping and per-action limits, with `counselReview` | Unverified until counsel review |
 
 A federal country puts national facts on the pack and per-state facts on each region: sales tax, privacy laws, contractor licensing boards, state holidays. Engine code reads them with `factsFor(pack, facet, regionCode)`, `identifierKinds(pack, regionCode)` and `packTimeZones(pack, regionCode)`; it never branches on a country code. `tests/country-packs/v2/federal-fixture.ts` is a complete synthetic example (not real facts); `packs/us.json` is the real, sourced model (every state, the District of Columbia and the territories, with California in depth), and `tests/country-packs/us` shows the tests a pack of that size should carry.
+
+## 2b. Inherit a shared layer (member states)
+
+If the country belongs to a group with a layer in `packages/country-packs/layers` (today: `eu.json`, the European Union), list it in a v2 pack and add only what is national:
+
+```json
+{ "schemaVersion": 2, "code": "XM", "layers": ["EU"], "facets": { "tax": [{ "type": "rate", "id": "vat", "...": "..." }] } }
+```
+
+- Every fact of the layer applies to the pack and its regions; read them with `layeredFactsFor(pack, facet, regionCode)` from `@trustwork/country-packs/layers`, which marks inherited facts with the layer as their source.
+- The layer's `memberVaries` lists what the pack must state itself (for the EU: VAT rates, national e-invoicing mandates, invoice retention, the supervisory authority, Eurocode national annexes, eID schemes, holidays, currency, construction licensing, national portals).
+- To differ from a layer fact (for example a national age of consent under GDPR Art. 8, or a stricter late-payment period), declare a fact with the same `id`, facet and kind, citing the national law: at least one source must be one the layer fact does not cite, or the validator refuses the override.
+- Validate with `validateLayeredPack` (or `layeredPackProblems`); the plain `validatePack` refuses a pack that lists layers, so a layer is never skipped. The pack must be one of the layer's members, and no layer can enable a restricted place.
+- `tests/country-packs/eu/layer-fixture.ts` is a synthetic layer and member (not real facts).
 
 ## 3. Add the dictionaries
 
