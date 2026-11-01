@@ -1,6 +1,8 @@
 import { withMaintenance } from '@trustwork/data';
+import { sourceWorld } from '../../../payments/source-helpers.js';
+import { sourceCrashCases } from '../../../payments/source-crash.js';
 import type { CrashCase } from '../cases.js';
-import { paymentHub, paymentVerifier, agreement, ok } from '../../../payments/helpers.js';
+import { paymentVerifier, agreement, ok } from '../../../payments/helpers.js';
 import { screenEveryoneClear } from '../../../screening-gates/helpers.js';
 import { kernelReference, kernelSync } from '../../../../packages/data/src/repositories/kernel.js';
 import type { PaymentBinding, PaymentView } from '../../../../packages/contracts/src/payments.js';
@@ -18,7 +20,7 @@ export default {
   name: 'PAY-001: immutable payment intent and bound follow-up operations',
   async run({ h, seed, as, exactlyOnce }) {
     await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
-    const hub = await paymentHub(h);
+    const hub = await sourceWorld(h);
     await screenEveryoneClear(h.db.admin);
     const buyer = await as('petr'), seller = await as('carl');
     const q = async (query: string, args: unknown[] = []) => (await h.db.admin.query(query, args)).rows;
@@ -39,6 +41,7 @@ export default {
       return { agreementId: a.id, budgetId: order.transaction_budget_id as string };
     };
     try {
+      await sourceCrashCases({ h, seed, as, exactlyOnce }, hub);
       const body = await fresh();
       const payment = ok<PaymentView>(await exactlyOnce({ action: 'payments.create', client: buyer, url: '/v1/payments', body,
         effects: async () => (await q('SELECT id FROM trustwork.payment_intent WHERE agreement_id=$1', [body.agreementId])).length }), 201);
@@ -54,6 +57,6 @@ export default {
       fake.plan(other!.id as string, 'succeeded'); await tick();
       await exactlyOnce({ action: 'payments.payout', client: buyer, url: `/v1/payments/${second.id}/payout`, body: {},
         effects: async () => (await q("SELECT id FROM trustwork.payment_operation WHERE payment_id=$1 AND kind='payout'", [second.id])).length });
-    } finally { await verifier.close(); await pool.end(); await worker.close(); }
+    } finally { await verifier.close(); await pool.end(); await worker.close(); await hub.close(); }
   },
 } satisfies CrashCase;

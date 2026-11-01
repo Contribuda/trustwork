@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { isRestricted } from '@trustwork/country-packs';
 import type { z } from 'zod';
+import { PAYMENT_SOURCE_PERMISSIONS } from '../../packages/contracts/src/payment-sources.js';
 import * as c from '../../packages/contracts/src/index.js';
 
 /*
@@ -154,7 +155,7 @@ test('vocabulary: console permissions extend the frozen admin vocabulary; no per
   const frozen = new Set<string>(c.ADMIN_PERMISSIONS);
   assert.ok(c.HUB_CONSOLE_PERMISSIONS.every((p) => !frozen.has(p) && /^admin\.[a-z_]+(\.[a-z_]+)+$/.test(p)));
   assert.equal(new Set(c.CONSOLE_PERMISSIONS).size, c.CONSOLE_PERMISSIONS.length, 'merged vocabulary has no duplicates');
-  assert.equal(c.CONSOLE_PERMISSIONS.length, c.ADMIN_PERMISSIONS.length + c.HUB_CONSOLE_PERMISSIONS.length);
+  assert.equal(c.CONSOLE_PERMISSIONS.length, c.ADMIN_PERMISSIONS.length + c.HUB_CONSOLE_PERMISSIONS.length + PAYMENT_SOURCE_PERMISSIONS.length);
   ok(c.ConsolePermissionSchema, 'admin.audit.read');
   ok(c.ConsolePermissionSchema, 'admin.providers.secret.write');
   ok(c.ConsolePermissionSchema, 'admin.agents.extensions.activate');
