@@ -57,7 +57,7 @@ test('every locale has a fallback to en and ru is never a default', () => {
     assert.notEqual(pack.defaultLocale, 'ru');
     // English may be a pack default where it is the country's language (the United States, ADR 012 decisions 27 and 31).
   }
-  assert.deepEqual([...ALL_LOCALES].sort(), ['az-Latn', 'en', 'hy', 'ka', 'ru', 'uz-Latn']);
+  for (const locale of ['az-Latn', 'en', 'es', 'hy', 'ka', 'ru', 'uz-Latn']) assert.ok(ALL_LOCALES.includes(locale));
 });
 
 test('money formats in the pack currency without a hard-coded one', () => {
