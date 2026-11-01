@@ -338,7 +338,8 @@ function flat(tag: string): Map<string, string> {
   })(JSON.parse(readFileSync(join(LOCALES, tag, 'admin-participants.json'), 'utf8')), '');
   return out;
 }
-const ENGINE_LANGUAGES = ['en', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn', 'es'];
+/** Maintained languages; Russian is not maintained (owner, 2026-11-01) and falls back to English. */
+const ENGINE_LANGUAGES = ['en', 'uz-Latn', 'ka', 'hy', 'az-Latn', 'es'];
 /** Tokens that stay Latin in every script: list codes, identifiers, abbreviations. */
 const LATIN = /\b(EIN|SMS|Trustwork|US|ID|plural|one|few|many|other)\b/g;
 /** Words spelled the same as in English in a Latin-script language. */
@@ -357,7 +358,6 @@ test('every engine language has the namespace with exactly the English keys and 
       if (/, plural,/.test(en.get(key)!)) assert.match(value, /other \{/, `${tag}: ${key} plural needs other`);
     }
   }
-  for (const [key, value] of flat('ru')) if (/, plural,/.test(value)) for (const form of ['one', 'few', 'many', 'other']) assert.match(value, new RegExp(`${form} \\{`), `ru: ${key} ${form}`);
 });
 
 test('no English copy is left in the other languages, and scripts match the language', () => {
