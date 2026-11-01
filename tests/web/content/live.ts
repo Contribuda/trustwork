@@ -1,11 +1,16 @@
 /** CNT-003 bounded live acceptance: real PostgreSQL/API/DataPort, local Next and Chromium; synthetic content only. */
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
+import { createPool, type DataPool } from '@trustwork/data';
+import { HandlerRegistry, Worker } from '@trustwork/worker';
+import { registerContent } from '../../../apps/worker/src/content/index.js';
+import { renderLocalPdf } from '../../../apps/worker/src/content/render.js';
 import { spawn } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 import { startHarness } from '../../backend/helpers/app.js';
-import { buildContentHttpWorld } from '../../content/http.js';
+import { buildContentHttpWorld, consoleCommand } from '../../content/http.js';
 import { credit, draft } from '../../content/helpers.js';
 import { publications, issues } from '../../../packages/data/src/repositories/content.js';
 
@@ -14,6 +19,9 @@ assert.ok(evidence, 'CNT003_EVIDENCE_DIR is required');
 const h = await startHarness('cnt003_live'); assert.ok(h);
 const world = await buildContentHttpWorld(h), { w } = world, p = w.people;
 let server: ReturnType<typeof spawn> | undefined;
+let worker: Worker | undefined, workerPool: DataPool | undefined;
+const workerRole = `cnt003_browser_${randomBytes(6).toString('hex')}`;
+let livePdf: Buffer | undefined;
 const browser = await chromium.launch({ headless: true });
 try {
   const ctxA = await w.act.elevate(p.editorA), ctxC = await w.act.elevate(p.chief);
@@ -35,6 +43,18 @@ try {
   issue = await w.act.as(p.editorA, trx => issues.transition(trx, ctxA, issue.id, issue.revision, 'curated'));
   issue = await w.act.as(p.editorA, trx => issues.transition(trx, ctxA, issue.id, issue.revision, 'review'));
   await w.act.as(p.chief, trx => issues.release(trx, ctxC, issue.id, issue.revision));
+  const password = randomBytes(18).toString('hex');
+  await h.db.admin.query(`CREATE ROLE ${workerRole} LOGIN PASSWORD '${password}' IN ROLE trustwork_worker`);
+  workerPool = createPool({ ...h.db.appConfig, user: workerRole, password, max: 3 });
+  const registry = new HandlerRegistry();
+  registerContent(registry, async (snapshot, signal) => { livePdf = await renderLocalPdf(snapshot, signal); return livePdf; });
+  worker = new Worker({ pool: workerPool, registry, config: { workerId: 'cnt003-browser', concurrency: 1, relayBatchSize: 500 }, tasks: () => [], log: () => {} });
+  await world.elevate('editorA');
+  const requested = await consoleCommand(world.c.editorA, `/v1/admin/content/issues/${issue.id}/renders`, { edition: 1, format: 'pdf' });
+  assert.equal(requested.status, 201, JSON.stringify(requested.body));
+  await worker.runOnce({ rethrow: true }); await worker.idle();
+  assert.ok(livePdf, 'real worker must produce the live browser artifact');
+  await mkdir(evidence, { recursive: true }); await writeFile(`${evidence}/issue-live-ru.pdf`, livePdf);
   // Local, explicitly configured deployment; synthetic participants never leave this database.
   await world.app.app.listen(3467, '127.0.0.1');
   server = spawn(process.execPath, ['../../node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', '3468'], {
@@ -67,7 +87,20 @@ try {
       await page.keyboard.press('Tab'); assert.ok(await page.evaluate(() => document.activeElement !== document.body), 'keyboard focus enters the page');
       const name = `${locale}-${surface}-375.png`;
       await page.screenshot({ path: `${evidence}/${name}`, fullPage: true });
-      if (locale === 'ru' && surface === 'reader') { await page.setViewportSize({ width: 1280, height: 900 }); await page.screenshot({ path: `${evidence}/ru-reader-desktop.png`, fullPage: true }); await page.setViewportSize({ width: 375, height: 812 }); }
+      if (surface === 'reader') {
+        await page.locator('.mgr__ctl--toc').focus(); await page.keyboard.press('Enter');
+        await page.getByRole('dialog').waitFor({ state: 'visible' });
+        await page.waitForFunction(() => document.activeElement?.closest('[role="dialog"]'));
+        await page.keyboard.press('Escape');
+        await page.getByRole('dialog').waitFor({ state: 'hidden' });
+      }
+      if (locale === 'ru' && surface === 'reader') {
+        await page.setViewportSize({ width: 1280, height: 900 });
+        const link = page.locator('a[href*="/v1/magazine/issues/1/pdf"]').first(); assert.equal(await link.count(), 1);
+        const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+        const downloadPath = await download.path(); assert.ok(downloadPath); assert.deepEqual(await readFile(downloadPath), livePdf);
+        await page.screenshot({ path: `${evidence}/ru-reader-desktop.png`, fullPage: true }); await page.setViewportSize({ width: 375, height: 812 });
+      }
       results.push({ locale, route, status: response?.status(), viewport: 375, axeViolations: axe.violations.length, screenshot: name });
     }
     await writeFile(`${evidence}/${locale}-browser-errors.json`, JSON.stringify({ errors, external }, null, 2));
@@ -85,6 +118,9 @@ try {
     if (file === 'feed.json') assert.equal(JSON.parse(body).version, 'https://jsonfeed.org/version/1.1');
     await writeFile(`${evidence}/${section}-${file}`, body);
   }
+  const downloaded = await fetch('http://127.0.0.1:3468/v1/magazine/issues/1/pdf?edition=1');
+  assert.equal(downloaded.status, 200); assert.match(downloaded.headers.get('cache-control') ?? '', /no-store/);
+  assert.deepEqual(Buffer.from(await downloaded.arrayBuffer()), livePdf);
   assert.equal((await fetch(`http://127.0.0.1:3468/ru/articles/${hidden.id}`)).status, 404);
   // Session-bound publications use the existing working projection, including the owner's draft.
   const context = await browser.newContext({ viewport: { width: 375, height: 812 } });
@@ -92,11 +128,14 @@ try {
   await context.addCookies([{ name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }, { name: 'trustwork.locale', value: 'ru', domain: '127.0.0.1', path: '/' }]);
   const page = await context.newPage(); await page.goto('http://127.0.0.1:3468/app/publications', { waitUntil: 'networkidle' });
   assert.match(await page.locator('body').innerText(), /PRIVATE draft marker/);
+  assert.ok(!(await page.locator('body').innerText()).includes('\u041d\u0438\u0433\u0434\u0435'), 'unknown placement must not be represented as nowhere');
   await page.screenshot({ path: `${evidence}/workspace-publications-375.png`, fullPage: true }); await context.close();
-  await writeFile(`${evidence}/live-results.json`, JSON.stringify({ results, articleId: article.id, newsId: news.id, checks: ['inert content', 'private draft absent publicly', 'correction in feeds and JSON-LD', 'owner workspace draft'], manualScreenReader: 'not performed' }, null, 2));
+  await writeFile(`${evidence}/live-results.json`, JSON.stringify({ results, articleId: article.id, newsId: news.id, checks: ['inert content', 'private draft absent publicly', 'correction in feeds and JSON-LD', 'owner workspace draft', 'real worker PDF through the web origin'], manualScreenReader: 'not performed' }, null, 2));
   await writeFile(`${evidence}/next-server.log`, serverLog);
   console.log(`PASS: ${results.length} live pages, seven languages, 375px, keyboard focus and axe; nine feeds; private draft and owner workspace checks.`);
 } finally {
   if (server) { server.kill('SIGTERM'); await new Promise(r => server!.once('exit', r)); }
+  await worker?.stop(); await workerPool?.end();
+  await h.db.admin.query(`DROP ROLE IF EXISTS ${workerRole}`);
   await browser.close(); await world.close(); await h.close();
 }

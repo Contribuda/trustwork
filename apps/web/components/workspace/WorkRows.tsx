@@ -127,7 +127,7 @@ export function PublicationListRow({ row }: { row: MyPublicationRow }) {
         ) : (
           <span className="ws-row__title">{typo(row.title)}</span>
         )}
-        <span className="ws-row__meta">
+        {row.shownInKnown !== false ? <span className="ws-row__meta">
           <span>{t('publications.col.shownIn')}:</span>
           {row.shownIn.length ? (
             row.shownIn.map((s, i) => (
@@ -138,7 +138,7 @@ export function PublicationListRow({ row }: { row: MyPublicationRow }) {
           ) : (
             <span>{t('publications.shownIn.nowhere')}</span>
           )}
-        </span>
+        </span> : null}
       </span>
       <span className="ws-row__side">
         <span>{t('common.updated', { date: shortDate(row.updatedAt) })}</span>

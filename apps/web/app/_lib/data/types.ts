@@ -274,6 +274,7 @@ export type ProjectDetail = ProjectCard & {
 export type RubricKey = 'analysis' | 'practice' | 'report' | 'interview' | 'people' | 'projectStory' | 'materials' | 'opinion' | 'week' | 'numbers' | 'qa';
 
 export type IssueItem = {
+  publicationHref?: string;
   correctionNote?: string | null;
   position: number;
   section: string;
@@ -469,6 +470,7 @@ export type WorkspaceProjectRow = {
   isPublished: boolean;
 };
 export type MyPublicationRow = {
+  shownInKnown?: boolean;
   id: string;
   title: string;
   format: PublicationCard['format'];

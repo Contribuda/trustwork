@@ -58,8 +58,9 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
   await t.test('real outbox, worker fencing and duplicate requests produce one durable edition artifact', async () => {
     const a = await request(issue.id), b = await request(issue.id);
     let calls = 0;
+    t.diagnostic(process.env.CNT003_EVIDENCE_DIR ? 'Installed Chromium PDF integration enabled' : 'Local PDF adapter fake; set CNT003_EVIDENCE_DIR for installed Chromium integration');
     const registry = new HandlerRegistry();
-    registerContent(registry, async (snapshot, signal) => { calls++; generated = await renderLocalPdf(snapshot, signal); return generated; });
+    registerContent(registry, async (snapshot, signal) => { calls++; generated = process.env.CNT003_EVIDENCE_DIR ? await renderLocalPdf(snapshot, signal) : Buffer.from('%PDF-synthetic-transaction-test'); return generated; });
     const worker = new Worker({ pool, registry, config: { workerId: 'cnt003-render', concurrency: 1, relayBatchSize: 500, retryJitter: 0 }, tasks: () => [], log: () => {} });
     t.after(() => worker.stop());
     await worker.runOnce({ rethrow: true }); await worker.idle();
