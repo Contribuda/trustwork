@@ -38,9 +38,8 @@ const texts = JSON.parse(readFileSync(new URL('./locales/reminders.json', import
 
 test('CONS-001 reminder producer and final fake dispatch under real restricted roles', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
-  let closeWorker: (() => Promise<void>) | undefined;
-  let closePools: (() => Promise<void>) | undefined;
-  t.after(async () => { await closeWorker?.(); await closePools?.(); await h.close(); });
+  const cleanup: { worker?: () => Promise<void>; pools?: () => Promise<void> } = {};
+  t.after(async () => { await cleanup.worker?.(); await cleanup.pools?.(); await h.close(); });
   const seed = await seedPersonas(h);
   const P = seed.people;
   await withMaintenance(h.db.admin, async (trx) => {
@@ -54,7 +53,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   const [client, expert, editor, reviewer, outsider] = await Promise.all([as('petr'), as('carl'), as('boris'), as('xenia'), as('anna')]);
   await screenClear(h, [{ kind: 'person', id: P.petr }, { kind: 'person', id: P.carl }]);
   const workers = await workerLogin(h);
-  closePools = () => workers.close();
+  cleanup.pools = () => workers.close();
   const pool = workers.pool(8);
   const channels = new ReminderChannelFake();
   const mail = mailConfigFromEnv({ MAIL_TRANSPORT: 'fake' });
@@ -62,7 +61,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   const runtime: ReminderRuntime = { pool, hubId, render: mail.render, channels };
   const registry = buildRegistry({ pool, mail, mailTransport: transport, log: silentLogger, metrics: new Metrics(), consultations: runtime });
   const worker = new Worker({ pool, registry, metrics: new Metrics(), tasks: () => [], config: { concurrency: 2, pollIntervalMs: 10 } });
-  closeWorker = () => worker.stop(1000);
+  cleanup.worker = () => worker.stop(1000);
   const tx = <T>(fn: Parameters<typeof inTransaction<T>>[1]) => inTransaction(pool, fn);
   const count = async (query: string, ids: unknown[] = []) => (await h.db.admin.query<{ n: number }>(`SELECT count(*)::int AS n FROM (${query}) x`, ids)).rows[0]!.n;
   const catalogue = ok<{ offering: { id: string; revision: number }; versions: { id: string }[] }>(await expert.post('/v1/catalogue', {

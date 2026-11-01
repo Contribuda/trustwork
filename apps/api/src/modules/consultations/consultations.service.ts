@@ -1097,4 +1097,3 @@ export class ConsultationsService {
     return this.run(state, async (trx, p) => MentoringListSchema.parse({ relationships: (await mentoringRelationships.listFor(trx, p.personId)).map(mentoringContract) }));
   }
 }
-

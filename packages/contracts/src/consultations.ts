@@ -806,4 +806,3 @@ export const CONSULTATION_MANIFEST: AgentModuleManifest = AgentModuleManifestSch
   freeFloor: [{ meter: 'agent_actions', units: '50', window: 'month' }],
   safetySuite: 'tests/consultations',
 });
-
