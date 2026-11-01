@@ -3,7 +3,7 @@ import type { ConsolePermission } from '@trustwork/contracts/client';
 import { demoModeEnabled } from '@/app/_lib/persona';
 import { canRead, visibleGroups } from '../_data/access';
 import type { CommandId } from '../_data/commands';
-import { consolePort } from '../_data/index';
+import { consolePort } from '../_data/server';
 import { consoleHref, resolveConsoleRequest, type ConsoleRequest } from '../_data/personas';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from '../_data/port';
 import type { ConsoleNode, HubRecord } from '../_data/schemas';

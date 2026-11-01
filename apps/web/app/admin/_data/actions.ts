@@ -7,7 +7,7 @@ import { primeLocale } from '@/app/_lib/locale';
 import { languageName, violationLabel } from '../_components/format';
 import { isCommandId, type CommandInput, type CommandOutcome } from './commands';
 import type { CommandState } from './command-state';
-import { consolePort } from './index';
+import { consolePort } from './server';
 import { resolveConsoleRequest } from './personas';
 
 const FIELD_PREFIX = 'f.';
