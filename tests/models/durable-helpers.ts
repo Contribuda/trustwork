@@ -23,7 +23,7 @@ export const syntheticGovernance: ModelGovernancePort = {
     return { ...answer, principalId: call.principalId, mandateId: call.mandateId, mandateRevision: call.mandateRevision, runId: call.runId };
   },
 };
-export async function durableWorld(db: NonNullable<Awaited<ReturnType<typeof provisionTestDatabase>>>) {
+export async function durableWorld(db: NonNullable<Awaited<ReturnType<typeof provisionTestDatabase>>>, protectionLimits?: { runsPerDay: number; actionsPerDay: number; concurrentRuns: number }) {
   await db.migrate();
   await db.createAppLogin();
   const pool = createPool({ ...db.appConfig, max: 5 });
@@ -44,6 +44,7 @@ export async function durableWorld(db: NonNullable<Awaited<ReturnType<typeof pro
         mandateAction: 'research', contextKinds: ['profile', 'project'], confirmation: 'none', budgetKind: null, sideEffects: ['draft_state', 'external_call'] }],
     });
     const control = engineDefaultPolicy(hubId, { manifests: [manifest], extensions: [] }).modules[0];
+    if (protectionLimits && control) control.limits = { ...control.limits, ...protectionLimits };
     await withMaintenance(db.admin, trx => sql`INSERT INTO trustwork.agent_engine_manifest(module_key,module_version,document,default_control)
       VALUES('research','1.0.0',${JSON.stringify(manifest)}::jsonb,${JSON.stringify(control)}::jsonb)`.execute(trx));
     await activateResidency(a, personId, world.people.officer, hubId, ['US']);

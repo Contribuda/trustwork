@@ -1,3 +1,4 @@
+import { effectImplementations, type EffectImplementation } from './implementations.js';
 import type { DataPool } from '@trustwork/data';
 import { assistantWorker, type ObservedOutcome } from '../../../../packages/data/src/repositories/assistant.js';
 import { inTransaction } from '../db.js';
@@ -26,7 +27,9 @@ export const ASSISTANT_SWEEP_TASK = 'assistant.sweep';
 
 export interface AssistantRuntime {
   pool: DataPool;
+  /** Legacy provider inventory never authorizes an executable effect. */
   providers: readonly EffectProvider[];
+  implementations?: readonly EffectImplementation[];
   /** Legacy configuration retained for callers; dispatch derives its hub from immutable intent provenance. */
   hubId: string | null;
   log: Logger;
@@ -40,7 +43,7 @@ function parseIntent(payload: unknown): IntentPayload {
 }
 
 export function dispatchHandler(runtime: AssistantRuntime): ExternalJobHandler<IntentPayload> {
-  const providers = new Map(runtime.providers.map((p) => [p.name, p]));
+  const implementationFor = effectImplementations(runtime.implementations ?? []);
   return {
     kind: ASSISTANT_DISPATCH,
     mode: 'external',
@@ -51,23 +54,33 @@ export function dispatchHandler(runtime: AssistantRuntime): ExternalJobHandler<I
         runtime.log('info', 'assistant action not dispatched', { intentId: payload.intentId, status: target.status, detail: target.status === 'refused' ? target.reason : target.state });
         return;
       }
-      const provider = providers.get(target.provider);
-      let outcome: ObservedOutcome;
-      if (!provider) {
-        // Persisted attempt, but no call was made: a definitive pre-effect failure.
-        outcome = { kind: 'final', result: 'failed', providerReference: null, evidence: `no adapter for provider ${target.provider}; nothing was sent` };
-      } else {
-        try {
-          const response = await provider.submit({ correlationKey: target.correlationKey, operationId: target.operationId, attemptNo: target.attemptNo, operation: target.operation, payload: target.payload, amount: target.amount }, signal);
-          outcome = response.kind === 'acknowledged'
-            ? { kind: 'acknowledged', providerReference: response.providerReference }
-            : { kind: 'final', result: response.result, providerReference: response.providerReference, evidence: response.evidence };
-        } catch (error) {
-          if (error instanceof ProviderRejectedError) outcome = { kind: 'final', result: 'failed', providerReference: null, evidence: error.evidence.slice(0, 2000) };
-          else outcome = { kind: 'unknown', reason: signal.aborted ? 'timeout' : 'ambiguous_response' };
+      const result = await inTransaction(runtime.pool, async trx => {
+        if (!await assistantWorker.enterEffect(trx, target.attemptId, job.id, job.fencing_token)) {
+          // No callback after authority withdrawal. Preserve the committed attempt/hold for original receipt lookup.
+          await assistantWorker.recordOutcome(trx, target.attemptId, { kind: 'unknown', reason: 'lease_expired' });
+          return null;
         }
-      }
-      const recorded = await inTransaction(runtime.pool, (trx) => assistantWorker.recordOutcome(trx, target.attemptId, outcome));
+        const provider = implementationFor(target.implementation);
+        let outcome: ObservedOutcome;
+        if (!provider) {
+          // Persisted attempt, but no call was made: a definitive pre-effect failure.
+          outcome = { kind: 'final', result: 'failed', providerReference: null, evidence: `no adapter for provider ${target.provider}; nothing was sent` };
+        } else {
+          try {
+            const response = await provider.submit({ correlationKey: target.correlationKey, operationId: target.operationId, attemptNo: target.attemptNo, operation: target.operation, payload: target.payload, amount: target.amount }, signal);
+            outcome = response.kind === 'acknowledged'
+              ? { kind: 'acknowledged', providerReference: response.providerReference }
+              : { kind: 'final', result: response.result, providerReference: response.providerReference, evidence: response.evidence };
+          } catch (error) {
+            if (error instanceof ProviderRejectedError) outcome = { kind: 'final', result: 'failed', providerReference: null, evidence: error.evidence.slice(0, 2000) };
+            else outcome = { kind: 'unknown', reason: signal.aborted ? 'timeout' : 'ambiguous_response' };
+          }
+        }
+        const recorded = await assistantWorker.recordOutcome(trx, target.attemptId, outcome);
+        return { outcome, recorded };
+      });
+      if (!result) return;
+      const { outcome, recorded } = result;
       runtime.log(outcome.kind === 'unknown' ? 'warn' : 'info', 'assistant action outcome recorded', { intentId: payload.intentId, attemptId: target.attemptId, outcome: outcome.kind, state: recorded });
     },
   };
@@ -88,7 +101,7 @@ function observedFromLookup(found: LookupResult, provider: string): ObservedOutc
 }
 
 export function reconcileHandler(runtime: AssistantRuntime): TransactionalJobHandler<IntentPayload> {
-  const providers = new Map(runtime.providers.map((p) => [p.name, p]));
+  const implementationFor = effectImplementations(runtime.implementations ?? []);
   return {
     kind: ASSISTANT_RECONCILE,
     mode: 'transactional',
@@ -96,7 +109,7 @@ export function reconcileHandler(runtime: AssistantRuntime): TransactionalJobHan
     async run({ trx, payload }) {
       const target = await assistantWorker.beginReconciliation(trx, payload.intentId);
       if (target.status !== 'reconcile') return;
-      const provider = providers.get(target.provider);
+      const provider = implementationFor(target.implementation);
       if (!provider) throw new RetryableJobError(`no adapter for provider ${target.provider}`);
       let found: LookupResult;
       try {
@@ -104,8 +117,8 @@ export function reconcileHandler(runtime: AssistantRuntime): TransactionalJobHan
       } catch (error) {
         throw new RetryableJobError('provider lookup failed; a lookup has no effect and is retried', { cause: error });
       }
-      const outcome = observedFromLookup(found, provider.name);
-      const state = await assistantWorker.recordReconciliation(trx, payload.intentId, `lookup:${provider.name}:${target.correlationKey}`.slice(0, 200), outcome);
+      const outcome = observedFromLookup(found, target.provider);
+      const state = await assistantWorker.recordReconciliation(trx, payload.intentId, `lookup:${target.provider}:${target.correlationKey}`.slice(0, 200), outcome);
       runtime.log(outcome.kind === 'final' ? 'info' : 'warn', 'assistant action reconciled', { intentId: payload.intentId, lookup: found.status, state });
     },
   };

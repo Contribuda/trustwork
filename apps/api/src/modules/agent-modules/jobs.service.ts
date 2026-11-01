@@ -26,7 +26,10 @@ const MAX_JOB_VALIDITY_MS = 366 * 86_400_000;
 export type ActingFor = 'self' | 'employer';
 
 export function jobRequestView(row: AgentJobRequestRow, schedule: AgentJobScheduleRow | null): JobRequestView {
+  const implemented = jobImplementation(row.module_key, row.template_key) !== null;
   return {
+    executionAvailability: implemented ? 'requires_current_authority' : 'implementation_unavailable',
+    executionMessageKey: implemented ? null : REFUSAL_MESSAGE_KEYS['module.not_serving'],
     id: row.id, moduleKey: row.module_key, templateKey: row.template_key, trigger: row.trigger as JobTrigger, status: row.status, reason: row.reason,
     mandateProposalId: row.proposal_id, jobSubscriptionId: row.job_subscription_id, nextDueAt: iso(schedule?.next_due_at ?? null), createdAt: iso(row.created_at) as string,
   };

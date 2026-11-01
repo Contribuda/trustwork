@@ -623,6 +623,8 @@ export type TurnOnJobCommand = z.infer<typeof TurnOnJobCommandSchema>;
 
 export const JobRequestStatusSchema = z.enum(['pending', 'active', 'withdrawn', 'lapsed']);
 export const JobRequestViewSchema = z.strictObject({
+  executionAvailability: z.enum(['implementation_unavailable', 'requires_current_authority']),
+  executionMessageKey: z.string().nullable(),
   id: IdSchema,
   moduleKey: AgentModuleKeySchema,
   templateKey: z.string(),
@@ -689,3 +691,18 @@ export const AGENT_MODULES_SCHEMAS = {
   CapabilityAvailability: CapabilityAvailabilitySchema, EngageAgentKillSwitchCommand: EngageAgentKillSwitchCommandSchema, ReleaseAgentKillSwitchCommand: ReleaseAgentKillSwitchCommandSchema,
   DraftAgentPolicyCommand: DraftAgentPolicyCommandSchema, ActivateAgentPolicyCommand: ActivateAgentPolicyCommandSchema,
 } as const;
+
+/** Immutable code-owned executable requirements. Registry metadata alone never supplies an implementation. */
+export interface EffectImplementationDeclaration {
+  readonly id: string;
+  readonly moduleKey: string;
+  readonly moduleVersion: string;
+  readonly capabilityId: string;
+  readonly provider: string;
+  readonly operation: string;
+  readonly mandateAction: string;
+  readonly contextKinds: readonly string[];
+  readonly privateDataClasses: readonly string[];
+  readonly egress: 'none';
+  readonly payloadContract: string;
+}

@@ -1,5 +1,5 @@
 import test from 'node:test';
-import { installSyntheticOrderManifest } from './manifest-fixture.js';
+import { syntheticEffectDeclaration, syntheticEffectImplementations, installSyntheticOrderManifest } from './manifest-fixture.js';
 import { buildAgentWorld } from '../agent-modules/helpers.js';
 import assert from 'node:assert/strict';
 import { jobs } from '@trustwork/data';
@@ -45,7 +45,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
   let mandate = ok<MandateView>(await petrApi.post('/v1/assistant/mandates', { draft: mandateDraft() }), 201);
 
   const providers = fakeEffectProviders();
-  const runtime: AssistantRuntime = { pool: worker.pool(6), providers: providers.all, hubId: null, log: silentLogger };
+  const runtime: AssistantRuntime = { pool: worker.pool(6), providers: providers.all, implementations: syntheticEffectImplementations(providers.all), hubId: null, log: silentLogger };
   const workerA = new Worker({ pool: runtime.pool, registry: registerAssistant(new HandlerRegistry(), runtime), config: { workerId: 'worker-a', leaseSeconds: 30, retryJitter: 0 }, tasks: () => [] });
   const runtimeB: AssistantRuntime = { ...runtime, pool: worker.pool(6) };
   const workerB = new Worker({ pool: runtimeB.pool, registry: registerAssistant(new HandlerRegistry(), runtimeB), config: { workerId: 'worker-b', leaseSeconds: 30, retryJitter: 0 } });
@@ -199,7 +199,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     const id = (action as { intentId: string }).intentId;
     const [job] = await inTransaction(runtime.pool, (trx) => jobs.lease(trx, ['assistant.dispatch'], 'slow-worker', 1, 1));
     const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job!.id, null, job!.fencing_token)) as { status: 'dispatch'; attemptId: string; correlationKey: string; operationId: string; attemptNo: number; operation: string; payload: unknown; amount: null };
-    await providers.orders.submit({ ...target }, new AbortController().signal);
+    await providers.orders.submit({ correlationKey: target.correlationKey, operationId: target.operationId, attemptNo: target.attemptNo, operation: target.operation, payload: target.payload, amount: target.amount }, new AbortController().signal);
     await waitFor(async () => (await h.db.admin.query("SELECT 1 FROM trustwork.job WHERE id = $1 AND leased_until < now()", [job!.id])).rowCount === 1, 15_000, 'lease expiry');
     await expireTask.run();
     await inTransaction(runtime.pool, (trx) => fails(assistantWorker.recordOutcome(trx, target.attemptId, { kind: 'final', result: 'succeeded', providerReference: 'late', evidence: 'late result' }), 'assistant.fenced_out'));
@@ -239,8 +239,15 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     const id = (action as { intentId: string }).intentId;
     const [job] = await inTransaction(runtime.pool, (trx) => jobs.lease(trx, ['assistant.dispatch'], 'inspector', 30, 1));
     const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job!.id, null, job!.fencing_token));
-    assert.deepEqual(Object.keys(target).sort(), ['amount', 'attemptId', 'attemptNo', 'correlationKey', 'operation', 'operationId', 'payload', 'provider', 'status']);
-    const text = JSON.stringify([target, providers.orders.submissions]);
+    assert.deepEqual(Object.keys(target).sort(), ['amount', 'attemptId', 'attemptNo', 'correlationKey', 'implementation', 'operation', 'operationId', 'payload', 'provider', 'status']);
+    assert.equal(target.status, 'dispatch');
+    if (target.status !== 'dispatch') throw new Error('expected dispatch');
+    assert.deepEqual(target.implementation, syntheticEffectDeclaration('deal_desk.place_order', 'fake_orders', 'order.place'));
+    // Code-owned data-class names describe required authority; no private values enter that declaration.
+    const { implementation: declaration, ...effectTarget } = target;
+    assert.ok(declaration);
+    const text = JSON.stringify([effectTarget, providers.orders.submissions]);
+    assert.ok(!JSON.stringify(target).includes(budget));
     for (const forbidden of ['floorPrice', 'ceiling', 'budget', 'privateConstraint', 'conditions', 'approvalPolicy', budget]) assert.ok(!text.includes(forbidden), `${forbidden} never leaves the API`);
     await inTransaction(runtime.pool, (trx) => assistantWorker.recordOutcome(trx, (target as { attemptId: string }).attemptId, { kind: 'final', result: 'succeeded', providerReference: 'inspect-1', evidence: 'synthetic' }));
     await inTransaction(runtime.pool, (trx) => jobs.complete(trx, job!.id, job!.fencing_token));
