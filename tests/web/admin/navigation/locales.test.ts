@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const tags = ['en', 'es', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn'];
+/** Maintained languages; Russian is not maintained (owner, 2026-11-01) and falls back to English. */
+const tags = ['en', 'es', 'uz-Latn', 'ka', 'hy', 'az-Latn'];
 const dictionary = (tag: string): Record<string, string> => JSON.parse(readFileSync(`apps/web/locales/${tag}/console-navigation.json`, 'utf8')).consoleNav;
 
-test('navigation copy is complete in seven locales, with no English words in non-Latin interface copy', () => {
+test('navigation copy is complete in every maintained locale, with no English words in non-Latin interface copy', () => {
   const reference = dictionary('en');
   for (const tag of tags) {
     const values = dictionary(tag);

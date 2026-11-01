@@ -11,6 +11,11 @@ import { enabledPacks, getPack } from '@trustwork/country-packs';
  * directories, so a new language or a new namespace file is checked here without editing this test.
  */
 const appRoot = resolve('apps/web/locales');
+/**
+ * Languages kept but no longer maintained (owner, 2026-11-01: Russian is not a priority). Their dictionaries may lack
+ * namespaces and keys; a reader gets English for anything missing (the English layer of `app/_lib/locale.ts`).
+ */
+const UNMAINTAINED = new Set(['ru']);
 const uiRoot = resolve('packages/ui/locales');
 
 function leaves(node: unknown, path = ''): Array<[string, string]> {
@@ -67,7 +72,7 @@ function parityProblems(root: string): string[] {
     if (canonical?.toLowerCase() !== tag.toLowerCase()) problems.push(`${tag}/: not a BCP 47 language tag`);
     if (tag === 'en') continue;
     const own = namespaceFiles(root, tag);
-    for (const namespace of reference) if (!own.includes(namespace)) problems.push(`${tag}/${namespace}.json is missing (every language has every namespace of en/)`);
+    if (!UNMAINTAINED.has(tag)) for (const namespace of reference) if (!own.includes(namespace)) problems.push(`${tag}/${namespace}.json is missing (every language has every namespace of en/)`);
     for (const namespace of own) {
       if (!reference.includes(namespace)) {
         problems.push(`${tag}/${namespace}.json has no reference en/${namespace}.json`);
@@ -100,8 +105,8 @@ const UI_TAGS = readdirSync(uiRoot)
   .filter((name) => name.endsWith('.json'))
   .map((name) => name.slice(0, -5));
 
-test('the application tree has one directory per language and the six engine languages', () => {
-  for (const tag of ['en', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']) assert.ok(APP_TAGS.includes(tag), `apps/web/locales/${tag}/ is missing`);
+test('the application tree has one directory per language and every maintained engine language', () => {
+  for (const tag of ['en', 'uz-Latn', 'ka', 'hy', 'az-Latn']) assert.ok(APP_TAGS.includes(tag), `apps/web/locales/${tag}/ is missing`);
   assert.ok(namespaceFiles(appRoot, 'en').length >= 10, 'the reference is split into feature namespaces');
 });
 
@@ -169,13 +174,6 @@ for (const [name, tags, read] of [
         assert.ok(!/\bTODO\b|\bTBD\b|XXX|[Ll]orem/.test(value), `${tag}: ${key} has a placeholder`); // case-sensitive: Spanish "todo" is a word (LANG-ES)
       }
     }
-  });
-  test(`${name}: the Russian dictionary is complete`, () => {
-    const ru = read('ru')!;
-    assert.deepEqual(
-      Object.keys(en).filter((k) => !(k in ru)),
-      [],
-    );
   });
   test(`${name}: complete country packs are fully translated; partial packs may fall back to English`, () => {
     for (const pack of enabledPacks()) {

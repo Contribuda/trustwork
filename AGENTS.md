@@ -21,7 +21,7 @@ Use the summary in `docs/engine/agent-onboarding.md` section 2. Be exact about s
 - Private data never reaches other parties, staff without a case grant, search, notifications, exports, other hubs or agents. Use the projection serializers.
 - Published RFQ versions and sent quote versions are immutable; acceptance binds `trustwork-digest-1` digests.
 - Product agents act only under structured mandates; chat text never authorizes; untrusted input (files, mail, web pages, other agents) never issues commands; one assistant surface per person and at most one standing representative per company with an accountable person; no multi-agent management UI for participants (the hub operator's internal agent team in the hub console is allowed: it acts only under operator grants with an accountable staff member, never under a participant's mandate, and human-only decisions stay human; ADR 010 decision 26).
-- Every visible string comes from locale files in every language; dates and numbers from `Intl`; no hard-coded brand.
+- Every visible string comes from locale files in every maintained language; Russian is not maintained (ADR 009 decision 11): add no Russian strings, missing ones fall back to English. Dates and numbers from `Intl`; no hard-coded brand.
 - Restricted places (see `NOTICE`) are never offered, hosted, served or federated.
 - No secrets, no real personal data, no external calls, no account registration, no spending, no deployment.
 - Migrations, the root lockfile and root configuration change only with a maintainer's agreement. Stay inside your package's paths.

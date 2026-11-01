@@ -37,7 +37,7 @@ function codeFiles(dir: string): string[] {
 }
 
 test('every engine language has an admin namespace', () => {
-  for (const tag of ['en', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn', 'es']) assert.ok(tags.includes(tag), tag);
+  for (const tag of ['en', 'uz-Latn', 'ka', 'hy', 'az-Latn', 'es']) assert.ok(tags.includes(tag), tag);
   for (const tag of tags) assert.ok(statSync(join(LOCALES, tag, 'admin.json')).isFile(), `${tag}/admin.json`);
 });
 
