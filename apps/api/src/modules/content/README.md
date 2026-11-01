@@ -2,7 +2,7 @@
 
 The sourced publication lifecycle and the weekly curated issue ([News, articles and walls](../../../../../docs/engine/publishing.md), [The weekly magazine](../../../../../docs/engine/magazine.md), [data model sections 10 and 11](../../../../../docs/data/model.md#10-content)). Contracts: the frozen [`content.ts`](../../../../../packages/contracts/src/content.ts) (`PublicationSchema`, `PublicationVersionSchema`, `IssueSchema`, `CorrectionSchema`, both transition tables) reused unchanged; request and view schemas the contracts do not carry are in [`schemas.ts`](schemas.ts). Storage: [`packages/data/migrations/content`](../../../../../packages/data/migrations/content), [`packages/data/src/repositories/content.ts`](../../../../../packages/data/src/repositories/content.ts).
 
-Status: **Live** as an API (not deployed; the web magazine and news pages still read fixtures, wiring them to these routes is a follow-up). Tests: `tests/content/*` and `tests/backend/idempotency/cases/content.ts`, on real PostgreSQL under the runtime role.
+Status: **Live** as an API with the CNT-003 web reader and opt-in local PDF worker; acceptance remains incomplete for editorial provenance and manual accessibility review. Tests: `tests/content/*` and `tests/backend/idempotency/cases/content.ts`, on real PostgreSQL under the runtime role.
 
 ## Rules the database enforces
 
@@ -44,8 +44,10 @@ Scheduled publications are released by the worker entry point `content_publish_d
 - Editing rights live in `publication_editor` instead of `object_participation` rows (see above); an integrator may migrate them once the foundation access functions know publications.
 - Topics are exposed as taxonomy codes in the contract's `topicIds`.
 - Agents cannot write publications yet (`403 access.mandate_scope`): no mandate kind covers publishing; drafting assistance is labelled through `assistantAssisted`.
-- Not wired yet: the worker loop for `content_publish_due`, the PDF renderer (Designed), hub configuration for review formats and comments (HUB-001), sanctions enforcement for posting bans, the web pages (fixtures today), the capability registry entries.
+- Not wired yet: the worker loop for `content_publish_due`, hub configuration for review formats and comments (HUB-001), sanctions enforcement for posting bans, the capability registry entries.
 
 ## CNT-003 reader and PDF delivery
 
 Public reader schemas are shared unchanged from `packages/contracts/src/content-reader.ts`. The live DataPort consumes publications, version pins, archive and issue projections; workspace publication rows retain the caller session. `GET` and `HEAD /v1/magazine/issues/:number/pdf?edition=N` deliver only a durable local artifact whose captured public/licence projection still matches. The route returns 404 when unavailable and uses `private, no-store`; it never accepts a URL or fetches a remote asset. The local worker is opt-in with `CONTENT_PDF_RENDERER=local`. See [implementation boundaries](../../../../../docs/design/magazine/CNT-003-reader-boundaries.md) for provenance fields that remain proposed rather than inferred.
+
+The owning database projections check the current linked SRC-001 source, item and activated import batch for each third-party reference. Missing, ambiguous or mismatched links withhold the publication; snapshot flags cannot widen current rights. Public detail, pinned versions, feeds, issue slots, walls, local digests and PDF share this gate. Headline-link versions have no public body. Nonconsenting co-author credits are omitted from detail and feed projections. Every public content route uses `private, no-store`. Source registry working views and private fields remain private.
