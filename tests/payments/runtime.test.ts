@@ -272,6 +272,98 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     assert.equal(fake.lookups.length, lookedUp + 1);
     assert.equal(fake.calls.filter((id) => id === op.id).length, 1);
   });
+  await t.test('initial dispatch and competing receipts acquire intent before operation and budget in both orders', async () => {
+    for (const receiptFirst of [true, false]) {
+      const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
+      await relay.relayOnce();
+      const [job] = await inTransaction(pool, (trx) => jobs.lease(trx, ['payments.dispatch'], 'synthetic-begin-receipt-race', 60, 1));
+      assert.ok(job);
+      const op = await operation(view.id), attempt = `${job.id}:${job.attempt}`;
+      const evidence = { eventId: `synthetic-begin-race:${op.id}`, operationId: op.id as string, connectionId: hub.connectionId,
+        kind: 'create' as const, providerRef: `synthetic:${op.id}`, originalProviderRef: null,
+        connectedAccountRef: 'synthetic-connected-payee', amountMinor: '1250', currency: 'USD' as const,
+        state: 'succeeded' as const, customerActionDeadline: null, evidenceMode: 'synthetic' as const };
+      const blocker = await h.db.admin.connect();
+      const dispatchClient = await pool.connect();
+      try {
+        await blocker.query('BEGIN');
+        await blocker.query("SET LOCAL statement_timeout='2s'");
+        await dispatchClient.query('BEGIN');
+        await dispatchClient.query("SET LOCAL statement_timeout='3s'");
+        const dispatchPid = (await dispatchClient.query('SELECT pg_backend_pid() AS pid')).rows[0]!.pid as number;
+        if (receiptFirst) await blocker.query('SELECT id FROM trustwork.payment_intent WHERE id=$1 FOR UPDATE', [view.id]);
+        else await blocker.query('SELECT b.id FROM trustwork.budget b JOIN trustwork.reservation r ON r.budget_id=b.id JOIN trustwork.payment_intent p ON p.reservation_id=r.id WHERE p.id=$1 FOR UPDATE OF b', [view.id]);
+        const beginning = dispatchClient.query('SELECT trustwork.payments_begin($1,$2,$3,$4)', [op.id, job.id, job.fencing_token, attempt]);
+        // Observe the actual blocked dispatch; there is no timing-based assumption about lock ownership.
+        for (let i = 0; i < 100; i++) {
+          if ((await q("SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND wait_event_type='Lock'", [dispatchPid])).length) break;
+          if (i === 99) assert.fail('dispatch did not wait for the held boundary');
+          await new Promise((r) => setTimeout(r, 10));
+        }
+        if (receiptFirst) {
+          // The waiting begin must not hold the operation while waiting for its intent.
+          await blocker.query('SELECT id FROM trustwork.payment_operation WHERE id=$1 FOR UPDATE NOWAIT', [op.id]);
+          await blocker.query('SAVEPOINT invalid_receipt');
+          await assert.rejects(blocker.query('SELECT trustwork.payments_receipt($1)', [evidence]), /binding mismatch/);
+          await blocker.query('ROLLBACK TO SAVEPOINT invalid_receipt');
+          await blocker.query('COMMIT'); await beginning; await dispatchClient.query('COMMIT');
+        } else {
+          let received = false;
+          const receipt = inTransaction(pool, async (trx, handle) => {
+            const result = payments.receipt(trx, evidence);
+            for (let i = 0; i < 100; i++) {
+              if ((await q("SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND wait_event_type='Lock'", [handle.pid])).length) break;
+              if (i === 99) assert.fail('receipt did not wait for dispatch intent');
+              await new Promise((r) => setTimeout(r, 10));
+            }
+            received = true;
+            return result;
+          });
+          for (let i = 0; !received && i < 100; i++) await new Promise((r) => setTimeout(r, 10));
+          assert.equal(received, true);
+          await blocker.query('COMMIT'); await beginning; await dispatchClient.query('COMMIT');
+          assert.equal(await receipt, 'applied');
+          assert.equal((await reservation(view.id)).state, 'settled');
+        }
+      } finally {
+        await blocker.query('ROLLBACK'); blocker.release();
+        await dispatchClient.query('ROLLBACK'); dispatchClient.release();
+      }
+    }
+  });
+  await t.test('actual job timeout releases dispatch authority locks even when an adapter ignores abort; late receipt reconciles', async () => {
+    const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
+    const op = await operation(view.id);
+    let finish!: () => void;
+    const waiting = new Promise<void>((resolve) => { finish = resolve; });
+    class HangingFake extends DeterministicPaymentFake {
+      override async create(...args: Parameters<DeterministicPaymentFake['create']>) {
+        const evidence = await super.create(...args);
+        await waiting; // Deliberately ignores the real runner's abort after the synthetic effect.
+        return evidence;
+      }
+    }
+    const hanging = new HangingFake(); hanging.plan(op.id, 'succeeded');
+    const hangingRuntime = { pool, providers: new PaymentProviders(new Map([[hub.connectionId, hanging]])) };
+    const hangingRegistry = new HandlerRegistry(); registerPayments(hangingRegistry, hangingRuntime);
+    const timedRunner = new JobRunner({ ...deps, registry: hangingRegistry, config: defaultWorkerConfig({ concurrency: 1, externalTimeoutMs: 250 }) });
+    try {
+      await relay.relayOnce(); await timedRunner.tick(); await timedRunner.idle();
+      assert.equal(hanging.calls.length, 1);
+      assert.equal((await operation(view.id)).state, 'outcome_unknown');
+      assert.equal((await reservation(view.id)).effect_pending, true);
+      const writer = await h.db.admin.connect();
+      try {
+        await writer.query('BEGIN'); await writer.query("SET LOCAL statement_timeout='1s'");
+        await writer.query('UPDATE trustwork.payment_source SET revoked_at=clock_timestamp() WHERE agreement_id=$1', [view.agreementId]);
+        await writer.query('COMMIT');
+      } finally { await writer.query('ROLLBACK'); writer.release(); }
+      finish();
+      assert.equal(await reconcilePayment(hangingRuntime, op.id, AbortSignal.timeout(1000)), 'applied');
+      assert.equal((await operation(view.id)).state, 'succeeded');
+      assert.equal(hanging.calls.length, 1);
+    } finally { finish(); }
+  });
   await t.test('final dispatch rechecks elapsed session authority after a competing lock wait', async () => {
     const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
     await relay.relayOnce();

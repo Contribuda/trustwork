@@ -4,7 +4,7 @@ import { payments } from '../../../../packages/data/src/repositories/payments.js
 import { inTransaction } from '../db.js';
 import type { ScheduledTask } from '../scheduler.js';
 import type { HandlerRegistry } from '../handlers.js';
-import { PaymentProviders } from './provider.js';
+import { PaymentProviders, awaitPaymentProvider } from './provider.js';
 
 export interface PaymentRuntime { pool: DataPool; providers: PaymentProviders }
 
@@ -23,7 +23,7 @@ export async function reconcilePayment(runtime: PaymentRuntime, operationId: str
   const instruction = await inTransaction(runtime.pool, (trx) => payments.instruction(trx, operationId));
   if (!instruction) return 'not_dispatched';
   const provider = runtime.providers.get(instruction.binding.connectionId);
-  const raw = await provider.lookup(instruction, signal);
+  const raw = await awaitPaymentProvider(signal, () => provider.lookup(instruction, signal));
   if (!raw) return 'outcome_unknown';
   const evidence = PaymentEvidenceSchema.parse(raw);
   if (evidence.evidenceMode !== provider.evidenceMode) throw new Error('payment evidence mode mismatch');
@@ -52,7 +52,7 @@ export function registerPayments(registry: HandlerRegistry, runtime: PaymentRunt
       const evidence = await inTransaction(runtime.pool, async (trx) => {
         await payments.dispatchGuard(trx, ctx.payload.operationId, ctx.job.id, ctx.job.fencing_token, ctx.attemptId);
         ctx.signal.throwIfAborted();
-        return PaymentEvidenceSchema.parse(await provider[method](instruction, ctx.signal));
+        return PaymentEvidenceSchema.parse(await awaitPaymentProvider(ctx.signal, () => provider[method](instruction, ctx.signal)));
       });
       if (evidence.evidenceMode !== provider.evidenceMode) throw new Error('payment evidence mode mismatch');
       await inTransaction(runtime.pool, (trx) => payments.receipt(trx, evidence));

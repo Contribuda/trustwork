@@ -23,6 +23,21 @@ export class PaymentProviders {
   }
 }
 
+/** Stop awaiting an uncooperative adapter when the real job aborts. Its possible effect remains unknown. */
+export async function awaitPaymentProvider<T>(signal: AbortSignal, invoke: () => Promise<T>): Promise<T> {
+  signal.throwIfAborted();
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(signal.reason);
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+  try {
+    return await Promise.race([Promise.resolve().then(() => { signal.throwIfAborted(); return invoke(); }), aborted]);
+  } finally {
+    if (onAbort) signal.removeEventListener('abort', onAbort);
+  }
+}
+
 /** Deterministic synthetic provider: no network, credentials, real account or real funds. */
 export class DeterministicPaymentFake implements PaymentProvider {
   readonly evidenceMode = 'synthetic' as const;
