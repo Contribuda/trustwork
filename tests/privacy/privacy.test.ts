@@ -26,6 +26,7 @@ import { billingAccounts, catalogue as billingCatalogue, subscriptions, priceAcc
 import { buildAdminWorld } from '../data/admin/helpers.js';
 import { agentReports } from '../../packages/data/src/repositories/agents.js';
 import { publications } from '../../packages/data/src/repositories/content.js';
+import { rfqInvitations } from '../../packages/data/src/repositories/commerce.js';
 import { PRIVACY_MODULE_INVENTORY } from '../../apps/api/src/modules/platform-admin/privacy/inventory.js';
 
 test('PRV-001: authenticated requests, preferences and delivery through real module projections', async (t) => {
@@ -117,6 +118,45 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.ok(!JSON.stringify(result.body).includes('Synthetic seller secret 1974'), 'the counterparty private side of the same agreement is never exported');
     assert.equal(result.headers['cache-control'], 'no-store');
     assert.deepEqual(await store.list('privacy-exports/'), []);
+  });
+  await t.test('personal participating projects use shared projections and disappear after actual revocation', async () => {
+    const target = { kind: 'person', id: seed.people.boris };
+    const created = await boris.post('/v1/privacy/exports', { subject: target });
+    const id = (created.body as { export: { id: string } }).export.id;
+    const before = await boris.get(`/v1/privacy/exports/${id}`);
+    assert.equal(before.status, 200, JSON.stringify(before.body));
+    assert.deepEqual((before.body as { archive: { data: { participatingProjects: unknown[] } } }).archive.data.participatingProjects, [], 'employer participation is not personal participation');
+    const granted = await petr.post(`/v1/projects/${seed.project}/participants`, { party: target, side: 'participant', capabilities: ['read.shared'], audience: 'shared_party', validUntil: null });
+    assert.equal(granted.status, 201, JSON.stringify(granted.body));
+    const grant = granted.body as { id: string; revision: number };
+    const during = await boris.get(`/v1/privacy/exports/${id}`);
+    assert.equal(during.status, 200, JSON.stringify(during.body));
+    const projects = (during.body as { archive: { data: { participatingProjects: { projection: string; project: { id: string } }[] } } }).archive.data.participatingProjects;
+    assert.equal(projects.length, 1); assert.equal(projects[0]!.project.id, seed.project); assert.equal(projects[0]!.projection, 'shared_party');
+    assert.ok(!JSON.stringify(projects).includes('privateNotes') && !JSON.stringify(projects).includes('budgets'));
+    const revoked = await petr.post(`/v1/projects/${seed.project}/participants/${grant.id}/revoke`, { expectedRevision: grant.revision, reason: 'Synthetic privacy current-authority check' });
+    assert.equal(revoked.status, 200, JSON.stringify(revoked.body));
+    const after = await boris.get(`/v1/privacy/exports/${id}`);
+    assert.equal(after.status, 200, JSON.stringify(after.body));
+    assert.deepEqual((after.body as { archive: { data: { participatingProjects: unknown[] } } }).archive.data.participatingProjects, []);
+  });
+  await t.test('personal supplier export includes pinned versions but no employer invitations or buyer private constraints', async () => {
+    const target = { kind: 'person', id: seed.people.boris };
+    const created = await boris.post('/v1/privacy/exports', { subject: target });
+    const id = (created.body as { export: { id: string } }).export.id;
+    const before = await boris.get(`/v1/privacy/exports/${id}`);
+    assert.equal(before.status, 200, JSON.stringify(before.body));
+    assert.deepEqual((before.body as { archive: { data: { supplierInvitations: { invitations: unknown[] } } } }).archive.data.supplierInvitations.invitations, []);
+    const rfq = await withMaintenance(h.db.admin, (trx) => trx.selectFrom('rfq').select(['id', 'current_version_id']).where('owner_person_id', '=', subject.id).executeTakeFirstOrThrow());
+    const invitation = await withPrincipal(h.pool, await principalFor(h.db.admin, subject.id), (trx) => rfqInvitations.insert(trx, { rfq_id: rfq.id, rfq_version_id: rfq.current_version_id!, party_person_id: target.id, party_company_id: null,
+      channel: 'platform', sent_by_person_id: subject.id, sent_via: 'person', sent_by_mandate_id: null, revalidates_invitation_id: null }));
+    const after = await boris.get(`/v1/privacy/exports/${id}`);
+    assert.equal(after.status, 200, JSON.stringify(after.body));
+    const supplier = (after.body as { archive: { data: { supplierInvitations: { invitations: { invitation: { id: string } }[]; rfqs: unknown[] } } } }).archive.data.supplierInvitations;
+    assert.equal(supplier.invitations.length, 1); assert.equal(supplier.invitations[0]!.invitation.id, invitation.id);
+    assert.ok(JSON.stringify(supplier.rfqs).includes(rfq.current_version_id!));
+    assert.ok(!JSON.stringify(supplier).includes('PRIVATE-ceiling') && !JSON.stringify(supplier).includes('privateConstraint'));
+    assert.ok(!JSON.stringify(supplier).includes(seed.companies.supplier), 'company invitation is outside the personal export');
   });
   await t.test('own clean file bytes are authorized and digest checked; counterparty bytes and storage paths stay out', async () => {
     const seedFile = async (personId: string, marker: string) => {

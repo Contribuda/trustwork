@@ -26,12 +26,12 @@ import type { PrivacySubject } from '../../../packages/contracts/src/privacy.js'
 const MODULE_COVERAGE = [
   { module: 'approval-routes', status: 'partial', includes: 'all own-company route versions and request decision cards, current delegations; person-only decision history pending' },
   { module: 'supplier-base', status: 'partial', includes: 'all own-company supplier records, assessments and external counterparties; sharing history pending' },
-  { module: 'agreements', status: 'partial', includes: 'current authorized agreement/order projections; historical events not yet composed' },
+  { module: 'agreements', status: 'partial', includes: 'authorized agreement/order projections, acceptance events and order-change history; audit records pending' },
   { module: 'assistant-goals', status: 'partial', includes: 'own personal goals/progress, authored personal reports and job subscriptions; agent negotiation and employer internals excluded' },
   { module: 'consultations', status: 'partial', includes: 'own requests and bookings through current owning projections, offerings and personal mentoring; historical reminders and availability pending' },
   { module: 'assistant', status: 'unsupported', includes: 'requires owning-module exporter' },
   { module: 'billing', status: 'partial', includes: 'own accounts, subscriptions, accepted prices, budgets and reservations; ledger and usage history pending' },
-  { module: 'catalogue', status: 'partial', includes: 'authorized offering view; historical versions not yet composed' },
+  { module: 'catalogue', status: 'partial', includes: 'all own offerings and versions with owning private-knowledge projection; audit history pending' },
   { module: 'communications', status: 'partial', includes: 'project/agreement threads, paginated own notifications, preferences and channels; other contexts pending' },
   { module: 'company', status: 'partial', includes: 'existing member projection; member directory not included' },
   { module: 'connections', status: 'partial', includes: 'own current connection/consent projections without bearer tokens; consent history pending' },
@@ -43,11 +43,11 @@ const MODULE_COVERAGE = [
   { module: 'identity', status: 'partial', includes: 'person, emails, provider identities, memberships and all session views without token hashes; account-change history pending' },
   { module: 'plans', status: 'partial', includes: 'owner plans, all versions, item states, changes, timing, shares, locations, permits and diary; participation-only enumeration pending' },
   { module: 'privacy', status: 'supported', includes: 'own request and preference records' },
-  { module: 'procurement', status: 'partial', includes: 'own needs and RFQs; supplier invitation views not yet composed' },
+  { module: 'procurement', status: 'partial', includes: 'own needs, all RFQ versions and invitations; personal supplier invitations and pinned shared RFQ versions; company invitation history pending' },
   { module: 'profiles', status: 'supported', includes: 'owner profile, consents, licences, portraits, experience, preferences, follows, bookmarks and reading progress' },
-  { module: 'projects', status: 'partial', includes: 'owned project projections; participation-only projects not yet composed' },
+  { module: 'projects', status: 'partial', includes: 'owned and currently participating project projections; ownership-transfer and participation history pending' },
   { module: 'reputation', status: 'partial', includes: 'own reputation builder and confirmation inbox; historical credentials pending' },
-  { module: 'sales', status: 'partial', includes: 'authorized buyer/seller quote views; historical versions not yet composed' },
+  { module: 'sales', status: 'partial', includes: 'authorized buyer/seller quote versions, negotiation rounds and amendment requests; audit history pending' },
   { module: 'sources', status: 'unsupported', includes: 'nonparticipant identity proof and sourced-record projection seam pending' },
   { module: 'support', status: 'partial', includes: 'all own cases through case serializer, own actions and access records; historical diagnostics pending' },
   { module: 'tasks', status: 'partial', includes: 'own requests, offers, assignments and invitations; historical version coverage pending' },
@@ -94,11 +94,25 @@ export async function composeExport(ctx: AppContext, identity: IdentityServices,
   const projectRows = await owned('project');
   const agreementRows = await sided('agreement');
   data.projects = await mapSequential(projectRows, (r) => projects.get(r.id, readState));
+  const participationRows = await trx.selectFrom('object_participation').select('resource_id')
+    .where('resource_kind', '=', 'project').where(subject.kind === 'person' ? 'party_person_id' : 'party_company_id', '=', subject.id)
+    .where('revoked_at', 'is', null).where('valid_from', '<=', ctx.clock.now())
+    .where((eb) => eb.or([eb('valid_until', 'is', null), eb('valid_until', '>', ctx.clock.now())]))
+    .where(sql<boolean>`capabilities && ARRAY['read.shared', 'read.party_private', 'read.owner_private']::text[]`).orderBy('resource_id').execute();
+  const participatingIds = [...new Set(participationRows.map((r) => r.resource_id))].filter((id) => !projectRows.some((r) => r.id === id));
+  data.participatingProjects = await mapSequential(participatingIds, (id) => projects.get(id, readState));
   data.catalogue = await mapSequential(await owned('offering'), (r) => catalogue.get(r.id, null, readState));
   data.procurement = {
     needs: await mapSequential(await owned('need'), (r) => procurement.getNeed(r.id, readState)),
     rfqs: await mapSequential(await owned('rfq'), (r) => procurement.getRfq(r.id, readState)),
   };
+  if (subject.kind === 'person') {
+    const invitations = await procurement.listInvitations(readState);
+    data.supplierInvitations = {
+      ...invitations,
+      rfqs: await mapSequential([...new Set(invitations.invitations.map((i) => i.rfq.id))], (id) => procurement.getRfq(id, readState)),
+    };
+  }
   data.sales = await mapSequential(await sided('quote'), (r) => sales.getQuote(r.id, readState));
   data.agreements = await mapSequential(agreementRows, (r) => agreements.getAgreement(r.id, readState));
   Object.assign(data, await composeModuleExports({ ctx, identity, fileOptions, owningPorts, trx, principals, principal: caller, state: readState, subject, projectIds: projectRows.map((r) => r.id), agreementIds: agreementRows.map((r) => r.id) }));
