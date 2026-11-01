@@ -80,7 +80,7 @@ If two of these conflict, stop and ask in the issue. Never resolve a contradicti
 - Payment never changes ranking, matching or reputation; no staff control sets a score.
 - Private data (budgets, floors, negotiation, private projects) never reaches another party, staff without a case grant, search, notifications, exports, other hubs or agents.
 - Published RFQ versions and sent quote versions are immutable; acceptance binds digests.
-- Agents act only under structured mandates; chat text never authorizes; untrusted input never issues commands; one assistant surface per person and at most one representative per company with an accountable person; no multi-agent management UI.
+- Agents act only under structured mandates; chat text never authorizes; untrusted input never issues commands; one assistant surface per person and at most one representative per company with an accountable person; no multi-agent management UI for participants (the hub operator's internal agent team is managed in the hub console under operator grants; ADR 010 decision 26).
 - Every visible string comes from locale dictionaries in every language; dates and numbers from `Intl`; no hard-coded brand names.
 - Restricted places are never offered, hosted, served or federated.
 - Accessibility (keyboard, screen readers, small screens) is part of done.

@@ -47,6 +47,7 @@ Integrator choices recorded with the freeze (the owner may override them): break
 | [Operations](operations.md) | Staff and roles, approvals, audit, backups and restore, updates and migrations, health, feature flags, maintenance, incidents, locale completeness, accessibility, onboarding help |
 | [Data model view](data-model.md) | Every console section mapped to the entities it reads and writes and the projection layer it may use |
 | [Screens](screens.md) | Screen-by-screen contract: purpose, data, actions, empty/error/denied states, mobile behaviour, locale namespace |
+| [Console design](console-design.md) | The cross-cutting design (owner request of 2026-11-01): research with sources, information architecture across platform, node and hub, command palette, approvals inbox, states, phone, dark mode and keyboard; users management (participants, staff, service accounts and AI clients); statistics management; permissions in the interface (role catalogue, permission matrix, scope picker, effective access, separation-of-duties checks, locked guard rails); platform management flows; the operator Agent team (ADR 010 decision 26); the `packages/ui` component inventory; writing rules; mapping to work packages |
 
 ## Principles
 
@@ -191,6 +192,8 @@ The console lives at `/admin` on the hub's origin, entered from the avatar menu 
 | Identity and keys `/identity` | Node identity, manifest, signing keys and rotation (federation and verifiable credentials) |
 | Kill switches `/kill-switches` | Node-wide switches |
 | Restricted places `/restricted` | Read-only list from code |
+
+**Additions of 2026-11-01** ([console design](console-design.md#32-navigation-model)): **Users** becomes a first-class area (people, companies, staff, roles and permissions, invitations, access reviews, service accounts and AI clients; participant servicing stays in Support, inside a case); **Statistics** becomes a first-class area (`/statistics/...`: dashboards, metric catalogue, segments and funnels, reports and exports, access and retention, all cohort aggregates); **Network** replaces Federation as the area for communication and connections between hubs (designed in the hub network chapter); Home gains the **Approvals inbox** (`/inbox`); a new **Agent team** area (`/agent-team/...`) holds the operator's internal agents (ADR 010 decision 26); Audit becomes its own area. Routes do not change when a section moves between groups. A command palette (Ctrl or Cmd+K) navigates and starts commands but never searches participants' data.
 
 ### Navigation behaviour
 
