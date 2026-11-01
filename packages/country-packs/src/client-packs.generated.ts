@@ -3859,5 +3859,344 @@ export const BUILT_IN_CLIENT_PACKS: readonly ClientPack[] = [
       ],
       "cityFirst": false
     }
+  },
+  {
+    "code": "MX",
+    "name": {
+      "en": "Mexico",
+      "es": "México"
+    },
+    "enabled": true,
+    "locales": [
+      "es",
+      "en"
+    ],
+    "defaultLocale": "es",
+    "currency": {
+      "code": "MXN",
+      "minorUnitDigits": 2,
+      "displayFractionDigits": 2,
+      "symbol": "$"
+    },
+    "secondaryCurrencies": [],
+    "formats": {
+      "timeZone": "America/Mexico_City",
+      "phone": {
+        "callingCode": "+52",
+        "nationalLength": 10,
+        "example": "+52 00 0000 0000"
+      },
+      "postalCode": {
+        "pattern": "^[0-9]{5}$",
+        "example": "01000"
+      }
+    },
+    "registrationIdentifier": {
+      "kind": "MX-RFC",
+      "label": {
+        "en": "RFC (legal entity)",
+        "es": "RFC (persona moral)"
+      },
+      "pattern": "^[A-Z&Ñ]{3}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$",
+      "example": "XXX010101AA0"
+    },
+    "legalEntityTypes": [
+      {
+        "code": "sa-cv",
+        "name": {
+          "en": "Variable-capital stock company (S.A. de C.V.)",
+          "es": "Sociedad anónima de capital variable (S.A. de C.V.)"
+        }
+      },
+      {
+        "code": "srl-cv",
+        "name": {
+          "en": "Variable-capital limited liability company (S. de R.L. de C.V.)",
+          "es": "Sociedad de responsabilidad limitada de capital variable (S. de R.L. de C.V.)"
+        }
+      },
+      {
+        "code": "sas",
+        "name": {
+          "en": "Simplified stock company (S.A.S.)",
+          "es": "Sociedad por acciones simplificada (S.A.S.)"
+        }
+      },
+      {
+        "code": "sole-proprietor",
+        "name": {
+          "en": "Individual conducting business (not a separate legal person)",
+          "es": "Persona física con actividad empresarial"
+        }
+      }
+    ],
+    "regions": [
+      {
+        "code": "MX-AGU",
+        "name": {
+          "en": "Aguascalientes",
+          "es": "Aguascalientes"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-BCN",
+        "name": {
+          "en": "Baja California",
+          "es": "Baja California"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-BCS",
+        "name": {
+          "en": "Baja California Sur",
+          "es": "Baja California Sur"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-CAM",
+        "name": {
+          "en": "Campeche",
+          "es": "Campeche"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-CHP",
+        "name": {
+          "en": "Chiapas",
+          "es": "Chiapas"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-CHH",
+        "name": {
+          "en": "Chihuahua",
+          "es": "Chihuahua"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-CMX",
+        "name": {
+          "en": "Mexico City",
+          "es": "Ciudad de México"
+        },
+        "kind": "district"
+      },
+      {
+        "code": "MX-COA",
+        "name": {
+          "en": "Coahuila de Zaragoza",
+          "es": "Coahuila de Zaragoza"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-COL",
+        "name": {
+          "en": "Colima",
+          "es": "Colima"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-DUR",
+        "name": {
+          "en": "Durango",
+          "es": "Durango"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-GUA",
+        "name": {
+          "en": "Guanajuato",
+          "es": "Guanajuato"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-GRO",
+        "name": {
+          "en": "Guerrero",
+          "es": "Guerrero"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-HID",
+        "name": {
+          "en": "Hidalgo",
+          "es": "Hidalgo"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-JAL",
+        "name": {
+          "en": "Jalisco",
+          "es": "Jalisco"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-MEX",
+        "name": {
+          "en": "Mexico",
+          "es": "México"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-MIC",
+        "name": {
+          "en": "Michoacán de Ocampo",
+          "es": "Michoacán de Ocampo"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-MOR",
+        "name": {
+          "en": "Morelos",
+          "es": "Morelos"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-NAY",
+        "name": {
+          "en": "Nayarit",
+          "es": "Nayarit"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-NLE",
+        "name": {
+          "en": "Nuevo León",
+          "es": "Nuevo León"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-OAX",
+        "name": {
+          "en": "Oaxaca",
+          "es": "Oaxaca"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-PUE",
+        "name": {
+          "en": "Puebla",
+          "es": "Puebla"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-QUE",
+        "name": {
+          "en": "Querétaro",
+          "es": "Querétaro"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-ROO",
+        "name": {
+          "en": "Quintana Roo",
+          "es": "Quintana Roo"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-SLP",
+        "name": {
+          "en": "San Luis Potosí",
+          "es": "San Luis Potosí"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-SIN",
+        "name": {
+          "en": "Sinaloa",
+          "es": "Sinaloa"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-SON",
+        "name": {
+          "en": "Sonora",
+          "es": "Sonora"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-TAB",
+        "name": {
+          "en": "Tabasco",
+          "es": "Tabasco"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-TAM",
+        "name": {
+          "en": "Tamaulipas",
+          "es": "Tamaulipas"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-TLA",
+        "name": {
+          "en": "Tlaxcala",
+          "es": "Tlaxcala"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-VER",
+        "name": {
+          "en": "Veracruz de Ignacio de la Llave",
+          "es": "Veracruz de Ignacio de la Llave"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-YUC",
+        "name": {
+          "en": "Yucatán",
+          "es": "Yucatán"
+        },
+        "kind": "state"
+      },
+      {
+        "code": "MX-ZAC",
+        "name": {
+          "en": "Zacatecas",
+          "es": "Zacatecas"
+        },
+        "kind": "state"
+      }
+    ],
+    "address": {
+      "lines": [
+        "street",
+        "street2",
+        "postalCode",
+        "city",
+        "region"
+      ],
+      "cityFirst": false
+    }
   }
 ];

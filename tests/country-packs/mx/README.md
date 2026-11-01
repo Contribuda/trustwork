@@ -1,0 +1,32 @@
+# CTRY-MX evidence and limitations
+
+The pack is reference data, not a live integration, legal opinion or identity verification. Access dates below are **2026-11-01 UTC**. `official` means the fact was checked against a primary source; it never means a participant or hub has been verified. Spanish names are pack locale data; the existing Spanish dictionaries retain their own review status.
+
+| Facts | Sources | Level and limits |
+|---|---|---|
+| MXN, two minor-unit digits | [ISO 4217 maintenance agency XML](https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml) | Primary XML read directly. Pack-wide level stays pending for the ISO region mapping. |
+| 32 entities, subdivision codes | [INEGI](https://www.inegi.org.mx/app/areasgeograficas/), [ISO 3166-2:MX](https://www.iso.org/obp/ui/#iso:code:3166:MX) | **Pending**: official indexed entity count; the interactive ISO browser requires acceptance of Terms of Use; no terms were accepted. No old DIF or QTO codes substituted for CMX or QUE. |
+| Twelve time zones; phone +52 and ten digits; five-digit postcodes | [IANA](https://data.iana.org/time-zones/tzdb/zone.tab), [IFT](https://www.ift.org.mx/conocenos/pleno/entrevistas/otros-funcionarios/entrevista-rafael-eslava-titular-de-la-unidad-de-concesiones-y-servicios-del-ift-en-bitacora-de), [UPU](https://www.upu.int/UPU/media/upu/PostalEntitiesFiles/addressingUnit/mexEn.pdf) | Primary sources read. No guessed state-to-zone mapping. Phone example is intentionally non-dialable. |
+| Corporate and sole-proprietor RFC formats | [SAT XML types](https://www.sat.gob.mx/sitio_internet/cfd/tipoDatos/tdCFDI/tdCFDI.xsd) | **Official** lexical formats only; distinct 12/13-character kinds, synthetic examples, no registry or check-digit verification. |
+| Company forms and individual business activity | [LGSM article 1](https://www.diputados.gob.mx/LeyesBiblio/pdf/LGSM.pdf), [SECIHTI](https://www.secihti.mx/servicios-en-linea/registro-de-personas-morales-y-personas-fisicas-con-actividad-empresarial/) | Company law read; individual-business classification from official indexed guidance, pending consolidated review. Individual business activity is not a separate legal person. |
+| REPSE specialized subcontracting | [STPS REPSE](https://repse.stps.gob.mx/) | **Official** existence and scoped registration requirement; lookup adapter is a candidate only. |
+| Professional credential, DRO and co-responsible experts | [SEP](https://www.gob.mx/sep/es/acciones-y-programas/correccion-de-datos-direccion-general-de-profesiones), [Mexico City ISC](https://www.isc.cdmx.gob.mx/directores-responsables-de-obra-y-corresponsables) | **Candidate**: indexed official descriptions; live pages blocked/timed out. City facts are only under MX-CMX. |
+| NOM/NMX catalogue; Mexico City regulation and technical standards | [Economy catalogue](https://platiica.economia.gob.mx/normalizacion/catalogo-mexicano-de-normaswd_asp-id29/), [city legal portal](https://data.consejeria.cdmx.gob.mx/index.php/leyes/reglamentos/35-) | Catalogue **official**; city rules **candidate**, consolidated editions not read. Link only, no text-ingestion licence assumed. |
+| Federal public works law and Compras MX transition | [LOPSRM](https://www.diputados.gob.mx/LeyesBiblio/pdf/LOPSRM.pdf), [Compras MX](https://comprasmx.buengobierno.gob.mx/mejoras) | Law read; portal **candidate** because only its indexed transition description was readable. Reuse/API terms unreviewed; no bidding. |
+| Standard IVA 16%; conditional border incentive 8% | [LIVA article 1](https://www.diputados.gob.mx/LeyesBiblio/pdf/LIVA.pdf), [SAT border guidance](https://www.gob.mx/sat/prensa/beneficios-fiscales-para-las-fronteras-norte-y-sur009-2021) | Standard **official**; border incentive **pending** current validity, territorial eligibility, notices and exclusions. Never select 8% by state alone. |
+| CFDI 4.0 and e.firma | [SAT CFDI](https://wwwmatnp.sat.gob.mx/aplicacion/75169/servicio-de-facturacion-cfdi-version-4.0-(vigente-a-partir-del-1-de-enero-de-2022)), [CFF articles 17-D, 29 and 29-A](https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf) | **Official**, within tax-law scope. SAT also offers free issuance; a paid PAC is not universally mandatory. Provider candidates only. |
+| Cards and SPEI | [CONDUSEF](https://www.condusef.gob.mx/index.php/conoce-la-condusef?p=cuentas-dep) | **Official** rail descriptions; no provider selected or connected. |
+| Seven annual statutory rest days | [LFT article 74](https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf) | **Official**. Conditional election days and six-year presidential transfer remain unrecorded; no invented annual recurrence or weekend substitution. |
+| Metric units | [CENAM](https://www.cenam.gob.mx/siu.aspx), [NOM-008-SE-2021](https://sidof.segob.gob.mx/notas/docFuente/5713228) | **Official** units; construction catalogue selection is not a market-usage claim. |
+| 2025 private-sector privacy law and authority | [LFPDPPP articles 2(XV), 35-39](https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf) | **Official** law and Secretariat for Anti-Corruption and Good Governance. Residency and HUB-005 agent-law defaults remain **pending** counsel. |
+| CURP exclusion | [RENAPO](https://www.gob.mx/segob/prensa/curp-derecho-para-acceder-a-otros-derechos?idiom=es-MX) | Identifier nature from official indexed description. Non-display is project policy: no CURP kind, value, pattern, example or adapter. |
+
+Run the country-pack tests with one test process at a time:
+
+```sh
+node --import tsx --test --test-concurrency=1 tests/country-packs/**/*.test.ts tests/country-packs/*.test.ts
+```
+
+Tests cover visitor language and formatting, the 32 entities, RFC negative cases, source dates and levels, city-fact isolation, conditional tax status, actual 2026/2027 holiday dates, counsel gating and the absence of country-specific engine branches. They make no external calls. Client-projection coverage uses the client entry from merged PR #360; facets, sources and personal-identifier metadata must stay on the server. Full build and browser acceptance belong to CI under the conductor's load rule.
+
+Follow-ups: confirm the ISO mapping; review both border decrees for current eligibility; read current city construction rules and SEP lookup terms; review portal data licences; obtain Mexican counsel approval for hub residency, transfers, legal templates and agent settings. None of these unknowns is promoted to official or production-ready.
