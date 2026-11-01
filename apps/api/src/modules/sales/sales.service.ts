@@ -19,6 +19,7 @@ import {
 import type { DealMandatePort } from './mandates.js';
 import { buyerOf, buyerQuoteView, sellerOf, sellerQuoteView } from './serializers.js';
 import type { TaxDeterminationPort } from './tax.js';
+import { ScreeningGate } from '../screening-gates/gate.js';
 
 type In<T extends z.ZodType> = z.infer<T>;
 const sameParty = (a: Party, b: Party) => a.kind === b.kind && a.id === b.id;
@@ -43,8 +44,8 @@ function unknownRfqLines(payload: QuoteVersionPayload, rfqPayload: unknown): str
  * the seller's floors or above the buyer's ceiling.
  */
 export class SalesService extends DealService {
-  constructor(ctx: AppContext, principals: PrincipalService, policy: ParticipationService, mandates: DealMandatePort, private readonly tax: TaxDeterminationPort) {
-    super(ctx, principals, policy, mandates);
+  constructor(ctx: AppContext, principals: PrincipalService, policy: ParticipationService, mandates: DealMandatePort, private readonly tax: TaxDeterminationPort, gate: ScreeningGate = new ScreeningGate(ctx.clock)) {
+    super(ctx, principals, policy, mandates, gate);
   }
 
   /* ---------- Loading ---------- */
@@ -216,6 +217,8 @@ export class SalesService extends DealService {
       this.checkPayloadAgainst(payload, rfqVersion);
       const at = this.now();
       if (Date.parse(payload.validity.until) <= at.getTime()) throw new ApiError('commercial.quote_expired', 'the validity has passed; set a later validity');
+      // SANC-004: the seller (and the person sending) and the buyer must be transactable before the offer goes out.
+      await this.requireTransactable(trx, sellerOf(quote), buyerOf(quote), actor, 'quote_send');
       if (actor.via === 'agent') {
         const privateRow = await quotePrivate.get(trx, quote.id);
         const floors = (privateRow?.floor_prices ?? {}) as Record<string, { minorUnits: string; currency: string }>;

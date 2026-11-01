@@ -6,6 +6,7 @@ import { createPool, withMaintenance, withPrincipal } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
 import { budgets } from '../../../packages/data/src/repositories/billing.js';
 import { principalFor } from '../../data/helpers/seed.js';
+import { screenEveryoneClear } from '../../screening-gates/helpers.js';
 import { endPool, provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
 import { CommittedMailbox } from '../../worker/mail/helpers/committed-mailbox.js';
 import { API_PORT, CONTROL_PORT, WEB_ORIGIN } from './ports.js';
@@ -16,7 +17,7 @@ import { API_PORT, CONTROL_PORT, WEB_ORIGIN } from './ports.js';
  * Docker or embedded-postgres), the API on a restricted runtime role, and a mailbox that reads the mail intents the API
  * committed (MAIL-001: mail leaves through the outbox; the tokens are opened with the shared `MAIL_SECRET_KEY`, exactly
  * what the worker would mail). A loopback-only control server lets the tests read that mailbox, move the API clock forward to reach
- * the step-up window and grant a person a transaction budget (WEB-002; no budget route exists yet). None of this is product code; nothing leaves the machine. The database is dropped on exit.
+ * the step-up window and grant a person a transaction budget (WEB-002; no budget route exists yet) and screen everyone against synthetic baseline lists (SANC-004; the worker is not part of this stack). None of this is product code; nothing leaves the machine. The database is dropped on exit.
  */
 class MovableClock implements Clock {
   offsetMs = 0;
@@ -65,6 +66,12 @@ const control = createServer((req, res) => {
       const principal = await principalFor(db.admin, body.personId);
       const id = await withPrincipal(pool, principal, (trx) => budgets.grant(trx, { kind: 'transaction', owner: 'person', projectId: null, employeePersonId: null, periodFrom: '2026-01-01T00:00:00Z', periodTo: '2030-01-01T00:00:00Z', limitMinor: body.limitMinor as string, currency: body.currency as string }));
       return send(res, 200, { id });
+    }
+    if (req.method === 'POST' && url.pathname === '/screen') {
+      // SANC-004: the money and commitment gates refuse unscreened parties; the worker is not part of this stack, so the
+      // control server activates synthetic baseline lists and screens every person and company through the worker's code.
+      if (!db) return send(res, 400, { error: 'bad request' });
+      return send(res, 200, await screenEveryoneClear(db.admin));
     }
     return send(res, 404, { error: 'not found' });
   })();

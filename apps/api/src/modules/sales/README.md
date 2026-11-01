@@ -43,6 +43,10 @@ Commands accept `actor: { via: 'agent', mandateId }`: drafts need `prepare`, sen
 
 Buyer views, comparisons and outbox payloads never carry the seller's private constraint, catalogue provenance or sender (`BUYER_FORBIDDEN_KEYS`); seller views never carry the buyer's ceiling, weights, notes, shortlist or budget identifiers (`SELLER_FORBIDDEN_KEYS`), tested field by field and value by value. Outbox events carry identifiers only (`DEAL_EVENT_PAYLOAD_KEYS`); notifications (MAIL-001) read projections under the recipient's authority. Comparison order is newest send first; no payment, entitlement or sponsorship input exists (equality test).
 
+## Screening gates (SANC-004)
+
+Sending a quote version is refused unless the seller party, the person sending and the buyer are all transactable ([screening gates](../screening-gates/README.md)): read inside the send transaction after the mandate check, failing closed. The seller's own side gets `screening.review_pending` with its status words (or `jurisdiction.restricted`), the buyer's state only `commercial.counterparty_unavailable`; an unreadable store or a stale baseline gives `screening.unavailable`. Agent commits (`send_quote`) are checked on the mandate path first (`ScreenedMandates` wraps the module's mandate port). Drafts, amendment requests and withdrawals are not gated.
+
 ## Tests
 
 `tests/commerce/transactions/contracts.test.ts`, `database.test.ts` (RLS, guards, staleness and concurrency under the runtime role), `api.test.ts` (the journey through HTTP with negative authorization, forbidden fields, agents and concurrency).

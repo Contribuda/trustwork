@@ -9,6 +9,8 @@ import type { PrincipalService } from '../identity/principal.service.js';
 import { mapDatabaseError, partyOf, UUID } from '../procurement/common.js';
 import { DEAL_EVENT_PAYLOAD_KEYS, rfqs, type DealActorInput, type PartyScope, type RfqRow } from './deps.js';
 import type { DealMandateCheck, DealMandatePort } from './mandates.js';
+import { ScreeningGate } from '../screening-gates/gate.js';
+import { dealSubjects, type ScreeningGatePurpose } from '../screening-gates/deps.js';
 
 export { UUID, partyOf };
 export const iso = (value: Date | string): string => new Date(value).toISOString();
@@ -60,6 +62,8 @@ export abstract class DealService {
     protected readonly principals: PrincipalService,
     protected readonly policy: ParticipationService,
     protected readonly mandates: DealMandatePort,
+    /** SANC-004: the money and commitment gate. Always the real gate; there is no switch to turn it off (ADR 014 decision 16). */
+    protected readonly gate: ScreeningGate = new ScreeningGate(ctx.clock),
   ) {}
 
   protected now(): Date {
@@ -84,6 +88,16 @@ export abstract class DealService {
     const ok = await this.mandates.allows({ personId: principal.personId, mandateId: input.mandateId, action, context, amount, at: this.now() });
     if (!ok) throw new ApiError('access.mandate_scope', `the agent needs a ${action} mandate for this object`);
     return { via: 'agent', personId: principal.personId, mandateId: input.mandateId };
+  }
+
+  /**
+   * SANC-004 (ADR 014 decisions 12 and 13): before a quote is sent, terms are accepted, an order is placed or accepted or
+   * a change binds, both parties and the acting person must be transactable, read inside this transaction (no stale
+   * answer binds). Called after the actor's own authority and mandate, before anything is written. The caller's own
+   * side gets its own words; the counterparty's refusal says only that the other party cannot transact now.
+   */
+  protected async requireTransactable(trx: Transaction, own: Party, counterparty: Party, actor: ResolvedActor, purpose: ScreeningGatePurpose): Promise<void> {
+    await this.gate.requireTransactable(trx, dealSubjects(own, counterparty, actor.personId), purpose);
   }
 
   /** The RFQ as the access policy sees it for the principal, or null when it is not readable. */

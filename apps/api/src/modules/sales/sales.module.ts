@@ -1,4 +1,5 @@
 import { Module, type DynamicModule } from '@nestjs/common';
+import { ScreenedMandates } from '../screening-gates/mandates.js';
 import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
 import { NoDealMandates, type DealMandatePort } from './mandates.js';
@@ -16,7 +17,7 @@ export interface SalesModuleOptions {
 @Module({})
 export class SalesModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: SalesModuleOptions = {}): DynamicModule {
-    const service = new SalesService(ctx, identity.principals, identity.participations, options.mandates ?? new NoDealMandates(), options.tax ?? new SellerStatedTax());
+    const service = new SalesService(ctx, identity.principals, identity.participations, new ScreenedMandates(options.mandates ?? new NoDealMandates(), ctx.pool, ctx.clock), options.tax ?? new SellerStatedTax());
     return { module: SalesModule, controllers: [QuotesController, RfqComparisonController], providers: [{ provide: SalesService, useValue: service }], exports: [SalesService] };
   }
 }

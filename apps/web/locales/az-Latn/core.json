@@ -59,7 +59,8 @@
       "budget_insufficient": "Bu əməliyyat üçün büdcə kifayət deyil.",
       "authority_missing": "Bu öhdəliyi götürmək səlahiyyətiniz yoxdur.",
       "outcome_unknown": "Nəticə hələ məlum deyil. Yoxlayırıq; əməliyyatı təkrarlamayın.",
-      "transfer_consent_pending": "Alıcı hələ ötürülməyə razılıq verməyib."
+      "transfer_consent_pending": "Alıcı hələ ötürülməyə razılıq verməyib.",
+      "counterparty_unavailable": "Digər tərəf hazırda əqd bağlaya bilmir."
     },
     "membership": {
       "already_employed": "Siz artıq şirkətdə işləyirsiniz. İnsanın eyni vaxtda bir aktiv işəgötürəni olur.",
@@ -73,6 +74,10 @@
     },
     "jurisdiction": {
       "restricted": "Bu sayt olduğunuz yerdə əlçatan deyil."
+    },
+    "screening": {
+      "review_pending": "Uyğunluq yoxlaması başa çatana qədər sizin tərəfinizdən ödənişlər və kommersiya öhdəlikləri dayandırılıb. Statusunuzu «Parametrlər», «Hesab», «Uyğunluq» bölməsində görə bilərsiniz.",
+      "unavailable": "Sanksiya siyahıları üzrə yoxlama müvəqqəti əlçatan deyil, buna görə indi ödəniş etmək və ya öhdəlik götürmək mümkün deyil. Bir az sonra yenidən cəhd edin."
     }
   },
   "taxonomy": {

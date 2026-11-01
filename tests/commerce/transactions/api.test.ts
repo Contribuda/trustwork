@@ -17,6 +17,7 @@ import type { RequestState } from '../../../apps/api/src/common/request.js';
 import { expectError, SKIP_REASON, startHarness, type Client, type Response } from '../../backend/helpers/app.js';
 import { login, seedPersonas } from '../../backend/helpers/personas.js';
 import { principalFor } from '../../data/helpers/seed.js';
+import { screenEveryoneClear } from '../../screening-gates/helpers.js';
 
 /**
  * COM-002 through the HTTP API (real database, runtime role, CSRF, idempotency): invited sellers draft and send quote
@@ -78,6 +79,8 @@ test('transactions API: quotes, comparison, negotiation, acceptance, orders and 
   t.after(() => h.close());
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
+  // SANC-004: quotes, acceptance and orders need every party screened clear against fresh baseline lists.
+  await screenEveryoneClear(h.db.admin);
   const as = async (key: Parameters<typeof login>[1]): Promise<Client> => { const c = h.client(); await login(c, key); return c; };
   const [petr, anna, boris, carl, xenia] = [await as('petr'), await as('anna'), await as('boris'), await as('carl'), await as('xenia')];
   const anonymous = h.client();

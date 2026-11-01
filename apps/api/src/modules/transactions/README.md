@@ -34,6 +34,10 @@ Trustwork never holds participants' money (ADR 010 decision 20). An order is an 
 
 `accept terms`, `place order`, `withdraw`, `cancel` and accepting a change by the buyer need a `place_order` mandate; the seller's acceptance or decline `accept_order`; proposing or rejecting changes `negotiate`. The default port refuses every agent request.
 
+## Screening gates (SANC-004)
+
+Accepting terms, placing an order (before the reservation), the seller's acceptance and proposing or accepting an order change are refused unless both parties and the acting person are transactable ([screening gates](../screening-gates/README.md)), read inside the same transaction so a decision racing the commitment is never bound on a stale answer. The caller's own side gets its own words (`screening.review_pending`, `jurisdiction.restricted`), the counterparty's state only `commercial.counterparty_unavailable`; `screening.unavailable` when the store cannot answer or the baseline is stale. Withdrawing, declining, cancelling and rejecting are never gated. Agent commits (`place_order`, `accept_order`) are checked on the mandate path first. Task agreements (TASK-001) and consultation agreements (CONS-001) are not gated yet (follow-up).
+
 ## Kinds of terms
 
 `terms_kind` (`rfq_quote`, `task`, `consultation`, ADR 012 decision 19) is a column of the agreement and part of its digest. This slice creates `rfq_quote` agreements and its routes read only those. Task agreements are created and read by the [tasks module](../tasks/README.md) (TASK-001, which added their checks to the agreement guard); consultation agreements arrive with CONS-001 (the database refuses them until then, `details.reason = terms_kind_unavailable`).

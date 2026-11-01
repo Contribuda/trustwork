@@ -137,4 +137,5 @@ Trustwork today has the authoritative restricted-places list (`packages/country-
 | Restricted places list in code, packs, configuration, kernel and console contracts | Live |
 | Ownership declaration and CSL adapter that never fakes clear (`packages/compliance`) | Live |
 | Deployment-location attestation: storage, refusal of restricted places, audit, renewal and status API (SANC-009; the wizard step is HUB-004) | Live (API, not deployed) |
+| Money and commitment gates: quotes, acceptance, orders and order changes refused for a held, matched, unscreened or stale-screened party on either side, failing closed and serialized with racing decisions; agent commits gated on the mandate path; counterparties told only that the other side cannot transact now; payee and payout-country helpers that hold the declaring person before any provider is called (SANC-004) | Live (API; the payout helpers wait for PAY-001 and BILL-002) |
 | Everything else in this ADR | Proposed (SANC-001 … SANC-009) |

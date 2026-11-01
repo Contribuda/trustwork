@@ -20,6 +20,9 @@
     },
     "refusal": {
       "suspended": "This account is suspended for legal reasons. You can read your compliance status and appeal."
+    },
+    "gate": {
+      "companyPaused": "Payments and commercial commitments of your company are paused until a compliance check is complete. An administrator of the company can see its compliance status."
     }
   }
 }

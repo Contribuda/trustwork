@@ -20,6 +20,9 @@
     },
     "refusal": {
       "suspended": "Bu hesab hüquqi səbəblərə görə dayandırılıb. Uyğunluq statusunuza baxa və şikayət edə bilərsiniz."
+    },
+    "gate": {
+      "companyPaused": "Uyğunluq yoxlaması başa çatana qədər şirkətinizin ödənişləri və kommersiya öhdəlikləri dayandırılıb. Yoxlamanın statusunu şirkətin administratoru görür."
     }
   }
 }
