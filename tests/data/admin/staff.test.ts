@@ -64,7 +64,7 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
         `SELECT has_table_privilege('trustwork_app', $1, 'SELECT') AS s, has_any_column_privilege('trustwork_app', $1, 'INSERT') AS i,
                 has_any_column_privilege('trustwork_app', $1, 'UPDATE') AS u, has_table_privilege('trustwork_app', $1, 'DELETE') AS d,
                 has_table_privilege('trustwork_app', $1, 'TRUNCATE') AS t, has_any_column_privilege('trustwork_app', $1, 'REFERENCES') AS r`, [`trustwork.${table}`])).rows[0];
-      assert.deepEqual(priv, { s: table !== 'admin_sequence', i: table === 'admin_audit_event' || table === 'access_log_entry', u: false, d: false, t: false, r: false }, table);
+      assert.deepEqual(priv, { s: !['admin_sequence', 'support_external_source_subject'].includes(table), i: table === 'admin_audit_event' || table === 'access_log_entry', u: false, d: false, t: false, r: false }, table);
     }
     for (const column of ['id', 'sequence', 'occurred_at']) {
       const c: { x: boolean } | undefined = (await db.admin.query<{ x: boolean }>("SELECT has_column_privilege('trustwork_app', 'trustwork.admin_audit_event', $1, 'INSERT') AS x", [column])).rows[0];

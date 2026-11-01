@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { PublicProvenanceSchema } from '../../packages/contracts/src/sources.js';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -47,6 +48,11 @@ test('owning source resolution: current two-person authority, immutable evidence
     await h.db.admin.query("UPDATE trustwork.hub SET lifecycle='public' WHERE id=$1", [f.source.hub_id]);
     const view = (await h.pool.query('SELECT trustwork.sources_public_provenance($1,$2,$3) AS v', [f.source.hub_id, f.field.recordKind, f.field.recordId])).rows[0].v;
     assert.equal(view.fields[0].correction.kind, 'verified_subject_correction');
+    const response = await h.client().get(`/v1/hubs/${f.source.hub_id}/sourced-records/${f.field.recordKind}/${f.field.recordId}/provenance`);
+    assert.equal(response.status, 200, JSON.stringify(response.body));
+    const projected = PublicProvenanceSchema.parse(response.body);
+    assert.deepEqual(projected.fields, view.fields, 'the HTTP projection exposes only the strict public correction marker');
+    assert.deepEqual(Object.keys(projected.fields[0]!.correction!).sort(), ['at', 'kind']);
     await assert.rejects(w.as(w.people.officer, (trx) => importBatches.stage(trx, f.ctx, f.source.id, { items: [item(randomUUID())], fields: [f.field], links: [] })),
       (e: { hint?: string }) => e.hint === 'privacy.source_review_required');
     await assert.rejects(w.as(w.people.reviewer, (trx) => importBatches.decide(trx, f.reviewCtx, staged.id, staged.revision, 'activate')),

@@ -742,6 +742,7 @@ export const PublicProvenanceSchema = z.strictObject({
     value: z.string(),
     observedAt: Iso,
     source: z.strictObject({ name: z.string(), attribution: z.string(), url: z.string().nullable() }),
+    correction: z.strictObject({ kind: z.literal('verified_subject_correction'), at: TimestampSchema }).nullable(),
   })),
 });
 export type PublicProvenance = z.infer<typeof PublicProvenanceSchema>;
