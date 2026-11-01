@@ -2,6 +2,10 @@ import { HistoricalTaskFees } from '../billing/fees/historical.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { FilesystemBlobStore } from '../../packages/data/src/files/filesystem.js';
 import { withMaintenance } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import type { PlanContent, PlanItem, PlanVersion, OwnerPlanView } from '../../packages/contracts/src/plans.js';
@@ -24,7 +28,9 @@ import { login, seedPersonas } from '../backend/helpers/personas.js';
  * the agreement version and only then reveals the site; execution claims are decided by the owner in person; reviews
  * only for completed tasks; outbox and audit carry identifiers only; payment never changes any order.
  */
-const h = await startHarness('tasks_api');
+const privacyFiles = await mkdtemp(join(tmpdir(), 'tasks-privacy-'));
+const h = await startHarness('tasks_api', { files: { store: new FilesystemBlobStore({ root: privacyFiles }) } });
+if (!h) await rm(privacyFiles, { recursive: true, force: true });
 
 const usd = (minorUnits: string) => ({ minorUnits, currency: 'USD' });
 const PERSON = { via: 'person' as const };
@@ -87,7 +93,7 @@ const refOf = (v: Ref) => ({ id: v.id, version: v.version, digest: v.digest! });
 
 test('tasks API: plan item to task, isolated offers, one assignment, execution and reviews, with negative authorization and concurrency', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
-  t.after(() => h.close());
+  t.after(async () => { await h.close(); await rm(privacyFiles, { recursive: true, force: true }); });
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const as = async (key: Parameters<typeof login>[1]): Promise<Client> => { const c = h.client(); await login(c, key); return c; };
@@ -465,5 +471,15 @@ test('tasks API: plan item to task, isolated offers, one assignment, execution a
     const listed = ok<{ agreements: { id: string }[] }>(await petr.get('/v1/agreements'));
     assert.ok(!listed.agreements.some((a) => a.id === taskAgreementId));
     expectError(await carl.post(`/v1/agreements/${taskAgreementId}/accept`, { expectedRevision: 1, acceptedTermsDigest: assignment.agreement.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON }), 404, 'access.not_found');
+  });
+  await t.test('privacy exports actual task versions and offer history through owning projections without the other private half', async () => {
+    for (const [client, personId, forbidden] of [[petr, seed.people.petr, OFFEROR_SECRETS], [carl, seed.people.carl, OWNER_SECRETS.slice(0, 8)]] as const) {
+      const created = ok<{ export: { id: string } }>(await client.post('/v1/privacy/exports', { subject: { kind: 'person', id: personId } }), 201);
+      const exported = ok<{ archive: { data: { tasks: { requests: OwnerTaskRequestView[]; offers: OfferorTaskOfferView[] } } } }>(await client.get(`/v1/privacy/exports/${created.export.id}`));
+      const data = exported.archive.data.tasks;
+      if (client === petr) assert.ok(data.requests.find((r) => r.request.id === request.request.id)!.versions.length >= 2);
+      else assert.ok(data.offers.some((r) => r.versions.length >= 2));
+      noLeak(data, [], forbidden);
+    }
   });
 });

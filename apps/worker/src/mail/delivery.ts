@@ -1,5 +1,6 @@
 import { sql } from 'kysely';
 import { consultationCommunications } from '../../../../packages/data/src/repositories/communications.js';
+import { privacy } from '../../../../packages/data/src/repositories/privacy.js';
 import { screeningNoticeAllowed } from '../../../../packages/data/src/repositories/screening-notices.js';
 import { deriveMailSecretKey, inbox, jobs, MAIL_AGGREGATE, MAIL_REQUESTED, mailDeliveries, suppressions, unsealMailSecret, type DataPool, type MailDelivery, type Transaction } from '@trustwork/data';
 import { inTransaction } from '../db.js';
@@ -236,6 +237,13 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
           // Feedback locks mail before inserting suppression. Keep that order through the fake/provider call,
           // so a concurrent complaint cannot hold mail while waiting for our shared suppression lock.
           await mailDeliveries.lockForDelivery(trx, delivery.id);
+          // Objections lock contact before MAIL suppression. Preserve that order before the COMMS gate,
+          // retaining the privacy lock through transport, receipt and commit. Security notices are not marketing.
+          if (delivery.template === 'notification' && delivery.params.transactional !== 'true'
+            && !await privacy.marketingAllowed(trx, delivery.recipient_hash)) {
+            await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'privacy marketing objection');
+            return false;
+          }
           if (!(await consultationCommunications.mailAllowed(trx, delivery.id, runtime.consultationHubId ?? null))) {
             await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'consultation access revoked');
             return false;

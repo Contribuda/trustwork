@@ -464,6 +464,19 @@ export class OAuthService {
 
   /* ---------- The person's connections ---------- */
 
+  /** Own consent history only; tokens, client credentials, elevations and internal call records stay outside this port. */
+  async privacyExport(state: RequestState) {
+    const current = await this.listConnections(state);
+    const consents = await this.identity.principals.runAs(state, async (trx, p) => {
+      const rows = await trx.selectFrom('connection_consent').selectAll().where('person_id', '=', p.personId).orderBy('granted_at').orderBy('id').execute();
+      return rows.map((k) => ({ id: k.id, clientId: k.client_id, surface: k.surface, redirectHost: new URL(k.redirect_uri).host,
+        scopes: k.scopes, toolsets: k.toolsets, privateDataClasses: k.private_data_classes, consentTextVersion: k.consent_text_version,
+        grantedAt: k.granted_at.toISOString(), expiresAt: k.expires_at.toISOString(), withdrawnAt: k.withdrawn_at?.toISOString() ?? null,
+        withdrawnReason: k.withdrawn_reason, locale: k.locale }));
+    });
+    return { ...current, consents };
+  }
+
   async listConnections(state: RequestState): Promise<{ connections: Record<string, unknown>[] }> {
     const rows = await this.identity.principals.runAs(state, (trx) => connectionGrants.list(trx));
     return {

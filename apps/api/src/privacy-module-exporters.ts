@@ -72,7 +72,7 @@ export async function composeModuleExports(input: {
   }
   if (subject.kind === 'person') {
     const oauth = new OAuthService(ctx, { ...identity, principals }, oauthSettingsFromEnv(ctx.config), null);
-    data.connections = await oauth.listConnections(state);
+    data.connections = await oauth.privacyExport(state);
     data.hubs = { legalAcceptances: (await legalDocuments.acceptances(trx)).map(toAcceptance) };
   }
   data.screening = await owningPorts.compliance(principals, state, subject);
@@ -108,6 +108,7 @@ export async function composeModuleExports(input: {
       counterparties: await each(counterparties, (r) => suppliers.getCounterparty(state, r.id)) };
   }
   const plans = new PlansService(ctx, principals, identity.participations, new NoPlanMandates(), new FileLicensingFacets());
+  data.sharedPlans = await plans.privacyShared(state, subject);
   const planRows = projectIds.length ? await trx.selectFrom('plan').select(['id', 'project_id']).where('project_id', 'in', projectIds).orderBy('id').execute() : [];
   data.plans = await each(planRows, async (r) => ({
     current: await plans.get(r.project_id, state),
@@ -153,10 +154,8 @@ export async function composeModuleExports(input: {
   const bookings = await trx.selectFrom('consultation_booking').select('id').where((eb) => subject.kind === 'company'
     ? eb('seller_company_id', '=', subject.id)
     : eb.or([eb('client_person_id', '=', subject.id), eb('seller_person_id', '=', subject.id)])).orderBy('id').execute();
-  const offerings = (await consultations.listOfferings(state)).offerings.filter((r) => r.owner.kind === subject.kind && r.owner.id === subject.id);
-  data.consultations = { offerings, requests: await each(consultationRequests, (r) => consultations.getRequest(r.id, state)),
-    bookings: await each(bookings, (r) => consultations.getBooking(r.id, state)),
-    ...(subject.kind === 'person' ? { mentoring: await consultations.listMentoring(state) } : {}) };
+  data.consultations = { ...await consultations.privacyInventory(state, subject), requests: await each(consultationRequests, (r) => consultations.getRequest(r.id, state)),
+    bookings: await each(bookings, (r) => consultations.getBooking(r.id, state)) };
   if (subject.kind === 'person') {
     const goals = new GoalsService(ctx, principals);
     // A person's export never includes an employer's private goals/reports or another agent's internal state.
