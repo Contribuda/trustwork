@@ -1,5 +1,6 @@
 .region {
-  overflow-x: auto;
+  overflow: auto;
+  max-block-size: 70vh;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
@@ -163,6 +164,11 @@
   line-height: var(--text-body-sm-line);
 }
 
+.cardField dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .cardField dt {
   color: var(--color-text-muted);
 }
@@ -171,4 +177,28 @@
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-3);
+}
+
+.consoleTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.consoleTable tbody th {
+  position: sticky;
+  inset-inline-start: 0;
+}
+.consoleTable[data-density="compact"] th,
+.consoleTable[data-density="compact"] td {
+  padding-block: var(--space-1);
+}
+
+.consoleTable tbody td:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  background: var(--color-surface);
+}
+.consoleTable thead th:first-child {
+  inset-inline-start: 0;
+  z-index: 2;
 }

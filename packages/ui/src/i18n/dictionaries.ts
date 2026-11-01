@@ -1,4 +1,5 @@
 import type { Messages } from '@trustwork/i18n-runtime/types';
+import es from '../../locales/es.json' with { type: 'json' };
 import ru from '../../locales/ru.json' with { type: 'json' };
 import uzLatn from '../../locales/uz-Latn.json' with { type: 'json' };
 import ka from '../../locales/ka.json' with { type: 'json' };
@@ -12,7 +13,7 @@ import { FALLBACK_LOCALE, registerUiLocale, uiDictionary } from './index';
  * components never import it, so a browser receives the active locale's dictionary as a store layer
  * instead of all of them.
  */
-const ENGINE_DICTIONARIES: Record<string, Messages> = { ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn };
+const ENGINE_DICTIONARIES: Record<string, Messages> = { es, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn };
 
 for (const [tag, messages] of Object.entries(ENGINE_DICTIONARIES)) registerUiLocale(tag, messages);
 

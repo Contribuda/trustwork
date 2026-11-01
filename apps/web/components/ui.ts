@@ -63,6 +63,7 @@ export {
   SkeletonGroup,
   Spinner,
   StatusChip,
+  StatusLabel,
   Stepper,
   StoryCard,
   Switch,

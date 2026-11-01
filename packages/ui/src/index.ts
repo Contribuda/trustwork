@@ -74,7 +74,7 @@ export { EmptyState, type EmptyStateProps } from './components/EmptyState/EmptyS
 export { Card, CardLink, type CardProps, type CardLinkProps } from './components/Card/Card';
 export { Breadcrumb, type BreadcrumbProps, type BreadcrumbItem } from './components/Breadcrumb/Breadcrumb';
 export { Pagination, type PaginationProps } from './components/Pagination/Pagination';
-export { DataTable, type DataTableProps, type DataTableColumn } from './components/DataTable/DataTable';
+export { DataTable, type DataTableProps, type DataTableColumn, type TableSelection } from './components/DataTable/DataTable';
 export { ComparisonTable, type ComparisonTableProps, type ComparisonCell, type ComparisonLine, type ComparisonOffer, type ComparisonReason } from './components/ComparisonTable/ComparisonTable';
 export { VersionPicker, VersionPill, type VersionPickerProps, type VersionItem } from './components/VersionPicker/VersionPicker';
 export {
@@ -102,3 +102,31 @@ export { PublicFooter, type PublicFooterProps, type FooterLink } from './compone
 export { AuthShell, type AuthShellProps } from './components/AuthShell/AuthShell';
 export { AssistantLauncher, type AssistantLauncherProps } from './components/Assistant/AssistantLauncher';
 export { AssistantOverlay, type AssistantOverlayProps, type AssistantMessage } from './components/Assistant/AssistantOverlay';
+
+// Controlled console compositions (DS-003).
+export * from './components/ApprovalCard/ApprovalCard';
+export * from './components/AuditTrail/AuditTrail';
+export * from './components/BulkActionBar/BulkActionBar';
+export * from './components/CalendarAgenda/CalendarAgenda';
+export * from './components/CommandPalette/CommandPalette';
+export * from './components/DetailDrawer/DetailDrawer';
+export * from './components/DiffViewer/DiffViewer';
+export * from './components/EffectiveAccess/EffectiveAccess';
+export * from './components/FacetPanel/FacetPanel';
+export * from './components/FilterBar/FilterBar';
+export * from './components/InboxList/InboxList';
+export * from './components/InlineHelp/InlineHelp';
+export * from './components/KeyboardShortcuts/KeyboardShortcuts';
+export * from './components/LockedRule/KillSwitchControl';
+export * from './components/LockedRule/LockedRule';
+export * from './components/MetricChart/MetricChart';
+export * from './components/MetricChart/values';
+export * from './components/NetworkMap/NetworkMap';
+export * from './components/PermissionMatrix/PermissionMatrix';
+export * from './components/RunHistory/RunHistory';
+export * from './components/RunHistory/StatusLabel';
+export * from './components/SavedViews/SavedViews';
+export * from './components/ScopePicker/ScopePicker';
+export * from './components/StepUpPrompt/ReasonField';
+export * from './components/StepUpPrompt/StepUpPrompt';
+export * from './components/StepUpPrompt/TypedConfirmation';

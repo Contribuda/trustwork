@@ -1,0 +1,196 @@
+.stack {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.row > * {
+  min-width: 0;
+}
+.list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm-size);
+}
+.scroll {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+  background: var(--color-surface);
+}
+.table th,
+.table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.table th {
+  background: var(--color-surface-muted);
+  font-weight: var(--weight-semibold);
+}
+.table [tabindex="0"]:focus,
+.table [tabindex="-1"]:focus,
+.panel:focus-visible,
+.scroll:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -3px;
+}
+.table caption {
+  text-align: start;
+  padding: var(--space-3);
+  font-weight: var(--weight-semibold);
+}
+.table input {
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+}
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(32rem, 100%);
+  overflow: auto;
+  z-index: var(--z-panel);
+  box-shadow: var(--shadow-overlay);
+  border-radius: 0;
+}
+.chart {
+  display: grid;
+  gap: var(--space-2);
+}
+.bar {
+  height: var(--space-3);
+  background: var(--color-accent);
+  min-width: 2px;
+}
+.map {
+  position: relative;
+  overflow: auto;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+}
+.mapCanvas {
+  position: relative;
+  min-height: 22rem;
+}
+.mapCanvas svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 9rem;
+}
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+.day {
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  min-height: 5rem;
+}
+@media (max-width: 767px) {
+  .calendar {
+    display: none;
+  }
+  .panel {
+    padding: var(--space-3);
+  }
+  .table th,
+  .table td {
+    padding: var(--space-2);
+  }
+  .row button,
+  .marker button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+@media (forced-colors: active) {
+  .bar {
+    background: CanvasText;
+  }
+}
+
+.commandInput {
+  font: inherit;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  min-width: 0;
+  width: 100%;
+}
+.commandInput:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+.commandResults {
+  max-height: 50vh;
+  overflow: auto;
+}
+.commandOption {
+  cursor: pointer;
+  margin-block: var(--space-2);
+}
+.commandOption[aria-selected="true"] {
+  outline: var(--focus-ring);
+  outline-offset: -3px;
+  background: var(--color-surface-muted);
+}
+
+/* Console labels can be long in every supported language. Keep controls operable on phones. */
+.stack button,
+.panel button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  height: auto;
+  min-height: var(--size-control);
+}
+.stack > *,
+.panel > * {
+  min-width: 0;
+}
+
+.stack button > span,
+.panel button > span {
+  white-space: inherit;
+  min-width: 0;
+}
+.day {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
