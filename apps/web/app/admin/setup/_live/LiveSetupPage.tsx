@@ -286,7 +286,7 @@ function Review({ view, token }: { view: SetupView; token: string }) {
       <p className="admin-note">{t('admin.setup.review.afterFinish')}</p>
       <h2 className="admin-h2">{t('setupWizard.review.confirmTitle')}</h2>
       <p className="admin-note">{t('setupWizard.review.confirmHelp')}</p>
-      <LiveSetupForm kind="finish" step="review" token={token} labels={labels(t('admin.setup.finish'), t('setupWizard.review.finished'))} doneHref="/admin">
+      <LiveSetupForm kind="finish" step="review" token={token} labels={labels(t('admin.setup.finish'), t('setupWizard.review.finished'))}>
         <PasswordField name="f.password" label={t('setupWizard.review.password')} autoComplete="current-password" isRequired />
         <TextField name="f.code" label={t('setupWizard.review.code')} autoComplete="one-time-code" inputMode="numeric" isRequired />
       </LiveSetupForm>

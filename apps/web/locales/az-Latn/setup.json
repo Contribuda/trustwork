@@ -133,8 +133,7 @@
       "confirmHelp": "Bitirmək habı qaralama kimi yaradır, onun konfiqurasiyasını qeyd edir və bu keçidi etibarsız edir. Parolunuz və autentifikator tətbiqindəki kodla təsdiqləyin.",
       "password": "Parol",
       "code": "Autentifikator kodu",
-      "finished": "Qurulma başa çatdı. Hab qaralamadır; konsolda davam edin.",
-      "openConsole": "Konsolu aç"
+      "finished": "Qurulma başa çatdı. Hab qaralamadır; konsolda davam edin."
     }
   }
 }
