@@ -1,3 +1,4 @@
+import { VersionedTaskFees, type TaskFeePort } from '../billing/fees/task-adapter.js';
 import type { z } from 'zod';
 import { computeAgreementDigest, computeDigest, DIGEST_ALGORITHM, verifyDigest, type Digest, type Money, type Party, type Principal, type VersionRef } from '../../deps/contracts.js';
 import { auditEvents, outbox, type Transaction } from '../../deps/data.js';
@@ -137,6 +138,7 @@ export class TasksService {
     private readonly principals: PrincipalService,
     private readonly mandates: TaskMandatePort,
     private readonly records: ElectronicRecordsPolicySource,
+    private readonly fees: TaskFeePort = new VersionedTaskFees(null),
   ) {}
 
   /* ---------- Plumbing ---------- */
@@ -324,6 +326,7 @@ export class TasksService {
       const request = await taskRequests.insert(trx, {
         owner_person_id: p.personId, project_id: projectId, plan_id: plan.id, plan_version_id: plan.current_version_id, plan_item_key: itemKey, audience: input.audience, creator_person_id: p.personId,
       });
+      await this.fees.origin(trx, 'request', request.id);
       const payload = await this.brief(trx, request, input.terms);
       const draft = await taskRequestVersions.insertDraft(trx, { task_request_id: request.id, version: 1, terms: input.terms, payload, drafted_by_person_id: p.personId });
       await taskRequestPrivate.insert(trx, { task_request_id: request.id, owner_person_id: p.personId, ...privateColumns(input.privateConstraint ?? EMPTY_TASK_REQUEST_PRIVATE), updated_by_person_id: p.personId });
@@ -519,6 +522,7 @@ export class TasksService {
         task_request_id: request.id, offeror_person_id: offeror.person, offeror_company_id: offeror.company, version: Math.max(0, ...group.map((o) => o.version)) + 1, request_version_id: pinned.id,
         request_version: pinned.version, request_version_digest: pinned.digest, payload: input.payload, valid_until: input.payload.validUntil, drafted_by_person_id: p.personId,
       });
+      await this.fees.origin(trx, 'offer', row.id);
       await taskOfferPrivate.insert(trx, { task_offer_id: row.id, offeror_person_id: offeror.person, offeror_company_id: offeror.company, ...offerPrivateColumns(input.privateConstraint ?? EMPTY_TASK_OFFER_PRIVATE), updated_by_person_id: p.personId });
       await this.audit(trx, p, state, 'task.offer_drafted', 'task_offer', row.id, { taskRequestId: request.id, version: row.version, requestVersionId: pinned.id, via: actor.via, mandateId: actor.mandateId });
       return this.offerorView(trx, request.id, input.offeror);
@@ -673,11 +677,12 @@ export class TasksService {
       const offer = await taskOffers.get(trx, input.offer.id);
       if (!offer || offer.task_request_id !== id) throw new ApiError('access.not_found');
       const payload = TaskOfferPayloadSchema.parse(offer.payload);
-      const actor = await this.actor(p, input.actor, 'place_order', { kind: 'task_request', id }, payload.price);
+      const feeTotal = await this.fees.amount(trx, 'buyer', payload.price, input.feeConfirmation);
+      const actor = await this.actor(p, input.actor, 'place_order', { kind: 'task_request', id }, feeTotal);
       if (request.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
       if (actor.via === 'agent') {
         const own = await taskRequestPrivate.get(trx, id);
-        if (outsideBound(payload.price, money(own?.budget_ceiling_minor ?? null, own?.budget_ceiling_currency ?? null), 'ceiling')) {
+        if (outsideBound(feeTotal, money(own?.budget_ceiling_minor ?? null, own?.budget_ceiling_currency ?? null), 'ceiling')) {
           throw new ApiError('access.mandate_scope', 'the agent acts only within the owner\'s private limits', { reason: 'outside_private_constraints' });
         }
       }
@@ -697,6 +702,7 @@ export class TasksService {
         buyer_person_id: p.personId, seller_person_id: seller.person, seller_company_id: seller.company, offer_ref_id: offer.id, request_ref_id: terms.requestRef.id, offer_version: offer.version,
         offer_digest: terms.offerRef.digest.value, request_version: terms.requestRef.version, request_digest: terms.requestRef.digest.value, accepted_terms_digest: terms.digest.value, created_by_person_id: p.personId,
       });
+      await this.fees.confirm(trx, row.id, 'buyer', input.feeConfirmation);
       const event = await this.recordEvent(trx, p, row, 'buyer_accepts_terms', { kind: 'person', id: p.personId }, actor, key, { consent });
       const bumped = await taskRequests.bump(trx, id, request.revision);
       if (!bumped) throw new ApiError('validation.revision_conflict');
@@ -746,6 +752,7 @@ export class TasksService {
       const seller = partyOf(agreement.seller_person_id, agreement.seller_company_id);
       if (!this.actsFor(p, seller)) throw new ApiError('access.not_found');
       const payload = TaskOfferPayloadSchema.parse(offer.payload);
+      const feeProceeds = await this.fees.amount(trx, 'seller', payload.price, input.feeConfirmation);
       const actor = await this.actor(p, input.actor, 'accept_order', { kind: 'agreement', id: agreementId }, payload.price);
       if (agreement.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
       if (agreement.status !== 'accepted_by_buyer') throw new ApiError('validation.schema', `a ${agreement.status} agreement is not confirmed`, { reason: 'invalid_transition' });
@@ -755,11 +762,12 @@ export class TasksService {
       }
       if (actor.via === 'agent') {
         const own = await taskOfferPrivate.get(trx, offer.id);
-        if (outsideBound(payload.price, money(own?.floor_price_minor ?? null, own?.floor_price_currency ?? null), 'floor')) {
+        if (outsideBound(feeProceeds, money(own?.floor_price_minor ?? null, own?.floor_price_currency ?? null), 'floor')) {
           throw new ApiError('access.mandate_scope', 'the agent acts only within the offeror\'s private limits', { reason: 'outside_private_constraints' });
         }
       }
       const consent = this.consent(input.electronicRecords);
+      await this.fees.confirm(trx, agreement.id, 'seller', input.feeConfirmation);
       const event = await this.recordEvent(trx, p, agreement, 'seller_accepts_order', seller, actor, key, { consent });
       const saved = await agreements.setStatus(trx, agreementId, input.expectedRevision, { status: 'accepted_by_both' });
       if (!saved) throw new ApiError('validation.revision_conflict');

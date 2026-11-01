@@ -1,3 +1,4 @@
+import type { TaskFeePort } from './modules/billing/fees/task-adapter.js';
 import { Controller, Get, Inject, Module, Optional, type DynamicModule } from '@nestjs/common';
 import { health } from './deps/contracts.js';
 import type { ApiConfig } from './config.js';
@@ -60,7 +61,7 @@ export class HealthController {
 @Module({})
 export class AppModule {
   static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured',
-    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort): DynamicModule {
+    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort, taskFees?: TaskFeePort): DynamicModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     return {
@@ -82,7 +83,7 @@ export class AppModule {
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),
-        TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks) }),
+        TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks), ...(communications.env ? {env: communications.env} : {}), ...(taskFees ? { fees: taskFees } : {}) }),
         ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity),
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),

@@ -21,6 +21,7 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   // Billing fees (BILL-003): aggregate and completion share the principal transaction.
   'billing.fee_activate': IN_TRANSACTION,
   'billing.fee_draft': IN_TRANSACTION,
+  'billing.task_fee_disclose': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,
   'person.set_handle': IN_TRANSACTION,

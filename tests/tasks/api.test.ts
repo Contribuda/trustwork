@@ -1,3 +1,4 @@
+import { HistoricalTaskFees } from '../../apps/api/src/modules/billing/fees/task-adapter.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -388,7 +389,7 @@ test('tasks API: plan item to task, isolated offers, one assignment, execution a
       { personId: seed.people.petr, mandateId: 'mandate-demo-owner', action: 'communicate' }, { personId: seed.people.petr, mandateId: 'mandate-demo-owner', action: 'place_order', ceiling: usd('5000000') },
       { personId: seed.people.carl, mandateId: 'mandate-demo-carl', action: 'prepare' }, { personId: seed.people.carl, mandateId: 'mandate-demo-carl', action: 'send_quote', ceiling: usd('5000000') },
     ]);
-    const service = new TasksService(h.created.ctx!, h.services().principals, mandates, new ConfiguredElectronicRecords());
+    const service = new TasksService(h.created.ctx!, h.services().principals, mandates, new ConfiguredElectronicRecords(), new HistoricalTaskFees());
     const owner = { via: 'agent' as const, mandateId: 'mandate-demo-owner' };
     let n = 0;
     const ps = async () => stateOf(petr, `req-agent-${++n}`);

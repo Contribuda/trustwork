@@ -2,7 +2,7 @@
 
 Normative requirements: [Billing and commissions](modules/billing-and-commissions.md), [Getting paid](modules/getting-paid.md). Participants: [who uses what](participants/README.md).
 
-Requirements R19, R20, R46, R47. Status: billing state in settings is **Demo**; budgets, price versions and acceptances are **Contract**; offers, entitlements, usage and payment adapters are **Designed** (work package BILL-001); licensed payment providers only (Trustwork never holds money), hub commissions and fees as versioned, disclosed settings and other hub-level commercial settings are **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20 and 21; PAY-001, BILL-002, BILL-003, PAY-002).
+Requirements R19, R20, R46, R47. Status: billing state in settings is **Demo**; budgets, price versions and acceptances are **Contract**; offers, entitlements, usage and payment adapters are **Designed** (work package BILL-001); licensed payment providers only (Trustwork never holds money), hub commissions have **partial implementation** ([BILL-003 boundaries](../../apps/api/src/modules/billing/fees/README.md)); other hub-level commercial settings remain **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20 and 21; PAY-001, BILL-002, BILL-003, PAY-002).
 
 ## Free to participate, fair to pay
 
@@ -41,7 +41,7 @@ Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-
 
 ## Commissions and fees are hub settings
 
-Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Proposed** (BILL-003; the public price page is designed in BIZ-001). The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
+Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing and exact consultation/task bindings are implemented; [remaining acceptance boundaries](../../apps/api/src/modules/billing/fees/README.md) include BIZ-001 design acceptance, missing price readers, marketplace fee mapping and referral authority. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
 
 | Rule | How it holds |
 |---|---|
