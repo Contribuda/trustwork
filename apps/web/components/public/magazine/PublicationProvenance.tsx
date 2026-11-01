@@ -17,7 +17,7 @@ export function publicationJsonLd(item: PublicationDetail, url: string) {
 export function PublicationProvenance({ item }: { item: PublicationDetail }) {
   if (!item.content) return null;
   return <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(publicationJsonLd(item, absoluteUrl(localPath(item.href)))).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') }} />
+    <script type="application/ld+json">{JSON.stringify(publicationJsonLd(item, absoluteUrl(localPath(item.href)))).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')}</script>
     {item.content.notices.map(note => <p className="art-note" key={note}>{note}</p>)}
     {item.content.sources.length ? <section className="art-block" aria-label={t('content.sources')}>
       <h2 className="art-block__title">{t('content.sources')}</h2>
