@@ -58,7 +58,7 @@ Homeowners and small owners (only the simple path: plan items become RFQs or tas
 | PRC-F28 | Analytics from the company's own records only; team-level throughput with a minimum group size; "my work" visible only to the person; no individual rankings | Proposed | PRC-014 |
 | PRC-F29 | Ideas: price indices and escalation alerts; warranty registration flowing into the home passport; anonymized price benchmarks and lead-time signals (opt-in, off by default, counsel sign-off); embodied carbon from EPDs; surplus and returns exchange; opt-in demand pooling (purchasing only) | Proposed | PRC-017 … PRC-022 |
 | PRC-F30 | Every operation is a capability registry entry with interface and agent paths; approvals, acceptance of delivered goods and clearing payment risk signals are confirmed by a person each time | Proposed | PRC-023, AGT-024 |
-| PRC-F31 | Public clients: market sounding, specification drafts, equal-treatment clarifications and the anti-splitting guard; submission to an official portal and award decisions stay with people | Proposed | AGT-009, PROC-001 |
+| PRC-F31 | Public clients: market sounding, specification drafts, equal-treatment clarifications and the anti-splitting guard; submission to an official portal and award decisions stay with people; the bidders' side is the [bid desk](bid-desk.md) | Proposed | AGT-009, PROC-001 |
 | PRC-F32 | A homeowner never sees requisitions or approval routes; their plan items become RFQs or tasks directly | Proposed | PLAN-001, TASK-001 |
 
 ## Agent capabilities

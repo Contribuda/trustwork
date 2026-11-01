@@ -16,6 +16,7 @@ To be found at the plan step where their product helps, because it fits and neve
 | Anonymous step questions answered with labelled commercial answers | [Catalogue](../modules/catalogue-and-manufacturer-knowledge.md) | Proposed | AGT-021 |
 | Quotes from catalogue, negotiation inside floors, order desk with capacity check | [Sales](../modules/sales.md) | Contract / Proposed | COM-002, AGT-008 |
 | Supplier portal side of the procurement suite (purchase orders, deliveries, invoices) | [Procurement and supply](../modules/procurement-and-supply.md) | Proposed | PRC-001 … PRC-014, WEB-011, WEB-012 |
+| Bid desk for public and private tenders: alerts with match reasons, bid/no-bid, cited compliance matrix, content library, documents in the buyer's format and language, specification checks, pricing with a margin guard, questions, teaming, reviews, human submission, debriefs; expert consultations | [Bid desk](../modules/bid-desk.md) | Proposed | BID-000 … BID-009, AGT-025, WEB-013, WEB-014 |
 | Installer training as courses with certificates | [Learning](../modules/learning-and-certificates.md) | Proposed | LRN-001 |
 | Events, open days, exhibitions; hosted-buyer meetings | [Events](../modules/events.md) | Proposed | EVT-001 |
 | BIM product data (IFC property sets), EPDs and certificates | [Integrations](../modules/integrations.md), [Catalogue](../modules/catalogue-and-manufacturer-knowledge.md) | Proposed | BIM-001, MAT-001 |

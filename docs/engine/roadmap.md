@@ -142,6 +142,27 @@ The company-side suite from plan step to payment ([Procurement and supply](procu
 | AGT-024 | Supply agent modules: requisition desk, sourcing desk, intake, receiving clerk, payables desk, supply watch, surplus exchange | open | AGT-008, PRC-023, PRC-004, PRC-011 |
 
 
+## Phase 3c: supplier bid desk
+
+The supplier side of tenders ([The supplier bid desk](tender-desk.md), R74, owner request of 2026-11-01): contracts first (BID-000), then pursuits and bid/no-bid decisions, tender documents with cited requirements and the compliance matrix, the content library and document builder, the pricing workbook with the margin guard and specification checks, clarifications and expert suggestions, teaming with the anti-collusion guard, reviews and the human submission step, outcomes and hand-off, the registry entries (BID-009), the `bid_desk` agent module (AGT-025), the web screens (WEB-013, WEB-014) and the procurement facts in country packs (CTRY-004). It builds on phase 3 commerce, PRC-001 approval routes, PROC-001 public opportunities and MATCH-001; nothing submits a bid without the person.
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| BID-000 | Freeze the supplier bid desk contracts | open | PRC-000, AGT-002, CTRY-002 |
+| BID-001 | Pursuits, alert profiles, match explanations and bid/no-bid decisions | open | BID-000, PROC-001, MATCH-001, PREQ-001, REP-001, PRC-001 |
+| BID-002 | Tender documents, requirement extraction with citations and the compliance matrix | open | BID-001, PRC-005, LLM-001, FILE-001 |
+| BID-003 | Content library and document builder in the buyer's formats and languages | open | BID-002, PREQ-001, PROV-001, PPL-001 |
+| BID-004 | Pricing workbook, margin guard, price schedules and specification checks | open | BID-002, PRC-006, PRC-017, COM-002 |
+| BID-005 | Clarifications, deadlines and expert suggestions | open | BID-002, COMMS-001, CONS-001 |
+| BID-006 | Teaming and subcontractor sourcing with the anti-collusion guard | open | BID-002, MATCH-001, SANC-004, COM-002 |
+| BID-007 | Review rounds, approvals, the submission checklist and the human submission step | open | BID-003, BID-004, BID-006, PRC-001, SANC-004, ESIG-001 |
+| BID-008 | Outcomes, debriefs, lessons, awards as sourced history and hand-off to execution | open | BID-007, PROC-001, EXE-001, PLAN-001 |
+| BID-009 | Bid desk entries in the shared capability registry (agent parity) | open | BID-000, AGT-002 |
+| AGT-025 | Bid desk agent module for suppliers | open | AGT-007, AGT-008, BID-009, BID-007, BID-008 |
+| WEB-013 | Bid desk on the web: dashboard, opportunities, bid/no-bid, compliance matrix, library and document builder | open | BID-003, BID-009, WEB-002, LANG-ES |
+| WEB-014 | Bid desk on the web: pricing workbook, clarifications, team, reviews, submission and outcomes | open | WEB-013, BID-004, BID-005, BID-006, BID-007, BID-008 |
+| CTRY-004 | Public procurement facets for bid desks in country packs | open | CTRY-002, INTL-US, CTRY-EU |
+
 ## Phase 4: hubs and the hub console
 
 Hubs, territories and versioned configuration, jurisdiction settings (decision 22), the setup wizard and one-command install, provider keys and model routes, verification and claims, support without impersonation, privacy operations, the source registry, pipelines, data mining, the autonomous editorial office, manufacturer and supplier knowledge and plan-step recommendations, backups and operations. The console is built fixtures-first in slices (ADM-002, HUBC-002 to HUBC-006), wired to the API (HUBC-007 to HUBC-010) and accepted as a whole by the umbrella HUB-002.
@@ -480,6 +501,8 @@ flowchart LR
   P2 --> P3
   P3 --> P3B[Phase 3b procurement and supply]
   P3B --> P5
+  P3 --> P3C[Phase 3c supplier bid desk]
+  P3C --> P5
   P1 --> P4[Phase 4 hubs and console]
   P2 --> P4
   P3 --> P5[Phase 5 agents]
@@ -515,3 +538,4 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 | Editorial agent team in the console; which content classes may ever publish under a standing policy (decisions E1 to E13) | Owner decision 2026-11-01 for the team; defaults proposed for the owner ([editorial office](editorial-office.md#141-decisions-for-the-owner)) | EDIT-002, HUBC-003, HUBC-012, PROV-001, TRN-001 |
 | International by default: language and country-pack roadmap, honest review status | Decided 2026-10-31 by the owner ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 30) | LANG-PT … LANG-JA, INTL-005 … INTL-007, CTRY-EU, CTRY-CA … CTRY-AU |
 | Full sanctions-compliance engine with Contribuda parity; no kill switch in the engine, enforcement on our own services, deployment attestation, trademark | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 24, [ADR 014](../adr/014-sanctions-compliance-engine.md)); lists, geolocation adapter, thresholds and counsel wording open | SANC-001 … SANC-009, HUB-003, PAY-001, FED-001, HUB-004 |
+| Supplier bid desk: automation of search, documents, communication, offer and specification checks, recommendations and consultations through the agent and the interface; binding submission stays human | Requested 2026-11-01 by the owner (R74, proposed) | BID-000 … BID-009, AGT-025, WEB-013, WEB-014, CTRY-004 |

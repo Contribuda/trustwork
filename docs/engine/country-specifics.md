@@ -73,7 +73,7 @@ Articles and RFQ lines can reference a code clause as a structured link, so a re
 |---|---|---|
 | National e-procurement portal(s), thresholds, notice formats, open data availability | Procurement notice feed | Whether public notices appear as opportunities on the needs board, licence flags |
 
-The engine does not submit bids to state portals; it helps people find and prepare for them.
+The engine does not submit bids to state portals; it helps people find and prepare for them. The supplier bid desk reads notice standards, supplier registrations, self-declaration forms, submission rules, bid security, debrief and standstill windows, integrity forms, automated-access terms, record retention and classification schemes as pack facts (proposed fact types, CTRY-004; [The supplier bid desk](tender-desk.md#country-specifics-as-pack-data)).
 
 ### Tax and invoicing
 

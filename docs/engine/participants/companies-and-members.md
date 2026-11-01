@@ -15,6 +15,7 @@ One honest company page shared by its people; being found and verified; buying a
 | Commercial authority separate from membership; transaction and platform budgets | [Billing](../modules/billing-and-commissions.md), [Agent](../modules/agent.md) | Contract | BILL-001, AST-001 |
 | Catalogue, price lists, quotes, negotiation, order acceptance | [Catalogue](../modules/catalogue-and-manufacturer-knowledge.md), [Sales](../modules/sales.md) | Contract / Designed | COM-001, COM-002 |
 | Requisitions, approval routes, sourcing events, purchase orders, receiving, invoices and three-way match | [Procurement and supply](../modules/procurement-and-supply.md) | Proposed | PRC-001 … PRC-014, WEB-011, WEB-012 |
+| Bid on public and private tenders as a company: pursuits, compliance matrix, library, pricing with a margin guard, teaming, approvals and the person's submission | [Bid desk](../modules/bid-desk.md) | Proposed | BID-000 … BID-009, AGT-025, WEB-013, WEB-014 |
 | Prequalification passport shared per client by consent | [People and companies](../modules/people-and-companies.md) | Proposed | PREQ-001 |
 | Field evidence, change orders, pay applications, retainage, waivers | [Execution](../modules/execution-and-field-evidence.md), [Getting paid](../modules/getting-paid.md) | Proposed | FIELD-001, PAY-002 |
 | Standing representative with a named accountable person; company mandates with re-confirmation | [Agent](../modules/agent.md) | Proposed | AGT-001 |

@@ -910,6 +910,32 @@
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; ADR 010 decision 25, docs/engine/hub-console/providers-and-models.md and docs/engine/hub-console/user-agents-admin.md are proposed",
       "status": "specified_not_implemented"
+    },
+    {
+      "id": "R74",
+      "tasks": [
+        "BID-000",
+        "BID-001",
+        "BID-002",
+        "BID-003",
+        "BID-004",
+        "BID-005",
+        "BID-006",
+        "BID-007",
+        "BID-008",
+        "BID-009",
+        "AGT-025",
+        "WEB-013",
+        "WEB-014",
+        "CTRY-004",
+        "PROC-001",
+        "PROC-002",
+        "PREQ-001",
+        "CONS-001"
+      ],
+      "spec": "docs/product/specification.md",
+      "verification": "Task acceptance plus docs/quality/validation.md; docs/engine/tender-desk.md and docs/engine/modules/bid-desk.md are proposed",
+      "status": "specified_not_implemented"
     }
   ]
 }
