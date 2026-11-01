@@ -2,7 +2,7 @@
 
 Normative requirements: [Federation mesh](modules/federation-mesh.md). Participants: [who uses what](participants/README.md).
 
-Requirement R39. Status: **Proposed**; the wire protocol is a **Contract**: [Mesh protocol `trustwork-mesh/1`](federation-protocol.md) (FED-000, `packages/contracts/src/federation.ts`, conformance vectors). Architecture decision: [ADR 011](../adr/011-federation-mesh.md).
+Requirement R39. Status: **Proposed**; the wire protocol is a **Contract**: [Mesh protocol `trustwork-mesh/1`](federation-protocol.md) (FED-000, `packages/contracts/src/federation.ts`, conformance vectors). Architecture decision: [ADR 011](../adr/011-federation-mesh.md). How modules, content, translations and cross-border commercial offers move between hubs on top of the mesh (schema registry, capability negotiation, usage policies, delivery guarantees, translation, dual screening, currencies, taxes, e-documents, fees and disputes): [Hub exchange architecture](hub-exchange-architecture.md) (Proposed, [ADR 016](../adr/016-hub-exchange-layer.md)).
 
 Imagine a trade association that opens the engine for the United States, and a group of engineers who separately open it for Austin. With federation they do not compete for the same people; they complement each other. Austin's meetups appear in the national calendar, the national magazine reaches Austin readers, an Austin client can hire a Houston contractor, a supplier on a Mexico hub can answer a Texas request, and an engineer in Nairobi can read what a hub in Munich publishes on facade fire safety. Every deployment that joins makes every other one more useful. Together they form a mesh that can cover the world, with no central owner.
 
@@ -201,6 +201,7 @@ Conditions attached to every licence: keep provenance and attribution visible, a
 | FED-003 | Directory federation and entity links |
 | FED-004 | Cross-node deals and agent envelopes |
 | FED-005 | Federated sign-in at `identity` level |
+| XCH-001 … XCH-016 | The hub exchange layer: schema registry, `trustwork-mesh/2` (proposed), capability profiles, delivery engine, usage policies, translation across hubs, cross-border terms, cross-hub agreements and orders, disputes, federated threads, passport verification, public search, skew suite, incident response, transfer policy and the deal screens ([Hub exchange architecture](hub-exchange-architecture.md#9-work-packages)) |
 
 ## Open questions
 

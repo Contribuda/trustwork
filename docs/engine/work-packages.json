@@ -2088,7 +2088,8 @@
         "docs/engine/billing.md",
         "docs/adr/004-delivery-and-providers.md",
         "docs/research/architecture-audit-2026-10.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Define the payment port (create intent, confirm, refund, payout through the provider's connected accounts, lookup outcome) and a deterministic fake.",
@@ -2101,7 +2102,9 @@
         "A timeout leaves the payment in outcome_unknown until reconciliation.",
         "No code path credits a balance held by Trustwork or the hub operator (test and review checklist).",
         "Ranking, matching, recommendation and reputation code has no dependency on payment state (tested).",
-        "Payout account creation and every payout ask the screening gate (SANC-004) and refuse while money is held or the answer is unknown; a restricted payout country is refused before the provider is called (tested)."
+        "Payout account creation and every payout ask the screening gate (SANC-004) and refuse while money is held or the answer is unknown; a restricted payout country is refused before the provider is called (tested).",
+        "For a cross-hub agreement only providers enabled on the collecting hub that support the payer's country and currency are offered, after both screening gates are clear; with none, the agreement records payment outside the platform (tested).",
+        "No code path converts currency or computes a settlement from a reference rate (tested)."
       ],
       "paths": [
         "packages/contracts/src/payments.ts",
@@ -2129,7 +2132,8 @@
         "docs/data/model.md",
         "docs/engine/billing.md",
         "docs/engine/country-specifics.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Add invoice, invoice_line, refund, payout_account (provider references only) and payout (packages/data/migrations/invoicing).",
@@ -2144,7 +2148,9 @@
         "Card and bank data never enter the database.",
         "Ticket, course and consultation sales and payouts refuse through the screening gate for held, matched or unscreened parties (tested).",
         "Every agent usage, credit-pack and commission invoice line names its price or fee version (tested).",
-        "No table or ledger account represents participants' money held by the hub or by Trustwork."
+        "No table or ledger account represents participants' money held by the hub or by Trustwork.",
+        "A cross-border line's tax treatment names the jurisdictions considered and the rule source (for example export zero rating or reverse charge); the platform never collects tax on the parties' trade (tested).",
+        "On a cross-hub transaction a hub invoices fees only to its own participant (tested)."
       ],
       "paths": [
         "apps/api/src/modules/invoicing",
@@ -2169,7 +2175,8 @@
       "read": [
         "docs/engine/billing.md",
         "docs/engine/hub-console/README.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Implement commission and fee versions on marketplace_fee_version with category scope, effective dates and no overlapping active versions.",
@@ -2183,7 +2190,8 @@
         "Every booking or acceptance records the fee version shown before confirmation.",
         "The public price page lists every active version in every hub language.",
         "The public price page lists active agent plans, model and capability prices and credit packs as well as fees and commissions (tested).",
-        "No fee or commission configuration key can change ranking, matching, recommendations or reputation (schema test)."
+        "No fee or commission configuration key can change ranking, matching, recommendations or reputation (schema test).",
+        "On a cross-hub transaction each hub charges only its own participant; both hubs' fee versions are shown before acceptance and each node records the version shown to its participant (tested)."
       ],
       "paths": [
         "apps/api/src/modules/billing/fees",
@@ -2344,7 +2352,8 @@
       "goal": "Let parties assemble a dispute package (digest-bound agreement versions, change orders, field records, payments, waivers, messages in context) and refer it to an external mediator; outcomes enter reputation only as consented, cited evidence.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/execution-and-reputation.md"
+        "docs/engine/execution-and-reputation.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Define the package manifest with digests and an export both parties can verify.",
@@ -2354,7 +2363,8 @@
       "acceptance": [
         "A package contains only records both parties are entitled to see (negative test).",
         "Digests in the export verify against the stored versions.",
-        "Outcomes enter reputation only as consented, cited evidence."
+        "Outcomes enter reputation only as consented, cited evidence.",
+        "A cross-hub dispute package contains only records both parties may see on both nodes and its digests verify on both; each hub decides only its own participant's case and appeal (tested)."
       ],
       "paths": [
         "apps/api/src/modules/disputes",
@@ -4532,7 +4542,8 @@
       "goal": "Let agents take intake, quote, negotiate, procure and accept orders inside mandates for sellers and buyers of every size, with stronger protections when one side is a consumer.",
       "read": [
         "docs/engine/agent-catalog.md",
-        "docs/engine/commerce.md"
+        "docs/engine/commerce.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Implement need intake with evidence per line, quoting from catalogue under standing mandates and revalidation after amendments.",
@@ -4543,7 +4554,8 @@
       "acceptance": [
         "Competing sellers never receive each other's pricing or participation (test).",
         "Consumer commitments are never pre-authorized.",
-        "Splitting an order below an approval threshold triggers approval."
+        "Splitting an order below an approval threshold triggers approval.",
+        "Consumer mode applies when either hub classifies a party as a consumer; envelopes to another node pass the same mandate checks as local ones (tested)."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/deal",
@@ -5453,7 +5465,8 @@
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Pin the A2A version; publish opt-in Agent Cards signed with the node key, with labels and accepted intents only; none for individual persons by default.",
@@ -5462,7 +5475,8 @@
       ],
       "acceptance": [
         "No A2A text part changes state (injection tests).",
-        "Agent Cards reveal no mandate, limit or plan."
+        "Agent Cards reveal no mandate, limit or plan.",
+        "A2A messages to a participant on another node travel only as mesh agent envelopes through the participant's home node, never directly (tested)."
       ],
       "paths": [
         "apps/api/src/modules/connections/a2a",
@@ -5988,7 +6002,8 @@
         "docs/architecture/retrieval.md",
         "docs/data/knowledge-model.md",
         "docs/quality/retrieval-evaluation.md",
-        "docs/architecture/retrieval-api.md"
+        "docs/architecture/retrieval-api.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Implement typed runtime queries, the structured resolver and hybrid fusion inside the trusted boundary.",
@@ -5998,7 +6013,8 @@
       "acceptance": [
         "Private authorized exact subsets and public-only certified ANN; measured plans and filtered recall.",
         "Candidates, hydration, provider egress and final admission fail closed on revoke; multi-node race tested.",
-        "Saved answers inherit the intersection of source rights; exact identifiers and complete-domain calculations bypass top-k."
+        "Saved answers inherit the intersection of source rights; exact identifiers and complete-domain calculations bypass top-k.",
+        "Federated replicas are indexed only under their own source class and licence; no private query or private context is ever forwarded to a peer (tested)."
       ],
       "paths": [
         "apps/api/src/modules/retrieval",
@@ -6152,7 +6168,8 @@
       "read": [
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Generate and store the node key through the secret store; serve the signed manifest at /.well-known/trustwork/manifest.json.",
@@ -6164,7 +6181,9 @@
         "Unsigned or wrongly signed requests are rejected.",
         "Peering above syndicate needs a second approver.",
         "Defederation stops feeds and deliveries without rewriting history.",
-        "A peer whose manifest, attestation or observed server location is a restricted place is refused at handshake through the SANC-008 admission check (tested)."
+        "A peer whose manifest, attestation or observed server location is a restricted place is refused at handshake through the SANC-008 admission check (tested).",
+        "Admission is re-run whenever a peer's manifest, attestation or capability statement changes and before the first delivery of every new deal; a lapsed admission stops new deliveries without rewriting history (tested).",
+        "Peers' manifests are refreshed at least daily and immediately after federation.key_unknown; a published revocation triggers re-verification of replicas and deal objects signed at or after compromisedSince (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/node",
@@ -6188,7 +6207,8 @@
       "read": [
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Implement cursor feeds per stream on the home node.",
@@ -6199,7 +6219,9 @@
       "acceptance": [
         "Replicas are read-only and never satisfy a write authorization.",
         "Items with syndication none never leave their node.",
-        "Tombstones reach search indexes and caches."
+        "Tombstones reach search indexes and caches.",
+        "A linked edition travels with its own licence and machine-translation label, never looser than its original, and is never presented as the original (tested).",
+        "A replica is never re-served in a feed; editions of a corrected original are marked stale on the receiving node (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/syndication",
@@ -6224,7 +6246,8 @@
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/federation.md",
-        "docs/engine/people-and-companies.md"
+        "docs/engine/people-and-companies.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Implement link proposals from identifier matches and signed statements (packages/data/migrations/federation-links).",
@@ -6234,7 +6257,8 @@
       "acceptance": [
         "No automatic merge.",
         "A peer badge is always labelled with the granting node.",
-        "Reputation is never recomputed on a replica."
+        "Reputation is never recomputed on a replica.",
+        "Identifiers from different country packs never create a link by themselves; a company linked across countries keeps each country's identifiers separately (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/links",
@@ -6251,7 +6275,9 @@
       "status": "open",
       "dependsOn": [
         "FED-003",
-        "AGT-001"
+        "AGT-001",
+        "XCH-004",
+        "SANC-004"
       ],
       "handbook": "docs/engine/federation.md",
       "goal": "Participants on different nodes exchange introductions, RFQ invitations, quote versions and agreements with identical digests on both sides.",
@@ -6260,17 +6286,26 @@
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/federation.md",
         "docs/engine/commerce.md",
-        "docs/engine/agents.md"
+        "docs/engine/agents.md",
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md"
       ],
       "steps": [
         "Deliver shared_party envelopes to the counterparty's home node only.",
         "Verify digests on both sides; bind acceptance to the same agreement digest.",
-        "Keep mandates, budgets and approvals on each party's own node; deliver agent envelopes with labels and rate limits per peering."
+        "Keep mandates, budgets and approvals on each party's own node; deliver agent envelopes with labels and rate limits per peering.",
+        "Before the first commercial message of a context, run the SANC-004 gate on the counterparty and the own participant on each node and exchange outcome-only screening attestations once trustwork-mesh/2 is available (until then each node relies on its own gate).",
+        "Pin the exchange schema versions of a deal at its first cross-hub version and use them for every later object of the context."
       ],
       "acceptance": [
         "Both nodes hold identical accepted terms proven by the same digest.",
         "Nothing on one node can authorize an action on the other.",
-        "No delivery is routed through a third node."
+        "No delivery is routed through a third node.",
+        "No commercial message leaves or is accepted unless the sending and the receiving node each have a clear screening outcome on fresh lists for both parties; a refusal reveals no match or list (tested on both sides).",
+        "Participants' places, the delivery place and any declared origin in a restricted place refuse the deal before any delivery (tested).",
+        "Budgets, floors, evaluation weights, mandate contents and cross-border private notes never appear in any envelope (forbidden-field test over every deal kind).",
+        "A seller's quote, price or participation is never relayed to another seller on any node (tested).",
+        "Unknown delivery outcomes are reconciled by resending the identical body under the same delivery identifier, never by a new identifier (fault-injection test)."
       ],
       "paths": [
         "apps/api/src/modules/federation/deals",
@@ -6292,7 +6327,8 @@
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/federation.md",
-        "docs/adr/002-identity-and-access.md"
+        "docs/adr/002-identity-and-access.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Implement nodes as OIDC providers and relying parties for each other (packages/data/migrations/federation-identity).",
@@ -6302,7 +6338,9 @@
       "acceptance": [
         "No auto-linking by e-mail.",
         "A remote identity never gains local company authority.",
-        "Ending peering at identity level ends remote sessions."
+        "Ending peering at identity level ends remote sessions.",
+        "A remote identity can never accept an agreement or place an order for a company on the receiving node (negative test).",
+        "The person's role as consumer or business is carried with the assertion and shown to the counterparty."
       ],
       "paths": [
         "apps/api/src/modules/federation/identity",
@@ -6324,7 +6362,8 @@
       "goal": "Let the wider social web follow a hub: one outbound ActivityPub actor per hub publishing public publications, magazine issues and public events with attribution, corrections as updates and deletions as tombstones.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Map public publication versions, issues and events to ActivityPub objects with links back to the hub.",
@@ -6334,7 +6373,8 @@
       "acceptance": [
         "Only public-projection fields appear in outgoing objects (negative tests).",
         "Restricted-place instances are refused.",
-        "No inbound social content is stored except follow records."
+        "No inbound social content is stored except follow records.",
+        "Outgoing objects carry language tags (contentMap) and the machine-translation label; an edition is never published as an original (tested)."
       ],
       "paths": [
         "apps/api/src/modules/activitypub",
@@ -6358,7 +6398,9 @@
         "docs/data/model.md",
         "docs/research/market-and-ideas-2026-10.md",
         "docs/engine/execution-and-reputation.md",
-        "docs/adr/012-integrator-decisions-2026-10-31.md"
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md"
       ],
       "steps": [
         "Pin the VC 2.0 and Open Badges 3.0 versions and the issuer identifier on the hub domain; define credential types per hub bound to verification recipes.",
@@ -6369,7 +6411,9 @@
       "acceptance": [
         "Credentials verify offline against the node's published key.",
         "Revoking a verification or licence check updates the status list before the next verification.",
-        "Credentials contain no counterparties' private data and no documents; payment never adds, hides or reorders passport contents (test)."
+        "Credentials contain no counterparties' private data and no documents; payment never adds, hides or reorders passport contents (test).",
+        "Presentations are holder-bound, name their audience and expire quickly; a verifier on another node can check them with only the issuing node's public key chain and status list (tested).",
+        "No credential or presentation contains review text, observations or counterparties' identities (tested)."
       ],
       "paths": [
         "packages/contracts/src/credentials.ts",
@@ -6540,7 +6584,8 @@
       "read": [
         "docs/engine/localization.md",
         "docs/adr/012-integrator-decisions-2026-10-31.md",
-        "docs/adr/009-international-engine-and-open-source.md"
+        "docs/adr/009-international-engine-and-open-source.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Define the metadata contract in packages/i18n-runtime/src/review-status.ts: status (reference, machine_draft, community_reviewed, native_reviewed), reviewers by public handle and only with their consent, review date, the namespaces the review covered, and a link to the review issue or pull request.",
@@ -6552,7 +6597,8 @@
         "Every enabled locale shows its review status in the picker; an unreviewed locale is labelled machine draft (tested).",
         "A locale without metadata is shown as machine draft, never as reviewed (tested).",
         "Review labels exist in every engine language and are announced by screen readers.",
-        "The printed table matches the languages table in the localization chapter at merge time."
+        "The printed table matches the languages table in the localization chapter at merge time.",
+        "Locale review status is available in a machine-readable form that capability statements can publish."
       ],
       "paths": [
         "packages/i18n-runtime/src/review-status.ts",
@@ -8312,7 +8358,8 @@
         "docs/engine/procurement-and-supply.md",
         "docs/data/model.md",
         "docs/engine/country-specifics.md",
-        "docs/country-packs/how-to-add-a-country.md"
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Migrations for document_requirement_set, document_link and e_document_exchange.",
@@ -8322,7 +8369,8 @@
       "acceptance": [
         "Requirement sets referencing a type the bound pack lacks are rejected (test).",
         "Exchange records are unique per network and external id; unknown outcomes reconcile (test).",
-        "No Russian network or provider can be configured (test against the restricted list)."
+        "No Russian network or provider can be configured (test against the restricted list).",
+        "A cross-hub e-document is exchanged over a network both parties' packs list (Peppol preferred where both have participant identifiers); otherwise only a reference with the document digest crosses nodes (tested)."
       ],
       "paths": [
         "apps/api/src/modules/e-documents",
@@ -9396,7 +9444,8 @@
       "goal": "In EU hubs, collect and make best efforts to verify trader traceability information before a trader can offer to consumers, show trader or non-trader status on offers, and let traders meet their information duties (Digital Services Act Articles 30 and 31).",
       "read": [
         "docs/engine/country-specifics.md",
-        "docs/research/competitive-landscape-2026-11.md"
+        "docs/research/competitive-landscape-2026-11.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Add traceability fields and verification states from the EU layer of the country packs.",
@@ -9406,7 +9455,8 @@
       "acceptance": [
         "A trader without complete traceability cannot publish a consumer-facing offer in an EU hub (test).",
         "Non-EU hubs are unaffected unless their pack enables the facet.",
-        "Trader status shows on every consumer-facing offer projection."
+        "Trader status shows on every consumer-facing offer projection.",
+        "A consumer-facing offer from another hub shown in an EU hub carries trader traceability from its home node, or is not shown to consumers (tested)."
       ],
       "paths": [
         "apps/api/src/modules/trader-traceability",
@@ -9459,7 +9509,8 @@
       "goal": "Import public tenders and awards from national portals (SAM.gov, the UK Central Digital Platform, TED, Brazil's PNCP, Chile's Mercado Publico, India's GeM and others) through adapters that map to the Open Contracting Data Standard, each with licence flags and a fake.",
       "read": [
         "docs/engine/partners-and-matching.md",
-        "docs/research/competitive-landscape-2026-11.md"
+        "docs/research/competitive-landscape-2026-11.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Define an OCDS-based mapping contract for notices and awards.",
@@ -9469,7 +9520,8 @@
       "acceptance": [
         "No adapter submits bids or contacts buyers (test).",
         "A portal whose terms forbid reuse cannot be activated as a source.",
-        "Imported notices are labelled from a public source and never appear as platform members' needs."
+        "Imported notices are labelled from a public source and never appear as platform members' needs.",
+        "Imported notices federate only as link_only unless the source licence allows redisplay, and keep their ocid as an external identifier (tested)."
       ],
       "paths": [
         "apps/worker/src/tenders",
@@ -9490,7 +9542,8 @@
       "goal": "Let parties sign agreements, acts and waivers with electronic signatures valid in their jurisdiction (ESIGN and UETA providers in the US, eIDAS advanced and qualified signatures in the EU, national schemes elsewhere) through adapters with fakes; the signed document's hash binds to the agreement digest.",
       "read": [
         "docs/engine/country-specifics.md",
-        "docs/engine/commerce.md"
+        "docs/engine/commerce.md",
+        "docs/engine/hub-exchange-architecture.md"
       ],
       "steps": [
         "Define the signature request and evidence contracts with signature level and provider reference.",
@@ -9500,7 +9553,8 @@
       "acceptance": [
         "A signature over a document whose hash differs from the agreement digest is rejected (test).",
         "Signature levels shown match the pack facts for the parties' jurisdictions.",
-        "Unknown outcomes go to reconciliation (fault-injection test)."
+        "Unknown outcomes go to reconciliation (fault-injection test).",
+        "Recognition of the other party's signature scheme across jurisdictions is shown only from a pack fact, otherwise as unknown (tested)."
       ],
       "paths": [
         "packages/contracts/src/e-signature.ts",
@@ -10169,6 +10223,525 @@
       "paths": [
         "apps/web/app/admin/hubs/[hub]/outreach",
         "tests/web/admin/outreach"
+      ]
+    },
+    {
+      "id": "XCH-001",
+      "title": "Exchange schema registry and compatibility checker",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-000"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Register every object that crosses a node boundary as a versioned exchange schema owned by one module, generated from its Zod contract, with down-projections and a compatibility checker that runs in CI; no wire change.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/federation.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/adr/008-contracts-and-validation.md"
+      ],
+      "steps": [
+        "Define the exchange schema descriptor (identifier tw.<module>.<object>, major and minor, owner module, projection, data class, mesh kind, essential members) in packages/contracts/src/exchange-registry.ts.",
+        "Register the current mesh kinds and the commerce, content and directory payloads in packages/contracts/src/exchange-schemas with JSON Schema generated from Zod.",
+        "Implement pure down-projections to earlier minors and a checker that refuses a minor that removes, renames, retypes or tightens a member, or drops an essential member."
+      ],
+      "acceptance": [
+        "A minor version that removes, renames, retypes or tightens a member fails the checker (tests).",
+        "Down-projection output validates against the earlier minor and its digest equals the digest of the same object built at that minor (tests).",
+        "A schema can never declare a projection its mesh kind does not allow (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/exchange-registry.ts",
+        "packages/contracts/src/exchange-schemas",
+        "tests/contracts/exchange-registry.test.ts"
+      ]
+    },
+    {
+      "id": "XCH-002",
+      "title": "Protocol trustwork-mesh/2: contracts and conformance vectors",
+      "area": "federation",
+      "status": "blocked",
+      "dependsOn": [
+        "XCH-001"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Freeze the trustwork-mesh/2 superset proposed in ADR 016 (envelope schema, language, policy and context members; new shared and public kinds; capability statement; opt-in search; new error codes) with conformance vectors. Blocked until ADR 016 is accepted.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/federation-protocol.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/adr/011-federation-mesh.md"
+      ],
+      "steps": [
+        "Wait for the owner and integrator decision on ADR 016; record it in the ADR.",
+        "Add the version 2 schemas in packages/contracts/src/federation-v2.ts reusing every version 1 byte rule; keep version 1 schemas unchanged.",
+        "Generate vectors in tests/federation/protocol-v2 for the new envelope members, kinds, capability statement and error codes; document the protocol in the protocol chapter."
+      ],
+      "acceptance": [
+        "Every version 1 vector still verifies unchanged (test).",
+        "party_private, owner_private and staff_case are still refused by the schema; a translation with binding true is refused (tests).",
+        "Vectors are byte-reproducible and drift fails the build."
+      ],
+      "paths": [
+        "packages/contracts/src/federation-v2.ts",
+        "tests/federation/protocol-v2"
+      ]
+    },
+    {
+      "id": "XCH-003",
+      "title": "Capability statements and per-peer exchange profiles",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "XCH-002",
+        "FED-001"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Each node signs a capability statement for its hubs; peers compute and store the same intersection (the exchange profile) and send nothing outside it.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/federation-protocol.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Serve the signed capability statement and fetch peers' statements on peering and on change (packages/data/migrations/federation-capabilities).",
+        "Compute the exchange profile deterministically, store it with its digest and both statement digests, and recompute on change.",
+        "Refuse outgoing and incoming deliveries outside the profile; expose an honest unavailable reason to the sending participant."
+      ],
+      "acceptance": [
+        "Both nodes compute the same profile digest from the same two statements (test with two simulated nodes).",
+        "A schema outside the profile is never sent and is refused with federation.schema_unsupported when received (tests).",
+        "A profile change never alters a pinned deal; a withdrawn schema a deal needs yields federation.capability_withdrawn and a notice to both parties (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/capabilities",
+        "packages/data/migrations/federation-capabilities",
+        "packages/data/src/schema/federation-capabilities.ts",
+        "packages/data/src/repositories/federation-capabilities.ts",
+        "tests/federation/capabilities"
+      ]
+    },
+    {
+      "id": "XCH-004",
+      "title": "Federation delivery engine: outbox, inbox processing, ordering, retries and reconciliation",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-001"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Deliver every addressed federation item at least once with effectively-once effects: a transactional outbox, idempotent inbox processing, order inside a context, backoff, maximum age, dead letters and reconciliation of unknown outcomes by identical resend.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/federation-protocol.md",
+        "docs/adr/004-delivery-and-providers.md",
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Write federation_delivery rows in the same transaction as the business change; send from the worker with leases (apps/worker/src/federation).",
+        "Process inbox deliveries in one transaction each, with the unique (senderNode, deliveryId) constraint and the stored receipt.",
+        "Retry with backoff and jitter honouring Retry-After; move to outcome_unknown, reconcile by resending the identical body, dead-letter past the maximum age.",
+        "Apply context items in sequence order with a bounded gap hold; refuse previous-digest mismatches.",
+        "Emit cohort metrics per peer and kind only."
+      ],
+      "acceptance": [
+        "A crash between commit and send never loses a delivery; a repeat never produces a second effect (fault-injection and concurrency tests).",
+        "Reconciliation never uses a new delivery identifier (test).",
+        "Metrics and logs contain no person identifiers or payloads (test)."
+      ],
+      "paths": [
+        "apps/worker/src/federation",
+        "apps/api/src/modules/federation/delivery",
+        "packages/data/migrations/federation-delivery",
+        "packages/data/src/schema/federation-delivery.ts",
+        "packages/data/src/repositories/federation-delivery.ts",
+        "tests/federation/delivery"
+      ]
+    },
+    {
+      "id": "XCH-005",
+      "title": "Usage policies: purpose, retention, residency, onward sharing and transfer bases",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "XCH-003",
+        "PRV-001"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Attach a signed usage policy to every shared_party delivery and consented item, enforce purpose, retention, residency and onward sharing on the receiving node, and record a transfer basis per peering for personal data classes.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/federation-protocol.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Define the usage policy contract with its closed vocabulary in packages/contracts/src/exchange-policy.ts.",
+        "Evaluate the policy before storing; refuse with federation.policy_unacceptable when it cannot be honoured.",
+        "Enforce purpose at read time through the projection serializers; run retention through the privacy retention jobs; record transfer bases per peering and stop personal data classes without one."
+      ],
+      "acceptance": [
+        "Data received for deal_execution never reaches search, recommendations, analytics or translation memory (negative tests).",
+        "A delivery whose residency excludes the receiving node's country is refused and nothing is stored (test).",
+        "A personal data class without a recorded transfer basis never flows to that peer (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/exchange-policy.ts",
+        "tests/contracts/exchange-policy.test.ts",
+        "apps/api/src/modules/federation/policy",
+        "tests/federation/policy"
+      ]
+    },
+    {
+      "id": "XCH-006",
+      "title": "Cross-hub language negotiation and translation records",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "XCH-002",
+        "PROV-001"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Carry the language of record, translation provenance and labels across nodes, produce reading translations of deal text on the reader's hub under its egress rules, and keep the original authoritative. Integrates with the translation memory package proposed by the editorial office design once it exists.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/localization.md",
+        "docs/engine/communications.md"
+      ],
+      "steps": [
+        "Define the language block and translation record (tag, role, translationOf, method, review, binding always false) in packages/contracts/src/exchange-language.ts.",
+        "Implement reading translations for shared_party text only when the usage policy allows reading_translation and the hub egress policy allows deal_data to its provider; never store them in translation memory.",
+        "Run blocking checks (numbers, currencies, units, dates, identifiers, glossary, do-not-translate) and hide failing translations.",
+        "Record the digest of a translation shown at acceptance next to the agreement digest."
+      ],
+      "acceptance": [
+        "A translation can never be marked binding and never enters an agreement digest (tests).",
+        "A translation whose numbers, units, currencies or dates differ from the original is hidden (test).",
+        "Deal text never reaches a provider without the reading hub's egress rule and never enters translation memory (negative tests)."
+      ],
+      "paths": [
+        "packages/contracts/src/exchange-language.ts",
+        "tests/contracts/exchange-language.test.ts",
+        "apps/api/src/modules/federation/translation",
+        "tests/federation/translation"
+      ]
+    },
+    {
+      "id": "XCH-007",
+      "title": "Cross-border commercial terms contract",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "COM-002",
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Define the optional cross-border terms block for RFQ and quote payloads: trade terms (Incoterms 2020 rule code, version and named place), informational reference rates, tax treatment with rule sources, applicable law and dispute resolution chosen by the parties, consumer or business role, document requirements and export-control declarations.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/commerce.md",
+        "docs/engine/country-specifics.md",
+        "docs/adr/003-snapshots-evidence-and-authority.md"
+      ],
+      "steps": [
+        "Write packages/contracts/src/cross-border.ts with strict schemas and pure validators (rule code set, sea rules need a port, rates as decimal strings with source and time, purpose informational).",
+        "Propose to the integrator the new RFQ and quote payload minor versions that embed the block; existing digests stay unchanged.",
+        "Map fields to UBL Quotation and Order elements in a documented table for exports."
+      ],
+      "acceptance": [
+        "A reference rate can never be used as a settlement value (no such field; test).",
+        "A tax treatment without a rule source is refused (test).",
+        "Payloads without the block produce byte-identical digests to today's (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/cross-border.ts",
+        "tests/contracts/cross-border.test.ts"
+      ]
+    },
+    {
+      "id": "XCH-008",
+      "title": "Cross-hub agreements, orders, documents, signatures and payments",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-004",
+        "XCH-007",
+        "XCH-005",
+        "ESIG-001",
+        "PAY-001",
+        "PRC-012",
+        "BILL-003"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Carry agreements, orders, order events, e-document references and payment evidence between the parties' home nodes with the applicable-rules record, both hubs' disclosed fees, signature levels from each party's pack and payments only through licensed providers.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/commerce.md",
+        "docs/engine/billing.md",
+        "docs/engine/procurement-and-supply.md"
+      ],
+      "steps": [
+        "Implement order and order_event deliveries bound to the agreement digest; budget reservation stays on the buyer's node.",
+        "Record the applicable-rules block, both fee versions shown and each party's signature level at acceptance.",
+        "Exchange e-document references with digests and fetch on demand under the usage policy; select payment providers by the cross-hub rule."
+      ],
+      "acceptance": [
+        "Both nodes hold identical agreement and order digests; nothing on one node authorizes an action on the other (tests).",
+        "Acceptance is impossible until both fee versions, the applicable rules and the language of record were shown (test).",
+        "No record represents money held by a hub or by Trustwork; no currency conversion is computed (tests)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/cross-hub-commerce",
+        "tests/federation/cross-hub-commerce"
+      ]
+    },
+    {
+      "id": "XCH-009",
+      "title": "Cross-hub disputes, appeals and moderation referrals",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "XCH-008",
+        "DISP-001"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Let each hub handle its own participant's dispute and appeal while the parties assemble one evidence package from records both may see on both nodes, refer it to a mediator or the agreed forum, and record outcomes as consented evidence on each home node.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/execution-and-reputation.md"
+      ],
+      "steps": [
+        "Implement dispute_referral deliveries and the joint package assembly with digest verification on both nodes.",
+        "Record outcomes as consented, cited evidence on each subject's home node only."
+      ],
+      "acceptance": [
+        "A hub never decides a case of the other hub's participant (test).",
+        "Packages contain only records both parties may see and verify against both nodes' digests (tests)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/disputes",
+        "tests/federation/disputes"
+      ]
+    },
+    {
+      "id": "XCH-010",
+      "title": "Federated context threads with reading translations",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-004",
+        "XCH-004",
+        "XCH-006"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Let parties on different nodes talk in the thread of their shared context: messages authored on each party's node, delivered as thread messages in context order, notifications created by each node for its own participant, reading translations labelled and the original one click away.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/communications.md"
+      ],
+      "steps": [
+        "Deliver thread_message items with context sequence and previous digest; store them in the context's thread on both nodes.",
+        "Create notifications per node from received messages without private values; never send to the other node's participants' external addresses.",
+        "Show reading translations from XCH-006 with labels and the original."
+      ],
+      "acceptance": [
+        "Non-parties on either node get not found for the thread (negative tests).",
+        "Agent-authored messages are labelled and their text never changes state on the receiver (injection tests).",
+        "Replayed or reordered messages are refused (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/threads",
+        "tests/federation/threads"
+      ]
+    },
+    {
+      "id": "XCH-011",
+      "title": "Passport presentation and verification across hubs",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "REP-002",
+        "XCH-003"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Let a hub verify a passport presentation issued by another hub (key chain, status list, validity, audience) and show it as verified by that hub, without importing raw reviews or recomputing reputation.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/execution-and-reputation.md"
+      ],
+      "steps": [
+        "Accept credential_presentation deliveries and holder-initiated presentations; verify against the issuer node's key chain at issuance time and its status list.",
+        "Display results with the issuer, evidence categories and dates; keep presentations only for the usage policy's purpose and retention."
+      ],
+      "acceptance": [
+        "A revoked or expired credential is shown as such before the next display (test).",
+        "No review text or recomputed score is stored or shown from another hub (negative test).",
+        "Payment never adds, hides or reorders verified credentials (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/passport-verification",
+        "tests/federation/passport-verification"
+      ]
+    },
+    {
+      "id": "XCH-012",
+      "title": "Federated public search with permission intersection",
+      "area": "retrieval",
+      "status": "open",
+      "dependsOn": [
+        "FED-002",
+        "RAG-301",
+        "XCH-003"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Offer an opt-in public query protocol between hubs that returns only public identifiers and snippets, carries no requester identity, ranks locally and inherits the intersection of source audiences.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/adr/007-hybrid-retrieval.md",
+        "docs/engine/search-and-knowledge.md"
+      ],
+      "steps": [
+        "Implement the search endpoint behind the search.public capability with per-peer rate limits.",
+        "Hydrate results from replicas or signed lookups, apply licences, rank under the local ranking statement and apply intersectReplicaAudiences."
+      ],
+      "acceptance": [
+        "No private query or private context is ever sent to a peer (negative tests).",
+        "Results never include shared_party data (test).",
+        "Search is unavailable unless both hubs enable it."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/search",
+        "tests/federation/search"
+      ]
+    },
+    {
+      "id": "XCH-013",
+      "title": "Module interop and version-skew conformance suite",
+      "area": "quality",
+      "status": "open",
+      "dependsOn": [
+        "XCH-003",
+        "FED-004"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Run two simulated nodes at engine versions N and N-1 through every module interop contract and fail the build when a release would break an older supported peer.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/federation-protocol.md"
+      ],
+      "steps": [
+        "Build a two-node harness with fake transport, fake providers and synthetic data only.",
+        "Exercise each interop contract (directory, content, events, matching, procurement, sales, transactions, communications, agents, reputation) across versions."
+      ],
+      "acceptance": [
+        "A deal started before an upgrade completes with identical digests on both nodes after the upgrade (test).",
+        "An essential member that would be lost by down-projection makes the feature unavailable instead of sending a lossy object (test)."
+      ],
+      "paths": [
+        "tests/federation/interop"
+      ]
+    },
+    {
+      "id": "XCH-014",
+      "title": "Compromised hub response, abuse controls and defederation effects",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "FED-001",
+        "XCH-004"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Detect and contain a compromised or abusive peer: revocation and equivocation handling, re-verification and hiding of affected replicas, flags on affected deals, rate limits per peer, kind and principal, and the defederation effects table, with an operator runbook.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Implement equivocation detection and suspension of new signatures from the node; re-verify objects signed in the compromise window.",
+        "Apply rate limits per peer, kind and principal; dead-letter pending deliveries on defederation with notices.",
+        "Write the operator runbook (docs/operations/federation-incidents.md)."
+      ],
+      "acceptance": [
+        "Two successors signed by the same previous key stop acceptance of the node's new signatures (test).",
+        "Accepted agreements are never voided silently; affected parties are notified (test).",
+        "Defederation stops deliveries without rewriting history (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/incidents",
+        "tests/federation/incidents",
+        "docs/operations/federation-incidents.md"
+      ]
+    },
+    {
+      "id": "XCH-015",
+      "title": "Cross-border transfer, residency and lawful-request policy for federation (counsel research)",
+      "area": "compliance",
+      "status": "open",
+      "dependsOn": [],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Prepare, for counsel review, the questions and candidate positions on personal data transfers between nodes (GDPR Chapter V and other regimes), residency rules in the packs, cross-border consumer contracts, sanctions facilitation and foreign lawful requests, so hubs can record transfer bases and policies.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/trust-safety-privacy.md",
+        "docs/engine/country-specifics.md"
+      ],
+      "steps": [
+        "List per example pack the transfer and residency rules with official sources and verification levels.",
+        "Draft the transfer-basis record and the lawful-request handling policy (a node answers only for data it holds; never relays to peers).",
+        "Record counsel questions C1 to C12 of the design with owners and status."
+      ],
+      "acceptance": [
+        "Every rule cites an official source or is marked pending; no legal advice is presented as decided.",
+        "The policy never requires a node to disclose a peer's data."
+      ],
+      "paths": [
+        "docs/legal/federation-transfers.md"
+      ]
+    },
+    {
+      "id": "XCH-016",
+      "title": "Cross-hub deal screens: home-hub labels, both hubs' fees, applicable rules, original and reading translation",
+      "area": "frontend-commerce",
+      "status": "open",
+      "dependsOn": [
+        "XCH-008",
+        "XCH-010",
+        "WEB-004"
+      ],
+      "handbook": "docs/engine/hub-exchange-architecture.md",
+      "goal": "Show participants in a cross-hub deal where each party and object lives, both hubs' fees, the applicable rules and language of record, delivery states, and the original next to a labelled reading translation, in every engine language and accessibly.",
+      "read": [
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/adr/016-hub-exchange-layer.md",
+        "docs/engine/localization.md",
+        "docs/engine/commerce.md"
+      ],
+      "steps": [
+        "Add components under apps/web/components/cross-hub and a cross-hub locale namespace in every engine language, including the reading-translation label.",
+        "Show delivery states and honest unavailable reasons (missing capability, policy refusal, screening pause) without revealing screening details."
+      ],
+      "acceptance": [
+        "Acceptance controls stay disabled until fees, applicable rules and language of record are shown (browser test).",
+        "Every label exists in every engine language; keyboard, screen reader and narrow-screen checks pass.",
+        "No screening finding, private constraint or other hub's private data appears on any screen (negative test)."
+      ],
+      "paths": [
+        "apps/web/components/cross-hub",
+        "tests/web/cross-hub"
       ]
     }
   ]
