@@ -7021,7 +7021,7 @@
       "id": "CTRY-GB",
       "title": "United Kingdom country pack",
       "area": "country-packs",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CTRY-002"
       ],
