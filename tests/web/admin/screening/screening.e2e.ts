@@ -108,7 +108,7 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     await expect(sourceCard.getByRole('heading', {name:'Synthetic local export',exact:true})).toBeVisible();
     await expect(sourceCard.getByText('Synthetic test authority', {exact:true})).toBeVisible();
     await expect(sourceCard.getByText('https://ofac.treasury.gov/synthetic-test-only', {exact:true})).toBeVisible();
-    await expect(configure.getByLabel(c.listControls.source,{exact:true}).locator('option:checked')).toHaveText('Synthetic local export — Synthetic test authority');
+    await expect(configure.getByRole('combobox',{name:c.listControls.source,exact:true}).locator('option:checked')).toHaveText('Synthetic local export — Synthetic test authority');
     await configure.getByLabel(c.reason,{exact:true}).fill('Synthetic browser list source review');
     await configure.getByRole('button').click();
     await expect(page.getByRole('button',{name:c.listControls.approve,exact:true})).toBeDisabled();
