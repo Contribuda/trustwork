@@ -20,6 +20,7 @@ import { SupportModule } from './modules/support/support.module.js';
 import { SupportService } from './modules/support/support.service.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { privacyExportPort } from './privacy-exporters.js';
+import type { PrivacyOwningPorts } from './privacy-module-exporters.js';
 import { PrivacyModule } from './modules/platform-admin/privacy/privacy.module.js';
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
 import { ProvidersModule } from './modules/providers/providers.module.js';
@@ -61,7 +62,7 @@ export class HealthController {
  */
 @Module({})
 export class AppModule {
-  static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured',
+  static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, privacyCompliance: PrivacyOwningPorts['compliance'], files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured',
     communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort, taskFees?: TaskFeePort): DynamicModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
@@ -80,7 +81,7 @@ export class AppModule {
         SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         SupportModule.forRoot(ctx, identity),
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
-        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity, files, { support: (principals) => new SupportService(ctx, principals) })),
+        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity, files, { compliance: privacyCompliance, support: (principals) => new SupportService(ctx, principals) })),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),
