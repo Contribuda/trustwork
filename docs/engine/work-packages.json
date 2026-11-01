@@ -2505,7 +2505,7 @@
       "id": "KEYS-001",
       "title": "Provider connections, secret store, model routes, egress, spending caps and kill switches",
       "area": "providers",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "HUB-001",
         "REL-001"

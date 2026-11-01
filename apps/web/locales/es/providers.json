@@ -1,0 +1,90 @@
+{
+  "providers": {
+    "reasons": {
+      "restricted_place": "Esta conexión procesa o almacena datos en un lugar restringido, por lo que no se puede guardar.",
+      "endpoint_not_allowed": "Esta dirección no está permitida: los proveedores necesitan HTTPS en un host público y una dirección nunca contiene una clave.",
+      "adapter_mode_fake_only": "Este adaptador solo funciona como simulación.",
+      "fake_holds_no_secret": "Las conexiones simuladas nunca guardan un secreto.",
+      "secret_store_unconfigured": "El almacén de secretos aún no tiene una clave de cifrado de claves, así que no se puede guardar ningún secreto.",
+      "secret_required": "Una conexión real con un proveedor necesita su secreto antes de activarse.",
+      "secret_not_found": "No se pudo leer el secreto de su almacén.",
+      "credential_not_active": "La referencia de credencial vinculada no está activa en este hub.",
+      "test_required": "Pruebe la configuración actual antes de activarla.",
+      "test_failed": "La última prueba de conexión no se superó.",
+      "connection_not_enabled": "La conexión no está activada.",
+      "connection_killed": "Un interruptor de emergencia detiene esta conexión; libérelo primero.",
+      "revision_conflict": "Alguien cambió esto mientras tanto. Vuelva a cargar e inténtelo de nuevo.",
+      "invalid_transition": "Este cambio no es posible en el estado actual.",
+      "route_unpinned": "Una ruta activa nombra una revisión exacta del modelo, nunca un alias variable como \"latest\".",
+      "route_connection_unusable": "Cada modelo de la ruta debe estar en una conexión activada de este hub.",
+      "route_outside_residency": "Una ruta para datos no públicos debe permanecer dentro de la residencia de datos del hub.",
+      "route_fallbacks_forbidden": "Las rutas de embeddings y de reordenación no tienen alternativas: los resultados de modelos distintos nunca se mezclan.",
+      "route_public_only": "Las instrucciones para imágenes solo pueden contener datos públicos.",
+      "route_budget_unknown": "El límite de gasto de la ruta no pertenece a este hub.",
+      "drafter_cannot_activate": "Una ruta que puede llevar datos no públicos la activa una persona distinta de quien la redactó.",
+      "egress_training": "Un proveedor que entrena con los datos recibidos nunca recibe datos no públicos.",
+      "egress_broker": "Un intermediario solo transporta datos públicos.",
+      "egress_not_in_residency": "Los datos no públicos solo pueden ir a una conexión que los procese y almacene dentro de la residencia del hub.",
+      "egress_retention": "Los datos no públicos solo pueden ir a un proveedor que no conserva nada (retención cero).",
+      "cap_currency": "Un límite de gasto se fija en la moneda del hub.",
+      "cap_scope_unknown": "El límite nombra algo que no pertenece a este hub.",
+      "kill_engaged": "Este interruptor de emergencia ya está activado.",
+      "kill_not_engaged": "Este interruptor de emergencia no está activado.",
+      "pricing_currency": "La moneda del registro de costo no se acepta aquí.",
+      "adapter_unavailable": "No hay un adaptador para este proveedor instalado en este nodo, así que la conexión no se puede probar.",
+      "decision_unknown": "Esta decisión de llamada es desconocida o ya está cerrada.",
+      "no_active_route": "Ninguna ruta activa atiende esta tarea, así que la llamada se rechaza.",
+      "data_class_not_in_route": "La ruta no está aprobada para este tipo de datos.",
+      "node_killed": "Un interruptor de emergencia detiene todas las llamadas de este nodo.",
+      "route_killed": "Un interruptor de emergencia detiene esta ruta.",
+      "job_killed": "Un interruptor de emergencia detiene esta tarea.",
+      "module_killed": "Un interruptor de emergencia detiene este módulo del agente.",
+      "extension_killed": "Un interruptor de emergencia detiene esta extensión.",
+      "pipeline_killed": "Un interruptor de emergencia detiene este proceso automático.",
+      "egress_denied": "Los datos no pueden salir del nodo hacia esta conexión.",
+      "no_available_connection": "Ninguna conexión de la ruta está disponible para estos datos.",
+      "cap_exhausted": "Se alcanzó un límite de gasto: las nuevas llamadas de pago están bloqueadas.",
+      "currency_mismatch": "El costo de la llamada no está en la moneda del hub.",
+      "allowed": "Permitido.",
+      "no_rule": "Ninguna regla permite esta clase de datos para esta conexión (denegado por defecto).",
+      "denied": "Una regla deniega esta clase de datos para esta conexión.",
+      "killed": "Un interruptor de emergencia detiene esta conexión.",
+      "training": "El proveedor entrena con los datos recibidos.",
+      "broker": "La conexión es un intermediario.",
+      "residency": "La conexión procesa o almacena datos fuera de la residencia del hub.",
+      "retention": "El proveedor conserva los datos recibidos."
+    },
+    "testOutcomes": {
+      "ok": "Superada",
+      "auth_failed": "La clave fue rechazada",
+      "unreachable": "No accesible",
+      "rate_limited": "Límite de frecuencia",
+      "quota_exceeded": "Cuota agotada",
+      "residency_mismatch": "La región contradice la residencia del hub",
+      "model_missing": "Modelo no encontrado",
+      "error": "Error"
+    },
+    "routeScopes": {
+      "job": "Todo uso de esta tarea",
+      "module": "Un módulo del agente",
+      "extension": "Una extensión"
+    },
+    "dataClasses": {
+      "public": "Público",
+      "person_private": "Privado de una persona",
+      "company_private": "Privado de una empresa",
+      "project_restricted": "Restringido a un proyecto",
+      "deal_party_private": "Privado de las partes de un trato"
+    },
+    "secretStatus": {
+      "active": "En uso",
+      "grace": "Clave anterior, aceptada hasta que termine su periodo de gracia",
+      "destroyed": "Destruida"
+    },
+    "capState": {
+      "ok": "Dentro del límite",
+      "alert": "Umbral de alerta alcanzado",
+      "exhausted": "Límite alcanzado: las nuevas llamadas de pago están bloqueadas"
+    }
+  }
+}

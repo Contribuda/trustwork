@@ -78,6 +78,27 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'bookmark.add': IN_TRANSACTION,
   'bookmark.remove': IN_TRANSACTION,
   'reading_progress.record': IN_TRANSACTION,
+  // KEYS-001: provider connections, egress, routes, caps, cost records and kill switches. Every route runs in one
+  // PrincipalService.runAs transaction through a providers_* SECURITY DEFINER command that writes its audit and change-log
+  // rows there (a two-person action without an approval writes the approval request instead). A connection test calls
+  // the adapter inside that transaction with synthetic input only, so a re-run after a crash repeats only a synthetic
+  // probe. The write-only secret route is deliberately not idempotent: a secret value is never stored in a record.
+  'providers.connection_create': IN_TRANSACTION,
+  'providers.connection_update': IN_TRANSACTION,
+  'providers.secret_revoke': IN_TRANSACTION,
+  'providers.connection_test': IN_TRANSACTION,
+  'providers.connection_enable': IN_TRANSACTION,
+  'providers.connection_disable': IN_TRANSACTION,
+  'providers.egress_set': IN_TRANSACTION,
+  'providers.route_draft': IN_TRANSACTION,
+  'providers.route_activate': IN_TRANSACTION,
+  'providers.route_disable': IN_TRANSACTION,
+  'providers.cap_create': IN_TRANSACTION,
+  'providers.cap_update': IN_TRANSACTION,
+  'providers.cap_retire': IN_TRANSACTION,
+  'providers.pricing_record': IN_TRANSACTION,
+  'providers.kill_engage': IN_TRANSACTION,
+  'providers.kill_release': IN_TRANSACTION,
   // Catalogue, needs, RFQs and invitations (COM-001): every route runs in one PrincipalService.runAs transaction (the
   // invitation outbox event included) and returns its result unchanged.
   'offering.create': IN_TRANSACTION,
