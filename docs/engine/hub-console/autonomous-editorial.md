@@ -4,7 +4,7 @@ Status: **Proposed**. Contract: `HubSourceSchema`, `AllowedUsesSchema`, `RobotsC
 
 A new hub must not start from an empty page, and a small editorial team cannot read the whole internet. The editorial office lets model-assisted pipelines do the tireless part (finding sources, checking whether they may be used, fetching, deduplicating, drafting, translating, checking, illustrating, assembling) while people keep every decision that matters: which sources are used, what is published, what the magazine says. The newsroom rules of [publishing](../publishing.md) stay intact: sources are named, dates are honest, corrections are visible, AI assistance is labelled, and **imported items are never published without a person's decision**.
 
-The "agents" of the editorial office are **pipeline stages run by the hub**, configured in the console. They are not participants' agents, have no mandates, no budgets of anyone else, and no presence in the product; the console shows pipelines and stages, never a list of bots.
+The "agents" of the editorial office are **pipeline stages run by the hub**, configured in the console. They are not participants' agents, have no mandates, no budgets of anyone else, and no presence in the product; the console shows pipelines and stages, never a list of bots. The owner decided on 2026-11-01 that administrators get an internal editorial agent team; its roles still run as pipeline stages and hold no publish capability, and the team roster is a staff configuration surface, never participant-facing ([The editorial office](../editorial-office.md#8-the-editorial-agent-team), owner decision E1 pending confirmation of the wording).
 
 ## The flow
 

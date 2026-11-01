@@ -1563,17 +1563,21 @@
       "read": [
         "docs/engine/magazine.md",
         "docs/engine/publishing.md",
-        "docs/design/system/editorial-cards.md"
+        "docs/design/system/editorial-cards.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Wire the news, articles, magazine and publications pages to the API through the DataPort.",
         "Build the PDF layout pipeline as a worker job producing a render artifact per issue revision.",
-        "Keep RSS feeds and rubric pages working from the API."
+        "Keep RSS feeds and rubric pages working from the API.",
+        "Render bylines and labels from the provenance record: editorial authorship, the responsible editor, agent role names, AI-assisted, machine-translation and stale-edition notices (editorial office section 8.5); never a person who did not take part and never \"AI\" as author.",
+        "Emit schema.org NewsArticle or Article JSON-LD with editor, datePublished, dateModified and correction, and a JSON Feed 1.1 beside RSS and Atom, with correction notes and AI disclosures in updated entries."
       ],
       "acceptance": [
         "The magazine is a curated issue; mobile readable; the PDF is inspected page by page in the pull request.",
         "Every page passes keyboard, screen reader and narrow-screen checks in every engine language.",
-        "A corrected publication shows its correction note in web, feed and the next PDF render."
+        "A corrected publication shows its correction note in web, feed and the next PDF render.",
+        "Every image in a rendered page or PDF has alt text or is marked decorative; a rendered byline never names AI as author (tests)."
       ],
       "paths": [
         "apps/web/app/(public)/news",
@@ -1908,14 +1912,16 @@
         "docs/data/model.md",
         "docs/research/market-and-ideas-2026-10.md",
         "docs/engine/agent-catalog.md",
-        "docs/engine/publishing.md"
+        "docs/engine/publishing.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Add knowledge_item, knowledge_consent and template_derivation (packages/data/migrations/knowledge); publication formats diary, lesson, checklist, template and expert answer linked to the source project version.",
         "Require the project owner's consent and each named participant's consent or anonymization; a redaction step strips budgets, prices, addresses, faces and private data of counterparties.",
         "Add a licence per item (for example CC BY 4.0, CC BY-SA 4.0, all rights reserved) shown to readers and carried in exports and federation.",
         "Let a person start a new plan from a published template with attribution; show the formats in the reader and on the project.",
-        "Let diaries and templates link the products actually used to their sourced or claimed pages, with no affiliate fees and no margin-based ordering."
+        "Let diaries and templates link the products actually used to their sourced or claimed pages, with no affiliate fees and no margin-based ordering.",
+        "Send knowledge shares to the editorial office redaction review queue; they are never eligible for a standing publication policy."
       ],
       "acceptance": [
         "Nothing from a private project is published without the owner's publish act and recorded consents (tested).",
@@ -3106,18 +3112,22 @@
       "goal": "Run versioned pipelines on schedules with windows, quotas, retries, alerts, dry runs, pause and resume, using leased jobs in the worker.",
       "read": [
         "docs/engine/hub-console/automation-and-scheduling.md",
-        "docs/data/model.md"
+        "docs/data/model.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Add pipeline, pipeline_version, pipeline_schedule and pipeline_run (packages/data/migrations/pipelines); schedules and the cron evaluator run in the hub time zone.",
         "Implement runs with leasing, fencing, quotas, retry policy and the state machine.",
         "Implement dry runs with no committed effects.",
-        "Implement alerts and automatic pause on source, robots or terms changes."
+        "Implement alerts and automatic pause on source, robots or terms changes.",
+        "Support role-bound stages for the editorial agent team: each stage names its role, and per-role caps are checked before every paid call (editorial office section 8.3).",
+        "Extend dry runs with an editorial preview: collection decisions per host, items and drafts that would be created, and publications a standing policy would have made, without committing any of them."
       ],
       "acceptance": [
         "A dry run commits nothing (tested).",
         "Retries never repeat an external effect with an unknown outcome.",
-        "A kill switch stops queued and running runs."
+        "A kill switch stops queued and running runs.",
+        "An exhausted per-role cap marks queued runs of that role skipped_budget while other roles keep running (test)."
       ],
       "paths": [
         "apps/api/src/modules/pipelines",
@@ -3176,17 +3186,20 @@
       "goal": "Record and show how AI contributed to every publication, translation and image: reader-visible labels naming the responsible human, C2PA manifests and IPTC digital source types on generated images.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/trust-safety-privacy.md"
+        "docs/engine/trust-safety-privacy.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Define a provenance record contract (none, ai_assisted, machine_translated_reviewed, generated) with the responsible person.",
         "Add label strings in every engine language and render them on publications, translations and images.",
-        "Behind an adapter with a fake, attach C2PA manifests with IPTC digitalSourceType to generated or AI-edited images."
+        "Behind an adapter with a fake, attach C2PA manifests with IPTC digitalSourceType to generated or AI-edited images.",
+        "Record agent role names and the responsible editor in the provenance record; the author of automated pieces is the editorial office, never a person and never \"AI\"."
       ],
       "acceptance": [
         "No AI-assisted content renders without a label (tested).",
         "A machine translation stays a draft until a named reviewer approves it.",
-        "Generated images carry trainedAlgorithmicMedia or compositeWithTrainedAlgorithmicMedia."
+        "Generated images carry trainedAlgorithmicMedia or compositeWithTrainedAlgorithmicMedia.",
+        "Machine translations published under a standing policy (EDIT-002, only after the owner confirms decision E3) carry the \"Machine translation, not reviewed\" label and the original-language link; without such a policy a machine translation stays a draft until a named reviewer approves it."
       ],
       "paths": [
         "packages/contracts/src/provenance.ts",
@@ -3202,25 +3215,32 @@
       "status": "open",
       "dependsOn": [
         "PIPE-001",
-        "PROV-001"
+        "PROV-001",
+        "SRC-002"
       ],
       "handbook": "docs/engine/hub-console/autonomous-editorial.md",
       "goal": "Discover and propose sources with recorded legal checks, ingest, deduplicate, cluster stories with multi-source attribution, draft, translate, check facts and similarity, label AI images and fill review queues; people approve every publication.",
       "read": [
         "docs/engine/hub-console/autonomous-editorial.md",
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/publishing.md"
+        "docs/engine/publishing.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Implement discovery and legal checks (robots, terms digest, licence) producing proposals.",
         "Implement ingestion for RSS, Atom, sitemaps and APIs; page crawling only for sources whose checks permit it.",
         "Implement deduplication and story clusters that reference, never copy, source items and list every source with time and link.",
-        "Implement drafting, translation, similarity and fact-check steps behind model routes; display-only sources are excluded from drafting; the review workbench API, calendar and magazine assembly proposals."
+        "Implement drafting, translation, similarity and fact-check steps behind model routes; display-only sources are excluded from drafting; the review workbench API, calendar and magazine assembly proposals.",
+        "Record claim records with evidence spans for every automated draft and add the uncited_claim blocker; order intake by an attention score built only from named, explained signals with no commercial signal (editorial office sections 5.7 and 5.8).",
+        "Quarantine imported text with instruction-like content before any drafting; run every extraction, summary and translation call tool-less with schema-validated output (section 5.5).",
+        "Build query plans from the hub taxonomy, plan-step categories and glossary, never from imported text (section 5.3)."
       ],
       "acceptance": [
         "No code path publishes without a person's approval (tested).",
         "A source whose robots or terms change is paused automatically.",
-        "Every cluster lists all member sources; AI images carry reader and metadata labels."
+        "Every cluster lists all member sources; AI images carry reader and metadata labels.",
+        "A draft with an uncited or contradicted claim cannot be approved; quarantined text never reaches a drafting step (tests).",
+        "Intake order is identical with and without any commercial field (comparison test)."
       ],
       "paths": [
         "apps/api/src/modules/editorial-office",
@@ -3239,7 +3259,8 @@
       "dependsOn": [
         "PIPE-001",
         "CLM-001",
-        "PLAN-000"
+        "PLAN-000",
+        "SRC-002"
       ],
       "handbook": "docs/engine/hub-console/autonomous-editorial.md",
       "goal": "Within the hub's legal basis and each source's licence and robots rules, build sourced manufacturer and supplier pages and index their products, installation guides, data sheets, warranty conditions, training, technical articles and events (ADR 010 decision 19).",
@@ -3247,14 +3268,16 @@
         "docs/research/market-and-ideas-2026-10.md",
         "docs/data/model.md",
         "docs/engine/hub-console/autonomous-editorial.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Add product_entry and learning_resource (packages/data/migrations/manufacturers); tag items with plan-step keys and ETIM classes where licensed.",
         "Crawl only logged-off public pages through sources whose crawl policy allows it, honouring robots.txt and RSL; store facts and links, not full documents, unless licensed; record per-field provenance.",
         "Keep sourced labels until the company claims its page (CLM-001); let claimed manufacturers supply catalogues, guides and training under an explicit licence.",
         "Takedown requests remove the item and propagate tombstones.",
-        "Offer claimed manufacturers a free structured knowledge feed and only aggregate signals (cohorts of at least ten), never who read or specified their products."
+        "Offer claimed manufacturers a free structured knowledge feed and only aggregate signals (cohorts of at least ten), never who read or specified their products.",
+        "Collect only through the shared pre-collection gate (SRC-002) and record its decision per request."
       ],
       "acceptance": [
         "No content is collected behind a login or technical barrier (collector configuration test).",
@@ -3288,13 +3311,15 @@
         "docs/data/model.md",
         "docs/engine/agent-catalog.md",
         "docs/engine/hub-console/autonomous-editorial.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Add recommendation_method_version, recommendation_set, recommendation and sponsored_placement (packages/data/migrations/recommendations).",
         "Match plan items to targets through the shared plan-step taxonomy and structured attributes; semantic recall is added once RAG-301 is done; courses and events come from LRN-001 and EVT-001 when those modules are enabled.",
         "Explain every recommendation (matched step terms, unknowns, source label); sourced items stay labelled sourced until claimed.",
-        "Show sponsored placements only in a separate labelled slot."
+        "Show sponsored placements only in a separate labelled slot.",
+        "Use plan-step tags proposed by the editorial knowledge packager only after an editor approved them."
       ],
       "acceptance": [
         "Recommendation ranks are identical with and without sponsored placements, entitlements and commissions (test).",
@@ -3658,17 +3683,21 @@
       "read": [
         "docs/engine/hub-console/autonomous-editorial.md",
         "docs/engine/hub-console/data-mining.md",
-        "docs/engine/hub-console/screens.md"
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Build the editorial sections including the review workbench with sources beside the draft.",
         "Build datasets, batches, links, knowledge and recommendations, including the sponsored-content policy (off by default).",
-        "Locale namespace for every engine language; Playwright and axe."
+        "Locale namespace for every engine language; Playwright and axe.",
+        "Build the editorial office screens HC-170 to HC-191 and the amendments to HC-40 to HC-49 on fixtures: intake, story board, item detail, fact-check, legal, notices, corrections, glossary, translation memory, languages and reviewers, media, channels, licences, collection jobs with dry-run preview, team roster, role settings with the autonomy matrix, standing policies, team runs, team output review, team costs, analytics and coverage (editorial office section 11)."
       ],
       "acceptance": [
         "No publish control exists outside the review decision.",
         "No merge control exists anywhere; link proposals offer only accept or reject.",
-        "AI labels are visible."
+        "AI labels are visible.",
+        "Locked guard rails render as locked cells with their reason in the autonomy matrix; \"auto-publish allowed\" is selectable only for eligible content classes (test).",
+        "No agent role appears with a human name or portrait (fixture scan)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/editorial",
@@ -4294,7 +4323,8 @@
         "docs/engine/hub-console/user-agents-admin.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/trust-safety-privacy.md",
-        "docs/architecture/retrieval.md"
+        "docs/architecture/retrieval.md",
+        "docs/engine/editorial-office.md"
       ],
       "steps": [
         "Contracts in packages/contracts/src/model-catalog.ts: ModelCatalogEntrySchema (connection, provider model id, description per hub language, capabilities, context window, output and file-size limits, processing regions with their source, retention and training terms, status draft, evaluated, enabled, disabled, retired), ModelVersionPinSchema, ModelEvaluationRunSchema and ModelRolloutSchema; propose the additive model kill-switch scope to the integrator.",
@@ -4302,7 +4332,8 @@
         "Route validation: every model in an active route is an enabled catalogue entry with a pinned revision and limits within its context window; rollback reactivates the previous pin for the next call while in-flight calls finish on their version.",
         "Evaluation before activation: run the EVAL-001 safety suite against the candidate on its route and data classes through the fake adapter, plus a quality check on hub-defined sample sets (public or synthetic data only) with thresholds compared with the version in service; results expire on an engine update or a provider revision change, and a version that fails after an engine release is suspended.",
         "Staged rollout through the LLM-001 route-resolution port: assignment by a deterministic hash of the run or request id, administrator-chosen stages, guard thresholds that stop the rollout and return all calls to the current version; embeddings never canary; reaching 100 percent on a route carrying non-public data needs a second person.",
-        "Aggregates per model version and stage (latency median and 95th percentile, error, fallback, cost and safety-signal rates) and by cohort (participant type, plan, module) with counts under ten suppressed; a preview of every catalogue, pin or rollout change (affected routes and modules, estimated monthly cost)."
+        "Aggregates per model version and stage (latency median and 95th percentile, error, fallback, cost and safety-signal rates) and by cohort (participant type, plan, module) with counts under ten suppressed; a preview of every catalogue, pin or rollout change (affected routes and modules, estimated monthly cost).",
+        "Support per-role sample sets for editorial agent roles; a model version serves an editorial role only after passing that role's sample set and the safety suite."
       ],
       "acceptance": [
         "A route naming a model that is not an enabled catalogue entry, without a pinned revision or with limits above the model's context window cannot be activated (tested).",
@@ -9048,6 +9079,276 @@
       "paths": [
         "apps/api/src/modules/financing-partners",
         "tests/financing-partners"
+      ]
+    },
+    {
+      "id": "SRC-002",
+      "title": "Pre-collection gate: AI-usage signals, TDM reservations, host policy and polite crawling",
+      "area": "content-sources",
+      "status": "open",
+      "dependsOn": [
+        "SRC-001",
+        "PIPE-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Decide before any request leaves the node whether a URL may be fetched and for which uses, combining source status, restricted places, access barriers, robots.txt (RFC 9309), recorded terms, legal basis, licence, RSL, IETF Content-Usage signals and TDMRep reservations, and record the decision with every run.",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/hub-console/automation-and-scheduling.md",
+        "docs/engine/publishing.md"
+      ],
+      "steps": [
+        "Add contracts for the collection decision (allow, deny, wait with reason codes and narrowed allowed uses) and for AI-usage signals and host policy.",
+        "Implement the gate as a pure function plus a worker adapter that fetches and caches robots.txt (at most 24 hours, server errors mean disallow), RSL documents, TDMRep files and Content-Usage headers, each with digests.",
+        "Implement per-host politeness: one concurrent request by default, crawl delay, polite window, backoff on 429 and 503 honouring Retry-After, and a stable bot user agent with a contact page.",
+        "Detect login walls, paywalls and technical barriers and refuse collection behind them; pause the source on any signal digest change; schedule licence expiry re-checks.",
+        "Publish the hub's own outbound content terms as an RSL document."
+      ],
+      "acceptance": [
+        "No request is sent for a URL whose decision is deny (network fake test asserting zero calls).",
+        "Unknown, unparsable or conflicting signals narrow allowed uses to the most restrictive reading (tests).",
+        "A changed robots, terms, RSL or TDMRep digest pauses the source until a person re-checks it."
+      ],
+      "paths": [
+        "packages/contracts/src/collection-policy.ts",
+        "tests/contracts/collection-policy.test.ts",
+        "apps/worker/src/collect",
+        "tests/collection-policy"
+      ]
+    },
+    {
+      "id": "TRN-001",
+      "title": "Translation memory, glossaries and post-editing workflow",
+      "area": "content-automation",
+      "status": "open",
+      "dependsOn": [
+        "CNT-001",
+        "PROV-001",
+        "PIPE-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Give each hub a translation memory, termbases per hub, topic and plan step, a machine translation and post-editing workflow with quality checks, a language-scoped reviewer role and per-locale publish gates, so linked editions are complete, labelled and never silently out of date.",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/localization.md",
+        "docs/engine/publishing.md"
+      ],
+      "steps": [
+        "Add translation_memory_segment, termbase_entry, translation_job and translation_qa_result (packages/data/migrations/translation); add the language-scoped translator-reviewer staff role through the console contract minor version.",
+        "Implement the edition states requested, pretranslated, machine_draft, post_editing, qa_failed, in_review, approved, scheduled, published and stale; the reviewer is never the post-editor.",
+        "Apply TM exact and fuzzy matches (bands 95-99, 85-94, 75-84) before machine translation; only reviewed segments enter TM, credited to the reviewer; text whose licence forbids storing or translating, private data and quarantined text never enter TM.",
+        "Implement blocking QA checks (glossary, do-not-translate, numbers, dates, units, identifiers, links, placeholders, untranslated segments, script) and quality estimation as a routing signal only.",
+        "Mark editions stale when their original is corrected; support TMX and XLIFF 2.1 import and export; remove TM segments on source takedown."
+      ],
+      "acceptance": [
+        "Unreviewed machine output never enters translation memory and never publishes without a named reviewer, except under an active standing policy after the owner confirms decision E3 (tests).",
+        "A correction of an original marks every edition stale and shows the notice in every engine language.",
+        "A segment from a taken-down source disappears from TM and from match results (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/translation.ts",
+        "tests/contracts/translation.test.ts",
+        "apps/api/src/modules/translation",
+        "packages/data/migrations/translation",
+        "packages/data/src/schema/translation.ts",
+        "packages/data/src/repositories/translation.ts",
+        "tests/translation"
+      ]
+    },
+    {
+      "id": "CNT-004",
+      "title": "Reader correction requests, notices, takedowns and statements of reasons",
+      "area": "trust-safety",
+      "status": "open",
+      "dependsOn": [
+        "CNT-001",
+        "SRC-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Let anyone submit a correction request or a notice about content (copyright, licence, legal, privacy, illegal content, source owner removal, right of reply), and let the hub acknowledge, decide, send a statement of reasons, offer a complaint path and apply the effect with tombstones.",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/trust-safety-privacy.md",
+        "docs/engine/modules/trust-safety-privacy-compliance.md"
+      ],
+      "steps": [
+        "Add notice, notice_decision, statement_of_reasons and correction_request (packages/data/migrations/notices) with states received, acknowledged, triaged, decided, reasons_sent, complaint_open and closed.",
+        "Apply upheld decisions through the owning modules' use cases only: hold, correction, unpublishing, source record removal; emit retrieval, translation memory and federation tombstones.",
+        "Expose a public intake form and an acknowledgement; keep notifier identity out of what the affected author sees unless the hub's legal settings require it; aggregate counts for the transparency report."
+      ],
+      "acceptance": [
+        "Every decided notice has a statement of reasons and the decision cites the rule applied (test).",
+        "An upheld source owner removal tombstones the source's records in indexes, translation memory and peers (integration test).",
+        "Notice data never appears in public projections or analytics rows (negative test)."
+      ],
+      "paths": [
+        "packages/contracts/src/notices.ts",
+        "tests/contracts/notices.test.ts",
+        "apps/api/src/modules/notices",
+        "packages/data/migrations/notices",
+        "packages/data/src/schema/notices.ts",
+        "packages/data/src/repositories/notices.ts",
+        "tests/notices"
+      ]
+    },
+    {
+      "id": "CNT-005",
+      "title": "Newsletters and distribution channels",
+      "area": "content-magazine",
+      "status": "open",
+      "dependsOn": [
+        "CNT-003",
+        "COMMS-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Send newsletter editions that reference published versions, with double opt-in, one-click unsubscribe and no tracking pixels, and record the publication state of each item per channel (site, feeds, newsletter, magazine, agent knowledge, peers).",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/communications.md",
+        "docs/engine/magazine.md"
+      ],
+      "steps": [
+        "Add newsletter, newsletter_subscription, newsletter_edition and channel_publication (packages/data/migrations/distribution); editions pin publication versions and refuse an item that lost its approval or was retracted.",
+        "Send through the communications outbox and mail adapter with idempotency keys and one-click unsubscribe (RFC 8058); corrections to sent items appear as notices in the next edition.",
+        "Show per-channel status for every publication and count reads only as suppressed aggregates."
+      ],
+      "acceptance": [
+        "No newsletter contains an open-tracking pixel or a per-recipient tracking parameter (test).",
+        "A retracted or embargoed item cannot be included in an edition (test).",
+        "An unknown send outcome is reconciled, never resent blindly."
+      ],
+      "paths": [
+        "packages/contracts/src/distribution.ts",
+        "tests/contracts/distribution.test.ts",
+        "apps/api/src/modules/distribution",
+        "apps/worker/src/distribution",
+        "packages/data/migrations/distribution",
+        "packages/data/src/schema/distribution.ts",
+        "packages/data/src/repositories/distribution.ts",
+        "tests/distribution"
+      ]
+    },
+    {
+      "id": "MEDIA-001",
+      "title": "Media library with rights, alt text and provenance",
+      "area": "content-sources",
+      "status": "open",
+      "dependsOn": [
+        "FILE-001",
+        "PROV-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Keep every image and file used in content with its rights holder, licence, permitted uses, expiry, credit line, alt text in each hub language, IPTC digital source type, C2PA manifest reference and a where-used list, so a withdrawn or expired licence can be acted on everywhere.",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Add media_asset, media_rights, media_alt_text and media_usage (packages/data/migrations/media) on top of the object storage port.",
+        "Refuse approval of a publication whose images lack alt text (or a decorative mark) or whose licence does not permit the use; alert before licence expiry.",
+        "Keep AI-generated images labelled and block their use in documentary placements (news lead images of real events, company products, project pages)."
+      ],
+      "acceptance": [
+        "Withdrawing an asset lists and replaces or removes every use (test).",
+        "An AI-generated image cannot be attached to a documentary placement (negative test)."
+      ],
+      "paths": [
+        "packages/contracts/src/media.ts",
+        "tests/contracts/media.test.ts",
+        "apps/api/src/modules/media",
+        "packages/data/migrations/media",
+        "packages/data/src/schema/media.ts",
+        "packages/data/src/repositories/media.ts",
+        "tests/media"
+      ]
+    },
+    {
+      "id": "EDIT-002",
+      "title": "Editorial agent team: roles, autonomy per role and content class, and standing publication policies",
+      "area": "content-automation",
+      "status": "open",
+      "dependsOn": [
+        "EDIT-001",
+        "TRN-001",
+        "MODEL-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Implement the owner decision of 2026-11-01: an internal team of AI roles (scout, collector, researcher, writer, fact-checker, translator, post-editor, editor-assistant, layout, designer, illustrator, photo researcher, metadata, distribution, curator, licence, accessibility, corrections watch, knowledge packager) with registry capabilities, model routes, caps, schedules, quality floors and an autonomy level per role and content class, plus standing publication policies for the eligible classes only.",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/capability-registry.md",
+        "docs/engine/hub-console/providers-and-models.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Write ADR 015 (status proposed) on the editorial agent team and standing publication policies and the console contract minor version 1.1.0 (new permissions, second-person actions, roles); no code relies on standing policies before the ADR is accepted.",
+        "Register each role's read and draft capabilities in the capability registry with staff-only surfaces; no role capability has the publication side effect.",
+        "Add editorial_role_settings, standing_publication_policy and role_quality_record (packages/data/migrations/editorial-team); autonomy levels off, draft_only, auto_with_review and auto_publish_allowed per role and content class, with locked classes enforced by schema refinements.",
+        "Let the content module publish an item under a standing policy only when its class, conditions, limits and the policy's activation by a second person hold; record the policy, signer and activator on the publication; sample audits per policy.",
+        "Lower autonomy automatically (never raise it) when a quality floor is crossed, a kill switch is engaged, the model route changes version or the accountable editor-in-chief is gone."
+      ],
+      "acceptance": [
+        "No path publishes news, a first publication, content naming a company or person with a claim, a correction changing a number, name, date or conclusion, or a magazine release without an individual review decision (negative tests).",
+        "A standing policy signed and activated by the same person, expired, or outside its class or limits publishes nothing (tests).",
+        "Bylines of automated pieces name the editorial office, the role names and the responsible editor; no role has a human name or portrait (fixture scan).",
+        "Without a named editor-in-chief every role and standing policy pauses (test)."
+      ],
+      "paths": [
+        "docs/adr/015-editorial-agent-team-and-standing-publication.md",
+        "packages/contracts/src/editorial-team.ts",
+        "tests/contracts/editorial-team.test.ts",
+        "apps/api/src/modules/editorial-team",
+        "apps/worker/src/editorial-team",
+        "packages/data/migrations/editorial-team",
+        "packages/data/src/schema/editorial-team.ts",
+        "packages/data/src/repositories/editorial-team.ts",
+        "tests/editorial-team"
+      ]
+    },
+    {
+      "id": "HUBC-012",
+      "title": "Console live wiring: editorial team, translation, notices, channels and media",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "HUBC-008",
+        "EDIT-002",
+        "TRN-001",
+        "CNT-004",
+        "CNT-005",
+        "MEDIA-001"
+      ],
+      "handbook": "docs/engine/editorial-office.md",
+      "goal": "Wire the editorial office screens added in HUBC-003 (team, standing policies, translation workbench, glossary and memory, notices, corrections, channels, media, licences, collection jobs, analytics and coverage) to the live API.",
+      "read": [
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/engine/hub-console/screens.md"
+      ],
+      "steps": [
+        "Replace the fixture adapter for the new editorial sections with the API adapter, keeping the same contract types.",
+        "Route every second-person action (standing policy activation, autonomy raise, naming the editor-in-chief, legal unpublishing) through the approvals inbox.",
+        "Playwright and axe journeys in at least one non-English language on desktop and phone."
+      ],
+      "acceptance": [
+        "Activating a standing policy or raising a role to auto-publish without a second person is refused against the API.",
+        "Analytics screens render no per-reader or per-staff row (DOM and network scan)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/editorial/team",
+        "apps/web/app/admin/hubs/[hub]/editorial/notices",
+        "apps/web/app/admin/hubs/[hub]/editorial/glossary",
+        "apps/web/app/admin/hubs/[hub]/editorial/memory",
+        "apps/web/app/admin/hubs/[hub]/editorial/media",
+        "apps/web/app/admin/hubs/[hub]/editorial/channels",
+        "tests/web/admin/editorial-live"
       ]
     }
   ]
