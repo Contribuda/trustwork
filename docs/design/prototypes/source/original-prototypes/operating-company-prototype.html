@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hub Operating Company</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#14171c;--muted:#5a6270;--line:#d9dde3;--brand:#1f5fd6;--brand-ink:#fff;--ok:#1d7a46;--warn:#9a5b00;--bad:#b42318;--chip:#eef2f8;--lock:#f3f0e8;--agent:#efe9fb;--agent-ink:#4b2c8f;--focus:#ffbf47}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1216;--panel:#171b21;--ink:#e8ebf0;--muted:#a3abb8;--line:#2c333d;--brand:#6c9cff;--brand-ink:#0b0e12;--ok:#5cc28a;--warn:#e0a84a;--bad:#ff7a6e;--chip:#222934;--lock:#2a2720;--agent:#2a2340;--agent-ink:#c9b6ff}}
+:root[data-theme="dark"]{--bg:#0f1216;--panel:#171b21;--ink:#e8ebf0;--muted:#a3abb8;--line:#2c333d;--brand:#6c9cff;--brand-ink:#0b0e12;--ok:#5cc28a;--warn:#e0a84a;--bad:#ff7a6e;--chip:#222934;--lock:#2a2720;--agent:#2a2340;--agent-ink:#c9b6ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Georgian","Noto Sans Armenian",sans-serif}
+a{color:var(--brand)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.band{background:#5a3e00;color:#fff;padding:6px 16px;font-size:13px}
+.mt{background:var(--chip);color:var(--muted);padding:4px 16px;font-size:12px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700}
+.sq{display:inline-grid;grid-template-columns:repeat(3,8px);gap:2px}.sq i{width:8px;height:8px;background:var(--brand);display:block}
+.acts{color:var(--muted);font-size:13px}
+.hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,button,input{font:inherit}
+select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 120px)}
+nav.side{background:var(--panel);border-right:1px solid var(--line);padding:12px 8px}
+nav.side h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 8px 6px}
+nav.side button{display:block;width:100%;text-align:start;padding:8px 10px;border:0;background:none;color:var(--ink);border-radius:6px;cursor:pointer}
+nav.side button[aria-current="page"]{background:var(--chip);font-weight:600}
+main{padding:18px 20px;max-width:1100px;width:100%}
+h1{font-size:22px;margin:0 0 4px}
+.lede{color:var(--muted);margin:0 0 16px}
+.status{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-inline-start:8px;vertical-align:middle;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+.kpi .v{font-size:22px;font-weight:700}.kpi .l{color:var(--muted);font-size:13px}.kpi .s{color:var(--muted);font-size:12px}
+.btn{border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);padding:8px 14px;border-radius:6px;cursor:pointer}
+.btn.sec{background:transparent;color:var(--brand)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;background:var(--chip);border-radius:999px;padding:1px 8px;font-size:12px}
+.agent{background:var(--agent);color:var(--agent-ink)}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.lock{background:var(--lock);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:6px 0;font-size:14px}
+.lock b{margin-inline-end:6px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:start;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+th{color:var(--muted);font-weight:600;font-size:13px}
+td.num,th.num{text-align:end;font-variant-numeric:tabular-nums}
+.steps{display:flex;gap:6px;flex-wrap:wrap;list-style:none;padding:0;margin:0 0 14px}
+.steps li{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.steps li[aria-current="step"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.steps li.done{color:var(--ok)}
+ul.tree,ul.tree ul{list-style:none;margin:0;padding-inline-start:18px;border-inline-start:2px solid var(--line)}
+ul.tree{padding-inline-start:0;border:0}
+ul.tree li{margin:6px 0}
+.node{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.icon{width:16px;height:16px;display:inline-block;border-radius:3px;background:var(--agent-ink);opacity:.8;transform:rotate(45deg) scale(.7)}
+.pic{width:16px;height:16px;display:inline-block;border-radius:50%;background:var(--brand)}
+.muted{color:var(--muted)}
+.label-ai{font-size:12px;color:var(--agent-ink)}
+.toggle{display:flex;gap:4px}
+.toggle button{padding:4px 10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--chip);font-weight:600}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:0 0 10px;padding:8px 12px}
+legend{font-weight:600;padding:0 4px}
+label{display:inline-flex;gap:6px;align-items:center;margin:4px 12px 4px 0}
+.alert{border-inline-start:4px solid var(--bad);background:var(--panel);padding:8px 12px;margin:8px 0}
+.note{border-inline-start:4px solid var(--brand);background:var(--panel);padding:8px 12px;margin:8px 0}
+.navsel{display:none;margin:8px 16px}.navsel select{max-width:100%}
+@media (max-width:820px){.navsel label{display:block}.layout{grid-template-columns:1fr}nav.side{display:none}.navsel{display:block}main{padding:12px 16px}
+ table.resp thead{display:none} table.resp tr{display:block;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;padding:4px}
+ table.resp td{display:flex;justify-content:space-between;gap:12px;border:0}
+ table.resp td::before{content:attr(data-h);color:var(--muted);font-size:12px} td.num{text-align:end}}
+</style>
+</head>
+<body>
+<div class="band" id="synthetic"></div>
+<div class="mt" id="mtnote" hidden></div>
+<header>
+  <div>
+    <div class="logo"><span class="sq" aria-hidden="true"><i></i><i></i><i></i></span><span id="brand"></span> <span class="muted" id="consoleTitle"></span></div>
+    <div class="acts" id="actsOn"></div>
+  </div>
+  <div class="hdr-right">
+    <label for="lang" id="langLabel"></label>
+    <select id="lang"></select>
+    <select id="theme" aria-label="Theme"><option value="">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select>
+  </div>
+</header>
+<div class="navsel"><label for="navsel" id="navselLabel"></label> <select id="navsel"></select></div>
+<div class="layout">
+  <nav class="side" aria-label="Console" id="sidenav"></nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+<script>
+const LANGS=[['en','English','en-US'],['es','Español','es-US'],['ru','Русский','ru-RU'],['uz','Oʻzbekcha','uz-Latn-UZ'],['ka','ქართული','ka-GE'],['hy','Հայերեն','hy-AM'],['az','Azərbaycanca','az-Latn-AZ']];
+const FN_KEYS=['lead','strat','edit','mkt','outr','cmty','sales','sup','tns','comp','fin','legal','people','qual','cult','res','events','loc','data','ops','proc','anl','fed'];
+
+/* ===== String tables: one per language. English is the reference; others are machine drafts. ===== */
+const S={};
+S.en={
+brand:'Trustwork',consoleTitle:'Hub console',actsOn:'This page acts on: {hub}',hub:'Trustwork San Diego (demo)',
+synthetic:'Prototype on synthetic data for review. No real people, companies, money or agents. Status: Proposed.',
+mtNote:'',langLabel:'Language',navLabel:'Section',
+grpStart:'Start',grpTeam:'Team',grpFunctions:'Function dashboards',
+navJourney:'Become a hub',navTeam:'Functions and org chart',navHandover:'Add a person and hand over',navFinance:'Finance',navMarketing:'Marketing and growth',navQuality:'Quality and standards',
+proposed:'Proposed',
+jTitle:'Become a hub',jLede:'From eligibility to a running company with an agent team and, over time, people in every function.',
+st0:'Eligibility',st1:'Setup wizard',st2:'Launch your team',st3:'Second person',st4:'Running',
+next:'Next',back:'Back',
+e0:'Not in a restricted place; deployment location attested',e1:'Operator and declared owners screened against sanctions lists',e2:'Legal entity recorded',e3:'Counsel engaged for terms, privacy, rules and agent disclosure',e4:'A bookkeeper or accountant chosen',e5:'A second person who can join before real providers and soft launch',
+eChecked:'Checked by the engine',eYours:'Your responsibility; recorded',
+w0:'Setup finished: draft hub, registration closed, every provider is a fake, automation manual.',w1:'Next things: invite a second staff member, record legal documents, register a source, choose a verification recipe, schedule a restore drill, launch your team.',
+pickPreset:'Pick a preset',
+p_solo:'Solo founder',p_solo_d:'One person; demo and setup only. You are accountable for all 23 functions.',
+p_pair:'Founding pair',p_pair_d:'Two people and the agent team. Reaches soft launch and public.',
+p_small:'Small team',p_small_d:'Three to eight people, one owner per group of functions.',
+p_assoc:'Association-run',p_assoc_d:'Volunteer board, a small secretariat and committees as review panels.',
+p_pub:'Publisher-run',p_pub_d:'Strong editorial; sales kept separate from editorial decisions.',
+p_reg:'Regional operator',p_reg_d:'A regional team with one general manager per city hub.',
+cap:'Monthly team cap: {v}',people:'People at start: {n}',
+apply:'Apply as draft and evaluate',
+applied:'Team launched in demo mode: {n} agent roles in {f} functions, each at Draft or Observe. Evaluations passed on synthetic samples.',
+demoModel:'Demo: agents use a fake model and produce labelled synthetic output.',
+s3body:'Real model providers, e-mail and soft launch need a second person. Agents never count as staff.',
+s3invite:'Invite Dana Ortiz as Operations and trust lead',s3done:'Dana Ortiz accepted. Real providers can now be enabled by two people.',
+s4brief:'Daily brief, prepared by the chief of staff agent',
+b0:'Approvals waiting: {n}',b1:'Support queue over target: no',b2:'Budget used this month: {v}',b3:'Launch gates open: {n}',
+tTitle:'Functions and org chart',tLede:'Every function has exactly one accountable person. Agents are labelled and never accountable.',
+viewGrid:'Functions',viewOrg:'Org chart',owner:'Accountable: {name}',agentsN:'Agent roles: {n}',peopleN:'People: {n}',vacant:'Vacant position',hire:'Consider a person: {r}',
+agentTag:'Agent',personTag:'Person',hubOwner:'Hub owner',concentration:'You are accountable for {n} functions.',
+hireR_sup:'queue over target on 10 of 14 days',hireR_cmty:'about 1,000 active members',hireR_fin:'first real revenue',
+lk_agents:'Agents never count as staff, approvers or reviewers.',lk_money:'Trustwork never holds participants\' money. Charges, refunds and payouts go only through the hub\'s licensed payment provider.',lk_neutral:'No price, sponsorship, advertisement or referral reward changes ranking, matching, recommendations or reputation.',lk_cohort:'Groups smaller than 10 are hidden so no one can be singled out.',alwaysOn:'Always on',
+f_lead:'Leadership and chief of staff',f_strat:'Strategy and internal projects',f_edit:'Editorial',f_mkt:'Marketing and growth',f_outr:'Outreach and partnerships',f_cmty:'Community and member success',f_sales:'Sales and commercial',f_sup:'Customer support',f_tns:'Trust and safety',f_comp:'Compliance',f_fin:'Finance and accounting',f_legal:'Legal operations',f_people:'People operations',f_qual:'Quality and standards',f_cult:'Culture and ethics',f_res:'Research and insights',f_events:'Events and learning',f_loc:'Localisation',f_data:'Data stewardship',f_ops:'IT and operations',f_proc:'Procurement for the hub',f_anl:'Analytics and reporting',f_fed:'Federation and network',
+hTitle:'Add a person and hand over',hLede:'Community and member success: invite a community lead and hand over agent duties without a gap.',
+h0:'Invite',h1:'Duties',h2:'Preview',h3:'Approve',h4:'Shadow',h5:'Cut-over',
+invitee:'Invitee',position:'Position',posCmty:'Community lead',rolesNeeded:'Staff roles requested: editor (until the community lead role exists)',sendInvite:'Send invitation (expires in 7 days)',accepted:'Sam Lee accepted the invitation and enrolled a second factor.',
+r_onb:'Onboarding guide agent',r_champ:'Champions coordinator agent',r_ans:'Community answers drafter agent',
+c_shadow:'Start shadowing',c_sup:'Become reviewer',c_take:'Take over the work',
+diffWhat:'Change',before:'Before',after:'After',d_rev:'Reviews the queue',d_acc:'Accountable person',d_aut:'Agent autonomy',d_gr:'Grants',unchanged:'Unchanged',draft:'Draft',observe:'Observe',items:'{n} open review items move to Sam Lee',
+needSecond:'No second person needed: community is not a sensitive function. The function owner confirms.',confirm:'Confirm hand-over',
+shadowDays:'Shadow period: {n} working days',practice:'Practice decisions are visible only to you and are never applied or used to evaluate you.',practiceDemo:'Sam Lee recorded 6 practice decisions this week.',
+cutover:'Cut over now',done:'Done. Sam Lee is accountable for the champions coordinator duty; the agent continues at Draft. A 30-day check is scheduled for {d}.',restart:'Start again',
+fiTitle:'Finance',fiLede:'The hub\'s own books. Every figure is a provider record or an operator entry, labelled with its source.',
+k_rec:'Received through the payment provider this month',k_pay:'Payout batches waiting for release',k_unrec:'Unreconciled items',k_model:'Model costs this month',src_prov:'Source: payment provider records',src_op:'Source: operator entries',src_meter:'Source: model provider usage reports',
+flows:'Recent provider-recorded flows',col_date:'Date',col_desc:'Description',col_src:'Source',col_amt:'Amount',col_state:'State',
+fl0:'Subscription plan payments (company accounts)',fl1:'Event tickets, payout to organizer',fl2:'Refund requested by participant',fl3:'Model provider invoice',
+stRec:'Reconciled',stUnk:'Unknown outcome: in reconciliation',stWait:'Waiting for release by two people',
+budget:'Budget by function this month',col_fn:'Function',col_cap:'Cap',col_used:'Used',
+prepared:'Prepared by the bookkeeping agent (AI). Reviewed by: Alex Kim.',release:'Release goes to Plans and payments and needs a second person.',
+mTitle:'Marketing and growth',mLede:'The hub promotes itself honestly. Every promoted item is labelled; nothing sells position.',
+campaigns:'Campaign drafts',cmp0:'Spring meetup series in San Diego',cmp1:'Magazine: winter concreting guide',cmp2:'Sponsored: tool library partner',
+lbAI:'Prepared by the content marketing agent (AI)',lbSpons:'Sponsored',lbAd:'Ad',chkOk:'Ads policy check passed',waitAppr:'Waiting for a person\'s approval',
+tryBad:'Try a request that breaks the rules',badReq:'Draft an ad: "Pay to appear first in contractor search"',refused:'Refused by the ads policy gate: advertising may promote the hub itself, never ranking, matching, recommendations, reputation or badges.',
+referral:'Referral programme (terms version 1, disclosed)',ref0:'Reward: platform credit, the same for everyone',ref1:'Referrers disclose the incentive when they recommend the hub',refCohort:'Members who joined through referrals this month: {n}',
+qTitle:'Quality and standards',qLede:'Where disputes and defects arise, as cohorts only. No company or person is named.',
+cohorts:'Cohorts by trade, San Diego County, last 12 months',col_trade:'Trade',col_done:'Completed tasks',col_disp:'Disputes per 100',col_rep:'Repeat defects',
+tr0:'Concrete and foundations',tr1:'Roofing',tr2:'Electrical',tr3:'Drywall and finishing',tr4:'Solar installation',fewer:'fewer than 10',
+guides:'Standards guides in the editorial pipeline',g0:'Moisture checks before flooring',g1:'Roof underlayment in coastal wind zones',
+recog:'Recognition programme: decided by a panel with declared conflicts; free; never changes ranking or reputation.',
+prepQ:'Prepared by the quality analyst agent (AI)'
+};
+S.es={
+brand:'Trustwork',consoleTitle:'Consola del hub',actsOn:'Esta página actúa sobre: {hub}',hub:'Trustwork San Diego (demo)',
+synthetic:'Prototipo con datos sintéticos para revisión. No hay personas, empresas, dinero ni agentes reales. Estado: Propuesto.',
+mtNote:'Traducción borrador automática; necesita revisión nativa.',langLabel:'Idioma',navLabel:'Sección',
+grpStart:'Inicio',grpTeam:'Equipo',grpFunctions:'Paneles de funciones',
+navJourney:'Convertirse en hub',navTeam:'Funciones y organigrama',navHandover:'Añadir una persona y traspasar',navFinance:'Finanzas',navMarketing:'Marketing y crecimiento',navQuality:'Calidad y normas',
+proposed:'Propuesto',
+jTitle:'Convertirse en hub',jLede:'De la elegibilidad a una empresa en marcha con un equipo de agentes y, con el tiempo, personas en cada función.',
+st0:'Elegibilidad',st1:'Asistente de configuración',st2:'Lanzar el equipo',st3:'Segunda persona',st4:'En marcha',
+next:'Siguiente',back:'Atrás',
+e0:'No está en un lugar restringido; ubicación del despliegue declarada',e1:'Operador y propietarios declarados verificados en listas de sanciones',e2:'Entidad legal registrada',e3:'Asesoría legal contratada para términos, privacidad, normas y aviso de agentes',e4:'Contable o asesor contable elegido',e5:'Una segunda persona que pueda unirse antes de proveedores reales y del lanzamiento suave',
+eChecked:'Verificado por el motor',eYours:'Su responsabilidad; queda registrado',
+w0:'Configuración terminada: hub en borrador, registro cerrado, todos los proveedores son simulados, automatización manual.',w1:'Siguientes pasos: invitar a un segundo miembro del personal, registrar documentos legales, registrar una fuente, elegir una receta de verificación, programar un simulacro de restauración, lanzar el equipo.',
+pickPreset:'Elija un preajuste',
+p_solo:'Fundador en solitario',p_solo_d:'Una persona; solo demo y configuración. Usted responde de las 23 funciones.',
+p_pair:'Pareja fundadora',p_pair_d:'Dos personas y el equipo de agentes. Llega al lanzamiento suave y público.',
+p_small:'Equipo pequeño',p_small_d:'De tres a ocho personas, un responsable por grupo de funciones.',
+p_assoc:'Gestionado por una asociación',p_assoc_d:'Junta voluntaria, una pequeña secretaría y comités como paneles de revisión.',
+p_pub:'Gestionado por una editorial',p_pub_d:'Redacción fuerte; ventas separadas de las decisiones editoriales.',
+p_reg:'Operador regional',p_reg_d:'Un equipo regional con un director general por hub de ciudad.',
+cap:'Límite mensual del equipo: {v}',people:'Personas al inicio: {n}',
+apply:'Aplicar como borrador y evaluar',
+applied:'Equipo lanzado en modo demo: {n} roles de agente en {f} funciones, cada uno en Borrador u Observar. Evaluaciones superadas con muestras sintéticas.',
+demoModel:'Demo: los agentes usan un modelo simulado y producen resultados sintéticos etiquetados.',
+s3body:'Los proveedores de modelos reales, el correo y el lanzamiento suave necesitan una segunda persona. Los agentes nunca cuentan como personal.',
+s3invite:'Invitar a Dana Ortiz como responsable de operaciones y confianza',s3done:'Dana Ortiz aceptó. Ahora dos personas pueden activar proveedores reales.',
+s4brief:'Resumen diario, preparado por el agente jefe de gabinete',
+b0:'Aprobaciones pendientes: {n}',b1:'Cola de soporte por encima del objetivo: no',b2:'Presupuesto usado este mes: {v}',b3:'Puertas de lanzamiento abiertas: {n}',
+tTitle:'Funciones y organigrama',tLede:'Cada función tiene exactamente una persona responsable. Los agentes están etiquetados y nunca son responsables.',
+viewGrid:'Funciones',viewOrg:'Organigrama',owner:'Responsable: {name}',agentsN:'Roles de agente: {n}',peopleN:'Personas: {n}',vacant:'Puesto vacante',hire:'Considere una persona: {r}',
+agentTag:'Agente',personTag:'Persona',hubOwner:'Titular del hub',concentration:'Usted es responsable de {n} funciones.',
+hireR_sup:'cola por encima del objetivo 10 de 14 días',hireR_cmty:'unos 1.000 miembros activos',hireR_fin:'primeros ingresos reales',
+lk_agents:'Los agentes nunca cuentan como personal, aprobadores ni revisores.',lk_money:'Trustwork nunca retiene el dinero de los participantes. Cobros, reembolsos y pagos pasan solo por el proveedor de pagos autorizado del hub.',lk_neutral:'Ningún precio, patrocinio, anuncio ni recompensa por referidos cambia el orden, las coincidencias, las recomendaciones ni la reputación.',lk_cohort:'Los grupos de menos de 10 se ocultan para que nadie pueda ser identificado.',alwaysOn:'Siempre activo',
+f_lead:'Dirección y jefatura de gabinete',f_strat:'Estrategia y proyectos internos',f_edit:'Redacción',f_mkt:'Marketing y crecimiento',f_outr:'Contacto y alianzas',f_cmty:'Comunidad y éxito de miembros',f_sales:'Ventas y comercial',f_sup:'Atención al cliente',f_tns:'Confianza y seguridad',f_comp:'Cumplimiento',f_fin:'Finanzas y contabilidad',f_legal:'Operaciones legales',f_people:'Personas',f_qual:'Calidad y normas',f_cult:'Cultura y ética',f_res:'Investigación',f_events:'Eventos y formación',f_loc:'Localización',f_data:'Gestión de datos',f_ops:'TI y operaciones',f_proc:'Compras del hub',f_anl:'Analítica e informes',f_fed:'Federación y red',
+hTitle:'Añadir una persona y traspasar',hLede:'Comunidad y éxito de miembros: invitar a una responsable de comunidad y traspasar tareas de agentes sin vacíos.',
+h0:'Invitar',h1:'Tareas',h2:'Vista previa',h3:'Aprobar',h4:'Acompañamiento',h5:'Cambio',
+invitee:'Persona invitada',position:'Puesto',posCmty:'Responsable de comunidad',rolesNeeded:'Roles de personal solicitados: editor (hasta que exista el rol de responsable de comunidad)',sendInvite:'Enviar invitación (caduca en 7 días)',accepted:'Sam Lee aceptó la invitación y activó un segundo factor.',
+r_onb:'Agente guía de incorporación',r_champ:'Agente coordinador de embajadores',r_ans:'Agente redactor de respuestas de la comunidad',
+c_shadow:'Empezar acompañamiento',c_sup:'Ser revisora',c_take:'Asumir el trabajo',
+diffWhat:'Cambio',before:'Antes',after:'Después',d_rev:'Revisa la cola',d_acc:'Persona responsable',d_aut:'Autonomía del agente',d_gr:'Permisos',unchanged:'Sin cambios',draft:'Borrador',observe:'Observar',items:'{n} elementos de revisión abiertos pasan a Sam Lee',
+needSecond:'No se necesita una segunda persona: comunidad no es una función sensible. Confirma la persona responsable de la función.',confirm:'Confirmar traspaso',
+shadowDays:'Periodo de acompañamiento: {n} días laborables',practice:'Las decisiones de práctica solo las ve usted; nunca se aplican ni se usan para evaluarle.',practiceDemo:'Sam Lee registró 6 decisiones de práctica esta semana.',
+cutover:'Hacer el cambio ahora',done:'Hecho. Sam Lee es responsable de la tarea del coordinador de embajadores; el agente sigue en Borrador. Revisión a 30 días programada para el {d}.',restart:'Empezar de nuevo',
+fiTitle:'Finanzas',fiLede:'Las cuentas propias del hub. Cada cifra es un registro del proveedor o un asiento del operador, con su fuente.',
+k_rec:'Recibido a través del proveedor de pagos este mes',k_pay:'Lotes de pago pendientes de liberación',k_unrec:'Partidas sin conciliar',k_model:'Costes de modelos este mes',src_prov:'Fuente: registros del proveedor de pagos',src_op:'Fuente: asientos del operador',src_meter:'Fuente: informes de uso del proveedor de modelos',
+flows:'Movimientos recientes registrados por el proveedor',col_date:'Fecha',col_desc:'Descripción',col_src:'Fuente',col_amt:'Importe',col_state:'Estado',
+fl0:'Pagos de planes de suscripción (cuentas de empresa)',fl1:'Entradas de evento, pago al organizador',fl2:'Reembolso solicitado por un participante',fl3:'Factura del proveedor de modelos',
+stRec:'Conciliado',stUnk:'Resultado desconocido: en conciliación',stWait:'Pendiente de liberación por dos personas',
+budget:'Presupuesto por función este mes',col_fn:'Función',col_cap:'Límite',col_used:'Usado',
+prepared:'Preparado por el agente de contabilidad (IA). Revisado por: Alex Kim.',release:'La liberación se hace en Planes y pagos y necesita una segunda persona.',
+mTitle:'Marketing y crecimiento',mLede:'El hub se promociona con honestidad. Todo lo promocionado está etiquetado; nada vende posiciones.',
+campaigns:'Borradores de campañas',cmp0:'Serie de encuentros de primavera en San Diego',cmp1:'Revista: guía de hormigonado en invierno',cmp2:'Patrocinado: socio de biblioteca de herramientas',
+lbAI:'Preparado por el agente de marketing de contenidos (IA)',lbSpons:'Patrocinado',lbAd:'Anuncio',chkOk:'Control de política publicitaria superado',waitAppr:'Pendiente de aprobación de una persona',
+tryBad:'Probar una solicitud que rompe las reglas',badReq:'Redactar un anuncio: «Pague para aparecer primero en la búsqueda de contratistas»',refused:'Rechazado por el control de publicidad: la publicidad puede promocionar el propio hub, nunca el orden, las coincidencias, las recomendaciones, la reputación ni las insignias.',
+referral:'Programa de referidos (versión de términos 1, publicada)',ref0:'Recompensa: crédito de plataforma, igual para todos',ref1:'Quien recomienda declara el incentivo al recomendar el hub',refCohort:'Miembros que se unieron por referidos este mes: {n}',
+qTitle:'Calidad y normas',qLede:'Dónde surgen disputas y defectos, solo por cohortes. No se nombra a ninguna empresa ni persona.',
+cohorts:'Cohortes por oficio, condado de San Diego, últimos 12 meses',col_trade:'Oficio',col_done:'Tareas completadas',col_disp:'Disputas por 100',col_rep:'Defectos repetidos',
+tr0:'Hormigón y cimentación',tr1:'Cubiertas',tr2:'Electricidad',tr3:'Tabiquería y acabados',tr4:'Instalación solar',fewer:'menos de 10',
+guides:'Guías de normas en el flujo editorial',g0:'Control de humedad antes del suelo',g1:'Subcapa de cubierta en zonas costeras con viento',
+recog:'Programa de reconocimiento: lo decide un panel con conflictos declarados; gratuito; nunca cambia el orden ni la reputación.',
+prepQ:'Preparado por el agente analista de calidad (IA)'
+};
+S.ru={
+brand:'Строй Репутация',consoleTitle:'Консоль хаба',actsOn:'Эта страница действует для: {hub}',hub:'Trustwork Сан-Диего (демо)',
+synthetic:'Прототип на синтетических данных для обсуждения. Реальных людей, компаний, денег и агентов нет. Статус: Предложено.',
+mtNote:'Машинный черновик перевода; требуется проверка носителем языка.',langLabel:'Язык',navLabel:'Раздел',
+grpStart:'Начало',grpTeam:'Команда',grpFunctions:'Панели функций',
+navJourney:'Стать хабом',navTeam:'Функции и оргструктура',navHandover:'Добавить человека и передать работу',navFinance:'Финансы',navMarketing:'Маркетинг и рост',navQuality:'Качество и стандарты',
+proposed:'Предложено',
+jTitle:'Стать хабом',jLede:'От проверки допуска до работающей компании с командой агентов и со временем людьми в каждой функции.',
+st0:'Допуск',st1:'Мастер настройки',st2:'Запуск команды',st3:'Второй человек',st4:'Работа',
+next:'Далее',back:'Назад',
+e0:'Не в запрещённой территории; место размещения заявлено',e1:'Оператор и заявленные владельцы проверены по санкционным спискам',e2:'Юридическое лицо записано',e3:'Привлечён юрист для условий, конфиденциальности, правил и раскрытия агентов',e4:'Выбран бухгалтер',e5:'Есть второй человек, который присоединится до реальных провайдеров и мягкого запуска',
+eChecked:'Проверяется движком',eYours:'Ваша ответственность; фиксируется',
+w0:'Настройка завершена: хаб-черновик, регистрация закрыта, все провайдеры имитационные, автоматизация вручную.',w1:'Дальше: пригласить второго сотрудника, записать юридические документы, зарегистрировать источник, выбрать рецепт проверки, запланировать учения по восстановлению, запустить команду.',
+pickPreset:'Выберите набор',
+p_solo:'Основатель в одиночку',p_solo_d:'Один человек; только демо и настройка. Вы отвечаете за все 23 функции.',
+p_pair:'Пара основателей',p_pair_d:'Два человека и команда агентов. Доходит до мягкого и публичного запуска.',
+p_small:'Небольшая команда',p_small_d:'От трёх до восьми человек, один ответственный на группу функций.',
+p_assoc:'Под управлением ассоциации',p_assoc_d:'Совет из волонтёров, небольшой секретариат и комитеты как панели проверки.',
+p_pub:'Под управлением издателя',p_pub_d:'Сильная редакция; продажи отделены от редакционных решений.',
+p_reg:'Региональный оператор',p_reg_d:'Региональная команда и генеральный менеджер в каждом городском хабе.',
+cap:'Месячный лимит команды: {v}',people:'Людей на старте: {n}',
+apply:'Применить как черновик и проверить',
+applied:'Команда запущена в демо-режиме: {n} ролей агентов в {f} функциях, каждая на уровне «Черновик» или «Наблюдение». Проверки на синтетических примерах пройдены.',
+demoModel:'Демо: агенты используют имитационную модель и выдают помеченные синтетические результаты.',
+s3body:'Реальные провайдеры моделей, почта и мягкий запуск требуют второго человека. Агенты никогда не считаются сотрудниками.',
+s3invite:'Пригласить Дану Ортис руководителем операций и доверия',s3done:'Дана Ортис приняла приглашение. Теперь два человека могут включить реальных провайдеров.',
+s4brief:'Ежедневная сводка от агента руководителя аппарата',
+b0:'Ожидают одобрения: {n}',b1:'Очередь поддержки выше цели: нет',b2:'Бюджет израсходован в этом месяце: {v}',b3:'Открытых условий запуска: {n}',
+tTitle:'Функции и оргструктура',tLede:'У каждой функции ровно один ответственный человек. Агенты помечены и никогда не бывают ответственными.',
+viewGrid:'Функции',viewOrg:'Оргструктура',owner:'Ответственный: {name}',agentsN:'Ролей агентов: {n}',peopleN:'Людей: {n}',vacant:'Вакантная позиция',hire:'Стоит взять человека: {r}',
+agentTag:'Агент',personTag:'Человек',hubOwner:'Владелец хаба',concentration:'Вы отвечаете за {n} функций.',
+hireR_sup:'очередь выше цели 10 дней из 14',hireR_cmty:'около 1 000 активных участников',hireR_fin:'первая реальная выручка',
+lk_agents:'Агенты никогда не считаются сотрудниками, одобряющими или проверяющими.',lk_money:'Trustwork никогда не держит деньги участников. Платежи, возвраты и выплаты идут только через лицензированного платёжного провайдера хаба.',lk_neutral:'Никакая цена, спонсорство, реклама или реферальное вознаграждение не меняют ранжирование, подбор, рекомендации и репутацию.',lk_cohort:'Группы меньше 10 скрыты, чтобы никого нельзя было выделить.',alwaysOn:'Всегда включено',
+f_lead:'Руководство и аппарат',f_strat:'Стратегия и внутренние проекты',f_edit:'Редакция',f_mkt:'Маркетинг и рост',f_outr:'Привлечение и партнёрства',f_cmty:'Сообщество и успех участников',f_sales:'Продажи',f_sup:'Поддержка',f_tns:'Доверие и безопасность',f_comp:'Комплаенс',f_fin:'Финансы и учёт',f_legal:'Юридические операции',f_people:'Работа с персоналом',f_qual:'Качество и стандарты',f_cult:'Культура и этика',f_res:'Исследования',f_events:'События и обучение',f_loc:'Локализация',f_data:'Управление данными',f_ops:'ИТ и эксплуатация',f_proc:'Закупки хаба',f_anl:'Аналитика и отчёты',f_fed:'Федерация и сеть',
+hTitle:'Добавить человека и передать работу',hLede:'Сообщество и успех участников: пригласить руководителя сообщества и передать задачи агентов без разрыва ответственности.',
+h0:'Приглашение',h1:'Задачи',h2:'Предпросмотр',h3:'Подтверждение',h4:'Сопровождение',h5:'Переключение',
+invitee:'Приглашённый',position:'Позиция',posCmty:'Руководитель сообщества',rolesNeeded:'Запрошенные роли: editor (пока нет роли руководителя сообщества)',sendInvite:'Отправить приглашение (действует 7 дней)',accepted:'Сэм Ли принял приглашение и подключил второй фактор.',
+r_onb:'Агент сопровождения новичков',r_champ:'Агент координации амбассадоров',r_ans:'Агент подготовки ответов сообществу',
+c_shadow:'Начать сопровождение',c_sup:'Стать проверяющим',c_take:'Взять работу на себя',
+diffWhat:'Изменение',before:'До',after:'После',d_rev:'Проверяет очередь',d_acc:'Ответственный',d_aut:'Автономность агента',d_gr:'Права',unchanged:'Без изменений',draft:'Черновик',observe:'Наблюдение',items:'{n} открытых элементов проверки переходят к Сэму Ли',
+needSecond:'Второй человек не нужен: сообщество не относится к чувствительным функциям. Подтверждает ответственный за функцию.',confirm:'Подтвердить передачу',
+shadowDays:'Период сопровождения: {n} рабочих дней',practice:'Учебные решения видите только вы; они не применяются и не используются для вашей оценки.',practiceDemo:'Сэм Ли записал 6 учебных решений на этой неделе.',
+cutover:'Переключить сейчас',done:'Готово. Сэм Ли отвечает за задачу координации амбассадоров; агент продолжает на уровне «Черновик». Проверка через 30 дней назначена на {d}.',restart:'Начать заново',
+fiTitle:'Финансы',fiLede:'Собственный учёт хаба. Каждая цифра — запись провайдера или запись оператора с указанием источника.',
+k_rec:'Получено через платёжного провайдера в этом месяце',k_pay:'Пакеты выплат ждут выпуска',k_unrec:'Несверенные позиции',k_model:'Расходы на модели в этом месяце',src_prov:'Источник: записи платёжного провайдера',src_op:'Источник: записи оператора',src_meter:'Источник: отчёты провайдера моделей',
+flows:'Последние движения по записям провайдера',col_date:'Дата',col_desc:'Описание',col_src:'Источник',col_amt:'Сумма',col_state:'Состояние',
+fl0:'Оплаты подписок (аккаунты компаний)',fl1:'Билеты на событие, выплата организатору',fl2:'Возврат по запросу участника',fl3:'Счёт провайдера моделей',
+stRec:'Сверено',stUnk:'Исход неизвестен: на сверке',stWait:'Ждёт выпуска двумя людьми',
+budget:'Бюджет по функциям в этом месяце',col_fn:'Функция',col_cap:'Лимит',col_used:'Израсходовано',
+prepared:'Подготовлено агентом учёта (ИИ). Проверил: Алекс Ким.',release:'Выпуск выполняется в разделе «Планы и платежи» и требует второго человека.',
+mTitle:'Маркетинг и рост',mLede:'Хаб продвигает себя честно. Всё продвигаемое помечено; ничего не продаёт позиции.',
+campaigns:'Черновики кампаний',cmp0:'Весенняя серия встреч в Сан-Диего',cmp1:'Журнал: руководство по зимнему бетонированию',cmp2:'Спонсорское: партнёр библиотеки инструментов',
+lbAI:'Подготовлено агентом контент-маркетинга (ИИ)',lbSpons:'Спонсорское',lbAd:'Реклама',chkOk:'Проверка рекламной политики пройдена',waitAppr:'Ждёт одобрения человека',
+tryBad:'Попробовать запрос, нарушающий правила',badReq:'Составить рекламу: «Заплатите, чтобы быть первым в поиске подрядчиков»',refused:'Отклонено рекламным фильтром: реклама может продвигать сам хаб, но никогда ранжирование, подбор, рекомендации, репутацию или значки.',
+referral:'Реферальная программа (условия, версия 1, опубликованы)',ref0:'Вознаграждение: кредиты платформы, одинаковые для всех',ref1:'Рекомендующие раскрывают вознаграждение, когда рекомендуют хаб',refCohort:'Участников, пришедших по рекомендациям в этом месяце: {n}',
+qTitle:'Качество и стандарты',qLede:'Где возникают споры и дефекты — только по когортам. Ни одна компания и ни один человек не названы.',
+cohorts:'Когорты по специальностям, округ Сан-Диего, последние 12 месяцев',col_trade:'Специальность',col_done:'Выполненные задачи',col_disp:'Споров на 100',col_rep:'Повторные дефекты',
+tr0:'Бетон и фундаменты',tr1:'Кровля',tr2:'Электрика',tr3:'Гипсокартон и отделка',tr4:'Солнечные установки',fewer:'меньше 10',
+guides:'Руководства по стандартам в редакционном процессе',g0:'Проверка влажности перед укладкой пола',g1:'Подкровельный слой в прибрежных ветровых зонах',
+recog:'Программа признания: решает панель с заявленными конфликтами интересов; бесплатно; никогда не меняет ранжирование и репутацию.',
+prepQ:'Подготовлено агентом-аналитиком качества (ИИ)'
+};
+S.uz={
+brand:'Trustwork',consoleTitle:'Hub konsoli',actsOn:'Bu sahifa amal qiladi: {hub}',hub:'Trustwork San-Diego (demo)',
+synthetic:'Koʻrib chiqish uchun sintetik maʼlumotlardagi prototip. Haqiqiy odamlar, kompaniyalar, pul yoki agentlar yoʻq. Holat: Taklif.',
+mtNote:'Mashina tarjimasi qoralamasi; ona tilida soʻzlashuvchi tekshiruvi kerak.',langLabel:'Til',navLabel:'Boʻlim',
+grpStart:'Boshlash',grpTeam:'Jamoa',grpFunctions:'Funksiya panellari',
+navJourney:'Hub boʻlish',navTeam:'Funksiyalar va tashkiliy tuzilma',navHandover:'Odam qoʻshish va ishni topshirish',navFinance:'Moliya',navMarketing:'Marketing va oʻsish',navQuality:'Sifat va standartlar',
+proposed:'Taklif',
+jTitle:'Hub boʻlish',jLede:'Muvofiqlikdan agentlar jamoasi bilan ishlayotgan kompaniyagacha, vaqt oʻtib har bir funksiyada odamlar bilan.',
+st0:'Muvofiqlik',st1:'Sozlash ustasi',st2:'Jamoani ishga tushirish',st3:'Ikkinchi odam',st4:'Ishlamoqda',
+next:'Keyingi',back:'Orqaga',
+e0:'Cheklangan hududda emas; joylashuv joyi tasdiqlangan',e1:'Operator va eʼlon qilingan egalar sanksiya roʻyxatlari boʻyicha tekshirilgan',e2:'Yuridik shaxs qayd etilgan',e3:'Shartlar, maxfiylik, qoidalar va agentlarni oshkor qilish uchun yurist jalb qilingan',e4:'Buxgalter tanlangan',e5:'Haqiqiy provayderlar va yumshoq ishga tushirishdan oldin qoʻshiladigan ikkinchi odam',
+eChecked:'Dvigatel tekshiradi',eYours:'Sizning masʼuliyatingiz; qayd etiladi',
+w0:'Sozlash tugadi: qoralama hub, roʻyxatdan oʻtish yopiq, barcha provayderlar soxta, avtomatlashtirish qoʻlda.',w1:'Keyingi qadamlar: ikkinchi xodimni taklif qilish, yuridik hujjatlarni qayd etish, manbani roʻyxatga olish, tekshirish retseptini tanlash, tiklash mashqini rejalashtirish, jamoani ishga tushirish.',
+pickPreset:'Toʻplamni tanlang',
+p_solo:'Yakka asoschi',p_solo_d:'Bir kishi; faqat demo va sozlash. Siz barcha 23 funksiya uchun javobgarsiz.',
+p_pair:'Asoschilar juftligi',p_pair_d:'Ikki kishi va agentlar jamoasi. Yumshoq va ommaviy ishga tushirishgacha yetadi.',
+p_small:'Kichik jamoa',p_small_d:'Uchdan sakkiz kishigacha, har bir funksiyalar guruhiga bitta masʼul.',
+p_assoc:'Assotsiatsiya boshqaruvida',p_assoc_d:'Koʻngilli kengash, kichik kotibiyat va koʻrib chiquvchi qoʻmitalar.',
+p_pub:'Nashriyot boshqaruvida',p_pub_d:'Kuchli tahririyat; savdo tahririy qarorlardan ajratilgan.',
+p_reg:'Mintaqaviy operator',p_reg_d:'Mintaqaviy jamoa va har bir shahar hubida bosh menejer.',
+cap:'Jamoaning oylik limiti: {v}',people:'Boshida odamlar: {n}',
+apply:'Qoralama sifatida qoʻllash va baholash',
+applied:'Jamoa demo rejimida ishga tushdi: {f} funksiyada {n} agent roli, har biri Qoralama yoki Kuzatish darajasida. Sintetik namunalarda baholashlar oʻtdi.',
+demoModel:'Demo: agentlar soxta modeldan foydalanadi va belgilangan sintetik natija beradi.',
+s3body:'Haqiqiy model provayderlari, elektron pochta va yumshoq ishga tushirish ikkinchi odamni talab qiladi. Agentlar hech qachon xodim hisoblanmaydi.',
+s3invite:'Dana Ortizni operatsiyalar va ishonch rahbari sifatida taklif qilish',s3done:'Dana Ortiz qabul qildi. Endi ikki kishi haqiqiy provayderlarni yoqishi mumkin.',
+s4brief:'Kunlik xulosa, apparat rahbari agenti tayyorlagan',
+b0:'Tasdiq kutayotganlar: {n}',b1:'Yordam navbati maqsaddan yuqori: yoʻq',b2:'Bu oy sarflangan byudjet: {v}',b3:'Ochiq ishga tushirish shartlari: {n}',
+tTitle:'Funksiyalar va tashkiliy tuzilma',tLede:'Har bir funksiyada aniq bitta masʼul odam bor. Agentlar belgilangan va hech qachon masʼul emas.',
+viewGrid:'Funksiyalar',viewOrg:'Tashkiliy tuzilma',owner:'Masʼul: {name}',agentsN:'Agent rollari: {n}',peopleN:'Odamlar: {n}',vacant:'Boʻsh lavozim',hire:'Odam olishni koʻrib chiqing: {r}',
+agentTag:'Agent',personTag:'Odam',hubOwner:'Hub egasi',concentration:'Siz {n} funksiya uchun masʼulsiz.',
+hireR_sup:'14 kundan 10 kunida navbat maqsaddan yuqori',hireR_cmty:'taxminan 1 000 faol aʼzo',hireR_fin:'birinchi haqiqiy daromad',
+lk_agents:'Agentlar hech qachon xodim, tasdiqlovchi yoki tekshiruvchi hisoblanmaydi.',lk_money:'Trustwork ishtirokchilarning pulini hech qachon saqlamaydi. Toʻlovlar, qaytarishlar va oʻtkazmalar faqat hubning litsenziyalangan toʻlov provayderi orqali.',lk_neutral:'Hech qanday narx, homiylik, reklama yoki tavsiya mukofoti reyting, moslashtirish, tavsiyalar yoki obroʻni oʻzgartirmaydi.',lk_cohort:'Hech kim ajratib koʻrsatilmasligi uchun 10 dan kichik guruhlar yashiriladi.',alwaysOn:'Doim yoqilgan',
+f_lead:'Rahbariyat va apparat',f_strat:'Strategiya va ichki loyihalar',f_edit:'Tahririyat',f_mkt:'Marketing va oʻsish',f_outr:'Jalb qilish va hamkorlik',f_cmty:'Hamjamiyat va aʼzolar muvaffaqiyati',f_sales:'Savdo',f_sup:'Mijozlarni qoʻllab-quvvatlash',f_tns:'Ishonch va xavfsizlik',f_comp:'Muvofiqlik nazorati',f_fin:'Moliya va buxgalteriya',f_legal:'Yuridik operatsiyalar',f_people:'Xodimlar bilan ishlash',f_qual:'Sifat va standartlar',f_cult:'Madaniyat va axloq',f_res:'Tadqiqot',f_events:'Tadbirlar va taʼlim',f_loc:'Mahalliylashtirish',f_data:'Maʼlumotlarni boshqarish',f_ops:'IT va ekspluatatsiya',f_proc:'Hub xaridlari',f_anl:'Tahlil va hisobotlar',f_fed:'Federatsiya va tarmoq',
+hTitle:'Odam qoʻshish va ishni topshirish',hLede:'Hamjamiyat va aʼzolar muvaffaqiyati: hamjamiyat rahbarini taklif qilish va agent vazifalarini uzilishsiz topshirish.',
+h0:'Taklif',h1:'Vazifalar',h2:'Oldindan koʻrish',h3:'Tasdiqlash',h4:'Hamrohlik',h5:'Almashtirish',
+invitee:'Taklif qilingan',position:'Lavozim',posCmty:'Hamjamiyat rahbari',rolesNeeded:'Soʻralgan rollar: editor (hamjamiyat rahbari roli paydo boʻlgunga qadar)',sendInvite:'Taklif yuborish (7 kunda tugaydi)',accepted:'Sem Li taklifni qabul qildi va ikkinchi omilni yoqdi.',
+r_onb:'Yangi aʼzolarga yoʻl koʻrsatuvchi agent',r_champ:'Elchilar koordinatori agenti',r_ans:'Hamjamiyat javoblarini tayyorlovchi agent',
+c_shadow:'Hamrohlikni boshlash',c_sup:'Tekshiruvchi boʻlish',c_take:'Ishni oʻz zimmasiga olish',
+diffWhat:'Oʻzgarish',before:'Oldin',after:'Keyin',d_rev:'Navbatni tekshiradi',d_acc:'Masʼul odam',d_aut:'Agent mustaqilligi',d_gr:'Ruxsatlar',unchanged:'Oʻzgarishsiz',draft:'Qoralama',observe:'Kuzatish',items:'{n} ta ochiq tekshiruv elementi Sem Liga oʻtadi',
+needSecond:'Ikkinchi odam kerak emas: hamjamiyat sezgir funksiya emas. Funksiya masʼuli tasdiqlaydi.',confirm:'Topshirishni tasdiqlash',
+shadowDays:'Hamrohlik davri: {n} ish kuni',practice:'Mashq qarorlarini faqat siz koʻrasiz; ular qoʻllanilmaydi va sizni baholash uchun ishlatilmaydi.',practiceDemo:'Sem Li bu hafta 6 ta mashq qarorini qayd etdi.',
+cutover:'Hozir almashtirish',done:'Tayyor. Sem Li elchilar koordinatori vazifasi uchun masʼul; agent Qoralama darajasida davom etadi. 30 kunlik tekshiruv {d} sanasiga belgilandi.',restart:'Qaytadan boshlash',
+fiTitle:'Moliya',fiLede:'Hubning oʻz hisobi. Har bir raqam provayder yozuvi yoki operator yozuvi boʻlib, manbasi koʻrsatilgan.',
+k_rec:'Bu oy toʻlov provayderi orqali olingan',k_pay:'Chiqarishni kutayotgan toʻlov paketlari',k_unrec:'Solishtirilmagan yozuvlar',k_model:'Bu oy model xarajatlari',src_prov:'Manba: toʻlov provayderi yozuvlari',src_op:'Manba: operator yozuvlari',src_meter:'Manba: model provayderi hisobotlari',
+flows:'Provayder qayd etgan soʻnggi harakatlar',col_date:'Sana',col_desc:'Tavsif',col_src:'Manba',col_amt:'Summa',col_state:'Holat',
+fl0:'Obuna toʻlovlari (kompaniya hisoblari)',fl1:'Tadbir chiptalari, tashkilotchiga toʻlov',fl2:'Ishtirokchi soʻragan qaytarish',fl3:'Model provayderi hisob-fakturasi',
+stRec:'Solishtirilgan',stUnk:'Natija nomaʼlum: solishtirilmoqda',stWait:'Ikki kishi chiqarishini kutmoqda',
+budget:'Bu oy funksiyalar boʻyicha byudjet',col_fn:'Funksiya',col_cap:'Limit',col_used:'Sarflangan',
+prepared:'Buxgalteriya agenti (SI) tayyorlagan. Tekshirgan: Aleks Kim.',release:'Chiqarish Rejalar va toʻlovlar boʻlimida amalga oshadi va ikkinchi odamni talab qiladi.',
+mTitle:'Marketing va oʻsish',mLede:'Hub oʻzini halol targʻib qiladi. Har bir targʻib qilingan element belgilangan; hech narsa oʻrin sotmaydi.',
+campaigns:'Kampaniya qoralamalari',cmp0:'San-Diegoda bahorgi uchrashuvlar turkumi',cmp1:'Jurnal: qishki betonlash qoʻllanmasi',cmp2:'Homiylik: asboblar kutubxonasi hamkori',
+lbAI:'Kontent-marketing agenti (SI) tayyorlagan',lbSpons:'Homiylik',lbAd:'Reklama',chkOk:'Reklama siyosati tekshiruvi oʻtdi',waitAppr:'Odam tasdigʻini kutmoqda',
+tryBad:'Qoidalarni buzadigan soʻrovni sinab koʻrish',badReq:'Reklama tayyorlash: «Pudratchilar qidiruvida birinchi boʻlish uchun toʻlang»',refused:'Reklama filtri rad etdi: reklama hubning oʻzini targʻib qilishi mumkin, lekin hech qachon reyting, moslashtirish, tavsiyalar, obroʻ yoki nishonlarni emas.',
+referral:'Tavsiya dasturi (shartlar, 1-versiya, eʼlon qilingan)',ref0:'Mukofot: platforma krediti, hamma uchun bir xil',ref1:'Tavsiya qiluvchilar hubni tavsiya qilganda mukofotni oshkor qiladi',refCohort:'Bu oy tavsiya orqali qoʻshilgan aʼzolar: {n}',
+qTitle:'Sifat va standartlar',qLede:'Nizolar va nuqsonlar qayerda paydo boʻladi, faqat kogortalar boʻyicha. Hech bir kompaniya yoki odam nomlanmaydi.',
+cohorts:'Kasblar boʻyicha kogortalar, San-Diego okrugi, soʻnggi 12 oy',col_trade:'Kasb',col_done:'Bajarilgan vazifalar',col_disp:'100 taga nizolar',col_rep:'Takroriy nuqsonlar',
+tr0:'Beton va poydevorlar',tr1:'Tom yopish',tr2:'Elektr ishlari',tr3:'Gipsokarton va pardozlash',tr4:'Quyosh qurilmalari',fewer:'10 tadan kam',
+guides:'Tahririy jarayondagi standart qoʻllanmalari',g0:'Pol yotqizishdan oldin namlikni tekshirish',g1:'Qirgʻoq shamol zonalarida tom osti qatlami',
+recog:'Eʼtirof dasturi: manfaatlar toʻqnashuvini eʼlon qilgan hayʼat hal qiladi; bepul; reyting yoki obroʻni hech qachon oʻzgartirmaydi.',
+prepQ:'Sifat tahlilchisi agenti (SI) tayyorlagan'
+};
+S.ka={
+brand:'Trustwork',consoleTitle:'ჰაბის კონსოლი',actsOn:'ეს გვერდი მოქმედებს: {hub}',hub:'Trustwork სან-დიეგო (დემო)',
+synthetic:'პროტოტიპი სინთეზურ მონაცემებზე განსახილველად. რეალური ადამიანები, კომპანიები, ფული ან აგენტები არ არის. სტატუსი: შემოთავაზებული.',
+mtNote:'მანქანური თარგმანის მონახაზი; საჭიროებს მშობლიური ენის მცოდნის შემოწმებას.',langLabel:'ენა',navLabel:'განყოფილება',
+grpStart:'დაწყება',grpTeam:'გუნდი',grpFunctions:'ფუნქციების პანელები',
+navJourney:'გახდი ჰაბი',navTeam:'ფუნქციები და ორგსტრუქტურა',navHandover:'ადამიანის დამატება და საქმის გადაცემა',navFinance:'ფინანსები',navMarketing:'მარკეტინგი და ზრდა',navQuality:'ხარისხი და სტანდარტები',
+proposed:'შემოთავაზებული',
+jTitle:'გახდი ჰაბი',jLede:'დაშვებიდან მომუშავე კომპანიამდე აგენტების გუნდით და დროთა განმავლობაში ადამიანებით ყველა ფუნქციაში.',
+st0:'დაშვება',st1:'დაყენების ოსტატი',st2:'გუნდის გაშვება',st3:'მეორე ადამიანი',st4:'მუშაობა',
+next:'შემდეგი',back:'უკან',
+e0:'არ არის შეზღუდულ ადგილას; განთავსების ადგილი დადასტურებულია',e1:'ოპერატორი და გამოცხადებული მფლობელები შემოწმებულია სანქციების სიებში',e2:'იურიდიული პირი ჩაწერილია',e3:'იურისტი ჩართულია პირობებისთვის, კონფიდენციალურობისთვის, წესებისთვის და აგენტების გამჟღავნებისთვის',e4:'ბუღალტერი არჩეულია',e5:'მეორე ადამიანი, რომელიც შემოუერთდება რეალურ პროვაიდერებამდე და რბილ გაშვებამდე',
+eChecked:'ამოწმებს ძრავა',eYours:'თქვენი პასუხისმგებლობა; ჩაიწერება',
+w0:'დაყენება დასრულდა: ჰაბის მონახაზი, რეგისტრაცია დახურულია, ყველა პროვაიდერი იმიტაციაა, ავტომატიზაცია ხელით.',w1:'შემდეგი: მეორე თანამშრომლის მოწვევა, იურიდიული დოკუმენტების ჩაწერა, წყაროს რეგისტრაცია, შემოწმების რეცეპტის არჩევა, აღდგენის წვრთნის დაგეგმვა, გუნდის გაშვება.',
+pickPreset:'აირჩიეთ ნაკრები',
+p_solo:'მარტო დამფუძნებელი',p_solo_d:'ერთი ადამიანი; მხოლოდ დემო და დაყენება. თქვენ პასუხობთ 23-ვე ფუნქციაზე.',
+p_pair:'დამფუძნებელთა წყვილი',p_pair_d:'ორი ადამიანი და აგენტების გუნდი. აღწევს რბილ და საჯარო გაშვებას.',
+p_small:'მცირე გუნდი',p_small_d:'სამიდან რვა ადამიანამდე, თითო პასუხისმგებელი ფუნქციების ჯგუფზე.',
+p_assoc:'ასოციაციის მართვით',p_assoc_d:'მოხალისეთა საბჭო, მცირე სამდივნო და კომიტეტები განხილვის პანელებად.',
+p_pub:'გამომცემლის მართვით',p_pub_d:'ძლიერი რედაქცია; გაყიდვები გამიჯნულია სარედაქციო გადაწყვეტილებებისგან.',
+p_reg:'რეგიონული ოპერატორი',p_reg_d:'რეგიონული გუნდი და გენერალური მენეჯერი თითოეულ ქალაქის ჰაბში.',
+cap:'გუნდის თვიური ლიმიტი: {v}',people:'ადამიანები დასაწყისში: {n}',
+apply:'მონახაზად გამოყენება და შეფასება',
+applied:'გუნდი გაეშვა დემო რეჟიმში: {n} აგენტის როლი {f} ფუნქციაში, თითოეული მონახაზის ან დაკვირვების დონეზე. შეფასებები გავიდა სინთეზურ ნიმუშებზე.',
+demoModel:'დემო: აგენტები იყენებენ იმიტაციურ მოდელს და ქმნიან მონიშნულ სინთეზურ შედეგს.',
+s3body:'რეალური მოდელის პროვაიდერები, ელფოსტა და რბილი გაშვება მეორე ადამიანს მოითხოვს. აგენტები არასოდეს ითვლებიან თანამშრომლებად.',
+s3invite:'დანა ორტისის მოწვევა ოპერაციებისა და ნდობის ხელმძღვანელად',s3done:'დანა ორტისმა მიიღო. ახლა ორ ადამიანს შეუძლია რეალური პროვაიდერების ჩართვა.',
+s4brief:'დღიური მიმოხილვა, მომზადებული აპარატის უფროსის აგენტის მიერ',
+b0:'ელოდება დამტკიცებას: {n}',b1:'მხარდაჭერის რიგი მიზანზე მაღლა: არა',b2:'ამ თვეში დახარჯული ბიუჯეტი: {v}',b3:'გაშვების ღია პირობები: {n}',
+tTitle:'ფუნქციები და ორგსტრუქტურა',tLede:'თითოეულ ფუნქციას ჰყავს ზუსტად ერთი პასუხისმგებელი ადამიანი. აგენტები მონიშნულია და არასოდეს არიან პასუხისმგებლები.',
+viewGrid:'ფუნქციები',viewOrg:'ორგსტრუქტურა',owner:'პასუხისმგებელი: {name}',agentsN:'აგენტის როლები: {n}',peopleN:'ადამიანები: {n}',vacant:'ვაკანტური პოზიცია',hire:'განიხილეთ ადამიანის აყვანა: {r}',
+agentTag:'აგენტი',personTag:'ადამიანი',hubOwner:'ჰაბის მფლობელი',concentration:'თქვენ პასუხობთ {n} ფუნქციაზე.',
+hireR_sup:'რიგი მიზანზე მაღლა 14-დან 10 დღეს',hireR_cmty:'დაახლოებით 1 000 აქტიური წევრი',hireR_fin:'პირველი რეალური შემოსავალი',
+lk_agents:'აგენტები არასოდეს ითვლებიან თანამშრომლებად, დამმტკიცებლებად ან შემმოწმებლებად.',lk_money:'Trustwork არასოდეს ინახავს მონაწილეთა ფულს. გადახდები, დაბრუნებები და გაცემები ხდება მხოლოდ ჰაბის ლიცენზირებული გადახდის პროვაიდერით.',lk_neutral:'არც ფასი, არც სპონსორობა, არც რეკლამა და არც რეფერალური ჯილდო არ ცვლის რეიტინგს, შერჩევას, რეკომენდაციებს ან რეპუტაციას.',lk_cohort:'10-ზე მცირე ჯგუფები დამალულია, რომ ვერავინ გამოირჩეს.',alwaysOn:'ყოველთვის ჩართული',
+f_lead:'ხელმძღვანელობა და აპარატი',f_strat:'სტრატეგია და შიდა პროექტები',f_edit:'რედაქცია',f_mkt:'მარკეტინგი და ზრდა',f_outr:'მოზიდვა და პარტნიორობა',f_cmty:'საზოგადოება და წევრების წარმატება',f_sales:'გაყიდვები',f_sup:'მომხმარებელთა მხარდაჭერა',f_tns:'ნდობა და უსაფრთხოება',f_comp:'შესაბამისობა',f_fin:'ფინანსები და აღრიცხვა',f_legal:'იურიდიული ოპერაციები',f_people:'ადამიანური რესურსები',f_qual:'ხარისხი და სტანდარტები',f_cult:'კულტურა და ეთიკა',f_res:'კვლევა',f_events:'ღონისძიებები და სწავლება',f_loc:'ლოკალიზაცია',f_data:'მონაცემთა მართვა',f_ops:'IT და ექსპლუატაცია',f_proc:'ჰაბის შესყიდვები',f_anl:'ანალიტიკა და ანგარიშები',f_fed:'ფედერაცია და ქსელი',
+hTitle:'ადამიანის დამატება და საქმის გადაცემა',hLede:'საზოგადოება და წევრების წარმატება: საზოგადოების ხელმძღვანელის მოწვევა და აგენტის მოვალეობების უწყვეტი გადაცემა.',
+h0:'მოწვევა',h1:'მოვალეობები',h2:'გადახედვა',h3:'დამტკიცება',h4:'თანხლება',h5:'გადართვა',
+invitee:'მოწვეული',position:'პოზიცია',posCmty:'საზოგადოების ხელმძღვანელი',rolesNeeded:'მოთხოვნილი როლები: editor (სანამ საზოგადოების ხელმძღვანელის როლი გაჩნდება)',sendInvite:'მოწვევის გაგზავნა (ვადა 7 დღე)',accepted:'სემ ლიმ მიიღო მოწვევა და ჩართო მეორე ფაქტორი.',
+r_onb:'ახალი წევრების მეგზური აგენტი',r_champ:'ელჩების კოორდინატორი აგენტი',r_ans:'საზოგადოების პასუხების მომამზადებელი აგენტი',
+c_shadow:'თანხლების დაწყება',c_sup:'შემმოწმებლად გახდომა',c_take:'საქმის საკუთარ თავზე აღება',
+diffWhat:'ცვლილება',before:'მანამდე',after:'შემდეგ',d_rev:'ამოწმებს რიგს',d_acc:'პასუხისმგებელი',d_aut:'აგენტის ავტონომია',d_gr:'ნებართვები',unchanged:'უცვლელი',draft:'მონახაზი',observe:'დაკვირვება',items:'{n} ღია შესამოწმებელი ელემენტი გადადის სემ ლისთან',
+needSecond:'მეორე ადამიანი არ არის საჭირო: საზოგადოება არ არის მგრძნობიარე ფუნქცია. ადასტურებს ფუნქციის პასუხისმგებელი.',confirm:'გადაცემის დადასტურება',
+shadowDays:'თანხლების პერიოდი: {n} სამუშაო დღე',practice:'სავარჯიშო გადაწყვეტილებებს მხოლოდ თქვენ ხედავთ; ისინი არ გამოიყენება და არ გამოიყენება თქვენს შესაფასებლად.',practiceDemo:'სემ ლიმ ამ კვირაში 6 სავარჯიშო გადაწყვეტილება ჩაწერა.',
+cutover:'ახლავე გადართვა',done:'მზადაა. სემ ლი პასუხისმგებელია ელჩების კოორდინაციის მოვალეობაზე; აგენტი აგრძელებს მონახაზის დონეზე. 30-დღიანი შემოწმება დანიშნულია {d}.',restart:'თავიდან დაწყება',
+fiTitle:'ფინანსები',fiLede:'ჰაბის საკუთარი აღრიცხვა. თითოეული ციფრი პროვაიდერის ან ოპერატორის ჩანაწერია, წყაროს მითითებით.',
+k_rec:'ამ თვეში მიღებული გადახდის პროვაიდერით',k_pay:'გაცემის პაკეტები ელოდება გაშვებას',k_unrec:'შეუდარებელი ჩანაწერები',k_model:'მოდელების ხარჯი ამ თვეში',src_prov:'წყარო: გადახდის პროვაიდერის ჩანაწერები',src_op:'წყარო: ოპერატორის ჩანაწერები',src_meter:'წყარო: მოდელის პროვაიდერის ანგარიშები',
+flows:'პროვაიდერის მიერ ჩაწერილი ბოლო მოძრაობები',col_date:'თარიღი',col_desc:'აღწერა',col_src:'წყარო',col_amt:'თანხა',col_state:'მდგომარეობა',
+fl0:'გამოწერის გადახდები (კომპანიების ანგარიშები)',fl1:'ღონისძიების ბილეთები, გადახდა ორგანიზატორს',fl2:'მონაწილის მოთხოვნილი დაბრუნება',fl3:'მოდელის პროვაიდერის ინვოისი',
+stRec:'შედარებულია',stUnk:'შედეგი უცნობია: შედარების პროცესში',stWait:'ელოდება ორი ადამიანის მიერ გაშვებას',
+budget:'ბიუჯეტი ფუნქციების მიხედვით ამ თვეში',col_fn:'ფუნქცია',col_cap:'ლიმიტი',col_used:'დახარჯული',
+prepared:'მოამზადა აღრიცხვის აგენტმა (AI). შეამოწმა: ალექს კიმი.',release:'გაშვება ხდება გეგმებისა და გადახდების განყოფილებაში და საჭიროებს მეორე ადამიანს.',
+mTitle:'მარკეტინგი და ზრდა',mLede:'ჰაბი საკუთარ თავს პატიოსნად აპოპულარიზებს. ყველაფერი რეკლამირებული მონიშნულია; არაფერი ყიდის პოზიციას.',
+campaigns:'კამპანიების მონახაზები',cmp0:'გაზაფხულის შეხვედრების სერია სან-დიეგოში',cmp1:'ჟურნალი: ზამთრის ბეტონირების გზამკვლევი',cmp2:'სპონსორობა: ხელსაწყოების ბიბლიოთეკის პარტნიორი',
+lbAI:'მოამზადა კონტენტ-მარკეტინგის აგენტმა (AI)',lbSpons:'სპონსორობით',lbAd:'რეკლამა',chkOk:'სარეკლამო პოლიტიკის შემოწმება გავიდა',waitAppr:'ელოდება ადამიანის დამტკიცებას',
+tryBad:'წესების დამრღვევი მოთხოვნის ცდა',badReq:'რეკლამის მომზადება: „გადაიხადეთ, რომ პირველი იყოთ კონტრაქტორების ძიებაში“',refused:'უარყოფილია სარეკლამო ფილტრით: რეკლამას შეუძლია თავად ჰაბის პოპულარიზაცია, მაგრამ არასოდეს რეიტინგის, შერჩევის, რეკომენდაციების, რეპუტაციის ან ნიშნების.',
+referral:'რეფერალური პროგრამა (პირობები, ვერსია 1, გამოქვეყნებული)',ref0:'ჯილდო: პლატფორმის კრედიტი, ყველასთვის ერთნაირი',ref1:'რეკომენდატორები ამჟღავნებენ ჯილდოს ჰაბის რეკომენდაციისას',refCohort:'ამ თვეში რეკომენდაციით შემოსული წევრები: {n}',
+qTitle:'ხარისხი და სტანდარტები',qLede:'სად ჩნდება დავები და დეფექტები, მხოლოდ კოჰორტებით. არცერთი კომპანია ან ადამიანი არ არის დასახელებული.',
+cohorts:'კოჰორტები პროფესიების მიხედვით, სან-დიეგოს ოლქი, ბოლო 12 თვე',col_trade:'პროფესია',col_done:'შესრულებული დავალებები',col_disp:'დავები 100-ზე',col_rep:'განმეორებითი დეფექტები',
+tr0:'ბეტონი და საძირკვლები',tr1:'სახურავები',tr2:'ელექტროობა',tr3:'თაბაშირმუყაო და მოპირკეთება',tr4:'მზის დანადგარები',fewer:'10-ზე ნაკლები',
+guides:'სტანდარტების გზამკვლევები სარედაქციო პროცესში',g0:'ტენიანობის შემოწმება იატაკის დაგებამდე',g1:'სახურავის ქვეშა ფენა სანაპირო ქარიან ზონებში',
+recog:'აღიარების პროგრამა: წყვეტს პანელი გამოცხადებული ინტერესთა კონფლიქტით; უფასოა; არასოდეს ცვლის რეიტინგს ან რეპუტაციას.',
+prepQ:'მოამზადა ხარისხის ანალიტიკოსმა აგენტმა (AI)'
+};
+S.hy={
+brand:'Trustwork',consoleTitle:'Հաբի կառավարման վահանակ',actsOn:'Այս էջը գործում է՝ {hub}',hub:'Trustwork Սան Դիեգո (դեմո)',
+synthetic:'Նախատիպ սինթետիկ տվյալներով՝ քննարկման համար։ Իրական մարդիկ, ընկերություններ, գումար կամ գործակալներ չկան։ Կարգավիճակ՝ Առաջարկված։',
+mtNote:'Մեքենայական թարգմանության սևագիր. անհրաժեշտ է մայրենի խոսողի ստուգում։',langLabel:'Լեզու',navLabel:'Բաժին',
+grpStart:'Սկիզբ',grpTeam:'Թիմ',grpFunctions:'Գործառույթների վահանակներ',
+navJourney:'Դառնալ հաբ',navTeam:'Գործառույթներ և կառուցվածք',navHandover:'Ավելացնել մարդ և փոխանցել աշխատանքը',navFinance:'Ֆինանսներ',navMarketing:'Մարքեթինգ և աճ',navQuality:'Որակ և ստանդարտներ',
+proposed:'Առաջարկված',
+jTitle:'Դառնալ հաբ',jLede:'Թույլատրելիությունից մինչև գործող ընկերություն՝ գործակալների թիմով և ժամանակի ընթացքում մարդկանցով յուրաքանչյուր գործառույթում։',
+st0:'Թույլատրելիություն',st1:'Կարգավորման օգնական',st2:'Թիմի գործարկում',st3:'Երկրորդ մարդ',st4:'Աշխատանք',
+next:'Հաջորդը',back:'Հետ',
+e0:'Սահմանափակված վայրում չէ. տեղակայման վայրը հաստատված է',e1:'Օպերատորը և հայտարարված սեփականատերերը ստուգված են պատժամիջոցների ցուցակներով',e2:'Իրավաբանական անձը գրանցված է',e3:'Իրավաբան է ներգրավված պայմանների, գաղտնիության, կանոնների և գործակալների բացահայտման համար',e4:'Հաշվապահ է ընտրված',e5:'Երկրորդ մարդ, որը կմիանա իրական մատակարարներից և մեղմ գործարկումից առաջ',
+eChecked:'Ստուգում է շարժիչը',eYours:'Ձեր պատասխանատվությունն է. գրանցվում է',
+w0:'Կարգավորումն ավարտված է. հաբը սևագիր է, գրանցումը փակ է, բոլոր մատակարարները կեղծ են, ավտոմատացումը ձեռքով է։',w1:'Հաջորդ քայլերը՝ հրավիրել երկրորդ աշխատակցին, գրանցել իրավական փաստաթղթերը, գրանցել աղբյուր, ընտրել ստուգման բաղադրատոմս, պլանավորել վերականգնման վարժանք, գործարկել թիմը։',
+pickPreset:'Ընտրեք հավաքածու',
+p_solo:'Միայնակ հիմնադիր',p_solo_d:'Մեկ մարդ. միայն դեմո և կարգավորում։ Դուք պատասխանատու եք բոլոր 23 գործառույթների համար։',
+p_pair:'Հիմնադիրների զույգ',p_pair_d:'Երկու մարդ և գործակալների թիմ։ Հասնում է մեղմ և հանրային գործարկման։',
+p_small:'Փոքր թիմ',p_small_d:'Երեքից ութ մարդ, յուրաքանչյուր գործառույթների խմբին՝ մեկ պատասխանատու։',
+p_assoc:'Ասոցիացիայի կառավարմամբ',p_assoc_d:'Կամավորական խորհուրդ, փոքր քարտուղարություն և հանձնաժողովներ՝ որպես վերանայման խմբեր։',
+p_pub:'Հրատարակչի կառավարմամբ',p_pub_d:'Ուժեղ խմբագրություն. վաճառքը տարանջատված է խմբագրական որոշումներից։',
+p_reg:'Տարածաշրջանային օպերատոր',p_reg_d:'Տարածաշրջանային թիմ և գլխավոր մենեջեր յուրաքանչյուր քաղաքային հաբում։',
+cap:'Թիմի ամսական սահմանաչափ՝ {v}',people:'Մարդիկ սկզբում՝ {n}',
+apply:'Կիրառել որպես սևագիր և գնահատել',
+applied:'Թիմը գործարկված է դեմո ռեժիմում՝ {n} գործակալի դեր {f} գործառույթում, յուրաքանչյուրը Սևագիր կամ Դիտարկում մակարդակում։ Գնահատումներն անցել են սինթետիկ նմուշներով։',
+demoModel:'Դեմո. գործակալներն օգտագործում են կեղծ մոդել և տալիս են նշված սինթետիկ արդյունք։',
+s3body:'Իրական մոդելների մատակարարները, էլփոստը և մեղմ գործարկումը պահանջում են երկրորդ մարդ։ Գործակալները երբեք չեն համարվում աշխատակիցներ։',
+s3invite:'Հրավիրել Դանա Օրտիսին՝ որպես գործառնությունների և վստահության ղեկավար',s3done:'Դանա Օրտիսն ընդունեց։ Այժմ երկու մարդ կարող է միացնել իրական մատակարարներին։',
+s4brief:'Օրվա ամփոփում՝ պատրաստված աշխատակազմի ղեկավարի գործակալի կողմից',
+b0:'Սպասում են հաստատման՝ {n}',b1:'Աջակցության հերթը նպատակից բարձր է՝ ոչ',b2:'Այս ամիս ծախսված բյուջե՝ {v}',b3:'Գործարկման բաց պայմաններ՝ {n}',
+tTitle:'Գործառույթներ և կառուցվածք',tLede:'Յուրաքանչյուր գործառույթ ունի ճիշտ մեկ պատասխանատու մարդ։ Գործակալները նշված են և երբեք պատասխանատու չեն։',
+viewGrid:'Գործառույթներ',viewOrg:'Կառուցվածք',owner:'Պատասխանատու՝ {name}',agentsN:'Գործակալի դերեր՝ {n}',peopleN:'Մարդիկ՝ {n}',vacant:'Թափուր պաշտոն',hire:'Մտածեք մարդ ընդունելու մասին՝ {r}',
+agentTag:'Գործակալ',personTag:'Մարդ',hubOwner:'Հաբի սեփականատեր',concentration:'Դուք պատասխանատու եք {n} գործառույթի համար։',
+hireR_sup:'հերթը նպատակից բարձր է 14-ից 10 օր',hireR_cmty:'մոտ 1 000 ակտիվ անդամ',hireR_fin:'առաջին իրական եկամուտը',
+lk_agents:'Գործակալները երբեք չեն համարվում աշխատակիցներ, հաստատողներ կամ վերանայողներ։',lk_money:'Trustwork-ը երբեք չի պահում մասնակիցների գումարը։ Վճարումները, վերադարձները և փոխանցումները կատարվում են միայն հաբի լիցենզավորված վճարային մատակարարի միջոցով։',lk_neutral:'Ոչ մի գին, հովանավորություն, գովազդ կամ ուղղորդման պարգև չի փոխում դասակարգումը, համապատասխանեցումը, առաջարկությունները կամ հեղինակությունը։',lk_cohort:'10-ից փոքր խմբերը թաքցված են, որպեսզի ոչ ոք չառանձնացվի։',alwaysOn:'Միշտ միացված',
+f_lead:'Ղեկավարում և աշխատակազմ',f_strat:'Ռազմավարություն և ներքին նախագծեր',f_edit:'Խմբագրություն',f_mkt:'Մարքեթինգ և աճ',f_outr:'Ներգրավում և գործընկերություն',f_cmty:'Համայնք և անդամների հաջողություն',f_sales:'Վաճառք',f_sup:'Հաճախորդների աջակցություն',f_tns:'Վստահություն և անվտանգություն',f_comp:'Համապատասխանություն',f_fin:'Ֆինանսներ և հաշվառում',f_legal:'Իրավական գործառնություններ',f_people:'Անձնակազմի հետ աշխատանք',f_qual:'Որակ և ստանդարտներ',f_cult:'Մշակույթ և էթիկա',f_res:'Հետազոտություն',f_events:'Միջոցառումներ և ուսուցում',f_loc:'Տեղայնացում',f_data:'Տվյալների կառավարում',f_ops:'ՏՏ և շահագործում',f_proc:'Հաբի գնումներ',f_anl:'Վերլուծություն և հաշվետվություններ',f_fed:'Ֆեդերացիա և ցանց',
+hTitle:'Ավելացնել մարդ և փոխանցել աշխատանքը',hLede:'Համայնք և անդամների հաջողություն. հրավիրել համայնքի ղեկավար և առանց ընդմիջման փոխանցել գործակալի պարտականությունները։',
+h0:'Հրավեր',h1:'Պարտականություններ',h2:'Նախադիտում',h3:'Հաստատում',h4:'Ուղեկցում',h5:'Անցում',
+invitee:'Հրավիրված',position:'Պաշտոն',posCmty:'Համայնքի ղեկավար',rolesNeeded:'Պահանջվող դերեր՝ editor (մինչև համայնքի ղեկավարի դերի ի հայտ գալը)',sendInvite:'Ուղարկել հրավեր (գործում է 7 օր)',accepted:'Սեմ Լին ընդունեց հրավերը և միացրեց երկրորդ գործոնը։',
+r_onb:'Նոր անդամների ուղեկցող գործակալ',r_champ:'Դեսպանների համակարգող գործակալ',r_ans:'Համայնքի պատասխաններ պատրաստող գործակալ',
+c_shadow:'Սկսել ուղեկցումը',c_sup:'Դառնալ վերանայող',c_take:'Ստանձնել աշխատանքը',
+diffWhat:'Փոփոխություն',before:'Առաջ',after:'Հետո',d_rev:'Վերանայում է հերթը',d_acc:'Պատասխանատու',d_aut:'Գործակալի ինքնավարություն',d_gr:'Թույլտվություններ',unchanged:'Անփոփոխ',draft:'Սևագիր',observe:'Դիտարկում',items:'{n} բաց վերանայման տարր անցնում է Սեմ Լիին',
+needSecond:'Երկրորդ մարդ պետք չէ. համայնքը զգայուն գործառույթ չէ։ Հաստատում է գործառույթի պատասխանատուն։',confirm:'Հաստատել փոխանցումը',
+shadowDays:'Ուղեկցման ժամանակաշրջան՝ {n} աշխատանքային օր',practice:'Վարժական որոշումները տեսնում եք միայն դուք. դրանք չեն կիրառվում և չեն օգտագործվում ձեզ գնահատելու համար։',practiceDemo:'Սեմ Լին այս շաբաթ գրանցել է 6 վարժական որոշում։',
+cutover:'Անցնել հիմա',done:'Պատրաստ է։ Սեմ Լին պատասխանատու է դեսպանների համակարգման պարտականության համար. գործակալը շարունակում է Սևագիր մակարդակում։ 30-օրյա ստուգումը նշանակված է {d}։',restart:'Սկսել նորից',
+fiTitle:'Ֆինանսներ',fiLede:'Հաբի սեփական հաշվառումը։ Յուրաքանչյուր թիվ մատակարարի կամ օպերատորի գրառում է՝ աղբյուրի նշումով։',
+k_rec:'Այս ամիս ստացված վճարային մատակարարի միջոցով',k_pay:'Փոխանցման փաթեթներ՝ թողարկման սպասող',k_unrec:'Չհամադրված գրառումներ',k_model:'Մոդելների ծախսեր այս ամիս',src_prov:'Աղբյուր՝ վճարային մատակարարի գրառումներ',src_op:'Աղբյուր՝ օպերատորի գրառումներ',src_meter:'Աղբյուր՝ մոդելի մատակարարի հաշվետվություններ',
+flows:'Մատակարարի գրանցած վերջին շարժերը',col_date:'Ամսաթիվ',col_desc:'Նկարագրություն',col_src:'Աղբյուր',col_amt:'Գումար',col_state:'Վիճակ',
+fl0:'Բաժանորդագրության վճարումներ (ընկերությունների հաշիվներ)',fl1:'Միջոցառման տոմսեր, վճարում կազմակերպչին',fl2:'Մասնակցի պահանջած վերադարձ',fl3:'Մոդելի մատակարարի հաշիվ-ապրանքագիր',
+stRec:'Համադրված',stUnk:'Արդյունքն անհայտ է. համադրման մեջ',stWait:'Սպասում է երկու մարդու թողարկմանը',
+budget:'Բյուջեն ըստ գործառույթների այս ամիս',col_fn:'Գործառույթ',col_cap:'Սահմանաչափ',col_used:'Ծախսված',
+prepared:'Պատրաստել է հաշվապահական գործակալը (ԱԲ)։ Ստուգել է՝ Ալեքս Քիմ։',release:'Թողարկումը կատարվում է Պլաններ և վճարումներ բաժնում և պահանջում է երկրորդ մարդ։',
+mTitle:'Մարքեթինգ և աճ',mLede:'Հաբն ազնվորեն է գովազդում իրեն։ Յուրաքանչյուր գովազդվող տարր նշված է. ոչինչ դիրք չի վաճառում։',
+campaigns:'Արշավների սևագրեր',cmp0:'Գարնանային հանդիպումների շարք Սան Դիեգոյում',cmp1:'Ամսագիր՝ ձմեռային բետոնապատման ուղեցույց',cmp2:'Հովանավորված՝ գործիքների գրադարանի գործընկեր',
+lbAI:'Պատրաստել է բովանդակային մարքեթինգի գործակալը (ԱԲ)',lbSpons:'Հովանավորված',lbAd:'Գովազդ',chkOk:'Գովազդային քաղաքականության ստուգումն անցել է',waitAppr:'Սպասում է մարդու հաստատմանը',
+tryBad:'Փորձել կանոնները խախտող հարցում',badReq:'Պատրաստել գովազդ՝ «Վճարեք՝ կապալառուների որոնման մեջ առաջինը լինելու համար»',refused:'Մերժված է գովազդային զտիչի կողմից. գովազդը կարող է խթանել հենց հաբը, բայց երբեք դասակարգում, համապատասխանեցում, առաջարկություններ, հեղինակություն կամ կրծքանշաններ։',
+referral:'Ուղղորդման ծրագիր (պայմաններ, տարբերակ 1, հրապարակված)',ref0:'Պարգև՝ հարթակի կրեդիտ, բոլորի համար նույնը',ref1:'Ուղղորդողները բացահայտում են պարգևը հաբը խորհուրդ տալիս',refCohort:'Այս ամիս ուղղորդմամբ միացած անդամներ՝ {n}',
+qTitle:'Որակ և ստանդարտներ',qLede:'Որտեղ են առաջանում վեճերը և թերությունները, միայն կոհորտներով։ Ոչ մի ընկերություն կամ մարդ չի նշվում։',
+cohorts:'Կոհորտներ ըստ մասնագիտության, Սան Դիեգո շրջան, վերջին 12 ամիս',col_trade:'Մասնագիտություն',col_done:'Կատարված առաջադրանքներ',col_disp:'Վեճեր 100-ի հաշվով',col_rep:'Կրկնվող թերություններ',
+tr0:'Բետոն և հիմքեր',tr1:'Տանիքներ',tr2:'Էլեկտրական աշխատանքներ',tr3:'Գիպսաստվարաթուղթ և հարդարում',tr4:'Արևային կայանքներ',fewer:'10-ից պակաս',
+guides:'Ստանդարտների ուղեցույցներ խմբագրական գործընթացում',g0:'Խոնավության ստուգում հատակ փռելուց առաջ',g1:'Տանիքի ենթաշերտ ափամերձ քամոտ գոտիներում',
+recog:'Ճանաչման ծրագիր. որոշում է հայտարարված շահերի բախումով հանձնաժողովը. անվճար է. երբեք չի փոխում դասակարգումը կամ հեղինակությունը։',
+prepQ:'Պատրաստել է որակի վերլուծաբան գործակալը (ԱԲ)'
+};
+S.az={
+brand:'Trustwork',consoleTitle:'Hab konsolu',actsOn:'Bu səhifə aiddir: {hub}',hub:'Trustwork San-Dieqo (demo)',
+synthetic:'Baxış üçün sintetik məlumatlarla prototip. Real insanlar, şirkətlər, pul və ya agentlər yoxdur. Status: Təklif.',
+mtNote:'Maşın tərcüməsi qaralaması; ana dilli yoxlama tələb olunur.',langLabel:'Dil',navLabel:'Bölmə',
+grpStart:'Başlanğıc',grpTeam:'Komanda',grpFunctions:'Funksiya panelləri',
+navJourney:'Hab olmaq',navTeam:'Funksiyalar və struktur',navHandover:'İnsan əlavə etmək və işi təhvil vermək',navFinance:'Maliyyə',navMarketing:'Marketinq və artım',navQuality:'Keyfiyyət və standartlar',
+proposed:'Təklif',
+jTitle:'Hab olmaq',jLede:'Uyğunluqdan agent komandası ilə işləyən şirkətə qədər, zamanla hər funksiyada insanlarla.',
+st0:'Uyğunluq',st1:'Quraşdırma ustası',st2:'Komandanı işə salmaq',st3:'İkinci insan',st4:'İşləyir',
+next:'Növbəti',back:'Geri',
+e0:'Məhdud yerdə deyil; yerləşdirmə yeri təsdiqlənib',e1:'Operator və bəyan edilmiş sahiblər sanksiya siyahıları üzrə yoxlanılıb',e2:'Hüquqi şəxs qeyd olunub',e3:'Şərtlər, məxfilik, qaydalar və agentlərin açıqlanması üçün hüquqşünas cəlb olunub',e4:'Mühasib seçilib',e5:'Real provayderlərdən və yumşaq işə salınmadan əvvəl qoşulacaq ikinci insan',
+eChecked:'Mühərrik yoxlayır',eYours:'Sizin məsuliyyətiniz; qeyd olunur',
+w0:'Quraşdırma bitdi: qaralama hab, qeydiyyat bağlıdır, bütün provayderlər saxtadır, avtomatlaşdırma əl ilə.',w1:'Növbəti addımlar: ikinci əməkdaşı dəvət etmək, hüquqi sənədləri qeyd etmək, mənbə qeydiyyatı, yoxlama reseptini seçmək, bərpa təlimini planlaşdırmaq, komandanı işə salmaq.',
+pickPreset:'Dəst seçin',
+p_solo:'Tək təsisçi',p_solo_d:'Bir nəfər; yalnız demo və quraşdırma. Bütün 23 funksiyaya siz cavabdehsiniz.',
+p_pair:'Təsisçi cütlüyü',p_pair_d:'İki nəfər və agent komandası. Yumşaq və ictimai işə salınmaya çatır.',
+p_small:'Kiçik komanda',p_small_d:'Üç-səkkiz nəfər, hər funksiya qrupuna bir məsul.',
+p_assoc:'Assosiasiyanın idarəsində',p_assoc_d:'Könüllü şura, kiçik katiblik və baxış panelləri kimi komitələr.',
+p_pub:'Nəşriyyatın idarəsində',p_pub_d:'Güclü redaksiya; satış redaksiya qərarlarından ayrılıb.',
+p_reg:'Regional operator',p_reg_d:'Regional komanda və hər şəhər habında baş menecer.',
+cap:'Komandanın aylıq limiti: {v}',people:'Başlanğıcda insanlar: {n}',
+apply:'Qaralama kimi tətbiq et və qiymətləndir',
+applied:'Komanda demo rejimində işə salındı: {f} funksiyada {n} agent rolu, hər biri Qaralama və ya Müşahidə səviyyəsində. Qiymətləndirmələr sintetik nümunələrdə keçdi.',
+demoModel:'Demo: agentlər saxta modeldən istifadə edir və işarələnmiş sintetik nəticə verir.',
+s3body:'Real model provayderləri, e-poçt və yumşaq işə salınma ikinci insan tələb edir. Agentlər heç vaxt əməkdaş sayılmır.',
+s3invite:'Dana Ortizi əməliyyatlar və etibar rəhbəri kimi dəvət etmək',s3done:'Dana Ortiz qəbul etdi. İndi iki nəfər real provayderləri aktivləşdirə bilər.',
+s4brief:'Gündəlik xülasə, aparat rəhbəri agenti tərəfindən hazırlanıb',
+b0:'Təsdiq gözləyənlər: {n}',b1:'Dəstək növbəsi hədəfdən yuxarı: xeyr',b2:'Bu ay xərclənən büdcə: {v}',b3:'Açıq işə salınma şərtləri: {n}',
+tTitle:'Funksiyalar və struktur',tLede:'Hər funksiyanın dəqiq bir məsul insanı var. Agentlər işarələnib və heç vaxt məsul deyil.',
+viewGrid:'Funksiyalar',viewOrg:'Struktur',owner:'Məsul: {name}',agentsN:'Agent rolları: {n}',peopleN:'İnsanlar: {n}',vacant:'Boş vəzifə',hire:'İnsan götürməyi düşünün: {r}',
+agentTag:'Agent',personTag:'İnsan',hubOwner:'Hab sahibi',concentration:'Siz {n} funksiyaya məsulsunuz.',
+hireR_sup:'14 gündən 10-da növbə hədəfdən yuxarı',hireR_cmty:'təxminən 1 000 aktiv üzv',hireR_fin:'ilk real gəlir',
+lk_agents:'Agentlər heç vaxt əməkdaş, təsdiqləyici və ya yoxlayıcı sayılmır.',lk_money:'Trustwork iştirakçıların pulunu heç vaxt saxlamır. Ödənişlər, geri qaytarmalar və köçürmələr yalnız habın lisenziyalı ödəniş provayderi vasitəsilə.',lk_neutral:'Heç bir qiymət, sponsorluq, reklam və ya tövsiyə mükafatı reytinqi, uyğunlaşdırmanı, tövsiyələri və ya reputasiyanı dəyişmir.',lk_cohort:'Heç kim fərqləndirilməsin deyə 10-dan kiçik qruplar gizlədilir.',alwaysOn:'Həmişə aktiv',
+f_lead:'Rəhbərlik və aparat',f_strat:'Strategiya və daxili layihələr',f_edit:'Redaksiya',f_mkt:'Marketinq və artım',f_outr:'Cəlbetmə və tərəfdaşlıq',f_cmty:'İcma və üzvlərin uğuru',f_sales:'Satış',f_sup:'Müştəri dəstəyi',f_tns:'Etibar və təhlükəsizlik',f_comp:'Uyğunluq nəzarəti',f_fin:'Maliyyə və mühasibat',f_legal:'Hüquqi əməliyyatlar',f_people:'Kadr işi',f_qual:'Keyfiyyət və standartlar',f_cult:'Mədəniyyət və etika',f_res:'Tədqiqat',f_events:'Tədbirlər və təlim',f_loc:'Lokallaşdırma',f_data:'Məlumat idarəçiliyi',f_ops:'İT və istismar',f_proc:'Hab satınalmaları',f_anl:'Analitika və hesabatlar',f_fed:'Federasiya və şəbəkə',
+hTitle:'İnsan əlavə etmək və işi təhvil vermək',hLede:'İcma və üzvlərin uğuru: icma rəhbərini dəvət etmək və agent vəzifələrini fasiləsiz təhvil vermək.',
+h0:'Dəvət',h1:'Vəzifələr',h2:'Önizləmə',h3:'Təsdiq',h4:'Müşayiət',h5:'Keçid',
+invitee:'Dəvət olunan',position:'Vəzifə',posCmty:'İcma rəhbəri',rolesNeeded:'Tələb olunan rollar: editor (icma rəhbəri rolu yaranana qədər)',sendInvite:'Dəvət göndər (7 günə bitir)',accepted:'Sem Li dəvəti qəbul etdi və ikinci amili aktivləşdirdi.',
+r_onb:'Yeni üzvlərə bələdçi agent',r_champ:'Səfirlər koordinatoru agenti',r_ans:'İcma cavablarını hazırlayan agent',
+c_shadow:'Müşayiətə başla',c_sup:'Yoxlayıcı ol',c_take:'İşi öz üzərinə götür',
+diffWhat:'Dəyişiklik',before:'Əvvəl',after:'Sonra',d_rev:'Növbəni yoxlayır',d_acc:'Məsul şəxs',d_aut:'Agentin muxtariyyəti',d_gr:'İcazələr',unchanged:'Dəyişməz',draft:'Qaralama',observe:'Müşahidə',items:'{n} açıq yoxlama elementi Sem Liyə keçir',
+needSecond:'İkinci insan lazım deyil: icma həssas funksiya deyil. Funksiyanın məsulu təsdiqləyir.',confirm:'Təhvili təsdiqlə',
+shadowDays:'Müşayiət dövrü: {n} iş günü',practice:'Təcrübə qərarlarını yalnız siz görürsünüz; onlar tətbiq olunmur və sizi qiymətləndirmək üçün istifadə edilmir.',practiceDemo:'Sem Li bu həftə 6 təcrübə qərarı qeyd etdi.',
+cutover:'İndi keç',done:'Hazırdır. Sem Li səfirlərin koordinasiyası vəzifəsinə məsuldur; agent Qaralama səviyyəsində davam edir. 30 günlük yoxlama {d} tarixinə təyin edilib.',restart:'Yenidən başla',
+fiTitle:'Maliyyə',fiLede:'Habın öz uçotu. Hər rəqəm provayder və ya operator qeydidir, mənbəyi göstərilir.',
+k_rec:'Bu ay ödəniş provayderi vasitəsilə alınıb',k_pay:'Buraxılışı gözləyən ödəniş paketləri',k_unrec:'Tutuşdurulmamış qeydlər',k_model:'Bu ay model xərcləri',src_prov:'Mənbə: ödəniş provayderinin qeydləri',src_op:'Mənbə: operator qeydləri',src_meter:'Mənbə: model provayderinin hesabatları',
+flows:'Provayderin qeyd etdiyi son hərəkətlər',col_date:'Tarix',col_desc:'Təsvir',col_src:'Mənbə',col_amt:'Məbləğ',col_state:'Vəziyyət',
+fl0:'Abunə ödənişləri (şirkət hesabları)',fl1:'Tədbir biletləri, təşkilatçıya ödəniş',fl2:'İştirakçının tələb etdiyi geri qaytarma',fl3:'Model provayderinin hesab-fakturası',
+stRec:'Tutuşdurulub',stUnk:'Nəticə naməlum: tutuşdurmada',stWait:'İki nəfərin buraxmasını gözləyir',
+budget:'Bu ay funksiyalar üzrə büdcə',col_fn:'Funksiya',col_cap:'Limit',col_used:'İstifadə olunub',
+prepared:'Mühasibat agenti (Sİ) hazırlayıb. Yoxlayan: Aleks Kim.',release:'Buraxılış Planlar və ödənişlər bölməsində olur və ikinci insan tələb edir.',
+mTitle:'Marketinq və artım',mLede:'Hab özünü dürüst təbliğ edir. Hər təbliğ olunan element işarələnib; heç nə mövqe satmır.',
+campaigns:'Kampaniya qaralamaları',cmp0:'San-Dieqoda yaz görüşləri seriyası',cmp1:'Jurnal: qış betonlaması bələdçisi',cmp2:'Sponsorlu: alət kitabxanası tərəfdaşı',
+lbAI:'Kontent-marketinq agenti (Sİ) hazırlayıb',lbSpons:'Sponsorlu',lbAd:'Reklam',chkOk:'Reklam siyasəti yoxlaması keçdi',waitAppr:'İnsanın təsdiqini gözləyir',
+tryBad:'Qaydaları pozan sorğunu sınayın',badReq:'Reklam hazırla: «Podratçı axtarışında birinci olmaq üçün ödəyin»',refused:'Reklam filtri rədd etdi: reklam habın özünü təbliğ edə bilər, amma heç vaxt reytinqi, uyğunlaşdırmanı, tövsiyələri, reputasiyanı və ya nişanları yox.',
+referral:'Tövsiyə proqramı (şərtlər, 1-ci versiya, açıqlanıb)',ref0:'Mükafat: platforma krediti, hamı üçün eyni',ref1:'Tövsiyə edənlər habı tövsiyə edərkən mükafatı açıqlayır',refCohort:'Bu ay tövsiyə ilə qoşulan üzvlər: {n}',
+qTitle:'Keyfiyyət və standartlar',qLede:'Mübahisələr və qüsurlar harada yaranır, yalnız kohortlar üzrə. Heç bir şirkət və ya insan adlandırılmır.',
+cohorts:'Peşələr üzrə kohortlar, San-Dieqo dairəsi, son 12 ay',col_trade:'Peşə',col_done:'Tamamlanmış tapşırıqlar',col_disp:'100-ə mübahisə',col_rep:'Təkrar qüsurlar',
+tr0:'Beton və bünövrələr',tr1:'Dam örtüyü',tr2:'Elektrik işləri',tr3:'Gipskarton və bəzək',tr4:'Günəş qurğuları',fewer:'10-dan az',
+guides:'Redaksiya prosesində standart bələdçiləri',g0:'Döşəmədən əvvəl rütubət yoxlaması',g1:'Sahil küləkli zonalarda dam altı təbəqə',
+recog:'Tanınma proqramı: maraq toqquşmasını bəyan etmiş panel qərar verir; pulsuzdur; reytinqi və ya reputasiyanı heç vaxt dəyişmir.',
+prepQ:'Keyfiyyət analitiki agenti (Sİ) hazırlayıb'
+};
+
+/* ===== Synthetic data ===== */
+const PRESETS=[['solo',1,0,23],['pair',2,300,23],['small',5,800,23],['assoc',4,400,23],['pub',6,1200,23],['reg',8,600,23]];
+const ROLES_PER_FN={lead:1,strat:1,edit:19,mkt:7,outr:12,cmty:5,sales:4,sup:3,tns:4,comp:4,fin:6,legal:4,people:5,qual:4,cult:3,res:3,events:3,loc:4,data:2,ops:4,proc:1,anl:3,fed:1};
+const OP='Rosa Delgado (operator)';
+const state={lang:'en',view:'journey',step:0,preset:'pair',applied:false,second:false,org:false,h:0,duties:{onb:'shadow',champ:'take',ans:'sup'},bad:false};
+try{const l=localStorage.getItem('tw-proto-lang');if(l&&S[l])state.lang=l;}catch(e){}
+
+function tag(){return LANGS.find(x=>x[0]===state.lang)[2]}
+function t(k,v){let s=(S[state.lang][k]??S.en[k]??k);if(v)for(const [a,b] of Object.entries(v))s=s.split('{'+a+'}').join(b);return s}
+const money=(n)=>new Intl.NumberFormat(tag(),{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
+const num=(n,d=0)=>new Intl.NumberFormat(tag(),{maximumFractionDigits:d,minimumFractionDigits:d}).format(n);
+const date=(d)=>new Intl.DateTimeFormat(tag(),{dateStyle:'medium'}).format(d);
+const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const totalRoles=()=>Object.values(ROLES_PER_FN).reduce((a,b)=>a+b,0);
+function lock(k){return `<div class="lock" role="note"><b>&#128274; ${t('alwaysOn')}</b>${t(k)}</div>`}
+
+const NAV=[['grpStart',[['journey','navJourney']]],['grpTeam',[['team','navTeam'],['handover','navHandover']]],['grpFunctions',[['finance','navFinance'],['marketing','navMarketing'],['quality','navQuality']]]];
+function renderChrome(){
+  document.documentElement.lang={uz:'uz-Latn',az:'az-Latn'}[state.lang]||state.lang;
+  document.getElementById('synthetic').textContent=t('synthetic');
+  const mt=document.getElementById('mtnote');mt.hidden=state.lang==='en';mt.textContent=t('mtNote');
+  document.getElementById('brand').textContent=t('brand');
+  document.getElementById('consoleTitle').textContent=t('consoleTitle');
+  document.getElementById('actsOn').textContent=t('actsOn',{hub:t('hub')});
+  document.getElementById('langLabel').textContent=t('langLabel');
+  document.getElementById('navselLabel').textContent=t('navLabel');
+  const sel=document.getElementById('lang');sel.innerHTML=LANGS.map(([k,n])=>`<option value="${k}" lang="${k}"${k===state.lang?' selected':''}>${n}</option>`).join('');
+  document.getElementById('sidenav').innerHTML=NAV.map(([g,items])=>`<h2>${t(g)}</h2>`+items.map(([v,k])=>`<button data-view="${v}"${state.view===v?' aria-current="page"':''}>${t(k)}</button>`).join('')).join('');
+  document.getElementById('navsel').innerHTML=NAV.flatMap(([g,items])=>items.map(([v,k])=>`<option value="${v}"${state.view===v?' selected':''}>${t(k)}</option>`)).join('');
+}
+function head(title,lede){return `<h1>${title}<span class="status">${t('proposed')}</span></h1><p class="lede">${lede}</p>`}
+
+function vJourney(){
+  const steps=['st0','st1','st2','st3','st4'];
+  let h=head(t('jTitle'),t('jLede'))+`<ol class="steps" aria-label="${t('jTitle')}">`+steps.map((s,i)=>`<li${i===state.step?' aria-current="step"':''} class="${i<state.step?'done':''}">${i+1}. ${t(s)}</li>`).join('')+'</ol><div class="card">';
+  if(state.step===0){h+=`<h2>${t('st0')}</h2><table class="resp"><tbody>`+['e0','e1','e2','e3','e4','e5'].map((k,i)=>`<tr><td data-h="">${i<2?'&#10003;':'&#9675;'} ${t(k)}</td><td data-h="" class="muted">${i<2?t('eChecked'):t('eYours')}</td></tr>`).join('')+'</tbody></table>'}
+  if(state.step===1){h+=`<h2>${t('st1')}</h2><p>&#10003; ${t('w0')}</p><p>${t('w1')}</p>`}
+  if(state.step===2){
+    h+=`<h2>${t('pickPreset')}</h2><div class="grid" role="radiogroup" aria-label="${t('pickPreset')}">`+PRESETS.map(([k,p,c])=>`<label class="card" style="display:block;margin:0"><input type="radio" name="preset" value="${k}"${state.preset===k?' checked':''}> <b>${t('p_'+k)}</b><br><span class="muted">${t('p_'+k+'_d')}</span><br><span class="chip">${t('people',{n:num(p)})}</span> <span class="chip">${t('cap',{v:money(c)})}</span></label>`).join('')+'</div>';
+    h+=`<p class="row" style="margin-top:10px"><button class="btn" id="apply">${t('apply')}</button></p>`;
+    if(state.applied)h+=`<div class="note" role="status">${t('applied',{n:num(totalRoles()),f:num(23)})}<br><span class="label-ai">${t('demoModel')}</span></div>`;
+  }
+  if(state.step===3){h+=`<h2>${t('st3')}</h2><p>${t('s3body')}</p>`+lock('lk_agents')+(state.second?`<div class="note" role="status">&#10003; ${t('s3done')}</div>`:`<button class="btn" id="second">${t('s3invite')}</button>`)}
+  if(state.step===4){h+=`<h2>${t('s4brief')}</h2><span class="chip agent">${t('agentTag')}</span><ul><li>${t('b0',{n:num(4)})}</li><li>${t('b1')}</li><li>${t('b2',{v:money(184)})}</li><li>${t('b3',{n:num(3)})}</li></ul>`}
+  h+=`</div><p class="row"><button class="btn sec" id="back"${state.step===0?' disabled':''}>${t('back')}</button><button class="btn" id="next"${state.step===4?' disabled':''}>${t('next')}</button></p>`;
+  return h;
+}
+function owner(k){if(state.second&&['tns','sup','comp','ops','data'].includes(k))return 'Dana Ortiz';if(k==='edit')return OP;return OP}
+function vTeam(){
+  let h=head(t('tTitle'),t('tLede'))+`<div class="toggle" role="group" aria-label="${t('tTitle')}"><button id="vg" aria-pressed="${!state.org}">${t('viewGrid')}</button><button id="vo" aria-pressed="${state.org}">${t('viewOrg')}</button></div><p class="muted">${t('concentration',{n:num(state.second?18:23)})}</p>`;
+  const hireFor={sup:'hireR_sup',cmty:'hireR_cmty',fin:'hireR_fin'};
+  if(!state.org){h+='<div class="grid">'+FN_KEYS.map(k=>`<div class="card" style="margin:0"><b>${t('f_'+k)}</b><div class="muted">${t('owner',{name:owner(k)})}</div><div class="row" style="margin-top:6px"><span class="chip agent">${t('agentsN',{n:num(ROLES_PER_FN[k])})}</span><span class="chip">${t('peopleN',{n:num(k==='cmty'&&state.h>=5?1:0)})}</span></div>${hireFor[k]?`<div class="warn" style="font-size:13px;margin-top:6px">${t('hire',{r:t(hireFor[k])})}</div>`:''}</div>`).join('')+'</div>'}
+  else{h+=`<ul class="tree"><li><span class="node"><span class="pic" aria-hidden="true"></span>${esc(OP)} <span class="chip">${t('hubOwner')}</span></span><ul>`+FN_KEYS.map(k=>{
+    const subs=k==='cmty'?[[t('r_onb'),1],[t('r_champ'),1],[t('r_ans'),1]]:[];
+    return `<li><span class="node"><b>${t('f_'+k)}</b> <span class="muted">${t('owner',{name:owner(k)})}</span></span>`+(k==='cmty'?`<ul><li><span class="node"><span class="pic" aria-hidden="true"></span>${state.h>=5?'Sam Lee':t('vacant')} <span class="chip">${t('personTag')}</span> ${t('posCmty')}</span></li>`+subs.map(s=>`<li><span class="node"><span class="icon" aria-hidden="true"></span>${s[0]} <span class="chip agent">${t('agentTag')}</span></span></li>`).join('')+'</ul>':`<ul><li><span class="node"><span class="icon" aria-hidden="true"></span><span class="chip agent">${t('agentsN',{n:num(ROLES_PER_FN[k])})}</span></span></li></ul>`)+'</li>'}).join('')+'</ul></li></ul>'}
+  h+=lock('lk_agents');return h;
+}
+function vHandover(){
+  const st=['h0','h1','h2','h3','h4','h5'];
+  let h=head(t('hTitle'),t('hLede'))+`<ol class="steps">`+st.map((s,i)=>`<li${i===state.h?' aria-current="step"':''} class="${i<state.h?'done':''}">${i+1}. ${t(s)}</li>`).join('')+'</ol><div class="card">';
+  const duties=[['onb','r_onb'],['champ','r_champ'],['ans','r_ans']];
+  if(state.h===0){h+=`<p><b>${t('invitee')}:</b> Sam Lee (sam.lee@example.org)</p><p><b>${t('position')}:</b> ${t('posCmty')}</p><p class="muted">${t('rolesNeeded')}</p><button class="btn" id="hn">${t('sendInvite')}</button>`}
+  if(state.h===1){h+=`<p class="ok">&#10003; ${t('accepted')}</p>`+duties.map(([k,r])=>`<fieldset><legend>${t(r)} <span class="chip agent">${t('agentTag')}</span></legend>`+['shadow','sup','take'].map(c=>`<label><input type="radio" name="d_${k}" value="${c}"${state.duties[k]===c?' checked':''}>${t({shadow:'c_shadow',sup:'c_sup',take:'c_take'}[c])}</label>`).join('')+'</fieldset>').join('')+`<button class="btn" id="hn">${t('next')}</button>`}
+  if(state.h===2){h+=`<table class="resp"><thead><tr><th>${t('diffWhat')}</th><th>${t('before')}</th><th>${t('after')}</th></tr></thead><tbody>`+duties.map(([k,r])=>{const c=state.duties[k];return `<tr><td data-h="${t('diffWhat')}"><b>${t(r)}</b>: ${t('d_rev')}</td><td data-h="${t('before')}">${esc(OP)}</td><td data-h="${t('after')}">${c==='shadow'?esc(OP):'Sam Lee'}</td></tr><tr><td data-h="${t('diffWhat')}">${t('d_acc')}</td><td data-h="${t('before')}">${esc(OP)}</td><td data-h="${t('after')}">${c==='take'?'Sam Lee':esc(OP)}</td></tr><tr><td data-h="${t('diffWhat')}">${t('d_aut')}</td><td data-h="${t('before')}">${t('draft')}</td><td data-h="${t('after')}">${c==='take'?t('observe'):t('draft')}</td></tr>`}).join('')+`<tr><td data-h="${t('diffWhat')}">${t('d_gr')}</td><td data-h="${t('before')}">—</td><td data-h="${t('after')}">${t('unchanged')}</td></tr></tbody></table><p>${t('items',{n:num(7)})}</p><button class="btn" id="hn">${t('next')}</button>`}
+  if(state.h===3){h+=`<p>${t('needSecond')}</p><button class="btn" id="hn">${t('confirm')}</button>`}
+  if(state.h===4){h+=`<p><b>${t('shadowDays',{n:num(10)})}</b></p><div class="note">${t('practice')}</div><p class="muted">${t('practiceDemo')}</p><button class="btn" id="hn">${t('cutover')}</button>`}
+  if(state.h===5){const d=new Date(2026,11,10);h+=`<div class="note" role="status">&#10003; ${t('done',{d:date(d)})}</div><button class="btn sec" id="hr">${t('restart')}</button>`}
+  h+='</div>'+lock('lk_agents');return h;
+}
+function vFinance(){
+  const f=[[new Date(2026,10,3),'fl0','src_prov',4200,'stRec'],[new Date(2026,10,5),'fl1','src_prov',-1350,'stWait'],[new Date(2026,10,6),'fl2','src_prov',-49,'stUnk'],[new Date(2026,10,1),'fl3','src_meter',-212,'stRec']];
+  let h=head(t('fiTitle'),t('fiLede'))+lock('lk_money')+`<div class="kpis">`+[[money(4200),'k_rec','src_prov'],[num(1),'k_pay','src_prov'],[num(1),'k_unrec','src_prov'],[money(212),'k_model','src_meter']].map(([v,l,s])=>`<div class="card kpi"><div class="v">${v}</div><div class="l">${t(l)}</div><div class="s">${t(s)}</div></div>`).join('')+'</div>';
+  h+=`<div class="card"><h2>${t('flows')}</h2><table class="resp"><thead><tr><th>${t('col_date')}</th><th>${t('col_desc')}</th><th>${t('col_src')}</th><th class="num">${t('col_amt')}</th><th>${t('col_state')}</th></tr></thead><tbody>`+f.map(r=>`<tr><td data-h="${t('col_date')}">${date(r[0])}</td><td data-h="${t('col_desc')}">${t(r[1])}</td><td data-h="${t('col_src')}">${t(r[2])}</td><td data-h="${t('col_amt')}" class="num">${money(r[3])}</td><td data-h="${t('col_state')}" class="${r[4]==='stUnk'?'warn':r[4]==='stRec'?'ok':''}">${t(r[4])}</td></tr>`).join('')+`</tbody></table><p class="label-ai">${t('prepared')}</p><p class="muted">${t('release')}</p></div>`;
+  const b=[['edit',400,212],['mkt',150,96],['sup',120,41],['fin',80,38],['cmty',80,22]];
+  h+=`<div class="card"><h2>${t('budget')}</h2><table class="resp"><thead><tr><th>${t('col_fn')}</th><th class="num">${t('col_cap')}</th><th class="num">${t('col_used')}</th></tr></thead><tbody>`+b.map(r=>`<tr><td data-h="${t('col_fn')}">${t('f_'+r[0])}</td><td data-h="${t('col_cap')}" class="num">${money(r[1])}</td><td data-h="${t('col_used')}" class="num">${money(r[2])} (${num(r[2]/r[1]*100)}%)</td></tr>`).join('')+`</tbody></table><p class="muted">${t('src_op')}</p></div>`;
+  return h;
+}
+function vMarketing(){
+  const c=[['cmp0',null],['cmp1',null],['cmp2','lbSpons']];
+  let h=head(t('mTitle'),t('mLede'))+lock('lk_neutral')+`<div class="card"><h2>${t('campaigns')}</h2><ul style="list-style:none;padding:0">`+c.map(([k,l])=>`<li class="card" style="margin:6px 0"><b>${t(k)}</b> ${l?`<span class="chip">${t(l)}</span>`:`<span class="chip">${t('lbAd')}</span>`}<div class="label-ai">${t('lbAI')}</div><div class="row"><span class="ok">&#10003; ${t('chkOk')}</span><span class="muted">${t('waitAppr')}</span></div></li>`).join('')+'</ul></div>';
+  h+=`<div class="card"><h2>${t('tryBad')}</h2><p>${t('badReq')}</p><button class="btn sec" id="bad">${t('tryBad')}</button>${state.bad?`<div class="alert" role="alert">${t('refused')}</div>`:''}</div>`;
+  h+=`<div class="card"><h2>${t('referral')}</h2><ul><li>${t('ref0')}</li><li>${t('ref1')}</li></ul><p>${t('refCohort',{n:num(37)})}</p></div>`+lock('lk_cohort');
+  return h;
+}
+function vQuality(){
+  const rows=[['tr0',412,3.4,'5.1%'],['tr1',288,4.9,'7.3%'],['tr2',356,2.1,'3.0%'],['tr3',203,3.0,'4.4%'],['tr4',7,null,null]];
+  let h=head(t('qTitle'),t('qLede'))+lock('lk_cohort')+`<div class="card"><h2>${t('cohorts')}</h2><table class="resp"><thead><tr><th>${t('col_trade')}</th><th class="num">${t('col_done')}</th><th class="num">${t('col_disp')}</th><th class="num">${t('col_rep')}</th></tr></thead><tbody>`+rows.map(r=>`<tr><td data-h="${t('col_trade')}">${t(r[0])}</td><td data-h="${t('col_done')}" class="num">${r[1]<10?t('fewer'):num(r[1])}</td><td data-h="${t('col_disp')}" class="num">${r[2]==null?t('fewer'):num(r[2],1)}</td><td data-h="${t('col_rep')}" class="num">${r[3]==null?t('fewer'):new Intl.NumberFormat(tag(),{style:'percent',maximumFractionDigits:1}).format(parseFloat(r[3])/100)}</td></tr>`).join('')+`</tbody></table><p class="label-ai">${t('prepQ')}</p></div>`;
+  h+=`<div class="card"><h2>${t('guides')}</h2><ul><li>${t('g0')}</li><li>${t('g1')}</li></ul></div><div class="card">${t('recog')}</div>`+lock('lk_neutral');
+  return h;
+}
+function render(){
+  renderChrome();
+  const m=document.getElementById('main');
+  m.innerHTML={journey:vJourney,team:vTeam,handover:vHandover,finance:vFinance,marketing:vMarketing,quality:vQuality}[state.view]();
+  bind();
+}
+function go(v){state.view=v;render();document.getElementById('main').focus()}
+function bind(){
+  document.querySelectorAll('#sidenav button').forEach(b=>b.onclick=()=>go(b.dataset.view));
+  const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f};
+  on('next',()=>{state.step=Math.min(4,state.step+1);render()});on('back',()=>{state.step=Math.max(0,state.step-1);render()});
+  document.querySelectorAll('input[name=preset]').forEach(r=>r.onchange=()=>{state.preset=r.value;state.applied=false;render()});
+  on('apply',()=>{state.applied=true;render()});on('second',()=>{state.second=true;render()});
+  on('vg',()=>{state.org=false;render()});on('vo',()=>{state.org=true;render()});
+  document.querySelectorAll('input[name^=d_]').forEach(r=>r.onchange=()=>{state.duties[r.name.slice(2)]=r.value});
+  on('hn',()=>{state.h++;render()});on('hr',()=>{state.h=0;render()});
+  on('bad',()=>{state.bad=true;render()});
+}
+document.getElementById('lang').onchange=(e)=>{state.lang=e.target.value;try{localStorage.setItem('tw-proto-lang',state.lang)}catch(_){}render()};
+document.getElementById('navsel').onchange=(e)=>go(e.target.value);
+document.getElementById('theme').onchange=(e)=>{if(e.target.value)document.documentElement.setAttribute('data-theme',e.target.value);else document.documentElement.removeAttribute('data-theme')};
+render();
+</script>
+</body>
+</html>

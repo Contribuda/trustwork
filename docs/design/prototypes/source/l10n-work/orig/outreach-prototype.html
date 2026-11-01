@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discovery and outreach prototype</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#111827;--muted:#5b6472;--line:#dde1e7;--brand:#1f5fd6;--brand-ink:#fff;--ok:#0f7a3d;--okbg:#e6f4ec;--warn:#8a5a00;--warnbg:#fff4dc;--bad:#a1271b;--badbg:#fde8e6;--info:#1f4f99;--infobg:#e8f0fd;--band:#0f172a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--muted:#9aa4b2;--line:#2d333b;--brand:#5b9bff;--brand-ink:#0d1117;--ok:#56d38a;--okbg:#10291b;--warn:#f0c060;--warnbg:#2c2410;--bad:#ff8a7a;--badbg:#341613;--info:#8ab4ff;--infobg:#132238;--band:#000}}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:var(--brand)}
+.demo{background:var(--warnbg);color:var(--warn);padding:6px 16px;font-size:13px;border-bottom:1px solid var(--line)}
+header{background:var(--band);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.sq{display:inline-grid;grid-template-columns:repeat(3,8px);gap:2px}.sq i{width:8px;height:8px;background:#3b82f6;display:block}
+.band small{opacity:.8;font-weight:400}
+.lang button{background:transparent;color:#fff;border:1px solid #475569;padding:4px 10px;border-radius:6px;cursor:pointer;font:inherit;font-size:13px}
+.lang button[aria-pressed="true"]{background:#fff;color:#0f172a}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+nav.tabs button{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px}
+nav.tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+main{max-width:1180px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 4px}h2{font-size:17px;margin:18px 0 8px}h3{font-size:15px;margin:12px 0 6px}
+.lede{color:var(--muted);margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:2fr 1fr}
+@media (max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent}
+.b-src{background:var(--infobg);color:var(--info)}.b-ok{background:var(--okbg);color:var(--ok)}.b-warn{background:var(--warnbg);color:var(--warn)}.b-bad{background:var(--badbg);color:var(--bad)}.b-mut{background:transparent;color:var(--muted);border-color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:13px}
+@media (max-width:640px){table.resp thead{display:none}table.resp tr{display:block;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;padding:6px}table.resp td{display:block;border:0;padding:3px 4px}table.resp td::before{content:attr(data-l);display:block;color:var(--muted);font-size:12px}}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px;margin:4px 6px 4px 0}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,nav.tabs button:focus-visible,.lang button:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.src{font-size:12px;color:var(--muted)}
+.gate{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line)}
+.gate .ic{flex:0 0 74px}
+.msg{white-space:pre-wrap;font-family:ui-serif,Georgia,serif;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:14px}
+.lock{background:var(--infobg);border-left:3px solid var(--info);padding:0 4px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--band);color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;display:none;max-width:90vw;z-index:9}
+.list button.item{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;font:inherit}
+.list button.item[aria-current="true"]{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand) inset}
+.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)}
+select,input[type=text],textarea{font:inherit;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);max-width:100%}
+label{display:block;margin:8px 0 4px;font-weight:600;font-size:14px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.flow span{padding:4px 8px;border-radius:6px;border:1px solid var(--line);font-size:13px}.flow span.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.notice{padding:10px;border-radius:8px;margin:8px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="demo" data-i="demo"></div>
+<header>
+  <div class="brand"><span class="sq" aria-hidden="true"><i></i><i></i><i></i></span><span><span data-i="brandName"></span> <small data-i="hubName"></small></span></div>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">English</button>
+    <button type="button" data-lang="ru" aria-pressed="false">Русский</button>
+  </div>
+</header>
+<nav class="tabs" role="tablist" aria-label="Views">
+  <button role="tab" data-v="page" aria-selected="true" data-i="tabPage"></button>
+  <button role="tab" data-v="review" aria-selected="false" data-i="tabReview"></button>
+  <button role="tab" data-v="campaign" aria-selected="false" data-i="tabCampaign"></button>
+  <button role="tab" data-v="claims" aria-selected="false" data-i="tabClaims"></button>
+  <button role="tab" data-v="object" aria-selected="false" data-i="tabObject"></button>
+</nav>
+<main id="main" tabindex="-1"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const T={
+en:{demo:"Prototype on synthetic data. No real company, person or address. Nothing is saved or sent.",brandName:"Trustwork",hubName:"San Diego hub (demo) · Hub console",
+tabPage:"1 · Sourced company page",tabReview:"2 · Entity review",tabCampaign:"3 · Outreach campaign",tabClaims:"4 · Claims and hand-over",tabObject:"5 · Objection and erasure",
+pageH:"Example Roofing Co",pageLede:"Public page as a visitor sees it. Built from public sources by the hub's agent team and activated in a batch by a data steward.",
+sourcedBadge:"Created from an open source",notVerified:"Not claimed, not verified. This page does not mean the company endorses the hub.",
+field:"Field",value:"Value",sources:"Sources",confidence:"Confidence",
+fLegal:"Legal name",fStatus:"Registration status",fLicence:"Contractor licence",fArea:"Service area",fServices:"Services",fSite:"Website",fContact:"Public business contact",
+vStatus:"Active",vLicence:"Class C-39 Roofing · active until 30 Jun 2027",vArea:"San Diego County",vServices:"Roof repair, re-roofing, inspections",vContact:"info@ address on the company's own website (shown only because the company publishes it and the source allows display)",
+c2:"Confirmed by two independent sources",c1:"From one source",cDis:"Sources disagree: register value shown",
+howBuilt:"How this page was built",howBody:"Fields come from the sources below. Legal facts follow the official register; descriptive facts follow the company's own website. Nothing here is a rating or a review. Missing: phone, photos, projects.",
+noPeople:"No people are shown on sourced pages. Officers in registers are used only to check claims.",
+claimBtn:"Claim this page",corrBtn:"Suggest a correction",aboutBtn:"This is about me or my company: correct or remove",
+srcReg:"State business entity register (synthetic), checked 12 Oct 2026",srcLic:"State contractor licence look-up (synthetic), checked 12 Oct 2026",srcSite:"example-roofing.invalid, checked 14 Oct 2026",srcOsm:"Open map data (synthetic), checked 3 Oct 2026",
+toastClaim:"Opens the claim flow (see tab 4)",toastCorr:"A correction form opens; corrections keep provenance",toastAbout:"Opens the objection flow (see tab 5)",
+reviewH:"Entity review",reviewLede:"Link proposals from entity resolution. Records are linked into one entity, never merged: every source record stays.",
+noMerge:"Records are linked, never merged; every source record stays",band:"Band",high:"High",med:"Medium",low:"Low",
+evidence:"Evidence",idMatch:"Same state licence number in two statutory sources",nameAddr:"Name similarity 0.93 after removing legal form; same street",domain:"Same website domain",
+recA:"Record A",recB:"Record B",linkBtn:"Link into one entity",rejectBtn:"Reject",distinctBtn:"Mark distinct",splitBtn:"Split a link",batchBtn:"Accept the 14 identifier matches as one reviewed decision",
+batchNote:"Only proposals with statutory identifier evidence can be accepted as a batch, after viewing a sample.",personNote:"A link involving a person needs that person's confirmation: accept disabled.",
+tLinked:"Linked. Page will be re-assembled with both records' provenance.",tRejected:"Rejected with reason; the pair will not be proposed again without new evidence.",tDistinct:"Marked distinct; the pipeline stops proposing this pair.",tBatch:"Demo: batch decision recorded by you (14 links).",tSplit:"Split: the page is re-assembled from the remaining records; reason recorded.",
+campH:"Outreach campaign: page notice",campLede:"Purpose: tell companies a page about them exists and how to correct, claim or remove it. Audience: 214 sourced roofing companies in San Diego County.",
+policyH:"Policy per jurisdiction",mode:"Mode",mStrict:"strict (default): no outreach",mNotice:"notice only (option B)",mGov:"governed (option C)",
+counselReq:"A counsel approval record and a second person are required before this mode can be activated. On the reference hub, the owner's approval too.",
+strictOn:"Outreach is off: the strict rule applies in this hub. Pages stay sourced; companies can claim them when they find them.",
+floorH:"Engine floor (no switch exists)",floor:["No consumer outreach","No automated calls, AI voice, SMS or messenger outreach without prior consent","No guessed or probe-verified addresses","Identification, data sources, automated-assistant disclosure and one-click unsubscribe in every message","Platform-wide suppression checked at dispatch","At most 3 touches per recipient per purpose"],
+juris:"Jurisdiction",cls:"Recipient class",chan:"Channel",basis:"Basis",
+rUS1:"US · organisation generic address · e-mail · opt-out (CAN-SPAM) · counsel review pending",rUS2:"US · business role address · e-mail · opt-out · counsel review pending",rUS3:"US · named business contact · not collected (owner question)",rUS4:"US · sole proprietor · prohibited (default)",rUS5:"US · any · SMS, calls, messengers · prior express written consent only",
+gatesH:"Gates for one recipient",recipPick:"Recipient",
+gNames:["Hub policy mode","Source allows contact use","Recipient class and jurisdiction known","Policy basis for class × channel","Platform suppression (hub and node)","Restricted place or screening match","Caps: touches, domain, per day, budget","Quiet hours in recipient time zone","Message checks: identification, sources, disclosure, opt-out, language","Approval at autonomy level"],
+pass:"pass",fail:"stop",wait:"wait",
+r1:"Example Roofing Co · info@ on own domain",r2:"Sample Gutters LLC · suppressed (unsubscribed 2 Sep)",r3:"Demo Shingle Supply · source is display-only",r4:"Placeholder Roof Pros · outside quiet hours",
+why:{mode:"Strict mode: nothing is sent",src:"The licence look-up source does not allow contact use",supp:"Suppressed: unsubscribe on 2 Sep 2026",quiet:"Recipient local time 19:40; next window Mon 09:00",appr:"Assisted level: a person approves the batch"},
+previewH:"Exact message preview",pvLang:"Language",pvJur:"Jurisdiction",
+locked:"Highlighted blocks are locked and cannot be removed by a template editor.",
+approveBtn:"Request activation (second person)",dryBtn:"Dry run: check gates, send nothing",
+tDry:"Dry run: gates were checked and nothing was sent. 61 would pass, 153 stop.",tApprove:"Demo: approval request created. You cannot approve your own request.",tStrictBlock:"Blocked: the hub is in strict mode.",
+metricsH:"Cohort metrics (counts under ten suppressed)",mSent:"Notices delivered",mClaims:"Claims started",mUnsub:"Unsubscribed",mCompl:"Complaints",fewer:"fewer than 10",
+claimsH:"Claims queue",claimsLede:"Management access passes only through the hub's verification recipe. A reply to an e-mail never hands over anything.",
+c1t:"Example Roofing Co · claimant: Synthetic Claimant A",c2t:"Demo Shingle Supply · two competing claims (dispute)",c3t:"Sample Gutters LLC · claimant on a free mail service",
+steps:["Verified login (e-mail verified)","Sanctions screening of claimant and company","Company tie: invitation link to info@ on the company's recorded domain","Register record active; identifier, name and address match (fetched by reviewer)","Signatory tie: authority letter signed with an accepted e-signature","Ownership declaration signed"],
+stOk:"passed",stPend:"pending",stNa:"not applicable: free mail cannot give a domain tie; use register match plus call-back",
+levelClaimed:"Approve to Claimed: limited control",levelVerified:"Approve to Verified: hand over management",
+handH:"What the hand-over gives",claimedGets:"Claimed: edit descriptive fields, accept or reject suggestions, stop outreach. Not: members, representative, offerings, legal name.",verifiedGets:"Verified: company administrator role, invite members, configure the representative with an accountable person.",
+cooling:"Cooling period: 7 days without changes to legal name, identifiers, domain, payout details or representative.",
+disputeBanner:"Dispute: two open claims. The page stays sourced. Decision needs verified-level evidence and a second person; current administrators are notified; waiting period ends 8 Nov 2026.",
+tClaimed:"Demo: approved to Claimed. Audit record written.",tVerified:"Demo: approved to Verified. Hand-over recorded; cooling period started.",
+auditH:"Audit trail",audit:["14 Oct 10:02 · Page notice delivered (campaign v3, touch 1)","15 Oct 08:41 · Claim request opened from invitation link","15 Oct 08:41 · Screening: clear against baseline lists (synthetic)","15 Oct 08:42 · Domain tie recorded (claimed level)","16 Oct 14:10 · Reviewer fetched register record: match"],
+objH:"Objection and erasure",objLede:"What a person or company sees after choosing \"This is about me or my company\", and what the hub does.",
+oStep:["Request","Tie check","Decision","Done"],
+oQ:"What would you like?",oStop:"Stop contacting me or my company",oCorr:"Correct something on the page",oErase:"Erase information about me",oRemove:"Remove the company page",
+oEmail:"Your business e-mail address",oSend:"Send a code to this address",oCode:"Enter the 6-digit code (demo: any 6 digits)",oVerify:"Confirm",
+oNext:"Continue",
+oResStop:"Done. This address is suppressed for every purpose across the hub and the node, immediately. We keep only the address, the reason and the date, so we can keep our promise.",
+oResErase:"Received. The privacy officer decides; erasure is executed by two people. Deadline: 30 days (from the country pack). Your contact data is suppressed now.",
+oResRemove:"Received. Company facts from official registers may stay where the law allows; you will get a reasoned decision and can appeal.",
+oResCorr:"Thank you. The correction is reviewed and keeps its source.",
+effectsH:"What happens in the hub",eff:["Suppression entry: all purposes, hub and node","Queued touches for this address cancelled","Do-not-collect entry: the next refresh will not re-import it","Erasure (if asked): person fields deleted from sourced records, outreach data and threads; tombstones to indexes and peers","Confirmation sent within the pack deadline"],
+adminH:"Privacy officer view",lookup:"Exact lookup (no browsing)",lookBtn:"Look up",lookRes:"Suppressed · reason: objection · 31 Oct 2026 · scope: node",
+pending:"Requests due",counts:"Suppression by reason (cohorts)",unsub:"Unsubscribe",objection:"Objection",bounce:"Bounce",erasure:"Erasure"},
+ru:{demo:"Прототип на синтетических данных. Нет реальных компаний, людей или адресов. Ничего не сохраняется и не отправляется.",brandName:"Строй Репутация",hubName:"Хаб Сан-Диего (демо) · Консоль хаба",
+tabPage:"1 · Страница компании из источников",tabReview:"2 · Проверка сущностей",tabCampaign:"3 · Кампания охвата",tabClaims:"4 · Заявки и передача управления",tabObject:"5 · Возражение и удаление",
+pageH:"Example Roofing Co",pageLede:"Публичная страница глазами посетителя. Собрана командой агентов хаба из открытых источников и включена в пакете распорядителем данных.",
+sourcedBadge:"Создано из открытого источника",notVerified:"Не заявлено и не проверено. Страница не означает, что компания поддерживает хаб.",
+field:"Поле",value:"Значение",sources:"Источники",confidence:"Уверенность",
+fLegal:"Юридическое название",fStatus:"Статус регистрации",fLicence:"Лицензия подрядчика",fArea:"Зона работ",fServices:"Услуги",fSite:"Сайт",fContact:"Публичный деловой контакт",
+vStatus:"Действует",vLicence:"Класс C-39, кровельные работы · действует до 30.06.2027",vArea:"Округ Сан-Диего",vServices:"Ремонт кровли, перекрытие, осмотры",vContact:"адрес info@ на собственном сайте компании (показан, потому что компания его публикует и источник разрешает показ)",
+c2:"Подтверждено двумя независимыми источниками",c1:"Из одного источника",cDis:"Источники расходятся: показано значение из реестра",
+howBuilt:"Как собрана эта страница",howBody:"Поля взяты из источников ниже. Юридические факты — по официальному реестру, описательные — по сайту компании. Здесь нет рейтингов и отзывов. Не хватает: телефона, фото, проектов.",
+noPeople:"На страницах из источников нет людей. Руководители из реестров используются только для проверки заявок.",
+claimBtn:"Заявить права на страницу",corrBtn:"Предложить исправление",aboutBtn:"Это обо мне или моей компании: исправить или удалить",
+srcReg:"Реестр юрлиц штата (синтетический), проверено 12.10.2026",srcLic:"Справка о лицензиях подрядчиков (синтетическая), проверено 12.10.2026",srcSite:"example-roofing.invalid, проверено 14.10.2026",srcOsm:"Открытые картографические данные (синтетические), проверено 03.10.2026",
+toastClaim:"Открывает заявку (см. вкладку 4)",toastCorr:"Откроется форма исправления; исправления сохраняют источник",toastAbout:"Открывает форму возражения (см. вкладку 5)",
+reviewH:"Проверка сущностей",reviewLede:"Предложения связей от сопоставления записей. Записи связываются в одну сущность и никогда не сливаются: каждая исходная запись остаётся.",
+noMerge:"Записи связываются, а не сливаются; каждая исходная запись остаётся",band:"Уровень",high:"Высокий",med:"Средний",low:"Низкий",
+evidence:"Доказательства",idMatch:"Одинаковый номер лицензии штата в двух официальных источниках",nameAddr:"Сходство названия 0,93 без организационно-правовой формы; та же улица",domain:"Одинаковый домен сайта",
+recA:"Запись A",recB:"Запись B",linkBtn:"Связать в одну сущность",rejectBtn:"Отклонить",distinctBtn:"Отметить как разные",splitBtn:"Разделить связь",batchBtn:"Принять 14 совпадений по идентификатору одним проверенным решением",
+batchNote:"Пакетом можно принять только предложения с доказательством по официальному идентификатору, после просмотра выборки.",personNote:"Связь с человеком требует его подтверждения: принятие недоступно.",
+tLinked:"Связано. Страница будет пересобрана с источниками обеих записей.",tRejected:"Отклонено с причиной; пара не будет предложена снова без новых доказательств.",tDistinct:"Отмечено как разные; конвейер больше не предлагает эту пару.",tBatch:"Демо: пакетное решение записано от вашего имени (14 связей).",tSplit:"Разделено: страница пересобрана из оставшихся записей; причина записана.",
+campH:"Кампания охвата: уведомление о странице",campLede:"Цель: сообщить компаниям, что о них есть страница, и как её исправить, заявить или удалить. Аудитория: 214 кровельных компаний из источников в округе Сан-Диего.",
+policyH:"Политика по юрисдикциям",mode:"Режим",mStrict:"строгий (по умолчанию): охвата нет",mNotice:"только уведомление (вариант B)",mGov:"управляемый (вариант C)",
+counselReq:"Для включения этого режима нужны запись об одобрении юриста и второй сотрудник. На эталонном хабе — также одобрение владельца.",
+strictOn:"Охват выключен: в этом хабе действует строгое правило. Страницы остаются «из источников»; компании могут заявить их, когда найдут.",
+floorH:"Минимум движка (переключателя нет)",floor:["Нет охвата потребителей","Нет автоматических звонков, голоса ИИ, SMS и мессенджеров без предварительного согласия","Нет угаданных или проверенных зондированием адресов","В каждом сообщении: кто отправитель, источники данных, указание на автоматического помощника и отписка в один клик","Общий список подавления проверяется при отправке","Не более 3 касаний на получателя и цель"],
+juris:"Юрисдикция",cls:"Класс получателя",chan:"Канал",basis:"Основание",
+rUS1:"США · общий адрес организации · e-mail · отказ по запросу (CAN-SPAM) · ждёт проверки юристом",rUS2:"США · ролевой адрес · e-mail · отказ по запросу · ждёт проверки юристом",rUS3:"США · именной деловой контакт · не собирается (вопрос владельцу)",rUS4:"США · индивидуальный предприниматель · запрещено (по умолчанию)",rUS5:"США · любой · SMS, звонки, мессенджеры · только предварительное письменное согласие",
+gatesH:"Проверки для одного получателя",recipPick:"Получатель",
+gNames:["Режим политики хаба","Источник разрешает использовать контакт","Класс и юрисдикция получателя известны","Основание для класса × канала","Общий список подавления (хаб и узел)","Запрещённая территория или совпадение при скрининге","Лимиты: касания, домен, в день, бюджет","Тихие часы по времени получателя","Проверка сообщения: отправитель, источники, раскрытие, отписка, язык","Одобрение на уровне автономности"],
+pass:"да",fail:"стоп",wait:"ждать",
+r1:"Example Roofing Co · info@ на своём домене",r2:"Sample Gutters LLC · подавлен (отписка 2 сентября)",r3:"Demo Shingle Supply · источник только для показа",r4:"Placeholder Roof Pros · вне тихих часов",
+why:{mode:"Строгий режим: ничего не отправляется",src:"Источник справки о лицензиях не разрешает использовать контакт",supp:"Подавлен: отписка 02.09.2026",quiet:"Местное время получателя 19:40; следующее окно — пн 09:00",appr:"Уровень «с помощником»: пакет одобряет человек"},
+previewH:"Точный предпросмотр сообщения",pvLang:"Язык",pvJur:"Юрисдикция",
+locked:"Выделенные блоки закреплены, редактор шаблона не может их удалить.",
+approveBtn:"Запросить включение (второй сотрудник)",dryBtn:"Пробный прогон: проверить, ничего не отправлять",
+tDry:"Пробный прогон: проверки выполнены, ничего не отправлено. Прошли бы 61, остановлены 153.",tApprove:"Демо: запрос на одобрение создан. Свой запрос одобрить нельзя.",tStrictBlock:"Заблокировано: хаб в строгом режиме.",
+metricsH:"Метрики по когортам (меньше десяти скрыто)",mSent:"Доставлено уведомлений",mClaims:"Начато заявок",mUnsub:"Отписались",mCompl:"Жалобы",fewer:"меньше 10",
+claimsH:"Очередь заявок",claimsLede:"Управление передаётся только по рецепту проверки хаба. Ответ на письмо никогда ничего не передаёт.",
+c1t:"Example Roofing Co · заявитель: Synthetic Claimant A",c2t:"Demo Shingle Supply · две конкурирующие заявки (спор)",c3t:"Sample Gutters LLC · заявитель на бесплатной почте",
+steps:["Подтверждённый вход (e-mail подтверждён)","Санкционный скрининг заявителя и компании","Связь с компанией: ссылка-приглашение на info@ домена компании из записи","Запись в реестре действует; идентификатор, название и адрес совпадают (получено проверяющим)","Связь с подписантом: письмо о полномочиях с принятой электронной подписью","Декларация о собственниках подписана"],
+stOk:"пройдено",stPend:"ожидает",stNa:"не применимо: бесплатная почта не даёт связи с доменом; нужен реестр плюс обратный звонок",
+levelClaimed:"Одобрить до «Заявлено»: ограниченное управление",levelVerified:"Одобрить до «Проверено»: передать управление",
+handH:"Что даёт передача",claimedGets:"Заявлено: правка описательных полей, принятие или отклонение предложений, остановка охвата. Нельзя: сотрудники, представитель, предложения, юридическое название.",verifiedGets:"Проверено: роль администратора компании, приглашение сотрудников, настройка представителя с ответственным лицом.",
+cooling:"Период охлаждения: 7 дней без изменения юридического названия, идентификаторов, домена, реквизитов выплат и представителя.",
+disputeBanner:"Спор: две открытые заявки. Страница остаётся «из источников». Решение требует доказательств уровня «Проверено» и второго сотрудника; текущие администраторы уведомлены; ожидание до 08.11.2026.",
+tClaimed:"Демо: одобрено до «Заявлено». Запись аудита создана.",tVerified:"Демо: одобрено до «Проверено». Передача записана; начался период охлаждения.",
+auditH:"Журнал аудита",audit:["14.10 10:02 · Уведомление о странице доставлено (кампания v3, касание 1)","15.10 08:41 · Заявка открыта по ссылке-приглашению","15.10 08:41 · Скрининг: совпадений нет по базовым спискам (синтетика)","15.10 08:42 · Связь с доменом записана (уровень «Заявлено»)","16.10 14:10 · Проверяющий получил запись реестра: совпадает"],
+objH:"Возражение и удаление",objLede:"Что видит человек или компания, выбрав «Это обо мне или моей компании», и что делает хаб.",
+oStep:["Запрос","Проверка связи","Решение","Готово"],
+oQ:"Что вы хотите?",oStop:"Больше не связываться со мной или моей компанией",oCorr:"Исправить что-то на странице",oErase:"Удалить информацию обо мне",oRemove:"Удалить страницу компании",
+oEmail:"Ваш деловой e-mail",oSend:"Отправить код на этот адрес",oCode:"Введите 6-значный код (демо: любые 6 цифр)",oVerify:"Подтвердить",
+oNext:"Продолжить",
+oResStop:"Готово. Адрес подавлен для всех целей во всём хабе и на узле, сразу. Мы храним только адрес, причину и дату, чтобы выполнить обещание.",
+oResErase:"Получено. Решает сотрудник по защите данных; удаление выполняют два человека. Срок: 30 дней (из пакета страны). Ваш контакт уже подавлен.",
+oResRemove:"Получено. Факты о компании из официальных реестров могут остаться, где это разрешает закон; вы получите мотивированное решение и сможете обжаловать.",
+oResCorr:"Спасибо. Исправление проверят, источник сохранится.",
+effectsH:"Что происходит в хабе",eff:["Запись подавления: все цели, хаб и узел","Запланированные касания для адреса отменены","Запись «не собирать»: следующее обновление не импортирует его снова","Удаление (если запрошено): поля о человеке удаляются из записей, данных охвата и переписки; надгробия в индексы и пирам","Подтверждение отправлено в срок из пакета страны"],
+adminH:"Вид сотрудника по защите данных",lookup:"Точный поиск (без просмотра списка)",lookBtn:"Найти",lookRes:"Подавлен · причина: возражение · 31.10.2026 · охват: узел",
+pending:"Запросы со сроком",counts:"Подавление по причинам (когорты)",unsub:"Отписка",objection:"Возражение",bounce:"Недоставка",erasure:"Удаление"}};
+let L='en', V='page', state={sel:0,recip:0,mode:'strict',pvLang:'en',claim:0,oStep:0,oKind:'stop'};
+const t=k=>T[L][k];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200)}
+function badge(cls,txt){return `<span class="badge ${cls}">${esc(txt)}</span>`}
+function vPage(){
+ const rows=[[t('fLegal'),'Example Roofing Co',[t('srcReg'),t('srcLic')],'b-ok',t('c2')],[t('fStatus'),t('vStatus'),[t('srcReg')],'b-mut',t('c1')],[t('fLicence'),t('vLicence'),[t('srcLic')],'b-mut',t('c1')],[t('fArea'),t('vArea'),[t('srcSite'),t('srcOsm')],'b-warn',t('cDis')],[t('fServices'),t('vServices'),[t('srcSite')],'b-mut',t('c1')],[t('fSite'),'example-roofing.invalid',[t('srcSite')],'b-mut',t('c1')],[t('fContact'),t('vContact'),[t('srcSite')],'b-mut',t('c1')]];
+ return `<h1>${t('pageH')}</h1><p>${badge('b-src','◇ '+t('sourcedBadge'))}</p><p class="lede">${t('pageLede')}</p>
+ <div class="notice" style="background:var(--infobg);color:var(--info)">${t('notVerified')}</div>
+ <div class="grid g3"><div class="card"><table class="resp"><thead><tr><th>${t('field')}</th><th>${t('value')}</th><th>${t('sources')}</th><th>${t('confidence')}</th></tr></thead><tbody>
+ ${rows.map(r=>`<tr><td data-l="${t('field')}"><strong>${esc(r[0])}</strong></td><td data-l="${t('value')}">${esc(r[1])}</td><td data-l="${t('sources')}">${r[2].map((s,i)=>`<div class="src">[${i+1}] ${esc(s)}</div>`).join('')}</td><td data-l="${t('confidence')}">${badge(r[3],r[4])}</td></tr>`).join('')}
+ </tbody></table></div>
+ <div><div class="card"><h3>${t('howBuilt')}</h3><p class="small">${t('howBody')}</p><p class="small muted">${t('noPeople')}</p></div>
+ <div class="card"><button class="btn primary" data-a="claim">${t('claimBtn')}</button><button class="btn" data-a="corr">${t('corrBtn')}</button><button class="btn" data-a="about">${t('aboutBtn')}</button></div></div></div>`}
+const props=[{band:'high',a:['Example Roofing Co','LIC 000001 (synthetic)','100 Example St, San Diego','—'],b:['EXAMPLE ROOFING COMPANY','LIC 000001 (synthetic)','100 Example Street, San Diego','example-roofing.invalid'],ev:['idMatch','nameAddr'],c:0.98,person:false},
+{band:'med',a:['Sample Gutters LLC','—','22 Sample Ave, Chula Vista','sample-gutters.invalid'],b:['Sample Gutters','—','22 Sample Avenue, Chula Vista','sample-gutters.invalid'],ev:['domain','nameAddr'],c:0.86,person:false},
+{band:'low',a:['Placeholder Roof Pros','—','El Cajon','—'],b:['Synthetic Person B (sole proprietor)','LIC 000777 (synthetic)','El Cajon','—'],ev:['nameAddr'],c:0.62,person:true}];
+function vReview(){const p=props[state.sel];const lbl={high:t('high'),med:t('med'),low:t('low')};const bc={high:'b-ok',med:'b-warn',low:'b-mut'};
+ const fl=[t('fLegal'),t('fLicence'),'Address / '+t('fArea'),t('fSite')];
+ return `<h1>${t('reviewH')}</h1><p class="lede">${t('reviewLede')}</p><div class="notice" style="background:var(--infobg);color:var(--info)">${t('noMerge')}</div>
+ <div class="grid g3" style="grid-template-columns:1fr 2fr"><div class="list" role="list">${props.map((q,i)=>`<button class="item" data-sel="${i}" aria-current="${i===state.sel}">${badge(bc[q.band],t('band')+': '+lbl[q.band]+' · '+q.c.toFixed(2))}<div><strong>${esc(q.a[0])}</strong> ↔ ${esc(q.b[0])}</div></button>`).join('')}
+ <div class="card small"><button class="btn" data-a="batch">${t('batchBtn')}</button><p class="muted">${t('batchNote')}</p></div></div>
+ <div class="card"><table class="resp"><thead><tr><th>${t('field')}</th><th>${t('recA')}</th><th>${t('recB')}</th></tr></thead><tbody>${fl.map((f,i)=>`<tr><td data-l="${t('field')}">${esc(f)}</td><td data-l="${t('recA')}">${esc(p.a[i])}</td><td data-l="${t('recB')}">${esc(p.b[i])}</td></tr>`).join('')}</tbody></table>
+ <h3>${t('evidence')}</h3><ul class="small">${p.ev.map(e=>`<li>${t(e)}</li>`).join('')}</ul>
+ ${p.person?`<div class="notice" style="background:var(--warnbg);color:var(--warn)">${t('personNote')}</div>`:''}
+ <button class="btn primary" data-a="link" ${p.person?'disabled':''}>${t('linkBtn')}</button><button class="btn" data-a="reject">${t('rejectBtn')}</button><button class="btn" data-a="distinct">${t('distinctBtn')}</button><button class="btn" data-a="split">${t('splitBtn')}</button></div></div>`}
+function gateRes(r){const strict=state.mode==='strict';const g=Array(10).fill('pass');const why={};
+ if(strict){g[0]='fail';why[0]=t('why').mode;for(let i=1;i<10;i++)g[i]='skip';return{g,why}}
+ if(r===1){g[4]='fail';why[4]=t('why').supp;for(let i=5;i<10;i++)g[i]='skip'}
+ else if(r===2){g[1]='fail';why[1]=t('why').src;for(let i=2;i<10;i++)g[i]='skip'}
+ else if(r===3){g[7]='wait';why[7]=t('why').quiet;g[8]='skip';g[9]='skip'}
+ else {g[9]='wait';why[9]=t('why').appr}
+ return{g,why}}
+function message(lang){if(lang==='es')return `<b>Asunto:</b> La página de su empresa en Trustwork San Diego (demo) se creó a partir de fuentes públicas
+
+Hola, equipo de Example Roofing Co:
+
+<span class="lock">Trustwork San Diego es un directorio abierto del sector de la construcción en el condado de San Diego, gestionado por Example Operator LLC. Nuestro asistente automático preparó este mensaje.</span>
+
+<span class="lock">Creamos una página sobre su empresa a partir de fuentes públicas: la consulta de licencias de contratistas (12 oct 2026) y su sitio example-roofing.invalid (14 oct 2026).</span> Está marcada como «Creada a partir de una fuente abierta» y no dice que esté verificada ni respaldada.
+
+Puede reclamarla gratis para corregirla y gestionarla, o pedirnos que la corrijamos o eliminemos: [enlace]. Si no hace nada, solo le enviaremos un recordatorio en 14 días.
+
+<span class="lock">Obtuvimos esta dirección de su sitio web, donde figura para consultas comerciales. Darse de baja con un clic: [enlace], o responda «stop».</span>
+
+<span class="lock">Example Operator LLC, 100 Example Street, San Diego, CA 92101, Estados Unidos</span>`;
+ return `<b>Subject:</b> Your company's page on Trustwork San Diego (demo) was created from public sources
+
+Hello Example Roofing Co team,
+
+<span class="lock">Trustwork San Diego is an open directory and gathering point for the construction industry in San Diego County, run by Example Operator LLC. Our automated assistant prepared this message.</span>
+
+<span class="lock">We created a page about your company from public sources: the California contractor licence look-up (checked 12 October 2026) and your website example-roofing.invalid (checked 14 October 2026).</span> It is labelled "Created from an open source" and does not say you are verified or endorsed.
+
+You can claim the page for free to correct and manage it, or ask us to correct or remove it: [page link]. If you do nothing, we will not write again about this page, except one reminder in 14 days.
+
+<span class="lock">We got this address from your website, where it is listed for business enquiries. Unsubscribe in one click: [link], or reply "stop".</span>
+
+<span class="lock">Example Operator LLC, 100 Example Street, San Diego, CA 92101, United States</span>`}
+function vCampaign(){const res=gateRes(state.recip);const strict=state.mode==='strict';
+ const lab={pass:['b-ok','✓ '+t('pass')],fail:['b-bad','✕ '+t('fail')],wait:['b-warn','… '+t('wait')],skip:['b-mut','—']};
+ return `<h1>${t('campH')}</h1><p class="lede">${t('campLede')}</p>
+ <div class="grid g2"><div class="card"><h2>${t('policyH')}</h2><label for="mode">${t('mode')} · US</label>
+ <select id="mode"><option value="strict" ${strict?'selected':''}>${t('mStrict')}</option><option value="notice" ${state.mode==='notice'?'selected':''}>${t('mNotice')}</option><option value="gov" ${state.mode==='gov'?'selected':''}>${t('mGov')}</option></select>
+ ${strict?`<div class="notice" style="background:var(--warnbg);color:var(--warn)">${t('strictOn')}</div>`:`<div class="notice" style="background:var(--badbg);color:var(--bad)">${t('counselReq')}</div>`}
+ <ul class="small">${['rUS1','rUS2','rUS3','rUS4','rUS5'].map(k=>`<li>${t(k)}</li>`).join('')}</ul>
+ <h3>${t('floorH')}</h3><ul class="small">${t('floor').map(f=>`<li>🔒 ${esc(f)}</li>`).join('')}</ul></div>
+ <div class="card"><h2>${t('gatesH')}</h2><label for="recip">${t('recipPick')}</label><select id="recip">${['r1','r2','r3','r4'].map((k,i)=>`<option value="${i}" ${i===state.recip?'selected':''}>${t(k)}</option>`).join('')}</select>
+ <div role="list">${t('gNames').map((n,i)=>`<div class="gate" role="listitem"><span class="ic">${badge(lab[res.g[i]][0],lab[res.g[i]][1])}</span><span><strong class="small">${i+1}. ${esc(n)}</strong>${res.why[i]?`<div class="small muted">${esc(res.why[i])}</div>`:''}</span></div>`).join('')}</div></div></div>
+ <div class="card"><h2>${t('previewH')}</h2><label for="pvl">${t('pvLang')}</label><select id="pvl"><option value="en" ${state.pvLang==='en'?'selected':''}>English (US)</option><option value="es" ${state.pvLang==='es'?'selected':''}>Español (US)</option></select>
+ <p class="small muted">${t('locked')}</p><div class="msg">${message(state.pvLang)}</div>
+ <button class="btn" data-a="dry">${t('dryBtn')}</button><button class="btn primary" data-a="approve">${t('approveBtn')}</button></div>
+ <div class="card"><h2>${t('metricsH')}</h2><div class="kv"><span>${t('mSent')}</span><strong>${strict?'0':'187'}</strong><span>${t('mClaims')}</span><strong>${strict?'0':'23'}</strong><span>${t('mUnsub')}</span><strong>${strict?'0':'11'}</strong><span>${t('mCompl')}</span><strong>${strict?'0':t('fewer')}</strong></div></div>`}
+const claimsData=[{st:['ok','ok','ok','ok','pend','pend'],disp:false},{st:['ok','ok','pend','pend','pend','pend'],disp:true},{st:['ok','ok','na','pend','pend','pend'],disp:false}];
+function vClaims(){const c=claimsData[state.claim];const lab={ok:['b-ok','✓ '+t('stOk')],pend:['b-warn','… '+t('stPend')],na:['b-mut',t('stNa')]};
+ const claimedOk=c.st[0]==='ok'&&c.st[1]==='ok'&&(c.st[2]==='ok'||c.st[3]==='ok')&&!c.disp;const verOk=c.st.every(s=>s==='ok')&&!c.disp;
+ return `<h1>${t('claimsH')}</h1><p class="lede">${t('claimsLede')}</p><div class="grid g3" style="grid-template-columns:1fr 2fr"><div class="list">${['c1t','c2t','c3t'].map((k,i)=>`<button class="item" data-claim="${i}" aria-current="${i===state.claim}">${esc(t(k))}</button>`).join('')}</div>
+ <div class="card">${c.disp?`<div class="notice" style="background:var(--badbg);color:var(--bad)">${t('disputeBanner')}</div>`:''}
+ <ol class="steps">${t('steps').map((s,i)=>`<li>${badge(lab[c.st[i]][0],lab[c.st[i]][1])}<span>${esc(s)}</span></li>`).join('')}</ol>
+ <button class="btn" data-a="claimed" ${claimedOk?'':'disabled'}>${t('levelClaimed')}</button><button class="btn primary" data-a="verified" ${verOk?'':'disabled'}>${t('levelVerified')}</button>
+ <h3>${t('handH')}</h3><p class="small">${t('claimedGets')}</p><p class="small">${t('verifiedGets')}</p><p class="small muted">${t('cooling')}</p>
+ <h3>${t('auditH')}</h3><ul class="small muted">${t('audit').map(a=>`<li>${esc(a)}</li>`).join('')}</ul></div></div>`}
+function vObject(){const s=state.oStep;const kinds=[['stop','oStop'],['corr','oCorr'],['erase','oErase'],['remove','oRemove']];
+ let body='';
+ if(s===0)body=`<fieldset style="border:0;padding:0"><legend><strong>${t('oQ')}</strong></legend>${kinds.map(([v,k])=>`<label style="font-weight:400"><input type="radio" name="ok" value="${v}" ${state.oKind===v?'checked':''}> ${t(k)}</label>`).join('')}</fieldset><button class="btn primary" data-a="onext">${t('oNext')}</button>`;
+ if(s===1)body=`<label for="oem">${t('oEmail')}</label><input id="oem" type="text" value="info@example-roofing.invalid" size="32"><br><button class="btn" data-a="osend">${t('oSend')}</button><label for="ocode">${t('oCode')}</label><input id="ocode" type="text" inputmode="numeric" maxlength="6" size="8"><br><button class="btn primary" data-a="overify">${t('oVerify')}</button>`;
+ if(s>=2){const m={stop:'oResStop',corr:'oResCorr',erase:'oResErase',remove:'oResRemove'}[state.oKind];body=`<div class="notice" style="background:var(--okbg);color:var(--ok)">${t(m)}</div><button class="btn" data-a="oreset">↺</button>`}
+ return `<h1>${t('objH')}</h1><p class="lede">${t('objLede')}</p><div class="flow" aria-label="Steps">${t('oStep').map((x,i)=>`<span class="${i===Math.min(s,3)?'on':''}">${i+1}. ${esc(x)}</span>`).join('')}</div>
+ <div class="grid g2"><div class="card">${body}</div><div class="card"><h3>${t('effectsH')}</h3><ol class="small">${t('eff').map((e,i)=>`<li style="${s>=2&&(i!==3||state.oKind==='erase')?'':'opacity:.5'}">${esc(e)}</li>`).join('')}</ol></div></div>
+ <div class="card"><h2>${t('adminH')}</h2><div class="grid g2"><div><label for="lk">${t('lookup')}</label><input id="lk" type="text" value="info@example-roofing.invalid" size="30"> <button class="btn" data-a="look">${t('lookBtn')}</button><div id="lkr" class="small"></div></div>
+ <div><h3>${t('counts')}</h3><div class="kv"><span>${t('unsub')}</span><strong>11</strong><span>${t('objection')}</span><strong>${t('fewer')}</strong><span>${t('bounce')}</span><strong>14</strong><span>${t('erasure')}</span><strong>${t('fewer')}</strong></div></div></div></div>`}
+function render(){document.documentElement.lang=L;document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
+ document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===L));
+ document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===V));
+ const m=document.getElementById('main');m.innerHTML={page:vPage,review:vReview,campaign:vCampaign,claims:vClaims,object:vObject}[V]();bind()}
+function bind(){const m=document.getElementById('main');
+ m.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{state.sel=+b.dataset.sel;render()});
+ m.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>{state.claim=+b.dataset.claim;render()});
+ const mo=m.querySelector('#mode');if(mo)mo.onchange=e=>{state.mode=e.target.value;render()};
+ const rc=m.querySelector('#recip');if(rc)rc.onchange=e=>{state.recip=+e.target.value;render()};
+ const pv=m.querySelector('#pvl');if(pv)pv.onchange=e=>{state.pvLang=e.target.value;render()};
+ m.querySelectorAll('input[name=ok]').forEach(r=>r.onchange=e=>state.oKind=e.target.value);
+ m.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
+  const map={claim:()=>{toast(t('toastClaim'))},corr:()=>toast(t('toastCorr')),about:()=>{V='object';state.oStep=0;render()},link:()=>toast(t('tLinked')),reject:()=>toast(t('tRejected')),distinct:()=>toast(t('tDistinct')),split:()=>toast(t('tSplit')),batch:()=>toast(t('tBatch')),
+  dry:()=>toast(state.mode==='strict'?t('tStrictBlock'):t('tDry')),approve:()=>toast(state.mode==='strict'?t('tStrictBlock'):t('tApprove')),claimed:()=>toast(t('tClaimed')),verified:()=>toast(t('tVerified')),
+  onext:()=>{state.oStep=1;render()},osend:()=>toast('✓'),overify:()=>{const v=(m.querySelector('#ocode')||{}).value||'';if(/^\d{6}$/.test(v)){state.oStep=2;render()}else toast(t('oCode'))},oreset:()=>{state.oStep=0;render()},
+  look:()=>{m.querySelector('#lkr').textContent=t('lookRes')}};(map[a]||(()=>{}))()})}
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{L=b.dataset.lang;render()});
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{V=b.dataset.v;render();document.getElementById('main').focus()});
+render();
+</script>
+</body>
+</html>

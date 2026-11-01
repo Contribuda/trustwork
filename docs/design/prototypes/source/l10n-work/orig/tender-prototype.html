@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trustwork tender desk prototype (synthetic data)</title>
+<style>
+:root{
+  --bg:#f5f6f8;--surface:#fff;--text:#14161a;--muted:#5b6270;--border:#dde1e7;--accent:#1f4fd1;--accent-ink:#fff;--navy:#0f1b3d;
+  --ok:#17723a;--ok-bg:#e6f4ea;--warn:#8a5a00;--warn-bg:#fff4d6;--bad:#a8231c;--bad-bg:#fde8e6;--info:#1f4fd1;--info-bg:#e8eefc;
+  --radius:10px;--focus:0 0 0 3px #f5b70066, 0 0 0 1px #8a5a00;
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus);border-radius:6px}
+.demo{background:#fff4d6;color:#5c3d00;text-align:center;padding:6px 12px;font-size:13px;border-bottom:1px solid #e9d08a}
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:calc(100vh - 31px)}
+.side{background:var(--surface);border-right:1px solid var(--border);padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;padding:6px 8px 14px}
+.brand .sq{display:inline-grid;grid-template-columns:repeat(3,8px);gap:2px}.brand .sq i{width:8px;height:8px;background:var(--accent);display:block}
+.nav a{display:block;padding:8px 10px;border-radius:8px;color:var(--text);text-decoration:none}
+.nav a[aria-current="page"]{background:var(--info-bg);color:var(--accent);font-weight:600}
+.main{min-width:0}
+.top{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
+.crumbs{color:var(--muted);font-size:14px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.lang{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:transparent;padding:5px 12px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.avatar{width:32px;height:32px;border-radius:50%;background:#c9d4f2;display:grid;place-items:center;font-weight:700;color:var(--navy)}
+.menu-btn{display:none;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px}
+.content{padding:18px 20px 120px;max-width:1200px}
+h1{font-size:24px;margin:4px 0 2px}h2{font-size:18px;margin:18px 0 8px}h3{font-size:15px;margin:12px 0 6px}
+.sub{color:var(--muted);margin:0 0 12px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:12px 0 14px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:9px 12px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.tabs button[aria-selected="true"]{border-color:var(--accent);color:var(--text);font-weight:600}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:12.5px;background:#fff;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);border-color:#bfe2c9;color:var(--ok)}
+.chip.warn{background:var(--warn-bg);border-color:#f0d58a;color:var(--warn)}
+.chip.bad{background:var(--bad-bg);border-color:#f3c0bb;color:var(--bad)}
+.chip.info{background:var(--info-bg);border-color:#c6d4f7;color:var(--info)}
+.chip.lock{background:#f1f2f5}
+.btn{border:1px solid var(--border);background:#fff;border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;background:var(--surface)}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:600;background:#fafbfc}
+.table-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:auto}
+.reasons{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px}
+.row-link{cursor:pointer}.row-link:hover td{background:#f8faff}
+.muted{color:var(--muted)}.small{font-size:13px}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:4px 10px;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+.banner{border-radius:8px;padding:10px 12px;margin:10px 0;border:1px solid}
+.banner.warn{background:var(--warn-bg);border-color:#f0d58a}
+.banner.info{background:var(--info-bg);border-color:#c6d4f7}
+.banner.bad{background:var(--bad-bg);border-color:#f3c0bb}
+.score{font-variant-numeric:tabular-nums}
+.rec{font-size:17px;font-weight:700}
+input[type=number],input[type=text],textarea,select{border:1px solid var(--border);border-radius:6px;padding:6px 8px;background:#fff;width:100%}
+td input[type=number]{width:110px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(440px,100%);background:#fff;border-left:1px solid var(--border);box-shadow:-8px 0 24px #0002;padding:16px;z-index:40;overflow:auto;transform:translateX(105%);transition:transform .18s}
+.drawer.open{transform:none}
+.page-sim{border:1px solid var(--border);border-radius:6px;padding:14px;font-family:Georgia,serif;font-size:13.5px;background:#fffef8}
+mark{background:#ffe48a;padding:1px 2px}
+.dialog-back{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
+.dialog-back.open{display:flex}
+.dialog{background:#fff;border-radius:12px;max-width:560px;width:100%;padding:18px;max-height:90vh;overflow:auto}
+.dialog h2{margin-top:0}
+.dialog .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.launcher{position:fixed;right:18px;bottom:18px;z-index:50;border:0;background:var(--navy);color:#fff;border-radius:999px;padding:12px 18px;box-shadow:0 6px 18px #0003;cursor:pointer;font-weight:600}
+.launcher .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f5b700;margin-left:6px}
+.overlay{position:fixed;right:18px;bottom:76px;width:min(400px,calc(100% - 24px));max-height:min(640px,calc(100vh - 110px));background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px #0003;z-index:50;display:none;flex-direction:column}
+.overlay.open{display:flex}
+.ov-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)}
+.ov-body{padding:12px 14px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px}
+.msg{border-radius:10px;padding:9px 11px;font-size:14px}
+.msg.agent{background:#f3f5f9}
+.msg.me{background:var(--info-bg);align-self:flex-end;max-width:85%}
+.proposal{border:1px solid var(--border);border-radius:10px;padding:10px;background:#fff}
+.proposal .label{font-size:12px;color:var(--muted)}
+.ov-input{display:flex;gap:6px;padding:10px;border-top:1px solid var(--border)}
+.thread{display:flex;flex-direction:column;gap:10px}
+.q{border:1px solid var(--border);border-radius:10px;padding:10px;background:#fff}
+.q.answer{background:#f7faf7;border-color:#cfe6d6}
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border)}
+.outline li{margin:4px 0}
+.hint{font-size:12.5px;color:var(--muted)}
+.cards-mobile{display:none}
+.mcard{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+@media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+@media (max-width:767px){
+  .shell{grid-template-columns:1fr}
+  .side{display:none;position:fixed;inset:31px 0 0 0;z-index:45}
+  .side.open{display:flex}
+  .menu-btn{display:inline-block}
+  .content{padding:14px 12px 120px}
+  .desktop-only{display:none}
+  .cards-mobile{display:block}
+  .kv{grid-template-columns:1fr}
+  .launcher{right:12px;bottom:12px}
+  .overlay{right:0;left:0;bottom:0;width:100%;max-height:85vh;border-radius:14px 14px 0 0}
+  .crumbs{display:none}
+}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<a class="sr" href="#main" id="skip"></a>
+<div class="demo" id="demoBanner"></div>
+<div class="shell">
+  <nav class="side" id="side" aria-label="Workspace">
+    <div class="brand"><span class="sq" aria-hidden="true"><i></i><i></i><i></i></span><span id="brandName">Trustwork</span></div>
+    <div class="nav" id="nav"></div>
+  </nav>
+  <div class="main">
+    <header class="top">
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="side"></button>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="top-actions">
+        <div class="lang" role="group" id="langGroup">
+          <button type="button" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+        </div>
+        <span class="avatar" aria-hidden="true">MR</span>
+      </div>
+    </header>
+    <main class="content" id="main" tabindex="-1"></main>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer" aria-labelledby="drawerTitle" role="complementary"></aside>
+<div class="dialog-back" id="dialogBack"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" id="dialog"></div></div>
+
+<button class="launcher" id="launcher" aria-expanded="false" aria-controls="overlay"></button>
+<section class="overlay" id="overlay" aria-labelledby="ovTitle">
+  <div class="ov-head"><strong id="ovTitle"></strong><button class="btn small" id="ovClose"></button></div>
+  <div class="ov-body" id="ovBody" role="log" aria-live="polite"></div>
+  <form class="ov-input" id="ovForm"><label class="sr" for="ovText" id="ovLabel"></label><input type="text" id="ovText"><button class="btn primary small" id="ovSend"></button></form>
+</section>
+
+<script>
+/* All data below is synthetic. No real buyer, company, person, notice or price. */
+const I18N = {
+en:{
+ skip:"Skip to content",demo:"Prototype with synthetic demo data. No real buyers, companies, notices or prices. Nothing is sent anywhere.",
+ brand:"Trustwork",menu:"Menu",
+ nav:["Overview","My page","Company","Projects","Procurement","Sales","Publications","Assistant"],
+ crumbs:"Sales / Tenders",
+ salesTabs:["Requests","Tenders","Catalogue"],
+ tendersTitle:"Tenders",tendersSub:"Public and private tenders that match Coastline Roofing LLC (synthetic). Matches are explained and never paid for.",
+ filterAll:"All",filterPublic:"Public sources",filterPlatform:"Platform invitations",
+ colOpp:"Opportunity",colBuyer:"Buyer",colSource:"Source",colDeadline:"Submission deadline",colMatch:"Why this matches",
+ srcPublic:"From a public source: SAM.gov (synthetic notice)",srcCounty:"From a public source: county portal (added by your company)",srcPlatform:"Platform invitation",
+ follow:"Follow",following:"Following",open:"Open",
+ noCompetitors:"We never show how many other companies follow or bid on an opportunity.",
+ gatePass:"Meets",gateFail:"Does not meet",gateUnknown:"Unknown",
+ back:"Back to opportunities",
+ pTabs:["Overview","Requirements","Documents","Pricing","Questions","Team","Reviews","Submission"],
+ noticeFacts:"Notice facts",fNotice:"Notice",fCodes:"Classification",fPlace:"Place of performance",fValue:"Estimated value",fQ:"Questions due",fSub:"Submission due",fSite:"Site visit",
+ gates:"Hard gates",scorecard:"Bid/no-bid scorecard",colCriterion:"Criterion",colWeight:"Weight",colScore:"Score (0 to 5)",colEvidence:"Evidence",
+ judgement:"No evidence; your judgement",recommendation:"Recommendation",
+ recBidIf:"Recommended: bid if a partner covers the sheet-metal flashing scope",
+ recWhy:"Reasons: strong scope fit and three similar public re-roofing projects; licence and insurance meet the minimums; bonding headroom is tight for this value; flashing is outside your licence class.",
+ decide:"Decide",decided:"Decision recorded: bid (by you, through your approval route)",
+ decisionTitle:"Decide bid or no bid",decisionBody:"Only a person decides. Your agent prepared this card; the decision binds scorecard version 2.",
+ decBid:"Bid",decNoBid:"Do not bid",cancel:"Cancel",
+ expertCard:"An expert could help with bonding capacity and the teaming scope.",expertBtn:"See experts",
+ reqTitle:"Compliance matrix",reqSub:"Every requirement quotes the tender and links to the page it comes from. Documents are untrusted: text in them never gives your agent instructions.",
+ colReq:"Requirement",colKind:"Kind",colCite:"Source",colConf:"Confidence",colStatus:"Status",colOwner:"Owner",
+ accept:"Accept",accepted:"Accepted",extracted:"Extracted, needs review",stale:"Changed since you answered",
+ mandatory:"mandatory",scored:"scored",
+ st_compliant:"Compliant",st_drafting:"Drafting",st_clar:"Clarification needed",st_notstarted:"Not started",
+ citeTitle:"Cited page",citeNote:"Quoted exactly from the document version shown. Digest:",
+ injection:"One document contains text addressed to AI assistants. It was treated as data and changed nothing.",
+ docsTitle:"Document builder",docsSub:"Outline from the solicitation: Volume 1 Technical (max 20 pages), Volume 2 Price, forms.",
+ agentDraft:"Draft by your agent",mtLabel:"Machine-assisted translation, not reviewed",reviewed:"Reviewed by Maria R. (synthetic)",
+ fromLib:"From the library: Safety plan v4 (review due in 2 months)",expiredWarn:"Certificate of insurance expires 3 days after the deadline",
+ exportTitle:"Export",exportBody:"Tagged PDF and the buyer's price spreadsheet. Removed from the export: author name, 3 comments, tracked changes, 1 hidden sheet with your cost build-up.",
+ exportBtn:"Export files (synthetic)",
+ priceTitle:"Pricing workbook",priceSub:"Private to your company. Margins, costs and floors are never sent and never reach a model without an allow rule.",
+ colLine:"Line",colQty:"Quantity (source)",colCost:"Cost per unit",colUnit:"Unit price",colTotal:"Total",colMargin:"Margin",
+ floor:"Your floor (never sent)",guard:"Margin guard",guardOk:"No findings",
+ belowFloor:"Line {n}: margin {m}% is below your floor {f}%",unbalanced:"Line {n}: unit price far above its cost build-up (possible unbalanced bid)",
+ totalBid:"Bid total",totalMargin:"Overall margin",escalation:"Escalation: producer price index for roofing materials (synthetic series), 3.1% over 14 months, applied to materials",
+ buyerSees:"What the buyer receives",buyerSeesBody:"Lines, quantities, unit prices and totals only. No cost, margin, floor or notes field exists in this schedule.",
+ showBuyer:"Preview the buyer's schedule",hideBuyer:"Back to the workbook",
+ qTitle:"Questions to the buyer",qSub:"Sent through the official channel from the notice data. Buyers usually publish questions and answers to all bidders.",
+ qDeadline:"Questions due {d} (Pacific Time). {h} hours left.",
+ qDraftLabel:"New question (cites requirement R-07)",
+ qDraftText:"Section 07 61 00 requires 24 gauge flashing. Will 22 gauge be accepted as equal or better?",
+ qSend:"Send through the official channel",qSent:"Sent through SAM.gov notice Q&A (recorded by you)",
+ qConfirmTitle:"Send this question?",qConfirmBody:"Recipient: contracting office of the synthetic notice SYN-2026-0142. Channel: the notice's Q&A, as stated in the structured notice data. Your company is not named to other bidders by the buyer's usual practice, but check the wording.",
+ qAnswerTitle:"Answer published to all bidders (Amendment 0002)",
+ qAnswer:"Flashing of 22 gauge is acceptable. The site visit moves to the date shown.",
+ qStaleNote:"Requirement R-07 was flagged as changed. Review it before the final review.",
+ teamTitle:"Team and partners",teamSub:"Partners are found by explained, payment-blind matching. You share only their scope, never your prices.",
+ gap:"Gap: sheet-metal flashing (licence class C-43 in the synthetic pack)",
+ cand1:"Pacific Sheet Metal Inc. (synthetic)",cand1Why:"Licence C-43 on record (sourced), 12 confirmed projects, within 30 miles",
+ cand2:"Harbor Flashing Co. (synthetic)",cand2Why:"Licence C-43 self-declared (claimed), 4 confirmed projects",
+ introduce:"Request introduction",scopePkg:"Share scope package",competitionNote:"Both companies could bid as prime. The hub's competition-law note applies; record why you team.",
+ reviewsTitle:"Reviews and approvals",rOutline:"Outline review: passed",rDraft:"Draft review: changes requested (2 comments)",rFinal:"Final review: waiting for the response version 3",
+ subTitle:"Submission checklist",subSub:"Computed from the matrix, the margin guard, pack facts and screening. Failures block submission.",
+ ck:[["ok","All 18 mandatory requirements answered"],["ok","Amendments 0001 and 0002 acknowledged on the form"],["ok","Volume 1 within 20 pages; file names as required"],["warn","Margin guard: 1 finding acknowledged by you"],["ok","Bid guarantee: bid bond from a licensed surety, reference SYN-BB-7781 (no funds through Trustwork)"],["ok","SAM.gov registration active on the deadline date (synthetic)"],["ok","Buyer and partner screened: no restriction"],["confirm","Certificate of independent price determination: sign as a person"]],
+ subPortal:"I submitted on the portal",subPortalNote:"Official portals: you upload and submit yourself; then record the receipt here. Trustwork never logs in to portals and never stores portal passwords.",
+ subPrepare:"Prepare submission",
+ subConfirmTitle:"Confirm a binding offer",subConfirmBody:"You are about to record a binding offer to the contracting office of SYN-2026-0142 (synthetic). Files: Volume1.pdf (digest 9f3a…c21), Price.xlsx (digest 41be…7d0). Deadline: Dec 4, 2026, 2:00 PM Pacific Time.",
+ stepUp:"Step-up: enter the code from your authenticator (demo code 123456)",receipt:"Portal receipt number",
+ confirm:"Confirm",confirmed:"Submission recorded by you. File digests match the frozen export.",wrongCode:"The code does not match. Nothing was recorded.",
+ agent:"Your agent",agentLaunch:"Assistant",close:"Close",send:"Send",ask:"Message your agent",
+ aHello:"I looked at the opportunity Re-roofing, Building 12 (synthetic). Here is what I suggest next. Nothing happens until you choose.",
+ p1:"Review 3 extracted requirements with low confidence",p2:"Send the flashing question before the question deadline (in 41 hours)",p3:"Ask Pacific Sheet Metal for a flashing sub-quote (introduction, uses 1 of your 10 monthly)",p4:"Book a 45-minute review of bonding capacity with a surety specialist",p5:"Prepare the submission: 7 of 8 checklist items pass; you sign the certificate and confirm with step-up. I will not submit for you.",
+ propose:"Suggested by your agent",go:"Open",
+ aSubmitReply:"I cannot submit from a chat message. Submitting is your decision: I opened the confirmation form with the checklist. You confirm there with step-up.",
+ aDefault:"Noted. I can draft, check and prepare; sending, deciding and submitting stay with you.",
+ expertsTitle:"Book an expert consultation",expertsBody:"Real experts on the platform. Suggestions are explained and never paid for.",
+ ex1:"Dana K. (synthetic), surety and bonding specialist",ex1Why:"Matches: bonding capacity, public works in California; licence recorded and checked by the hub",ex1Offer:"Bonding review, 45 minutes, video. USD 150. Hub commission USD 15 shown before booking.",
+ scopeTitle:"What you share with the expert",sReq:"Requirements R-02, R-05 (bonding and insurance)",sScore:"Bid/no-bid scorecard",sWork:"Pricing workbook (contains your prices)",
+ book:"Book and pay through the hub's licensed provider (demo: no money moves)",booked:"Booked (synthetic). The expert sees only what you chose to share.",
+ conflictNote:"Before booking we checked the expert has no conflict on this opportunity."
+},
+ru:{
+ skip:"Перейти к содержимому",demo:"Прототип на синтетических демонстрационных данных. Нет реальных заказчиков, компаний, извещений и цен. Ничего никуда не отправляется.",
+ brand:"Строй Репутация",menu:"Меню",
+ nav:["Обзор","Моя страница","Компания","Проекты","Закупки","Продажи","Публикации","Ассистент"],
+ crumbs:"Продажи / Тендеры",
+ salesTabs:["Запросы","Тендеры","Каталог"],
+ tendersTitle:"Тендеры",tendersSub:"Государственные и частные тендеры, подходящие компании Coastline Roofing LLC (синтетическая). Совпадения объяснены и никогда не продаются.",
+ filterAll:"Все",filterPublic:"Публичные источники",filterPlatform:"Приглашения на платформе",
+ colOpp:"Возможность",colBuyer:"Заказчик",colSource:"Источник",colDeadline:"Срок подачи",colMatch:"Почему подходит",
+ srcPublic:"Из публичного источника: SAM.gov (синтетическое извещение)",srcCounty:"Из публичного источника: портал округа (добавлено вашей компанией)",srcPlatform:"Приглашение на платформе",
+ follow:"Отслеживать",following:"Отслеживается",open:"Открыть",
+ noCompetitors:"Мы никогда не показываем, сколько других компаний отслеживают возможность или подают заявки.",
+ gatePass:"Соответствует",gateFail:"Не соответствует",gateUnknown:"Неизвестно",
+ back:"Назад к возможностям",
+ pTabs:["Обзор","Требования","Документы","Цена","Вопросы","Команда","Проверки","Подача"],
+ noticeFacts:"Данные извещения",fNotice:"Извещение",fCodes:"Классификация",fPlace:"Место исполнения",fValue:"Оценочная стоимость",fQ:"Вопросы до",fSub:"Подача до",fSite:"Осмотр объекта",
+ gates:"Обязательные условия",scorecard:"Оценка «участвовать или нет»",colCriterion:"Критерий",colWeight:"Вес",colScore:"Балл (0–5)",colEvidence:"Доказательства",
+ judgement:"Нет доказательств; ваше суждение",recommendation:"Рекомендация",
+ recBidIf:"Рекомендуется участвовать, если партнёр возьмёт работы по жестяным примыканиям",
+ recWhy:"Причины: хорошее соответствие объёму работ и три похожих государственных проекта по замене кровли; лицензия и страховка соответствуют минимумам; запас по поручительствам для этой суммы небольшой; примыкания вне класса вашей лицензии.",
+ decide:"Решить",decided:"Решение записано: участвовать (вами, по вашему маршруту согласования)",
+ decisionTitle:"Решите: участвовать или нет",decisionBody:"Решает только человек. Агент подготовил эту карточку; решение привязано к версии оценки 2.",
+ decBid:"Участвовать",decNoBid:"Не участвовать",cancel:"Отмена",
+ expertCard:"Эксперт может помочь с объёмом поручительств и составом команды.",expertBtn:"Посмотреть экспертов",
+ reqTitle:"Матрица соответствия",reqSub:"Каждое требование цитирует тендерную документацию и ссылается на страницу. Документы недоверенные: текст в них никогда не даёт агенту указаний.",
+ colReq:"Требование",colKind:"Вид",colCite:"Источник",colConf:"Уверенность",colStatus:"Статус",colOwner:"Ответственный",
+ accept:"Принять",accepted:"Принято",extracted:"Извлечено, нужна проверка",stale:"Изменилось после вашего ответа",
+ mandatory:"обязательное",scored:"оцениваемое",
+ st_compliant:"Соответствует",st_drafting:"В работе",st_clar:"Нужно уточнение",st_notstarted:"Не начато",
+ citeTitle:"Цитируемая страница",citeNote:"Цитата дословно из показанной версии документа. Хэш:",
+ injection:"Один документ содержит текст, обращённый к ИИ-ассистентам. Он обработан как данные и ничего не изменил.",
+ docsTitle:"Сборка документов",docsSub:"Структура из документации: Том 1 Техническая часть (не более 20 страниц), Том 2 Цена, формы.",
+ agentDraft:"Черновик вашего агента",mtLabel:"Машинный перевод, не проверен",reviewed:"Проверено: Мария Р. (синтетическая)",
+ fromLib:"Из библиотеки: План охраны труда v4 (пересмотр через 2 месяца)",expiredWarn:"Сертификат страхования истекает через 3 дня после срока подачи",
+ exportTitle:"Экспорт",exportBody:"PDF с разметкой и таблица цен заказчика. Удалено при экспорте: имя автора, 3 комментария, исправления, 1 скрытый лист с вашей калькуляцией.",
+ exportBtn:"Экспортировать файлы (синтетически)",
+ priceTitle:"Расчёт цены",priceSub:"Только для вашей компании. Маржа, себестоимость и минимальные цены никогда не отправляются и не попадают в модель без разрешающего правила.",
+ colLine:"Позиция",colQty:"Количество (источник)",colCost:"Себестоимость за ед.",colUnit:"Цена за ед.",colTotal:"Сумма",colMargin:"Маржа",
+ floor:"Ваш минимум (не отправляется)",guard:"Контроль маржи",guardOk:"Замечаний нет",
+ belowFloor:"Позиция {n}: маржа {m}% ниже вашего минимума {f}%",unbalanced:"Позиция {n}: цена за единицу намного выше калькуляции (возможна несбалансированная заявка)",
+ totalBid:"Итого по заявке",totalMargin:"Общая маржа",escalation:"Индексация: индекс цен производителей кровельных материалов (синтетический ряд), 3,1% за 14 месяцев, применён к материалам",
+ buyerSees:"Что получит заказчик",buyerSeesBody:"Только позиции, количества, цены за единицу и суммы. В этой таблице нет полей себестоимости, маржи, минимума или заметок.",
+ showBuyer:"Показать таблицу для заказчика",hideBuyer:"Назад к расчёту",
+ qTitle:"Вопросы заказчику",qSub:"Отправляются через официальный канал из данных извещения. Заказчики обычно публикуют вопросы и ответы для всех участников.",
+ qDeadline:"Вопросы до {d} (тихоокеанское время). Осталось {h} ч.",
+ qDraftLabel:"Новый вопрос (ссылается на требование R-07)",
+ qDraftText:"Раздел 07 61 00 требует жесть 24 калибра. Будет ли принят 22 калибр как равноценный или лучше?",
+ qSend:"Отправить через официальный канал",qSent:"Отправлено через раздел вопросов извещения SAM.gov (записано вами)",
+ qConfirmTitle:"Отправить этот вопрос?",qConfirmBody:"Получатель: контрактный отдел синтетического извещения SYN-2026-0142. Канал: раздел вопросов извещения, как указано в структурированных данных. Обычно заказчик не называет вашу компанию другим участникам, но проверьте формулировку.",
+ qAnswerTitle:"Ответ опубликован для всех участников (изменение 0002)",
+ qAnswer:"Жесть 22 калибра допускается. Осмотр объекта переносится на указанную дату.",
+ qStaleNote:"Требование R-07 отмечено как изменившееся. Проверьте его до итоговой проверки.",
+ teamTitle:"Команда и партнёры",teamSub:"Партнёров подбирает объяснимый подбор, не зависящий от оплаты. Вы передаёте только их часть работ, никогда свои цены.",
+ gap:"Пробел: жестяные работы (класс лицензии C-43 в синтетическом пакете)",
+ cand1:"Pacific Sheet Metal Inc. (синтетическая)",cand1Why:"Лицензия C-43 из реестра (из источника), 12 подтверждённых проектов, в пределах 30 миль",
+ cand2:"Harbor Flashing Co. (синтетическая)",cand2Why:"Лицензия C-43 заявлена самостоятельно, 4 подтверждённых проекта",
+ introduce:"Запросить знакомство",scopePkg:"Передать пакет работ",competitionNote:"Обе компании могли бы участвовать как генподрядчик. Действует памятка хаба о конкуренции; запишите, зачем вы объединяетесь.",
+ reviewsTitle:"Проверки и согласования",rOutline:"Проверка структуры: пройдена",rDraft:"Проверка черновика: нужны изменения (2 комментария)",rFinal:"Итоговая проверка: ждёт версию ответа 3",
+ subTitle:"Чек-лист подачи",subSub:"Рассчитывается из матрицы, контроля маржи, данных страны и проверки санкций. Ошибки блокируют подачу.",
+ ck:[["ok","Все 18 обязательных требований выполнены"],["ok","Изменения 0001 и 0002 подтверждены в форме"],["ok","Том 1 в пределах 20 страниц; имена файлов по требованиям"],["warn","Контроль маржи: 1 замечание подтверждено вами"],["ok","Обеспечение заявки: гарантия лицензированного поручителя, номер SYN-BB-7781 (деньги не проходят через платформу)"],["ok","Регистрация в SAM.gov действует на дату подачи (синтетически)"],["ok","Заказчик и партнёр проверены: ограничений нет"],["confirm","Сертификат независимого определения цены: подписывает человек"]],
+ subPortal:"Я подал(а) на портале",subPortalNote:"Официальные порталы: вы загружаете и подаёте сами, затем записываете здесь квитанцию. Платформа никогда не входит в порталы и не хранит пароли от них.",
+ subPrepare:"Подготовить подачу",
+ subConfirmTitle:"Подтвердите обязывающее предложение",subConfirmBody:"Вы записываете обязывающее предложение контрактному отделу SYN-2026-0142 (синтетическое). Файлы: Volume1.pdf (хэш 9f3a…c21), Price.xlsx (хэш 41be…7d0). Срок: 4 дек. 2026, 14:00 тихоокеанского времени.",
+ stepUp:"Дополнительная проверка: введите код из приложения (демо-код 123456)",receipt:"Номер квитанции портала",
+ confirm:"Подтвердить",confirmed:"Подача записана вами. Хэши файлов совпадают с зафиксированным экспортом.",wrongCode:"Код не совпадает. Ничего не записано.",
+ agent:"Ваш агент",agentLaunch:"Ассистент",close:"Закрыть",send:"Отправить",ask:"Сообщение агенту",
+ aHello:"Я посмотрел возможность «Замена кровли, здание 12» (синтетическая). Вот что предлагаю дальше. Ничего не произойдёт, пока вы не выберете.",
+ p1:"Проверить 3 извлечённых требования с низкой уверенностью",p2:"Отправить вопрос о жести до срока вопросов (через 41 ч)",p3:"Запросить у Pacific Sheet Metal субподрядное предложение (знакомство, 1 из 10 в месяц)",p4:"Записаться на 45-минутную консультацию по поручительствам",p5:"Подготовить подачу: 7 из 8 пунктов чек-листа выполнены; вы подписываете сертификат и подтверждаете с дополнительной проверкой. Я не подаю за вас.",
+ propose:"Предложение вашего агента",go:"Открыть",
+ aSubmitReply:"Я не могу подать заявку по сообщению в чате. Подача — ваше решение: я открыл форму подтверждения с чек-листом. Подтвердите там с дополнительной проверкой.",
+ aDefault:"Понял. Я могу готовить черновики, проверять и готовить подачу; отправка, решения и подача остаются за вами.",
+ expertsTitle:"Записаться на консультацию эксперта",expertsBody:"Реальные эксперты на платформе. Рекомендации объяснены и никогда не оплачиваются.",
+ ex1:"Дана К. (синтетическая), специалист по поручительствам",ex1Why:"Совпадения: объём поручительств, государственные работы в Калифорнии; лицензия записана и проверена хабом",ex1Offer:"Разбор поручительств, 45 минут, видео. 150 USD. Комиссия хаба 15 USD показана до записи.",
+ scopeTitle:"Что вы передаёте эксперту",sReq:"Требования R-02, R-05 (поручительства и страхование)",sScore:"Оценка «участвовать или нет»",sWork:"Расчёт цены (содержит ваши цены)",
+ book:"Записаться и оплатить через лицензированного провайдера хаба (демо: деньги не движутся)",booked:"Запись создана (синтетически). Эксперт видит только то, что вы решили передать.",
+ conflictNote:"Перед записью мы проверили, что у эксперта нет конфликта по этой возможности."
+}};
+let lang="en";const t=(k)=>I18N[lang][k];
+const fmtMoney=(v)=>new Intl.NumberFormat(lang==="ru"?"ru-RU":"en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(v);
+const fmtDate=(iso,opt)=>new Intl.DateTimeFormat(lang==="ru"?"ru-RU":"en-US",Object.assign({timeZone:"America/Los_Angeles"},opt||{dateStyle:"medium",timeStyle:"short"})).format(new Date(iso));
+const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const OPPS=[
+ {id:"o1",title:{en:"Re-roofing, Building 12 (synthetic)",ru:"Замена кровли, здание 12 (синтетическая)"},buyer:{en:"Federal contracting office (synthetic)",ru:"Федеральный контрактный отдел (синтетический)"},src:"srcPublic",deadline:"2026-12-04T22:00:00Z",value:2400000,
+  reasons:[["ok",{en:"Roofing (NAICS 238160)",ru:"Кровля (NAICS 238160)"}],["ok",{en:"Licence C-39 on record",ru:"Лицензия C-39 в реестре"}],["warn",{en:"Bonding headroom tight",ru:"Мало запаса по поручительствам"}],["bad",{en:"Flashing: licence C-43 missing",ru:"Примыкания: нет лицензии C-43"}],["ok",{en:"3 similar public projects",ru:"3 похожих гос. проекта"}]]},
+ {id:"o2",title:{en:"Roof coating, community library (synthetic)",ru:"Кровельное покрытие, библиотека (синтетическая)"},buyer:{en:"Harbor County Facilities (synthetic)",ru:"Управление объектов округа Harbor (синтетическое)"},src:"srcCounty",deadline:"2026-11-20T23:00:00Z",value:310000,
+  reasons:[["ok",{en:"Roof coatings",ru:"Кровельные покрытия"}],["ok",{en:"Within your regions",ru:"В ваших регионах"}],["warn",{en:"Mandatory site visit: unknown attendance",ru:"Обязательный осмотр: участие неизвестно"}]]},
+ {id:"o3",title:{en:"Warehouse roof repair, phase 2 (synthetic)",ru:"Ремонт кровли склада, этап 2 (синтетический)"},buyer:{en:"Mesa Vista Logistics LLC (synthetic)",ru:"Mesa Vista Logistics LLC (синтетическая)"},src:"srcPlatform",deadline:"2026-11-14T01:00:00Z",value:180000,
+  reasons:[["ok",{en:"Scope fit: TPO repair",ru:"Объём: ремонт ТПО"}],["ok",{en:"Within declared capacity",ru:"В пределах заявленной мощности"}]]}
+];
+const REQS=[
+ {id:"R-01",text:{en:"Submit Volume 1 Technical, at most 20 pages, PDF",ru:"Подать Том 1 «Техническая часть», не более 20 страниц, PDF"},kind:"submission",ob:"mandatory",doc:"Solicitation.pdf",page:4,conf:1,status:"st_compliant",owner:"Maria R.",acc:true,
+  quote:"Volume 1 – Technical Proposal shall not exceed twenty (20) pages and shall be submitted in PDF format."},
+ {id:"R-02",text:{en:"Bid guarantee of 20% of the bid price, separate bid bond",ru:"Обеспечение заявки 20% цены, отдельная гарантия"},kind:"form",ob:"mandatory",doc:"Solicitation.pdf",page:9,conf:.97,status:"st_drafting",owner:"Alex P.",acc:true,
+  quote:"Offerors shall furnish a bid guarantee in the amount of 20 percent of the bid price, in the form of a separate bid bond."},
+ {id:"R-05",text:{en:"Insurance: general liability at least USD 2,000,000 per occurrence",ru:"Страхование: общая ответственность не менее 2 000 000 USD на случай"},kind:"qualification",ob:"mandatory",doc:"Solicitation.pdf",page:12,conf:.91,status:"st_compliant",owner:"Alex P.",acc:true,
+  quote:"Commercial general liability insurance with limits of not less than $2,000,000 per occurrence."},
+ {id:"R-07",text:{en:"Flashing: 24 gauge galvanized steel (section 07 61 00)",ru:"Примыкания: оцинкованная сталь 24 калибра (раздел 07 61 00)"},kind:"technical",ob:"mandatory",doc:"Specifications.pdf",page:37,conf:.62,status:"st_clar",owner:"Maria R.",acc:false,
+  quote:"Sheet metal flashing shall be 24 gauge galvanized steel unless otherwise indicated."},
+ {id:"R-11",text:{en:"Past performance: three similar projects in the last five years",ru:"Опыт: три похожих проекта за последние пять лет"},kind:"qualification",ob:"scored",doc:"Solicitation.pdf",page:15,conf:.58,status:"st_notstarted",owner:"—",acc:false,
+  quote:"Provide three (3) projects of similar size and scope completed within the past five (5) years."},
+ {id:"R-14",text:{en:"Warranty: 20-year manufacturer warranty, no dollar limit",ru:"Гарантия: 20 лет от производителя, без ограничения суммы"},kind:"contract",ob:"mandatory",doc:"Specifications.pdf",page:41,conf:.55,status:"st_notstarted",owner:"—",acc:false,
+  quote:"Provide manufacturer's 20-year no-dollar-limit (NDL) warranty."}
+];
+const LINES=[
+ {n:1,desc:{en:"Remove existing roofing",ru:"Демонтаж существующей кровли"},qty:42000,unit:"SF",src:{en:"Buyer schedule p. 2",ru:"Таблица заказчика, с. 2"},cost:2.1,price:2.6},
+ {n:2,desc:{en:"TPO membrane 60 mil, installed",ru:"Мембрана ТПО 60 мил, с монтажом"},qty:42000,unit:"SF",src:{en:"Buyer schedule p. 2",ru:"Таблица заказчика, с. 2"},cost:6.4,price:7.5},
+ {n:3,desc:{en:"Sheet-metal flashing (partner)",ru:"Жестяные примыкания (партнёр)"},qty:3100,unit:"LF",src:{en:"Your takeoff",ru:"Ваш подсчёт"},cost:18,price:18.8},
+ {n:4,desc:{en:"Mobilization",ru:"Мобилизация"},qty:1,unit:"LS",src:{en:"Buyer schedule p. 1",ru:"Таблица заказчика, с. 1"},cost:22000,price:61000}
+];
+const FLOOR=8;
+const state={view:"list",tab:0,filter:"all",following:{o1:true},decided:false,qSent:false,answered:false,showBuyer:false,submitted:false,booked:false,reqAccepted:{},ovOpen:false,msgs:[]};
+
+function renderChrome(){
+  document.documentElement.lang=lang;
+  document.getElementById("skip").textContent=t("skip");
+  document.getElementById("demoBanner").textContent=t("demo");
+  document.getElementById("brandName").textContent=t("brand");
+  document.getElementById("menuBtn").textContent=t("menu");
+  document.getElementById("crumbs").textContent=t("crumbs");
+  document.getElementById("nav").innerHTML=t("nav").map((n,i)=>`<a href="#" ${i===5?'aria-current="page"':""}>${esc(n)}</a>`).join("");
+  document.getElementById("langGroup").setAttribute("aria-label",lang==="ru"?"Язык":"Language");
+  document.querySelectorAll("#langGroup button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.lang===lang)));
+  document.getElementById("launcher").innerHTML=esc(t("agentLaunch"))+'<span class="dot" aria-hidden="true"></span>';
+  document.getElementById("ovTitle").textContent=t("agent");
+  document.getElementById("ovClose").textContent=t("close");
+  document.getElementById("ovSend").textContent=t("send");
+  document.getElementById("ovLabel").textContent=t("ask");
+  document.getElementById("ovText").placeholder=t("ask");
+}
+function chip(kind,text){return `<span class="chip ${kind}">${kind==="ok"?"✓ ":kind==="bad"?"✕ ":kind==="warn"?"! ":""}${esc(text)}</span>`}
+function salesTabs(){return `<div class="tabs" role="tablist">${t("salesTabs").map((s,i)=>`<button role="tab" aria-selected="${i===1}">${esc(s)}</button>`).join("")}</div>`}
+
+function viewList(){
+  const list=OPPS.filter(o=>state.filter==="all"||(state.filter==="public"&&o.src!=="srcPlatform")||(state.filter==="platform"&&o.src==="srcPlatform"));
+  const rows=list.map(o=>`<tr class="row-link" data-open="${o.id}">
+    <td><strong>${esc(o.title[lang])}</strong><div class="small muted">${esc(fmtMoney(o.value))}</div></td>
+    <td>${esc(o.buyer[lang])}</td><td class="small">${esc(t(o.src))}</td>
+    <td>${esc(fmtDate(o.deadline))}<div class="small muted">PT</div></td>
+    <td><ul class="reasons">${o.reasons.map(r=>`<li>${chip(r[0],r[1][lang])}</li>`).join("")}</ul></td>
+    <td><button class="btn small" data-follow="${o.id}" aria-pressed="${!!state.following[o.id]}">${state.following[o.id]?t("following"):t("follow")}</button></td></tr>`).join("");
+  const cards=list.map(o=>`<div class="mcard"><strong>${esc(o.title[lang])}</strong><div class="small muted">${esc(o.buyer[lang])} · ${esc(fmtDate(o.deadline))} PT</div><div class="small">${esc(t(o.src))}</div><ul class="reasons">${o.reasons.map(r=>`<li>${chip(r[0],r[1][lang])}</li>`).join("")}</ul><div style="margin-top:8px;display:flex;gap:6px"><button class="btn small primary" data-open="${o.id}">${t("open")}</button><button class="btn small" data-follow="${o.id}" aria-pressed="${!!state.following[o.id]}">${state.following[o.id]?t("following"):t("follow")}</button></div></div>`).join("");
+  return `${salesTabs()}<h1>${esc(t("tendersTitle"))}</h1><p class="sub">${esc(t("tendersSub"))}</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" role="group">
+   ${[["all","filterAll"],["public","filterPublic"],["platform","filterPlatform"]].map(([k,l])=>`<button class="btn small" data-filter="${k}" aria-pressed="${state.filter===k}" style="${state.filter===k?"background:var(--navy);color:#fff":""}">${esc(t(l))}</button>`).join("")}
+  </div>
+  <div class="table-wrap desktop-only" role="region" aria-label="${esc(t("tendersTitle"))}" tabindex="0"><table><thead><tr><th>${t("colOpp")}</th><th>${t("colBuyer")}</th><th>${t("colSource")}</th><th>${t("colDeadline")}</th><th>${t("colMatch")}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="cards-mobile">${cards}</div>
+  <p class="hint">${esc(t("noCompetitors"))}</p>`;
+}
+
+function pursuitHeader(){
+  const o=OPPS[0];
+  return `${salesTabs()}<button class="btn small" id="backBtn">← ${esc(t("back"))}</button>
+  <h1>${esc(o.title[lang])}</h1>
+  <p class="sub">${esc(o.buyer[lang])} · ${chip("info",t("srcPublic"))} · ${esc(t("colDeadline"))}: <strong>${esc(fmtDate(o.deadline))} PT</strong></p>
+  <div class="tabs" role="tablist" aria-label="Pursuit">${t("pTabs").map((p,i)=>`<button role="tab" id="tab${i}" aria-selected="${state.tab===i}" data-tab="${i}">${esc(p)}</button>`).join("")}</div>`;
+}
+function tabOverview(){
+  const crit=[[{en:"Scope fit",ru:"Соответствие объёму"},25,5,{en:"Roofing scope matched, NAICS 238160",ru:"Объём кровельных работ совпал, NAICS 238160"}],[{en:"Similar past work",ru:"Похожий опыт"},20,4,{en:"3 confirmed public projects (REP-001)",ru:"3 подтверждённых гос. проекта"}],[{en:"Resources available",ru:"Наличие ресурсов"},15,3,{en:"2 crews free from January",ru:"2 бригады свободны с января"}],[{en:"Contract risk",ru:"Риски контракта"},15,3,{en:"Liquidated damages USD 1,500 per day",ru:"Неустойка 1 500 USD в день"}],[{en:"Competitive position",ru:"Конкурентная позиция"},15,3,null],[{en:"Strategic value",ru:"Стратегическая ценность"},10,4,null]];
+  const total=crit.reduce((a,c)=>a+c[1]*c[2],0)/5;
+  const gates=[["ok",{en:"SAM.gov registration active",ru:"Регистрация SAM.gov действует"}],["ok",{en:"Licence C-39 (roofing)",ru:"Лицензия C-39 (кровля)"}],["ok",{en:"Insurance meets USD 2M",ru:"Страховка от 2 млн USD"}],["bad",{en:"Licence C-43 for flashing",ru:"Лицензия C-43 на примыкания"}],["warn",{en:"Bonding capacity for USD 2.4M",ru:"Поручительства на 2,4 млн USD"}]];
+  return `<div class="grid2"><div>
+   <div class="card"><h2 style="margin-top:0">${t("scorecard")}</h2>
+    <div class="table-wrap"><table><caption class="sr">${t("scorecard")}</caption><thead><tr><th>${t("colCriterion")}</th><th class="num">${t("colWeight")}</th><th class="num">${t("colScore")}</th><th>${t("colEvidence")}</th></tr></thead><tbody>
+    ${crit.map(c=>`<tr><td>${esc(c[0][lang])}</td><td class="num">${c[1]}%</td><td class="num score">${c[2]}</td><td class="small">${c[3]?esc(c[3][lang]):`<em class="muted">${esc(t("judgement"))}</em>`}</td></tr>`).join("")}
+    </tbody></table></div>
+    <p class="small muted">Σ ${total.toFixed(0)} / 100</p>
+    <div class="banner info" role="status"><div class="small muted">${t("recommendation")} · ${t("propose")}</div><div class="rec">${esc(t("recBidIf"))}</div><p class="small" style="margin:6px 0 0">${esc(t("recWhy"))}</p></div>
+    ${state.decided?`<div class="banner info">${esc(t("decided"))}</div>`:`<button class="btn primary" id="decideBtn">${esc(t("decide"))}</button>`}
+   </div></div>
+   <div>
+    <div class="card"><h3 style="margin-top:0">${t("noticeFacts")}</h3><dl class="kv">
+     <dt>${t("fNotice")}</dt><dd>SYN-2026-0142</dd><dt>${t("fCodes")}</dt><dd>NAICS 238160 · PSC Z2AA</dd><dt>${t("fPlace")}</dt><dd>San Diego County, CA</dd><dt>${t("fValue")}</dt><dd>${fmtMoney(2400000)}</dd>
+     <dt>${t("fQ")}</dt><dd>${fmtDate("2026-11-13T01:00:00Z")} PT</dd><dt>${t("fSite")}</dt><dd>${fmtDate("2026-11-10T17:00:00Z")} PT</dd><dt>${t("fSub")}</dt><dd>${fmtDate("2026-12-04T22:00:00Z")} PT</dd></dl></div>
+    <div class="card" style="margin-top:12px"><h3 style="margin-top:0">${t("gates")}</h3><ul class="checklist">${gates.map(g=>`<li>${chip(g[0],g[0]==="ok"?t("gatePass"):g[0]==="bad"?t("gateFail"):t("gateUnknown"))}<span>${esc(g[1][lang])}</span></li>`).join("")}</ul></div>
+    <div class="card" style="margin-top:12px"><p style="margin-top:0">${esc(t("expertCard"))}</p><button class="btn" id="expertBtn">${esc(t("expertBtn"))}</button></div>
+   </div></div>`;
+}
+function tabRequirements(){
+  const row=r=>{const acc=r.acc||state.reqAccepted[r.id];const stale=r.id==="R-07"&&state.answered;
+   return `<tr><td><strong>${r.id}</strong> ${esc(r.text[lang])} ${stale?chip("warn",t("stale")):""}</td><td class="small">${r.kind}<br><span class="muted">${t(r.ob)}</span></td>
+   <td><button class="chip info" data-cite="${r.id}" aria-expanded="false">${esc(r.doc)}, ${lang==="ru"?"с.":"p."} ${r.page}</button></td>
+   <td class="num small">${r.conf<.7?chip("warn",r.conf.toFixed(2)):r.conf.toFixed(2)}</td>
+   <td class="small">${acc?esc(t(r.status)):`<span class="muted">${esc(t("extracted"))}</span>`}</td><td class="small">${esc(r.owner)}</td>
+   <td>${acc?`<span class="small">${chip("ok",t("accepted"))}</span>`:`<button class="btn small" data-accept="${r.id}">${t("accept")}</button>`}</td></tr>`};
+  const cards=REQS.map(r=>{const acc=r.acc||state.reqAccepted[r.id];return `<div class="mcard"><strong>${r.id}</strong> ${esc(r.text[lang])}<div class="small muted">${r.kind} · ${t(r.ob)} · ${r.conf.toFixed(2)}</div><div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button class="chip info" data-cite="${r.id}">${esc(r.doc)}, ${lang==="ru"?"с.":"p."} ${r.page}</button>${acc?chip("ok",t("accepted")):`<button class="btn small" data-accept="${r.id}">${t("accept")}</button>`}</div></div>`}).join("");
+  return `<h2 style="margin-top:0">${t("reqTitle")}</h2><p class="sub">${esc(t("reqSub"))}</p>
+  <div class="banner warn" role="note">${esc(t("injection"))}</div>
+  <div class="table-wrap desktop-only" role="region" aria-label="${esc(t("reqTitle"))}" tabindex="0"><table><thead><tr><th>${t("colReq")}</th><th>${t("colKind")}</th><th>${t("colCite")}</th><th class="num">${t("colConf")}</th><th>${t("colStatus")}</th><th>${t("colOwner")}</th><th></th></tr></thead><tbody>${REQS.map(row).join("")}</tbody></table></div>
+  <div class="cards-mobile">${cards}</div>`;
+}
+function tabDocuments(){
+  return `<div class="grid2"><div class="card"><h2 style="margin-top:0">${t("docsTitle")}</h2><p class="sub">${esc(t("docsSub"))}</p>
+   <ol class="outline">
+    <li><strong>1.1</strong> ${lang==="ru"?"Подход к работам":"Technical approach"} ${chip("info",t("agentDraft"))}</li>
+    <li><strong>1.2</strong> ${lang==="ru"?"Охрана труда":"Safety"} <span class="small muted">${esc(t("fromLib"))}</span></li>
+    <li><strong>1.3</strong> ${lang==="ru"?"Опыт (R-11)":"Past performance (R-11)"} ${chip("ok",lang==="ru"?"3 подтверждённых проекта":"3 confirmed projects")}</li>
+    <li><strong>1.4</strong> ${lang==="ru"?"Резюме ключевых сотрудников":"Key personnel CVs"} <span class="small muted">${lang==="ru"?"с согласия: Мария Р., Алекс П.":"with consent: Maria R., Alex P."}</span></li>
+    <li><strong>1.5</strong> ${lang==="ru"?"Резюме на испанском для субподрядчика":"Summary in Spanish for the crew lead"} ${chip("warn",t("mtLabel"))}</li>
+    <li><strong>F-3</strong> ${lang==="ru"?"Сертификат страхования":"Certificate of insurance"} ${chip("warn",t("expiredWarn"))}</li>
+   </ol>
+   <label class="small" for="secText">${lang==="ru"?"Раздел 1.1, черновик":"Section 1.1, draft"}</label>
+   <textarea id="secText" rows="5">${lang==="ru"?"Мы выполним замену кровли поэтапно, сохраняя здание в эксплуатации. Демонтаж и укладка ведутся участками не более 2 000 кв. футов в день, с укрытием до конца смены (черновик агента).":"We will replace the roof in phases while the building stays in use. Tear-off and installation proceed in areas of at most 2,000 square feet per day, dried-in before the end of each shift (agent draft)."}</textarea>
+  </div>
+  <div class="card"><h3 style="margin-top:0">${t("exportTitle")}</h3><p class="small">${esc(t("exportBody"))}</p><button class="btn" id="exportBtn">${t("exportBtn")}</button><p class="hint" id="exportMsg"></p></div></div>`;
+}
+function priceCalc(){
+  return LINES.map(l=>{const total=l.qty*l.price;const margin=(l.price-l.cost)/l.price*100;return Object.assign({},l,{total,margin})});
+}
+function tabPricing(){
+  const L=priceCalc();const total=L.reduce((a,l)=>a+l.total,0);const cost=L.reduce((a,l)=>a+l.qty*l.cost,0);const m=(total-cost)/total*100;
+  const findings=[];L.forEach(l=>{if(l.margin<FLOOR)findings.push(t("belowFloor").replace("{n}",l.n).replace("{m}",l.margin.toFixed(1)).replace("{f}",FLOOR));if(l.price>l.cost*2)findings.push(t("unbalanced").replace("{n}",l.n))});
+  if(state.showBuyer){
+   return `<h2 style="margin-top:0">${t("buyerSees")}</h2><p class="sub">${esc(t("buyerSeesBody"))}</p>
+   <div class="table-wrap" role="region" tabindex="0" aria-label="${esc(t("buyerSees"))}"><table><thead><tr><th>${t("colLine")}</th><th class="num">${lang==="ru"?"Количество":"Quantity"}</th><th class="num">${t("colUnit")}</th><th class="num">${t("colTotal")}</th></tr></thead><tbody>
+   ${L.map(l=>`<tr><td>${l.n}. ${esc(l.desc[lang])}</td><td class="num">${l.qty.toLocaleString(lang==="ru"?"ru-RU":"en-US")} ${l.unit}</td><td class="num">${new Intl.NumberFormat(lang==="ru"?"ru-RU":"en-US",{style:"currency",currency:"USD"}).format(l.price)}</td><td class="num">${fmtMoney(l.total)}</td></tr>`).join("")}
+   <tr><th colspan="3">${t("totalBid")}</th><th class="num">${fmtMoney(total)}</th></tr></tbody></table></div>
+   <p><button class="btn" id="toggleBuyer">${t("hideBuyer")}</button></p>`;
+  }
+  return `<h2 style="margin-top:0">${t("priceTitle")}</h2><p class="sub">${esc(t("priceSub"))}</p>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="${esc(t("priceTitle"))}"><table><thead><tr><th>${t("colLine")}</th><th>${t("colQty")}</th><th class="num">${t("colCost")}</th><th class="num">${t("colUnit")}</th><th class="num">${t("colTotal")}</th><th class="num">${t("colMargin")}</th></tr></thead><tbody>
+  ${L.map(l=>`<tr><td>${l.n}. ${esc(l.desc[lang])}</td><td class="small">${l.qty.toLocaleString(lang==="ru"?"ru-RU":"en-US")} ${l.unit}<br><span class="muted">${esc(l.src[lang])}</span></td><td class="num">${l.cost.toLocaleString(lang==="ru"?"ru-RU":"en-US")}</td>
+   <td class="num"><label class="sr" for="p${l.n}">${t("colUnit")}, ${t("colLine").toLowerCase()} ${l.n}</label><input type="number" step="0.1" id="p${l.n}" data-price="${l.n}" value="${l.price}"></td>
+   <td class="num">${fmtMoney(l.total)}</td><td class="num">${l.margin<FLOOR?chip("bad",l.margin.toFixed(1)+"%"):l.margin.toFixed(1)+"%"}</td></tr>`).join("")}
+  </tbody></table></div>
+  <div class="grid3" style="margin-top:12px">
+   <div class="card"><div class="small muted">${t("totalBid")}</div><div class="rec">${fmtMoney(total)}</div></div>
+   <div class="card"><div class="small muted">${t("totalMargin")}</div><div class="rec">${m.toFixed(1)}%</div><div class="small"><span class="chip lock">🔒 ${t("floor")}: ${FLOOR}%</span></div></div>
+   <div class="card" aria-live="polite"><div class="small muted">${t("guard")}</div>${findings.length?`<ul class="small" style="margin:4px 0;padding-left:18px">${findings.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:`<div>${chip("ok",t("guardOk"))}</div>`}</div>
+  </div>
+  <p class="small muted">${esc(t("escalation"))}</p>
+  <button class="btn" id="toggleBuyer">${t("showBuyer")}</button>`;
+}
+function tabQuestions(){
+  const hours=41;
+  return `<h2 style="margin-top:0">${t("qTitle")}</h2><p class="sub">${esc(t("qSub"))}</p>
+  <div class="banner warn" role="status">⏱ ${esc(t("qDeadline").replace("{d}",fmtDate("2026-11-13T01:00:00Z")).replace("{h}",hours))}</div>
+  <div class="thread">
+   ${state.qSent?`<div class="q"><div class="small muted">${esc(t("qSent"))}</div><p style="margin:4px 0 0">${esc(t("qDraftText"))}</p></div>`:`<div class="q"><label for="qText"><strong>${esc(t("qDraftLabel"))}</strong> ${chip("info",t("agentDraft"))}</label><textarea id="qText" rows="3" style="margin-top:6px">${esc(t("qDraftText"))}</textarea><div style="margin-top:8px"><button class="btn primary" id="qSendBtn">${esc(t("qSend"))}</button></div></div>`}
+   ${state.answered?`<div class="q answer"><strong>${esc(t("qAnswerTitle"))}</strong><p style="margin:4px 0">${esc(t("qAnswer"))}</p><div class="banner warn small">${esc(t("qStaleNote"))}</div></div>`:""}
+  </div>`;
+}
+function tabTeam(){
+  return `<h2 style="margin-top:0">${t("teamTitle")}</h2><p class="sub">${esc(t("teamSub"))}</p>
+  <div class="banner info">${esc(t("gap"))}</div>
+  <div class="grid2">
+   <div class="card"><strong>${esc(t("cand1"))}</strong><p class="small">${esc(t("cand1Why"))}</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn small" data-toast="intro">${t("introduce")}</button><button class="btn small" data-toast="scope">${t("scopePkg")}</button></div><div class="banner warn small">${esc(t("competitionNote"))}</div></div>
+   <div class="card"><strong>${esc(t("cand2"))}</strong><p class="small">${esc(t("cand2Why"))}</p><button class="btn small" data-toast="intro">${t("introduce")}</button></div>
+  </div><p class="hint" id="teamMsg" role="status"></p>`;
+}
+function tabReviews(){
+  return `<h2 style="margin-top:0">${t("reviewsTitle")}</h2><ol class="checklist"><li>${chip("ok","1")} ${esc(t("rOutline"))}</li><li>${chip("warn","2")} ${esc(t("rDraft"))}</li><li>${chip("info","3")} ${esc(t("rFinal"))}</li></ol>`;
+}
+function tabSubmission(){
+  return `<h2 style="margin-top:0">${t("subTitle")}</h2><p class="sub">${esc(t("subSub"))}</p>
+  <ul class="checklist">${t("ck").map(c=>`<li>${chip(c[0]==="ok"?"ok":c[0]==="warn"?"warn":"info",c[0]==="confirm"?(lang==="ru"?"подтвердите":"confirm"):c[0]==="ok"?(lang==="ru"?"готово":"pass"):(lang==="ru"?"проверено":"checked"))}<span>${esc(c[1])}</span></li>`).join("")}</ul>
+  <div class="banner info small">${esc(t("subPortalNote"))}</div>
+  ${state.submitted?`<div class="banner info" role="status">${esc(t("confirmed"))}</div>`:`<button class="btn primary" id="submitBtn">${esc(t("subPortal"))}</button>`}`;
+}
+function render(){
+  renderChrome();
+  const main=document.getElementById("main");
+  if(state.view==="list"){main.innerHTML=viewList();}
+  else{const tabs=[tabOverview,tabRequirements,tabDocuments,tabPricing,tabQuestions,tabTeam,tabReviews,tabSubmission];main.innerHTML=pursuitHeader()+`<section role="tabpanel" aria-labelledby="tab${state.tab}">${tabs[state.tab]()}</section>`;}
+  renderOverlay();
+}
+
+/* dialogs */
+let lastFocus=null;
+function openDialog(html,onReady){lastFocus=document.activeElement;const d=document.getElementById("dialog");d.innerHTML=html;document.getElementById("dialogBack").classList.add("open");const first=d.querySelector("[data-cancel]")||d.querySelector("button,input");first&&first.focus();onReady&&onReady(d);}
+function closeDialog(){document.getElementById("dialogBack").classList.remove("open");lastFocus&&lastFocus.focus&&lastFocus.focus();}
+document.getElementById("dialogBack").addEventListener("click",e=>{if(e.target.id==="dialogBack"||e.target.dataset.cancel!==undefined)closeDialog();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(document.getElementById("dialogBack").classList.contains("open"))closeDialog();else if(document.getElementById("drawer").classList.contains("open"))closeDrawer();}});
+
+function decisionDialog(){openDialog(`<h2 id="dlgTitle">${esc(t("decisionTitle"))}</h2><p>${esc(t("decisionBody"))}</p><p class="small">${esc(t("recBidIf"))}</p><div class="actions"><button class="btn" data-cancel>${t("cancel")}</button><button class="btn" id="dNo">${t("decNoBid")}</button><button class="btn primary" id="dYes">${t("decBid")}</button></div>`,d=>{d.querySelector("#dYes").onclick=()=>{state.decided=true;closeDialog();render();};d.querySelector("#dNo").onclick=()=>{closeDialog();};});}
+function questionDialog(){openDialog(`<h2 id="dlgTitle">${esc(t("qConfirmTitle"))}</h2><p>${esc(t("qConfirmBody"))}</p><blockquote class="small">${esc(document.getElementById("qText").value)}</blockquote><div class="actions"><button class="btn" data-cancel>${t("cancel")}</button><button class="btn primary" id="qOk">${t("confirm")}</button></div>`,d=>{d.querySelector("#qOk").onclick=()=>{state.qSent=true;closeDialog();render();setTimeout(()=>{state.answered=true;render();},1600);};});}
+function submitDialog(){openDialog(`<h2 id="dlgTitle">${esc(t("subConfirmTitle"))}</h2><p>${esc(t("subConfirmBody"))}</p>
+ <label for="rcpt" class="small">${t("receipt")}</label><input type="text" id="rcpt" value="SYN-RCPT-55120">
+ <label for="code" class="small" style="display:block;margin-top:8px">${t("stepUp")}</label><input type="text" id="code" inputmode="numeric" autocomplete="one-time-code">
+ <p class="small" id="codeMsg" role="alert"></p>
+ <div class="actions"><button class="btn" data-cancel>${t("cancel")}</button><button class="btn primary" id="sOk">${t("confirm")}</button></div>`,d=>{d.querySelector("#sOk").onclick=()=>{if(d.querySelector("#code").value.trim()==="123456"){state.submitted=true;closeDialog();render();}else{d.querySelector("#codeMsg").textContent=t("wrongCode");}};});}
+function expertDialog(){openDialog(`<h2 id="dlgTitle">${esc(t("expertsTitle"))}</h2><p class="small">${esc(t("expertsBody"))}</p>
+ <div class="card"><strong>${esc(t("ex1"))}</strong><p class="small">${esc(t("ex1Why"))}</p><p class="small">${esc(t("ex1Offer"))}</p></div>
+ <fieldset style="border:1px solid var(--border);border-radius:8px;margin-top:10px"><legend class="small">${esc(t("scopeTitle"))}</legend>
+  <label style="display:block"><input type="checkbox" checked> ${esc(t("sReq"))}</label>
+  <label style="display:block"><input type="checkbox" checked> ${esc(t("sScore"))}</label>
+  <label style="display:block"><input type="checkbox"> ${esc(t("sWork"))} <span class="chip warn">!</span></label></fieldset>
+ <p class="hint">${esc(t("conflictNote"))}</p>
+ <p class="small" id="bookMsg" role="status">${state.booked?esc(t("booked")):""}</p>
+ <div class="actions"><button class="btn" data-cancel>${t("cancel")}</button><button class="btn primary" id="bOk" ${state.booked?'aria-disabled="true"':""}>${esc(t("book"))}</button></div>`,d=>{d.querySelector("#bOk").onclick=()=>{if(state.booked)return;state.booked=true;d.querySelector("#bookMsg").textContent=t("booked");d.querySelector("#bOk").setAttribute("aria-disabled","true");};});}
+
+/* citation drawer */
+function openCite(id,btn){const r=REQS.find(x=>x.id===id);const dr=document.getElementById("drawer");
+ dr.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 id="drawerTitle" style="margin:0">${esc(t("citeTitle"))}</h2><button class="btn small" id="drClose">${t("close")}</button></div>
+ <p class="small muted">${esc(r.doc)} · ${lang==="ru"?"страница":"page"} ${r.page} · ${esc(t("citeNote"))} 3c7e…a19 (synthetic)</p>
+ <div class="page-sim" tabindex="-1" id="citePage"><p>… </p><p><mark>${esc(r.quote)}</mark></p><p>…</p></div>
+ <p class="small"><strong>${r.id}</strong> ${esc(r.text[lang])}</p>`;
+ dr.classList.add("open");dr.dataset.opener=id;btn&&btn.setAttribute("aria-expanded","true");document.getElementById("citePage").focus();document.getElementById("drClose").onclick=closeDrawer;}
+function closeDrawer(){const dr=document.getElementById("drawer");dr.classList.remove("open");const b=document.querySelector(`[data-cite="${dr.dataset.opener}"]`);if(b){b.setAttribute("aria-expanded","false");b.focus();}}
+
+/* overlay (the one assistant surface) */
+function renderOverlay(){
+ const ov=document.getElementById("overlay");ov.classList.toggle("open",state.ovOpen);document.getElementById("launcher").setAttribute("aria-expanded",String(state.ovOpen));
+ const props=[["p1",1],["p2",4],["p3",5],["p4","expert"],["p5",7]];
+ document.getElementById("ovBody").innerHTML=`<div class="msg agent">${esc(t("aHello"))}</div>
+  ${props.map(([k,target])=>`<div class="proposal"><div class="label">${esc(t("propose"))}</div><div>${esc(t(k))}</div><button class="btn small" style="margin-top:6px" data-goto="${target}">${t("go")}</button></div>`).join("")}
+  ${state.msgs.map(m=>`<div class="msg ${m.who}">${esc(m.text[lang]||m.text)}</div>`).join("")}`;
+}
+document.getElementById("launcher").onclick=()=>{state.ovOpen=!state.ovOpen;renderOverlay();if(state.ovOpen)document.getElementById("ovText").focus();};
+document.getElementById("ovClose").onclick=()=>{state.ovOpen=false;renderOverlay();document.getElementById("launcher").focus();};
+document.getElementById("ovForm").onsubmit=(e)=>{e.preventDefault();const v=document.getElementById("ovText").value.trim();if(!v)return;
+ state.msgs.push({who:"me",text:{en:v,ru:v}});
+ const wantsSubmit=/submit|send the bid|подай|подать|отправь заявку/i.test(v);
+ state.msgs.push({who:"agent",text:{en:I18N.en[wantsSubmit?"aSubmitReply":"aDefault"],ru:I18N.ru[wantsSubmit?"aSubmitReply":"aDefault"]}});
+ document.getElementById("ovText").value="";renderOverlay();
+ if(wantsSubmit){state.view="pursuit";state.tab=7;render();submitDialog();}
+};
+
+/* delegation */
+document.addEventListener("click",e=>{
+ const el=e.target.closest("[data-open],[data-follow],[data-filter],[data-tab],[data-accept],[data-cite],[data-goto],[data-toast],#backBtn,#decideBtn,#expertBtn,#qSendBtn,#submitBtn,#toggleBuyer,#exportBtn,#menuBtn,[data-lang]");
+ if(!el)return;
+ if(el.dataset.lang){lang=el.dataset.lang;render();return;}
+ if(el.id==="menuBtn"){const s=document.getElementById("side");const o=!s.classList.contains("open");s.classList.toggle("open",o);el.setAttribute("aria-expanded",String(o));return;}
+ if(el.dataset.follow){e.stopPropagation();state.following[el.dataset.follow]=!state.following[el.dataset.follow];render();return;}
+ if(el.dataset.open){state.view="pursuit";state.tab=0;render();document.getElementById("main").focus();return;}
+ if(el.dataset.filter){state.filter=el.dataset.filter;render();return;}
+ if(el.dataset.tab){state.tab=+el.dataset.tab;render();const b=document.getElementById("tab"+state.tab);b&&b.focus();return;}
+ if(el.dataset.accept){state.reqAccepted[el.dataset.accept]=true;render();return;}
+ if(el.dataset.cite){openCite(el.dataset.cite,el);return;}
+ if(el.dataset.goto){if(el.dataset.goto==="expert"){expertDialog();return;}state.view="pursuit";state.tab=+el.dataset.goto;render();return;}
+ if(el.dataset.toast){const m=document.getElementById("teamMsg");if(m)m.textContent=el.dataset.toast==="intro"?(lang==="ru"?"Запрос знакомства подготовлен; отправка после вашего подтверждения (синтетически).":"Introduction request prepared; it is sent after your confirmation (synthetic)."):(lang==="ru"?"Пакет работ: требования R-07, чертежи кровли, срок 20 ноября. Без ваших цен.":"Scope package: requirement R-07, roof drawings, due Nov 20. Your prices are not included.");return;}
+ switch(el.id){
+  case "backBtn":state.view="list";render();break;
+  case "decideBtn":decisionDialog();break;
+  case "expertBtn":expertDialog();break;
+  case "qSendBtn":questionDialog();break;
+  case "submitBtn":submitDialog();break;
+  case "toggleBuyer":state.showBuyer=!state.showBuyer;render();break;
+  case "exportBtn":document.getElementById("exportMsg").textContent=lang==="ru"?"Файлы подготовлены (синтетически). Хэши записаны.":"Files prepared (synthetic). Digests recorded.";break;
+ }
+});
+document.addEventListener("change",e=>{if(e.target.dataset.price){const l=LINES.find(x=>x.n===+e.target.dataset.price);const v=parseFloat(e.target.value);if(!isNaN(v)&&v>=0){l.price=v;}render();const inp=document.getElementById("p"+l.n);inp&&inp.focus();}});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trustwork console prototype</title>
+<style>
+:root{
+  --canvas:#f6f5f2;--surface:#fff;--muted:#f0efec;--tint:#f0f5ff;--text:#111827;--text2:#5b6472;--border:#e5e8ee;--border2:#7a8494;
+  --accent:#0756d8;--accent-h:#0648b4;--navy:#0f1f3d;--navy2:#16295a;--navy-t:#fff;--navy-t2:#c3cce0;--focus:#0756d8;
+  --info-bg:#e6eefc;--info:#0a3f9c;--ok-bg:#e3f5ea;--ok:#14603a;--warn-bg:#fff3d6;--warn:#704200;--bad-bg:#fde8e8;--bad:#9e1b1b;--neu-bg:#eceff4;--neu:#3e4756;--ai-bg:#efe9fb;--ai:#4c2a9a;
+  --shadow:0 4px 12px rgba(16,24,40,.08);--r:10px;
+}
+:root[data-theme="dark"]{
+  --canvas:#0d1117;--surface:#161b22;--muted:#1f2630;--tint:#16233b;--text:#e8edf4;--text2:#a9b4c2;--border:#2b3440;--border2:#8b96a5;
+  --accent:#6ea8ff;--accent-h:#8dbaff;--navy:#050a14;--navy2:#0e1830;--navy-t:#fff;--navy-t2:#b9c4d8;--focus:#8dbaff;
+  --info-bg:#132a52;--info:#b8d0ff;--ok-bg:#12321f;--ok:#9be0b4;--warn-bg:#3a2b05;--warn:#f5d27a;--bad-bg:#3d1414;--bad:#ffb4b4;--neu-bg:#252c36;--neu:#cdd5df;--ai-bg:#2a1f47;--ai:#d4c3ff;
+  --shadow:0 4px 16px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="dark"]){
+  --canvas:#0d1117;--surface:#161b22;--muted:#1f2630;--tint:#16233b;--text:#e8edf4;--text2:#a9b4c2;--border:#2b3440;--border2:#8b96a5;
+  --accent:#6ea8ff;--accent-h:#8dbaff;--navy:#050a14;--navy2:#0e1830;--navy-t:#fff;--navy-t2:#b9c4d8;--focus:#8dbaff;
+  --info-bg:#132a52;--info:#b8d0ff;--ok-bg:#12321f;--ok:#9be0b4;--warn-bg:#3a2b05;--warn:#f5d27a;--bad-bg:#3d1414;--bad:#ffb4b4;--neu-bg:#252c36;--neu:#cdd5df;--ai-bg:#2a1f47;--ai:#d4c3ff;
+  --shadow:0 4px 16px rgba(0,0,0,.5);}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--canvas);color:var(--text)}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:0;background:var(--surface);padding:8px 12px;z-index:100}
+.skip:focus{left:8px;top:8px}
+.band{background:var(--navy);color:var(--navy-t);display:flex;align-items:center;gap:12px;padding:8px 16px;position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.band .brand{display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap}
+.sq{display:inline-grid;grid-template-columns:repeat(3,8px);gap:2px}.sq i{width:8px;height:8px;background:#1a6ee8;display:block;border-radius:1px}
+.band .admin{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--navy-t2);border-left:1px solid rgba(255,255,255,.2);padding-left:10px}
+.band .grow{flex:1}
+.band button,.band select{background:var(--navy2);color:var(--navy-t);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;min-height:36px;cursor:pointer}
+.band .search{min-width:220px;text-align:left;color:var(--navy-t2)}
+.band kbd{font-size:11px;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:0 4px;margin-left:6px}
+.menu-btn{display:none}
+.bands .b{padding:8px 16px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.b.demo{background:var(--warn-bg);color:var(--warn);justify-content:space-between}
+.persona-wrap select{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text);min-height:32px;max-width:100%}
+.b.kill{background:var(--bad-bg);color:var(--bad);font-weight:600}
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 52px)}
+nav.side{background:var(--surface);border-right:1px solid var(--border);padding:12px 8px;overflow:auto;max-height:calc(100vh - 52px);position:sticky;top:52px}
+nav.side details{margin:2px 0}
+nav.side summary{cursor:pointer;padding:6px 10px;font-weight:600;font-size:13px;color:var(--text2);border-radius:6px;list-style:none}
+nav.side summary::-webkit-details-marker{display:none}
+nav.side summary::before{content:"\25B8";display:inline-block;width:14px;transition:transform .15s}
+nav.side details[open] summary::before{transform:rotate(90deg)}
+nav.side ul{list-style:none;margin:0;padding:0 0 4px 14px}
+nav.side a{display:flex;justify-content:space-between;gap:6px;padding:6px 10px;border-radius:6px;color:var(--text);text-decoration:none;font-size:14px;min-height:32px;align-items:center}
+nav.side a:hover{background:var(--muted)}
+nav.side a[aria-current="page"]{background:var(--tint);color:var(--accent);font-weight:600}
+.count{font-size:12px;background:var(--accent);color:#fff;border-radius:999px;padding:0 7px}
+.nstat{font-size:11px;color:var(--text2)}
+main{padding:20px 24px 80px;max-width:1240px;width:100%}
+.crumbs{font-size:13px;color:var(--text2);margin-bottom:6px}
+.crumbs a{color:var(--text2)}
+.acts{font-size:13px;color:var(--text2)}
+h1{font-size:28px;line-height:1.2;margin:2px 0 4px}
+h2{font-size:19px;margin:0 0 10px}
+h3{font-size:16px;margin:14px 0 6px}
+.lede{color:var(--text2);margin:0 0 16px;max-width:760px}
+.titlerow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.titlerow .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.c-info{background:var(--info-bg);color:var(--info)}.c-ok{background:var(--ok-bg);color:var(--ok)}.c-warn{background:var(--warn-bg);color:var(--warn)}.c-bad{background:var(--bad-bg);color:var(--bad)}.c-neu{background:var(--neu-bg);color:var(--neu)}.c-ai{background:var(--ai-bg);color:var(--ai)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin:0 0 16px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.tile .n{font-size:26px;font-weight:700}
+.tile a{font-size:14px}
+button.btn,a.btn{font:inherit;font-size:14px;border-radius:8px;padding:7px 14px;min-height:36px;border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+:root[data-theme="dark"] .btn.primary{background:var(--accent);border-color:var(--accent);color:#04101f}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+:root[data-theme="dark"] .btn.danger{color:#2a0505}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--muted);font-weight:600;font-size:13px;position:sticky;top:0}
+tr.sel td{background:var(--tint)}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.filterbar input,.filterbar select,.field input,.field select,.field textarea{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text);min-height:36px}
+.fchip{display:inline-flex;align-items:center;gap:6px;background:var(--tint);color:var(--accent);border-radius:999px;padding:2px 4px 2px 10px;font-size:13px}
+.fchip button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:14px;min-width:24px;min-height:24px}
+.bulk{display:flex;gap:8px;align-items:center;background:var(--navy);color:#fff;border-radius:8px;padding:6px 10px;margin-bottom:10px}
+.field{display:flex;flex-direction:column;gap:4px;margin:0 0 12px}
+.field label{font-weight:600;font-size:14px}
+.field .hint{font-size:13px;color:var(--text2)}
+.field .err{font-size:13px;color:var(--bad);font-weight:600}
+dl.kv{display:grid;grid-template-columns:200px 1fr;gap:6px 12px;margin:0}
+dl.kv dt{color:var(--text2)}dl.kv dd{margin:0}
+.locked{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--border)}
+.locked:last-child{border-bottom:0}
+.locked .lk{flex:none;font-size:12px;font-weight:700;background:var(--neu-bg);color:var(--neu);border-radius:6px;padding:2px 8px;white-space:nowrap}
+.diff td.old{background:var(--bad-bg);color:var(--bad)}.diff td.new{background:var(--ok-bg);color:var(--ok)}
+.matrix td,.matrix th{text-align:center}.matrix td:first-child,.matrix th:first-child{text-align:left}
+.matrix td[aria-selected="true"]{outline:3px solid var(--focus);outline-offset:-3px}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{border-left:2px solid var(--border);padding:0 0 12px 14px;position:relative}
+.timeline li::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--accent);position:absolute;left:-6px;top:6px}
+.small{font-size:13px;color:var(--text2)}
+.note{background:var(--info-bg);color:var(--info);border-radius:8px;padding:10px 12px;font-size:14px;margin:0 0 12px}
+.note.warn{background:var(--warn-bg);color:var(--warn)}.note.bad{background:var(--bad-bg);color:var(--bad)}.note.ok{background:var(--ok-bg);color:var(--ok)}
+.drawer{position:fixed;top:52px;right:0;bottom:0;width:min(460px,100%);background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow);padding:16px;overflow:auto;z-index:30}
+dialog{border:0;border-radius:12px;padding:0;max-width:560px;width:calc(100% - 32px);background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(15,31,61,.55)}
+dialog .dh{padding:16px 18px 0}dialog .db{padding:8px 18px}dialog .df{padding:12px 18px 16px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#palette{max-width:640px;margin-top:10vh}
+#palette input{width:100%;font:inherit;font-size:16px;padding:14px 16px;border:0;border-bottom:1px solid var(--border);background:var(--surface);color:var(--text)}
+#palette ul{list-style:none;margin:0;padding:6px;max-height:50vh;overflow:auto}
+#palette li{padding:8px 10px;border-radius:6px;display:flex;justify-content:space-between;gap:8px;cursor:pointer}
+#palette li[aria-selected="true"]{background:var(--tint);color:var(--accent)}
+#palette .grp{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;cursor:default;padding:8px 10px 2px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:8px;z-index:60;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
+.tabs button{font:inherit;font-size:14px;border:0;background:transparent;color:var(--text2);padding:8px 12px;border-bottom:3px solid transparent;cursor:pointer;min-height:40px}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.empty{text-align:center;padding:36px 16px;color:var(--text2)}
+.empty h2{color:var(--text)}
+.meter{height:8px;background:var(--muted);border-radius:4px;overflow:hidden;margin-top:4px}.meter i{display:block;height:100%;background:var(--accent)}
+@media (max-width:767px){
+  .menu-btn{display:inline-flex}
+  .band .search{min-width:0;flex:1}
+  .band .admin,.band .hide-sm{display:none}
+  .layout{grid-template-columns:1fr}
+  nav.side{position:fixed;inset:52px 0 0 0;max-height:none;z-index:40;display:none}
+  nav.side.open{display:block}
+  nav.side a{min-height:44px}
+  main{padding:14px 16px 96px}
+  h1{font-size:24px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  dl.kv{grid-template-columns:1fr}
+  dl.kv dt{font-weight:600;color:var(--text)}
+  table.cards thead{display:none}
+  table.cards tr{display:block;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:var(--surface);padding:6px}
+  table.cards td{display:flex;justify-content:space-between;gap:12px;border:0;padding:6px 8px}
+  table.cards td::before{content:attr(data-label);font-weight:600;color:var(--text2)}
+  .stickybar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;z-index:25}
+  button.btn,a.btn{min-height:44px}
+  .wide-note{display:block}
+  .band .search kbd{display:none}
+  .band .search{min-width:0}
+  .band .brand #brandName{font-size:14px}
+  .persona-wrap,.persona-wrap select{width:100%}
+}
+.wide-note{display:none;font-size:13px;color:var(--text2);margin-bottom:8px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" id="skiplink">Skip to content</a>
+<header class="band" role="banner">
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidenav">&#9776; <span data-t="menu"></span></button>
+  <span class="brand"><span class="sq" aria-hidden="true"><i></i><i></i><i></i></span><span id="brandName">Trustwork</span></span>
+  <span class="admin" data-t="administration"></span>
+  <button class="search" id="openPalette" aria-haspopup="dialog"><span data-t="searchBtn"></span><kbd>Ctrl K</kbd></button>
+  <span class="grow"></span>
+  <button id="inboxBtn"></button>
+  <button id="langBtn" aria-label="Language"></button>
+  <button id="themeBtn"></button>
+  <a class="btn ghost hide-sm" style="color:#fff" href="#/help" data-t="help"></a>
+</header>
+<div class="bands" id="bands"></div>
+<div class="layout">
+  <nav class="side" id="sidenav" aria-label="Console navigation"></nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div id="drawerHost"></div>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<dialog id="palette" aria-label="Command palette">
+  <input id="palInput" role="combobox" aria-expanded="true" aria-controls="palList" aria-autocomplete="list" autocomplete="off">
+  <ul id="palList" role="listbox"></ul>
+  <p class="small" style="padding:0 16px 12px" id="palHint"></p>
+</dialog>
+<div id="live" aria-live="polite" style="position:absolute;left:-9999px"></div>
+<script>
+"use strict";
+/* ---------------- i18n: English reference and Russian ---------------- */
+const T = {
+  menu:["Menu","Меню"], administration:["Administration","Администрирование"], searchBtn:["Search or run a command","Поиск или команда"],
+  help:["Help","Справка"], viewingAs:["Viewing as","Смотреть как"], theme_system:["Theme: system","Тема: системная"], theme_light:["Theme: light","Тема: светлая"], theme_dark:["Theme: dark","Тема: тёмная"],
+  inbox:["Inbox","Входящие"], demoBand:["Demo: synthetic data for a prototype. Nothing is saved; people and companies are invented.","Демо: синтетические данные прототипа. Ничего не сохраняется; люди и компании вымышлены."],
+  killBand:["Kill switch engaged: {name}, by {who} at {time}.","Аварийный выключатель включён: {name}, {who}, {time}."], openIncident:["Open the incident","Открыть инцидент"],
+  actsOn:["This page acts on","Эта страница относится к"], hubName:["Trustwork United States (demo), San Diego","Trustwork США (демо), Сан-Диего"], stageDraft:["Stage: preparing","Этап: подготовка"],
+  st_demo:["Demo","Демо"], st_designed:["Designed","Спроектировано"], st_proposed:["Proposed","Предложено"],
+  g_home:["Home","Главная"], g_hub:["Hub","Хаб"], g_participants:["Participants","Участники"], g_support:["Support","Поддержка"], g_trust:["Trust and safety","Доверие и безопасность"],
+  g_editorial:["Editorial","Редакция"], g_data:["Data","Данные"], g_modules:["Modules","Модули"], g_agents:["Agents (product)","Агенты (продукт)"], g_team:["Agent team","Команда агентов"],
+  g_money:["Plans and payments","Тарифы и платежи"], g_keys:["Keys and models","Ключи и модели"], g_automation:["Automation","Автоматизация"], g_comms:["Communications","Коммуникации"],
+  g_fed:["Federation","Федерация"], g_privacy:["Privacy","Приватность"], g_staff:["Staff and access","Сотрудники и доступ"], g_audit:["Audit","Аудит"], g_ops:["Operations","Эксплуатация"],
+  s_overview:["Overview","Обзор"], s_inbox:["Approvals inbox","Входящие на согласование"], s_insights:["Insights","Аналитика"], s_help:["Help","Справка"],
+  s_identity:["Identity and territory","Идентичность и территория"], s_modes:["System modes","Режимы системы"], s_config:["Configuration versions","Версии конфигурации"], s_launch:["Launch checklist","Чек-лист запуска"],
+  s_people:["People","Люди"], s_companies:["Companies","Компании"], s_claims:["Claims","Заявки на компании"],
+  s_lookup:["Lookup","Поиск"], s_cases:["Cases","Обращения"], s_recovery:["Recovery","Восстановление"],
+  s_moderation:["Moderation","Модерация"], s_appeals:["Appeals","Апелляции"], s_screening:["Screening","Санкционный контроль"],
+  s_desk:["Desk","Редакционный стол"], s_review:["Review","Проверка"], s_calendar:["Calendar","Календарь"],
+  s_datasets:["Datasets","Наборы данных"], s_links:["Links","Связи"], s_mods:["Product modules","Модули продукта"],
+  s_agentmods:["Agent modules","Модули агентов"], s_agentpolicy:["Agent policy","Политика агентов"],
+  s_roster:["Roster","Состав"], s_teamroles:["Roles","Роли"], s_teamreview:["Review queue","Очередь проверки"], s_teamruns:["Runs","Запуски"],
+  s_prices:["Prices","Цены"], s_payouts:["Payouts","Выплаты"], s_models:["Models and prices","Модели и цены"], s_egress:["Egress","Передача данных"], s_kill:["Kill switches","Аварийные выключатели"],
+  s_schedules:["Schedules","Расписания"], s_runs:["Runs","Запуски"], s_templates:["Templates","Шаблоны"], s_peers:["Peers","Партнёрские узлы"], s_requests:["Requests","Запросы субъектов"],
+  s_staff:["Staff","Сотрудники"], s_roles:["Roles","Роли"], s_invites:["Invitations","Приглашения"], s_reviews:["Access reviews","Пересмотр доступа"], s_clients:["Clients","Клиенты"],
+  s_auditlog:["Audit explorer","Журнал аудита"], s_health:["Health","Состояние"], s_incidents:["Incidents","Инциденты"], s_flags:["Flags","Флаги"],
+  g_users:["Users","Пользователи"], g_stats:["Statistics","Статистика"], g_network:["Network","Сеть хабов"], g_verify:["Verification and claims","Проверка и заявки"],
+  s_usershome:["All users","Все пользователи"], s_dash:["Dashboards","Дашборды"], s_catalogue:["Metric catalogue","Каталог метрик"], s_funnels:["Segments and funnels","Сегменты и воронки"], s_reports:["Reports and exports","Отчёты и выгрузки"], s_statsettings:["Access and retention","Доступ и хранение"],
+  s_map:["Hub map and directory","Карта и каталог хабов"], s_opchannel:["Operator channel","Канал операторов"], s_netstats:["Network statistics","Статистика сети"], s_svc:["Service accounts and AI clients","Сервисные учётные записи и ИИ-клиенты"],
+  us_lede:["Every kind of user in one place. Participants open through their public page or the support lookup with a case; staff through their staff page.","Все виды пользователей в одном месте. Участники открываются через публичную страницу или поиск в поддержке с обращением; сотрудники — через страницу сотрудника."],
+  us_people:["People","Люди"], us_companies:["Companies","Компании"], us_staff:["Staff","Сотрудники"], us_clients:["Clients","Клиенты"],
+  us_public:["Public projection only. To service an account, open Support and name the case.","Только публичные данные. Чтобы обслужить аккаунт, откройте «Поддержку» и укажите обращение."],
+  stat_lede:["Cohort aggregates for the hub. Counts under ten are hidden after segmentation; nothing here describes a person or a staff member.","Агрегаты по когортам. Числа меньше десяти скрываются после сегментации; здесь ничего не описывает отдельного человека или сотрудника."],
+  stat_period:["Period","Период"], stat_segment:["Segment by","Разбить по"], stat_none:["No segment","Без разбивки"], stat_territory:["Territory","Территория"], stat_language:["Language","Язык"], stat_module:["Module","Модуль"],
+  stat_tooNarrow:["Too few participants for this combination; try a wider territory or a longer period.","Слишком мало участников для такого сочетания; возьмите шире территорию или дольше период."],
+  stat_money:["Trustwork never holds funds; these are records of instructions to the licensed payment provider.","Trustwork никогда не держит деньги; это записи распоряжений лицензированному платёжному провайдеру."],
+  stat_def:["Definition","Определение"], stat_vis:["Visible to","Видят"], stat_fresh:["Freshness","Актуальность"], stat_status:["Status","Статус"],
+  stat_funnelTitle:["Joining funnel, entry cohort: weeks 40 to 43 (synthetic)","Воронка «Вход», когорта по неделе входа: недели 40–43 (синтетика)"],
+  stat_schedule:["Schedule a report","Запланировать отчёт"], stat_export:["Export (suppressed, signed)","Выгрузить (с подавлением, подписано)"],
+  stat_reportNote:["Recipients are rechecked at every send; the e-mail carries a link, never figures about participants.","Получатели перепроверяются при каждой отправке; письмо содержит ссылку, а не данные об участниках."],
+  net_lede:["Communication and connections between hubs: map and directory, peering, operator channel and network statistics. Designed in the hub network chapter; shown here as a placeholder.","Связи между хабами: карта и каталог, пиринг, канал операторов и статистика сети. Проектируется в главе о сети хабов; здесь — заглушка."],
+  net_list:["Hubs (list is the accessible primary view)","Хабы (список — основной доступный вид)"],
+  // overview
+  ov_lede:["What needs a person today, and is the hub healthy and lawful.","Что сегодня требует решения человека и всё ли в порядке с хабом."],
+  ov_waiting:["Waiting for your decision","Ждут вашего решения"], ov_queues:["Queues you can act on","Очереди, с которыми вы работаете"], ov_health:["Health","Состояние"],
+  ov_sod:["Fewer than five staff would mean reduced separation of duties. This hub has seven staff: full separation of duties is on.","При менее чем пяти сотрудниках разделение обязанностей сокращено. В этом хабе семь сотрудников: полное разделение обязанностей включено."],
+  q_claims:["Claims","Заявки на компании"], q_cases:["Support cases","Обращения в поддержку"], q_reports:["Moderation reports","Жалобы на модерацию"], q_privacy:["Privacy requests (nearest deadline in 12 days)","Запросы субъектов (ближайший срок через 12 дней)"], q_agent:["Agent team review items","Проверка работы агентов"],
+  h_dispatch:["Agent dispatch errors","Ошибки запуска агентов"], h_outbox:["Outbox oldest item","Самое старое сообщение в очереди"], h_backup:["Last backup","Последняя резервная копия"],
+  open:["Open","Открыть"], all:["All","Все"],
+  // inbox
+  ib_lede:["Decisions and work assigned to you. Each row is a structured request, never a message.","Решения и задачи, назначенные вам. Каждая строка — структурированный запрос, а не сообщение."],
+  ib_waiting:["Waiting for me","Ждут меня"], ib_mine:["My requests","Мои запросы"], ib_assigned:["Assigned to me","Назначено мне"], ib_done:["Done","Готово"],
+  ib_empty:["Nothing needs your decision right now.","Сейчас ничего не требует вашего решения."], ib_why:["Why this is yours: you hold {role} at this hub.","Почему это вам: у вас роль «{role}» в этом хабе."],
+  ib_requested:["Requested by {who} · reason: {reason}","Запросил(а) {who} · причина: {reason}"], ib_expires:["Request expires in {h} hours","Запрос истекает через {h} ч"],
+  approve:["Approve","Согласовать"], decline:["Decline","Отклонить"], withdraw:["Withdraw","Отозвать"], ownRequest:["You cannot approve your own request.","Нельзя согласовать собственный запрос."],
+  noRole:["You do not hold a role that can approve this.","У вас нет роли, которая может это согласовать."],
+  st_pending:["Waiting for a second person","Ждёт второго человека"], st_approved:["Approved","Согласовано"], st_declined:["Declined","Отклонено"], st_active:["Active","Действует"],
+  // support
+  lk_lede:["Find whom to help. Every lookup serves a case and is written to the access log.","Найдите, кому помочь. Каждый поиск относится к обращению и записывается в журнал доступа."],
+  lk_case:["Case this lookup serves","Обращение, к которому относится поиск"], lk_query:["E-mail, name, company or identifier","Эл. почта, имя, компания или идентификатор"], lk_search:["Look up","Найти"],
+  lk_logged:["Logged for case {c}.","Записано для обращения {c}."], lk_needcase:["Choose the case this lookup serves, then look up.","Выберите обращение, затем выполните поиск."],
+  lk_nothing:["Nothing found.","Ничего не найдено."],
+  pc_lede:["Account card: an allowlist view for servicing. Panels you may not see are absent.","Карточка аккаунта: разрешённый набор полей для обслуживания. Панелей, которые вам не положены, здесь нет."],
+  pc_identity:["Identity and state","Идентичность и состояние"], pc_email:["E-mail","Эл. почта"], pc_state:["Account state","Состояние аккаунта"], pc_2fa:["Second factor","Второй фактор"], pc_sessions:["Active sessions","Активные сеансы"], pc_employer:["Employer","Работодатель"],
+  pc_cases:["Support cases","Обращения"], pc_moderation:["Moderation history","История модерации"], pc_compliance:["Compliance","Санкционный контроль"], pc_privacy:["Data rights requests","Запросы о данных"], pc_viewed:["Who viewed this record","Кто просматривал запись"],
+  pc_noImp:["Staff never sign in as a participant. Use one of these instead:","Сотрудники никогда не входят от имени участника. Вместо этого используйте:"],
+  pc_public:["View public page","Публичная страница"], pc_explain:["Access explainer","Объяснение доступа"], pc_diag:["Ask for a diagnostic snapshot","Запросить диагностический снимок"], pc_task:["Send a guided task","Отправить пошаговое задание"], pc_grant:["Request access to named objects","Запросить доступ к объектам"],
+  pc_active:["active","активен"], pc_verified:["verified","подтверждена"], pc_enrolled:["enrolled (2 methods)","настроен (2 способа)"],
+  pc_clear:["No compliance checks are pending.","Нет незавершённых проверок."], pc_mod1:["Level 1 warning, 2026-09-14, clause 4.2 (advertising without a label); no appeal.","Предупреждение 1-го уровня, 2026-09-14, пункт 4.2 (реклама без пометки); без апелляции."],
+  pc_priv1:["Export request, delivered to the person 2026-10-02.","Запрос на выгрузку, передан человеку 2026-10-02."],
+  pc_grantActive:["Case access grant active until {t}: {objs}.","Доступ по обращению действует до {t}: {objs}."], pc_viewObj:["View under grant","Открыть по доступу"],
+  pc_grantPending:["Case access grant waiting for a second person.","Доступ по обращению ждёт второго человека."],
+  // grant dialog
+  gd_title:["Request access to named objects","Запрос доступа к объектам"], gd_objs:["Objects (one type, up to 100)","Объекты (один тип, до 100)"], gd_class:["Projection","Проекция"],
+  gd_diag:["Diagnostic (states and ids, no private content)","Диагностическая (состояния и идентификаторы, без частного содержимого)"], gd_spl:["Support, private limited","Поддержка, ограниченная частная"],
+  gd_purpose:["Purpose","Цель"], gd_expiry:["Expiry in hours (at most 72)","Срок в часах (не более 72)"], gd_reason:["Reason","Причина"],
+  gd_note:["A different person must approve. Every read is logged; negotiation data, credentials and payment references are never shown.","Согласовать должен другой человек. Каждое чтение записывается; переговоры, учётные данные и платёжные реквизиты не показываются никогда."],
+  gd_send:["Request approval","Запросить согласование"], cancel:["Cancel","Отмена"], close:["Close","Закрыть"],
+  e_reason:["Write a reason: what you need and why. It is recorded in the audit log.","Укажите причину: что нужно и зачем. Она записывается в журнал аудита."],
+  e_expiry:["Choose an expiry between 1 and 72 hours.","Укажите срок от 1 до 72 часов."], e_objs:["Choose at least one object.","Выберите хотя бы один объект."],
+  audit:["This action is recorded in the audit log.","Это действие записывается в журнал аудита."],
+  // step-up
+  su_title:["Confirm it is you","Подтвердите, что это вы"], su_body:["This action needs a fresh confirmation. Use your passkey, security key or authenticator code. Paste and password managers work.","Для этого действия нужно свежее подтверждение. Используйте ключ доступа, ключ безопасности или код из приложения. Вставка и менеджеры паролей работают."],
+  su_code:["Authenticator code (demo: any six digits)","Код из приложения (демо: любые шесть цифр)"], su_ok:["Confirm","Подтвердить"], su_err:["Enter the six digits shown in your authenticator app.","Введите шесть цифр из приложения-аутентификатора."], su_done:["Confirmed for 10 minutes.","Подтверждено на 10 минут."],
+  // staff
+  sf_lede:["People who hold staff roles at this hub. No activity or productivity columns exist.","Люди с ролями сотрудников в этом хабе. Столбцов активности и продуктивности нет."],
+  sf_name:["Name","Имя"], sf_roles:["Roles and scope","Роли и область"], sf_2fa:["Second factor","Второй фактор"], sf_elev:["Elevation","Повышение прав"], sf_conf:["Declared conflicts","Заявленные конфликты"],
+  sf_invite:["Invite a staff member","Пригласить сотрудника"], sf_change:["Change roles","Изменить роли"], sf_effective:["What this person can do","Что может этот человек"],
+  sf_none:["none","нет"], sf_until:["until {t}","до {t}"], sf_review:["Start access review for selected","Начать пересмотр доступа для выбранных"], sf_selected:["{n} selected","Выбрано: {n}"],
+  rc_title:["Change roles: {name}","Изменение ролей: {name}"], rc_role:["Add role","Добавить роль"], rc_scope:["Scope","Область"], rc_hub:["This hub","Этот хаб"],
+  rc_diff:["Difference","Разница"], rc_gained:["Permissions gained","Добавляемые права"], rc_sod:["Separation of duties","Разделение обязанностей"],
+  rc_block:["Blocked: {a} and {b} cannot be held by one person in full separation-of-duties mode (an auditor must not review their own commercial decisions). End the other role or choose another person.","Запрещено: роли «{a}» и «{b}» не может совмещать один человек при полном разделении обязанностей (аудитор не проверяет собственные коммерческие решения). Снимите другую роль или выберите другого человека."],
+  rc_ok:["No conflict with this person's other roles.","Конфликтов с другими ролями человека нет."], rc_sensitive:["Sensitive role: a second person must approve before it takes effect.","Чувствительная роль: до вступления в силу нужно согласование второго человека."],
+  rc_apply:["Apply","Применить"], rc_request:["Request approval","Запросить согласование"],
+  rl_lede:["Released role definitions. Hubs may narrow a role, never add permissions to it.","Утверждённые описания ролей. Хаб может сузить роль, но не расширить её."],
+  rl_matrix:["Permission matrix","Матрица прав"], rl_compare:["Compare with","Сравнить с"], allowed:["Allowed","Разрешено"], notallowed:["Not allowed","Запрещено"], allowed2:["Allowed, second person needed","Разрешено, нужен второй человек"],
+  rl_kbd:["Use arrow keys to move between cells; each cell explains its value.","Перемещайтесь стрелками; каждая ячейка поясняет значение."],
+  // config
+  cf_lede:["Egress: which data classes may reach which connection. Default deny. Changes are versions; private classes need a second person.","Передача данных: какие классы данных могут уходить к каким подключениям. По умолчанию запрещено. Изменения — это версии; для частных классов нужен второй человек."],
+  cf_active:["Active version {v}","Действующая версия {v}"], cf_draft:["Draft version {v}","Черновик версии {v}"], cf_save:["Save draft","Сохранить черновик"], cf_requestAct:["Request activation","Запросить активацию"],
+  cf_diffTitle:["Changes against the active version","Изменения относительно действующей версии"], cf_field:["Field","Поле"], cf_before:["Before","Было"], cf_after:["After","Стало"], cf_effect:["Effect","Последствие"],
+  cf_effectTxt:["Private project data may now be sent to Example Models Inc. (United States).","Частные данные проектов теперь могут передаваться Example Models Inc. (США)."],
+  cf_deny:["Deny","Запрещено"], cf_allow:["Allow","Разрешено"], cf_trains:["This provider trains models on submitted data; private data cannot be sent to it.","Этот поставщик обучает модели на присланных данных; частные данные ему передавать нельзя."],
+  cf_history:["Version history","История версий"], cf_rollback:["Roll back to version {v}","Вернуть версию {v}"], cf_rollbackNote:["Rollback creates a new draft with the payload of version {v}; it goes through the same approval.","Возврат создаёт новый черновик с содержимым версии {v}; он проходит то же согласование."],
+  cf_changed:["Changed by another staff member? The approval binds this exact version; any later edit voids it.","Изменено другим сотрудником? Согласование привязано к этой версии; любое изменение его аннулирует."],
+  // models
+  md_lede:["Models, their cost and your price to participants. Prices are versions activated by a second person and published.","Модели, их себестоимость и цена для участников. Цены — это версии, активируемые вторым человеком и публикуемые."],
+  md_model:["Model","Модель"], md_conn:["Connection and region","Подключение и регион"], md_eval:["Evaluation","Оценка"], md_cost:["Cost per 1,000 tokens","Себестоимость за 1000 токенов"], md_sale:["Sale price","Цена продажи"], md_margin:["Margin","Маржа"], md_route:["Used by","Используется"],
+  md_pass:["Passed 2026-10-28","Пройдена 2026-10-28"], md_none:["Not evaluated: cannot be enabled","Не оценена: включить нельзя"], md_draftPrice:["Draft a price version","Создать версию цены"],
+  md_guard:["Always on: rules no administrator can switch off","Всегда включено: правила, которые нельзя отключить"], alwaysOn:["Always on","Всегда"],
+  gr_mandate:["Agents commit only under a confirmed mandate, within a budget, with the person's confirmation.","Агенты берут обязательства только по подтверждённому мандату, в пределах бюджета и с подтверждением человека."],
+  gr_pay:["No price, plan, credit or commission changes ranking, matching, recommendations or reputation.","Никакая цена, тариф, кредиты или комиссия не влияют на ранжирование, подбор, рекомендации и репутацию."],
+  gr_sanc:["Baseline sanctions screening cannot be switched off; money and commitments wait while a match is open.","Базовую санкционную проверку отключить нельзя; деньги и обязательства ждут, пока совпадение не разобрано."],
+  gr_restricted:["Restricted places are never offered, hosted, served or federated.","Запрещённые территории никогда не обслуживаются и не федерируются."],
+  gr_agent:["Administrators set policy for everyone and never read or change one participant's agent, mandates or settings.","Администраторы задают политику для всех и никогда не читают и не меняют агента, мандаты или настройки отдельного участника."],
+  gr_imp:["Staff never sign in as a participant.","Сотрудники никогда не входят от имени участника."], gr_money:["Trustwork never holds money: charges, credits and payouts go through the licensed payment provider.","Trustwork никогда не держит деньги: списания, кредиты и выплаты идут через лицензированного платёжного провайдера."],
+  pv_title:["Draft a price version: Agent run, RFQ responder","Новая версия цены: запуск агента, ответ на RFQ"], pv_cost:["Cost price (measured average)","Себестоимость (среднее)"], pv_sale:["Sale price","Цена продажи"], pv_eff:["Effective from (never back-dated)","Действует с (не задним числом)"],
+  pv_neg:["Negative margin: this unit is subsidised. Allowed, but check it is intended.","Отрицательная маржа: единица субсидируется. Это допустимо, но проверьте намерение."],
+  // incidents
+  in_lede:["Incidents link kill switches, holds and break-glass sessions, with a timeline and a review.","Инциденты связывают аварийные выключатели, блокировки и экстренный доступ, с хронологией и разбором."],
+  in_title:["Agent dispatch errors above threshold","Ошибки запуска агентов выше порога"], in_sev:["Severity 2","Серьёзность 2"], in_open:["Open","Открыт"],
+  in_engage:["Engage kill switch: agent dispatch in this hub","Включить выключатель: запуск агентов в этом хабе"], in_release:["Request release","Запросить отключение выключателя"],
+  in_engageReason:["Why are you engaging it?","Почему вы его включаете?"], in_note:["Incident note (required to release)","Заметка по инциденту (нужна для отключения)"],
+  in_engaged:["Engaged by {who} at {t}.","Включён: {who}, {t}."], in_released:["Released after approval by {who}.","Отключён после согласования: {who}."],
+  in_fast:["Engaging is immediate and needs one person. Releasing needs a second person and an incident note.","Включение — немедленно и одним человеком. Отключение — вторым человеком и с заметкой по инциденту."],
+  in_t1:["Health tile turned red: dispatch errors 14% for 10 minutes.","Плитка состояния стала красной: ошибки запуска 14% в течение 10 минут."], in_t2:["Incident opened by Synthetic Ops Engineer.","Инцидент открыт: Synthetic Ops Engineer."],
+  // agent team
+  at_lede:["The hub's internal agents. They work under operator grants with an accountable person; they never act as a participant or as staff.","Внутренние агенты хаба. Работают по операторским разрешениям под ответственность человека; никогда не действуют от имени участника или сотрудника."],
+  at_agent:["Agent","Агент"], at_role:["Role","Роль"], at_autonomy:["Autonomy","Автономность"], at_accountable:["Accountable person","Ответственный"], at_budget:["Budget this month","Бюджет за месяц"], at_eval:["Evaluation","Оценка"], at_state:["State","Состояние"],
+  au_observe:["Observe","Наблюдение"], au_draft:["Draft","Черновики"], au_review:["Act with review","Действия с проверкой"], au_limits:["Act within limits","Действия в пределах"],
+  at_enabled:["Enabled","Включён"], at_paused:["Paused","Приостановлен"], at_killed:["Kill switch engaged","Выключатель включён"], at_kill:["Kill switch","Выключатель"],
+  at_human:["A person decides this. Agents can prepare it, never decide it.","Это решает человек. Агенты могут подготовить, но не решить."],
+  at_humanList:["Human-only decisions for this role","Решения только для человека в этой роли"],
+  at_editorial:["Editorial agents (writers, layout designers, designers, photographers, illustrators) are designed with the editorial office and appear in this roster.","Редакционные агенты (авторы, верстальщики, дизайнеры, фотографы, иллюстраторы) проектируются вместе с редакцией и появятся в этом составе."],
+  at_label:["Prepared by the {role} agent","Подготовлено агентом «{role}»"], at_return:["Return with a note","Вернуть с заметкой"], at_approveSend:["Approve and send","Согласовать и отправить"],
+  // misc
+  designedTitle:["This section is designed, not part of the prototype","Раздел спроектирован, но не входит в прототип"], designedBody:["See the console design chapter for its contents and owning work package.","Его содержание и пакет работ описаны в главе о дизайне консоли."],
+  pal_ph:["Search sections and commands, or type # and an id","Ищите разделы и команды или введите # и идентификатор"], pal_sections:["Sections","Разделы"], pal_commands:["Commands","Команды"], pal_lookup:["Look up a participant in Support","Найти участника в разделе «Поддержка»"],
+  pal_hint:["Participants are never searched here: lookups happen in Support, inside a case, and are logged.","Участников здесь не ищут: поиск идёт в «Поддержке», внутри обращения, и записывается в журнал."],
+  pal_nothing:["Nothing found","Ничего не найдено"],
+  reason:["Reason","Причина"], saved:["Demo: changes are not saved, but the prototype remembers them until you reload.","Демо: изменения не сохраняются, но прототип помнит их до перезагрузки."],
+  ins_lede:["Cohort trends. Counts under ten are shown as fewer than 10; no row is a person; no per-staff view exists.","Тенденции по когортам. Числа меньше десяти показаны как «меньше 10»; ни одна строка не описывает человека; разбивки по сотрудникам нет."],
+  fewer10:["fewer than 10","меньше 10"], wide:["More comfortable on a wide screen","Удобнее на широком экране"],
+  au_lede:["Every console mutation and every read under a grant. Denied attempts are shown too.","Все изменения в консоли и все чтения по доступу. Отказы тоже показаны."],
+  helpLede:["Keyboard: Ctrl or Cmd+K palette, / filter, g then o overview, g then i inbox, j and k rows, Escape closes. Single-key shortcuts can be turned off.","Клавиатура: Ctrl или Cmd+K — палитра, / — фильтр, g затем o — обзор, g затем i — входящие, j и k — строки, Escape — закрыть. Однoклавишные сочетания можно отключить."],
+  shortcutsOn:["Single-key shortcuts: on","Однoклавишные сочетания: вкл."], shortcutsOff:["Single-key shortcuts: off","Однoклавишные сочетания: выкл."]
+};
+let lang = 'en';
+function t(k, v){ const e = T[k]; let s = e ? e[lang==='ru'?1:0] : k; if (v) for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; }
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------------- Synthetic data ---------------- */
+const ROLE = {
+  'hub-owner':["Hub owner","Владелец хаба"], 'support-agent':["Support agent","Агент поддержки"], 'support-lead':["Support lead","Руководитель поддержки"],
+  'ops-engineer':["Ops engineer","Инженер эксплуатации"], 'compliance-officer':["Compliance officer","Комплаенс-офицер"], 'commercial-admin':["Commercial admin","Коммерческий администратор"],
+  'auditor':["Auditor","Аудитор"], 'privacy-officer':["Privacy officer","Специалист по приватности"], 'moderator':["Moderator","Модератор"], 'trust-reviewer':["Trust reviewer","Проверяющий доверия"], 'editor':["Editor","Редактор"]
+};
+const rn = (r) => ROLE[r] ? ROLE[r][lang==='ru'?1:0] : r;
+const SENSITIVE = ['hub-owner','commercial-admin','privacy-officer','compliance-officer','staff-admin'];
+const SOD = [['auditor','commercial-admin'],['support-agent','support-lead']];
+const PERSONAS = [
+  {id:'s1', name:'Synthetic Support Agent', roles:['support-agent']},
+  {id:'s2', name:'Synthetic Support Lead', roles:['support-lead']},
+  {id:'s3', name:'Synthetic Hub Owner', roles:['hub-owner']},
+  {id:'s4', name:'Synthetic Ops Engineer', roles:['ops-engineer']},
+  {id:'s5', name:'Synthetic Compliance Officer', roles:['compliance-officer']},
+  {id:'s6', name:'Synthetic Auditor', roles:['auditor']},
+  {id:'s7', name:'Synthetic Commercial Admin', roles:['commercial-admin']},
+];
+const S = {
+  persona:'s3', theme:'system', killEngaged:false, killBy:null, killAt:null, releaseRequested:false, stepUps:{}, shortcuts:true,
+  lookupCase:'', lookupDone:false, grant:null, accessLog:[
+    {who:'Support agent', caseId:'C-1042', what:'Account card', at:'2026-10-30 09:12'},
+  ],
+  egress:{active:7, draft:null, cells:{}}, versions:[{v:7,by:'Synthetic Compliance Officer',at:'2026-10-20',status:'active'},{v:6,by:'Synthetic Compliance Officer',at:'2026-09-02',status:'superseded'}],
+  approvals:[
+    {id:'A-301', kind:'price', title:['Activate price version 4: Agent run, RFQ responder','Активировать версию цены 4: запуск агента, ответ на RFQ'], by:'s7', reason:'Cost of the pinned model fell', role:'hub-owner', status:'pending', h:61, diff:[['Sale price per run','$0.10','$0.09'],['Effective from','—','2026-11-15']]},
+  ],
+  staff:[
+    {id:'s1',name:'Synthetic Support Agent',roles:['support-agent'],tfa:true,elev:null,conf:0},
+    {id:'s2',name:'Synthetic Support Lead',roles:['support-lead'],tfa:true,elev:'15:40',conf:0},
+    {id:'s3',name:'Synthetic Hub Owner',roles:['hub-owner'],tfa:true,elev:'16:05',conf:0},
+    {id:'s4',name:'Synthetic Ops Engineer',roles:['ops-engineer'],tfa:true,elev:null,conf:0},
+    {id:'s5',name:'Synthetic Compliance Officer',roles:['compliance-officer'],tfa:true,elev:null,conf:1},
+    {id:'s6',name:'Synthetic Auditor',roles:['auditor'],tfa:true,elev:null,conf:0},
+    {id:'s7',name:'Synthetic Commercial Admin',roles:['commercial-admin'],tfa:false,elev:null,conf:0},
+  ],
+  sel:new Set(),
+  agents:[
+    {id:'ag1', name:'Support triage', role:'support', autonomy:'review', acc:'Synthetic Support Lead', budget:[18,60], eval:true, state:'enabled'},
+    {id:'ag2', name:'Moderation triage', role:'moderation', autonomy:'draft', acc:'Synthetic Hub Owner', budget:[6,40], eval:true, state:'enabled'},
+    {id:'ag3', name:'Sanctions review assistant', role:'sanctions', autonomy:'draft', acc:'Synthetic Compliance Officer', budget:[2,20], eval:true, state:'enabled'},
+    {id:'ag4', name:'Operations monitor', role:'ops', autonomy:'review', acc:'Synthetic Ops Engineer', budget:[9,30], eval:true, state:'enabled'},
+    {id:'ag5', name:'Billing reconciliation', role:'billing', autonomy:'draft', acc:'Synthetic Commercial Admin', budget:[0,25], eval:false, state:'paused'},
+    {id:'ag6', name:'Analytics reporter', role:'analytics', autonomy:'limits', acc:'Synthetic Hub Owner', budget:[1,10], eval:true, state:'enabled'},
+  ],
+  review:[{id:'R-88', agent:'Support triage', what:['Draft first reply to case C-1042 (account locked after travel)','Черновик первого ответа по обращению C-1042 (аккаунт заблокирован после поездки)'], status:'pending'}],
+};
+const me = () => PERSONAS.find((p) => p.id === S.persona);
+const has = (r) => me().roles.includes(r) || me().roles.includes('hub-owner');
+const nowStr = () => new Date().toTimeString().slice(0,5);
+
+/* ---------------- Navigation ---------------- */
+const GROUPS = [
+  ['home',[['overview','#/overview'],['inbox','#/inbox'],['help','#/help']]],
+  ['users',[['usershome','#/users'],['people','#/users'],['companies','#/x/companies'],['staff','#/staff'],['roles','#/staff/role'],['invites','#/x/invites'],['reviews','#/x/reviews'],['svc','#/x/clients']]],
+  ['stats',[['dash','#/stats'],['catalogue','#/stats/metrics'],['funnels','#/stats/funnels'],['reports','#/stats/reports'],['statsettings','#/x/statsettings']]],
+  ['hub',[['identity','#/x/identity'],['modes','#/x/modes'],['config','#/config/egress'],['launch','#/x/launch']]],
+  ['verify',[['claims','#/x/claims']]],
+  ['support',[['lookup','#/support'],['cases','#/x/cases'],['recovery','#/x/recovery']]],
+  ['trust',[['moderation','#/x/moderation'],['appeals','#/x/appeals'],['screening','#/x/screening']]],
+  ['editorial',[['desk','#/x/desk'],['review','#/x/review'],['calendar','#/x/calendar']]],
+  ['data',[['datasets','#/x/datasets'],['links','#/x/links']]],
+  ['modules',[['mods','#/x/mods']]],
+  ['agents',[['agentmods','#/x/agentmods'],['agentpolicy','#/x/agentpolicy']]],
+  ['team',[['roster','#/team'],['teamroles','#/team/role'],['teamreview','#/team/review'],['teamruns','#/x/teamruns']]],
+  ['money',[['prices','#/models'],['payouts','#/x/payouts']]],
+  ['keys',[['models','#/models'],['egress','#/config/egress'],['kill','#/ops/incident']]],
+  ['automation',[['schedules','#/x/schedules'],['runs','#/x/runs']]],
+  ['comms',[['templates','#/x/templates']]],
+  ['network',[['map','#/network'],['peers','#/x/peers'],['opchannel','#/x/opchannel'],['netstats','#/x/netstats']]],
+  ['privacy',[['requests','#/x/requests']]],
+    ['audit',[['auditlog','#/audit']]],
+  ['ops',[['health','#/x/health'],['incidents','#/ops/incident'],['flags','#/x/flags']]],
+];
+const VIS = { users:['support-agent','support-lead','auditor','compliance-officer'], stats:['support-lead','ops-engineer','compliance-officer','commercial-admin','auditor'], network:['compliance-officer'], support:['support-agent','support-lead'], staff:['auditor'], audit:['auditor'], keys:['ops-engineer','compliance-officer','commercial-admin'], ops:['ops-engineer'], money:['commercial-admin'], team:['support-lead','ops-engineer','compliance-officer','commercial-admin'], trust:['compliance-officer'], privacy:[], hub:['compliance-officer'] };
+function canSeeStaff(){ return has('hub-owner') || me().roles.includes('auditor'); }
+function canSeeGroup(g){ if (['home'].includes(g)) return true; if (has('hub-owner')) return true; const v = VIS[g]; return v ? v.some((r) => me().roles.includes(r)) : false; }
+function myWaiting(){ return S.approvals.filter((a) => a.status==='pending' && a.by !== S.persona && has(a.role)).length + (has('support-lead')||has('hub-owner') ? S.review.filter(r=>r.status==='pending').length : 0); }
+
+function renderNav(){
+  const cur = location.hash || '#/overview';
+  const counts = { inbox: myWaiting() };
+  document.getElementById('sidenav').innerHTML = GROUPS.filter(([g]) => canSeeGroup(g)).map(([g, items]) => {
+    const open = g==='home' || items.some(([,h]) => cur.startsWith(h));
+    return `<details ${open?'open':''}><summary>${esc(t('g_'+g))}</summary><ul>${items.map(([s,h]) => {
+      const isCur = cur === h || (h !== '#/overview' && cur.startsWith(h) && h.length > 3);
+      const c = counts[s] ? `<span class="count" aria-hidden="true">${counts[s]}</span><span style="position:absolute;left:-9999px">, ${counts[s]} waiting</span>` : (h.startsWith('#/x/') ? `<span class="nstat">${esc(t('st_designed'))}</span>` : '');
+      return `<li><a href="${h}" ${isCur?'aria-current="page"':''}><span>${esc(t('s_'+s))}</span>${c}</a></li>`; }).join('')}</ul></details>`;
+  }).join('');
+}
+function renderBand(){
+  document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
+  document.getElementById('brandName').textContent = lang==='ru' ? 'Строй Репутация' : 'Trustwork';
+  document.documentElement.lang = lang;
+  const n = myWaiting();
+  document.getElementById('inboxBtn').textContent = `${t('inbox')} (${n})`;
+  document.getElementById('inboxBtn').setAttribute('aria-label', `${t('inbox')}: ${n}`);
+  document.getElementById('langBtn').textContent = lang==='en' ? 'RU' : 'EN';
+  const narrow = window.matchMedia('(max-width: 767px)').matches;
+  document.getElementById('themeBtn').textContent = narrow ? '\u25D0' : t('theme_'+S.theme);
+  document.getElementById('themeBtn').setAttribute('aria-label', t('theme_'+S.theme));
+  document.querySelector('#openPalette span').textContent = narrow ? (lang==='ru'?'Поиск':'Search') : t('searchBtn');
+  document.getElementById('palInput').placeholder = t('pal_ph');
+  document.getElementById('palHint').textContent = t('pal_hint');
+  document.getElementById('skiplink').textContent = lang==='ru' ? 'Перейти к содержимому' : 'Skip to content';
+  let b = `<div class="b demo"><span role="note">${esc(t('demoBand'))}</span><label class="persona-wrap"><span>${esc(t('viewingAs'))}:</span> <select id="persona">${PERSONAS.map((p) => `<option value="${p.id}" ${p.id===S.persona?'selected':''}>${esc(p.name)} (${esc(p.roles.map(rn).join(', '))})</option>`).join('')}</select></label></div>`;
+  if (S.killEngaged) b += `<div class="b kill" role="status">${esc(t('killBand',{name:t('in_engage').split(': ')[1]||'agent dispatch', who:S.killBy, time:S.killAt}))} <a href="#/ops/incident">${esc(t('openIncident'))}</a></div>`;
+  document.getElementById('bands').innerHTML = b;
+  document.getElementById('persona').onchange = (e) => { S.persona = e.target.value; render(); toast(`${t('viewingAs')}: ${me().name}`); document.getElementById('persona').focus(); };
+}
+
+/* ---------------- Helpers ---------------- */
+function header(title, lede, status, crumbs, actions){
+  return `<div class="crumbs">${crumbs.map(([l,h]) => h?`<a href="${h}">${esc(l)}</a>`:esc(l)).join(' › ')}</div>
+  <p class="acts">${esc(t('actsOn'))} <strong>${esc(t('hubName'))}</strong> · ${esc(t('stageDraft'))}</p>
+  <div class="titlerow"><h1 tabindex="-1" id="h1">${esc(title)}</h1><span class="chip ${status==='demo'?'c-info':'c-neu'}">${esc(t('st_'+status))}</span><span class="sp"></span>${actions||''}</div>
+  <p class="lede">${esc(lede)}</p>`;
+}
+const crumbBase = () => [[lang==='ru'?'Узел':'Node',''],[t('hubName').split(',')[0],'#/overview']];
+function toast(msg){ const el = document.createElement('div'); el.className='toast'; el.setAttribute('role','status'); el.textContent = msg; document.body.appendChild(el); setTimeout(() => el.remove(), 3800); }
+function announce(m){ document.getElementById('live').textContent = m; }
+function dialog(html, onMount){ const d = document.getElementById('dlg'); d.innerHTML = html; d.showModal(); const first = d.querySelector('[data-cancel]'); if (first) first.focus(); d.querySelectorAll('[data-cancel]').forEach((b) => b.onclick = () => d.close()); if (onMount) onMount(d); return d; }
+function stepUp(then){
+  if (Date.now() - (S.stepUps[S.persona]||0) < 10*60*1000) return then();
+  dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('su_title'))}</h2></div><div class="db"><p>${esc(t('su_body'))}</p>
+    <div class="field"><label for="su">${esc(t('su_code'))}</label><input id="su" inputmode="numeric" autocomplete="one-time-code"><span class="err" id="suErr" aria-live="polite"></span></div></div>
+    <div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn primary" id="suOk">${esc(t('su_ok'))}</button></div>`, (d) => {
+      d.querySelector('#suOk').onclick = () => { const v = d.querySelector('#su').value.trim(); if (!/^\d{6}$/.test(v)) { d.querySelector('#suErr').textContent = t('su_err'); d.querySelector('#su').setAttribute('aria-invalid','true'); d.querySelector('#su').focus(); return; } S.stepUps[S.persona] = Date.now(); d.close(); toast(t('su_done')); then(); };
+    });
+}
+
+/* ---------------- Screens ---------------- */
+function scrOverview(){
+  const w = myWaiting();
+  return header(t('s_overview'), t('ov_lede'), 'demo', crumbBase().concat([[t('s_overview')]])) +
+  `<div class="note ok">${esc(t('ov_sod'))}</div>
+  <div class="grid3">
+    <div class="tile"><div class="small">${esc(t('ov_waiting'))}</div><div class="n">${w}</div><a href="#/inbox">${esc(t('s_inbox'))}</a></div>
+    <div class="tile"><div class="small">${esc(t('h_dispatch'))}</div><div class="n" style="color:var(--bad)">14%</div><span class="chip c-bad">${lang==='ru'?'Выше порога':'Above threshold'}</span> <a href="#/ops/incident">${esc(t('s_incidents'))}</a></div>
+    <div class="tile"><div class="small">${esc(t('h_backup'))}</div><div class="n">6 h</div><span class="chip c-ok">${lang==='ru'?'Резервная копия вне хоста':'Off-host copy present'}</span></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h2>${esc(t('ov_queues'))}</h2><table class="cards"><thead><tr><th>${lang==='ru'?'Очередь':'Queue'}</th><th>${lang==='ru'?'Ожидают':'Waiting'}</th><th></th></tr></thead><tbody>
+  ${[['q_claims',4,'#/x/claims'],['q_cases',9,'#/x/cases'],['q_reports',3,'#/x/moderation'],['q_privacy',2,'#/x/requests'],['q_agent',S.review.filter(r=>r.status==='pending').length,'#/team/review']].map(([k,n,h]) => `<tr><td data-label="${lang==='ru'?'Очередь':'Queue'}">${esc(t(k))}</td><td data-label="${lang==='ru'?'Ожидают':'Waiting'}">${n}</td><td><a href="${h}">${esc(t('open'))}</a></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+let inboxTab = 'waiting';
+function scrInbox(){
+  const rows = S.approvals.filter((a) => inboxTab==='waiting' ? a.status==='pending' && has(a.role) : inboxTab==='mine' ? a.by===S.persona : inboxTab==='done' ? a.status!=='pending' : false);
+  const tabs = ['waiting','mine','assigned','done'].map((k) => `<button role="tab" aria-selected="${inboxTab===k}" data-tab="${k}">${esc(t({waiting:'ib_waiting',mine:'ib_mine',assigned:'ib_assigned',done:'ib_done'}[k]))}</button>`).join('');
+  let body = rows.map((a) => {
+    const own = a.by === S.persona; const can = has(a.role);
+    const requester = PERSONAS.find((p) => p.id===a.by).name;
+    return `<article class="panel" aria-labelledby="ap-${a.id}"><div class="titlerow"><h2 id="ap-${a.id}" style="margin:0">${esc(a.title[lang==='ru'?1:0])}</h2><span class="sp"></span><span class="chip ${a.status==='pending'?'c-warn':a.status==='approved'?'c-ok':'c-neu'}">${esc(t('st_'+a.status))}</span></div>
+    <p class="small">${esc(t('ib_requested',{who:requester, reason:a.reason}))} · ${esc(a.id)} · ${a.status==='pending'?esc(t('ib_expires',{h:a.h})):''}</p>
+    <table class="diff cards"><thead><tr><th>${esc(t('cf_field'))}</th><th>${esc(t('cf_before'))}</th><th>${esc(t('cf_after'))}</th></tr></thead><tbody>${a.diff.map(([f,o,n]) => `<tr><td data-label="${esc(t('cf_field'))}">${esc(f)}</td><td class="old" data-label="${esc(t('cf_before'))}">${esc(o)}</td><td class="new" data-label="${esc(t('cf_after'))}">${esc(n)}</td></tr>`).join('')}</tbody></table>
+    <p class="small">${esc(t('ib_why',{role:rn(a.role)}))} ${lang==='ru'?'Отпечаток действия':'Action digest'}: <code>sha256:${a.id.toLowerCase()}9f3…</code></p>
+    ${a.status==='pending' ? `<div class="row">${own ? `<button class="btn primary" disabled aria-describedby="own-${a.id}">${esc(t('approve'))}</button><span id="own-${a.id}" class="small">${esc(t('ownRequest'))}</span> <button class="btn" data-withdraw="${a.id}">${esc(t('withdraw'))}</button>` : can ? `<button class="btn primary" data-approve="${a.id}">${esc(t('approve'))}</button><button class="btn" data-decline="${a.id}">${esc(t('decline'))}</button>` : `<span class="small">${esc(t('noRole'))}</span>`}</div>` : ''}
+    </article>`; }).join('');
+  if (inboxTab==='waiting' && (has('support-lead')||has('hub-owner'))) body += S.review.filter(r=>r.status==='pending').map((r) => `<article class="panel"><div class="titlerow"><h2 style="margin:0">${esc(r.what[lang==='ru'?1:0])}</h2><span class="sp"></span><span class="chip c-ai">${esc(t('at_label',{role:r.agent}))}</span></div><p><a href="#/team/review">${esc(t('s_teamreview'))}</a></p></article>`).join('');
+  if (inboxTab==='assigned') body = `<div class="panel"><table class="cards"><thead><tr><th>${lang==='ru'?'Объект':'Item'}</th><th>${lang==='ru'?'Состояние':'State'}</th></tr></thead><tbody><tr><td data-label="${lang==='ru'?'Объект':'Item'}">${lang==='ru'?'Обращение C-1042: аккаунт заблокирован':'Case C-1042: account locked'}</td><td data-label="${lang==='ru'?'Состояние':'State'}"><span class="chip c-info">${lang==='ru'?'В работе':'Open'}</span></td></tr><tr><td data-label="${lang==='ru'?'Объект':'Item'}">${esc(t('in_title'))}</td><td data-label="${lang==='ru'?'Состояние':'State'}"><span class="chip c-warn">${esc(t('in_sev'))}</span></td></tr></tbody></table></div>`;
+  if (!body) body = `<div class="empty"><h2>${esc(t('ib_empty'))}</h2></div>`;
+  return header(t('s_inbox'), t('ib_lede'), 'demo', crumbBase().concat([[t('s_inbox')]])) + `<div class="tabs" role="tablist">${tabs}</div><div role="tabpanel">${body}</div>`;
+}
+function approveFlow(id, ok){
+  const a = S.approvals.find((x) => x.id===id);
+  if (!ok) { dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('decline'))}: ${esc(a.title[lang==='ru'?1:0])}</h2></div><div class="db"><div class="field"><label for="dr">${esc(t('reason'))}</label><textarea id="dr" rows="3"></textarea><span class="err" id="drErr"></span></div><p class="small">${esc(t('audit'))}</p></div><div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn danger" id="dOk">${esc(t('decline'))}</button></div>`, (d) => { d.querySelector('#dOk').onclick = () => { if (!d.querySelector('#dr').value.trim()) { d.querySelector('#drErr').textContent = t('e_reason'); d.querySelector('#dr').focus(); return; } a.status='declined'; d.close(); render(); toast(t('st_declined')); }; }); return; }
+  stepUp(() => { a.status='approved'; a.approver = me().name; if (a.onApprove) a.onApprove(); render(); toast(`${t('st_approved')}: ${a.id}`); });
+}
+function scrLookup(){
+  const res = S.lookupDone ? `<div class="panel"><p class="note ok">${esc(t('lk_logged',{c:S.lookupCase}))}</p><table class="cards"><thead><tr><th>${esc(t('sf_name'))}</th><th>${esc(t('pc_email'))}</th><th>${esc(t('pc_state'))}</th><th></th></tr></thead><tbody><tr><td data-label="${esc(t('sf_name'))}">Synthetic Builder Alex</td><td data-label="${esc(t('pc_email'))}">al***@example.invalid</td><td data-label="${esc(t('pc_state'))}"><span class="chip c-warn">${lang==='ru'?'Заблокирован после неудачных входов':'Locked after failed sign-ins'}</span></td><td><a href="#/support/person">${esc(t('open'))}</a></td></tr></tbody></table></div>` : '';
+  return header(t('s_lookup'), t('lk_lede'), 'demo', crumbBase().concat([[t('g_support')],[t('s_lookup')]])) +
+  `<div class="panel"><form id="lkForm" novalidate><div class="grid2"><div class="field"><label for="lkc">${esc(t('lk_case'))}</label><select id="lkc"><option value="">—</option><option ${S.lookupCase==='C-1042'?'selected':''}>C-1042</option><option>C-1043</option></select></div>
+  <div class="field"><label for="lkq">${esc(t('lk_query'))}</label><input id="lkq" value="alex@example.invalid"></div></div><span class="err" id="lkErr" aria-live="polite" style="color:var(--bad);font-weight:600"></span><div class="row"><button class="btn primary">${esc(t('lk_search'))}</button><span class="small">${esc(t('audit'))}</span></div></form></div>` + res;
+}
+function scrPerson(){
+  const g = S.grant;
+  const supportish = has('support-agent') || has('support-lead');
+  const grantNote = g ? (g.status==='active' ? `<div class="note ok">${esc(t('pc_grantActive',{t:g.until, objs:g.objs.join(', ')}))} <button class="btn" id="viewObj">${esc(t('pc_viewObj'))}</button></div>` : g.status==='pending' ? `<div class="note warn">${esc(t('pc_grantPending'))} <a href="#/inbox">${esc(t('s_inbox'))}</a></div>` : '') : '';
+  const panels = [];
+  panels.push(`<section class="panel" aria-labelledby="p1"><h2 id="p1">${esc(t('pc_identity'))}</h2><dl class="kv"><dt>${esc(t('pc_email'))}</dt><dd>al***@example.invalid · ${esc(t('pc_verified'))}</dd><dt>${esc(t('pc_state'))}</dt><dd><span class="chip c-warn">${lang==='ru'?'Заблокирован после неудачных входов':'Locked after failed sign-ins'}</span></dd><dt>${esc(t('pc_2fa'))}</dt><dd>${esc(t('pc_enrolled'))}</dd><dt>${esc(t('pc_sessions'))}</dt><dd>2</dd><dt>${esc(t('pc_employer'))}</dt><dd>Synthetic Framing Co. (example) · ${lang==='ru'?'прораб':'site lead'}</dd></dl></section>`);
+  panels.push(`<section class="panel" aria-labelledby="p2"><h2 id="p2">${esc(t('pc_cases'))}</h2><ul class="timeline"><li><strong>C-1042</strong> · ${lang==='ru'?'Аккаунт заблокирован после поездки':'Account locked after travel'} · <span class="chip c-info">${lang==='ru'?'В работе':'Open'}</span></li></ul></section>`);
+  if (has('moderator') || has('support-lead')) panels.push(`<section class="panel" aria-labelledby="p3"><h2 id="p3">${esc(t('pc_moderation'))}</h2><p>${esc(t('pc_mod1'))}</p></section>`);
+  if (has('compliance-officer')) panels.push(`<section class="panel" aria-labelledby="p4"><h2 id="p4">${esc(t('pc_compliance'))}</h2><p>${esc(t('pc_clear'))}</p></section>`);
+  if (has('privacy-officer') || has('hub-owner')) panels.push(`<section class="panel" aria-labelledby="p5"><h2 id="p5">${esc(t('pc_privacy'))}</h2><p>${esc(t('pc_priv1'))}</p></section>`);
+  if (has('auditor') || has('privacy-officer') || has('hub-owner')) panels.push(`<section class="panel" aria-labelledby="p6"><h2 id="p6">${esc(t('pc_viewed'))}</h2><table class="cards"><thead><tr><th>${esc(t('at_role'))}</th><th>${lang==='ru'?'Обращение':'Case'}</th><th>${lang==='ru'?'Что':'What'}</th><th>${lang==='ru'?'Когда':'When'}</th></tr></thead><tbody>${S.accessLog.map((e) => `<tr><td data-label="${esc(t('at_role'))}">${esc(e.who)}</td><td data-label="${lang==='ru'?'Обращение':'Case'}">${esc(e.caseId)}</td><td data-label="${lang==='ru'?'Что':'What'}">${esc(e.what)}</td><td data-label="${lang==='ru'?'Когда':'When'}">${esc(e.at)}</td></tr>`).join('')}</tbody></table></section>`);
+  return header('Synthetic Builder Alex', t('pc_lede'), 'demo', crumbBase().concat([[t('g_support')],[t('s_lookup'),'#/support'],['Synthetic Builder Alex']])) + grantNote +
+  `<div class="panel"><p style="margin-top:0">${esc(t('pc_noImp'))}</p><div class="row"><button class="btn">${esc(t('pc_public'))}</button><button class="btn">${esc(t('pc_explain'))}</button><button class="btn">${esc(t('pc_diag'))}</button><button class="btn">${esc(t('pc_task'))}</button>${supportish && !g ? `<button class="btn primary" id="reqGrant">${esc(t('pc_grant'))}</button>` : ''}</div></div>` + `<div class="grid2">${panels.join('')}</div>`;
+}
+function grantDialog(){
+  dialog(`<form id="gForm" novalidate><div class="dh"><h2 id="dlgTitle">${esc(t('gd_title'))}</h2></div><div class="db">
+  <div id="gSum" role="alert" class="note bad" hidden></div>
+  <fieldset class="field" style="border:0;padding:0"><legend style="font-weight:600">${esc(t('gd_objs'))}</legend>
+  <label><input type="checkbox" name="o" value="RFQ-2207" checked> RFQ-2207 (${lang==='ru'?'запрос предложений':'request for quotes'})</label><label><input type="checkbox" name="o" value="Invitation-88"> Invitation-88</label></fieldset>
+  <div class="field"><label for="gc">${esc(t('gd_class'))}</label><select id="gc"><option>${esc(t('gd_diag'))}</option><option>${esc(t('gd_spl'))}</option></select></div>
+  <div class="field"><label for="gp">${esc(t('gd_purpose'))}</label><input id="gp" value="${lang==='ru'?'Поставщик говорит, что не получил RFQ':'Supplier says the RFQ never arrived'}"></div>
+  <div class="field"><label for="ge">${esc(t('gd_expiry'))}</label><input id="ge" type="number" min="1" max="72" value="24"><span class="err" id="geErr"></span></div>
+  <div class="field"><label for="gr">${esc(t('gd_reason'))}</label><textarea id="gr" rows="2"></textarea><span class="err" id="grErr"></span></div>
+  <p class="small">${esc(t('gd_note'))} ${esc(t('audit'))}</p></div>
+  <div class="df"><button type="button" class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn primary">${esc(t('gd_send'))}</button></div></form>`, (d) => {
+    d.querySelector('#gForm').onsubmit = (ev) => { ev.preventDefault();
+      const objs = [...d.querySelectorAll('input[name=o]:checked')].map((x) => x.value); const e = +d.querySelector('#ge').value; const r = d.querySelector('#gr').value.trim();
+      const errs = []; d.querySelector('#geErr').textContent=''; d.querySelector('#grErr').textContent='';
+      if (!objs.length) errs.push(t('e_objs')); if (!(e>=1 && e<=72)) { errs.push(t('e_expiry')); d.querySelector('#geErr').textContent=t('e_expiry'); } if (!r) { errs.push(t('e_reason')); d.querySelector('#grErr').textContent=t('e_reason'); }
+      const sum = d.querySelector('#gSum'); if (errs.length) { sum.hidden=false; sum.innerHTML = errs.map(esc).join('<br>'); sum.focus(); return; }
+      const until = new Date(Date.now()+e*3600e3).toISOString().slice(0,16).replace('T',' ');
+      S.grant = {status:'pending', objs, until};
+      S.approvals.unshift({id:'A-'+(400+S.approvals.length), kind:'grant', title:[`Case access grant for case C-1042: ${objs.join(', ')}`,`Доступ по обращению C-1042: ${objs.join(', ')}`], by:S.persona, reason:r, role:'support-lead', status:'pending', h:72, diff:[['Objects','—',objs.join(', ')],['Projection','—','diagnostic'],['Expiry','—',until]], onApprove(){ S.grant.status='active'; }});
+      d.close(); render(); toast(t('st_pending'));
+    };
+  });
+}
+function scrStaff(){
+  const rows = S.staff.map((s) => `<tr class="${S.sel.has(s.id)?'sel':''}"><td><input type="checkbox" aria-label="${lang==='ru'?'Выбрать':'Select'} ${esc(s.name)}" data-sel="${s.id}" ${S.sel.has(s.id)?'checked':''}></td><td data-label="${esc(t('sf_name'))}"><a href="#/staff/person/${s.id}">${esc(s.name)}</a></td><td data-label="${esc(t('sf_roles'))}">${s.roles.map((r) => `<span class="chip c-neu">${esc(rn(r))} · ${lang==='ru'?'хаб':'hub'}</span>`).join(' ')}</td><td data-label="${esc(t('sf_2fa'))}">${s.tfa?`<span class="chip c-ok">${lang==='ru'?'настроен':'enrolled'}</span>`:`<span class="chip c-bad">${lang==='ru'?'не настроен':'missing'}</span>`}</td><td data-label="${esc(t('sf_elev'))}">${s.elev?esc(t('sf_until',{t:s.elev})):esc(t('sf_none'))}</td><td data-label="${esc(t('sf_conf'))}">${s.conf}</td></tr>`).join('');
+  const bulk = S.sel.size ? `<div class="bulk" role="region" aria-label="${lang==='ru'?'Действия с выбранными':'Bulk actions'}"><strong>${esc(t('sf_selected',{n:S.sel.size}))}</strong><span style="flex:1"></span><button class="btn">${esc(t('sf_review'))}</button><button class="btn" id="clearSel">${esc(t('cancel'))}</button></div>` : `<div class="filterbar"><label style="position:absolute;left:-9999px" for="sfq">Filter</label><input id="sfq" placeholder="${lang==='ru'?'Фильтр по имени или роли':'Filter by name or role'}"><span class="fchip">${lang==='ru'?'Область: этот хаб':'Scope: this hub'} <button aria-label="${lang==='ru'?'Убрать фильтр':'Remove filter'}: scope">×</button></span><span class="small">${S.staff.length} ${lang==='ru'?'человек':'people'}</span></div>`;
+  return header(t('s_staff'), t('sf_lede'), 'demo', crumbBase().concat([[t('g_staff')],[t('s_staff')]]), `<button class="btn primary">${esc(t('sf_invite'))}</button>`) +
+  `<div class="panel">${bulk}<table class="cards"><thead><tr><th><span style="position:absolute;left:-9999px">${lang==='ru'?'Выбор':'Select'}</span></th><th>${esc(t('sf_name'))}</th><th>${esc(t('sf_roles'))}</th><th>${esc(t('sf_2fa'))}</th><th>${esc(t('sf_elev'))}</th><th>${esc(t('sf_conf'))}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function scrStaffPerson(id){
+  const s = S.staff.find((x) => x.id===id) || S.staff[5];
+  const perms = s.roles.flatMap((r) => PERMS[r] || []);
+  return header(s.name, lang==='ru'?'Роли, область и эффективные права.':'Roles, scope and effective access.', 'demo', crumbBase().concat([[t('g_staff')],[t('s_staff'),'#/staff'],[s.name]]), `<button class="btn primary" id="chRoles" data-id="${s.id}">${esc(t('sf_change'))}</button>`) +
+  `<div class="grid2"><section class="panel"><h2>${esc(t('sf_roles'))}</h2>${s.roles.map((r) => `<p><span class="chip c-neu">${esc(rn(r))}</span> ${lang==='ru'?'этот хаб, бессрочно':'this hub, no end date'}</p>`).join('')}<p class="small">${esc(t('ov_sod'))}</p></section>
+  <section class="panel"><h2>${esc(t('sf_effective'))}</h2><ul>${perms.map((p) => `<li>${esc(p[lang==='ru'?1:0])} <code class="small">${esc(p[2])}</code>${p[3]?` <span class="chip c-warn">${esc(t('allowed2'))}</span>`:''}</li>`).join('')}</ul></section></div>`;
+}
+const PERMS = {
+  'auditor':[["Read the audit log","Читать журнал аудита","admin.audit.read"],["Export the signed audit","Выгружать подписанный аудит","admin.audit.export"],["Verify the audit chain","Проверять цепочку аудита","admin.audit.verify"]],
+  'commercial-admin':[["Draft price versions","Создавать версии цен","admin.commerce.price.draft"],["Activate price versions","Активировать версии цен","admin.commerce.price.activate",true],["Issue credits within the cap","Выдавать кредиты в пределах лимита","admin.commerce.credit.issue"]],
+  'support-lead':[["Read the account card","Читать карточку аккаунта","admin.support.account.read"],["Approve case access grants","Согласовывать доступ по обращению","admin.support.grant.approve"],["Approve recovery changes","Согласовывать восстановление доступа","admin.support.recovery.approve",true]],
+  'privacy-officer':[["Read data rights requests","Читать запросы субъектов","admin.privacy.request.read"],["Execute erasure","Выполнять стирание данных","admin.privacy.erasure.execute",true]],
+  'support-agent':[["Read the account card","Читать карточку аккаунта","admin.support.account.read"],["Request case access grants","Запрашивать доступ по обращению","admin.support.grant.request"]],
+  'hub-owner':[["Everything at this hub except node-only permissions","Всё в хабе, кроме прав уровня узла","admin.*"]],
+  'ops-engineer':[["Engage kill switches","Включать аварийные выключатели","admin.providers.kill"],["Open incidents","Открывать инциденты","admin.incident.open"]],
+  'compliance-officer':[["Activate legal documents","Активировать юридические документы","admin.hub.legal.activate",true],["Edit egress rules","Менять правила передачи данных","admin.providers.egress.edit",true]],
+};
+function roleChangeDialog(id){
+  const s = S.staff.find((x) => x.id===id);
+  const opts = ['commercial-admin','support-lead','privacy-officer','moderator'].filter((r) => !s.roles.includes(r));
+  const draw = (d) => {
+    const r = d.querySelector('#rcr').value;
+    const conflict = SOD.find(([a,b]) => (s.roles.includes(a) && r===b) || (s.roles.includes(b) && r===a));
+    const sens = SENSITIVE.includes(r);
+    d.querySelector('#rcDiff').innerHTML = `<h3>${esc(t('rc_gained'))}</h3><table class="diff cards"><thead><tr><th>${esc(t('cf_field'))}</th><th>${esc(t('cf_before'))}</th><th>${esc(t('cf_after'))}</th></tr></thead><tbody>${(PERMS[r]||[["Moderation decisions, levels 1 and 2","Решения модерации, уровни 1 и 2","admin.moderation.decide"]]).map((p) => `<tr><td data-label="${esc(t('cf_field'))}">${esc(p[lang==='ru'?1:0])} <code class="small">${esc(p[2])}</code></td><td class="old" data-label="${esc(t('cf_before'))}">${esc(t('notallowed'))}</td><td class="new" data-label="${esc(t('cf_after'))}">${esc(p[3]?t('allowed2'):t('allowed'))}</td></tr>`).join('')}</tbody></table>
+    <h3>${esc(t('rc_sod'))}</h3>${conflict ? `<div class="note bad" role="alert">${esc(t('rc_block',{a:rn(conflict[0]),b:rn(conflict[1])}))}</div>` : `<div class="note ok">${esc(t('rc_ok'))}</div>`}${!conflict && sens ? `<div class="note warn">${esc(t('rc_sensitive'))}</div>`:''}`;
+    const btn = d.querySelector('#rcGo'); btn.disabled = !!conflict; btn.textContent = sens ? t('rc_request') : t('rc_apply');
+  };
+  dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('rc_title',{name:s.name}))}</h2></div><div class="db">
+  <div class="grid2"><div class="field"><label for="rcr">${esc(t('rc_role'))}</label><select id="rcr">${opts.map((r) => `<option value="${r}">${esc(rn(r))}${SENSITIVE.includes(r)?(lang==='ru'?' (чувствительная)':' (sensitive)'):''}</option>`).join('')}</select></div>
+  <fieldset class="field" style="border:0;padding:0"><legend style="font-weight:600">${esc(t('rc_scope'))}</legend><label><input type="radio" name="sc" checked> ${esc(t('rc_hub'))}</label><label class="small"><input type="radio" name="sc" disabled> ${lang==='ru'?'Узел (нет прав назначать)':'Node (you cannot assign at this scope)'}</label></fieldset></div>
+  <div class="field"><label for="rcReason">${esc(t('reason'))}</label><input id="rcReason" value="${lang==='ru'?'Замена на время отпуска':'Cover during leave'}"></div>
+  <div id="rcDiff" aria-live="polite"></div><p class="small">${esc(t('audit'))}</p></div>
+  <div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn primary" id="rcGo"></button></div>`, (d) => {
+    d.querySelector('#rcr').onchange = () => draw(d); draw(d);
+    d.querySelector('#rcGo').onclick = () => { const r = d.querySelector('#rcr').value; stepUp(() => {
+      if (SENSITIVE.includes(r)) { S.approvals.unshift({id:'A-'+(500+S.approvals.length), title:[`Assign ${rn(r)} to ${s.name} at this hub`,`Назначить роль «${rn(r)}» сотруднику ${s.name} в этом хабе`], by:S.persona, reason:d.querySelector('#rcReason').value, role:'hub-owner', status:'pending', h:72, diff:[['Roles', s.roles.map(rn).join(', '), s.roles.concat([r]).map(rn).join(', ')]], onApprove(){ s.roles.push(r); }}); toast(t('st_pending')); }
+      else { s.roles.push(r); toast(lang==='ru'?'Роль назначена':'Role assigned'); }
+      d.close(); render(); }); };
+  });
+}
+function scrRole(){
+  const cols = ['support-agent','support-lead','auditor','commercial-admin'];
+  const rows = [
+    ['Read the account card','Читать карточку аккаунта','admin.support.account.read',{ 'support-agent':1,'support-lead':1 }],
+    ['Request case access grants','Запрашивать доступ по обращению','admin.support.grant.request',{ 'support-agent':1,'support-lead':1 }],
+    ['Approve case access grants','Согласовывать доступ по обращению','admin.support.grant.approve',{ 'support-lead':1 }],
+    ['Reset a second factor','Сбрасывать второй фактор','admin.support.second_factor.reset',{ 'support-lead':2 }],
+    ['Read the audit log','Читать журнал аудита','admin.audit.read',{ 'auditor':1 }],
+    ['Activate price versions','Активировать версии цен','admin.commerce.price.activate',{ 'commercial-admin':2 }],
+    ['Restore from backup','Восстанавливать из резервной копии','admin.ops.restore.execute',{}],
+  ];
+  const cell = (v) => v===1 ? t('allowed') : v===2 ? t('allowed2') : t('notallowed');
+  return header(`${t('s_roles')}: ${rn('support-lead')}`, t('rl_lede'), 'demo', crumbBase().concat([[t('g_staff')],[t('s_roles')],[rn('support-lead')]])) +
+  `<div class="panel"><dl class="kv"><dt>${lang==='ru'?'Кратко':'Summary'}</dt><dd>${lang==='ru'?'Ведёт обращения и согласовывает доступ по обращениям.':'Runs support cases and approves case access grants.'}</dd><dt>${esc(t('rc_scope'))}</dt><dd>${lang==='ru'?'Платформа, узел или хаб':'Platform, node or hub'}</dd><dt>${esc(t('rc_sod'))}</dt><dd>${lang==='ru'?'Конфликтует с ролью «Агент поддержки» у того же человека':'Conflicts with Support agent for the same person'}</dd><dt>${lang==='ru'?'Версия':'Version'}</dt><dd>3 · 2026-10-31</dd></dl></div>
+  <div class="panel"><h2>${esc(t('rl_matrix'))}</h2><p class="wide-note">${esc(t('wide'))}</p><p class="small" id="mxHelp">${esc(t('rl_kbd'))}</p>
+  <div style="overflow:auto"><table class="matrix" role="grid" aria-describedby="mxHelp" id="mx"><thead><tr role="row"><th role="columnheader">${lang==='ru'?'Право':'Permission'}</th>${cols.map((c) => `<th role="columnheader">${esc(rn(c))}</th>`).join('')}</tr></thead><tbody>
+  ${rows.map((r,i) => `<tr role="row"><th role="rowheader" scope="row">${esc(r[lang==='ru'?1:0])}<br><code class="small">${esc(r[2])}</code>${r[2]==='admin.ops.restore.execute'?` <span class="chip c-neu">${lang==='ru'?'Только узел':'Node only'}</span>`:''}</th>${cols.map((c,j) => `<td role="gridcell" tabindex="${i===0&&j===0?0:-1}" data-r="${i}" data-c="${j}" title="${esc(cell(r[3][c]))}">${r[3][c]===1?'<span class="chip c-ok">':r[3][c]===2?'<span class="chip c-warn">':'<span class="chip c-neu">'}${esc(cell(r[3][c]))}</span></td>`).join('')}</tr>`).join('')}
+  </tbody></table></div></div>`;
+}
+function scrConfig(){
+  const draft = S.egress.draft;
+  const classes = [['public',['Public','Публичные']],['private_project',['Private project data','Частные данные проектов']],['contact',['Contact details','Контактные данные']]];
+  const conns = [['local',['Local model server (node)','Локальный сервер моделей (узел)'],false],['exm',['Example Models Inc. (US)','Example Models Inc. (США)'],false],['trainer',['Example Trainer Co. (trains on data)','Example Trainer Co. (обучается на данных)'],true]];
+  const val = (c,k) => { const key=c+'|'+k; if (draft && key in draft.cells) return draft.cells[key]; return c==='public' || k==='local'; };
+  const grid = `<table class="cards"><thead><tr><th>${lang==='ru'?'Класс данных':'Data class'}</th>${conns.map(([,n]) => `<th>${esc(n[lang==='ru'?1:0])}</th>`).join('')}</tr></thead><tbody>${classes.map(([c,n]) => `<tr><th scope="row">${esc(n[lang==='ru'?1:0])}</th>${conns.map(([k,cn,trains]) => {
+    const v = val(c,k); const lockedTrain = trains && c!=='public';
+    return `<td data-label="${esc(cn[lang==='ru'?1:0])}">${lockedTrain ? `<span class="chip c-neu" title="${esc(t('cf_trains'))}">${esc(t('cf_deny'))} · ${esc(t('alwaysOn'))}</span><div class="small">${esc(t('cf_trains'))}</div>` : `<button class="btn" aria-pressed="${v}" data-cell="${c}|${k}">${esc(v?t('cf_allow'):t('cf_deny'))}</button>`}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`;
+  let diff = '';
+  if (draft && Object.keys(draft.cells).length) {
+    diff = `<section class="panel" aria-labelledby="dfh"><h2 id="dfh">${esc(t('cf_diffTitle'))}</h2><table class="diff cards"><thead><tr><th>${esc(t('cf_field'))}</th><th>${esc(t('cf_before'))}</th><th>${esc(t('cf_after'))}</th></tr></thead><tbody>${Object.entries(draft.cells).map(([k,v]) => { const [c,cn] = k.split('|'); const cl = classes.find(x=>x[0]===c)[1][lang==='ru'?1:0]; const co = conns.find(x=>x[0]===cn)[1][lang==='ru'?1:0]; return `<tr><td data-label="${esc(t('cf_field'))}">${esc(cl)} → ${esc(co)}</td><td class="old" data-label="${esc(t('cf_before'))}">${esc(v?t('cf_deny'):t('cf_allow'))}</td><td class="new" data-label="${esc(t('cf_after'))}">${esc(v?t('cf_allow'):t('cf_deny'))}</td></tr>`; }).join('')}</tbody></table>
+    <p><strong>${esc(t('cf_effect'))}:</strong> ${esc(t('cf_effectTxt'))}</p><p class="small">${esc(t('cf_changed'))}</p>
+    ${draft.status==='draft' ? `<div class="row stickybar"><button class="btn primary" id="reqAct">${esc(t('cf_requestAct'))}</button><span class="small">${esc(t('audit'))}</span></div>` : `<div class="note warn">${esc(t('st_pending'))} · <a href="#/inbox">${esc(t('s_inbox'))}</a></div>`}</section>`;
+  }
+  return header(`${t('s_config')}: ${t('s_egress')}`, t('cf_lede'), 'demo', crumbBase().concat([[t('g_hub')],[t('s_config')],[t('s_egress')]]), `<span class="chip c-ok">${esc(t('cf_active',{v:S.egress.active}))}</span>${draft?`<span class="chip c-warn">${esc(t('cf_draft',{v:draft.v}))}</span>`:''}`) +
+  `<div class="panel"><p class="wide-note">${esc(t('wide'))}</p>${grid}</div>` + diff +
+  `<section class="panel"><h2>${esc(t('cf_history'))}</h2><table class="cards"><thead><tr><th>${lang==='ru'?'Версия':'Version'}</th><th>${lang==='ru'?'Кто':'By'}</th><th>${lang==='ru'?'Когда':'When'}</th><th>${lang==='ru'?'Статус':'Status'}</th><th></th></tr></thead><tbody>${S.versions.map((v) => `<tr><td data-label="${lang==='ru'?'Версия':'Version'}">${v.v}</td><td data-label="${lang==='ru'?'Кто':'By'}">${esc(v.by)}</td><td data-label="${lang==='ru'?'Когда':'When'}">${esc(v.at)}</td><td data-label="${lang==='ru'?'Статус':'Status'}"><span class="chip ${v.status==='active'?'c-ok':'c-neu'}">${esc(v.status==='active'?t('st_active'):(lang==='ru'?'заменена':'superseded'))}</span></td><td>${v.status!=='active'?`<button class="btn ghost" data-rollback="${v.v}">${esc(t('cf_rollback',{v:v.v}))}</button>`:''}</td></tr>`).join('')}</tbody></table></section>`;
+}
+function scrModels(){
+  const models = [
+    ['Example Chat Large 2026-09','Example Models Inc., US West',true,'$0.0040','—','—','Agent modules, Editorial drafts'],
+    ['Example Chat Small 2026-08','Example Models Inc., US West',true,'$0.0006','—','—','Support triage agent, Classification'],
+    ['Local Open Model 14B','Local model server (node), US',false,'$0.0002','—','—','—'],
+  ];
+  const prices = [['Agent run: RFQ responder','Запуск агента: ответ на RFQ','$0.0325','$0.10','+$0.0675',false],['Agent run: plan companion','Запуск агента: помощник по плану','$0.041','$0.03','−$0.011',true]];
+  return header(t('s_models'), t('md_lede'), 'demo', crumbBase().concat([[t('g_keys')],[t('s_models')]]), `<button class="btn primary" id="draftPrice">${esc(t('md_draftPrice'))}</button>`) +
+  `<section class="panel"><h2>${lang==='ru'?'Каталог моделей':'Model catalogue'}</h2><table class="cards"><thead><tr><th>${esc(t('md_model'))}</th><th>${esc(t('md_conn'))}</th><th>${esc(t('md_eval'))}</th><th>${esc(t('md_cost'))}</th><th>${esc(t('md_route'))}</th><th>${esc(t('at_kill'))}</th></tr></thead><tbody>
+  ${models.map((m) => `<tr><td data-label="${esc(t('md_model'))}">${esc(m[0])}</td><td data-label="${esc(t('md_conn'))}">${esc(m[1])}</td><td data-label="${esc(t('md_eval'))}">${m[2]?`<span class="chip c-ok">${esc(t('md_pass'))}</span>`:`<span class="chip c-warn">${esc(t('md_none'))}</span>`}</td><td data-label="${esc(t('md_cost'))}">${esc(m[3])}</td><td data-label="${esc(t('md_route'))}">${esc(m[6])}</td><td data-label="${esc(t('at_kill'))}"><button class="btn">${lang==='ru'?'Включить':'Engage'}</button></td></tr>`).join('')}</tbody></table></section>
+  <section class="panel"><h2>${esc(t('s_prices'))}</h2><table class="cards"><thead><tr><th>${lang==='ru'?'Единица':'Unit'}</th><th>${esc(t('pv_cost'))}</th><th>${esc(t('md_sale'))}</th><th>${esc(t('md_margin'))}</th></tr></thead><tbody>
+  ${prices.map((p) => `<tr><td data-label="${lang==='ru'?'Единица':'Unit'}">${esc(p[lang==='ru'?1:0])}</td><td data-label="${esc(t('pv_cost'))}">${esc(p[2])}</td><td data-label="${esc(t('md_sale'))}">${esc(p[3])}</td><td data-label="${esc(t('md_margin'))}">${p[5]?`<span class="chip c-warn">${esc(p[4])} · ${lang==='ru'?'субсидируется':'subsidised'}</span>`:esc(p[4])}</td></tr>`).join('')}</tbody></table>
+  <p class="small">${lang==='ru'?'Первые 30 запусков в месяц бесплатны. Все действующие цены опубликованы на публичной странице цен.':'The first 30 runs a month are free. Every active price is published on the public price page.'}</p></section>
+  <section class="panel" aria-labelledby="grh"><h2 id="grh">${esc(t('md_guard'))}</h2>${['gr_mandate','gr_pay','gr_sanc','gr_restricted','gr_agent','gr_imp','gr_money'].map((k) => `<div class="locked"><span class="lk"><span aria-hidden="true">&#128274;</span> ${esc(t('alwaysOn'))}</span><span>${esc(t(k))}</span></div>`).join('')}</section>`;
+}
+function priceDialog(){
+  dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('pv_title'))}</h2></div><div class="db">
+  <dl class="kv"><dt>${esc(t('pv_cost'))}</dt><dd>$0.0325 ${lang==='ru'?'за запуск':'per run'}</dd></dl>
+  <div class="field" style="margin-top:12px"><label for="pvs">${esc(t('pv_sale'))}</label><input id="pvs" value="0.09" inputmode="decimal"><span class="hint" id="pvm"></span></div>
+  <div class="field"><label for="pve">${esc(t('pv_eff'))}</label><input id="pve" type="date" value="2026-11-15"></div>
+  <div class="field"><label for="pvr">${esc(t('reason'))}</label><input id="pvr" value="${lang==='ru'?'Себестоимость закреплённой модели снизилась':'Cost of the pinned model fell'}"></div>
+  <div class="note warn">${esc(t('rc_sensitive'))}</div><p class="small">${esc(t('gr_pay'))} ${esc(t('audit'))}</p></div>
+  <div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn primary" id="pvGo">${esc(t('rc_request'))}</button></div>`, (d) => {
+    const upd = () => { const s = parseFloat(d.querySelector('#pvs').value); const m = s - 0.0325; d.querySelector('#pvm').textContent = isNaN(s) ? '' : `${t('md_margin')}: ${m>=0?'+':'−'}$${Math.abs(m).toFixed(4)}` + (m<0 ? ' · '+t('pv_neg') : ''); };
+    d.querySelector('#pvs').oninput = upd; upd();
+    d.querySelector('#pvGo').onclick = () => { d.close(); S.approvals.unshift({id:'A-'+(600+S.approvals.length), title:['Activate price version 5: Agent run, RFQ responder','Активировать версию цены 5: запуск агента, ответ на RFQ'], by:S.persona, reason:d.querySelector('#pvr').value, role:'hub-owner', status:'pending', h:72, diff:[['Sale price per run','$0.10','$'+d.querySelector('#pvs').value],['Effective from','—',d.querySelector('#pve').value]]}); render(); toast(t('st_pending')); };
+  });
+}
+function scrIncident(){
+  const relPending = S.approvals.find((a) => a.kind==='release' && a.status==='pending');
+  return header(t('in_title'), t('in_lede'), 'demo', crumbBase().concat([[t('g_ops')],[t('s_incidents')],['INC-7']]), `<span class="chip c-warn">${esc(t('in_sev'))}</span><span class="chip c-info">${esc(t('in_open'))}</span>`) +
+  `<div class="note">${esc(t('in_fast'))}</div>
+  <div class="grid2"><section class="panel" aria-labelledby="ksh"><h2 id="ksh">${esc(t('s_kill'))}</h2>
+  <p><strong>${lang==='ru'?'Запуск агентов в этом хабе':'Agent dispatch in this hub'}</strong>: ${S.killEngaged?`<span class="chip c-bad">${lang==='ru'?'Включён':'Engaged'}</span> <span class="small">${esc(t('in_engaged',{who:S.killBy,t:S.killAt}))}</span>`:`<span class="chip c-ok">${lang==='ru'?'Не включён':'Not engaged'}</span>`}</p>
+  <div class="row stickybar">${!S.killEngaged?`<button class="btn danger" id="engage">${esc(t('in_engage'))}</button>`:relPending?`<span class="note warn" style="margin:0">${esc(t('st_pending'))} · <a href="#/inbox">${esc(t('s_inbox'))}</a></span>`:`<button class="btn" id="release">${esc(t('in_release'))}</button>`}</div></section>
+  <section class="panel"><h2>${lang==='ru'?'Хронология':'Timeline'}</h2><ol class="timeline"><li>13:52 · ${esc(t('in_t1'))}</li><li>13:55 · ${esc(t('in_t2'))}</li>${S.killEngaged?`<li>${esc(S.killAt)} · ${esc(t('in_engaged',{who:S.killBy,t:S.killAt}))}</li>`:''}${S.relDone?`<li>${esc(t('in_released',{who:S.relDone}))}</li>`:''}</ol></section></div>`;
+}
+function engageFlow(){
+  stepUp(() => dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('in_engage'))}?</h2></div><div class="db"><p>${lang==='ru'?'Все новые и текущие запуски агентов в хабе остановятся. Участники увидят, что агенты временно недоступны.':'All new and running agent work in this hub stops. Participants see that agents are temporarily unavailable.'}</p><div class="field"><label for="kr">${esc(t('in_engageReason'))}</label><input id="kr" value="${lang==='ru'?'Ошибки запуска 14%, причина неизвестна':'Dispatch errors at 14%, cause unknown'}"></div><p class="small">${esc(t('audit'))}</p></div><div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn danger" id="kGo">${lang==='ru'?'Включить':'Engage'}</button></div>`, (d) => {
+    d.querySelector('#kGo').onclick = () => { S.killEngaged = true; S.killBy = me().name; S.killAt = nowStr(); d.close(); render(); toast(lang==='ru'?'Выключатель включён':'Kill switch engaged'); };
+  }));
+}
+function releaseFlow(){
+  dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('in_release'))}</h2></div><div class="db"><div class="field"><label for="rn">${esc(t('in_note'))}</label><textarea id="rn" rows="3">${lang==='ru'?'Исправлена ротация ключа у поставщика; ошибки 0,2% в течение 30 минут.':'Provider key rotation fixed; errors at 0.2% for 30 minutes.'}</textarea><span class="err" id="rnErr"></span></div><div class="note warn">${esc(t('rc_sensitive'))}</div></div><div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn primary" id="rGo">${esc(t('rc_request'))}</button></div>`, (d) => {
+    d.querySelector('#rGo').onclick = () => { if (!d.querySelector('#rn').value.trim()) { d.querySelector('#rnErr').textContent = t('e_reason'); return; }
+      S.approvals.unshift({id:'A-'+(700+S.approvals.length), kind:'release', title:['Release kill switch: agent dispatch in this hub','Отключить выключатель: запуск агентов в этом хабе'], by:S.persona, reason:d.querySelector('#rn').value, role:'hub-owner', status:'pending', h:72, diff:[['Agent dispatch','Engaged','Released']], onApprove(){ S.killEngaged=false; S.relDone = me().name; }});
+      d.close(); render(); toast(t('st_pending')); };
+  });
+}
+function scrTeam(){
+  const au = {observe:'au_observe',draft:'au_draft',review:'au_review',limits:'au_limits'};
+  return header(t('g_team'), t('at_lede'), 'proposed', crumbBase().concat([[t('g_team')],[t('s_roster')]])) +
+  `<div class="note">${esc(t('at_editorial'))}</div><div class="panel"><table class="cards"><thead><tr><th>${esc(t('at_agent'))}</th><th>${esc(t('at_autonomy'))}</th><th>${esc(t('at_accountable'))}</th><th>${esc(t('at_budget'))}</th><th>${esc(t('at_eval'))}</th><th>${esc(t('at_state'))}</th><th></th></tr></thead><tbody>
+  ${S.agents.map((a) => `<tr><td data-label="${esc(t('at_agent'))}"><a href="#/team/role">${esc(a.name)}</a></td><td data-label="${esc(t('at_autonomy'))}">${esc(t(au[a.autonomy]))}</td><td data-label="${esc(t('at_accountable'))}">${esc(a.acc)}</td><td data-label="${esc(t('at_budget'))}">$${a.budget[0]} / $${a.budget[1]}<div class="meter" aria-hidden="true"><i style="width:${Math.round(a.budget[0]/a.budget[1]*100)}%"></i></div></td><td data-label="${esc(t('at_eval'))}">${a.eval?`<span class="chip c-ok">${esc(t('md_pass'))}</span>`:`<span class="chip c-warn">${esc(t('md_none'))}</span>`}</td><td data-label="${esc(t('at_state'))}"><span class="chip ${a.state==='enabled'?'c-ok':a.state==='killed'?'c-bad':'c-neu'}">${esc(t(a.state==='enabled'?'at_enabled':a.state==='killed'?'at_killed':'at_paused'))}</span></td><td>${a.state!=='killed'?`<button class="btn" data-akill="${a.id}">${esc(t('at_kill'))}</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function scrTeamRole(){
+  return header(`${t('s_teamroles')}: Support triage`, lang==='ru'?'Что агент может делать, по каким разрешениям и что всегда решает человек.':'What the agent may do, under which grants, and what a person always decides.', 'proposed', crumbBase().concat([[t('g_team')],[t('s_teamroles')],['Support triage']])) +
+  `<div class="grid2"><section class="panel"><h2>${lang==='ru'?'Операторское разрешение':'Operator grant'}</h2><dl class="kv"><dt>${lang==='ru'?'Возможности':'Capabilities'}</dt><dd><code>support.categorise_case</code> (read), <code>support.draft_reply</code> (draft), <code>support.send_template_reply</code> (commit, ${lang==='ru'?'после проверки':'after review'})</dd><dt>${lang==='ru'?'Классы данных':'Data classes'}</dt><dd>${lang==='ru'?'Метаданные обращения; без частных данных':'Case metadata; no private data'}</dd><dt>${esc(t('at_accountable'))}</dt><dd>Synthetic Support Lead</dd><dt>${lang==='ru'?'Маршрут модели':'Model route'}</dt><dd>Example Chat Small 2026-08</dd><dt>${lang==='ru'?'Срок':'Expires'}</dt><dd>2027-01-31</dd></dl>
+  <div class="field" style="margin-top:12px"><label for="auSel">${esc(t('at_autonomy'))}</label><select id="auSel"><option>${esc(t('au_observe'))}</option><option>${esc(t('au_draft'))}</option><option selected>${esc(t('au_review'))}</option><option disabled>${esc(t('au_limits'))} (${lang==='ru'?'недоступно для этой роли':'not offered for this role'})</option></select></div></section>
+  <section class="panel" aria-labelledby="hoh"><h2 id="hoh">${esc(t('at_humanList'))}</h2>${[lang==='ru'?'Доступ по обращению (запрос и согласование)':'Case access grants (request and approval)', lang==='ru'?'Сброс второго фактора и смена почты для восстановления':'Second-factor reset and recovery e-mail changes', lang==='ru'?'Блокировка аккаунта и санкции':'Account suspension and sanctions', lang==='ru'?'Решения по санкционным совпадениям':'Sanctions screening decisions', lang==='ru'?'Деньги, кредиты, возвраты':'Money, credits and refunds'].map((x) => `<div class="locked"><span class="lk"><span aria-hidden="true">&#128274;</span> ${esc(t('alwaysOn'))}</span><span>${esc(x)}. ${esc(t('at_human'))}</span></div>`).join('')}
+  <div class="locked"><span class="lk"><span aria-hidden="true">&#128274;</span> ${esc(t('alwaysOn'))}</span><span>${lang==='ru'?'Агент никогда не выдаёт себя за участника или сотрудника и помечает свою работу.':'The agent never poses as a participant or as staff, and labels its work.'}</span></div></section></div>`;
+}
+function scrTeamReview(){
+  const rows = S.review.map((r) => `<article class="panel"><div class="titlerow"><h2 style="margin:0">${esc(r.what[lang==='ru'?1:0])}</h2><span class="sp"></span><span class="chip c-ai">${esc(t('at_label',{role:r.agent}))}</span><span class="chip ${r.status==='pending'?'c-warn':'c-ok'}">${esc(r.status==='pending'?t('st_pending'):t('st_approved'))}</span></div>
+  <blockquote style="border-left:3px solid var(--border);margin:10px 0;padding:4px 12px">${lang==='ru'?'Здравствуйте! Аккаунт заблокирован после нескольких неудачных попыток входа из новой страны. Чтобы разблокировать, мы отправили ссылку на подтверждённую почту. Если письма нет, ответьте здесь.':'Hello. Your account was locked after several failed sign-ins from a new country. We sent an unlock link to your verified e-mail. If it has not arrived, reply here.'}</blockquote>
+  ${r.status==='pending'?`<div class="row"><button class="btn primary" data-rv="${r.id}">${esc(t('at_approveSend'))}</button><button class="btn">${esc(t('at_return'))}</button></div>`:''}</article>`).join('');
+  return header(t('s_teamreview'), lang==='ru'?'То, что агенты подготовили, проверяет человек из ответственной роли.':'Work the agents prepared, reviewed by a person in the accountable role.', 'proposed', crumbBase().concat([[t('g_team')],[t('s_teamreview')]])) + rows;
+}
+function scrAudit(){
+  const ev = [['18422','Synthetic Hub Owner','hub-owner','commerce.activate_price_version','applied','A-301'],['18421','Synthetic Support Agent','support-agent','admin.support.grant.approve','denied','own request'],['18420','Synthetic Ops Engineer','ops-engineer','kill_switch.engage','applied','INC-7']];
+  return header(t('s_auditlog'), t('au_lede'), 'demo', crumbBase().concat([[t('g_audit')],[t('s_auditlog')]]), `<button class="btn">${lang==='ru'?'Проверить цепочку':'Verify chain'}</button><button class="btn">${lang==='ru'?'Подписанная выгрузка':'Signed export'}</button>`) +
+  `<div class="panel"><div class="filterbar"><label style="position:absolute;left:-9999px" for="aq">Filter</label><input id="aq" placeholder="${lang==='ru'?'ID запроса или объекта':'Request or object id'}"><select aria-label="${lang==='ru'?'Сохранённые представления':'Saved views'}"><option>${lang==='ru'?'Все события':'All events'}</option><option>${lang==='ru'?'Отказы за неделю':'Denied attempts this week'}</option><option>${lang==='ru'?'Действия со вторым человеком':'Second-person actions'}</option></select><span class="note ok" style="margin:0">${lang==='ru'?'Без пропусков в 18 422 событиях':'No gaps in 18,422 events'}</span></div>
+  <table class="cards"><thead><tr><th>#</th><th>${lang==='ru'?'Кто':'Actor'}</th><th>${esc(t('at_role'))}</th><th>${lang==='ru'?'Действие':'Action'}</th><th>${lang==='ru'?'Итог':'Outcome'}</th><th>${lang==='ru'?'Связь':'Link'}</th></tr></thead><tbody>${ev.map((e) => `<tr><td data-label="#">${e[0]}</td><td data-label="${lang==='ru'?'Кто':'Actor'}">${esc(e[1])}</td><td data-label="${esc(t('at_role'))}">${esc(rn(e[2]))}</td><td data-label="${lang==='ru'?'Действие':'Action'}"><code>${esc(e[3])}</code></td><td data-label="${lang==='ru'?'Итог':'Outcome'}"><span class="chip ${e[4]==='applied'?'c-ok':'c-bad'}">${esc(e[4])}</span></td><td data-label="${lang==='ru'?'Связь':'Link'}">${esc(e[5])}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function scrInsights(){
+  const rows = [['Homeowners',['Частные заказчики'],412],['Small contractors',['Малые подрядчики'],187],['Manufacturers',['Производители'],23],['Event organizers',['Организаторы событий'],7]];
+  return header(t('s_insights'), t('ins_lede'), 'demo', crumbBase().concat([[t('s_insights')]])) +
+  `<div class="panel"><h2>${lang==='ru'?'Участники по типу (синтетика)':'Participants by type (synthetic)'}</h2><table class="cards"><thead><tr><th>${lang==='ru'?'Тип':'Type'}</th><th>${lang==='ru'?'Количество':'Count'}</th><th>${lang==='ru'?'Доля':'Share'}</th></tr></thead><tbody>${rows.map(([n,r,c]) => `<tr><td data-label="${lang==='ru'?'Тип':'Type'}">${esc(lang==='ru'?r[0]:n)}</td><td data-label="${lang==='ru'?'Количество':'Count'}">${c<10?esc(t('fewer10')):c}</td><td data-label="${lang==='ru'?'Доля':'Share'}">${c<10?'—':`<div class="meter" aria-hidden="true" style="width:160px"><i style="width:${Math.round(c/412*100)}%"></i></div>`}</td></tr>`).join('')}</tbody></table><p class="small">${lang==='ru'?'«Меньше 10» скрывает маленькие группы, чтобы нельзя было узнать конкретных людей.':'"Fewer than 10" hides small groups so no one can be singled out.'}</p></div>`;
+}
+function scrUsers(){
+  const tab = usersTab;
+  const tabs = ['people','companies','staff','clients'].map((k) => `<button role="tab" aria-selected="${tab===k}" data-utab="${k}">${esc(t('us_'+k))} <span class="small">(${{people:'1,240',companies:'318',staff:'7',clients:'12'}[k]})</span></button>`).join('');
+  let body = '';
+  if (tab==='people') body = `<p class="note">${esc(t('us_public'))}</p><table class="cards"><thead><tr><th>${esc(t('sf_name'))}</th><th>${lang==='ru'?'Публичная роль':'Public role'}</th><th>${esc(t('stat_territory'))}</th><th></th></tr></thead><tbody><tr><td data-label="${esc(t('sf_name'))}">Synthetic Builder Alex</td><td data-label="${lang==='ru'?'Публичная роль':'Public role'}">${lang==='ru'?'Прораб, Synthetic Framing Co.':'Site lead, Synthetic Framing Co.'}</td><td data-label="${esc(t('stat_territory'))}">San Diego County</td><td><a href="#/support">${esc(t('s_lookup'))}</a></td></tr><tr><td data-label="${esc(t('sf_name'))}">Synthetic Architect Maya</td><td data-label="${lang==='ru'?'Публичная роль':'Public role'}">${lang==='ru'?'Архитектор':'Architect'}</td><td data-label="${esc(t('stat_territory'))}">San Diego County</td><td><a href="#/support">${esc(t('s_lookup'))}</a></td></tr></tbody></table>`;
+  if (tab==='companies') body = `<table class="cards"><thead><tr><th>${lang==='ru'?'Компания':'Company'}</th><th>${esc(t('stat_status'))}</th></tr></thead><tbody><tr><td data-label="${lang==='ru'?'Компания':'Company'}">Synthetic Framing Co. (example)</td><td data-label="${esc(t('stat_status'))}"><span class="chip c-ok">${lang==='ru'?'Подтверждена':'Verified'}</span></td></tr><tr><td data-label="${lang==='ru'?'Компания':'Company'}">Example Windows Manufacturer</td><td data-label="${esc(t('stat_status'))}"><span class="chip c-neu">${lang==='ru'?'Из источников':'From sources'}</span></td></tr></tbody></table>`;
+  if (tab==='staff') body = `<p><a href="#/staff">${esc(t('s_staff'))}</a> · <a href="#/staff/role">${esc(t('s_roles'))}</a></p>`;
+  if (tab==='clients') body = `<table class="cards"><thead><tr><th>${lang==='ru'?'Вид':'Kind'}</th><th>${lang==='ru'?'Ответственный':'Accountable'}</th><th>${lang==='ru'?'Количество':'Count'}</th></tr></thead><tbody>
+  <tr><td data-label="${lang==='ru'?'Вид':'Kind'}">${lang==='ru'?'Системные субъекты (воркер, планировщик)':'System principals (worker, scheduler)'}</td><td data-label="${lang==='ru'?'Ответственный':'Accountable'}">${lang==='ru'?'Оператор узла':'Node operator'}</td><td data-label="${lang==='ru'?'Количество':'Count'}">3</td></tr>
+  <tr><td data-label="${lang==='ru'?'Вид':'Kind'}">${lang==='ru'?'ИИ-клиенты сотрудников (/mcp/admin)':'Staff AI clients (/mcp/admin)'}</td><td data-label="${lang==='ru'?'Ответственный':'Accountable'}">${lang==='ru'?'Подключивший сотрудник':'The staff member who connected it'}</td><td data-label="${lang==='ru'?'Количество':'Count'}">2</td></tr>
+  <tr><td data-label="${lang==='ru'?'Вид':'Kind'}">${lang==='ru'?'Операторские агенты':'Operator agents'}</td><td data-label="${lang==='ru'?'Ответственный':'Accountable'}">${lang==='ru'?'Владелец роли':'Role owner'}</td><td data-label="${lang==='ru'?'Количество':'Count'}"><a href="#/team">6</a></td></tr>
+  <tr><td data-label="${lang==='ru'?'Вид':'Kind'}">${lang==='ru'?'ИИ-клиенты участников (MCP, A2A)':'Participants\' AI clients (MCP, A2A)'}</td><td data-label="${lang==='ru'?'Ответственный':'Accountable'}">${lang==='ru'?'Участник':'The participant'}</td><td data-label="${lang==='ru'?'Количество':'Count'}">${lang==='ru'?'только число: ':'count only: '}41</td></tr></tbody></table>
+  <div class="locked"><span class="lk"><span aria-hidden="true">&#128274;</span> ${esc(t('alwaysOn'))}</span><span>${lang==='ru'?'Нет отдельных сервисных учётных записей с правами сотрудника: у каждого клиента есть ответственный человек.':'No free-standing service account has staff authority: every client has an accountable person.'}</span></div>`;
+  return header(t('g_users'), t('us_lede'), 'demo', crumbBase().concat([[t('g_users')]])) + `<div class="filterbar"><label style="position:absolute;left:-9999px" for="uq">Filter</label><input id="uq" placeholder="${lang==='ru'?'Фильтр':'Filter'}"><select aria-label="${lang==='ru'?'Сохранённые представления':'Saved views'}"><option>${lang==='ru'?'Все':'All'}</option><option>${lang==='ru'?'Без второго фактора':'Second factor missing'}</option></select></div><div class="tabs" role="tablist">${tabs}</div><div class="panel" role="tabpanel">${body}</div>`;
+}
+let usersTab = 'people', statSeg = 'none';
+function scrStats(){
+  const base = [['Homeowners','Частные заказчики',412],['Small contractors','Малые подрядчики',187],['Manufacturers','Производители',23],['Event organizers','Организаторы событий',7]];
+  const seg = statSeg;
+  let table;
+  if (seg==='none') table = base.map(([e,r,c]) => [lang==='ru'?r:e, c]);
+  else if (seg==='language') table = [[lang==='ru'?'Частные заказчики · английский':'Homeowners · English',351],[lang==='ru'?'Частные заказчики · испанский':'Homeowners · Spanish',61],[lang==='ru'?'Производители · испанский':'Manufacturers · Spanish',4],[lang==='ru'?'Производители · английский':'Manufacturers · English',19]];
+  else table = [[lang==='ru'?'Частные заказчики · Ла-Холья':'Homeowners · La Jolla',8],[lang==='ru'?'Частные заказчики · Чула-Виста':'Homeowners · Chula Vista',6],[lang==='ru'?'Малые подрядчики · Эскондидо':'Small contractors · Escondido',3]];
+  const allSmall = table.every(([,c]) => c < 10);
+  const fmt = (c) => c<10 ? `<span class="chip c-neu">${esc(t('fewer10'))}</span>` : c.toLocaleString(lang==='ru'?'ru-RU':'en-US');
+  return header(t('s_dash'), t('stat_lede'), 'demo', crumbBase().concat([[t('g_stats')],[t('s_dash')]]), `<button class="btn" id="statExport">${esc(t('stat_export'))}</button>`) +
+  `<div class="filterbar"><label for="sp" class="small">${esc(t('stat_period'))}</label><select id="sp"><option>${lang==='ru'?'Последние 4 недели':'Last 4 weeks'}</option><option>${lang==='ru'?'Квартал':'Quarter'}</option></select>
+  <label for="ss" class="small">${esc(t('stat_segment'))}</label><select id="ss"><option value="none" ${seg==='none'?'selected':''}>${esc(t('stat_none'))}</option><option value="language" ${seg==='language'?'selected':''}>${esc(t('stat_language'))}</option><option value="place" ${seg==='place'?'selected':''}>${esc(t('stat_territory'))}: ${lang==='ru'?'населённый пункт':'place'}</option></select></div>
+  <div class="grid3"><div class="tile"><div class="small">${lang==='ru'?'Новые аккаунты за неделю':'New accounts per week'}</div><div class="n">96</div><a href="#/stats/metrics">${esc(t('stat_def'))}</a></div><div class="tile"><div class="small">${lang==='ru'?'Подтверждённые компании':'Verified companies'}</div><div class="n">54</div><span class="chip c-info">${esc(t('st_demo'))}</span></div><div class="tile"><div class="small">${lang==='ru'?'Медиана до первого ответа поддержки':'Median time to first support response'}</div><div class="n">3 h</div></div></div>
+  <section class="panel" style="margin-top:16px"><h2>${lang==='ru'?'Участники по типу':'Participants by type'}</h2>${allSmall?`<div class="note warn">${esc(t('stat_tooNarrow'))}</div>`:''}
+  <table class="cards"><thead><tr><th>${lang==='ru'?'Группа':'Group'}</th><th>${lang==='ru'?'Количество':'Count'}</th><th>${lang==='ru'?'Доля':'Share'}</th></tr></thead><tbody>${table.map(([n,c]) => `<tr><td data-label="${lang==='ru'?'Группа':'Group'}">${esc(n)}</td><td data-label="${lang==='ru'?'Количество':'Count'}">${fmt(c)}</td><td data-label="${lang==='ru'?'Доля':'Share'}">${c<10?'—':`<div class="meter" aria-hidden="true" style="width:160px"><i style="width:${Math.round(c/412*100)}%"></i></div>`}</td></tr>`).join('')}</tbody></table>
+  <p class="small">${lang==='ru'?'«Меньше 10» скрывает маленькие группы, чтобы нельзя было узнать конкретных людей. Вторичное подавление скрывает итоги, по которым можно вычислить скрытое значение.':'"Fewer than 10" hides small groups so no one can be singled out. Secondary suppression also hides totals that would reveal a hidden value.'}</p></section>
+  <div class="grid2"><section class="panel"><h2>${lang==='ru'?'Денежные потоки (записи распоряжений)':'Money flows (recorded instructions)'}</h2><p class="note">${esc(t('stat_money'))}</p><table class="cards"><thead><tr><th>${lang==='ru'?'Вид':'Kind'}</th><th>${lang==='ru'?'Подтверждено провайдером':'Confirmed by provider'}</th><th>${lang==='ru'?'Неизвестный итог':'Unknown outcome'}</th></tr></thead><tbody><tr><td data-label="${lang==='ru'?'Вид':'Kind'}">${lang==='ru'?'Покупки кредитов':'Credit purchases'}</td><td data-label="${lang==='ru'?'Подтверждено провайдером':'Confirmed by provider'}">$1,840</td><td data-label="${lang==='ru'?'Неизвестный итог':'Unknown outcome'}">1 → ${lang==='ru'?'сверка':'reconciliation'}</td></tr><tr><td data-label="${lang==='ru'?'Вид':'Kind'}">${lang==='ru'?'Выплаты экспертам':'Payouts to experts'}</td><td data-label="${lang==='ru'?'Подтверждено провайдером':'Confirmed by provider'}">$2,310</td><td data-label="${lang==='ru'?'Неизвестный итог':'Unknown outcome'}">0</td></tr></tbody></table></section>
+  <section class="panel"><h2>${lang==='ru'?'Команда агентов: запуски и затраты':'Agent team: runs and costs'}</h2><table class="cards"><thead><tr><th>${esc(t('at_role'))}</th><th>${lang==='ru'?'Запуски':'Runs'}</th><th>${lang==='ru'?'Принято при проверке':'Approved on review'}</th><th>${lang==='ru'?'Затраты':'Cost'}</th></tr></thead><tbody><tr><td data-label="${esc(t('at_role'))}">Support triage</td><td data-label="${lang==='ru'?'Запуски':'Runs'}">212</td><td data-label="${lang==='ru'?'Принято при проверке':'Approved on review'}">88%</td><td data-label="${lang==='ru'?'Затраты':'Cost'}">$18</td></tr><tr><td data-label="${esc(t('at_role'))}">Moderation triage</td><td data-label="${lang==='ru'?'Запуски':'Runs'}">64</td><td data-label="${lang==='ru'?'Принято при проверке':'Approved on review'}">—</td><td data-label="${lang==='ru'?'Затраты':'Cost'}">$6</td></tr></tbody></table></section></div>`;
+}
+function scrMetrics(){
+  const m = [['participants.verified_companies',['Verified companies','Подтверждённые компании'],['Companies whose claim reached verified and is not revoked, at period end','Компании с подтверждённой и неотозванной заявкой на конец периода'],'Hub owner, trust reviewer, auditor','daily','Demo'],
+    ['editorial.time_to_publish',['Median time from draft to publication','Медиана от черновика до публикации'],['Median hours between draft creation and publication, by format and language','Медиана часов от создания черновика до публикации, по формату и языку'],'Hub owner, editor-in-chief','hourly','Proposed'],
+    ['trust.appeal_reversal_rate',['Appeal reversal rate','Доля отменённых по апелляции решений'],['Decided appeals that overturned the decision, divided by decided appeals','Апелляции, отменившие решение, к числу рассмотренных апелляций'],'Hub owner, trust reviewer, moderator, auditor','daily','Proposed']];
+  return header(t('s_catalogue'), lang==='ru'?'Каждое число в статистике имеет определение, источник, актуальность и список ролей, которые его видят.':'Every number in Statistics has a definition, a source, a freshness and the roles that may see it.', 'demo', crumbBase().concat([[t('g_stats')],[t('s_catalogue')]])) +
+  `<div class="panel"><table class="cards"><thead><tr><th>${lang==='ru'?'Метрика':'Metric'}</th><th>${esc(t('stat_def'))}</th><th>${esc(t('stat_vis'))}</th><th>${esc(t('stat_fresh'))}</th><th>${esc(t('stat_status'))}</th></tr></thead><tbody>${m.map((x) => `<tr><td data-label="${lang==='ru'?'Метрика':'Metric'}"><strong>${esc(x[1][lang==='ru'?1:0])}</strong><br><code class="small">${esc(x[0])}</code></td><td data-label="${esc(t('stat_def'))}">${esc(x[2][lang==='ru'?1:0])}</td><td data-label="${esc(t('stat_vis'))}">${esc(x[3])}</td><td data-label="${esc(t('stat_fresh'))}">${esc(x[4])}</td><td data-label="${esc(t('stat_status'))}"><span class="chip ${x[5]==='Demo'?'c-info':'c-neu'}">${esc(x[5]==='Demo'?t('st_demo'):t('st_proposed'))}</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+function scrFunnels(){
+  const steps = [['Account created','Аккаунт создан',148],['E-mail verified','Почта подтверждена',131],['Profile public','Профиль опубликован',77],['First plan or request','Первый план или запрос',41],['First consultation booked','Первая консультация',8]];
+  return header(t('s_funnels'), lang==='ru'?'Воронки считаются по когорте входа. Конверсия показывается, только если на обоих шагах не меньше десяти. Индивидуальных путей нет.':'Funnels are counted by entry cohort. A conversion appears only when both steps have at least ten. There are no individual paths.', 'demo', crumbBase().concat([[t('g_stats')],[t('s_funnels')]])) +
+  `<section class="panel"><h2>${esc(t('stat_funnelTitle'))}</h2><table class="cards"><thead><tr><th>${lang==='ru'?'Шаг':'Step'}</th><th>${lang==='ru'?'Количество':'Count'}</th><th>${lang==='ru'?'Конверсия с прошлого шага':'Conversion from previous step'}</th></tr></thead><tbody>${steps.map(([e,r,c],i) => { const prev = i ? steps[i-1][2] : null; const conv = prev===null ? '—' : (c<10||prev<10) ? `<span class="chip c-neu">${esc(t('fewer10'))}</span>` : Math.round(c/prev*100)+'%'; return `<tr><td data-label="${lang==='ru'?'Шаг':'Step'}">${esc(lang==='ru'?r:e)}</td><td data-label="${lang==='ru'?'Количество':'Count'}">${c<10?`<span class="chip c-neu">${esc(t('fewer10'))}</span>`:c}<div class="meter" aria-hidden="true" style="width:200px"><i style="width:${c<10?0:Math.round(c/148*100)}%"></i></div></td><td data-label="${lang==='ru'?'Конверсия с прошлого шага':'Conversion from previous step'}">${conv}</td></tr>`; }).join('')}</tbody></table></section>`;
+}
+function scrReports(){
+  return header(t('s_reports'), t('stat_reportNote'), 'demo', crumbBase().concat([[t('g_stats')],[t('s_reports')]]), `<button class="btn primary" id="schedRep">${esc(t('stat_schedule'))}</button>`) +
+  `<div class="panel"><table class="cards"><thead><tr><th>${lang==='ru'?'Отчёт':'Report'}</th><th>${lang==='ru'?'Периодичность':'Cadence'}</th><th>${lang==='ru'?'Получатели':'Recipients'}</th><th>${lang==='ru'?'Последний запуск':'Last run'}</th></tr></thead><tbody>
+  <tr><td data-label="${lang==='ru'?'Отчёт':'Report'}">${lang==='ru'?'Еженедельный обзор хаба':'Weekly hub summary'} <span class="chip c-ai">${esc(t('at_label',{role:'Analytics reporter'}))}</span></td><td data-label="${lang==='ru'?'Периодичность':'Cadence'}">${lang==='ru'?'Понедельник 08:00 PT':'Mondays 08:00 PT'}</td><td data-label="${lang==='ru'?'Получатели':'Recipients'}">${lang==='ru'?'Владелец хаба, коммерческий администратор':'Hub owner, Commercial admin'}</td><td data-label="${lang==='ru'?'Последний запуск':'Last run'}">2026-10-27</td></tr>
+  <tr><td data-label="${lang==='ru'?'Отчёт':'Report'}">${lang==='ru'?'Ежемесячный отчёт по доверию и безопасности':'Monthly trust and safety report'}</td><td data-label="${lang==='ru'?'Периодичность':'Cadence'}">${lang==='ru'?'1-е число':'1st of the month'}</td><td data-label="${lang==='ru'?'Получатели':'Recipients'}">${lang==='ru'?'Владелец хаба, аудитор':'Hub owner, Auditor'}</td><td data-label="${lang==='ru'?'Последний запуск':'Last run'}">2026-10-01</td></tr></tbody></table>
+  <p class="small">${lang==='ru'?'Выгрузки содержат только агрегаты с уже применённым подавлением, определения метрик и метод; подписываются, записываются в аудит и удаляются через 7 дней.':'Exports contain aggregates only, with suppression applied, the metric definitions and the method; they are signed, audited and removed after 7 days.'}</p></div>`;
+}
+function scrNetwork(){
+  return header(t('s_map'), t('net_lede'), 'designed', crumbBase().concat([[t('g_network')],[t('s_map')]])) +
+  `<div class="panel"><h2>${esc(t('net_list'))}</h2><table class="cards"><thead><tr><th>${lang==='ru'?'Хаб':'Hub'}</th><th>${esc(t('stat_territory'))}</th><th>${lang==='ru'?'Уровень пиринга':'Peering level'}</th></tr></thead><tbody><tr><td data-label="${lang==='ru'?'Хаб':'Hub'}">Trustwork United States (demo)</td><td data-label="${esc(t('stat_territory'))}">San Diego, US</td><td data-label="${lang==='ru'?'Уровень пиринга':'Peering level'}">${lang==='ru'?'этот хаб':'this hub'}</td></tr><tr><td data-label="${lang==='ru'?'Хаб':'Hub'}">${lang==='ru'?'Пример: хаб Самарканда':'Example: Samarkand hub'}</td><td data-label="${esc(t('stat_territory'))}">Samarkand, UZ</td><td data-label="${lang==='ru'?'Уровень пиринга':'Peering level'}">${lang==='ru'?'публичный обмен':'public syndication'}</td></tr></tbody></table>
+  <div class="locked"><span class="lk"><span aria-hidden="true">&#128274;</span> ${esc(t('alwaysOn'))}</span><span>${esc(t('gr_restricted'))}</span></div></div>`;
+}
+function scrHelp(){
+  return header(t('s_help'), t('helpLede'), 'demo', crumbBase().concat([[t('s_help')]])) + `<div class="panel"><button class="btn" id="scToggle">${esc(S.shortcuts?t('shortcutsOn'):t('shortcutsOff'))}</button></div>`;
+}
+function scrDesigned(){
+  return header(t('designedTitle'), t('designedBody'), 'designed', crumbBase()) + `<div class="empty"><h2>${esc(t('designedTitle'))}</h2><p>${esc(t('designedBody'))}</p><a class="btn" href="#/overview">${esc(t('s_overview'))}</a></div>`;
+}
+
+/* ---------------- Router ---------------- */
+function route(){
+  const h = location.hash || '#/overview';
+  if (h==='#/overview') return scrOverview();
+  if (h==='#/inbox') return scrInbox();
+  if (h==='#/users') return canSeeGroup('users') ? scrUsers() : scrDenied();
+  if (h==='#/stats') return canSeeGroup('stats') ? scrStats() : scrDenied();
+  if (h==='#/stats/metrics') return canSeeGroup('stats') ? scrMetrics() : scrDenied();
+  if (h==='#/stats/funnels') return canSeeGroup('stats') ? scrFunnels() : scrDenied();
+  if (h==='#/stats/reports') return canSeeGroup('stats') ? scrReports() : scrDenied();
+  if (h==='#/network') return canSeeGroup('network') ? scrNetwork() : scrDenied();
+  if (h==='#/help') return scrHelp();
+  if (h==='#/support') return (has('support-agent')||has('support-lead')) ? scrLookup() : scrDenied();
+  if (h==='#/support/person') return (has('support-agent')||has('support-lead')) ? scrPerson() : scrDenied();
+  if (h==='#/staff') return canSeeStaff() ? scrStaff() : scrDenied();
+  if (h.startsWith('#/staff/person/')) return canSeeStaff() ? scrStaffPerson(h.split('/').pop()) : scrDenied();
+  if (h==='#/staff/role') return canSeeStaff() ? scrRole() : scrDenied();
+  if (h==='#/config/egress') return canSeeGroup('keys')||canSeeGroup('hub') ? scrConfig() : scrDenied();
+  if (h==='#/models') return canSeeGroup('keys') ? scrModels() : scrDenied();
+  if (h==='#/ops/incident') return canSeeGroup('ops') ? scrIncident() : scrDenied();
+  if (h==='#/team') return canSeeGroup('team') ? scrTeam() : scrDenied();
+  if (h==='#/team/role') return canSeeGroup('team') ? scrTeamRole() : scrDenied();
+  if (h==='#/team/review') return canSeeGroup('team') ? scrTeamReview() : scrDenied();
+  if (h==='#/audit') return canSeeGroup('audit') ? scrAudit() : scrDenied();
+  return scrDesigned();
+}
+function scrDenied(){ return header(lang==='ru'?'Нет доступа к этому разделу':'You do not have access to this section', lang==='ru'?'Раздел доступен ролям, которые указаны в его описании. Попросите администратора сотрудников, если он нужен вам для работы.':'This section is available to the roles named in its description. Ask a staff admin if you need it for your work.', 'demo', crumbBase()); }
+let lastHash = null;
+function render(){
+  renderBand(); renderNav();
+  const main = document.getElementById('main'); main.innerHTML = route(); wire();
+  if (lastHash !== location.hash) { lastHash = location.hash; const h1 = document.getElementById('h1'); if (h1) h1.focus(); }
+  document.getElementById('sidenav').classList.remove('open'); document.getElementById('menuBtn').setAttribute('aria-expanded','false');
+}
+function wire(){
+  const $ = (s) => document.querySelector(s), $$ = (s) => document.querySelectorAll(s);
+  $$('[data-tab]').forEach((b) => b.onclick = () => { inboxTab = b.dataset.tab; render(); });
+  $$('[data-approve]').forEach((b) => b.onclick = () => approveFlow(b.dataset.approve, true));
+  $$('[data-decline]').forEach((b) => b.onclick = () => approveFlow(b.dataset.decline, false));
+  $$('[data-withdraw]').forEach((b) => b.onclick = () => { const a = S.approvals.find((x) => x.id===b.dataset.withdraw); a.status='declined'; if (a.kind==='grant') S.grant=null; render(); });
+  const lk = $('#lkForm'); if (lk) lk.onsubmit = (e) => { e.preventDefault(); const c = $('#lkc').value; if (!c) { $('#lkErr').textContent = t('lk_needcase'); $('#lkc').focus(); return; } S.lookupCase = c; S.lookupDone = true; S.accessLog.unshift({who:rn(me().roles[0]), caseId:c, what:'Lookup', at:new Date().toISOString().slice(0,16).replace('T',' ')}); render(); };
+  if ($('#reqGrant')) $('#reqGrant').onclick = grantDialog;
+  if ($('#viewObj')) $('#viewObj').onclick = () => { S.accessLog.unshift({who:rn(me().roles[0]), caseId:'C-1042', what:'RFQ-2207 (diagnostic)', at:new Date().toISOString().slice(0,16).replace('T',' ')}); toast(lang==='ru'?'RFQ-2207: приглашение доставлено 2026-10-29 10:14, поставщик не открыл. Чтение записано.':'RFQ-2207: invitation delivered 2026-10-29 10:14, not opened by the supplier. This read was logged.'); render(); };
+  $$('[data-sel]').forEach((c) => c.onchange = () => { c.checked ? S.sel.add(c.dataset.sel) : S.sel.delete(c.dataset.sel); render(); announce(t('sf_selected',{n:S.sel.size})); });
+  if ($('#clearSel')) $('#clearSel').onclick = () => { S.sel.clear(); render(); };
+  if ($('#chRoles')) $('#chRoles').onclick = () => roleChangeDialog($('#chRoles').dataset.id);
+  $$('[data-cell]').forEach((b) => b.onclick = () => { if (!S.egress.draft || S.egress.draft.status!=='draft') S.egress.draft = {v:S.egress.active+1, cells:{}, status:'draft'}; const k = b.dataset.cell; const cur = b.getAttribute('aria-pressed')==='true'; if (k in S.egress.draft.cells) delete S.egress.draft.cells[k]; else S.egress.draft.cells[k] = !cur; render(); });
+  if ($('#reqAct')) $('#reqAct').onclick = () => stepUp(() => { const d = S.egress.draft; d.status='pending'; S.approvals.unshift({id:'A-'+(800+S.approvals.length), title:[`Activate egress version ${d.v}`,`Активировать версию ${d.v} правил передачи данных`], by:S.persona, reason:'Use the hosted model for project summaries', role:'hub-owner', status:'pending', h:72, diff:Object.entries(d.cells).map(([k,v]) => [k.replace('|',' → '), v?'Deny':'Allow', v?'Allow':'Deny']), onApprove(){ S.versions.forEach((x) => { if (x.status==='active') x.status='superseded'; }); S.versions.unshift({v:d.v, by:PERSONAS.find(p=>p.id===this.by).name, at:new Date().toISOString().slice(0,10), status:'active'}); S.egress.active = d.v; S.egress.draft = null; }}); render(); toast(t('st_pending')); });
+  $$('[data-rollback]').forEach((b) => b.onclick = () => dialog(`<div class="dh"><h2 id="dlgTitle">${esc(t('cf_rollback',{v:b.dataset.rollback}))}</h2></div><div class="db"><p>${esc(t('cf_rollbackNote',{v:b.dataset.rollback}))}</p></div><div class="df"><button class="btn" data-cancel>${esc(t('cancel'))}</button><button class="btn primary" data-cancel>${esc(t('cf_save'))}</button></div>`));
+  if ($('#draftPrice')) $('#draftPrice').onclick = priceDialog;
+  if ($('#engage')) $('#engage').onclick = engageFlow;
+  if ($('#release')) $('#release').onclick = releaseFlow;
+  $$('[data-akill]').forEach((b) => b.onclick = () => stepUp(() => { const a = S.agents.find((x) => x.id===b.dataset.akill); a.state='killed'; render(); toast(`${a.name}: ${t('at_killed')}`); }));
+  $$('[data-rv]').forEach((b) => b.onclick = () => { const r = S.review.find((x) => x.id===b.dataset.rv); r.status='done'; render(); toast(t('st_approved')); });
+  $$('[data-utab]').forEach((b) => b.onclick = () => { usersTab = b.dataset.utab; render(); });
+  if ($('#ss')) $('#ss').onchange = (e) => { statSeg = e.target.value; render(); };
+  if ($('#statExport')) $('#statExport').onclick = () => toast(lang==='ru'?'Демо: выгрузка с подавлением подготовлена и записана в аудит':'Demo: suppressed export prepared and audited');
+  if ($('#schedRep')) $('#schedRep').onclick = () => toast(lang==='ru'?'Демо: здесь откроется форма расписания отчёта':'Demo: the report schedule form opens here');
+  if ($('#scToggle')) $('#scToggle').onclick = () => { S.shortcuts = !S.shortcuts; render(); };
+  const mx = $('#mx'); if (mx) mx.addEventListener('keydown', (e) => { const c = e.target.closest('[role=gridcell]'); if (!c) return; let r = +c.dataset.r, k = +c.dataset.c; const maxR = mx.querySelectorAll('tbody tr').length-1, maxC = 3;
+    if (e.key==='ArrowRight') k=Math.min(maxC,k+1); else if (e.key==='ArrowLeft') k=Math.max(0,k-1); else if (e.key==='ArrowDown') r=Math.min(maxR,r+1); else if (e.key==='ArrowUp') r=Math.max(0,r-1); else if (e.key==='Home') k=0; else if (e.key==='End') k=maxC; else return;
+    e.preventDefault(); const n = mx.querySelector(`[data-r="${r}"][data-c="${k}"]`); c.tabIndex=-1; c.removeAttribute('aria-selected'); n.tabIndex=0; n.setAttribute('aria-selected','true'); n.focus(); announce(n.title); });
+}
+
+/* ---------------- Palette ---------------- */
+const COMMANDS = [['in_engage','#/ops/incident'],['sf_invite','#/staff'],['md_draftPrice','#/models'],['cf_requestAct','#/config/egress']];
+let palItems = [], palIdx = 0;
+function palRender(){
+  const q = document.getElementById('palInput').value.trim().toLowerCase();
+  const sections = GROUPS.filter(([g]) => canSeeGroup(g)).flatMap(([g, items]) => items.map(([s,h]) => ({label:t('s_'+s), sub:t('g_'+g), h})));
+  palItems = [];
+  const groups = [];
+  if (/@|\S+@\S+|^[a-z]+ [a-z]+$/.test(q) && q.includes('@')) { palItems.push({label:t('pal_lookup'), sub:'', h:'#/support'}); groups.push([t('pal_sections'), palItems.slice()]); }
+  else if (q.startsWith('#')) { const id = q.slice(1).toUpperCase(); const a = S.approvals.find((x) => x.id===id); const items = a ? [{label:a.title[lang==='ru'?1:0], sub:a.id, h:'#/inbox'}] : (id==='INC-7' ? [{label:t('in_title'), sub:'INC-7', h:'#/ops/incident'}] : []); palItems.push(...items); groups.push(['#', items]); }
+  else {
+    const sec = sections.filter((x) => !q || x.label.toLowerCase().includes(q.replace(/^>/,'')) ).slice(0, q.startsWith('>')?0:8);
+    const cmd = COMMANDS.map(([k,h]) => ({label:t(k), sub:'', h})).filter((x) => !q || x.label.toLowerCase().includes(q.replace(/^>/,'')));
+    palItems.push(...sec, ...cmd); groups.push([t('pal_sections'), sec], [t('pal_commands'), cmd]);
+  }
+  palIdx = Math.min(palIdx, Math.max(0, palItems.length-1));
+  let i = 0;
+  const html = groups.filter(([,its]) => its.length).map(([g, its]) => `<li class="grp" role="presentation">${esc(g)}</li>` + its.map((x) => { const idx = i++; return `<li role="option" id="po${idx}" aria-selected="${idx===palIdx}" data-h="${x.h}">${esc(x.label)}<span class="small">${esc(x.sub)}</span></li>`; }).join('')).join('');
+  document.getElementById('palList').innerHTML = html || `<li role="option" aria-disabled="true">${esc(t('pal_nothing'))}</li>`;
+  document.getElementById('palInput').setAttribute('aria-activedescendant', palItems.length ? 'po'+palIdx : '');
+  document.querySelectorAll('#palList [data-h]').forEach((li) => li.onclick = () => { location.hash = li.dataset.h; document.getElementById('palette').close(); });
+}
+function openPalette(){ const p = document.getElementById('palette'); document.getElementById('palInput').value=''; palIdx=0; palRender(); p.showModal(); document.getElementById('palInput').focus(); }
+document.getElementById('palInput').addEventListener('input', () => { palIdx=0; palRender(); });
+document.getElementById('palInput').addEventListener('keydown', (e) => {
+  if (e.key==='ArrowDown') { palIdx = Math.min(palItems.length-1, palIdx+1); palRender(); e.preventDefault(); }
+  else if (e.key==='ArrowUp') { palIdx = Math.max(0, palIdx-1); palRender(); e.preventDefault(); }
+  else if (e.key==='Enter' && palItems[palIdx]) { location.hash = palItems[palIdx].h; document.getElementById('palette').close(); }
+});
+
+/* ---------------- Global events ---------------- */
+document.getElementById('openPalette').onclick = openPalette;
+document.getElementById('inboxBtn').onclick = () => { location.hash = '#/inbox'; };
+document.getElementById('langBtn').onclick = () => { lang = lang==='en' ? 'ru' : 'en'; render(); };
+document.getElementById('themeBtn').onclick = () => { S.theme = S.theme==='system' ? 'light' : S.theme==='light' ? 'dark' : 'system'; if (S.theme==='system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme); renderBand(); };
+document.getElementById('menuBtn').onclick = () => { const n = document.getElementById('sidenav'); n.style.top = document.querySelector('.band').offsetHeight + 'px'; const o = n.classList.toggle('open'); document.getElementById('menuBtn').setAttribute('aria-expanded', String(o)); if (o) { const a = n.querySelector('a'); if (a) a.focus(); } };
+let gPending = false;
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='k') { e.preventDefault(); openPalette(); return; }
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.querySelector('dialog[open]');
+  if (typing || !S.shortcuts) return;
+  if (gPending) { gPending = false; if (e.key==='o') location.hash='#/overview'; else if (e.key==='i') location.hash='#/inbox'; else if (e.key==='a') location.hash='#/audit'; return; }
+  if (e.key==='g') { gPending = true; setTimeout(() => gPending=false, 1200); }
+  else if (e.key==='?') location.hash = '#/help';
+  else if (e.key==='/') { const f = document.querySelector('main .filterbar input, main input'); if (f) { e.preventDefault(); f.focus(); } }
+});
+window.addEventListener('hashchange', render);
+window.matchMedia('(max-width: 767px)').addEventListener('change', renderBand);
+render();
+</script>
+</body>
+</html>

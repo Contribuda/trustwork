@@ -1,0 +1,192 @@
+{
+ "console": [],
+ "network": [],
+ "leaks": [],
+ "same": [
+  {
+   "tag": "es",
+   "s": "↔ EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "es",
+   "s": "EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "es",
+   "s": "100 Example St, San Diego"
+  },
+  {
+   "tag": "es",
+   "s": "100 Example Street, San Diego"
+  },
+  {
+   "tag": "es",
+   "s": "El Cajon"
+  },
+  {
+   "tag": "es",
+   "s": "22 Sample Ave, Chula Vista"
+  },
+  {
+   "tag": "es",
+   "s": "22 Sample Avenue, Chula Vista"
+  },
+  {
+   "tag": "ru",
+   "s": "↔ EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "ru",
+   "s": "EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "ru",
+   "s": "100 Example St, San Diego"
+  },
+  {
+   "tag": "ru",
+   "s": "100 Example Street, San Diego"
+  },
+  {
+   "tag": "ru",
+   "s": "El Cajon"
+  },
+  {
+   "tag": "ru",
+   "s": "22 Sample Ave, Chula Vista"
+  },
+  {
+   "tag": "ru",
+   "s": "22 Sample Avenue, Chula Vista"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "↔ EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "100 Example St, San Diego"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "100 Example Street, San Diego"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "El Cajon"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "22 Sample Ave, Chula Vista"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "22 Sample Avenue, Chula Vista"
+  },
+  {
+   "tag": "ka",
+   "s": "↔ EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "ka",
+   "s": "EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "ka",
+   "s": "100 Example St, San Diego"
+  },
+  {
+   "tag": "ka",
+   "s": "100 Example Street, San Diego"
+  },
+  {
+   "tag": "ka",
+   "s": "El Cajon"
+  },
+  {
+   "tag": "ka",
+   "s": "22 Sample Ave, Chula Vista"
+  },
+  {
+   "tag": "ka",
+   "s": "22 Sample Avenue, Chula Vista"
+  },
+  {
+   "tag": "hy",
+   "s": "↔ EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "hy",
+   "s": "EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "hy",
+   "s": "100 Example St, San Diego"
+  },
+  {
+   "tag": "hy",
+   "s": "100 Example Street, San Diego"
+  },
+  {
+   "tag": "hy",
+   "s": "El Cajon"
+  },
+  {
+   "tag": "hy",
+   "s": "22 Sample Ave, Chula Vista"
+  },
+  {
+   "tag": "hy",
+   "s": "22 Sample Avenue, Chula Vista"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "↔ EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "EXAMPLE ROOFING COMPANY"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "100 Example St, San Diego"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "100 Example Street, San Diego"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "El Cajon"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "22 Sample Ave, Chula Vista"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "22 Sample Avenue, Chula Vista"
+  }
+ ],
+ "overflow": [],
+ "keyboard": [
+  {
+   "opened": "en",
+   "after": [
+    "es",
+    true,
+    true
+   ],
+   "esc": [
+    true,
+    true
+   ],
+   "kept": "es",
+   "ok": true
+  }
+ ]
+}

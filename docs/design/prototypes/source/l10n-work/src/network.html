@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hub network prototype</title>
+<style>
+:root{--bg:#f6f7f9;--surface:#fff;--ink:#14171c;--muted:#5a6270;--line:#d9dde4;--blue:#1f5fd6;--blue-ink:#0b3d91;--blue-soft:#e8f0fd;--green:#17703a;--green-soft:#e6f4ea;--amber:#8a5a00;--amber-soft:#fdf3dc;--red:#a1251b;--red-soft:#fbe9e7;--land:#dfe5ee;--sea:#f1f5fa;--focus:#ffbf00;--radius:8px;--lp-bg:var(--surface);--lp-ink:var(--ink);--lp-line:var(--line);--lp-accent:var(--blue)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#101318;--surface:#181c23;--ink:#eef1f5;--muted:#a7afbd;--line:#2c333e;--blue:#7aa7ff;--blue-ink:#a9c5ff;--blue-soft:#1b2a45;--green:#6fd08f;--green-soft:#15301f;--amber:#f0c060;--amber-soft:#3a2d10;--red:#ff8a80;--red-soft:#3a1714;--land:#2a3240;--sea:#141a22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--blue)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:0;background:var(--surface);padding:8px;z-index:10}.skip:focus{left:8px}
+.proto-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 16px;background:#14171c;color:#fff;font-size:13px}
+.proto-bar .seg{display:inline-flex;border:1px solid #556;border-radius:6px;overflow:hidden}
+.proto-bar .seg button{background:transparent;border:0;color:#fff;padding:4px 10px;cursor:pointer}
+.proto-bar .seg button[aria-pressed="true"]{background:#fff;color:#14171c}
+.stage{padding:0}
+.stage.phone{display:flex;justify-content:center;padding:16px}
+.app{background:var(--bg);min-height:calc(100vh - 44px)}
+.stage.phone .app{width:390px;min-height:780px;border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.band{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;text-decoration:none;color:var(--ink)}
+.mark{display:inline-grid;grid-template-columns:8px 8px;gap:2px}.mark i{width:8px;height:8px;background:var(--blue);display:block}.mark i:nth-child(3){grid-column:1}
+.brand .stack{line-height:1;font-size:12px;text-transform:none}
+.acts{color:var(--muted);font-size:13px}
+.acts b{color:var(--ink)}
+.band .spacer{flex:1}
+.demo{background:var(--amber-soft);color:var(--amber);padding:6px 16px;font-size:13px;border-bottom:1px solid var(--line)}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:600px}
+nav.side{background:var(--surface);border-right:1px solid var(--line);padding:12px 8px}
+nav.side h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:8px 8px}
+nav.side ul{list-style:none;margin:0;padding:0}
+nav.side a{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:6px;color:var(--ink);text-decoration:none}
+nav.side a[aria-current="page"]{background:var(--blue-soft);color:var(--blue-ink);font-weight:600}
+nav.side .count{font-size:12px;background:var(--line);border-radius:10px;padding:0 7px}
+main{padding:16px 20px;min-width:0}
+.stage.phone .layout,.compact .layout{grid-template-columns:1fr}
+.stage.phone nav.side,.compact nav.side{border-right:0;border-bottom:1px solid var(--line);padding:8px}
+.stage.phone nav.side h2{display:none}
+.stage.phone nav.side ul{display:flex;overflow-x:auto;gap:4px}
+.stage.phone nav.side a{white-space:nowrap}
+.stage.phone main{padding:12px}
+@media (max-width:720px){.layout{grid-template-columns:1fr}nav.side{border-right:0;border-bottom:1px solid var(--line)}nav.side h2{display:none}nav.side ul{display:flex;overflow-x:auto;gap:4px}nav.side a{white-space:nowrap}main{padding:12px}}
+.crumb{font-size:13px;color:var(--muted);margin:0 0 4px}
+h1{font-size:22px;margin:0 0 4px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lede{color:var(--muted);margin:0 0 14px}
+.status{font-size:12px;font-weight:600;border-radius:4px;padding:1px 6px;border:1px solid currentColor}
+.st-proposed{color:var(--amber)}.st-ok{color:var(--green)}.st-warn{color:var(--amber)}.st-bad{color:var(--red)}.st-info{color:var(--blue)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:12px}
+.toolbar label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:2px}
+select,input[type=text],input[type=number],textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-height:34px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;min-height:34px}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.danger{color:var(--red);border-color:var(--red)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg2 button{border:0;background:var(--surface);padding:6px 12px;cursor:pointer;min-height:34px}
+.seg2 button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.card h2,.card h3{margin:0 0 8px;font-size:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stage.phone .grid2{grid-template-columns:1fr}
+@media (max-width:720px){.grid2{grid-template-columns:1fr}}
+.mapwrap{position:relative;background:var(--sea);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.mapwrap svg{display:block;width:100%;height:auto;touch-action:none}
+.mapctl{position:absolute;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(3,36px);gap:4px}
+.mapctl button{width:36px;height:36px;border:1px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin:8px 0}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.summary{font-size:13px;color:var(--muted);margin:6px 0 0}
+table{width:100%;border-collapse:collapse;background:var(--surface)}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600}
+.tablewrap{border:1px solid var(--line);border-radius:var(--radius);overflow:auto}
+.cards-only{display:none}
+.stage.phone .tablewrap.responsive table,.compact .tablewrap.responsive table{display:none}
+.stage.phone .tablewrap.responsive .cards-only{display:block}
+@media (max-width:720px){.tablewrap.responsive table{display:none}.tablewrap.responsive .cards-only{display:block}}
+.rowcard{padding:10px;border-bottom:1px solid var(--line)}
+.rowcard b{display:block}
+.pill{display:inline-block;font-size:12px;border-radius:10px;padding:0 8px;border:1px solid var(--line);margin:0 4px 4px 0}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-8px 0 24px rgba(0,0,0,.12);padding:16px;overflow:auto;z-index:20}
+.stage.phone .drawer{position:absolute}
+.stage.phone .app{position:relative}
+.drawer header{display:flex;justify-content:space-between;align-items:start;gap:8px}
+dl.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0}
+dl.facts dt{color:var(--muted);font-size:13px}
+dl.facts dd{margin:0}
+.src{font-size:11px;color:var(--muted);display:block}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+.tabs button{border:0;background:transparent;padding:8px 12px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{border-bottom-color:var(--blue);font-weight:600}
+.setting{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.setting small{display:block;color:var(--muted)}
+.locked{display:flex;gap:8px;align-items:start;padding:6px 0;font-size:14px}
+.locked::before{content:"\1F512";font-size:12px}
+.diff{width:100%}
+.diff td.b{color:var(--red)}.diff td.a{color:var(--green)}
+.effect{font-size:13px;color:var(--muted)}
+.tag-w{color:var(--amber);font-weight:600;font-size:12px}.tag-n{color:var(--green);font-weight:600;font-size:12px}
+.approval{border:2px solid var(--blue);border-radius:var(--radius);padding:14px;background:var(--blue-soft)}
+.stepper{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 12px;flex-wrap:wrap}
+.stepper li{font-size:13px;padding:4px 10px;border-radius:12px;border:1px solid var(--line)}
+.stepper li[aria-current="step"]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.thread{list-style:none;margin:0;padding:0}
+.msg{border:1px solid var(--line);border-radius:var(--radius);padding:10px;margin-bottom:8px;background:var(--surface)}
+.msg.out{border-left:4px solid var(--blue)}
+.msg .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
+.fields{font-size:13px;background:var(--bg);border-radius:6px;padding:6px 8px;margin:6px 0}
+.warn{background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:8px;font-size:13px}
+.ok{background:var(--green-soft);color:var(--green);border-radius:6px;padding:8px;font-size:13px}
+.bad{background:var(--red-soft);color:var(--red);border-radius:6px;padding:8px;font-size:13px}
+.bar{height:10px;background:var(--blue);border-radius:3px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.muted{color:var(--muted)}
+.inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toast{pointer-events:none;position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14171c;color:#fff;padding:10px 14px;border-radius:8px;z-index:30;max-width:90%}
+.grid2>*,.layout>*{min-width:0}.setting label{min-width:0;overflow-wrap:break-word}.card{overflow-wrap:break-word}.stage.phone .diff thead{display:none}.stage.phone .diff tr,.stage.phone .diff th,.stage.phone .diff td{display:block;border:0;padding:2px 0}.stage.phone .diff tr{border-bottom:1px solid var(--line);padding:8px 0}.stage.phone .diff td::before{content:attr(data-label) ": ";color:var(--muted);font-size:12px}
+@media (max-width:720px){.diff thead{display:none}.diff tr,.diff th,.diff td{display:block;border:0;padding:2px 0}.diff tr{border-bottom:1px solid var(--line);padding:8px 0}.diff td::before{content:attr(data-label) ": ";color:var(--muted);font-size:12px}}.stage.phone .tablewrap{max-width:100%}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+/*@@KIT_CSS@@*/
+.proto-bar .lp-btn{border-color:#556}
+@media(max-width:720px){.layout,.side{min-width:0}.side{max-width:100%;overflow-x:auto}.side ul{width:100%;max-width:100%}.side li,.side a{position:relative}.side a{white-space:nowrap}}
+@media(max-width:720px){dl.facts{grid-template-columns:minmax(0,1fr)}dl.facts dd{margin:0;overflow-wrap:anywhere}.grid2>*{min-width:0}}
+@media(max-width:720px){.traffic-table{table-layout:fixed}.traffic-table th,.traffic-table td{overflow-wrap:anywhere}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<div class="proto-bar" role="region" data-i18n-label="protoControls">
+  <span data-i18n="protoTitle">Trustwork hub network: clickable prototype (synthetic data)</span>
+  <span class="inline">
+    <span id="langPicker"></span>
+    <span class="seg" role="group" data-i18n-label="viewport"><button type="button" data-vp="desktop" aria-pressed="true" data-i18n="desktop">Desktop</button><button type="button" data-vp="phone" aria-pressed="false" data-i18n="phone">Phone</button></span>
+  </span>
+</div>
+<div class="stage" id="stage">
+<div class="app" id="app">
+  <header class="band">
+    <a class="brand" href="#map" aria-label="Trustwork"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="stack" id="brandName">Trustwork</span></a>
+    <span data-i18n="admin" class="acts">Administration</span>
+    <span class="acts"><span data-i18n="actsOn">This page acts on</span>: <b data-i18n="localHub"></b> · <span data-i18n="stagePublic">Public</span></span>
+    <span class="spacer"></span>
+    <span class="acts" id="who"></span>
+  </header>
+  <div class="demo" role="note" data-i18n="demoBand">Prototype: every hub, person and number here is synthetic (domains on example.invalid). Nothing is saved or sent.</div>
+  <div class="layout">
+    <nav class="side" aria-labelledby="navh">
+      <h2 id="navh" data-i18n="navNetwork">Network</h2>
+      <ul id="navlist"></ul>
+    </nav>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+</div>
+<div id="live" class="vh" aria-live="polite"></div>
+<script>
+"use strict";
+/* ---------- i18n ---------- */
+/*@@KIT_JS@@*/
+/*@@MESSAGES@@*/
+const t=L10N.t, tp=L10N.tp;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate=d=>L10N.date(d,{dateStyle:"medium",timeZone:"UTC"});
+const fmtNum=n=>L10N.num(n);
+const range=(a,b)=>fmtNum(a)+"–"+fmtNum(b);
+/* Language names come from MESSAGES: browsers lack display names for several engine languages. */
+const langName=c=>t("langNames."+c);
+const viaText=v=>v==="tw"?t("dirTrustwork"):v;
+const tombText=h=>h.tomb==null?"-":t("hours",{n:fmtNum(h.tomb)});
+/* ---------- synthetic data ---------- */
+const HUBS=[
+ {id:"sd",name:"Trustwork San Diego (demo)",node:"sandiego.example.invalid",country:"US",terr:"US-CA:san-diego",lat:32.7,lon:-117.2,langs:["en","es"],mods:["publications","events","directory","consultations","tasks","procurement"],posture:"open_to_requests",status:"this",region:"Americas",attest:"2027-09-30",stricter:[],via:"-"},
+ {id:"north",name:"Example North Builders",node:"north.example.invalid",country:"CA",terr:"CA-ON:toronto",lat:43.7,lon:-79.4,langs:["en","fr"],mods:["publications","events","directory","learning"],posture:"open_to_requests",status:"peer",level:"syndicate",trust:"standard",reach:"ok",tomb:9,region:"Americas",attest:"2027-03-14",stricter:["persons"],via:"tw"},
+ {id:"bajio",name:"Example Bajío Construye",node:"bajio.example.invalid",country:"MX",terr:"MX-GUA",lat:21.0,lon:-101.3,langs:["es"],mods:["publications","directory","consultations","tasks","procurement"],posture:"selective",status:"peer",level:"deal_routing",trust:"established",reach:"ok",tomb:4,region:"Americas",attest:"2027-06-02",stricter:[],via:"tw"},
+ {id:"austin",name:"Example Austin Makers",node:"austin.example.invalid",country:"US",terr:"US-TX:austin",lat:30.3,lon:-97.7,langs:["en"],mods:["events","directory","learning"],posture:"open_to_requests",status:"peer",level:"trust_verifications",trust:"standard",reach:"degraded",tomb:31,region:"Americas",attest:"2026-11-20",stricter:[],via:"tw"},
+ {id:"lisbon",name:"Example Lisboa Obra",node:"lisboa.example.invalid",country:"PT",terr:"PT-11",lat:38.7,lon:-9.1,langs:["pt","en"],mods:["publications","events","directory"],posture:"open_to_requests",status:"reqin",region:"Europe",attest:"2027-05-01",stricter:[],via:"tw"},
+ {id:"bavaria",name:"Example Bayern Bau",node:"bayern.example.invalid",country:"DE",terr:"DE-BY:munich",lat:48.1,lon:11.6,langs:["de","en"],mods:["publications","directory","procurement","learning"],posture:"selective",status:"listed",region:"Europe",attest:"2027-08-19",stricter:["member"],via:"tw"},
+ {id:"nairobi",name:"Example Nairobi Build",node:"nairobi.example.invalid",country:"KE",terr:"KE-30",lat:-1.3,lon:36.8,langs:["en","sw"],mods:["publications","events","directory","tasks"],posture:"open_to_requests",status:"reqout",region:"Africa",attest:"2027-02-11",stricter:[],via:"tw"},
+ {id:"tbilisi",name:"Example Tbilisi Mshenebloba",node:"tbilisi.example.invalid",country:"GE",terr:"GE-TB",lat:41.7,lon:44.8,langs:["ka","en"],mods:["publications","directory"],posture:"open_to_requests",status:"suspended",level:"syndicate",trust:"standard",reach:"down",tomb:null,region:"Asia",attest:"2026-10-28",stricter:[],via:"Example Caucasus directory"},
+ {id:"yerevan",name:"Example Yerevan Shinararutyun",node:"yerevan.example.invalid",country:"AM",terr:"AM-ER",lat:40.2,lon:44.5,langs:["hy","en"],mods:["publications","events","directory"],posture:"selective",status:"listed",region:"Asia",attest:"2027-04-09",stricter:[],via:"Example Caucasus directory"},
+ {id:"samarkand",name:"Example Samarkand Qurilish",node:"samarkand.example.invalid",country:"UZ",terr:"UZ-SA:samarkand",lat:39.65,lon:66.96,langs:["uz-Latn","en"],mods:["publications","directory","learning"],posture:"open_to_requests",status:"listed",region:"Asia",attest:"2027-01-22",stricter:["persons"],via:"tw"},
+ {id:"saopaulo",name:"Example São Paulo Obras",node:"saopaulo.example.invalid",country:"BR",terr:"BR-SP",lat:-23.5,lon:-46.6,langs:["pt"],mods:["publications","events","directory","procurement"],posture:"closed",status:"listed",region:"Americas",attest:"2027-07-07",stricter:[],via:"tw"},
+ {id:"sydney",name:"Example Sydney Build",node:"sydney.example.invalid",country:"AU",terr:"AU-NSW",lat:-33.9,lon:151.2,langs:["en"],mods:["publications","directory","tasks"],posture:"open_to_requests",status:"listed",region:"Asia",attest:"2027-03-30",stricter:[],via:"tw"},
+ {id:"pune",name:"Example Pune Nirman",node:"pune.example.invalid",country:"IN",terr:"IN-MH",lat:18.5,lon:73.9,langs:["en","hi","mr"],mods:["publications","directory","learning"],posture:"selective",status:"listed",region:"Asia",attest:"2027-05-15",stricter:[],via:"tw"},
+ {id:"warsaw",name:"Example Warszawa Budowa",node:"warszawa.example.invalid",country:"PL",terr:"PL-14",lat:52.2,lon:21.0,langs:["pl","en"],mods:["publications","directory","procurement"],posture:"open_to_requests",status:"listed",region:"Europe",attest:"2027-06-30",stricter:[],via:"tw"},
+ {id:"osaka",name:"Example Osaka Kensetsu",node:"osaka.example.invalid",country:"JP",terr:"JP-27",lat:34.7,lon:135.5,langs:["ja","en"],mods:["publications","events","directory"],posture:"selective",status:"listed",region:"Asia",attest:"2027-02-28",stricter:[],via:"tw"},
+ {id:"lagos",name:"Example Lagos Build",node:"lagos.example.invalid",country:"NG",terr:"NG-LA",lat:6.5,lon:3.4,langs:["en"],mods:["publications","directory"],posture:"open_to_requests",status:"former",ended:"2026-09-12",region:"Africa",attest:"2027-01-05",stricter:[],via:"tw"}
+];
+const hub=id=>HUBS.find(h=>h.id===id);
+/* very rough continent outlines (lon,lat), for the prototype only; the engine bundles Natural Earth 1:110m */
+const LAND=[
+ [[-168,66],[-140,70],[-95,72],[-80,63],[-60,55],[-53,47],[-66,44],[-75,35],[-81,25],[-97,26],[-97,18],[-87,15],[-80,8],[-83,9],[-105,20],[-117,32],[-124,40],[-125,49],[-135,58],[-150,60],[-165,60]],
+ [[-55,60],[-45,60],[-20,70],[-20,80],[-60,82],[-72,77]],
+ [[-80,8],[-60,10],[-50,0],[-35,-7],[-40,-22],[-58,-38],[-65,-55],[-75,-50],[-72,-30],[-81,-5]],
+ [[-10,36],[-9,43],[-2,48],[-5,58],[5,62],[15,69],[30,71],[40,66],[45,55],[40,45],[28,41],[23,36],[12,38],[3,42]],
+ [[-6,50],[2,51],[-2,58],[-6,57]],
+ [[-17,21],[-10,35],[10,37],[33,31],[43,12],[51,12],[40,-5],[40,-15],[33,-28],[20,-35],[12,-17],[9,4],[-8,4],[-17,14]],
+ [[28,41],[36,36],[48,30],[57,25],[66,25],[72,20],[78,8],[88,22],[98,16],[104,1],[108,12],[122,30],[122,40],[130,43],[142,52],[160,60],[180,66],[180,72],[140,73],[100,78],[70,73],[50,68],[45,55],[40,45]],
+ [[114,-22],[130,-12],[142,-11],[153,-28],[147,-38],[135,-35],[115,-34]],
+ [[130,31],[141,36],[142,45],[139,40]],
+ [[95,5],[106,-6],[115,-8],[120,-5],[110,2]],
+ [[172,-35],[178,-38],[168,-46],[167,-44]]
+];
+/* ---------- state ---------- */
+const S={view:"map",mapMode:"map",filters:{country:"",lang:"",mod:"",status:""},zoom:1,cx:500,cy:250,drawer:null,peer:"bajio",peerTab:"settings",peersTab:"active",
+ approver:false,reqStep:1,reqHub:"bavaria",reqLevel:"syndicate",thread:"t1",statsTab:"this",listing:true,peerVis:"count",
+ pub:{participants:true,companies:true,pubs:true,events:false,tomb:true},annAck:false,
+ settingsVersion:3,active:null,draft:null,pending:null,activity:[]};
+function baseSettings(){return{level:"deal_routing",receive:{persons:"off",companies:"agreed",events:"agreed",needs:"agreed",pubs:"agreed"},dispVerif:true,
+ modules:{events:true,magazine:true,knowledge:false,learning:false,needs:true,tenders:false},tr:{mt:false,peer:false},se:{index:true,dir:true},
+ rq:{intro:{on:true,n:20},consult:{on:false,n:10},tasks:{on:false,n:20},rfq:{on:true,n:20},agent:{on:true,n:100}},commerce:true,identity:false,lim:{inbox:1000,agent:100},trust:"established"};}
+S.active=baseSettings();S.draft=JSON.parse(JSON.stringify(S.active));
+S.activity=[{d:"2026-10-02",k:"act1"},{d:"2026-10-02",k:"act2"},{d:"2026-10-19",k:"act3"},{d:"2026-10-27",k:"act4"}];
+const THREADS=[
+ {id:"t1",hub:"bajio",kind:"incident_notice",urgency:"urgent",state:"open",msgs:[
+   {dir:"in",when:"2026-10-31T14:05:00Z",role:{k:"ops",hub:"bajio"},fields:[["fCategory",{k:"fv.availability"}],["fStatusF",{k:"fv.investigating"}],["fImpact",{k:"fv.delayed"}]],bodyKey:"t1a"},
+   {dir:"out",when:"2026-10-31T14:20:00Z",role:{k:"compliance",hub:"sd"},fields:[],bodyKey:"t1b"}]},
+ {id:"t2",hub:"tbilisi",kind:"abuse_report",urgency:"soon",state:"open",msgs:[
+   {dir:"out",when:"2026-10-29T09:10:00Z",role:{k:"moderator",hub:"sd"},fields:[["target","trustwork://tbilisi.example.invalid/open_need/n-88"],["clause","spam.repeated_posting"]],bodyKey:"t2a"}]},
+ {id:"t3",hub:"lisbon",kind:"peering_request",urgency:"routine",state:"open",msgs:[
+   {dir:"in",when:"2026-10-30T11:00:00Z",role:{k:"owner",hub:"lisbon"},fields:[["fReqLevel",{k:"lvl_syndicate"}],["fProposed",{k:"fv.proposedSet"}]],bodyKey:"t3a"}]}
+];
+const ANN=[
+ {id:"a1",pub:"project",sev:"security",when:"2026-10-30"},
+ {id:"a2",pub:"dir",dir:"tw",when:"2026-10-28"},
+ {id:"a3",pub:"peer",hub:"austin",when:"2026-10-20",retracted:true}
+];
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+function toast(msg){const d=document.createElement("div");d.className="toast";d.setAttribute("role","status");d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),4200);}
+function announce(msg){const l=$("#live");l.textContent="";setTimeout(()=>{l.textContent=msg},30);}
+function statusText(h){if(h.status==="this")return t("stThis");if(h.status==="peer")return t("stPeer")+", "+t("lvl_"+h.level);if(h.status==="suspended")return t("stSuspended");if(h.status==="reqin")return t("stReqIn");if(h.status==="reqout")return t("stReqOut");if(h.status==="former")return t("former",{d:fmtDate(h.ended)});return t("stListed");}
+function countryName(c){return t("country_"+c);}
+function attestText(h){const days=(new Date(h.attest)-new Date("2026-11-01"))/864e5;return days<30?t("renewalDue",{d:fmtDate(h.attest)}):t("validUntil",{d:fmtDate(h.attest)});}
+function filtered(){const f=S.filters;return HUBS.filter(h=>h.status!=="former"&&(!f.country||h.country===f.country)&&(!f.lang||h.langs.includes(f.lang))&&(!f.mod||h.mods.includes(f.mod))&&(!f.status||h.status===f.status)).sort((a,b)=>a.status==="this"?-1:b.status==="this"?1:a.name.localeCompare(b.name));}
+const NAV=[["map","navMap"],["peers","navPeers"],["messages","navMessages"],["announcements","navAnn"],["stats","navStats"],["listing","navListing"]];
+function renderNav(){const counts={peers:HUBS.filter(h=>h.status==="reqin").length,messages:THREADS.filter(x=>x.urgency==="urgent").length,announcements:S.annAck?0:1};
+ $("#navlist").innerHTML=NAV.map(([v,k])=>{const cur=S.view===v||(v==="peers"&&(S.view==="peer"||S.view==="request"));const c=counts[v]?`<span class="count" aria-hidden="true">${counts[v]}</span><span class="vh">, ${counts[v]}</span>`:"";return `<li><a href="#${v}" data-nav="${v}" ${cur?'aria-current="page"':""}><span>${t(k)}</span>${c}</a></li>`}).join("");}
+function pageHead(titleKey,ledeKey,crumb){return `${crumb?`<p class="crumb">${crumb}</p>`:""}<h1 tabindex="-1" id="h1">${t(titleKey)} <span class="status st-proposed">${t("proposed")}</span></h1><p class="lede">${t(ledeKey)}</p>`;}
+/* ---------- map ---------- */
+const W=1000,Hh=500;
+const proj=(lon,lat)=>[(lon+180)/360*W,(90-lat)/180*Hh];
+function view2screen([x,y]){return[(x-S.cx)*S.zoom+W/2,(y-S.cy)*S.zoom+Hh/2];}
+function markerShape(h,x,y){
+  if(h.status==="this")return `<g aria-hidden="true"><rect x="${x-9}" y="${y-9}" width="8" height="8" fill="var(--blue)"/><rect x="${x+1}" y="${y-9}" width="8" height="8" fill="var(--blue)"/><rect x="${x-9}" y="${y+1}" width="8" height="8" fill="var(--blue)"/></g>`;
+ if(h.status==="peer")return `<g aria-hidden="true"><circle cx="${x}" cy="${y}" r="11" fill="var(--blue-ink)" stroke="var(--surface)" stroke-width="2"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--surface)">${esc(t("lvlAbbr."+h.level))}</text></g>`;
+ if(h.status==="suspended")return `<g aria-hidden="true"><circle cx="${x}" cy="${y}" r="11" fill="var(--surface)" stroke="var(--red)" stroke-width="2.5"/><rect x="${x-4}" y="${y-5}" width="3" height="10" fill="var(--red)"/><rect x="${x+1}" y="${y-5}" width="3" height="10" fill="var(--red)"/></g>`;
+ if(h.status==="reqin"||h.status==="reqout")return `<g aria-hidden="true"><circle cx="${x}" cy="${y}" r="11" fill="var(--surface)" stroke="var(--amber)" stroke-width="2.5"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--amber)">${h.status==="reqin"?"↙":"↗"}</text></g>`;
+ return `<g aria-hidden="true"><rect x="${x-7}" y="${y-7}" width="14" height="14" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/></g>`;}
+function mapSVG(list){
+ const land=LAND.map(poly=>"M"+poly.map(p=>view2screen(proj(p[0],p[1])).map(v=>v.toFixed(1)).join(",")).join("L")+"Z").join("");
+ const pts=list.map(h=>({h,p:view2screen(proj(h.lon,h.lat))})).filter(o=>o.p[0]>-20&&o.p[0]<W+20&&o.p[1]>-20&&o.p[1]<Hh+20);
+ const groups=[];for(const o of pts){const g=groups.find(g=>Math.hypot(g.p[0]-o.p[0],g.p[1]-o.p[1])<24);if(g)g.items.push(o);else groups.push({p:o.p,items:[o]});}
+ const marks=groups.map(g=>{const [x,y]=g.p;if(g.items.length===1){const h=g.items[0].h;const label=`${h.name}, ${countryName(h.country)}, ${statusText(h)}`;return `<g class="mk" role="button" tabindex="0" data-hub="${h.id}" aria-label="${esc(label)}"><title>${esc(label)}</title><circle cx="${x}" cy="${y}" r="16" fill="transparent"/>${markerShape(h,x,y)}</g>`;}
+  const label=tp("cluster",g.items.length)+": "+g.items.map(o=>o.h.name).join(", ");return `<g class="mk" role="button" tabindex="0" data-cluster="${x},${y}" aria-label="${esc(label)}"><title>${esc(label)}</title><circle cx="${x}" cy="${y}" r="14" fill="var(--ink)"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--surface)" aria-hidden="true">${g.items.length}</text></g>`;}).join("");
+ const vis=pts.map(o=>o.h);S._visible=vis;
+ return `<svg viewBox="0 0 ${W} ${Hh}" aria-labelledby="mapl" role="group"><title id="mapl">${t("mapLabel")}</title><rect width="${W}" height="${Hh}" fill="var(--sea)"/><path d="${land}" fill="var(--land)" stroke="var(--line)" stroke-width="1"/>${marks}</svg>`;}
+function summaryLine(){const v=S._visible||[];return t("inView",{n:v.length,p:v.filter(h=>h.status==="peer"||h.status==="suspended").length,r:v.filter(h=>h.status==="reqin"||h.status==="reqout").length,l:v.filter(h=>h.status==="listed").length});}
+function viewMap(){
+ const list=filtered();const countries=[...new Set(HUBS.filter(h=>h.status!=="former").map(h=>h.country))].sort((a,b)=>countryName(a).localeCompare(countryName(b),L10N.fmt()));
+ const langs=[...new Set(HUBS.flatMap(h=>h.langs))].sort();const mods=["publications","events","directory","consultations","tasks","procurement","learning"];
+ const sts=[["this","stThis"],["peer","stPeer"],["suspended","stSuspended"],["reqin","stReqIn"],["reqout","stReqOut"],["listed","stListed"]];
+ const opt=(v,l,cur)=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`;
+ let html=pageHead("mapTitle","mapLede")+`<div class="toolbar" role="search">
+  <label>${t("fCountry")}<select data-filter="country">${opt("",t("any"),S.filters.country)}${countries.map(c=>opt(c,countryName(c),S.filters.country)).join("")}</select></label>
+  <label>${t("fLanguage")}<select data-filter="lang">${opt("",t("any"),S.filters.lang)}${langs.map(c=>opt(c,langName(c),S.filters.lang)).join("")}</select></label>
+  <label>${t("fModule")}<select data-filter="mod">${opt("",t("any"),S.filters.mod)}${mods.map(c=>opt(c,t("mod_"+c),S.filters.mod)).join("")}</select></label>
+  <label>${t("fStatus")}<select data-filter="status">${opt("",t("any"),S.filters.status)}${sts.map(([v,k])=>opt(v,t(k),S.filters.status)).join("")}</select></label>
+  <span class="seg2" role="group" aria-label="${t("viewMap")} / ${t("viewList")}"><button type="button" data-mode="map" aria-pressed="${S.mapMode==="map"}">${t("viewMap")}</button><button type="button" data-mode="list" aria-pressed="${S.mapMode==="list"}">${t("viewList")}</button></span></div>`;
+ if(S.mapMode==="map"){html+=`<div class="mapwrap" id="mapwrap" tabindex="0" aria-describedby="sum">${mapSVG(list)}<div class="mapctl">
+   <span></span><button type="button" data-pan="up" aria-label="${t("panUp")}">&uarr;</button><button type="button" data-zoom="in" aria-label="${t("zoomIn")}">+</button>
+   <button type="button" data-pan="left" aria-label="${t("panLeft")}">&larr;</button><button type="button" data-zoom="reset" aria-label="${t("reset")}">&#8634;</button><button type="button" data-pan="right" aria-label="${t("panRight")}">&rarr;</button>
+   <span></span><button type="button" data-pan="down" aria-label="${t("panDown")}">&darr;</button><button type="button" data-zoom="out" aria-label="${t("zoomOut")}">&minus;</button></div></div>
+  <p class="summary" id="sum">${summaryLine()}</p>
+  <div class="legend" aria-hidden="true"><span>${markerSvgMini("this")} ${t("stThis")}</span><span>${markerSvgMini("peer")} ${t("stPeer")} (${["syndicate","trust_verifications","deal_routing","identity"].map(l=>esc(t("lvlAbbr."+l))).join(", ")})</span><span>${markerSvgMini("suspended")} ${t("stSuspended")}</span><span>${markerSvgMini("reqin")} ${t("stReqIn")} / ${t("stReqOut")}</span><span>${markerSvgMini("listed")} ${t("stListed")}</span></div>`;}
+ else html+=listTable(list);
+ return html;}
+function markerSvgMini(st){const h={status:st,level:"syndicate"};return `<svg width="26" height="26" viewBox="0 0 26 26">${markerShape(h,13,13)}</svg>`;}
+function listTable(list){
+ const rows=list.map(h=>`<tr><td><button class="btn" data-hub="${h.id}">${esc(h.name)}</button><span class="src">${esc(h.node)}</span></td><td>${countryName(h.country)}<span class="src">${esc(h.terr)}</span></td><td>${h.langs.map(langName).join(", ")}</td><td>${h.mods.map(m=>t("mod_"+m)).join(", ")}</td><td>${t("posture_"+h.posture)}</td><td>${statusText(h)}</td><td>${attestText(h)}</td><td>${esc(viaText(h.via))}</td></tr>`).join("");
+ const cards=list.map(h=>`<div class="rowcard"><b><button class="btn" data-hub="${h.id}">${esc(h.name)}</button></b>${countryName(h.country)} · ${statusText(h)}<details><summary>${t("details")}</summary>${h.langs.map(langName).join(", ")} · ${t("posture_"+h.posture)} · ${attestText(h)}</details></div>`).join("");
+ return `<div class="tablewrap responsive"><table><caption class="vh">${t("mapTitle")}</caption><thead><tr><th scope="col">${t("cHub")}</th><th scope="col">${t("cTerritory")}</th><th scope="col">${t("cLanguages")}</th><th scope="col">${t("cModules")}</th><th scope="col">${t("cPosture")}</th><th scope="col">${t("cStatus")}</th><th scope="col">${t("cAttest")}</th><th scope="col">${t("cVia")}</th></tr></thead><tbody>${rows}</tbody></table><div class="cards-only">${cards}</div></div><p class="summary">${t("inView",{n:list.length,p:list.filter(h=>h.status==="peer"||h.status==="suspended").length,r:list.filter(h=>h.status==="reqin"||h.status==="reqout").length,l:list.filter(h=>h.status==="listed").length})}</p>`;}
+function drawerHTML(h){
+ const lic=h.stricter.length?t("stricterSome",{c:L10N.list(h.stricter.map(x=>t("sc."+x)))}):t("allDefault");
+ const actions=h.status==="this"?"":`<div class="inline">${h.status==="listed"?`<button class="btn primary" data-go-request="${h.id}">${t("reqConnect")}</button>`:""}${h.status==="peer"||h.status==="suspended"?`<button class="btn primary" data-open-peer="${h.id}">${t("openPeer")}</button>`:""}${h.status==="reqin"?`<button class="btn primary" data-nav="peers" data-peerstab="requests">${t("review")}</button>`:""}<button class="btn" data-nav="messages">${t("sendMsg")}</button></div>`;
+ return `<aside class="drawer" role="dialog" aria-modal="false" aria-labelledby="dh"><header><div><h2 id="dh" tabindex="-1">${esc(h.name)}</h2><span class="muted">${esc(h.node)}</span></div><button class="btn" data-close aria-label="${t("close")}">&times;</button></header>
+ <p><span class="pill">${statusText(h)}</span><span class="pill">${t("posture_"+h.posture)}</span></p>
+ <dl class="facts"><dt>${t("cTerritory")}</dt><dd>${countryName(h.country)}, ${esc(h.terr)}<span class="src">${t("srcManifest")}</span></dd>
+ <dt>${t("cLanguages")}</dt><dd>${h.langs.map(langName).join(", ")}<span class="src">${t("srcManifest")}</span></dd>
+ <dt>${t("cModules")}</dt><dd>${h.mods.map(m=>t("mod_"+m)).join(", ")}<span class="src">${t("srcOperator")}</span></dd>
+ <dt>${t("licences")}</dt><dd>${esc(lic)}<span class="src">${t("srcManifest")}</span></dd>
+ <dt>${t("attestation")}</dt><dd>${attestText(h)} · ${countryName(h.country)}<span class="src">${t("srcOperator")}</span></dd>
+ <dt>${t("operator")}</dt><dd>${esc(h.name.replace("Example ","Example Operator "))} LLC (${esc(t("synthetic"))})<span class="src">${t("srcManifest")}</span></dd>
+ <dt>${t("commitments")}</dt><dd>${t("commitText")}<span class="src">${t("srcOperator")}; ${t("srcEngine")}: 2026-10-30</span></dd>
+ <dt>${t("contact")}</dt><dd>network@${esc(h.node)}</dd>
+ <dt>${t("cVia")}</dt><dd>${esc(viaText(h.via))}</dd></dl>${actions}</aside>`;}
+/* ---------- peers ---------- */
+function viewPeers(){
+ const tabs=[["active","tActive"],["requests","tRequests"],["suspended","tSuspended"],["former","tFormer"]];
+ let html=pageHead("peersTitle","peersLede")+`<div class="tabs" role="tablist">${tabs.map(([v,k])=>`<button role="tab" aria-selected="${S.peersTab===v}" data-peerstab="${v}">${t(k)}</button>`).join("")}</div>`;
+ if(S.peersTab==="requests"){
+  const inc=HUBS.filter(h=>h.status==="reqin"),out=HUBS.filter(h=>h.status==="reqout");
+  html+=`<h2>${t("incoming")}</h2>`+(inc.map(h=>`<div class="card"><h3>${esc(h.name)}</h3><p class="muted">${countryName(h.country)} · ${t("fReqLevel")}: ${t("lvl_syndicate")} · ${t("admitted")}</p><div class="inline"><label>${t("atLevel")} <select id="acc-${h.id}"><option value="syndicate">${t("lvl_syndicate")}</option></select></label><button class="btn primary" data-accept="${h.id}">${t("accept")}</button><button class="btn" data-decline="${h.id}">${t("decline")}</button><button class="btn" data-hub="${h.id}">${t("details")}</button></div></div>`).join("")||`<p class="muted">-</p>`);
+  html+=`<h2>${t("outgoing")}</h2>`+(out.map(h=>`<div class="card"><h3>${esc(h.name)}</h3><p class="muted">${countryName(h.country)} · ${t("stReqOut")}</p></div>`).join("")||`<p class="muted">-</p>`);
+  return html;}
+ const sel={active:h=>h.status==="peer",suspended:h=>h.status==="suspended",former:h=>h.status==="former"}[S.peersTab];
+ const list=HUBS.filter(sel);
+ const rows=list.map(h=>`<tr><td>${h.status==="former"?esc(h.name):`<button class="btn" data-open-peer="${h.id}">${esc(h.name)}</button>`}</td><td>${h.level?t("lvl_"+h.level):"-"}</td><td>${h.trust?t("trust_"+h.trust):"-"}</td><td>${h.reach?t("reach_"+h.reach):(h.ended?t("former",{d:fmtDate(h.ended)}):"-")}</td><td>${tombText(h)}</td><td>${h.attest?attestText(h):"-"}</td></tr>`).join("");
+ const cards=list.map(h=>`<div class="rowcard"><b>${h.status==="former"?esc(h.name):`<button class="btn" data-open-peer="${h.id}">${esc(h.name)}</button>`}</b>${h.level?t("lvl_"+h.level):""} · ${h.reach?t("reach_"+h.reach):""}</div>`).join("");
+ return html+`<div class="tablewrap responsive"><table><thead><tr><th>${t("cHub")}</th><th>${t("cLevel")}</th><th>${t("cTrust")}</th><th>${t("cReach")}</th><th>${t("cTomb")}</th><th>${t("cAttest")}</th></tr></thead><tbody>${rows||`<tr><td colspan="6">-</td></tr>`}</tbody></table><div class="cards-only">${cards||"-"}</div></div>`;}
+/* ---------- peer detail ---------- */
+const RQ=["intro","consult","tasks","rfq","agent"];const MODS=["events","magazine","knowledge","learning","needs","tenders"];const DCS=["pubs","events","companies","needs","persons"];
+function flatten(s){const o={};o.level=s.level;for(const d of DCS)o["receive."+d]=s.receive[d];o.dispVerif=s.dispVerif;for(const m of MODS)o["modules."+m]=s.modules[m];o["tr.mt"]=s.tr.mt;o["tr.peer"]=s.tr.peer;o["se.index"]=s.se.index;o["se.dir"]=s.se.dir;for(const r of RQ){o["rq."+r+".on"]=s.rq[r].on;o["rq."+r+".n"]=s.rq[r].n;}o.commerce=s.commerce;o.identity=s.identity;o["lim.inbox"]=s.lim.inbox;o["lim.agent"]=s.lim.agent;o.trust=s.trust;return o;}
+const LEVELS=["syndicate","trust_verifications","deal_routing","identity"];const TRUST=["restricted","new","standard","established"];const RECV=["off","link","agreed"];
+function labelOf(k){if(k==="level")return t("setLevel");if(k.startsWith("receive."))return t("setReceive")+": "+t("dc_"+k.split(".")[1]);if(k==="dispVerif")return t("dispVerif");if(k.startsWith("modules."))return t("m_"+k.split(".")[1]);if(k.startsWith("tr."))return t("tr_"+k.split(".")[1]);if(k.startsWith("se."))return t("se_"+k.split(".")[1]);if(k.startsWith("rq.")){const [,r,f]=k.split(".");return t("rq_"+r)+(f==="n"?" ("+t("perHour")+")":"");}if(k==="commerce")return t("setCommerce");if(k==="identity")return t("setIdentity");if(k==="lim.inbox")return t("inboxLimit");if(k==="lim.agent")return t("agentLimit");if(k==="trust")return t("setTrust");return k;}
+function valText(k,v){if(typeof v==="boolean")return v?t("valOn"):t("valOff");if(k==="level")return t("lvl_"+v);if(k==="trust")return t("trust_"+v);if(k.startsWith("receive."))return v==="off"?t("off"):v==="link"?t("onLink"):t("onAgreed");return fmtNum(v);}
+const valLocal=valText;
+function widens(k,a,b){if(typeof a==="boolean")return !a&&b;if(k==="level")return LEVELS.indexOf(b)>LEVELS.indexOf(a);if(k==="trust")return TRUST.indexOf(b)>TRUST.indexOf(a);if(k.startsWith("receive."))return RECV.indexOf(b)>RECV.indexOf(a);return b>a;}
+function diffs(){const A=flatten(S.active),B=flatten(S.draft);return Object.keys(A).filter(k=>A[k]!==B[k]).map(k=>({k,a:A[k],b:B[k],w:widens(k,A[k],B[k])}));}
+function effect(d){if(d.k==="receive.persons"&&d.b!=="off")return t("eff_persons_on",{n:fmtNum(1200)});if(d.k.endsWith(".n")||d.k.startsWith("lim."))return t("eff_limit",{n:fmtNum(d.b)});if(d.b===false||d.b==="off")return t("eff_off");return t("eff_generic");}
+function digestOf(){let h=0;const s=JSON.stringify(S.draft);for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return "9f"+h.toString(16).padStart(8,"0")+"…";}
+function toggle(name,checked,label,help,disabled){return `<div class="setting"><label for="${name}">${label}${help?`<small>${help}</small>`:""}</label><input type="checkbox" id="${name}" data-set="${name}" ${checked?"checked":""} ${disabled?"disabled":""}></div>`;}
+function viewPeer(){
+ const h=hub(S.peer);const tabs=[["overview","detailOverview"],["settings","detailSettings"],["traffic","detailTraffic"],["messages","detailMessages"],["activity","detailActivity"]];
+ let html=`<p class="crumb"><a href="#peers" data-nav="peers">${t("navPeers")}</a> › ${esc(h.name)}</p><h1 tabindex="-1" id="h1">${esc(h.name)} <span class="status ${h.status==="suspended"?"st-bad":"st-ok"}">${statusText(h)}</span></h1><p class="lede">${esc(h.node)} · ${countryName(h.country)} · ${t("cTrust")}: ${t("trust_"+(S.peer==="bajio"?S.active.trust:h.trust))}</p>
+ <div class="inline" style="margin-bottom:12px"><button class="btn" data-suspend>${t("suspend")}</button><button class="btn danger" data-defed>${t("defederate")}</button></div>
+ <div class="tabs" role="tablist">${tabs.map(([v,k])=>`<button role="tab" aria-selected="${S.peerTab===v}" data-peertab="${v}">${t(k)}</button>`).join("")}</div><div id="confirmSlot"></div>`;
+ if(S.peerTab==="overview")html+=`<div class="card"><h2>${t("agreedLic")}</h2><table><tbody>${t("licRows").map(r=>`<tr><th scope="row">${esc(r[0])}</th><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table><p class="muted">${t("commonProto")} · ${t("attestation")}: ${attestText(h)}</p></div>`;
+ if(S.peerTab==="settings")html+=settingsHTML();
+ if(S.peerTab==="traffic")html+=trafficHTML();
+ if(S.peerTab==="messages")html+=THREADS.filter(x=>x.hub===S.peer).map(threadCard).join("")||`<p class="muted">-</p>`;
+ if(S.peerTab==="activity")html+=`<div class="card"><h2>${t("actTitle")}</h2><ol>${S.activity.map(a=>`<li><time datetime="${a.d}">${fmtDate(a.d)}</time>: ${esc(t(a.k,a.vars&&{v:a.vars.v,how:t(a.vars.how)}))}</li>`).join("")}</ol></div>`;
+ return html;}
+function settingsHTML(){
+ const d=S.draft;const lvlIdx=LEVELS.indexOf(d.level);
+ const sel=(name,val,opts)=>`<select id="${name}" data-set="${name}">${opts.map(([v,l])=>`<option value="${v}" ${v===val?"selected":""}>${l}</option>`).join("")}</select>`;
+ let h=`<div class="grid2"><div>`;
+ h+=`<div class="card"><h2>${t("setLevel")}</h2><div class="setting"><label for="level">${t("setLevel")}<small>${t("levelHelp")}</small></label>${sel("level",d.level,LEVELS.slice(0,3).map(v=>[v,t("lvl_"+v)]))}</div>
+ <div class="setting"><label for="trust">${t("setTrust")}</label>${sel("trust",d.trust,TRUST.map(v=>[v,t("trust_"+v)]))}</div></div>`;
+ h+=`<div class="card"><h2>${t("setReceive")}</h2>${DCS.map(dc=>`<div class="setting"><label for="receive.${dc}">${t("dc_"+dc)}</label>${sel("receive."+dc,d.receive[dc],[["off",t("off")],["link",t("onLink")],["agreed",t("onAgreed")]])}</div>`).join("")}${toggle("dispVerif",d.dispVerif,t("dispVerif"),"",lvlIdx<1)}</div>`;
+ h+=`<div class="card"><h2>${t("setModules")}</h2>${MODS.map(m=>toggle("modules."+m,d.modules[m],t("m_"+m))).join("")}</div>`;
+ h+=`<div class="card"><h2>${t("setTranslation")}</h2>${toggle("tr.mt",d.tr.mt,t("tr_mt"))}${toggle("tr.peer",d.tr.peer,t("tr_peer"))}<h2 style="margin-top:12px">${t("setSearch")}</h2>${toggle("se.index",d.se.index,t("se_index"))}${toggle("se.dir",d.se.dir,t("se_dir"))}</div>`;
+ h+=`<div class="card"><h2>${t("setRequests")}</h2>${RQ.map(r=>`<div class="setting"><label for="rq.${r}.on">${t("rq_"+r)}</label><span class="inline"><input type="checkbox" id="rq.${r}.on" data-set="rq.${r}.on" ${d.rq[r].on?"checked":""} ${lvlIdx<2?"disabled":""}><input type="number" min="0" max="${r==="agent"?200:5000}" value="${d.rq[r].n}" data-set="rq.${r}.n" aria-label="${t("rq_"+r)}, ${t("perHour")}" style="width:84px" ${lvlIdx<2?"disabled":""}> <span class="muted">${t("perHour")}</span></span></div>`).join("")}
+ ${toggle("commerce",d.commerce,t("setCommerce"),t("commerceText"),lvlIdx<2)}${toggle("identity",d.identity,t("setIdentity"),t("identityText"),true)}</div>`;
+ h+=`<div class="card"><h2>${t("setLimits")}</h2><div class="setting"><label for="lim.inbox">${t("inboxLimit")} (${t("perHour")})</label><input id="lim.inbox" type="number" min="0" max="10000" value="${d.lim.inbox}" data-set="lim.inbox" style="width:100px"></div><div class="setting"><label for="lim.agent">${t("agentLimit")}</label><input id="lim.agent" type="number" min="0" max="200" value="${d.lim.agent}" data-set="lim.agent" style="width:100px"></div></div>`;
+ h+=`<div class="card"><h2>${t("lockedTitle")}</h2>${["lk1","lk2","lk3","lk4","lk5","lk6"].map(k=>`<div class="locked">${t(k)}</div>`).join("")}</div>`;
+ h+=`</div><div>${diffPanel()}</div></div>`;return h;}
+function diffPanel(){
+ if(S.pending)return approvalCard();
+ const ds=diffs();if(!ds.length)return `<div class="card"><h2>${t("changes",{v:S.settingsVersion})}</h2><p class="muted">${t("noChanges")}</p></div>`;
+ const allNarrow=ds.every(d=>!d.w);
+ return `<div class="card" id="diffcard"><h2>${t("changes",{v:S.settingsVersion})}</h2><table class="diff"><thead><tr><th scope="col">${t("settingCol")}</th><th scope="col">${t("before")}</th><th scope="col">${t("after")}</th></tr></thead><tbody>${ds.map(d=>`<tr><th scope="row">${esc(labelOf(d.k))} <span class="${d.w?"tag-w":"tag-n"}">${d.w?t("widening"):t("narrowing")}</span><div class="effect">${esc(effect(d))}</div></th><td class="b" data-label="${t("before")}">${esc(valLocal(d.k,d.a))}</td><td class="a" data-label="${t("after")}">${esc(valLocal(d.k,d.b))}</td></tr>`).join("")}</tbody></table>
+ <p><label for="reason">${t("reason")}</label><br><textarea id="reason" rows="2" style="width:100%"></textarea></p>
+ <div class="inline"><button class="btn primary" data-request-act>${t("requestAct")}</button><button class="btn" data-protective ${allNarrow?"":"disabled"}>${t("applyProtective")}</button></div><p class="muted" style="font-size:13px">${t("protectiveHelp")}</p></div>`;}
+function approvalCard(){const p=S.pending;
+ return `<div class="approval" role="region" aria-labelledby="aph"><h2 id="aph">${t("approvalTitle")}</h2><p>${t("requestedBy")}: A. Rivera · ${fmtDate("2026-11-01")}<br>${t("digest")}: <code>${p.digest}</code><br>${t("expires")}</p>
+ <ul>${p.diffs.map(d=>`<li>${esc(labelOf(d.k))}: ${esc(valLocal(d.k,d.a))} → ${esc(valLocal(d.k,d.b))} <span class="${d.w?"tag-w":"tag-n"}">${d.w?t("widening"):t("narrowing")}</span></li>`).join("")}</ul>
+ <p><i>${esc(p.reason)}</i></p>
+ <div class="inline"><button class="btn primary" data-approve ${S.approver?"":"disabled aria-describedby=\"ownreq\""}>${t("approve")}</button><button class="btn" data-decline-req ${S.approver?"":"disabled"}>${t("declineReq")}</button></div>
+ ${S.approver?"":`<p id="ownreq" class="warn">${t("ownReq")}</p><button class="btn" data-switch-approver>${t("switchApprover")}</button>`}</div>`;}
+function trafficHTML(){const rows=[[t("tLag"),t("minutes",{n:fmtNum(2)})],[t("tAccepted"),fmtNum(4812)],[t("tRejected"),fmtNum(7)+" (federation.signature_invalid 2, federation.rate_limited 5)"],[t("tRate"),fmtNum(5)],[t("tTombMed"),t("hours",{n:fmtNum(4)})]];
+ const days=[620,710,680,802,655,690,655];const max=Math.max(...days);
+ return `<div class="card"><h2>${t("trafficTitle")}</h2><svg viewBox="0 0 280 90" width="100%" style="max-width:420px" role="img" aria-label="${t("tAccepted")}: ${days.join(", ")}">${days.map((v,i)=>`<rect x="${i*40+6}" y="${80-v/max*70}" width="28" height="${v/max*70}" fill="var(--blue)"/>`).join("")}</svg>
+ <details><summary>${t("tableAlt")}</summary><table><tbody>${days.map((v,i)=>`<tr><th scope="row">${fmtDate(new Date(Date.UTC(2026,9,25+i)))}</th><td>${fmtNum(v)}</td></tr>`).join("")}</tbody></table></details>
+ <table class="traffic-table"><tbody>${rows.map(r=>`<tr><th scope="row">${r[0]}</th><td>${r[1]}</td></tr>`).join("")}</tbody></table></div>`;}
+/* ---------- request flow ---------- */
+function viewRequest(){const h=hub(S.reqHub);const steps=["s1","s2","s3","s4"];
+ let html=`<p class="crumb"><a href="#peers" data-nav="peers">${t("navPeers")}</a> › ${t("reqTitle")}</p><h1 tabindex="-1" id="h1">${t("reqTitle")}: ${esc(h.name)} <span class="status st-proposed">${t("proposed")}</span></h1><p class="lede">${t("reqLede")}</p>
+ <ol class="stepper">${steps.map((k,i)=>`<li ${S.reqStep===i+1?'aria-current="step"':""}>${i+1}. ${t(k)}</li>`).join("")}</ol>`;
+ if(S.reqStep===1)html+=`<div class="card"><p class="ok">${t("admitted")}</p><dl class="facts"><dt>${t("operator")}</dt><dd>Example Operator Bayern Bau GmbH (${esc(t("synthetic"))}), ${countryName("DE")}</dd><dt>${t("cTerritory")}</dt><dd>${esc(h.terr)}</dd><dt>${t("cLanguages")}</dt><dd>${h.langs.map(langName).join(", ")}</dd><dt>${t("attestation")}</dt><dd>${attestText(h)}</dd><dt>${t("licences")}</dt><dd>${t("stricterSome",{c:L10N.list(h.stricter.map(x=>t("sc."+x)))})}</dd><dt>${t("cPosture")}</dt><dd>${t("posture_"+h.posture)}</dd><dt>${t("sharedPeers")}</dt><dd>${t("noneYet")}</dd></dl><p class="muted">${t("commonProto")}</p><button class="btn primary" data-step="2">${t("next")}</button></div>`;
+ if(S.reqStep===2)html+=`<div class="card"><fieldset><legend>${t("setLevel")}</legend>${LEVELS.slice(0,3).map(v=>`<label style="display:block"><input type="radio" name="rl" value="${v}" data-reqlevel ${S.reqLevel===v?"checked":""}> ${t("lvl_"+v)}</label>`).join("")}</fieldset><p class="muted">${t("levelHelp")}</p>
+  <p>${t("setTrust")}: <b>${t("trust_new")}</b> · ${t("inboxLimit")}: ${fmtNum(200)} ${t("perHour")} · ${t("setRequests")}: ${t("off")}</p><div class="inline"><button class="btn" data-step="1">${t("back")}</button><button class="btn primary" data-step="3">${t("next")}</button></div></div>`;
+ if(S.reqStep===3)html+=`<div class="card"><p><label for="rnote">${t("noteLabel")}</label><br><textarea id="rnote" rows="3" style="width:100%"></textarea></p><p><label for="rreason">${t("reason")}</label><br><textarea id="rreason" rows="2" style="width:100%"></textarea></p><div class="inline"><button class="btn" data-step="2">${t("back")}</button><button class="btn primary" data-send-request>${t("send")}</button></div></div>`;
+ if(S.reqStep===4)html+=`<div class="card"><p class="ok" role="status">${t("reqSent")}</p><button class="btn" data-nav="peers" data-peerstab="requests">${t("navPeers")}</button></div>`;
+ return html;}
+/* ---------- messages ---------- */
+function threadCard(th){const h=hub(th.hub);return `<div class="card"><h3><button class="btn" data-thread="${th.id}">${t("k_"+th.kind)}: ${esc(h.name)}</button></h3><span class="pill">${t("u_"+th.urgency)}</span><span class="pill">${fmtDate(th.msgs[th.msgs.length-1].when)}</span></div>`;}
+function viewMessages(){const th=THREADS.find(x=>x.id===S.thread);const h=hub(th.hub);
+ let html=pageHead("msgTitle","msgLede")+`<div class="grid2"><div><h2 class="vh">${t("threads")}</h2>${THREADS.map(threadCard).join("")}</div><div>`;
+ html+=`<div class="card"><h2>${t("k_"+th.kind)}: ${esc(h.name)} <span class="pill">${t("u_"+th.urgency)}</span></h2><ol class="thread">${th.msgs.map(m=>`<li class="msg ${m.dir==="out"?"out":""}"><div class="meta"><span>${m.dir==="out"?t("to")+": "+esc(h.name):t("from")+": "+esc(t("role."+m.role.k,{hub:hub(m.role.hub).name}))}</span><time datetime="${m.when}">${fmtDate(m.when)}</time><span class="st-ok">&#10003; ${t("sigOk")}</span>${m.dir==="out"?`<span>${t("delivered")}</span>`:""}</div>${m.fields.length?`<div class="fields">${m.fields.map(([k,v])=>`<div><b>${t(k)}:</b> ${esc(typeof v==="object"?t(v.k):v)}</div>`).join("")}</div>`:""}${m.bodyKey?`<p>${esc(t("msgBodies."+m.bodyKey))}</p>`:`<p lang="${m.lang||"und"}">${esc(m.body)}</p>`}</li>`).join("")}</ol>
+ ${th.state==="actioned"?`<p class="ok">${t("actioned")}</p>`:`<button class="btn" data-actioned>${t("markActioned")}</button>`}</div>
+ <div class="card"><h3>${t("newMsg")}</h3><div class="inline"><label>${t("kind")} <select id="mkind">${["incident_notice","abuse_report","policy_change","takedown_coordination","introduction"].map(k=>`<option value="${k}">${t("k_"+k)}</option>`).join("")}</select></label><label>${t("urgency")} <select id="murg">${["routine","soon","urgent"].map(k=>`<option value="${k}">${t("u_"+k)}</option>`).join("")}</select></label></div>
+ <p><label for="mtarget">${t("target")}</label><br><input id="mtarget" type="text" style="width:100%" placeholder="trustwork://${esc(h.node)}/publication/…"></p>
+ <p><label for="mbody">${t("body")}</label><br><textarea id="mbody" rows="3" style="width:100%" aria-describedby="mwarn"></textarea></p><div id="mwarn" aria-live="polite"></div>
+ <button class="btn primary" data-send-msg>${t("sendShort")}</button></div></div></div>`;
+ return html;}
+/* ---------- announcements ---------- */
+function viewAnn(){return pageHead("annTitle","annLede")+ANN.map(a=>{const ver=a.pub==="project"?t("verifiedProject"):a.pub==="dir"?t("verifiedDir",{d:viaText(a.dir)}):t("verifiedPeer",{h:hub(a.hub).name});
+ return `<article class="card"><h2 ${a.retracted?'style="text-decoration:line-through"':""}>${esc(t("ann."+a.id+".title"))}</h2><p class="muted"><span class="st-ok">&#10003; ${ver}</span> · ${fmtDate(a.when)}</p><p>${esc(t("ann."+a.id+".body"))}</p>${a.retracted?`<p class="warn">${t("retracted")}</p>`:""}${a.sev==="security"?(S.annAck?`<p class="ok">${t("acked")}</p>`:`<div class="inline"><button class="btn primary" data-ack>${t("ack")}</button><button class="btn" data-updates>${t("openUpdates")}</button></div>`):""}</article>`;}).join("");}
+/* ---------- statistics ---------- */
+function bars(data,label){const max=Math.max(...data.map(d=>d[1]));return `<div role="img" aria-label="${esc(label)}: ${data.map(d=>d[0]+" "+d[1]).join(", ")}">${data.map(d=>`<div class="inline" style="margin:4px 0"><span style="width:130px">${esc(d[0])}</span><span class="bar" style="width:${Math.max(6,d[1]/max*200)}px" aria-hidden="true"></span><span>${fmtNum(d[1])}</span></div>`).join("")}</div>`;}
+function viewStats(){const tabs=[["this","stThisHub"],["peers","stPeers"],["network","stNetwork"],["graph","stGraph"]];
+ let html=pageHead("statsTitle","statsLede")+`<div class="tabs" role="tablist">${tabs.map(([v,k])=>`<button role="tab" aria-selected="${S.statsTab===v}" data-statstab="${v}">${t(k)}</button>`).join("")}</div>`;
+ if(S.statsTab==="this"){const rows=[["participants","f_participants",range(1000,9999)],["companies","f_companies",range(100,999)],["pubs","f_pubs",range(100,999)],["events","f_events",t("fewer10")],["tomb","f_tomb",t("hours",{n:fmtNum(6)})]];
+  html+=`<div class="card"><h2>${t("pubTitle")}</h2><table><thead><tr><th>${t("publish")}</th><th>${t("settingCol")}</th><th>${t("value")}</th></tr></thead><tbody>${rows.map(([k,l,v])=>`<tr><td><input type="checkbox" aria-label="${t("publish")}: ${t(l)}" data-pub="${k}" ${S.pub[k]?"checked":""}></td><th scope="row">${t(l)}</th><td>${v}</td></tr>`).join("")}</tbody></table><p class="muted">${t("never")}</p></div>`;}
+ if(S.statsTab==="peers"){const ps=HUBS.filter(h=>h.status==="peer"||h.status==="suspended");html+=`<div class="tablewrap"><table><thead><tr><th>${t("cHub")}</th><th>${t("cReach")}</th><th>${t("tLag")}</th><th>${t("tAccepted")}</th><th>${t("tRejected")}</th><th>${t("cTomb")}</th></tr></thead><tbody>${ps.map((h,i)=>`<tr><th scope="row">${esc(h.name)}</th><td>${t("reach_"+h.reach)}</td><td>${[3,2,48,null][i]==null?"-":t("minutes",{n:fmtNum([3,2,48][i])})}</td><td>${fmtNum([2210,4812,930,0][i])}</td><td>${fmtNum([1,7,58,0][i])}</td><td>${tombText(h)}</td></tr>`).join("")}</tbody></table></div>`;}
+ if(S.statsTab==="network"){const by={};HUBS.filter(h=>h.status!=="former").forEach(h=>by[h.region]=(by[h.region]||0)+1);const lb={};HUBS.filter(h=>h.status!=="former").forEach(h=>h.langs.forEach(l=>lb[l]=(lb[l]||0)+1));
+  html+=`<div class="grid2"><div class="card"><h2>${t("netByRegion")}</h2>${bars(Object.entries(by).map(([k,v])=>[t("regions_"+k),v]),t("netByRegion"))}</div><div class="card"><h2>${t("netByLang")}</h2>${bars(Object.entries(lb).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>[langName(k),v]),t("netByLang"))}</div></div>`;}
+ if(S.statsTab==="graph"){const nodes=[["sd",0,0],["north",-130,-70],["bajio",-120,70],["austin",0,-110],["tbilisi",130,-60],["warsaw",140,70],["osaka",0,115]];const edges=[["sd","north"],["sd","bajio"],["sd","austin"],["sd","tbilisi"],["north","austin"],["bajio","austin"],["warsaw","tbilisi"],["osaka","north"]];
+  const pos=Object.fromEntries(nodes.map(([id,x,y])=>[id,[x+220,y+150]]));
+  html+=`<p class="muted">${t("graphLede")}</p><div class="card"><svg viewBox="0 0 440 300" width="100%" style="max-width:560px" role="img" aria-label="${t("stGraph")}">${edges.map(([a,b])=>`<line x1="${pos[a][0]}" y1="${pos[a][1]}" x2="${pos[b][0]}" y2="${pos[b][1]}" stroke="var(--muted)"/>`).join("")}${nodes.map(([id])=>`<g><circle cx="${pos[id][0]}" cy="${pos[id][1]}" r="${id==="sd"?14:9}" fill="${id==="sd"?"var(--blue)":"var(--surface)"}" stroke="var(--ink)"/><text x="${pos[id][0]}" y="${pos[id][1]+24}" text-anchor="middle" font-size="10" fill="var(--ink)">${esc(hub(id).name.replace("Example ","").replace("Trustwork ",""))}</text></g>`).join("")}</svg>
+  <table><caption>${t("tableAlt")}</caption><thead><tr><th>${t("adjHub")}</th><th>${t("adjPeers")}</th><th>${t("adjShared")}</th></tr></thead><tbody>${nodes.filter(n=>n[0]!=="sd").map(([id])=>{const ps=edges.filter(e=>e.includes(id)).map(e=>e[0]===id?e[1]:e[0]);const mine=edges.filter(e=>e.includes("sd")).map(e=>e[0]==="sd"?e[1]:e[0]);return `<tr><th scope="row">${esc(hub(id).name)}</th><td>${fmtNum(ps.length)}</td><td>${ps.filter(p=>mine.includes(p)).map(p=>esc(hub(p).name)).join(", ")||"-"}</td></tr>`}).join("")}</tbody></table></div>`;}
+ return html;}
+/* ---------- listing ---------- */
+function viewListing(){const me=hub("sd");
+ return pageHead("listingTitle","listingLede")+`<div class="grid2"><div><div class="card">${toggle("listingOn",S.listing,t("listOn"),"")}<div class="setting"><label for="pv">${t("peerVis")}</label><select id="pv" data-pv>${["none","count","list"].map(v=>`<option value="${v}" ${S.peerVis===v?"selected":""}>${t("pv_"+v)}</option>`).join("")}</select></div></div>
+ <div class="card"><h2>${t("dirs")}</h2><table><tbody><tr><th scope="row">${esc(t("dirTrustwork"))}</th><td>${S.listing?t("dirState_listed",{d:fmtDate("2026-11-30")}):t("dirState_none")}</td></tr><tr><th scope="row">Example Pacific directory (directory.example.invalid)</th><td>${t("dirState_none")} <button class="btn" data-submit-dir ${S.listing?"":"disabled"}>${t("submit")}</button></td></tr></tbody></table></div><p class="muted">${t("never")}</p></div>
+ <div class="card"><h2>${t("preview")}</h2>${S.listing?`<h3>${esc(me.name)}</h3><p class="muted">${esc(me.node)}</p><dl class="facts"><dt>${t("cTerritory")}</dt><dd>${esc(me.terr)}</dd><dt>${t("cLanguages")}</dt><dd>${me.langs.map(langName).join(", ")}</dd><dt>${t("cModules")}</dt><dd>${me.mods.map(m=>t("mod_"+m)).join(", ")}</dd><dt>${t("cPosture")}</dt><dd>${t("posture_"+me.posture)}</dd><dt>${t("attestation")}</dt><dd>${attestText(me)}<span class="src">${t("srcOperator")}</span></dd><dt>${t("contact")}</dt><dd>network@sandiego.example.invalid</dd><dt>${t("navPeers")}</dt><dd>${S.peerVis==="none"?"-":S.peerVis==="count"?fmtNum(4):"Example North Builders, Example Bajío Construye, Example Austin Makers, Example Tbilisi Mshenebloba"}</dd><dt>${t("f_participants")}</dt><dd>${S.pub.participants?range(1000,9999):"-"}</dd></dl>`:`<p class="muted">${t("dirState_none")}</p>`}</div></div>`;}
+/* ---------- render and events ---------- */
+function render(focus){
+ document.title=t("docTitle");
+ document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
+ document.querySelectorAll("[data-i18n-label]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.i18nLabel)));
+ $("#brandName").textContent=t("brand"); $(".brand").setAttribute("aria-label",t("brand")); HUBS[0].name=t("localHub");
+ $("#who").textContent=S.approver?t("whoB"):t("whoA");
+ renderNav();
+ const v={map:viewMap,peers:viewPeers,peer:viewPeer,request:viewRequest,messages:viewMessages,announcements:viewAnn,stats:viewStats,listing:viewListing}[S.view];
+ $("#main").innerHTML=v()+(S.drawer?drawerHTML(hub(S.drawer)):"");
+ L10N.tabs();
+ if(focus==="h1"){const h=$("#h1");if(h)h.focus();}
+ else if(focus==="drawer"){const d=$("#dh");if(d)d.focus();}
+ else if(focus){const el=document.querySelector(focus);if(el)el.focus();}
+}
+function go(view,extra){Object.assign(S,{view,drawer:null},extra||{});location.hash=view;render("h1");}
+function setDeep(obj,path,val){const ps=path.split(".");let o=obj;for(let i=0;i<ps.length-1;i++)o=o[ps[i]];o[ps[ps.length-1]]=val;}
+function getDeep(obj,path){return path.split(".").reduce((o,k)=>o[k],obj);}
+document.addEventListener("click",e=>{
+ const el=e.target.closest("button,a,[data-hub],[data-cluster]");if(!el)return;const d=el.dataset;
+ if(d.vp){$("#stage").classList.toggle("phone",d.vp==="phone");document.querySelectorAll("[data-vp]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.vp===d.vp));return;}
+ if(d.nav){e.preventDefault();go(d.nav,d.peerstab?{peersTab:d.peerstab}:{});return;}
+ if(d.peerstab){S.peersTab=d.peerstab;render(`[data-peerstab="${d.peerstab}"]`);return;}
+ if(d.peertab){S.peerTab=d.peertab;render(`[data-peertab="${d.peertab}"]`);return;}
+ if(d.statstab){S.statsTab=d.statstab;render(`[data-statstab="${d.statstab}"]`);return;}
+ if(d.mode){S.mapMode=d.mode;render(`[data-mode="${d.mode}"]`);return;}
+ if(d.hub){S._return=d.hub;S.drawer=d.hub;render("drawer");return;}
+ if(d.cluster){const [x,y]=d.cluster.split(",").map(Number);S.cx=(x-W/2)/S.zoom+S.cx;S.cy=(y-Hh/2)/S.zoom+S.cy;S.zoom=Math.min(8,S.zoom*2.5);render();announce(summaryLine());return;}
+ if(d.close!==undefined&&el.hasAttribute("data-close")){S.drawer=null;render(S._return?`[data-hub="${S._return}"]`:"h1");return;}
+ if(d.pan){const step=120/S.zoom;if(d.pan==="up")S.cy-=step;if(d.pan==="down")S.cy+=step;if(d.pan==="left")S.cx-=step;if(d.pan==="right")S.cx+=step;render(`[data-pan="${d.pan}"]`);announce(summaryLine());return;}
+ if(d.zoom){if(d.zoom==="in")S.zoom=Math.min(8,S.zoom*1.6);if(d.zoom==="out")S.zoom=Math.max(1,S.zoom/1.6);if(d.zoom==="reset"){S.zoom=1;S.cx=500;S.cy=250;}render(`[data-zoom="${d.zoom}"]`);announce(summaryLine());return;}
+ if(d.goRequest){go("request",{reqHub:d.goRequest,reqStep:1});return;}
+ if(d.openPeer){if(d.openPeer!=="bajio"){S.peer=d.openPeer;}else S.peer="bajio";go("peer",{peerTab:d.openPeer==="bajio"?"settings":"overview"});return;}
+ if(d.step){S.reqStep=Number(d.step);render("h1");return;}
+ if(el.hasAttribute("data-send-request")){if(!$("#rreason").value.trim()){toast(t("needReason"));$("#rreason").focus();return;}hub(S.reqHub).status="reqout";S.reqStep=4;render("h1");announce(t("reqSent"));return;}
+ if(d.accept){hub(d.accept).status="peer";hub(d.accept).level="syndicate";hub(d.accept).trust="new";hub(d.accept).reach="ok";hub(d.accept).tomb="-";toast(t("acceptedToast"));render();return;}
+ if(d.decline){hub(d.decline).status="listed";toast(t("declinedToast"));render();return;}
+ if(el.hasAttribute("data-request-act")){const r=$("#reason").value.trim();if(!r){toast(t("needReason"));$("#reason").focus();return;}S.pending={diffs:diffs(),digest:digestOf(),reason:r};render("#aph");announce(t("approvalTitle"));return;}
+ if(el.hasAttribute("data-protective")){const r=$("#reason").value.trim();if(!r){toast(t("needReason"));$("#reason").focus();return;}S.settingsVersion++;S.active=JSON.parse(JSON.stringify(S.draft));S.activity.push({d:"2026-11-01",k:"actNew",vars:{v:S.settingsVersion,how:"howProtective"}});toast(t("protectiveDone",{v:S.settingsVersion}));render("h1");return;}
+ if(el.hasAttribute("data-switch-approver")){S.approver=true;render("[data-approve]");return;}
+ if(el.hasAttribute("data-approve")){S.settingsVersion++;S.active=JSON.parse(JSON.stringify(S.draft));S.pending=null;S.activity.push({d:"2026-11-01",k:"actNew",vars:{v:S.settingsVersion,how:"howApproved"}});S.approver=false;toast(t("activated",{v:S.settingsVersion}));render("h1");return;}
+ if(el.hasAttribute("data-decline-req")){S.pending=null;S.draft=JSON.parse(JSON.stringify(S.active));S.approver=false;toast(t("declinedToast"));render("h1");return;}
+ if(el.hasAttribute("data-suspend")){confirmBox(t("suspendQ",{h:hub(S.peer).name}),false,()=>{hub(S.peer).status="suspended";S.activity.push({d:"2026-11-01",k:"actSusp"});toast(t("suspendedToast"));render("h1");});return;}
+ if(el.hasAttribute("data-defed")){confirmBox(t("defedQ",{h:hub(S.peer).name}),true,()=>{const h=hub(S.peer);h.status="former";h.ended="2026-11-01";S.activity.push({d:"2026-11-01",k:"actDefed"});toast(t("defedToast",{r:fmtNum(1834),d:fmtNum(3)}));go("peers",{peersTab:"former"});});return;}
+ if(d.thread){S.thread=d.thread;render("h1");return;}
+ if(el.hasAttribute("data-actioned")){THREADS.find(x=>x.id===S.thread).state="actioned";render();return;}
+ if(el.hasAttribute("data-send-msg")){const b=$("#mbody").value.trim();if(!b)return;THREADS.find(x=>x.id===S.thread).msgs.push({dir:"out",when:new Date().toISOString(),role:null,fields:$("#mtarget").value?[["target",$("#mtarget").value]]:[],body:b,lang:L10N.lang});toast(t("sent"));render();return;}
+ if(el.hasAttribute("data-ack")){S.annAck=true;render("h1");return;}
+ if(el.hasAttribute("data-updates")){toast(t("opsOutside"));return;}
+ if(el.hasAttribute("data-submit-dir")){toast(t("submittedDir"));return;}
+});
+function confirmBox(text,typed,onOk){const trigger=document.activeElement;const slot=$("#confirmSlot");const name=hub(S.peer).name;
+ slot.innerHTML=`<div class="card" role="alertdialog" aria-labelledby="cq"><p id="cq">${esc(text)}</p>${typed?`<p><label for="cname">${t("typeName")}</label><br><input id="cname" type="text" style="width:100%" autocomplete="off"></p>`:""}<p><label for="creason">${t("reason")}</label><br><textarea id="creason" rows="2" style="width:100%"></textarea></p><div class="inline"><button class="btn" id="ccancel">${t("cancel")}</button><button class="btn danger" id="cok">${t("confirm")}</button></div></div>`;
+ $("#ccancel").focus();
+ const cancel=()=>{slot.innerHTML="";trigger?.focus();};
+ $("#ccancel").onclick=cancel;
+ slot.onkeydown=e=>{if(e.key==="Escape"){e.stopPropagation();cancel();}};
+ $("#cok").onclick=()=>{if(!$("#creason").value.trim()){toast(t("needReason"));$("#creason").focus();return;}if(typed&&$("#cname").value.trim()!==name){$("#cname").setAttribute("aria-invalid","true");toast(t("typeName")+": "+name);$("#cname").focus();return;}onOk();};}
+document.addEventListener("change",e=>{const el=e.target;
+ if(el.dataset.filter!==undefined){S.filters[el.dataset.filter]=el.value;render(`[data-filter="${el.dataset.filter}"]`);announce(S.mapMode==="map"?summaryLine():"");return;}
+ if(el.dataset.set){const k=el.dataset.set;if(k==="listingOn"){S.listing=el.checked;render("#listingOn");return;}let v=el.type==="checkbox"?el.checked:el.type==="number"?Math.max(0,Math.min(Number(el.max)||1e9,Number(el.value)||0)):el.value;
+  if(k==="level"&&LEVELS.indexOf(v)<2){S.draft.commerce=false;RQ.forEach(r=>S.draft.rq[r].on=false);}
+  setDeep(S.draft,k,v);render(`[data-set="${k}"]`);return;}
+ if(el.dataset.pv!==undefined){S.peerVis=el.value;render("[data-pv]");return;}
+ if(el.dataset.pub){S.pub[el.dataset.pub]=el.checked;return;}
+ if(el.hasAttribute("data-reqlevel")){S.reqLevel=el.value;return;}
+});
+document.addEventListener("input",e=>{if(e.target.id==="mbody"){const w=$("#mwarn");w.innerHTML=/[\w.+-]+@[\w-]+\.[\w.]+|\+?\d[\d\s().-]{7,}\d/.test(e.target.value)?`<p class="warn">${t("piiWarn")}</p>`:"";}});
+document.addEventListener("keydown",e=>{
+ const mk=e.target.closest&&e.target.closest(".mk");
+ if(mk&&(e.key==="Enter"||e.key===" ")){e.preventDefault();mk.dispatchEvent(new MouseEvent("click",{bubbles:true}));return;}
+ if(e.key==="Escape"&&S.drawer){S.drawer=null;render(S._return?`[data-hub="${S._return}"]`:"h1");return;}
+ if(e.target.id==="mapwrap"&&["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();const step=120/S.zoom;if(e.key==="ArrowUp")S.cy-=step;if(e.key==="ArrowDown")S.cy+=step;if(e.key==="ArrowLeft")S.cx-=step;if(e.key==="ArrowRight")S.cx+=step;render("#mapwrap");announce(summaryLine());}
+});
+window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(v&&v!==S.view&&["map","peers","peer","request","messages","announcements","stats","listing"].includes(v)){S.view=v;S.drawer=null;render("h1");}});
+L10N.mount(document.getElementById("langPicker"));
+L10N.onChange(()=>render());
+(function init(){const v=location.hash.slice(1);if(["map","peers","peer","request","messages","announcements","stats","listing"].includes(v))S.view=v;if(window.matchMedia&&matchMedia("(max-width:720px)").matches)S.mapMode="list";render();})();
+</script>
+</body>
+</html>

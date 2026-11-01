@@ -1,0 +1,252 @@
+{
+  "dictionaries": [
+    {
+      "name": "console",
+      "tag": "en",
+      "keys": 549
+    },
+    {
+      "name": "console",
+      "tag": "es",
+      "keys": 549
+    },
+    {
+      "name": "console",
+      "tag": "ru",
+      "keys": 549
+    },
+    {
+      "name": "console",
+      "tag": "uz-Latn",
+      "keys": 549
+    },
+    {
+      "name": "console",
+      "tag": "ka",
+      "keys": 549
+    },
+    {
+      "name": "console",
+      "tag": "hy",
+      "keys": 549
+    },
+    {
+      "name": "console",
+      "tag": "az-Latn",
+      "keys": 549
+    },
+    {
+      "name": "editorial",
+      "tag": "en",
+      "keys": 501
+    },
+    {
+      "name": "editorial",
+      "tag": "es",
+      "keys": 501
+    },
+    {
+      "name": "editorial",
+      "tag": "ru",
+      "keys": 501
+    },
+    {
+      "name": "editorial",
+      "tag": "uz-Latn",
+      "keys": 501
+    },
+    {
+      "name": "editorial",
+      "tag": "ka",
+      "keys": 501
+    },
+    {
+      "name": "editorial",
+      "tag": "hy",
+      "keys": 501
+    },
+    {
+      "name": "editorial",
+      "tag": "az-Latn",
+      "keys": 501
+    },
+    {
+      "name": "outreach",
+      "tag": "en",
+      "keys": 200
+    },
+    {
+      "name": "outreach",
+      "tag": "es",
+      "keys": 200
+    },
+    {
+      "name": "outreach",
+      "tag": "ru",
+      "keys": 200
+    },
+    {
+      "name": "outreach",
+      "tag": "uz-Latn",
+      "keys": 200
+    },
+    {
+      "name": "outreach",
+      "tag": "ka",
+      "keys": 200
+    },
+    {
+      "name": "outreach",
+      "tag": "hy",
+      "keys": 200
+    },
+    {
+      "name": "outreach",
+      "tag": "az-Latn",
+      "keys": 200
+    },
+    {
+      "name": "network",
+      "tag": "en",
+      "keys": 388
+    },
+    {
+      "name": "network",
+      "tag": "es",
+      "keys": 388
+    },
+    {
+      "name": "network",
+      "tag": "ru",
+      "keys": 388
+    },
+    {
+      "name": "network",
+      "tag": "uz-Latn",
+      "keys": 388
+    },
+    {
+      "name": "network",
+      "tag": "ka",
+      "keys": 388
+    },
+    {
+      "name": "network",
+      "tag": "hy",
+      "keys": 388
+    },
+    {
+      "name": "network",
+      "tag": "az-Latn",
+      "keys": 388
+    },
+    {
+      "name": "tender",
+      "tag": "en",
+      "keys": 276
+    },
+    {
+      "name": "tender",
+      "tag": "es",
+      "keys": 276
+    },
+    {
+      "name": "tender",
+      "tag": "ru",
+      "keys": 276
+    },
+    {
+      "name": "tender",
+      "tag": "uz-Latn",
+      "keys": 276
+    },
+    {
+      "name": "tender",
+      "tag": "ka",
+      "keys": 276
+    },
+    {
+      "name": "tender",
+      "tag": "hy",
+      "keys": 276
+    },
+    {
+      "name": "tender",
+      "tag": "az-Latn",
+      "keys": 276
+    },
+    {
+      "name": "operating-company",
+      "tag": "en",
+      "keys": 215
+    },
+    {
+      "name": "operating-company",
+      "tag": "es",
+      "keys": 215
+    },
+    {
+      "name": "operating-company",
+      "tag": "ru",
+      "keys": 215
+    },
+    {
+      "name": "operating-company",
+      "tag": "uz-Latn",
+      "keys": 215
+    },
+    {
+      "name": "operating-company",
+      "tag": "ka",
+      "keys": 215
+    },
+    {
+      "name": "operating-company",
+      "tag": "hy",
+      "keys": 215
+    },
+    {
+      "name": "operating-company",
+      "tag": "az-Latn",
+      "keys": 215
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "console",
+      "scripts": 3,
+      "sha256": "9ce84e443ce442f24403e4f0be2d588a234f728250701a3047dd6cb29386f5d3"
+    },
+    {
+      "name": "editorial",
+      "scripts": 1,
+      "sha256": "a06cda6f7c831cc9e5e8cf701fb2331ab8eb3d2df1653f352297a1a67996d84f"
+    },
+    {
+      "name": "outreach",
+      "scripts": 1,
+      "sha256": "43bfec63046198cd4c72cb3499ffb72b83de17443e4f177ae378e8d25853896c"
+    },
+    {
+      "name": "network",
+      "scripts": 1,
+      "sha256": "3e4f0d7308c8137e2fa39220ef250f51df9f320bd6c43e5df6f439a74ab02b8a"
+    },
+    {
+      "name": "tender",
+      "scripts": 1,
+      "sha256": "ca3665c4e93739026ad43d2355913f05990338300ac5b74bb398444d3d45e96a"
+    },
+    {
+      "name": "operating-company",
+      "scripts": 1,
+      "sha256": "02a8f0441ea9895ec7f9f42a1d1232e0cc54213e52569707a23b32b200ebe685"
+    }
+  ],
+  "originals": {
+    "checked": 57,
+    "mismatches": []
+  },
+  "errors": [],
+  "reproducible": true
+}

@@ -1,0 +1,11 @@
+{
+  "picker": {
+    "label": "Idioma de la interfaz",
+    "machine": "traducción automática",
+    "machineTitle": "Traducción automática, aún sin revisión de un hablante nativo",
+    "unreviewed": "sin revisar",
+    "unreviewedTitle": "Aún sin revisión editorial"
+  },
+  "format": null,
+  "relative": null
+}

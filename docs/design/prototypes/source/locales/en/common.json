@@ -1,0 +1,11 @@
+{
+  "picker": {
+    "label": "Interface language",
+    "machine": "machine draft",
+    "machineTitle": "Machine translation, not yet reviewed by a native speaker",
+    "unreviewed": "not proofread",
+    "unreviewedTitle": "Not yet proofread by an editor"
+  },
+  "format": null,
+  "relative": null
+}

@@ -16,6 +16,10 @@ Eleven generated PNGs were inspected and preserved byte-for-byte in the private 
 | Procurement onboarding | Accepted optional categories/regions | No forced company/INN setup |
 | Workspace latest | **New proposal, unapproved** | Human feedback; both workflows, full states and responsive refinement |
 
+## Administrative interaction studies
+
+[Administrative interface guidelines](admin-ui-guidelines.md), [Proposed ADR 019](../adr/019-admin-ui-libraries.md) and [six localized offline prototypes](prototypes/README.md) continue the console, editorial, outreach, network, tender and operating-company studies. Their source, generation instructions, synthetic fixtures, seven-language dictionaries and desktop/375 px browser evidence are preserved in the repository. These are **Proposed design**, not implemented routes, accepted visual direction or live acceptance. Implementation package publication is pending the owner's package-ID decision.
+
 ## Brand and layout rules
 
 Three blue squares in an L-like arrangement with a black stacked wordmark: Trustwork is the product name everywhere; a Russian-language wordmark defined in `apps/web/brand` is shown only in the Russian interface. Raster references inspire a canonical editable asset; no final logo asset is fabricated here. Light white/cool-gray surfaces, restrained blue, readable sans-serif and purposeful imagery. Preserve complete functionality while reducing clutter. No generic giant charts, excessive panels, inconsistent controls or hard-coded product text.

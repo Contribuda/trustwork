@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editorial office prototype</title>
+<style>
+:root{
+  --bg:#f6f7f9;--panel:#ffffff;--ink:#14181f;--muted:#5b6472;--line:#dde1e7;--band:#1d2a44;--band-ink:#ffffff;
+  --accent:#1f5fbf;--accent-ink:#ffffff;--ok:#1d7a46;--warn:#9a5b00;--bad:#b3261e;--lock:#5b4bb7;--chip:#eef1f6;--focus:#f2b705;
+  --radius:10px;--font:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#0f1218;--panel:#171b23;--ink:#e8ebf0;--muted:#a3abb8;--line:#2a303b;--band:#0b1322;--chip:#222836;--accent:#5b9bff;--accent-ink:#0b1322;--ok:#4cc38a;--warn:#e0a94a;--bad:#ff8a80;--lock:#a99cff}
+}
+:root[data-theme="dark"]{--bg:#0f1218;--panel:#171b23;--ink:#e8ebf0;--muted:#a3abb8;--line:#2a303b;--band:#0b1322;--chip:#222836;--accent:#5b9bff;--accent-ink:#0b1322;--ok:#4cc38a;--warn:#e0a94a;--bad:#ff8a80;--lock:#a99cff}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font)}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:0;background:var(--panel);padding:8px;z-index:10}
+.skip:focus{left:8px}
+.band{background:var(--band);color:var(--band-ink);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.band strong{font-weight:650}
+.band .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.band select,.band button{font:inherit;font-size:13px;background:transparent;color:var(--band-ink);border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:4px 8px}
+.band option{color:#14181f}
+.demo{background:#fff4d6;color:#4a3500;padding:6px 16px;font-size:13px;border-bottom:1px solid #f0d58a}
+.layout{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 90px)}
+nav.side{border-right:1px solid var(--line);background:var(--panel);padding:12px 8px;overflow:auto}
+nav.side h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 10px 6px}
+nav.side button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;color:var(--ink);padding:7px 10px;border-radius:8px;font:inherit;cursor:pointer}
+nav.side button[aria-current="page"]{background:var(--chip);font-weight:650}
+nav.side .count{font-size:12px;background:var(--chip);border-radius:999px;padding:0 7px;color:var(--muted)}
+.navtoggle{display:none}
+main{padding:18px 22px;max-width:1200px;width:100%}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h2{font-size:16px;margin:0 0 8px}
+.card h3{font-size:14px;margin:12px 0 6px}
+.tile .n{font-size:26px;font-weight:700}
+.tile .l{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+.output-review{table-layout:fixed}.output-review th,.output-review td{overflow-wrap:anywhere}.output-review .chip{white-space:normal}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.chip{display:inline-block;background:var(--chip);border-radius:999px;padding:1px 8px;font-size:12px;margin:1px 2px 1px 0;white-space:nowrap}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .lock{color:var(--lock)}
+.chip.ok{background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.chip.warn{background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.chip.bad{background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.chip.lock{background:color-mix(in srgb,var(--lock) 14%,transparent)}
+.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.spread{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.note{font-size:13px;color:var(--muted)}
+.locked{border:1px dashed var(--lock);border-radius:8px;padding:8px 10px;color:var(--lock);font-size:13px}
+.blocker{border-left:3px solid var(--bad);padding:4px 10px;margin:6px 0;background:color-mix(in srgb,var(--bad) 6%,transparent)}
+.okline{border-left:3px solid var(--ok);padding:4px 10px;margin:6px 0;background:color-mix(in srgb,var(--ok) 6%,transparent)}
+.warnline{border-left:3px solid var(--warn);padding:4px 10px;margin:6px 0;background:color-mix(in srgb,var(--warn) 6%,transparent)}
+.side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{padding:6px 8px;border-radius:6px;margin:4px 0;border:1px solid var(--line)}
+.seg.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+mark{background:color-mix(in srgb,var(--focus) 40%,transparent);color:inherit;padding:0 2px;border-radius:3px}
+del{color:var(--bad)} ins{color:var(--ok);text-decoration:none;background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.matrix td,.matrix th{text-align:center}
+.matrix td:first-child,.matrix th:first-child{text-align:left}
+.matrix .chip{white-space:normal}
+.matrix select{font:inherit;font-size:13px;padding:3px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);max-width:150px}
+.bar{height:8px;background:var(--chip);border-radius:999px;overflow:hidden}
+.bar > span{display:block;height:100%;background:var(--accent)}
+.toast{pointer-events:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-size:14px;max-width:92vw;display:none;z-index:20}
+.drawer{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.tabs{display:none;gap:6px;margin-bottom:8px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .day{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-height:96px;padding:6px;font-size:12px}
+.cal .day b{display:block;font-size:12px;color:var(--muted)}
+.slot{display:block;border-radius:6px;padding:3px 5px;margin:3px 0;background:var(--chip)}
+.slot.empty{border:1px dashed var(--warn);background:transparent}
+.byline{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.list-cal{display:none}
+dl.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:0}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0}
+@media (max-width: 900px){
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:1fr}
+}
+@media (max-width: 767px){
+  .layout{grid-template-columns:1fr}
+  nav.side{display:none;border-right:0;border-bottom:1px solid var(--line)}
+  nav.side.open{display:block}
+  .navtoggle{display:inline-block}
+  main{padding:14px 16px}
+  .g2,.side-by-side{grid-template-columns:1fr}
+  .hide-sm{display:none}
+  table.cards thead{display:none}
+  table.cards tr{display:block;border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:6px;background:var(--panel)}
+  table.cards td{display:block;border:0;padding:3px 4px}
+  table.cards td[data-label]::before{content:attr(data-label) ": ";color:var(--muted);font-size:12px}
+  .cal{display:none}
+  .list-cal{display:block}
+  .tabs{display:flex}
+  .wide-only{display:none}
+}
+/*@@KIT_CSS@@*/
+main{min-width:0} @media(max-width:600px){.side-by-side{grid-template-columns:1fr}.chip{white-space:normal}main{padding:14px}table{display:block;overflow:auto;max-width:100%}}
+@media(max-width:600px){.grid,.grid>*{min-width:0}.kv{grid-template-columns:minmax(0,1fr)}.kv dd{margin:0;min-width:0}code{overflow-wrap:anywhere}.btn{white-space:normal;max-width:100%;min-height:44px}}
+@media(max-width:600px){dl.kv{grid-template-columns:minmax(0,1fr)}dl.kv dd,.card{overflow-wrap:anywhere}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip" id="skip">Skip to content</a>
+<header class="band" role="banner">
+  <div><strong id="brandLine">Administration · Trustwork United States (demo) · San Diego</strong></div>
+  <div class="meta">
+    <button class="navtoggle" id="navToggle" aria-expanded="false" aria-controls="sideNav">Menu</button>
+    <label><span id="personaLabel">Signed in as</span>
+      <select id="persona" aria-label="Persona">
+        <option value="ed">Synthetic Editor A (editor)</option>
+        <option value="eic">Synthetic Editor-in-chief B (editor-in-chief)</option>
+        <option value="ed2">Synthetic Editor F (editor)</option>
+        <option value="tr">Synthetic Reviewer C (translator-reviewer, es)</option>
+        <option value="au">Synthetic Auditor D (auditor)</option>
+      </select>
+    </label>
+    <span id="langPicker"></span>
+    <button id="themeBtn" aria-label="Theme">◐</button>
+  </div>
+</header>
+<div class="demo" id="demoBand" role="note">Demo prototype with synthetic data. No real people, companies, sources or traffic. Changes are not saved. Status: Proposed design.</div>
+<div class="layout">
+  <nav class="side" id="sideNav" aria-label="Editorial office"></nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/*@@MESSAGES@@*/
+/*@@KIT_JS@@*/
+
+(function(){
+"use strict";
+var lang = L10N.lang;
+var persona = 'ed';
+var current = 'desk';
+function raw(k){return L10N.t('x_'+k);}
+function tt(en, ru){ const key=EDITORIAL_KEYS[en]; if(!key){console.warn('Missing editorial message',en);return en;} return L10N.t(key); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+var fmtDate = function(d, opts){ return L10N.date(d,Object.assign({timeZone:'America/Los_Angeles'},opts||{dateStyle:'medium',timeStyle:'short'})); };
+var money = function(n){ return L10N.money(n); };
+var num = function(n){ return L10N.num(n); };
+
+/* ---------- Synthetic state ---------- */
+var S = {
+  sources: [
+    {id:'s1', name:'Example State Building Standards Notices', kind:'rss', tier:'regulator', licence:'statutory_public', status:'active', robots:'n/a (feed)', terms:'not_applicable', uses:{headline:1,summary:1,full:1,index:1,model:1,translate:1,rewrite:1,images:0,syndicate:1}, signals:'none', last:'2026-10-31T13:10:00Z'},
+    {id:'s2', name:'Example Trade Media Feed', kind:'atom', tier:'industry_media', licence:'all_rights_reserved', status:'active', robots:'n/a (feed)', terms:'not_applicable', uses:{headline:1,summary:0,full:0,index:1,model:0,translate:0,rewrite:0,images:0,syndicate:0}, signals:'RSL: ai-input denied', last:'2026-10-31T14:02:00Z'},
+    {id:'s3', name:'Example Manufacturer Technical Library', kind:'sitemap', tier:'company_statement', licence:'publisher_agreement', status:'active', robots:'allowed, crawl delay 10 s', terms:'permitted (reviewed by Synthetic Data Steward E)', uses:{headline:1,summary:1,full:0,index:1,model:1,translate:1,rewrite:0,images:0,syndicate:0}, signals:'TDMRep: not reserved', last:'2026-10-30T09:40:00Z'},
+    {id:'s4', name:'Example Association Events Calendar', kind:'web_page', tier:'association', licence:'unknown', status:'paused', pause:'terms_changed', robots:'allowed', terms:'unclear', uses:{headline:1,summary:0,full:0,index:1,model:0,translate:0,rewrite:0,images:0,syndicate:0}, signals:'terms digest changed 2026-10-29', last:'2026-10-28T08:00:00Z'},
+    {id:'s5', name:'Example County Procurement Portal', kind:'api', tier:'official_register', licence:'statutory_public', status:'active', robots:'n/a (API)', terms:'permitted', uses:{headline:1,summary:1,full:1,index:1,model:1,translate:1,rewrite:1,images:0,syndicate:1}, signals:'none', last:'2026-10-31T15:00:00Z'}
+  ],
+  dryRun: null,
+  pub: {state:'in_review', drafter:'ed', firstReview:null, secondReview:null, scheduled:null},
+  correction: {kind:null, published:false},
+  translation: {state:'in_review', active:2},
+  roles: null,
+  reviewQueue: [
+    {id:'o1', role:'writer', en:'Draft: "County adopts updated energy code amendments" (summary)', ru:'Черновик: «Округ принял поправки к энергетическому кодексу» (резюме)', cls:'news', state:'waiting'},
+    {id:'o2', role:'translator', en:'Spanish edition: "Cold-weather concrete curing checklist"', ru:'Испанская редакция: «Чек-лист ухода за бетоном в холодную погоду»', cls:'translation', state:'waiting'},
+    {id:'o3', role:'metadata', en:'Alt text and search description for "Vapor retarder basics"', ru:'Альтернативный текст и описание для «Основы пароизоляции»', cls:'metadata', state:'waiting'},
+    {id:'o4', role:'distribution', en:'Newsletter edition No. 44 (6 published items)', ru:'Выпуск рассылки № 44 (6 опубликованных материалов)', cls:'newsletter', state:'waiting'},
+    {id:'o5', role:'editor_assistant', en:'Minor fix: typo "retarder" in "Slab inspections explained" (audit sample)', ru:'Мелкая правка: опечатка в «Как проходят проверки плиты» (выборочный аудит)', cls:'minor_fix', state:'auto-published', audit:true}
+  ]
+};
+var ROLE_DEFS = [
+  ['scout','Scout','Разведчик','classification',2.00,'autoWithReview','Daily 02:00','Ежедневно 02:00',0.62],
+  ['collector','Collector','Сборщик','embeddings, ocr',1.00,'autoWithReview','Per source','По расписанию источника',0.97],
+  ['researcher','Researcher','Исследователь','summarisation',1.50,'autoWithReview','On commission','По заданию',0.81],
+  ['writer','Writer','Автор текстов','editorial_rewrite, summarisation',3.00,'draftOnly','Weekdays 05:30','Будни 05:30',0.58],
+  ['fact_checker','Fact-checker','Фактчекер','fact_check_assist',1.00,'autoWithReview','After each draft','После каждого черновика',0.88],
+  ['translator','Translator','Переводчик','translation',2.00,'autoWithReview','Every 2 hours','Каждые 2 часа',0.74],
+  ['post_editor','Post-editor','Постредактор','translation',1.00,'draftOnly','After QA','После проверок качества',0.69],
+  ['editor_assistant','Editor-assistant','Ассистент редактора','classification, agent_drafting',1.00,'autoWithReview','Hourly 08:00-18:00','Ежечасно 08:00-18:00',0.83],
+  ['layout','Layout and PDF designer','Верстальщик и PDF','layout_assist (proposed)',0.50,'draftOnly','After curation','После сборки выпуска',0.77],
+  ['designer','Designer','Дизайнер','image_generation (abstract only)',1.00,'draftOnly','Per issue','К каждому выпуску',0.71],
+  ['illustrator','Illustrator','Иллюстратор','image_generation',1.00,'draftOnly','On request','По запросу',0.66],
+  ['photo','Photo researcher','Фоторедактор (поиск)','classification',0.30,'autoWithReview','On request','По запросу',0.79],
+  ['metadata','SEO and metadata','SEO и метаданные','seo_metadata, alt_text (proposed)',0.20,'autoWithReview','After approval','После одобрения',0.86],
+  ['distribution','Newsletter and social','Рассылка и соцсети','summarisation',0.50,'autoWithReview','Thu 14:00','Чт 14:00',0.9],
+  ['curator','Curator','Куратор выпусков','summarisation, classification',1.00,'draftOnly','Thu 12:00','Чт 12:00',0.75]
+];
+var CLASSES = [
+  ['news','News','Новости',false],
+  ['article','Articles (first publication)','Статьи (первая публикация)',false],
+  ['named','Claims about named companies or people','Утверждения о названных компаниях и людях',false],
+  ['regulation','Regulation, safety, legal','Нормы, безопасность, право',false],
+  ['translation','Machine translation of approved pieces','Машинный перевод одобренных материалов',true,'E3'],
+  ['digest','Digests of published items','Дайджесты опубликованного',true,'E4'],
+  ['newsletter','Newsletter of published items','Рассылка из опубликованного',true,'E5'],
+  ['metadata','Metadata of approved items','Метаданные одобренных материалов',true,'E6'],
+  ['minor_fix','Minor non-substantive fixes','Мелкие несущественные правки',true,'E2']
+];
+var ROLE_CLASSES = {writer:['news','article','named','regulation'], translator:['translation'], post_editor:['translation'], editor_assistant:['minor_fix','named'], metadata:['metadata'], distribution:['digest','newsletter'], curator:['digest'], scout:[], collector:[], researcher:['news','article'], fact_checker:['news','article','named','regulation'], layout:[], designer:[], illustrator:[], photo:[]};
+function initRoles(){
+  S.roles = {};
+  ROLE_DEFS.forEach(function(r){
+    var auto = {};
+    (ROLE_CLASSES[r[0]]||[]).forEach(function(c){ auto[c] = r[5]; });
+    S.roles[r[0]] = {paused:false, killed:false, autonomy:auto, cap:r[4]};
+  });
+}
+initRoles();
+
+/* ---------- Navigation ---------- */
+function renderNav(){
+  var nav = document.getElementById('sideNav');
+  var groups = [
+    [tt('Home','Главная'), [['desk',tt('Desk','Редакционный стол'),3],['approvals',tt('Approvals','Согласования'),approvalsCount()]]],
+    [tt('Collect','Сбор'), [['sources',tt('Sources','Источники'),1],['jobs',tt('Collection jobs','Задания сбора'),0],['intake',tt('Intake','Входящие'),12]]],
+    [tt('Produce','Производство'), [['item',tt('Intake item','Материал'),0],['translations',tt('Translations','Переводы'),4],['calendar',tt('Calendar','Календарь'),2]]],
+    [tt('Publish','Публикация'), [['publish',tt('Review and publish','Проверка и публикация'),S.pub.state==='published'?0:1],['corrections',tt('Corrections','Исправления'),S.correction.published?0:1]]],
+    [tt('Editorial team','Редакционная команда'), [['team',tt('Team roster','Состав команды'),0],['role',tt('Role settings','Настройки роли'),0],['runs',tt('Team runs','Запуски команды'),0],['teamreview',tt('Output review','Проверка результатов'),S.reviewQueue.filter(function(o){return o.state!=='accepted'&&o.state!=='returned';}).length],['costs',tt('Costs','Затраты'),0]]]
+  ];
+  var h = '';
+  groups.forEach(function(g){
+    h += '<h2>' + esc(g[0]) + '</h2>';
+    g[1].forEach(function(it){
+      h += '<button data-go="' + it[0] + '"' + (current===it[0]?' aria-current="page"':'') + '><span>' + esc(it[1]) + '</span>' + (it[2] ? '<span class="count" aria-label="' + esc(tt('waiting','ожидают')) + '">' + it[2] + '</span>' : '') + '</button>';
+    });
+  });
+  nav.innerHTML = h;
+}
+function approvalsCount(){ return (S.pub.state==='awaiting_second' ? 1 : 0) + (S.pendingAutonomy ? 1 : 0); }
+function go(id){
+  current = id; renderNav(); render();
+  var m = document.getElementById('main'); m.focus(); var h1 = m.querySelector('h1'); if (h1) { h1.setAttribute('tabindex','-1'); h1.focus(); }
+  document.getElementById('sideNav').classList.remove('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','false');
+  window.scrollTo(0,0);
+}
+function toast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toast._t); toast._t = setTimeout(function(){ t.style.display='none'; }, 3800); }
+function demoSaved(extra){ toast((extra ? extra + ' · ' : '') + tt('Demo: changes are not saved','Демо: изменения не сохраняются')); }
+function personaName(p){ return {ed:'Synthetic Editor A', ed2:'Synthetic Editor F', eic:'Synthetic Editor-in-chief B', tr:'Synthetic Reviewer C', au:'Synthetic Auditor D'}[p]; }
+function canAct(){ return persona !== 'au'; }
+function chip(text, cls){ return '<span class="chip ' + (cls||'') + '">' + esc(text) + '</span>'; }
+function lockNote(text){ return '<div class="locked" role="note"><span aria-hidden="true">&#128274;</span> ' + esc(tt('Locked by the engine','Заблокировано движком')) + ': ' + esc(text) + '</div>'; }
+function reasonField(id){ return '<label class="note" for="' + id + '">' + esc(tt('Reason (required, recorded in the audit log)','Причина (обязательно, записывается в журнал аудита)')) + '</label><br><input id="' + id + '" style="width:100%;max-width:520px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink)" value="' + esc(tt('Synthetic demo reason','Синтетическая причина для демо')) + '">'; }
+
+/* ---------- Screens ---------- */
+var screens = {};
+
+screens.desk = function(){
+  var auditors = persona==='au' ? '<p class="note">' + esc(tt('Auditor view: read-only.','Режим аудитора: только чтение.')) + '</p>' : '';
+  return '<h1>' + tt('Desk','Редакционный стол') + '</h1><p class="sub">' + tt('What needs a person today. Hub time: ','Что сегодня требует решения человека. Время хаба: ') + fmtDate(new Date('2026-11-01T16:00:00Z')) + '</p>' + auditors +
+  '<div class="grid g4">' +
+   tile(12, tt('Items in intake','Материалов во входящих')) + tile(S.pub.state==='published'?0:1, tt('Drafts waiting for review','Черновиков ждут проверки')) + tile(4, tt('Editions waiting (es)','Редакций ждут (es)')) + tile(2, tt('Unfilled calendar slots this week','Пустых слотов календаря на неделе')) +
+  '</div>' +
+  '<div class="grid g2" style="margin-top:12px">' +
+   '<div class="card"><h2>' + tt('Queues','Очереди') + '</h2><table class="cards"><thead><tr><th>' + tt('Queue','Очередь') + '</th><th>' + tt('Waiting','Ожидают') + '</th><th>' + tt('Oldest','Самый старый') + '</th></tr></thead><tbody>' +
+     qrow(tt('Intake','Входящие'),12,tt('5 h','5 ч'),'intake') + qrow(tt('Review','Проверка'),1,tt('40 min','40 мин'),'publish') + qrow(tt('Quarantine (instruction-like text)','Карантин (текст похож на инструкции)'),1,tt('1 d','1 д'),'intake') + qrow(tt('Translations','Переводы'),4,tt('3 h','3 ч'),'translations') + qrow(tt('Corrections','Исправления'),1,tt('2 h','2 ч'),'corrections') + qrow(tt('Team output review','Проверка результатов команды'),5,tt('1 h','1 ч'),'teamreview') +
+   '</tbody></table></div>' +
+   '<div class="card"><h2>' + tt('Automation health','Состояние автоматизации') + '</h2>' +
+     '<div class="okline">' + tt('Accountable editor-in-chief: Synthetic Editor-in-chief B','Ответственный главный редактор: Synthetic Editor-in-chief B') + '</div>' +
+     '<div class="warnline">' + tt('Source paused: Example Association Events Calendar (terms changed). Needs a person to re-check.','Источник на паузе: Example Association Events Calendar (изменились условия). Нужна повторная проверка человеком.') + ' <button class="btn" data-go="sources">' + tt('Open','Открыть') + '</button></div>' +
+     '<h3>' + tt('Editorial spend this week','Расходы редакции за неделю') + '</h3>' + meter(41.2, 120) +
+     '<p class="note">' + tt('Cost per published item this week: ','Стоимость одного опубликованного материала за неделю: ') + money(1.87) + '</p>' +
+     '<div class="row">' + (canAct() ? '<button class="btn danger" data-act="killall">' + tt('Engage team kill switch','Включить аварийную остановку команды') + '</button>' : '') + '</div>' +
+   '</div>' +
+  '</div>';
+};
+function tile(n,l){ return '<div class="card tile"><div class="n">' + num(n) + '</div><div class="l">' + esc(l) + '</div></div>'; }
+function qrow(name,n,age,goTo){ return '<tr><td data-label="' + esc(tt('Queue','Очередь')) + '"><button class="btn" data-go="' + goTo + '">' + esc(name) + '</button></td><td data-label="' + esc(tt('Waiting','Ожидают')) + '">' + num(n) + '</td><td data-label="' + esc(tt('Oldest','Самый старый')) + '">' + esc(age) + '</td></tr>'; }
+function meter(v,cap){ var p = Math.min(100, Math.round(v/cap*100)); return '<p>' + money(v) + ' ' + tt('of','из') + ' ' + money(cap) + ' (' + p + '%)</p><div class="bar" aria-hidden="true"><span style="width:' + p + '%"></span></div>'; }
+
+screens.approvals = function(){
+  var h = '<h1>' + tt('Approvals','Согласования') + '</h1><p class="sub">' + tt('Second-person decisions. You cannot approve your own request.','Решения второго лица. Нельзя одобрить собственный запрос.') + '</p>';
+  var any = false;
+  if (S.pub.state === 'awaiting_second') {
+    any = true;
+    var mine = S.pub.firstReview === persona || persona === 'ed';
+    h += '<div class="card"><h2>' + tt('Second editor review: "County adopts updated energy code amendments"','Вторая редакторская проверка: «Округ принял поправки к энергетическому кодексу»') + '</h2>' +
+      '<dl class="kv"><dt>' + tt('Why required','Почему требуется') + '</dt><dd>' + tt('Regulation topic (second-editor matrix, decision E8)','Тема норм (матрица второй проверки, решение E8)') + '</dd><dt>' + tt('First review','Первая проверка') + '</dt><dd>' + esc(personaName(S.pub.firstReview)) + '</dd><dt>' + tt('Version digest','Дайджест версии') + '</dt><dd><code>3f9a…c21e</code></dd></dl>' +
+      (mine ? '<p class="bad">' + tt('You drafted this version or made the first review; another editor must decide.','Вы готовили эту версию или провели первую проверку; решать должен другой редактор.') + '</p>' : '') +
+      '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="second-approve"' + (mine||!canAct()||persona==='tr'?' disabled':'') + '>' + tt('Approve','Одобрить') + '</button><button class="btn" data-act="second-return"' + (mine||!canAct()?' disabled':'') + '>' + tt('Return with note','Вернуть с замечанием') + '</button></div></div>';
+  }
+  if (S.pendingAutonomy) {
+    any = true;
+    var mine2 = S.pendingAutonomy.by === persona;
+    h += '<div class="card" style="margin-top:12px"><h2>' + tt('Raise autonomy: ','Повысить автономию: ') + esc(S.pendingAutonomy.label) + '</h2><p>' + esc(S.pendingAutonomy.diff) + '</p>' +
+      (mine2 ? '<p class="bad">' + tt('You requested this change; another staff member must approve.','Вы запросили это изменение; одобрить должен другой сотрудник.') + '</p>' : '') +
+      '<div class="row"><button class="btn primary" data-act="autonomy-approve"' + (mine2||persona!=='eic'&&persona!=='ed'?' disabled':'') + '>' + tt('Approve','Одобрить') + '</button><button class="btn" data-act="autonomy-decline"' + (mine2?' disabled':'') + '>' + tt('Decline','Отклонить') + '</button></div></div>';
+  }
+  if (!any) h += '<div class="card"><p>' + tt('Nothing needs your decision.','Ничего не требует вашего решения.') + '</p></div>';
+  return h;
+};
+
+screens.sources = function(){
+  var u = function(s,k,label){ return s.uses[k] ? chip('✓ ' + label,'ok') : chip('✕ ' + label,''); };
+  var rows = S.sources.map(function(s){
+    var st = s.status === 'paused' ? chip(tt('Paused: terms changed','Пауза: изменились условия'),'warn') : chip(tt('Active','Активен'),'ok');
+    return '<tr><td data-label="' + tt('Source','Источник') + '"><strong>' + esc(s.name) + '</strong><br><span class="note">' + esc(['rss','atom','api'].includes(s.kind)?s.kind.toUpperCase():raw(s.kind)) + ' · ' + esc(raw(s.tier)) + '</span></td>' +
+      '<td data-label="' + tt('Licence','Лицензия') + '">' + esc(raw(s.licence)) + '<br><span class="note">' + esc(s.signals==='none'?raw('none'):s.signals.startsWith('RSL')?raw('signalRSL'):s.signals.startsWith('TDMRep')?raw('signalTDM'):L10N.t('x_termsChanged',{date:L10N.date('2026-10-29',{dateStyle:'medium',timeZone:'UTC'})})) + '</span></td>' +
+      '<td data-label="' + tt('Allowed uses','Разрешённые виды использования') + '">' + u(s,'headline',tt('headline+link','заголовок+ссылка')) + u(s,'summary',tt('summary','резюме')) + u(s,'full',tt('full text','полный текст')) + u(s,'model',tt('models','модели')) + u(s,'translate',tt('translate','перевод')) + u(s,'rewrite',tt('rewrite','переписывание')) + u(s,'syndicate',tt('peers','пиры')) + '</td>' +
+      '<td data-label="' + tt('Robots and terms','Robots и условия') + '">' + esc(s.robots.startsWith('n/a')?raw('not_applicable'):s.robots==='allowed'?raw('allowed'):L10N.t('x_crawlAllowed',{n:L10N.num(10)})) + '<br><span class="note">' + esc(s.terms.startsWith('permitted (')?raw('termsReviewed'):raw(s.terms)) + '</span></td>' +
+      '<td data-label="' + tt('Status','Статус') + '">' + st + '</td></tr>';
+  }).join('');
+  return '<h1>' + tt('Sources','Источники') + '</h1><p class="sub">' + tt('Registry with licence flags. Allowed uses can never be wider than the licence and the source\'s machine-readable signals.','Реестр с флагами лицензий. Разрешённое использование не может быть шире лицензии и машиночитаемых сигналов источника.') + '</p>' +
+  '<div class="card"><table class="cards"><thead><tr><th>' + tt('Source','Источник') + '</th><th>' + tt('Licence and signals','Лицензия и сигналы') + '</th><th>' + tt('Allowed uses','Разрешённые виды использования') + '</th><th>' + tt('Robots and terms','Robots и условия') + '</th><th>' + tt('Status','Статус') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+  '<div class="card" style="margin-top:12px"><h2>' + tt('Example Association Events Calendar: paused','Example Association Events Calendar: на паузе') + '</h2>' +
+   '<div class="warnline">' + tt('Terms page digest changed on 2026-10-29. Automated access is now "unclear", so crawling is disabled until a person re-checks the terms.','Дайджест страницы условий изменился 2026-10-29. Автоматический доступ теперь «неясен», поэтому обход отключён до повторной проверки человеком.') + '</div>' +
+   lockNote(tt('a crawling source cannot run without robots permission and terms that permit automated access, both recorded by a person','источник с обходом страниц не может работать без разрешения robots и условий, допускающих автоматический доступ, — оба записаны человеком')) +
+   '<div class="row" style="margin-top:8px">' + (canAct() ? '<button class="btn" data-act="recheck">' + tt('Re-run legal checks','Повторить юридические проверки') + '</button><button class="btn" disabled title="' + esc(tt('Resume needs fresh permitting checks','Для возобновления нужны свежие разрешающие проверки')) + '">' + tt('Resume','Возобновить') + '</button><button class="btn danger" data-act="takedown">' + tt('Take down','Снять (удаление)') + '</button>' : '') + '</div></div>';
+};
+
+screens.jobs = function(){
+  var dr = S.dryRun;
+  var h = '<h1>' + tt('Collection job: plan step "Foundation"','Задание сбора: шаг плана «Фундамент»') + '</h1><p class="sub">' + tt('Version 3 · weekly, Sunday 02:00 Pacific · cap ','Версия 3 · еженедельно, вс 02:00 по тихоокеанскому времени · лимит ') + money(2) + tt(' per run',' за запуск') + '</p>' +
+  '<div class="grid g2"><div class="card"><h2>' + tt('Query plan (from taxonomy and glossary, never from imported text)','План запросов (из таксономии и глоссария, никогда из импортированного текста)') + '</h2><ul>' +
+   '<li lang="en">en: slab-on-grade vapor retarder installation guide</li><li lang="en">en: post-tensioned slab inspection California</li><li lang="es">es: guía de instalación de retardador de vapor en losa</li><li lang="en">en: cold-weather concrete curing training</li></ul>' +
+   '<p class="note">' + tt('Target kinds: guide, training, technical article, event, catalogue item','Типы: руководство, обучение, техническая статья, событие, позиция каталога') + '</p>' +
+   (canAct() ? '<div class="row"><button class="btn primary" data-act="dryrun-fakes">' + tt('Dry run with fakes','Пробный запуск с фейками') + '</button><button class="btn" data-act="dryrun-models">' + tt('Dry run with models (sample of 5, max ','Пробный запуск с моделями (5 образцов, макс. ') + money(0.5) + ')</button></div>' : '') +
+  '</div><div class="card"><h2>' + tt('Schedule','Расписание') + '</h2><dl class="kv"><dt>Cron</dt><dd><code>0 2 * * 0</code></dd><dt>' + tt('Plain language','Простыми словами') + '</dt><dd>' + tt('At 02:00 on Sunday, Pacific time','В 02:00 по воскресеньям, тихоокеанское время') + '</dd><dt>' + tt('Next runs','Следующие запуски') + '</dt><dd>' + [new Date('2026-11-01T10:00:00Z'), new Date('2026-11-08T10:00:00Z'), new Date('2026-11-15T10:00:00Z')].map(function(d){return fmtDate(d);}).join('<br>') + '</dd><dt>' + tt('Window','Окно') + '</dt><dd>' + tt('Crawling only 00:00-05:00 in the source time zone','Обход только 00:00-05:00 по времени источника') + '</dd></dl></div></div>';
+  if (dr) {
+    h += '<div class="card" style="margin-top:12px"><div class="spread"><h2>' + tt('Dry-run preview','Предпросмотр пробного запуска') + ' · ' + (dr==='models'?tt('with models','с моделями'):tt('with fakes','с фейками')) + '</h2>' + chip(tt('Nothing committed','Ничего не записано'),'ok') + '</div>' +
+      '<h3>' + tt('Collection decisions per host (before any request)','Решения о сборе по хостам (до любого запроса)') + '</h3><table class="cards"><thead><tr><th>' + tt('Host','Хост') + '</th><th>' + tt('Decision','Решение') + '</th><th>' + tt('Reason','Причина') + '</th><th>' + tt('Uses after narrowing','Использование после сужения') + '</th></tr></thead><tbody>' +
+      '<tr><td data-label="' + tt('Host','') + '">library.manufacturer-a.example.invalid</td><td data-label="' + tt('Decision','') + '">' + chip(tt('allow','разрешено'),'ok') + '</td><td data-label="' + tt('Reason','') + '">' + tt('robots allows, terms permitted, TDM not reserved','robots разрешает, условия допускают, TDM не зарезервирован') + '</td><td data-label="' + raw('uses') + '">' + tt('summary, index, models, translate','резюме, индекс, модели, перевод') + '</td></tr>' +
+      '<tr><td data-label="' + tt('Host','') + '">news.trade-media.example.invalid</td><td data-label="' + tt('Decision','') + '">' + chip(tt('allow (narrowed)','разрешено (сужено)'),'warn') + '</td><td data-label="' + tt('Reason','') + '">' + tt('RSL: ai-input denied; all rights reserved','RSL: ai-input запрещён; все права защищены') + '</td><td data-label="' + raw('uses') + '">' + tt('headline and link only','только заголовок и ссылка') + '</td></tr>' +
+      '<tr><td data-label="' + tt('Host','') + '">members.association-b.example.invalid</td><td data-label="' + tt('Decision','') + '">' + chip(tt('deny','запрещено'),'bad') + '</td><td data-label="' + tt('Reason','') + '">' + tt('access barrier: login wall','барьер доступа: требуется вход') + '</td><td data-label="' + raw('uses') + '">—</td></tr>' +
+      '<tr><td data-label="' + tt('Host','') + '">blog.supplier-c.example.invalid</td><td data-label="' + tt('Decision','') + '">' + chip(tt('deny','запрещено'),'bad') + '</td><td data-label="' + tt('Reason','') + '">' + tt('robots.txt unreachable (server error) = full disallow','robots.txt недоступен (ошибка сервера) = полный запрет') + '</td><td data-label="' + raw('uses') + '">—</td></tr>' +
+      '<tr><td data-label="' + tt('Host','') + '">training.provider-d.example.invalid</td><td data-label="' + tt('Decision','') + '">' + chip(tt('wait','ожидание'),'warn') + '</td><td data-label="' + tt('Reason','') + '">' + tt('crawl delay 10 s; outside polite window','задержка обхода 10 с; вне вежливого окна') + '</td><td data-label="' + raw('uses') + '">' + tt('next window','следующее окно') + '</td></tr>' +
+      '</tbody></table>' +
+      '<h3>' + tt('Would create','Будет создано') + '</h3><ul><li>' + tt('2 source proposals for a person to activate','2 предложения источников для активации человеком') + '</li><li>' + tt('9 items into intake (3 clustered as duplicates)','9 материалов во входящие (3 объединены как дубликаты)') + '</li><li>' + tt('1 item quarantined: hidden text "ignore previous instructions"','1 материал в карантине: скрытый текст «игнорируй предыдущие инструкции»') + '</li><li>' + tt('0 publications (collection never publishes)','0 публикаций (сбор никогда не публикует)') + '</li></ul>' +
+      '<p>' + tt('Estimated cost per real run: ','Оценка стоимости реального запуска: ') + money(dr==='models'?0.42:0) + ' / ' + money(2) + ' ' + tt('cap','лимит') + '</p>' +
+      (canAct() ? '<button class="btn primary" data-act="activate-job">' + tt('Activate version 3','Активировать версию 3') + '</button>' : '') + '</div>';
+  }
+  return h;
+};
+
+screens.intake = function(){
+  var items = [
+    [86, tt('County adopts updated energy code amendments','Округ принял поправки к энергетическому кодексу'), tt('regulator ×2, industry media ×1','регулятор ×2, отраслевые СМИ ×1'), tt('matches topic regulation; San Diego County; fills Monday round-up slot','тема «нормы»; округ Сан-Диего; заполняет слот понедельника'), ''],
+    [71, tt('New cold-weather curing training announced','Анонсировано обучение по уходу за бетоном в холодную погоду'), tt('association ×1','ассоциация ×1'), tt('plan step Foundation; training gap in Spanish','шаг плана «Фундамент»; нет обучения на испанском'), ''],
+    [64, tt('County procurement: school roofing repair notice','Закупка округа: ремонт кровли школы'), tt('official register ×1','официальный реестр ×1'), tt('procurement watch; routed to opportunities','мониторинг закупок; направлено в возможности'), ''],
+    [0, tt('"Best insulation brand" page','Страница «Лучший бренд утеплителя»'), tt('supplier blog ×1','блог поставщика ×1'), tt('quarantined: instruction-like hidden text','в карантине: скрытый текст, похожий на инструкции'), 'q']
+  ];
+  return '<h1>' + tt('Intake','Входящие') + '</h1><p class="sub">' + tt('Ordered by attention score. The score never decides publication and has no commercial signal.','Упорядочено по баллу внимания. Балл никогда не решает публикацию и не содержит коммерческих сигналов.') + '</p>' +
+  '<div class="card"><table class="cards"><thead><tr><th>' + tt('Score','Балл') + '</th><th>' + tt('Item or cluster','Материал или кластер') + '</th><th>' + tt('Coverage by source type','Покрытие по типам источников') + '</th><th>' + tt('Why','Почему') + '</th><th></th></tr></thead><tbody>' +
+  items.map(function(i){ return '<tr><td data-label="' + tt('Score','Балл') + '">' + (i[4]==='q' ? chip(tt('quarantine','карантин'),'bad') : '<strong>' + i[0] + '</strong>') + '</td><td data-label="' + tt('Item','Материал') + '">' + esc(i[1]) + '</td><td data-label="' + tt('Coverage','Покрытие') + '">' + esc(i[2]) + '</td><td data-label="' + tt('Why','Почему') + '">' + esc(i[3]) + '</td><td>' + (i[4]==='q' ? '<button class="btn" data-act="release-q">' + tt('Review as data','Проверить как данные') + '</button>' : '<button class="btn" data-go="item">' + tt('Open','Открыть') + '</button>') + '</td></tr>'; }).join('') +
+  '</tbody></table>' + lockNote(tt('payment, sponsorship, plan tier and per-person reading behaviour are not signals; imported text never issues commands','оплата, спонсорство, тариф и поведение отдельных читателей не являются сигналами; импортированный текст никогда не отдаёт команд')) + '</div>';
+};
+
+screens.item = function(){
+  var claims = [
+    ['c1', tt('The amendments take effect on 1 January 2027.','Поправки вступают в силу 1 января 2027 г.'), 'corroborated', tt('Example State Building Standards Notices, retrieved 2026-10-31 13:10, "effective January 1, 2027"; County notice No. 2026-114','Example State Building Standards Notices, получено 2026-10-31 13:10, «effective January 1, 2027»; уведомление округа № 2026-114')],
+    ['c2', tt('The update affects new residential construction permits.','Изменения касаются разрешений на новое жилое строительство.'), 'supported', tt('County notice No. 2026-114, section 2','Уведомление округа № 2026-114, раздел 2')],
+    ['c3', tt('Builders expect costs to rise by 4 percent.','Строители ожидают роста затрат на 4 %.'), 'unverifiable', tt('Only in trade media headline (headline-and-link licence); no data source','Только в заголовке отраслевого СМИ (лицензия «заголовок и ссылка»); нет источника данных')],
+    ['c4', tt('The county held two public hearings.','Округ провёл два публичных слушания.'), 'uncited', '—']
+  ];
+  var st = function(s){ return {corroborated:chip(tt('corroborated','подтверждено двумя'),'ok'), supported:chip(tt('supported','подтверждено'),'ok'), unverifiable:chip(tt('unverifiable','непроверяемо'),'warn'), uncited:chip(tt('uncited: blocks approval','без ссылки: блокирует одобрение'),'bad')}[s]; };
+  return '<h1>' + tt('County adopts updated energy code amendments','Округ принял поправки к энергетическому кодексу') + '</h1><p class="sub">' + tt('Story cluster · 3 sources · treatment: summary (allowed by licence) · drafted by the writing desk (AI)','Кластер · 3 источника · обработка: резюме (разрешено лицензией) · черновик подготовлен отделом текстов (ИИ)') + '</p>' +
+  '<div class="tabs" role="tablist"><button class="btn" data-tab="tSources">' + tt('Sources','Источники') + '</button><button class="btn" data-tab="tClaims">' + tt('Claims','Утверждения') + '</button><button class="btn" data-tab="tDraft">' + tt('Draft','Черновик') + '</button></div>' +
+  '<div class="grid g2"><div class="card" id="tSources"><h2>' + tt('Sources (earliest first)','Источники (сначала самые ранние)') + '</h2><ol>' +
+   '<li>Example State Building Standards Notices · ' + raw('regulator') + ' · ' + fmtDate(new Date('2026-10-31T13:10:00Z')) + ' · ' + chip(tt('summary allowed','резюме разрешено'),'ok') + '</li>' +
+   '<li>Example County Procurement Portal · ' + raw('official_register') + ' · ' + fmtDate(new Date('2026-10-31T15:00:00Z')) + ' · ' + chip(tt('summary allowed','резюме разрешено'),'ok') + '</li>' +
+   '<li>Example Trade Media Feed · ' + raw('industry_media') + ' · ' + fmtDate(new Date('2026-10-31T14:02:00Z')) + ' · ' + chip(tt('headline and link only','только заголовок и ссылка'),'warn') + '</li></ol>' +
+   '<p class="note">' + tt('Similarity to sources: 0.18 (threshold 0.35)','Сходство с источниками: 0,18 (порог 0,35)') + '</p></div>' +
+  '<div class="card" id="tDraft"><h2>' + tt('Draft (English original)','Черновик (оригинал на английском)') + '</h2><p lang="en">San Diego County adopted amendments to the state energy code that take effect on January 1, 2027 <sup>[c1]</sup>. The changes apply to new residential construction permits <sup>[c2]</sup>. <mark>Builders expect costs to rise by 4 percent</mark> <sup>[c3]</sup>. <mark>The county held two public hearings</mark> <sup>[c4]</sup>.</p>' +
+   '<div class="byline">' + tt('Editorial office of Trustwork United States (demo). Prepared with the writing desk and fact-check desk (AI). Responsible editor: Synthetic Editor A.','Редакция Trustwork United States (demo). Подготовлено отделом текстов и отделом проверки фактов (ИИ). Ответственный редактор: Synthetic Editor A.') + '</div></div></div>' +
+  '<div class="card" id="tClaims" style="margin-top:12px"><h2>' + tt('Extracted claims with citations','Извлечённые утверждения со ссылками') + '</h2><table class="cards"><thead><tr><th>' + tt('Claim','Утверждение') + '</th><th>' + tt('Status','Статус') + '</th><th>' + tt('Evidence','Доказательство') + '</th></tr></thead><tbody>' +
+   claims.map(function(c){ return '<tr><td data-label="' + tt('Claim','Утверждение') + '">[' + c[0] + '] ' + esc(c[1]) + '</td><td data-label="' + tt('Status','Статус') + '">' + st(c[2]) + '</td><td data-label="' + tt('Evidence','Доказательство') + '">' + esc(c[3]) + '</td></tr>'; }).join('') +
+   '</tbody></table>' +
+   '<div class="blocker">' + tt('Blocker: claim c4 has no evidence. Remove it or add a source.','Блокер: у утверждения c4 нет доказательства. Удалите его или добавьте источник.') + '</div>' +
+   '<div class="warnline">' + tt('Warning: claim c3 is unverifiable. Remove, attribute or mark it.','Предупреждение: утверждение c3 непроверяемо. Удалите, атрибутируйте или пометьте.') + '</div>' +
+   (canAct() ? '<div class="row"><button class="btn" data-act="fix-claims">' + tt('Remove c3 and c4 (editor edit)','Удалить c3 и c4 (правка редактора)') + '</button><button class="btn primary" data-go="publish">' + tt('Send to review','Отправить на проверку') + '</button></div>' : '') +
+  '</div>';
+};
+
+screens.translations = function(){
+  var segs = [
+    ['Cure concrete above 50 °F for the first 48 hours.', 'Cure el concreto por encima de 50 °F durante las primeras 48 horas.', tt('TM exact 100% · reviewed by Synthetic Reviewer C, 2026-09-14','TM точное 100 % · проверено Synthetic Reviewer C, 2026-09-14'), 'ok'],
+    ['Cover the slab with insulating blankets and a vapor retarder.', 'Cubra la losa con mantas aislantes y un <mark>barrera de vapor</mark>.', tt('Machine draft · glossary: preferred term "retardador de vapor"; "barrera de vapor" is deprecated','Машинный черновик · глоссарий: предпочтительный термин «retardador de vapor»; «barrera de vapor» устарел'), 'bad'],
+    ['Check ASTM C31 cylinders at 7 and 28 days.', 'Revise los cilindros ASTM C31 a los 7 y 28 días.', tt('TM fuzzy 88% · do-not-translate "ASTM C31" kept','TM нечёткое 88 % · «ASTM C31» не переведено (верно)'), 'ok'],
+    ['Do not add water to the mix on site.', 'No agregue agua a la mezcla en la obra.', tt('Machine draft · QA green · quality estimate 0.91 (routing signal only)','Машинный черновик · проверки пройдены · оценка качества 0,91 (только сигнал маршрутизации)'), 'ok']
+  ];
+  var a = S.translation.active;
+  var reviewerOk = persona === 'tr';
+  return '<h1>' + tt('Translation review: "Cold-weather concrete curing checklist"','Проверка перевода: «Чек-лист ухода за бетоном в холодную погоду»') + '</h1><p class="sub">en → es · ' + tt('light post-editing · post-editor: Synthetic Editor A · reviewer must be someone else','лёгкое постредактирование · постредактор: Synthetic Editor A · проверяющий — другой человек') + '</p>' +
+  '<div class="grid g2"><div class="card"><h2>' + tt('Segments','Сегменты') + '</h2>' +
+   segs.map(function(s,i){ return '<div class="seg' + (i===a-1?' active':'') + '"><div class="side-by-side"><div lang="en">' + s[0] + '</div><div lang="es">' + (S.translation.fixed && i===1 ? 'Cubra la losa con mantas aislantes y un retardador de vapor.' : s[1]) + '</div></div><div class="note ' + (S.translation.fixed && i===1 ? 'ok' : s[3]) + '">' + (S.translation.fixed && i===1 ? tt('Edited by reviewer · glossary check passes','Исправлено проверяющим · проверка глоссария пройдена') : esc(s[2])) + '</div></div>'; }).join('') +
+  '</div><div class="card"><h2>' + tt('Translation memory and glossary','Память переводов и глоссарий') + '</h2>' +
+   '<h3>' + tt('TM matches for segment 2','Совпадения TM для сегмента 2') + '</h3><table><tbody><tr><td>86%</td><td lang="es">Cubra la losa con un retardador de vapor antes del vertido.</td><td class="note">' + tt('reviewed 2026-08-02','проверено 2026-08-02') + '</td></tr></tbody></table>' +
+   '<h3>' + tt('Glossary hits','Термины глоссария') + '</h3><table><tbody><tr><td lang="en">vapor retarder</td><td lang="es">retardador de vapor</td><td>' + chip(tt('preferred','предпочтительный'),'ok') + '</td></tr><tr><td></td><td lang="es">barrera de vapor</td><td>' + chip(tt('deprecated','устаревший'),'bad') + '</td></tr><tr><td>ASTM C31</td><td>ASTM C31</td><td>' + chip(tt('do not translate','не переводить'),'lock') + '</td></tr><tr><td>' + L10N.t('brandName') + '</td><td>' + L10N.t('brandName') + '</td><td>' + chip(tt('brand, locked','бренд, заблокировано'),'lock') + '</td></tr></tbody></table>' +
+   '<h3>' + tt('QA checks','Проверки качества') + '</h3>' + (S.translation.fixed ? '<div class="okline">' + tt('All blocking checks pass.','Все блокирующие проверки пройдены.') + '</div>' : '<div class="blocker">' + tt('Glossary: deprecated term in segment 2.','Глоссарий: устаревший термин в сегменте 2.') + '</div>') +
+   '<h3>' + tt('Reader label after approval','Метка для читателя после одобрения') + '</h3><div class="byline" lang="es">' + tt('"Machine-assisted translation, reviewed by Synthetic Reviewer C" (shown in Spanish to readers)','«Машинный перевод, проверен Synthetic Reviewer C» (читатели видят на испанском)') + '</div>' +
+   '<div class="row" style="margin-top:8px">' + (canAct() ? '<button class="btn" data-act="fix-seg">' + tt('Apply preferred term','Применить предпочтительный термин') + '</button><button class="btn primary" data-act="approve-ed"' + (!reviewerOk || !S.translation.fixed ? ' disabled' : '') + '>' + tt('Approve edition','Одобрить редакцию') + '</button>' : '') + '</div>' +
+   (!reviewerOk ? '<p class="note">' + tt('Switch persona to Synthetic Reviewer C (translator-reviewer, es) to approve.','Переключитесь на Synthetic Reviewer C (переводчик-проверяющий, es), чтобы одобрить.') + '</p>' : '') +
+   (S.translation.state==='approved' ? '<div class="okline">' + tt('Edition approved; per-locale gate passed; scheduled with the original.','Редакция одобрена; языковой шлюз пройден; запланирована вместе с оригиналом.') + '</div>' : '') +
+  '</div></div>';
+};
+
+screens.calendar = function(){
+  var days = [
+    [tt('Mon 2','Пн 2'), [[tt('08:00 Regulation round-up','08:00 Обзор норм'), S.pub.scheduled ? tt('County energy code amendments (en, es)','Поправки к энергокодексу (en, es)') : null]]],
+    [tt('Tue 3','Вт 3'), [[tt('07:00 Materials brief','07:00 Материалы'), tt('Vapor retarder basics (en)','Основы пароизоляции (en)')]]],
+    [tt('Wed 4','Ср 4'), [[tt('07:00 Practice','07:00 Практика'), null]]],
+    [tt('Thu 5','Чт 5'), [[tt('12:00 Issue assembly (curator)','12:00 Сборка выпуска (куратор)'), tt('proposal','предложение')],[tt('14:00 Newsletter assembly','14:00 Сборка рассылки'), tt('edition No. 45','выпуск № 45')]]],
+    [tt('Fri 6','Пт 6'), [[tt('07:00 Magazine issue 46','07:00 Журнал, выпуск 46'), tt('editor-in-chief releases','выпускает главный редактор')],[tt('07:00 Newsletter send','07:00 Отправка рассылки'), tt('opt-in subscribers','подписчики по согласию')]]],
+    [tt('Sat 7','Сб 7'), []],
+    [tt('Sun 8','Вс 8'), [[tt('02:00 Plan-step discovery','02:00 Поиск по шагам плана'), tt('job','задание')]]]
+  ];
+  var grid = '<div class="cal wide-only" aria-hidden="false">' + days.map(function(d){ return '<div class="day"><b>' + esc(d[0]) + '</b>' + d[1].map(function(s){ return '<span class="slot' + (s[1]?'':' empty') + '">' + esc(s[0]) + '<br>' + (s[1] ? esc(s[1]) : '<em class="warn">' + tt('unfilled','не заполнен') + '</em>') + '</span>'; }).join('') + '</div>'; }).join('') + '</div>';
+  var list = '<div class="list-cal">' + days.map(function(d){ return d[1].length ? '<div class="card" style="margin:6px 0"><strong>' + esc(d[0]) + '</strong>' + d[1].map(function(s){ return '<div>' + esc(s[0]) + ': ' + (s[1] ? esc(s[1]) : '<em class="warn">' + tt('unfilled','не заполнен') + '</em>') + '</div>'; }).join('') + '</div>' : ''; }).join('') + '</div>';
+  return '<h1>' + tt('Calendar','Календарь') + '</h1><p class="sub">' + tt('Week of 2 November 2026, Pacific time. US federal holidays from the country pack. No drag-only actions.','Неделя 2 ноября 2026, тихоокеанское время. Федеральные праздники США из пакета страны. Без действий только перетаскиванием.') + '</p>' + grid + list +
+  '<div class="card" style="margin-top:12px"><h2>' + tt('Assign an approved item to a slot','Назначить одобренный материал в слот') + '</h2>' +
+  (S.pub.state==='published' || S.pub.state==='approved' ? '<p>' + tt('"County adopts updated energy code amendments" is approved.','«Округ принял поправки к энергетическому кодексу» одобрен.') + '</p><div class="row"><label for="slotSel">' + tt('Slot','Слот') + '</label><select id="slotSel"><option>' + tt('Mon 2, 08:00 Regulation round-up','Пн 2, 08:00 Обзор норм') + '</option><option>' + tt('Wed 4, 07:00 Practice','Ср 4, 07:00 Практика') + '</option></select><label><input type="checkbox" id="embargo"> ' + tt('Embargo until slot time','Эмбарго до времени слота') + '</label>' + (canAct() ? '<button class="btn primary" data-act="schedule">' + tt('Schedule','Запланировать') + '</button>' : '') + '</div>' + (S.pub.scheduled ? '<div class="okline">' + tt('Scheduled for ','Запланировано на ') + fmtDate(new Date('2026-11-02T16:00:00Z')) + tt('; embargoed items stay out of feeds, search, agent knowledge and peers until then.','; материалы под эмбарго не попадают в ленты, поиск, знания агентов и к пирам до этого времени.') + '</div>' : '') : '<p class="note">' + tt('No approved item yet. Approve "County adopts updated energy code amendments" first.','Пока нет одобренных материалов. Сначала одобрите «Округ принял поправки к энергетическому кодексу».') + '</p><button class="btn" data-go="publish">' + tt('Go to review','К проверке') + '</button>') +
+  '</div>';
+};
+
+screens.publish = function(){
+  var p = S.pub;
+  var steps = [
+    [tt('Automatic checks','Автоматические проверки'), S.claimsFixed ? 'ok' : 'bad', S.claimsFixed ? tt('similarity 0.18 < 0.35; all claims cited; licence allows summary; labels present; alt text present','сходство 0,18 < 0,35; все утверждения со ссылками; лицензия допускает резюме; метки есть; alt-текст есть') : tt('claim c4 uncited (fix in the item)','утверждение c4 без ссылки (исправьте в материале)')],
+    [tt('Fact-check sign-off','Подтверждение фактчека'), S.claimsFixed ? 'ok' : 'warn', tt('by an editor','редактором')],
+    [tt('Legal check','Юридическая проверка'), 'ok', tt('not required (no named company or person with a claim)','не требуется (нет утверждений о названных компаниях или людях)')],
+    [tt('Review decision (not the drafter)','Решение проверки (не автор черновика)'), p.firstReview ? 'ok' : 'warn', p.firstReview ? tt('approved by ','одобрено: ') + personaName(p.firstReview) : tt('waiting','ожидает')],
+    [tt('Second editor (regulation topic)','Второй редактор (тема норм)'), p.secondReview ? 'ok' : 'warn', p.secondReview ? tt('approved by ','одобрено: ') + personaName(p.secondReview) : tt('waiting','ожидает')]
+  ];
+  var drafterNote = '<p class="note">' + tt('Draft version 2 prepared by the writing desk (AI) and edited by Synthetic Editor A, so Synthetic Editor A cannot make the review decision.','Версия 2 черновика подготовлена отделом текстов (ИИ) и отредактирована Synthetic Editor A, поэтому Synthetic Editor A не может принять решение проверки.') + '</p>';
+  var canFirst = canAct() && persona !== 'ed' && persona !== 'tr' && !p.firstReview && S.claimsFixed;
+  var h = '<h1>' + tt('Review and publish','Проверка и публикация') + '</h1><p class="sub">' + tt('"County adopts updated energy code amendments" · news · en (es edition linked)','«Округ принял поправки к энергетическому кодексу» · новость · en (связана редакция es)') + '</p>' +
+  '<div class="grid g2"><div class="card"><h2>' + tt('Pre-publish checklist','Предпубликационный чек-лист') + '</h2>' +
+   steps.map(function(s){ return '<div class="' + (s[1]==='ok'?'okline':s[1]==='bad'?'blocker':'warnline') + '"><strong>' + esc(s[0]) + '</strong>: ' + esc(s[2]) + '</div>'; }).join('') + drafterNote +
+   lockNote(tt('news is never eligible for auto-publication; agent roles have no publish capability','новости никогда не публикуются автоматически; у ролей агентов нет права публикации')) +
+   '<div class="row" style="margin-top:8px">' +
+    (p.state==='in_review' ? '<button class="btn primary" data-act="first-approve"' + (canFirst?'':' disabled') + '>' + tt('Approve (first review)','Одобрить (первая проверка)') + '</button><button class="btn" data-act="return"' + (canAct()&&persona!=='ed'?'':' disabled') + '>' + tt('Return with note','Вернуть с замечанием') + '</button>' : '') +
+    (p.state==='awaiting_second' ? '<button class="btn" data-go="approvals">' + tt('Open second-person request','Открыть запрос второго лица') + '</button>' : '') +
+    (p.state==='approved' ? '<button class="btn primary" data-go="calendar">' + tt('Schedule in calendar','Запланировать в календаре') + '</button><button class="btn" data-act="publish-now"' + (canAct()?'':' disabled') + '>' + tt('Publish now','Опубликовать сейчас') + '</button>' : '') +
+   '</div>' + (persona==='ed' && p.state==='in_review' ? '<p class="note">' + tt('Switch persona to Synthetic Editor-in-chief B for the first review; the second review must then come from Synthetic Editor F, who is neither the drafter nor the first reviewer.','Переключитесь на Synthetic Editor-in-chief B для первой проверки; вторую проверку затем проводит Synthetic Editor F — не автор черновика и не первый проверяющий.') + '</p>' : '') +
+  '</div><div class="card"><h2>' + tt('Channels and reader view','Каналы и вид для читателя') + '</h2>' +
+   '<label><input type="checkbox" checked disabled> ' + tt('Site (en, es when its edition passes its gate)','Сайт (en; es — когда редакция пройдёт свой шлюз)') + '</label><br><label><input type="checkbox" checked> ' + tt('Feeds: RSS, Atom, JSON Feed','Ленты: RSS, Atom, JSON Feed') + '</label><br><label><input type="checkbox" checked> ' + tt('Newsletter candidate','Кандидат в рассылку') + '</label><br><label><input type="checkbox" checked> ' + tt('Agent knowledge (licence allows indexing)','Знания агентов (лицензия разрешает индексирование)') + '</label><br><label><input type="checkbox"> ' + tt('Peers (federation)','Пиры (федерация)') + '</label>' +
+   '<h3>' + tt('Byline and labels','Подпись и метки') + '</h3><div class="byline">' + tt('Editorial office of Trustwork United States (demo). Prepared with the writing desk and fact-check desk (AI). Responsible editor: Synthetic Editor A. Reviewed by ','Редакция Trustwork United States (demo). Подготовлено отделом текстов и отделом проверки фактов (ИИ). Ответственный редактор: Synthetic Editor A. Проверили: ') + (p.firstReview ? personaName(p.firstReview) : '…') + (p.secondReview ? ', ' + personaName(p.secondReview) : '') + '.</div>' +
+   '<p class="note">' + tt('No AI is named as author; no invented person appears.','ИИ не указывается как автор; вымышленные люди не появляются.') + '</p>' +
+   (p.state==='published' ? '<div class="okline">' + tt('Published ','Опубликовано ') + fmtDate(new Date('2026-11-01T16:20:00Z')) + '</div>' : '') +
+  '</div></div>';
+  return h;
+};
+
+screens.corrections = function(){
+  var c = S.correction;
+  return '<h1>' + tt('Corrections','Исправления') + '</h1><p class="sub">' + tt('Corrections are always possible and reach every channel.','Исправления возможны всегда и доходят до всех каналов.') + '</p>' +
+  '<div class="card"><h2>' + tt('Reader request: "Vapor retarder basics" gives the wrong perm rating','Запрос читателя: в «Основах пароизоляции» неверное значение паропроницаемости') + '</h2>' +
+  '<p class="note">' + tt('Received 2026-11-01 09:12 through the public form · acknowledged automatically · corrections watcher found the cited data sheet changed','Получено 2026-11-01 09:12 через публичную форму · подтверждено автоматически · наблюдатель исправлений нашёл изменение цитируемого паспорта') + '</p>' +
+  '<h3>' + tt('Diff between version 3 and the proposed version 4','Разница между версией 3 и предлагаемой версией 4') + '</h3><p>' + tt('A Class I vapor retarder has a rating of ','Пароизоляция класса I имеет значение ') + '<del>' + num(1) + ' perm</del> <ins>' + L10N.t('x_permLess',{n:num(0.1)}) + '</ins>' + tt(' (ASTM E96, desiccant method).',' (ASTM E96, метод осушителя).') + '</p>' +
+  '<h3>' + tt('Classification','Классификация') + '</h3><div class="row">' +
+   ['minor','correction','clarification','update'].map(function(k){ var lbl = {minor:tt('Minor fix','Мелкая правка'),correction:tt('Correction','Исправление'),clarification:tt('Clarification','Уточнение'),update:tt('Update','Обновление')}[k]; return '<label><input type="radio" name="ck" value="' + k + '"' + (c.kind===k?' checked':'') + (k==='minor'?' disabled':'') + '> ' + lbl + '</label>'; }).join('') + '</div>' +
+   '<p class="note">' + tt('Minor fix is disabled: the change alters a number, so it is a correction and needs a second editor (E8). Auto-publication is not possible for it.','Мелкая правка недоступна: изменение затрагивает число, поэтому это исправление, требующее второго редактора (E8). Автопубликация невозможна.') + '</p>' +
+   '<label for="cnote">' + tt('Reader-visible correction note','Видимое читателю примечание об исправлении') + '</label><br><textarea id="cnote" rows="2" style="width:100%;max-width:640px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px">' + esc(tt('Correction, 1 November 2026: an earlier version gave the Class I rating as 1.0 perm; the correct value is 0.1 perm or less.','Исправление, 1 ноября 2026: в ранней версии для класса I было указано 1,0 перм; верное значение — 0,1 перм или меньше.')) + '</textarea>' +
+   '<h3>' + tt('Propagation','Распространение') + '</h3><table class="cards"><tbody>' +
+   [[tt('Site (en)','Сайт (en)'),1],[tt('Spanish edition','Испанская редакция'),2],[tt('Magazine issue 44 (new edition with banner)','Журнал, выпуск 44 (новая редакция с баннером)'),1],[tt('Feeds (updated entry with note)','Ленты (обновлённая запись с примечанием)'),1],[tt('Newsletter (notice in the next edition)','Рассылка (уведомление в следующем выпуске)'),1],[tt('Agent knowledge (re-indexed)','Знания агентов (переиндексация)'),1]].map(function(r){ return '<tr><td>' + esc(r[0]) + '</td><td>' + (c.published ? (r[1]===2 ? chip(tt('marked stale, update queued','помечено устаревшим, обновление в очереди'),'warn') : chip(tt('done','готово'),'ok')) : chip(tt('pending','ожидает'),'')) + '</td></tr>'; }).join('') +
+   '</tbody></table>' + reasonField('creason') +
+   '<div class="row" style="margin-top:8px">' + (canAct() ? '<button class="btn primary" data-act="publish-correction"' + (c.published?' disabled':'') + '>' + tt('Request second editor and publish correction','Запросить второго редактора и опубликовать исправление') + '</button>' : '') + '</div>' +
+   (c.published ? '<div class="okline">' + tt('Correction version 4 published after second review by Synthetic Editor-in-chief B (demo).','Версия 4 с исправлением опубликована после второй проверки Synthetic Editor-in-chief B (демо).') + '</div>' : '') +
+  '</div>';
+};
+
+screens.team = function(){
+  var rows = ROLE_DEFS.map(function(r){
+    var st = S.roles[r[0]];
+    var state = st.killed ? chip(tt('stopped (kill switch)','остановлено (аварийный выключатель)'),'bad') : st.paused ? chip(tt('paused','на паузе'),'warn') : chip(tt('running','работает'),'ok');
+    var levels = Object.keys(st.autonomy); var lv = levels.length ? autLabel(st.autonomy[levels[0]]) : tt('n/a','н/д');
+    return '<tr><td data-label="' + tt('Role','Роль') + '"><strong>' + esc(tt(r[1],r[2])) + '</strong><br><span class="note">' + tt('AI role · no human name or portrait','ИИ-роль · без человеческого имени и портрета') + '</span></td><td data-label="' + tt('Model job','Задача модели') + '"><code>' + esc(jobLabel(r[3])) + '</code></td><td data-label="' + tt('Autonomy (main class)','Автономия (основной класс)') + '">' + esc(lv) + '</td><td data-label="' + tt('Schedule','Расписание') + '">' + esc(tt(r[6],r[7])) + '</td><td data-label="' + tt('Acceptance (30 d)','Принятие (30 дн)') + '">' + Math.round(r[8]*100) + '%</td><td data-label="' + tt('State','Состояние') + '">' + state + '</td><td><button class="btn" data-role="' + r[0] + '">' + tt('Settings','Настройки') + '</button></td></tr>';
+  }).join('');
+  return '<h1>' + tt('Editorial team','Редакционная команда') + '</h1><p class="sub">' + tt('Hub automation configured by administrators. Not participants, no accounts, no mandates. Accountable editor-in-chief: Synthetic Editor-in-chief B.','Автоматизация хаба, настраиваемая администраторами. Не участники, без аккаунтов и мандатов. Ответственный главный редактор: Synthetic Editor-in-chief B.') + '</p>' +
+  '<div class="card">' + lockNote(tt('no role can publish, activate sources, release issues or pose as a person; AI text, machine translation and AI images are labelled','ни одна роль не может публиковать, активировать источники, выпускать номера или выдавать себя за человека; ИИ-тексты, машинный перевод и ИИ-изображения маркируются')) +
+  '<table class="cards" style="margin-top:8px"><thead><tr><th>' + tt('Role','Роль') + '</th><th>' + tt('Model job','Задача модели') + '</th><th>' + tt('Autonomy','Автономия') + '</th><th>' + tt('Schedule','Расписание') + '</th><th>' + tt('Accepted','Принято') + '</th><th>' + tt('State','Состояние') + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+};
+function classLabel(v){const c=CLASSES.find(c=>c[0]===v);return c?tt(c[1],c[2]):v;}
+function jobLabel(v){return v.replace('(proposed)','('+tt('Proposed','')+')').replace('(abstract only)','('+raw('abstractOnly')+')');}
+function autLabel(v){ return {off:tt('Off','Выключено'), draftOnly:tt('Draft only','Только черновик'), autoWithReview:tt('Auto with review','Авто с проверкой'), autoPublish:tt('Auto-publish allowed','Автопубликация разрешена')}[v] || v; }
+
+screens.role = function(){
+  var rid = S.selRole || 'translator';
+  var def = ROLE_DEFS.filter(function(r){return r[0]===rid;})[0];
+  var st = S.roles[rid];
+  var cols = ['off','draftOnly','autoWithReview','autoPublish'];
+  var mrows = CLASSES.map(function(c){
+    var applicable = (ROLE_CLASSES[rid]||[]).indexOf(c[0]) >= 0;
+    if (!applicable) return '';
+    var val = st.autonomy[c[0]] || 'off';
+    var opts = cols.map(function(k){
+      var dis = (k==='autoPublish' && !c[3]);
+      return '<option value="' + k + '"' + (val===k?' selected':'') + (dis?' disabled':'') + '>' + esc(autLabel(k)) + (dis ? ' (' + tt('locked','заблокировано') + ')' : '') + '</option>';
+    }).join('');
+    return '<tr><td>' + esc(tt(c[1],c[2])) + (c[4] ? ' <span class="note">(' + tt('owner decision ','решение владельца ') + c[4] + ')</span>' : '') + '</td><td><select data-aut="' + c[0] + '" aria-label="' + esc(tt('Autonomy for ','Автономия для ') + tt(c[1],c[2])) + '"' + (canAct()?'':' disabled') + '>' + opts + '</select></td><td>' + (c[3] ? chip(tt('eligible with a standing policy','допустимо при постоянной политике'),'warn') : chip('🔒 ' + tt('never auto-publish','никогда без проверки'),'lock')) + '</td></tr>';
+  }).join('');
+  var options = ROLE_DEFS.map(function(r){ return '<option value="' + r[0] + '"' + (r[0]===rid?' selected':'') + '>' + esc(tt(r[1],r[2])) + '</option>'; }).join('');
+  return '<h1>' + tt('Role settings: ','Настройки роли: ') + esc(tt(def[1],def[2])) + '</h1><p class="sub"><label for="roleSel">' + tt('Role','Роль') + '</label> <select id="roleSel">' + options + '</select> · ' + tt('settings version 4 · owner editor: Synthetic Editor A','версия настроек 4 · редактор-владелец: Synthetic Editor A') + '</p>' +
+  '<div class="grid g2"><div class="card"><h2>' + tt('Capabilities (capability registry)','Возможности (реестр возможностей)') + '</h2><ul>' +
+   (rid==='translator' ? '<li><code>editorial_translator.pretranslate</code> · ' + tt('Draft','') + '</li><li><code>editorial_translator.translate</code> · ' + tt('Draft','') + '</li>' : '<li><code>editorial_' + rid + '.*</code> · ' + raw('read') + ', ' + tt('Draft','') + '</li>') +
+   '</ul>' + lockNote(tt('editorial roles hold only read and draft capabilities; staff console surface only; public data only','роли редакции имеют только возможности чтения и черновика; только консоль сотрудников; только публичные данные')) +
+   '<h3>' + tt('Model route','Маршрут модели') + '</h3><dl class="kv"><dt>' + tt('Job','Задача') + '</dt><dd><code>' + esc(jobLabel(def[3])) + '</code></dd><dt>' + tt('Primary','Основная') + '</dt><dd>' + tt('Fake translation model (demo), pinned rev. 2026-10-01','Фейковая модель перевода (демо), закреплена ревизия 2026-10-01') + '</dd><dt>' + tt('Fallback','Резерв') + '</dt><dd>' + tt('Self-hosted model (demo), same egress rule','Локальная модель (демо), то же правило вывода данных') + '</dd><dt>' + tt('Egress','Вывод данных') + '</dt><dd>' + chip(raw('public'),'ok') + ' ' + tt('only','только') + '</dd><dt>' + tt('Evaluation','Оценка') + '</dt><dd>' + chip(tt('safety suite passed','набор безопасности пройден'),'ok') + chip(tt('role sample set 0.92 ≥ floor 0.85','выборка роли 0,92 ≥ порог 0,85'),'ok') + '</dd></dl>' +
+   '<h3>' + tt('Caps','Лимиты') + '</h3><dl class="kv"><dt>' + tt('Per run','За запуск') + '</dt><dd>' + money(def[4]) + '</dd><dt>' + tt('Per day','В день') + '</dt><dd>' + money(def[4]*6) + '</dd><dt>' + tt('Per month','В месяц') + '</dt><dd>' + money(def[4]*120) + '</dd></dl>' +
+   '<div class="row">' + (canAct() ? '<button class="btn" data-act="pause-role">' + (st.paused ? tt('Resume role','Возобновить роль') : tt('Pause role','Приостановить роль')) + '</button><button class="btn danger" data-act="kill-role"' + (st.killed?' disabled':'') + '>' + tt('Engage role kill switch','Аварийно остановить роль') + '</button>' : '') + '</div>' +
+   (st.killed ? '<p class="note">' + tt('Releasing the kill switch needs a second person and an incident note.','Снятие аварийной остановки требует второго лица и записи об инциденте.') + '</p>' : '') +
+  '</div><div class="card"><h2>' + tt('Autonomy per content class','Автономия по классам контента') + '</h2><table class="matrix"><thead><tr><th>' + tt('Content class','Класс контента') + '</th><th>' + tt('Level','Уровень') + '</th><th>' + tt('Rule','Правило') + '</th></tr></thead><tbody>' + (mrows || '<tr><td colspan="3">' + tt('This role produces no publishable content class.','Эта роль не создаёт публикуемого класса контента.') + '</td></tr>') + '</tbody></table>' +
+   '<p class="note">' + tt('"Auto-publish allowed" needs an active standing publication policy signed by the editor-in-chief and activated by a second person. Autonomy drops automatically when quality falls below the floor, a kill switch engages, the model version changes or the editor-in-chief is gone. It never rises on its own.','«Автопубликация разрешена» требует активной постоянной политики публикации, подписанной главным редактором и активированной вторым лицом. Автономия автоматически снижается при падении качества ниже порога, аварийной остановке, смене версии модели или отсутствии главного редактора. Сама она никогда не повышается.') + '</p>' +
+   '<h3>' + tt('Standing policy: machine translation en → es (E3)','Постоянная политика: машинный перевод en → es (E3)') + '</h3><dl class="kv"><dt>' + tt('Status','Статус') + '</dt><dd>' + (S.policyActive ? chip(tt('active until 2027-01-30','активна до 2027-01-30'),'ok') : chip(tt('draft (off by default)','черновик (по умолчанию выключено)'),'')) + '</dd><dt>' + tt('Conditions','Условия') + '</dt><dd>' + tt('original already approved; all QA green; quality estimate ≥ 0.90; no named person; ≤ 20 items per day','оригинал уже одобрен; все проверки пройдены; оценка качества ≥ 0,90; нет названных людей; ≤ 20 материалов в день') + '</dd><dt>' + tt('Reader label','Метка для читателя') + '</dt><dd>' + tt('"Machine translation, not reviewed" + link to original','«Машинный перевод, не проверен» + ссылка на оригинал') + '</dd><dt>' + tt('Audit sampling','Выборочный аудит') + '</dt><dd>' + tt('100% of first 50, then 20%','100 % первых 50, затем 20 %') + '</dd></dl>' +
+   (canAct() ? '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="request-autonomy"' + (S.policyActive||S.pendingAutonomy?' disabled':'') + '>' + tt('Sign and request activation (second person)','Подписать и запросить активацию (второе лицо)') + '</button></div>' : '') +
+  '</div></div>';
+};
+
+screens.runs = function(){
+  var runs = [
+    ['r-1042', tt('Translator','Переводчик'), 'schedule', 'succeeded', '2026-11-01T14:00:00Z', 3, 0, 0.31],
+    ['r-1041', tt('Writer','Автор текстов'), 'manual', 'succeeded', '2026-11-01T13:30:00Z', 1, 0, 0.44],
+    ['r-1040', tt('Scout','Разведчик'), 'schedule', 'partially_succeeded', '2026-11-01T10:00:00Z', 9, 1, 0.18],
+    ['r-1039', tt('Fact-checker','Фактчекер'), 'event', 'succeeded', '2026-11-01T09:45:00Z', 4, 0, 0.09],
+    ['r-1038', tt('Illustrator','Иллюстратор'), 'manual', 'skipped_budget', '2026-10-31T22:00:00Z', 0, 0, 0],
+    ['r-1037', tt('Collector','Сборщик'), 'schedule', 'failed', '2026-10-31T21:00:00Z', 0, 0, 0.02],
+    ['r-1036', tt('Curator','Куратор выпусков'), 'dry_run', 'succeeded', '2026-10-31T20:00:00Z', 1, 0, 0]
+  ];
+  var cls = function(s){ return {succeeded:'ok', partially_succeeded:'warn', failed:'bad', skipped_budget:'warn'}[s] || ''; };
+  return '<h1>' + tt('Team runs','Запуски команды') + '</h1><p class="sub">' + tt('Structured step logs; no secrets, no private data, no full prompts. A retry is a new run.','Структурированные журналы шагов; без секретов, личных данных и полных промптов. Повтор — новый запуск.') + '</p>' +
+  '<div class="card"><table class="cards"><thead><tr><th>' + tt('Run','Запуск') + '</th><th>' + tt('Role','Роль') + '</th><th>' + tt('Trigger','Триггер') + '</th><th>' + tt('State','Состояние') + '</th><th>' + tt('Started','Начало') + '</th><th>' + tt('Proposed','Предложено') + '</th><th>' + tt('Quarantined','В карантине') + '</th><th>' + tt('Cost','Стоимость') + '</th></tr></thead><tbody>' +
+  runs.map(function(r){ return '<tr><td data-label="' + tt('Run','Запуск') + '"><code>' + r[0] + '</code></td><td data-label="' + tt('Role','Роль') + '">' + esc(r[1]) + '</td><td data-label="' + tt('Trigger','Триггер') + '">' + raw(r[2]) + '</td><td data-label="' + tt('State','Состояние') + '">' + chip(raw(r[3]), cls(r[3])) + '</td><td data-label="' + tt('Started','Начало') + '">' + fmtDate(new Date(r[4])) + '</td><td data-label="' + tt('Proposed','Предложено') + '">' + num(r[5]) + '</td><td data-label="' + tt('Quarantined','В карантине') + '">' + num(r[6]) + '</td><td data-label="' + tt('Cost','Стоимость') + '">' + money(r[7]) + '</td></tr>'; }).join('') +
+  '</tbody></table></div>' +
+  '<div class="card" style="margin-top:12px"><h2>r-1037 · ' + tt('Collector · failed','Сборщик · ошибка') + '</h2><ol><li>' + raw('fetch') + ' · library.manufacturer-a.example.invalid · ' + chip('429 rate_limited','warn') + ' · ' + tt('backoff 60 s, Retry-After honoured','пауза 60 с, Retry-After учтён') + '</li><li>' + raw('fetch') + ' · ' + chip(tt('3 attempts exhausted','3 попытки исчерпаны'),'bad') + '</li><li>' + tt('No external effect with unknown outcome; nothing to reconcile.','Нет внешних эффектов с неизвестным исходом; сверять нечего.') + '</li></ol>' +
+  (canAct() ? '<button class="btn" data-act="retry-run">' + tt('Retry as new run','Повторить новым запуском') + '</button>' : '') + '</div>';
+};
+
+screens.teamreview = function(){
+  var rows = S.reviewQueue.map(function(o){
+    var roleName = (ROLE_DEFS.filter(function(r){return r[0]===o.role;})[0]||[])[1] || o.role;
+    var roleRu = (ROLE_DEFS.filter(function(r){return r[0]===o.role;})[0]||[])[2] || o.role;
+    var stateChip = o.state==='accepted' ? chip(tt('accepted','принято'),'ok') : o.state==='returned' ? chip(tt('returned','возвращено'),'warn') : o.state==='auto-published' ? chip(tt('auto-published (E2 policy) · audit sample','автопубликация (политика E2) · выборка аудита'),'warn') : chip(tt('waiting','ожидает'),'');
+    var acts = (o.state==='waiting' || o.state==='auto-published') && canAct() ? '<button class="btn" data-out="' + o.id + '" data-v="accepted">' + tt('Accept','Принять') + '</button> <button class="btn" data-out="' + o.id + '" data-v="returned">' + tt('Return with reason','Вернуть с причиной') + '</button>' + (o.audit ? ' <button class="btn danger" data-out="' + o.id + '" data-v="returned">' + tt('Mark error and unpublish','Отметить ошибку и снять') + '</button>' : '') : '';
+    return '<tr><td data-label="' + tt('Role','Роль') + '">' + esc(tt(roleName, roleRu)) + '</td><td data-label="' + tt('Output','Результат') + '">' + esc(tt(o.en,o.ru)) + '</td><td data-label="' + tt('Class','Класс') + '">' + esc(classLabel(o.cls)) + '</td><td data-label="' + tt('State','Состояние') + '">' + stateChip + '</td><td>' + acts + '</td></tr>';
+  }).join('');
+  return '<h1>' + tt('Team output review','Проверка результатов команды') + '</h1><p class="sub">' + tt('Outputs grouped by role, plus sampling audits of anything published under a standing policy. Editors\' decisions feed the quality floors; the producing role never grades itself.','Результаты по ролям и выборочный аудит всего, что опубликовано по постоянной политике. Решения редакторов питают пороги качества; роль никогда не оценивает себя сама.') + '</p>' +
+  '<div class="card"><table class="cards output-review"><thead><tr><th>' + tt('Role','Роль') + '</th><th>' + tt('Output','Результат') + '</th><th>' + tt('Class','Класс') + '</th><th>' + tt('State','Состояние') + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+};
+
+screens.costs = function(){
+  var data = [[tt('Writer','Автор текстов'),18.4,22,0.84],[tt('Translator','Переводчик'),9.1,31,0.29],[tt('Scout','Разведчик'),4.2,0,0],[tt('Fact-checker','Фактчекер'),3.6,22,0.16],[tt('Illustrator','Иллюстратор'),2.0,2,1.0],[tt('SEO and metadata','SEO и метаданные'),1.1,22,0.05],[tt('Newsletter and social','Рассылка и соцсети'),0.9,1,0.9],[tt('Curator','Куратор выпусков'),0.8,1,0.8],[tt('Others','Остальные'),1.1,0,0]];
+  var max = 20;
+  return '<h1>' + tt('Team costs','Затраты команды') + '</h1><p class="sub">' + tt('This week, aggregate. No per-staff productivity figures.','Эта неделя, агрегировано. Без показателей продуктивности сотрудников.') + '</p>' +
+  '<div class="grid g3">' + tile(41.2, tt('Spend this week, USD','Расходы за неделю, USD')) + tile(22, tt('Items published with team help','Опубликовано с помощью команды')) + tile(6, tt('Corrections caused by team outputs (30 d)','Исправлений из-за результатов команды (30 дн)')) + '</div>' +
+  '<div class="card" style="margin-top:12px"><h2>' + tt('By role','По ролям') + '</h2><table class="cards"><thead><tr><th>' + tt('Role','Роль') + '</th><th>' + tt('Spend','Расходы') + '</th><th class="hide-sm">' + tt('Share of team cap','Доля лимита команды') + '</th><th>' + tt('Published items','Опубликовано') + '</th><th>' + tt('Cost per published item','Стоимость на материал') + '</th></tr></thead><tbody>' +
+  data.map(function(d){ return '<tr><td data-label="' + tt('Role','Роль') + '">' + esc(d[0]) + '</td><td data-label="' + tt('Spend','Расходы') + '">' + money(d[1]) + '</td><td class="hide-sm"><div class="bar" aria-hidden="true"><span style="width:' + Math.round(d[1]/max*100) + '%"></span></div></td><td data-label="' + tt('Published','Опубликовано') + '">' + d[2] + '</td><td data-label="' + tt('Per item','На материал') + '">' + (d[2] ? money(d[3]) : '—') + '</td></tr>'; }).join('') +
+  '</tbody></table><h3>' + tt('Team cap','Лимит команды') + '</h3>' + meter(41.2, 120) + (canAct() ? '<div class="row" style="margin-top:8px"><button class="btn" data-act="cap">' + tt('Adjust caps (new version)','Изменить лимиты (новая версия)') + '</button></div>' : '') + '</div>';
+};
+
+/* ---------- Render and events ---------- */
+function render(){
+  document.documentElement.lang = lang; document.title=tt('Editorial team','');
+  document.getElementById('skip').textContent = tt('Skip to content','Перейти к содержимому');
+  document.getElementById('brandLine').textContent = tt('Administration · Trustwork United States (demo) · San Diego','Администрирование · Trustwork United States (demo) · Сан-Диего');
+  document.getElementById('demoBand').textContent = tt('Demo prototype with synthetic data. No real people, companies, sources or traffic. Changes are not saved. Status: Proposed design.','Демо-прототип на синтетических данных. Никаких реальных людей, компаний, источников или трафика. Изменения не сохраняются. Статус: предложенный дизайн.');
+  document.getElementById('personaLabel').textContent = tt('Signed in as','');
+  document.getElementById('persona').setAttribute('aria-label',tt('Signed in as',''));
+  document.getElementById('themeBtn').setAttribute('aria-label',L10N.t('theme'));
+  document.getElementById('sideNav').setAttribute('aria-label',tt('Editorial team',''));
+  [...document.querySelectorAll('#persona option')].forEach(o=>{const names={ed:'Synthetic Editor A',eic:'Synthetic Editor-in-chief B',ed2:'Synthetic Editor F',tr:'Synthetic Reviewer C',au:'Synthetic Auditor D'};o.textContent=names[o.value];});
+
+  document.getElementById('navToggle').textContent = tt('Menu','Меню');
+  document.getElementById('main').innerHTML = screens[current]();
+}
+document.addEventListener('click', function(e){
+  var t = e.target.closest('button, [data-go]'); if (!t) return;
+  if (t.dataset.go) { go(t.dataset.go); return; }
+  if (t.dataset.role) { S.selRole = t.dataset.role; go('role'); return; }
+  if (t.dataset.tab) { var el = document.getElementById(t.dataset.tab); if (el) el.scrollIntoView({behavior:'smooth'}); return; }
+  if (t.dataset.out) { S.reviewQueue.forEach(function(o){ if (o.id===t.dataset.out) o.state = t.dataset.v; }); renderNav(); render(); demoSaved(tt('Decision recorded','Решение записано')); return; }
+  var a = t.dataset.act; if (!a) return;
+  switch(a){
+    case 'killall': ROLE_DEFS.forEach(function(r){ S.roles[r[0]].killed = true; }); demoSaved(tt('Team stopped at the next step boundary','Команда остановлена на границе следующего шага')); break;
+    case 'recheck': demoSaved(tt('Legal checks queued; terms remain unclear until a person records the review','Юридические проверки поставлены в очередь; условия остаются неясными до записи проверки человеком')); break;
+    case 'takedown': demoSaved(tt('Takedown requires a reason; tombstones would reach indexes, TM and peers','Снятие требует причины; надгробия дойдут до индексов, TM и пиров')); break;
+    case 'dryrun-fakes': S.dryRun = 'fakes'; render(); toast(tt('Dry run finished: nothing committed','Пробный запуск завершён: ничего не записано')); return;
+    case 'dryrun-models': S.dryRun = 'models'; render(); toast(tt('Dry run with models on 5 samples: ','Пробный запуск с моделями на 5 образцах: ') + money(0.38)); return;
+    case 'activate-job': demoSaved(tt('Version 3 activated by ','Версия 3 активирована: ') + personaName(persona)); break;
+    case 'release-q': demoSaved(tt('Opened as data: the text is shown inert and cannot trigger anything','Открыто как данные: текст показан инертно и ничего не может запустить')); break;
+    case 'fix-claims': S.claimsFixed = true; render(); demoSaved(tt('Claims c3 and c4 removed (new draft version)','Утверждения c3 и c4 удалены (новая версия черновика)')); return;
+    case 'fix-seg': S.translation.fixed = true; render(); demoSaved(); return;
+    case 'approve-ed': S.translation.state = 'approved'; render(); demoSaved(tt('Edition approved by ','Редакция одобрена: ') + personaName(persona)); return;
+    case 'first-approve': S.pub.firstReview = persona; S.pub.state = 'awaiting_second'; renderNav(); render(); toast(tt('First review recorded. A second editor must approve in Approvals.','Первая проверка записана. Второй редактор должен одобрить в «Согласованиях».')); return;
+    case 'second-approve': S.pub.secondReview = persona; S.pub.state = 'approved'; renderNav(); render(); demoSaved(tt('Second review recorded','Вторая проверка записана')); return;
+    case 'second-return': case 'return': S.pub.state = 'in_review'; S.pub.firstReview = null; renderNav(); render(); demoSaved(tt('Returned with note','Возвращено с замечанием')); return;
+    case 'publish-now': S.pub.state = 'published'; renderNav(); render(); demoSaved(tt('Published by the content module on your decision','Опубликовано модулем контента по вашему решению')); return;
+    case 'schedule': S.pub.scheduled = true; render(); demoSaved(); return;
+    case 'publish-correction': S.correction.published = true; S.correction.kind = 'correction'; renderNav(); render(); demoSaved(); return;
+    case 'pause-role': var r1 = S.roles[S.selRole||'translator']; r1.paused = !r1.paused; render(); demoSaved(); return;
+    case 'kill-role': S.roles[S.selRole||'translator'].killed = true; render(); demoSaved(tt('Role stopped','Роль остановлена')); return;
+    case 'request-autonomy': S.pendingAutonomy = {by: persona, label: tt('Translator · machine translation of approved pieces → auto-publish allowed (E3)','Переводчик · машинный перевод одобренных материалов → автопубликация разрешена (E3)'), diff: tt('autonomy: auto with review → auto-publish allowed; standing policy "MT en→es" draft → active, expires 2027-01-30; cap 20 items/day','автономия: авто с проверкой → автопубликация разрешена; политика «MT en→es» черновик → активна, истекает 2027-01-30; лимит 20 материалов/день')}; renderNav(); render(); toast(tt('Request sent to Approvals. You cannot approve it yourself.','Запрос отправлен в «Согласования». Вы не можете одобрить его сами.')); return;
+    case 'autonomy-approve': S.policyActive = true; S.roles.translator.autonomy.translation = 'autoPublish'; S.pendingAutonomy = null; renderNav(); render(); demoSaved(tt('Second person approved','Второе лицо одобрило')); return;
+    case 'autonomy-decline': S.pendingAutonomy = null; renderNav(); render(); demoSaved(); return;
+    case 'retry-run': demoSaved(tt('New run r-1043 linked to r-1037','Новый запуск r-1043 связан с r-1037')); break;
+    case 'cap': demoSaved(); break;
+  }
+  render();
+});
+document.addEventListener('change', function(e){
+  if (e.target.id === 'roleSel') { S.selRole = e.target.value; render(); return; }
+  if (e.target.dataset && e.target.dataset.aut) {
+    var rid = S.selRole || 'translator';
+    if (e.target.value === 'autoPublish') { e.target.value = S.roles[rid].autonomy[e.target.dataset.aut] || 'off'; toast(tt('Use "Sign and request activation": auto-publish needs a standing policy and a second person.','Используйте «Подписать и запросить активацию»: автопубликации нужны постоянная политика и второе лицо.')); return; }
+    S.roles[rid].autonomy[e.target.dataset.aut] = e.target.value; demoSaved(tt('New settings version drafted','Создана новая версия настроек'));
+  }
+});
+L10N.mount(document.getElementById('langPicker')); L10N.onChange(function(next){lang=next;renderNav();render();});
+document.getElementById('persona').addEventListener('change', function(e){ persona = e.target.value; render(); toast(tt('Persona: ','Персона: ') + personaName(persona)); });
+document.getElementById('themeBtn').addEventListener('click', function(){ var r = document.documentElement; var cur = r.getAttribute('data-theme'); var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; r.setAttribute('data-theme', dark ? 'light' : 'dark'); });
+document.getElementById('navToggle').addEventListener('click', function(){ var n = document.getElementById('sideNav'); var open = n.classList.toggle('open'); this.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+renderNav(); render();
+})();
+</script>
+</body>
+</html>
