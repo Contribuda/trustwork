@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "Оригинал на языке {language}",
+    "machineTranslation": "Перевод с помощью ИИ",
+    "retracted": "Отозвано: {note}",
+    "withheld": "Материал недоступен.",
+    "sources": "Источники и лицензии",
+    "nextUnknown": "Дата следующего выпуска ещё не объявлена.",
+    "pdfEdition": "Выпуск {number} · Редакция {edition} · {date}",
+    "pdfVersion": "Версия {version} · Язык: {language}",
+    "pdfCorrection": "Исправление: {note}",
+    "pdfAssisted": "Подготовлено с помощью ИИ; ответственность несут указанные авторы."
+  }
+}

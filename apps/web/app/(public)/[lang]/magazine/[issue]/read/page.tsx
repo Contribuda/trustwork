@@ -34,7 +34,7 @@ export default async function ReadPage({ params }: Params) {
   if (!found) notFound();
   const { issue, previous, next } = found;
   const covers: Record<number, ReaderCover> = Object.fromEntries(
-    issue.items.map((item) => {
+    (issue.live ? [] : issue.items).map((item) => {
       const media = storyCover({ id: item.publicationId, slug: item.slug, format: 'article' });
       return [item.position, { src: media.src, srcSet: media.type === 'photo' ? media.srcSet : null, alt: media.alt, author: media.type === 'photo' ? media.author : null }];
     }),
@@ -65,7 +65,7 @@ export default async function ReadPage({ params }: Params) {
       covers={covers}
       authors={authors}
       related={related}
-      nextDate={longDate(issue.nextReleaseAt)}
+      nextDate={issue.nextReleaseAt ? longDate(issue.nextReleaseAt) : ''}
       previousIssue={previous ? { number: previous.number, title: previous.title, href: previous.readerHref } : null}
       nextIssue={next ? { number: next.number, title: next.title, href: next.readerHref } : null}
     />

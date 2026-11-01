@@ -1,3 +1,5 @@
+import { apiOrigin } from './config';
+import { contentData } from './content';
 import { cache } from 'react';
 import {
   CompanyDirectoryPageSchema,
@@ -46,7 +48,7 @@ import {
 /**
  * Live implementation of the `DataPort` (WEB-004) on the implemented `/v1/*` endpoints. Server rendering reads with
  * the visitor's session cookie (workspace) or without any cookie (public pages, so a public page shows exactly what
- * every visitor sees). Modules the API does not serve yet (editorial, events, magazine, academy, procurement, sales,
+ * every visitor sees). Modules the API does not serve yet (events, academy, procurement, sales,
  * assistant) answer empty lists and `null`, which pages render as their empty or not-found states: in live mode no
  * fixture ever reaches a page. Every response is parsed with the frozen contract schema before mapping.
  */
@@ -83,7 +85,7 @@ function segment(value: string): string {
   return encodeURIComponent(value);
 }
 
-export function createHttpDataPort(transport: Transport): DataPort {
+export function createHttpDataPort(transport: Transport, pdfAvailable?: (path: string) => Promise<boolean>): DataPort {
   /** `GET /v1/me` once per request (React request cache); `null` without a valid session. */
   const me = cache(async () => {
     if (!(await transport.hasSession())) return null;
@@ -335,12 +337,10 @@ export function createHttpDataPort(transport: Transport): DataPort {
 
   return {
     source: 'api',
+    ...contentData(transport, pdfAvailable),
     getHome,
     listEvents: empty,
     getEvent: none,
-    listNews: empty,
-    listArticles: empty,
-    getPublication: none,
     listCompanies,
     getCompany,
     listPeople,
@@ -349,18 +349,12 @@ export function createHttpDataPort(transport: Transport): DataPort {
     getPublicProject,
     listCourses: empty,
     getPlatformCertificate: none,
-    getMagazine: async () => ({ current: null, archive: [] }),
-    listRubrics: empty,
-    listRubricEntries: empty,
-    listMagazineAuthors: empty,
-    getIssue: none,
     getLegalDocuments,
     getOverview,
     listRfqs: async (principal) => (person(principal), []),
     listLeads: async (principal) => (person(principal), []),
     listWorkspaceProjects,
     getWorkspaceProject,
-    listMyPublications: async (principal) => (person(principal), []),
     getCompanyWorkspace,
     getMe,
     getAssistant: async (principal) => (person(principal), { summary: { running: 0, approvals: 0, unknown: 0, unread: 0 }, mandates: [], approvals: [], runs: [] }),
@@ -370,4 +364,7 @@ export function createHttpDataPort(transport: Transport): DataPort {
 }
 
 /** The live adapter of this process: the configured API origin and the current request's cookies. */
-export const httpDataPort: DataPort = createHttpDataPort(createTransport());
+export const httpDataPort: DataPort = createHttpDataPort(createTransport(), async path => {
+  const response = await fetch(`${apiOrigin()}${path}`, { method: 'HEAD', cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(10_000) });
+  return response.ok && response.headers.get('content-type')?.startsWith('application/pdf') === true;
+});

@@ -1,4 +1,5 @@
-import { Controller, Get, HttpCode, Inject, Post, UseGuards } from '@nestjs/common';
+import type { FastifyReply } from 'fastify';
+import { Controller, Get, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
 import type { z } from 'zod';
 import { Authenticated, Idempotent, Req, ReqState, type RequestState, type TrustworkRequest } from '../../common/request.js';
 import { Body, Params, Query } from '../../common/zod.js';
@@ -142,6 +143,15 @@ export class PublicContentController {
   @Get('magazine/issues')
   archive(@Query(ArchiveQuerySchema) query: P<typeof ArchiveQuerySchema>) {
     return this.content.archive(query.year);
+  }
+
+  @Get('magazine/issues/:number/pdf')
+  async pdf(@Params(IssueNumberParams) params: P<typeof IssueNumberParams>, @Query(IssueQuerySchema) query: P<typeof IssueQuerySchema>, @Res() reply: FastifyReply) {
+    const artifact = await this.content.pdf(params.number, query.edition);
+    return reply.header('Cache-Control', 'private, no-store').header('X-Content-Type-Options', 'nosniff')
+      .header('Content-Disposition', `attachment; filename="issue-${params.number}-edition-${artifact.edition}.pdf"`)
+      .header('Content-Security-Policy', "default-src 'none'; sandbox")
+      .type('application/pdf').send(artifact.bytes);
   }
 
   @Get('magazine/issues/:number')

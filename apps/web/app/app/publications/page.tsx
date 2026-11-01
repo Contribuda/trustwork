@@ -4,7 +4,7 @@ import { ArrowRight, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { PageHeader } from '@/components/workspace/parts';
 import { PublicationListRow } from '@/components/workspace/WorkRows';
-import { data } from '@/app/_lib/data';
+import { data, DATA_SOURCE } from '@/app/_lib/data';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { t } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';
@@ -86,10 +86,10 @@ export default async function PublicationsPage({ searchParams }: { searchParams:
               <strong>{count('draft')}</strong>
               <span>{t('publications.stats.drafts')}</span>
             </li>
-            <li className="ws-stat">
+            {DATA_SOURCE === 'fixtures' ? <li className="ws-stat">
               <strong>{all.reduce((a, r) => a + r.shownIn.filter((s) => s.kind === 'issue').length, 0)}</strong>
               <span>{t('publications.stats.inIssues')}</span>
-            </li>
+            </li> : null}
           </ul>
           <div className="ws-card">
             <h2 className="ws-h2">

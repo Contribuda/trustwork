@@ -15,6 +15,7 @@ export type ArticleFormat = 'analysis' | 'practice' | 'experience' | 'opinion' |
 export type AuthorKind = 'editorial' | 'person' | 'company';
 
 export type PublicationCard = {
+  live?: boolean;
   id: string;
   slug: string;
   href: string;
@@ -40,6 +41,7 @@ export type PublicationCard = {
 
 export type PublicationDetail = PublicationCard & {
   body: string;
+  content?: { language: string; notices: string[]; sources: Array<{ name: string; url: string | null; licence: string | null }>; modifiedAt: string; retracted: boolean };
   version: number;
   correction: { note: string; date: string; fromVersion: number } | null;
   history: Array<{ version: number; publishedAt: string | null; note: string | null }>;
@@ -272,6 +274,7 @@ export type ProjectDetail = ProjectCard & {
 export type RubricKey = 'analysis' | 'practice' | 'report' | 'interview' | 'people' | 'projectStory' | 'materials' | 'opinion' | 'week' | 'numbers' | 'qa';
 
 export type IssueItem = {
+  correctionNote?: string | null;
   position: number;
   section: string;
   rubric: RubricKey;
@@ -311,7 +314,7 @@ export type IssueView = {
   dateTo: string;
   releasedAt: string;
   /** Planned date of the next weekly issue (released + 7 days). */
-  nextReleaseAt: string;
+  nextReleaseAt: string | null;
   edition: number;
   status: 'released' | 'corrected';
   itemsCount: number;
@@ -320,7 +323,8 @@ export type IssueView = {
   /** Distinct rubrics in item order. */
   rubrics: RubricKey[];
   items: IssueItem[];
-  pdf: { state: 'pending' } | { state: 'ready'; size: string; pages: number };
+  pdf: { state: 'pending' } | { state: 'ready'; size: string; pages: number } | { state: 'available'; href: string };
+  live?: boolean;
   poll: IssuePoll | null;
   glossary: GlossaryEntry[];
   corrections: Array<{ id: string; itemTitle: string; summary: string; date: string; fromEdition: number; toEdition: number }>;

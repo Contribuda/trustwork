@@ -26,9 +26,9 @@ export type FeedRowProps = {
 export function FeedRow({ card, kicker, chip, lines = [], flag, external, inlineMeta }: FeedRowProps) {
   return (
     <article className="feed-row">
-      <div className="feed-row__media" aria-hidden="true">
+      {!card.live ? <div className="feed-row__media" aria-hidden="true">
         <MediaFrame media={storyCover(card)} ratio="fill" radius="none" sizes="(max-width: 767px) 96px, 216px" />
-      </div>
+      </div> : null}
       <div className="feed-row__body">
         <span className="pub-kicker">{kicker}</span>
         <h3 className="feed-row__title">

@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import type { z } from 'zod';
 import { DIGEST_ALGORITHM, type Principal } from '../../deps/contracts.js';
 import { auditEvents, outbox, type Transaction } from '../../deps/data.js';
@@ -351,6 +352,14 @@ export class ContentService {
       });
     });
   }
+  pdf(number: number, edition: number | undefined) {
+    const hubId = this.hub();
+    return this.read(async trx => {
+      const row = (await sql<{ bytes: Buffer; sha256: string; edition: number }>`SELECT * FROM trustwork.content_public_pdf(${hubId}::uuid, ${number}, ${edition ?? null}::integer)`.execute(trx)).rows[0];
+      if (!row) throw new ApiError('access.not_found', 'not found');
+      return row;
+    });
+  }
   archive(year: number | undefined) {
     const hubId = this.hub();
     return this.read(async (trx) => ArchiveSchema.parse({ issues: (await publicContent.archive(trx, hubId, year ?? null)) ?? [] }));
@@ -440,7 +449,7 @@ export class ContentService {
   requestRender(e: Elevated, id: string, body: In<typeof RequestRenderCommandSchema>) {
     return this.staffRun(e, body, async (trx, c) => {
       const render = await issues.requestRender(trx, c, id, body.edition, body.format);
-      // The renderer (Designed) picks the job up from the outbox; identifiers only.
+      // The opt-in local renderer picks the job up from the outbox; identifiers only.
       await outbox.append(trx, { aggregate_kind: 'issue', aggregate_id: id, revision: render.revision, type: 'issue.render_requested', payload: { issueId: id, renderId: render.id, edition: body.edition, format: body.format } });
       return this.issueView(trx, (await issues.get(trx, id)) as IssueRow);
     });

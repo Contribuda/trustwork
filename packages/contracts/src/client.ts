@@ -26,6 +26,7 @@ export * from './sales.js';
 export * from './transactions.js';
 export * from './execution.js';
 export * from './content.js';
+export * from './content-reader.js';
 export * from './billing.js';
 export * from './assistant.js';
 export * from './agent-catalog.js';

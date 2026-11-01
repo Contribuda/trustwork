@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "Orijinalın dili: {language}",
+    "machineTranslation": "Maşın dəstəkli tərcümə",
+    "retracted": "Geri götürülüb: {note}",
+    "withheld": "Bu material əlçatan deyil.",
+    "sources": "Mənbələr və lisenziyalar",
+    "nextUnknown": "Növbəti buraxılışın tarixi hələ elan edilməyib.",
+    "pdfEdition": "Buraxılış {number} · Nəşr {edition} · {date}",
+    "pdfVersion": "Versiya {version} · Dil: {language}",
+    "pdfCorrection": "Düzəliş: {note}",
+    "pdfAssisted": "Süni intellektin köməyi ilə hazırlanıb; məsuliyyət göstərilən müəlliflərdə qalır."
+  }
+}

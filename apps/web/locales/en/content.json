@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "Original in {language}",
+    "machineTranslation": "Machine-assisted translation",
+    "retracted": "Retracted: {note}",
+    "withheld": "This material is unavailable.",
+    "sources": "Sources and licences",
+    "nextUnknown": "The next issue date has not been announced.",
+    "pdfEdition": "Issue {number} · Edition {edition} · {date}",
+    "pdfVersion": "Version {version} · Language: {language}",
+    "pdfCorrection": "Correction: {note}",
+    "pdfAssisted": "AI-assisted preparation; responsibility remains with the credited authors."
+  }
+}

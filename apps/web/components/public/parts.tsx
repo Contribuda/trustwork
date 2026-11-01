@@ -166,7 +166,7 @@ export function Story({
       chips={chips ? card.topics.slice(0, 2).map(topicLabel) : undefined}
       dek={size === 's' ? undefined : typo(card.lede)}
       meta={storyMeta(card, { showEvent, short: size === 's' })}
-      media={withMedia ? storyCover(card) : undefined}
+      media={withMedia && !card.live ? storyCover(card) : undefined}
       size={size}
       layout={layout}
       headingLevel={headingLevel}

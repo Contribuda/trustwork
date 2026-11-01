@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "Original en {language}",
+    "machineTranslation": "Traducción asistida por máquina",
+    "retracted": "Retirado: {note}",
+    "withheld": "Este material no está disponible.",
+    "sources": "Fuentes y licencias",
+    "nextUnknown": "La fecha del próximo número aún no se ha anunciado.",
+    "pdfEdition": "Número {number} · Edición {edition} · {date}",
+    "pdfVersion": "Versión {version} · Idioma: {language}",
+    "pdfCorrection": "Corrección: {note}",
+    "pdfAssisted": "Preparación asistida por IA; la responsabilidad sigue siendo de los autores acreditados."
+  }
+}

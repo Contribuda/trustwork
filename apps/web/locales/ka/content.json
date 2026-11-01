@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "ორიგინალის ენა: {language}",
+    "machineTranslation": "მანქანური დახმარებით თარგმანი",
+    "retracted": "გაუქმებულია: {note}",
+    "withheld": "ეს მასალა მიუწვდომელია.",
+    "sources": "წყაროები და ლიცენზიები",
+    "nextUnknown": "შემდეგი ნომრის თარიღი ჯერ არ გამოცხადებულა.",
+    "pdfEdition": "ნომერი {number} · გამოცემა {edition} · {date}",
+    "pdfVersion": "ვერსია {version} · ენა: {language}",
+    "pdfCorrection": "შესწორება: {note}",
+    "pdfAssisted": "მომზადებულია ხელოვნური ინტელექტის დახმარებით; პასუხისმგებლობა მითითებულ ავტორებს ეკისრებათ."
+  }
+}
