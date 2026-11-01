@@ -12,6 +12,7 @@ import { GROUP as billing } from '../hubs/[hub]/billing/_group.js';
 import { GROUP as integrations } from '../hubs/[hub]/integrations/_group.js';
 import { GROUP as automation } from '../hubs/[hub]/automation/_group.js';
 import { GROUP as communications } from '../hubs/[hub]/communications/_group.js';
+import { GROUP as outreach } from '../hubs/[hub]/outreach/_group.js';
 import { GROUP as federation } from '../hubs/[hub]/federation/_group.js';
 import { GROUP as privacy } from '../hubs/[hub]/privacy/_group.js';
 import { GROUP as staff } from '../hubs/[hub]/staff/_group.js';
@@ -20,7 +21,7 @@ import { GROUP as ops } from '../hubs/[hub]/ops/_group.js';
 export type { GroupDef, GroupId, SectionDef, SectionStatus } from './section-types.js';
 
 /** Every group of the hub console in navigation order (the section map of docs/engine/hub-console/README.md). */
-export const GROUPS: readonly GroupDef[] = [home, hub, participants, support, editorial, data, modules, trust, agents, billing, integrations, automation, communications, federation, privacy, staff, ops];
+export const GROUPS: readonly GroupDef[] = [home, hub, participants, support, editorial, data, modules, trust, agents, billing, integrations, automation, communications, outreach, federation, privacy, staff, ops];
 
 export type SectionRef = { group: GroupDef; section: SectionDef };
 

@@ -59,8 +59,8 @@ const LATIN_OK = /\b(Trustwork|OpenRouter|HTTPS|localhost|Tab|Escape|ISO|US|UZ|e
 async function expectNoEnglish(page: Page) {
   const text = (await uiText(page)).replace(/\S+@\S+/g, ' ').replace(/\b[a-z0-9]+(?:[.-][a-z0-9]+)+\b/g, ' ').replace(/\b[A-Z]{2}(?:-[A-Z0-9]{1,3})?(?::[a-z0-9-]+)?\b/g, ' ').replace(LATIN_OK, ' ');
   const latin = text.match(/\b[A-Za-z]{3,}\b/g) ?? [];
-  expect(latin, `English copy found: ${[...new Set(latin)].join(', ')}`).toEqual([]);
-  expect(text).toMatch(/[А-Яа-яЁё]{3,}/);
+  expect(latin, `${page.url()}: English copy found: ${[...new Set(latin)].join(', ')}`).toEqual([]);
+  expect(text).toMatch(/[\u10A0-\u10FF]{3,}/); // Georgian script: the page really is localized
 }
 
 test.describe('hub console: who can reach it', () => {
@@ -257,7 +257,10 @@ test.describe('hub console in English', () => {
   });
 });
 
-test.describe('hub console in Russian', () => {
+test.describe('hub console in Georgian', () => {
+  // Russian is not maintained (ADR 009 decision 11) and falls back to English; Georgian is a maintained non-Latin
+  // language, so any Latin word on these screens is English copy that escaped the locale files.
+  test.use({ storageState: { cookies: [cookie('trustwork.locale', 'ka'), cookie('trustwork.country', 'UZ')], origins: [] } });
   test('no English copy on the Samarkand hub screens, the hub list, a designed page and the wizard', async ({ page }) => {
     const paths = [
       at('/admin', 'node-operator'),
@@ -274,8 +277,8 @@ test.describe('hub console in Russian', () => {
       await expectNoEnglish(page);
     }
     await page.goto(at(SAM, 'node-operator'));
-    await expect(page.getByTestId('admin-hub-name')).toHaveText('Trustwork Самарканд (пример)');
-    await expect(page.getByTestId('admin-demo-band')).toContainText('Демонстрационные данные');
+    await expect(page.getByTestId('admin-hub-name')).toHaveText('Trustwork Samarqand (namuna)');
+    await expect(page.getByTestId('admin-demo-band')).toContainText('სადემონსტრაციო მონაცემები');
   });
 });
 

@@ -93,7 +93,8 @@
       "federation": "Federasiya",
       "privacy": "Məxfilik",
       "staff": "Kadrlar və audit",
-      "ops": "İstismar"
+      "ops": "İstismar",
+      "outreach": "Müraciətlər"
     },
     "sections": {
       "home": {
@@ -222,6 +223,16 @@
         "incidents": "İnsidentlər",
         "locales": "Dillər",
         "accessibility": "Əlçatanlıq"
+      },
+      "outreach": {
+        "overview": "İcmal",
+        "policies": "Siyasətlər",
+        "campaigns": "Kampaniyalar",
+        "templates": "Şablonlar",
+        "replies": "Cavablar",
+        "suppression": "Blok siyahısı",
+        "deliverability": "Çatdırılma",
+        "lifecycle": "Həyat dövrü ssenariləri"
       }
     },
     "common": {

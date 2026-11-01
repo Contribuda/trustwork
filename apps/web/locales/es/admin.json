@@ -93,7 +93,8 @@
       "federation": "Federación",
       "privacy": "Privacidad",
       "staff": "Personal y auditoría",
-      "ops": "Operaciones"
+      "ops": "Operaciones",
+      "outreach": "Contacto"
     },
     "sections": {
       "home": {
@@ -222,6 +223,16 @@
         "incidents": "Incidentes",
         "locales": "Idiomas",
         "accessibility": "Accesibilidad"
+      },
+      "outreach": {
+        "overview": "Resumen",
+        "policies": "Políticas",
+        "campaigns": "Campañas",
+        "templates": "Plantillas",
+        "replies": "Respuestas",
+        "suppression": "Supresión",
+        "deliverability": "Entregabilidad",
+        "lifecycle": "Recorridos del ciclo de vida"
       }
     },
     "common": {

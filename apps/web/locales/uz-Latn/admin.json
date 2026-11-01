@@ -93,7 +93,8 @@
       "federation": "Federatsiya",
       "privacy": "Maxfiylik",
       "staff": "Xodimlar va audit",
-      "ops": "Ekspluatatsiya"
+      "ops": "Ekspluatatsiya",
+      "outreach": "Murojaatlar"
     },
     "sections": {
       "home": {
@@ -222,6 +223,16 @@
         "incidents": "Hodisalar",
         "locales": "Tillar",
         "accessibility": "Qulaylik"
+      },
+      "outreach": {
+        "overview": "Umumiy koʻrinish",
+        "policies": "Siyosatlar",
+        "campaigns": "Kampaniyalar",
+        "templates": "Shablonlar",
+        "replies": "Javoblar",
+        "suppression": "Bloklash roʻyxati",
+        "deliverability": "Yetkazilish",
+        "lifecycle": "Hayot sikli ssenariylari"
       }
     },
     "common": {

@@ -10308,7 +10308,7 @@
       "id": "OUTR-004",
       "title": "Console: discovery and outreach screens on fixtures",
       "area": "hubs-web",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "ADM-002",
         "OUTR-001"

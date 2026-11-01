@@ -65,7 +65,9 @@ const ROUTE_GROUP_PAGES: Array<[string, string]> = [
   ['/this-route-does-not-exist', 'public'],
 ];
 
-for (const [tag, country] of LOCALES.filter(([tag]) => ['en', 'ru', 'ka'].includes(tag))) {
+// Russian is not maintained (ADR 009 decision 11): it has no file for newer namespaces and falls back to English
+// there, so the route-group check runs on maintained languages in Latin and non-Latin scripts.
+for (const [tag, country] of LOCALES.filter(([tag]) => ['en', 'es', 'ka'].includes(tag))) {
   test(`${tag} pages receive only their route group's namespaces`, async ({ playwright, baseURL }) => {
     const signatures = namespaceSignatures(tag);
     const context = await playwright.request.newContext({ baseURL: baseURL!, extraHTTPHeaders: { cookie: `trustwork.country=${country}; trustwork.locale=${tag}` } });
