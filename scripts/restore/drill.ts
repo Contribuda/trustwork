@@ -440,7 +440,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
         readParts(target, ring, logical.manifest, (part) => new Promise<void>((ok) => (child.stdin.write(part) ? ok() : child.stdin.once('drain', ok)))).then(() => child.stdin.end(), reject);
       });
       const counts = (await logicalExec.psql('SELECT (SELECT count(*) FROM trustwork.person) || \'|\' || (SELECT count(*) FROM trustwork.evidence_artifact)')).split('|').map(Number);
-      check('logical dump restores into a scratch database with the seed counts', counts[0] === 3 && counts[1] === 6, { persons: counts[0], artifacts: counts[1] });
+      check('logical dump restores into a scratch database with the seed counts', counts[0] === (privacy ? 5 : 3) && counts[1] === 6, { persons: counts[0], artifacts: counts[1] });
     }
     if (options.pitrCheck) {
       const pitrTarget = pitr.target;
@@ -468,6 +468,11 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
         const pitrAdmin = pool(pitrUrl);
         const pitrFence = new HbaFence(pexec, `${PGDATA}/pg_hba.conf`);
         check('PITR privacy replay starts behind the runtime fence', await pitrFence.isApplied());
+        const older = (await pitrAdmin.query<{ active: boolean; requests: number; plans: number }>(`SELECT active,
+          (SELECT count(*)::int FROM trustwork.privacy_source_request WHERE id=$2) AS requests,
+          (SELECT count(*)::int FROM trustwork.privacy_source_plan WHERE id=$3) AS plans
+          FROM trustwork.sourced_record_field WHERE id=$1`, [privacy.sourceV2!.fieldId, privacy.sourceV2!.requestId, privacy.sourceV2!.planId])).rows[0]!;
+        check('source-v2 physical PITR predates the exact request, plan and deactivation', older.active && older.requests === 0 && older.plans === 0, older);
         await reconcileRestore({ admin: pitrAdmin, restoreId: `${id}-pitr`, recoveryPoint: recoveryPoint!, restoreStartedAt, journal, operator: OPERATOR });
         await authorizePrivacyDrill(privacy, pitrUrl, pitrProject, `${id}-pitr`);
         const result = await verifyPrivacyDrill(privacy, pitrAdmin, pool(url(pitrProject.port, 'trustwork_stack_worker', passwords.worker)));

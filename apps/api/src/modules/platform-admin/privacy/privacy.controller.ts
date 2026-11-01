@@ -49,7 +49,13 @@ export class PrivacyController {
     });
   }
   @Get('exports/:id') @Header('Cache-Control', 'no-store')
-  download(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>) { return this.privacy.download(state, params.id); }
+  download(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>, @Res() reply: FastifyReply) {
+    return this.privacy.download(state, params.id, async (result) => {
+      const delivered = finished(reply.raw, { cleanup: true });
+      reply.header('Cache-Control', 'no-store').send(result);
+      await delivered;
+    });
+  }
 }
 
 /** Platform privacy permission and a live elevation; no subject payload is returned to staff. */
