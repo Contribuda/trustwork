@@ -347,9 +347,10 @@ function GridInteractionExample() {
       <Checkbox isSelected={actionsEnabled} onChange={setActionsEnabled}>
         {t("table.rowActions")}
       </Checkbox>
-      <label>
+      <label className={s.stack}>
         {t("consoleKit.status")}
         <select
+          style={{ maxWidth: "100%" }}
           value={behavior}
           onChange={(event) => setBehavior(event.target.value)}
         >
