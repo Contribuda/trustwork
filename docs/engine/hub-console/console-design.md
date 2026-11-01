@@ -621,6 +621,8 @@ flowchart LR
 
 ### 8.2 Roles
 
+The roles below are organised into 23 business functions, each with one accountable person, human positions, presets and a hand-over flow between agents and people, in [The hub operating company](../hub-operating-company.md) (ADR 018, proposed); that chapter adds the agent roles for marketing, community, sales, finance, legal operations, people operations, quality, culture, research, events, localisation, procurement and network relations.
+
 Platform-wide operator roles proposed for the first release (the editorial roles, such as writer, layout designer, designer, photographer and illustrator agents, are designed in [the editorial agent team](../editorial-office.md#8-the-editorial-agent-team) and configured under Editorial → Team (HC-184 … HC-189); the Agent team roster lists them read-only beside the platform roles, with links, so the administrator sees every operator agent and every kill switch in one place):
 
 | Role | Prepares or does | Highest autonomy offered | Always human |

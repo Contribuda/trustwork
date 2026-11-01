@@ -2136,7 +2136,8 @@
         "docs/engine/billing.md",
         "docs/engine/country-specifics.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/hub-exchange-architecture.md"
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Add invoice, invoice_line, refund, payout_account (provider references only) and payout (packages/data/migrations/invoicing).",
@@ -2153,7 +2154,8 @@
         "Every agent usage, credit-pack and commission invoice line names its price or fee version (tested).",
         "No table or ledger account represents participants' money held by the hub or by Trustwork.",
         "A cross-border line's tax treatment names the jurisdictions considered and the rule source (for example export zero rating or reverse charge); the platform never collects tax on the parties' trade (tested).",
-        "On a cross-hub transaction a hub invoices fees only to its own participant (tested)."
+        "On a cross-hub transaction a hub invoices fees only to its own participant (tested).",
+        "Invoices, refunds and payouts expose provider-recorded entries in a shape the operator finance back office (BOOK-001) imports without a second source of truth."
       ],
       "paths": [
         "apps/api/src/modules/invoicing",
@@ -2179,7 +2181,8 @@
         "docs/engine/billing.md",
         "docs/engine/hub-console/README.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/hub-exchange-architecture.md"
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Implement commission and fee versions on marketplace_fee_version with category scope, effective dates and no overlapping active versions.",
@@ -2194,7 +2197,8 @@
         "The public price page lists every active version in every hub language.",
         "The public price page lists active agent plans, model and capability prices and credit packs as well as fees and commissions (tested).",
         "No fee or commission configuration key can change ranking, matching, recommendations or reputation (schema test).",
-        "On a cross-hub transaction each hub charges only its own participant; both hubs' fee versions are shown before acceptance and each node records the version shown to its participant (tested)."
+        "On a cross-hub transaction each hub charges only its own participant; both hubs' fee versions are shown before acceptance and each node records the version shown to its participant (tested).",
+        "Referral programme terms, when a hub runs one, are versioned, publicly disclosed and activated by a second person like fee versions, and never change ranking, matching, recommendations or reputation (tested)."
       ],
       "paths": [
         "apps/api/src/modules/billing/fees",
@@ -3071,7 +3075,8 @@
         "docs/data/retention-and-privacy.md",
         "docs/engine/trust-safety-privacy.md",
         "docs/engine/discovery-and-outreach.md",
-        "docs/adr/017-outreach-policy.md"
+        "docs/adr/017-outreach-policy.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Add privacy_request, privacy_preference, privacy_export, erasure_ledger (outside the restorable snapshot), legal_hold and data_broker_registration (packages/data/migrations/privacy).",
@@ -3089,7 +3094,8 @@
         "Legal holds suspend deletion with an audited reason; deadlines and retention bounds come from the pack, never from code.",
         "Export remains available after a plan ends and contains only the requester's own data and shared records they may read.",
         "After erasure the person receives no outreach and the next refresh does not re-import their data (test).",
-        "An objection submitted while an outreach batch is queued cancels the queued touches (concurrency test)."
+        "An objection submitted while an outreach batch is queued cancels the queued touches (concurrency test).",
+        "Privacy request response packages can be prepared by an operator agent at Draft; execution and every decision stay with people (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/platform-admin/privacy",
@@ -3613,7 +3619,8 @@
       "read": [
         "docs/engine/hub-console/operations.md",
         "docs/operations/runbook.md",
-        "docs/engine/hub-network.md"
+        "docs/engine/hub-network.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Implement backup records and drills against an isolated environment.",
@@ -3624,7 +3631,8 @@
         "A restore replays tombstones before reconnecting workers.",
         "A production migration without a fresh backup is refused (tested).",
         "Restore and production migration need two people.",
-        "Health aggregates include a federation tile (peers reachable, degraded, unreachable; tombstone deadlines missed) as node-level counts, and acknowledged security advisories link to the update screen with the affected-version check."
+        "Health aggregates include a federation tile (peers reachable, degraded, unreachable; tombstone deadlines missed) as node-level counts, and acknowledged security advisories link to the update screen with the affected-version check.",
+        "Backup, update and health data are available in a shape the IT and operations function dashboard (TEAM-006) reads without extra calls."
       ],
       "paths": [
         "apps/api/src/modules/operations",
@@ -4022,7 +4030,8 @@
         "OPS-004",
         "FED-001",
         "ADM-004",
-        "NET-001"
+        "NET-001",
+        "TEAM-002"
       ],
       "handbook": "docs/engine/hub-console/operations.md",
       "goal": "Wire the M6 sections and the node console to the API.",
@@ -4030,7 +4039,8 @@
         "docs/engine/hub-console/operations.md",
         "docs/engine/federation.md",
         "docs/engine/hub-console/console-design.md",
-        "docs/engine/hub-network.md"
+        "docs/engine/hub-network.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Implement the API adapter methods for federation peers, privacy requests, staff, audit, operations and node console.",
@@ -4040,7 +4050,8 @@
         "Erasure execution and restore need two people against the API (tested).",
         "Raising a peering level above syndicate needs a second approver.",
         "Invitations, just-in-time roles, access reviews and offboarding are wired to ADM-004; a revoked role ends elevation, eligible roles, pending approvals and admin clients at once (tested against the API).",
-        "NC-10 Directory service is wired to the directory module (NET-001); refusal rows show the place and dataset, never an address (tested)."
+        "NC-10 Directory service is wired to the directory module (NET-001); refusal rows show the place and dataset, never an address (tested).",
+        "Staff pages show the person's function positions and accountabilities, wired against TEAM-002 (new dependency)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/federation",
@@ -4064,7 +4075,9 @@
         "HUBC-020",
         "HUBC-021",
         "HUBC-022",
-        "HUBC-024"
+        "HUBC-024",
+        "TEAM-003",
+        "TEAM-006"
       ],
       "handbook": "docs/engine/hub-administration.md",
       "goal": "Umbrella for the console packages (HUBC-000, ADM-002, HUBC-002 to HUBC-010): the console is complete when every section described in the handbook works against the API with the guard rails proven end to end.",
@@ -4073,7 +4086,8 @@
         "docs/engine/hub-administration.md",
         "docs/design/screen-contracts/workspace/administration.md",
         "docs/engine/hub-console/console-design.md",
-        "docs/engine/hub-network.md"
+        "docs/engine/hub-network.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Run the full console browser plan against the API at three widths in every hub language of the US demo hub (en, es) and one other example hub.",
@@ -4085,7 +4099,8 @@
         "Activating a legal document without counsel approval fails.",
         "No console control sets a score, position or badge directly.",
         "The six flows of the console design (staff invite with approval, just-in-time elevation, case access grant, role change with the separation-of-duties check, configuration change with diff and second person, incident with kill switch and step-up) pass end to end against the API, including phone journeys at 375 px for the approvals inbox and the incident. The Users and Statistics areas pass their journeys against the API.",
-        "The network flows of docs/engine/hub-network.md pass end to end on the API: listing, peering request and acceptance with a second approver, an interaction-settings change with approval, suspension and defederation with the purge summary, an operator message thread and an advisory acknowledgement, including phone journeys."
+        "The network flows of docs/engine/hub-network.md pass end to end on the API: listing, peering request and acceptance with a second approver, an interaction-settings change with approval, suspension and defederation with the purge summary, an operator message thread and an advisory acknowledgement, including phone journeys.",
+        "End to end on the API at 1280, 768 and 375 px: a team preset applied in demo mode, a person added to a function position, a hand-over completed with a shadow period, and an offboarding that moves function accountability (new dependencies TEAM-003 and TEAM-006)."
       ],
       "paths": [
         "tests/web/admin/acceptance",
@@ -4742,7 +4757,8 @@
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/engine/hub-administration.md",
-        "docs/engine/hub-console/console-design.md"
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Implement staff-principal runs on queues with no access outside case grants.",
@@ -4752,7 +4768,8 @@
       "acceptance": [
         "Claims, sanctions, appeals, method releases and price activation are human-only (negative tests).",
         "No per-person staff analytics exist.",
-        "The hub operations assistant's jobs run as operator agent roles of the agent team (AGT-030) under operator grants with an accountable staff member; they never run under a participant's mandate."
+        "The hub operations assistant's jobs run as operator agent roles of the agent team (AGT-030) under operator grants with an accountable staff member; they never run under a participant's mandate.",
+        "The hub operations assistant jobs map to functions of the operating company (docs/engine/hub-operating-company.md) and run as their agent roles."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/operations",
@@ -7801,7 +7818,8 @@
         "docs/engine/hub-console/setup-wizard.md",
         "docs/engine/hubs.md",
         "docs/guides/hub-operator.md",
-        "docs/adr/012-integrator-decisions-2026-10-31.md"
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Run INST-001 on a clean machine and on one platform recipe that INST-001 marked as tested; record every command, prompt, output and duration exactly as observed.",
@@ -7812,7 +7830,8 @@
       "acceptance": [
         "A second person follows the guide on a clean machine without help and reaches a draft hub with a first administrator holding a second factor (recorded in the pull request).",
         "Every command in the guide was run at the head commit of the pull request; no secret, token or real personal data appears in the text or screenshots.",
-        "No step claims a capability the installer or wizard does not have; statuses follow the handbook labels."
+        "No step claims a capability the installer or wizard does not have; statuses follow the handbook labels.",
+        "The operator guide includes \"Before you start\" (eligibility, prerequisites and counsel questions), the team presets and the hand-over flow of the hub operating company chapter."
       ],
       "paths": [
         "docs/operators",
@@ -9010,7 +9029,8 @@
         "docs/engine/hub-console/operations.md",
         "apps/api/src/modules/platform-admin/README.md",
         "packages/contracts/src/hub.ts",
-        "packages/contracts/src/admin.ts"
+        "packages/contracts/src/admin.ts",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Add a staff-lifecycle contract (invitation, eligible assignment, activation request, access review campaign and item, offboarding record, effective access, role-change preview) in its own file; request any change to hub.ts or admin.ts from the integrator.",
@@ -9022,7 +9042,8 @@
         "Nobody invites, assigns, activates or reviews themselves; an invitation or activation for a sensitive role cannot take effect without a second person (negative tests on real PostgreSQL under the runtime role).",
         "An activation ends at its window end without a job having to run (checked at every request); a revoked role ends elevations, eligible roles, pending approvals and grants at once (tested).",
         "A role change whose preview is stale is refused; in full separation-of-duties mode a conflicting role is refused (tested).",
-        "No endpoint returns activity, productivity or behaviour metrics about a staff member (schema walk)."
+        "No endpoint returns activity, productivity or behaviour metrics about a staff member (schema walk).",
+        "Invitations may name a function position; offboarding cannot complete while the person owns a function or is accountable for an agent role and offers the hub owner as fallback, who must accept; an abrupt role loss suspends the affected agent roles at once (tested)."
       ],
       "paths": [
         "apps/api/src/modules/platform-admin/staff-lifecycle",
@@ -9127,7 +9148,8 @@
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/agent-catalog.md",
         "docs/engine/hub-console/user-agents-admin.md",
-        "docs/engine/editorial-office.md"
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Build HC-200 to HC-206 with fixtures for the platform-wide roles; list the editorial roles of EDIT-002 read-only with links to Editorial → Team (HC-184 … HC-189); every agent output labelled as agent work.",
@@ -9137,7 +9159,8 @@
       "acceptance": [
         "Enable stays blocked without a passing evaluation; widening a grant with a data class or commit capability shows the second-person requirement (fixtures).",
         "No control lets an operator agent decide a human-only decision; those appear as locked rows with explanations (scan).",
-        "Every agent shows its accountable person; an agent without one shows as suspended."
+        "Every agent shows its accountable person; an agent without one shows as suspended.",
+        "The roster and roles screens filter by function and show the function owner; a function without an owner shows its agents as paused with the reason (fixtures)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/agent-team",
@@ -9166,7 +9189,8 @@
         "docs/engine/hub-console/console-design.md",
         "docs/engine/modules/analytics.md",
         "docs/engine/hub-console/screens.md",
-        "docs/engine/hub-console/user-agents-admin.md"
+        "docs/engine/hub-console/user-agents-admin.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Build the screens with synthetic, labelled fixtures validated by the contracts; every chart with its data table.",
@@ -9177,7 +9201,8 @@
         "No screen, filter, drill-down or export leads to one participant or one staff member (scan and test).",
         "Counts under ten after segmentation render as \"fewer than 10\" and secondary suppression hides revealing cells (test).",
         "Money flows are labelled as recorded instructions to the licensed payment provider; a metric whose source is not live shows its status label, not a number (test).",
-        "Each dashboard is visible only to the roles its catalogue entry names (negative test per persona)."
+        "Each dashboard is visible only to the roles its catalogue entry names (negative test per persona).",
+        "Statistics dashboards can be filtered by function and are linked from the function dashboards (TEAM-006)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/statistics",
@@ -9209,7 +9234,8 @@
         "docs/engine/agent-catalog.md",
         "docs/engine/hub-console/user-agents-admin.md",
         "docs/engine/trust-safety-privacy.md",
-        "docs/engine/editorial-office.md"
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Add an operator-agents contract (role definition, operator grant, autonomy level, agent, run, review item) in its own file; request the additive hub.ts change for kill-switch scopes per operator agent and per role from the integrator.",
@@ -9222,7 +9248,8 @@
         "Sanctions and screening decisions, account suspensions and sanctions, money and commitments, appeals, legal holds, claim and link decisions, price activation and every HUMAN_GATES decision are unreachable for operator agents at every autonomy level (negative tests).",
         "An operator agent never reads or changes a participant's agent, mandates, settings or conversations, and never acts as a participant or a staff member (negative tests).",
         "An exhausted budget or an engaged kill switch stops queued and running work; release needs a second person and an incident note (tested).",
-        "Every output is labelled as agent work; no output, run or statistic carries per-person behaviour analytics."
+        "Every output is labelled as agent work; no output, run or statistic carries per-person behaviour analytics.",
+        "Every agent role belongs to one function of the operating company (functionKey); kill switches exist per function as well as per agent and per role; an agent can never be a function owner, position holder, approver or reviewer, nor counted for launch gates or separation of duties (negative tests); the stored autonomy scale is the one of the hub operating company chapter (Off, Observe, Draft, Act with review, Act within limits) with a separate trigger."
       ],
       "paths": [
         "apps/api/src/modules/agent-team",
@@ -9705,7 +9732,8 @@
       "read": [
         "docs/engine/vision.md",
         "docs/engine/hub-console/user-agents-admin.md",
-        "docs/engine/hub-console/console-design.md"
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/hub-operating-company.md"
       ],
       "steps": [
         "Define event and cohort contracts with suppression below the minimum cohort.",
@@ -9718,7 +9746,8 @@
         "No third-party tracker or advertising identifier is loaded by any page (browser test).",
         "A versioned metric catalogue (definition, formula, source projection, freshness, allowed segments, visibility roles, owner, status) backs every statistic the console shows (console design, section 7).",
         "Suppression is applied after segmentation, with secondary suppression so that no total, period difference or sibling segment reveals a suppressed cell (tested with differencing probes).",
-        "Funnels are counted by entry cohort and show a conversion only when both steps have at least ten; exports and scheduled reports are signed, suppressed, audited and sent only to staff who hold the permission when the report is sent (tests)."
+        "Funnels are counted by entry cohort and show a conversion only when both steps have at least ten; exports and scheduled reports are signed, suppressed, audited and sent only to staff who hold the permission when the report is sent (tests).",
+        "The metric catalogue carries the function KPIs of the hub operating company chapter as cohort metrics with an owning function; no metric about an individual staff member exists (schema walk)."
       ],
       "paths": [
         "apps/api/src/modules/analytics",
@@ -11934,6 +11963,394 @@
         "tests/contracts/launch-kit.test.ts",
         "data/launch-kits",
         "tests/launch-kits"
+      ]
+    },
+    {
+      "id": "TEAM-001",
+      "title": "Operating function catalogue, position model and team presets",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "AGT-030",
+        "ADM-004",
+        "HUB-004"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Give the hub operator company its organisational layer (ADR 018, proposed): the catalogue of 23 functions with reserved decisions, exactly one accountable person per enabled function, positions separate from staff roles, hire signals, and versioned team presets applied as configuration drafts.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/hub-console/setup-wizard.md",
+        "packages/contracts/src/hub.ts",
+        "packages/contracts/src/admin.ts"
+      ],
+      "steps": [
+        "Add the operating-company contract (function, accountability, position, hire signal, preset, preset step key) in its own file; request the additive staff roles, permission domains and second-person actions of the chapter from the integrator.",
+        "Implement function accountability with acceptance-only transfer and suspension of agent roles when no accountable person remains.",
+        "Ship the six presets as reviewed engine data and apply them as configuration drafts that start every role at Off, Observe or Draft.",
+        "Expose preset step keys and function keys for the launch playbooks."
+      ],
+      "acceptance": [
+        "Every enabled function has exactly one accountable person at every moment; removing that person's role suspends the function's agent roles until a person accepts (tested on real PostgreSQL under the runtime role).",
+        "No preset or setting starts a role above Draft except the operations monitor's incident paging and the analytics reporter's cohort reports; raising any role needs a second person (negative tests).",
+        "An agent can never be accountable for a function or hold a position (negative test); a function's reserved decisions cannot be removed by a hub or an extension.",
+        "Applying a preset in demo mode sends nothing outside the hub (tested with fakes)."
+      ],
+      "paths": [
+        "packages/contracts/src/operating-company.ts",
+        "apps/api/src/modules/operating-company/functions",
+        "apps/api/src/modules/operating-company/presets",
+        "packages/data/migrations/operating-company",
+        "packages/data/src/schema/operating-company.ts",
+        "packages/data/src/repositories/operating-company.ts",
+        "tests/operating-company/functions",
+        "tests/operating-company/presets"
+      ]
+    },
+    {
+      "id": "TEAM-002",
+      "title": "Human and agent hand-over: coverage states, shadowing, supervision and accountability transfer",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "TEAM-001",
+        "ADM-005"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Move work between operator agents and people without a gap and without surveillance: coverage states (agent-led, shadowing, supervised, human-led, retired), a previewed hand-over with confirmation, practice decisions visible only to their author, cut-over and hand-back.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add the hand-over contract (coverage, hand-over, practice decision) in its own file.",
+        "Implement the preview diff that the API recomputes at cut-over; route moved review items through the console work list (ADM-005).",
+        "Require a second person when accountability moves for a sensitive function or to a person invited less than 30 days ago.",
+        "Implement hand-back with a fresh evaluation and restart at Draft."
+      ],
+      "acceptance": [
+        "A cut-over moves review items exactly as previewed; a stale preview is refused (tested).",
+        "Practice decisions are readable only by their author and never applied (negative tests); no endpoint compares a named person with an agent.",
+        "Autonomy never rises through a hand-over; hand-back restarts the role at Draft after a passing evaluation (tested)."
+      ],
+      "paths": [
+        "packages/contracts/src/operating-handover.ts",
+        "apps/api/src/modules/operating-company/handover",
+        "packages/data/migrations/operating-handover",
+        "tests/operating-company/handover"
+      ]
+    },
+    {
+      "id": "TEAM-003",
+      "title": "Console Team section on fixtures: start, launch, functions, org chart, function page, hand-over and workplan",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "HUBC-020",
+        "HUBC-021",
+        "DS-003"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Build HC-200 to HC-206 of the hub operating company chapter on fixtures: Before you start, Launch your team, the functions view, the org chart with accountability lines (list view primary), the function page, the hand-over flow and the workplan.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Build the screens with synthetic, labelled fixtures for every preset; agents labelled as agents with abstract icons.",
+        "Add the opsTeam namespace in every engine language.",
+        "Playwright and axe at 1280, 768 and 375 px."
+      ],
+      "acceptance": [
+        "The org chart has an equivalent list view that is the primary accessible view; agents are marked \"Agent\" in text (scan).",
+        "A function without an owner shows its agents as paused with the reason; reserved decisions appear as locked rows without controls (fixtures).",
+        "Practice-decision agreement is visible only on the shadowing person's own view (fixtures)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/team",
+        "apps/web/locales/en/operating-team.json",
+        "apps/web/locales/ru/operating-team.json",
+        "apps/web/locales/uz-Latn/operating-team.json",
+        "apps/web/locales/ka/operating-team.json",
+        "apps/web/locales/hy/operating-team.json",
+        "apps/web/locales/az-Latn/operating-team.json",
+        "apps/web/locales/es/operating-team.json",
+        "tests/web/admin/operating-team"
+      ]
+    },
+    {
+      "id": "TEAM-004",
+      "title": "Operator workplan: objectives, initiatives, milestones and the decision log",
+      "area": "platform-admin-backend",
+      "status": "open",
+      "dependsOn": [
+        "TEAM-001"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Give the operator company small internal project management: objectives with key results drawn from catalogue metrics, initiatives, milestones and tasks assigned to people or agent roles, and a decision log signed by the deciding person.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add the workplan contract in its own file.",
+        "Implement objectives, initiatives, milestones, tasks and decision records with audit.",
+        "Let the planning and chief-of-staff agent roles draft entries that a person accepts."
+      ],
+      "acceptance": [
+        "No workplan object can reference participant private data (schema walk).",
+        "A decision record is signed by a person, never by an agent (negative test).",
+        "Key results reference catalogue metrics and inherit their cohort suppression."
+      ],
+      "paths": [
+        "packages/contracts/src/operator-workplan.ts",
+        "apps/api/src/modules/operating-company/workplan",
+        "packages/data/migrations/operating-workplan",
+        "tests/operating-company/workplan"
+      ]
+    },
+    {
+      "id": "TEAM-005",
+      "title": "Operator back-office law per country (counsel research)",
+      "area": "product-research",
+      "status": "open",
+      "dependsOn": [],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Research, with primary sources, the questions the hub operating company raises per country: worker classification and volunteers, notices for staff systems, hiring tools, franchise and business-opportunity law for licensed city hubs, referral and advertising rules, platform tax reporting and revenue recognition, interview recording; produce counsel question packs, never conclusions.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Cover the United States (federal and the largest states), the EU, the UK and the four example packs first.",
+        "Record each finding with its source, date and a counsel question; mark secondary sources.",
+        "Propose country-pack fact keys where a fact is stable enough to become data."
+      ],
+      "acceptance": [
+        "Every statement cites a primary source or is marked secondary; no statement is phrased as legal advice.",
+        "Restricted places are excluded; Russia is not covered as a market."
+      ],
+      "paths": [
+        "docs/research/operator-back-office"
+      ]
+    },
+    {
+      "id": "TEAM-006",
+      "title": "Console function dashboards on fixtures: finance, marketing, community, quality, people and the standard layout",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "TEAM-003",
+        "HUBC-022"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Build HC-207 to HC-212: the finance dashboard with provider-recorded flows only, the marketing dashboard with labelled content and payment-neutrality locks, community, quality and standards (cohorts only), people operations, and the standard function dashboard layout.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Build the dashboards on synthetic fixtures with MetricChart and its data table.",
+        "Use the opsTeam namespace for shared strings and add function strings there.",
+        "Playwright and axe at 1280, 768 and 375 px."
+      ],
+      "acceptance": [
+        "Every money figure names its source (provider record or operator entry) and the locked rule that Trustwork never holds participants' money is shown (scan).",
+        "Quality and community tables show no named company or person and suppress cohorts under ten (fixtures).",
+        "Marketing shows every promoted item labelled and the payment-neutrality locks without controls."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/functions",
+        "tests/web/admin/function-dashboards"
+      ]
+    },
+    {
+      "id": "BOOK-001",
+      "title": "Operator finance back office: the hub's own books through accounting providers",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "BILL-002",
+        "BILL-003",
+        "AGT-004",
+        "KEYS-001",
+        "TEAM-001"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Keep the hub operator's own books without ever holding participants' money: ledger entry drafts from payment-provider and accounting-provider feeds through adapters with fakes, revenue records for subscriptions and credits under the accountant's policy, tax preparation packs per country pack, budgets per function and model cost forecasts.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/billing.md"
+      ],
+      "steps": [
+        "Add the operator-finance contract and an accounting provider port with a fake adapter.",
+        "Implement entry drafts, reconciliation links to BILL-002 records, revenue schedules, tax packs and budgets per function.",
+        "Let finance agent roles draft at Draft; approvals of the close and every money action stay with people."
+      ],
+      "acceptance": [
+        "No code path moves money or creates a balance of participants' funds (negative tests); payout release still needs billing.release_payout_batch with a second person.",
+        "Every figure carries its source (provider reference or operator entry); unknown outcomes go to reconciliation and are never retried blindly (tested).",
+        "Tax packs are labelled as preparation for the operator's accountant, never as filings."
+      ],
+      "paths": [
+        "packages/contracts/src/operator-finance.ts",
+        "apps/api/src/modules/operator-finance",
+        "packages/data/migrations/operator-finance",
+        "packages/data/src/schema/operator-finance.ts",
+        "packages/data/src/repositories/operator-finance.ts",
+        "tests/operator-finance"
+      ]
+    },
+    {
+      "id": "PEOP-001",
+      "title": "People operations for hub staff: positions, recruiting coordination, onboarding, training and offboarding plans",
+      "area": "platform-admin-backend",
+      "status": "open",
+      "dependsOn": [
+        "ADM-004",
+        "TEAM-001"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Support the people who work for the hub without surveillance and without automated decisions about them: position openings, interview coordination, onboarding checklists that create ADM-004 requests a person submits, training paths per role, offboarding plans that list work and accountability to move.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add the people-ops contract in its own file with no scoring, ranking or activity fields.",
+        "Implement openings, checklists, training paths and offboarding plans with retention set by the hub's counsel-approved policy.",
+        "Let people-operations agent roles draft only."
+      ],
+      "acceptance": [
+        "No field, endpoint or agent capability scores, ranks, shortlists or rejects a candidate or a staff member (schema walk and negative tests).",
+        "No activity, productivity, sentiment or last-seen measure about staff exists (schema walk).",
+        "Candidate data is deleted at the end of the configured retention (tested)."
+      ],
+      "paths": [
+        "packages/contracts/src/people-ops.ts",
+        "apps/api/src/modules/people-ops",
+        "packages/data/migrations/people-ops",
+        "tests/people-ops"
+      ]
+    },
+    {
+      "id": "QUAL-001",
+      "title": "Regional quality and standards programme",
+      "area": "analytics",
+      "status": "open",
+      "dependsOn": [
+        "ANL-001",
+        "LRN-001",
+        "TEAM-001"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Help the hub raise construction quality in its region: cohort reports of disputes, defects, corrections and confirmed completions by trade, category, territory and period; a standards guides pipeline through the editorial workflow; learning programmes with partners; recognition programmes decided by a human panel and never affecting ranking.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add the quality-programme contract in its own file.",
+        "Implement cohort reports with suppression under ten and secondary suppression.",
+        "Implement recognition programmes with published criteria, panel decisions with declared conflicts and labelled results."
+      ],
+      "acceptance": [
+        "No report names a company or person or shows a cohort under ten (tested with secondary suppression).",
+        "Recognition never changes ranking, matching, recommendations or reputation scores (tested) and cannot be bought.",
+        "Programme criteria changes are versioned and require a person's activation."
+      ],
+      "paths": [
+        "packages/contracts/src/quality-programme.ts",
+        "apps/api/src/modules/quality-programme",
+        "packages/data/migrations/quality-programme",
+        "tests/quality-programme"
+      ]
+    },
+    {
+      "id": "GROW-001",
+      "title": "Marketing and growth function: campaigns, ads policy gate and referral programmes",
+      "area": "communications",
+      "status": "open",
+      "dependsOn": [
+        "TEAM-001",
+        "BILL-003"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Let the hub promote itself honestly: a campaign calendar with drafts approved by people, a deterministic ads policy gate (only the hub itself is promoted, labelled, no ranking claims, no sensitive targeting, consent-bound pixels), and referral programmes whose disclosed terms are versioned and activated by a second person.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add the growth contract in its own file.",
+        "Implement campaigns, the ads policy gate and referral programme versions with fraud flags for a person to review.",
+        "Let marketing agent roles draft; send only through approved channels after a person approves."
+      ],
+      "acceptance": [
+        "A campaign that sells or implies ranking, matching, reputation, verification or badges, or lacks a label, is refused by the gate (tested).",
+        "Referral rewards are the same for everyone, disclosed, and never change position (tested).",
+        "Nothing creates reviews, testimonials, follower counts or traffic (negative tests)."
+      ],
+      "paths": [
+        "packages/contracts/src/growth.ts",
+        "apps/api/src/modules/growth",
+        "packages/data/migrations/growth",
+        "tests/growth"
+      ]
+    },
+    {
+      "id": "CMTY-001",
+      "title": "Community programmes: member journeys, champions and local chapters",
+      "area": "communications",
+      "status": "open",
+      "dependsOn": [
+        "TEAM-001",
+        "EVT-001"
+      ],
+      "handbook": "docs/engine/hub-operating-company.md",
+      "goal": "Help members succeed and lead locally: onboarding and learning journeys inside members' own preferences, champions selected by people from public evidence, and local chapters with charters, organisers bound by written rules and event kits.",
+      "read": [
+        "docs/engine/hub-operating-company.md",
+        "docs/adr/018-hub-operating-company.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add the community-programmes contract in its own file.",
+        "Implement journeys, champion programmes and chapters; stipends and event budgets are disclosed fixed amounts recorded by finance.",
+        "Let community agent roles draft only."
+      ],
+      "acceptance": [
+        "Champions and organisers gain no ranking, matching or reputation advantage (tested); they are participants, never staff.",
+        "No per-member engagement score exists (schema walk); outcomes are cohorts.",
+        "Journey messages respect each member's notification preferences (tested)."
+      ],
+      "paths": [
+        "packages/contracts/src/community-programmes.ts",
+        "apps/api/src/modules/community-programmes",
+        "packages/data/migrations/community-programmes",
+        "tests/community-programmes"
       ]
     }
   ]

@@ -87,7 +87,7 @@ The engine refuses to switch a hub to **public** until every gate is green (HUB-
 
 ## Growing a hub
 
-The engine helps; people grow a community. A playbook distilled from the design:
+The engine helps; people grow a community. How one operator starts with a complete agent team, which functions a hub company needs and when to bring in people for each is designed in [The hub operating company](hub-operating-company.md) (proposed). A playbook distilled from the design:
 
 1. **Content first.** Start the news desk and the magazine before asking anyone to register. Register sources, invite three practitioners to write.
 2. **Real companies, honestly labelled.** Import a licensed register as "from sources", then invite companies to claim and verify their pages.
