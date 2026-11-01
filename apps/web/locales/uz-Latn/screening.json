@@ -203,7 +203,7 @@
       },
       "listControls": {
         "title": "Qo‘shimcha ro‘yxat sozlamalari",
-        "boundary": "Asosiy ro‘yxatlar doim faol. Fayl importi mamlakat paketidagi ro‘yxatdan o‘tgan manbalar va mavjud adapterlardan foydalanadi. Aniq sozlamani boshqa muvofiqlik xodimi tasdiqlaydi. Jonli yuklash provayderning alohida ruxsatini talab qiladi va bu yerda mavjud emas.",
+        "boundary": "Asosiy ro‘yxatlar doimo yoqilgan. Ro‘yxatdan o‘tgan manbani tanlang va o‘zgarish sababini ko‘rsating. Boshqa komplayens xodimi aynan shu sozlamalarni tasdiqlashi kerak. Bu yerda avtomatik yuklab olish mavjud emas.",
         "propose": "Fayl ro‘yxati sozlamasini taklif qilish",
         "source": "Ro‘yxatdan o‘tgan manba",
         "cadence": "Yangilash oralig‘i (soniya)",
@@ -211,7 +211,7 @@
         "stale": "Eskirish muddati (soniya)",
         "exportEvidence": "Rasmiy eksport tekshirildi",
         "reviewEvidence": "Manba fakti tekshirildi",
-        "noSources": "Mos eksport manbasi ro‘yxatdan o‘tmagan. So‘rov adapterlari va tekshirilmagan faktlar ro‘yxat importi uchun yaroqsiz.",
+        "noSources": "Fayllarni import qilish uchun ro‘yxatdan o‘tgan manba mavjud emas.",
         "history": "Sozlamalar tarixi",
         "approve": "Sozlamani tasdiqlash",
         "pause": "Qo‘shimcha ro‘yxatni to‘xtatish",

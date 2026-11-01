@@ -107,15 +107,19 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
     </section>
     <section aria-labelledby="list-authority-heading"><h2 id="list-authority-heading">{c.listControls.title}</h2>
       <p>{c.listControls.boundary}</p>
+      {data.listAuthority.sources.map((source) => <article className="screening-card" key={source.id} data-testid="registered-list-source">
+        <h3>{source.name}</h3><p>{source.authority}</p><p>{source.sourceUrl}</p>
+        <details><summary>{c.evidence}</summary><p><code>{source.packCode} / {source.factId} / {source.adapter}</code></p><p>{c.digest}: <code>{source.sourceDigest}</code></p></details>
+      </article>)}
       {data.listAuthority.sources.length ? <ActionForm path="/v1/admin/screening/list-proposals" label={c.listControls.propose} copy={c} fixed={{hubId:data.hub.id}}
-        choices={{sourceId:{label:c.listControls.source,options:Object.fromEntries(data.listAuthority.sources.map((source)=>[source.id,`${source.packCode} / ${source.factId} / ${source.adapter}`]))}}}
+        choices={{sourceId:{label:c.listControls.source,options:Object.fromEntries(data.listAuthority.sources.map((source)=>[source.id,`${source.name} — ${source.authority}`]))}}}
         numbers={{cadenceSeconds:{label:c.listControls.cadence,value:86400,min:60,max:604800},warnAfterSeconds:{label:c.listControls.warning,value:259200,min:120,max:1209599},staleAfterSeconds:{label:c.listControls.stale,value:604800,min:180,max:1209600}}}
         evidence={{official_export:c.listControls.exportEvidence,source_review:c.listControls.reviewEvidence}} disabled={!mayAct} /> : <p>{c.listControls.noSources}</p>}
       <h3>{c.listControls.history}</h3><p>{c.historyLimit}</p>
       {data.listAuthority.proposals.map((proposal)=><article className="screening-card" key={proposal.id}>
         <h4>{c.listControls.proposalStates[proposal.state]}</h4>
-        <p>{c.listControls.source}: <code>{proposal.source.packCode} / {proposal.source.factId} / {proposal.source.adapter}</code></p>
-        <p><code>{proposal.source.sourceUrl}</code></p><p>{c.digest}: <code>{proposal.source.sourceDigest}</code></p>
+        <p>{c.listControls.source}: <strong>{proposal.source.name}</strong></p><p>{proposal.source.authority}</p><p>{proposal.source.sourceUrl}</p>
+        <details><summary>{c.evidence}</summary><p><code>{proposal.source.packCode} / {proposal.source.factId} / {proposal.source.adapter}</code></p><p>{c.digest}: <code>{proposal.source.sourceDigest}</code></p></details>
         <p>{c.evidence}: {proposal.evidence === 'official_export' ? c.listControls.exportEvidence : c.listControls.reviewEvidence}</p><p>{proposal.reason}</p><p>{fmtDate(proposal.createdAt)}</p>
         <dl><dt>{c.listControls.cadence}</dt><dd>{number(proposal.cadenceSeconds)}</dd><dt>{c.listControls.warning}</dt><dd>{number(proposal.warnAfterSeconds)}</dd><dt>{c.listControls.stale}</dt><dd>{number(proposal.staleAfterSeconds)}</dd></dl>
         <p>{c.digest}: <code>{proposal.actionDigest}</code></p>

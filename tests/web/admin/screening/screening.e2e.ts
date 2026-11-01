@@ -104,11 +104,20 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     }
     await page.goto(base);
     const configure = page.locator('form').filter({ has: page.getByRole('button', {name:c.listControls.propose,exact:true}) });
+    const sourceCard = page.getByTestId('registered-list-source');
+    await expect(sourceCard.getByRole('heading', {name:'Synthetic local export',exact:true})).toBeVisible();
+    await expect(sourceCard.getByText('Synthetic test authority', {exact:true})).toBeVisible();
+    await expect(sourceCard.getByText('https://ofac.treasury.gov/synthetic-test-only', {exact:true})).toBeVisible();
+    await expect(configure.getByLabel(c.listControls.source,{exact:true}).locator('option:checked')).toHaveText('Synthetic local export — Synthetic test authority');
     await configure.getByLabel(c.reason,{exact:true}).fill('Synthetic browser list source review');
     await configure.getByRole('button').click();
     await expect(page.getByRole('button',{name:c.listControls.approve,exact:true})).toBeDisabled();
     await reviewer.goto(base);
     const approveList = reviewer.locator('form').filter({has:reviewer.getByRole('button',{name:c.listControls.approve,exact:true})});
+    const sourceProposal = approveList.locator('xpath=ancestor::article');
+    await expect(sourceProposal.getByText('Synthetic local export',{exact:true})).toBeVisible();
+    await expect(sourceProposal.getByText('Synthetic test authority',{exact:true})).toBeVisible();
+    await expect(sourceProposal.getByText('https://ofac.treasury.gov/synthetic-test-only',{exact:true})).toBeVisible();
     await approveList.getByLabel(c.reason,{exact:true}).fill('Synthetic independent list configuration approval');
     await approveList.getByRole('button').click();
     await expect(reviewer.getByRole('heading',{name:c.listControls.proposalStates.approved,exact:true})).toBeVisible();

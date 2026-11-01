@@ -203,7 +203,7 @@
       },
       "listControls": {
         "title": "Configuración de listas adicionales",
-        "boundary": "Las listas base permanecen activas. La importación usa fuentes registradas del paquete de país y adaptadores implementados. Otro responsable de cumplimiento aprueba la configuración exacta. Las descargas requieren autorización independiente del proveedor y no están disponibles aquí.",
+        "boundary": "Las listas básicas permanecen activas. Elija una fuente registrada e indique el motivo del cambio. Otro responsable de cumplimiento debe aprobar la configuración exacta. Las descargas automáticas no están disponibles aquí.",
         "propose": "Proponer configuración desde archivo",
         "source": "Fuente registrada",
         "cadence": "Intervalo de actualización (segundos)",
@@ -211,7 +211,7 @@
         "stale": "Edad de caducidad (segundos)",
         "exportEvidence": "Exportación oficial comprobada",
         "reviewEvidence": "Fuente revisada",
-        "noSources": "No hay una fuente de exportación apta registrada. Los adaptadores de consultas y los datos sin revisar no permiten importar listas.",
+        "noSources": "No hay fuentes registradas disponibles para importar archivos.",
         "history": "Historial de configuración",
         "approve": "Aprobar configuración",
         "pause": "Pausar lista adicional",

@@ -1143,11 +1143,14 @@ export const ScreeningListDecisionSchema = z.strictObject({
 });
 export const ScreeningListStatusCommandSchema = z.strictObject({ status: z.enum(['active', 'paused']), reason: z.string().trim().min(1).max(500) });
 export const ScreeningListConfirmCommandSchema = z.strictObject({ reason: z.string().trim().min(1).max(500) });
+const ScreeningListSourceIdentity = {
+  name: z.string().min(1).max(500), authority: z.string().min(1).max(500), sourceUrl: z.url().max(2048),
+};
 export const ScreeningListAuthoritySchema = z.strictObject({
-  sources: z.array(z.strictObject({ id: z.uuid(), packCode: z.string(), packVersion: z.string(), factId: z.string(), code: z.string(), sourceDigest: z.string(), adapter: z.string() })),
+  sources: z.array(z.strictObject({ ...ScreeningListSourceIdentity, id: z.uuid(), packCode: z.string(), packVersion: z.string(), factId: z.string(), code: z.string(), sourceDigest: z.string(), adapter: z.string() })),
   proposals: z.array(z.strictObject({ id: z.uuid(), hubId: z.uuid(), sourceId: z.uuid(), requestedBy: z.uuid(),
     actionDigest: z.string(), state: z.enum(['pending', 'approved', 'rejected']), createdAt: z.iso.datetime(), expiresAt: z.iso.datetime(),
     cadenceSeconds: z.int(), warnAfterSeconds: z.int(), staleAfterSeconds: z.int(), reason: z.string(), evidence: z.string(),
-    source: z.strictObject({packCode:z.string(),factId:z.string(),adapter:z.string(),sourceDigest:z.string(),sourceUrl:z.string(),code:z.string()}),
+    source: z.strictObject({...ScreeningListSourceIdentity,packCode:z.string(),factId:z.string(),adapter:z.string(),sourceDigest:z.string(),code:z.string()}),
   })),
 });
