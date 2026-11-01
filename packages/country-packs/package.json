@@ -5,7 +5,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./layers": "./src/layers.ts"
   },
   "dependencies": {
     "zod": "4.6.7"

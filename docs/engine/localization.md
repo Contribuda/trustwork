@@ -78,7 +78,7 @@ Every fact in a pack cites a source and states how far it is verified ([Country 
 | `MX` | Mexico | Planned | CTRY-MX | |
 | `BR` | Brazil | Planned | CTRY-BR | |
 | `GB` | United Kingdom | Planned | CTRY-GB | |
-| `EU` | European Union layer | Planned | CTRY-EU | Shared facts (GDPR, eIDAS, VAT and ViDA, Eurocodes, procurement directives, SEPA) inherited by member packs |
+| `EU` | European Union layer | Live (layer data) | CTRY-EU | Shared facts (GDPR, eIDAS, VAT and ViDA, Eurocodes, Construction Products Regulation, procurement directives, SEPA, Late Payment, DSA, AI Act, Accessibility Act, EU sanctions list) inherited by member packs; no member pack yet |
 | `DE` | Germany | Planned | CTRY-DE | Uses the EU layer |
 | `FR` | France | Planned | CTRY-FR | Uses the EU layer |
 | `ES` | Spain | Planned | CTRY-ES | Uses the EU layer |

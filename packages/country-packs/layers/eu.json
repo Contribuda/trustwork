@@ -1,0 +1,1078 @@
+{
+  "layerVersion": 1,
+  "code": "EU",
+  "name": {
+    "en": "European Union"
+  },
+  "summary": {
+    "en": "Law every European Union member state shares: data protection, electronic identification and signatures, the VAT Directive and VAT in the Digital Age, the Eurocodes and the Construction Products Regulation, the procurement directives with TED and eForms, SEPA and instant payments, late payment, the Digital Services Act, the AI Act, the European Accessibility Act and EU financial sanctions. Member packs list this layer and add what is national."
+  },
+  "officialHosts": [
+    "europa.eu"
+  ],
+  "members": {
+    "codes": [
+      "AT",
+      "BE",
+      "BG",
+      "HR",
+      "CY",
+      "CZ",
+      "DK",
+      "EE",
+      "FI",
+      "FR",
+      "DE",
+      "GR",
+      "HU",
+      "IE",
+      "IT",
+      "LV",
+      "LT",
+      "LU",
+      "MT",
+      "NL",
+      "PL",
+      "PT",
+      "RO",
+      "SK",
+      "SI",
+      "ES",
+      "SE"
+    ],
+    "verification": "official",
+    "sources": [
+      {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries_en",
+        "what": "EU countries: the 27 member countries (Austria to Netherlands on the first page)",
+        "accessed": "2026-10-31"
+      },
+      {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries_en?page=1",
+        "what": "EU countries, second page: Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden",
+        "accessed": "2026-10-31"
+      }
+    ]
+  },
+  "memberVaries": [
+    {
+      "facet": "tax",
+      "topic": "vat-rates",
+      "summary": {
+        "en": "Standard and reduced VAT rates are set by each member state: the standard rate is not lower than 15 % (Art. 97 as replaced by Directive (EU) 2018/912); at most two reduced rates not below 5 % for Annex III supplies, plus a limited lower rate or exemption with deduction (Art. 98 as replaced by Directive (EU) 2022/542). Member packs state their rates as tax rate facts."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32018L0912",
+          "what": "Council Directive (EU) 2018/912: Art. 97 of the VAT Directive replaced, the standard rate shall not be lower than 15 %",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/dir/2018/912/oj",
+          "what": "Council Directive (EU) 2018/912: Art. 97 of the VAT Directive replaced, the standard rate shall not be lower than 15 %",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        },
+        {
+          "url": "https://publications.europa.eu/resource/celex/32022L0542",
+          "what": "Council Directive (EU) 2022/542: Art. 98 of the VAT Directive replaced, at most two reduced rates not below 5 % plus a limited lower rate or exemption with deduction",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/dir/2022/542/oj",
+          "what": "Council Directive (EU) 2022/542: Art. 98 of the VAT Directive replaced, at most two reduced rates not below 5 % plus a limited lower rate or exemption with deduction",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "tax",
+      "topic": "national-einvoicing-mandates",
+      "summary": {
+        "en": "Since VAT in the Digital Age a member state may require domestic electronic invoices without an authorisation (Art. 218 second paragraph, applicable from 14 April 2025) and may require domestic digital reporting (Art. 271a). National mandates, systems and dates are member facts."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32025L0516",
+          "what": "Council Directive (EU) 2025/516 (VAT in the Digital Age): Art. 1(2) domestic e-invoicing without authorisation, Art. 5 amendments from 1 July 2030 (Art. 218 e-invoices by default in the European standard, Art. 262 digital reporting of intra-Community transactions, Art. 271a domestic reporting option), Art. 6 transposition dates",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/dir/2025/516/oj",
+          "what": "Council Directive (EU) 2025/516 (VAT in the Digital Age): Art. 1(2) domestic e-invoicing without authorisation, Art. 5 amendments from 1 July 2030 (Art. 218 e-invoices by default in the European standard, Art. 262 digital reporting of intra-Community transactions, Art. 271a domestic reporting option), Art. 6 transposition dates",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "privacy",
+      "topic": "invoice-retention",
+      "summary": {
+        "en": "Each member state determines how long invoices are stored (VAT Directive Art. 247(1)); member packs state it as a retention fact."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32006L0112",
+          "what": "Council Directive 2006/112/EC (VAT Directive), original text: Art. 98 reduced rates, Art. 247(1) invoice storage period set by each member state",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/dir/2006/112/oj",
+          "what": "Council Directive 2006/112/EC (VAT Directive), original text: Art. 98 reduced rates, Art. 247(1) invoice storage period set by each member state",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "privacy",
+      "topic": "supervisory-authority",
+      "summary": {
+        "en": "Each member state provides one or more independent supervisory authorities (GDPR Art. 51); member packs name theirs."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32016R0679",
+          "what": "Regulation (EU) 2016/679 (GDPR): Art. 3 territorial scope, Art. 4(11) consent, Art. 8(1) child consent, Art. 12(3) response period, Art. 33(1) breach notification, Art. 51 supervisory authorities, Art. 99 application",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+          "what": "Regulation (EU) 2016/679 (GDPR): Art. 3 territorial scope, Art. 4(11) consent, Art. 8(1) child consent, Art. 12(3) response period, Art. 33(1) breach notification, Art. 51 supervisory authorities, Art. 99 application",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "standards",
+      "topic": "national-annexes",
+      "summary": {
+        "en": "National annexes and nationally determined parameters of the Eurocodes, and national building regulations, are national (Recommendation 2003/887/EC points 2 and 3)."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32003H0887",
+          "what": "Commission Recommendation 2003/887/EC on the implementation and use of Eurocodes: points 1 to 3, nationally determined parameters",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/reco/2003/887/oj",
+          "what": "Commission Recommendation 2003/887/EC on the implementation and use of Eurocodes: points 1 to 3, nationally determined parameters",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "eSignature",
+      "topic": "national-eid-schemes",
+      "summary": {
+        "en": "National electronic identification schemes are notified by each member state (eIDAS Art. 9), and each provides its own wallet; member packs record them."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32014R0910",
+          "what": "Regulation (EU) No 910/2014 (eIDAS): Art. 9 notification of eID schemes, Art. 25 legal effects of electronic signatures, Art. 26 advanced electronic signatures",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/reg/2014/910/oj",
+          "what": "Regulation (EU) No 910/2014 (eIDAS): Art. 9 notification of eID schemes, Art. 25 legal effects of electronic signatures, Art. 26 advanced electronic signatures",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "calendar",
+      "topic": "public-holidays",
+      "summary": {
+        "en": "Public holidays, the working week and the fiscal year are national; the layer states none."
+      }
+    },
+    {
+      "facet": "payments",
+      "topic": "currency-and-domestic-schemes",
+      "summary": {
+        "en": "Whether a member uses the euro, and its domestic card schemes and instant payment systems, are member facts; the instant-payment deadlines differ for euro and non-euro member states (Regulation (EU) 2024/886 Art. 5a(8))."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32024R0886",
+          "what": "Regulation (EU) 2024/886 (instant credit transfers in euro): Art. 5a(8) receive and send deadlines, Art. 5c verification of the payee deadlines",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/reg/2024/886/oj",
+          "what": "Regulation (EU) 2024/886 (instant credit transfers in euro): Art. 5a(8) receive and send deadlines, Art. 5c verification of the payee deadlines",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    },
+    {
+      "facet": "licensing",
+      "topic": "construction-licensing",
+      "summary": {
+        "en": "Construction licences, contractor registration and regulated professions are national; the layer states none."
+      }
+    },
+    {
+      "facet": "procurement",
+      "topic": "national-portals",
+      "summary": {
+        "en": "National e-procurement portals and procurement below the EU thresholds are national; notices above the thresholds also appear on TED."
+      },
+      "sources": [
+        {
+          "url": "https://publications.europa.eu/resource/celex/32019R1780",
+          "what": "Commission Implementing Regulation (EU) 2019/1780 establishing standard forms for procurement notices (eForms): TED definition, application from 14 November 2022, Regulation (EU) 2015/1986 repealed with effect from 25 October 2023",
+          "accessed": "2026-10-31",
+          "verification": "Official Journal text read in full on the Publications Office Cellar"
+        },
+        {
+          "url": "https://eur-lex.europa.eu/eli/reg_impl/2019/1780/oj",
+          "what": "Commission Implementing Regulation (EU) 2019/1780 establishing standard forms for procurement notices (eForms): TED definition, application from 14 November 2022, Regulation (EU) 2015/1986 repealed with effect from 25 October 2023",
+          "accessed": "2026-10-31",
+          "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+        }
+      ]
+    }
+  ],
+  "verificationLevel": "official",
+  "facets": {
+    "privacy": [
+      {
+        "type": "law",
+        "id": "gdpr",
+        "name": {
+          "en": "General Data Protection Regulation (Regulation (EU) 2016/679)"
+        },
+        "summary": {
+          "en": "Binding and directly applicable in every member state from 25 May 2018 (Art. 99). Consent must be a freely given, specific, informed and unambiguous statement or clear affirmative action (Art. 4(11)). A personal data breach is notified to the supervisory authority without undue delay and, where feasible, within 72 hours (Art. 33(1)). Data subject requests are answered without undue delay and within one month of receipt, extendable by two further months (Art. 12(3))."
+        },
+        "appliesWhen": {
+          "en": "Processing in the context of an establishment of a controller or processor in the Union, and processing of personal data of people in the Union by a controller or processor outside it when offering them goods or services or monitoring their behaviour (Art. 3)."
+        },
+        "consent": "opt-in",
+        "breachNotificationHours": 72,
+        "effectiveFrom": "2018-05-25",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32016R0679",
+            "what": "Regulation (EU) 2016/679 (GDPR): Art. 3 territorial scope, Art. 4(11) consent, Art. 8(1) child consent, Art. 12(3) response period, Art. 33(1) breach notification, Art. 51 supervisory authorities, Art. 99 application",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+            "what": "Regulation (EU) 2016/679 (GDPR): Art. 3 territorial scope, Art. 4(11) consent, Art. 8(1) child consent, Art. 12(3) response period, Art. 33(1) breach notification, Art. 51 supervisory authorities, Art. 99 application",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Supervisory authorities are national (Art. 51) and are recorded by member packs; the one-month response period is not a fixed number of days, so subjectRequestDays is left empty."
+      },
+      {
+        "type": "law",
+        "id": "gdpr-child-consent-age",
+        "name": {
+          "en": "Age of a child’s own consent to information society services (GDPR Art. 8(1))"
+        },
+        "summary": {
+          "en": "Where consent is the legal basis for offering an information society service directly to a child, the child must be at least 16; below that age the holder of parental responsibility gives or authorises consent. A member state may set a lower age by law, not below 13; a member pack overrides this fact with its national law as the source."
+        },
+        "minorsAge": 16,
+        "effectiveFrom": "2018-05-25",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32016R0679",
+            "what": "Regulation (EU) 2016/679 (GDPR): Art. 3 territorial scope, Art. 4(11) consent, Art. 8(1) child consent, Art. 12(3) response period, Art. 33(1) breach notification, Art. 51 supervisory authorities, Art. 99 application",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+            "what": "Regulation (EU) 2016/679 (GDPR): Art. 3 territorial scope, Art. 4(11) consent, Art. 8(1) child consent, Art. 12(3) response period, Art. 33(1) breach notification, Art. 51 supervisory authorities, Art. 99 application",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "eidas-qualified-signature",
+        "kind": "signature",
+        "name": {
+          "en": "Qualified electronic signature (eIDAS)"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "Regulation (EU) No 910/2014 Art. 25(2) and (3): a qualified electronic signature has the equivalent legal effect of a handwritten signature and one based on a qualified certificate from one member state is recognised in all others. Art. 25(1): no electronic signature is denied legal effect or admissibility as evidence solely because it is electronic."
+        },
+        "candidateAdapters": [
+          "qualified signature validation against the EU trusted lists"
+        ],
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014R0910",
+            "what": "Regulation (EU) No 910/2014 (eIDAS): Art. 9 notification of eID schemes, Art. 25 legal effects of electronic signatures, Art. 26 advanced electronic signatures",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2014/910/oj",
+            "what": "Regulation (EU) No 910/2014 (eIDAS): Art. 9 notification of eID schemes, Art. 25 legal effects of electronic signatures, Art. 26 advanced electronic signatures",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "eidas-advanced-signature",
+        "kind": "signature",
+        "name": {
+          "en": "Advanced electronic signature (eIDAS)"
+        },
+        "strength": "advanced",
+        "legalBasis": {
+          "en": "Regulation (EU) No 910/2014 Art. 26: uniquely linked to and capable of identifying the signatory, created with data under the signatory’s sole control, and linked to the signed data so that any later change is detectable. Its legal effect beyond Art. 25(1) is national."
+        },
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014R0910",
+            "what": "Regulation (EU) No 910/2014 (eIDAS): Art. 9 notification of eID schemes, Art. 25 legal effects of electronic signatures, Art. 26 advanced electronic signatures",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2014/910/oj",
+            "what": "Regulation (EU) No 910/2014 (eIDAS): Art. 9 notification of eID schemes, Art. 25 legal effects of electronic signatures, Art. 26 advanced electronic signatures",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "eu-digital-identity-wallet",
+        "kind": "signature-and-identity",
+        "name": {
+          "en": "European Digital Identity Wallet"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "Regulation (EU) 2024/1183, inserting Art. 5a into eIDAS: each member state provides at least one wallet within 24 months of the entry into force of the implementing acts (Art. 5a(1)); issuance, use and revocation are free of charge to natural persons (Art. 5a(13)); wallets offer natural persons qualified electronic signatures by default and free of charge (Art. 5a(5)(g))."
+        },
+        "candidateAdapters": [
+          "European Digital Identity Wallet relying-party integration (OpenID for Verifiable Presentations)"
+        ],
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32024R1183",
+            "what": "Regulation (EU) 2024/1183 amending eIDAS: Art. 5a European Digital Identity Wallets (5a(1) provision within 24 months of the implementing acts, 5a(5)(g) qualified signatures free of charge, 5a(13) free of charge to natural persons)",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2024/1183/oj",
+            "what": "Regulation (EU) 2024/1183 amending eIDAS: Art. 5a European Digital Identity Wallets (5a(1) provision within 24 months of the implementing acts, 5a(5)(g) qualified signatures free of charge, 5a(13) free of charge to natural persons)",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The implementing acts that start the 24-month period were not reviewed, so the layer states no availability date; which wallets exist is recorded by member packs. The candidate adapter protocol is a lead, not checked against the implementing acts."
+      }
+    ],
+    "tax": [
+      {
+        "type": "e-invoicing",
+        "id": "eu-einvoicing-public-buyers",
+        "system": {
+          "en": "Electronic invoices in the European standard on electronic invoicing, received and processed by contracting authorities and entities (Directive 2014/55/EU Art. 7)"
+        },
+        "mandatory": false,
+        "scope": [
+          "B2G"
+        ],
+        "signatureRequired": false,
+        "candidateAdapters": [
+          "European standard e-invoice issuing and delivery"
+        ],
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014L0055",
+            "what": "Directive 2014/55/EU on electronic invoicing in public procurement: Art. 7 receipt and processing of electronic invoices, Art. 11 transposition",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/55/oj",
+            "what": "Directive 2014/55/EU on electronic invoicing in public procurement: Art. 7 receipt and processing of electronic invoices, Art. 11 transposition",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The Directive obliges public buyers to receive and process such invoices; whether suppliers must send them is national, so mandatory is false here and member packs state their own mandate. The Directive sets no signature requirement."
+      },
+      {
+        "type": "e-invoicing",
+        "id": "vida-intra-eu-einvoicing",
+        "system": {
+          "en": "VAT in the Digital Age: from 1 July 2030 invoices are issued as electronic invoices in the European standard (Art. 218 as replaced), and intra-Community transactions are reported digitally per transaction (Art. 262 as replaced); paper may be accepted only for transactions outside the reporting obligations"
+        },
+        "mandatory": true,
+        "scope": [
+          "B2B"
+        ],
+        "signatureRequired": false,
+        "effectiveFrom": "2030-07-01",
+        "candidateAdapters": [
+          "European standard e-invoice issuing and delivery",
+          "digital reporting to the tax authority of the issuing member state"
+        ],
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32025L0516",
+            "what": "Council Directive (EU) 2025/516 (VAT in the Digital Age): Art. 1(2) domestic e-invoicing without authorisation, Art. 5 amendments from 1 July 2030 (Art. 218 e-invoices by default in the European standard, Art. 262 digital reporting of intra-Community transactions, Art. 271a domestic reporting option), Art. 6 transposition dates",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2025/516/oj",
+            "what": "Council Directive (EU) 2025/516 (VAT in the Digital Age): Art. 1(2) domestic e-invoicing without authorisation, Art. 5 amendments from 1 July 2030 (Art. 218 e-invoices by default in the European standard, Art. 262 digital reporting of intra-Community transactions, Art. 271a domestic reporting option), Art. 6 transposition dates",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Member states transpose by 30 June 2030 and apply from 1 July 2030 (Art. 6(5)); states with a domestic real-time reporting system before 2024 align domestic e-invoicing and reporting by 1 January 2035. Domestic mandates before 2030 are member facts. The Directive sets no signature requirement."
+      }
+    ],
+    "standards": [
+      {
+        "id": "eurocodes",
+        "system": {
+          "en": "Eurocodes: European standards for structural design, EN 1990 to EN 1999"
+        },
+        "body": {
+          "name": {
+            "en": "European Committee for Standardization (CEN), Technical Committee 250 Structural Eurocodes"
+          },
+          "url": "https://www.cencenelec.eu/"
+        },
+        "publications": "https://eurocodes.jrc.ec.europa.eu/",
+        "adopts": [
+          "EN 1990",
+          "EN 1991",
+          "EN 1992",
+          "EN 1993",
+          "EN 1994",
+          "EN 1995",
+          "EN 1996",
+          "EN 1997",
+          "EN 1998",
+          "EN 1999"
+        ],
+        "sources": [
+          {
+            "url": "https://eurocodes.jrc.ec.europa.eu/",
+            "what": "Joint Research Centre Eurocodes site: EN 1990 to EN 1999, CEN/TC 250, nationally determined parameters database, second generation distributed to national standards bodies by 30 March 2026",
+            "accessed": "2026-10-31"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32003H0887",
+            "what": "Commission Recommendation 2003/887/EC on the implementation and use of Eurocodes: points 1 to 3, nationally determined parameters",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reco/2003/887/oj",
+            "what": "Commission Recommendation 2003/887/EC on the implementation and use of Eurocodes: points 1 to 3, nationally determined parameters",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Member states lay down nationally determined parameters, using the recommended values unless local conditions require otherwise (Recommendation 2003/887/EC points 2 and 3); national annexes and parameters are member facts. Second-generation parts are distributed to national standards bodies by 30 March 2026 (JRC site); national adoption dates are member facts. The licence of the standards texts is not recorded."
+      },
+      {
+        "id": "construction-products-regulation",
+        "system": {
+          "en": "Construction Products Regulation (EU) 2024/3110: declaration of performance and conformity and CE marking"
+        },
+        "body": {
+          "name": {
+            "en": "European Commission"
+          },
+          "url": "https://commission.europa.eu/"
+        },
+        "publications": "https://eur-lex.europa.eu/eli/reg/2024/3110/oj",
+        "adopts": [
+          "harmonised technical specifications",
+          "European assessment documents",
+          "CE marking"
+        ],
+        "effectiveFrom": "2026-01-08",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32024R3110",
+            "what": "Regulation (EU) 2024/3110 (Construction Products Regulation): Art. 15 declaration of performance and conformity, Art. 17 CE marking, Art. 94 repeal of Regulation (EU) No 305/2011, Art. 95 transitional provisions, Art. 96 application",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2024/3110/oj",
+            "what": "Regulation (EU) 2024/3110 (Construction Products Regulation): Art. 15 declaration of performance and conformity, Art. 17 CE marking, Art. 94 repeal of Regulation (EU) No 305/2011, Art. 95 transitional provisions, Art. 96 application",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Applies from 8 January 2026 with some articles from 7 January 2025 and Art. 92 from 8 January 2027 (Art. 96). Regulation (EU) No 305/2011 is repealed from 8 January 2026 except listed provisions repealed from 8 January 2040 (Art. 94); harmonised standards cited under it and in force on 8 January 2026 stay valid until withdrawn (Art. 95(3)). The CE marking is affixed only to products with a declaration of performance and conformity (Art. 17(2))."
+      }
+    ],
+    "procurement": [
+      {
+        "type": "portal",
+        "id": "ted",
+        "name": {
+          "en": "TED (Tenders Electronic Daily), the online Supplement to the Official Journal, with notices in eForms"
+        },
+        "url": "https://ted.europa.eu/",
+        "level": "supranational",
+        "openData": true,
+        "candidateAdapters": [
+          "TED API notice search",
+          "eForms SDK notice parser"
+        ],
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32019R1780",
+            "what": "Commission Implementing Regulation (EU) 2019/1780 establishing standard forms for procurement notices (eForms): TED definition, application from 14 November 2022, Regulation (EU) 2015/1986 repealed with effect from 25 October 2023",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg_impl/2019/1780/oj",
+            "what": "Commission Implementing Regulation (EU) 2019/1780 establishing standard forms for procurement notices (eForms): TED definition, application from 14 November 2022, Regulation (EU) 2015/1986 repealed with effect from 25 October 2023",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://docs.ted.europa.eu/home/index.html",
+            "what": "TED Developer Docs: TED API (validate and submit eForms notices, search the TED archives), TED Open Data (SPARQL endpoint, notice XML downloads), eForms SDK",
+            "accessed": "2026-10-31"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "ted.europa.eu answered automated requests with a bot check; the definition of TED comes from Regulation (EU) 2019/1780 and the API and open data from the TED Developer Docs. Thresholds below are net of VAT."
+      },
+      {
+        "type": "threshold",
+        "id": "public-works-threshold",
+        "summary": {
+          "en": "Public works contracts under Directive 2014/24/EU (Art. 4(a)), from 1 January 2026, value net of VAT"
+        },
+        "amount": {
+          "minorUnits": "540400000",
+          "currency": "EUR"
+        },
+        "effectiveFrom": "2026-01-01",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32025R2152",
+            "what": "Commission Delegated Regulation (EU) 2025/2152: thresholds of Directive 2014/24/EU Art. 4(a) EUR 5 404 000, (b) EUR 140 000, (c) EUR 216 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg_del/2025/2152/oj",
+            "what": "Commission Delegated Regulation (EU) 2025/2152: thresholds of Directive 2014/24/EU Art. 4(a) EUR 5 404 000, (b) EUR 140 000, (c) EUR 216 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014L0024",
+            "what": "Directive 2014/24/EU on public procurement: Art. 4 thresholds (original amounts), Art. 6 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/24/oj",
+            "what": "Directive 2014/24/EU on public procurement: Art. 4 thresholds (original amounts), Art. 6 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The Commission revises the thresholds every two years with effect from 1 January (Art. 6); these are the 2026 and 2027 values."
+      },
+      {
+        "type": "threshold",
+        "id": "central-supplies-services-threshold",
+        "summary": {
+          "en": "Public supply and service contracts and design contests of central government authorities under Directive 2014/24/EU (Art. 4(b)), from 1 January 2026, value net of VAT"
+        },
+        "amount": {
+          "minorUnits": "14000000",
+          "currency": "EUR"
+        },
+        "effectiveFrom": "2026-01-01",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32025R2152",
+            "what": "Commission Delegated Regulation (EU) 2025/2152: thresholds of Directive 2014/24/EU Art. 4(a) EUR 5 404 000, (b) EUR 140 000, (c) EUR 216 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg_del/2025/2152/oj",
+            "what": "Commission Delegated Regulation (EU) 2025/2152: thresholds of Directive 2014/24/EU Art. 4(a) EUR 5 404 000, (b) EUR 140 000, (c) EUR 216 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014L0024",
+            "what": "Directive 2014/24/EU on public procurement: Art. 4 thresholds (original amounts), Art. 6 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/24/oj",
+            "what": "Directive 2014/24/EU on public procurement: Art. 4 thresholds (original amounts), Art. 6 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "threshold",
+        "id": "sub-central-supplies-services-threshold",
+        "summary": {
+          "en": "Public supply and service contracts and design contests of sub-central contracting authorities under Directive 2014/24/EU (Art. 4(c)), from 1 January 2026, value net of VAT"
+        },
+        "amount": {
+          "minorUnits": "21600000",
+          "currency": "EUR"
+        },
+        "effectiveFrom": "2026-01-01",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32025R2152",
+            "what": "Commission Delegated Regulation (EU) 2025/2152: thresholds of Directive 2014/24/EU Art. 4(a) EUR 5 404 000, (b) EUR 140 000, (c) EUR 216 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg_del/2025/2152/oj",
+            "what": "Commission Delegated Regulation (EU) 2025/2152: thresholds of Directive 2014/24/EU Art. 4(a) EUR 5 404 000, (b) EUR 140 000, (c) EUR 216 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014L0024",
+            "what": "Directive 2014/24/EU on public procurement: Art. 4 thresholds (original amounts), Art. 6 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/24/oj",
+            "what": "Directive 2014/24/EU on public procurement: Art. 4 thresholds (original amounts), Art. 6 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "threshold",
+        "id": "utilities-works-threshold",
+        "summary": {
+          "en": "Works contracts of utilities under Directive 2014/25/EU (Art. 15(b)), from 1 January 2026, value net of VAT"
+        },
+        "amount": {
+          "minorUnits": "540400000",
+          "currency": "EUR"
+        },
+        "effectiveFrom": "2026-01-01",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32025R2150",
+            "what": "Commission Delegated Regulation (EU) 2025/2150: thresholds of Directive 2014/25/EU Art. 15(a) EUR 432 000, (b) EUR 5 404 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg_del/2025/2150/oj",
+            "what": "Commission Delegated Regulation (EU) 2025/2150: thresholds of Directive 2014/25/EU Art. 15(a) EUR 432 000, (b) EUR 5 404 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014L0025",
+            "what": "Directive 2014/25/EU on procurement by entities in the water, energy, transport and postal services sectors: Art. 15 thresholds (original amounts), Art. 17 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/25/oj",
+            "what": "Directive 2014/25/EU on procurement by entities in the water, energy, transport and postal services sectors: Art. 15 thresholds (original amounts), Art. 17 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "type": "threshold",
+        "id": "utilities-supplies-services-threshold",
+        "summary": {
+          "en": "Supply and service contracts and design contests of utilities under Directive 2014/25/EU (Art. 15(a)), from 1 January 2026, value net of VAT"
+        },
+        "amount": {
+          "minorUnits": "43200000",
+          "currency": "EUR"
+        },
+        "effectiveFrom": "2026-01-01",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32025R2150",
+            "what": "Commission Delegated Regulation (EU) 2025/2150: thresholds of Directive 2014/25/EU Art. 15(a) EUR 432 000, (b) EUR 5 404 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg_del/2025/2150/oj",
+            "what": "Commission Delegated Regulation (EU) 2025/2150: thresholds of Directive 2014/25/EU Art. 15(a) EUR 432 000, (b) EUR 5 404 000, applicable from 1 January 2026",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32014L0025",
+            "what": "Directive 2014/25/EU on procurement by entities in the water, energy, transport and postal services sectors: Art. 15 thresholds (original amounts), Art. 17 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2014/25/oj",
+            "what": "Directive 2014/25/EU on procurement by entities in the water, energy, transport and postal services sectors: Art. 15 thresholds (original amounts), Art. 17 biennial revision",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "payments": [
+      {
+        "type": "scheme",
+        "id": "sepa-credit-transfer-direct-debit",
+        "name": {
+          "en": "SEPA credit transfers and direct debits in euro (Regulation (EU) No 260/2012)"
+        },
+        "rails": [
+          "credit-transfer",
+          "direct-debit"
+        ],
+        "effectiveFrom": "2014-02-01",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32012R0260",
+            "what": "Regulation (EU) No 260/2012 (SEPA): Art. 1 scope, euro credit transfers and direct debits within the Union; Art. 6 end-dates 1 February 2014",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2012/260/oj",
+            "what": "Regulation (EU) No 260/2012 (SEPA): Art. 1 scope, euro credit transfers and direct debits within the Union; Art. 6 end-dates 1 February 2014",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Covers euro-denominated transactions where the payment service providers are located in the Union (Art. 1(1)); providers with an adapter are hub configuration."
+      },
+      {
+        "type": "scheme",
+        "id": "sepa-instant-credit-transfer",
+        "name": {
+          "en": "Instant credit transfers in euro with verification of the payee (Regulation (EU) 2024/886)"
+        },
+        "rails": [
+          "instant-credit-transfer"
+        ],
+        "effectiveFrom": "2025-01-09",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32024R0886",
+            "what": "Regulation (EU) 2024/886 (instant credit transfers in euro): Art. 5a(8) receive and send deadlines, Art. 5c verification of the payee deadlines",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2024/886/oj",
+            "what": "Regulation (EU) 2024/886 (instant credit transfers in euro): Art. 5a(8) receive and send deadlines, Art. 5c verification of the payee deadlines",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Payment service providers in euro-area member states receive instant credit transfers in euro by 9 January 2025 and send them by 9 October 2025; in other member states by 9 January 2027 and 9 July 2027 (Art. 5a(8)). Verification of the payee applies by 9 October 2025 in the euro area and 9 July 2027 elsewhere (Art. 5c). Which currency a member uses is a member fact."
+      },
+      {
+        "type": "payment-terms",
+        "id": "late-payment-directive",
+        "summary": {
+          "en": "Late Payment Directive 2011/7/EU: between undertakings the contractual payment period does not exceed 60 calendar days unless expressly agreed otherwise and not grossly unfair to the creditor (Art. 3(5)); where a public authority pays, 30 calendar days as a rule (Art. 4(3)), with limited extensions up to 60 days. Late payers owe statutory interest of the reference rate plus at least eight percentage points (Art. 2) and at least EUR 40 for recovery costs (Art. 6)."
+        },
+        "businessMaxDays": 60,
+        "publicAuthorityMaxDays": 30,
+        "effectiveFrom": "2013-03-16",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32011L0007",
+            "what": "Directive 2011/7/EU on combating late payment in commercial transactions: Art. 2 statutory interest, Art. 3(5) 60 days between undertakings, Art. 4(3) 30 days for public authorities, Art. 6 EUR 40 recovery costs, Art. 12 transposition by 16 March 2013",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2011/7/oj",
+            "what": "Directive 2011/7/EU on combating late payment in commercial transactions: Art. 2 statutory interest, Art. 3(5) 60 days between undertakings, Art. 4(3) 30 days for public authorities, Art. 6 EUR 40 recovery costs, Art. 12 transposition by 16 March 2013",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Directive text; the binding rules are the national transposition laws (by 16 March 2013, Art. 12), which may be stricter and are recorded by member packs as overrides with their own sources."
+      }
+    ],
+    "contentLaw": [
+      {
+        "id": "dsa-notice-and-action",
+        "topic": "takedown",
+        "summary": {
+          "en": "Digital Services Act Art. 16: hosting services, online platforms such as a hub included, provide an easy, electronic mechanism for anyone to notify specific content they consider illegal, and process notices in a timely, diligent, non-arbitrary and objective manner. Applies from 17 February 2024 (Art. 93)."
+        },
+        "effectiveFrom": "2024-02-17",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32022R2065",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2022/2065/oj",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "dsa-advertising-transparency",
+        "topic": "advertising",
+        "summary": {
+          "en": "Digital Services Act Art. 26: an online platform presenting advertisements lets each recipient identify, clearly and in real time, that it is an advertisement, on whose behalf it is presented, who paid for it and the main parameters used to select it. Section 3 (Arts. 19 to 28) does not apply to platforms that qualify as micro or small enterprises (Art. 19)."
+        },
+        "effectiveFrom": "2024-02-17",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32022R2065",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2022/2065/oj",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "dsa-recommender-transparency",
+        "topic": "other",
+        "summary": {
+          "en": "Digital Services Act Art. 27: an online platform using recommender systems sets out in its terms and conditions, in plain language, the main parameters and any options to modify them, explaining why information is suggested. Excluded for micro and small enterprises (Art. 19)."
+        },
+        "effectiveFrom": "2024-02-17",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32022R2065",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2022/2065/oj",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "dsa-trader-traceability",
+        "topic": "consumer-protection",
+        "summary": {
+          "en": "Digital Services Act Art. 30: an online platform that lets consumers conclude distance contracts with traders lets a trader offer to consumers in the Union only after obtaining the trader’s name, address, telephone and email, an identification document or eIDAS electronic identification, payment account details, the trade register and number where registered, and a self-certification of compliance with Union law; it makes best efforts to check them against freely accessible official databases (Art. 30(2)), suspends traders who fail to correct inaccurate data (Art. 30(3)) and stores the data for six months after the relationship ends (Art. 30(5)). Not applicable to platforms that are micro or small enterprises (Art. 29)."
+        },
+        "effectiveFrom": "2024-02-17",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32022R2065",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2022/2065/oj",
+            "what": "Regulation (EU) 2022/2065 (Digital Services Act): Art. 16 notice and action, Art. 19 exclusion for micro and small enterprises, Art. 26 advertising, Art. 27 recommender systems, Art. 29 exclusion for micro and small enterprises, Art. 30 traceability of traders, Art. 93 application from 17 February 2024",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "european-accessibility-act",
+        "topic": "other",
+        "summary": {
+          "en": "European Accessibility Act, Directive (EU) 2019/882: e-commerce and other listed services provided to consumers after 28 June 2025 meet the accessibility requirements (Art. 2(2), Art. 31); microenterprises providing services are exempt (Art. 4(5)). Whether a hub’s paid services are in scope is a counsel question."
+        },
+        "effectiveFrom": "2025-06-28",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32019L0882",
+            "what": "Directive (EU) 2019/882 (European Accessibility Act): Art. 2(2) services provided to consumers after 28 June 2025 including e-commerce services, Art. 4(5) microenterprises providing services exempt, Art. 31 application from 28 June 2025",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/dir/2019/882/oj",
+            "what": "Directive (EU) 2019/882 (European Accessibility Act): Art. 2(2) services provided to consumers after 28 June 2025 including e-commerce services, Art. 4(5) microenterprises providing services exempt, Art. 31 application from 28 June 2025",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Directive text; the binding rules are the national transposition laws, recorded by member packs."
+      }
+    ],
+    "agentLaw": [
+      {
+        "id": "ai-act-interaction-disclosure",
+        "topic": "disclosure",
+        "summary": {
+          "en": "AI Act Art. 50(1): providers design AI systems intended to interact directly with natural persons so that those persons are informed they are interacting with an AI system, unless that is obvious to a reasonably well-informed, observant and circumspect person in the context. Applies from 2 August 2026 (Art. 113); Regulation (EU) 2026/1744 kept that date."
+        },
+        "counselReview": "pending",
+        "effectiveFrom": "2026-08-02",
+        "sources": [
+          {
+            "url": "https://publications.europa.eu/resource/celex/32024R1689",
+            "what": "Regulation (EU) 2024/1689 (AI Act): Art. 50(1) informing natural persons that they interact with an AI system; Art. 113 general application from 2 August 2026",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+            "what": "Regulation (EU) 2024/1689 (AI Act): Art. 50(1) informing natural persons that they interact with an AI system; Art. 113 general application from 2 August 2026",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          },
+          {
+            "url": "https://publications.europa.eu/resource/celex/32026R1744",
+            "what": "Regulation (EU) 2026/1744 (Digital Omnibus on AI): amends the AI Act; keeps 2 August 2026 as the general date of application and adds a transition to 2 December 2026 only for Art. 50(2) marking by systems already on the market",
+            "accessed": "2026-10-31",
+            "verification": "Official Journal text read in full on the Publications Office Cellar"
+          },
+          {
+            "url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+            "what": "Regulation (EU) 2026/1744 (Digital Omnibus on AI): amends the AI Act; keeps 2 August 2026 as the general date of application and adds a transition to 2 December 2026 only for Art. 50(2) marking by systems already on the market",
+            "accessed": "2026-10-31",
+            "verification": "Canonical EUR-Lex address of the same act; EUR-Lex answered automated requests with a bot check, so the text was read through the Cellar link"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Regulation text checked on the Official Journal; how it applies to a person’s own agent and the disclosure wording awaits counsel review (HUB-005), so this default stays below official."
+      }
+    ],
+    "sanctions": [
+      {
+        "id": "eu-consolidated-financial-sanctions",
+        "name": {
+          "en": "Consolidated list of persons, groups and entities subject to EU financial sanctions"
+        },
+        "authority": {
+          "name": {
+            "en": "European Commission, Directorate-General for Financial Stability, Financial Services and Capital Markets Union (DG FISMA)"
+          },
+          "url": "https://commission.europa.eu/about/departments-and-executive-agencies/financial-stability-financial-services-and-capital-markets-union_en"
+        },
+        "url": "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions",
+        "updateCadence": "daily",
+        "candidateAdapters": [
+          "EU Financial Sanctions Files consolidated list XML 1.1 import"
+        ],
+        "sources": [
+          {
+            "url": "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions",
+            "what": "Consolidated list of persons, groups and entities subject to EU financial sanctions: publisher DG FISMA, update frequency daily, XML and CSV files on the Financial Sanctions Files website",
+            "accessed": "2026-10-31",
+            "verification": "Dataset record read through the data.europa.eu search API (api/hub/search/datasets/<id>)"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Applied by hubs in member states in addition to the engine-wide restricted places, which no layer or pack can change; no live download runs until an operator activates a list adapter."
+      }
+    ]
+  },
+  "notes": [
+    "CTRY-EU: every fact was read on 2026-10-31 in the Official Journal text (Publications Office Cellar) or on another europa.eu page; EUR-Lex itself answered automated requests with a bot check.",
+    "Directives bind member states, not people: where a fact rests on a directive, the national transposition law is the binding rule and a member pack may override the fact with that law as its own source.",
+    "Agent-law defaults stay below official until counsel review (HUB-005). Adapters are named only as candidates; no fact calls a register."
+  ],
+  "sources": [
+    {
+      "url": "https://european-union.europa.eu/principles-countries-history/eu-countries_en",
+      "what": "EU countries: the 27 member countries (Austria to Netherlands on the first page)",
+      "accessed": "2026-10-31"
+    },
+    {
+      "url": "https://european-union.europa.eu/principles-countries-history/eu-countries_en?page=1",
+      "what": "EU countries, second page: Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden",
+      "accessed": "2026-10-31"
+    },
+    {
+      "url": "https://eur-lex.europa.eu/",
+      "what": "EUR-Lex, the official access to EU law; acts are cited by their ELI address",
+      "accessed": "2026-10-31",
+      "verification": "Home page not opened by automated requests (bot check); acts were read through the Publications Office Cellar"
+    }
+  ]
+}

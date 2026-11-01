@@ -7,6 +7,9 @@ import { FacetsSchema, LocalizedText, RegionCodeSchema, SourceSchema, Verificati
  * countries (state, district, territory, province), subdivision hierarchy and facets at country and subdivision level.
  */
 
+/** Code of a shared layer (CTRY-EU, `layers.ts`), for example a union whose law every member pack inherits. */
+export const LayerCodeSchema = z.string().regex(/^[A-Z]{2,8}$/, 'layer code: two to eight capital letters');
+
 export const REGION_KINDS = ['city', 'region', 'republic', 'autonomous-republic', 'rayon', 'municipality', 'state', 'district', 'territory', 'province'] as const;
 
 export const RegionSchema = z.strictObject({
@@ -63,6 +66,11 @@ export const CountryPackSchema = z.strictObject({
   verificationLevel: VerificationLevelSchema.optional(),
   /** v2: country-level facts. */
   facets: FacetsSchema.optional(),
+  /**
+   * v2 (CTRY-EU): shared layers the pack inherits, in order. A layer fact applies unless the pack (or one of its
+   * subdivisions) overrides it by id with its own source. Validated with the layer registry (`layers.ts`).
+   */
+  layers: z.array(LayerCodeSchema).min(1).optional(),
   notes: z.array(z.string()).optional(),
   sources: z.array(SourceSchema).min(1),
 });

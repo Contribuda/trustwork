@@ -6888,7 +6888,7 @@
       "id": "CTRY-EU",
       "title": "European Union layer shared by member-state packs",
       "area": "country-packs",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CTRY-002"
       ],
