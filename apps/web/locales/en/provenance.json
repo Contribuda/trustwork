@@ -67,6 +67,7 @@
     "originalUnavailable": "Original unavailable",
     "currentOriginal": "Current original",
     "refresh": "Refresh",
-    "submit": "Submit for editorial review"
+    "submit": "Submit for editorial review",
+    "unsavedDraft": "Save the draft before declaring, reviewing or publishing this version."
   }
 }

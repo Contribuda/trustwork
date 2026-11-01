@@ -6,8 +6,12 @@ import { localPath } from '@/app/_lib/localize';
 /** Exact public provenance only; declared functional roles never become runtime evidence or authors. */
 export function publicationJsonLd(item: PublicationDetail, url: string) {
   const provenance = item.content?.provenance;
-  const editor = provenance?.availability === 'recorded' ? provenance.credits.responsible_editor : undefined;
+  const recorded = provenance?.availability === 'recorded' ? provenance : undefined;
+  const editor = recorded?.credits.responsible_editor;
+  const original = recorded?.translation;
   return {
+    ...(recorded ? { identifier: recorded.binding.digest.value, version: recorded.binding.version } : {}),
+    ...(original ? { translationOfWork: { '@type': 'CreativeWork', url: absoluteUrl(localPath(`/${original.originalFormat === 'news' ? 'news' : 'articles'}/${original.originalPublicationId}?version=${original.originalVersion}`)), inLanguage: original.originalLanguage, identifier: original.originalDigest } } : {}),
     ...(editor ? { editor: { '@type': 'Person', name: editor } } : {}),
     '@context': 'https://schema.org', '@type': item.format === 'news' ? 'NewsArticle' : 'Article',
     headline: item.title, url, datePublished: item.publishedAt, dateModified: item.content?.modifiedAt ?? item.correctedAt ?? item.publishedAt,

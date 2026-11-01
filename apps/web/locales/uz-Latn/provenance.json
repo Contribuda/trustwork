@@ -67,6 +67,7 @@
     "originalUnavailable": "Asl nusxa mavjud emas",
     "currentOriginal": "Joriy asl nusxa",
     "refresh": "Yangilash",
-    "submit": "Tahririyat tekshiruviga yuborish"
+    "submit": "Tahririyat tekshiruviga yuborish",
+    "unsavedDraft": "Ushbu versiyani deklaratsiya qilish, tekshirish yoki nashr etishdan oldin qoralamani saqlang."
   }
 }

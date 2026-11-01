@@ -67,6 +67,7 @@
     "originalUnavailable": "Original no disponible",
     "currentOriginal": "Original actual",
     "refresh": "Actualizar",
-    "submit": "Enviar a revisión editorial"
+    "submit": "Enviar a revisión editorial",
+    "unsavedDraft": "Guarde el borrador antes de declarar, revisar o publicar esta versión."
   }
 }

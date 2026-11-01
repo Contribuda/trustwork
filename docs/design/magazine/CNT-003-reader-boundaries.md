@@ -1,6 +1,6 @@
 # CNT-003 reader and PDF implementation boundaries
 
-Status: proposed for the missing provenance contract; implemented behavior below is submitted for review.
+Status: CNT-003 baseline preserved; additive PROV-001 integration is implemented for conductor review, not full package acceptance.
 
 ## Existing public authority
 
@@ -8,36 +8,17 @@ The reader uses CNT-001 public publication, pinned version, archive and issue pr
 
 The public wire schemas are extracted unchanged into `packages/contracts/src/content-reader.ts`, shared by the API and DataPort. No publication authority, consent rule or editorial mandate is introduced by that extraction. The owning database serializer omits nonconsenting person credits from public detail and feed projections; the reader and PDF also suppress redacted person/company identifiers. Literal AI/tool names are never promoted to authors; assistant involvement is a separate disclosure. This is not an identity classifier for arbitrary freeform credit strings.
 
-## Missing accepted provenance contract
+## Additive provenance integration after PR #473
 
-CNT-003's work package requests the responsible editor, agent role names and stale-edition notices. CNT-001 does not expose a public editorial provenance record. Its public authorship fields are `kind`, nullable `id`, freeform `credit` and `assistantAssisted`. Edition links expose language, original/translation role, `machineAssisted` and `reviewed`; they do not pin the original version or identify the public reviewer/editor. A staff working view is not permission to publish those people or their activity.
+The conductor-authorized PROV-001 continuation supplies `provenance` on exact public versions and associated owner projections. The original CNT authorship and staff views do not authorize these additional credits. The private responsible person comes from the authenticated session; public editor/reviewer names require explicit consent for that provenance record, functional role, exact current name and delivery channel. Profile consent and staff access are not editorial publication consent.
 
-Consequently the implementation does not invent an editor, an agent role, a review claim or a stale-translation flag. JSON-LD includes type, headline, dates, language, available correction, disclosures and source citations; `editor` is absent. A translated item preserves the machine-assistance label even if the current link says reviewed. Human authorship is taken only from existing public credits. Atom entries require those credits; entries without public credits are omitted from Atom, while RSS and JSON Feed preserve the public entry without invented authorship.
+Structured role keys are declared assistance, not invented agent identities or proof of execution: the evidence remains `human_declaration`. Immutable translation provenance pins the original version/digest and a distinct authorized review. Current source authority, correction and withholding rules apply at delivery. An original correction marks the translation stale while preserving its old binding; an unavailable original withholds dependent content. Readers and feeds link to the pinned original; safe JSON-LD carries exact content/original identifiers and only web-consented editor credit. Published content digests remain unchanged.
 
-JSON-LD uses a React text child in an inert `application/ld+json` script, with HTML delimiters and line separators escaped in the JSON serialization. The public-tree raw-HTML prohibition remains unchanged. The real browser test publishes malicious mixed-case closing-script and image payloads in title/correction text, bypasses CSP only in the isolated negative test, and checks JSON round trips, absence of injected elements or execution, and zero external requests.
+The common CNT publication/release blocker covers legacy commands, scheduling and scheduled execution. Exact prepared corrections need a new declaration and any separate translation review. Issue/digest release and legacy edition-review hooks cannot bypass these checks. E3 and autonomous publication remain OFF. These technical additions are implemented under explicit conductor authority; approval of an autonomous editorial policy or real signing authority is a separate, unresolved boundary.
 
-A proposed additive public provenance contract should define:
+The first-party editor calls actual authenticated commands for draft editing, responsibility, separate review, scoped consent and withdrawal, submission, publication and correction. All seven locales and content-language choices are included. See the [PROV module](../../../apps/api/src/modules/content/provenance/README.md) for contracts, authority and unsigned-image limits. Full acceptance still requires conductor/maintainer review and the explicitly recorded human checks.
 
-- A public, consent-checked responsible-editor credit, with the action/version that establishes responsibility.
-- Structured participating agent roles with an accountable person and a public disclosure policy; no agent as author.
-- Original publication/version binding, reviewed translation version, reviewer authority and the precise stale rule.
-- An explicit source-item and immutable version binding for richer provenance display. Ordinary current-source enforcement already uses the existing authoritative SRC-001 publication linkage; it does not wait for this proposal.
-
-These fields require maintainer acceptance before implementation. This proposal grants no new authority and changes no automatic publication policy.
-
-### Concrete additive proposal (not accepted or implemented)
-
-Propose an optional `publicProvenance` object on a published version, assembled only by the owning serializer:
-
-| Proposed field | Authority and withholding rule |
-| --- | --- |
-| `responsibleEditor` | A public credit bound to the publication version, editorial responsibility action and accountable person. Requires a dedicated, versioned publication-consent purpose accepted by the owning consent module. An existing staff role, working-view name or authorship string grants no publication consent. Omit on withdrawal. |
-| `participatingRoles` | Structured registry role identifiers and localized disclosure keys, pinned to actual contribution events for that version. Keep internal run, prompt, provider and staff fields private. Each event has an accountable person in the private record; publishing that person's credit requires the explicit rule above. Roles are assistance disclosures, never authors. |
-| `original` | Original publication identifier, immutable version and digest, plus the translation version that used it. Resolve only through current public projections. Omit links and text when the original is withheld. |
-| `review` | Review action bound to the exact translation version and pinned original version, with consent-checked reviewer credit. A later review does not retroactively certify older editions. |
-| `stale` | Derive only when a bound original exists, is currently public, and its current version differs from the original version bound to this translation. Without a binding the status is unknown, not false. |
-
-Acceptance needs conductor approval of this shape, the consent purpose and withdrawal behavior, authoring/review authority, locale copy in all seven languages, migration and backward-compatibility rules, and real negative authorization/concurrency tests. No fields above have been added to the live contract. Freeform-name filtering is only a defensive display rule, never proof of human identity.
+JSON-LD remains a React text child in an inert `application/ld+json` script, with HTML delimiters and line separators escaped. The raw-HTML prohibition remains unchanged. Browser tests use malicious closing-script and image payloads, bypass CSP only for the isolated negative case, and verify round trips without injected elements, execution or external requests. Freeform-name filtering is only a defensive display rule, never proof of human identity.
 
 ## PDF persistence and delivery
 
