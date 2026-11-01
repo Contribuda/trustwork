@@ -125,3 +125,8 @@ More fundamentally, `PrivacySourceTombstoneSchema` version 2 binds only the exac
 FILE deletion and erasure commands now advance the parent artifact revision before inserting/updating deletion state. This preserves the existing parent-first lock order and immutable file evidence while making a snapshot that predates revocation fail its locking read. Both the inline JSON and streaming paths are tested with revocation before resolution admission, after snapshot creation, and after delivery admission, including the initially absent state row.
 
 An owning COMMS export port now enumerates full histories for already-discovered owned RFQs, party quotes, agreements and owned/participating projects, using current context/thread authorizers and the existing message projection. It never discovers employer threads for a personal export or lists arbitrary internal communications. Other context discovery remains partial.
+
+
+### Continuation migration order
+
+The conductor allocated `20261118100000` through `20261118100950` to the eleven unpublished privacy continuation migrations so they can follow the SANC-006 `20261117` family. Only filenames moved; every SQL byte is preserved. The applied `20261106100000_privacy.sql` is unchanged. Historical reports and executed source commits retain their original `20261114` names and test evidence; they are not final-head CI claims. Integration waits for the sanctions continuation to merge before this family is queued.
