@@ -236,6 +236,7 @@
       }
     },
     "common": {
+      "applied": "Hecho: el cambio quedó registrado.",
       "demoNotSaved": "Demostración: los cambios no se guardan.",
       "demoSecondPerson": "Demostración: esto crearía una solicitud a una segunda persona para “{action}”; no se guarda nada.",
       "reason": "Motivo",

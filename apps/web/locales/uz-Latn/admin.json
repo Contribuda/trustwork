@@ -236,6 +236,7 @@
       }
     },
     "common": {
+      "applied": "Bajarildi: oʻzgarish qayd etildi.",
       "demoNotSaved": "Namuna: oʻzgarishlar saqlanmaydi.",
       "demoSecondPerson": "Namuna: bu yerda «{action}» uchun ikkinchi xodimga soʻrov yaratilardi; hech narsa saqlanmadi.",
       "reason": "Sabab",

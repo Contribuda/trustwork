@@ -10,6 +10,8 @@ import {
   type ConsolePermission,
   type HubStaffRole,
 } from '@trustwork/contracts/client';
+import { isRestricted } from '@trustwork/country-packs';
+import { evaluateCommand, type CommandInput, type CommandOutcome, type RejectCode } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
 import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord } from './schemas.js';
@@ -29,9 +31,17 @@ import type { SectionDef } from './section-types.js';
 /** The reads this adapter needs: parsed JSON of a 2xx answer, `null` for 404 `access.not_found`, otherwise a rejection. */
 export interface ConsoleApi {
   get(path: `/v1/${string}`): Promise<unknown | null>;
+  /**
+   * A staff mutation with the session cookie, the CSRF header, the browser's origin and `Idempotency-Key` (the same
+   * key travels in the body as the console contract asks). Never rejects for an HTTP answer: it reports the status and
+   * the error code of the envelope.
+   */
+  post?(path: `/v1/${string}`, body: Record<string, unknown>, idempotencyKey: string): Promise<{ status: number; code: string | null }>;
 }
 export interface ApiPortOptions {
   api: ConsoleApi;
+  /** A fresh idempotency key per submission (UUID). */
+  newKey?: () => string;
   /** Host name of this deployment (the hub's address in the console); one deployment serves its hubs on one host. */
   siteHost: () => string | Promise<string>;
   engineVersion: string;
@@ -207,6 +217,43 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     return { requests, decisions };
   }
 
+  /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
+  const LIVE_COMMANDS = new Set<CommandInput['command']>(['approvals.decide', 'approvals.withdraw']);
+
+  /** An API refusal as a console reject code (the API decides; the console only words it). */
+  function refusal(status: number, code: string | null): CommandOutcome {
+    if (status === 404) return { status: 'not_found' };
+    const as = (c: RejectCode): CommandOutcome => ({ status: 'rejected', code: c, field: null, detail: [] });
+    if (status === 401) return as('elevation_required');
+    if (status === 403) return as(code === 'access.second_approver_required' ? 'own_request' : 'denied');
+    if (status === 409) return as('request_void');
+    return as('invalid');
+  }
+
+  async function command(request: ConsoleRequest, input: CommandInput): Promise<CommandOutcome> {
+    if (request.demo || !LIVE_COMMANDS.has(input.command) || !api.post) return { status: 'not_found' };
+    const v = await viewer(request);
+    const hub = v && input.hubSlug ? (await hubs(request)).find((h) => h.hub.slug === input.hubSlug) ?? null : null;
+    if (!v || !hub) return { status: 'not_found' };
+    const acc = await access(v, { nodeId: hub.hub.nodeId, hubId: hub.hub.id });
+    const { requests } = await approvals(hub.hub.id);
+    // The same checks as everywhere in the console first (role, elevation, reason, own request, digest); the API repeats them as the authority.
+    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted });
+    if (checked.status !== 'demo_not_saved') return checked;
+    const f = input.fields;
+    const key = (options.newKey ?? (() => crypto.randomUUID()))();
+    const base = { contractVersion: '1.0.0', idempotencyKey: key, reason: input.reason.trim() };
+    const id = encodeURIComponent(f.requestId ?? '');
+    const call =
+      input.command === 'approvals.withdraw'
+        ? api.post(`/v1/admin/approvals/${id}/withdraw`, base, key)
+        : f.decision === 'approve'
+          ? api.post(`/v1/admin/approvals/${id}/approve`, { ...base, actionDigest: f.digest ?? '' }, key)
+          : api.post(`/v1/admin/approvals/${id}/decline`, base, key);
+    const answer = await call;
+    return answer.status >= 200 && answer.status < 300 ? { status: 'applied' } : refusal(answer.status, answer.code);
+  }
+
   return {
     source: 'api',
     now,
@@ -230,7 +277,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     product: async () => null,
     // The live setup wizard reads `/v1/setup` itself (HUB-004, setup/_live); the console port has no setup run.
     setup: async () => null,
-    // Commands are wired one by one with their backend routes; until then live mode refuses them as not found.
-    command: async () => ({ status: 'not_found' }),
+    // Commands are wired one by one with their backend routes (LIVE_COMMANDS); the others are not found in live mode.
+    command,
   };
 }
