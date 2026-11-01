@@ -243,13 +243,13 @@ export const budgets = {
   },
   /**
    * limit - consumed - held as seen by the caller, with the same arithmetic as `billing_reserve` (which re-evaluates it
-   * under the row lock): consumed from the budget's ledger legs, held from open, unexpired reservations.
+   * under the row lock): consumed from the budget's ledger legs, held from unresolved effects or open, unexpired reservations.
    */
   async balance(trx: Transaction, budgetId: string): Promise<{ limitMinor: string; consumedMinor: string; heldMinor: string; remainingMinor: string; currency: string } | undefined> {
     const row = await sql<{ limit_minor: string; consumed: string; held: string; currency: string }>`
       SELECT b.limit_minor, b.currency,
         coalesce((SELECT -sum(e.amount_minor) FROM trustwork.ledger_entry e WHERE e.account_kind = 'budget' AND e.account_id = b.id), 0)::bigint AS consumed,
-        coalesce((SELECT sum(r.amount_minor) FROM trustwork.reservation r WHERE r.budget_id = b.id AND r.state = 'reserved' AND r.expires_at > clock_timestamp()), 0)::bigint AS held
+        coalesce((SELECT sum(r.amount_minor) FROM trustwork.reservation r WHERE r.budget_id = b.id AND r.state = 'reserved' AND (r.effect_pending OR r.expires_at > clock_timestamp())), 0)::bigint AS held
       FROM trustwork.budget b WHERE b.id = ${budgetId}::uuid`.execute(trx);
     const r = row.rows[0];
     if (!r) return undefined;
@@ -259,6 +259,10 @@ export const budgets = {
 };
 
 export const reservations = {
+  /** Internal owning command only: hold until authoritative outcome; runtime roles cannot call this directly. */
+  async holdForEffect(trx: Transaction, reservationId: string): Promise<void> {
+    await sql`SELECT trustwork.billing_hold_for_effect(${reservationId}::uuid)`.execute(trx);
+  },
   /** Runtime (definer): atomic and idempotent per correlation key; see the migration for the refusal hints. */
   async reserve(trx: Transaction, input: ReserveInput): Promise<ReservationRow> {
     return one(sql<ReservationRow>`SELECT * FROM trustwork.billing_reserve(${input.budgetId}::uuid, ${input.kind}, ${minor(input.amountMinor)}::bigint, ${input.currency},

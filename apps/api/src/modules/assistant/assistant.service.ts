@@ -6,6 +6,8 @@ import {
 } from '../../deps/contracts.js';
 import { auditEvents, type Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
+import { completionRecordId } from '../../common/idempotency/completion.js';
+import { assistantModelTurns } from '../../../../../packages/data/src/repositories/assistant-model.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
@@ -15,7 +17,8 @@ import {
   type ActionIntentRow, type ConversationTurnRow, type MandateProposalRow, type MandateRow, type RunRow, type RunStepRow, type ServiceBacklogItemRow,
 } from './deps.js';
 import { actionDigest, assertShareable, decide, isUuid, mandateDigest, mandateOf, PrivateFieldError, type PolicySettings } from './policy.js';
-import type { ModelPort, ModelToolCall, RetrievalPort } from './ports.js';
+import { UnavailableModel } from './ports.js';
+import type { ModelInput, ModelPort, ModelToolCall, RetrievalPort } from './ports.js';
 import type {
   BacklogStatusCommandSchema, CancelRunCommandSchema, ConfirmProposalCommandSchema, ConversationCommandSchema, CreateMandateCommandSchema, DeclineCommandSchema, DecideCommandSchema,
   MandateDraft, NarrowMandateCommandSchema, ReviseMandateCommandSchema,
@@ -29,6 +32,8 @@ const money = (minor: string | null, currency: string | null): Money | null => (
 
 /** Database hints of the assistant commands (and the BILL-001 reservation they call), mapped to frozen contract codes. */
 const HINTS: Record<string, { code: ErrorCode; reason: string }> = {
+  'validation.idempotency_in_progress': { code: 'validation.idempotency_in_progress', reason: 'in_progress' },
+  'validation.idempotency_conflict': { code: 'validation.idempotency_conflict', reason: 'conflict' },
   'mandate.not_principal': { code: 'access.forbidden', reason: 'not_principal' },
   'mandate.authority_basis': { code: 'access.forbidden', reason: 'authority_basis' },
   'mandate.budget_authority': { code: 'commercial.authority_missing', reason: 'budget_authority' },
@@ -316,12 +321,46 @@ export class AssistantService {
    * is stored as content; its tool calls become proposals (mandate changes, backlog items) or actions decided by the
    * mandate policy. Nothing typed here confirms, approves, widens or stops anything.
    */
-  converse(body: In<typeof ConversationCommandSchema>, state: RequestState) {
-    return this.run(state, async (trx, p) => {
-      const history = (await conversationTurns.list(trx, p.personId, 20)).reverse().map((t) => ({ role: t.role, content: t.content }));
+  async converse(body: In<typeof ConversationCommandSchema>, state: RequestState) {
+    // The built-in unavailable model has no effect or adapter; retain the existing single-commit no-model route.
+    if (this.model instanceof UnavailableModel) return this.run(state, async (trx, p) => {
+      if (!await assistantModelTurns.available(trx,p.personId)) throw new ApiError('validation.idempotency_in_progress', 'model outcome unresolved');
       const run = await runs.start(trx, { principal_person_id: p.personId, kind: 'conversation' });
       const asked = await conversationTurns.append(trx, { person_id: p.personId, role: 'person', content: body.text, run_id: run.id });
-      const reply = await this.model.respond({ personId: p.personId, history, text: body.text, evidence: [] });
+      const answer = await conversationTurns.append(trx, { person_id: p.personId, role: 'system', content: 'assistant.overlay.stateUnavailable', run_id: run.id });
+      await runSteps.append(trx, { run_id: run.id, kind: 'model_call', tool: null, input_digest: computeDigest({ text: body.text }).value,
+        output_ref: { provider: 'none', usage: { inputTokens: 0, outputTokens: 0 }, toolCalls: 0 }, state: 'succeeded' });
+      await runs.setState(trx, run.id, 'completed');
+      return { run: runView((await runs.get(trx, run.id))!), turns: [turnView(asked), turnView(answer)], proposals: [] as ReturnType<typeof proposalView>[], actions: [] as ActionProposalResult[], citations: [] as string[] };
+    });
+    const key = completionRecordId(state) ?? state.requestId;
+    // Commit intent first. The HTTP idempotency completion belongs only to the final transaction.
+    const prepared = await this.run({ ...state }, async (trx, p) => {
+      if (!state.session || state.session.personId !== p.personId) throw new ApiError('auth.session_invalid', 'session required');
+      const begun = await assistantModelTurns.begin(trx, key, computeDigest(body).value, body.text);
+      const history = (await conversationTurns.list(trx, p.personId, 21)).filter((t) => t.id !== begun.turn.asked_id).slice(0, 20).reverse().map((t) => ({ role: t.role, content: t.content }));
+      return { ...begun, principal: p, history };
+    });
+    type Result = { run: ReturnType<typeof runView>; turns: ReturnType<typeof turnView>[]; proposals: ReturnType<typeof proposalView>[]; actions: ActionProposalResult[]; citations: string[] };
+    if (prepared.turn.state === 'completed') return this.run(state, async () => prepared.turn.result as Result);
+    const input: ModelInput = { personId: prepared.principal.personId, history: prepared.history, text: body.text, evidence: [],
+      execution: { operationId: prepared.turn.id, runId: prepared.turn.run_id, hubId: this.settings.hubId, principal: prepared.principal, sessionId: state.session!.id } };
+    // A pending turn after a crash is never reclaimed for dispatch, even after an HTTP lease expires.
+    const reply = prepared.fresh ? await this.model.respond(input) : await this.model.recover?.(input);
+    if (!reply) throw new ApiError('validation.idempotency_in_progress', 'model outcome unresolved');
+    return this.run(state, async (trx, p) => {
+      const turn = await assistantModelTurns.lock(trx, prepared.turn.id);
+      if (!turn) throw new ApiError('access.not_found', 'turn not found');
+      if (turn.state === 'completed') return turn.result as Result;
+      const run = await runs.get(trx, turn.run_id);
+      const asked = await trx.selectFrom('conversation_turn').selectAll().where('id','=',turn.asked_id).executeTakeFirst();
+      if (!run || !asked) throw new ApiError('access.not_found', 'active conversation not found');
+      if (['cancelled', 'failed'].includes(run.state)) {
+        const answer = await conversationTurns.append(trx, { person_id: p.personId, role: 'system', content: 'assistant.overlay.stateUnavailable', run_id: run.id });
+        const result: Result = { run: runView(run), turns: [turnView(asked), turnView(answer)], proposals: [], actions: [], citations: [] };
+        await assistantModelTurns.finish(trx, turn.id, result);
+        return result;
+      }
       await runSteps.append(trx, { run_id: run.id, kind: 'model_call', tool: null, input_digest: computeDigest({ text: body.text }).value, output_ref: { provider: this.model.provider, usage: reply.usage, toolCalls: reply.toolCalls.length }, state: 'succeeded' });
       const proposals: ReturnType<typeof proposalView>[] = [];
       const actions: ActionProposalResult[] = [];
@@ -347,7 +386,9 @@ export class AssistantService {
       const intents = await actionIntents.listForRun(trx, run.id);
       if (intents.length === 0) await runs.setState(trx, run.id, 'completed');
       const finished = (await runs.get(trx, run.id))!;
-      return { run: runView(finished), turns: [turnView(asked), turnView(answer)], proposals, actions, citations };
+      const result: Result = { run: runView(finished), turns: [turnView(asked), turnView(answer)], proposals, actions, citations };
+      await assistantModelTurns.finish(trx, turn.id, result);
+      return result;
     });
   }
 

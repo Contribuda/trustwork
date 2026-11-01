@@ -112,7 +112,7 @@ test('gateway route resolution against real KEYS-001 PostgreSQL; synthetic autho
       hosting: { kind: 'self_hosted', country: 'RU' }, storageCountry: null, region: null, credentialRefId: null,
     })), (e: unknown) => (e as { hint?: string }).hint === 'providers.restricted_place');
   });
-  await t.test('dependency evidence: BILL-001 forgets an unsettled hold after its TTL', async () => {
+  await t.test('ordinary unheld BILL-001 reservations retain their finite-TTL behavior', async () => {
     const billing = await buildWorld(db.admin);
     const b = actor(db.admin, runtime);
     const principal = billing.people.solo;
@@ -123,9 +123,9 @@ test('gateway route resolution against real KEYS-001 PostgreSQL; synthetic autho
     const reserve = (key: string, ttlSeconds: number) => b.as(principal, (trx) => reservations.reserve(trx, {
       budgetId, kind: 'platform', amountMinor: '7', currency: 'USD', actionIntentId: randomUUID(), correlationKey: key, projectId: null, ttlSeconds,
     }));
-    const first = await reserve('synthetic-unknown-outcome', 1);
+    const first = await reserve('synthetic-finite-reservation', 1);
     assert.equal((await b.as(principal, (trx) => budgets.balance(trx, budgetId)))!.heldMinor, '7');
-    // Local database clock only. No provider is called; this reproduces a dependency, not model acceptance.
+    // Local database clock only. Durable effect holds have separate coverage in durable.test.ts.
     await db.admin.query('SELECT pg_sleep(1.1)');
     const second = await reserve('synthetic-after-expiry', 60);
     assert.notEqual(first.id, second.id);

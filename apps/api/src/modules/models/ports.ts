@@ -15,7 +15,7 @@ export interface RouteResolutionPort {
 
 /** Supplied by trusted application services, never by a request body or model output. */
 export interface ModelAuthorityPort {
-  check(call: ModelCall, candidate: PinnedCandidate): Promise<{
+  check(call: ModelCall, candidate: PinnedCandidate, purpose?: 'invoke' | 'reconcile'): Promise<{
     principalId: string;
     mandateId: string;
     mandateRevision: number;
@@ -32,7 +32,8 @@ export interface ModelAuthorityPort {
 
 export interface ReservedModelCall {
   operationId: string;
-  reservationId: string;
+  reservationId: string | null;
+  dispatchToken: string;
   request: Omit<ModelCall, 'prompt'>;
   route: ResolvedModelRoute;
   candidate: PinnedCandidate;
@@ -43,14 +44,17 @@ export type ModelReplay = { kind: 'replay'; outcome: ModelCallMetadata['outcome'
  * run, route and provider revision. It reserves platform AND operator budgets before returning dispatch ownership.
  * A duplicate never dispatches. An abandoned dispatcher is reconciled, not reclaimed. Unknown holds never expire.
  * Finish settles/releases both reservations and records only allowlisted metadata in the same transaction.
- * No production implementation exists yet: BILL-001 cannot currently hold an unknown reservation without expiry.
+ * The PostgreSQL implementation accepts fake connections only, as KEYS assigns them zero operator cost.
  */
 export interface ModelCallStore {
   begin(call: ModelCall, route: ResolvedModelRoute, candidate: PinnedCandidate): Promise<{ kind: 'dispatch'; call: ReservedModelCall } | ModelReplay>;
   /** Only after authoritative evidence of no effect; atomically move operator holds to the fallback connection. */
   fallback(operation: ReservedModelCall, candidate: PinnedCandidate): Promise<ReservedModelCall>;
+  /** Durable one-use fence. False means another execution or reconciliation owns this intent. */
+  admit(operation: ReservedModelCall): Promise<boolean>;
   finish(operation: ReservedModelCall, metadata: ModelCallMetadata): Promise<void>;
   /** Reconciliation may only return an already dispatched operation belonging to this principal. */
+  settled(operationId: string, principalId: string): Promise<ModelCallMetadata | null>;
   unknown(operationId: string, principalId: string): Promise<ReservedModelCall | null>;
 }
 
@@ -61,7 +65,7 @@ export type ModelAdapterResult =
 export interface ModelAdapter {
   readonly mode: 'fake';
   invoke(input: { operationId: string; model: PinnedCandidate; prompt: string; maxInputTokens: number; maxOutputTokens: number; signal: AbortSignal }): Promise<ModelAdapterResult>;
-  /** Lookup only. Never implements reconciliation by calling invoke again. */
+  /** Lookup only, never invoke. not_sent must be authoritative and fence any delayed invocation of this operation. Absence is unknown. */
   reconcile(operationId: string, model: PinnedCandidate): Promise<ModelAdapterResult>;
 }
 

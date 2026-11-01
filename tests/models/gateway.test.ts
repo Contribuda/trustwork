@@ -28,7 +28,7 @@ test('gateway forwards the exact pin and returns a synthetic response without lo
   assert.ok(!JSON.stringify(h.logs).includes(request.prompt));
   assert.ok(!JSON.stringify(h.logs).includes('Synthetic model response.'));
   assert.ok(!JSON.stringify([...h.store.rows.values()]).includes(request.prompt));
-  assert.equal(h.routes.checks.length, 3);
+  assert.equal(h.routes.checks.length, 4);
 });
 
 test('all mandatory kill scopes, including unknown, refuse before adapter invocation', async (t) => {
@@ -192,4 +192,15 @@ test('a hung reconciliation is bounded and never invokes again', async () => {
   const result = await h.gateway.reconcile(request.operationId, request.principalId);
   assert.equal(result.outcome, 'outcome_unknown');
   assert.equal(h.adapter.calls.length, 0);
+});
+
+
+test('lost or ambiguous durable admission never invokes an adapter or releases the hold', async () => {
+  for (const ambiguous of [false, true]) {
+    const h = harness();
+    h.store.admit = async () => { if (ambiguous) throw new Error('Synthetic ambiguous commit'); return false; };
+    assert.equal((await h.gateway.call(request)).outcome, 'outcome_unknown');
+    assert.equal(h.adapter.calls.length, 0);
+    assert.equal(h.store.rows.get(request.operationId)!.metadata, null);
+  }
 });

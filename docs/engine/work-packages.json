@@ -4368,9 +4368,10 @@
       "area": "assistant",
       "status": "blocked",
       "dependsOn": [
-        "KEYS-001",
+        "AGT-003",
         "AST-001",
-        "BILL-001"
+        "BILL-001",
+        "KEYS-001"
       ],
       "handbook": "docs/engine/agents.md",
       "goal": "Provide one model port that routes every call by data class and hub egress policy, reserves cost from the platform budget per mandate and run, and logs metadata without bodies.",

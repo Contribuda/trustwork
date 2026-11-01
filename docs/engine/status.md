@@ -2,7 +2,7 @@
 
 We would rather under-promise. The normative requirements of every module, with a status per requirement, are in the [module specifications](modules/README.md). This page says, area by area, what you can run today, what exists only as a demo on synthetic data, what is frozen as a contract, what is designed, and what this handbook proposes for the first time. It is updated whenever a work package is accepted.
 
-LLM-001 remains blocked: its internal gateway core resolves and rechecks KEYS-001 routes, with local fake adapters and metadata-only projections. It is not wired into the assistant, API or worker, and has no durable model-call store. See the [integration dependencies and bounded evidence](../../apps/api/src/modules/models/README.md); no model gateway is claimed Live.
+LLM-001 remains partial and blocked on mandatory governance integration: its fake-only gateway uses real KEYS routing, durable BILL effect holds, locked mandate accounting, cross-process dispatch ownership and an AST commit/finalization boundary. The default application model remains unavailable; AGT-003 authority is not fabricated. See the [integration boundary and bounded evidence](../../apps/api/src/modules/models/README.md); no model gateway is claimed Live.
 
 ## Status levels
 
