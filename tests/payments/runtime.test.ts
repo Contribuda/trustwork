@@ -6,7 +6,7 @@ import { seedPersonas, login } from '../backend/helpers/personas.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { screenEveryoneClear, setBaselineStale } from '../screening-gates/helpers.js';
 import { workerLogin } from '../assistant/helpers.js';
-import { agreement, paymentHub, ok } from './helpers.js';
+import { agreement, paymentHub, paymentVerifier, ok } from './helpers.js';
 import type { PaymentBinding, PaymentView } from '../../packages/contracts/src/payments.js';
 import { PaymentProviders, DeterministicPaymentFake } from '../../apps/worker/src/payments/provider.js';
 import { receivePaymentWebhook, reconcilePayment, registerPayments, paymentReconcileTask } from '../../apps/worker/src/payments/index.js';
@@ -22,7 +22,6 @@ import { inTransaction } from '../../apps/worker/src/db.js';
 const h = await startHarness('payments_runtime');
 test('payments: real API, worker, immutable receipts and BILL holds', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
-  t.after(() => h.close());
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const hub = await paymentHub(h);
@@ -34,7 +33,9 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
   t.after(async () => { await pool.end(); await worker.close(); });
   const fake = new DeterministicPaymentFake();
   const providers = new PaymentProviders(new Map([[hub.connectionId, fake]]));
-  const runtime = { pool, providers };
+  const verifier = await paymentVerifier(h);
+  t.after(async () => { await verifier.close(); await h.close(); });
+  const runtime = { pool, providers, receiptPool: verifier.pool };
   const registry = new HandlerRegistry(); registerPayments(registry, runtime);
   const config = defaultWorkerConfig({ concurrency: 1, relayBatchSize: 1000 });
   const logs: unknown[] = [];
@@ -217,7 +218,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
           }
           assert.equal(revoked, false); release();
           const receipt = await dispatched; await revocation; await writer.query('COMMIT');
-          await inTransaction(pool, (trx) => payments.receipt(trx, receipt));
+          await inTransaction(verifier.pool, (trx) => payments.receipt(trx, receipt));
           assert.equal(fake.calls.filter((id) => id === op.id).length, 1);
         }
       } finally { await writer.query('ROLLBACK'); writer.release(); }
@@ -250,7 +251,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     const instruction = await inTransaction(pool, (trx) => payments.begin(trx, op.id, job.id, job.fencing_token, `${job.id}:${job.attempt}`));
     assert.ok(instruction);
     const receipt = await inTransaction(pool, async (trx) => { await payments.dispatchGuard(trx, op.id, job.id, job.fencing_token, `${job.id}:${job.attempt}`); return fake.create(instruction, AbortSignal.timeout(1000)); });
-    await inTransaction(pool, (trx) => payments.receipt(trx, receipt));
+    await inTransaction(verifier.pool, (trx) => payments.receipt(trx, receipt));
     await inTransaction(pool, (trx) => jobs.markOutcomeUnknown(trx, job.id, job.fencing_token, 'synthetic crash after receipt commit'));
     const lookups = fake.lookups.length;
     assert.equal(await reconcilePayment(runtime, op.id, AbortSignal.timeout(1000)), 'succeeded');
@@ -309,7 +310,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
           await blocker.query('COMMIT'); await beginning; await dispatchClient.query('COMMIT');
         } else {
           let received = false;
-          const receipt = inTransaction(pool, async (trx, handle) => {
+          const receipt = inTransaction(verifier.pool, async (trx, handle) => {
             const result = payments.receipt(trx, evidence);
             for (let i = 0; i < 100; i++) {
               if ((await q("SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND wait_event_type='Lock'", [handle.pid])).length) break;
@@ -344,7 +345,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
       }
     }
     const hanging = new HangingFake(); hanging.plan(op.id, 'succeeded');
-    const hangingRuntime = { pool, providers: new PaymentProviders(new Map([[hub.connectionId, hanging]])) };
+    const hangingRuntime = { pool, receiptPool: verifier.pool, providers: new PaymentProviders(new Map([[hub.connectionId, hanging]])) };
     const hangingRegistry = new HandlerRegistry(); registerPayments(hangingRegistry, hangingRuntime);
     const timedRunner = new JobRunner({ ...deps, registry: hangingRegistry, config: defaultWorkerConfig({ concurrency: 1, externalTimeoutMs: 250 }) });
     try {

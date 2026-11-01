@@ -1,6 +1,6 @@
 import { withMaintenance } from '@trustwork/data';
 import type { CrashCase } from '../cases.js';
-import { paymentHub, agreement, ok } from '../../../payments/helpers.js';
+import { paymentHub, paymentVerifier, agreement, ok } from '../../../payments/helpers.js';
 import { screenEveryoneClear } from '../../../screening-gates/helpers.js';
 import { kernelReference, kernelSync } from '../../../../packages/data/src/repositories/kernel.js';
 import type { PaymentBinding, PaymentView } from '../../../../packages/contracts/src/payments.js';
@@ -23,8 +23,9 @@ export default {
     const buyer = await as('petr'), seller = await as('carl');
     const q = async (query: string, args: unknown[] = []) => (await h.db.admin.query(query, args)).rows;
     const worker = await workerLogin(h); const pool = worker.pool(4);
+    const verifier = await paymentVerifier(h);
     const fake = new DeterministicPaymentFake();
-    const registry = new HandlerRegistry(); registerPayments(registry, { pool, providers: new PaymentProviders(new Map([[hub.connectionId, fake]])) });
+    const registry = new HandlerRegistry(); registerPayments(registry, { pool, receiptPool: verifier.pool, providers: new PaymentProviders(new Map([[hub.connectionId, fake]])) });
     const deps = { pool, registry, config: defaultWorkerConfig({ concurrency: 1, relayBatchSize: 1000 }), metrics: new Metrics(), log: () => {} };
     const relay = new OutboxRelay(deps), runner = new JobRunner(deps);
     const tick = async () => { await relay.relayOnce(); await runner.tick(); await runner.idle(); };
@@ -53,6 +54,6 @@ export default {
       fake.plan(other!.id as string, 'succeeded'); await tick();
       await exactlyOnce({ action: 'payments.payout', client: buyer, url: `/v1/payments/${second.id}/payout`, body: {},
         effects: async () => (await q("SELECT id FROM trustwork.payment_operation WHERE payment_id=$1 AND kind='payout'", [second.id])).length });
-    } finally { await pool.end(); await worker.close(); }
+    } finally { await verifier.close(); await pool.end(); await worker.close(); }
   },
 } satisfies CrashCase;
