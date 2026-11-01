@@ -17,7 +17,7 @@ test('ranking, matching and reputation modules do not depend on payment state or
 test('the shipped payment bootstrap contains no real provider or account bootstrap', () => {
   const main = readFileSync('apps/worker/src/main.ts', 'utf8');
   assert.match(main, /const payments: PaymentRuntime = \{ pool, providers: new PaymentProviders\(\) \}/);
-  const migration = readFileSync('packages/data/migrations/payments/20261119100000_payment_operations.sql', 'utf8');
+  const migration = readFileSync('packages/data/migrations/payments/20261123100000_payment_operations.sql', 'utf8');
   assert.doesNotMatch(migration, /INSERT INTO trustwork\.(?:payment_source|payment_rail|billing_account)/);
   assert.match(migration, /custody='provider_connected_accounts'/);
 });

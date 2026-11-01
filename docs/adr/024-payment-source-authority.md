@@ -1,6 +1,6 @@
 # ADR 024: Payment source authority and bilateral payment authorization
 
-Date: 2026-11-01. Status: **Proposed**; technical conductor review pending. Owner: PAY-001 (#80), draft PR #510. This allocates no operational provider, credentials, publisher or authority to existing billing permissions. No frozen commercial or mesh contract changes here.
+Date: 2026-11-01. Status: **Proposed**; conductor technical review allocated a bounded first-party, single-hub commercial implementation on 2026-11-01; implementation review remains pending. Owner: PAY-001 (#80), draft PR #510. This allocates no operational provider, credentials, publisher or authority to existing billing permissions. No frozen commercial or mesh contract changes here.
 
 ## Problem and existing contracts
 
@@ -11,7 +11,7 @@ Existing exact sources:
 - `agreement` and `quote_version`, owned by commerce, carry immutable accepted digest, offer/request versions, party IDs and quote gross amount/currency. `commercial_order` carries the original transaction reservation and accepted digest. See [immutable evidence](003-snapshots-evidence-and-authority.md), `packages/data/migrations/transactions/20261101120000_transactions.sql` and `packages/contracts/src/deals.ts`.
 - `task_assignment` and `consultation_booking` pin their owning accepted records (`packages/data/src/schema/tasks.ts`, `packages/data/src/schema/consultations.ts`). Their factories are owned by AGT. Platform fee holds are not settlement reservations. No unconsumed adapter is integration.
 - `provider_connection`, `hub_config_current` and immutable `hub_config_version` carry configured provider identity/capabilities and activated hub policy. `packages/data/src/repositories/providers.ts::providerConnections` and `hubs.ts::hubConfig` expose the owning commands. They do not establish participant account ownership.
-- `payment_source` is an immutable runtime projection with a revocation timestamp and no production publisher. `payment_rail` is owner-only. `payments_authority`, `payments_route_available`, `payments_funds_guard`, `payments_begin` and `payments_dispatch_guard` are in `packages/data/migrations/payments/20261119100000..20261119100005`. `payment_operation.admitted_authority` records the admitting person/company epochs and membership ID. Initial settlement keeps intent -> operation -> BILL order.
+- `payment_source` is an immutable runtime projection with a revocation timestamp and no production publisher. `payment_rail` is owner-only. `payments_authority`, `payments_route_available`, `payments_funds_guard`, `payments_begin` and `payments_dispatch_guard` are in `packages/data/migrations/payments/20261123100000..20261123100005`. `payment_operation.admitted_authority` records the admitting person/company epochs and membership ID. Initial settlement keeps intent -> operation -> BILL order.
 - `screening_gate_check` (`screening-gates/20261103030000_screening_gates.sql`) serializes local baseline/subject/hold checks. `screening_available(clock_timestamp())` checks age after domain waits. This single-node authority is not remote federation.
 - `PaymentProviders` in `apps/worker/src/payments/provider.ts` ships empty. `PaymentRuntime.receiptPool` is a separate trusted verifier boundary; ordinary app/worker SQL cannot call `payments_receipt`. No login or operational verifier is provisioned.
 
@@ -23,7 +23,7 @@ A chosen **responsible payment hub** is a service/routing selection accepted by 
 
 ## Proposed records and limits
 
-These are proposed table/contract names, not existing functions or an implementation allocation. Every record has an opaque ID, schema version, canonical digest, creation time and issuer registration version. Immutable versions have separate current/revocation pointers; no historical record is overwritten. UUIDs and ISO codes use existing contracts. Digests use `trustwork-digest-1`; raw signatures use an explicitly registered algorithm/key version, never a Boolean.
+These proposed records are allocated for the bounded local implementation; they do not authorize operational registration. Every record has an opaque ID, schema version, canonical digest, creation time and issuer registration version. Immutable versions have separate current/revocation pointers; no historical record is overwritten. UUIDs and ISO codes use existing contracts. Digests use `trustwork-digest-1`; raw signatures use an explicitly registered algorithm/key version, never a Boolean.
 
 | Proposed record | Required contents and owner |
 |---|---|
@@ -101,6 +101,6 @@ This candidate explicitly depends on reviewed revoker completion semantics, boun
 
 ## Allocation and verification
 
-PAY owns the proposed source records/projections and payment adapter boundary. Identity owns verified-subject linkage; commerce owns immutable agreement and acceptance provenance; HUB owns hub service acceptance/review permissions; SANC owns scoped screening/revoker semantics; AGT owns task/consultation factories; PROV owns provider publication. Precise migrations/contracts/hooks require subsequent conductor allocation. No files in those other owning implementations are changed by this proposal.
+PAY owns the proposed source records/projections and payment adapter boundary. Identity owns verified-subject linkage; commerce owns immutable agreement and acceptance provenance; HUB owns hub service acceptance/review permissions; SANC owns scoped screening/revoker semantics; AGT owns task/consultation factories; PROV owns provider publication. The conductor allocated additive PAY records/contracts/API/publisher, minimal explicit ADM entries and owner tests for the local individual commercial slice. Remote protocol, company and AGT source hooks require subsequent allocation. No files in those other owning implementations are changed by this proposal.
 
 Required evidence: each field's issuer/party/audience/challenge negative cases; distinct registration/account reviewers; original publisher cannot self-authorize; raw app/worker forgery refusal; old-agreement and one-sided acceptance refusal; account-change bilateral replacement; payload bounds; source/key/receipt expiry/revocation distinctions; every owning local revoker in both orders; expired authority after waits; remote prepare/fence/revoker/clock/partition/crash tests if ever enabled; no duplicate sends or timeout-based hold release; privacy projections and no operator custody. Fake-adapter observations remain labelled synthetic. Completion of these tests is not operational provider or maintainer acceptance.

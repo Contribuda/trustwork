@@ -40,18 +40,27 @@ test('the synthetic catalogue is labelled and never claims a real price', () => 
   }
 });
 
-test('payment neutrality by construction: no module outside billing reads a billing table', () => {
+test('payment neutrality by construction: only billing and the exact settlement boundary read billing tables', () => {
   const roots = ['packages/data/src', 'packages/data/migrations', 'apps/api/src', 'apps/worker/src', 'packages/contracts/src'];
   const offenders: string[] = [];
   const pattern = new RegExp(`(trustwork\\.(${BILLING_TABLES.join('|')})\\b|(selectFrom|insertInto|updateTable|innerJoin|leftJoin)\\('(${BILLING_TABLES.join('|')})( as [a-z]+)?'\\))`);
+  // PAY-001 reuses the original commercial reservation. This is not entitlement/ranking access.
+  const settlementReaders = new Set([
+    'packages/data/migrations/payments/20261123100000_payment_operations.sql',
+    'packages/data/migrations/payments/20261123100005_payment_current_authority.sql',
+  ]);
   for (const root of roots) {
     for (const path of files(root)) {
       const rel = relative('.', path);
       if (rel.includes('/billing') || rel.endsWith('billing.ts')) continue;
-      if (pattern.test(readFileSync(path, 'utf8'))) offenders.push(rel);
+      const source = readFileSync(path, 'utf8');
+      if (settlementReaders.has(rel)) {
+        const matches = [...source.matchAll(new RegExp(pattern.source, 'g'))];
+        for (const match of matches) assert.ok(['budget', 'reservation'].includes(match[2] ?? match[4] ?? ''), `${rel}: only original settlement funds`);
+      } else if (pattern.test(source)) offenders.push(rel);
     }
   }
-  assert.deepEqual(offenders, [], 'ranking, matching, directory, reputation and every other module stay blind to payments');
+  assert.deepEqual(offenders, [], 'ranking, matching, directory, reputation and other modules stay blind to billing; only exact settlement readers are allowed');
 });
 
 test('no float money in the billing slice', () => {
