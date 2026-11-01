@@ -1,6 +1,6 @@
 # Federation mesh
 
-Module code `MSH`. Status: **Proposed** ([ADR 011](../../adr/011-federation-mesh.md); R39); data licences for peers are decided by the integrator under the owner's delegation (ADR 010 decision 10). Packages: FED-000 … FED-006, REP-002, AGT-017, XCH-001 … XCH-016. Exchange layer (schemas, capability negotiation, usage policies, delivery, translation and cross-border commerce): [Hub exchange architecture](../hub-exchange-architecture.md) (Proposed, [ADR 016](../../adr/016-hub-exchange-layer.md)). Narrative: [Federation: one worldwide mesh](../federation.md). Wire protocol (Contract, FED-000): [Mesh protocol `trustwork-mesh/1`](../federation-protocol.md). Data: [§26 Federation](../../data/model.md#26-federation).
+Module code `MSH`. Status: **Proposed** ([ADR 011](../../adr/011-federation-mesh.md); R39); data licences for peers are decided by the integrator under the owner's delegation (ADR 010 decision 10). Packages: FED-000 … FED-006, NET-000 … NET-004, REP-002, AGT-017, XCH-001 … XCH-016. Exchange layer (schemas, capability negotiation, usage policies, delivery, translation and cross-border commerce): [Hub exchange architecture](../hub-exchange-architecture.md) (Proposed, [ADR 016](../../adr/016-hub-exchange-layer.md)). Narrative: [Federation: one worldwide mesh](../federation.md). Wire protocol (Contract, FED-000): [Mesh protocol `trustwork-mesh/1`](../federation-protocol.md). Data: [§26 Federation](../../data/model.md#26-federation).
 
 ## Purpose
 
@@ -21,6 +21,9 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | MSH-S5 | As a reader on the fediverse, I want to follow a hub's publications and public events | Proposed |
 | MSH-S6 | As a buyer in San Diego, I want to send an RFQ in English to a supplier on a Mexico hub who reads it in Spanish, see both hubs' fees and the applicable rules before accepting, and know that the English original is what binds | Proposed |
 | MSH-S7 | As a supplier, I want my licence check and completed-jobs snapshot from my home hub verified by a buyer's hub in another country without re-verification | Proposed |
+| MSH-S8 | As a hub operator, I want to see every listed hub in the world on a map and in an accessible list, and ask the right ones to connect | Proposed |
+| MSH-S9 | As a hub operator, I want to decide per peer what we share and receive, which modules interoperate and whether cross-hub requests are allowed, with a second person for anything that widens the flow | Proposed |
+| MSH-S10 | As a hub operator, I want a signed channel to other hubs' operators for incidents, abuse reports and coordinated takedowns, without passing anyone's private data | Proposed |
 
 ## Functional requirements
 
@@ -58,6 +61,14 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | MSH-F30 | Each hub decides disputes and appeals of its own participant; joint evidence packages from records both parties see | Proposed | XCH-009 |
 | MSH-F31 | A hub verifies another hub's passport presentations against its key chain and status list and never imports raw reviews | Proposed | XCH-011 |
 | MSH-F32 | Federated public search is opt-in, public-only, without requester identity, and inherits the intersection of source audiences | Proposed | XCH-012 |
+| MSH-F33 | Opt-in hub listings, signed by the node, in directory services that admit them through the SANC-008 `hub_directory` check and never list or serve restricted places; directories may federate and each re-verifies and re-admits ([The hub network](../hub-network.md#6-hub-directory-and-world-map)) | Proposed | NET-000, NET-001 |
+| MSH-F34 | A world map of hubs with an equal accessible list, the same filters and no third-party tiles in the console | Proposed | MAP-001, HUBC-023 |
+| MSH-F35 | Peering requests are double opt-in: each side admits the other and a person accepts; renewal re-runs admission on manifest or attestation change and suspends on refusal or expiry | Proposed | FED-001, NET-002 |
+| MSH-F36 | Per-peer interaction settings can only narrow the level and agreed licences; widening needs a second person bound to the exact change; narrowing, suspension and defederation are immediate with a reason | Proposed | NET-000, NET-002, HUBC-023 |
+| MSH-F37 | Defederation and long suspension purge a peer's personal-data replicas within the agreed tombstone hours; deal replicas stay for the parties | Proposed | FED-002, NET-002 |
+| MSH-F38 | A signed, typed, audited operator channel between hubs that never carries participants' private data except under a counsel-approved case grant (off by default) | Proposed | NET-000, NET-003 |
+| MSH-F39 | Network announcements are pulled, signature-verified, retractable and never self-executing | Proposed | NET-003 |
+| MSH-F40 | Network statistics: per-peer federation health as node-level aggregates; opt-in published hub statistics as buckets with a delay; peering graph with an adjacency table; nothing about people below ten | Proposed | NET-004 |
 
 ## Agent capabilities
 
@@ -66,6 +77,7 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | `core.search_mesh` | read | — | `none` | Search with home-hub labels |
 | `negotiation.send_cross_node_envelope` | commit | `introduce`, `send_quote` or `negotiate` (per intent) | `mandate` (per the mandate's policy) | Deal contexts |
 | `hub_ops.request_peering` | govern | — | `first_party_form` (staff; second person for deal-routing and identity) | Console → Federation |
+| `hub_ops.draft_operator_message` | draft | — | `first_party_form` (staff send it; an operator agent may only draft) | Console → Network → Messages |
 
 ## Interface surfaces
 
@@ -74,6 +86,8 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | Home-hub labels on replicas ("from the national hub", "verified by hub X") | Every public card | Proposed |
 | Federation console: peers, licences, tombstones, incoming links | `/admin/hubs/[hub]/federation` | Proposed (HUBC-006, HUBC-010) |
 | Node identity and keys | `/admin/node/identity` | Proposed |
+| Network area: map and list, directory listing, peers and requests, interaction settings, messages, announcements, statistics | `/admin/hubs/[hub]/network` | Proposed (HUBC-023, HUBC-024) |
+| Directory service (nodes running the directory module) | `/admin/node/directory` | Proposed (HUBC-006, HUBC-010, NET-001) |
 
 ## Hub console settings
 
