@@ -257,7 +257,7 @@ export class FilesService {
       const actor = await this.actor(p, input.actor, 'maintain_records', { kind: row.parent_kind, id: row.parent_id });
       if (await files.requestDeletion(trx, id)) {
         await this.audit(trx, p, state, 'file.deletion_requested', id, { via: actor.via, mandateId: actor.mandateId });
-        await this.event(trx, 'file.deletion_requested', id, row.revision);
+        await this.event(trx, 'file.deletion_requested', id, row.revision + 1);
       }
       return DeleteFileResultSchema.parse({ id, deletionRequested: true });
     });

@@ -36,7 +36,7 @@ const MODULE_COVERAGE = [
   { module: 'assistant', status: 'unsupported', includes: 'requires owning-module exporter' },
   { module: 'billing', status: 'partial', includes: 'own accounts, subscriptions, accepted prices, budgets and reservations; ledger and usage history pending' },
   { module: 'catalogue', status: 'partial', includes: 'all own offerings and versions with owning private-knowledge projection; audit history pending' },
-  { module: 'communications', status: 'partial', includes: 'full project/agreement thread history, paginated own notifications, preferences and channels; other contexts pending' },
+  { module: 'communications', status: 'partial', includes: 'full owned/participating project, RFQ, quote and agreement thread history, paginated own notifications, preferences and channels; other contexts pending' },
   { module: 'company', status: 'partial', includes: 'existing member projection; member directory not included' },
   { module: 'connections', status: 'partial', includes: 'own connection projections and all own consent history without tokens, credentials or elevation ids' },
   { module: 'hubs', status: 'partial', includes: 'own legal-document acceptance history; operator records require separate owning projection' },
@@ -97,6 +97,7 @@ export async function composeExport(ctx: AppContext, identity: IdentityServices,
   } else data.company = await new MembershipService(ctx, principals).company(subject.id, readState);
   const projectRows = await owned('project');
   const agreementRows = await sided('agreement');
+  const rfqRows = await owned('rfq'); const quoteRows = await sided('quote');
   data.projects = await mapSequential(projectRows, (r) => projects.get(r.id, readState));
   const participationRows = await trx.selectFrom('object_participation').select('resource_id')
     .where('resource_kind', '=', 'project').where(subject.kind === 'person' ? 'party_person_id' : 'party_company_id', '=', subject.id)
@@ -108,7 +109,7 @@ export async function composeExport(ctx: AppContext, identity: IdentityServices,
   data.catalogue = await mapSequential(await owned('offering'), (r) => catalogue.get(r.id, null, readState));
   data.procurement = {
     needs: await mapSequential(await owned('need'), (r) => procurement.getNeed(r.id, readState)),
-    rfqs: await mapSequential(await owned('rfq'), (r) => procurement.getRfq(r.id, readState)),
+    rfqs: await mapSequential(rfqRows, (r) => procurement.getRfq(r.id, readState)),
   };
   if (subject.kind === 'person') {
     const invitations = await procurement.listInvitations(readState);
@@ -117,12 +118,17 @@ export async function composeExport(ctx: AppContext, identity: IdentityServices,
       rfqs: await mapSequential([...new Set(invitations.invitations.map((i) => i.rfq.id))], (id) => procurement.getRfq(id, readState)),
     };
   }
-  data.sales = await mapSequential(await sided('quote'), (r) => sales.getQuote(r.id, readState));
+  data.sales = await mapSequential(quoteRows, (r) => sales.getQuote(r.id, readState));
   // Task and consultation agreements belong to their own projections; the commerce reader deliberately rejects them.
   const commerceAgreementRows = agreementRows.length ? await trx.selectFrom('agreement').select('id').where('id', 'in', agreementRows.map((r) => r.id))
     .where('terms_kind', '=', 'rfq_quote').orderBy('id').execute() : [];
   data.agreements = await mapSequential(commerceAgreementRows, (r) => agreements.getAgreement(r.id, readState));
-  Object.assign(data, await composeModuleExports({ ctx, identity, fileOptions, owningPorts, trx, principals, principal: caller, state: readState, subject, projectIds: projectRows.map((r) => r.id), agreementIds: agreementRows.map((r) => r.id) }));
+  Object.assign(data, await composeModuleExports({ ctx, identity, fileOptions, owningPorts, trx, principals, principal: caller, state: readState, subject, projectIds: projectRows.map((r) => r.id), agreementIds: agreementRows.map((r) => r.id), communicationContexts: [
+    ...[...projectRows.map((r) => r.id), ...participatingIds].map((id) => ({ kind: 'project' as const, id })),
+    ...agreementRows.map((r) => ({ kind: 'agreement' as const, id: r.id })),
+    ...rfqRows.map((r) => ({ kind: 'rfq' as const, id: r.id })),
+    ...quoteRows.map((r) => ({ kind: 'quote' as const, id: r.id })),
+  ] }));
   return data;
 }
 async function mapSequential<T, R>(items: T[], fn: (item: T) => Promise<R>): Promise<R[]> {

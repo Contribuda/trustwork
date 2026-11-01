@@ -188,6 +188,21 @@ export class CommunicationsService {
     return this.run(state, async (trx) => this.view(trx, id, true));
   }
 
+  /** Privacy-only enumeration of already-discovered subject contexts; never a generic inbox or raw message dump. */
+  privacyContexts(contexts: readonly ThreadContextRef[], state: RequestState): Promise<ThreadView[]> {
+    return this.run(state, async (trx) => {
+      const result: ThreadView[] = []; const seen = new Set<string>();
+      for (const context of contexts) {
+        if (!await commsContexts.mySide(trx, context.kind, context.id)) continue;
+        for (const row of await threads.listForContext(trx, context.kind, context.id)) {
+          if (seen.has(row.id)) continue;
+          result.push(await this.view(trx, row.id, true)); seen.add(row.id);
+        }
+      }
+      return result;
+    });
+  }
+
   private async view(trx: Transaction, id: string, history = false): Promise<ThreadView> {
     if (!isUuid(id)) throw new ApiError('access.not_found', 'not found');
     const row = await threads.getById(trx, id);

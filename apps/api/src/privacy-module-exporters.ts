@@ -19,7 +19,7 @@ import { SupplierBaseService } from './modules/supplier-base/supplier-base.servi
 import { NoSupplierBaseMandates } from './modules/supplier-base/mandates.js';
 import { sanctionsScreening } from './modules/supplier-base/screening.js';
 import type { Transaction } from './deps/data.js';
-import { toSessionView, type Principal } from './deps/contracts.js';
+import { toSessionView, type Principal, type ThreadContextRef } from './deps/contracts.js';
 import type { RequestState } from './common/request.js';
 import type { AppContext } from './modules/identity/context.js';
 import type { PrincipalService } from './modules/identity/principal.service.js';
@@ -53,7 +53,7 @@ export interface PrivacyOwningPorts {
 /** Only composition-root readers; all calls share the download's real principal and locked transaction. */
 export async function composeModuleExports(input: {
   ctx: AppContext; identity: IdentityServices; owningPorts: PrivacyOwningPorts; fileOptions: FilesModuleOptions; trx: Transaction; principals: PrincipalService;
-  principal: Principal; state: RequestState; subject: PrivacySubject; projectIds: string[]; agreementIds: string[];
+  principal: Principal; state: RequestState; subject: PrivacySubject; projectIds: string[]; agreementIds: string[]; communicationContexts: ThreadContextRef[];
 }): Promise<Record<string, unknown>> {
   const { ctx, identity, fileOptions, owningPorts, trx, principals, state, subject, projectIds, agreementIds } = input;
   const data: Record<string, unknown> = {};
@@ -134,10 +134,8 @@ export async function composeModuleExports(input: {
     assignments: await each(assignments, (r) => tasks.getAssignment(r.id, state)),
   };
   const comms = new CommunicationsService(ctx, principals, new NoCommsMandates(), { providers: [], send: async () => { throw new Error('export cannot dispatch'); } }, communicationsSettingsFromEnv());
-  // A person export excludes an employer's threads. RLS plus the owning thread service enforce current participation.
-  const contexts = [...projectIds, ...agreementIds];
-  const threadRows = contexts.length ? await trx.selectFrom('context_thread').select('id').where('context_id', 'in', contexts).orderBy('id').execute() : [];
-  const communications: Record<string, unknown> = { threads: await each(threadRows, (r) => comms.privacyThread(r.id, state)) };
+  // Context discovery stays subject-scoped. COMMS performs its current authorizer and complete history projection.
+  const communications: Record<string, unknown> = { threads: await comms.privacyContexts(input.communicationContexts, state) };
   if (subject.kind === 'person') {
     const notifications: unknown[] = []; let cursor: string | undefined;
     do {
