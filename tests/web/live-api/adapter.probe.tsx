@@ -7,7 +7,8 @@ import assert from 'node:assert/strict';
 import { createHttpDataPort } from '@/app/_lib/data/http';
 import { ApiFailure, createTransport, type FetchLike } from '@/app/_lib/data/http/transport';
 import { apiOrigin, ApiConfigurationError } from '@/app/_lib/data/http/config';
-import { companyStatus, toWorkspaceProject } from '@/app/_lib/data/http/map';
+import { companyStatus, publicOwnerOf, toWorkspaceProject } from '@/app/_lib/data/http/map';
+import { pickLegalDocument, termsVersionFor } from '@/app/_lib/legal';
 import { LIVE_CONTEXT, defaultPersona, demoModeEnabled, resolveDemoContext, withDemo } from '@/app/_lib/persona';
 import type { AuthenticatedPrincipal, Principal } from '@/app/_lib/data';
 
@@ -170,5 +171,48 @@ test('the workspace project view carries no owner-private field and refuses the 
   assert.equal(view.budget, null);
   const json = JSON.stringify(view);
   for (const secret of ['SECRET-NOTE', '99999', 'budgetId']) assert.ok(!json.includes(secret), secret);
-  assert.equal(toWorkspaceProject({ projection: 'public', project: { id: PROJECT, name: 'House', summary: null, status: 'planned', publishedStory: null, openNeedIds: [], publicParticipantIds: [] } }, null, me), null);
+  assert.equal(toWorkspaceProject({ projection: 'public', project: { id: PROJECT, name: 'House', summary: null, status: 'planned', publishedStory: null, openNeedIds: [], publicParticipantIds: [], publicOwner: null } }, null, me), null);
+});
+
+const projectEntry = (id: string, publicOwner: unknown, handle: string | null = null) => ({ id, handle, name: `Project ${id.slice(0, 4)}`, summary: null, status: 'active', publishedStory: null, openNeedIds: [], publicParticipantIds: [], publicOwner });
+
+test('QA-002 D2: the public owner reaches project pages, unnamed owners stay unnamed, and the company page lists its published projects', async () => {
+  const OTHER = '55555555-5555-4555-8555-555555555555';
+  const { data, calls } = port({
+    '/v1/projects/by-handle/riverside': { status: 200, body: { item: projectEntry(PROJECT, { kind: 'company', id: COMPANY, name: 'Acme Build', handle: 'acme-build' }, 'riverside'), redirect: false } },
+    [`/v1/projects/${OTHER}`]: { status: 200, body: { projection: 'public', project: { id: OTHER, name: 'Unnamed owner house', summary: null, status: 'active', publishedStory: null, openNeedIds: [], publicParticipantIds: [], publicOwner: null } } },
+    '/v1/companies/by-handle/acme-build': { status: 200, body: { item: { id: COMPANY, handle: 'acme-build', name: 'Acme Build', origin: 'registered', claimStatus: 'unclaimed', legalIdentifiers: [], publicDescription: null }, redirect: false } },
+    [`/v1/companies/${COMPANY}/projects?limit=100`]: { status: 200, body: { items: [projectEntry(PROJECT, { kind: 'company', id: COMPANY, name: 'Acme Build', handle: 'acme-build' }, 'riverside')], nextCursor: null } },
+  });
+  const project = (await data.getPublicProject('riverside'))!;
+  assert.deepEqual(project.owner, { label: 'Acme Build', href: '/companies/acme-build', kind: 'company' });
+  const unnamed = (await data.getPublicProject(OTHER))!;
+  assert.deepEqual(unnamed.owner, { label: '', href: null, kind: 'person' }, 'no public owner: nothing is guessed');
+  const company = (await data.getCompany('acme-build'))!;
+  assert.deepEqual(company.projects.map((p) => [p.id, p.href]), [[PROJECT, '/projects/riverside']]);
+  assert.equal(company.projectsCount, 1);
+  assert.ok(calls.every((c) => c.headers.cookie === undefined), 'public reads send no cookie');
+  assert.deepEqual(publicOwnerOf({ kind: 'person', id: PERSON, name: 'Dana Builder', handle: 'dana' }), { label: 'Dana Builder', href: '/people/dana', kind: 'person' });
+  assert.equal(publicOwnerOf(null), null);
+});
+
+test('QA-002 D4: the legal texts come from GET /v1/legal; the visitor\'s language first; sign-up records the text id or the draft marker', async () => {
+  const doc = (kind: string, locale: string, id: string) => ({ id, hubId: COMPANY, kind, locale, version: 2, body: `Synthetic ${kind} ${locale}`, bodyDigest: 'a'.repeat(64), activatedAt: NOW });
+  const TERMS_EN = '66666666-6666-4666-8666-666666666666';
+  const TERMS_ES = '77777777-7777-4777-8777-777777777777';
+  const PRIVACY_EN = '88888888-8888-4888-8888-888888888888';
+  const legal = { hubConfigured: true, documents: [doc('terms', 'en', TERMS_EN), doc('terms', 'es', TERMS_ES), doc('privacy_notice', 'en', PRIVACY_EN)] };
+  const { data, calls } = port({ '/v1/legal': { status: 200, body: legal } });
+  const read = await data.getLegalDocuments();
+  assert.equal(read.documents.length, 3);
+  assert.equal(calls.at(-1)!.headers.cookie, undefined);
+  assert.equal(pickLegalDocument(read.documents, 'terms', 'es')?.id, TERMS_ES);
+  assert.equal(pickLegalDocument(read.documents, 'terms', 'es-US')?.id, TERMS_ES, 'same base language');
+  assert.equal(pickLegalDocument(read.documents, 'privacy_notice', 'es')?.id, PRIVACY_EN, 'the language it exists in');
+  assert.equal(pickLegalDocument(read.documents, 'cookie_notice', 'en'), null);
+  assert.equal(termsVersionFor(read, 'es'), TERMS_ES, 'the exact text the visitor could read');
+  assert.equal(termsVersionFor({ hubConfigured: true, documents: [] }, 'en'), 'no-active-terms');
+  assert.notEqual(termsVersionFor({ hubConfigured: false, documents: [] }, 'en'), 'draft-2026-10', 'no stale version that looks final');
+  const missing = port({});
+  assert.deepEqual(await missing.data.getLegalDocuments(), { hubConfigured: false, documents: [] }, 'an API without the route: no text in force');
 });

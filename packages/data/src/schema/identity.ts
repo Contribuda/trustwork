@@ -84,12 +84,22 @@ export interface SecondFactorResetTable {
 }
 export type SecondFactorResetRow = Selectable<SecondFactorResetTable>;
 
+/** The language a person last used for their own account actions (QA-002 D5): for mail someone else causes for them. */
+export type MailLocaleSource = 'sign_in' | 'email_verified';
+export interface PersonMailLocaleTable {
+  person_id: string;
+  locale: string;
+  source: MailLocaleSource;
+  updated_at: GeneratedTimestamp;
+}
+
 export interface IdentityDatabase {
   second_factor: SecondFactorTable;
   recovery_code: RecoveryCodeTable;
   second_factor_challenge: SecondFactorChallengeTable;
   session_elevation: SessionElevationTable;
   second_factor_reset: SecondFactorResetTable;
+  person_mail_locale: PersonMailLocaleTable;
 }
 
 declare module './index.js' {
@@ -107,4 +117,5 @@ export const TABLE_COLUMNS: TableColumns<IdentityDatabase> = {
     'id', 'subject_person_id', 'support_case_id', 'evidence_refs', 'reason', 'requested_by', 'requested_at', 'approved_by', 'approved_at', 'effective_at', 'state',
     'cancelled_by', 'cancelled_at', 'executed_by', 'executed_at',
   ]),
+  person_mail_locale: columns('person_mail_locale', ['person_id', 'locale', 'source', 'updated_at']),
 };

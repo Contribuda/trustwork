@@ -1188,6 +1188,8 @@ export const fixtureDataPort = {
   listRubricEntries: async (key: RubricKey) => listRubricEntries(key),
   listMagazineAuthors: async () => listMagazineAuthors(),
   getIssue: async (number: number) => getIssue(number),
+  // Demo data has no hub and therefore no legal text in force: the legal pages show the draft notice.
+  getLegalDocuments: async () => ({ hubConfigured: false, documents: [] }),
   getOverview: async (principal: Principal) => getOverview(principal),
   listRfqs: async (principal: Principal) => listRfqs(principal),
   listLeads: async (principal: Principal) => listLeads(principal),

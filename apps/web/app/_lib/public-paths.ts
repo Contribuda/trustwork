@@ -20,6 +20,8 @@ export const UNLOCALIZED_SEGMENTS: ReadonlySet<string> = new Set([
   'recover',
   'logout',
   'verify-email',
+  // The mailed invitation link (QA-002 D1): transactional, per request, in the visitor's cookie language.
+  'invitations',
   'onboarding',
   // The hub console (ADM-002): private, per request, in the visitor's cookie language.
   'admin',

@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { toSessionView, type Principal, type SessionView } from '../../deps/contracts.js';
-import { assumePrincipal, auditEvents, auth, authTokens, clearOwnLoginFailures, credentials, emailBindings, persons, preIdentity, sessions, withPrincipal, type Transaction } from '../../deps/data.js';
+import { assumePrincipal, auditEvents, auth, authTokens, clearOwnLoginFailures, credentials, emailBindings, mailLocales, persons, preIdentity, sessions, withPrincipal, type Transaction } from '../../deps/data.js';
 import { clearSessionCookie } from '../../common/cookies.js';
 import { withoutPrincipal } from '../../common/db.js';
 import { ApiError, LocalApiError } from '../../common/errors.js';
@@ -69,7 +69,7 @@ export class AuthService {
    * verification (sessions, tokens, provider links) and issues the first session, or keeps the acting session of the
    * same person and revokes the others. Also completes e-mail change tokens. One transaction.
    */
-  async verifyEmail(token: string, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<{ status: 'verified'; personId: string; email: string }> {
+  async verifyEmail(token: string, state: RequestState, request: FastifyRequest, reply: FastifyReply, locales: readonly string[] = []): Promise<{ status: 'verified'; personId: string; email: string }> {
     const hash = sha256Hex(token);
     const now = this.now;
     const result = await withoutPrincipal(this.ctx.pool, async (trx) => {
@@ -79,6 +79,8 @@ export class AuthService {
       const personId = proof.person_id;
       const epoch = proof.authz_epoch;
       await assumePrincipal(trx, { personId, authzEpoch: epoch });
+      // The language of the person's own action, for mail someone else causes for them later (QA-002 D5).
+      if (locales[0]) await mailLocales.record(trx, personId, locales[0], 'email_verified');
       const acting = state.session && state.session.personId === personId ? state.session.id : null;
       if (proof.kind === 'email_change' && proof.binding_id) await emailBindings.setPrimary(trx, personId, proof.binding_id);
       await sessions.revokeCreatedBefore(trx, personId, now, 'suspicious', acting, now);
@@ -150,7 +152,7 @@ export class AuthService {
    * Password sign-in. A person with an active second factor gets no session yet: the answer is
    * `second_factor_required` with a short-lived challenge cookie, and `POST /v1/auth/second-factor` issues the session.
    */
-  async login(input: { email: string; password: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply): Promise<{ status: 'authenticated'; personId: string } | ReturnType<SecondFactorService['challengeResponse']>> {
+  async login(input: { email: string; password: string }, state: RequestState, request: FastifyRequest, reply: FastifyReply, locales: readonly string[] = []): Promise<{ status: 'authenticated'; personId: string } | ReturnType<SecondFactorService['challengeResponse']>> {
     const subjects = await this.throttle(input.email, state, 'auth.login');
     const lookup = await auth.lookupPasswordCredential(this.ctx.pool, input.email);
     const verified = await this.passwords.verify(lookup.password_hash, input.password);
@@ -164,6 +166,8 @@ export class AuthService {
     const rehashed = this.passwords.needsRehash(lookup.password_hash) ? await this.passwords.hash(input.password) : null;
     const issued = await withPrincipal(this.ctx.pool, { personId, authzEpoch: epoch }, async (trx) => {
       if (rehashed) await credentials.setPasswordHash(trx, personId, rehashed);
+      // The password is proven: the language of this request is the person's own (QA-002 D5, mail caused by others).
+      if (locales[0]) await mailLocales.record(trx, personId, locales[0], 'sign_in');
       if (await this.secondFactors.hasActiveFactor(trx, personId)) {
         const challenge = await this.secondFactors.issueChallenge(trx, personId, 'password');
         await journal(trx, { action: 'auth.login_second_factor_required', objectKind: 'person', objectId: personId, requestId: state.requestId, actor: personId, epoch, basis: { method: 'password' } });

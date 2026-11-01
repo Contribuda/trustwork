@@ -28,7 +28,7 @@ const { NextRequest } = (await import(NEXT_SERVER)) as { NextRequest: new (url: 
 const LANGUAGES = { default: 'en', offered: ['en', 'es', 'ru', 'uz-Latn', 'ka'] };
 
 test('public paths: everything but the workspace, sign-in, onboarding, media, the API and framework files', () => {
-  for (const path of ['/', '/news', '/news/a-story?x=1', '/companies/acme#team', '/magazine/12/read', '/this-route-does-not-exist']) assert.ok(isPublicPath(path), path);
+  for (const path of ['/', '/news', '/news/a-story?x=1', '/companies/acme#team', '/magazine/12/read', '/this-route-does-not-exist', '/legal/terms', '/legal/privacy']) assert.ok(isPublicPath(path), path);
   for (const path of [
     '/app',
     '/app/viewer',
@@ -37,6 +37,8 @@ test('public paths: everything but the workspace, sign-in, onboarding, media, th
     '/recover/abc',
     '/logout',
     '/verify-email/t',
+    // The mailed invitation link (QA-002 D1): transactional, never a localized public address.
+    '/invitations/11111111-1111-4111-8111-111111111111/token',
     '/onboarding/goals',
     '/admin/hubs/x',
     '/restricted',

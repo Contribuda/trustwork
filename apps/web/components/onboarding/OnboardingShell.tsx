@@ -44,8 +44,8 @@ export function OnboardingShell({ name, step, children }: { name: string; step: 
         {children}
       </main>
       <footer className="ob__footer">
-        <NextLink href="/#legal">{t('footer.privacy')}</NextLink>
-        <NextLink href="/#legal">{t('footer.terms')}</NextLink>
+        <NextLink href="/legal/privacy">{t('footer.privacy')}</NextLink>
+        <NextLink href="/legal/terms">{t('footer.terms')}</NextLink>
         <NextLink href="/#help">{t('footer.help')}</NextLink>
       </footer>
     </div>

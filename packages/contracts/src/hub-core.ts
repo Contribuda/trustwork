@@ -257,6 +257,31 @@ export type LegalDocumentKind = z.infer<typeof LegalDocumentKindSchema>;
 /** Documents the `legal_documents_counsel_approved` gate requires in every hub language. */
 export const COUNSEL_GATE_DOCUMENT_KINDS: readonly LegalDocumentKind[] = ['terms', 'privacy_notice', 'sanctions_section'];
 export const LegalAcceptanceContextSchema = z.enum(['signup', 'checkout', 'hosting', 'authoring', 'peering']);
+/** An active legal text of the hub as everyone may read it, signed in or not (`GET /v1/legal`, QA-002 D4). */
+export const PublicLegalDocumentSchema = z.strictObject({
+  id: IdSchema,
+  hubId: IdSchema,
+  kind: LegalDocumentKindSchema,
+  locale: LocaleTagSchema,
+  version: z.int().min(1),
+  body: z.string().min(1).max(200_000),
+  bodyDigest: z.string().regex(/^[0-9a-f]{64}$/),
+  activatedAt: TimestampSchema.nullable(),
+});
+export type PublicLegalDocument = z.infer<typeof PublicLegalDocumentSchema>;
+/**
+ * The active legal texts of the hub this API serves (`TRUSTWORK_HUB_ID`). `hubConfigured` is false when the API serves
+ * no hub; an empty list means nothing is active yet (before soft launch, or no version activated): pages then show a
+ * labelled draft notice instead of any text, and sign-up records that no terms version was active.
+ */
+export const PublicLegalDocumentsSchema = z.strictObject({ hubConfigured: z.boolean(), documents: z.array(PublicLegalDocumentSchema) });
+export type PublicLegalDocuments = z.infer<typeof PublicLegalDocumentsSchema>;
+/** The acceptedTermsVersion a sign-up records while the hub has no active terms: never a version string that looks final. */
+export const NO_ACTIVE_TERMS_VERSION = 'no-active-terms';
+/** The acceptedTermsVersion of an active terms text: its document id, which names the exact text (body and digest). */
+export function termsAcceptanceVersion(document: Pick<PublicLegalDocument, 'id'>): string {
+  return document.id;
+}
 
 /* ---------- Commands (strict console commands of contract 1.0.0) ---------- */
 

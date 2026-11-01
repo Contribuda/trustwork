@@ -53,8 +53,8 @@ export function AuthFrame({ headline, subline, media, points, children }: { head
         </main>
       </div>
       <footer className="au__footer">
-        <NextLink href="/#legal">{t('footer.privacy')}</NextLink>
-        <NextLink href="/#legal">{t('footer.terms')}</NextLink>
+        <NextLink href="/legal/privacy">{t('footer.privacy')}</NextLink>
+        <NextLink href="/legal/terms">{t('footer.terms')}</NextLink>
         <NextLink href="/#help">{t('footer.help')}</NextLink>
       </footer>
     </div>

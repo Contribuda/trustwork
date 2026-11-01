@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import {
   AcceptMembershipCommandSchema, AssignLeaderCommandSchema, ChangeEmailCommandSchema, ChangeMembershipCommandSchema, contractJsonSchemas, CreateProjectCommandSchema, EndMembershipCommandSchema,
-  InviteMemberCommandSchema, MembershipSchema, OwnershipTransferSchema, ParticipantProjectSchema, PersonSchema, PrincipalSchema, ProjectSchema, ProviderLinkStartCommandSchema,
+  InvitationLinkCommandSchema, InvitationPreviewSchema, InviteMemberCommandSchema, MembershipSchema, OwnershipTransferSchema, ParticipantProjectSchema, PersonSchema, PrincipalSchema, ProjectSchema, ProviderLinkStartCommandSchema,
   PublishProjectCommandSchema, RecoveryCompleteCommandSchema, RecoveryRequestCommandSchema, RevokeSessionCommandSchema, TransferOwnershipCommandSchema, VerifyEmailCommandSchema,
 } from '../deps/contracts.js';
 import { ChangePasswordCommandSchema, StepUpCommandSchema } from '../modules/identity/controllers/auth.controller.js';
@@ -20,7 +20,7 @@ const local: Record<string, Record<string, unknown>> = {
   Person: json(PersonSchema), Principal: json(PrincipalSchema), Membership: json(MembershipSchema), Project: json(ProjectSchema), ParticipantProject: json(ParticipantProjectSchema), OwnershipTransfer: json(OwnershipTransferSchema),
   VerifyEmailCommand: json(VerifyEmailCommandSchema), RecoveryRequestCommand: json(RecoveryRequestCommandSchema), RecoveryCompleteCommand: json(RecoveryCompleteCommandSchema), StepUpCommand: json(StepUpCommandSchema),
   ChangePasswordCommand: json(ChangePasswordCommandSchema), ChangeEmailCommand: json(ChangeEmailCommandSchema), RevokeSessionCommand: json(RevokeSessionCommandSchema), ProviderLinkStartCommand: json(ProviderLinkStartCommandSchema),
-  InviteMemberCommand: json(InviteMemberCommandSchema), AcceptMembershipCommand: json(AcceptMembershipCommandSchema), ChangeMembershipCommand: json(ChangeMembershipCommandSchema), EndMembershipCommand: json(EndMembershipCommandSchema),
+  InviteMemberCommand: json(InviteMemberCommandSchema), AcceptMembershipCommand: json(AcceptMembershipCommandSchema), InvitationLinkCommand: json(InvitationLinkCommandSchema), InvitationPreview: json(InvitationPreviewSchema), ChangeMembershipCommand: json(ChangeMembershipCommandSchema), EndMembershipCommand: json(EndMembershipCommandSchema),
   CreateProjectCommand: json(CreateProjectCommandSchema), AssignLeaderCommand: json(AssignLeaderCommandSchema), PublishProjectCommand: json(PublishProjectCommandSchema), TransferOwnershipCommand: json(TransferOwnershipCommandSchema),
   GrantParticipationCommand: json(GrantParticipationCommandSchema), RevokeParticipationCommand: json(RevokeParticipationCommandSchema),
 };
@@ -74,6 +74,8 @@ const document = {
       post: { ...op('Invite a member (company.members.manage, step-up, identical acknowledgement)', { body: 'InviteMemberCommand', auth: 'step_up', idempotent: true, status: 202, tags: ['companies'] }), parameters: [id('id')] },
     },
     '/v1/companies/{id}/memberships/accept': { post: { ...op('Accept an invitation with the mailbox token', { body: 'AcceptMembershipCommand', auth: 'session', idempotent: true, response: 'Membership', tags: ['companies'] }), parameters: [id('id')] } },
+    '/v1/invitations/preview': { post: op('The mailed invitation link: company and role for the signed-in invitee, without spending the token', { body: 'InvitationLinkCommand', auth: 'session', response: 'InvitationPreview', tags: ['companies'] }) },
+    '/v1/invitations/accept': { post: op('The mailed invitation link: accept without a company id (the membership names it)', { body: 'InvitationLinkCommand', auth: 'session', idempotent: true, response: 'Membership', tags: ['companies'] }) },
     '/v1/companies/{id}/memberships/change': { post: { ...op('Change role/permissions (member manager, never oneself, last administrator kept)', { body: 'ChangeMembershipCommand', auth: 'step_up', idempotent: true, response: 'Membership', tags: ['companies'] }), parameters: [id('id')] } },
     '/v1/companies/{id}/memberships/end': { post: { ...op('End a membership (self or member manager) with the revocation sequence', { body: 'EndMembershipCommand', auth: 'step_up', idempotent: true, tags: ['companies'] }), parameters: [id('id')] } },
     '/v1/projects': { post: op('Create a project (owner person XOR company; owner row materialised)', { body: 'CreateProjectCommand', auth: 'session', idempotent: true, status: 201, response: 'Project', tags: ['projects'] }) },

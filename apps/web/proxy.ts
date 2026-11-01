@@ -211,6 +211,8 @@ export function proxy(request: NextRequest, event?: NextFetchEvent) {
  * `'/'` is listed on its own because, with a base path, Next compiles the second pattern to `^<base>/(...)` with a
  * mandatory slash, so the home page at `<base>` (Next redirects `<base>/` to it) would get no CSP, no frame and
  * referrer headers and no `?country=&lang=` handling. Without a base path `'/'` is already covered; listing it is
- * harmless. Checked by infra/images/web-smoke.mjs against the image with the preview's base path.
+ * harmless. Checked by infra/images/web-smoke.mjs against the image with the preview's base path. The exclusions are
+ * exactly the refusal page's own assets (`REFUSAL_PAGE_ASSET_*` in app/_lib/jurisdiction.ts, QA-002 D3): every other
+ * path, every other `/_next/` path included, passes the jurisdiction gate first.
  */
-export const config = { matcher: ['/', '/((?!_next/|icons/|favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest).*)'] };
+export const config = { matcher: ['/', '/((?!_next/static/|icons/|favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest).*)'] };

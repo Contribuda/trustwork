@@ -41,7 +41,7 @@ const PUBLIC_ROUTE_HEADER = 'x-trustwork-public-route';
 const publicRoute = { type: 'header' as const, key: PUBLIC_ROUTE_HEADER, value: '(?<route>[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*(?:/.*)?)' };
 const publicRouteRewrites = [
   { source: '/', has: [publicRoute], destination: '/:route*' },
-  { source: '/:path((?!_next/|icons/|media/|favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest).+)', has: [publicRoute], destination: '/:route*' },
+  { source: '/:path((?!_next/static/|icons/|media/|favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest).+)', has: [publicRoute], destination: '/:route*' },
 ];
 
 

@@ -354,6 +354,7 @@
     "actionViewing": "დათვალიერებაზე ჩაწერა",
     "actionRequest": "პირობების მოთხოვნა",
     "actionJoin": "განაცხადის დატოვება",
-    "commercialTermsTitle": "კომერციული პირობები"
+    "commercialTermsTitle": "კომერციული პირობები",
+    "ownerUnnamed": "საჯაროდ არ ჩანს"
   }
 }

@@ -1,3 +1,4 @@
+import type { PublicLegalDocuments } from '@trustwork/contracts/client';
 import type { DemoContext } from '../persona';
 import type {
   AssistantView,
@@ -72,6 +73,12 @@ export interface PublicDataPort {
   listRubricEntries(key: RubricKey): Promise<RubricEntry[]>;
   listMagazineAuthors(): Promise<MagazineAuthor[]>;
   getIssue(number: number): Promise<IssueLookup | null>;
+  /**
+   * The hub's active legal texts (`GET /v1/legal`, HUB-001 legal documents, QA-002 D4) for the terms and privacy pages
+   * and the terms version sign-up records. Fixtures and an API without a hub answer no active text, which the pages
+   * show as a labelled draft notice.
+   */
+  getLegalDocuments(): Promise<PublicLegalDocuments>;
 }
 
 /**

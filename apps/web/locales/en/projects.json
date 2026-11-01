@@ -354,6 +354,7 @@
     "actionViewing": "Book a viewing",
     "actionRequest": "Request the terms",
     "actionJoin": "Leave a request",
-    "commercialTermsTitle": "Commercial terms"
+    "commercialTermsTitle": "Commercial terms",
+    "ownerUnnamed": "Not shown publicly"
   }
 }

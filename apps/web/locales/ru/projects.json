@@ -354,6 +354,7 @@
     "actionViewing": "Записаться на показ",
     "actionRequest": "Запросить условия",
     "actionJoin": "Оставить заявку",
-    "commercialTermsTitle": "Коммерческие условия"
+    "commercialTermsTitle": "Коммерческие условия",
+    "ownerUnnamed": "Не показывается публично"
   }
 }

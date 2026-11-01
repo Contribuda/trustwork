@@ -58,3 +58,7 @@ export * from './sanctions.js';
 export * from './sanctions-attestation.js';
 // Context threads, messages, notifications, preferences, channel grants and templates (COMMS-001).
 export * from './communications.js';
+// The hub's active legal texts for the legal pages and sign-up (HUB-001 legal documents, QA-002 D4); the rest of
+// hub-core stays server-side.
+export { LegalDocumentKindSchema, NO_ACTIVE_TERMS_VERSION, PublicLegalDocumentSchema, PublicLegalDocumentsSchema, termsAcceptanceVersion } from './hub-core.js';
+export type { LegalDocumentKind, PublicLegalDocument, PublicLegalDocuments } from './hub-core.js';

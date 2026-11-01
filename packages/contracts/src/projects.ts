@@ -36,6 +36,19 @@ export const ProjectSchema = z.strictObject({
 });
 export type Project = z.infer<typeof ProjectSchema>;
 
+/** A current directory handle as the directory returns it (the HandleSchema rules of directory.ts apply on write). */
+const OwnerHandleSchema = z.string().min(1).max(64).nullable();
+/**
+ * The owner of a published project as the public may see it (QA-002 D2): a company by its public name and current
+ * handle; a person only while their profile is public with a live `profile_public` consent. Otherwise the public
+ * owner is null and pages leave the owner unnamed rather than guessing. Never the raw owner party of the record.
+ */
+export const PublicProjectOwnerSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('company'), id: IdSchema, name: NameSchema, handle: OwnerHandleSchema }),
+  z.strictObject({ kind: z.literal('person'), id: IdSchema, name: NameSchema.nullable(), handle: OwnerHandleSchema }),
+]);
+export type PublicProjectOwner = z.infer<typeof PublicProjectOwnerSchema>;
+
 export const PublicProjectSchema = z.strictObject({
   id: IdSchema,
   name: NameSchema,
@@ -44,19 +57,25 @@ export const PublicProjectSchema = z.strictObject({
   publishedStory: TextSchema.nullable(),
   openNeedIds: z.array(IdSchema),
   publicParticipantIds: z.array(IdSchema),
+  publicOwner: PublicProjectOwnerSchema.nullable(),
 });
 export type PublicProject = z.infer<typeof PublicProjectSchema>;
-/** Publicity never releases prices, files, messages or commitments; unpublished projects are not found. */
-export function toPublicProject(project: Project): PublicProject | null {
+/**
+ * Publicity never releases prices, files, messages or commitments; unpublished projects are not found. `publicOwner`
+ * comes from the owner-run public lookup (company name and handle, or a consenting person), never from the record.
+ */
+export function toPublicProject(project: Project, publicOwner: PublicProjectOwner | null = null): PublicProject | null {
   if (!project.publicity.enabled) return null;
   return PublicProjectSchema.parse({
     ...pickFields(project, ['id', 'name', 'summary', 'status']),
     publishedStory: project.publicity.publishedStory,
     openNeedIds: project.publicity.openNeedIds,
     publicParticipantIds: project.publicity.publicParticipantIds,
+    publicOwner,
   });
 }
-export const ParticipantProjectSchema = PublicProjectSchema.extend({
+/** Participants see the owner party itself (`owner`), so the public owner is not repeated here. */
+export const ParticipantProjectSchema = PublicProjectSchema.omit({ publicOwner: true }).extend({
   owner: PartySchema,
   leaderPersonId: IdSchema.nullable(),
   milestones: z.array(SharedMilestoneSchema),

@@ -20,12 +20,13 @@ interface JurisdictionModule {
   sessionCookieOf(header: string | null): string | null;
   relaySighting(input: { cookieHeader: string | null; address: string | null }, options?: { origin?: string | null; fetch?: typeof fetch; timeoutMs?: number }): Promise<string>;
   jurisdictionOpenPath(pathname: string): boolean;
+  refusalPageAsset(pathname: string): boolean;
 }
 const LIB: string = '../../apps/web/app/_lib/jurisdiction.ts';
 const PROXY: string = '../../apps/web/proxy.ts';
 const NEXT_SERVER: string = 'next/server';
 const lib = (await import(LIB)) as JurisdictionModule;
-const { proxy } = (await import(PROXY)) as { proxy(request: unknown, event?: { waitUntil(p: Promise<unknown>): void }): Response };
+const { proxy, config: proxyConfig } = (await import(PROXY)) as { proxy(request: unknown, event?: { waitUntil(p: Promise<unknown>): void }): Response; config: { matcher: string[] } };
 const { NextRequest } = (await import(NEXT_SERVER)) as { NextRequest: new (url: string, init?: { method?: string; headers?: Record<string, string> }) => unknown };
 
 const headersOf = (h: Record<string, string>) => (name: string) => h[name.toLowerCase()] ?? null;
@@ -48,6 +49,24 @@ test('decisions: pages are refused in place, calls and server actions with 451, 
   assert.equal(restricted('/restricted', HTML).kind, 'pass');
   assert.equal(lib.decideWebRequest({ method: 'GET', pathname: '/companies', header: headersOf({ 'x-real-ip': '203.0.113.7', ...HTML }) }, state).kind, 'pass');
   assert.equal(lib.decideWebRequest({ method: 'GET', pathname: '/companies', header: headersOf(HTML) }, state).kind, 'pass', 'no address: served (a local stand)');
+});
+
+test('QA-002 D3: the refusal page assets and the legal pages stay open; every other path from a restricted place is refused', () => {
+  const state = lib.webJurisdictionGate({ TRUSTWORK_JURISDICTION_GATE: 'fake' }, true);
+  const decide = (pathname: string, accept = 'text/html') => lib.decideWebRequest({ method: 'GET', pathname, header: headersOf({ 'x-real-ip': '192.0.2.10', accept }) }, state).kind;
+  const assets = ['/_next/static/chunks/main-abc.js', '/_next/static/css/app.css', '/_next/static/media/font.woff2', '/favicon.ico', '/icon.svg', '/apple-icon.png', '/manifest.webmanifest', '/icons/icon-192.png'];
+  for (const path of assets) assert.equal(decide(path, '*/*'), 'pass', `${path}: an asset of the refusal page`);
+  for (const path of ['/restricted', '/legal/terms', '/legal/privacy', '/es/legal/terms', '/uz-Latn/legal/privacy', '/legal/terms/']) assert.equal(decide(path), 'pass', `${path}: an open door`);
+  for (const path of ['/_next/image', '/_next/data/build/index.json', '/_next/webpack-hmr', '/media/artworks/a.svg', '/_nextstatic/a.js', '/icons', '/favicon.icox', '/icon.svg.map']) {
+    assert.equal(decide(path, 'image/avif,image/webp,*/*'), 'refuse_call', `${path}: refused`);
+  }
+  for (const path of ['/legal', '/legal/other', '/legal/terms/extra', '/companies/legal/terms', '/es/companies']) assert.equal(decide(path), 'refuse_page', `${path}: a page, refused in place`);
+
+  // The proxy matcher skips exactly the refusal page's assets (tests/ops/security-headers.test.ts compiles it with Next).
+  const skipped = (/\(\?!(.*?)\)\.\*/.exec(proxyConfig.matcher[1]!)?.[1] ?? '').split('|').map((item) => `/${item.replace(/\\/g, '')}`);
+  assert.deepEqual(skipped.sort(), ['/_next/static/', '/apple-icon.png', '/favicon.ico', '/icon.svg', '/icons/', '/manifest.webmanifest']);
+  for (const item of skipped) assert.ok(lib.refusalPageAsset(item.endsWith('/') ? `${item}x` : item), `${item} is an open asset of the gate too`);
+  for (const path of ['/_next/image', '/_next/data/build/index.json', '/media/a.svg', '/legal/terms', '/companies']) assert.equal(lib.refusalPageAsset(path), false, `${path} is not an asset`);
 });
 
 test('configuration: unconfigured serves (the API refuses to start in production); a broken range table fails closed', () => {

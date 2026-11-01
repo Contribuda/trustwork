@@ -1,5 +1,6 @@
-import { toPublicCompany, wouldRemoveLastAdministrator, type Company, type Membership, type Principal, type PublicCompany } from '../../deps/contracts.js';
-import { auditEvents, auth, companies, memberships, outbox, preIdentity } from '../../deps/data.js';
+import { sql } from 'kysely';
+import { InvitationPreviewSchema, toPublicCompany, wouldRemoveLastAdministrator, type Company, type InvitationPreview, type Membership, type Principal, type PublicCompany } from '../../deps/contracts.js';
+import { auditEvents, auth, companies, mailLocales, memberships, outbox, preIdentity, type Transaction } from '../../deps/data.js';
 import { withoutPrincipal } from '../../common/db.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
@@ -57,8 +58,12 @@ export class MembershipService {
     });
   }
 
-  /** Identical acknowledgement whether or not the address belongs to a verified account. */
-  async invite(companyId: string, input: { companyId: string; inviteeEmail: string; role: MembershipRoleValue; permissions: MembershipPermissions }, state: RequestState): Promise<{ status: 'invited' }> {
+  /**
+   * Identical acknowledgement whether or not the address belongs to a verified account. The mail is written in the
+   * invitee's recorded language (their last own sign-in or verification), else the inviter's chosen language (the
+   * request's languages), else the hub default (QA-002 D5); the worker picks the first language the hub serves.
+   */
+  async invite(companyId: string, input: { companyId: string; inviteeEmail: string; role: MembershipRoleValue; permissions: MembershipPermissions }, state: RequestState, inviterLocales: readonly string[] = []): Promise<{ status: 'invited' }> {
     if (input.companyId !== companyId) throw new ApiError('validation.schema', 'companyId does not match the route');
     const principal = state.principal as Principal;
     const membership = this.requireMember(principal, companyId);
@@ -81,11 +86,12 @@ export class MembershipService {
           await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: row.id, revision: row.revision, type: 'membership.invited', payload: { companyId } });
         }
         const company = await companies.getById(trx, companyId);
-        // The invitee's language is unknown here (the inviter caused the mail): the hub default applies.
+        const inviteeLocale = await mailLocales.forMail(trx, inviteeId);
         await this.ctx.mail.record(trx, {
           to: input.inviteeEmail, template: 'membership_invitation',
           params: { membershipId: row.id, companyId, company: company?.display_name ?? '', days: daysOf(this.ctx.config.tokens.invitationMs) },
           secret: { token, expiresAt },
+          locales: [...new Set([...(inviteeLocale ? [inviteeLocale] : []), ...inviterLocales])].slice(0, 6),
         });
       });
     }
@@ -93,20 +99,59 @@ export class MembershipService {
   }
 
   async accept(companyId: string, input: { membershipId: string; invitationToken: string }, state: RequestState): Promise<Membership> {
+    return this.acceptInvitation(companyId, input, state);
+  }
+
+  /**
+   * The mailed link (`/invitations/<membershipId>/<token>`, QA-002 D1): the company comes from the membership itself, so
+   * the link needs no company id. The same checks as `accept`: single use, expiry, and only the invited person.
+   */
+  async acceptLink(input: { membershipId: string; invitationToken: string }, state: RequestState): Promise<Membership> {
+    return this.acceptInvitation(null, input, state);
+  }
+
+  /**
+   * What the invitation page shows before the invitee accepts: the company's public name and the offered role. It
+   * checks the mailbox proof exactly as accepting would (valid, unexpired, unused, the signed-in person's own, for an
+   * invited membership) inside a savepoint that is always rolled back, so previewing never spends the proof. Every
+   * failure is the same not found as a wrong token, so nothing about other people's invitations leaks.
+   */
+  async previewLink(input: { membershipId: string; invitationToken: string }, state: RequestState): Promise<InvitationPreview> {
+    const principal = state.principal as Principal;
+    if (!principal.emailVerified) throw new ApiError('auth.email_unverified');
+    return this.principals.runAs(state, async (trx, p) => {
+      await sql`SAVEPOINT invitation_preview`.execute(trx);
+      try {
+        const row = await this.checkInvitation(trx, p, null, input);
+        const company = await companies.getById(trx, row.company_id);
+        return InvitationPreviewSchema.parse({ membershipId: row.id, company: { id: row.company_id, name: company?.display_name ?? '' }, role: row.role });
+      } finally {
+        await sql`ROLLBACK TO SAVEPOINT invitation_preview`.execute(trx);
+      }
+    });
+  }
+
+  /** Consumes the mailbox proof and returns the invited membership of the signed-in person, or refuses. */
+  private async checkInvitation(trx: Transaction, p: Principal, companyId: string | null, input: { membershipId: string; invitationToken: string }) {
+    const consumed = await preIdentity.consumeToken(trx, sha256Hex(input.invitationToken), 'membership_invitation');
+    if (!consumed || consumed.person_id !== p.personId) throw new ApiError('access.not_found', 'invitation is invalid or expired');
+    const row = await memberships.getById(trx, input.membershipId);
+    if (!row || row.person_id !== p.personId || (companyId !== null && row.company_id !== companyId)) throw new ApiError('access.not_found');
+    if (row.status !== 'invited') throw new ApiError('membership.invitation_expired');
+    return row;
+  }
+
+  private async acceptInvitation(companyId: string | null, input: { membershipId: string; invitationToken: string }, state: RequestState): Promise<Membership> {
     const principal = state.principal as Principal;
     if (!principal.emailVerified) throw new ApiError('auth.email_unverified');
     return this.principals.runAs(state, async (trx, p) => {
       // The mailbox proof is consumed in the same transaction as the activation (and its idempotency completion), so a
       // crash before COMMIT leaves the invitation usable for the retry instead of burning it without an effect.
-      const consumed = await preIdentity.consumeToken(trx, sha256Hex(input.invitationToken), 'membership_invitation');
-      if (!consumed || consumed.person_id !== p.personId) throw new ApiError('access.not_found', 'invitation is invalid or expired');
-      const row = await memberships.getById(trx, input.membershipId);
-      if (!row || row.person_id !== p.personId || row.company_id !== companyId) throw new ApiError('access.not_found');
-      if (row.status !== 'invited') throw new ApiError('membership.invitation_expired');
+      const row = await this.checkInvitation(trx, p, companyId, input);
       const activated = await memberships.activate(trx, row.id, row.revision, this.ctx.clock.now());
       if (!activated) throw new ApiError('validation.revision_conflict');
       await auditEvents.append(trx, { actor_person_id: p.personId, action: 'membership.activated', object_kind: 'membership', object_id: row.id, request_id: state.requestId, authz_epoch: p.authzEpoch });
-      await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: row.id, revision: activated.revision, type: 'membership.activated', payload: { companyId } });
+      await outbox.append(trx, { aggregate_kind: 'membership', aggregate_id: row.id, revision: activated.revision, type: 'membership.activated', payload: { companyId: row.company_id } });
       return toMembership(activated);
     });
   }

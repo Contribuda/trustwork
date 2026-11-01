@@ -143,5 +143,7 @@ test('web: the proxy runs on the home page and on every page with and without a 
     // With a base path the home page is `<base>` without a trailing slash; the catch-all alone does not match it.
     for (const path of [basePath || '/', `${basePath}/companies`, `${basePath}/companies/acme`, `${basePath}/media/artworks/a.svg`]) assert.ok(runs(path), `${basePath || '(none)'}: runs on ${path}`);
     for (const path of [`${basePath}/_next/static/chunks/a.js`, `${basePath}/icon.svg`, `${basePath}/favicon.ico`, `${basePath}/icons/a.png`]) assert.ok(!runs(path), `${basePath || '(none)'}: skips ${path}`);
+    // QA-002 D3: only the refusal page's own assets skip the proxy; the image optimizer and other framework paths pass the jurisdiction gate.
+    for (const path of [`${basePath}/_next/image`, `${basePath}/_next/data/build/index.json`, `${basePath}/legal/terms`]) assert.ok(runs(path), `${basePath || '(none)'}: runs on ${path}`);
   }
 });

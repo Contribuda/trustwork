@@ -4,7 +4,10 @@ import { AuthFrame } from '@/components/auth/AuthFrame';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { DEFAULT_PASSWORD_POLICY } from '@trustwork/contracts/client';
 import { getPrincipal, hrefFor, type PageSearchParams } from '@/app/_lib/principal';
-import { t } from '@/app/_lib/i18n';
+import { currentLocale, t } from '@/app/_lib/i18n';
+import { data } from '@/app/_lib/data';
+import { termsVersionFor } from '@/app/_lib/legal';
+import { NO_ACTIVE_TERMS_VERSION } from '@trustwork/contracts/client';
 import { artwork } from '@/app/_lib/media';
 import { safeNext } from '@/app/_lib/safe-next';
 import { primeLocale } from '@/app/_lib/locale';
@@ -20,6 +23,8 @@ export default async function SignupPage({ searchParams }: { searchParams: PageS
   const params = await searchParams;
   const principal = await getPrincipal(params);
   if (principal.kind === 'person') redirect(hrefFor(principal, '/app'));
+  // The terms version sign-up records: the active terms text the visitor can read, or the explicit draft marker.
+  const termsVersion = termsVersionFor(await data.getLegalDocuments(), currentLocale());
   return (
     <AuthFrame
       headline={t('auth.visual.signupHeadline')}
@@ -31,7 +36,7 @@ export default async function SignupPage({ searchParams }: { searchParams: PageS
         { icon: 'trust', text: t('auth.points.trust') },
       ]}
     >
-      <SignupForm minPassword={DEFAULT_PASSWORD_POLICY.minLength} next={safeNext(params.next)} demoMode={demoModeEnabled()} />
+      <SignupForm minPassword={DEFAULT_PASSWORD_POLICY.minLength} next={safeNext(params.next)} demoMode={demoModeEnabled()} termsVersion={termsVersion} termsDraft={termsVersion === NO_ACTIVE_TERMS_VERSION} />
     </AuthFrame>
   );
 }

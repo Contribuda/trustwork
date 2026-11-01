@@ -4,4 +4,4 @@
  * untouched; adding them to those barrels is integrator bookkeeping.
  */
 export * from '../../../../../packages/contracts/src/directory.js';
-export { directory, directoryQueries, type DirectoryPage, type CompanyDirectoryRow, type MyProjectRow, type PersonDirectoryRow, type ProjectDirectoryRow } from '../../../../../packages/data/src/repositories/directory.js';
+export { directory, directoryQueries, type DirectoryPage, type CompanyDirectoryRow, type MyProjectRow, type PersonDirectoryRow, type ProjectDirectoryRow, type PublicProjectOwnerRow } from '../../../../../packages/data/src/repositories/directory.js';

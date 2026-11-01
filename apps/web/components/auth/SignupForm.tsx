@@ -10,9 +10,6 @@ import { ProviderButtons } from './ProviderButtons';
 import { mapFieldErrors, useAuthForm } from './useAuthForm';
 import { t } from '@/app/_lib/i18n';
 
-/** Terms version the person accepts (the API records it; the legal text is still a draft, see ADR 012). */
-const TERMS_VERSION = 'draft-2026-10';
-
 const FIELD_MAP = {
   name: { required: 'auth.error.nameRequired', invalid: 'auth.error.nameRequired' },
   email: { required: 'auth.error.emailRequired', format: 'auth.error.emailFormat', invalid: 'auth.error.emailFormat' },
@@ -22,12 +19,14 @@ const FIELD_MAP = {
 
 /**
  * Signup with exactly one name field (`auth.name`, no surname), e-mail, password with the policy hint and a
- * non-blocking strength meter, terms checkbox whose links are separate tab stops, and a «what happens next» list.
+ * non-blocking strength meter, terms checkbox whose links (the legal pages) are separate tab stops, and a «what happens
+ * next» list. The recorded terms version is the active terms text's id, or `no-active-terms` with a visible note while
+ * the hub has none (QA-002 D4).
  * `POST /v1/auth/signup` answers `202 verification_sent` for new and existing addresses alike (no account
  * enumeration, no session before verification): the form shows «Confirm your email» and can send the message
  * again. A demo deployment validates only, says that nothing was created or sent and offers the onboarding preview.
  */
-export function SignupForm({ minPassword, next, demoMode }: { minPassword: number; next: string | null; demoMode: boolean }) {
+export function SignupForm({ minPassword, next, demoMode, termsVersion, termsDraft }: { minPassword: number; next: string | null; demoMode: boolean; termsVersion: string; termsDraft: boolean }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +34,7 @@ export function SignupForm({ minPassword, next, demoMode }: { minPassword: numbe
   const [verifyPending, setVerifyPending] = useState(false);
   const form = useAuthForm();
   const resend = useAuthForm();
-  const payload = (): Record<string, unknown> => ({ name, email, password, ...(terms ? { acceptedTermsVersion: TERMS_VERSION } : {}) });
+  const payload = (): Record<string, unknown> => ({ name, email, password, ...(terms ? { acceptedTermsVersion: termsVersion } : {}) });
 
   if (verifyPending) {
     return (
@@ -162,8 +161,9 @@ export function SignupForm({ minPassword, next, demoMode }: { minPassword: numbe
           </div>
           <div id="signup-acceptedTermsVersion">
             <Checkbox isSelected={terms} onChange={setTerms} isDisabled={form.busy} {...(form.fields.acceptedTermsVersion ? { isInvalid: true, 'aria-describedby': 'signup-terms-error' } : {})}>
-              {t('auth.acceptTermsPrefix')} <NextLink href="/#legal">{t('auth.termsLink')}</NextLink> {t('auth.and')} <NextLink href="/#legal">{t('auth.privacyLink')}</NextLink>
+              {t('auth.acceptTermsPrefix')} <NextLink href="/legal/terms">{t('auth.termsLink')}</NextLink> {t('auth.and')} <NextLink href="/legal/privacy">{t('auth.privacyLink')}</NextLink>
             </Checkbox>
+            {termsDraft ? <p className="au-form__note">{t('auth.termsDraft')}</p> : null}
             {form.fields.acceptedTermsVersion ? (
               <p id="signup-terms-error" className="au-form__error" role="alert">
                 {form.fields.acceptedTermsVersion}

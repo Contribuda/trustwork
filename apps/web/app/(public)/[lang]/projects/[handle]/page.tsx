@@ -81,6 +81,8 @@ export default async function ProjectPage({ params }: Params) {
   const writeHref = `/login?next=${encodeURIComponent(`/app/messages/new?project=${project.handle}`)}`;
   const joinHref = `/login?next=${encodeURIComponent(`/app/projects/join?project=${project.handle}`)}`;
   const owner = project.participants.find((p) => p.role === 'owner') ?? null;
+  // An owner the public projection does not name (a person without a public, consented profile) is said to be not shown (QA-002 D2).
+  const ownerLabel = project.owner.label || t('projectPage.ownerUnnamed');
   const nextDue = project.progress.current ? (project.progress.current.changedDue ?? project.progress.current.baselineDue) : null;
   const lastMs = project.milestones[project.milestones.length - 1];
   const stateKey = project.status === 'completed' ? 'stateDone' : project.milestones.length === 0 ? 'statePlanned' : project.progress.delayed ? 'stateDelayed' : 'stateOnTrack';
@@ -221,15 +223,21 @@ export default async function ProjectPage({ params }: Params) {
             </div>
             <div className="pj-owner">
               <div className="pj-owner__row">
-                {owner ? <PartyMark p={owner} size={36} /> : <CompanyMark name={project.owner.label} seed={project.owner.label} size={36} />}
+                {owner ? (
+                  <PartyMark p={owner} size={36} />
+                ) : project.owner.kind === 'company' ? (
+                  <CompanyMark name={ownerLabel} seed={project.owner.href ?? ownerLabel} size={36} />
+                ) : (
+                  <PersonAvatar name={ownerLabel} portrait={null} size={36} />
+                )}
                 <span>
                   <span className="pj-owner__label">{t('projectPage.owner')}</span>
                   {project.owner.href ? (
                     <NextLink href={project.owner.href} className="pj-owner__name">
-                      {project.owner.label}
+                      {ownerLabel}
                     </NextLink>
                   ) : (
-                    <span className="pj-owner__name">{project.owner.label}</span>
+                    <span className="pj-owner__name">{ownerLabel}</span>
                   )}
                 </span>
               </div>

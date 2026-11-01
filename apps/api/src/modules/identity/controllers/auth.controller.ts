@@ -30,13 +30,13 @@ export class AuthController {
   }
 
   @Post('verify-email') @HttpCode(200)
-  verify(@Body(VerifyEmailCommandSchema) body: z.infer<typeof VerifyEmailCommandSchema>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res({ passthrough: true }) reply: FastifyReply) {
-    return this.auth.verifyEmail(body.token, state, request, reply);
+  verify(@Body(VerifyEmailCommandSchema) body: z.infer<typeof VerifyEmailCommandSchema>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res({ passthrough: true }) reply: FastifyReply, @ReqLocales() locales: string[]) {
+    return this.auth.verifyEmail(body.token, state, request, reply, locales);
   }
 
   @Post('login') @HttpCode(200)
-  login(@Body(LoginCommandSchema) body: z.infer<typeof LoginCommandSchema>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res({ passthrough: true }) reply: FastifyReply) {
-    return this.auth.login(body, state, request, reply);
+  login(@Body(LoginCommandSchema) body: z.infer<typeof LoginCommandSchema>, @ReqState() state: RequestState, @Req() request: TrustworkRequest, @Res({ passthrough: true }) reply: FastifyReply, @ReqLocales() locales: string[]) {
+    return this.auth.login(body, state, request, reply, locales);
   }
 
   @Post('logout') @HttpCode(204)

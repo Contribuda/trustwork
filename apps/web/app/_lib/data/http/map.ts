@@ -1,4 +1,4 @@
-import type { CompanyDirectoryEntry, Membership, MyProject, ParticipantProject, Person, PersonDirectoryEntry, Principal as ContractPrincipal, Project, ProjectDirectoryEntry, PublicCompany, PublicPerson, PublicPersonProfile, PublicProject, SessionView } from '@trustwork/contracts/client';
+import type { CompanyDirectoryEntry, Membership, MyProject, ParticipantProject, Person, PersonDirectoryEntry, Principal as ContractPrincipal, Project, ProjectDirectoryEntry, PublicCompany, PublicPerson, PublicPersonProfile, PublicProject, PublicProjectOwner, SessionView } from '@trustwork/contracts/client';
 import type {
   AuthenticatedPrincipal,
   CompanyCard,
@@ -158,6 +158,18 @@ export function toPersonDetailFromProfile(profile: PublicPersonProfile): PersonD
   };
 }
 
+/**
+ * The public owner of a published project (QA-002 D2) as a card owner: the company, or a person whose profile is
+ * public with consent. Null when the API names no owner: pages then say the owner is not shown, never a guess.
+ */
+export function publicOwnerOf(owner: PublicProjectOwner | null): ProjectCard['owner'] | null {
+  if (!owner) return null;
+  const name = urlName({ id: owner.id, handle: owner.handle });
+  return owner.kind === 'company'
+    ? { label: owner.name, href: `/companies/${name}`, kind: 'company' }
+    : { label: personDisplayName(owner.name), href: `/people/${name}`, kind: 'person' };
+}
+
 export function toProjectCard(project: PublicProject | ProjectDirectoryEntry, owner: ProjectCard['owner'] | null = null): ProjectCard {
   const handle = 'handle' in project ? project.handle : null;
   const name = urlName({ id: project.id, handle });
@@ -170,8 +182,8 @@ export function toProjectCard(project: PublicProject | ProjectDirectoryEntry, ow
     status: project.status,
     category: null,
     region: '',
-    // The public projection carries no owner (BE-001); the label stays empty rather than guessed.
-    owner: owner ?? { label: '', href: null, kind: 'person' },
+    // The public owner of the projection (QA-002 D2); an unnamed owner keeps an empty label rather than a guess.
+    owner: owner ?? publicOwnerOf(project.publicOwner) ?? { label: '', href: null, kind: 'person' },
     publicParticipants: [],
     openNeedsCount: project.openNeedIds.length,
     progressPercent: project.status === 'completed' ? 100 : 0,
