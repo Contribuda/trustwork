@@ -29,7 +29,7 @@ test('BILL-003 internal adapter binds exact disclosures; missing source integrat
     await rejects(a.as(p.outsider, (trx) => trx.insertInto('billing_fee_scope').values({ ...scope, id: randomUUID() }).execute()), '42501');
   });
   // Both synthetic rates are activated through actual scoped staff, elevation and distinct-person approval.
-  const start = new Date(Date.now() + 2000);
+  const start = new Date(Date.now() + 10000);
   const buyer = await draft(syntheticTerms({ effectiveFrom: start.toISOString(), effectiveTo: null }));
   const seller = await draft(syntheticTerms({ payer: 'seller', basisPoints: 200, effectiveFrom: start.toISOString(), effectiveTo: null }), hubB, p.otherOwner);
   await activate(buyer, await approve(buyer));
@@ -76,7 +76,8 @@ test('BILL-003 internal adapter binds exact disclosures; missing source integrat
     await rejects(withMaintenance(db.admin, (trx) => sql`DELETE FROM trustwork.billing_fee_confirmation WHERE id=${confirmation.id}::uuid`.execute(trx)), '23000');
   });
   await t.test('expired shown versions are refused at confirmation and booking, never silently replaced', async () => {
-    const starts = new Date(Date.now()+1000); const ends = new Date(starts.getTime()+1500);
+    // Real approvals must finish before activation even when the shared runner is busy.
+    const starts = new Date(Date.now()+10000); const ends = new Date(starts.getTime()+10000);
     const expiring = await draft(syntheticTerms({ categoryKey: 'synthetic_expiring', effectiveFrom: starts.toISOString(), effectiveTo: ends.toISOString() }));
     const other = await draft(syntheticTerms({ categoryKey: 'synthetic_expiring', payer: 'seller', effectiveFrom: starts.toISOString(), effectiveTo: null }), hubB, p.otherOwner);
     await activate(expiring, await approve(expiring)); await activate(other, await approve(other, other.digest, p.moderator, p.otherOwner), p.moderator);
