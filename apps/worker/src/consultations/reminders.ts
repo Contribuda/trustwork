@@ -69,7 +69,7 @@ export async function produceReminder(trx: Transaction, runtime: ReminderRuntime
 /** The scheduled row is the durable local work item; a crash rolls back the whole effect and the next tick retries. */
 export function consultationRemindersTask(runtime: ReminderRuntime): ScheduledTask {
   return {
-    name: 'consultation.reminders', intervalSeconds: 60,
+    name: `consultation.reminders.${runtime.hubId}`, intervalSeconds: 60,
     run: async () => {
       const reconciled = await inTransaction(runtime.pool, (trx) => comms.reconcileChannels(trx));
       const due = await inTransaction(runtime.pool, (trx) => comms.due(trx, runtime.hubId));
