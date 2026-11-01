@@ -106,6 +106,9 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     assert.equal((await buyer.post('/v1/payments', badAccountPlace)).status, 403);
     const remote = await fresh('1250', { payeeHubId: '00000000-0000-4000-8000-000000000001' });
     assert.equal((await buyer.post('/v1/payments', remote)).status, 403);
+    const otherHome = '00000000-0000-4000-8000-000000000002';
+    const foreignCollector = await fresh('1250', { payerHubId: otherHome, payeeHubId: otherHome });
+    assert.equal((await buyer.post('/v1/payments', foreignCollector)).status, 403);
     const unsupported = await fresh('1250', { rail: 'ach' });
     const view = ok<PaymentView>(await buyer.post('/v1/payments', unsupported), 201);
     assert.equal(view.state, 'outside_platform');
