@@ -9134,7 +9134,7 @@
       "id": "HUBC-020",
       "title": "Console navigation layer on fixtures: command palette, approvals inbox, saved views, shortcuts and the Users area home",
       "area": "hubs-web",
-      "status": "in_progress",
+      "status": "done",
       "dependsOn": [
         "ADM-002",
         "DS-003"
