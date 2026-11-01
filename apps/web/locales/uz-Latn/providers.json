@@ -1,0 +1,90 @@
+{
+  "providers": {
+    "reasons": {
+      "restricted_place": "Bu ulanish maʼlumotlarni cheklangan joyda qayta ishlaydi yoki saqlaydi, shuning uchun uni saqlab boʻlmaydi.",
+      "endpoint_not_allowed": "Bu manzilga ruxsat yoʻq: tashqi provayderlarga ochiq xostda HTTPS kerak, manzil esa hech qachon kalitni oʻz ichiga olmaydi.",
+      "adapter_mode_fake_only": "Bu adapter faqat taqlid sifatida ishlaydi.",
+      "fake_holds_no_secret": "Taqlid ulanishlar hech qachon maxfiy kalit saqlamaydi.",
+      "secret_store_unconfigured": "Maxfiy kalitlar omborida hali kalitlarni shifrlash kaliti yoʻq, shuning uchun maxfiy kalitni saqlab boʻlmaydi.",
+      "secret_required": "Haqiqiy provayder ulanishi yoqilishidan oldin maxfiy kalitga ega boʻlishi kerak.",
+      "secret_not_found": "Maxfiy kalitni omboridan oʻqib boʻlmadi.",
+      "credential_not_active": "Bogʻlangan hisob maʼlumotlari havolasi bu xabda faol emas.",
+      "test_required": "Avval joriy sozlamani sinovdan oʻtkazing.",
+      "test_failed": "Oxirgi ulanish sinovi muvaffaqiyatsiz boʻldi.",
+      "connection_not_enabled": "Ulanish yoqilmagan.",
+      "connection_killed": "Favqulodda oʻchirgich bu ulanishni toʻxtatgan; avval uni boʻshating.",
+      "revision_conflict": "Bu orada kimdir buni oʻzgartirdi. Sahifani yangilab, qayta urinib koʻring.",
+      "invalid_transition": "Joriy holatda bu oʻzgarish mumkin emas.",
+      "route_unpinned": "Faol marshrut modelning aniq versiyasini koʻrsatadi, hech qachon «latest» kabi oʻzgaruvchan taxallusni emas.",
+      "route_connection_unusable": "Marshrutning har bir modeli shu xabning yoqilgan ulanishida boʻlishi kerak.",
+      "route_outside_residency": "Ochiq boʻlmagan maʼlumotlar uchun marshrut xabning maʼlumotlar rezidentligi doirasida qolishi kerak.",
+      "route_fallbacks_forbidden": "Embedding va qayta saralash marshrutlarida zaxira modellar yoʻq: turli modellarning natijalari hech qachon aralashmaydi.",
+      "route_public_only": "Rasm soʻrovlarida faqat ochiq maʼlumotlar boʻlishi mumkin.",
+      "route_budget_unknown": "Marshrutning xarajat chegarasi bu xabga tegishli emas.",
+      "drafter_cannot_activate": "Ochiq boʻlmagan maʼlumotlarni tashishi mumkin boʻlgan marshrutni uni tayyorlagan odamdan boshqa kishi faollashtiradi.",
+      "egress_training": "Kiruvchi maʼlumotlarda oʻqitiladigan provayder hech qachon ochiq boʻlmagan maʼlumot olmaydi.",
+      "egress_broker": "Vositachi faqat ochiq maʼlumotlarni uzatadi.",
+      "egress_not_in_residency": "Ochiq boʻlmagan maʼlumotlar faqat ularni xab rezidentligi doirasida qayta ishlaydigan va saqlaydigan ulanishga yuborilishi mumkin.",
+      "egress_retention": "Ochiq boʻlmagan maʼlumotlar faqat hech narsani saqlamaydigan provayderga (nol saqlash) yuborilishi mumkin.",
+      "cap_currency": "Xarajat chegarasi xab valyutasida belgilanadi.",
+      "cap_scope_unknown": "Chegara bu xabga tegishli boʻlmagan narsani koʻrsatadi.",
+      "kill_engaged": "Bu favqulodda oʻchirgich allaqachon yoqilgan.",
+      "kill_not_engaged": "Bu favqulodda oʻchirgich yoqilmagan.",
+      "pricing_currency": "Xarajat yozuvining valyutasi bu yerda qabul qilinmaydi.",
+      "adapter_unavailable": "Bu tugunda ushbu provayder uchun adapter oʻrnatilmagan, shuning uchun ulanishni sinab boʻlmaydi.",
+      "decision_unknown": "Bu chaqiruv qarori nomaʼlum yoki allaqachon yopilgan.",
+      "no_active_route": "Bu vazifaga hech qanday faol marshrut xizmat qilmaydi, shuning uchun chaqiruv rad etildi.",
+      "data_class_not_in_route": "Marshrut bu turdagi maʼlumotlar uchun tasdiqlanmagan.",
+      "node_killed": "Favqulodda oʻchirgich bu tugundagi barcha chaqiruvlarni toʻxtatgan.",
+      "route_killed": "Favqulodda oʻchirgich bu marshrutni toʻxtatgan.",
+      "job_killed": "Favqulodda oʻchirgich bu vazifani toʻxtatgan.",
+      "module_killed": "Favqulodda oʻchirgich bu agent modulini toʻxtatgan.",
+      "extension_killed": "Favqulodda oʻchirgich bu kengaytmani toʻxtatgan.",
+      "pipeline_killed": "Favqulodda oʻchirgich bu konveyerni toʻxtatgan.",
+      "egress_denied": "Bu maʼlumotlar ushbu ulanish uchun tugundan chiqa olmaydi.",
+      "no_available_connection": "Marshrutning hech bir ulanishi bu maʼlumotlar uchun mavjud emas.",
+      "cap_exhausted": "Xarajat chegarasiga yetildi: yangi pullik chaqiruvlar bloklangan.",
+      "currency_mismatch": "Chaqiruv narxi xab valyutasida emas.",
+      "allowed": "Ruxsat berilgan.",
+      "no_rule": "Hech bir qoida bu ulanish uchun ushbu maʼlumotlar sinfiga ruxsat bermaydi (sukut boʻyicha rad etiladi).",
+      "denied": "Qoida bu ulanish uchun ushbu maʼlumotlar sinfini rad etadi.",
+      "killed": "Favqulodda oʻchirgich bu ulanishni toʻxtatgan.",
+      "training": "Provayder kiruvchi maʼlumotlarda oʻqitiladi.",
+      "broker": "Ulanish vositachidir.",
+      "residency": "Ulanish maʼlumotlarni xab rezidentligidan tashqarida qayta ishlaydi yoki saqlaydi.",
+      "retention": "Provayder kiruvchi maʼlumotlarni saqlaydi."
+    },
+    "testOutcomes": {
+      "ok": "Muvaffaqiyatli",
+      "auth_failed": "Kalit rad etildi",
+      "unreachable": "Ulanib boʻlmadi",
+      "rate_limited": "Soʻrovlar chastotasi cheklandi",
+      "quota_exceeded": "Kvota tugadi",
+      "residency_mismatch": "Hudud xab rezidentligiga zid",
+      "model_missing": "Model topilmadi",
+      "error": "Xato"
+    },
+    "routeScopes": {
+      "job": "Bu vazifaning har qanday ishlatilishi",
+      "module": "Bitta agent moduli",
+      "extension": "Bitta kengaytma"
+    },
+    "dataClasses": {
+      "public": "Ochiq",
+      "person_private": "Shaxsga tegishli maxfiy",
+      "company_private": "Kompaniyaga tegishli maxfiy",
+      "project_restricted": "Loyiha bilan cheklangan",
+      "deal_party_private": "Bitim taraflariga tegishli maxfiy"
+    },
+    "secretStatus": {
+      "active": "Foydalanilmoqda",
+      "grace": "Oldingi kalit, imtiyozli muddat tugaguncha qabul qilinadi",
+      "destroyed": "Yoʻq qilingan"
+    },
+    "capState": {
+      "ok": "Chegara doirasida",
+      "alert": "Ogohlantirish chegarasiga yetildi",
+      "exhausted": "Chegaraga yetildi: yangi pullik chaqiruvlar bloklangan"
+    }
+  }
+}

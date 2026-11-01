@@ -1,0 +1,90 @@
+{
+  "providers": {
+    "reasons": {
+      "restricted_place": "This connection processes or stores data in a restricted place, so it cannot be saved.",
+      "endpoint_not_allowed": "This address is not allowed: vendors need HTTPS on a public host, and an address never contains a key.",
+      "adapter_mode_fake_only": "This adapter only runs as a fake.",
+      "fake_holds_no_secret": "Fake connections never hold a secret.",
+      "secret_store_unconfigured": "The secret store has no key-encryption key yet, so no secret can be saved.",
+      "secret_required": "A live vendor connection needs its secret before it can be enabled.",
+      "secret_not_found": "The secret could not be read from its store.",
+      "credential_not_active": "The linked credential reference is not active in this hub.",
+      "test_required": "Test the current configuration before enabling it.",
+      "test_failed": "The last connection test did not pass.",
+      "connection_not_enabled": "The connection is not enabled.",
+      "connection_killed": "A kill switch stops this connection; release it first.",
+      "revision_conflict": "Someone changed this in the meantime. Reload and try again.",
+      "invalid_transition": "This change is not possible in the current state.",
+      "route_unpinned": "An active route names an exact model revision, never a moving alias such as \"latest\".",
+      "route_connection_unusable": "Every model of the route must be on an enabled connection of this hub.",
+      "route_outside_residency": "A route for non-public data must stay within the hub's data residency.",
+      "route_fallbacks_forbidden": "Embedding and reranking routes have no fallbacks: results from different models never mix.",
+      "route_public_only": "Image prompts may contain public data only.",
+      "route_budget_unknown": "The spending cap of the route does not belong to this hub.",
+      "drafter_cannot_activate": "A route that may carry non-public data is activated by someone other than the person who drafted it.",
+      "egress_training": "A vendor that trains on inputs never receives non-public data.",
+      "egress_broker": "A broker carries public data only.",
+      "egress_not_in_residency": "Non-public data may only go to a connection that processes and stores it within the hub's residency.",
+      "egress_retention": "Non-public data may only go to a provider that keeps nothing (zero retention).",
+      "cap_currency": "A spending cap is set in the hub's currency.",
+      "cap_scope_unknown": "The cap names something that does not belong to this hub.",
+      "kill_engaged": "This kill switch is already engaged.",
+      "kill_not_engaged": "This kill switch is not engaged.",
+      "pricing_currency": "The cost record's currency is not accepted here.",
+      "adapter_unavailable": "No adapter for this provider is installed on this node, so the connection cannot be tested.",
+      "decision_unknown": "This call decision is unknown or already closed.",
+      "no_active_route": "No active route serves this task, so the call is refused.",
+      "data_class_not_in_route": "The route is not approved for this kind of data.",
+      "node_killed": "A kill switch stops every call on this node.",
+      "route_killed": "A kill switch stops this route.",
+      "job_killed": "A kill switch stops this task.",
+      "module_killed": "A kill switch stops this agent module.",
+      "extension_killed": "A kill switch stops this extension.",
+      "pipeline_killed": "A kill switch stops this pipeline.",
+      "egress_denied": "The data may not leave the node for this connection.",
+      "no_available_connection": "No connection of the route is available for this data.",
+      "cap_exhausted": "A spending cap is reached: new paid calls are blocked.",
+      "currency_mismatch": "The call's cost is not in the hub's currency.",
+      "allowed": "Allowed.",
+      "no_rule": "No rule allows this data class for this connection (denied by default).",
+      "denied": "A rule denies this data class for this connection.",
+      "killed": "A kill switch stops this connection.",
+      "training": "The vendor trains on inputs.",
+      "broker": "The connection is a broker.",
+      "residency": "The connection processes or stores data outside the hub's residency.",
+      "retention": "The vendor retains inputs."
+    },
+    "testOutcomes": {
+      "ok": "Passed",
+      "auth_failed": "The key was rejected",
+      "unreachable": "Not reachable",
+      "rate_limited": "Rate limited",
+      "quota_exceeded": "Quota used up",
+      "residency_mismatch": "Region contradicts the hub's residency",
+      "model_missing": "Model not found",
+      "error": "Error"
+    },
+    "routeScopes": {
+      "job": "Every use of this task",
+      "module": "One agent module",
+      "extension": "One extension"
+    },
+    "dataClasses": {
+      "public": "Public",
+      "person_private": "Private to a person",
+      "company_private": "Private to a company",
+      "project_restricted": "Restricted to a project",
+      "deal_party_private": "Private to the parties of a deal"
+    },
+    "secretStatus": {
+      "active": "In use",
+      "grace": "Previous key, still accepted until its grace period ends",
+      "destroyed": "Destroyed"
+    },
+    "capState": {
+      "ok": "Within the cap",
+      "alert": "Alert threshold reached",
+      "exhausted": "Cap reached: new paid calls are blocked"
+    }
+  }
+}

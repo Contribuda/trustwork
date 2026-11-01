@@ -9,6 +9,7 @@ import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntim
 import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
+import { providersSecretSweepTask } from './providers/index.js';
 import { registerScreening, screeningConfigFromEnv, screeningSweepTask, type ScreeningRuntime } from './screening/index.js';
 import { registerRescreen, rescreenConfigFromEnv, rescreenTickTask, rescreenWeeklyTask, type RescreenRuntime } from './rescreen/index.js';
 import { rangesAgeTask, registerScreeningLists, screeningFreshnessTask, screeningListsConfigFromEnv, screeningListsDueTask, type ScreeningListsRuntime } from './screening-lists/index.js';
@@ -23,7 +24,8 @@ import { Worker } from './worker.js';
  * `mail.deliver`, `mail.feedback`, the `mail.settle` task), FILE-001 files, SANC-002 screening lists
  * (`screening.list_ingest`, the `screening.lists_due`, `screening.lists_freshness` and `jurisdiction.ranges_age` tasks)
  * SANC-003 screening (the trigger handlers, `screening.screen_subject` and the `screening.names_sweep` task) and SANC-005
- * re-screening (`screening.rescreen_batch`, the `screening.rescreen_tick` and `screening.rescreen_weekly` tasks);
+ * re-screening (`screening.rescreen_batch`, the `screening.rescreen_tick` and `screening.rescreen_weekly` tasks) and KEYS-001
+ * providers (the `providers.secrets_destroy` task);
  * search projections and other consumers come later. Events of other types are marked published and counted as
  * `unhandled`; the rows stay in the outbox for consumers added later.
  */
@@ -66,6 +68,7 @@ async function main(): Promise<void> {
   const worker = new Worker({
     pool, registry, config, log, metrics,
     tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps), mailSettleTask({ pool, metrics }), ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []), ...(assistant ? [assistantSweepTask(assistant)] : []),
+      providersSecretSweepTask({ pool, metrics }),
       screeningListsDueTask(screeningLists), screeningFreshnessTask(screeningLists), rangesAgeTask({ env: process.env, log, metrics }), screeningSweepTask(screening),
       rescreenTickTask(rescreen), rescreenWeeklyTask(rescreen)],
   });

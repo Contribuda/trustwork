@@ -23,6 +23,7 @@ export type AppMessages =
   & typeof import('./en/procurement.json')
   & typeof import('./en/projects.json')
   & typeof import('./en/public.json')
+  & typeof import('./en/providers.json')
   & typeof import('./en/publishing.json')
   & typeof import('./en/sales.json')
   & typeof import('./en/screening.json')

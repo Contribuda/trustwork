@@ -1,0 +1,90 @@
+{
+  "providers": {
+    "reasons": {
+      "restricted_place": "Bu qoşulma məlumatları məhdudlaşdırılmış yerdə emal edir və ya saxlayır, ona görə də onu yadda saxlamaq olmaz.",
+      "endpoint_not_allowed": "Bu ünvana icazə verilmir: təchizatçılara açıq hostda HTTPS lazımdır, ünvan isə heç vaxt açar ehtiva etmir.",
+      "adapter_mode_fake_only": "Bu adapter yalnız imitasiya kimi işləyir.",
+      "fake_holds_no_secret": "İmitasiya qoşulmaları heç vaxt gizli açar saxlamır.",
+      "secret_store_unconfigured": "Gizli açarlar anbarında hələ açarların şifrələnməsi açarı yoxdur, ona görə də gizli açarı yadda saxlamaq olmaz.",
+      "secret_required": "Təchizatçı ilə real qoşulmanın aktivləşdirilməzdən əvvəl öz gizli açarı olmalıdır.",
+      "secret_not_found": "Gizli açarı anbardan oxumaq mümkün olmadı.",
+      "credential_not_active": "Bağlı giriş məlumatları istinadı bu habda aktiv deyil.",
+      "test_required": "Aktivləşdirməzdən əvvəl cari konfiqurasiyanı yoxlayın.",
+      "test_failed": "Son qoşulma yoxlaması uğursuz oldu.",
+      "connection_not_enabled": "Qoşulma aktiv deyil.",
+      "connection_killed": "Qəza açarı bu qoşulmanı dayandırır; əvvəlcə onu buraxın.",
+      "revision_conflict": "Bu arada kimsə bunu dəyişdi. Səhifəni yeniləyin və yenidən cəhd edin.",
+      "invalid_transition": "Cari vəziyyətdə bu dəyişiklik mümkün deyil.",
+      "route_unpinned": "Aktiv marşrut modelin dəqiq versiyasını göstərir, heç vaxt «latest» kimi dəyişkən ləqəbi yox.",
+      "route_connection_unusable": "Marşrutun hər modeli bu habın aktiv qoşulmasında olmalıdır.",
+      "route_outside_residency": "Açıq olmayan məlumatlar üçün marşrut habın məlumat rezidentliyi daxilində qalmalıdır.",
+      "route_fallbacks_forbidden": "Embedding və yenidən sıralama marşrutlarının ehtiyat modelləri yoxdur: müxtəlif modellərin nəticələri heç vaxt qarışmır.",
+      "route_public_only": "Şəkil sorğularında yalnız açıq məlumatlar ola bilər.",
+      "route_budget_unknown": "Marşrutun xərc limiti bu haba aid deyil.",
+      "drafter_cannot_activate": "Açıq olmayan məlumatları daşıya bilən marşrutu onu hazırlayan şəxsdən başqa biri aktivləşdirir.",
+      "egress_training": "Daxil olan məlumatlar üzərində öyrədilən təchizatçı heç vaxt açıq olmayan məlumat almır.",
+      "egress_broker": "Vasitəçi yalnız açıq məlumatları ötürür.",
+      "egress_not_in_residency": "Açıq olmayan məlumatlar yalnız onları habın rezidentliyi daxilində emal edən və saxlayan qoşulmaya göndərilə bilər.",
+      "egress_retention": "Açıq olmayan məlumatlar yalnız heç nə saxlamayan təchizatçıya (sıfır saxlama) göndərilə bilər.",
+      "cap_currency": "Xərc limiti habın valyutasında təyin edilir.",
+      "cap_scope_unknown": "Limit bu haba aid olmayan bir şeyi göstərir.",
+      "kill_engaged": "Bu qəza açarı artıq işə salınıb.",
+      "kill_not_engaged": "Bu qəza açarı işə salınmayıb.",
+      "pricing_currency": "Xərc qeydinin valyutası burada qəbul edilmir.",
+      "adapter_unavailable": "Bu qovşaqda bu təchizatçı üçün adapter quraşdırılmayıb, ona görə də qoşulmanı yoxlamaq olmaz.",
+      "decision_unknown": "Bu çağırış qərarı naməlumdur və ya artıq bağlanıb.",
+      "no_active_route": "Bu tapşırığa heç bir aktiv marşrut xidmət etmir, ona görə də çağırış rədd edilir.",
+      "data_class_not_in_route": "Marşrut bu növ məlumatlar üçün təsdiqlənməyib.",
+      "node_killed": "Qəza açarı bu qovşaqdakı bütün çağırışları dayandırır.",
+      "route_killed": "Qəza açarı bu marşrutu dayandırır.",
+      "job_killed": "Qəza açarı bu tapşırığı dayandırır.",
+      "module_killed": "Qəza açarı agentin bu modulunu dayandırır.",
+      "extension_killed": "Qəza açarı bu genişləndirməni dayandırır.",
+      "pipeline_killed": "Qəza açarı bu konveyeri dayandırır.",
+      "egress_denied": "Bu məlumatlar bu qoşulma üçün qovşağı tərk edə bilməz.",
+      "no_available_connection": "Marşrutun heç bir qoşulması bu məlumatlar üçün mövcud deyil.",
+      "cap_exhausted": "Xərc limitinə çatıldı: yeni ödənişli çağırışlar bloklanıb.",
+      "currency_mismatch": "Çağırışın dəyəri habın valyutasında deyil.",
+      "allowed": "İcazə verilir.",
+      "no_rule": "Heç bir qayda bu qoşulma üçün bu məlumat sinfinə icazə vermir (standart olaraq rədd edilir).",
+      "denied": "Qayda bu qoşulma üçün bu məlumat sinfini qadağan edir.",
+      "killed": "Qəza açarı bu qoşulmanı dayandırır.",
+      "training": "Təchizatçı daxil olan məlumatlar üzərində öyrədilir.",
+      "broker": "Qoşulma vasitəçidir.",
+      "residency": "Qoşulma məlumatları habın rezidentliyindən kənarda emal edir və ya saxlayır.",
+      "retention": "Təchizatçı daxil olan məlumatları saxlayır."
+    },
+    "testOutcomes": {
+      "ok": "Uğurlu",
+      "auth_failed": "Açar rədd edildi",
+      "unreachable": "Əlçatmazdır",
+      "rate_limited": "Sorğu tezliyi məhdudlaşdırılıb",
+      "quota_exceeded": "Kvota bitib",
+      "residency_mismatch": "Region habın rezidentliyinə ziddir",
+      "model_missing": "Model tapılmadı",
+      "error": "Xəta"
+    },
+    "routeScopes": {
+      "job": "Bu tapşırığın istənilən istifadəsi",
+      "module": "Agentin bir modulu",
+      "extension": "Bir genişləndirmə"
+    },
+    "dataClasses": {
+      "public": "Açıq",
+      "person_private": "Şəxsə aid məxfi",
+      "company_private": "Şirkətə aid məxfi",
+      "project_restricted": "Layihə ilə məhdud",
+      "deal_party_private": "Sövdələşmə tərəflərinə aid məxfi"
+    },
+    "secretStatus": {
+      "active": "İstifadədədir",
+      "grace": "Əvvəlki açar, güzəşt müddəti bitənə qədər qəbul edilir",
+      "destroyed": "Məhv edilib"
+    },
+    "capState": {
+      "ok": "Limit daxilində",
+      "alert": "Xəbərdarlıq həddinə çatıldı",
+      "exhausted": "Limitə çatıldı: yeni ödənişli çağırışlar bloklanıb"
+    }
+  }
+}
