@@ -6,6 +6,9 @@ import { hydrated, expectNoAxeViolations } from '../../helpers.js';
 const base = '/admin/hubs/us-demo';
 const at = (path = 'inbox', extra = '') => `${base}/${path}?persona=hub-owner${extra ? `&${extra}` : ''}`;
 const evidence = fileURLToPath(new URL('./evidence/', import.meta.url));
+// Screenshots and geometry are recorded only under this suite's own config; the main web suite runs the same
+// checks without rewriting the committed evidence.
+const keepEvidence = Boolean(process.env.HUBC020_LIVE_SERVER);
 const copy = (tag: string) => JSON.parse(readFileSync(new URL(`../../../../apps/web/locales/${tag}/console-navigation.json`, import.meta.url), 'utf8')).consoleNav as Record<string, string>;
 const en = copy('en');
 const languageLabel = (tag: string): string => JSON.parse(readFileSync(new URL(`../../../../packages/ui/locales/${tag}.json`, import.meta.url), 'utf8')).consoleKit.language;
@@ -242,7 +245,7 @@ test('the actual locale picker switches the whole navigation copy', async ({ pag
 
 for (const width of [1280, 768, 375]) test(`seven locales, axe, geometry, touch targets and screenshots at ${width}`, async ({ page }) => {
   test.setTimeout(240_000);
-  mkdirSync(evidence, { recursive: true });
+  if (keepEvidence) mkdirSync(evidence, { recursive: true });
   await page.setViewportSize({ width, height: width === 375 ? 812 : 900 });
   const observations: unknown[] = [];
   for (const tag of ['en', 'es', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']) {
@@ -252,24 +255,24 @@ for (const width of [1280, 768, 375]) test(`seven locales, axe, geometry, touch 
     await expect(page.locator('h1')).toHaveText(strings.inbox!);
     await geometry(page); await expectNoAxeViolations(page);
     await page.locator('h1').scrollIntoViewIfNeeded();
-    await page.screenshot({ path: `${evidence}/${tag}-${width}-inbox.png`, fullPage: tag === 'ru' });
+    if (keepEvidence) await page.screenshot({ path: `${evidence}/${tag}-${width}-inbox.png`, fullPage: tag === 'ru' });
     await page.getByRole('button', { name: strings.preferences!, exact: true }).click();
     const dialog = page.getByRole('dialog');
     const language = dialog.getByRole('combobox', { name: languageLabel(tag), exact: true });
     await expect(language.locator('option')).toHaveCount(7);
     await geometry(page); await expectNoAxeViolations(page);
-    await page.screenshot({ path: `${evidence}/${tag}-${width}-preferences.png` });
+    if (keepEvidence) await page.screenshot({ path: `${evidence}/${tag}-${width}-preferences.png` });
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: strings.commands!, exact: true }).click();
     await expect(page.getByRole('dialog').getByRole('combobox')).toBeFocused();
     await expect(page.getByRole('dialog').getByRole('option')).not.toHaveCount(0);
     await geometry(page); await expectNoAxeViolations(page);
-    await page.screenshot({ path: `${evidence}/${tag}-${width}-palette.png` });
+    if (keepEvidence) await page.screenshot({ path: `${evidence}/${tag}-${width}-palette.png` });
     await page.keyboard.press('Escape');
     const targets = await page.getByTestId('console-navigation-tools').getByRole('button').evaluateAll((buttons) => buttons.map((button) => ({ width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
     expect(targets.every((target) => target.width >= 44 && target.height >= 44)).toBe(true);
     await page.goto(at('users')); await ready(page); await geometry(page); await expectNoAxeViolations(page);
     observations.push({ tag, width, targets, axeViolations: 0, horizontalOverflow: false });
   }
-  writeFileSync(`${evidence}/geometry-${width}.json`, `${JSON.stringify(observations, null, 2)}\n`);
+  if (keepEvidence) writeFileSync(`${evidence}/geometry-${width}.json`, `${JSON.stringify(observations, null, 2)}\n`);
 });
