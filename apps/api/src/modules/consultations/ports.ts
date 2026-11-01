@@ -12,7 +12,10 @@ import { commissionOn, type CommissionQuote, type ConsultationKind } from './dep
  * frozen into the proposed terms (and so into the booked digest); payment never changes ranking, matching or reputation.
  */
 export interface ConsultationCommissionPort {
-  quote(trx: Transaction, input: { kind: ConsultationKind; price: Money; expert: Party; at: Date }): Promise<CommissionQuote>;
+  quote(trx: Transaction, input: { kind: ConsultationKind; price: Money | null; expert: Party; at: Date; requestId: string }): Promise<CommissionQuote>;
+  origin?(trx: Transaction, kind: 'offering' | 'request', id: string): Promise<void>;
+  proposed?(trx: Transaction, bookingId: string): Promise<void>;
+  confirmed?(trx: Transaction, bookingId: string, side: 'buyer' | 'seller'): Promise<void>;
 }
 /** Default until BILL-003: no commission is published, so none is charged or shown as owed. */
 export class NoPublishedCommission implements ConsultationCommissionPort {
@@ -23,8 +26,8 @@ export class NoPublishedCommission implements ConsultationCommissionPort {
 /** Fake for tests and demos: one published setting for every kind. */
 export class FixedRateCommission implements ConsultationCommissionPort {
   constructor(private readonly setting: { id: string; version: number; rateBps: number; fixedFee: Money | null; payer: 'client' | 'expert' }) {}
-  async quote(_trx: Transaction, input: { price: Money }): Promise<CommissionQuote> {
-    return commissionOn(input.price, this.setting);
+  async quote(_trx: Transaction, input: { price: Money | null }): Promise<CommissionQuote> {
+    return input.price ? commissionOn(input.price, this.setting) : { status: 'none_published' };
   }
 }
 

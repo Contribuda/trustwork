@@ -1,3 +1,4 @@
+import { NoPublishedCommission } from '../../../apps/api/src/modules/consultations/ports.js';
 import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import { createApp, type CreateAppOptions, type CreatedApp } from '../../../apps/api/src/app.js';
@@ -106,6 +107,7 @@ export async function startHarness(label: string, options: Partial<CreateAppOpti
   const clock = new TestClock();
   const staff = new Map<string, string[]>();
   const created = await createApp({
+    consultationCommission: new NoPublishedCommission(),
     env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_PROVIDER_MODE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '1000', AUTH_LOCKOUT_THRESHOLD: '5', MAIL_SECRET_KEY: mailKeyHex },
     pool, clock, mandates, providers: { google, apple }, staffRoles: async (personId) => staff.get(personId) ?? [],
     // Structured API log lines: only failures are printed, so a failing test still shows the server-side stack.

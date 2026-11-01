@@ -378,6 +378,7 @@ export class ConsultationsService {
         offering_id: input.offeringId, owner_person_id: catalogue.owner_person_id, owner_company_id: catalogue.owner_company_id, expert_person_id: p.personId, created_by_person_id: p.personId,
         ...this.offeringColumns(input.terms),
       });
+      await this.commission.origin?.(trx, 'offering', row.offering_id);
       await this.audit(trx, p, state, 'consultation.offering_registered', 'consultation_offering', row.offering_id, { kind: row.kind, via: actor.via, mandateId: actor.mandateId });
       await this.event(trx, 'consultation_offering', row.offering_id, row.revision, 'consultation.offering_registered', { offeringId: row.offering_id, kind: row.kind, via: actor.via });
       return this.offeringView(trx, row);
@@ -534,6 +535,7 @@ export class ConsultationsService {
         plan_version_id: planRef?.planVersionId ?? null, plan_item_key: planRef?.itemKey ?? null, mentoring_relationship_id: input.mentoringRelationshipId, kind: input.terms.kind,
         licence_required: input.terms.licenceRequired, terms: input.terms, brief, digest: digest.value, sent_via: actor.via, sent_mandate_id: actor.mandateId,
       });
+      await this.commission.origin?.(trx, 'request', row.id);
       await consultationRequestPrivate.insert(trx, { request_id: row.id, requester_person_id: p.personId, ...privateColumns(input.privateConstraint ?? EMPTY_REQUEST_PRIVATE), updated_by_person_id: p.personId });
       if (planRef) await this.linkPlanItem(trx, p, planRef.planId, planRef.projectId, planRef.itemKey, row.id);
       // Audit names the fields shared, never the question, the materials or any private value.
@@ -669,7 +671,7 @@ export class ConsultationsService {
       }
       const amount = priceAmount(price);
       const expert = this.expertParty(request);
-      const commission = amount ? await this.commission.quote(trx, { kind: terms.kind, price: amount, expert, at: now }) : { status: 'none_published' as const };
+      const commission = await this.commission.quote(trx, { kind: terms.kind, price: amount, expert, at: now, requestId });
       const pricing = pricingSummary(price, commission);
       const actor = await this.actor(p, input.actor, 'send_quote', { kind: 'consultation', id: requestId }, pricing.clientTotal);
       await this.screening.requireTransactable(trx, [{ party: expert, self: true }, { party: { kind: 'person', id: p.personId }, self: true }, { party: { kind: 'person', id: request.requester_person_id }, self: false }], 'consultation.propose', now);
@@ -689,6 +691,7 @@ export class ConsultationsService {
         mode: input.mode, window_id: window?.window_id ?? null, slot_start: slot?.start ?? null, slot_end: slot?.end ?? null, deliverable_due: input.deliverableDue, terms: bookingTerms,
         terms_digest: digest.value, valid_until: input.validUntil, proposed_by_person_id: p.personId, proposed_via: actor.via, proposed_mandate_id: actor.mandateId,
       });
+      await this.commission.proposed?.(trx, row.id);
       await this.audit(trx, p, state, 'consultation.proposed', 'consultation_booking', row.id, { requestId, digest: digest.value, offeringVersion: current.version, via: actor.via, mandateId: actor.mandateId });
       await this.event(trx, 'consultation_booking', row.id, row.revision, 'consultation.proposed', { requestId, bookingId: row.id, via: actor.via });
       return this.expertRequestView(trx, (await consultationRequests.get(trx, requestId)) as ConsultationRequestRow);
@@ -763,6 +766,7 @@ export class ConsultationsService {
       await this.screening.requireTransactable(trx, [{ party: { kind: 'person', id: p.personId }, self: true }, { party: terms.expert.party, self: false }], 'consultation.accept', this.now());
       const consent = this.consent(input.electronicRecords);
       const verified = this.verified(request, booking);
+      await this.commission.confirmed?.(trx, booking.id, 'buyer');
       const seller = columnsOf(terms.expert.party);
       const agreement = await consultationAgreements.insert(trx, {
         buyer_person_id: p.personId, seller_person_id: seller.person, seller_company_id: seller.company, offer_ref_id: booking.id, request_ref_id: request.id,
@@ -839,6 +843,7 @@ export class ConsultationsService {
       }
       await this.screening.requireTransactable(trx, [{ party: seller, self: true }, { party: { kind: 'person', id: p.personId }, self: true }, { party: terms.client, self: false }], 'consultation.confirm', this.now());
       const consent = this.consent(input.electronicRecords);
+      await this.commission.confirmed?.(trx, booking.id, 'seller');
       const event = await this.recordEvent(trx, p, agreement, 'seller_accepts_order', seller, actor, key, { consent });
       const saved = await agreements.setStatus(trx, agreementId, input.expectedRevision, { status: 'accepted_by_both' });
       if (!saved) throw new ApiError('validation.revision_conflict');

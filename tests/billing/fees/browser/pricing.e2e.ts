@@ -22,6 +22,9 @@ test('real API/DataPort: Russian empty, published synthetic prices, phone, langu
   await expect(page.locator('.fee-pricing-list li')).toHaveCount(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: resolve(evidence, 'pricing-ru-positive-375.png'), fullPage: true });
+  await page.locator('button.lsw').click();
+  await expect(page.locator('.lsw-lang')).toHaveCount(7);
+  await page.keyboard.press('Escape');
   // Every offered language resolves the same actual public catalogue, without a session.
   for (const lang of ['en', 'es', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']) {
     await page.goto(lang === 'en' ? '/pricing' : `/${lang}/pricing`);

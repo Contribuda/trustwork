@@ -27,6 +27,6 @@ export function neutralOutputs(personId: string) {
       quoteId: 'synthetic-'+amount, seller: { kind: 'person', id: personId }, version: ref('synthetic-'+amount), rfqVersion: rfq, status: 'sent', payload: quote(amount),
     })) }),
     reputation: computeReputation(inputs, now),
-    acceptanceDigest: computeAgreementDigest(ref('synthetic-100'), rfq),
+    acceptanceDigest: computeAgreementDigest(ref('synthetic-100'), ref('synthetic-rfq')),
   };
 }
