@@ -15,8 +15,7 @@ export function publicSourceUrl(value: string): string | null {
 export function authorCredit(p: Pick<PublicPublication, 'authorship'>): string {
   return p.authorship.filter(a => a.kind === 'editorial' || a.id !== null).map(a => a.credit.trim()).filter(c => c && !/^(ai|artificial intelligence|chatgpt|claude|codex|\u0438\u0438)$/iu.test(c)).join(' · ');
 }
-export function publicationView(p: PublicPublication): PublicationDetail {
-  const v = p.current;
+export function publicationView(p: PublicPublication, v: PublicPublication['current'] = p.current): PublicationDetail {
   const translation = p.editions.find(e => e.role === 'original');
   const notices = [
     ...(v.language !== currentLocale() ? [t('content.original', { language: v.language })] : []),
@@ -69,7 +68,7 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
       const raw = p ? await read(`/v1/publications/${i.publicationId}/versions/${i.publicationVersion}`) : null;
       const pinned = raw === null ? null : PublicVersionViewSchema.parse(raw);
       const card = p ? publicationView(p) : null;
-      const notices = card?.content?.notices ?? [];
+      const notices = p && pinned ? publicationView(p, pinned).content?.notices ?? [] : [];
       const correction = card?.correction?.note ?? pinned?.correctionNote;
       const format = !i.withheld && i.articleFormat === 'project_story' ? 'projectStory' : !i.withheld ? i.articleFormat : null;
       items.push({ position: i.position, section: i.section, rubric: (rubrics.has(i.section) ? i.section : format && rubrics.has(format) ? format : 'analysis') as RubricKey,

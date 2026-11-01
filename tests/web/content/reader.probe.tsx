@@ -41,6 +41,23 @@ test('public reads are anonymous, unknown IDs and missing projections never fall
   assert.deepEqual(await port.getMagazine(), { current: null, archive: [] });
   assert.ok(calls.every(c => (c as { options: { anonymous: boolean } }).options.anonymous));
 }));
+test('pinned versions retain their own assistance disclosure instead of borrowing the current version', async () => scoped('en', async () => {
+  const p = publication(); p.authorship[0]!.assistantAssisted = false; p.current.assistantAssisted = false;
+  const pinned = { ...p.current, version: 1, assistantAssisted: true, correctionOf: null, correctionNote: null };
+  const item = { position: 1, section: 'practice', publicationId: id, publicationVersion: 1 };
+  const port = contentData({ hasSession: async () => false, get: async path => {
+    if (path === '/v1/magazine/issues') return { issues: [{ id: person, number: 1, date: '2026-11-01', theme: 'Synthetic issue', status: 'released', currentEdition: 1, coverAssetId: null, items: 1 }] };
+    if (path.startsWith('/v1/magazine/issues/1')) return { projection: 'public', issue: { id: person, number: 1, date: '2026-11-01', status: 'released', edition: 1, items: [item], renderArtifacts: [], revision: 1 },
+      theme: 'Synthetic issue', coverAssetId: null, editorLetterPublicationId: null, currentEdition: 1, digest: { algorithm: 'trustwork-digest-1', value: 'b'.repeat(64) }, releasedAt: date, correctionNote: null,
+      items: [{ ...item, withheld: false, title: pinned.title, format: 'article', articleFormat: 'practice', currentVersion: 2, corrected: true, retracted: false }], corrections: [] };
+    if (path.endsWith('/versions/1')) return { ...pinned, projection: 'public', publicationId: id };
+    if (path === `/v1/publications/${id}`) return p;
+    throw new Error(`Unexpected synthetic route: ${path}`);
+  } });
+  assert.match((await port.getIssue(1))!.issue.items[0]!.body, /assistant/);
+  p.current.assistantAssisted = true; pinned.assistantAssisted = false;
+  assert.doesNotMatch((await port.getIssue(1))!.issue.items[0]!.body, /assistant/);
+}));
 test('RSS, Atom and JSON Feed carry correction/disclosure as inert text and real credits only', () => {
   const feed = { title: 'Synthetic feed', url: 'https://example.invalid/news', feedUrl: 'https://example.invalid/news/feed.xml', language: 'en', entries: [{ id, url: 'https://example.invalid/item', title: '<script>title</script>', text: 'Correction: revised. AI-assisted. <img src="http://127.0.0.1/private">', published: date, modified: date, language: 'en', authors: ['Synthetic Author'] }] };
   for (const format of ['rss', 'atom', 'json'] as const) {
