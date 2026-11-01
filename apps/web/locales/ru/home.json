@@ -72,6 +72,7 @@
     "kindEvent": "Событие",
     "moreNews": "Все новости",
     "moreEvents": "Все события",
-    "allMaterials": "Все материалы"
+    "allMaterials": "Все материалы",
+    "publicationsUnavailable": "Некоторые публикации временно недоступны. Попробуйте позже."
   }
 }

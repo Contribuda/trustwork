@@ -72,6 +72,7 @@
     "kindEvent": "ღონისძიება",
     "moreNews": "ყველა სიახლე",
     "moreEvents": "ყველა ღონისძიება",
-    "allMaterials": "ყველა მასალა"
+    "allMaterials": "ყველა მასალა",
+    "publicationsUnavailable": "ზოგი პუბლიკაცია დროებით მიუწვდომელია. სცადეთ მოგვიანებით."
   }
 }
