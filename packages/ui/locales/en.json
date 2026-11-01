@@ -554,12 +554,12 @@
     "help": "Help",
     "languages": {
       "en": "English",
-      "es": "Español",
-      "ru": "Русский",
-      "uz-Latn": "O‘zbekcha",
-      "ka": "ქართული",
-      "hy": "Հայերեն",
-      "az-Latn": "Azərbaycanca"
+      "es": "Spanish",
+      "ru": "Russian",
+      "uz-Latn": "Uzbek",
+      "ka": "Georgian",
+      "hy": "Armenian",
+      "az-Latn": "Azerbaijani"
     }
   }
 }

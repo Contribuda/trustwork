@@ -553,13 +553,13 @@
     "notifications": "Notificaciones",
     "help": "Ayuda",
     "languages": {
-      "en": "English",
-      "es": "Español",
-      "ru": "Русский",
-      "uz-Latn": "O‘zbekcha",
-      "ka": "ქართული",
-      "hy": "Հայերեն",
-      "az-Latn": "Azərbaycanca"
+      "en": "inglés",
+      "es": "español",
+      "ru": "ruso",
+      "uz-Latn": "uzbeko",
+      "ka": "georgiano",
+      "hy": "armenio",
+      "az-Latn": "azerbaiyano"
     }
   }
 }
