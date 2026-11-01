@@ -9,6 +9,7 @@ import { sectionById, type GroupDef, type SectionRef, type SectionStatus } from 
 import { resolveHub, type HubContext, type HubParams, type PageSearchParams } from './context';
 import { list } from './format';
 import { NavSheet } from './NavSheet';
+import { NavigationTools } from '../_navigation/server';
 
 /* ---------- Small server parts ---------- */
 
@@ -86,7 +87,7 @@ function ConsoleNav({ groups, current, href }: { groups: readonly GroupDef[]; cu
                 return (
                   <li key={section.id}>
                     <NextLink href={href(section.path)} className="admin-nav__link" {...(isCurrent ? { 'aria-current': 'page' as const } : {})}>
-                      <span>{tDynamic(`admin.sections.${group.id}.${section.id}`, section.id)}</span>
+                      <span>{tDynamic(section.labelKey ?? `admin.sections.${group.id}.${section.id}`, section.id)}</span>
                       {section.status === 'designed' ? <span className="admin-nav__status">{t('admin.status.designed')}</span> : null}
                     </NextLink>
                   </li>
@@ -173,6 +174,7 @@ export function AdminShell({
   offline = false,
   showPersonas = true,
   label,
+  navigationTools,
   children,
 }: {
   request: ConsoleRequest;
@@ -188,6 +190,8 @@ export function AdminShell({
   showPersonas?: boolean;
   /** A label after "Administration" when no hub is named (the setup wizard). */
   label?: string | undefined;
+  /** Additive HUBC-020 controls; the existing shell and route authority remain here. */
+  navigationTools?: ReactNode;
   children: ReactNode;
 }) {
   const navigation = nav && nav.length ? <ConsoleNav groups={nav} current={current} href={navHref} /> : null;
@@ -211,6 +215,7 @@ export function AdminShell({
           ) : null}
         </div>
         <div className="admin-band__side">
+          {navigationTools}
           {viewer ? (
             <p className="admin-band__viewer">
               <span lang={viewer.person.nameLang}>{viewer.person.displayName}</span>
@@ -350,6 +355,7 @@ export async function HubConsolePage({
       helpHref={showNav ? ctx.href('help') : null}
       selfPath={ctx.href(current.section.path).split('?')[0] ?? '/admin'}
       offline={ctx.offline}
+      navigationTools={resolution.kind === 'ok' ? <NavigationTools ctx={ctx} /> : undefined}
     >
       {body}
     </AdminShell>

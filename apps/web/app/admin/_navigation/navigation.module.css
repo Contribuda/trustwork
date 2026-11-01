@@ -1,0 +1,24 @@
+.tools { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; min-width: 0; }
+.tools button, .stack button, .saved button { white-space: normal; height: auto; min-height: 44px; max-width: 100%; }
+.tools button span, .stack button span, .saved button span { white-space: inherit; overflow-wrap: anywhere; }
+.tools select, .stack select, .filter select { font: inherit; min-height: 44px; max-width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: var(--space-2); background: var(--color-surface); color: var(--color-text); }
+.language { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.location { flex-basis: 100%; overflow-wrap: anywhere; font-size: var(--font-size-sm); }
+.stack { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; overflow-wrap: anywhere; }
+.stack > *, .row > * { min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.saved { border-block: 1px solid var(--color-border); padding-block: var(--space-3); margin-block: var(--space-4); }
+.saved p { margin-block: var(--space-2); }
+.saved a, .tabs a, .record a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2); overflow-wrap: anywhere; }
+.tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-4); }
+.tabs [aria-current="page"] { font-weight: 700; text-decoration-thickness: 3px; }
+.record { padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow-wrap: anywhere; min-width: 0; }
+.records { list-style: none; padding: 0; display: grid; gap: var(--space-4); }
+.fieldList { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
+.fieldList li { border-inline-start: 3px solid var(--color-border); padding-inline-start: var(--space-3); }
+.fieldList dl { margin: 0; }
+.fieldList dt { font-weight: 600; }
+.fieldList dd { margin: 0 0 var(--space-2); overflow-wrap: anywhere; }
+.filter { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.record code { overflow-wrap: anywhere; white-space: normal; }
+@media (max-width: 767px) { .tools { width: 100%; } .language { width: 100%; } .record { padding: var(--space-3); } }

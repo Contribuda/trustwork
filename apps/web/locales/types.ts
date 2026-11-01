@@ -12,6 +12,7 @@ export type AppMessages =
   & typeof import('./en/commerce.json')
   & typeof import('./en/companies.json')
   & typeof import('./en/compliance.json')
+  & typeof import('./en/console-navigation.json')
   & typeof import('./en/consultations.json')
   & typeof import('./en/content.json')
   & typeof import('./en/core.json')
