@@ -1,3 +1,4 @@
+import { declareHttpFixture } from './provenance-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PublicationSchema, PublicationVersionSchema, IssueSchema } from '@trustwork/contracts';
@@ -73,6 +74,7 @@ test('content API: publications, corrections, moderation and curated issues', { 
     const id = view.publication.id;
     await c.writer.post(`/v1/publications/${id}/editors`, { personId: p.member, rights: 'publish' });
     view = ok(await c.writer.get(`/v1/publications/${id}/manage`));
+    await declareHttpFixture(c.writer,id);
     const racers = await Promise.all([c.writer, c.member].map((client) => client.post(`/v1/publications/${id}/publish`, { expectedRevision: view.publication.revision, scheduledFor: null })));
     assert.deepEqual(racers.map((r) => r.status).sort(), [200, 409]);
     view = ok(await c.writer.get(`/v1/publications/${id}/manage`));
@@ -92,6 +94,9 @@ test('content API: publications, corrections, moderation and curated issues', { 
   await t.test('corrections are visible new versions; the first text stays readable', async () => {
     const id = view.publication.id;
     expectRefusal(await c.writer.post(`/v1/publications/${id}/corrections`, { expectedRevision: view.publication.revision, draft: draft(), note: '', reason: 'x' }), 422, 'validation.schema');
+    ok(await c.writer.post(`/v1/provenance/publications/${id}/correction-draft`,{expectedRevision:view.publication.revision,draft:draft({body:'Corrected synthetic body.'}),note:'The pipe diameter was wrong in version 1.'}));
+    await declareHttpFixture(c.writer,id);
+    view=ok(await c.writer.get(`/v1/publications/${id}/manage`));
     view = ok(await c.writer.post(`/v1/publications/${id}/corrections`, { expectedRevision: view.publication.revision, draft: draft({ body: 'Corrected synthetic body.' }), note: 'The pipe diameter was wrong in version 1.', reason: 'reader report' }), 201);
     assert.equal(view.publication.status, 'corrected');
     assert.equal(view.corrections[0]?.subject.kind, 'publication');
@@ -113,9 +118,10 @@ test('content API: publications, corrections, moderation and curated issues', { 
       expectRefusal(await c.writer.post(`/v1/publications/${made.publication.id}/publish`, { expectedRevision: made.publication.revision, scheduledFor: null }), 422, 'validation.schema', reason);
     }
     const good = ok<ManagePublicationView>(await news({ sourceRefs: [source()] }), 201);
-    const published = ok<ManagePublicationView>(await c.writer.post(`/v1/publications/${good.publication.id}/publish`, { expectedRevision: good.publication.revision, scheduledFor: null }));
-    expectRefusal(await anonymous.get(`/v1/publications/${published.publication.id}`), 404, 'access.not_found');
+    await declareHttpFixture(c.writer,good.publication.id);
+    expectRefusal(await c.writer.post(`/v1/publications/${good.publication.id}/publish`,{expectedRevision:good.publication.revision,scheduledFor:null}),422,'validation.schema','provenance_source_unavailable');
     const own = ok<ManagePublicationView>(await news({ treatment: 'original_reporting', sourceRefs: [source({ kind: 'own_reporting' })] }), 201);
+    await declareHttpFixture(c.writer,own.publication.id);
     await c.writer.post(`/v1/publications/${own.publication.id}/publish`, { expectedRevision: own.publication.revision, scheduledFor: null });
     const shown = ok<PublicPublication>(await anonymous.get(`/v1/publications/${own.publication.id}`));
     assert.deepEqual(shown.current.sourceRefs.map((s) => [s.name, s.kind]), [['Synthetic Standards Bulletin', 'own_reporting']]);
@@ -137,6 +143,7 @@ test('content API: publications, corrections, moderation and curated issues', { 
     piece = ok(await c.editorA.post(`/v1/publications/${id}/submit`, { expectedRevision: piece.publication.revision, staff: staffAct }));
     expectRefusal(await c.editorA.post(`/v1/publications/${id}/publish`, { expectedRevision: piece.publication.revision, scheduledFor: null, staff: staffAct }), 403, 'access.forbidden', 'self_review');
     expectRefusal(await c.editorB.post(`/v1/publications/${id}/publish`, { expectedRevision: piece.publication.revision, scheduledFor: null }), 403, 'access.forbidden', 'elevation');
+    await declareHttpFixture(c.editorA,id,staffAct);
     piece = ok(await c.editorB.post(`/v1/publications/${id}/publish`, { expectedRevision: piece.publication.revision, scheduledFor: null, staff: staffAct }));
     assert.equal(piece.publication.status, 'published');
     assert.equal(piece.myRight, 'staff');

@@ -1,3 +1,4 @@
+import { withProvenanceFixtures } from '../../content/provenance-fixture.js';
 /** CNT-003 bounded live acceptance: real PostgreSQL/API/DataPort, local Next and Chromium; synthetic content only. */
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
@@ -37,11 +38,11 @@ try {
       draft: draft({ title, body: 'Synthetic construction report. <img src="http://127.0.0.1:1/private" onerror="alert(1)">\n\nSynthetic findings, reviewed by the credited author.', language: 'ru', assistantAssisted: true,
         eventTime: format === 'news' ? '2026-11-01T00:00:00.000Z' : null,
         sourceRefs: format === 'news' ? [{ name: 'Synthetic field reporting', uri: 'https://example.invalid/field-notes', kind: 'own_reporting', observedAt: '2026-11-01T00:00:00.000Z' }] : [] }), authorship: credit(p.writer, 'Synthetic Writer') }));
-    if (publish) row = await w.act.as(p.writer, trx => publications.publish(trx, null, row.id, row.revision, null));
+    if (publish) row = await w.act.as(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, row.id, row.revision, null));
     return row;
   };
   let article = await make('article', 'Synthetic: insulation practice', true);
-  article = await w.act.as(p.writer, trx => publications.correct(trx, null, article.id, article.revision, draft({ title: 'Synthetic: corrected insulation practice', body: 'Synthetic corrected construction report.\n\n<script>window.unsafeContent = true</script>', language: 'ru', assistantAssisted: true }), 'Synthetic correction: insulation thickness updated.', 'correction'));
+  article = await w.act.as(p.writer, trx => withProvenanceFixtures(w).correct(trx, null, article.id, article.revision, draft({ title: 'Synthetic: corrected insulation practice', body: 'Synthetic corrected construction report.\n\n<script>window.unsafeContent = true</script>', language: 'ru', assistantAssisted: true }), 'Synthetic correction: insulation thickness updated.', 'correction'));
   const news = await make('news', 'Synthetic: construction field report', true);
   const hidden = await make('article', 'Synthetic PRIVATE draft marker', false);
   const version = (await w.act.as(p.writer, trx => publications.versions(trx, article.id))).find(v => v.version === 2)!;
@@ -122,7 +123,7 @@ try {
   const breakoutTitle = 'Synthetic </ScRiPt><script id="cnt003-breakout">window.jsonLdBreakout=true</script> <!-- & " \u2028\u2029';
   const breakoutNote = 'Synthetic correction </script><img id="cnt003-breakout-image" src="https://example.invalid/never-fetch" onerror="window.jsonLdBreakout=true">';
   let breakout = await make('article', breakoutTitle, true);
-  breakout = await w.act.as(p.writer, trx => publications.correct(trx, null, breakout.id, breakout.revision, draft({ title: breakoutTitle, body: 'Synthetic JSON-LD boundary test.', language: 'ru' }), breakoutNote, 'correction'));
+  breakout = await w.act.as(p.writer, trx => withProvenanceFixtures(w).correct(trx, null, breakout.id, breakout.revision, draft({ title: breakoutTitle, body: 'Synthetic JSON-LD boundary test.', language: 'ru' }), breakoutNote, 'correction'));
   const breakoutContext = await browser.newContext({ bypassCSP: true });
   await breakoutContext.addCookies([{ name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }]);
   const breakoutPage = await breakoutContext.newPage(), breakoutRequests: string[] = [], breakoutErrors: string[] = [];
@@ -161,7 +162,104 @@ try {
   const page = await context.newPage(); await page.goto('http://127.0.0.1:3468/app/publications', { waitUntil: 'networkidle' });
   assert.match(await page.locator('body').innerText(), /PRIVATE draft marker/);
   assert.ok(!(await page.locator('body').innerText()).includes('\u041d\u0438\u0433\u0434\u0435'), 'unknown placement must not be represented as nowhere');
-  await page.screenshot({ path: `${evidence}/workspace-publications-375.png`, fullPage: true }); await context.close();
+  await page.screenshot({ path: `${evidence}/workspace-publications-375.png`, fullPage: true });
+  const labels=JSON.parse(await readFile('apps/web/locales/ru/provenance.json','utf8')).publicationProvenance;
+  await page.goto(`http://127.0.0.1:3468/app/publications/${hidden.id}/edit`,{waitUntil:'networkidle'});
+  await page.getByLabel(labels.heading,{exact:true}).fill('Synthetic UI publication');
+  await page.getByLabel(labels.body,{exact:true}).fill('Synthetic UI declaration workflow.');
+  await page.getByLabel(labels.reason,{exact:true}).fill('Synthetic browser verification');
+  assert.equal(await page.getByLabel(labels.language,{exact:true}).locator('option').count(),7);
+  const command=async(label:string,path:string)=>{
+    const [response]=await Promise.all([page.waitForResponse(r=>r.url().endsWith(path)&&r.request().method()==='POST'),page.getByRole('button',{name:label,exact:true}).click()]);
+    assert.ok(response.ok(),await response.text());
+    await page.getByRole('status').filter({hasText:labels.saved}).waitFor();
+  };
+  await command(labels.saveDraft,`/v1/publications/${hidden.id}/draft`);
+  await page.getByLabel(labels.roles.editorial_writer,{exact:true}).check();
+  await command(labels.declare,'/v1/provenance/declarations');
+  assert.equal(await page.getByLabel(labels.affirmConsent,{exact:true}).isChecked(),false);
+  assert.equal(await page.getByRole('button',{name:labels.grantConsent,exact:true}).isDisabled(),true);
+  await page.getByLabel(labels.web,{exact:true}).check();
+  await page.getByLabel(labels.affirmConsent,{exact:true}).check();
+  await command(labels.grantConsent,'/v1/provenance/consents');
+  await command(labels.publish,`/v1/publications/${hidden.id}/publish`);
+  const publicCredit=async(channel:string)=>fetch(`http://127.0.0.1:3468/v1/publications/${hidden.id}?channel=${channel}`).then(r=>r.json()).then(p=>p.current.provenance.credits);
+  assert.equal((await publicCredit('web')).responsible_editor,'Synthetic Writer');
+  assert.deepEqual(await publicCredit('feed'),{});assert.deepEqual(await publicCredit('pdf'),{});
+  for(const width of [375,1280]) {
+    await page.setViewportSize({width,height:900});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+    const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze();
+    await writeFile(`${evidence}/ru-editor-${width}-axe.json`,JSON.stringify(axe.violations,null,2));
+    assert.deepEqual(axe.violations,[]);
+    await page.screenshot({path:`${evidence}/ru-editor-${width}.png`,fullPage:true});
+  }
+  await command(labels.revokeConsent,'/v1/provenance/revocations');
+  assert.deepEqual(await publicCredit('web'),{});
+  for(const locale of ['en','es','uz-Latn','ka','hy','az-Latn']) {
+    await context.addCookies([{name:'trustwork.locale',value:locale,domain:'127.0.0.1',path:'/'}]);
+    await page.setViewportSize({width:375,height:812});
+    await page.goto(`http://127.0.0.1:3468/app/publications/${hidden.id}/edit`,{waitUntil:'networkidle'});
+    const dictionary=JSON.parse(await readFile(`apps/web/locales/${locale}/provenance.json`,'utf8')).publicationProvenance;
+    await page.getByRole('heading',{name:dictionary.title,exact:true}).waitFor();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+    await page.screenshot({path:`${evidence}/${locale}-editor-375.png`,fullPage:true});
+  }
+  await writeFile(`${evidence}/provenance-editor-results.json`,JSON.stringify({save:true,declare:true,publish:true,consent:'explicit-web-only',withdrawal:true,languages:7,viewports:[375,1280],manualScreenReader:'not performed',nativeLanguageReview:'not performed'},null,2));
+  await context.close();
+  // A distinct session reviews the exact machine translation through the first-party form.
+  const translated=await w.act.as(p.writer,trx=>publications.create(trx,null,{hubId:w.hubId,owner:{kind:'person'},format:'article',articleFormat:'practice',language:'es',licence:'cc_by',requiresReview:false,draft:draft({language:'es',title:'Synthetic Spanish translation',body:'Synthetic translated construction report.',assistantAssisted:true}),authorship:credit(p.writer)}));
+  await w.act.as(p.writer,trx=>publications.linkEdition(trx,null,article.id,translated.id,true));
+  await world.c.writer.post(`/v1/publications/${translated.id}/editors`,{personId:p.coauthor,rights:'publish'});
+  const translationContext=await browser.newContext({viewport:{width:375,height:812}});
+  const usePerson=async(key:'writer'|'coauthor')=>{
+    await translationContext.clearCookies();
+    await translationContext.addCookies([...world.c[key].jar].map(([name,value])=>({name,value,secure:name.startsWith('__Host-'),domain:'127.0.0.1',path:'/'})));
+    await translationContext.addCookies([{name:'trustwork.country',value:'UZ',domain:'127.0.0.1',path:'/'},{name:'trustwork.locale',value:'ru',domain:'127.0.0.1',path:'/'}]);
+  };
+  const trPage=await translationContext.newPage();
+  const editor=async()=>{await trPage.goto(`http://127.0.0.1:3468/app/publications/${translated.id}/edit`,{waitUntil:'networkidle'});await trPage.getByLabel(labels.reason,{exact:true}).fill('Synthetic exact translation review');};
+  const trCommand=async(label:string,path:string)=>{
+    const [r]=await Promise.all([trPage.waitForResponse(r=>r.url().endsWith(path)&&r.request().method()==='POST'),trPage.getByRole('button',{name:label,exact:true}).click()]);assert.ok(r.ok(),await r.text());await trPage.getByRole('status').filter({hasText:labels.saved}).waitFor();
+  };
+  await usePerson('writer');await editor();
+  await trPage.getByLabel(labels.kind,{exact:true}).selectOption('machine_translation');
+  await trPage.getByLabel(labels.roles.editorial_translator,{exact:true}).check();
+  await trPage.getByLabel(labels.originalId,{exact:true}).fill(article.id);
+  await Promise.all([trPage.waitForResponse(r=>r.url().endsWith(`/v1/publications/${article.id}`)),trPage.getByRole('button',{name:labels.loadOriginal,exact:true}).click()]);
+  await trCommand(labels.declare,'/v1/provenance/declarations');
+  await usePerson('coauthor');await editor();
+  await trCommand(labels.review,'/v1/provenance/reviews');
+  await trPage.getByLabel(labels.pdf,{exact:true}).check();await trPage.getByLabel(labels.feed,{exact:true}).check();await trPage.getByLabel(labels.affirmConsent,{exact:true}).check();
+  await trCommand(labels.grantConsent,'/v1/provenance/consents');
+  await trPage.screenshot({path:`${evidence}/ru-translation-reviewer-375.png`,fullPage:true});
+  await usePerson('writer');await editor();await trCommand(labels.publish,`/v1/publications/${translated.id}/publish`);
+  const trVersion=(await w.act.as(p.writer,trx=>publications.versions(trx,translated.id)))[0]!;
+  let trIssue=await w.act.as(p.editorA,trx=>issues.create(trx,ctxA,{hubId:w.hubId,number:15,date:'2026-11-01',theme:'Synthetic reviewed translation',coverAssetId:null,editorLetterId:null}));
+  trIssue=await w.act.as(p.editorA,trx=>issues.curate(trx,ctxA,trIssue.id,trIssue.revision,{items:[{position:1,section:'practice',publicationId:translated.id,publicationVersionId:trVersion.id}],theme:null,coverAssetId:null,editorLetterId:null}));
+  trIssue=await w.act.as(p.editorA,trx=>issues.transition(trx,ctxA,trIssue.id,trIssue.revision,'curated'));
+  trIssue=await w.act.as(p.editorA,trx=>issues.transition(trx,ctxA,trIssue.id,trIssue.revision,'review'));
+  await w.act.as(p.chief,trx=>issues.release(trx,ctxC,trIssue.id,trIssue.revision));
+  await world.elevate('editorA');
+  assert.equal((await consoleCommand(world.c.editorA,`/v1/admin/content/issues/${trIssue.id}/renders`,{edition:1,format:'pdf'})).status,201);
+  await worker.runOnce({rethrow:true});await worker.idle();
+  const translationPdf=await fetch('http://127.0.0.1:3468/v1/magazine/issues/15/pdf?edition=1');assert.equal(translationPdf.status,200);
+  await writeFile(`${evidence}/issue-translation-es.pdf`,Buffer.from(await translationPdf.arrayBuffer()));
+  await trPage.goto('http://127.0.0.1:3468/ru/magazine/15/read',{waitUntil:'networkidle'});
+  assert.equal(await trPage.locator(`a[href="/ru/articles/${article.id}?version=2"]`).count(),1);
+  await trPage.screenshot({path:`${evidence}/ru-translation-reader-375.png`,fullPage:true});
+  for(const section of ['articles','magazine'])for(const file of ['feed.xml','atom.xml','feed.json']){
+    const body=await fetch(`http://127.0.0.1:3468/ru/${section}/${file}`).then(r=>r.text());assert.ok(body.includes(`${article.id}?version=2`));
+  }
+  await usePerson('coauthor');await editor();await trCommand(labels.revokeConsent,'/v1/provenance/revocations');
+  assert.equal((await fetch('http://127.0.0.1:3468/v1/magazine/issues/15/pdf?edition=1')).status,404);
+  article=await w.act.as(p.writer,trx=>withProvenanceFixtures(w).correct(trx,null,article.id,article.revision,draft({language:'ru',title:'Synthetic current original',body:'Synthetic revised original.',assistantAssisted:true}),'Synthetic original update','Synthetic update'));
+  await trPage.goto(`http://127.0.0.1:3468/ru/articles/${translated.id}`,{waitUntil:'networkidle'});
+  assert.ok((await trPage.locator('body').innerText()).includes(labels.stale));
+  assert.equal(await trPage.locator(`a[href="/ru/articles/${article.id}?version=2"]`).count(),1);
+  await trPage.screenshot({path:`${evidence}/ru-stale-translation-375.png`,fullPage:true});
+  await writeFile(`${evidence}/translation-results.json`,JSON.stringify({distinctReviewerForm:true,reviewerConsent:['feed','pdf'],exactOriginalVersion:2,originalDigest:version.content_digest,staleAfterCorrection:true,pdfWithdrawalStatus:404},null,2));
+  await translationContext.close();
   // The actual live DataPort and all nine feed routes must re-read rights after committed revocation.
   const sw = await buildSourcesWorld(h.db.admin, h.pool, w);
   await withMaintenance(h.db.admin, async trx => {

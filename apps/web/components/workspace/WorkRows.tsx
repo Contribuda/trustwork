@@ -109,7 +109,7 @@ export function pubTone(status: MyPublicationRow['status']): 'success' | 'info' 
 }
 
 /** Publication row: state first, then where it is shown. */
-export function PublicationListRow({ row }: { row: MyPublicationRow }) {
+export function PublicationListRow({ row, editorHref }: { row: MyPublicationRow; editorHref?: string }) {
   return (
     <li className="ws-row">
       <span className="ws-row__main">
@@ -141,6 +141,7 @@ export function PublicationListRow({ row }: { row: MyPublicationRow }) {
         </span> : null}
       </span>
       <span className="ws-row__side">
+        {editorHref ? <NextLink href={editorHref} className="ws-row__action">{t('publicationProvenance.openEditor')}</NextLink> : null}
         <span>{t('common.updated', { date: shortDate(row.updatedAt) })}</span>
         {row.href ? (
           <NextLink href={row.href} className="ws-row__action">

@@ -20,15 +20,15 @@ export function publicationView(p: PublicPublication, v: PublicPublication['curr
   const provenance = v.provenance;
   const recorded = provenance?.availability === 'recorded' ? provenance : null;
   const notices = [
-    ...(provenance?.availability === 'unavailable' ? [t('provenance.unavailable')] : []),
-    ...(recorded?.kind === 'ai_assisted' ? [t('provenance.aiAssisted')] : []),
-    ...(recorded?.kind === 'generated' ? [t('provenance.generated')] : []),
-    ...(recorded?.kind === 'machine_translation' ? [t('provenance.machineReviewed')] : []),
-    ...(recorded ? [t('provenance.declarationEvidence')] : []),
-    ...(recorded?.credits.responsible_editor ? [`${t('provenance.responsibleEditor')}: ${recorded.credits.responsible_editor}`] : recorded ? [t('provenance.revoked')] : []),
-    ...(recorded?.credits.translation_reviewer ? [`${t('provenance.reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
-    ...(recorded?.roles.length ? [`${t('provenance.declaredRoles')}: ${recorded.roles.map(role => t(`provenance.roles.${role}`)).join(' · ')}`] : []),
-    ...(recorded?.translation?.stale ? [t('provenance.stale')] : []),
+    ...(provenance?.availability === 'unavailable' ? [t('publicationProvenance.unavailable')] : []),
+    ...(recorded?.kind === 'ai_assisted' ? [t('publicationProvenance.aiAssisted')] : []),
+    ...(recorded?.kind === 'generated' ? [t('publicationProvenance.generated')] : []),
+    ...(recorded?.kind === 'machine_translation' ? [t('publicationProvenance.machineReviewed')] : []),
+    ...(recorded ? [t('publicationProvenance.declarationEvidence')] : []),
+    ...(recorded?.credits.responsible_editor ? [`${t('publicationProvenance.responsibleEditor')}: ${recorded.credits.responsible_editor}`] : recorded ? [t('publicationProvenance.revoked')] : []),
+    ...(recorded?.credits.translation_reviewer ? [`${t('publicationProvenance.reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
+    ...(recorded?.roles.length ? [`${t('publicationProvenance.declaredRoles')}: ${recorded.roles.map(role => t(`publicationProvenance.roles.${role}`)).join(' · ')}`] : []),
+    ...(recorded?.translation?.stale ? [t('publicationProvenance.stale')] : []),
     ...(v.language !== currentLocale() ? [t('content.original', { language: v.language })] : []),
     ...(v.assistantAssisted || p.authorship.some(a => a.assistantAssisted) ? [t('articles.assistantAssisted')] : []),
     ...(translation?.machineAssisted ? [t('content.machineTranslation')] : []),
@@ -54,7 +54,7 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
   const read = (path: `/v1/${string}`) => transport.get(path, { anonymous: true });
   async function publication(id: string, channel: 'web' | 'feed' = 'web'): Promise<PublicPublication | null> {
     if (!UUID.test(id)) return null;
-    const body = await read(`/v1/publications/${id}?channel=${channel}`);
+    const body = await read(`/v1/publications/${id}${channel === 'web' ? '' : `?channel=${channel}`}`);
     return body === null ? null : PublicPublicationSchema.parse(body);
   }
   async function list(format: 'news' | 'article', topic?: TopicKey) {
@@ -76,13 +76,15 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
     const items: IssueItem[] = [];
     for (const i of view.items) {
       const p = i.withheld ? null : await publication(i.publicationId,channel);
-      const raw = p ? await read(`/v1/publications/${i.publicationId}/versions/${i.publicationVersion}?channel=${channel}`) : null;
+      const raw = p ? await read(`/v1/publications/${i.publicationId}/versions/${i.publicationVersion}${channel === 'web' ? '' : `?channel=${channel}`}`) : null;
       const pinned = raw === null ? null : PublicVersionViewSchema.parse(raw);
       const card = p ? publicationView(p) : null;
+      const original = pinned?.provenance?.availability === 'recorded' ? pinned.provenance.translation : undefined;
+      const originalPath = original ? `/${original.originalFormat === 'news' ? 'news' : 'articles'}/${original.originalPublicationId}` : undefined;
       const notices = p && pinned ? publicationView(p, pinned).content?.notices ?? [] : [];
       const correction = card?.correction?.note ?? pinned?.correctionNote;
       const format = !i.withheld && i.articleFormat === 'project_story' ? 'projectStory' : !i.withheld ? i.articleFormat : null;
-      items.push({ position: i.position, section: i.section, rubric: (rubrics.has(i.section) ? i.section : format && rubrics.has(format) ? format : 'analysis') as RubricKey,
+      items.push({ ...(original && originalPath ? { originalHref: `${originalPath}?version=${original.originalVersion}`, ...(original.stale ? { currentOriginalHref: originalPath } : {}) } : {}), position: i.position, section: i.section, rubric: (rubrics.has(i.section) ? i.section : format && rubrics.has(format) ? format : 'analysis') as RubricKey,
         title: pinned?.title ?? t('content.withheld'), slug: i.publicationId, publicationId: i.publicationId, version: i.publicationVersion,
         ...(card ? { publicationHref: card.href } : {}), correctionNote: correction ?? null, isCorrected: !!correction, articleFormat: card?.articleFormat ?? null,
         body: [...notices, pinned?.body ?? t('content.withheld'), ...(pinned?.sourceRefs.length ? [t('content.sources'), ...pinned.sourceRefs.map(s => [s.name, publicSourceUrl(s.uri), s.license].filter(Boolean).join(' · '))] : [])].filter(Boolean).join('\n\n'),

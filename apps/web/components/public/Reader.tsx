@@ -398,6 +398,7 @@ export function Reader({
                 </NextLink>
               </div>
             ) : null}
+            {item.originalHref ? <p className="mgr__mentions"><NextLink href={item.originalHref}>{t('publicationProvenance.originalLink')}</NextLink>{item.currentOriginalHref ? <> · <NextLink href={item.currentOriginalHref}>{t('publicationProvenance.currentOriginal')}</NextLink></> : null}</p> : null}
             <Prose family="serif" measure="reader" as="div" className="mgr__prose">
               {body?.nodes}
             </Prose>

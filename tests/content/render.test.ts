@@ -1,3 +1,5 @@
+import { provenance } from '../../packages/data/src/repositories/provenance.js';
+import { withProvenanceFixtures } from './provenance-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -32,7 +34,7 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
     let row = await act(p.writer, trx => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'ru', licence: 'cc_by', requiresReview: false,
       draft: draft({ language: 'ru', title: 'Synthetic: reader and PDF evidence', body: 'Synthetic content. <script>alert(1)</script>\n\nA local, version-bound artifact.', ...over }), authorship: [...credit(p.writer), ...credit(p.coauthor, 'Synthetic Coauthor')] }));
     await consentToMention(env!.db.admin, p.coauthor, row.id);
-    row = await act(p.writer, trx => publications.publish(trx, null, row.id, row.revision, null));
+    row = await act(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, row.id, row.revision, null));
     return row;
   }
   async function issueFor(pub: PublicationRow) {
@@ -52,7 +54,7 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
   const finish = async (trx: Transaction, id: string, snapshot: unknown) => (await sql<{ ok: boolean }>`SELECT trustwork.content_render_finish(${id}::uuid, ${JSON.stringify(snapshot)}::jsonb, ${Buffer.from('%PDF-synthetic-test')}::bytea) AS ok`.execute(trx)).rows[0]!.ok;
   const pdf = (number: number, hub = w.hubId) => tx(env.apiPool, trx => sql<{ bytes: Buffer; sha256: string; edition: number }>`SELECT * FROM trustwork.content_public_pdf(${hub}::uuid, ${number}, NULL::integer)`.execute(trx)).then(r => r.rows[0]);
   let primary = await publish();
-  primary = await act(p.writer, trx => publications.correct(trx, null, primary.id, primary.revision, draft({ language: 'ru', body: 'Synthetic corrected content. <script>alert(1)</script>\n\nThe worker keeps user content inert.', assistantAssisted: true }), 'Synthetic: corrected insulation thickness.', 'correction'));
+  primary = await act(p.writer, trx => withProvenanceFixtures(w).correct(trx, null, primary.id, primary.revision, draft({ language: 'ru', body: 'Synthetic corrected content. <script>alert(1)</script>\n\nThe worker keeps user content inert.', assistantAssisted: true }), 'Synthetic: corrected insulation thickness.', 'correction'));
   const issue = await issueFor(primary);
   let generated: Buffer | undefined;
 
@@ -116,7 +118,7 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
     const r = await request((await issueFor(primary)).id);
     await tx(pool, async trx => {
       const snap = await prepare(trx, r.id); assert.ok(snap);
-      await act(p.writer, t2 => publications.correct(t2, null, primary.id, primary.revision, draft({ language: 'ru', body: 'Synthetic corrected body.' }), 'Synthetic correction notice', 'correction'));
+      await act(p.writer, t2 => withProvenanceFixtures(w).correct(t2, null, primary.id, primary.revision, draft({ language: 'ru', body: 'Synthetic corrected body.' }), 'Synthetic correction notice', 'correction'));
       assert.equal(await finish(trx, r.id, snap), false);
     });
     assert.equal(await pdf(issue.number), undefined);
@@ -140,8 +142,25 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
     assert.ok(await pdf(i.number));
     pub = await act(p.writer, trx => publications.retract(trx, null, pub.id, pub.revision, 'Synthetic retraction'));
     assert.equal(pub.status, 'retracted'); assert.equal(await pdf(i.number), undefined);
-    const sourced = await publish({ sourceRefs: [source()], treatment: 'summary' }), si = await issueFor(sourced), sr = await request(si.id);
-    assert.equal(await tx(pool, trx => prepare(trx, sr.id)), null, 'a snapshot URL without linked source authority is insufficient');
+    await refused(publish({ sourceRefs: [source()], treatment: 'summary' }), '23514', 'content.provenance_source_unavailable');
+  });
+  await t.test('exact PDF-only credit withdrawal invalidates captured server bytes and in-flight completion', async()=>{
+    const pub=await publish();const record=(await act(p.writer,trx=>provenance.history(trx,pub.id))).at(-1)!;
+    const context={sessionId:w.admin.sessions.writer!,requestId:'synthetic-pdf-consent'};
+    const credit=(await env.db.admin.query<{display_name:string}>('SELECT display_name FROM trustwork.person WHERE id=$1',[p.writer])).rows[0]!.display_name;
+    const consent=await act(p.writer,trx=>provenance.consent(trx,context,{provenanceId:record.id,role:'responsible_editor',credit,channels:['pdf'],noticeVersion:'provenance.credit.v1',informedConsent:true}));
+    const i=await issueFor(pub),r=await request(i.id);
+    const captured=await tx(pool,trx=>prepare(trx,r.id));
+    assert.match(JSON.stringify(captured),/responsible_editor/);
+    assert.equal(await tx(pool,trx=>finish(trx,r.id,captured)),true);
+    const bytes=(await pdf(i.number))!.bytes;
+    const other=await request((await issueFor(pub)).id);
+    const inFlight=await tx(pool,trx=>prepare(trx,other.id));
+    await act(p.writer,trx=>provenance.revoke(trx,context,consent.id,'Synthetic exact withdrawal'));
+    assert.equal(await pdf(i.number),undefined);
+    assert.equal(await tx(pool,trx=>finish(trx,other.id,inFlight)),false);
+    const stored=await env.db.admin.query<{bytes:Buffer}>('SELECT bytes FROM trustwork.content_render_blob WHERE issue_revision_id=(SELECT id FROM trustwork.issue_revision WHERE issue_id=$1 AND edition=1)',[i.id]);
+    assert.deepEqual(stored.rows[0]!.bytes,bytes,'captured bytes remain immutable; only server availability changes');
   });
   await t.test('local renderer failure records a terminal outcome without leaking diagnostic content', async () => {
     const i = await issueFor(await publish()), r = await request(i.id);
@@ -175,7 +194,7 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
       draft: draft({ sourceRefs: [source({ uri: external.url })], treatment: 'summary' }), authorship: [{ kind: 'editorial', credit: 'Synthetic Editorial Office', assistantAssisted: false }] }));
     await act(p.editorA, trx => sourceItems.decide(trx, ctxA, imported.id, imported.revision, 'draft', pub.id));
     pub = await act(p.editorA, trx => publications.transition(trx, ctxA, pub.id, pub.revision, 'in_review'));
-    pub = await act(p.chief, trx => publications.publish(trx, ctxC, pub.id, pub.revision, null));
+    pub = await act(p.chief, trx => withProvenanceFixtures(w).publish(trx, ctxC, pub.id, pub.revision, null));
     const i = await issueFor(pub), r = await request(i.id);
     await tx(pool, async trx => { const snap = await prepare(trx, r.id); assert.ok(snap); assert.equal(await finish(trx, r.id, snap), true); });
     assert.ok(await pdf(i.number));

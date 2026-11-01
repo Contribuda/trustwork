@@ -1,3 +1,5 @@
+import { provenance } from '../../packages/data/src/repositories/provenance.js';
+import { withProvenanceFixtures } from './provenance-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sql } from 'kysely';
@@ -87,7 +89,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
   });
 
   await t.test('publishing freezes the version and binds its digest; later changes are corrections', async () => {
-    post = await as(p.writer, (trx) => publications.publish(trx, null, post.id, post.revision, null));
+    post = await as(p.writer, (trx) => withProvenanceFixtures(w).publish(trx, null, post.id, post.revision, null));
     assert.equal(post.status, 'published');
     const [v1] = await as(p.writer, (trx) => publications.versions(trx, post.id));
     assert.ok(v1 && v1.status === 'published' && v1.content_digest);
@@ -110,7 +112,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
   await t.test('a correction is a new version with a visible note; the previous text stays readable', async () => {
     await refused(as(p.writer, (trx) => publications.correct(trx, null, post.id, post.revision, draft({ body: 'Fixed' }), '', 'reason')), '22023', 'content.correction_note_required');
     await refused(as(p.coauthor, (trx) => publications.correct(trx, null, post.id, post.revision, draft({ body: 'Fixed' }), 'note', 'reason')), '42501', 'content.not_authorised');
-    post = await as(p.writer, (trx) => publications.correct(trx, null, post.id, post.revision, draft({ title: 'Synthetic: insulating a crawl space, revised', body: 'Corrected body.' }),
+    post = await as(p.writer, (trx) => withProvenanceFixtures(w).correct(trx, null, post.id, post.revision, draft({ title: 'Synthetic: insulating a crawl space, revised', body: 'Corrected body.' }),
       'The first version gave the wrong vapour barrier thickness.', 'reader report'));
     assert.equal(post.status, 'corrected');
     assert.equal(post.current_version, 2);
@@ -128,7 +130,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     const news = (over: Parameters<typeof newsDraft>[0]) => as(p.writer, (trx) => publications.create(trx, null, {
       hubId: w.hubId, owner: { kind: 'person' }, format: 'news', articleFormat: null, language: 'en', licence: 'all_rights', requiresReview: false, draft: newsDraft(over), authorship: credit(p.writer),
     }));
-    const tryPublish = async (row: PublicationRow) => as(p.writer, (trx) => publications.publish(trx, null, row.id, row.revision, null));
+    const tryPublish = async (row: PublicationRow) => as(p.writer, (trx) => withProvenanceFixtures(w).publish(trx, null, row.id, row.revision, null));
     await refused(tryPublish(await news({ sourceRefs: [] })), '23514', 'content.news_needs_source');
     await refused(tryPublish(await news({ eventTime: null })), '23514', 'content.news_needs_event_time');
     await refused(tryPublish(await news({ sourceRefs: [source({ license: null })] })), '23514', 'content.source_licence_missing');
@@ -139,8 +141,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     // Own reporting needs no third-party licence; a headline-and-link treatment of a display-only source is fine.
     const own = await tryPublish(await news({ treatment: 'original_reporting', sourceRefs: [{ uri: 'https://example.invalid/site-visit', name: 'Own reporting', kind: 'own_reporting', sourceTime: null, observedAt: '2026-10-29T10:00:00.000Z', license: null }] }));
     assert.equal(own.status, 'published');
-    const display = await tryPublish(await news({ treatment: 'headline_link', sourceRefs: [source({}, { displaySummary: false, storeFullText: false, sendToModelProviders: false })] }));
-    assert.equal(await publicOf(display.id), null, 'unlinked external snapshots do not grant public display');
+    await refused(tryPublish(await news({ treatment: 'headline_link', sourceRefs: [source({}, { displaySummary: false, storeFullText: false, sendToModelProviders: false })] })), '23514', 'content.provenance_source_unavailable');
     const pub = await publicOf(own.id) as Pub;
     const current = pub.current as { eventTime: string; publishedAt: string; sourceRefs: { name: string; kind: string }[]; contentDigest: string };
     assert.equal(current.eventTime, '2026-10-28T08:00:00.000Z', 'event time and publication time are separate');
@@ -167,11 +168,11 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     piece = await as(p.editorA, (trx) => publications.transition(trx, ctxA, piece.id, piece.revision, 'in_review'));
     await refused(as(p.editorA, (trx) => publications.publish(trx, ctxA, piece.id, piece.revision, null)), '42501', 'content.self_review');
     const ctxB = await staff(p.editorB);
-    piece = await as(p.editorB, (trx) => publications.publish(trx, ctxB, piece.id, piece.revision, null));
+    piece = await as(p.editorB, (trx) => withProvenanceFixtures(w).publish(trx, ctxB, piece.id, piece.revision, null));
     assert.equal(piece.status, 'published');
     const audit = await db.admin.query<{ action: string; actor_person_id: string }>(`SELECT action, actor_person_id FROM trustwork.admin_audit_event WHERE object_id = $1 ORDER BY sequence`, [piece.id]);
-    assert.deepEqual(audit.rows.map((r) => r.action), ['publication.create', 'publication.submitted', 'publication.published']);
-    assert.equal(audit.rows[2]?.actor_person_id, p.editorB);
+    assert.deepEqual(audit.rows.map((r) => r.action), ['publication.create', 'publication.submitted', 'provenance.authorized', 'publication.published']);
+    assert.equal(audit.rows[3]?.actor_person_id, p.editorB);
     // Retraction belongs to the editor-in-chief.
     await refused(as(p.editorB, (trx) => publications.retract(trx, ctxB, piece.id, piece.revision, 'Withdrawn')), '42501', 'admin.forbidden');
     await refused(as(p.writer, (trx) => publications.retract(trx, null, piece.id, piece.revision, 'Withdrawn')), '42501', 'admin.elevation_required');
@@ -185,14 +186,14 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     await refused(create(p.employee), '42501', 'content.not_authorised');
     await refused(create(p.writer), '42501', 'content.not_authorised');
     const row = await create(p.member);
-    const published = await as(p.member, (trx) => publications.publish(trx, null, row.id, row.revision, null));
+    const published = await as(p.member, (trx) => withProvenanceFixtures(w).publish(trx, null, row.id, row.revision, null));
     assert.equal(published.owner_company_id, w.company);
     assert.equal(await as(p.employee, (trx) => publications.get(trx, row.id)), undefined, 'membership without company.publish gives no working access');
   });
 
   await t.test('a moderation hold removes the public projection; decisions keep or restore it', async () => {
     const victim = await personal(p.writer, { title: 'Synthetic: disputed claim' });
-    const live = await as(p.writer, (trx) => publications.publish(trx, null, victim.id, victim.revision, null));
+    const live = await as(p.writer, (trx) => withProvenanceFixtures(w).publish(trx, null, victim.id, victim.revision, null));
     assert.ok(await publicOf(live.id));
     const ctxM = await staff(p.moderator);
     const held = await as(p.moderator, async (trx) => {
@@ -349,7 +350,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     const ctxA = await staff(p.editorA);
     const ctxC = await staff(p.chief);
     const allRights = await personal(p.writer, { title: 'Synthetic: all rights' });
-    const published = await as(p.writer, (trx) => publications.publish(trx, null, allRights.id, allRights.revision, null));
+    const published = await as(p.writer, (trx) => withProvenanceFixtures(w).publish(trx, null, allRights.id, allRights.revision, null));
     const digest = await as(p.editorA, (trx) => digests.create(trx, ctxA, { hubId: w.hubId, title: 'Synthetic: November practice', period: '2026-11', publicationIds: [post.id, published.id] }));
     const items = await as(p.editorA, (trx) => digests.items(trx, digest.id));
     assert.deepEqual(items.map((i) => [i.licence, i.display]), [['cc_by', 'full'], ['all_rights', 'headline_link']]);
@@ -365,7 +366,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
   await t.test('scheduling: an embargoed item is published by the worker when its time comes', async () => {
     const row = await personal(p.writer, { title: 'Synthetic: embargoed' });
     const at = new Date(Date.now() + 3_600_000).toISOString();
-    const scheduled = await as(p.writer, (trx) => publications.publish(trx, null, row.id, row.revision, at));
+    const scheduled = await as(p.writer, (trx) => withProvenanceFixtures(w).publish(trx, null, row.id, row.revision, at));
     assert.equal(scheduled.status, 'scheduled');
     assert.equal(await publicOf(row.id), null, 'embargoed');
     assert.equal(await withMaintenance(db.admin, (trx) => contentWorker.publishDue(trx)), 0, 'not yet');
@@ -381,12 +382,22 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     const es = await as(p.writer, (trx) => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'es-US', licence: 'cc_by', requiresReview: false,
       draft: draft({ title: 'Sintetico: aislamiento', language: 'es-US', treatment: 'translation' }), authorship: credit(p.writer) }));
     const link = await as(p.writer, (trx) => publications.linkEdition(trx, null, post.id, es.id, true));
-    await as(p.writer, (trx) => publications.publish(trx, null, es.id, es.revision, null));
-    await refused(as(p.writer, (trx) => publications.reviewEdition(trx, null, link.id)), '42501', 'content.self_review');
+    await refused(as(p.writer, trx => publications.publish(trx, null, es.id, es.revision, null)), '23514', 'content.provenance_required');
+    const ctx = (key: 'writer' | 'coauthor') => ({ sessionId: w.admin.sessions[key]!, requestId: `synthetic-edition-${key}` });
+    const bind = async (id: string) => {
+      const v = (await as(p.writer, trx => publications.versions(trx, id))).at(-1)!;
+      return { publicationId: id, version: v.version, digest: computeDigest({ title:v.title,body:v.body,language:v.language,sourceRefs:[],eventTime:null,correctionOf:v.correction_of,correctionNote:v.correction_note }) };
+    };
+    const binding=await bind(es.id), original=await bind(post.id);
+    const record=await as(p.writer, trx => provenance.declare(trx,ctx('writer'),{binding,original,expectedRevision:0,kind:'machine_translation',roles:['editorial_translator'],evidence:'human_declaration',reason:'Synthetic translation'}));
+    await as(p.writer, trx => publications.grantEditor(trx,es.id,p.coauthor,'publish'));
+    await refused(as(p.coauthor, trx => publications.reviewEdition(trx,null,link.id)), '23514', 'content.provenance_review_required');
+    await as(p.coauthor, trx => provenance.review(trx,ctx('coauthor'),{provenanceId:record.id,binding,original,reason:'Synthetic separate review'}));
+    await as(p.writer, trx => publications.publish(trx,null,es.id,es.revision,null));
+    await refused(as(p.writer, trx => publications.reviewEdition(trx,null,link.id)), '42501', 'content.self_review');
     let pub = await publicOf(post.id) as Pub & { editions: { machineAssisted: boolean; reviewed: boolean; language: string }[] };
     assert.deepEqual(pub.editions.map((e) => [e.language, e.machineAssisted, e.reviewed]), [['es-US', true, false]]);
-    await as(p.writer, (trx) => publications.grantEditor(trx, es.id, p.coauthor, 'edit'));
-    await as(p.coauthor, (trx) => publications.reviewEdition(trx, null, link.id));
+    await as(p.coauthor, trx => publications.reviewEdition(trx,null,link.id));
     pub = await publicOf(post.id) as typeof pub;
     assert.equal(pub.editions[0]?.reviewed, true);
   });
@@ -411,14 +422,14 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     await as(p.writer, (trx) => publications.grantEditor(trx, row.id, p.coauthor, 'publish'));
     const fresh = (await as(p.writer, (trx) => publications.get(trx, row.id)))!;
     const results = await Promise.allSettled([
-      as(p.writer, (trx) => publications.publish(trx, null, row.id, fresh.revision, null)),
-      as(p.coauthor, (trx) => publications.publish(trx, null, row.id, fresh.revision, null)),
+      as(p.writer, (trx) => withProvenanceFixtures(w).publish(trx, null, row.id, fresh.revision, null)),
+      as(p.coauthor, (trx) => withProvenanceFixtures(w).publish(trx, null, row.id, fresh.revision, null)),
     ]);
     assert.deepEqual(results.map((r) => r.status).sort(), ['fulfilled', 'rejected']);
     const failure = results.find((r) => r.status === 'rejected') as PromiseRejectedResult;
     assert.ok(['40001'].includes(sqlState(failure.reason) ?? ''), String(failure.reason));
     const live = (await as(p.writer, (trx) => publications.get(trx, row.id)))!;
-    const corrections = await Promise.allSettled([1, 2].map((n) => as(n === 1 ? p.writer : p.coauthor, (trx) => publications.correct(trx, null, row.id, live.revision, draft({ body: `Race ${n}` }), `note ${n}`, 'race'))));
+    const corrections = await Promise.allSettled([1, 2].map((n) => as(n === 1 ? p.writer : p.coauthor, (trx) => withProvenanceFixtures(w).correct(trx, null, row.id, live.revision, draft({ body: `Race ${n}` }), `note ${n}`, 'race'))));
     assert.deepEqual(corrections.map((r) => r.status).sort(), ['fulfilled', 'rejected']);
     assert.equal((await as(p.writer, (trx) => publications.versions(trx, row.id))).length, 2, 'exactly one correction version');
     const concurrentIssues = await Promise.allSettled([1, 2].map(async () => as(p.editorA, async (trx) => issues.create(trx, await staff(p.editorA), { hubId: w.hubId, number: 7, date: '2026-12-14', theme: null, coverAssetId: null, editorLetterId: null }))));

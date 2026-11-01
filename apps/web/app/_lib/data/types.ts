@@ -274,6 +274,8 @@ export type ProjectDetail = ProjectCard & {
 export type RubricKey = 'analysis' | 'practice' | 'report' | 'interview' | 'people' | 'projectStory' | 'materials' | 'opinion' | 'week' | 'numbers' | 'qa';
 
 export type IssueItem = {
+  originalHref?: string;
+  currentOriginalHref?: string;
   publicationHref?: string;
   correctionNote?: string | null;
   position: number;

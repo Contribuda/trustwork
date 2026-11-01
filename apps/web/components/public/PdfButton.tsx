@@ -6,7 +6,7 @@ import { t } from '@/app/_lib/i18n';
 
 /** Downloads a guarded live artifact; demo previews and pending editions remain unavailable. */
 export function PdfButton({ pdf, size = 'md' }: { pdf: IssueView['pdf']; size?: 'sm' | 'md' }) {
-  if (pdf.state === 'available') return <ButtonLink href={pdf.href} variant="secondary" size={size}>{t('magazine.downloadPdf')}</ButtonLink>;
+  if (pdf.state === 'available') return <ButtonLink href={pdf.href} download variant="secondary" size={size}>{t('magazine.downloadPdf')}</ButtonLink>;
   const ready = pdf.state === 'ready';
   const label = ready ? `${t('magazine.pdfAfterLaunch')} · ${t('magazine.downloadPdfMeta', { size: pdf.size })}` : t('magazine.pdfPending');
   const reason = ready ? t('magazine.pdfAfterLaunchReason') : t('magazine.pdfPendingReason');

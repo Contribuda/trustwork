@@ -24,7 +24,7 @@ export function PublicationProvenance({ item }: { item: PublicationDetail }) {
   const originalPath = original ? `/${original.originalFormat === 'news' ? 'news' : 'articles'}/${original.originalPublicationId}` : '';
   return <>
     <script type="application/ld+json">{JSON.stringify(publicationJsonLd(item, absoluteUrl(localPath(item.href)))).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')}</script>
-    {original ? <p className="art-note"><a href={localPath(`${originalPath}?version=${original.originalVersion}`)}>{t('provenance.originalLink')} · {new Intl.NumberFormat(original.originalLanguage).format(original.originalVersion)}</a>{original.stale ? <> · <a href={localPath(originalPath)}>{t('provenance.currentOriginal')}</a></> : null}</p> : null}
+    {original ? <p className="art-note"><a href={localPath(`${originalPath}?version=${original.originalVersion}`)}>{t('publicationProvenance.originalLink')} · {new Intl.NumberFormat(original.originalLanguage).format(original.originalVersion)}</a>{original.stale ? <> · <a href={localPath(originalPath)}>{t('publicationProvenance.currentOriginal')}</a></> : null}</p> : null}
     {item.content.notices.map(note => <p className="art-note" key={note}>{note}</p>)}
     {item.content.sources.length ? <section className="art-block" aria-label={t('content.sources')}>
       <h2 className="art-block__title">{t('content.sources')}</h2>

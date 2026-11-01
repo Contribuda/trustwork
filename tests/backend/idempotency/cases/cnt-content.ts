@@ -1,3 +1,4 @@
+import { declareHttpFixture } from '../../../content/provenance-fixture.js';
 // Named to sort before communications.ts: CNT-001 releases editorial role definitions at version 1, which the
 // communications case would otherwise have taken for its own `editor` definition.
 import assert from 'node:assert/strict';
@@ -72,11 +73,19 @@ export default {
       v = body(await run('content.editor_revoke', writer, `${P}/editors/${people.coauthor}/revoke`, {}, audits('publication.editor_revoked')));
       v = await latest(v.publication.id);
       v = body(await run('content.publication_links', writer, `${P}/links`, { expectedRevision: v.publication.revision, topics: ['materials'], entityLinks: null }, audits('publication.links_edited')));
+      await declareHttpFixture(writer,v.publication.id);
       v = body(await run('content.publication_publish', writer, `${P}/publish`, { expectedRevision: v.publication.revision, scheduledFor: null }, audits('publication.published')));
+      body(await writer.post(`/v1/provenance/publications/${v.publication.id}/correction-draft`, { expectedRevision:v.publication.revision, draft:draft('Synthetic: exactly once, corrected'), note:'Synthetic correction note' }));
+      await declareHttpFixture(writer,v.publication.id);
+      v = await latest(v.publication.id);
       v = body(await run('content.publication_correct', writer, `${P}/corrections`, { expectedRevision: v.publication.revision, draft: draft('Synthetic: exactly once, corrected'), note: 'Synthetic correction note', reason: 'Synthetic' }, audits('publication.corrected')));
       const es = body<View>(await writer.post('/v1/publications', createBody('Sintetico: una vez', 'es-US')));
       v = body(await run('content.edition_link', writer, `${P}/editions`, { translationId: es.publication.id, machineAssisted: true }, audits('publication.edition_linked')));
-      await writer.post(`/v1/publications/${es.publication.id}/editors`, { personId: people.coauthor, rights: 'edit' });
+      await writer.post(`/v1/publications/${es.publication.id}/editors`, { personId: people.coauthor, rights: 'publish' });
+      const translation=body<{binding:unknown}>(await writer.get(`/v1/provenance/publications/${es.publication.id}`));
+      const original=body<{binding:unknown}>(await writer.get(`/v1/provenance/publications/${v.publication.id}`));
+      const record=body<{id:string}>(await writer.post('/v1/provenance/declarations',{declaration:{binding:translation.binding,original:original.binding,expectedRevision:0,kind:'machine_translation',roles:['editorial_translator'],evidence:'human_declaration',reason:'Synthetic crash edition'}}));
+      body(await coauthor.post('/v1/provenance/reviews',{review:{provenanceId:record.id,binding:translation.binding,original:original.binding,reason:'Synthetic separate review'}}));
       await run('content.edition_review', coauthor, `/v1/edition-links/${v.editions[0]!.id}/review`, {}, audits('publication.edition_reviewed'));
       await run('content.comment', coauthor, `${P}/comments`, { parentId: null, body: 'Synthetic exactly-once comment' }, audits('publication.commented'));
       const wall = body<{ items: { id: string }[] }>(await run('content.wall_add', writer, '/v1/walls', { wall: { kind: 'person' }, publicationId: v.publication.id, publicationVersion: null, pinned: false }, audits('wall.referenced')));

@@ -1,3 +1,4 @@
+import { declareHttpFixture } from '../../../content/provenance-fixture.js';
 import { computeDigest } from "@trustwork/contracts";
 import { withMaintenance } from "@trustwork/data";
 import type { CrashCase } from "../cases.js";
@@ -48,6 +49,7 @@ export default {
           201,
         ).publication;
       const original = await create("en");
+      await declareHttpFixture(writer, original.id);
       ok(
         await writer.post(`/v1/publications/${original.id}/publish`, {
           expectedRevision: original.revision,
@@ -148,6 +150,13 @@ export default {
             "consent_id",
             consent.consentId,
           ),
+      });
+      const current = ok<{publication:{revision:number}}>(await writer.get(`/v1/publications/${original.id}/manage`)).publication;
+      await exactlyOnce({
+        action: "provenance.prepare_correction", client: writer,
+        url: `/v1/provenance/publications/${original.id}/correction-draft`,
+        body: { expectedRevision: current.revision, draft: draft("en"), note: "Synthetic correction crash" },
+        effects: () => count("publication_version", "publication_id", original.id),
       });
     } finally {
       if (previous === undefined) delete process.env.TRUSTWORK_HUB_ID;

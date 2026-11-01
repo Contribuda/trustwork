@@ -1,56 +1,47 @@
 # Publication provenance (PROV-001)
 
-Status: implementation checkpoint, not accepted. The module owns append-only declarations, exact translation reviews and narrowly scoped credit consent. Shared CNT public wire schemas, rendering and mandatory publication hooks wait for CNT-003 PR #473 to merge. The package remains `in_progress`; nothing is deployed.
+Status: actual CNT integration, not package acceptance; nothing is deployed. CNT-003 PR #473 merged before this continuation. PROV-001 #97, CNT-001 #5 and CNT-003 #69 own the declaration, publication, reader and PDF boundaries below. The conductor authorizes the minimal WEB-004/006, INTL/LANG, BE-005 and REL-001 integration seams. E3 and autonomous publication remain OFF. A technical guard is not permission to publish autonomously.
 
 ## Authority and storage
 
-A declaration binds one publication version, the content digest recomputed by CNT-001 and the draft revision. Its responsible person is the authenticated caller accepting responsibility, never an arbitrary input identity, an editing credit or an agent. Declared participating role keys use the editorial vocabulary and carry `human_declaration`; no runtime execution evidence is invented. Editorial commands require the caller's live elevation and the existing hub publication permission. Person/company commands require existing publication rights; an edit-only right is insufficient. Delegated API principals are refused.
+A declaration binds one publication version, its CNT-computed content digest and draft revision. The responsible person is the authenticated first-party caller accepting responsibility, never an arbitrary input identity, editing credit or agent. Functional assisting roles carry `human_declaration`; this is not verified runtime execution evidence. Editorial commands require current elevation and the existing hub permission; person/company commands require publication rights, not merely an edit grant. Delegated API principals are refused.
 
-Five tables in the provenance migration have forced row-level security. The runtime can read only the permitted working records and writes through restricted commands. Every record, review, consent, revocation and image attachment is append-only even under maintenance. Changing provenance appends a revision under the publication lock and an optimistic revision check, with audit and an identifiers-only outbox event. Publication content digests remain unchanged.
+Declarations, reviews, consents, revocations and test image attachments are append-only, including under maintenance. Commands serialize on publication locks, check expected revisions, and commit audits and identifier-only outbox events transactionally. Published content digests and original versions are never rewritten. A later disclosure cannot remove a translation's original or rebind an already published translation to another original. A corrected translation requires a new exact declaration and distinct authorized review.
 
-A consent names one provenance record, one role (`responsible_editor` or `translation_reviewer`), the person's exact current display name and selected channels (`web`, `feed`, `pdf`). The notice is `provenance.credit.v1`; affirmative informed consent is mandatory. Profile/mention consent is never consulted. Only the actual responsible person or recorded reviewer can consent. Overlapping live consents must be revoked before replacement. A new provenance revision needs new consent. Withdrawal remains possible after publication rights are lost. Delivery checks current consent and current credit text; no identity is disclosed when absent. Machine assistance survives credit withdrawal. Downloaded copies cannot be recalled.
+## First-party commands
 
-## Commands
-
-All four routes use a first-party session, same-origin CSRF and transactional idempotency:
+`GET /v1/provenance/publications/:id` supplies a private, no-store working projection and only the caller's own consents. The editor at `/app/publications/:id/edit` uses the following authenticated, same-origin, transactionally idempotent commands; displaying a control never grants authority.
 
 | Route | Input | Result |
 | --- | --- | --- |
-| `POST /v1/provenance/declarations` | `declaration`, optional elevated `staff.reason` | Record ID and revision |
-| `POST /v1/provenance/reviews` | `review`, optional elevated `staff.reason` | Review and record IDs |
-| `POST /v1/provenance/consents` | Exact consent and affirmative notice acknowledgement | Consent ID |
+| `POST /v1/provenance/declarations` | Exact declaration; optional elevated staff reason | Record ID and revision |
+| `POST /v1/provenance/reviews` | Exact original/translation binding and review reason | Review and record IDs |
+| `POST /v1/provenance/consents` | Exact role, credit, selected channels and affirmative notice | Consent ID |
 | `POST /v1/provenance/revocations` | Consent ID and reason | Revocation acknowledgement |
+| `POST /v1/provenance/publications/:id/correction-draft` | Expected publication revision, draft and correction note | Prepared correction |
 
-`capabilities.ts` records these restricted operations. It grants no agent/MCP execution authority and provides no automatic publication switch. There is no public provenance endpoint in this checkpoint. The API does not expose working records to anonymous readers.
+The editor saves actual drafts, declares responsibility, requests a separate review, grants or withdraws narrowly scoped credit, and invokes the owning CNT submit/publish/correct commands. All seven content-language choices and locale dictionaries are available. Native translation and manual assistive-technology review remain separate human acceptance.
 
-## Translation and delivery seams
+## Mandatory publication guards
 
-`provenance.publish` composes the real CNT-001 publication command in the same transaction. Before publication it verifies the exact current provenance/draft revision, pinned source and a review by a different authorized person. A changed draft invalidates the review, including an edit that restores earlier bytes. Review and publication lock the original and translation in stable order. A correction of the original makes delivery metadata stale; retraction or withholding of the original suppresses translation metadata. Reviewed machine translation stays labelled.
+The common CNT blocker and release function require exact provenance on every real publication path, including legacy commands, scheduling and the scheduled worker. Source authority is checked through current SRC linkage and intersected rights ceilings; a matching URL or old snapshot never creates permission. Corrections must first prepare their exact draft, declare it and obtain any required separate translation review. The release command compares every prepared field before freezing the version. Issue, correction-edition and digest release triggers validate every pinned publication. A legacy edition review boolean cannot replace a provenance review.
 
-`provenance.deliveryMetadata` is an internal owner projection seam, not a frozen public wire shape. It composes the current CNT public-version authority. Once #473 merges, that authority includes its linked-source revocation checks. Source linkage is never reconstructed from a URL. This checkpoint does not claim that existing CNT commands universally enforce the new gate or that any reader, feed or PDF consumes the metadata yet. Those integrations and their acceptance tests are required remaining engineering.
+Machine translations require a distinct reviewer with current authority at review time. Draft edits invalidate the binding and review, including edits keeping the same version number. Publication rechecks the current original. After publication, an original correction leaves the immutable original digest and review intact and marks the translation stale; an unavailable original withholds its dependent translation. Recursive dependency checks are bounded and deny cycles. The standard editorial second-editor rule remains independently applicable.
 
-E3 and all automatic publication policies remain OFF and unapproved. Review records do not activate a policy and do not invent authorship. Existing editorial authorship semantics remain owned by CNT.
+## Public delivery and consent
 
-## Image adapter
+Additive public schemas expose exact version bindings, declared functional roles, honest declaration evidence, original-language/version/digest and stale status. Detail, pinned versions, issues, walls, digests, readers, all nine feeds, inert JSON-LD and PDF use current owner projections. Readers and feeds link to the exact original version. Existing headline-only body suppression and no-store behavior remain. Unrecorded legacy provenance is labelled unavailable, never invented or retroactively certified.
 
-`C2paIptcAdapter` has an unavailable default and an explicitly injected fake. The fake attaches a deterministic unsigned test sidecar to unchanged image bytes and records the exact IPTC type `trainedAlgorithmicMedia` or `compositeWithTrainedAlgorithmicMedia`. The input binds asset ID, asset byte digest, publication version/digest and provenance record. The attachment command checks an existing clean image artifact linked to that publication. Byte, sidecar, type and binding substitution are rejected.
+Consent binds one provenance record, one role (`responsible_editor` or `translation_reviewer`), the person's exact current display name and selected `web`, `feed` and `pdf` channels. `provenance.credit.v1` requires explicit informed acknowledgement. Profile or mention consent and staff access are never editorial credit consent. Only the responsible person or actual reviewer can grant it; a new record needs new consent. Withdrawal works after publication authority is lost. Delivery checks current consent and current credit text; absent or withdrawn consent leaves functional labels without a name.
 
-The fake is not a C2PA encoder, signed manifest, cryptographic authenticity proof or production signing authority. Its checksums only detect substitution relative to the supplied expected binding. There is no provider activation route or signing dependency. A real standards implementation and configured signing authority remain unavailable and need separate conductor review. Generated imagery is illustrative, never documentary or a depiction of an identifiable real person.
+PDF snapshots include exact PDF-scoped provenance while retaining presentation version 2 and optional runtime browser import. Current projection changes, including consent withdrawal, invalidate captured server delivery and in-flight completion; stored bytes remain immutable. Previously downloaded external copies cannot be recalled. Generated PDF evidence must be rendered and every page inspected before visual acceptance is claimed.
 
-## Continuation after CNT-003
+## Unsigned image boundary
 
-1. Verify #473 is merged, fetch and rebase; preserve all upstream status rows, package objects and current source/privacy guards.
-2. Add mandatory owning publication/correction/edition hooks without changing applied migrations. All machine translations must use the exact review gate, including legacy command paths and scheduling.
-3. Freeze additive public wire schemas and connect detail, pinned versions, issues, walls, feeds, safe JSON-LD and PDF captures. Revocation, correction, removal and retraction must invalidate previous captures at delivery.
-4. Wire the seven-language namespace, credit-consent interaction and labels. Verify actual desktop/375px non-English surfaces, negative authorization and race orders; inspect each rendered PDF page.
-5. Report exact-head focused checks and CI separately. Native-language and manual screen-reader review remain human acceptance, not automated evidence.
+`C2paIptcAdapter` defaults to unavailable. Its explicitly injected fake preserves original image bytes and creates a deterministic unsigned test sidecar. It binds asset ID, byte digest, publication version/digest, provenance record and the IPTC type `trainedAlgorithmicMedia` or `compositeWithTrainedAlgorithmicMedia`. Database validation requires an existing clean image artifact linked to that publication. Substituted bytes, sidecars, source types and bindings are rejected.
 
-## Integration checkpoint after CNT-003
+The fake always has `c2paValid=false` and `test_only_unsigned`; its checksums do not prove authorship or authenticity. Actual C2PA encoding/signing and delivery of signed generated-image assets remain incomplete. The minimal proposed dependency is `@contentauth/c2pa-node`, maintained in [contentauth/c2pa-js](https://github.com/contentauth/c2pa-js/tree/main/packages/c2pa-node), behind the existing adapter. Its current source package declares version 0.9.11 and supports signed manifest writing and validation. Pinning a released version requires runtime/native-binary compatibility review and approved root lockfile work; the upstream repository currently requires a newer patched Node 24 than this workspace. Separately configured signing authority is still required. Neither dependency nor credentials are installed here. No provider setup blocks the independent text/translation/consent delivery work. Generated illustrations must not be presented as documentary imagery or identifiable real people.
 
-The continuation is authorized by the conductor for PROV-001 #97, CNT-001 #5 and CNT-003 #69 and their minimal web, locale and PDF seams. Ordinary engineering does not require a new owner policy decision. E3 and operational signing remain unavailable.
+## Verification and acceptance
 
-All new publications require an exact declaration through the common CNT blocker, including scheduling and the scheduled worker. Corrections first prepare a draft, then obtain a new declaration and separate translation review where applicable, then release the exact prepared draft. Old immutable versions and digests are never rewritten. Released issue/digest bundles also validate the pinned records. Legacy edition review flags cannot replace the exact provenance review.
-
-Public version metadata carries declared functional roles, honest human-declaration evidence, exact original bindings and stale status, plus only the credits consented for the delivery channel. Feed reads request feed-scoped credits; PDF snapshots bind PDF-scoped credits. Current source restrictions and presentation version 2 remain. Stored PDFs become unavailable when the captured projection changes; downloaded copies cannot be recalled.
-
-The first-party workspace is `/app/publications/:id/edit`. Its controls call the authenticated owner commands; UI visibility never grants authority. All seven locale dictionaries are wired, with new translations awaiting native review. Browser/PDF acceptance, regression expansion and full CI remain pending at this checkpoint.
+Focused PG/API tests cover absent, withdrawn, stale, cross-person, cross-hub and wrong-role authority; immutable content; scheduling; separate translation review; concurrency; crash rollback/takeover/replay; and captured PDF invalidation. Browser and PDF evidence, exact-head commands, failures and counts are recorded in the conductor's `tools/PROV001-integration-result.md`. Historical tests are not current-head CI. Full CI is unchecked until observed passing; worker completion is not maintainer or conductor acceptance. The PR remains draft.
