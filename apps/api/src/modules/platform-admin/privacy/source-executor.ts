@@ -13,7 +13,10 @@ export async function executeLocalSourceErasure(input: {
   const client = await input.admin.connect();
   try {
     await client.query('BEGIN');
-    await client.query('SET LOCAL ROLE trustwork_app');
+    // The isolated migrator belongs to the owner role, never the runtime role.
+    // Admission still uses the exact principal and elevated owning commands; no maintenance bypass.
+    await client.query('SET LOCAL ROLE trustwork_owner');
+    await client.query("SET LOCAL trustwork.maintenance='off'");
     await client.query('SELECT trustwork.set_principal($1,$2)', [input.personId, input.authzEpoch]);
     const { rows } = await client.query<{ v: Record<string, unknown> }>('SELECT trustwork.privacy_source_plan_admit($1::jsonb,$2::uuid,$3) AS v', [JSON.stringify(input.context), input.planId, input.digest]);
     const admission = rows[0]!.v;
