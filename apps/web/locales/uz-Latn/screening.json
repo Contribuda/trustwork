@@ -28,7 +28,7 @@
       "nodeScope": "Bu yozuvlar va qarorlar butun tugunga, barcha markazlarga tegishli.",
       "api": "Xizmat maʼlumotlari",
       "incomplete": "Ayrim guruh ko‘rsatkichlari mavjud emas",
-      "unavailable": "Noma’lum ko‘rsatkichlar uchun xab guruhlari yozuvlari kerak.",
+      "unavailable": "Bu xab uchun tasdiqlangan ko‘rsatkichlar hozircha mavjud emas.",
       "saved": "Saqlandi. Joriy yozuv yangilandi.",
       "refused": "Amal rad etildi. Sahifani yangilang va ruxsatingizni tekshiring. So‘rov:",
       "unknownOutcome": "Natija noma’lum. Natijani olish uchun aynan shu so‘rovni takrorlang; o‘zgartirilgan qarorni yubormang.",
@@ -133,7 +133,7 @@
         "propose_reversal": "Bekor qilishni taklif etish"
       },
       "participantTitle": "Ishtirokchi muvofiqligi",
-      "participantScope": "Bu sahifada faqat ruxsat etilgan muvofiqlik paneli ko‘rsatiladi. Boshqa ma’lumotlar ulanmagan.",
+      "participantScope": "Bu sahifada sizga ko‘rishga ruxsat berilgan muvofiqlik ma’lumotlari ko‘rsatiladi.",
       "listReadOnly": "Ro‘yxatlar va versiyalar faqat o‘qiladi. Asosiy ro‘yxatlar va solishtirish qoidalari o‘zgartirilmaydi.",
       "additional": "Qo‘shimcha ro‘yxat",
       "mode": "Rejim",
@@ -186,9 +186,9 @@
         "not_screened": "Tekshirilmagan"
       },
       "metricReasons": {
-        "hub_attribution_missing": "Xabga tegishlilik yozilmagan",
-        "distinct_principals_missing": "Alohida ishtirokchilar hisoblanmagan",
-        "gate_counter_missing": "Rad etish hisoblagichi saqlanmaydi"
+        "hub_attribution_missing": "Tasdiqlangan ko‘rsatkichlar mavjud emas.",
+        "distinct_principals_missing": "Tasdiqlangan ko‘rsatkichlar mavjud emas.",
+        "gate_counter_missing": "Tasdiqlangan ko‘rsatkichlar mavjud emas."
       },
       "metricNames": {
         "refusals": "Joy va kun bo‘yicha rad etishlar",
