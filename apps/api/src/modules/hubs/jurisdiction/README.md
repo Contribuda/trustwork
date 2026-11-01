@@ -1,53 +1,42 @@
-# Jurisdiction settings groundwork (HUB-005)
+# Jurisdiction authority (HUB-005)
 
-Status: **Blocked, partial implementation; not Live.** No controller, participant projection or dispatch hook is registered. No country has an executable mandatory baseline in this implementation. Nothing here asserts counsel approval or enables real commitments.
+Status: **implemented domain boundary and isolated adapters; package not accepted**. No production policy or deployment. All shipped country policies remain `UNKNOWN`. The architecture direction in ADR 022 was accepted by the conductor in [the maintainer decision](https://github.com/Contribuda/trustwork/pull/445#issuecomment-6552887365); PR #472 records that decision in the ADR. Architecture acceptance does not approve legal facts or counsel text.
 
-## Implemented and testable
+## Source and legal authority
 
-- Additive `jurisdiction.ts` schemas for per-jurisdiction disclosure locale keys, opaque liability allocation identities, consent requirements, retention intervals, per-action approval thresholds and legal text keys, with pack fact references.
-- Deterministic protective composition of an authoritative list of applicable jurisdictions. Country, subdivision and party applicability must be resolved by a trusted domain adapter, never a client string or preference.
-- Mandatory-rule comparisons that reject weakening, missing mandatory references, or an incomparable change. Every hub language needs disclosure and legal text keys. Key presence is not proof that translated, counsel-reviewed text exists.
-- A repository pack reader that returns source evidence with its recorded verification and counsel status. It reads files only, including region ancestors and declared layers; it never turns prose into executable policy. The current adapter always returns `unknown` because the mandatory baseline is not representable.
-- Transaction-scoped draft storage and read-only preflight using existing HUB-001 repositories, permissions, RLS and audit. Preflight always reports the outstanding integration guards and is never an activation authorization.
-- A pure restriction composer with the actual `evaluateMandateV2` result. A jurisdiction threshold can turn `allow` into `ask`; unknown applicability turns it into `deny`; nothing changes a mandate denial into permission. This is **not a runtime dispatch integration**.
+`JurisdictionSourceSchema` adds an optional, explicitly reviewed executable record to country agent-law facts. It requires jurisdiction and ancestors, effective dates, action applicability, a mandatory/advisory classification for every area, liability and consent identities, retention intervals, immutable source content digests and counsel evidence. Empty requirements are explicit reviewed statements. The reader never interprets prose, `recordYears`, a preferred country, locale or an address as executable law. Existing country files and verification assertions are unchanged.
 
-All successful policy examples in tests are synthetic normalized baselines. They are not released pack facts or legal defaults. The real-PostgreSQL tests establish inherited storage authorization, second-person activation, audit and concurrent single consumption of an approval, and demonstrate that participant access to sensitive configuration is unavailable. They do not establish the missing HUB-005 activation/dispatch enforcement.
+`jurisdictionEvidence.importSource` and `attestApplicability` are owner-module maintenance ports. API users, staff commands and workers cannot call them or write/read their tables. The importing domain must establish reviewed applicability evidence, including its validity interval; an account's address alone is not such evidence. No automatic importer or country default is enabled. Immutable records and monotonic head revisions prevent a source/applicability round trip from reviving an old binding.
 
-## Explicit comparisons
+A configuration version binds exact source ID, digest and head revision. Disclosure, liability, consent and legal text identities bind immutable `agent_jurisdiction` legal document versions in every current hub language, their body digests and counsel approval IDs. Existing legal draft, counsel and second-person activation commands remain authoritative. Locale keys alone never count as legal approval. A replacement legal version invalidates a binding to its superseded predecessor.
 
-| Requirement | Composition | Refusal |
-|---|---|---|
-| Approval policy | `pre_authorized < ask_each < human_only` | A mandatory approval requirement cannot be lowered |
-| Monetary threshold | Minimum integer minor units within each currency, using `BigInt`; equality remains within the threshold | No amount, negative amount, or a threshold in another currency denies evaluation; no implicit FX or numeric currency ordering |
-| Multiple currencies | Retain a minimum for **each** currency | A single-currency action cannot satisfy a cross-currency comparison without a reviewed FX contract; no human approval bypass is inferred |
-| Consent | Union of required consent identities | Removing a mandatory consent is refused; this resolver does not record or verify actual consents |
-| Retention | Maximum lower bound and minimum upper bound for each record class | Empty intersection blocks. Calendar years are never approximated as days. This does not alter the retention worker |
-| Liability | Exact allocation identity only | Different allocation identities block; neither is assumed more protective |
-| Disclosure and legal text | Union of keys per locale, preserving both jurisdictions | Missing hub language blocks. Changing a mandatory disclosure identity is incomparable without a new pack decision |
+## Database activation
 
-Unknown is a denial, not implicit permission or a request that a human can approve around missing law. A resolved limit is only an additional restriction: mandates, budgets, sanctions, consent, access and digest-bound confirmation still apply.
+Migration `20261108100000_jurisdiction_authority.sql` is additive. It creates five forced-RLS authority tables, validators, activation/profile triggers, a staff preflight, a narrow participant projection and a worker composition command. No existing migration is edited or renamed.
 
-## Dependencies and proposed decisions for the conductor
+The existing `hubs_activate_config` keeps its permission, elevation, exact-digest second person, single-use approval and audit behavior. The new trigger enforces source and legal bindings for every writer, including a maintenance writer with a consumed approval. A v1 agent policy cannot activate, and once agent settings exist a legacy payload cannot remove them. Existing restriction-only hubs can still use HUB-001's add-only restricted-place domain.
 
-1. **Executable country-pack baseline (contract and counsel dependency).** `packages/country-packs/src/facets.ts`, `AgentLawFactSchema`, currently has `topic`, prose `summary`, optional `wording`, `recordYears`, `actionLimit` and `counselReview`. It has no mandatory/advisory distinction, action applicability, typed liability alternatives, consent identities, or minimum-versus-maximum retention meaning. `US-CA/ca-bot-disclosure`, `US/esign-electronic-agents` and `US/esign-record-retention` remain secondary with pending counsel. Proposal: pack maintainers define an explicit reviewed rule schema with these dimensions, provenance, effective scope/dates and explicit absence-of-requirement semantics. Do not interpret missing facts as no requirements. Counsel must supply the values; this PR changes no pack facts or pack schema.
-2. **Database activation guard (migration agreement required).** `packages/data/migrations/hubs/20261102140000_hubs_core.sql`, `hubs_check_payload`, checks generic payload safety and add-only restrictions for the jurisdiction domain. It does not check these new settings. `hubs_activate_config` already provides permissions, exact-digest second-person approval, audit and serialization; reuse it, adding a database validation boundary that covers every writer and races with hub language changes. Also prevent removing existing agent settings through a legacy restriction-only payload. A TypeScript preflight alone cannot enforce those invariants, so this PR adds no activation method or API route.
-3. **Minimal participant/runtime projection (migration agreement required).** RLS permits `hub_config_version` and `hub_config_current` reads only to staff. `hubs_public_config` refuses every domain except `identity`, `country` and `modes`; the application role cannot execute `hubs_active_payload`. Proposal: a reviewed, narrow read-only projection of active jurisdiction limits and version/digest, with an explicit audience and no access to other configuration domains. Do not grant participants access to whole sensitive configuration tables or use a maintenance connection in dispatch.
-4. **Authoritative applicability and effect-time recheck (AST-001/domain contract dependency).** `apps/api/src/modules/assistant/policy.ts`, `PolicyRequest`, has person, action, context, amount and project, but no authoritative participant/counterparty jurisdiction binding. The existing action digest does not bind the jurisdiction configuration version. Proposal: resolve both parties and applicable jurisdiction ancestors from the domain object, retain the resolved policy version/digest with the intent, and recheck before the effect; a changed material policy must invalidate the earlier approval. The worker path must enforce the same check. This belongs in a bounded agreed integration, not a redesign of AGT-003 (#385).
-5. **Counsel-reviewed locale text.** Locale keys alone do not prove the content, translations or counsel review. Proposal: agree how agent disclosure keys bind immutable localized legal text versions and their counsel evidence. The existing `legal_document_version` kinds do not include agent disclosure. No UI or fabricated legal copy is added here.
+Mandatory rules cannot be weakened: same-currency thresholds use integer comparisons; consent identities accumulate; retention intervals intersect; liability identities have no invented ordering. No FX or natural-language exception is inferred. Advisory rules are explicitly classified, never silently missing. Missing applicable actions refuse execution.
 
-These are proposed decisions, not approved architecture changes. HUB-005 must not become `done` until the activation and dispatch acceptance criteria pass against the actual registered paths and the approved source/binding contracts exist.
+Policy/source/applicability/legal/profile writes and authority reads share a transaction advisory lock. Volatile validators read fresh `READ COMMITTED` snapshots after waiting; other isolation modes refuse. This conservative node-wide lock favors correctness over throughput and must never enclose provider I/O. Language, source and second-person approval races are tested in both lock orders with real PostgreSQL lock observation.
+
+## Runtime boundary
+
+`jurisdictionAuthority.limits` accepts a quote ID and action only. It checks the actual seller permission, derives both parties and the project from the stored quote/RFQ, and requires current reviewed applicability for the acting person, both parties and the project. It expands reviewed ancestors and combines every applicable policy. Project/quote/RFQ revisions, applicability evidence/head revisions, exact configuration versions, source revisions and languages contribute to the binding. Public visibility, staff scope and a process hub default grant no access.
+
+The projection returns restrictive limits, safe reason codes, configuration IDs/digests and the authoritative project hub. It omits party geography, source text, counsel identity, private project content and full configuration. A missing or conflicting source yields `UNKNOWN`, never a human override.
+
+`intent-adapter.ts` composes the actual assistant `decide` and `actionIntents.record` APIs. It hashes the jurisdiction binding into the immutable action digest and persists an append-only binding; SQL recomputes that digest. Above-limit actions become real proposed intents even under a permissive confirmed mandate. A human-only rule refuses automated execution. Required consent identities also refuse execution until a typed, purpose/action-specific consent evidence adapter exists; a generic legal acceptance or action approval is not silently treated as that consent. Explicit synthetic no-consent rules exercise the positive machinery only.
+
+`requireCurrentJurisdiction` rechecks within the API action transaction. `jurisdictionWorker.beginAttempt` verifies the exact live job lease/fencing token, current party authority and the policy binding, then composes the existing `assistant_begin_attempt` in the same transaction. A changed/unavailable policy revokes before an attempt exists. No provider is called by these adapters or tests.
+
+## Exact remaining integration seams
+
+1. After the active LLM worker merges, the conductor must wire `recordJurisdictionIntent` into the assistant proposal path for supported quote actions, call `requireCurrentJurisdiction` before consuming an approval/effect, and replace the dispatch handler's `assistantWorker.beginAttempt` call with `jurisdictionWorker.beginAttempt(intentId, job.id, job.fencingToken)` using the actual leased token. The existing service, ports, models, billing and worker handler files were not edited here. Old unbound intents must remain refused through this path; do not silently backfill them.
+2. The domain owners must connect reviewed applicability evidence to their real attestation workflows and add authoritative resolvers for actions/contexts beyond quotes with a project. Missing attestations and unsupported contexts remain unavailable. The concrete adapter currently supports `send_quote` only; other existing mandate actions need their owning domain resolver and tests. No action vocabulary is extended.
+3. A typed consent receipt/revocation port must bind purpose, action, parties and exact legal versions before consent-bearing rules can execute. Retention enforcement and presenting the bound legal disclosures remain the owning domains' obligations; the projection alone does not perform those effects.
+4. Registered API/worker acceptance, domain permission and policy-change tests on the integrated LLM head, plus full exact-head CI and maintainer acceptance, are still required. AGT-022 and HUBC-007 dependencies stay closed. There is no UI in this repair.
 
 ## Verification
 
-Run one test process at a time:
-
-```sh
-node --import tsx --test --test-concurrency=1 tests/contracts/jurisdiction.test.ts tests/hubs/jurisdiction/policy.test.ts
-TRUSTWORK_TEST_PG_BACKEND=embedded TRUSTWORK_REQUIRE_PG=1 node --import tsx --test --test-concurrency=1 tests/hubs/jurisdiction/storage.test.ts
-npx tsc --noEmit -p tsconfig.json
-npx eslint packages/contracts/src/jurisdiction.ts apps/api/src/modules/hubs/jurisdiction tests/contracts/jurisdiction.test.ts tests/hubs/jurisdiction
-npm run validate:docs
-node scripts/work-packages.mjs validate
-```
-
-No interface changes: seven-locale coverage is exercised as configuration data. Browser builds, screenshots and a live-UI claim are not applicable. Full local `npm run check` is prohibited by the conductor's load rule; CI remains pending until verified on the exact PR head.
+`tests/hubs/jurisdiction` uses embedded PostgreSQL with restricted API and worker logins, real hub/legal/approval commands, real projects/RFQs/invitations/quotes, confirmed mandates and durable intents. Fixtures are explicitly synthetic and establish no country's legal readiness. Source, approval and language races observe actual waiting database transactions. The module access inventory and schema mirror are registered without editing shared inline lists. Exact commands, counts and head are recorded in draft PR #405 and the conductor result report.

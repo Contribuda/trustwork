@@ -302,7 +302,9 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     const functions = (await db.admin.query<{ proname: string; prosrc: string }>("SELECT p.proname, p.prosrc FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'trustwork'")).rows;
     // KEYS-001 reads the residency domain only to narrow egress (private data stays in the hub's residency countries);
     // it grants nothing and is no access function.
-    const narrowingReaders = new Set(['providers_residency']);
+    // HUB-005 validates activation and restricts a quote action after checking its actual party; none of these
+    // helpers changes an RLS policy or grants private-data access (negative evidence: tests/hubs/jurisdiction).
+    const narrowingReaders = new Set(['providers_residency', 'jurisdiction_config_guard', 'jurisdiction_language_guard', 'jurisdiction_resolve_quote', 'jurisdiction_preflight']);
     for (const fn of functions) if (!fn.proname.startsWith('hubs_') && !narrowingReaders.has(fn.proname)) assert.doesNotMatch(fn.prosrc, configTables, fn.proname);
 
     // Private rows visible to hub staff and to a participant are the same before and after configuring every domain.

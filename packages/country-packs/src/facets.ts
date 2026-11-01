@@ -1,3 +1,4 @@
+import { JurisdictionSourceSchema } from '../../contracts/src/jurisdiction.js';
 import { z } from 'zod';
 import { CatalogueUnitCodeSchema, DecimalSchema, MoneySchema, PROVIDER_CAPABILITIES } from '@trustwork/contracts/client';
 
@@ -290,6 +291,7 @@ export const SanctionsFactSchema = fact({
  * counsel review: `verification: official` is accepted only with `counselReview: done`.
  */
 export const AgentLawFactSchema = fact({
+  executable: JurisdictionSourceSchema.optional(),
   topic: z.enum(['disclosure', 'liability', 'consent', 'record-keeping', 'action-limit', 'other']),
   summary: FactText,
   wording: LocalizedText.optional(),

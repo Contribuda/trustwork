@@ -2448,7 +2448,7 @@
       "id": "HUB-005",
       "title": "Jurisdiction settings: agent disclosure, liability, consent, record-keeping and per-action limits",
       "area": "hubs",
-      "status": "blocked",
+      "status": "in_progress",
       "dependsOn": [
         "HUB-001",
         "CTRY-002"

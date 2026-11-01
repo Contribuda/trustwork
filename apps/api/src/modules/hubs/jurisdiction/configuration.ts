@@ -1,9 +1,10 @@
 import { z } from 'zod';
-import { JurisdictionAgentSettingsSchema, jurisdictionOverrideProblems } from '../../../../../../packages/contracts/src/jurisdiction.js';
+import { ExecutableJurisdictionPayloadSchema, JurisdictionAgentSettingsSchema, jurisdictionOverrideProblems } from '../../../../../../packages/contracts/src/jurisdiction.js';
 import { AddedRestrictedPlaceSchema } from '../../../../../../packages/contracts/src/hub-core.js';
 import type { Transaction } from '../../../deps/data.js';
 import { ApiError } from '../../../common/errors.js';
 import { hubConfig, hubs, type CommandContext } from '../deps.js';
+import { jurisdictionAuthority } from '../../../../../../packages/data/src/repositories/jurisdiction-policy.js';
 import { RepositoryJurisdictionPacks, type JurisdictionPackSource } from './pack-source.js';
 
 /** Preserve HUB-001's add-only restrictions in the same domain version. No opaque policy passthrough here. */
@@ -13,15 +14,15 @@ export const JurisdictionPayloadSchema = z.strictObject({
 });
 
 /**
- * Draft storage and read-only preflight, under the existing principal transaction and RLS. No activation method:
- * activation needs database enforcement (including concurrent hub-language changes) and runtime integration first.
+ * Draft storage and read-only preflight under the existing principal transaction and RLS. Activation uses the
+ * existing hubConfig.activate command; additive database triggers enforce ADR022 for every writer.
  * Preflight is diagnostic evidence, not an authorization token. No public or participant projection is exposed.
  */
 export class JurisdictionConfiguration {
   constructor(private readonly source: JurisdictionPackSource = new RepositoryJurisdictionPacks()) {}
 
   async draft(trx: Transaction, cmd: CommandContext, hubId: string, input: unknown) {
-    const payload = JurisdictionPayloadSchema.parse(input);
+    const payload = z.union([ExecutableJurisdictionPayloadSchema, JurisdictionPayloadSchema]).parse(input);
     return hubConfig.draft(trx, cmd, hubId, 'jurisdiction', payload);
   }
 
@@ -30,8 +31,9 @@ export class JurisdictionConfiguration {
     if (!version || version.hub_id !== hubId || version.domain !== 'jurisdiction') throw new ApiError('access.not_found', 'access.not_found');
     const profile = await hubs.profile(trx, hubId);
     if (!profile) throw new ApiError('access.not_found', 'access.not_found');
+    if (ExecutableJurisdictionPayloadSchema.safeParse(version.payload).success) return jurisdictionAuthority.preflight(trx, versionId);
     const payload = JurisdictionPayloadSchema.parse(version.payload);
-    const problems: string[] = ['database_activation_guard_missing', 'runtime_jurisdiction_binding_missing'];
+    const problems: string[] = ['legacy_policy_not_executable', 'registered_runtime_integration_pending'];
     const inspections = payload.agentSettings.jurisdictions.map((setting) => {
       for (const locale of profile.locales) {
         if (!setting.policy.disclosureTextKeys[locale]) problems.push(`disclosure_locale_missing:${locale}`);

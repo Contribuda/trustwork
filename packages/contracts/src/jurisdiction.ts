@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AddedRestrictedPlaceSchema } from './hub-core.js';
 import { MandateActionV2Schema } from './agent-catalog.js';
 import { NonNegativeMoneySchema, type Money } from './common/money.js';
 import { JurisdictionCodeSchema, JurisdictionSettingAreaSchema, LocaleTagSchema, PackFactRefSchema } from './hub.js';
@@ -178,3 +179,67 @@ export function evaluateJurisdictionAction(resolution: JurisdictionResolution, a
   return { effect: 'allow', reasons: [] };
 }
 
+
+/** ADR 022: reviewed machine-readable rules are separate from prose facts. Empty requirements are explicit. */
+export const JurisdictionSourceSchema = z.strictObject({
+  schemaVersion: z.literal(2),
+  jurisdiction: JurisdictionCodeSchema,
+  ancestors: z.array(JurisdictionCodeSchema).max(12).refine(unique),
+  version: z.string().min(1).max(100),
+  effectiveFrom: z.iso.datetime(),
+  effectiveUntil: z.iso.datetime().nullable(),
+  verification: z.literal('official'),
+  counsel: z.strictObject({ status: z.literal('reviewed'), reviewId: Key, evidenceDigest: z.string().regex(/^[a-f0-9]{64}$/), reviewedAt: z.iso.datetime() }),
+  provenance: z.array(z.strictObject({
+    packCode: z.string().regex(/^[A-Z][A-Z0-9-]{1,15}$/), packVersion: z.string().min(1).max(100), factKey: Key,
+    url: z.url(), accessed: z.iso.date(), contentDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  })).min(1).max(100),
+  mandatoryAreas: z.array(JurisdictionSettingAreaSchema).refine(unique),
+  advisoryAreas: z.array(JurisdictionSettingAreaSchema).refine(unique),
+  policy: JurisdictionPolicySchema,
+}).superRefine((s, ctx) => {
+  const areas = [...s.mandatoryAreas, ...s.advisoryAreas];
+  if (!unique(areas) || areas.length !== JurisdictionSettingAreaSchema.options.length) ctx.addIssue({ code: 'custom', message: 'each area explicitly mandatory or advisory' });
+  if (s.ancestors.includes(s.jurisdiction)) ctx.addIssue({ code: 'custom', message: 'self ancestor' });
+  if (s.effectiveUntil !== null && s.effectiveUntil <= s.effectiveFrom) ctx.addIssue({ code: 'custom', message: 'empty effective interval' });
+});
+export type JurisdictionSource = z.infer<typeof JurisdictionSourceSchema>;
+export const JurisdictionLegalBindingSchema = z.strictObject({
+  key: Key, locale: LocaleTagSchema, documentId: z.uuid(), bodyDigest: z.string().regex(/^[a-f0-9]{64}$/), counselApprovalId: z.uuid(),
+});
+export const ExecutableJurisdictionPayloadSchema = z.strictObject({
+  // HUB-001 still checks the add-only restricted places in this domain.
+  addedRestrictedPlaces: z.array(AddedRestrictedPlaceSchema).max(200).optional(),
+  agentSettings: z.strictObject({
+    schemaVersion: z.literal(2),
+    jurisdictions: z.array(z.strictObject({
+      jurisdiction: JurisdictionCodeSchema,
+      sourceId: z.uuid(), sourceRevision: z.int().min(1), sourceDigest: z.string().regex(/^[a-f0-9]{64}$/),
+      policy: JurisdictionPolicySchema,
+      legalBindings: z.array(JurisdictionLegalBindingSchema).min(1).max(500)
+        .refine((v) => unique(v.map((r) => `${r.locale}:${r.key}`)), 'duplicate legal binding'),
+    })).min(1).max(100).refine((v) => unique(v.map((s) => s.jurisdiction)), 'duplicate jurisdiction'),
+  }),
+});
+export type ExecutableJurisdictionPayload = z.infer<typeof ExecutableJurisdictionPayloadSchema>;
+
+/** Reviewed domain attestations; not location inference or a participant command. The owner-module port is trusted. */
+export const JurisdictionApplicabilitySchema = z.strictObject({
+  subjectKind: z.enum(['person', 'company', 'project']), subjectId: z.uuid(), hubId: z.uuid(),
+  jurisdictions: z.array(JurisdictionCodeSchema).min(1).max(20).refine(unique),
+  evidenceId: Key, evidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  effectiveFrom: z.iso.datetime(), effectiveUntil: z.iso.datetime(),
+}).refine((v) => v.effectiveUntil > v.effectiveFrom, 'empty applicability interval');
+
+/** Deliberately omits party identities, locations, source documents, counsel identities and full configuration. */
+export const JurisdictionLimitsSchema = z.strictObject({
+  status: z.enum(['resolved', 'unknown']), reasons: z.array(z.string()),
+  bindingDigest: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  versions: z.array(z.strictObject({ id: z.uuid(), digest: z.string().regex(/^[a-f0-9]{64}$/) })),
+  hubId: z.uuid().nullable(),
+  approval: JurisdictionApprovalSchema,
+  approvalAbove: z.array(NonNegativeMoneySchema),
+  consentRequirements: z.array(Key), recordKeeping: z.array(JurisdictionRecordRuleSchema),
+  liabilityAllocationKey: Key.nullable(),
+});
+export type JurisdictionLimits = z.infer<typeof JurisdictionLimitsSchema>;
