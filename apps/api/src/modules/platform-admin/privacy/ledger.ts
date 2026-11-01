@@ -3,7 +3,7 @@ import { mkdir, open, readFile, readdir, rename, rmdir, realpath } from 'node:fs
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { z } from 'zod';
 import type pg from 'pg';
-import { PrivacyPropagationSchema, PrivacyTombstoneSchema, type PrivacyTombstone } from '../../../../../../packages/contracts/src/privacy.js';
+import { PrivacyPropagationSchema, PrivacyRetainedDecisionSchema, type PrivacyRetainedDecision } from '../../../../../../packages/contracts/src/privacy.js';
 
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
 const EMPTY = '0'.repeat(64);
@@ -11,9 +11,9 @@ const Digest = z.string().regex(/^[a-f0-9]{64}$/);
 const Checkpoint = z.strictObject({ version: z.literal(1), journalId: z.uuid(), sequence: z.int().nonnegative(),
   head: Digest, sealed: z.boolean() });
 const Entry = z.strictObject({ version: z.literal(1), journalId: z.uuid(), sequence: z.int().positive(),
-  previous: Digest, record: PrivacyTombstoneSchema });
+  previous: Digest, record: PrivacyRetainedDecisionSchema });
 export type PrivacyJournalCheckpoint = z.infer<typeof Checkpoint>;
-export interface PrivacyLedgerEntry { record: PrivacyTombstone; digest: string }
+export interface PrivacyLedgerEntry { record: PrivacyRetainedDecision; digest: string }
 export type LocalJournalStep = 'entry_synced' | 'checkpoint_synced' | 'restore_sealed';
 export interface RetainedPrivacyAuthority {
   directory: string;
@@ -106,12 +106,12 @@ export class PrivacyErasureLedger {
   async all(): Promise<PrivacyLedgerEntry[]> {
     return this.exclusive(async () => (await this.verify()).entries);
   }
-  async record(input: PrivacyTombstone): Promise<void> {
+  async record(input: PrivacyRetainedDecision): Promise<void> {
     await this.withDecision(input, async () => undefined);
   }
   /** Local owning executor boundary: journal/checkpoint first, then DB commit, retaining the lock on any uncertainty. */
-  async withDecision<T>(input: PrivacyTombstone, operation: (entry: PrivacyLedgerEntry) => Promise<T>): Promise<T> {
-    const record = PrivacyTombstoneSchema.parse(input);
+  async withDecision<T>(input: PrivacyRetainedDecision, operation: (entry: PrivacyLedgerEntry) => Promise<T>): Promise<T> {
+    const record = PrivacyRetainedDecisionSchema.parse(input);
     return this.exclusive(async () => {
       const { checkpoint, entries } = await this.verify();
       if (checkpoint.sealed) throw new Error('privacy journal sealed for restore; live erasure executor unavailable');
@@ -167,9 +167,13 @@ export async function provisionLocalPrivacyJournal(binding: LocalJournalBinding)
  */
 export async function replayPrivacyLedger(client: pg.PoolClient, entries: readonly PrivacyLedgerEntry[]): Promise<number> {
   for (const { record } of entries) {
-    if (record.modules.some((m) => m !== 'privacy')) throw new Error('privacy replay adapter unavailable; restore must remain fenced');
+    if (record.version === 1 && record.modules.some((m) => m !== 'privacy')) throw new Error('privacy replay adapter unavailable; restore must remain fenced');
   }
   for (const { record, digest: hash } of entries) {
+    if (record.version === 2) {
+      await client.query('SELECT trustwork.sources_replay_privacy_erasure($1::jsonb,$2)', [JSON.stringify(record), hash]);
+      continue;
+    }
     await client.query('SELECT trustwork.privacy_lock_subject($1, $2::uuid)', [record.subject.kind, record.subject.id]);
     const held = await client.query('SELECT id FROM trustwork.legal_hold WHERE subject_kind=$1 AND subject_id=$2 AND released_at IS NULL', [record.subject.kind, record.subject.id]);
     if (held.rowCount) throw new Error('privacy restore decision conflicts with a retained legal hold');

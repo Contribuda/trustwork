@@ -4,6 +4,23 @@ import type { LegalHoldRow, PrivacyExportRow, PrivacyPreferenceRow, PrivacyReque
 import type { CommandContext } from './admin.js';
 
 export const privacy = {
+  async proposeSourcePlan(trx: Transaction, ctx: CommandContext, requestId: string, grantId: string): Promise<{ id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> }> {
+    return (await sql<{ result: { id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> } }>`SELECT trustwork.privacy_source_plan_propose(${JSON.stringify(ctx)}::jsonb,${requestId}::uuid,${grantId}::uuid) AS result`.execute(trx)).rows[0]!.result;
+  },
+  async approveSourcePlan(trx: Transaction, ctx: CommandContext, id: string, grantId: string, digest: string) {
+    await sql`SELECT trustwork.privacy_source_plan_approve(${JSON.stringify(ctx)}::jsonb,${id}::uuid,${grantId}::uuid,${digest})`.execute(trx);
+    return { approved: true };
+  },
+  async executeSourcePlan(trx: Transaction, ctx: CommandContext, id: string, digest: string): Promise<{ status: 'applied' | 'blocked'; complete: false; reason?: string }> {
+    return (await sql<{ result: { status: 'applied' | 'blocked'; complete: false; reason?: string } }>`SELECT trustwork.privacy_source_plan_execute(${JSON.stringify(ctx)}::jsonb,${id}::uuid,${digest}) AS result`.execute(trx)).rows[0]!.result;
+  },
+  async sourceHold(trx: Transaction, ctx: CommandContext, fieldId: string, grantId: string, reason: string, evidenceRef: string) {
+    return (await sql<{ id: string }>`SELECT trustwork.privacy_source_hold_place(${JSON.stringify(ctx)}::jsonb,${fieldId}::uuid,${grantId}::uuid,${reason},${evidenceRef}::uuid) AS id`.execute(trx)).rows[0]!;
+  },
+  async externalSourceCase(trx: Transaction, ctx: CommandContext, input: { hubId: string; sourceFieldId: string; action: string; proposedValue: string | null; country: string; method: string; evidenceDigest: string }): Promise<{ caseId: string; evidenceRef: string; subjectId: string }> {
+    return (await sql<{ result: { caseId: string; evidenceRef: string; subjectId: string } }>`SELECT trustwork.support_open_external_source_case(${JSON.stringify(ctx)}::jsonb,
+      ${input.hubId}::uuid, ${input.sourceFieldId}::uuid, ${input.action}, ${input.proposedValue}, ${input.country}, ${input.method}, ${input.evidenceDigest}) AS result`.execute(trx)).rows[0]!.result;
+  },
   async proposePlan(trx: Transaction, ctx: CommandContext, requestId: string, grantId: string): Promise<{ id: string; digest: string; approvalId: string; state: 'proposed'; snapshot: Record<string, unknown> }> {
     return (await sql<{ result: { id: string; digest: string; approvalId: string; state: 'proposed'; snapshot: Record<string, unknown> } }>`SELECT trustwork.privacy_plan_propose(${JSON.stringify(ctx)}::jsonb, ${requestId}::uuid, ${grantId}::uuid) AS result`.execute(trx)).rows[0]!.result;
   },

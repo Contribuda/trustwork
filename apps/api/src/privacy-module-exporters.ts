@@ -45,9 +45,7 @@ import type { PrivacySubject } from '../../../packages/contracts/src/privacy.js'
 export interface PrivacyOwningPorts {
   compliance(principals: PrincipalService, state: RequestState, subject: PrivacySubject): Promise<unknown>;
   support(principals: PrincipalService): {
-    ownCase(state: RequestState, id: string): Promise<unknown>;
-    ownActions(state: RequestState): Promise<unknown>;
-    ownAccessRecords(state: RequestState): Promise<unknown>;
+    privacyExport(state: RequestState): Promise<unknown>;
   };
 }
 
@@ -68,10 +66,7 @@ export async function composeModuleExports(input: {
     if (!person) throw new Error('export subject disappeared');
     data.identity = { sessions: (await sessions.listForPerson(trx, subject.id)).map((row) => toSessionView(toSession(row))), person: toPerson(person, await emailBindings.listForPerson(trx, subject.id), await credentials.listForPerson(trx, subject.id)),
       memberships: (await trx.selectFrom('membership').selectAll().where('person_id', '=', subject.id).orderBy('created_at').execute()).map(toMembership) };
-    const support = owningPorts.support(principals);
-    // The UI's ownCases list is bounded at 200. Enumerate all ids, then use its owning projection for each.
-    const cases = await trx.selectFrom('support_case').select('id').where('requester_person_id', '=', subject.id).orderBy('id').execute();
-    data.support = { cases: await each(cases, (r) => support.ownCase(state, r.id)), actions: await support.ownActions(state), access: await support.ownAccessRecords(state) };
+    data.support = await owningPorts.support(principals).privacyExport(state);
   } else {
     data.companyMemberships = (await memberships.listForCompany(trx, subject.id)).map(toMembership);
   }
@@ -90,7 +85,7 @@ export async function composeModuleExports(input: {
       if (r.scan_state !== 'clean') return { metadata, binaryStatus: 'scan_unavailable' };
       if (fileOptions.store!.kind !== 'filesystem') return { metadata, binaryStatus: 'external_storage_adapter_required' };
       const size = Number(r.bytes);
-      if (!Number.isSafeInteger(size) || size < 0 || size > 16 * 1024 * 1024 || size > remainingBytes) return { metadata, binaryStatus: 'streaming_export_required' };
+      if (!Number.isSafeInteger(size) || size < 0 || size > 16 * 1024 * 1024 || size > remainingBytes) return { metadata, binaryStatus: fileOptions.store!.stream ? 'authenticated_stream_available' : 'streaming_adapter_unavailable', streamFileId: r.id };
       const bytes = await fileOptions.store!.read(r.storage_key, size);
       if (!bytes || bytes.length !== size || createHash('sha256').update(bytes).digest('hex') !== r.sha256) throw new Error('privacy file digest verification failed');
       remainingBytes -= size;
@@ -130,17 +125,16 @@ export async function composeModuleExports(input: {
   const reputation = new ReputationService(ctx, principals, { hubId: null, register: { code: 'unavailable', lookup: async () => { throw new Error('export cannot call a credential register'); } } });
   data.reputation = { own: await reputation.own(subject, state), confirmations: await reputation.inbox(subject, state) };
   const tasks = new TasksService(ctx, principals, new NoTaskMandates(), new ConfiguredElectronicRecords());
-  const requests = subject.kind === 'person' ? await tasks.listRequests(state) : { requests: [] }; const offers = await tasks.listOffers(state);
   const assignments = agreementIds.length ? await trx.selectFrom('task_assignment').select('id').where('agreement_id', 'in', agreementIds).orderBy('id').execute() : [];
   data.tasks = {
-    requests: await each(requests.requests, (r) => tasks.getRequest(r.id, state)), offers: await each(offers.offers.filter((r) => r.offeror.kind === subject.kind && r.offeror.id === subject.id), (r) => tasks.getOffer(r.offerId, state)),
-    assignments: await each(assignments, (r) => tasks.getAssignment(r.id, state)), invitations: subject.kind === 'person' ? await tasks.listInvitations(state) : { invitations: [] },
+    ...await tasks.privacyExport(state, subject),
+    assignments: await each(assignments, (r) => tasks.getAssignment(r.id, state)),
   };
   const comms = new CommunicationsService(ctx, principals, new NoCommsMandates(), { providers: [], send: async () => { throw new Error('export cannot dispatch'); } }, communicationsSettingsFromEnv());
   // A person export excludes an employer's threads. RLS plus the owning thread service enforce current participation.
   const contexts = [...projectIds, ...agreementIds];
   const threadRows = contexts.length ? await trx.selectFrom('context_thread').select('id').where('context_id', 'in', contexts).orderBy('id').execute() : [];
-  const communications: Record<string, unknown> = { threads: await each(threadRows, (r) => comms.getThread(r.id, state)) };
+  const communications: Record<string, unknown> = { threads: await each(threadRows, (r) => comms.privacyThread(r.id, state)) };
   if (subject.kind === 'person') {
     const notifications: unknown[] = []; let cursor: string | undefined;
     do {

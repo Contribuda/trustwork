@@ -1,3 +1,4 @@
+import { createReadStream } from 'node:fs';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -137,6 +138,12 @@ export class FilesystemBlobStore implements BlobStore {
     if (!head) return null;
     if (head.bytes > maxBytes) throw new BlobTooLargeError(maxBytes);
     return new Uint8Array(await readFile(this.path(key)));
+  }
+
+  async *stream(key: string, signal?: AbortSignal): AsyncIterable<Uint8Array> {
+    this.operations.push({ op: 'stream', key });
+    const input = createReadStream(this.path(key), { highWaterMark: 64 * 1024, ...(signal ? { signal } : {}) });
+    for await (const chunk of input) yield chunk as Buffer;
   }
 
   async put(key: string, body: Uint8Array): Promise<void> {

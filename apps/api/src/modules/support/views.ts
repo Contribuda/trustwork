@@ -28,7 +28,7 @@ export function toAccountCard(json: AccountCardJson): SupportAccountCard {
 
 export const caseView = (r: SupportCaseRow) => ({
   id: r.id, number: Number(r.number), hubId: r.hub_id, requesterPersonId: r.requester_person_id, openedBy: r.opened_by,
-  subject: r.subject_person_id ? { kind: 'person' as const, id: r.subject_person_id } : { kind: 'company' as const, id: r.subject_company_id as string },
+  subject: r.external_source_subject_id ? { kind: 'external_source' as const, id: r.external_source_subject_id } : r.subject_person_id ? { kind: 'person' as const, id: r.subject_person_id } : { kind: 'company' as const, id: r.subject_company_id as string },
   category: r.category, summary: r.summary, status: r.status, urgency: r.priority, assignedTo: r.assigned_to, openedAt: isoOf(r.opened_at), resolvedAt: iso(r.resolved_at),
   closedAt: iso(r.closed_at), resolutionCode: r.resolution_code, revision: r.revision,
 });

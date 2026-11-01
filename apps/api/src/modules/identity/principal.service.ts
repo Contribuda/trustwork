@@ -109,7 +109,7 @@ export class PrincipalService {
    * Runs `fn` as the request principal. A stale epoch (authority changed since resolution) re-resolves the principal
    * from the same session once and retries; a second failure surfaces as a conflict.
    */
-  async runAs<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>): Promise<T> {
+  async runAs<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>, options?: { snapshot: true }): Promise<T> {
     if (!state.principal || !state.session) throw new ApiError('auth.session_invalid', 'authentication required');
     const principal = state.principal;
     // An idempotent request completes its idempotency record in this same transaction (BE-005, ADR 012 decision 39).
@@ -119,11 +119,11 @@ export class PrincipalService {
       return result;
     };
     try {
-      return await withPrincipal(this.ctx.pool, { personId: principal.personId, authzEpoch: principal.authzEpoch }, (trx) => run(trx, principal));
+      return await withPrincipal(this.ctx.pool, { personId: principal.personId, authzEpoch: principal.authzEpoch }, (trx) => run(trx, principal), options);
     } catch (error) {
       if (!(error instanceof PrincipalError) || error.code !== 'access.stale_epoch') throw error;
       const fresh = await this.refresh(state);
-      return withPrincipal(this.ctx.pool, { personId: fresh.personId, authzEpoch: fresh.authzEpoch }, (trx) => run(trx, fresh));
+      return withPrincipal(this.ctx.pool, { personId: fresh.personId, authzEpoch: fresh.authzEpoch }, (trx) => run(trx, fresh), options);
     }
   }
 

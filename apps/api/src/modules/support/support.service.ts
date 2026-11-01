@@ -129,7 +129,7 @@ export class SupportService {
   /** Cases row-level security shows the staff member at their hubs, except their own requests. */
   cases(state: RequestState, status: SupportCaseRow['status'] | undefined) {
     return this.participant(state, async (trx, p) => {
-      let query = trx.selectFrom('support_case').selectAll().where('requester_person_id', '<>', p.personId);
+      let query = trx.selectFrom('support_case').selectAll().where((eb) => eb.or([eb('requester_person_id', '<>', p.personId), eb('requester_person_id', 'is', null)]));
       if (status) query = query.where('status', '=', status);
       return { cases: (await query.orderBy('opened_at', 'desc').limit(200).execute()).map(caseView) };
     });
@@ -272,6 +272,25 @@ export class SupportService {
     return this.participant(state, async (trx, p) => ({
       cases: (await trx.selectFrom('support_case').selectAll().where('requester_person_id', '=', p.personId).orderBy('opened_at', 'desc').limit(200).execute()).map(ownCaseView),
     }));
+  }
+
+  /** All requester-visible history through the existing projections; never internal notes or staff identities. */
+  privacyExport(state: RequestState) {
+    return this.participant(state, async (trx, p) => {
+      const cases = [];
+      const rows = await trx.selectFrom('support_case').selectAll().where('requester_person_id', '=', p.personId).orderBy('id').execute();
+      for (const row of rows) {
+        const notes = (await supportCases.notes(trx, row.id)).filter((n) => n.visibility === 'requester');
+        const diagnostics = await diagnosticSnapshots.forCase(trx, row.id);
+        cases.push({ case: ownCaseView(row), notes: notes.map((n) => ownNoteView(n, p.personId)), diagnostics: diagnostics.map(snapshotView) });
+      }
+      const actions = [];
+      for (const row of await serviceActions.exportForSubject(trx, p.personId)) {
+        actions.push(ownActionView(row, row.action === 'rebind_recovery_email' ? await serviceActions.maskedEmail(trx, row.id) : null));
+      }
+      const records = (await supportAccess.exportOwn(trx)).map((r) => ({ id: r.id, at: new Date(r.at).toISOString(), kind: r.kind, supportCaseId: r.support_case_id }));
+      return { cases, actions: { actions }, access: { records } };
+    });
   }
 
   ownCase(state: RequestState, id: string) {

@@ -9,6 +9,8 @@ import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
 import { addLogins, signIn } from '../admin/helpers.js';
 import { seedFixtures, principalFor } from '../data/helpers/seed.js';
 import { FilesystemBlobStore } from '../../packages/data/src/files/filesystem.js';
+import { files } from '../../packages/data/src/repositories/files.js';
+import { gate, waitFor } from '../worker/helpers/worker-db.js';
 import { privacy } from '../../packages/data/src/repositories/privacy.js';
 import { PrivacyPolicySchema, PrivacyTombstoneSchema } from '../../packages/contracts/src/privacy.js';
 import type pg from 'pg';
@@ -179,6 +181,42 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     await store.put(own.key, Buffer.from('corrupt'));
     assert.equal((await petr.get(`/v1/privacy/exports/${id}`)).status, 500, 'corrupt content cannot be delivered as a successful archive');
     await store.put(own.key, own.body);
+  });
+  await t.test('files beyond the inline limit stream verified bytes with current authority and bounded chunks', async () => {
+    const body = Buffer.alloc(17 * 1024 * 1024 + 3, 65); const key = `synthetic-files/${randomUUID()}`;
+    await store.put(key, body);
+    const file = await withMaintenance(h.db.admin, (trx) => trx.insertInto('evidence_artifact').values({ owner_person_id: subject.id, parent_kind: 'person', parent_id: subject.id,
+      classification: 'owner_private', storage_key: key, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.length, media_type: 'text/plain', scan_state: 'clean', uploaded_by: subject.id }).returning('id').executeTakeFirstOrThrow());
+    const created = await petr.post('/v1/privacy/exports', { subject });
+    const id = (created.body as { export: { id: string } }).export.id;
+    const metadata = await petr.get(`/v1/privacy/exports/${id}`);
+    assert.equal(metadata.status, 200);
+    assert.ok(JSON.stringify(metadata.body).includes('authenticated_stream_available'));
+    assert.ok(!JSON.stringify(metadata.body).includes(key));
+    const url = `/v1/privacy/exports/${id}/files/${file.id}`;
+    assert.equal((await boris.get(url)).status, 404);
+    assert.equal((await h.client().get(url)).status, 401);
+    const read = store.stream.bind(store); let maxChunk = 0;
+    const entered = gate(); const release = gate();
+    store.stream = async function* (storageKey: string) {
+      for await (const chunk of read(storageKey)) {
+        maxChunk = Math.max(maxChunk, chunk.length);
+        if (storageKey === key) { entered.open(); await release.promise; }
+        yield chunk;
+      }
+    };
+    const downloading = petr.get(url);
+    await entered.promise;
+    const deletion = withPrincipal(h.pool, await principalFor(h.db.admin, subject.id), (trx) => files.requestDeletion(trx, file.id));
+    try {
+      await waitFor(async () => (await h.db.admin.query("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%files_request_deletion%') AS blocked")).rows[0].blocked,
+        5000, 'owning file deletion waits through verified download');
+    } finally { release.open(); }
+    const result = await downloading; await deletion; store.stream = read;
+    assert.equal(result.status, 200); assert.equal(Buffer.byteLength(result.body as string), body.length);
+    assert.equal(createHash('sha256').update(result.body as string).digest('hex'), createHash('sha256').update(body).digest('hex'));
+    assert.ok(maxChunk <= 64 * 1024); assert.equal(result.headers['cache-control'], 'no-store');
+    assert.equal((await petr.get(url)).status, 404, 'current deletion authority checked on every stream download');
   });
   await t.test('own publication drafts export through CNT projections without a counterparty draft', async () => {
     await buildAdminWorld(h.db.admin);

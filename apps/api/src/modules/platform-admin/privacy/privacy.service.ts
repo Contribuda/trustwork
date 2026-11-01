@@ -1,3 +1,4 @@
+import type { Readable } from 'node:stream';
 import { createHash } from 'node:crypto';
 import type { z } from 'zod';
 import { ApiError } from '../../../common/errors.js';
@@ -9,7 +10,7 @@ import type { IdentityServices } from '../../identity/identity.module.js';
 import type { CommandContext } from '../../../../../../packages/data/src/repositories/admin.js';
 import { privacy } from '../../../../../../packages/data/src/repositories/privacy.js';
 import type { BlobStore } from '../../../../../../packages/data/src/files/blob-store.js';
-import type { PrivacyHoldCommandSchema, PrivacyPreferenceCommand, PrivacyRequestCommand, PrivacySubject, PrivacySourceProofSchema, PrivacySourceSubmissionSchema } from '../../../../../../packages/contracts/src/privacy.js';
+import type { PrivacyHoldCommandSchema, PrivacyPreferenceCommand, PrivacyRequestCommand, PrivacySubject, PrivacySourceProofSchema, PrivacySourceSubmissionSchema, PrivacyExternalSourceCaseSchema } from '../../../../../../packages/contracts/src/privacy.js';
 import type { PrivacyExportPort } from './ports.js';
 import { mailAddressHash } from '../../../../../../packages/data/src/repositories/mail.js';
 
@@ -27,12 +28,24 @@ export class PrivacyService {
     await this.ctx.pool.query('SELECT trustwork.privacy_marketing_object($1::text)', [mailAddressHash(address)]);
     return { accepted: true };
   }
+  externalSourceCase(state: RequestState, elevationId: string, input: z.infer<typeof PrivacyExternalSourceCaseSchema>) {
+    return this.run(state, (trx) => privacy.externalSourceCase(trx, this.staffContext(state, elevationId, 'external_source_verification'), input));
+  }
   sourceProof(state: RequestState, elevationId: string, input: z.infer<typeof PrivacySourceProofSchema>) {
     return this.run(state, async (trx) => {
       // The verifying client retains the random capability; neither audit nor idempotency stores its plaintext.
       const id = await privacy.sourceProof(trx, this.staffContext(state, elevationId, 'source_identity_verification'), input);
       return { id };
     });
+  }
+  proposeSourcePlan(state: RequestState, elevationId: string, requestId: string, grantId: string) {
+    return this.run(state, (trx) => privacy.proposeSourcePlan(trx, this.staffContext(state, elevationId, 'privacy_source_plan'), requestId, grantId));
+  }
+  approveSourcePlan(state: RequestState, elevationId: string, id: string, grantId: string, digest: string) {
+    return this.run(state, (trx) => privacy.approveSourcePlan(trx, this.staffContext(state, elevationId, 'privacy_source_review'), id, grantId, digest));
+  }
+  executeSourcePlan(state: RequestState, elevationId: string, id: string, digest: string) {
+    return this.run(state, (trx) => privacy.executeSourcePlan(trx, this.staffContext(state, elevationId, 'privacy_source_execute'), id, digest));
   }
   proposePlan(state: RequestState, elevationId: string, requestId: string, grantId: string) {
     return this.run(state, (trx) => privacy.proposePlan(trx, this.staffContext(state, elevationId, 'privacy_plan_propose'), requestId, grantId));
@@ -47,9 +60,9 @@ export class PrivacyService {
     await this.ctx.pool.query('SELECT trustwork.privacy_source_submit($1, $2, $3)', [createHash('sha256').update(input.proof).digest('hex'), input.action, input.proposedValue]);
     return { accepted: true };
   }
-  private run<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>): Promise<T> {
+  private run<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>, options?: { snapshot: true }): Promise<T> {
     if (state.principal?.delegation) throw new ApiError('access.forbidden', 'privacy governance requires the person');
-    return this.identity.principals.runAs(state, fn).catch(refusal);
+    return this.identity.principals.runAs(state, fn, options).catch(refusal);
   }
   request(state: RequestState, input: PrivacyRequestCommand) { return this.run(state, (trx) => privacy.request(trx, input)); }
   requests(state: RequestState) { return this.run(state, async (trx) => ({ requests: await privacy.requests(trx) })); }
@@ -62,15 +75,7 @@ export class PrivacyService {
   download(state: RequestState, id: string) {
     return this.run(state, async (trx, p) => {
       if (!this.store || this.store.kind !== 'filesystem') throw new ApiError('validation.schema', 'local export storage unavailable', { reason: 'storage_unavailable' });
-      const row = await privacy.export(trx, id);
-      if (!row) throw new ApiError('access.not_found');
-      // Revocations bump the person's epoch. Hold the identity row while all module projections are composed.
-      const person = await trx.selectFrom('person').select(['id', 'authz_epoch']).where('id', '=', p.personId).forShare().executeTakeFirst();
-      if (!person || person.authz_epoch !== p.authzEpoch) throw new ApiError('validation.revision_conflict', 'authority changed');
-      if (row.subject_kind === 'company') {
-        await trx.selectFrom('membership').select('id').where('person_id', '=', p.personId).where('company_id', '=', row.subject_id).forShare().execute();
-      }
-      if (!await privacy.authorized(trx, row.subject_kind, row.subject_id)) throw new ApiError('access.not_found');
+      const row = await this.authorizeDownload(trx, p, id);
       const subject = { kind: row.subject_kind, id: row.subject_id };
       const data = await this.exports.compose(trx, p, state, subject);
       data.privacy = {
@@ -91,7 +96,25 @@ export class PrivacyService {
         // The authenticated response is the delivery. No personal export bytes remain as an ungoverned cache.
         await this.store.delete(key);
       }
-    });
+    }, { snapshot: true });
+  }
+  private async authorizeDownload(trx: Transaction, p: Principal, id: string) {
+    const row = await privacy.export(trx, id);
+    if (!row) throw new ApiError('access.not_found');
+    // Revocations bump the person's epoch. Hold the identity row while all module projections are composed.
+    const person = await trx.selectFrom('person').select(['id', 'authz_epoch']).where('id', '=', p.personId).forShare().executeTakeFirst();
+    if (!person || person.authz_epoch !== p.authzEpoch) throw new ApiError('validation.revision_conflict', 'authority changed');
+    if (row.subject_kind === 'company') {
+      await trx.selectFrom('membership').select('id').where('person_id', '=', p.personId).where('company_id', '=', row.subject_id).forShare().execute();
+    }
+    if (!await privacy.authorized(trx, row.subject_kind, row.subject_id)) throw new ApiError('access.not_found');
+    return row;
+  }
+  downloadFile(state: RequestState, id: string, fileId: string, consume: (file: { stream: Readable; bytes: number; sha256: string }) => Promise<void>) {
+    return this.run(state, async (trx, p) => {
+      const row = await this.authorizeDownload(trx, p, id);
+      await this.exports.file(trx, p, state, { kind: row.subject_kind, id: row.subject_id }, fileId, consume);
+    }, { snapshot: true });
   }
   hold(state: RequestState, elevationId: string, input: z.infer<typeof PrivacyHoldCommandSchema>) {
     return this.run(state, (trx) => privacy.hold(trx, this.staffContext(state, elevationId, input.reasonCode), input.requestId, input.reasonCode, input.evidenceRef));

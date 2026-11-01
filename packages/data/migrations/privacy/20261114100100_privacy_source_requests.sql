@@ -63,6 +63,9 @@ BEGIN
   IF NOT FOUND OR NOT v_field.active OR v_field.source_id IS DISTINCT FROM v_source_id OR v_grant.expires_at <= clock_timestamp() THEN
     RAISE EXCEPTION 'record unavailable' USING ERRCODE = '42501', HINT = 'privacy.not_found';
   END IF;
+  IF NOT coalesce(trustwork.support_external_source_matches(v_grant.support_case_id,p_field,p_action,NULL,p_method,v_actor.person_id,p_evidence,false),false) THEN
+    RAISE EXCEPTION 'verified external request mismatch' USING ERRCODE='42501', HINT='privacy.proof_required';
+  END IF;
   INSERT INTO trustwork.privacy_source_proof(token_hash, source_field_id, source_digest, action, grant_id, verified_by, evidence_ref, method, expires_at)
     VALUES(p_token_hash, p_field, trustwork.privacy_source_digest(p_field), p_action, p_grant, v_actor.person_id, p_evidence, p_method, v_grant.expires_at) RETURNING id INTO v_id;
   PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, v_field.hub_id, 'privacy.source_proof_issued', 'privacy_source_proof', v_id, NULL,

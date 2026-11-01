@@ -71,12 +71,36 @@ test('PRV source requests bind real case grants, human evidence, action and sour
     assert.equal((await h.db.admin.query('SELECT count(*)::int n FROM trustwork.privacy_source_request WHERE source_field_id=$1', [f.fieldId])).rows[0].n, 0);
   });
   await t.test('changed source revision invalidates correction authority; no source history is rewritten', async () => {
-    const f = await privacySourceFixture(h, world);
+    const f = await privacySourceFixture(h, world, 3600, 'correction', 'Synthetic corrected value');
     await world.as(world.people.officer, (trx) => privacy.sourceProof(trx, f.ctx, { ...f.body, action: 'correction' }));
     await h.db.admin.query('UPDATE trustwork.source SET revision=revision+1 WHERE id=$1', [f.source.id]);
     assert.equal((await submit(f.proof, 'correction', 'Synthetic corrected value')).status, 202);
     assert.equal((await h.db.admin.query('SELECT count(*)::int n FROM trustwork.privacy_source_request WHERE source_field_id=$1', [f.fieldId])).rows[0].n, 0);
     assert.equal((await h.db.admin.query('SELECT value FROM trustwork.sourced_record_field WHERE id=$1', [f.fieldId])).rows[0].value, f.field.value);
+  });
+  await t.test('external support intake creates no person and binds the exact verified request', async () => {
+    const before = (await h.db.admin.query('SELECT count(*)::int n FROM trustwork.person')).rows[0].n;
+    const f = await privacySourceFixture(h, world, 3600, 'correction', 'Synthetic exact correction');
+    assert.equal((await h.db.admin.query('SELECT count(*)::int n FROM trustwork.person')).rows[0].n, before);
+    const support = (await h.db.admin.query('SELECT * FROM trustwork.support_case WHERE id=$1', [f.support.caseId])).rows[0];
+    assert.equal(support.requester_person_id, null); assert.equal(support.subject_person_id, null); assert.equal(support.subject_company_id, null);
+    assert.equal(support.external_source_subject_id, f.support.subjectId);
+    await assert.rejects(h.pool.query('SELECT * FROM trustwork.support_external_source_subject'), /permission denied/);
+    await assert.rejects(world.as(world.people.subject, (trx) => privacy.externalSourceCase(trx, f.ctx, f.intake)));
+    await assert.rejects(world.as(world.people.officer, (trx) => caseGrants.request(trx, f.ctx, { supportCaseId: f.support.caseId,
+      objectType: 'sourced_record_field', objectIds: [randomUUID()], projectionClass: 'support_private_limited', purpose: 'Synthetic wrong field', expiresInSeconds: 3600 })),
+    (e: { hint?: string }) => e.hint === 'privacy.case_grant_required');
+    await assert.rejects(world.as(world.people.officer, (trx) => privacy.sourceProof(trx, f.ctx, { ...f.body, action: 'erasure' })),
+      (e: { hint?: string }) => e.hint === 'privacy.proof_required');
+    await world.as(world.people.officer, (trx) => privacy.sourceProof(trx, f.ctx, f.body));
+    assert.equal((await submit(f.proof, 'correction', 'Unverified replacement')).status, 202);
+    assert.equal((await h.db.admin.query('SELECT used_at FROM trustwork.privacy_source_proof WHERE token_hash=$1', [f.body.tokenHash])).rows[0].used_at, null);
+    assert.equal((await submit(f.proof, 'correction', 'Synthetic exact correction')).status, 202);
+    assert.equal((await h.db.admin.query('SELECT proposed_value FROM trustwork.privacy_source_request WHERE source_field_id=$1', [f.fieldId])).rows[0].proposed_value, 'Synthetic exact correction');
+    assert.equal((await world.officer.post('/v1/admin/privacy/external-source-cases', { ...f.intake, address: 'arbitrary@example.invalid' })).status, 422);
+    await assert.rejects(h.db.admin.query('UPDATE trustwork.support_case SET requester_person_id=$2 WHERE id=$1', [f.support.caseId, world.people.subject]),
+      (e: { hint?: string }) => e.hint === 'admin.immutable');
+    await assert.rejects(h.db.admin.query("UPDATE trustwork.support_external_source_subject SET action='erasure' WHERE id=$1", [f.support.subjectId]));
   });
   const waitingOn = (pid: number) => waitFor(async () => (await h.db.admin.query(
     'SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND $1=ANY(pg_blocking_pids(pid))) AS waiting', [pid],

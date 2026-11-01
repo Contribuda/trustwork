@@ -81,7 +81,7 @@ export interface AdminAuditEventTable {
   reason_text: string; outcome: AuditOutcome; request_id: string; client_fingerprint_hash: string | null; retention_class: Generated<RetentionClass>;
 }
 export interface SupportCaseTable {
-  id: GeneratedUuid; hub_id: string; number: ColumnType<string, never, never>; requester_person_id: string; opened_by: string; subject_person_id: string | null;
+  id: GeneratedUuid; hub_id: string; number: ColumnType<string, never, never>; requester_person_id: string | null; external_source_subject_id: string | null; opened_by: string; subject_person_id: string | null;
   subject_company_id: string | null; category: string; summary: string; status: Generated<SupportCaseStatus>; priority: Generated<SupportPriority>; assigned_to: string | null;
   opened_at: GeneratedTimestamp; resolved_at: Timestamp | null; closed_at: Timestamp | null; closed_by: string | null; resolution_code: string | null;
   revision: GeneratedInt; updated_at: GeneratedTimestamp;
@@ -135,6 +135,11 @@ export interface KillSwitchTable {
 }
 
 export interface AdminDatabase {
+  support_external_source_subject: {
+    id: GeneratedUuid; source_field_id: string; source_digest: string; action: 'correction' | 'erasure' | 'objection';
+    proposed_value_digest: string; country: string; method: 'signed_statement' | 'record_control' | 'verified_representative';
+    evidence_digest: string; attested_by: string; created_at: GeneratedTimestamp;
+  };
   admin_node: AdminNodeTable;
   staff_role_definition_version: StaffRoleDefinitionVersionTable;
   incident: IncidentTable;
@@ -194,7 +199,8 @@ export const TABLE_COLUMNS: TableColumns<AdminDatabase> = {
   admin_audit_event: columns('admin_audit_event', ['id', 'sequence', 'occurred_at', 'actor_person_id', 'actor_role', 'scope_kind', 'node_id', 'hub_id', 'permission', 'session_elevation_id',
     'breakglass', 'case_id', 'second_approver_person_id', 'approval_id', 'approval_digest', 'action', 'object_type', 'object_id', 'object_revision_before', 'object_revision_after',
     'before_digest', 'after_digest', 'reason_code', 'reason_text', 'outcome', 'request_id', 'client_fingerprint_hash', 'retention_class']),
-  support_case: columns('support_case', ['id', 'hub_id', 'number', 'requester_person_id', 'opened_by', 'subject_person_id', 'subject_company_id', 'category', 'summary', 'status', 'priority',
+  support_external_source_subject: columns('support_external_source_subject', ['id', 'source_field_id', 'source_digest', 'action', 'proposed_value_digest', 'country', 'method', 'evidence_digest', 'attested_by', 'created_at']),
+  support_case: columns('support_case', ['external_source_subject_id', 'id', 'hub_id', 'number', 'requester_person_id', 'opened_by', 'subject_person_id', 'subject_company_id', 'category', 'summary', 'status', 'priority',
     'assigned_to', 'opened_at', 'resolved_at', 'closed_at', 'closed_by', 'resolution_code', 'revision', 'updated_at']),
   support_case_note: columns('support_case_note', ['id', 'support_case_id', 'author_person_id', 'body', 'visibility', 'created_at']),
   case_access_grant: columns('case_access_grant', ['id', 'support_case_id', 'hub_id', 'requested_by', 'requested_at', 'object_type', 'object_ids', 'projection_class', 'excluded_field_classes',

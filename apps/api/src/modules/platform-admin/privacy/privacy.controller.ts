@@ -1,4 +1,6 @@
-import { Controller, Get, Header, HttpCode, Inject, Post, UseGuards } from '@nestjs/common';
+import type { FastifyReply } from 'fastify';
+import { finished } from 'node:stream/promises';
+import { Controller, Get, Header, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
 import type { z } from 'zod';
 import { Authenticated, Idempotent, ReqState, type RequestState } from '../../../common/request.js';
 import { Body, Params } from '../../../common/zod.js';
@@ -6,7 +8,7 @@ import { Elevation, ElevationGuard } from '../../identity/second-factor/elevatio
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
   PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema, PrivacyMarketingObjectionSchema, PrivacySourceProofSchema, PrivacySourceSubmissionSchema,
-  PrivacyPlanProposeSchema, PrivacyPlanApproveSchema, PrivacyPlanExecuteSchema,
+  PrivacyFileParamsSchema, PrivacyExternalSourceCaseSchema, PrivacyPlanProposeSchema, PrivacyPlanApproveSchema, PrivacyPlanExecuteSchema,
 } from '../../../../../../packages/contracts/src/privacy.js';
 import { PrivacyService } from './privacy.service.js';
 
@@ -36,6 +38,16 @@ export class PrivacyController {
   preference(@ReqState() state: RequestState, @Body(PrivacyPreferenceCommandSchema) body: z.infer<typeof PrivacyPreferenceCommandSchema>) { return this.privacy.preference(state, body); }
   @Post('exports') @HttpCode(201) @Idempotent('privacy.export_create')
   createExport(@ReqState() state: RequestState, @Body(PrivacyExportCommandSchema) body: z.infer<typeof PrivacyExportCommandSchema>) { return this.privacy.createExport(state, body.subject); }
+  @Get('exports/:id/files/:fileId') @Header('Cache-Control', 'no-store')
+  downloadFile(@ReqState() state: RequestState, @Params(PrivacyFileParamsSchema) params: z.infer<typeof PrivacyFileParamsSchema>, @Res() reply: FastifyReply) {
+    return this.privacy.downloadFile(state, params.id, params.fileId, async (file) => {
+      reply.type('application/octet-stream').header('Content-Disposition', 'attachment; filename="file"')
+        .header('Content-Length', file.bytes).header('X-Content-SHA256', file.sha256).header('Cache-Control', 'no-store');
+      const delivered = finished(reply.raw, { cleanup: true });
+      reply.send(file.stream);
+      await delivered;
+    });
+  }
   @Get('exports/:id') @Header('Cache-Control', 'no-store')
   download(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>) { return this.privacy.download(state, params.id); }
 }
@@ -56,6 +68,20 @@ export class PrivacyStaffController {
   @Post('plans/:id/execute') @HttpCode(200) @Idempotent('privacy.plan_execute', 'id')
   executePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>,
     @Body(PrivacyPlanExecuteSchema) body: z.infer<typeof PrivacyPlanExecuteSchema>) { return this.privacy.executePlan(state, elevation.id, params.id, body.digest); }
+  @Post('source-plans') @HttpCode(201) @Idempotent('privacy.source_plan_propose')
+  proposeSourcePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacyPlanProposeSchema) body: z.infer<typeof PrivacyPlanProposeSchema>) {
+    return this.privacy.proposeSourcePlan(state, elevation.id, body.requestId, body.grantId);
+  }
+  @Post('source-plans/:id/approve') @HttpCode(200) @Idempotent('privacy.source_plan_approve', 'id')
+  approveSourcePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>,
+    @Body(PrivacyPlanApproveSchema) body: z.infer<typeof PrivacyPlanApproveSchema>) { return this.privacy.approveSourcePlan(state, elevation.id, params.id, body.grantId, body.digest); }
+  @Post('source-plans/:id/execute') @HttpCode(200) @Idempotent('privacy.source_plan_execute', 'id')
+  executeSourcePlan(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>,
+    @Body(PrivacyPlanExecuteSchema) body: z.infer<typeof PrivacyPlanExecuteSchema>) { return this.privacy.executeSourcePlan(state, elevation.id, params.id, body.digest); }
+  @Post('external-source-cases') @HttpCode(201) @Idempotent('privacy.external_source_case')
+  externalCase(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacyExternalSourceCaseSchema) body: z.infer<typeof PrivacyExternalSourceCaseSchema>) {
+    return this.privacy.externalSourceCase(state, elevation.id, body);
+  }
   @Post('source-proofs') @HttpCode(201) @Header('Cache-Control', 'no-store') @Idempotent('privacy.source_proof')
   proof(@ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow, @Body(PrivacySourceProofSchema) body: z.infer<typeof PrivacySourceProofSchema>) {
     return this.privacy.sourceProof(state, elevation.id, body);
