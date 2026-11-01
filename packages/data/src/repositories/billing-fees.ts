@@ -47,7 +47,18 @@ export const feePricingReaders = {
   },
   async publishedPlans(trx: Transaction, hubId: string) {
     return trx.selectFrom('subscription_plan_version as p').innerJoin('offer as o', 'o.id', 'p.offer_id')
-      .select(['p.id', 'p.version', 'p.price_version_id']).where('o.hub_id', '=', hubId)
+      .select(['p.id', 'p.version', 'p.price_version_id', 'p.offer_id', 'p.payer_kind', 'p.payload', 'p.status']).where('o.hub_id', '=', hubId)
       .where('o.status', '=', 'active').where('p.status', '=', 'active').orderBy('p.version').execute();
+  },
+  /** Public allowlist only: no staff, approval, provider-cost or payer records are loaded. */
+  async publishedPrices(trx: Transaction, hubId: string, at: Date, plans: boolean) {
+    return trx.selectFrom('price_version as p').innerJoin('offer as o', 'o.id', 'p.offer_id')
+      .select(['p.id', 'p.version', 'p.offer_id', 'p.currency', 'p.amount_minor', 'p.effective_from', 'p.effective_to',
+        'p.acceptance_text_version', 'o.code as offer_code', 'o.kind as offer_kind', 'o.name as offer_name'])
+      .where('o.hub_id', '=', hubId).where('o.status', '=', 'active').where('p.status', '=', 'active')
+      .where('o.kind', plans ? '=' : '!=', 'plan')
+      .where('o.kind', 'in', ['plan', 'deliverable', 'verification_fee', 'agent_module'])
+      .where(eb => eb.or([eb('p.effective_to', 'is', null), eb('p.effective_to', '>', at)]))
+      .orderBy('o.code').orderBy('p.effective_from').execute();
   },
 };
