@@ -14,7 +14,7 @@ export class PaymentsService {
     return this.principals.runAs(state, async (trx) => {
       if (!state.session) throw new ApiError('auth.session_invalid');
       return payments.request(trx, input.agreementId, input.budgetId, state.session.id);
-    });
+    }, { refreshStale: false });
   }
   read(id: string, state: RequestState) { requireId(id); return this.principals.runAs(state, (trx) => payments.read(trx, id)); }
   action(id: string, kind: 'confirm' | 'refund' | 'payout' | 'connected_account', state: RequestState) {
@@ -22,6 +22,6 @@ export class PaymentsService {
     return this.principals.runAs(state, async (trx) => {
       if (!state.session) throw new ApiError('auth.session_invalid');
       return payments.action(trx, id, kind, state.session.id);
-    });
+    }, { refreshStale: false });
   }
 }
