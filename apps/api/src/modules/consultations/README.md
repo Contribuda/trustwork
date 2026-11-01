@@ -1,0 +1,54 @@
+# Consultations module: consultations and mentoring from plan items (CONS-001)
+
+The flagship journey "from plan to people" (ADR 010 decision 17; [agent catalogue: consultation](../../../../../docs/engine/agent-catalog.md#consultation), [data model section 8](../../../../../docs/data/model.md#8-consultations-tasks-and-mentoring), [lifecycles](../../../../../docs/data/lifecycles.md#consultations-tasks-and-mentoring)). A homeowner's plan item (or a direct question) becomes a **consultation request** to one expert's offering: an advice session, a drawing or quote review, a site visit, or a mentoring session inside a mentoring relationship. Contracts: [`consultations.ts`](../../../../../packages/contracts/src/consultations.ts). Storage: [`packages/data/migrations/consultations`](../../../../../packages/data/migrations/consultations), [`packages/data/src/repositories/consultations.ts`](../../../../../packages/data/src/repositories/consultations.ts).
+
+Status: **Live** in the API and tests (no pages yet). All mutations: authenticated session, `X-Trustwork-Request` with same-origin metadata, `Idempotency-Key`. Every route completes its idempotency record inside its own request transaction (BE-005, `in_transaction` in `apps/api/src/common/idempotency/routes.ts`) and is crash-tested (`tests/backend/idempotency/cases/consultations.ts`). Errors use the contract envelope; specific reasons are in `details.reason`.
+
+## The commercial kernel, reused
+
+| Consultation object | Kernel counterpart | Shared rule |
+|---|---|---|
+| `consultation_offering` | catalogue `offering` of kind `services` | price and options stay in the immutable published `offering_version`; a proposal pins it by id and digest |
+| `consultation_request` | `rfq_version` | the brief is built field by field from the approved plan item (`buildConsultationBrief`: scope, trade, locality, drawings, quantities, schedule; never a budget, the address or the contact) and frozen with `trustwork-digest-1` when sent |
+| `consultation_request_private` | `rfq_private_constraint` | the requester's budget ceiling and notes; readable by the requester only |
+| `consultation_booking` | `quote_version` | one row per proposal, frozen for every role from the moment it is proposed; digest over `{ bookingId, version: 1, terms }` where the terms carry the request ref, the pinned catalogue version, kind, mode, slot or due date, price, hub commission, totals, cancellation terms and the licence label |
+| agreement `terms_kind = consultation` | COM-002 `agreement` | `offer_ref_id` = booking, `request_ref_id` = request; digest `{ termsKind: 'consultation', quoteVersion: booking, rfqVersion: request }`; the client's `buyer_accepts_terms` and the expert side's `seller_accepts_order` repeat it |
+| `consultation_deliverable` | EXE-001 claim and confirmation | delivery is the expert's `service_delivered` claim on its perform obligation, acceptance the client's confirmation: separate append-only records |
+
+## Routes
+
+| Route | Who | Result |
+|---|---|---|
+| `GET`, `POST /v1/consultation-offerings`, `POST /v1/consultation-offerings/:id` | The catalogue owner (`company.catalogue.edit` for a company) | Registers an active services offering as a consultation (kind, modes per kind, topics, places, languages, duration, deliverable, pricing, cancellation terms, licence, recording) and updates it; the kind never changes; restricted places are refused |
+| `GET /v1/consultation-offerings/public?ownerKind=&ownerId=` | Anyone (anonymous too) | Active offerings with their terms, the catalogue fields the owner made public and the licence label (never the number), payment-blind newest first |
+| `GET`, `POST /v1/consultation-availability`, `POST .../:id/close` | The named expert | Windows of future time with a capacity; requesters see only free windows and remaining capacity in their request view |
+| `POST /v1/consultation-requests` | A person; for a plan item the project's person owner | A frozen request from a plan item of the approved plan (kinds consultation, task, phase, decision, permit, inspection, purchase, material; a company project gets `422 requisition_required`) or a direct question; the plan item records the path `consultation` and becomes `requested`; a site visit needs a project site; mentoring sessions name an active relationship |
+| `GET /v1/consultation-requests`, `GET .../:id` | Requester: `RequesterRequestView` (brief, private half, proposals with pricing, agreements, free windows). Expert side: `ExpertRequestView` (brief and proposals, never the private half). Others `404` |
+| `POST .../:id/private`, `.../withdraw` | Requester | Saves the private half (audit names the change, never values); withdraws (an open proposal is declined first; not while an acceptance is pending) |
+| `POST .../:id/decline`, `.../proposals` | Expert side | Declines; proposes exact terms (the server pins the current catalogue version, computes the price and asks the commission port; misfits such as `licence_required`, `slot_outside_window` or `mode_not_requested` are refused); one open proposal per request |
+| `POST .../:id/acceptances` | Requester | Accepts the exact proposal against its own request by id and digest, with consent to electronic records; both parties pass the screening gate; both stored digests are recomputed; one pending acceptance per request (request row lock and the database guard) |
+| `POST /v1/consultation-agreements/:id/confirm`, `/decline`, `/withdraw` | Expert side confirms or declines; the client withdraws before that | Confirm states the digest it accepts; in one transaction: agreement `accepted_by_both`, obligations (perform; pay when priced; accept), the booking takes the window's capacity (serialized by an expert lock and the window row lock in the database: a full window gives `409 capacity_exhausted`, an overlapping live slot `409 slot_overlaps`), the session opens, reminders are scheduled |
+| `GET /v1/consultation-bookings`, `GET .../:id`, `GET .../:id/calendar` | The two parties | `BookingView` (terms, agreement, session, deliverables, reminders, the agreement context thread, and a site visit's site once booked); an RFC 5545 calendar file with the title and times only (never the site, a link or a price) |
+| `POST .../:id/withdraw`, `.../decline` | Expert side withdraws a proposal; the client declines one |
+| `POST .../:id/cancel` | Either party for its own side, or the other side's absence after the start (`no_show`) | The charge follows the frozen cancellation terms (computed, never collected here: CONS-002); reminders are cancelled |
+| `POST .../:id/session`, `.../deliverables` | A party records that a synchronous session took place; the expert side delivers in person | Delivery writes the EXE-001 claim and the deliverable; one undecided deliverable at a time |
+| `POST /v1/consultation-deliverables/:id/decision`, `/publish`; `GET .../:id/public` | The client decides in person (no actor field: `confirm_execution` is human-only); the author publishes; anyone reads a published one | Acceptance completes the booking, derives the performance observations (REP-001 counts `consultation_given`) and finishes the plan item; a rejection reopens the delivery. The public projection is the author's title and body only |
+| `GET`, `POST /v1/mentoring`, `POST .../:id/respond`, `.../change` | The two people | Double opt-in; either side pauses, resumes or ends |
+
+## Agents, money, screening and privacy
+
+Commands accept `actor: { via: 'agent', mandateId }` under the AST-001 mandate store (module key `consultation`): offerings `publish`, windows and cancellations `schedule`, requests and mentoring `communicate`, proposals `send_quote` (with the client total), acceptance `place_order` (never above the requester's private ceiling: `outside_private_constraints`), confirmation `accept_order`, sessions `record_evidence`. Delivering, deciding and publishing a deliverable have no actor field. Registry entries: `CONSULTATION_MANIFEST` (module `consultation`, ADR 010 decision 23); every label is in the seven locale files (`apps/web/locales/*/consultations.json`).
+
+No money moves (ADR 010 decision 20): a priced booking records the client's `pay` obligation; charging through a licensed provider is CONS-002. The hub commission comes from `ConsultationCommissionPort`; until BILL-003 publishes versioned hub price settings the default answers `none_published` and nothing is added. Payment never changes any order: lists are ordered by time and id only.
+
+Screening (ADR 014 decision 13): `ConsultationScreeningGate` runs before an acceptance or a confirmation binds; the default reads SANC-003's `screeningState` for both parties and fails closed (unscreened, held or unreadable means no). SANC-004 will provide `requireTransactable`; swap the port when it lands. The counterparty learns only `party_cannot_transact_now`.
+
+Licences: an offering that needs a licence names a REP-001 `professional_credential` of kind `licence` held by the expert; it is usable while checked or self-declared and not expired, suspended, revoked or superseded. The label says `self_declared` until a hub check matched (`checked`); CLM-001 recipes will add per-hub checks.
+
+## Follow-ups
+
+Reminder delivery into the agreement context thread (a COMMS-001 notification template and a worker job), recurring windows, open requests through matching (MATCH), video and recording adapters, paid consultations (CONS-002), the public mentoring count with both consents, consultation pages in the workspace.
+
+## Tests
+
+`tests/contracts/consultations.test.ts` (brief allowlist, forbidden budget keys, digest binding, acceptance checks, price and commission, licence rules, obligations, cancellation charges, reminders, calendar files, mentoring, payment-blind order, registry and locale labels), `tests/consultations/api.test.ts` (the journey through HTTP with negative authorization, the real screening gate, concurrent confirmations against capacity, site reveal, licence labels, deliverable visibility, REP-001 derivation, agents, ceilings and commission with fakes, and database guards for every role).

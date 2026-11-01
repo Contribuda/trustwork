@@ -1,0 +1,114 @@
+{
+  "consultations": {
+    "capability": {
+      "listPublicOfferings": "Maslahat takliflarini koʻrish",
+      "listOfferings": "Mening maslahat takliflarim",
+      "listAvailability": "Mening jadvalim",
+      "listRequests": "Maslahat soʻrovlari",
+      "getRequest": "Mening soʻrovimni ochish",
+      "getBrief": "Soʻrov tavsifini oʻqish",
+      "listBookings": "Maslahatga yozilishlar",
+      "getBooking": "Yozilishni ochish",
+      "getCalendar": "Taqvim faylini yuklab olish",
+      "listMentoring": "Murabbiylik munosabatlari",
+      "registerOffering": "Maslahat taklif qilish",
+      "updateOffering": "Maslahat taklifini oʻzgartirish",
+      "openWindow": "Boʻsh vaqtni ochish",
+      "closeWindow": "Boʻsh vaqtni yopish",
+      "request": "Maslahat soʻrash",
+      "setRequestPrivate": "Shaxsiy byudjet chegarasini belgilash",
+      "withdrawRequest": "Soʻrovni qaytarib olish",
+      "declineRequest": "Soʻrovni rad etish",
+      "propose": "Maslahat shartlarini taklif qilish",
+      "withdrawProposal": "Taklifni qaytarib olish",
+      "acceptProposal": "Taklif qilingan maslahatga yozilish",
+      "declineProposal": "Taklifni rad etish",
+      "withdrawAcceptance": "Yozilishga roziligimni qaytarib olish",
+      "confirmBooking": "Yozilishni tasdiqlash",
+      "declineAgreement": "Yozilishni rad etish",
+      "cancel": "Yozilishni bekor qilish",
+      "recordSession": "Uchrashuv boʻlib oʻtganini qayd etish",
+      "deliver": "Maslahat natijasini topshirish",
+      "decideDeliverable": "Natijani qabul qilish yoki rad etish",
+      "publishDeliverable": "Maslahat natijamni eʼlon qilish",
+      "proposeMentoring": "Murabbiylikni taklif qilish",
+      "respondMentoring": "Murabbiylik taklifiga javob berish",
+      "changeMentoring": "Murabbiylikni toʻxtatish, davom ettirish yoki yakunlash"
+    },
+    "kind": {
+      "session": "Maslahat uchrashuvi",
+      "drawing_review": "Chizmalarni tekshirish",
+      "quote_review": "Narx takliflarini tahlil qilish",
+      "site_visit": "Obyektga borish",
+      "mentoring": "Murabbiy bilan uchrashuv"
+    },
+    "mode": {
+      "video": "Video qoʻngʻiroq",
+      "chat": "Chat",
+      "phone": "Telefon qoʻngʻirogʻi",
+      "in_person": "Yuzma-yuz",
+      "async": "Yozma, uchrashuvsiz"
+    },
+    "deliverableKind": {
+      "written_advice": "Yozma tavsiya",
+      "marked_up_document": "Belgilar qoʻyilgan hujjat",
+      "site_report": "Obyekt hisoboti",
+      "checklist": "Nazorat roʻyxati",
+      "recording": "Yozuv"
+    },
+    "pricing": {
+      "free": "Bepul",
+      "fixed": "Belgilangan narx",
+      "hourly": "Soatbay narx"
+    },
+    "requestStatus": {
+      "requested": "Taklif kutilmoqda",
+      "offered": "Taklif olindi",
+      "booked": "Yozildi",
+      "withdrawn": "Qaytarib olindi",
+      "expired": "Muddati oʻtdi",
+      "declined": "Mutaxassis rad etdi"
+    },
+    "bookingStatus": {
+      "proposed": "Taklif qilingan",
+      "booked": "Yozilgan",
+      "held": "Uchrashuv boʻlib oʻtdi",
+      "delivered": "Natija topshirildi",
+      "accepted": "Yakunlandi",
+      "cancelled": "Bekor qilindi",
+      "declined": "Rad etildi",
+      "withdrawn": "Qaytarib olindi",
+      "disputed": "Nizoda"
+    },
+    "mentoringStatus": {
+      "proposed": "Taklif qilingan",
+      "active": "Faol",
+      "paused": "Toʻxtatilgan",
+      "declined": "Rad etilgan",
+      "ended": "Yakunlangan"
+    },
+    "credential": {
+      "checked": "Litsenziya ushbu hub tomonidan tekshirilgan",
+      "self_declared": "Litsenziyani mutaxassis koʻrsatgan, hub tekshirmagan",
+      "expired": "Litsenziya muddati oʻtgan",
+      "suspended": "Litsenziya toʻxtatilgan",
+      "revoked": "Litsenziya bekor qilingan"
+    },
+    "commission": {
+      "price": "Narx",
+      "none_published": "Bu hub maslahatlar uchun komissiya olmaydi",
+      "published": "Hub komissiyasi",
+      "clientTotal": "Siz toʻlaysiz",
+      "expertAmount": "Mutaxassis oladi"
+    },
+    "refusal": {
+      "party_cannot_transact_now": "Boshqa tomon hozir majburiyat ola olmaydi.",
+      "screening_review_pending": "Hisobingiz boʻyicha muvofiqlik tekshiruvi davom etmoqda. U tugaguncha yozilishlar toʻxtatilgan.",
+      "screening_unavailable": "Hozir yozilishni tekshirib boʻlmaydi. Keyinroq qayta urinib koʻring.",
+      "licence_required": "Bu maslahat uchun litsenziyali mutaxassis kerak, bu mutaxassisda esa qayd etilgan litsenziya yoʻq.",
+      "capacity_exhausted": "Bu vaqt endi boʻsh emas.",
+      "slot_overlaps": "Mutaxassisning bu vaqtda boshqa yozilishi bor."
+    },
+    "siteNotice": "Obyekt manzili mutaxassisga faqat borishga yozilgandan keyin beriladi."
+  }
+}

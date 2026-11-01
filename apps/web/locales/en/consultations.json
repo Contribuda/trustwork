@@ -1,0 +1,114 @@
+{
+  "consultations": {
+    "capability": {
+      "listPublicOfferings": "Browse consultation offerings",
+      "listOfferings": "See my consultation offerings",
+      "listAvailability": "See my availability",
+      "listRequests": "See consultation requests",
+      "getRequest": "Open my consultation request",
+      "getBrief": "Read a consultation brief",
+      "listBookings": "See consultation bookings",
+      "getBooking": "Open a booking",
+      "getCalendar": "Download the calendar file",
+      "listMentoring": "See mentoring relationships",
+      "registerOffering": "Offer a consultation",
+      "updateOffering": "Change a consultation offering",
+      "openWindow": "Open availability",
+      "closeWindow": "Close availability",
+      "request": "Ask for a consultation",
+      "setRequestPrivate": "Set my private budget limit",
+      "withdrawRequest": "Withdraw a consultation request",
+      "declineRequest": "Decline a consultation request",
+      "propose": "Propose consultation terms",
+      "withdrawProposal": "Withdraw a proposal",
+      "acceptProposal": "Book the proposed consultation",
+      "declineProposal": "Decline a proposal",
+      "withdrawAcceptance": "Withdraw my booking acceptance",
+      "confirmBooking": "Confirm a booking",
+      "declineAgreement": "Decline a booking",
+      "cancel": "Cancel a booking",
+      "recordSession": "Record that the session took place",
+      "deliver": "Deliver the consultation result",
+      "decideDeliverable": "Accept or reject the result",
+      "publishDeliverable": "Publish my consultation result",
+      "proposeMentoring": "Propose mentoring",
+      "respondMentoring": "Answer a mentoring proposal",
+      "changeMentoring": "Pause, resume or end mentoring"
+    },
+    "kind": {
+      "session": "Advice session",
+      "drawing_review": "Drawing review",
+      "quote_review": "Quote review",
+      "site_visit": "Site visit",
+      "mentoring": "Mentoring session"
+    },
+    "mode": {
+      "video": "Video call",
+      "chat": "Chat",
+      "phone": "Phone call",
+      "in_person": "In person",
+      "async": "Written, no meeting"
+    },
+    "deliverableKind": {
+      "written_advice": "Written advice",
+      "marked_up_document": "Marked-up document",
+      "site_report": "Site report",
+      "checklist": "Checklist",
+      "recording": "Recording"
+    },
+    "pricing": {
+      "free": "Free",
+      "fixed": "Fixed price",
+      "hourly": "Hourly rate"
+    },
+    "requestStatus": {
+      "requested": "Waiting for a proposal",
+      "offered": "Proposal received",
+      "booked": "Booked",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired",
+      "declined": "Declined by the expert"
+    },
+    "bookingStatus": {
+      "proposed": "Proposed",
+      "booked": "Booked",
+      "held": "Session held",
+      "delivered": "Result delivered",
+      "accepted": "Completed",
+      "cancelled": "Cancelled",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "disputed": "In dispute"
+    },
+    "mentoringStatus": {
+      "proposed": "Proposed",
+      "active": "Active",
+      "paused": "Paused",
+      "declined": "Declined",
+      "ended": "Ended"
+    },
+    "credential": {
+      "checked": "Licence checked by this hub",
+      "self_declared": "Licence stated by the expert, not checked by this hub",
+      "expired": "Licence expired",
+      "suspended": "Licence suspended",
+      "revoked": "Licence revoked"
+    },
+    "commission": {
+      "price": "Price",
+      "none_published": "This hub charges no commission on consultations",
+      "published": "Hub commission",
+      "clientTotal": "You pay",
+      "expertAmount": "The expert receives"
+    },
+    "refusal": {
+      "party_cannot_transact_now": "The other party cannot take on commitments right now.",
+      "screening_review_pending": "A compliance check of your account is pending. Until it is complete, bookings are paused.",
+      "screening_unavailable": "The booking cannot be checked right now. Please try again later.",
+      "licence_required": "This advice needs a licensed professional, and this expert has no recorded licence.",
+      "capacity_exhausted": "This time is no longer available.",
+      "slot_overlaps": "The expert is already booked at this time."
+    },
+    "siteNotice": "The site address is shared with the expert only after the visit is booked."
+  }
+}

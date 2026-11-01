@@ -1,0 +1,114 @@
+{
+  "consultations": {
+    "capability": {
+      "listPublicOfferings": "Məsləhət təkliflərinə baxmaq",
+      "listOfferings": "Mənim məsləhət təkliflərim",
+      "listAvailability": "Mənim boş vaxtım",
+      "listRequests": "Məsləhət sorğuları",
+      "getRequest": "Sorğumu açmaq",
+      "getBrief": "Sorğunun təsvirini oxumaq",
+      "listBookings": "Məsləhət qeydiyyatları",
+      "getBooking": "Qeydiyyatı açmaq",
+      "getCalendar": "Təqvim faylını yükləmək",
+      "listMentoring": "Mentorluq münasibətləri",
+      "registerOffering": "Məsləhət təklif etmək",
+      "updateOffering": "Məsləhət təklifini dəyişmək",
+      "openWindow": "Boş vaxt açmaq",
+      "closeWindow": "Boş vaxtı bağlamaq",
+      "request": "Məsləhət istəmək",
+      "setRequestPrivate": "Şəxsi büdcə həddimi təyin etmək",
+      "withdrawRequest": "Sorğunu geri götürmək",
+      "declineRequest": "Sorğudan imtina etmək",
+      "propose": "Məsləhət şərtlərini təklif etmək",
+      "withdrawProposal": "Təklifi geri götürmək",
+      "acceptProposal": "Təklif olunan məsləhətə yazılmaq",
+      "declineProposal": "Təklifdən imtina etmək",
+      "withdrawAcceptance": "Qeydiyyata razılığımı geri götürmək",
+      "confirmBooking": "Qeydiyyatı təsdiqləmək",
+      "declineAgreement": "Qeydiyyatdan imtina etmək",
+      "cancel": "Qeydiyyatı ləğv etmək",
+      "recordSession": "Görüşün baş tutduğunu qeyd etmək",
+      "deliver": "Məsləhətin nəticəsini təhvil vermək",
+      "decideDeliverable": "Nəticəni qəbul etmək və ya rədd etmək",
+      "publishDeliverable": "Məsləhət nəticəmi dərc etmək",
+      "proposeMentoring": "Mentorluq təklif etmək",
+      "respondMentoring": "Mentorluq təklifinə cavab vermək",
+      "changeMentoring": "Mentorluğu dayandırmaq, davam etdirmək və ya bitirmək"
+    },
+    "kind": {
+      "session": "Məsləhət görüşü",
+      "drawing_review": "Çertyojların yoxlanılması",
+      "quote_review": "Qiymət təkliflərinin təhlili",
+      "site_visit": "Obyektə baxış",
+      "mentoring": "Mentorla görüş"
+    },
+    "mode": {
+      "video": "Video zəng",
+      "chat": "Çat",
+      "phone": "Telefon zəngi",
+      "in_person": "Şəxsən",
+      "async": "Yazılı, görüşsüz"
+    },
+    "deliverableKind": {
+      "written_advice": "Yazılı tövsiyə",
+      "marked_up_document": "Qeydli sənəd",
+      "site_report": "Baxış hesabatı",
+      "checklist": "Yoxlama siyahısı",
+      "recording": "Yazı"
+    },
+    "pricing": {
+      "free": "Pulsuz",
+      "fixed": "Sabit qiymət",
+      "hourly": "Saatlıq tarif"
+    },
+    "requestStatus": {
+      "requested": "Təklif gözlənilir",
+      "offered": "Təklif alınıb",
+      "booked": "Qeydiyyat edilib",
+      "withdrawn": "Geri götürülüb",
+      "expired": "Müddəti bitib",
+      "declined": "Ekspert imtina edib"
+    },
+    "bookingStatus": {
+      "proposed": "Təklif olunub",
+      "booked": "Qeydiyyat edilib",
+      "held": "Görüş baş tutub",
+      "delivered": "Nəticə təhvil verilib",
+      "accepted": "Tamamlanıb",
+      "cancelled": "Ləğv edilib",
+      "declined": "İmtina edilib",
+      "withdrawn": "Geri götürülüb",
+      "disputed": "Mübahisədə"
+    },
+    "mentoringStatus": {
+      "proposed": "Təklif olunub",
+      "active": "Aktiv",
+      "paused": "Dayandırılıb",
+      "declined": "İmtina edilib",
+      "ended": "Bitib"
+    },
+    "credential": {
+      "checked": "Lisenziya bu hub tərəfindən yoxlanılıb",
+      "self_declared": "Lisenziyanı ekspert göstərib, hub yoxlamayıb",
+      "expired": "Lisenziyanın müddəti bitib",
+      "suspended": "Lisenziya dayandırılıb",
+      "revoked": "Lisenziya ləğv edilib"
+    },
+    "commission": {
+      "price": "Qiymət",
+      "none_published": "Bu hub məsləhətlərə görə komissiya tutmur",
+      "published": "Hub komissiyası",
+      "clientTotal": "Siz ödəyirsiniz",
+      "expertAmount": "Ekspert alır"
+    },
+    "refusal": {
+      "party_cannot_transact_now": "Digər tərəf hazırda öhdəlik götürə bilməz.",
+      "screening_review_pending": "Hesabınızın uyğunluq yoxlaması davam edir. Bitənə qədər qeydiyyatlar dayandırılıb.",
+      "screening_unavailable": "Qeydiyyatı hazırda yoxlamaq mümkün deyil. Bir az sonra yenidən cəhd edin.",
+      "licence_required": "Bu məsləhət üçün lisenziyalı mütəxəssis lazımdır, bu ekspertin isə qeydə alınmış lisenziyası yoxdur.",
+      "capacity_exhausted": "Bu vaxt artıq boş deyil.",
+      "slot_overlaps": "Ekspertin bu vaxt üçün artıq qeydiyyatı var."
+    },
+    "siteNotice": "Obyektin ünvanı ekspertə yalnız baxışa qeydiyyatdan sonra verilir."
+  }
+}
