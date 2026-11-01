@@ -1,7 +1,6 @@
 import type { Money, Party } from '../../deps/contracts.js';
 import type { Transaction } from '../../deps/data.js';
-import { ApiError } from '../../common/errors.js';
-import { screeningState } from '../screening/port.js';
+import { ScreeningGate } from '../screening-gates/gate.js';
 import { commissionOn, type CommissionQuote, type ConsultationKind } from './deps.js';
 
 /* ---------- Hub commission (BILL-003) ---------- */
@@ -31,48 +30,16 @@ export class FixedRateCommission implements ConsultationCommissionPort {
 
 /* ---------- Screening gate (SANC-004) ---------- */
 
-/**
- * The screening gate a consultation commitment passes before it binds (ADR 014 decision 13): no agreement is accepted
- * or confirmed while either party is held, matched, unscreened or screened against stale lists, and the gate fails
- * closed when the screening state cannot be read. SANC-004 (`apps/api/src/modules/screening-gates`, not merged yet)
- * provides `requireTransactable(subjects, purpose)`; until it lands this port reads SANC-003's `screeningState`
- * directly. The counterparty learns only that the other side cannot transact now; the subject is pointed to its own
- * compliance status page.
- */
-export type ConsultationGatePurpose = 'consultation.accept' | 'consultation.confirm';
+/** The shared SANC-004 gate holds its locks until the consultation transaction ends. */
+export type ConsultationGatePurpose = 'consultation.propose' | 'consultation.accept' | 'consultation.confirm';
 export interface ConsultationScreeningGate {
-  /** Throws `ApiError` (403) when any subject cannot bind a commitment now; `self` is the acting side. */
   requireTransactable(trx: Transaction, subjects: readonly { party: Party; self: boolean }[], purpose: ConsultationGatePurpose, now: Date): Promise<void>;
 }
-export class ScreeningStateGate implements ConsultationScreeningGate {
+export class ScreeningCommitmentGate implements ConsultationScreeningGate {
   async requireTransactable(trx: Transaction, subjects: readonly { party: Party; self: boolean }[], purpose: ConsultationGatePurpose, now: Date): Promise<void> {
-    for (const subject of subjects) {
-      let held: boolean;
-      try {
-        held = (await screeningState(trx, { kind: subject.party.kind, id: subject.party.id }, now)).moneyHeld;
-      } catch {
-        // Fail closed: an unreadable state is never "clear".
-        throw new ApiError('access.forbidden', 'the commitment cannot be checked now', { reason: 'screening_unavailable', purpose });
-      }
-      if (held) {
-        throw subject.self
-          ? new ApiError('access.forbidden', 'your account has a compliance check pending', { reason: 'screening_review_pending', purpose })
-          : new ApiError('access.forbidden', 'the other party cannot take on commitments right now', { reason: 'party_cannot_transact_now', purpose });
-      }
-    }
-  }
-}
-/** Fake for tests: refuses exactly the listed subjects (as the real gate words it), allows everyone else. */
-export class ListScreeningGate implements ConsultationScreeningGate {
-  readonly checks: { subjects: string[]; purpose: ConsultationGatePurpose }[] = [];
-  constructor(private readonly held: ReadonlySet<string> = new Set(), private readonly unavailable = false) {}
-  async requireTransactable(_trx: Transaction, subjects: readonly { party: Party; self: boolean }[], purpose: ConsultationGatePurpose): Promise<void> {
-    this.checks.push({ subjects: subjects.map((s) => s.party.id), purpose });
-    if (this.unavailable) throw new ApiError('access.forbidden', 'the commitment cannot be checked now', { reason: 'screening_unavailable', purpose });
-    for (const s of subjects) {
-      if (this.held.has(s.party.id)) {
-        throw new ApiError('access.forbidden', s.self ? 'your account has a compliance check pending' : 'the other party cannot take on commitments right now', { reason: s.self ? 'screening_review_pending' : 'party_cannot_transact_now', purpose });
-      }
-    }
+    const purposes = { 'consultation.propose': 'quote_send', 'consultation.accept': 'terms_accept', 'consultation.confirm': 'order_accept' } as const;
+    await new ScreeningGate({ now: () => now }).requireTransactable(
+      trx, subjects.map(({ party, self }) => ({ subject: party, side: self ? 'own' : 'counterparty' })), purposes[purpose],
+    );
   }
 }

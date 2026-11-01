@@ -2,7 +2,7 @@
 
 The flagship journey "from plan to people" (ADR 010 decision 17; [agent catalogue: consultation](../../../../../docs/engine/agent-catalog.md#consultation), [data model section 8](../../../../../docs/data/model.md#8-consultations-tasks-and-mentoring), [lifecycles](../../../../../docs/data/lifecycles.md#consultations-tasks-and-mentoring)). A homeowner's plan item (or a direct question) becomes a **consultation request** to one expert's offering: an advice session, a drawing or quote review, a site visit, or a mentoring session inside a mentoring relationship. Contracts: [`consultations.ts`](../../../../../packages/contracts/src/consultations.ts). Storage: [`packages/data/migrations/consultations`](../../../../../packages/data/migrations/consultations), [`packages/data/src/repositories/consultations.ts`](../../../../../packages/data/src/repositories/consultations.ts).
 
-Status: **Live** in the API and tests (no pages yet). All mutations: authenticated session, `X-Trustwork-Request` with same-origin metadata, `Idempotency-Key`. Every route completes its idempotency record inside its own request transaction (BE-005, `in_transaction` in `apps/api/src/common/idempotency/routes.ts`) and is crash-tested (`tests/backend/idempotency/cases/consultations.ts`). Errors use the contract envelope; specific reasons are in `details.reason`.
+Status: **Live** in the API and tests (no pages yet). All mutations: authenticated session, `X-Trustwork-Request` with same-origin metadata, `Idempotency-Key`. Every route completes its idempotency record inside its own request transaction (BE-005, `in_transaction` in `apps/api/src/common/idempotency/routes.ts`) and is crash-tested (`tests/backend/idempotency/cases/consultations.ts`). Errors use the contract envelope; consultation reasons are in `details.reason`; SANC-004 counterparty refusals carry no details.
 
 ## The commercial kernel, reused
 
@@ -37,17 +37,25 @@ Status: **Live** in the API and tests (no pages yet). All mutations: authenticat
 
 ## Agents, money, screening and privacy
 
-Commands accept `actor: { via: 'agent', mandateId }` under the AST-001 mandate store (module key `consultation`): offerings `publish`, windows and cancellations `schedule`, requests and mentoring `communicate`, proposals `send_quote` (with the client total), acceptance `place_order` (never above the requester's private ceiling: `outside_private_constraints`), confirmation `accept_order`, sessions `record_evidence`. Delivering, deciding and publishing a deliverable have no actor field. Registry entries: `CONSULTATION_MANIFEST` (module `consultation`, ADR 010 decision 23); every label is in the seven locale files (`apps/web/locales/*/consultations.json`).
+Commands accept `actor: { via: 'agent', mandateId }` under the AST-001 mandate store (module key `consultation`): offerings `publish`, windows and cancellations `schedule`, requests and mentoring `communicate`, proposals `send_quote` (with the client total), acceptance `place_order` (never above the requester's private ceiling and never across different currencies without an approved FX snapshot: `outside_private_constraints`; no FX snapshot path exists in CONS-001), confirmation `accept_order`, sessions `record_evidence`. Delivering, deciding and publishing a deliverable have no actor field. Registry entries: `CONSULTATION_MANIFEST` (module `consultation`, ADR 010 decision 23); every label is in the seven locale files (`apps/web/locales/*/consultations.json`).
 
 No money moves (ADR 010 decision 20): a priced booking records the client's `pay` obligation; charging through a licensed provider is CONS-002. The hub commission comes from `ConsultationCommissionPort`; until BILL-003 publishes versioned hub price settings the default answers `none_published` and nothing is added. Payment never changes any order: lists are ordered by time and id only.
 
-Screening (ADR 014 decision 13): `ConsultationScreeningGate` runs before an acceptance or a confirmation binds; the default reads SANC-003's `screeningState` for both parties and fails closed (unscreened, held or unreadable means no). SANC-004 will provide `requireTransactable`; swap the port when it lands. The counterparty learns only `party_cannot_transact_now`.
+Screening (ADR 014 decision 13): `ScreeningCommitmentGate` delegates to the shared SANC-004 `ScreeningGate` inside the consultation transaction. Proposal, acceptance and confirmation map to `quote_send`, `terms_accept` and `order_accept`. Both parties and the acting company member are checked; screening and jurisdiction locks remain held until commit. Unscreened subjects, jurisdiction holds, stale lists and unreadable state fail closed. A counterparty refusal is `commercial.counterparty_unavailable` without details; own-side refusals retain the shared gate's status and purpose.
 
-Licences: an offering that needs a licence names a REP-001 `professional_credential` of kind `licence` held by the expert; it is usable while checked or self-declared and not expired, suspended, revoked or superseded. The label says `self_declared` until a hub check matched (`checked`); CLM-001 recipes will add per-hub checks.
+Licences: an offering that needs a licence names a REP-001 `professional_credential` of kind `licence` held by the expert; it is usable while checked or self-declared and not expired, suspended, revoked or superseded. The label says `self_declared` until a hub check matched (`checked`); CLM-001 recipes will add per-hub checks. Acceptance and confirmation re-check the pinned credential, locking its row against new check results and superseding credentials through their foreign-key locks. A replacement credential requires a new proposal; frozen terms are never silently changed.
 
 ## Follow-ups
 
-Reminder delivery into the agreement context thread (a COMMS-001 notification template and a worker job), recurring windows, open requests through matching (MATCH), video and recording adapters, paid consultations (CONS-002), the public mentoring count with both consents, consultation pages in the workspace.
+Reminder delivery is **not implemented** and remains an incomplete CONS-001 scheduling step, not part of paid consultations (CONS-002). Booking views expose the agreement context reference and scheduled reminder records; this does not mean a thread message or notification was delivered. The missing dependency spans COMMS-001 and the worker runtime:
+
+- `packages/contracts/src/communications.ts` only permits `thread.opened`, `thread.message` and `account.security_notice`; no consultation reminder template exists, and the SQL template allowlist must agree with the contract.
+- `trustwork.comms_notify` requires an authenticated participant; the message insert policy requires a person or agent author. No worker-authorized system-message producer exists for scheduled agreement reminders.
+- A durable worker handler must atomically re-check party access and booking cancellation, append the system message with a stable reminder dedupe key, fan out allowlisted notification parameters and mark the reminder delivered. `consultation_reminder_guard` currently permits only scheduled-to-cancelled transitions; delivery needs a scoped worker path with negative authorization, cancellation and duplicate-execution tests.
+
+These changes require communications-owned contracts/migrations and worker registration outside this repair's assigned paths. CONS-001 remains in review pending that integration and maintainer acceptance.
+
+Other follow-ups: recurring windows, open requests through matching (MATCH), video and recording adapters, paid consultations (CONS-002), the public mentoring count with both consents, consultation pages in the workspace.
 
 ## Tests
 

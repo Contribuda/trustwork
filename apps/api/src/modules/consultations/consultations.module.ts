@@ -8,7 +8,7 @@ import {
 } from './consultations.controller.js';
 import { ConsultationsService } from './consultations.service.js';
 import { NoConsultationMandates, type ConsultationMandatePort } from './mandates.js';
-import { NoPublishedCommission, ScreeningStateGate, type ConsultationCommissionPort, type ConsultationScreeningGate } from './ports.js';
+import { NoPublishedCommission, ScreeningCommitmentGate, type ConsultationCommissionPort, type ConsultationScreeningGate } from './ports.js';
 
 export interface ConsultationsModuleOptions {
   /** Agent mandate check; defaults to "no mandate store", which refuses every agent request. */
@@ -17,7 +17,7 @@ export interface ConsultationsModuleOptions {
   electronicRecords?: ElectronicRecordsPolicySource;
   /** The hub commission (BILL-003); defaults to "none published". */
   commission?: ConsultationCommissionPort;
-  /** The screening gate (SANC-004); defaults to SANC-003's screening state, failing closed. */
+  /** The screening gate (SANC-004); defaults to SANC-004's transactional commitment gate, failing closed. */
   screening?: ConsultationScreeningGate;
 }
 
@@ -26,7 +26,7 @@ export class ConsultationsModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: ConsultationsModuleOptions = {}): DynamicModule {
     const service = new ConsultationsService(
       ctx, identity.principals, options.mandates ?? new NoConsultationMandates(), options.electronicRecords ?? new ConfiguredElectronicRecords(),
-      options.commission ?? new NoPublishedCommission(), options.screening ?? new ScreeningStateGate(),
+      options.commission ?? new NoPublishedCommission(), options.screening ?? new ScreeningCommitmentGate(),
     );
     return {
       module: ConsultationsModule,

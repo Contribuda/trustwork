@@ -669,6 +669,7 @@ export class ConsultationsService {
       const commission = amount ? await this.commission.quote(trx, { kind: terms.kind, price: amount, expert, at: now }) : { status: 'none_published' as const };
       const pricing = pricingSummary(price, commission);
       const actor = await this.actor(p, input.actor, 'send_quote', { kind: 'consultation', id: requestId }, pricing.clientTotal);
+      await this.screening.requireTransactable(trx, [{ party: expert, self: true }, { party: { kind: 'person', id: p.personId }, self: true }, { party: { kind: 'person', id: request.requester_person_id }, self: false }], 'consultation.propose', now);
       const bookingTerms = BookingTermsSchema.parse({
         request: { id: request.id, version: 1, digest: digestOf(request.digest) },
         offering: { offeringId: offering.offering_id, version: { id: current.version_id, version: current.version, digest: digestOf(current.digest) }, title: catalogue.title },
@@ -745,7 +746,7 @@ export class ConsultationsService {
       if (actor.via === 'agent' && terms.pricing.clientTotal) {
         const own = await consultationRequestPrivate.get(trx, requestId);
         const ceiling = money(own?.budget_ceiling_minor ?? null, own?.budget_ceiling_currency ?? null);
-        if (ceiling && ceiling.currency === terms.pricing.clientTotal.currency && BigInt(terms.pricing.clientTotal.minorUnits) > BigInt(ceiling.minorUnits)) {
+        if (ceiling && (ceiling.currency !== terms.pricing.clientTotal.currency || BigInt(terms.pricing.clientTotal.minorUnits) > BigInt(ceiling.minorUnits))) {
           throw new ApiError('access.mandate_scope', 'the agent acts only within the requester\'s private limits', { reason: 'outside_private_constraints' });
         }
       }
@@ -833,7 +834,7 @@ export class ConsultationsService {
       if (verified.digest.value !== agreement.accepted_terms_digest || input.acceptedTermsDigest.value !== agreement.accepted_terms_digest) {
         throw new ApiError('commercial.digest_mismatch', CHECK_MESSAGES['commercial.digest_mismatch'], { reason: 'digest_mismatch' });
       }
-      await this.screening.requireTransactable(trx, [{ party: seller, self: true }, { party: terms.client, self: false }], 'consultation.confirm', this.now());
+      await this.screening.requireTransactable(trx, [{ party: seller, self: true }, { party: { kind: 'person', id: p.personId }, self: true }, { party: terms.client, self: false }], 'consultation.confirm', this.now());
       const consent = this.consent(input.electronicRecords);
       const event = await this.recordEvent(trx, p, agreement, 'seller_accepts_order', seller, actor, key, { consent });
       const saved = await agreements.setStatus(trx, agreementId, input.expectedRevision, { status: 'accepted_by_both' });
