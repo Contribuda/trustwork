@@ -28,12 +28,13 @@ const h=await startHarness('fee_legacy_cutoff',{
 rmSync(directory,{recursive:true,force:true});
 test('migration captures exact historical sources once; newly backdated or origin-less records cannot declare themselves legacy',{skip:h?false:SKIP_REASON},async t=>{
   if(!h)return;
+  t.after(()=>h.close());
   const w=await feeWorld(h.db.admin,h.pool);
   const buyerEmail='synthetic-legacy-buyer@example.invalid',sellerEmail='synthetic-legacy-seller@example.invalid';
   await addLogins(h,[[w.p.outsider,buyerEmail],[w.p.operator,sellerEmail]]);
   const buyer=h.client(),seller=h.client();await signIn(buyer,buyerEmail);await signIn(seller,sellerEmail);
   const f=await taskFixture(h,{buyerId:w.p.outsider,sellerId:w.p.operator,buyerEmail,sellerEmail,hubA:w.hubA,hubB:w.hubB,buyerClient:buyer,sellerClient:seller});
-  t.after(async()=>{await f.close();await h.close();});
+  t.after(()=>f.close());
   const prepareTask=async()=>{const source=await f.prepare();return taskOk<OwnerTaskRequestView>(await buyer.post(source.url,source.accept),201).agreements[0]!;};
   const oldTask=await prepareTask();
   await screenClear(h,[{kind:'person',id:w.p.outsider},{kind:'person',id:w.p.operator}]);
@@ -52,19 +53,7 @@ test('migration captures exact historical sources once; newly backdated or origi
     return {booking:b,agreement:accepted.agreements[0]!};
   };
   const oldConsultation=await prepareConsultation();
-  // This historical-data fixture intentionally hosts the current AGT service schema before the fee cutover.
-  // Execute the exact fee scripts as a transactional SQL fixture; never lie to the forward-only migration ledger.
-  // The production runner and its ordering refusal remain covered by tests/data/migrations.test.ts.
-  const cutover = await h.db.admin.connect();
-  try {
-    await cutover.query('BEGIN');
-    await cutover.query('SET LOCAL ROLE trustwork_owner');
-    await cutover.query('SET LOCAL search_path = trustwork, pg_temp');
-    await cutover.query("SELECT set_config('trustwork.maintenance', 'on', true)");
-    for (const file of loadMigrations().filter(file => file.filename.startsWith('202611111000'))) await cutover.query(file.script);
-    await cutover.query('COMMIT');
-  } catch (error) { await cutover.query('ROLLBACK'); throw error; }
-  finally { cutover.release(); }
+  await h.db.migrate();
   const captured=(await h.db.admin.query('SELECT source_kind,source_id,source_digest FROM trustwork.billing_fee_legacy_source ORDER BY source_kind')).rows;
   assert.deepEqual(captured,[{source_kind:'consultation',source_id:oldConsultation.booking.id,source_digest:oldConsultation.booking.digest.value},{source_kind:'task',source_id:oldTask.id,source_digest:oldTask.acceptedTermsDigest.value}]);
   await t.test('actual pre-migration records retain their old final acceptance',async()=>{
