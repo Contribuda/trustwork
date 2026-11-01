@@ -47,10 +47,10 @@ export class HubsService {
     return { elevationId: e.elevationId, requestId: e.state.requestId, reasonCode: 'console_action', reasonText: body.reason };
   }
 
-  private async staff<T>(e: Elevated, body: Cmd, attempt: Attempt | null, fn: (trx: Transaction, cmd: CommandContext, p: Principal) => Promise<T>): Promise<T> {
+  private async staff<T>(e: Elevated, body: Cmd, attempt: Attempt | null, fn: (trx: Transaction, cmd: CommandContext, p: Principal) => Promise<T>, refreshStale = true): Promise<T> {
     const cmd = this.commandContext(e, body);
     try {
-      return await this.principals.runAs(e.state, (trx, p) => fn(trx, cmd, p));
+      return await this.principals.runAs(e.state, (trx, p) => fn(trx, cmd, p), { refreshStale });
     } catch (error) {
       const refusal = hubsRefusal(error);
       if (refusal && attempt && isAuthorityRefusal(refusal)) await this.recordDenied(e, cmd, attempt, refusal).catch((failure: unknown) => this.ctx.log('hubs.denied_audit_failed', failure));
@@ -222,7 +222,7 @@ export class HubsService {
       const boundContext = domain === 'jurisdiction' ? { ...cmd, sessionId: e.state.session?.id } : cmd;
       const active = await hubConfig.activate(trx, boundContext, versionId, body.expectedRevision, action ? body.approvalId : null);
       return { result: await this.result(trx, cmd, 'applied', active.id, active.revision, null), version: toConfigVersion(active) };
-    });
+    }, false);
   }
 
   /**

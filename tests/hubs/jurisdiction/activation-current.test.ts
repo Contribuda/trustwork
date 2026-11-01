@@ -1,3 +1,4 @@
+import { staleRequest } from './current-request.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
@@ -55,10 +56,17 @@ test('executable policy activation rechecks current authority after domain waits
     await assert.rejects(a.as(p.officer, trx => hubConfig.activate(trx, missing, v.id, v.revision, ap)), { code: '42501' });
     await assert.rejects(a.as(p.officer, trx => hubConfig.activate(trx, { ...ctx, ...{ sessionId: world.sessions.owner } }, v.id, v.revision, ap)), { code: '42501' });
   });
-  await t.test('registered hub activation supplies the resolved request session', async () => {
+  await t.test('registered hub activation supplies the resolved request session', async t => {
     const { v, ap } = await setup(); const token = randomBytes(32).toString('base64url');
     await h.db.admin.query('UPDATE trustwork.session SET token_hash=$1 WHERE id=$2', [createHash('sha256').update(token).digest(), world.sessions.officer]);
     h.staff.set(p.officer, ['compliance-officer']); const client = h.client(); client.setSessionCookie(token);
+    await t.test('resolved jurisdiction activation does not refresh changed request authority', async () => {
+      const staleKey = randomUUID();
+      await staleRequest(h, () => client.post(`/v1/admin/hubs/${f.hubId}/config/${v.id}/activate`, {
+        contractVersion: HUB_CONSOLE_CONTRACT_VERSION, idempotencyKey: staleKey, reason: 'Synthetic stale activation', expectedRevision: v.revision, approvalId: ap,
+      }, { idempotencyKey: staleKey }));
+      assert.equal((await h.db.admin.query('SELECT status FROM trustwork.hub_config_version WHERE id=$1', [v.id])).rows[0]?.status, 'draft');
+    });
     const key = randomUUID();
     const r = await client.post(`/v1/admin/hubs/${f.hubId}/config/${v.id}/activate`, {
       contractVersion: HUB_CONSOLE_CONTRACT_VERSION, idempotencyKey: key, reason: 'Synthetic current-session activation', expectedRevision: v.revision, approvalId: ap,

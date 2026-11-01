@@ -13,7 +13,7 @@ export class JurisdictionApplicabilityService {
     const sessionId = state.session.id;
     return this.principals.runAs(state, trx => jurisdictionApplicabilityReview[operation](trx, sessionId, {
       elevationId, requestId: state.requestId, reasonCode: 'jurisdiction_review', reasonText: body.reason,
-    }, id, body.evidenceDigest)).catch((error: unknown) => { throw hubsRefusal(error) ?? error; });
+    }, id, body.evidenceDigest), { refreshStale: false }).catch((error: unknown) => { throw hubsRefusal(error) ?? error; });
   }
 
   propose(state: RequestState, elevationId: string, evidenceId: string, body: Input) { return this.run(state, elevationId, evidenceId, body, 'propose'); }

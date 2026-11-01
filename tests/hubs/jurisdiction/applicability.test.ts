@@ -1,3 +1,4 @@
+import { staleRequest } from './current-request.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
@@ -34,7 +35,7 @@ test('owning staged evidence review uses exact current two-person authority', { 
     assert.equal((await a.as(p.officer, trx => review.activate(trx, world.sessions.officer, officer, r.reviewId, e.digest))).state, 'active');
     await assert.rejects(a.as(p.officer, trx => review.activate(trx, world.sessions.officer, officer, r.reviewId, e.digest)));
   });
-  await t.test('registered API rejects invented jurisdiction and consumes an exact immutable staged evidence ID', async () => {
+  await t.test('registered API rejects invented jurisdiction and consumes an exact immutable staged evidence ID', async t => {
     const e = await stage(); const clients = { owner: h.client(), officer: h.client() };
     for (const key of ['owner', 'officer'] as const) {
       const token = randomBytes(32).toString('base64url');
@@ -43,8 +44,14 @@ test('owning staged evidence review uses exact current two-person authority', { 
     }
     const path = `/v1/admin/jurisdiction-applicability/evidence/${e.id}/review`;
     assert.equal((await clients.owner.post(path, { evidenceDigest: e.digest, reason: 'Synthetic review', jurisdiction: 'US' })).status, 422);
+    await t.test('resolved review does not refresh changed request authority', async () => {
+      await staleRequest(h, () => clients.owner.post(path, { evidenceDigest: e.digest, reason: 'Synthetic stale review' }));
+    });
     const r = await clients.owner.post(path, { evidenceDigest: e.digest, reason: 'Synthetic review' });
     assert.equal(r.status, 200, JSON.stringify(r.body));
+    await t.test('resolved activation does not refresh changed request authority', async () => {
+      await staleRequest(h, () => clients.officer.post(`/v1/admin/jurisdiction-applicability/reviews/${(r.body as { reviewId: string }).reviewId}/activate`, { evidenceDigest: e.digest, reason: 'Synthetic stale activation' }));
+    });
     const done = await clients.officer.post(`/v1/admin/jurisdiction-applicability/reviews/${(r.body as { reviewId: string }).reviewId}/activate`, { evidenceDigest: e.digest, reason: 'Synthetic second review' });
     assert.equal(done.status, 200, JSON.stringify(done.body));
   });

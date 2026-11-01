@@ -1,3 +1,4 @@
+import { staleRequest } from './current-request.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
@@ -68,6 +69,10 @@ test('typed consent through registered API and competing PostgreSQL connections'
     }
     await assert.rejects(a.as(p.moderator, trx => jurisdictionConsent.grant(trx, world.sessions.outsider, quoteId, notices.seller, 'en')), { code: '42501' });
   });
+  await t.test('resolved consent grant never refreshes stale request authority', async () => {
+    await staleRequest(h, () => clients.seller.post(path, { noticeDigest: notices.seller, locale: 'en' }));
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.jurisdiction_consent_receipt')).rowCount, 0);
+  });
   const receipts = {} as Record<'buyer' | 'seller', string>;
   await t.test('every affected party consents separately; retry preserves the exact immutable receipt', async () => {
     assert.equal((await a.as(p.moderator, trx => jurisdictionAuthority.limits(trx, quoteId, 'send_quote'))).consentSatisfied, false);
@@ -83,6 +88,10 @@ test('typed consent through registered API and competing PostgreSQL connections'
     assert.equal((await a.as(p.moderator, trx => jurisdictionAuthority.limits(trx, quoteId, 'send_quote'))).consentSatisfied, true);
     await assert.rejects(h.db.admin.query("UPDATE trustwork.jurisdiction_consent_receipt SET locale='es' WHERE id=$1", [receipts.seller]), { code: '23000' });
     assert.equal((await clients.seller.post(path, { noticeDigest: notices.seller, locale: 'es' })).status, 422);
+  });
+  await t.test('resolved revocation never refreshes stale request authority', async () => {
+    await staleRequest(h, () => clients.buyer.post(`/v1/jurisdiction-consents/${receipts.buyer}/revoke`, {}));
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.jurisdiction_consent_revocation')).rowCount, 0);
   });
   await t.test('policy change wins: a waiting old-notice grant cannot bind to the replacement', async () => {
     const next = structuredClone(f.payload); next.agentSettings.jurisdictions[0]!.policy.actionLimits[0]!.approvalAbove!.minorUnits = '50';

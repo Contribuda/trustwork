@@ -11,7 +11,7 @@ export class JurisdictionConsentService {
 
   private run<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>): Promise<T> {
     if (!state.session) throw new ApiError('auth.session_invalid', 'authentication required');
-    return this.principals.runAs(state, fn).catch((error: unknown) => { throw hubsRefusal(error) ?? error; });
+    return this.principals.runAs(state, fn, { refreshStale: false }).catch((error: unknown) => { throw hubsRefusal(error) ?? error; });
   }
 
   preview(state: RequestState, quoteId: string) {
