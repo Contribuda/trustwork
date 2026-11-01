@@ -44,17 +44,13 @@ export class HealthController {
 }
 
 /**
- * Composition root: health always; identity, projects, directory, plans, catalogue, procurement, approval routes (PRC-001),
- * sales, the supplier base (PRC-003), transactions, profiles, tasks, execution and trust, the reputation builder (REP-001), platform administration,
- * the support workspace (SUP-001), content (CNT-001), the assistant, agent goals and representation (AGT-001), the deployment-location attestation
- * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), keys, providers and models (KEYS-001), communications (COMMS-001) and the MCP
- * the support workspace (SUP-001), content (CNT-001), the hub source registry (SRC-001), the assistant, agent goals and representation (AGT-001), the deployment-location attestation
- * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), communications (COMMS-001) and the MCP
- * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), the setup wizard (HUB-004), keys, providers and models
- * (KEYS-001), communications (COMMS-001) and the MCP
- * authorization server (MCP-002) only when a database is configured;
- * files (FILE-001) additionally only with a configured blob store. Every module's agent check goes to the one AST-001
- * mandate store (confirmed mandates); a caller-supplied mandate port in `files` still wins (tests).
+ * Composition root: health always; identity, projects, directory, plans, catalogue, procurement,
+ * sales, supplier base, transactions, profiles, tasks, execution, reputation and platform administration
+ * only with a configured database. The same boundary registers support, content, sources (SRC-001),
+ * assistant goals and representation, attestation (SANC-009), hubs (HUB-001), setup (HUB-004),
+ * providers (KEYS-001), communications (COMMS-001) and MCP authorization (MCP-002).
+ * Files additionally require a blob store. Module agent checks use the one AST-001 mandate store;
+ * an explicitly supplied files mandate port still wins in tests.
  */
 @Module({})
 export class AppModule {
