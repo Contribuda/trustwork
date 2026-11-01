@@ -1,0 +1,44 @@
+
+> @trustwork/ui@0.1.0 test:unit
+> node ../../scripts/run-tests.mjs tests/unit
+
+✔ APG arrows, Home/End, control bounds and page navigation never wrap (1.077125ms)
+✔ interaction Tab includes optional selection/actions, wraps rows and exits outer bounds (0.369583ms)
+✔ page selection preserves explicit selections on other pages without mutating input (0.163875ms)
+✔ all-matching selection is explicit, excludes rows and cannot leak into a changed query (0.157333ms)
+✔ network display denies every canonical restricted code, descendants, mixed and empty territories (1.286375ms)
+✔ console translations have the same nonempty keys in all seven dictionaries (3.190458ms)
+✔ interpolates named parameters (0.784125ms)
+✔ selects Russian plural categories one / few / many (44.446208ms)
+✔ plural inside a sentence keeps surrounding text (0.246542ms)
+✔ throws for unknown keys and reads array entries by index (0.31375ms)
+✔ date-only strings are calendar dates in any time zone and use the DS-000 long form without the Russian year suffix (0.673042ms)
+✔ non-finite plural counts fall back to the many form and stay visible (0.121083ms)
+✔ rate-limit message pluralises minutes (0.132375ms)
+✔ unknown parameters are left visible so missing data is noticed in review (0.069417ms)
+✔ navigation invariants from the specification are intact in the reference dictionary (0.96075ms)
+✔ every dictionary carries exactly the reference keys, no empty strings and no placeholders (23.42025ms)
+✔ Russian copy is Cyrillic (Latin only for product names and keys) (0.85875ms)
+✔ plural groups carry the forms their language needs (0.4505ms)
+✔ no Russian-provider names remain in any dictionary (3.042084ms)
+✔ the active locale selects messages, plural rules and date formats; English is the fallback (35.549125ms)
+✔ the engine media set is 16 artworks on disk and no photographs (3.510666ms)
+✔ a deployment can register its own photographs and coverFor mixes them in (0.172667ms)
+✔ coverFor is deterministic, spreads across the artwork pool and never gives people a photograph (16.642292ms)
+✔ hashSeed is stable and references resolve (0.221167ms)
+✔ tokens.css is generated from tokens/index.ts and committed in sync (1.532792ms)
+✔ z-index scale follows content < sticky < assistant < panel < dialog < toast (0.59625ms)
+✔ breakpoints are mobile < 768, tablet 768-1279, desktop >= 1280 (0.081458ms)
+✔ brand blues are preserved in the tonal scale (0.157666ms)
+✔ text colours reach WCAG AA contrast on their backgrounds (0.332416ms)
+✔ white text over the scrim keeps AA contrast even above a pure white photograph (0.260166ms)
+✔ type scale is descending with tight tracking only on display sizes (0.119292ms)
+✔ elevation and motion tokens exist and reduced motion zeroes every duration (0.841958ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 316.793042
