@@ -1,6 +1,6 @@
 # ADR 019: administrative interface library boundary
 
-Status: **Proposed**
+Status: **Technical composition boundary accepted for DS-005; visual direction and remaining proposals unaccepted**
 
 Date: 2026-11-01
 
@@ -12,7 +12,13 @@ The stopped administrative redesign needs consistent navigation, dense operation
 
 ADR numbers 015 (editorial), 016 (exchange), 017 (outreach) and 018 (operating company) remain reserved for their respective designs. This proposal does not accept or supersede any of them.
 
-## Proposed decision
+## Limited technical acceptance
+
+On 2026-11-01 the conductor, under delegated maintainer authority, accepted only the existing-stack composition boundary for DS-005 in [issue #504, comment 6555259864](https://github.com/Contribuda/trustwork/issues/504#issuecomment-6555259864). This permits reuse of merged DS-003 React Aria primitives, current tokens, CSS Modules, local fonts/icons and shared locale/brand sources. It accepts no new dependency, product policy, domain permission or authorization path. Controlled navigation callbacks confer no authority. One account avatar, one participant company and one assistant surface remain the boundary.
+
+Owner visual approval, native-language review, manual accessibility and native screen-reader acceptance are unperformed. This technical acceptance is not DS-005 implementation acceptance or acceptance of ADM-UX-001, ADM-UX-002, or live console data.
+
+## Technical boundary and remaining proposals
 
 1. Continue the existing component stack. Wrap existing accessible primitives in shared administrative compositions; do not introduce an independent vendor dashboard theme or replace the public/workspace system.
 2. Keep native tables for read-only records. Use the existing DataTable/grid work from DS-003 for controlled sorting, pagination, selection and accessible editing. Do not install a new table, chart, form or editor library in this design PR.
@@ -41,4 +47,4 @@ The prototype source can carry technical debt that must not cross into productio
 - [Six prototypes and reproducible checks](../design/prototypes/README.md)
 - [Console rules and component ownership](../engine/hub-console/console-design.md)
 
-Owner review of the visual direction and maintainer acceptance of this proposal remain pending. Editorial standing policies, outreach modes and operating-company policy questions are outside this ADR; retain their restrictive defaults.
+Owner review of the visual direction and acceptance of the remaining proposals remain pending; the limited technical acceptance above is recorded separately. Editorial standing policies, outreach modes and operating-company policy questions are outside this ADR; retain their restrictive defaults.

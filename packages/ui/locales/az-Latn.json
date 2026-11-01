@@ -524,5 +524,42 @@
     },
     "language": "Dil",
     "sort": "Sıralama"
+  },
+  "adminShell": {
+    "scope": "Bu səhifənin əhatəsi: {scope}",
+    "back": "Geri: {page}",
+    "emptyNavigation": "Bu əhatədə əlçatan bölmələr yoxdur.",
+    "accountUnavailable": "Hesabın əlçatmaz əməliyyatlarını burada yerinə yetirmək olmaz.",
+    "emptyAccount": "Burada hesab əməliyyatları əlçatan deyil.",
+    "scrollNavigation": "Bütün bölmələri görmək üçün sürüşdürün.",
+    "unavailable": "Bu bölmə önbaxışda əlçatan deyil.",
+    "emptyTitle": "Yoxlanılacaq heç nə yoxdur",
+    "emptyBody": "Bu əhatədə yoxlanılacaq iş olduqda materiallar burada görünəcək.",
+    "scopeName": "Nümunə hab · San Dieqo",
+    "person": "Nümunə əməkdaş",
+    "company": "Nümunə şirkət",
+    "longTitle": "Müvəqqəti əməkdaşların və xarici tərəfdaşların giriş hüquqlarının və icazələrinin yoxlanılması",
+    "translationNote": "Tərcümələr ana dili daşıyıcılarının yoxlamasını gözləyən qaralamalardır.",
+    "previewNotice": "Sintetik məlumatlarla önbaxış. Naviqasiya yalnız bu nümunəni dəyişir; heç nə saxlanmır.",
+    "requestNotice": "Bu əməliyyat önbaxışda əlçatan deyil. Heç nə dəyişmədi.",
+    "title": "İdarəetmə",
+    "navigation": "Əsas naviqasiya",
+    "skip": "Məzmuna keç",
+    "overview": "İcmal",
+    "editorial": "Redaksiya",
+    "outreach": "Cəlbetmə",
+    "network": "Şəbəkə",
+    "approvals": "Təsdiqlər",
+    "notifications": "Bildirişlər",
+    "help": "Kömək",
+    "languages": {
+      "en": "English",
+      "es": "Español",
+      "ru": "Русский",
+      "uz-Latn": "O‘zbekcha",
+      "ka": "ქართული",
+      "hy": "Հայերեն",
+      "az-Latn": "Azərbaycanca"
+    }
   }
 }

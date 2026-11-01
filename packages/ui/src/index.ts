@@ -130,3 +130,5 @@ export * from './components/ScopePicker/ScopePicker';
 export * from './components/StepUpPrompt/ReasonField';
 export * from './components/StepUpPrompt/StepUpPrompt';
 export * from './components/StepUpPrompt/TypedConfirmation';
+
+export * from './components/AdminShell/AdminShell';

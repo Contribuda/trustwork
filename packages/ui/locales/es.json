@@ -524,5 +524,42 @@
     },
     "language": "Idioma",
     "sort": "Ordenar por"
+  },
+  "adminShell": {
+    "scope": "Esta página actúa sobre: {scope}",
+    "back": "Volver a {page}",
+    "emptyNavigation": "No hay secciones disponibles en este ámbito.",
+    "accountUnavailable": "Las acciones de cuenta no disponibles no se pueden usar aquí.",
+    "emptyAccount": "No hay acciones de cuenta disponibles aquí.",
+    "scrollNavigation": "Desplázate para ver todas las secciones.",
+    "unavailable": "Esta sección no está disponible en esta vista previa.",
+    "emptyTitle": "Nada que revisar",
+    "emptyBody": "Los elementos aparecerán aquí cuando haya trabajo que revisar en este ámbito.",
+    "scopeName": "Centro de ejemplo · San Diego",
+    "person": "Miembro del personal de ejemplo",
+    "company": "Empresa de ejemplo",
+    "longTitle": "Revisiones de acceso y permisos para personal temporal y colaboradores externos",
+    "translationNote": "Las traducciones son borradores pendientes de revisión por hablantes nativos.",
+    "previewNotice": "Vista previa con datos sintéticos. La navegación solo cambia este ejemplo; no se guarda nada.",
+    "requestNotice": "Esta acción no está disponible en esta vista previa. No cambió nada.",
+    "title": "Administración",
+    "navigation": "Navegación principal",
+    "skip": "Saltar al contenido",
+    "overview": "Resumen",
+    "editorial": "Editorial",
+    "outreach": "Contacto",
+    "network": "Red",
+    "approvals": "Aprobaciones",
+    "notifications": "Notificaciones",
+    "help": "Ayuda",
+    "languages": {
+      "en": "English",
+      "es": "Español",
+      "ru": "Русский",
+      "uz-Latn": "O‘zbekcha",
+      "ka": "ქართული",
+      "hy": "Հայերեն",
+      "az-Latn": "Azərbaycanca"
+    }
   }
 }
