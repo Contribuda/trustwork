@@ -2992,7 +2992,7 @@
       "id": "SUP-001",
       "title": "Support workspace and account servicing without impersonation",
       "area": "platform-admin-backend",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "ADM-001"
       ],

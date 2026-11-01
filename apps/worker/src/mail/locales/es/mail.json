@@ -67,7 +67,15 @@
       "second_factor_reset_requested": "Se pidió a soporte restablecer la verificación en dos pasos de su cuenta. Nada cambia hasta que lo apruebe un segundo miembro del personal y pase un periodo de espera de al menos 72 horas.",
       "second_factor_reset_approved": "Se aprobó el restablecimiento de la verificación en dos pasos de su cuenta. Entra en vigor después de un periodo de espera de al menos 72 horas; hasta entonces puede cancelarlo en la configuración de seguridad.",
       "second_factor_reset_cancelled": "Se canceló el restablecimiento de la verificación en dos pasos de su cuenta. No cambió nada.",
-      "second_factor_reset_completed": "Soporte restableció la verificación en dos pasos de su cuenta y se cerraron todas las sesiones. Inicie sesión y vuelva a configurar la verificación en dos pasos."
+      "second_factor_reset_completed": "Soporte restableció la verificación en dos pasos de su cuenta y se cerraron todas las sesiones. Inicie sesión y vuelva a configurar la verificación en dos pasos.",
+      "recovery_email_rebind_requested": "Se pidió a soporte cambiar la dirección de correo de recuperación de su cuenta. Nada cambia hasta que lo apruebe un segundo miembro del personal y pase un periodo de espera de al menos 72 horas.",
+      "recovery_email_rebind_approved": "Se aprobó un cambio de la dirección de correo de recuperación de su cuenta. Entra en vigor tras un periodo de espera de al menos 72 horas; hasta entonces puede cancelarlo en su cuenta.",
+      "recovery_email_rebind_cancelled": "Se canceló el cambio de la dirección de correo de recuperación de su cuenta. No ha cambiado nada.",
+      "recovery_email_rebind_completed": "Terminó el periodo de espera y soporte envió un enlace de confirmación a la nueva dirección de recuperación. La dirección queda vinculada a su cuenta solo después de abrir ese enlace.",
+      "sessions_revoked_by_support": "A petición suya, soporte cerró todas las sesiones de su cuenta. Inicie sesión de nuevo para continuar.",
+      "password_reset_required": "Soporte cerró todas las sesiones de su cuenta y pidió una contraseña nueva. Use el enlace para restablecer la contraseña en la página de inicio de sesión.",
+      "account_unlocked": "Soporte borró los intentos fallidos de inicio de sesión de su cuenta, así que puede iniciar sesión sin esperar.",
+      "support_guided_task": "Soporte le envió instrucciones paso a paso en su caso de soporte. Abra el caso en su cuenta para seguirlas usted mismo."
     },
     "notYou": "Si no fue usted, restablezca su contraseña ahora y revise sus sesiones activas.",
     "action": "Restablecer la contraseña"

@@ -67,7 +67,15 @@
       "second_factor_reset_requested": "Qo‘llab-quvvatlash xizmatiga hisobingizning ikki bosqichli tasdiqlashini tiklash so‘rovi keldi. Ikkinchi xodim tasdiqlamaguncha va kamida 72 soatlik kutish muddati o‘tmaguncha hech narsa o‘zgarmaydi.",
       "second_factor_reset_approved": "Hisobingizning ikki bosqichli tasdiqlashini tiklash tasdiqlandi. U kamida 72 soatlik kutish muddatidan keyin kuchga kiradi; shu vaqtgacha uni xavfsizlik sozlamalarida bekor qilishingiz mumkin.",
       "second_factor_reset_cancelled": "Hisobingizning ikki bosqichli tasdiqlashini tiklash bekor qilindi. Hech narsa o‘zgarmadi.",
-      "second_factor_reset_completed": "Qo‘llab-quvvatlash xizmati hisobingizning ikki bosqichli tasdiqlashini tikladi va barcha seanslardan chiqildi. Tizimga kiring va ikki bosqichli tasdiqlashni qaytadan sozlang."
+      "second_factor_reset_completed": "Qo‘llab-quvvatlash xizmati hisobingizning ikki bosqichli tasdiqlashini tikladi va barcha seanslardan chiqildi. Tizimga kiring va ikki bosqichli tasdiqlashni qaytadan sozlang.",
+      "recovery_email_rebind_requested": "Qo‘llab-quvvatlash xizmatiga hisobingizning zaxira elektron pochta manzilini o‘zgartirish so‘rovi keldi. Ikkinchi xodim tasdiqlamaguncha va kamida 72 soatlik kutish muddati o‘tmaguncha hech narsa o‘zgarmaydi.",
+      "recovery_email_rebind_approved": "Hisobingizning zaxira elektron pochta manzilini o‘zgartirish tasdiqlandi. U kamida 72 soatlik kutish muddatidan keyin kuchga kiradi; shu vaqtgacha uni hisobingizda bekor qilishingiz mumkin.",
+      "recovery_email_rebind_cancelled": "Hisobingizning zaxira elektron pochta manzilini o‘zgartirish bekor qilindi. Hech narsa o‘zgarmadi.",
+      "recovery_email_rebind_completed": "Kutish muddati tugadi va qo‘llab-quvvatlash xizmati yangi zaxira manzilga tasdiqlash havolasini yubordi. Manzil faqat shu havola ochilgandan keyin hisobingizga bog‘lanadi.",
+      "sessions_revoked_by_support": "So‘rovingizga ko‘ra qo‘llab-quvvatlash xizmati hisobingizning barcha seanslaridan chiqdi. Davom etish uchun qaytadan kiring.",
+      "password_reset_required": "Qo‘llab-quvvatlash xizmati hisobingizning barcha seanslaridan chiqdi va yangi parol o‘rnatishni so‘radi. Kirish sahifasidagi parolni tiklash havolasidan foydalaning.",
+      "account_unlocked": "Qo‘llab-quvvatlash xizmati hisobingizga muvaffaqiyatsiz kirish urinishlarini tozaladi, endi kutmasdan kirishingiz mumkin.",
+      "support_guided_task": "Qo‘llab-quvvatlash xizmati murojaatingizga bosqichma-bosqich ko‘rsatma yubordi. Ko‘rsatmalarni o‘zingiz bajarish uchun hisobingizda murojaatni oching."
     },
     "notYou": "Agar bu siz bo‘lmasangiz, hoziroq parolingizni tiklang va faol seanslaringizni tekshiring.",
     "action": "Parolni tiklash"

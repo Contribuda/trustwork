@@ -67,7 +67,15 @@
       "second_factor_reset_requested": "Dəstək xidmətinə hesabınızın iki mərhələli yoxlamasını sıfırlamaq üçün müraciət edilib. İkinci əməkdaş təsdiqləyənə və ən azı 72 saatlıq gözləmə müddəti keçənə qədər heç nə dəyişməyəcək.",
       "second_factor_reset_approved": "Hesabınızın iki mərhələli yoxlamasının sıfırlanması təsdiqləndi. O, ən azı 72 saatlıq gözləmə müddətindən sonra qüvvəyə minəcək; o vaxta qədər onu təhlükəsizlik ayarlarında ləğv edə bilərsiniz.",
       "second_factor_reset_cancelled": "Hesabınızın iki mərhələli yoxlamasının sıfırlanması ləğv edildi. Heç nə dəyişməyib.",
-      "second_factor_reset_completed": "Dəstək xidməti hesabınızın iki mərhələli yoxlamasını sıfırladı və bütün seanslardan çıxış edildi. Daxil olun və iki mərhələli yoxlamanı yenidən qurun."
+      "second_factor_reset_completed": "Dəstək xidməti hesabınızın iki mərhələli yoxlamasını sıfırladı və bütün seanslardan çıxış edildi. Daxil olun və iki mərhələli yoxlamanı yenidən qurun.",
+      "recovery_email_rebind_requested": "Dəstək xidmətinə hesabınızın bərpa e-poçt ünvanını dəyişmək üçün müraciət edilib. İkinci əməkdaş təsdiqləyənə və ən azı 72 saatlıq gözləmə müddəti keçənə qədər heç nə dəyişməyəcək.",
+      "recovery_email_rebind_approved": "Hesabınızın bərpa e-poçt ünvanının dəyişdirilməsi təsdiqləndi. O, ən azı 72 saatlıq gözləmə müddətindən sonra qüvvəyə minir; o vaxta qədər onu hesabınızda ləğv edə bilərsiniz.",
+      "recovery_email_rebind_cancelled": "Hesabınızın bərpa e-poçt ünvanının dəyişdirilməsi ləğv edildi. Heç nə dəyişmədi.",
+      "recovery_email_rebind_completed": "Gözləmə müddəti bitdi və dəstək xidməti yeni bərpa ünvanına təsdiq keçidi göndərdi. Ünvan hesabınıza yalnız həmin keçid açıldıqdan sonra bağlanacaq.",
+      "sessions_revoked_by_support": "Sorğunuza əsasən dəstək xidməti hesabınızın bütün seanslarından çıxış etdi. Davam etmək üçün yenidən daxil olun.",
+      "password_reset_required": "Dəstək xidməti hesabınızın bütün seanslarından çıxış etdi və yeni şifrə təyin etməyi xahiş etdi. Giriş səhifəsindəki şifrəni bərpa etmə keçidindən istifadə edin.",
+      "account_unlocked": "Dəstək xidməti hesabınıza uğursuz giriş cəhdlərini təmizlədi, artıq gözləmədən daxil ola bilərsiniz.",
+      "support_guided_task": "Dəstək xidməti müraciətinizə addım-addım təlimat göndərdi. Addımları özünüz yerinə yetirmək üçün hesabınızda müraciəti açın."
     },
     "notYou": "Bu siz deyildinizsə, şifrənizi dərhal bərpa edin və aktiv seanslarınızı yoxlayın.",
     "action": "Şifrəni bərpa et"

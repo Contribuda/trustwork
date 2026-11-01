@@ -68,7 +68,15 @@
       "second_factor_reset_requested": "Support was asked to reset the two-step verification of your account. Nothing changes until a second staff member approves it and a waiting period of at least 72 hours has passed.",
       "second_factor_reset_approved": "A reset of the two-step verification of your account was approved. It takes effect after a waiting period of at least 72 hours; you can cancel it in the security settings until then.",
       "second_factor_reset_cancelled": "The reset of the two-step verification of your account was cancelled. Nothing has changed.",
-      "second_factor_reset_completed": "The two-step verification of your account was reset by support, and every session was signed out. Sign in and set up two-step verification again."
+      "second_factor_reset_completed": "The two-step verification of your account was reset by support, and every session was signed out. Sign in and set up two-step verification again.",
+      "recovery_email_rebind_requested": "Support was asked to change the recovery email address of your account. Nothing changes until a second staff member approves it and a waiting period of at least 72 hours has passed.",
+      "recovery_email_rebind_approved": "A change of the recovery email address of your account was approved. It takes effect after a waiting period of at least 72 hours; you can cancel it in your account until then.",
+      "recovery_email_rebind_cancelled": "The change of the recovery email address of your account was cancelled. Nothing has changed.",
+      "recovery_email_rebind_completed": "The waiting period ended and support sent a confirmation link to the new recovery email address. The address is bound to your account only after that link is opened.",
+      "sessions_revoked_by_support": "Support signed your account out of every session at your request. Sign in again to continue.",
+      "password_reset_required": "Support signed your account out of every session and asked for a new password. Use the password reset link on the sign-in page to set one.",
+      "account_unlocked": "Support cleared the failed sign-in attempts on your account, so you can sign in again without waiting.",
+      "support_guided_task": "Support sent you step-by-step instructions in your support case. Open the case in your account to follow them yourself."
     },
     "notYou": "If this was not you, reset your password now and review your active sessions.",
     "action": "Reset password"
