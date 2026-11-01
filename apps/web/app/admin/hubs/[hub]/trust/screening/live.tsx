@@ -113,7 +113,10 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
         evidence={{official_export:c.listControls.exportEvidence,source_review:c.listControls.reviewEvidence}} disabled={!mayAct} /> : <p>{c.listControls.noSources}</p>}
       <h3>{c.listControls.history}</h3><p>{c.historyLimit}</p>
       {data.listAuthority.proposals.map((proposal)=><article className="screening-card" key={proposal.id}>
-        <h4>{c.listControls.proposalStates[proposal.state]}</h4><p>{proposal.reason}</p><p>{fmtDate(proposal.createdAt)}</p>
+        <h4>{c.listControls.proposalStates[proposal.state]}</h4>
+        <p>{c.listControls.source}: <code>{proposal.source.packCode} / {proposal.source.factId} / {proposal.source.adapter}</code></p>
+        <p><code>{proposal.source.sourceUrl}</code></p><p>{c.digest}: <code>{proposal.source.sourceDigest}</code></p>
+        <p>{c.evidence}: {proposal.evidence === 'official_export' ? c.listControls.exportEvidence : c.listControls.reviewEvidence}</p><p>{proposal.reason}</p><p>{fmtDate(proposal.createdAt)}</p>
         <dl><dt>{c.listControls.cadence}</dt><dd>{number(proposal.cadenceSeconds)}</dd><dt>{c.listControls.warning}</dt><dd>{number(proposal.warnAfterSeconds)}</dd><dt>{c.listControls.stale}</dt><dd>{number(proposal.staleAfterSeconds)}</dd></dl>
         <p>{c.digest}: <code>{proposal.actionDigest}</code></p>
         {proposal.state === 'pending' ? <><p>{c.secondRequired}</p>

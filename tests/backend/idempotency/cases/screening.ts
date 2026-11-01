@@ -1,3 +1,4 @@
+import { listCrashCases } from '../../../web/admin/screening/list-crashes.js';
 import assert from 'node:assert/strict';
 import { withMaintenance, withPrincipal } from '@trustwork/data';
 import type { Client, Harness } from '../../helpers/app.js';
@@ -70,6 +71,7 @@ export default {
         officers.push(client);
       }
       const [first, second] = officers as [Client, Client];
+      await listCrashCases(h,first,second,worker,exactlyOnce);
       // SANC-006: the existing manual command audits and completes in the request transaction.
       await exactlyOnce({ action: 'screening.rescreen_request', client: first, url: '/v1/admin/screening/rescreen-runs', body: { reason: 'Synthetic manual review' }, effects: () => count(h, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'screening.rescreen_requested'") });
       const milo = await person(h.db.admin, 'Milo Fictivsky');
