@@ -1,6 +1,6 @@
 # ADR 018 — The hub operating company: functions, accountable people and hand-over between agents and people
 
-Date: 2026-11-01. Status: **Proposed** (architect: Claude, an AI agent working for the repository owner Dmitry Parshkov, on the owner's request of 2026-11-01). Nothing here changes a rule until the owner and the integrator accept it. Design: [The hub operating company](../engine/hub-operating-company.md). Work: TEAM-001 to TEAM-006, BOOK-001, PEOP-001, QUAL-001, GROW-001, CMTY-001 and amendments to AGT-030, HUBC-021, ADM-004 and others listed in that chapter. Not legal advice.
+Date: 2026-11-01. Status: **Accepted** 2026-11-01 with the owner-delegated answers of [ADR 025](025-owner-delegated-product-decisions-2026-11-01.md) decisions 15 to 23; counsel questions stay open. Originally proposed (architect: Claude, an AI agent working for the repository owner Dmitry Parshkov, on the owner's request of 2026-11-01). Nothing here changes a rule until the owner and the integrator accept it. Design: [The hub operating company](../engine/hub-operating-company.md). Work: TEAM-001 to TEAM-006, BOOK-001, PEOP-001, QUAL-001, GROW-001, CMTY-001 and amendments to AGT-030, HUBC-021, ADM-004 and others listed in that chapter. Not legal advice.
 
 ## Context
 
