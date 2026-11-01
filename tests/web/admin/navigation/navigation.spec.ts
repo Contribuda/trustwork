@@ -222,7 +222,8 @@ test('Users uses only owning public projections and case workflow; missing staff
 });
 
 test('live mode refuses fixture identity and every new route', async ({ request }) => {
-  const port = Number(process.env.HUBC020_PORT ?? 43471) + 1;
+  test.skip(!process.env.HUBC020_LIVE_SERVER, 'needs the live server of tests/web/admin/navigation/playwright.config.ts');
+  const port = Number(process.env.HUBC020_LIVE_SERVER);
   for (const route of ['inbox', 'users']) {
     const response = await request.get(`http://127.0.0.1:${port}${at(route)}`);
     expect(response.status()).toBe(404);
