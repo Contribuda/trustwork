@@ -1314,6 +1314,25 @@
         ],
         "verification": "official"
       }
+    ],
+    "outreachLaw": [
+      {
+        "id": "outreach-az-personal-data-law",
+        "topic": "other",
+        "summary": {
+          "en": "Law of the Republic of Azerbaijan No. 998-IIIQ \"On Personal Data\" (2010) governs contact data of natural persons. Its rule for direct marketing to non-participants is not yet sourced, so no basis is recorded and outreach resolves to no contact."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://e-qanun.az/framework/19675",
+            "what": "Law of the Republic of Azerbaijan No. 998-IIIQ \"On Personal Data\" (2010)",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "Official text located; the direct-marketing rule is not yet read and counsel review is pending."
+      }
     ]
   },
   "notes": [

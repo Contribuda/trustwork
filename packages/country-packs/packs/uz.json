@@ -691,6 +691,25 @@
         "verification": "secondary",
         "verificationNote": "Labour Code art. 208 makes the first day a holiday; the 2026 date (Muslim Board announcement) is taken from reports, pending the official text. Additional days off decreed for 2026 are not recorded as holidays."
       }
+    ],
+    "outreachLaw": [
+      {
+        "id": "outreach-uz-personal-data-law",
+        "topic": "other",
+        "summary": {
+          "en": "Law of the Republic of Uzbekistan No. ZRU-547 \"On Personal Data\" (2019) governs contact data of natural persons. Its rule for direct marketing to non-participants is not yet sourced, so no basis is recorded and outreach resolves to no contact."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://lex.uz/docs/4831939",
+            "what": "Law of the Republic of Uzbekistan No. ZRU-547 \"On Personal Data\" (2019)",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "Official text located; the direct-marketing rule is not yet read and counsel review is pending."
+      }
     ]
   },
   "notes": [

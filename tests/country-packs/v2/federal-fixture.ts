@@ -115,6 +115,7 @@ export function federalFixture() {
         updateCadence: 'daily', adapter: { capability: 'sanctions_list', id: 'us-consolidated-screening-list' }, sources: src('screening list'), verification: 'pending',
       }],
       agentLaw: [{ id: 'xf-agent-disclosure', topic: 'disclosure', summary: t('Automated agents disclose that they are automated'), counselReview: 'pending', sources: src('agent disclosure'), verification: 'pending' }],
+      outreachLaw: [{ id: 'xf-outreach-email', topic: 'basis', summary: t('Business e-mail may be sent until the recipient opts out'), recipientClasses: ['organisation_generic'], channels: ['email'], basis: 'opt_out', counselReview: 'pending', sources: src('outreach e-mail'), verification: 'pending' }],
     },
     sources: [{ url: 'https://example.invalid/xf/subdivisions', what: 'Synthetic subdivision list', accessed: '2026-10-30' }],
   };

@@ -1,4 +1,5 @@
 import { JurisdictionSourceSchema } from '../../contracts/src/jurisdiction.js';
+import { outreachLawFields } from './outreach-law.js';
 import { z } from 'zod';
 import { CatalogueUnitCodeSchema, DecimalSchema, MoneySchema, PROVIDER_CAPABILITIES } from '@trustwork/contracts/client';
 
@@ -300,6 +301,9 @@ export const AgentLawFactSchema = fact({
   counselReview: z.enum(['pending', 'done']).default('pending'),
 });
 
+/** Sourced rules for contacting non-participants (OUTR-001, ADR 017); fields in `outreach-law.ts`. */
+export const OutreachLawFactSchema = fact(outreachLawFields(FactText));
+
 export const FacetsSchema = z.strictObject({
   identifiers: z.array(IdentifierFactSchema).optional(),
   registers: z.array(RegisterFactSchema).optional(),
@@ -316,6 +320,7 @@ export const FacetsSchema = z.strictObject({
   contentLaw: z.array(ContentLawFactSchema).optional(),
   sanctions: z.array(SanctionsFactSchema).optional(),
   agentLaw: z.array(AgentLawFactSchema).optional(),
+  outreachLaw: z.array(OutreachLawFactSchema).optional(),
 });
 export type Facets = z.infer<typeof FacetsSchema>;
 export type FacetName = keyof Facets;

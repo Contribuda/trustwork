@@ -1050,6 +1050,88 @@
         "verification": "official",
         "verificationNote": "Applied by hubs in member states in addition to the engine-wide restricted places, which no layer or pack can change; no live download runs until an operator activates a list adapter."
       }
+    ],
+    "outreachLaw": [
+      {
+        "id": "outreach-eu-electronic-marketing-consent",
+        "topic": "basis",
+        "summary": {
+          "en": "Unsolicited direct marketing to natural persons by e-mail, SMS or automated calling needs their prior consent (ePrivacy article 13(1)); member states decide for legal persons (article 13(5))."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32002L0058",
+            "what": "Directive 2002/58/EC (ePrivacy), article 13: unsolicited communications for direct marketing",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Directive text checked; national transpositions and counsel review pending.",
+        "recipientClasses": [
+          "sole_proprietor",
+          "consumer"
+        ],
+        "channels": [
+          "email",
+          "sms_messenger",
+          "phone_automated"
+        ],
+        "basis": "prior_consent"
+      },
+      {
+        "id": "outreach-eu-soft-opt-in",
+        "topic": "other",
+        "summary": {
+          "en": "A business may e-mail its own customers about its similar products when the address was obtained in a sale and an opt-out was offered at collection and in every message (ePrivacy article 13(2)); this does not cover contacts gathered from public sources."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32002L0058",
+            "what": "Directive 2002/58/EC (ePrivacy), article 13: unsolicited communications for direct marketing",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Directive text checked; counsel review pending."
+      },
+      {
+        "id": "outreach-eu-article-14-notice",
+        "topic": "notice",
+        "summary": {
+          "en": "When personal data was not obtained from the person, they are informed within a reasonable period and at the latest within one month, or at the first communication when the data is used to contact them (GDPR article 14(3))."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+            "what": "Regulation (EU) 2016/679 (GDPR), articles 14 and 21",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Regulation text checked; counsel review pending.",
+        "noticeTiming": "at_first_communication",
+        "noticeMaxDays": 30
+      },
+      {
+        "id": "outreach-eu-marketing-objection",
+        "topic": "opt-out",
+        "summary": {
+          "en": "A person may object at any time to processing for direct marketing, and the data is then no longer processed for that purpose (GDPR article 21(2) and (3))."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+            "what": "Regulation (EU) 2016/679 (GDPR), articles 14 and 21",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Regulation text checked; counsel review pending."
+      }
     ]
   },
   "notes": [

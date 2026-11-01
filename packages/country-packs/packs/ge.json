@@ -747,6 +747,44 @@
         "verification": "secondary",
         "verificationNote": "Labour Code art. 30(1)(g) lists the four Easter days as a movable feast; the 2026 dates come from a secondary calendar, pending the official date. Later years are added when confirmed."
       }
+    ],
+    "outreachLaw": [
+      {
+        "id": "outreach-ge-direct-marketing-consent",
+        "topic": "basis",
+        "summary": {
+          "en": "The 2023 Law of Georgia on Personal Data Protection requires the person’s written consent for processing their data for direct marketing, and lets them stop it in the way it is delivered."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://matsne.gov.ge/en/document/view/5827307",
+            "what": "Law of Georgia on Personal Data Protection (2023), direct marketing provisions",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://ge.andersen.com/personal-data-protection-georgia/",
+            "what": "Andersen Georgia summary of the 2023 law: written consent for direct marketing",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Taken from a law-firm summary of the official law; the article text and counsel review are still to do.",
+        "recipientClasses": [
+          "business_role",
+          "business_named_contact",
+          "sole_proprietor",
+          "consumer"
+        ],
+        "channels": [
+          "email",
+          "postal",
+          "phone_manual",
+          "phone_automated",
+          "sms_messenger"
+        ],
+        "basis": "prior_consent"
+      }
     ]
   },
   "notes": [
