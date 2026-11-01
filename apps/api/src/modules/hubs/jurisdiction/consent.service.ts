@@ -1,3 +1,4 @@
+import type { Transaction } from '../../../deps/data.js';
 import type { RequestState } from '../../../common/request.js';
 import { ApiError } from '../../../common/errors.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
@@ -8,9 +9,9 @@ import { hubsRefusal } from '../errors.js';
 export class JurisdictionConsentService {
   constructor(private readonly principals: PrincipalService) {}
 
-  private run<T>(state: RequestState, fn: Parameters<PrincipalService['runAs']>[1]): Promise<T> {
+  private run<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>): Promise<T> {
     if (!state.session) throw new ApiError('auth.session_invalid', 'authentication required');
-    return this.principals.runAs(state, fn).catch((error: unknown) => { throw hubsRefusal(error) ?? error; }) as Promise<T>;
+    return this.principals.runAs(state, fn).catch((error: unknown) => { throw hubsRefusal(error) ?? error; });
   }
 
   preview(state: RequestState, quoteId: string) {

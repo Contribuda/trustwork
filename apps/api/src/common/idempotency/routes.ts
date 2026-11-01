@@ -28,6 +28,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'company.set_handle': IN_TRANSACTION,
   'project.set_handle': IN_TRANSACTION,
   // HUB-005: immutable consent and revocation commit with the request receipt.
+  'jurisdiction.applicability_activate': IN_TRANSACTION,
+  'jurisdiction.applicability_propose': IN_TRANSACTION,
   'jurisdiction.consent_grant': IN_TRANSACTION,
   'jurisdiction.consent_revoke': IN_TRANSACTION,
   // Company memberships (identity)

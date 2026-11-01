@@ -12,7 +12,7 @@ A configuration version binds exact source ID, digest and head revision. Disclos
 
 ## Database activation
 
-Migration `20261108100000_jurisdiction_authority.sql` is additive. It creates five forced-RLS authority tables, validators, activation/profile triggers, a staff preflight, a narrow participant projection and a worker composition command. No existing migration is edited or renamed.
+The applied foundation migration `20261108100000_jurisdiction_authority.sql` is preserved unchanged. It creates five forced-RLS authority tables, validators, activation/profile triggers, a staff preflight, a narrow participant projection and a worker composition command. No existing migration is edited or renamed.
 
 The existing `hubs_activate_config` keeps its permission, elevation, exact-digest second person, single-use approval and audit behavior. The new trigger enforces source and legal bindings for every writer, including a maintenance writer with a consumed approval. A v1 agent policy cannot activate, and once agent settings exist a legacy payload cannot remove them. Existing restriction-only hubs can still use HUB-001's add-only restricted-place domain.
 
@@ -20,26 +20,28 @@ Mandatory rules cannot be weakened: same-currency thresholds use integer compari
 
 Policy/source/applicability/legal/profile writes and authority reads share a transaction advisory lock. Volatile validators read fresh `READ COMMITTED` snapshots after waiting; other isolation modes refuse. This conservative node-wide lock favors correctness over throughput and must never enclose provider I/O. Language, source and second-person approval races are tested in both lock orders with real PostgreSQL lock observation.
 
+Executable jurisdiction configuration activation also receives the resolved request session through HUB-001's existing registered endpoint. Its narrow database wrapper locks the domain/version/approval, validates current exact session/epoch/role/elevation, invokes the original activation authority, and validates again after its waits. Other configuration domains retain their existing behavior. Tests cover both competing-connection orders for role, elevation and epoch changes; API language-completeness fixtures cover all seven configured engine languages with explicitly synthetic text.
+
 ## Runtime boundary
 
 `jurisdictionAuthority.limits` accepts a quote ID and action only. It checks the actual seller permission, derives both parties and the project from the stored quote/RFQ, and requires current reviewed applicability for the acting person, both parties and the project. It expands reviewed ancestors and combines every applicable policy. Project/quote/RFQ revisions, applicability evidence/head revisions, exact configuration versions, source revisions and languages contribute to the binding. Public visibility, staff scope and a process hub default grant no access.
 
 The projection returns restrictive limits, safe reason codes, configuration IDs/digests and the authoritative project hub. It omits party geography, source text, counsel identity, private project content and full configuration. A missing or conflicting source yields `UNKNOWN`, never a human override.
 
-`intent-adapter.ts` composes the actual assistant `decide` and `actionIntents.record` APIs. It hashes the jurisdiction binding into the immutable action digest and persists an append-only binding; SQL recomputes that digest. Above-limit actions become real proposed intents even under a permissive confirmed mandate. A human-only rule refuses automated execution. Required consent identities also refuse execution until a typed, purpose/action-specific consent evidence adapter exists; a generic legal acceptance or action approval is not silently treated as that consent. Explicit synthetic no-consent rules exercise the positive machinery only.
+`intent-adapter.ts` composes the actual assistant `decide` and `actionIntents.record` APIs. It hashes the jurisdiction binding into the immutable action digest and persists an append-only binding; SQL recomputes that digest. Above-limit actions become real proposed intents even under a permissive confirmed mandate. A human-only rule refuses automated execution. Required consent refuses execution unless the current typed purpose/action/affected-person notice has an unrevoked exact receipt. Key-only legacy policies remain unavailable. Generic legal acceptance, profile consent and action approval never satisfy that gate. Positive country-law fixtures remain explicitly synthetic.
 
 `requireCurrentJurisdiction` rechecks within the API action transaction. `jurisdictionWorker.beginAttempt` verifies the exact live job lease/fencing token, current party authority and the policy binding, then composes the existing `assistant_begin_attempt` in the same transaction. A changed/unavailable policy revokes before an attempt exists. No provider is called by these adapters or tests.
 
 ## Exact remaining integration seams
 
-1. After the active LLM worker merges, the conductor must wire `recordJurisdictionIntent` into the assistant proposal path for supported quote actions, call `requireCurrentJurisdiction` before consuming an approval/effect, and replace the dispatch handler's `assistantWorker.beginAttempt` call with `jurisdictionWorker.beginAttempt(intentId, job.id, job.fencingToken)` using the actual leased token. The existing service, ports, models, billing and worker handler files were not edited here. Old unbound intents must remain refused through this path; do not silently backfill them.
-2. The domain owners must connect reviewed applicability evidence to their real attestation workflows and add authoritative resolvers for actions/contexts beyond quotes with a project. Missing attestations and unsupported contexts remain unavailable. The concrete adapter currently supports `send_quote` only; other existing mandate actions need their owning domain resolver and tests. No action vocabulary is extended.
-3. A typed consent receipt/revocation port must bind purpose, action, parties and exact legal versions before consent-bearing rules can execute. Retention enforcement and presenting the bound legal disclosures remain the owning domains' obligations; the projection alone does not perform those effects.
+1. After the active AGT-003 worker merges and the conductor allocates the exact files, wire `recordJurisdictionIntent` into the assistant proposal path for supported quote actions, call `requireCurrentJurisdiction` before consuming an approval/effect, and replace the dispatch handler's `assistantWorker.beginAttempt` call with `jurisdictionWorker.beginAttempt(intentId, job.id, job.fencingToken)` using the actual leased token. The existing service, ports, models, billing and worker handler files were not edited here. Old unbound intents must remain refused through this path; do not silently backfill them.
+2. The domain owners must connect immutable legal-applicability source producers to the implemented staged-evidence review workflow and add authoritative resolvers for actions/contexts beyond quotes with a project. Missing attestations and unsupported contexts remain unavailable. The concrete adapter currently supports `send_quote` only; other existing mandate actions need their owning domain resolver and tests. No action vocabulary is extended.
+3. The typed personal-party receipt/revocation API is implemented. A separately valid structured company-consent mandate, participant UI, owning retention/legal-hold execution and an actual OUTR-002 immutable template/runtime consumer remain absent. No unconsumed port completes these integrations.
 4. Registered API/worker acceptance, domain permission and policy-change tests on the integrated LLM head, plus full exact-head CI and maintainer acceptance, are still required. AGT-022 and HUBC-007 dependencies stay closed. There is no UI in this repair.
 
 ## Verification
 
-`tests/hubs/jurisdiction` uses embedded PostgreSQL with restricted API and worker logins, real hub/legal/approval commands, real projects/RFQs/invitations/quotes, confirmed mandates and durable intents. Fixtures are explicitly synthetic and establish no country's legal readiness. Source, approval and language races observe actual waiting database transactions. The module access inventory and schema mirror are registered without editing shared inline lists. Exact commands, counts and head are recorded in draft PR #405 and the conductor result report.
+`tests/hubs/jurisdiction` uses embedded PostgreSQL with restricted API and worker logins, real hub/legal/approval commands, real projects/RFQs/invitations/quotes, confirmed mandates and durable intents. Fixtures are explicitly synthetic and establish no country's legal readiness. Source, approval and language races observe actual waiting database transactions. The module access inventory and schema mirror are registered without editing shared inline lists. PR #405 is the merged historical foundation. Current commands, counts and head are recorded separately in draft PR #511 and the conductor consent result report.
 
 ## Typed consent continuation
 
@@ -48,3 +50,21 @@ The registered `/v1/jurisdiction-consents/quotes/:quoteId` API returns only the 
 The authority lock has a three-second acquisition timeout. Current session and identity epoch are checked after domain waits; row locks serialize the check against actual session and epoch updates. Transactions contain no provider I/O. Receipt storage does not define a retention duration or execute erasure/legal-hold policy; that remains an owning privacy authority integration. There is no receipt-history listing.
 
 This is engineering groundwork, not complete HUB-005 acceptance. Registered assistant/dispatch integration awaits the conductor's allocation after AGT-003 merges; OUTR-002 has no runtime; broader owning applicability and company consent remain unavailable. No UI or native language/accessibility acceptance is claimed.
+
+### Owning applicability review and source inventory
+
+The registered `/v1/admin/jurisdiction-applicability` commands propose and independently activate an exact immutable evidence row staged by `jurisdictionEvidence.stageApplicability`. Only the maintenance/domain importer can stage evidence; HTTP cannot supply a hub, jurisdiction, subject, company or location. The two reviewers bind the evidence digest and current-head revision. Activation rechecks the exact recorded sessions, identity epochs, elevations and role assignments, including the proposer, after domain waits. An older head, a different approver session or replacement role cannot revive a stale review. The pre-existing trusted maintenance import remains available to owning modules; it is not an HTTP attestation path.
+
+| Owning source | Current engineering result |
+| --- | --- |
+| Quote, published RFQ and project | The `send_quote` resolver derives actor, buyer, seller and project from stored owning rows and pins their revisions. Concrete rows are locked; caller scope is ignored. |
+| Imported reviewed applicability evidence | Immutable staged records now have real two-person review/activation commands and current heads. Tests use explicitly synthetic importer evidence. |
+| Person/company geography and project location | No registered immutable legal-applicability producer exists. Profile country, company address and mutable `project_location` are not converted into law. Missing reviewed evidence remains unavailable. |
+| Other action contexts | No authoritative complete party/project resolver is registered; they remain unavailable. |
+| Company consent | No separately scoped company-consent mandate contract/producer is registered. Ordinary action mandates and membership permissions do not substitute. |
+
+### OUTR-002 handoff port
+
+`jurisdictionDisclosure.current` loads only the current source-validated policy's public immutable counsel disclosure in every configured language, under an exact current elevated staff session. `validateJurisdictionTemplate` intersects that bundle with an owning immutable template port, requiring every language and locked operator, assistant, source, page, correction/removal and unsubscribe blocks. It binds the exact policy and template digests and refuses missing or edited disclosure.
+
+OUTR-002 has no runtime or immutable template producer on this branch. The port is unconsumed, does not create an active template and proves neither campaign activation nor sending. Existing strict outreach remains unchanged. COMMS/MAIL/PRV implementations are untouched. No retention duration, legal hold execution or provider configuration is invented.

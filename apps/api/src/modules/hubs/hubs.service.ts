@@ -219,7 +219,8 @@ export class HubsService {
         if (v.drafted_by === p.personId) throw new ApiError('access.second_approver_required', 'a sensitive version is activated by someone other than its drafter', { reason: 'self_approval' });
         return { result: await this.pending(trx, cmd, action, hubId, configActivationDigestInput({ id: v.id, hubId, domain, version: v.version, payloadDigest: v.payload_digest }), v.id, v.revision), version: toConfigVersion(v) };
       }
-      const active = await hubConfig.activate(trx, cmd, versionId, body.expectedRevision, action ? body.approvalId : null);
+      const boundContext = domain === 'jurisdiction' ? { ...cmd, sessionId: e.state.session?.id } : cmd;
+      const active = await hubConfig.activate(trx, boundContext, versionId, body.expectedRevision, action ? body.approvalId : null);
       return { result: await this.result(trx, cmd, 'applied', active.id, active.revision, null), version: toConfigVersion(active) };
     });
   }

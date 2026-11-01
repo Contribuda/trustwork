@@ -1,7 +1,7 @@
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import '../schema/jurisdiction-policy.js';
-import { JurisdictionApplicabilitySchema, JurisdictionLimitsSchema, JurisdictionSourceSchema, JurisdictionConsentPreviewSchema, JurisdictionConsentReceiptSchema } from '../../../contracts/src/jurisdiction.js';
+import { JurisdictionApplicabilitySchema, JurisdictionLimitsSchema, JurisdictionSourceSchema, JurisdictionConsentPreviewSchema, JurisdictionConsentReceiptSchema, JurisdictionApplicabilityReviewResultSchema, JurisdictionDisclosureBundleSchema } from '../../../contracts/src/jurisdiction.js';
 
 /** Owner-module maintenance port only. No API/worker/staff role has table writes or source assertion privileges. */
 export const jurisdictionEvidence = {
@@ -12,6 +12,11 @@ export const jurisdictionEvidence = {
       .onConflict((c) => c.column('jurisdiction').doUpdateSet({ source_id: row.id })).returning('revision').executeTakeFirstOrThrow();
     return { ...row, revision: head.revision };
   },
+  async stageApplicability(trx: Transaction, input: unknown) {
+    const document = JurisdictionApplicabilitySchema.parse(input);
+    return trx.insertInto('jurisdiction_applicability').values({ document: JSON.stringify(document), digest: '0'.repeat(64) }).returning(['id', 'digest']).executeTakeFirstOrThrow();
+  },
+  /** Trusted owning maintenance import. Interactive review uses stageApplicability plus the review commands. */
   async attestApplicability(trx: Transaction, input: unknown) {
     const document = JurisdictionApplicabilitySchema.parse(input);
     const row = await trx.insertInto('jurisdiction_applicability').values({ document: JSON.stringify(document), digest: '0'.repeat(64) }).returning(['id', 'digest']).executeTakeFirstOrThrow();
@@ -62,5 +67,25 @@ export const jurisdictionConsent = {
   async revoke(trx: Transaction, sessionId: string, receiptId: string) {
     const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_consent_revoke(${sessionId}::uuid,${receiptId}::uuid) AS result`.execute(trx);
     return JurisdictionConsentReceiptSchema.parse(rows[0]?.result);
+  },
+};
+
+
+export const jurisdictionApplicabilityReview = {
+  async propose(trx: Transaction, sessionId: string, ctx: import('./admin.js').CommandContext, evidenceId: string, digest: string) {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_applicability_propose(${sessionId}::uuid,${JSON.stringify(ctx)}::jsonb,${evidenceId}::uuid,${digest}) AS result`.execute(trx);
+    return JurisdictionApplicabilityReviewResultSchema.parse(rows[0]?.result);
+  },
+  async activate(trx: Transaction, sessionId: string, ctx: import('./admin.js').CommandContext, reviewId: string, digest: string) {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_applicability_activate(${sessionId}::uuid,${JSON.stringify(ctx)}::jsonb,${reviewId}::uuid,${digest}) AS result`.execute(trx);
+    return JurisdictionApplicabilityReviewResultSchema.parse(rows[0]?.result);
+  },
+};
+
+
+export const jurisdictionDisclosure = {
+  async current(trx: Transaction, sessionId: string, ctx: import('./admin.js').CommandContext, policyVersionId: string) {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_disclosure_bundle(${sessionId}::uuid,${JSON.stringify(ctx)}::jsonb,${policyVersionId}::uuid) AS result`.execute(trx);
+    return JurisdictionDisclosureBundleSchema.parse(rows[0]?.result);
   },
 };

@@ -82,3 +82,15 @@ test('threshold boundary uses exact bigint; missing money never becomes zero', (
   assert.equal(evaluateJurisdictionAction(resolution, null).effect, 'deny');
   assert.equal(evaluateJurisdictionAction(resolution, { currency: 'USD', minorUnits: '-1' }).effect, 'deny');
 });
+
+test('typed consent commands never accept caller subject, scope, mandate or legal authority', async () => {
+  const { JurisdictionConsentCommandSchema, JurisdictionConsentScopeSchema, JurisdictionApplicabilityReviewCommandSchema } = await import('../../packages/contracts/src/jurisdiction.js');
+  const command = { noticeDigest: 'a'.repeat(64), locale: 'ru' };
+  assert.equal(JurisdictionConsentCommandSchema.safeParse(command).success, true);
+  for (const field of ['personId', 'companyId', 'hubId', 'country', 'mandateId', 'legalVersion', 'approvalId', 'consent']) {
+    assert.equal(JurisdictionConsentCommandSchema.safeParse({ ...command, [field]: 'untrusted' }).success, false, field);
+  }
+  assert.equal(JurisdictionConsentScopeSchema.safeParse({ requirement: 'synthetic.consent', purpose: 'synthetic.processing', action: 'send_quote', affectedParty: 'seller', noticeKey: 'synthetic.terms' }).success, true);
+  assert.equal(JurisdictionConsentScopeSchema.safeParse({ requirement: 'synthetic.consent' }).success, false);
+  assert.equal(JurisdictionApplicabilityReviewCommandSchema.safeParse({ evidenceDigest: 'a'.repeat(64), reason: 'Synthetic review', jurisdictions: ['US'] }).success, false);
+});

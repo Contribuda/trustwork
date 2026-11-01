@@ -6,8 +6,8 @@ import { jurisdictionEvidence } from '../../../packages/data/src/repositories/ju
 import { hubConfig, legalDocuments } from '../../../packages/data/src/repositories/hubs.js';
 import { rfqs, rfqVersions, rfqInvitations } from '../../../packages/data/src/repositories/commerce.js';
 import { quotes } from '../../../packages/data/src/repositories/transactions.js';
-import { actors, buildHubWorld, syncKernel, US_HUB } from '../helpers.js';
-import { syntheticSettings } from './fixtures.js';
+import { actors, buildHubWorld, syncKernel, US_HUB, type HubWorld } from '../helpers.js';
+import { LOCALES, syntheticSettings } from './fixtures.js';
 
 export function sourceDocument(jurisdiction = 'US', version = 'synthetic-1') {
   return JurisdictionSourceSchema.parse({
@@ -18,11 +18,16 @@ export function sourceDocument(jurisdiction = 'US', version = 'synthetic-1') {
     policy: syntheticSettings(jurisdiction).policy,
   });
 }
-export async function authorityFixture(admin: DataPool, runtime: DataPool) {
+export async function authorityFixture(admin: DataPool, runtime: DataPool, shared?: { world: HubWorld; a: ReturnType<typeof actors> }, completeLanguages = false) {
   await syncKernel(admin);
-  const world = await buildHubWorld(admin); const p = world.people; const a = actors(admin,runtime,world);
+  const world = shared?.world ?? await buildHubWorld(admin); const p = world.people; const base = shared?.a ?? actors(admin,runtime,world);
+  const sessionOf = (person: string) => world.sessions[(Object.keys(p) as Array<keyof typeof p>).find(k => p[k] === person)!];
+  const a = { ...base,
+    elevate: async (person: string, seconds?: number) => ({ ...await base.elevate(person, seconds), sessionId: sessionOf(person) }),
+    cmd: <T>(person: string, fn: Parameters<typeof base.cmd<T>>[1]) => base.cmd(person, (trx, ctx) => fn(trx, Object.assign(ctx, { sessionId: sessionOf(person) }))),
+  };
   await a.assignSensitive({ personId:p.operator,role:'node-operator',scope:{kind:'node',nodeId:world.nodeId} });
-  const hubId=(await a.createHub('synthetic-authority',US_HUB)).hub_id;
+  const hubId=(await a.createHub('synthetic-authority',completeLanguages ? { ...US_HUB, locales: LOCALES, name: Object.fromEntries(LOCALES.map(locale => [locale, 'Synthetic authority hub'])) } : US_HUB)).hub_id;
   const otherHubId=(await a.createHub('synthetic-foreign-authority',US_HUB)).hub_id;
   await a.assignSensitive({ personId:p.owner,role:'hub-owner',scope:{kind:'hub',hubId} });
   await a.assignSensitive({ personId:p.officer,role:'compliance-officer',scope:{kind:'hub',hubId} });
@@ -34,7 +39,8 @@ export async function authorityFixture(admin: DataPool, runtime: DataPool) {
     const approval=await a.approve(p.officer,p.owner,'legal.activate_document_version',hubId,legalActivationDigestInput({id:d.id,hubId,kind:'agent_jurisdiction',locale,version:d.version,bodyDigest:d.body_digest,counselApprovalId:c.id}));
     return a.cmd(p.officer,(trx,ctx)=>legalDocuments.activate(trx,ctx,d.id,d.revision,approval));
   };
-  const docs=[await legal('en'),await legal('es')];
+  const docs=[];
+  for (const locale of completeLanguages ? LOCALES : ['en', 'es']) docs.push(await legal(locale));
   const document=sourceDocument();
   const source=await withMaintenance(admin,trx=>jurisdictionEvidence.importSource(trx,document));
   const payload: ExecutableJurisdictionPayload={addedRestrictedPlaces:[],agentSettings:{schemaVersion:2,jurisdictions:[{
