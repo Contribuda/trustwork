@@ -5,9 +5,19 @@ import { Body, Params } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
-  PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema,
+  PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema, PrivacyMarketingObjectionSchema,
 } from '../../../../../../packages/contracts/src/privacy.js';
 import { PrivacyService } from './privacy.service.js';
+
+/** Always the same acknowledgement, including unknown contacts. No account or match lookup. */
+@Controller('v1/privacy/public')
+export class PrivacyPublicController {
+  constructor(@Inject(PrivacyService) private readonly privacy: PrivacyService) {}
+  @Post('marketing-objections') @HttpCode(202) @Header('Cache-Control', 'no-store')
+  object(@Body(PrivacyMarketingObjectionSchema) body: z.infer<typeof PrivacyMarketingObjectionSchema>) {
+    return this.privacy.objectToMarketing(body.address);
+  }
+}
 
 @Controller('v1/privacy')
 @Authenticated()

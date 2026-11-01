@@ -33,6 +33,13 @@ export type PrivacySubject = z.infer<typeof PrivacySubjectSchema>;
 export type PrivacyPreferenceCommand = z.infer<typeof PrivacyPreferenceCommandSchema>;
 export type PrivacyRequestCommand = z.infer<typeof PrivacyRequestCommandSchema>;
 
+/** Suppression never proves identity, discloses a match, or authorizes erasure. */
+export const PrivacyMarketingObjectionSchema = z.object({ address: z.email().max(320) }).strict();
+export const PrivacyRegistryEntrySchema = z.object({
+  externalRef: z.string().min(1).max(128), contactDigest: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+export const PrivacyRegistryBatchSchema = z.array(PrivacyRegistryEntrySchema).max(100);
+
 /** No production pack is supplied here. A verified pack must carry its source and reviewed values. */
 export const PrivacyPolicySchema = z.object({
   country: z.string().regex(/^[A-Z]{2}$/), version: z.string().min(1).max(100),

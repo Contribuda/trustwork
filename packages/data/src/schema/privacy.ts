@@ -28,6 +28,10 @@ export interface DataBrokerRegistrationTable {
   id: Generated<string>; country: string; registry: 'fake_drop'; registration_ref: string; last_polled_at: Date | null; next_poll_at: Date | null;
 }
 export interface PrivacyDatabase {
+  privacy_registry_intake: {
+    id: Generated<string>; registration_id: string; external_ref: string; contact_digest: string;
+    received_at: Generated<Date>; policy_version: string | null; deadline_at: Date | null; state: Generated<'received' | 'proof_required'>;
+  };
   data_broker_registration: DataBrokerRegistrationTable;
   legal_hold: LegalHoldTable;
   privacy_country_policy: PrivacyCountryPolicyTable;
@@ -47,6 +51,7 @@ export type PrivacyExportRow = Selectable<PrivacyExportTable>;
 export type LegalHoldRow = Selectable<LegalHoldTable>;
 const c = columnsOf<PrivacyDatabase>();
 export const TABLE_COLUMNS: TableColumns<PrivacyDatabase> = {
+  privacy_registry_intake: c('privacy_registry_intake', ['id', 'registration_id', 'external_ref', 'contact_digest', 'received_at', 'policy_version', 'deadline_at', 'state']),
   data_broker_registration: c('data_broker_registration', ['id', 'country', 'registry', 'registration_ref', 'last_polled_at', 'next_poll_at']),
   legal_hold: c('legal_hold', ['id', 'request_id', 'subject_kind', 'subject_id', 'reason_code', 'evidence_ref', 'placed_by', 'placed_at', 'released_by', 'released_at']),
   privacy_country_policy: c('privacy_country_policy', ['country', 'version', 'review', 'sources', 'deadline_days', 'retention_days', 'registry_poll_hours', 'registry_deadline_days']),
