@@ -72,6 +72,7 @@ export interface BudgetTable {
   closed_at: Timestamp | null; closed_by: string | null; revision: Revision; created_at: GeneratedTimestamp; updated_at: GeneratedTimestamp;
 }
 export interface ReservationTable {
+  effect_pending: Generated<boolean>;
   id: GeneratedUuid; budget_id: string; action_intent_id: string; project_id: string | null; amount_minor: MinorUnits; currency: string; state: Generated<ReservationStateColumn>;
   settled_minor: MinorUnits | null; refunded_minor: ColumnType<string, string | bigint | undefined, string | bigint>; reserved_by: string; reserved_at: GeneratedTimestamp;
   expires_at: Timestamp; closed_at: Timestamp | null; evidence_ref: string | null; effect_correlation_key: string; revision: Revision; created_at: GeneratedTimestamp; updated_at: GeneratedTimestamp;
@@ -143,7 +144,7 @@ export const TABLE_COLUMNS: TableColumns<BillingDatabase> = {
   subscription: columns('subscription', ['id', 'billing_account_id', 'offer_id', 'subscription_plan_version_id', 'price_version_id', 'price_acceptance_id', 'status', 'current_period_start', 'current_period_end', 'renews_at', 'cancelled_at', 'cancelled_by', 'revision', 'created_at', 'updated_at']),
   entitlement: columns('entitlement', ['id', 'billing_account_id', 'offer_id', 'subscription_id', 'module_code', 'limits', 'valid_from', 'valid_until', 'source', 'revoked_at', 'revoked_reason', 'revision', 'created_at', 'updated_at']),
   budget: columns('budget', ['id', 'kind', 'owner_person_id', 'owner_company_id', 'project_id', 'employee_person_id', 'period_from', 'period_to', 'limit_minor', 'currency', 'status', 'granted_by', 'closed_at', 'closed_by', 'revision', 'created_at', 'updated_at']),
-  reservation: columns('reservation', ['id', 'budget_id', 'action_intent_id', 'project_id', 'amount_minor', 'currency', 'state', 'settled_minor', 'refunded_minor', 'reserved_by', 'reserved_at', 'expires_at', 'closed_at', 'evidence_ref', 'effect_correlation_key', 'revision', 'created_at', 'updated_at']),
+  reservation: columns('reservation', ['effect_pending', 'id', 'budget_id', 'action_intent_id', 'project_id', 'amount_minor', 'currency', 'state', 'settled_minor', 'refunded_minor', 'reserved_by', 'reserved_at', 'expires_at', 'closed_at', 'evidence_ref', 'effect_correlation_key', 'revision', 'created_at', 'updated_at']),
   ledger_entry: columns('ledger_entry', ['id', 'batch_id', 'entry_kind', 'account_kind', 'account_id', 'owner_person_id', 'owner_company_id', 'amount_minor', 'currency', 'reservation_id', 'payment_id', 'credit_grant_id', 'correcting_entry_of', 'reason', 'occurred_at']),
   usage_record: columns('usage_record', ['id', 'principal_person_id', 'principal_company_id', 'billing_account_id', 'module_key', 'capability_id', 'run_id', 'run_step_id', 'attempt_id', 'connection_id', 'meter', 'provider_class', 'units', 'within_included_quota', 'meter_rate_version_id', 'reservation_id', 'recorded_at']),
   credit_grant: columns('credit_grant', ['id', 'billing_account_id', 'amount_minor', 'currency', 'reason_code', 'issued_by', 'cap_check', 'case_id', 'valid_until', 'expiry_disclosure_key', 'created_at']),

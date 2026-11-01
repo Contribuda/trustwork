@@ -54,3 +54,8 @@ export async function completeInTransaction(state: object, trx: Transaction, bod
   const completion = bound.get(state);
   if (completion) await completion.record(trx, body);
 }
+
+/** Stable command identity for a staged effect. Preparatory transactions must use an unbound state copy. */
+export function completionRecordId(state: object): string | null {
+  return bound.get(state)?.recordId ?? null;
+}

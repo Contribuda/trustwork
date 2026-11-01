@@ -1,3 +1,4 @@
+import type { Principal } from '../../deps/contracts.js';
 import type { AuthorizedEvidence, ContextRef, MandateActionV2, Money, PolicyContext, RetrievalPort, RetrievalResult, SearchRequest } from '../../deps/contracts.js';
 import type { MandateDraft } from './schemas.js';
 
@@ -28,6 +29,8 @@ export type ModelToolCall =
 
 export interface ModelInput {
   personId: string;
+  /** Supplied by AST after the run and incoming turn commit, never by model text. */
+  execution?: { operationId: string; runId: string; hubId: string | null; principal: Principal; sessionId: string };
   /** The person's own turns and earlier agent replies, newest last. */
   history: readonly { role: 'person' | 'agent' | 'system'; content: string }[];
   text: string;
@@ -44,6 +47,8 @@ export interface ModelReply {
 export interface ModelPort {
   readonly provider: string;
   respond(input: ModelInput): Promise<ModelReply>;
+  /** Lookup only after a crash, never resend. Null means unresolved; leave the conversation serialized. */
+  recover?(input: ModelInput): Promise<ModelReply | null>;
 }
 
 /** Default: no model configured. Nothing is sent anywhere; the person is told the assistant is unavailable. */

@@ -25,7 +25,7 @@ export interface GatewayResult {
   metadata: ModelCallMetadata | null;
 }
 
-/** Internal gateway. Not registered in the application until the durable store and authority integration exist. */
+/** Internal gateway. Production wiring remains disabled until every mandatory governance scope has an authority. */
 export class ModelGateway {
   constructor(
     private readonly routes: RouteResolutionPort,
@@ -35,12 +35,12 @@ export class ModelGateway {
     private readonly log: (metadata: ModelCallMetadata) => void = () => {},
   ) {}
 
-  private async check(call: ModelCall, route: ResolvedModelRoute, candidate: PinnedCandidate): Promise<void> {
+  private async check(call: ModelCall, route: ResolvedModelRoute, candidate: PinnedCandidate, purpose: 'invoke' | 'reconcile' = 'invoke'): Promise<void> {
     if (!route.candidates.some((c) => sameCandidate(c, candidate))) throw new ModelRefusal('candidate_not_pinned');
     if (!call.allowedConnections.includes(candidate.connectionId)) throw new ModelRefusal('connection_not_allowed');
     if (call.maxInputTokens > route.limits.maxInputTokens || call.maxOutputTokens > route.limits.maxOutputTokens) throw new ModelRefusal('token_limit');
     if (['embeddings', 'rerank'].includes(call.job) && (route.stage === 'canary' || route.candidates.length !== 1)) throw new ModelRefusal('vectors_must_not_mix');
-    const authority = await this.authority.check(call, candidate);
+    const authority = await this.authority.check(call, candidate, purpose);
     if (authority.principalId !== call.principalId || authority.mandateId !== call.mandateId || authority.mandateRevision !== call.mandateRevision || authority.runId !== call.runId) {
       throw new ModelRefusal('authority_mismatch');
     }
@@ -110,6 +110,14 @@ export class ModelGateway {
       } catch {
         return this.finish(operation, this.metadata(operation, 'refused', performance.now() - started), null);
       }
+      // Commit the one-use dispatch fence before the effect. An ambiguous admission never authorizes sending.
+      try {
+        if (!await this.store.admit(operation)) return { operationId: operation.operationId, outcome: 'outcome_unknown', text: null, metadata: null };
+      } catch {
+        return { operationId: operation.operationId, outcome: 'outcome_unknown', text: null, metadata: null };
+      }
+      try { await this.check(call, route, candidate); }
+      catch { return this.finish(operation, this.metadata(operation, 'refused', performance.now() - started), null); }
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
       let result: ModelAdapterResult;
@@ -141,10 +149,12 @@ export class ModelGateway {
   }
 
   async reconcile(operationId: string, principalId: string): Promise<GatewayResult> {
+    const completed = await this.store.settled(operationId, principalId);
+    if (completed) return { operationId, outcome: completed.outcome, text: null, metadata: completed };
     const operation = await this.store.unknown(operationId, principalId);
     if (!operation || operation.request.principalId !== principalId) throw new ModelRefusal('operation_not_found');
     const call = ModelCallSchema.parse({ ...operation.request, prompt: '' });
-    await this.check(call, operation.route, operation.candidate);
+    await this.check(call, operation.route, operation.candidate, 'reconcile');
     let result: ModelAdapterResult;
     const started = performance.now();
     let timer: ReturnType<typeof setTimeout> | undefined;

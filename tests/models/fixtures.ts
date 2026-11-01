@@ -51,7 +51,7 @@ export class MemoryStore implements ModelCallStore {
     }
     const { prompt: _prompt, ...metadataRequest } = call;
     void _prompt;
-    const operation: ReservedModelCall = { operationId: call.operationId, reservationId: `reservation-${call.operationId}`, request: metadataRequest, route: resolved, candidate: model };
+    const operation: ReservedModelCall = { operationId: call.operationId, reservationId: `reservation-${call.operationId}`, dispatchToken: call.operationId, request: metadataRequest, route: resolved, candidate: model };
     this.rows.set(call.operationId, { digest, call: operation, metadata: null });
     this.beforeReturn?.();
     return { kind: 'dispatch' as const, call: operation };
@@ -61,9 +61,14 @@ export class MemoryStore implements ModelCallStore {
     this.rows.get(operation.operationId)!.call = next;
     return next;
   }
+  async admit(): Promise<boolean> { return true; }
   async finish(operation: ReservedModelCall, metadata: ModelCallMetadata) {
     if (this.failFinish) throw new Error('PRIVATE_STORAGE_ERROR_CANARY');
     this.rows.get(operation.operationId)!.metadata = metadata;
+  }
+  async settled(operationId: string, principalId: string) {
+    const row = this.rows.get(operationId);
+    return row?.call.request.principalId === principalId && row.metadata?.outcome !== 'outcome_unknown' ? row?.metadata ?? null : null;
   }
   async unknown(operationId: string, principalId: string) {
     const row = this.rows.get(operationId);

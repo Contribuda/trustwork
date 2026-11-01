@@ -86,3 +86,12 @@ export const ModelUsageAggregateSchema = z.strictObject({
   latencyP95Ms: z.int().nonnegative(),
 });
 export type ModelUsageAggregate = z.infer<typeof ModelUsageAggregateSchema>;
+
+/** Internal runtime evidence. Never accepted from conversation text or a public request body. */
+export const ModelRuntimeBindingSchema = z.strictObject({
+  sessionId: IdSchema,
+  authzEpoch: z.int().positive(),
+  action: z.enum(['research', 'prepare']),
+  context: z.strictObject({ kind: z.enum(['profile', 'project']), id: IdSchema }),
+});
+export type ModelRuntimeBinding = z.infer<typeof ModelRuntimeBindingSchema>;
