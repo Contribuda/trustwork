@@ -1828,5 +1828,1863 @@ export const BUILT_IN_CLIENT_PACKS: readonly ClientPack[] = [
       ],
       "cityFirst": false
     }
+  },
+  {
+    "code": "GB",
+    "name": {
+      "en": "United Kingdom"
+    },
+    "enabled": true,
+    "locales": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "currency": {
+      "code": "GBP",
+      "minorUnitDigits": 2,
+      "displayFractionDigits": 2,
+      "symbol": "£"
+    },
+    "secondaryCurrencies": [],
+    "formats": {
+      "timeZone": "Europe/London",
+      "phone": {
+        "callingCode": "+44",
+        "nationalLength": 10,
+        "example": "+44 1632 960000"
+      },
+      "postalCode": {
+        "pattern": "^(?:GIR ?0AA|[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})$",
+        "example": "SW1A 1AA"
+      }
+    },
+    "registrationIdentifier": {
+      "kind": "GB-CRN",
+      "label": {
+        "en": "Companies House company number"
+      },
+      "pattern": "^(?:[0-9]{8}|[A-Z]{2}[0-9]{6})$",
+      "example": "00000000"
+    },
+    "legalEntityTypes": [
+      {
+        "code": "private-limited-shares",
+        "name": {
+          "en": "Private company limited by shares"
+        }
+      },
+      {
+        "code": "private-limited-guarantee",
+        "name": {
+          "en": "Private company limited by guarantee"
+        }
+      },
+      {
+        "code": "public-limited",
+        "name": {
+          "en": "Public limited company"
+        }
+      },
+      {
+        "code": "llp",
+        "name": {
+          "en": "Limited liability partnership"
+        }
+      },
+      {
+        "code": "partnership",
+        "name": {
+          "en": "Partnership"
+        }
+      },
+      {
+        "code": "sole-trader",
+        "name": {
+          "en": "Sole trader"
+        }
+      },
+      {
+        "code": "cic",
+        "name": {
+          "en": "Community interest company"
+        }
+      }
+    ],
+    "regions": [
+      {
+        "code": "GB-ENG",
+        "name": {
+          "en": "England"
+        },
+        "kind": "region"
+      },
+      {
+        "code": "GB-BAS",
+        "name": {
+          "en": "Bath and North East Somerset"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BBD",
+        "name": {
+          "en": "Blackburn with Darwen"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BCP",
+        "name": {
+          "en": "Bournemouth, Christchurch and Poole"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BDF",
+        "name": {
+          "en": "Bedford"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BDG",
+        "name": {
+          "en": "Barking and Dagenham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BEN",
+        "name": {
+          "en": "Brent"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BEX",
+        "name": {
+          "en": "Bexley"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BIR",
+        "name": {
+          "en": "Birmingham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BKM",
+        "name": {
+          "en": "Buckinghamshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BNE",
+        "name": {
+          "en": "Barnet"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BNH",
+        "name": {
+          "en": "Brighton and Hove"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BNS",
+        "name": {
+          "en": "Barnsley"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BOL",
+        "name": {
+          "en": "Bolton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BPL",
+        "name": {
+          "en": "Blackpool"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BRC",
+        "name": {
+          "en": "Bracknell Forest"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BRD",
+        "name": {
+          "en": "Bradford"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BRY",
+        "name": {
+          "en": "Bromley"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BST",
+        "name": {
+          "en": "Bristol"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-BUR",
+        "name": {
+          "en": "Bury"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CAM",
+        "name": {
+          "en": "Cambridgeshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CBF",
+        "name": {
+          "en": "Central Bedfordshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CHE",
+        "name": {
+          "en": "Cheshire East"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CHW",
+        "name": {
+          "en": "Cheshire West and Chester"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CLD",
+        "name": {
+          "en": "Calderdale"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CMA",
+        "name": {
+          "en": "Cumbria"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CMD",
+        "name": {
+          "en": "Camden"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CON",
+        "name": {
+          "en": "Cornwall"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-COV",
+        "name": {
+          "en": "Coventry"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-CRY",
+        "name": {
+          "en": "Croydon"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DAL",
+        "name": {
+          "en": "Darlington"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DBY",
+        "name": {
+          "en": "Derbyshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DER",
+        "name": {
+          "en": "Derby"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DEV",
+        "name": {
+          "en": "Devon"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DNC",
+        "name": {
+          "en": "Doncaster"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DOR",
+        "name": {
+          "en": "Dorset"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DUD",
+        "name": {
+          "en": "Dudley"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-DUR",
+        "name": {
+          "en": "Durham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-EAL",
+        "name": {
+          "en": "Ealing"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-ENF",
+        "name": {
+          "en": "Enfield"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-ERY",
+        "name": {
+          "en": "East Riding of Yorkshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-ESS",
+        "name": {
+          "en": "Essex"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-ESX",
+        "name": {
+          "en": "East Sussex"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-GAT",
+        "name": {
+          "en": "Gateshead"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-GLS",
+        "name": {
+          "en": "Gloucestershire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-GRE",
+        "name": {
+          "en": "Greenwich"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HAL",
+        "name": {
+          "en": "Halton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HAM",
+        "name": {
+          "en": "Hampshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HAV",
+        "name": {
+          "en": "Havering"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HCK",
+        "name": {
+          "en": "Hackney"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HEF",
+        "name": {
+          "en": "Herefordshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HIL",
+        "name": {
+          "en": "Hillingdon"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HMF",
+        "name": {
+          "en": "Hammersmith and Fulham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HNS",
+        "name": {
+          "en": "Hounslow"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HPL",
+        "name": {
+          "en": "Hartlepool"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HRT",
+        "name": {
+          "en": "Hertfordshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HRW",
+        "name": {
+          "en": "Harrow"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-HRY",
+        "name": {
+          "en": "Haringey"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-IOS",
+        "name": {
+          "en": "Isles of Scilly"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-IOW",
+        "name": {
+          "en": "Isle of Wight"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-ISL",
+        "name": {
+          "en": "Islington"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-KEC",
+        "name": {
+          "en": "Kensington and Chelsea"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-KEN",
+        "name": {
+          "en": "Kent"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-KHL",
+        "name": {
+          "en": "Kingston upon Hull"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-KIR",
+        "name": {
+          "en": "Kirklees"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-KTT",
+        "name": {
+          "en": "Kingston upon Thames"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-KWL",
+        "name": {
+          "en": "Knowsley"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LAN",
+        "name": {
+          "en": "Lancashire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LBH",
+        "name": {
+          "en": "Lambeth"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LCE",
+        "name": {
+          "en": "Leicester"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LDS",
+        "name": {
+          "en": "Leeds"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LEC",
+        "name": {
+          "en": "Leicestershire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LEW",
+        "name": {
+          "en": "Lewisham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LIN",
+        "name": {
+          "en": "Lincolnshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LIV",
+        "name": {
+          "en": "Liverpool"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LND",
+        "name": {
+          "en": "London"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-LUT",
+        "name": {
+          "en": "Luton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-MAN",
+        "name": {
+          "en": "Manchester"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-MDB",
+        "name": {
+          "en": "Middlesbrough"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-MDW",
+        "name": {
+          "en": "Medway"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-MIK",
+        "name": {
+          "en": "Milton Keynes"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-MRT",
+        "name": {
+          "en": "Merton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NBL",
+        "name": {
+          "en": "Northumberland"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NEL",
+        "name": {
+          "en": "North East Lincolnshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NET",
+        "name": {
+          "en": "Newcastle upon Tyne"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NFK",
+        "name": {
+          "en": "Norfolk"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NGM",
+        "name": {
+          "en": "Nottingham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NLN",
+        "name": {
+          "en": "North Lincolnshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NNH",
+        "name": {
+          "en": "North Northamptonshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NSM",
+        "name": {
+          "en": "North Somerset"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NTT",
+        "name": {
+          "en": "Nottinghamshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NTY",
+        "name": {
+          "en": "North Tyneside"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NWM",
+        "name": {
+          "en": "Newham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-NYK",
+        "name": {
+          "en": "North Yorkshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-OLD",
+        "name": {
+          "en": "Oldham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-OXF",
+        "name": {
+          "en": "Oxfordshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-PLY",
+        "name": {
+          "en": "Plymouth"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-POR",
+        "name": {
+          "en": "Portsmouth"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-PTE",
+        "name": {
+          "en": "Peter"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-RCC",
+        "name": {
+          "en": "Redcar and Cleveland"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-RCH",
+        "name": {
+          "en": "Rochdale"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-RDB",
+        "name": {
+          "en": "Redbridge"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-RDG",
+        "name": {
+          "en": "Reading"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-RIC",
+        "name": {
+          "en": "Richmond upon Thames"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-ROT",
+        "name": {
+          "en": "Rotherham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-RUT",
+        "name": {
+          "en": "Rutland"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SAW",
+        "name": {
+          "en": "Sandwell"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SFK",
+        "name": {
+          "en": "Suffolk"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SFT",
+        "name": {
+          "en": "Sefton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SGC",
+        "name": {
+          "en": "South Gloucestershire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SHF",
+        "name": {
+          "en": "Sheffield"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SHN",
+        "name": {
+          "en": "Saint Helens"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SHR",
+        "name": {
+          "en": "Shropshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SKP",
+        "name": {
+          "en": "Stockport"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SLF",
+        "name": {
+          "en": "Salford"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SLG",
+        "name": {
+          "en": "Slough"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SND",
+        "name": {
+          "en": "Sunderland"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SOL",
+        "name": {
+          "en": "Solihull"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SOM",
+        "name": {
+          "en": "Somerset"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SOS",
+        "name": {
+          "en": "Southend-on-Sea"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SRY",
+        "name": {
+          "en": "Surrey"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-STE",
+        "name": {
+          "en": "Stoke-on-Trent"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-STH",
+        "name": {
+          "en": "Southampton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-STN",
+        "name": {
+          "en": "Sutton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-STS",
+        "name": {
+          "en": "Staffordshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-STT",
+        "name": {
+          "en": "Stockton-on-Tees"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-STY",
+        "name": {
+          "en": "South Tyneside"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SWD",
+        "name": {
+          "en": "Swindon"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SWK",
+        "name": {
+          "en": "Southwark"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-TAM",
+        "name": {
+          "en": "Tameside"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-TFW",
+        "name": {
+          "en": "Telford and Wrekin"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-THR",
+        "name": {
+          "en": "Thurrock"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-TOB",
+        "name": {
+          "en": "Torbay"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-TRF",
+        "name": {
+          "en": "Trafford"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-TWH",
+        "name": {
+          "en": "Tower Hamlets"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WAR",
+        "name": {
+          "en": "Warwickshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WBK",
+        "name": {
+          "en": "West Berkshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WFT",
+        "name": {
+          "en": "Waltham Forest"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WGN",
+        "name": {
+          "en": "Wigan"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WIL",
+        "name": {
+          "en": "Wiltshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WKF",
+        "name": {
+          "en": "Wakefield"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WLL",
+        "name": {
+          "en": "Walsall"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WLV",
+        "name": {
+          "en": "Wolverhampton"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WND",
+        "name": {
+          "en": "Wandsworth"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WNH",
+        "name": {
+          "en": "West Northamptonshire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WNM",
+        "name": {
+          "en": "Windsor and Maidenhead"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WOK",
+        "name": {
+          "en": "Wokingham"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WOR",
+        "name": {
+          "en": "Worcestershire"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WRL",
+        "name": {
+          "en": "Wirral"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WRT",
+        "name": {
+          "en": "Warrington"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WSM",
+        "name": {
+          "en": "Westminster"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-WSX",
+        "name": {
+          "en": "West Sussex"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-YOR",
+        "name": {
+          "en": "York"
+        },
+        "kind": "district",
+        "parent": "GB-ENG"
+      },
+      {
+        "code": "GB-SCT",
+        "name": {
+          "en": "Scotland"
+        },
+        "kind": "region"
+      },
+      {
+        "code": "GB-ABD",
+        "name": {
+          "en": "Aberdeenshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ABE",
+        "name": {
+          "en": "Aberdeen"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-AGB",
+        "name": {
+          "en": "Argyll and Bute"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ANS",
+        "name": {
+          "en": "Angus"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-CLK",
+        "name": {
+          "en": "Clackmannanshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-DGY",
+        "name": {
+          "en": "Dumfries and Galloway"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-DND",
+        "name": {
+          "en": "Dundee"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-EAY",
+        "name": {
+          "en": "East Ayrshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-EDH",
+        "name": {
+          "en": "Edinburgh"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-EDU",
+        "name": {
+          "en": "East Dunbartonshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ELN",
+        "name": {
+          "en": "East Lothian"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ELS",
+        "name": {
+          "en": "Outer Hebrides"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ERW",
+        "name": {
+          "en": "East Renfrewshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-FAL",
+        "name": {
+          "en": "Falkirk"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-FIF",
+        "name": {
+          "en": "Fife"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-GLG",
+        "name": {
+          "en": "Glasgow"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-HLD",
+        "name": {
+          "en": "Highland"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-IVC",
+        "name": {
+          "en": "Inverclyde"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-MLN",
+        "name": {
+          "en": "Midlothian"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-MRY",
+        "name": {
+          "en": "Moray"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-NAY",
+        "name": {
+          "en": "North Ayrshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-NLK",
+        "name": {
+          "en": "North Lanarkshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ORK",
+        "name": {
+          "en": "Orkney Islands"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-PKN",
+        "name": {
+          "en": "Perth and Kinross"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-RFW",
+        "name": {
+          "en": "Renfrewshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-SAY",
+        "name": {
+          "en": "South Ayrshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-SCB",
+        "name": {
+          "en": "Scottish Borders"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-SLK",
+        "name": {
+          "en": "South Lanarkshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-STG",
+        "name": {
+          "en": "Stirling"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-WDU",
+        "name": {
+          "en": "West Dunbartonshire"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-WLN",
+        "name": {
+          "en": "West Lothian"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-ZET",
+        "name": {
+          "en": "Shetland"
+        },
+        "kind": "district",
+        "parent": "GB-SCT"
+      },
+      {
+        "code": "GB-WLS",
+        "name": {
+          "en": "Wales"
+        },
+        "kind": "region"
+      },
+      {
+        "code": "GB-AGY",
+        "name": {
+          "en": "Anglesey"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-BGE",
+        "name": {
+          "en": "Bridgend"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-BGW",
+        "name": {
+          "en": "Blaenau Gwent"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-CAY",
+        "name": {
+          "en": "Caerphilly"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-CGN",
+        "name": {
+          "en": "Ceredigion"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-CMN",
+        "name": {
+          "en": "Carmarthenshire"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-CRF",
+        "name": {
+          "en": "Cardiff"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-CWY",
+        "name": {
+          "en": "Conwy"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-DEN",
+        "name": {
+          "en": "Denbighshire"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-FLN",
+        "name": {
+          "en": "Flintshire"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-GWN",
+        "name": {
+          "en": "Gwynedd"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-MON",
+        "name": {
+          "en": "Monmouthshire"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-MTY",
+        "name": {
+          "en": "Merthyr Tydfil"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-NTL",
+        "name": {
+          "en": "Neath Port Talbot"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-NWP",
+        "name": {
+          "en": "Newport"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-PEM",
+        "name": {
+          "en": "Pembrokeshire"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-POW",
+        "name": {
+          "en": "Powys"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-RCT",
+        "name": {
+          "en": "Rhondda Cynon Taf"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-SWA",
+        "name": {
+          "en": "Swansea"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-TOF",
+        "name": {
+          "en": "Torfaen"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-VGL",
+        "name": {
+          "en": "Vale of Glamorgan"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-WRX",
+        "name": {
+          "en": "Wrexham"
+        },
+        "kind": "district",
+        "parent": "GB-WLS"
+      },
+      {
+        "code": "GB-NIR",
+        "name": {
+          "en": "Northern Ireland"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "GB-ABC",
+        "name": {
+          "en": "Armagh, Banbridge and Craigavon"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-AND",
+        "name": {
+          "en": "Ards and North Down"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-ANN",
+        "name": {
+          "en": "Antrim and Newtownabbey"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-BFS",
+        "name": {
+          "en": "Belfast"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-CCG",
+        "name": {
+          "en": "Causeway Coast and Glens"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-DRS",
+        "name": {
+          "en": "Derry and Strabane"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-FMO",
+        "name": {
+          "en": "Fermanagh and Omagh"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-LBC",
+        "name": {
+          "en": "Lisburn and Castlereagh"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-MEA",
+        "name": {
+          "en": "Mid and East Antrim"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-MUL",
+        "name": {
+          "en": "Mid Ulster"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      },
+      {
+        "code": "GB-NMD",
+        "name": {
+          "en": "Newry, Mourne and Down"
+        },
+        "kind": "district",
+        "parent": "GB-NIR"
+      }
+    ],
+    "address": {
+      "lines": [
+        "street",
+        "street2",
+        "city",
+        "region",
+        "postalCode"
+      ],
+      "cityFirst": false
+    }
   }
 ];

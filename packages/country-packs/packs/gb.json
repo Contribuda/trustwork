@@ -1,0 +1,4312 @@
+{
+  "schemaVersion": 2,
+  "code": "GB",
+  "name": {
+    "en": "United Kingdom"
+  },
+  "enabled": true,
+  "status": "partial",
+  "locales": [
+    "en"
+  ],
+  "defaultLocale": "en",
+  "currency": {
+    "code": "GBP",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 2,
+    "symbol": "£"
+  },
+  "secondaryCurrencies": [],
+  "formats": {
+    "timeZone": "Europe/London",
+    "phone": {
+      "callingCode": "+44",
+      "nationalLength": 10,
+      "example": "+44 1632 960000"
+    },
+    "postalCode": {
+      "pattern": "^(?:GIR ?0AA|[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})$",
+      "example": "SW1A 1AA"
+    }
+  },
+  "timeZones": [
+    "Europe/London"
+  ],
+  "verificationLevel": "secondary",
+  "registrationIdentifier": {
+    "kind": "GB-CRN",
+    "label": {
+      "en": "Companies House company number"
+    },
+    "pattern": "^(?:[0-9]{8}|[A-Z]{2}[0-9]{6})$",
+    "example": "00000000",
+    "issuer": {
+      "name": {
+        "en": "Companies House"
+      },
+      "url": "https://www.gov.uk/government/organisations/companies-house"
+    },
+    "verification": "Format only: eight digits or a two-letter prefix plus six digits, normalized uppercase and zero-padded. The all-zero example is synthetic, not a registered company. Special and legacy register formats remain unverified. A matching pattern proves neither incorporation nor authority. Sole traders and ordinary partnerships are not required to have a CRN.",
+    "verificationLevel": "pending",
+    "sources": [
+      {
+        "url": "https://find-and-update.company-information.service.gov.uk/company-lookup/search?forward=%2Fauth-code-requests%2Fcompany%2F%7BcompanyNumber%7D%2Fconfirm",
+        "what": "Companies House expects eight characters; pad shorter numbers with leading zeros.",
+        "accessed": "2026-11-01"
+      },
+      {
+        "url": "https://www.westofengland-ca.gov.uk/wp-content/uploads/2020/05/WECA-Monitoring-Evaluation-Framework-2020-FINAL.pdf",
+        "what": "Combined authority guidance: eight digits or two uppercase letters and six digits for a CRN.",
+        "accessed": "2026-11-01",
+        "verification": "Official local-authority guidance; legacy and special register prefixes are not exhaustively checked."
+      },
+      {
+        "url": "https://www.gov.uk/set-up-business",
+        "what": "Sole traders, limited companies and partnerships are business structures.",
+        "accessed": "2026-11-01"
+      }
+    ]
+  },
+  "legalEntityTypes": [
+    {
+      "code": "private-limited-shares",
+      "name": {
+        "en": "Private company limited by shares"
+      }
+    },
+    {
+      "code": "private-limited-guarantee",
+      "name": {
+        "en": "Private company limited by guarantee"
+      }
+    },
+    {
+      "code": "public-limited",
+      "name": {
+        "en": "Public limited company"
+      }
+    },
+    {
+      "code": "llp",
+      "name": {
+        "en": "Limited liability partnership"
+      }
+    },
+    {
+      "code": "partnership",
+      "name": {
+        "en": "Partnership"
+      }
+    },
+    {
+      "code": "sole-trader",
+      "name": {
+        "en": "Sole trader"
+      }
+    },
+    {
+      "code": "cic",
+      "name": {
+        "en": "Community interest company"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "code": "GB-ENG",
+      "name": {
+        "en": "England"
+      },
+      "kind": "region",
+      "timeZones": [
+        "Europe/London"
+      ],
+      "facets": {
+        "standards": [
+          {
+            "id": "building-regulations",
+            "system": {
+              "en": "Building Regulations and Approved Documents (England)"
+            },
+            "body": {
+              "name": {
+                "en": "UK government"
+              },
+              "url": "https://www.gov.uk/government/collections/approved-documents"
+            },
+            "publications": "https://www.gov.uk/government/collections/approved-documents",
+            "textLicence": "Link to official guidance; check document licensing and applicable edition before reuse.",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/government/collections/approved-documents",
+                "what": "Approved Documents provide guidance on meeting building regulations in England.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ],
+        "calendar": [
+          {
+            "id": "new-year-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "New Year's Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-01-01",
+                "2027-01-01",
+                "2028-01-03"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "good-friday",
+            "type": "holiday",
+            "name": {
+              "en": "Good Friday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-03",
+                "2027-03-26",
+                "2028-04-14"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "easter-monday",
+            "type": "holiday",
+            "name": {
+              "en": "Easter Monday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-06",
+                "2027-03-29",
+                "2028-04-17"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "early-may-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Early May bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-04",
+                "2027-05-03",
+                "2028-05-01"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "spring-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Spring bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-25",
+                "2027-05-31",
+                "2028-05-29"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "summer-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Summer bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-08-31",
+                "2027-08-30",
+                "2028-08-28"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "christmas-day",
+            "type": "holiday",
+            "name": {
+              "en": "Christmas Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-25",
+                "2027-12-27",
+                "2028-12-25"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "boxing-day",
+            "type": "holiday",
+            "name": {
+              "en": "Boxing Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-28",
+                "2027-12-28",
+                "2028-12-26"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "competent-person-schemes",
+            "type": "activity",
+            "name": {
+              "en": "Competent person / self-certification schemes"
+            },
+            "authority": {
+              "name": {
+                "en": "Building regulations authorities"
+              },
+              "url": "https://www.gov.uk/building-regulations-competent-person-schemes"
+            },
+            "required": false,
+            "sources": [
+              {
+                "url": "https://www.gov.uk/building-regulations-competent-person-schemes",
+                "what": "Competent person scheme membership is voluntary and permits self-certification for covered work.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/government/publications/self-certification-schemes-mandatory-technical-competence-requirements",
+                "what": "Self-certification technical competence framework applies to England and Wales.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Voluntary route for specified work; otherwise applicable building-control approval is still required."
+          },
+          {
+            "id": "registered-building-control-approver",
+            "type": "activity",
+            "name": {
+              "en": "Private building control approver registration"
+            },
+            "authority": {
+              "name": {
+                "en": "Building Safety Regulator"
+              },
+              "url": "https://www.gov.uk/guidance/find-a-registered-building-control-approver-in-england"
+            },
+            "required": true,
+            "register": "building-control-approvers",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/guidance/find-a-registered-building-control-approver-in-england",
+                "what": "Private building control approvers must register; England and Wales have distinct registers.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          },
+          {
+            "id": "higher-risk-building-approval",
+            "type": "activity",
+            "name": {
+              "en": "Higher-risk building control approval in England"
+            },
+            "authority": {
+              "name": {
+                "en": "Building Safety Regulator"
+              },
+              "url": "https://www.gov.uk/guidance/building-control-approval-for-higher-risk-buildings"
+            },
+            "required": true,
+            "sources": [
+              {
+                "url": "https://www.gov.uk/guidance/building-control-approval-for-higher-risk-buildings",
+                "what": "England: BSR oversees higher-risk building work; approval before work, subject to stated exceptions.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Qualifying higher-risk building work, with statutory exceptions. The regime is not inherited by Scotland, Wales or Northern Ireland."
+          }
+        ],
+        "registers": [
+          {
+            "id": "building-control-approvers",
+            "name": {
+              "en": "Registered building control approvers in England"
+            },
+            "url": "https://www.gov.uk/guidance/find-a-registered-building-control-approver-in-england",
+            "query": "manual",
+            "covers": [],
+            "candidateAdapters": [
+              "England RBCA register (candidate; no live lookup)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.gov.uk/guidance/find-a-registered-building-control-approver-in-england",
+                "what": "Private building control approvers must register; England and Wales have distinct registers.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ],
+        "payments": [
+          {
+            "id": "construction-payment-law",
+            "type": "payment-terms",
+            "summary": {
+              "en": "HGCRA 1996 Part II: payment notices, notified sums and adjudication for qualifying construction contracts."
+            },
+            "sources": [
+              {
+                "url": "https://www.legislation.gov.uk/ukpga/1996/53/part/II/crossheading/payment/2022-09-18?view=extent",
+                "what": "HGCRA Part II: payment notices and notified-sum payment, with pay-less notice provisions.",
+                "accessed": "2026-11-01",
+                "verification": "Official historical consolidation dated 2022-09-18; current amendments need counsel review."
+              },
+              {
+                "url": "https://www.legislation.gov.uk/ukpga/1996/53/body/enacted?timeline=false",
+                "what": "HGCRA Part II section 108 provides adjudication rights for qualifying construction contracts.",
+                "accessed": "2026-11-01",
+                "verification": "Original enacted text, not a current consolidation; scope and exclusions need review."
+              }
+            ],
+            "verification": "pending",
+            "verificationNote": "Historical official texts only. Current amendments, residential-occupier exclusions and the applicable national Scheme need counsel review. No generic maximum payment period is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "GB-BAS",
+      "name": {
+        "en": "Bath and North East Somerset"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BBD",
+      "name": {
+        "en": "Blackburn with Darwen"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BCP",
+      "name": {
+        "en": "Bournemouth, Christchurch and Poole"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BDF",
+      "name": {
+        "en": "Bedford"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BDG",
+      "name": {
+        "en": "Barking and Dagenham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BEN",
+      "name": {
+        "en": "Brent"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BEX",
+      "name": {
+        "en": "Bexley"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BIR",
+      "name": {
+        "en": "Birmingham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BKM",
+      "name": {
+        "en": "Buckinghamshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BNE",
+      "name": {
+        "en": "Barnet"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BNH",
+      "name": {
+        "en": "Brighton and Hove"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BNS",
+      "name": {
+        "en": "Barnsley"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BOL",
+      "name": {
+        "en": "Bolton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BPL",
+      "name": {
+        "en": "Blackpool"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BRC",
+      "name": {
+        "en": "Bracknell Forest"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BRD",
+      "name": {
+        "en": "Bradford"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BRY",
+      "name": {
+        "en": "Bromley"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BST",
+      "name": {
+        "en": "Bristol"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-BUR",
+      "name": {
+        "en": "Bury"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CAM",
+      "name": {
+        "en": "Cambridgeshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CBF",
+      "name": {
+        "en": "Central Bedfordshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CHE",
+      "name": {
+        "en": "Cheshire East"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CHW",
+      "name": {
+        "en": "Cheshire West and Chester"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CLD",
+      "name": {
+        "en": "Calderdale"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CMA",
+      "name": {
+        "en": "Cumbria"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CMD",
+      "name": {
+        "en": "Camden"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CON",
+      "name": {
+        "en": "Cornwall"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-COV",
+      "name": {
+        "en": "Coventry"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-CRY",
+      "name": {
+        "en": "Croydon"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DAL",
+      "name": {
+        "en": "Darlington"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DBY",
+      "name": {
+        "en": "Derbyshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DER",
+      "name": {
+        "en": "Derby"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DEV",
+      "name": {
+        "en": "Devon"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DNC",
+      "name": {
+        "en": "Doncaster"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DOR",
+      "name": {
+        "en": "Dorset"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DUD",
+      "name": {
+        "en": "Dudley"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-DUR",
+      "name": {
+        "en": "Durham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-EAL",
+      "name": {
+        "en": "Ealing"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-ENF",
+      "name": {
+        "en": "Enfield"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-ERY",
+      "name": {
+        "en": "East Riding of Yorkshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-ESS",
+      "name": {
+        "en": "Essex"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-ESX",
+      "name": {
+        "en": "East Sussex"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-GAT",
+      "name": {
+        "en": "Gateshead"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-GLS",
+      "name": {
+        "en": "Gloucestershire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-GRE",
+      "name": {
+        "en": "Greenwich"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HAL",
+      "name": {
+        "en": "Halton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HAM",
+      "name": {
+        "en": "Hampshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HAV",
+      "name": {
+        "en": "Havering"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HCK",
+      "name": {
+        "en": "Hackney"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HEF",
+      "name": {
+        "en": "Herefordshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HIL",
+      "name": {
+        "en": "Hillingdon"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HMF",
+      "name": {
+        "en": "Hammersmith and Fulham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HNS",
+      "name": {
+        "en": "Hounslow"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HPL",
+      "name": {
+        "en": "Hartlepool"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HRT",
+      "name": {
+        "en": "Hertfordshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HRW",
+      "name": {
+        "en": "Harrow"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-HRY",
+      "name": {
+        "en": "Haringey"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-IOS",
+      "name": {
+        "en": "Isles of Scilly"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-IOW",
+      "name": {
+        "en": "Isle of Wight"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-ISL",
+      "name": {
+        "en": "Islington"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-KEC",
+      "name": {
+        "en": "Kensington and Chelsea"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-KEN",
+      "name": {
+        "en": "Kent"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-KHL",
+      "name": {
+        "en": "Kingston upon Hull"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-KIR",
+      "name": {
+        "en": "Kirklees"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-KTT",
+      "name": {
+        "en": "Kingston upon Thames"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-KWL",
+      "name": {
+        "en": "Knowsley"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LAN",
+      "name": {
+        "en": "Lancashire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LBH",
+      "name": {
+        "en": "Lambeth"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LCE",
+      "name": {
+        "en": "Leicester"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LDS",
+      "name": {
+        "en": "Leeds"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LEC",
+      "name": {
+        "en": "Leicestershire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LEW",
+      "name": {
+        "en": "Lewisham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LIN",
+      "name": {
+        "en": "Lincolnshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LIV",
+      "name": {
+        "en": "Liverpool"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LND",
+      "name": {
+        "en": "London"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-LUT",
+      "name": {
+        "en": "Luton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-MAN",
+      "name": {
+        "en": "Manchester"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-MDB",
+      "name": {
+        "en": "Middlesbrough"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-MDW",
+      "name": {
+        "en": "Medway"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-MIK",
+      "name": {
+        "en": "Milton Keynes"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-MRT",
+      "name": {
+        "en": "Merton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NBL",
+      "name": {
+        "en": "Northumberland"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NEL",
+      "name": {
+        "en": "North East Lincolnshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NET",
+      "name": {
+        "en": "Newcastle upon Tyne"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NFK",
+      "name": {
+        "en": "Norfolk"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NGM",
+      "name": {
+        "en": "Nottingham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NLN",
+      "name": {
+        "en": "North Lincolnshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NNH",
+      "name": {
+        "en": "North Northamptonshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NSM",
+      "name": {
+        "en": "North Somerset"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NTT",
+      "name": {
+        "en": "Nottinghamshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NTY",
+      "name": {
+        "en": "North Tyneside"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NWM",
+      "name": {
+        "en": "Newham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-NYK",
+      "name": {
+        "en": "North Yorkshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-OLD",
+      "name": {
+        "en": "Oldham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-OXF",
+      "name": {
+        "en": "Oxfordshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-PLY",
+      "name": {
+        "en": "Plymouth"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-POR",
+      "name": {
+        "en": "Portsmouth"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-PTE",
+      "name": {
+        "en": "Peter"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-RCC",
+      "name": {
+        "en": "Redcar and Cleveland"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-RCH",
+      "name": {
+        "en": "Rochdale"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-RDB",
+      "name": {
+        "en": "Redbridge"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-RDG",
+      "name": {
+        "en": "Reading"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-RIC",
+      "name": {
+        "en": "Richmond upon Thames"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-ROT",
+      "name": {
+        "en": "Rotherham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-RUT",
+      "name": {
+        "en": "Rutland"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SAW",
+      "name": {
+        "en": "Sandwell"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SFK",
+      "name": {
+        "en": "Suffolk"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SFT",
+      "name": {
+        "en": "Sefton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SGC",
+      "name": {
+        "en": "South Gloucestershire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SHF",
+      "name": {
+        "en": "Sheffield"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SHN",
+      "name": {
+        "en": "Saint Helens"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SHR",
+      "name": {
+        "en": "Shropshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SKP",
+      "name": {
+        "en": "Stockport"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SLF",
+      "name": {
+        "en": "Salford"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SLG",
+      "name": {
+        "en": "Slough"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SND",
+      "name": {
+        "en": "Sunderland"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SOL",
+      "name": {
+        "en": "Solihull"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SOM",
+      "name": {
+        "en": "Somerset"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SOS",
+      "name": {
+        "en": "Southend-on-Sea"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SRY",
+      "name": {
+        "en": "Surrey"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-STE",
+      "name": {
+        "en": "Stoke-on-Trent"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-STH",
+      "name": {
+        "en": "Southampton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-STN",
+      "name": {
+        "en": "Sutton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-STS",
+      "name": {
+        "en": "Staffordshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-STT",
+      "name": {
+        "en": "Stockton-on-Tees"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-STY",
+      "name": {
+        "en": "South Tyneside"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SWD",
+      "name": {
+        "en": "Swindon"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SWK",
+      "name": {
+        "en": "Southwark"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-TAM",
+      "name": {
+        "en": "Tameside"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-TFW",
+      "name": {
+        "en": "Telford and Wrekin"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-THR",
+      "name": {
+        "en": "Thurrock"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-TOB",
+      "name": {
+        "en": "Torbay"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-TRF",
+      "name": {
+        "en": "Trafford"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-TWH",
+      "name": {
+        "en": "Tower Hamlets"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WAR",
+      "name": {
+        "en": "Warwickshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WBK",
+      "name": {
+        "en": "West Berkshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WFT",
+      "name": {
+        "en": "Waltham Forest"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WGN",
+      "name": {
+        "en": "Wigan"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WIL",
+      "name": {
+        "en": "Wiltshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WKF",
+      "name": {
+        "en": "Wakefield"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WLL",
+      "name": {
+        "en": "Walsall"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WLV",
+      "name": {
+        "en": "Wolverhampton"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WND",
+      "name": {
+        "en": "Wandsworth"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WNH",
+      "name": {
+        "en": "West Northamptonshire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WNM",
+      "name": {
+        "en": "Windsor and Maidenhead"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WOK",
+      "name": {
+        "en": "Wokingham"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WOR",
+      "name": {
+        "en": "Worcestershire"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WRL",
+      "name": {
+        "en": "Wirral"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WRT",
+      "name": {
+        "en": "Warrington"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WSM",
+      "name": {
+        "en": "Westminster"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-WSX",
+      "name": {
+        "en": "West Sussex"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-YOR",
+      "name": {
+        "en": "York"
+      },
+      "kind": "district",
+      "parent": "GB-ENG"
+    },
+    {
+      "code": "GB-SCT",
+      "name": {
+        "en": "Scotland"
+      },
+      "kind": "region",
+      "timeZones": [
+        "Europe/London"
+      ],
+      "facets": {
+        "standards": [
+          {
+            "id": "building-regulations",
+            "system": {
+              "en": "Building (Scotland) Regulations and Technical Handbooks"
+            },
+            "body": {
+              "name": {
+                "en": "Scottish Government"
+              },
+              "url": "https://www.gov.scot/collections/building-standards/"
+            },
+            "publications": "https://www.gov.scot/collections/building-standards/",
+            "textLicence": "Link to official guidance; check document licensing and applicable edition before reuse.",
+            "sources": [
+              {
+                "url": "https://www.gov.scot/collections/building-standards/",
+                "what": "Technical handbooks explain Building (Scotland) Regulations 2004; edition depends on warrant/application timing.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ],
+        "calendar": [
+          {
+            "id": "new-year-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "New Year's Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-01-01",
+                "2027-01-01",
+                "2028-01-03"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "2nd-january",
+            "type": "holiday",
+            "name": {
+              "en": "2nd January"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-01-02",
+                "2027-01-04",
+                "2028-01-04"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "good-friday",
+            "type": "holiday",
+            "name": {
+              "en": "Good Friday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-03",
+                "2027-03-26",
+                "2028-04-14"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "early-may-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Early May bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-04",
+                "2027-05-03",
+                "2028-05-01"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "spring-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Spring bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-25",
+                "2027-05-31",
+                "2028-05-29"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "world-cup-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "World Cup bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-06-15"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "summer-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Summer bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-08-03",
+                "2027-08-02",
+                "2028-08-07"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "st-andrew-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "St Andrew's Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-11-30",
+                "2027-11-30",
+                "2028-11-30"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "christmas-day",
+            "type": "holiday",
+            "name": {
+              "en": "Christmas Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-25",
+                "2027-12-27",
+                "2028-12-25"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "boxing-day",
+            "type": "holiday",
+            "name": {
+              "en": "Boxing Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-28",
+                "2027-12-28",
+                "2028-12-26"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          }
+        ],
+        "payments": [
+          {
+            "id": "construction-payment-law",
+            "type": "payment-terms",
+            "summary": {
+              "en": "HGCRA 1996 Part II: payment notices, notified sums and adjudication for qualifying construction contracts."
+            },
+            "sources": [
+              {
+                "url": "https://www.legislation.gov.uk/ukpga/1996/53/part/II/crossheading/payment/2022-09-18?view=extent",
+                "what": "HGCRA Part II: payment notices and notified-sum payment, with pay-less notice provisions.",
+                "accessed": "2026-11-01",
+                "verification": "Official historical consolidation dated 2022-09-18; current amendments need counsel review."
+              },
+              {
+                "url": "https://www.legislation.gov.uk/ukpga/1996/53/body/enacted?timeline=false",
+                "what": "HGCRA Part II section 108 provides adjudication rights for qualifying construction contracts.",
+                "accessed": "2026-11-01",
+                "verification": "Original enacted text, not a current consolidation; scope and exclusions need review."
+              }
+            ],
+            "verification": "pending",
+            "verificationNote": "Historical official texts only. Current amendments, residential-occupier exclusions and the applicable national Scheme need counsel review. No generic maximum payment period is inferred."
+          }
+        ],
+        "procurement": [
+          {
+            "id": "find-a-tender",
+            "type": "portal",
+            "name": {
+              "en": "Find a Tender under Scottish procurement rules"
+            },
+            "url": "https://www.find-tender.service.gov.uk/",
+            "level": "national",
+            "openData": false,
+            "sources": [
+              {
+                "url": "https://www.find-tender.service.gov.uk/Home/NoticeTypes",
+                "what": "Procurement Act 2023 notices for new processes from 24 February 2025; Scottish, NI below-threshold and legacy-procurement exceptions.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Scottish procurement rules remain distinct; this override does not remove applicable UK-wide authority procurements. Procurement Act applicability depends on the authority and procurement, not address alone."
+          }
+        ]
+      }
+    },
+    {
+      "code": "GB-ABD",
+      "name": {
+        "en": "Aberdeenshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ABE",
+      "name": {
+        "en": "Aberdeen"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-AGB",
+      "name": {
+        "en": "Argyll and Bute"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ANS",
+      "name": {
+        "en": "Angus"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-CLK",
+      "name": {
+        "en": "Clackmannanshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-DGY",
+      "name": {
+        "en": "Dumfries and Galloway"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-DND",
+      "name": {
+        "en": "Dundee"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-EAY",
+      "name": {
+        "en": "East Ayrshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-EDH",
+      "name": {
+        "en": "Edinburgh"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-EDU",
+      "name": {
+        "en": "East Dunbartonshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ELN",
+      "name": {
+        "en": "East Lothian"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ELS",
+      "name": {
+        "en": "Outer Hebrides"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ERW",
+      "name": {
+        "en": "East Renfrewshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-FAL",
+      "name": {
+        "en": "Falkirk"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-FIF",
+      "name": {
+        "en": "Fife"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-GLG",
+      "name": {
+        "en": "Glasgow"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-HLD",
+      "name": {
+        "en": "Highland"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-IVC",
+      "name": {
+        "en": "Inverclyde"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-MLN",
+      "name": {
+        "en": "Midlothian"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-MRY",
+      "name": {
+        "en": "Moray"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-NAY",
+      "name": {
+        "en": "North Ayrshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-NLK",
+      "name": {
+        "en": "North Lanarkshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ORK",
+      "name": {
+        "en": "Orkney Islands"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-PKN",
+      "name": {
+        "en": "Perth and Kinross"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-RFW",
+      "name": {
+        "en": "Renfrewshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-SAY",
+      "name": {
+        "en": "South Ayrshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-SCB",
+      "name": {
+        "en": "Scottish Borders"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-SLK",
+      "name": {
+        "en": "South Lanarkshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-STG",
+      "name": {
+        "en": "Stirling"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-WDU",
+      "name": {
+        "en": "West Dunbartonshire"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-WLN",
+      "name": {
+        "en": "West Lothian"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-ZET",
+      "name": {
+        "en": "Shetland"
+      },
+      "kind": "district",
+      "parent": "GB-SCT"
+    },
+    {
+      "code": "GB-WLS",
+      "name": {
+        "en": "Wales"
+      },
+      "kind": "region",
+      "timeZones": [
+        "Europe/London"
+      ],
+      "facets": {
+        "standards": [
+          {
+            "id": "building-regulations",
+            "system": {
+              "en": "Building Regulations and Approved Documents (Wales)"
+            },
+            "body": {
+              "name": {
+                "en": "Welsh Government"
+              },
+              "url": "https://www.gov.wales/building-regulations-approved-documents"
+            },
+            "publications": "https://www.gov.wales/building-regulations-approved-documents",
+            "textLicence": "Link to official guidance; check document licensing and applicable edition before reuse.",
+            "sources": [
+              {
+                "url": "https://www.gov.wales/building-regulations-approved-documents",
+                "what": "Welsh approved documents provide guidance for building regulations in Wales.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ],
+        "calendar": [
+          {
+            "id": "new-year-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "New Year's Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-01-01",
+                "2027-01-01",
+                "2028-01-03"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "good-friday",
+            "type": "holiday",
+            "name": {
+              "en": "Good Friday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-03",
+                "2027-03-26",
+                "2028-04-14"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "easter-monday",
+            "type": "holiday",
+            "name": {
+              "en": "Easter Monday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-06",
+                "2027-03-29",
+                "2028-04-17"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "early-may-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Early May bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-04",
+                "2027-05-03",
+                "2028-05-01"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "spring-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Spring bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-25",
+                "2027-05-31",
+                "2028-05-29"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "summer-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Summer bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-08-31",
+                "2027-08-30",
+                "2028-08-28"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "christmas-day",
+            "type": "holiday",
+            "name": {
+              "en": "Christmas Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-25",
+                "2027-12-27",
+                "2028-12-25"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "boxing-day",
+            "type": "holiday",
+            "name": {
+              "en": "Boxing Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-28",
+                "2027-12-28",
+                "2028-12-26"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "competent-person-schemes",
+            "type": "activity",
+            "name": {
+              "en": "Competent person / self-certification schemes"
+            },
+            "authority": {
+              "name": {
+                "en": "Building regulations authorities"
+              },
+              "url": "https://www.gov.uk/building-regulations-competent-person-schemes"
+            },
+            "required": false,
+            "sources": [
+              {
+                "url": "https://www.gov.uk/building-regulations-competent-person-schemes",
+                "what": "Competent person scheme membership is voluntary and permits self-certification for covered work.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/government/publications/self-certification-schemes-mandatory-technical-competence-requirements",
+                "what": "Self-certification technical competence framework applies to England and Wales.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Voluntary route for specified work; otherwise applicable building-control approval is still required."
+          }
+        ],
+        "payments": [
+          {
+            "id": "construction-payment-law",
+            "type": "payment-terms",
+            "summary": {
+              "en": "HGCRA 1996 Part II: payment notices, notified sums and adjudication for qualifying construction contracts."
+            },
+            "sources": [
+              {
+                "url": "https://www.legislation.gov.uk/ukpga/1996/53/part/II/crossheading/payment/2022-09-18?view=extent",
+                "what": "HGCRA Part II: payment notices and notified-sum payment, with pay-less notice provisions.",
+                "accessed": "2026-11-01",
+                "verification": "Official historical consolidation dated 2022-09-18; current amendments need counsel review."
+              },
+              {
+                "url": "https://www.legislation.gov.uk/ukpga/1996/53/body/enacted?timeline=false",
+                "what": "HGCRA Part II section 108 provides adjudication rights for qualifying construction contracts.",
+                "accessed": "2026-11-01",
+                "verification": "Original enacted text, not a current consolidation; scope and exclusions need review."
+              }
+            ],
+            "verification": "pending",
+            "verificationNote": "Historical official texts only. Current amendments, residential-occupier exclusions and the applicable national Scheme need counsel review. No generic maximum payment period is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "GB-AGY",
+      "name": {
+        "en": "Anglesey"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-BGE",
+      "name": {
+        "en": "Bridgend"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-BGW",
+      "name": {
+        "en": "Blaenau Gwent"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-CAY",
+      "name": {
+        "en": "Caerphilly"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-CGN",
+      "name": {
+        "en": "Ceredigion"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-CMN",
+      "name": {
+        "en": "Carmarthenshire"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-CRF",
+      "name": {
+        "en": "Cardiff"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-CWY",
+      "name": {
+        "en": "Conwy"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-DEN",
+      "name": {
+        "en": "Denbighshire"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-FLN",
+      "name": {
+        "en": "Flintshire"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-GWN",
+      "name": {
+        "en": "Gwynedd"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-MON",
+      "name": {
+        "en": "Monmouthshire"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-MTY",
+      "name": {
+        "en": "Merthyr Tydfil"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-NTL",
+      "name": {
+        "en": "Neath Port Talbot"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-NWP",
+      "name": {
+        "en": "Newport"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-PEM",
+      "name": {
+        "en": "Pembrokeshire"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-POW",
+      "name": {
+        "en": "Powys"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-RCT",
+      "name": {
+        "en": "Rhondda Cynon Taf"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-SWA",
+      "name": {
+        "en": "Swansea"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-TOF",
+      "name": {
+        "en": "Torfaen"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-VGL",
+      "name": {
+        "en": "Vale of Glamorgan"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-WRX",
+      "name": {
+        "en": "Wrexham"
+      },
+      "kind": "district",
+      "parent": "GB-WLS"
+    },
+    {
+      "code": "GB-NIR",
+      "name": {
+        "en": "Northern Ireland"
+      },
+      "kind": "province",
+      "timeZones": [
+        "Europe/London"
+      ],
+      "facets": {
+        "standards": [
+          {
+            "id": "building-regulations",
+            "system": {
+              "en": "Building Regulations (Northern Ireland) and Technical Booklets"
+            },
+            "body": {
+              "name": {
+                "en": "Department of Finance (Northern Ireland)"
+              },
+              "url": "https://www.finance-ni.gov.uk/articles/building-regulations-technical-booklets"
+            },
+            "publications": "https://www.finance-ni.gov.uk/articles/building-regulations-technical-booklets",
+            "textLicence": "Link to official guidance; check document licensing and applicable edition before reuse.",
+            "sources": [
+              {
+                "url": "https://www.finance-ni.gov.uk/articles/building-regulations-technical-booklets",
+                "what": "Northern Ireland building regulations have Technical Booklets and a presumption of compliance for covered requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ],
+        "calendar": [
+          {
+            "id": "new-year-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "New Year's Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-01-01",
+                "2027-01-01",
+                "2028-01-03"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "st-patrick-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "St Patrick's Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-03-17",
+                "2027-03-17",
+                "2028-03-17"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "good-friday",
+            "type": "holiday",
+            "name": {
+              "en": "Good Friday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-03",
+                "2027-03-26",
+                "2028-04-14"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "easter-monday",
+            "type": "holiday",
+            "name": {
+              "en": "Easter Monday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-04-06",
+                "2027-03-29",
+                "2028-04-17"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "early-may-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Early May bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-04",
+                "2027-05-03",
+                "2028-05-01"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "spring-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Spring bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-25",
+                "2027-05-31",
+                "2028-05-29"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "battle-of-the-boyne-orangemen-s-day",
+            "type": "holiday",
+            "name": {
+              "en": "Battle of the Boyne (Orangemen's Day)"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-07-13",
+                "2027-07-12",
+                "2028-07-12"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "summer-bank-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Summer bank holiday"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-08-31",
+                "2027-08-30",
+                "2028-08-28"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "christmas-day",
+            "type": "holiday",
+            "name": {
+              "en": "Christmas Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-25",
+                "2027-12-27",
+                "2028-12-25"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          },
+          {
+            "id": "boxing-day",
+            "type": "holiday",
+            "name": {
+              "en": "Boxing Day"
+            },
+            "holiday": "bank",
+            "nonWorking": true,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-12-28",
+                "2027-12-28",
+                "2028-12-26"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.gov.uk/bank-holidays.json",
+                "what": "GOV.UK published bank-holiday dates by England/Wales, Scotland and Northern Ireland; this pack retains 2026-2028 only.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.gov.uk/bank-holidays",
+                "what": "Bank holiday dates include substitutes; employers need not grant paid leave on these days.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published bank calendar, including substitute dates as actual dates; not an individual entitlement to paid leave or a site shutdown rule. No extrapolation outside 2026-2028."
+          }
+        ],
+        "payments": [
+          {
+            "id": "construction-payment-law",
+            "type": "payment-terms",
+            "summary": {
+              "en": "Northern Ireland has its own Construction Contracts Order 1997 and 2011 amendment for construction payments and adjudication."
+            },
+            "sources": [
+              {
+                "url": "https://www.finance-ni.gov.uk/sites/default/files/publications/dfp/Construction%20Toolkit%20%28pdf%20version%2030%20Sept%2022%20%281%29.PDF%29.PDF",
+                "what": "Department of Finance construction toolkit: Construction Contracts (NI) Order 1997 and 2011 amendment, payment and adjudication.",
+                "accessed": "2026-11-01",
+                "verification": "2022 guidance; current law and contract-specific exclusions need counsel review."
+              }
+            ],
+            "verification": "pending",
+            "verificationNote": "2022 official guidance, pending current statutory and contract-specific review. Do not apply HGCRA Great Britain provisions automatically."
+          }
+        ]
+      }
+    },
+    {
+      "code": "GB-ABC",
+      "name": {
+        "en": "Armagh, Banbridge and Craigavon"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-AND",
+      "name": {
+        "en": "Ards and North Down"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-ANN",
+      "name": {
+        "en": "Antrim and Newtownabbey"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-BFS",
+      "name": {
+        "en": "Belfast"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-CCG",
+      "name": {
+        "en": "Causeway Coast and Glens"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-DRS",
+      "name": {
+        "en": "Derry and Strabane"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-FMO",
+      "name": {
+        "en": "Fermanagh and Omagh"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-LBC",
+      "name": {
+        "en": "Lisburn and Castlereagh"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-MEA",
+      "name": {
+        "en": "Mid and East Antrim"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-MUL",
+      "name": {
+        "en": "Mid Ulster"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    },
+    {
+      "code": "GB-NMD",
+      "name": {
+        "en": "Newry, Mourne and Down"
+      },
+      "kind": "district",
+      "parent": "GB-NIR"
+    }
+  ],
+  "address": {
+    "lines": [
+      "street",
+      "street2",
+      "city",
+      "region",
+      "postalCode"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
+  "dataResidency": {
+    "required": false,
+    "note": {
+      "en": "ICO guidance permits restricted transfers through adequacy, safeguards or a derogation; this is not blanket permission to transfer or a finding that all sector-specific residency rules are absent. Hub storage, processor and transfer arrangements require counsel review."
+    },
+    "verificationLevel": "pending",
+    "sources": [
+      {
+        "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/a-brief-guide-to-international-transfers/",
+        "what": "ICO: restricted transfers require adequacy, appropriate safeguards or a derogation; other UK GDPR obligations remain.",
+        "accessed": "2026-11-01"
+      }
+    ]
+  },
+  "facets": {
+    "identifiers": [
+      {
+        "id": "vat-number",
+        "kind": "GB-VAT",
+        "role": "vat",
+        "label": {
+          "en": "VAT registration number"
+        },
+        "pattern": "^(?:GB *)?(?:[0-9] *){8}[0-9]$",
+        "example": "123456789",
+        "issuer": {
+          "name": {
+            "en": "HM Revenue and Customs"
+          },
+          "url": "https://www.gov.uk/government/organisations/hm-revenue-customs"
+        },
+        "appliesTo": [
+          "legal-entity",
+          "sole-proprietor"
+        ],
+        "register": "hmrc-vat-check",
+        "sources": [
+          {
+            "url": "https://design.tax.service.gov.uk/hmrc-design-patterns/vat-registration-number/",
+            "what": "HMRC input guidance: nine digits with optional GB prefix and spaces; use synthetic example 123456789.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Standard domestic nine-digit VRN only. This does not cover branch suffixes, special government/health references or XI-prefixed trade identifiers. Pattern checks do not verify registration or a checksum."
+      }
+    ],
+    "registers": [
+      {
+        "id": "companies-house",
+        "name": {
+          "en": "Companies House public company register"
+        },
+        "url": "https://find-and-update.company-information.service.gov.uk/",
+        "query": "manual",
+        "covers": [
+          "GB-CRN"
+        ],
+        "candidateAdapters": [
+          "Companies House lookup (candidate; API and reuse terms require review)"
+        ],
+        "sources": [
+          {
+            "url": "https://find-and-update.company-information.service.gov.uk/company-lookup/search?forward=%2Fauth-code-requests%2Fcompany%2F%7BcompanyNumber%7D%2Fconfirm",
+            "what": "Companies House expects eight characters; pad shorter numbers with leading zeros.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.gov.uk/government/publications/incorporation-and-names/incorporation-and-names",
+            "what": "Companies House: private companies limited by shares or guarantee, public companies and CICs.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Public register existence is sourced; this pack performs no company or person lookup and makes no verified-company claim."
+      },
+      {
+        "id": "hmrc-vat-check",
+        "name": {
+          "en": "HMRC Check a UK VAT number"
+        },
+        "url": "https://www.gov.uk/check-uk-vat-number",
+        "query": "manual",
+        "covers": [
+          "GB-VAT"
+        ],
+        "candidateAdapters": [
+          "HMRC VAT check (candidate; no credentials or live call)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gov.uk/check-uk-vat-number",
+            "what": "HMRC lookup checks a supplied VAT number and returns registered business name and address; no name-only search.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "gas-safe",
+        "name": {
+          "en": "Gas Safe Register"
+        },
+        "url": "https://www.hse.gov.uk/gas/gas-safe-register-check.htm",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "Gas Safe Register lookup (candidate; access and reuse terms unreviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.hse.gov.uk/gas/gas-safe-register-check.htm",
+            "what": "HSE directs users to Gas Safe Register to check an engineer and permitted work categories.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "architects-register",
+        "name": {
+          "en": "Architects Register"
+        },
+        "url": "https://arb.org.uk/public-information/before-hiring-an-architect/who-can-use-the-title-architect/",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "Architects Register lookup (candidate; access and reuse terms unreviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://arb.org.uk/public-information/before-hiring-an-architect/who-can-use-the-title-architect/",
+            "what": "ARB: architect is a protected title; architectural services are not reserved solely to registered architects.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "engineering-register",
+        "name": {
+          "en": "Engineering Council RegCheck"
+        },
+        "url": "https://www.engc.org.uk/professional-registration/check-a-registration-regcheck",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "Engineering Council RegCheck lookup (candidate; access and reuse terms unreviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.engc.org.uk/professional-registration/check-a-registration-regcheck",
+            "what": "Engineering Council RegCheck confirms professional registration and entitlement to protected professional titles.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "licensing": [
+      {
+        "id": "general-contractor-licensing",
+        "type": "activity",
+        "name": {
+          "en": "General contractor licensing: absence of a blanket licence remains unverified"
+        },
+        "authority": {
+          "name": {
+            "en": "UK government licensing guidance"
+          },
+          "url": "https://www.gov.uk/licence-finder"
+        },
+        "required": false,
+        "sources": [
+          {
+            "url": "https://www.gov.uk/building-regulations-competent-person-schemes",
+            "what": "Competent person scheme membership is voluntary and permits self-certification for covered work.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.hse.gov.uk/gas/domestic/faqs.htm",
+            "what": "Domestic gas work and landlord checks require an appropriately registered Gas Safe engineer; verify the scope of work.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Research lead only: no general UK contractor licence was established from the reviewed sources. required=false is not permission to work; activity-specific licensing, competence, permits and nation-specific requirements must be checked."
+      },
+      {
+        "id": "gas-safety",
+        "type": "activity",
+        "name": {
+          "en": "Gas Safe registration for regulated domestic gas work"
+        },
+        "authority": {
+          "name": {
+            "en": "Gas Safe Register"
+          },
+          "url": "https://www.gassaferegister.co.uk/"
+        },
+        "required": true,
+        "register": "gas-safe",
+        "sources": [
+          {
+            "url": "https://www.hse.gov.uk/gas/domestic/faqs.htm",
+            "what": "Domestic gas work and landlord checks require an appropriately registered Gas Safe engineer; verify the scope of work.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.hse.gov.uk/gas/gas-safe-register-check.htm",
+            "what": "HSE directs users to Gas Safe Register to check an engineer and permitted work categories.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Check registration and the specific work categories. HSE guidance covers Great Britain; Northern Ireland statutory implementation is not independently reviewed here."
+      },
+      {
+        "id": "cscs-card",
+        "type": "activity",
+        "name": {
+          "en": "CSCS construction skills card"
+        },
+        "authority": {
+          "name": {
+            "en": "Construction Skills Certification Scheme"
+          },
+          "url": "https://www.cscs.uk.com/"
+        },
+        "required": false,
+        "sources": [
+          {
+            "url": "https://www.cscs.uk.com/about/",
+            "what": "Scheme operator: CSCS cards evidence training and qualifications but are not a legislative requirement; site access is for clients or principal contractors.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Not a statutory general contractor licence. A client or principal contractor may require a valid card for site access."
+      },
+      {
+        "id": "architect-title",
+        "type": "profession",
+        "name": {
+          "en": "Protected title: architect"
+        },
+        "body": {
+          "name": {
+            "en": "Architects Registration Board"
+          },
+          "url": "https://arb.org.uk/"
+        },
+        "register": "architects-register",
+        "sources": [
+          {
+            "url": "https://arb.org.uk/public-information/before-hiring-an-architect/who-can-use-the-title-architect/",
+            "what": "ARB: architect is a protected title; architectural services are not reserved solely to registered architects.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Registration protects the title, not an exclusive right to provide every architectural service."
+      },
+      {
+        "id": "engineering-titles",
+        "type": "profession",
+        "name": {
+          "en": "Engineering Council professional registration"
+        },
+        "body": {
+          "name": {
+            "en": "Engineering Council"
+          },
+          "url": "https://www.engc.org.uk/"
+        },
+        "register": "engineering-register",
+        "sources": [
+          {
+            "url": "https://www.engc.org.uk/professional-registration/check-a-registration-regcheck",
+            "what": "Engineering Council RegCheck confirms professional registration and entitlement to protected professional titles.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Professional title verification does not establish a general statutory licence for all engineering work."
+      }
+    ],
+    "standards": [
+      {
+        "id": "british-eurocodes",
+        "system": {
+          "en": "BS EN Eurocodes with UK National Annexes"
+        },
+        "body": {
+          "name": {
+            "en": "British Standards Institution"
+          },
+          "url": "https://www.bsigroup.com/"
+        },
+        "publications": "https://knowledge.bsigroup.com/categories/eurocodes",
+        "textLicence": "Link only; no permission to reproduce or index paid standards is assumed.",
+        "adopts": [
+          "BS EN 1990 to BS EN 1999; applicable editions and UK National Annexes require project review"
+        ],
+        "sources": [
+          {
+            "url": "https://knowledge.bsigroup.com/categories/eurocodes",
+            "what": "BSI catalogue of BS EN Eurocodes and UK National Annexes; standards have editions and are licensed publications.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Catalogue records adoption and publications, not a claim that every edition applies to every building or jurisdiction."
+      }
+    ],
+    "procurement": [
+      {
+        "id": "find-a-tender",
+        "type": "portal",
+        "name": {
+          "en": "Find a Tender: central digital platform"
+        },
+        "url": "https://www.find-tender.service.gov.uk/",
+        "level": "national",
+        "openData": false,
+        "candidateAdapters": [
+          "Find a Tender notice feed (candidate; API and reuse terms not reviewed)"
+        ],
+        "effectiveFrom": "2025-02-24",
+        "sources": [
+          {
+            "url": "https://www.find-tender.service.gov.uk/Home/NoticeTypes",
+            "what": "Procurement Act 2023 notices for new processes from 24 February 2025; Scottish, NI below-threshold and legacy-procurement exceptions.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Procurement Act 2023 for applicable new procurements. Scottish rules, Northern Ireland below-threshold contracts and legacy procedures have exceptions. openData=false means reuse was not reviewed, not that the portal has no public data."
+      }
+    ],
+    "tax": [
+      {
+        "id": "vat",
+        "type": "rate",
+        "taxKind": "vat",
+        "name": {
+          "en": "VAT: supply-specific rates and construction reverse charge"
+        },
+        "standardRate": "20",
+        "reducedRates": [
+          {
+            "rate": "5",
+            "appliesTo": {
+              "en": "Qualifying reduced-rate supplies; determine eligibility from HMRC guidance"
+            }
+          },
+          {
+            "rate": "0",
+            "appliesTo": {
+              "en": "Qualifying zero-rated supplies; distinct from exempt supplies"
+            }
+          }
+        ],
+        "localRates": "none",
+        "registrationThreshold": null,
+        "calculation": "adapter",
+        "candidateAdapters": [
+          "HMRC-aware tax calculation provider (candidate; no adapter implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gov.uk/vat-rates",
+            "what": "HMRC: standard VAT 20%, reduced 5%, zero 0%; exemptions are distinct.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.gov.uk/guidance/vat-domestic-reverse-charge-for-building-and-construction-services",
+            "what": "Construction domestic reverse charge applies to qualifying VAT/CIS supplies from 1 March 2021; exclusions apply.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "No automatic 20% construction tax calculation: supply classification, exemptions and domestic reverse-charge conditions require review. Reverse charge applies to qualifying standard/reduced-rate CIS supplies from 1 March 2021; exceptions apply. Registration threshold is not recorded, not absent."
+      },
+      {
+        "id": "cis-deductions",
+        "type": "rate",
+        "taxKind": "withholding",
+        "name": {
+          "en": "Construction Industry Scheme deductions"
+        },
+        "standardRate": "20",
+        "reducedRates": [
+          {
+            "rate": "30",
+            "appliesTo": {
+              "en": "Unregistered subcontractors (higher rate, represented in the schema alternative-rate list)"
+            }
+          },
+          {
+            "rate": "0",
+            "appliesTo": {
+              "en": "Subcontractors with gross payment status"
+            }
+          }
+        ],
+        "calculation": "adapter",
+        "candidateAdapters": [
+          "CIS status and deduction calculation (candidate; consent and tax-data controls required)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gov.uk/what-you-must-do-as-a-cis-contractor/make-deductions-and-pay-subcontractors",
+            "what": "HMRC CIS deduction rates 20%, 30% or 0% depending on verified status; deductible base excludes specified costs.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "HMRC verification determines the rate. Apply it to the eligible payment base after specified exclusions, not the entire invoice. No live CIS verification or UTR collection."
+      },
+      {
+        "id": "electronic-invoicing-current",
+        "type": "e-invoicing",
+        "system": {
+          "en": "Current VAT electronic invoicing: authenticity and integrity controls"
+        },
+        "mandatory": false,
+        "scope": [
+          "B2B",
+          "B2G"
+        ],
+        "signatureRequired": false,
+        "effectiveTo": "2029-03-31",
+        "sources": [
+          {
+            "url": "https://www.gov.uk/guidance/electronic-invoicing-notice-70063",
+            "what": "HMRC VAT Notice 700/63: electronic invoicing requirements and authenticity/integrity controls.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "HMRC VAT Notice 700/63 reviewed as a lead; sector/buyer-specific requirements and the precise signature controls have not been exhaustively reviewed. These booleans do not waive contractual B2G requirements."
+      },
+      {
+        "id": "electronic-invoicing-2029",
+        "type": "e-invoicing",
+        "system": {
+          "en": "Announced VAT e-invoicing regime from April 2029"
+        },
+        "mandatory": true,
+        "scope": [
+          "B2B",
+          "B2G"
+        ],
+        "signatureRequired": false,
+        "effectiveFrom": "2029-04-01",
+        "candidateAdapters": [
+          "UK e-invoicing / Peppol integration (candidate; final rules and provider review required)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gov.uk/government/publications/vat-electronic-invoicing/e-invoicing-requirements",
+            "what": "28 October 2026 announcement: VAT e-invoicing from 1 April 2029, with enabling legislation and implementing rules. Not a present mandate.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Future announced policy, not a current operational mandate. Implementing regulations, precise scope and signature requirements await review; signatureRequired=false means not confirmed. Do not activate from this fact alone."
+      }
+    ],
+    "contentLaw": [
+      {
+        "id": "sensitive-utr",
+        "topic": "other",
+        "summary": {
+          "en": "HMRC UTR is a ten-digit tax reference for Self Assessment or companies."
+        },
+        "sources": [
+          {
+            "url": "https://www.gov.uk/find-utr-number",
+            "what": "HMRC issues a ten-digit UTR for Self Assessment or a limited company; recovery is via tax accounts or HMRC correspondence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Engine handling decision: treat UTR as sensitive tax information; never a public company identifier. Intentionally excluded from the identifier catalogue until the schema supports private collection and projections."
+      },
+      {
+        "id": "companies-house-identity-verification",
+        "topic": "other",
+        "summary": {
+          "en": "Director and PSC identity verification became mandatory from 18 November 2025, with transitional deadlines for existing roles."
+        },
+        "effectiveFrom": "2025-11-18",
+        "sources": [
+          {
+            "url": "https://www.gov.uk/government/news/companies-house-confirms-identity-verification-rollout-from-18-november-2025",
+            "what": "Mandatory director and PSC identity verification begins 18 November 2025 with a twelve-month transition for existing roles.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Deadlines depend on the role and filing cycle. This is not platform identity verification and grants no company authority in the engine."
+      },
+      {
+        "id": "making-tax-digital-vat",
+        "topic": "other",
+        "summary": {
+          "en": "Making Tax Digital requires specified VAT records in digital form unless an exemption applies."
+        },
+        "sources": [
+          {
+            "url": "https://www.gov.uk/charge-reclaim-record-vat/keeping-vat-records",
+            "what": "Certain VAT records must be kept digitally unless exempt from Making Tax Digital rules.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Digital VAT records and returns are distinct from an electronic-invoice exchange mandate."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "electronic-communications-act",
+        "kind": "signature",
+        "name": {
+          "en": "Electronic signature evidence"
+        },
+        "strength": "simple",
+        "legalBasis": {
+          "en": "Electronic Communications Act 2000, section 7: electronic signatures and their certification are admissible as evidence."
+        },
+        "sources": [
+          {
+            "url": "https://www.legislation.gov.uk/ukpga/2000/7/part/II?view=extent",
+            "what": "Electronic Communications Act 2000 section 7: electronic signatures and certification may be admitted as evidence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Admissibility is not blanket validity for every deed or transaction; formalities and jurisdiction require counsel review."
+      },
+      {
+        "id": "uk-eidas",
+        "kind": "signature",
+        "name": {
+          "en": "UK eIDAS trust services framework"
+        },
+        "strength": "qualified",
+        "legalBasis": {
+          "en": "UK eIDAS regulates trust services under ICO supervision. EU qualified services may be recognised in the UK; reciprocal EU recognition is not automatic."
+        },
+        "candidateAdapters": [
+          "UK qualified trust service verification (candidate; trusted-list and document-form review required)"
+        ],
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/guide-to-eidas/what-is-the-eidas-regulation/",
+            "what": "ICO explains UK eIDAS and UK recognition of EU qualified services without automatic reciprocal EU recognition.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Qualified is the class described, not an assurance about any provider or signature used by the engine."
+      }
+    ],
+    "payments": [
+      {
+        "id": "faster-payments",
+        "type": "scheme",
+        "name": {
+          "en": "Faster Payments"
+        },
+        "rails": [
+          "instant-credit-transfer"
+        ],
+        "candidateAdapters": [
+          "Licensed Faster Payments provider (candidate; hub review required)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.wearepay.uk/what-we-do/payment-systems/faster-payment-system/",
+            "what": "Pay.UK operates real-time Faster Payments, available throughout the year.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "bacs",
+        "type": "scheme",
+        "name": {
+          "en": "Bacs Direct Credit and Direct Debit"
+        },
+        "rails": [
+          "credit-transfer",
+          "direct-debit"
+        ],
+        "candidateAdapters": [
+          "Licensed Bacs provider (candidate; hub review required)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.wearepay.uk/what-we-do/payment-systems/bacs-payment-system/",
+            "what": "Pay.UK Bacs supports Direct Debit and Direct Credit.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "cards",
+        "type": "scheme",
+        "name": {
+          "en": "Debit and credit card payments"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "Licensed card acquirer (candidate; hub review required)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gov.uk/pay-self-assessment-tax-bill/by-debit-or-credit-card-online",
+            "what": "HMRC accepts debit and corporate credit cards; evidence of card payments, not universal merchant acceptance.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Source evidences HMRC card acceptance only; individual merchants, card types and provider support vary. No provider is configured."
+      }
+    ],
+    "privacy": [
+      {
+        "id": "uk-data-protection",
+        "type": "law",
+        "name": {
+          "en": "UK GDPR and Data Protection Act 2018"
+        },
+        "authority": {
+          "name": {
+            "en": "Information Commissioner's Office"
+          },
+          "url": "https://ico.org.uk/"
+        },
+        "summary": {
+          "en": "Personal-data processing must satisfy UK data-protection rules; international transfers need an applicable mechanism."
+        },
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/a-brief-guide-to-international-transfers/",
+            "what": "ICO: restricted transfers require adequacy, appropriate safeguards or a derogation; other UK GDPR obligations remain.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "No universal consent basis, retention term or numerical subject-request deadline is encoded. Current amendments and sector-specific obligations require counsel review."
+      },
+      {
+        "id": "pecr",
+        "type": "law",
+        "name": {
+          "en": "Privacy and Electronic Communications Regulations (PECR)"
+        },
+        "authority": {
+          "name": {
+            "en": "Information Commissioner's Office"
+          },
+          "url": "https://ico.org.uk/"
+        },
+        "summary": {
+          "en": "PECR supplies additional electronic-communications privacy rules alongside UK GDPR and the Data Protection Act 2018."
+        },
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Storage/access technologies and marketing rules, exemptions and current amendments require use-case review; no blanket consent exception is asserted."
+      }
+    ],
+    "units": [
+      {
+        "id": "measurement-system",
+        "type": "system",
+        "system": "mixed",
+        "common": [
+          "m",
+          "m2",
+          "m3",
+          "kg",
+          "t",
+          "l",
+          "ft",
+          "in",
+          "lb"
+        ],
+        "sources": [
+          {
+            "url": "https://service-manual.ons.gov.uk/content/numbers/measurements-and-units",
+            "what": "ONS style guidance uses metric units except specified everyday imperial conventions.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Metric is the default for the pack; imperial units support everyday references. This catalogue selection is not a legal permission to invoice every product in imperial units."
+      }
+    ],
+    "agentLaw": [
+      {
+        "id": "agent-disclosure",
+        "topic": "disclosure",
+        "summary": {
+          "en": "Identify the acting agent and the accountable person before commitments; counsel must approve wording."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.legislation.gov.uk/ukpga/2000/7/part/II?view=extent",
+            "what": "Electronic Communications Act 2000 section 7: electronic signatures and certification may be admitted as evidence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Proposed engine safeguard, not a sourced UK legal rule. No wording, retention period, liability allocation or monetary limit is approved. HUB-005 counsel review required."
+      },
+      {
+        "id": "agent-liability",
+        "topic": "liability",
+        "summary": {
+          "en": "Record the represented principal and authority; counsel must determine liability allocation."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.legislation.gov.uk/ukpga/2000/7/part/II?view=extent",
+            "what": "Electronic Communications Act 2000 section 7: electronic signatures and certification may be admitted as evidence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Proposed engine safeguard, not a sourced UK legal rule. No wording, retention period, liability allocation or monetary limit is approved. HUB-005 counsel review required."
+      },
+      {
+        "id": "agent-consent",
+        "topic": "consent",
+        "summary": {
+          "en": "Use confirmed, revocable structured mandates; chat text never authorizes."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.legislation.gov.uk/ukpga/2000/7/part/II?view=extent",
+            "what": "Electronic Communications Act 2000 section 7: electronic signatures and certification may be admitted as evidence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Proposed engine safeguard, not a sourced UK legal rule. No wording, retention period, liability allocation or monetary limit is approved. HUB-005 counsel review required."
+      },
+      {
+        "id": "agent-record-keeping",
+        "topic": "record-keeping",
+        "summary": {
+          "en": "Keep evidence of confirmed mandates and committed versions; counsel must set lawful retention."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.legislation.gov.uk/ukpga/2000/7/part/II?view=extent",
+            "what": "Electronic Communications Act 2000 section 7: electronic signatures and certification may be admitted as evidence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Proposed engine safeguard, not a sourced UK legal rule. No wording, retention period, liability allocation or monetary limit is approved. HUB-005 counsel review required."
+      },
+      {
+        "id": "agent-action-limit",
+        "topic": "action-limit",
+        "summary": {
+          "en": "No default legal spending limit is asserted; explicit mandate and budget limits still apply."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/how-do-the-pecr-rules-relate-to-the-uk-gdpr/",
+            "what": "ICO: PECR works alongside UK GDPR and the Data Protection Act 2018 for electronic communications privacy.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.legislation.gov.uk/ukpga/2000/7/part/II?view=extent",
+            "what": "Electronic Communications Act 2000 section 7: electronic signatures and certification may be admitted as evidence.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Proposed engine safeguard, not a sourced UK legal rule. No wording, retention period, liability allocation or monetary limit is approved. HUB-005 counsel review required."
+      }
+    ]
+  },
+  "notes": [
+    "CTRY-GB: sourced pack data, not legal advice or a live integration. Source access dates use UTC (2026-11-01). Maintainer acceptance occurs through PR review.",
+    "Pack-wide verification is secondary: the four nation codes are confirmed by government guidance, but the 217 child subdivisions and their parents are a Unicode CLDR 48 snapshot, not independently checked against the current ISO register. It includes legacy administrative areas such as Cumbria; do not use it as a current local-authority or permitting-authority list. Engine kind region/district is a neutral schema mapping, not an asserted ISO category.",
+    "English uses engine locale en and country-derived Intl tag en-GB. Welsh (cy) is a welcome contributor language, not an installed engine locale. English names are the fallback in other interface languages; no new translation review is claimed.",
+    "The postcode expression is a permissive shape check, not Royal Mail deliverability validation. Phone nationalLength 10 is representative, not a complete numbering rule (short and exceptional numbers exist). Europe/London is the representative zone; dependencies and overseas territories are not included in GB.",
+    "UTR is sensitive tax information and is deliberately absent from registrationIdentifier and the identifiers facet. The v2 identifier contract has no sensitivity or projection field; do not add it as a public identifier before that contract and its authorization tests exist.",
+    "No EU layer is inherited. Northern Ireland-specific trade and VAT arrangements are not inferred from EU membership or this pack; specialist review remains necessary.",
+    "Holiday data is bounded to the GOV.UK published 2026-2028 dates, including substitute days and the 2026 Scotland World Cup bank holiday. No dates are extrapolated; local Scottish public holidays and individual employment/site calendars are not included. Bank holidays do not automatically grant paid leave.",
+    "Every named adapter is a candidate only. No lookup, filing, identity verification, payment, tax calculation or document signing is performed. Standards are linked, not copied or licensed for indexing.",
+    "Subdivision names and containment are derived from Unicode CLDR 48, Copyright Unicode, Inc.; Unicode License V3 is reproduced in tests/country-packs/gb/UNICODE-LICENSE.txt."
+  ],
+  "sources": [
+    {
+      "url": "https://www.gov.uk/government/publications/open-standards-for-government/country-codes",
+      "what": "Government country-code guidance: GB-ENG, GB-SCT, GB-WLS and GB-NIR.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/release-48/common/subdivisions/en.xml",
+      "what": "Unicode CLDR 48 English subdivision names; secondary evidence for ISO codes.",
+      "accessed": "2026-11-01",
+      "verification": "Secondary ISO mapping; current ISO register not independently checked."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/release-48/common/supplemental/subdivisions.xml",
+      "what": "Unicode CLDR 48 subdivision containment: 152 England, 32 Scotland, 22 Wales and 11 Northern Ireland entries.",
+      "accessed": "2026-11-01",
+      "verification": "Secondary ISO mapping, not a current local-authority register."
+    },
+    {
+      "url": "https://www.bankofengland.co.uk/education/education-resources/shillings-to-pounds-converter",
+      "what": "UK decimal currency: 100 pence per pound, symbols p and GBP pound sign.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://data.iana.org/time-zones/tzdb/zone1970.tab",
+      "what": "IANA time-zone database: representative UK zone Europe/London.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.itu.int/oth/T0202.aspx?lang=en&parent=T02020000DD",
+      "what": "ITU United Kingdom national numbering plan, calling code +44.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.ofcom.org.uk/phones-and-broadband/phone-numbers/numbers-for-drama",
+      "what": "Ofcom reserves 01632 960000-960999 for drama; example is not a subscriber.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.ons.gov.uk/methodology/geography/ukgeographies/postalgeography",
+      "what": "ONS: postcodes have a 2-4 character outward part and a three-character inward part.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.gov.uk/government/publications/incorporation-and-names/incorporation-and-names",
+      "what": "Companies House: private companies limited by shares or guarantee, public companies and CICs.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.gov.uk/set-up-business",
+      "what": "Sole traders, limited companies and partnerships are business structures.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.gov.uk/guidance/set-up-and-run-a-limited-liability-partnership-llp",
+      "what": "LLP incorporation and registration with Companies House.",
+      "accessed": "2026-11-01"
+    }
+  ]
+}
