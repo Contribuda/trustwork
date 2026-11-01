@@ -1,0 +1,208 @@
+{
+  "sourceCommit": "f6aa6803915cbf615e3ee9ed298683c141501787",
+  "upstreamCommit": "ea906192912cb3aeb536262152204af8f5c29ab0",
+  "repairBaseCommit": "af7e3bd8f6a4c434017b00abfff28f870408be83",
+  "generatedAt": "2026-11-01T06:21:17.562726+00:00",
+  "browser": "Chromium via Playwright 1.64.1",
+  "axeTags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22aa"
+  ],
+  "browserCommand": "cd packages/ui && STORYBOOK_PORT=6213 npx --no-install playwright test tests/e2e/console.spec.ts tests/e2e/keyboard.spec.ts tests/e2e/mobile.spec.ts --project=desktop --project=mobile --workers=1 --max-failures=1 --grep 'DS-003|dialog traps|confirm dialog focuses|tabs move|password toggle|sortable table headers|assistant overlay is|data table collapses'",
+  "browserExit": 0,
+  "browserStats": {
+    "startTime": "2026-11-01T06:17:21.032Z",
+    "duration": 202120.87,
+    "expected": 49,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "scope": "42 DS-003 + 7 existing primitive regressions; 10 stories x 7 languages x 3 widths = 210 rendered combinations",
+  "screenshots": [
+    {
+      "file": "access-ru-1280.png",
+      "sha256": "a1c53e71f88e1a8cd12b8eb8d8619248950f69180f5c9174f75fe924e17fe593",
+      "imageWidth": 1280,
+      "imageHeight": 937,
+      "locale": "ru",
+      "viewportWidth": 1280,
+      "viewportHeight": 900
+    },
+    {
+      "file": "access-ru-375.png",
+      "sha256": "ddab06d8e884b377362a04e6d7d0cd7c2c43b21459c8f85e5284bf8d0b9e0b34",
+      "imageWidth": 375,
+      "imageHeight": 1356,
+      "locale": "ru",
+      "viewportWidth": 375,
+      "viewportHeight": 900
+    },
+    {
+      "file": "activity-ru-1280.png",
+      "sha256": "b0e190729d1a00e5cf880b2a53436f1a3c052e5c21d4b20880b093ef37867fe9",
+      "imageWidth": 1280,
+      "imageHeight": 2715,
+      "locale": "ru",
+      "viewportWidth": 1280,
+      "viewportHeight": 900
+    },
+    {
+      "file": "activity-ru-375.png",
+      "sha256": "eceda18f769d6d8042599494e62ecaf423e62035e8f98106d9710f2720ad7d21",
+      "imageWidth": 375,
+      "imageHeight": 2415,
+      "locale": "ru",
+      "viewportWidth": 375,
+      "viewportHeight": 900
+    },
+    {
+      "file": "decisions-after-ru-375.png",
+      "sha256": "8a63909525d1ccb0584de8086bb0f8b5807a7402cfe59c9c9db0271804cec501",
+      "imageWidth": 343,
+      "imageHeight": 502,
+      "locale": "ru",
+      "viewportWidth": 375,
+      "viewportHeight": 900
+    },
+    {
+      "file": "decisions-ru-1280.png",
+      "sha256": "92318791192bceeff479a0f76d8b5e14993aa7a1b3b24316188bfddaf425cb1f",
+      "imageWidth": 1280,
+      "imageHeight": 2045,
+      "locale": "ru",
+      "viewportWidth": 1280,
+      "viewportHeight": 900
+    },
+    {
+      "file": "decisions-ru-375.png",
+      "sha256": "201263d7760e05d8996a169e71609d67dff5b88bb3a4f198436dc13bb32d5b69",
+      "imageWidth": 375,
+      "imageHeight": 2417,
+      "locale": "ru",
+      "viewportWidth": 375,
+      "viewportHeight": 900
+    },
+    {
+      "file": "records-ru-1280.png",
+      "sha256": "21e0bcd213f350844ab2a3faa944b63875cd0a27843977fb63fb930444c21b4a",
+      "imageWidth": 1280,
+      "imageHeight": 1066,
+      "locale": "ru",
+      "viewportWidth": 1280,
+      "viewportHeight": 900
+    },
+    {
+      "file": "records-ru-375.png",
+      "sha256": "ec3c7c711a741104d04c9b8431eb29dd1e1772dcb47e3162ee1f6303b1f4e7cb",
+      "imageWidth": 375,
+      "imageHeight": 1766,
+      "locale": "ru",
+      "viewportWidth": 375,
+      "viewportHeight": 900
+    }
+  ],
+  "visualInspection": [
+    "decisions-ru-375.png",
+    "decisions-after-ru-375.png",
+    "decisions-ru-1280.png"
+  ],
+  "localResults": {
+    "uiUnits": {
+      "exit": 0,
+      "passed": 32,
+      "failed": 0
+    },
+    "uiTypes": {
+      "exit": 0
+    },
+    "webTypes": {
+      "exit": 0
+    },
+    "scopedLint": {
+      "exit": 0
+    },
+    "storybookBuild": {
+      "exit": 0
+    },
+    "docs": {
+      "exit": 0,
+      "packages": 360,
+      "requirements": 74,
+      "revision": "Final reporting tree; full reporting SHA in the PR description"
+    },
+    "packageValidation": {
+      "exit": 0,
+      "packages": 360,
+      "available": 76
+    },
+    "diffCheck": {
+      "exit": 0
+    }
+  },
+  "lintCommand": "npx --no-install eslint packages/ui/src/components/{DataTable,FilterBar,FacetPanel,SavedViews,BulkActionBar,DetailDrawer,AuditTrail,DiffViewer,ApprovalCard,PermissionMatrix,ScopePicker,EffectiveAccess,LockedRule,StepUpPrompt,CommandPalette,InboxList,InlineHelp,KeyboardShortcuts,RunHistory,CalendarAgenda,MetricChart,NetworkMap} packages/ui/stories/console packages/ui/tests/unit/console packages/ui/tests/unit/locale.test.ts packages/ui/tests/e2e/console.spec.ts packages/ui/src/index.ts packages/ui/src/i18n/dictionaries.ts apps/web/app/admin/_components/{ConsoleForm,shell}.tsx apps/web/components/ui.ts",
+  "historicalRuns": [
+    {
+      "sourceCommit": "569c66f13358bfbe46d557f64f054d3c71b970bd",
+      "exit": 130,
+      "passed": 7,
+      "failed": 2,
+      "interrupted": 1,
+      "reason": "Exact-label locator timed out on the synthetic scenario select; stopped the duplicate timeout; changed to accessible combobox name."
+    },
+    {
+      "sourceCommit": "6f0462cc9fad6f205ddfcc31eb4c11273aabc512",
+      "exit": 0,
+      "passed": 3,
+      "failed": 0,
+      "scope": "controlled requests at three widths"
+    },
+    {
+      "sourceCommit": "6f0462cc9fad6f205ddfcc31eb4c11273aabc512",
+      "exit": 1,
+      "passed": 0,
+      "failed": 1,
+      "notRun": 48,
+      "reason": "Synthetic native select overflowed English 375; width constrained without waiving the assertion."
+    },
+    {
+      "sourceCommit": "e441f238e0ea9e4ba8a8c48aa608e994fe3a1b03",
+      "exit": 130,
+      "passed": 11,
+      "failed": 0,
+      "notRun": 38,
+      "reason": "Intentionally stopped to localize visible callback markers; not final acceptance."
+    }
+  ],
+  "firstTypecheck": {
+    "baseCommit": "af7e3bd8f6a4c434017b00abfff28f870408be83",
+    "workingTreePatch": "typecheck-first-at-af7e3bd.patch",
+    "patchSha256": "b32f72867dedd5daa06ae146782f1b46280206250e4f79906e02474d7ac36aba",
+    "command": "npm run typecheck -w @trustwork/ui",
+    "exit": 2,
+    "diagnostics": 5,
+    "resolution": "Synthetic story Error export shadowed global Error; explicit DataTable row generic required. Corrected before commit 569c66f13358bfbe46d557f64f054d3c71b970bd."
+  },
+  "preservation": {
+    "otherPackageObjectsUnchanged": 359,
+    "nonDesignSystemStatusRowsUnchanged": true,
+    "rootDependenciesAndConfigUnchanged": true,
+    "backendUnchanged": true
+  },
+  "limitations": [
+    "Exact-final-head CI pending; no full local gate",
+    "Human screen-reader/native/physical-device review not performed",
+    "No application or backend acceptance inferred"
+  ],
+  "unitSummaryNormalization": "One pre-existing test title translated to English; raw output preserved in the conductor archive.",
+  "trailerNormalization": {
+    "testedCommit": "f6aa6803915cbf615e3ee9ed298683c141501787",
+    "canonicalImplementationCommit": "315680e1276fafacbea1dcde4370f4dd930fb682",
+    "identicalTree": "148030dba02c72750800fdc36011c6547b4c9ed7",
+    "reason": "Reorder existing authorized DCO and coauthor trailers; no implementation/story/test changes. Actual executed source SHAs remain in historical evidence.",
+    "originalCommitBundle": "Conductor handoff: tools/DS003-repair-evidence/pre-trailer-normalization.bundle"
+  }
+}
