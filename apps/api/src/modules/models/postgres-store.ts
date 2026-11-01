@@ -1,4 +1,5 @@
 import { sql } from 'kysely';
+import { withModelDispatchTransaction } from './dispatch-context.js';
 import { computeDigest } from '../../../../../packages/contracts/src/common/digest.js';
 import {
   ModelCallMetadataSchema,
@@ -107,9 +108,10 @@ export class PostgresModelCallStore extends PostgresModelReceiptStore implements
   }
   withDispatchAuthority<T>(operation: ReservedModelCall, invoke: () => Promise<T>): Promise<T> {
     return this.as(async trx => {
+      await sql`SELECT set_config('lock_timeout',${String(Math.min(operation.route.limits.timeoutMs,5000))},true)`.execute(trx);
       const checked = await sql<{ allowed: boolean }>`SELECT trustwork.agent_modules_enter_model_effect(${operation.operationId},${operation.dispatchToken}::uuid) AS allowed`.execute(trx);
       if (checked.rows[0]?.allowed !== true) throw new ModelRefusal('dispatch_authority_withdrawn');
-      return invoke();
+      return withModelDispatchTransaction(trx, invoke);
     });
   }
   admit(operation: ReservedModelCall) {

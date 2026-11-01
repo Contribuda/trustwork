@@ -13,6 +13,7 @@ export const request: ModelCall = {
   operationId: 'operation-synthetic', principalId: 'person-synthetic', runId: 'run-synthetic', mandateId: 'mandate-synthetic', mandateRevision: 1,
   hubId: 'hub-synthetic', job: 'agent_drafting', moduleKey: 'research', capabilityId: 'research.draft', extensionId: null, pipelineId: null,
   dataClasses: ['person_private'], allowedConnections: [candidate.connectionId], residencyCountries: ['US'], requireZeroRetention: true,
+  sourceBindings: [{ sourceId: 'synthetic-source', version: 'synthetic-1', digest: 'a'.repeat(64) }],
   estimatedCost: { minorUnits: '10', currency: 'USD' }, maxInputTokens: 20, maxOutputTokens: 10, prompt: 'PRIVATE_PROMPT_CANARY',
 };
 export class SyntheticAuthority implements ModelAuthorityPort {
@@ -20,15 +21,23 @@ export class SyntheticAuthority implements ModelAuthorityPort {
   answer = {
     principalId: request.principalId, mandateId: request.mandateId, mandateRevision: request.mandateRevision, runId: request.runId,
     sourceAllowsModelUse: true, processingCountry: 'US', storageCountry: null as string | null, zeroRetention: true, restricted: false,
+    sourceBindings: structuredClone(request.sourceBindings),
     killed: Object.fromEntries(MODEL_KILL_SCOPES.map((s) => [s, false])) as Awaited<ReturnType<ModelAuthorityPort['check']>>['killed'],
   };
   async check(): Promise<typeof this.answer> { this.checks++; return structuredClone(this.answer); }
+  async withAuthority<T>(_call: ModelCall, _candidate: PinnedCandidate, invoke: (facts: typeof this.answer) => Promise<T>): Promise<T> {
+    return invoke(await this.check());
+  }
 }
 export class SyntheticRoutes implements RouteResolutionPort {
   current = structuredClone(route);
   checks: PinnedCandidate[] = [];
   deny: string | null = null;
   async resolve(): Promise<ResolvedModelRoute> { return structuredClone(this.current); }
+  async withAuthority<T>(operation: ReservedModelCall, invoke: () => Promise<T>): Promise<T> {
+    await this.recheck({ ...operation.request, prompt: '' },operation.route,operation.candidate);
+    return invoke();
+  }
   async recheck(_call: ModelCall, _route: ResolvedModelRoute, model: PinnedCandidate): Promise<void> {
     this.checks.push({ ...model });
     if (model.connectionId === this.deny) throw new ModelRefusal('egress_denied');

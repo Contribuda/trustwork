@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { budgets, reservations } from '../../packages/data/src/repositories/billing.js';
 import { actor, buildWorld, days } from '../billing/helpers.js';
-import { createPool } from '@trustwork/data';
 import { computeDigest } from '@trustwork/contracts';
 import { approvals } from '../../packages/data/src/repositories/admin.js';
 import { egressRules, modelRoutes, providerConnections } from '../../packages/data/src/repositories/providers.js';
@@ -12,36 +11,19 @@ import { KeysRouteResolver } from '../../apps/api/src/modules/models/keys-route-
 import { ModelGateway } from '../../apps/api/src/modules/models/gateway.js';
 import { DeterministicModel } from '../../apps/api/src/modules/models/fake.js';
 import { FakeModelRegistry, ModelRefusal } from '../../apps/api/src/modules/models/ports.js';
-import { actors, activateResidency, buildProvidersWorld, SELF_US, setUpHubs, syncKernel } from '../providers/helpers.js';
 import { provisionTestDatabase, SKIP_REASON } from '../data/helpers/postgres.js';
-import { MemoryStore, request, SyntheticAuthority } from './fixtures.js';
+import { durableWorld, syntheticGovernance } from './durable-helpers.js';
+import { PostgresModelCallStore } from '../../apps/api/src/modules/models/postgres-store.js';
+import { RuntimeModelAuthority } from '../../apps/api/src/modules/models/runtime-authority.js';
 
 const db = await provisionTestDatabase('models_keys');
-test('gateway route resolution against real KEYS-001 PostgreSQL; synthetic authority and store', { skip: db ? false : SKIP_REASON }, async (t) => {
+test('gateway route resolution against real KEYS-001 PostgreSQL; synthetic source policy and original-operation store', { skip: db ? false : SKIP_REASON }, async (t) => {
   if (!db) return;
-  await db.migrate();
-  await db.createAppLogin();
-  const runtime = createPool({ ...db.appConfig, max: 3 });
-  t.after(async () => { await runtime.end(); await db.close(); });
-  await syncKernel(db.admin);
-  const world = await buildProvidersWorld(db.admin);
-  const a = actors(db.admin, runtime, world);
-  const { owner, officer } = world.people;
-  const { hubA } = await setUpHubs(a, world, 'synthetic-models');
-  await activateResidency(a, owner, officer, hubA, ['US']);
-  const create = async () => {
-    const c = await a.cmd(owner, (trx, ctx) => providerConnections.create(trx, ctx, hubA, {
-      adapterId: 'fake', mode: 'fake', label: 'Synthetic local model', capabilities: ['llm'], endpoint: null,
-      hosting: SELF_US, storageCountry: null, region: null, credentialRefId: null,
-    }));
-    const material = await a.cmd(owner, (trx, ctx) => providerConnections.testMaterial(trx, ctx, c.id));
-    await a.cmd(owner, (trx, ctx) => providerConnections.recordTest(trx, ctx, c.id, {
-      configDigest: material.config_digest, outcome: 'ok', latencyMs: 1, modelsListed: 1, cost: null, probeDigest: 'a'.repeat(64), secretRefId: null,
-    }));
-    return a.cmd(owner, async (trx, ctx) => providerConnections.enable(trx, ctx, c.id, (await providerConnections.get(trx, c.id))!.revision, null));
-  };
-  const primary = await create();
-  const secondary = await create();
+  const w = await durableWorld(db);
+  const runtime=w.pool, world=w.world, a=w.a, hubA=w.hubId;
+  const {owner,officer}=world.people;
+  const primary=w.connection, secondary=w.secondary;
+  t.after(async()=>{await runtime.end();await db.close();});
   const ref = (id: string, revision = 'synthetic-revision-1') => ({ connectionId: id, modelId: 'synthetic-model', modelRevision: revision });
   const draft = async (revision = 'synthetic-revision-1') => a.cmd(owner, (trx, ctx) => modelRoutes.draft(trx, ctx, hubA, {
     job: 'agent_drafting', scope: { kind: 'job' }, primary: ref(primary.id, revision), fallbacks: [ref(secondary.id)],
@@ -71,9 +53,10 @@ test('gateway route resolution against real KEYS-001 PostgreSQL; synthetic autho
   const primaryAdapter = new DeterministicModel();
   const fallbackAdapter = new DeterministicModel();
   registry.register(primary.id, primaryAdapter); registry.register(secondary.id, fallbackAdapter);
-  const authority = new SyntheticAuthority();
-  const input = { ...request, hubId: hubA, allowedConnections: [primary.id, secondary.id] };
-  const make = (store = new MemoryStore()) => new ModelGateway(routes, authority, store, registry);
+  const authority = new RuntimeModelAuthority(runtime,w.principal,w.binding,syntheticGovernance);
+  const freshInput=async()=>({...await w.call((await w.mandate(await w.budget())).id),dataClasses:['person_private'] as const});
+  const input={...await freshInput(),dataClasses:['person_private'] as ('person_private')[]};
+  const make = (store = new PostgresModelCallStore(runtime,w.principal,w.binding)) => new ModelGateway(routes,authority,store,registry);
 
   await t.test('private data without an allow cell is refused before any adapter', async () => {
     await assert.rejects(make().call(input), (e: unknown) => e instanceof ModelRefusal && e.reason === 'egress_denied');
@@ -90,11 +73,20 @@ test('gateway route resolution against real KEYS-001 PostgreSQL; synthetic autho
   });
   await allow(secondary.id, 'person_private');
   await t.test('a fallback revoked after resolution receives no private input', async () => {
+    let revocation:Promise<unknown>|undefined;
     primaryAdapter.invoke = async () => {
-      await a.cmd(owner, (trx, ctx) => egressRules.set(trx, ctx, { connectionId: secondary.id, dataClass: 'person_private', decision: 'deny', requireInResidency: true, requireZeroRetention: true, approvalId: null }));
-      return { kind: 'not_sent', reason: 'unreachable' };
+      // The owning writer waits for this held callback; do not await a revoker from inside its lock.
+      revocation=a.cmd(owner,(trx,ctx)=>egressRules.set(trx,ctx,{connectionId:secondary.id,dataClass:'person_private',decision:'deny',requireInResidency:true,requireZeroRetention:true,approvalId:null}));
+      return {kind:'not_sent',reason:'unreachable'};
     };
-    assert.equal((await make().call({ ...input, operationId: 'fallback-denial' })).outcome, 'refused');
+    const check=authority.check.bind(authority);
+    authority.check=async(call,candidate,purpose)=>{
+      if(candidate.connectionId===secondary.id)await revocation;
+      return check(call,candidate,purpose);
+    };
+    const next=await freshInput();
+    try { assert.equal((await make().call({...next,dataClasses:['person_private']})).outcome,'refused'); }
+    finally { await revocation; authority.check=check; }
     assert.equal(fallbackAdapter.calls.length, 0);
   });
   await t.test('a different active route never silently substitutes a newer provider revision', async () => {
