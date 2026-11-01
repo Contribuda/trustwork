@@ -50,3 +50,7 @@ Self-declared places and the payout-country check (SANC-004), list screening (SA
 ## Tests
 
 `tests/contracts/sanctions.test.ts` (addresses, range tables, adapters, configuration, records), `tests/jurisdiction/ranges-generator.test.ts` (offline generator), `tests/jurisdiction/holds-data.test.ts` (PostgreSQL under the runtime role: one open hold under concurrent sightings, no direct writes, staff-only reads, clearing refused for other staff, missing elevation, the subject and a conflicted reviewer, racing reviewers, audit, re-hold), `tests/jurisdiction/gate-api.test.ts` (the API end to end: 451 before any route, holds, refusal at password and provider sign-in, staff clearing, production configuration, edge header and trusted proxies), `tests/jurisdiction/web-gate.test.ts` (the web door and relay).
+
+## Screening console metadata (SANC-006)
+
+`GET /v1/admin/jurisdiction/geolocation` requires an elevated session and the existing node compliance/auditor reader authority. It describes the actual adapter installed in the request gate, with age only when that adapter has a recorded dataset month. Historical holds and a later environment change cannot substitute for current adapter metadata. No ranges, addresses or file paths are returned. The accepted two-month warning bound is unchanged; unrecorded age remains unknown.

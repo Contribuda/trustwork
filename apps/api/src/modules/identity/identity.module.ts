@@ -12,7 +12,10 @@ import { ProviderService } from './providers/provider.service.js';
 import { ElevationGuard } from './second-factor/elevation.guard.js';
 import { AdminSessionController, MeSecondFactorController, SecondFactorLoginController, SupportSecondFactorController } from './second-factor/second-factor.controllers.js';
 import { SecondFactorService } from './second-factor/second-factor.service.js';
+import { JurisdictionGeolocationController } from '../jurisdiction/geolocation.controller.js';
 import { JurisdictionHoldsController, JurisdictionRelayController } from '../jurisdiction/jurisdiction.controller.js';
+import { ScreeningConsoleController } from '../screening/console.controller.js';
+import { ScreeningRescreenController } from '../screening/rescreen.controller.js';
 import { ScreeningSelfController, ScreeningStaffController } from '../screening/screening.controller.js';
 
 /** Service graph built once from the application context so the Fastify hook and Nest share the same instances. */
@@ -47,8 +50,8 @@ export class IdentityModule {
       module: IdentityModule,
       // The jurisdiction gate's relay and staff routes (SANC-001) live with identity: a hold is part of admission. So do
       // the screening routes (SANC-003): a confirmed match suspends the account, and staff decide behind an elevation.
-      controllers: [AuthController, MeController, CompaniesController, MeSecondFactorController, SecondFactorLoginController, AdminSessionController, SupportSecondFactorController, JurisdictionRelayController, JurisdictionHoldsController,
-        ScreeningSelfController, ScreeningStaffController],
+      controllers: [AuthController, MeController, CompaniesController, MeSecondFactorController, SecondFactorLoginController, AdminSessionController, SupportSecondFactorController, JurisdictionGeolocationController, JurisdictionHoldsController, JurisdictionRelayController,
+        ScreeningConsoleController, ScreeningRescreenController, ScreeningSelfController, ScreeningStaffController],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },
         { provide: AuthService, useValue: services.auth },

@@ -10,6 +10,8 @@ The API side of the screening engine ([ADR 014](../../../../../docs/adr/014-sanc
 | `POST /v1/screening/me/appeal` | the subject, fresh step-up | `core.appeal_compliance_decision`: every confirmed match of the subject goes to `appeal` |
 | `GET /v1/admin/screening/queue` | compliance staff, elevated | one item per subject waiting for a reviewer, late after `SCREENING_REVIEW_SERVICE_LEVEL_DAYS` business days (1 to 5, default 1) |
 | `GET /v1/admin/screening/subjects/:stateId`, `GET /v1/admin/screening/matches/:id` | compliance staff, elevated | the entry and the screened name side by side, the decision trail and any second-person request |
+| `GET /v1/admin/screening/rescreen-runs` | node compliance officer or auditor, elevated | operational SANC-005 run projection, newest first; progress suppressed below ten proven distinct people |
+| `POST /v1/admin/screening/rescreen-runs` | node compliance officer, elevated | existing SANC-005 manual full-run request with a required reason; unfinished runs serialize, response and audit complete in one idempotent transaction |
 | `GET /v1/admin/screening/report-drafts` | compliance staff, elevated | drafts for the operator's blocked-property or rejected-transaction reports |
 | `POST /v1/admin/screening/matches/:id/confirm` | compliance officer, elevated | confirm (one person, the safe direction): suspension, agent stop, report draft |
 | `POST /v1/admin/screening/matches/:id/propose-not-same-person` | compliance officer, elevated | starts `screening.clear_match` |
@@ -24,3 +26,5 @@ Every decision route is `@Idempotent` and completes in its request transaction (
 - `suspension.ts`: an `onRequest` hook after the jurisdiction gate. A person suspended by a confirmed match reaches only `GET /v1/me`, sign-out, step-up, the second-factor step, their compliance status and the appeal; everything else answers `403 auth.compliance_suspended`. A possible match never refuses anything.
 
 The routes are mounted by the identity module (they share its elevation guard), like the jurisdiction routes.
+
+SANC-006 adds the re-screen HTTP adapter and read-only list/version/freshness, exact person/company subject-state lookup and metric projections. Every new read checks the existing node staff authority before accessing RLS tables or the SECURITY DEFINER freshness function. See the [console read API and missing cohort data](../../../../../tests/web/admin/screening/README.md#read-apis-and-privacy). GET and command responses project runs without raw participant counters; progress needs ten distinct recorded people. Its deadline uses the worker's existing `RESCREEN_WINDOW_HOURS` bounds (1 to 168, default 6), never a client-supplied window. It does not expose list management or invent new permissions. The focused [console/API tests](../../../../../tests/web/admin/screening/README.md) exercise real PostgreSQL, authorization, concurrent requests, rollback and idempotent replay.

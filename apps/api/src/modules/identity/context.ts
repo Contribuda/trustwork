@@ -4,6 +4,7 @@ import type { Clock, MailOutbox, MandateRevocationPort, OidcProviderPort, StaffR
 
 /** Everything the identity and projects modules depend on; tests substitute fakes and clocks. */
 export interface AppContext {
+  jurisdictionGate?: import('../jurisdiction/deps.js').JurisdictionGate;
   config: ApiConfig;
   pool: DataPool;
   clock: Clock;

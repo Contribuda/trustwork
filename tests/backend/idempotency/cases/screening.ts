@@ -70,6 +70,8 @@ export default {
         officers.push(client);
       }
       const [first, second] = officers as [Client, Client];
+      // SANC-006: the existing manual command audits and completes in the request transaction.
+      await exactlyOnce({ action: 'screening.rescreen_request', client: first, url: '/v1/admin/screening/rescreen-runs', body: { reason: 'Synthetic manual review' }, effects: () => count(h, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'screening.rescreen_requested'") });
       const milo = await person(h.db.admin, 'Milo Fictivsky');
       await addLogins(h, [[milo.id, 'crash-screening-subject@example.invalid']]);
       const orla = await person(h.db.admin, 'Orla Testworthy');
