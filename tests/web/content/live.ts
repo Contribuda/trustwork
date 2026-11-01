@@ -194,7 +194,7 @@ try {
   await command(labels.publish,`/v1/publications/${hidden.id}/publish`);
   const publicCredit=async(channel:string)=>fetch(`http://127.0.0.1:3468/v1/publications/${hidden.id}?channel=${channel}`).then(r=>r.json()).then(p=>p.current.provenance.credits);
   assert.equal((await publicCredit('web')).responsible_editor,'Synthetic Writer');
-  assert.deepEqual(await publicCredit('feed'),{});assert.deepEqual(await publicCredit('pdf'),{});
+  assert.deepEqual(await publicCredit('feed'),{});assert.equal((await fetch(`http://127.0.0.1:3468/v1/publications/${hidden.id}?channel=pdf`)).status,422);
   for(const width of [375,1280]) {
     await page.setViewportSize({width,height:900});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
