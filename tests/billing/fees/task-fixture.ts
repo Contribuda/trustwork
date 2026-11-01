@@ -10,7 +10,7 @@ export const taskPerson = { via: 'person' } as const;
 export const taskConsent = { consented: true, disclosureKey: 'trustwork.electronic-records.v1' } as const;
 export function taskOk<T>(r: Response, status = 200): T { assert.equal(r.status, status, JSON.stringify(r.body)); return r.body as T; }
 export async function taskFixture(h: Harness, input: { buyerId: string; sellerId: string; buyerEmail: string; sellerEmail: string; hubA: string; hubB: string; buyerClient?: Client; sellerClient?: Client }) {
-  const makeApp = (hub: string) => createApp({ env: { API_HOST:'127.0.0.1',API_PORT:'0',PUBLIC_ORIGIN:'https://trustwork.test',TRUSTWORK_HUB_ID:hub,MAIL_SECRET_KEY:randomBytes(32).toString('hex') }, pool:h.pool,clock:h.clock,logSink:line=>{ if(line.includes('"level":"error"')) console.error(line); } });
+  const makeApp = (hub: string) => createApp({ env: { API_HOST:'127.0.0.1',API_PORT:'0',PUBLIC_ORIGIN:`https://${hub}.test`,TRUSTWORK_HUB_ID:hub,MAIL_SECRET_KEY:randomBytes(32).toString('hex') }, pool:h.pool,clock:h.clock,logSink:line=>{ if(line.includes('"level":"error"')) console.error(line); } });
   const buyerApp=await makeApp(input.hubA), sellerApp=await makeApp(input.hubB);
   const buyer=input.buyerClient ?? new Client(buyerApp), seller=input.sellerClient ?? new Client(sellerApp), wrongHub=new Client(sellerApp), anonymous=new Client(buyerApp);
   if (!input.buyerClient) await signIn(buyer,input.buyerEmail);

@@ -4,7 +4,7 @@ import type { ServiceCapabilityBinding, ServiceCapabilityBindings } from './serv
 
 const target = (suffix: string, companyId: string | null = null) => ({ capabilityId: `consultation.${suffix}`, companyId });
 const personal = (suffix: string): ServiceCapabilityBinding => ({ capabilityId: `consultation.${suffix}` });
-const currentCompany = (p: Principal, id: string | null | undefined) => p.membership?.companyId === id ? id : null;
+const currentCompany = (p: Principal, id: string | null | undefined) => p.membership?.companyId === id ? id ?? null : null;
 const idOf = (args: readonly unknown[]) => typeof args[0] === 'string' && /^[a-f0-9-]{36}$/i.test(args[0]) ? args[0] : null;
 const mixed = (suffix: string, permission = 'company.deals.manage'): ServiceCapabilityBinding => ({ resolve: async (_trx, p) => [target(suffix),
   ...(p.membership?.permissions.includes(permission as never) ? [target(suffix, p.membership.companyId)] : [])] });

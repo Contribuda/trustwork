@@ -23,7 +23,7 @@ test('BILL-003 actual cross-hub consultation acceptance binds both exact fees wi
   const buyerId=w.p.outsider, sellerId=w.p.operator;
   await addLogins(h,[[buyerId,'synthetic-fee-buyer@example.invalid'],[sellerId,'synthetic-fee-seller@example.invalid']]);
   await screenClear(h,[{kind:'person',id:buyerId},{kind:'person',id:sellerId}]);
-  const makeApp=(hub:string)=>createApp({env:{API_HOST:'127.0.0.1',API_PORT:'0',PUBLIC_ORIGIN:'https://trustwork.test',
+  const makeApp=(hub:string)=>createApp({env:{API_HOST:'127.0.0.1',API_PORT:'0',PUBLIC_ORIGIN:`https://${hub}.test`,
     TRUSTWORK_HUB_ID:hub,MAIL_SECRET_KEY:randomBytes(32).toString('hex')},pool:h.pool,clock:h.clock,logSink:line=>{if(line.includes('"level":"error"'))console.error(line);}});
   const buyerApp=await makeApp(w.hubA),sellerApp=await makeApp(w.hubB);
   t.after(async()=>{await buyerApp.close();await sellerApp.close();await h.close();});

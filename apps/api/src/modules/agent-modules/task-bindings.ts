@@ -4,7 +4,7 @@ import type { TasksService } from '../tasks/tasks.service.js';
 import type { ServiceCapabilityBinding, ServiceCapabilityBindings, ServiceCapabilityTarget } from './service-bindings.js';
 
 const target = (suffix: string, companyId: string | null = null): ServiceCapabilityTarget => ({ capabilityId: `task_marketplace.${suffix}`, companyId });
-const currentCompany = (p: Principal, id: string | null | undefined) => p.membership?.companyId === id ? id : null;
+const currentCompany = (p: Principal, id: string | null | undefined) => p.membership?.companyId === id ? id ?? null : null;
 const personal = (suffix: string): ServiceCapabilityBinding => ({ capabilityId: `task_marketplace.${suffix}` });
 const scope = (p: Principal): (string | null)[] => p.membership?.permissions.includes('company.deals.manage') ? [null, p.membership.companyId] : [null];
 const mixed = (suffix: string): ServiceCapabilityBinding => ({ resolve: async (_trx, p) => scope(p).map(company => target(suffix, company)) });

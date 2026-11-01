@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import { adminDigests, approvals, staffAssignments, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
 import { actors, buildHubWorld, syncKernel } from '../../hubs/helpers.js';
@@ -13,6 +14,12 @@ export async function feeWorld(admin: DataPool, runtime: DataPool) {
   await a.assignSensitive({ personId: p.operator, role: 'node-operator', scope: { kind: 'node', nodeId: w.nodeId } });
   const hubA = (await a.createHub('synthetic-fee-a')).hub_id;
   const hubB = (await a.createHub('synthetic-fee-b')).hub_id;
+  // Explicit test installations: distinct public origins retain exact hub attribution across both fee parties.
+  await withMaintenance(admin, async trx => {
+    for (const [origin, hub] of [['https://trustwork.test', hubA], [`https://${hubA}.test`, hubA], [`https://${hubB}.test`, hubB]] as const) {
+      await sql`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES(${origin},${hub}::uuid) ON CONFLICT (origin) DO NOTHING`.execute(trx);
+    }
+  });
   await withMaintenance(admin, (trx) => staffRoleDefinitions.release(trx, {
     version: 2, role: 'hub-owner', scopes: ['hub'], permissions: ['admin.billing.fees.draft', 'admin.billing.fees.activate', 'admin.audit.read'],
     caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null,
