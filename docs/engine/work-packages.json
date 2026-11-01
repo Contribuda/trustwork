@@ -6885,6 +6885,135 @@
       ]
     },
     {
+      "id": "LANG-AF",
+      "title": "Afrikaans (af)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "DEMO-ZA"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Afrikaans across the interface and demo content through configuration only, for hubs in South Africa (the largest home language in the Western Cape, 41.2 percent in Census 2022); formats follow the country (af-ZA). English stays the default language of the South Africa pack until a native review raises the review status.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/research/market-opportunities-2026-11.md"
+      ],
+      "steps": [
+        "Add af files for every namespace in apps/web/locales/af and the design system dictionary packages/ui/locales/af.json with full key coverage and the CLDR plural forms Intl.PluralRules reports for af (one and other in Node 24 with CLDR 48); translate from English, the reference.",
+        "Use South African construction vocabulary; record terms that differ from Dutch-derived technical usage as review notes; keep decimal comma and space grouping as Intl formats them for af-ZA.",
+        "Add af overrides for the demo content: the example hub in apps/web/fixtures/i18n/af.json, the synthetic US demo hub (DEMO-US) in apps/web/fixtures/us/i18n/af.json and the Cape Town demo hub (DEMO-ZA) in apps/web/fixtures/za/i18n/af.json, so the translation covers the content that ships and the demo coverage tests pass.",
+        "Register af through configuration (no TypeScript change), add it to the locales of packages/country-packs/packs/za.json after en, and extend the locale and leak tests to af.",
+        "Record the review status in apps/web/locales/af.meta.json (machine draft until named reviewers sign off), update the languages table in the localization chapter, and open a review request for Afrikaans speakers; a machine draft is never offered as a hub's default language."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in af; the brand reads Trustwork.",
+        "Every public page renders in af without Russian or untranslated text (leak test).",
+        "With country ZA dates, numbers and currency use af-ZA formats.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/af",
+        "apps/web/locales/af.meta.json",
+        "packages/ui/locales/af.json",
+        "apps/web/fixtures/i18n/af.json",
+        "apps/web/fixtures/us/i18n/af.json",
+        "apps/web/fixtures/za/i18n/af.json",
+        "tests/web/af"
+      ]
+    },
+    {
+      "id": "LANG-XH",
+      "title": "isiXhosa (xh)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "DEMO-ZA"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "isiXhosa across the interface and demo content through configuration only, for hubs in South Africa (home language of 16.3 percent nationally in Census 2022 and widely spoken in Cape Town); formats follow the country (xh-ZA). English stays the default language of the South Africa pack until a native review raises the review status.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/research/market-opportunities-2026-11.md"
+      ],
+      "steps": [
+        "Add xh files for every namespace in apps/web/locales/xh and the design system dictionary packages/ui/locales/xh.json with full key coverage and the CLDR plural forms Intl.PluralRules reports for xh (one and other in Node 24 with CLDR 48); translate from English, the reference.",
+        "Keep English loanwords for technical construction terms where speakers use them and record each choice as a review note; the language picker shows the name Intl.DisplayNames gives (IsiXhosa) unless reviewers ask for a casing override recorded in the locale metadata.",
+        "Add xh overrides for the demo content: the example hub in apps/web/fixtures/i18n/xh.json, the synthetic US demo hub (DEMO-US) in apps/web/fixtures/us/i18n/xh.json and the Cape Town demo hub (DEMO-ZA) in apps/web/fixtures/za/i18n/xh.json, so the translation covers the content that ships and the demo coverage tests pass.",
+        "Register xh through configuration (no TypeScript change), add it to the locales of packages/country-packs/packs/za.json after en, and extend the locale and leak tests to xh.",
+        "Record the review status in apps/web/locales/xh.meta.json (machine draft until named reviewers sign off), update the languages table in the localization chapter, and open a review request for isiXhosa speakers; a machine draft is never offered as a hub's default language."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in xh; the brand reads Trustwork.",
+        "Every public page renders in xh without Russian or untranslated text (leak test).",
+        "With country ZA dates, numbers and currency use xh-ZA formats.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/xh",
+        "apps/web/locales/xh.meta.json",
+        "packages/ui/locales/xh.json",
+        "apps/web/fixtures/i18n/xh.json",
+        "apps/web/fixtures/us/i18n/xh.json",
+        "apps/web/fixtures/za/i18n/xh.json",
+        "tests/web/xh"
+      ]
+    },
+    {
+      "id": "LANG-ZU",
+      "title": "isiZulu (zu)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US",
+        "DEMO-ZA"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "isiZulu across the interface and demo content through configuration only, for hubs in South Africa (the most spoken home language nationally, 24.4 percent in Census 2022); formats follow the country (zu-ZA). English stays the default language of the South Africa pack until a native review raises the review status.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/research/market-opportunities-2026-11.md"
+      ],
+      "steps": [
+        "Add zu files for every namespace in apps/web/locales/zu and the design system dictionary packages/ui/locales/zu.json with full key coverage and the CLDR plural forms Intl.PluralRules reports for zu (one and other in Node 24 with CLDR 48); translate from English, the reference.",
+        "Keep English loanwords for technical construction terms where speakers use them and record each choice as a review note; check noun-class prefixes in interpolated strings (names, counts) with reviewers and avoid sentence fragments that cannot take a prefix.",
+        "Add zu overrides for the demo content: the example hub in apps/web/fixtures/i18n/zu.json, the synthetic US demo hub (DEMO-US) in apps/web/fixtures/us/i18n/zu.json and the Cape Town demo hub (DEMO-ZA) in apps/web/fixtures/za/i18n/zu.json, so the translation covers the content that ships and the demo coverage tests pass.",
+        "Register zu through configuration (no TypeScript change), add it to the locales of packages/country-packs/packs/za.json after en, and extend the locale and leak tests to zu.",
+        "Record the review status in apps/web/locales/zu.meta.json (machine draft until named reviewers sign off), update the languages table in the localization chapter, and open a review request for isiZulu speakers; a machine draft is never offered as a hub's default language."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in zu; the brand reads Trustwork.",
+        "Every public page renders in zu without Russian or untranslated text (leak test).",
+        "With country ZA dates, numbers and currency use zu-ZA formats.",
+        "The language picker and the languages table in the localization chapter show the review status (machine draft, community reviewed or native reviewed); no review is claimed that did not happen."
+      ],
+      "paths": [
+        "apps/web/locales/zu",
+        "apps/web/locales/zu.meta.json",
+        "packages/ui/locales/zu.json",
+        "apps/web/fixtures/i18n/zu.json",
+        "apps/web/fixtures/us/i18n/zu.json",
+        "apps/web/fixtures/za/i18n/zu.json",
+        "tests/web/zu"
+      ]
+    },
+    {
       "id": "CTRY-EU",
       "title": "European Union layer shared by member-state packs",
       "area": "country-packs",
@@ -7389,6 +7518,77 @@
       "paths": [
         "packages/country-packs/packs/au.json",
         "tests/country-packs/au"
+      ]
+    },
+    {
+      "id": "CTRY-ZA",
+      "title": "South Africa country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced South Africa pack, modelled on the United States pack (INTL-US), so a hub in South Africa (for example a Cape Town hub, the candidate second reference hub in the market-opportunities note) is configured with data and settings, never with code. The facts listed below are leads to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/research/market-opportunities-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: nine provinces (ISO 3166-2:ZA, with the Western Cape and the City of Cape Town metropolitan municipality in depth); one time zone (Africa/Johannesburg, no daylight saving); four-digit postal codes; phone +27; ZAR; en-ZA formats as Intl gives them (2026/10/31, R 1 234,50).",
+        "Companies and identifiers: CIPC company registration numbers, SARS income tax and VAT numbers, the National Treasury Central Supplier Database supplier number, the CIDB contractor registration number, B-BBEE certificate level and expiry as a company-level fact; entity forms (private company (Pty) Ltd, public company, personal liability company (Inc), non-profit company, sole proprietor, partnership, trust, co-operative). Patterns and check digits only from official sources; CIPC data only through manual or licensed lookups (no scraping).",
+        "Facets to source: construction licensing (CIDB Register of Contractors: grades 1 to 9 by tender value range and class of works, three-year validity, annual update, suspension; NHBRC home-builder registration and home enrolment under the Housing Consumer Protection Measures Act 95 of 1998, and the Housing Consumer Protection Act 2024 with its commencement status; ECSA, SACAP, SACQSP and SACPCMP registrations under the Council for the Built Environment); building codes (National Building Regulations and Building Standards Act 103 of 1977 with the 30-day and 60-day plan decision periods, SANS 10400 cited as a licensed standard, municipal e-submission such as the City of Cape Town e-Services and DAMS); public procurement (PFMA, MFMA, PPPFA and the Preferential Procurement Regulations 2022 with 80/20 up to R50 million and 90/10 above, the Public Procurement Act 28 of 2024 with its commencement status, the eTender Publication Portal and the CSD); tax (VAT rate and registration threshold from SARS, SARS e-invoicing status); e-signatures (ECTA 25 of 2002, advanced electronic signatures, and the exclusions for alienation of land, long leases of land, wills and bills of exchange); payment rails (EFT, PayShap, cards; Paystack, Ozow, Peach Payments and Yoco named as candidate adapters only; prompt-payment and adjudication rules under the CIDB Act if confirmed); privacy (POPIA, the Information Regulator, the section 69 direct-marketing consent rule and the December 2024 guidance note, race as special personal information, PAIA manuals); consumer law (Consumer Protection Act); holidays (Public Holidays Act); twelve official languages including South African Sign Language; units (metric); national sanctions facet (targeted financial sanctions lists published by the Financial Intelligence Centre, if confirmed).",
+        "Languages: en (en-ZA) first and default; af, xh and zu once LANG-AF, LANG-XH and LANG-ZU are done.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending (for example CIDB tender value limits per grade until read in the Government Gazette); candidate verification adapters are named as candidates only (no live register call); agent-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country ZA sees en-ZA formats, ZAR and the nine provinces.",
+        "The NHBRC and public-procurement facts state the commencement status of the 2024 acts and their sources; nothing claims an act is in force without a proclamation source.",
+        "No engine code branches on ZA; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/za.json",
+        "tests/country-packs/za"
+      ]
+    },
+    {
+      "id": "DEMO-ZA",
+      "title": "Cape Town demo hub: synthetic South African dataset",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-ZA",
+        "DEMO-US",
+        "CFG-001"
+      ],
+      "handbook": "docs/engine/hubs.md",
+      "goal": "A second synthetic demo hub, set in Cape Town and selected by configuration, that shows the same engine in a market with informal self-building, statutory contractor registers, instant bank payments and several official languages, without any code that branches on the country.",
+      "read": [
+        "docs/engine/hubs.md",
+        "docs/engine/localization.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/research/market-opportunities-2026-11.md"
+      ],
+      "steps": [
+        "Create a synthetic dataset in apps/web/fixtures/za written in English (people, companies, projects with plans, events, publications, magazine issues, courses) set in the City of Cape Town, with no real names, CIDB or NHBRC numbers, company numbers or street addresses; obviously fictitious identifiers marked synthetic and example.invalid domains.",
+        "Personas: a household planning a backyard second dwelling, an independent bricklayer building a reputation from evidence, a small registered contractor with a synthetic CIDB grade and class (for example 3GB) and its expiry, a SACAP-registered draughtsperson offering consultations, and a buyer at a synthetic municipal entity.",
+        "Show the country facts the pack provides: the 30-day plan decision timer for buildings under 500 m2, NHBRC enrolment as a plan step where it applies, a tender alert matched to the contractor's grade, and payment through provider links with no balance held; public project pages show no street address or live site schedule.",
+        "Register the dataset in apps/web/fixtures/datasets.ts for country ZA (data only; the selection rule is unchanged) and keep the US, Uzbekistan, Georgia, Armenia and Azerbaijan datasets selectable.",
+        "Update smoke and browser tests for a deployment configured with ZA as the default country; record screenshots in English."
+      ],
+      "acceptance": [
+        "A visitor with country ZA sees the Cape Town hub in English with ZAR and en-ZA dates; a deployment with TRUSTWORK_DEFAULT_COUNTRY=ZA opens it on first visit.",
+        "Every demo record is labelled synthetic; no real company, person, register number or address appears.",
+        "Tests pass with US, UZ and ZA as the configured default."
+      ],
+      "paths": [
+        "apps/web/fixtures/za",
+        "apps/web/fixtures/datasets.ts",
+        "tests/web/demo-za"
       ]
     },
     {

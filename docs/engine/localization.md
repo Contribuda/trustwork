@@ -59,6 +59,9 @@ Review status is one of *reference* (English, the source of every key), *machine
 | `zh-Hans` | Chinese (Simplified) | Planned | — | LANG-ZH | CJK typography (INTL-006) |
 | `hi` | Hindi | Planned | — | LANG-HI | Devanagari typography (INTL-006) |
 | `ja` | Japanese | Planned | — | LANG-JA | CJK typography (INTL-006) |
+| `af` | Afrikaans | Planned | — | LANG-AF | Formats per country (`af-ZA`); after the Cape Town demo content (DEMO-ZA); proposed in the [market-opportunities note](../research/market-opportunities-2026-11.md) |
+| `xh` | isiXhosa | Planned | — | LANG-XH | Formats per country (`xh-ZA`); after DEMO-ZA |
+| `zu` | isiZulu | Planned | — | LANG-ZU | Formats per country (`zu-ZA`); after DEMO-ZA |
 | — | Any language you bring | Welcome | — | — | See [Adding a language](#adding-a-language) |
 
 All seven live dictionaries are complete. Translations other than English and Russian were produced by the integrator or, for Spanish, by an AI agent (Claude Code, LANG-ES) and await native-speaker review; this is one of the most valuable contributions you can make. Shared foundations: right-to-left support (INTL-005), CJK and Devanagari typography (INTL-006) and review-status metadata (INTL-007).
@@ -89,6 +92,7 @@ Every fact in a pack cites a source and states how far it is verified ([Country 
 | `AE` | United Arab Emirates | Planned | CTRY-AE | Arabic and English |
 | `IN` | India | Planned | CTRY-IN | Hindi and English |
 | `AU` | Australia | Planned | CTRY-AU | |
+| `ZA` | South Africa | Planned | CTRY-ZA; demo DEMO-ZA | English default; Afrikaans, isiXhosa and isiZulu planned; Cape Town is the candidate second reference hub in the [market-opportunities note](../research/market-opportunities-2026-11.md) (Proposed) |
 | — | Any other country | Generic profile | — | Contribute a pack: [How to add a country](../country-packs/how-to-add-a-country.md) |
 
 Russia is not a market and is never offered; Russian remains available as a language.
