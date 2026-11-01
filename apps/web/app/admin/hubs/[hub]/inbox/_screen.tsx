@@ -61,7 +61,7 @@ export async function Inbox(ctx: HubContext, route: ScreenRoute) {
         const requestState = request.state !== 'pending' || request.currentDigest.value !== request.actionDigest.value ? 'void' : Date.parse(request.expiresAt) <= ctx.now.getTime() ? 'expired' : 'pending';
         const marker = createHash('sha256').update(JSON.stringify([deviceScope(ctx), request.id, request.actionDigest.value])).digest('hex');
         return <Decision key={request.id} copy={copy} title={tDynamic(`admin.approvals.actions.${request.action}`, request.action)}
-          scope={copy.scope} requester={t('admin.approvals.requestedBy')} requestReason={fixtureReason ?? copy.synthetic}
+          scope={ctx.hubName.text} requester={requester?.displayName ?? t('admin.common.unknownPerson')} requestReason={fixtureReason ?? copy.synthetic}
           digest={request.actionDigest.value} expiresAt={request.expiresAt} timeZone={ctx.record.hub.timeZone} marker={marker}
           hubId={ctx.record.hub.id} lostResponse={route.query.demoResult === 'unknown'}
           hidden={ctx.hidden('approvals.decide', { actor: me, 'f.requestId': request.id, 'f.digest': request.actionDigest.value })}

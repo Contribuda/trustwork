@@ -84,6 +84,7 @@ export function Decision({ copy, title, scope, requester, requestReason, digest,
   const blocked = disabledReason || simulationState || (attempt ? copy.unknown : !ready || pending ? copy.pending : undefined);
   return <div className={s.record} data-testid={`decision-${hidden['f.requestId']}`}>
     <ApprovalCard title={title} scope={scope} requester={requester} reason={requestReason} digest={digest} expiresAt={expiresAt} timeZone={timeZone}
+      auditNote={copy.synthetic}
       declineReason={reason} onDeclineReasonChange={setReason} pending={pending}
       approve={{ onPress: () => void decide('approve'), disabledReason: blocked || (!reason.trim() ? copy.reasonRequired : undefined) }}
       decline={{ onPress: () => void decide('decline'), disabledReason: blocked }}>

@@ -20,6 +20,8 @@ export type ApprovalCardProps = {
   decline: { onPress: () => void; disabledReason?: string | undefined };
   pending?: boolean | undefined;
   error?: string | undefined;
+  /** Override when the caller has different persistence semantics, such as a fixture-only simulation. */
+  auditNote?: ReactNode;
 };
 /** Shows the caller's decision availability; never derives permission from identity, digest or time. */
 export function ApprovalCard(p: ApprovalCardProps) {
@@ -60,7 +62,7 @@ export function ApprovalCard(p: ApprovalCardProps) {
       </div>
       {p.approve.disabledReason && <p>{p.approve.disabledReason}</p>}
       {p.decline.disabledReason && <p>{p.decline.disabledReason}</p>}
-      <AuditNote />
+      {p.auditNote === undefined ? <AuditNote /> : <AuditNote>{p.auditNote}</AuditNote>}
     </article>
   );
 }

@@ -113,6 +113,10 @@ for (const decision of ['approve', 'decline'] as const) test(`375: simulated ${d
   await english(page); await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(at('inbox', 'item=rq-legal-privacy-2')); await ready(page);
   const card = page.getByTestId('decision-rq-legal-privacy-2');
+  await expect(card.locator('article > p').first()).toHaveText('Trustwork United States (demo) · Synthetic Compliance Officer');
+  const auditCopy = JSON.parse(readFileSync(resolve('packages/ui/locales/en.json'), 'utf8')).consoleKit.auditNote as string;
+  await expect(card.getByText(auditCopy, { exact: true })).toHaveCount(0);
+  await expect(card.locator('article')).toContainText(en.synthetic!);
   await expect(card.getByTestId('inbox-field-diff').getByRole('listitem')).not.toHaveCount(0);
   await card.getByRole('textbox').fill('Synthetic reason');
   let sends = 0;
