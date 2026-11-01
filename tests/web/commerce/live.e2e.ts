@@ -32,6 +32,12 @@ async function confirm(page: Page, label: string): Promise<void> {
   await expect(dialog).toBeHidden();
 }
 
+/** SANC-004: quotes, acceptance and orders need every party screened clear (the stack screens with synthetic baseline lists). */
+async function screenEveryone(): Promise<void> {
+  const response = await fetch(`${CONTROL_ORIGIN}/screen`, { method: 'POST' });
+  expect(response.status).toBe(200);
+}
+
 async function budget(personId: string, limitMinor: string, currency: string): Promise<string> {
   const response = await fetch(`${CONTROL_ORIGIN}/budget`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ personId, limitMinor, currency }) });
   expect(response.status).toBe(200);
@@ -52,6 +58,7 @@ test('procurement and sales on the live API: stale quotes are not comparable, or
   const company = `Поставка ${Date.now().toString(36)}`;
   const created = await seller.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-co-${Date.now()}` }, data: { name: company, handle: null, publicDescription: 'Металлопрокат для строек.' } });
   expect(created.status(), await created.text()).toBe(201);
+  await screenEveryone();
 
   let needUrl = '';
   let rfqUrl = '';

@@ -59,7 +59,8 @@
       "budget_insufficient": "The budget is not enough for this action.",
       "authority_missing": "You have no authority to commit to this.",
       "outcome_unknown": "The result is not known yet. We are checking it; do not repeat the action.",
-      "transfer_consent_pending": "The recipient has not agreed to the transfer yet."
+      "transfer_consent_pending": "The recipient has not agreed to the transfer yet.",
+      "counterparty_unavailable": "The other party cannot transact right now."
     },
     "membership": {
       "already_employed": "You already work for a company. A person has one active employer at a time.",
@@ -73,6 +74,10 @@
     },
     "jurisdiction": {
       "restricted": "This site is not available in your location."
+    },
+    "screening": {
+      "review_pending": "Payments and commercial commitments on your side are paused until a compliance check is complete. You can see your status in Settings, Account, Compliance.",
+      "unavailable": "Compliance screening is temporarily unavailable, so no payment or commitment can be made right now. Please try again later."
     }
   },
   "taxonomy": {

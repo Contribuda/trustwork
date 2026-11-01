@@ -20,6 +20,9 @@
     },
     "refusal": {
       "suspended": "Ushbu hisob huquqiy sabablarga koʻra toʻxtatilgan. Muvofiqlik holatingizni koʻrishingiz va shikoyat qilishingiz mumkin."
+    },
+    "gate": {
+      "companyPaused": "Muvofiqlik tekshiruvi tugaguncha kompaniyangizning toʻlovlari va tijoriy majburiyatlari toʻxtatilgan. Tekshiruv holatini kompaniya administratori koʻra oladi."
     }
   }
 }

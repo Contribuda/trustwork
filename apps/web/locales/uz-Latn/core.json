@@ -59,7 +59,8 @@
       "budget_insufficient": "Bu amal uchun byudjet yetarli emas.",
       "authority_missing": "Sizda bu majburiyatni olish vakolati yo‘q.",
       "outcome_unknown": "Natija hali noma’lum. Biz uni tekshirmoqdamiz; amalni takrorlamang.",
-      "transfer_consent_pending": "Qabul qiluvchi hali topshirishga rozilik bermagan."
+      "transfer_consent_pending": "Qabul qiluvchi hali topshirishga rozilik bermagan.",
+      "counterparty_unavailable": "Boshqa tomon hozir bitim tuza olmaydi."
     },
     "membership": {
       "already_employed": "Siz allaqachon kompaniyada ishlaysiz. Insonning bir vaqtda bitta amaldagi ish beruvchisi bo‘ladi.",
@@ -73,6 +74,10 @@
     },
     "jurisdiction": {
       "restricted": "Bu sayt sizning joylashuvingizda mavjud emas."
+    },
+    "screening": {
+      "review_pending": "Muvofiqlik tekshiruvi tugaguncha sizning tomoningizdagi toʻlovlar va tijoriy majburiyatlar toʻxtatilgan. Holatingizni «Sozlamalar», «Hisob», «Muvofiqlik» boʻlimida koʻrishingiz mumkin.",
+      "unavailable": "Sanksiya roʻyxatlari boʻyicha tekshiruv vaqtincha mavjud emas, shuning uchun hozir toʻlov yoki majburiyat qabul qilib boʻlmaydi. Keyinroq qayta urinib koʻring."
     }
   },
   "taxonomy": {

@@ -9,6 +9,7 @@ import { withMaintenance, withPrincipal } from '@trustwork/data';
 import { budgets } from '../../../packages/data/src/repositories/billing.js';
 import { principalFor } from '../../data/helpers/seed.js';
 import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
+import { screenEveryoneClear } from '../../screening-gates/helpers.js';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -352,6 +353,8 @@ test('exactly-once completion: crash before and after the handler commit, for ev
   await t.test('commerce (COM-002): quotes, negotiation, agreements, orders and changes', async () => {
     const reference = await kernelReference.fromRepository();
     await withMaintenance(h.db.admin, (trx) => kernelSync.apply(trx, reference));
+    // SANC-004: quotes, acceptance and orders need every party screened clear against fresh baseline lists.
+    await screenEveryoneClear(h.db.admin);
     const person = { via: 'person' };
     const consent = { consented: true, disclosureKey: 'trustwork.electronic-records.v1' };
     const bdate = (date: string) => ({ date, timeZone: 'America/Los_Angeles' });

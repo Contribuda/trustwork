@@ -2696,7 +2696,7 @@
       "id": "SANC-004",
       "title": "Screening gates for money, commercial commitments, counterparties and agents",
       "area": "compliance",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SANC-003",
         "COM-002"

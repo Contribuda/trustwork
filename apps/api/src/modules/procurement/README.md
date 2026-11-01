@@ -43,6 +43,10 @@ The database repeats every rule under FORCE RLS (`trustwork.rfq_can`, `trustwork
 
 Commands accept `actor: { via: 'agent', mandateId }`: drafts need a `prepare` mandate, publishing and closing `publish`, invitations `communicate`. The `CommerceMandatePort` decides; the default `NoCommerceMandates` refuses every agent request (`403 access.mandate_scope`) until the mandate store exists. Registry entries: `COMMERCE_CAPABILITIES` in `commerce.ts` (ADR 010 decision 23); `sourcing_desk.draft_rfq` and `sourcing_desk.publish_rfq` are declared by PRC-000 and served here.
 
+## Screening gates (SANC-004)
+
+Needs, RFQs and invitations bind nobody, so they are not gated. The buyer's binding steps (accepting terms, placing an order, accepting a change) are gated in the [transactions module](../transactions/README.md) and the seller's quote in the [sales module](../sales/README.md) ([screening gates](../screening-gates/README.md)).
+
 ## Tests
 
 `tests/commerce/procurement/contracts.test.ts`, `database.test.ts` (RLS, guards and concurrency under the runtime role), `api.test.ts` (the journey through HTTP with negative authorization, forbidden fields, payment equality, agents and plan items).

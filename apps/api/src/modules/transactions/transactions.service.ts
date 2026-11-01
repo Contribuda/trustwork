@@ -22,6 +22,7 @@ import {
 import type { DealMandatePort } from '../sales/mandates.js';
 import { quoteVersionContract } from '../sales/serializers.js';
 import type { ElectronicRecordsPolicySource } from './electronic-records.js';
+import { ScreeningGate } from '../screening-gates/gate.js';
 
 type In<T extends z.ZodType> = z.infer<T>;
 type Side = 'buyer' | 'seller';
@@ -57,8 +58,8 @@ const CHECK_CODES = {
  * instructions and reservations are authority.
  */
 export class TransactionsService extends DealService {
-  constructor(ctx: AppContext, principals: PrincipalService, policy: ParticipationService, mandates: DealMandatePort, private readonly records: ElectronicRecordsPolicySource) {
-    super(ctx, principals, policy, mandates);
+  constructor(ctx: AppContext, principals: PrincipalService, policy: ParticipationService, mandates: DealMandatePort, private readonly records: ElectronicRecordsPolicySource, gate: ScreeningGate = new ScreeningGate(ctx.clock)) {
+    super(ctx, principals, policy, mandates, gate);
   }
 
   /* ---------- Sides ---------- */
@@ -208,6 +209,8 @@ export class TransactionsService extends DealService {
       if (check !== 'ok') throw new ApiError(check, CHECK_CODES[check], { reason: check.slice('commercial.'.length) });
       const rfqRef = { id: current.id, version: current.version, digest: digestOf(current.digest as string) };
       if (!sameRef(input.rfqVersion, rfqRef)) throw new ApiError('commercial.rfq_version_mismatch', CHECK_CODES['commercial.rfq_version_mismatch'], { reason: 'rfq_version_mismatch', currentRfqVersionId: current.id });
+      // SANC-004: the buyer (and the person accepting) and the seller must be transactable before the terms bind.
+      await this.requireTransactable(trx, partyOf(rfq), partyOfColumns(quote.seller_person_id, quote.seller_company_id), actor, 'terms_accept');
       const quoteRef = { id: qv.id, version: qv.version, digest: digestOf(qv.digest as string) };
       const digest = computeAgreementDigest(quoteRef, rfqRef, 'rfq_quote');
       const buyer = columnsOf(partyOf(rfq));
@@ -252,6 +255,8 @@ export class TransactionsService extends DealService {
       if (!UUID.test(input.transactionBudgetId)) throw new ApiError('commercial.authority_missing', 'a transaction budget is needed', { reason: 'budget_unknown' });
       const amount = BigInt(gross.minorUnits);
       if (amount < 0n) throw new ApiError('validation.schema', 'a negative total is not ordered', { reason: 'negative_total' });
+      // SANC-004: before the order and its reservation, both parties and the person ordering must be transactable.
+      await this.requireTransactable(trx, this.buyer(row), this.seller(row), actor, 'order_place');
       const reservation = amount === 0n ? null : await reservations.reserve(trx, {
         budgetId: input.transactionBudgetId, kind: 'transaction', amountMinor: gross.minorUnits, currency: gross.currency, actionIntentId: row.id, correlationKey: `order:${row.id}:${key}`,
         projectId: rfqRow.project_id, ttlSeconds: RESERVATION_TTL_SECONDS,
@@ -290,6 +295,8 @@ export class TransactionsService extends DealService {
       const payload = terms.quoteVersion.payload as QuoteVersionPayload;
       const actor = await this.actor(p, input.actor, 'accept_order', { kind: 'agreement', id: row.id }, payload.totals.gross);
       const consent = this.consent(input.electronicRecords);
+      // SANC-004: the seller (and the person accepting) and the buyer must be transactable before the order binds both.
+      await this.requireTransactable(trx, this.seller(row), this.buyer(row), actor, 'order_accept');
       const event = await this.recordEvent(trx, p, row, 'seller_accepts_order', this.seller(row), actor, key, { consent });
       const accepted = await agreements.setStatus(trx, row.id, row.revision, { status: 'accepted_by_both' });
       if (!accepted) throw new ApiError('validation.revision_conflict');
@@ -461,6 +468,8 @@ export class TransactionsService extends DealService {
       const proposer = side === 'buyer' ? this.buyer(agreement) : this.seller(agreement);
       const delta = BigInt(gross.minorUnits) - BigInt(locked.amount_minor);
       if (gross.currency !== locked.currency) throw new ApiError('commercial.currency_mismatch', 'a change keeps the order currency');
+      // SANC-004: a proposed change is an offer to bind new terms: the proposer's side and the counterparty must be transactable.
+      await this.requireTransactable(trx, proposer, side === 'buyer' ? this.seller(agreement) : this.buyer(agreement), actor, 'order_change');
       const deltaReservation = side === 'buyer' ? await this.reserveIncrease(trx, agreement, delta, gross.currency, input.transactionBudgetId, key, rfq?.row.project_id ?? null) : null;
       const cols = columnsOf(proposer);
       const change = await orderChanges.insert(trx, {
@@ -523,6 +532,8 @@ export class TransactionsService extends DealService {
       const { newRfq, gross, digest } = await this.newTerms(trx, agreement, { id: newQuote.id, version: newQuote.version, digest: digestOf(newQuote.digest) });
       if (digest.value !== change.new_terms_digest) throw new ApiError('commercial.digest_mismatch', CHECK_CODES['commercial.digest_mismatch'], { reason: 'digest_mismatch' });
       const actor = await this.actor(p, input.actor, action, { kind: 'order', id: order.id }, gross);
+      // SANC-004: accepting a change binds new terms: the deciding side and the proposer must be transactable.
+      await this.requireTransactable(trx, side === 'buyer' ? this.buyer(agreement) : this.seller(agreement), side === 'buyer' ? this.seller(agreement) : this.buyer(agreement), actor, 'order_change');
       const delta = BigInt(gross.minorUnits) - BigInt(order.amount_minor);
       const deltaReservation = side === 'buyer' ? await this.reserveIncrease(trx, agreement, delta, gross.currency, input.transactionBudgetId, key, rfq?.row.project_id ?? null) : change.delta_reservation_id;
       if (side === 'seller' && delta > 0n && deltaReservation === null) throw new ApiError('commercial.authority_missing', 'a higher total proposed by the buyer must come with its reservation', { reason: 'budget_required' });

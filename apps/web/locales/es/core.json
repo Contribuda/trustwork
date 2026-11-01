@@ -59,7 +59,8 @@
       "budget_insufficient": "El presupuesto no alcanza para esta acción.",
       "authority_missing": "Usted no tiene autorización para asumir este compromiso.",
       "outcome_unknown": "Aún no se conoce el resultado. Lo estamos verificando; no repita la acción.",
-      "transfer_consent_pending": "El destinatario aún no aceptó la transferencia."
+      "transfer_consent_pending": "El destinatario aún no aceptó la transferencia.",
+      "counterparty_unavailable": "La otra parte no puede realizar transacciones en este momento."
     },
     "membership": {
       "already_employed": "Usted ya trabaja para una empresa. Cada persona tiene un solo empleador activo a la vez.",
@@ -73,6 +74,10 @@
     },
     "jurisdiction": {
       "restricted": "Este sitio no está disponible en su ubicación."
+    },
+    "screening": {
+      "review_pending": "Los pagos y los compromisos comerciales de su parte están en pausa hasta que se complete una verificación de cumplimiento. Puede ver su estado en Configuración, Cuenta, Cumplimiento.",
+      "unavailable": "La verificación en listas de sanciones no está disponible temporalmente, por lo que ahora no se puede realizar un pago ni asumir un compromiso. Inténtelo de nuevo más tarde."
     }
   },
   "taxonomy": {

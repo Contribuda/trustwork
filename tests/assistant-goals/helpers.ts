@@ -5,6 +5,7 @@ import type { SellerQuoteView } from '../../packages/contracts/src/deals.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import type { Client, Harness, Response } from '../backend/helpers/app.js';
 import { login, seedPersonas, type PersonaKey } from '../backend/helpers/personas.js';
+import { screenEveryoneClear } from '../screening-gates/helpers.js';
 
 export const UNTIL = '2027-12-31T00:00:00.000Z';
 export const usd = (minorUnits: string) => ({ minorUnits, currency: 'USD' });
@@ -69,6 +70,8 @@ export async function buildWorld(h: Harness): Promise<World> {
     await trx.insertInto('membership').values({ person_id: seed.people.xenia, company_id: seed.companies.supplier, role: 'member', permissions: ['company.deals.manage'], status: 'active', valid_from: at }).execute();
     await trx.insertInto('membership').values({ person_id: seed.people.pure, company_id: seed.companies.supplier, role: 'member', permissions: [], status: 'active', valid_from: at }).execute();
   });
+  // SANC-004: quotes and acceptance need every party screened clear against fresh baseline lists.
+  await screenEveryoneClear(h.db.admin);
   const clients = {} as Record<PersonaKey, Client>;
   for (const key of ['petr', 'anna', 'pure', 'boris', 'carl', 'xenia'] as PersonaKey[]) {
     const c = h.client();

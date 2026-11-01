@@ -17,11 +17,19 @@ export class ApiError extends Error {
  * Codes not yet in the frozen contract (requested from FND-002): `internal.error` for unexpected failures and
  * `auth.email_taken` for an e-mail change to an address that is already bound. The body keeps the envelope shape.
  */
-export type LocalErrorCode = 'internal.error' | 'auth.email_taken' | 'jurisdiction.restricted' | 'auth.jurisdiction_hold';
-/** `jurisdiction.restricted` and `auth.jurisdiction_hold` are the gate's codes (SANC-001, `JURISDICTION_ERROR_STATUS`). */
-const LOCAL_STATUS: Record<LocalErrorCode, number> = { 'internal.error': 500, 'auth.email_taken': 409, 'jurisdiction.restricted': 451, 'auth.jurisdiction_hold': 403 };
+export type LocalErrorCode = 'internal.error' | 'auth.email_taken' | 'jurisdiction.restricted' | 'auth.jurisdiction_hold'
+  | 'screening.review_pending' | 'screening.unavailable' | 'commercial.counterparty_unavailable';
+/**
+ * `jurisdiction.restricted` and `auth.jurisdiction_hold` are the gate's codes (SANC-001, `JURISDICTION_ERROR_STATUS`);
+ * `screening.review_pending`, `screening.unavailable` and `commercial.counterparty_unavailable` are the money and
+ * commitment gates' codes (SANC-004, `SCREENING_GATE_ERROR_STATUS`).
+ */
+const LOCAL_STATUS: Record<LocalErrorCode, number> = {
+  'internal.error': 500, 'auth.email_taken': 409, 'jurisdiction.restricted': 451, 'auth.jurisdiction_hold': 403,
+  'screening.review_pending': 403, 'screening.unavailable': 409, 'commercial.counterparty_unavailable': 409,
+};
 export class LocalApiError extends Error {
-  constructor(readonly code: LocalErrorCode, message: string = code) {
+  constructor(readonly code: LocalErrorCode, message: string = code, readonly details?: Record<string, unknown>) {
     super(message);
     this.name = 'LocalApiError';
   }
@@ -29,7 +37,7 @@ export class LocalApiError extends Error {
     return LOCAL_STATUS[this.code];
   }
 }
-export interface RenderedError { status: number; body: ErrorEnvelope | { code: LocalErrorCode; message: string; requestId: string } }
+export interface RenderedError { status: number; body: ErrorEnvelope | { code: LocalErrorCode; message: string; details?: Record<string, unknown>; requestId: string } }
 
 /** Database hints raised by SECURITY DEFINER commands and triggers, mapped to contract codes. */
 const HINT_CODES: Record<string, ErrorCode> = {
@@ -61,7 +69,7 @@ export function renderError(error: unknown, requestId: string): RenderedError {
   if (error instanceof ApiError) {
     return { status: error.status, body: errorEnvelope(error.code, requestId, error.message, error.details) };
   }
-  if (error instanceof LocalApiError) return { status: error.status, body: { code: error.code, message: error.message, requestId } };
+  if (error instanceof LocalApiError) return { status: error.status, body: error.details ? { code: error.code, message: error.message, details: error.details, requestId } : { code: error.code, message: error.message, requestId } };
   if (error instanceof ZodError) {
     const unknown = error.issues.find((i) => i.code === 'unrecognized_keys');
     const code: ErrorCode = unknown ? 'validation.unknown_field' : 'validation.schema';
