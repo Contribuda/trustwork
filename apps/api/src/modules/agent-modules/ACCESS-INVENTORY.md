@@ -270,3 +270,9 @@ Merged PRV exports `PlansService.privacyShared`, `TasksService.privacyExport`, a
 
 
 The observed CI601 HUB reader scan now recognizes only the four exact preserved internal HUB configuration implementations, with actual app/worker invocation negatives and privilege checks; no wrapper prefix is exempt. Consultation outbox tests validate exact allowed fields and UUID/enum types before distinguishing identifier digits from private values. A deterministic UUID containing `40000` reproduces the historical substring failure; deliberate amount, note and wrong-type payloads still fail. Production HUB/consultation code is unchanged by these test repairs.
+
+### Membership writer ordering and privacy coverage
+
+The allocated unpublished21100990 membership `BEFORE UPDATE FOR EACH STATEMENT` trigger obtains the existing envelope ordering fence before owning membership revocation hooks lock representative/company-mandate rows and AGT epochs. The trigger-only helper has no runtime EXECUTE grant; the public ordering helper still requires a current principal. Identity authorization, membership row locks and all existing revocation hooks remain unchanged. The actual MembershipService.end and raw permission writer are tested against delivery in both concurrent serialization orders, including rollback, retained deals authority after a role change, existing statement timeout and session expiry while waiting. A failed or timed-out wait never counts as delivery.
+
+The shared PRV module inventory explicitly includes agent-modules. Existing coverage marks its missing owning exporter unsupported; neither this inventory entry nor the three first-party service bindings claim a complete AGT subject export. The exact module-directory inventory and foreign-subject/token/private-data negatives remain enforced.

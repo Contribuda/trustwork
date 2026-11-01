@@ -1,3 +1,6 @@
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
+import { REGISTRY } from '../agent-modules/fixtures.js';
+import { engineDefaultPolicy } from '../../packages/contracts/src/agent-modules.js';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -52,6 +55,8 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
   const h = await startHarness('privacy', { files: { store }, logSink: (line) => { logs.push(line); } });
   if (!h) { await rm(root, { recursive: true, force: true }); t.skip(SKIP_REASON); return; }
   t.after(async () => { await h.close(); await rm(root, { recursive: true, force: true }); });
+  const servingHubId = await installSyntheticServingHub(h);
+  assert.ok(engineDefaultPolicy(servingHubId, REGISTRY).policy.enabledModules.some(m => m.moduleKey === 'consultation'), 'the synthetic serving hub uses the enabled consultation default, without bypassing the owning gate');
   const seed = await seedFixtures(h.db.admin);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   await withMaintenance(h.db.admin, (trx) => trx.updateTable('company_private').set({ internal_notes: 'Synthetic counterparty private sentinel 9371' }).where('company_id', '=', seed.companies.mixed).execute());
@@ -346,9 +351,10 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     const text = JSON.stringify(result.body);
     assert.ok(text.includes(sub.id)); assert.ok(text.includes('ended')); assert.ok(text.includes('39900'));
     assert.ok(!text.includes(secretBudget)); assert.ok(!text.includes('938471'));
-    const archive = (result.body as { archive: { complete: boolean; coverage: { module: string }[] } }).archive;
+    const archive = (result.body as { archive: { complete: boolean; coverage: { module: string; status: string; includes: string }[] } }).archive;
     assert.equal(archive.complete, false);
     assert.deepEqual(archive.coverage.map((r) => r.module).sort(), [...PRIVACY_MODULE_INVENTORY].sort());
+    assert.deepEqual(archive.coverage.find((r) => r.module === 'agent-modules'), { module: 'agent-modules', status: 'unsupported', includes: 'owning module exporter unavailable; not omitted from the inventory' });
   });
   await t.test('company authority is checked again at delivery after membership revocation', async () => {
     const created = await anna.post('/v1/privacy/exports', { subject: company });

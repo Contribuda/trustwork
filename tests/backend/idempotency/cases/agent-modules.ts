@@ -4,13 +4,14 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { hash } from '@node-rs/argon2';
 import { withMaintenance, withPrincipal, type Transaction } from '@trustwork/data';
 import { HUB_CONSOLE_CONTRACT_VERSION } from '@trustwork/contracts';
-import { engineDefaultPolicy } from '../../../../packages/contracts/src/agent-modules.js';
+import { engineDefaultPolicy, engineModuleControl } from '../../../../packages/contracts/src/agent-modules.js';
 import type { Client, Harness } from '../../helpers/app.js';
 import { codeNow } from '../../second-factor/helpers.js';
 import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';
 import { principalFor } from '../../../data/helpers/seed.js';
 import { approvals, staffAssignments, type CommandContext } from '../../../../packages/data/src/repositories/admin.js';
 import { sessionElevations } from '../../../../packages/data/src/repositories/identity.js';
+import { NEGOTIATION_MANIFEST, REPRESENTATIVE_MANIFEST } from '../../../../packages/contracts/src/agents.js';
 import { REGISTRY, runtimeHubPolicy } from '../../../agent-modules/fixtures.js';
 import type { CrashCase } from '../cases.js';
 
@@ -87,6 +88,11 @@ export default {
       const owningModules = ['reputation_builder', 'task_marketplace', 'consultation'];
       policy.policy.enabledModules.push(...defaults.policy.enabledModules.filter(m => owningModules.includes(m.moduleKey)));
       policy.modules.push(...defaults.modules.filter(m => owningModules.includes(m.moduleKey)));
+      // Existing AGT-001 crash routes require normal explicit hub activation of these opt-in manifests.
+      for (const manifest of [NEGOTIATION_MANIFEST, REPRESENTATIVE_MANIFEST]) {
+        policy.policy.enabledModules.push({ moduleKey: manifest.key, moduleVersion: manifest.version, freeQuota: [], settings: {} });
+        policy.modules.push(engineModuleControl(manifest));
+      }
       // Policy: draft (validated, preview stored), then activation without an approval asks a second person.
       const drafted = body<{ version: { versionId: string; revision: number; activation: { actionDigest: string } } }>(await exactlyOnce({
         action: 'agent_modules.policy_draft', client: clients.drafter, url: `${base}/policy`, body: cmd('agent_modules.policy_draft', { document: policy }),
