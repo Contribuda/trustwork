@@ -74,8 +74,8 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
       const format = !i.withheld && i.articleFormat === 'project_story' ? 'projectStory' : !i.withheld ? i.articleFormat : null;
       items.push({ position: i.position, section: i.section, rubric: (rubrics.has(i.section) ? i.section : format && rubrics.has(format) ? format : 'analysis') as RubricKey,
         title: pinned?.title ?? t('content.withheld'), slug: i.publicationId, publicationId: i.publicationId, version: i.publicationVersion,
-        correctionNote: correction ?? null, isCorrected: !!correction, articleFormat: card?.articleFormat ?? null,
-        body: [correction ? `${t('common.corrected')}: ${correction}` : '', ...notices, pinned?.body ?? t('content.withheld')].filter(Boolean).join('\n\n'),
+        ...(card ? { publicationHref: card.href } : {}), correctionNote: correction ?? null, isCorrected: !!correction, articleFormat: card?.articleFormat ?? null,
+        body: [...notices, pinned?.body ?? t('content.withheld'), ...(pinned?.sourceRefs.length ? [t('content.sources'), ...pinned.sourceRefs.map(s => [s.name, publicSourceUrl(s.uri), s.license].filter(Boolean).join(' · '))] : [])].filter(Boolean).join('\n\n'),
         lede: '', readMinutes: null, authorKind: card?.authorKind ?? 'editorial', authorLabel: pinned ? card?.authorLabel ?? '' : '', authorHref: null,
         topics: card?.topics ?? [], quiz: [], mentions: [] });
     }
@@ -108,7 +108,7 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
       // This view is already authorized by CNT-001. Only the fields needed for this row leave the adapter.
       const v = z.object({ projection: z.literal('working'), draft: z.object({ title: z.string(), updatedAt: z.string() }).nullable(), versions: z.array(z.object({ contract: z.object({ title: z.string(), publishedAt: z.string().nullable() }) })) }).parse(raw);
       const latest = v.versions.at(-1)?.contract;
-      out.push({ id: p.id, title: v.draft?.title ?? latest?.title ?? '', format: p.format,
+      out.push({ shownInKnown: false, id: p.id, title: v.draft?.title ?? latest?.title ?? '', format: p.format,
         authorLabel: p.authorship.map(a => a.credit).filter(c => !/^(ai|chatgpt|claude|codex|\u0438\u0438)$/iu.test(c.trim())).join(' · '), status: p.status,
         updatedAt: v.draft?.updatedAt ?? latest?.publishedAt ?? p.createdAt, shownIn: [],
         href: p.currentVersion && ['news', 'article', 'magazine_piece'].includes(p.format) ? `/${p.format === 'news' ? 'news' : 'articles'}/${p.id}` : null });

@@ -10,7 +10,7 @@ export async function contentFeedResponse(section: 'news' | 'articles' | 'magazi
   if (section === 'magazine') {
     for (const issue of (await data.getMagazine()).archive) entries.push({ id: link(issue.href), url: link(issue.readerHref), title: issue.title, language: currentLocale(), published: issue.releasedAt,
       modified: issue.corrections.at(-1)?.date ?? issue.releasedAt, authors: [...new Set(issue.items.map(i => i.authorLabel).filter(Boolean))],
-      text: [...issue.corrections.map(c => `${t('common.corrected')}: ${c.summary}`), ...issue.items.map(i => `${i.title}\n${i.body}`)].join('\n\n') });
+      text: [...issue.corrections.map(c => `${t('common.corrected')}: ${c.summary}`), ...issue.items.map(i => `${i.title}\n${i.correctionNote ? `${t('common.corrected')}: ${i.correctionNote}\n` : ''}${i.body}`)].join('\n\n') });
   } else {
     const cards = section === 'news' ? await data.listNews() : await data.listArticles();
     for (const card of cards.slice(0, 50)) {

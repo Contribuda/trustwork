@@ -393,8 +393,8 @@ export function Reader({
                 <span className="mg-banner__body">
                   {t('common.corrected')}: {item.correctionNote ? typo(item.correctionNote) : correction ? typo(correction.summary) : t('magazine.edition', { edition: issue.edition, date: longDate(issue.releasedAt) })}
                 </span>
-                <NextLink href={`${issue.href}#corrections`} className="mg-banner__link">
-                  {t('magazine.corrections')}
+                <NextLink href={item.publicationHref ? `${item.publicationHref}#history` : `${issue.href}#corrections`} className="mg-banner__link">
+                  {item.publicationHref ? t('detail.history') : t('magazine.corrections')}
                 </NextLink>
               </div>
             ) : null}
