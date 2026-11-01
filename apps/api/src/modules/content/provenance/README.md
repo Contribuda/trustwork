@@ -53,3 +53,7 @@ The fake always has `c2paValid=false` and `test_only_unsigned`; its checksums do
 ## Verification and acceptance
 
 Focused PG/API tests cover absent, withdrawn, stale, cross-person, cross-hub and wrong-role authority; immutable content; scheduling; separate translation review; concurrency; crash rollback/takeover/replay; and captured PDF invalidation. Browser and PDF evidence, exact-head commands, failures and counts are recorded in the conductor's `tools/PROV001-integration-result.md`. Historical tests are not current-head CI. Full CI is unchecked until observed passing; worker completion is not maintainer or conductor acceptance. The PR remains draft.
+
+## Integration order
+
+The three unpublished provenance migrations use `20261120100000` through `20261120100002`, sequenced after the sanctions and privacy continuations. The move from the original 12xxx allocation changes filenames only; all SQL bytes and previously applied migrations remain unchanged. Historical verification remains tied to its original source commits.
