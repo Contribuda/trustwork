@@ -67,3 +67,11 @@ export const PrivacyPropagationSchema = z.object({
   operation: z.literal('apply_retained_redaction'),
 }).strict();
 export type PrivacyPropagation = z.infer<typeof PrivacyPropagationSchema>;
+
+/** Every implemented API module must participate in export coverage and subject planning. */
+export const PRIVACY_MODULE_INVENTORY = [
+  'approval-routes', 'assistant', 'assistant-goals', 'billing', 'catalogue', 'communications', 'connections', 'consultations',
+  'content', 'directory', 'execution', 'files', 'hubs', 'identity', 'jurisdiction', 'models', 'plans', 'platform-admin',
+  'procurement', 'profiles', 'projects', 'providers', 'reputation', 'sales', 'screening', 'screening-gates', 'sources',
+  'supplier-base', 'support', 'tasks', 'transactions', 'trust',
+] as const;

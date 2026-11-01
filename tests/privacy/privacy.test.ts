@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { createPool, withMaintenance, withPrincipal } from '@trustwork/data';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
@@ -23,6 +23,9 @@ import { authorizeLocalPrivacyRestore, reconcileRestore } from '../../scripts/re
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { buildAgreement, businessDate } from '../trust/helpers.js';
 import { billingAccounts, catalogue as billingCatalogue, subscriptions, priceAcceptances, budgets } from '../../packages/data/src/repositories/billing.js';
+import { buildAdminWorld } from '../data/admin/helpers.js';
+import { agentReports } from '../../packages/data/src/repositories/agents.js';
+import { publications } from '../../packages/data/src/repositories/content.js';
 import { PRIVACY_MODULE_INVENTORY } from '../../apps/api/src/modules/platform-admin/privacy/inventory.js';
 
 test('PRV-001: authenticated requests, preferences and delivery through real module projections', async (t) => {
@@ -110,9 +113,68 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.equal(archive.data.projects.length, 1);
     assert.ok(!JSON.stringify(result.body).includes('Synthetic counterparty private sentinel 9371'), 'counterparty private note is not exported');
     assert.ok(JSON.stringify(result.body).includes(fixture.agreement.id), 'the authorized shared agreement is exported');
+    assert.ok(!JSON.stringify(result.body).includes('tokenHash') && !JSON.stringify(result.body).includes('token_hash'), 'session token material never reaches the archive');
     assert.ok(!JSON.stringify(result.body).includes('Synthetic seller secret 1974'), 'the counterparty private side of the same agreement is never exported');
     assert.equal(result.headers['cache-control'], 'no-store');
     assert.deepEqual(await store.list('privacy-exports/'), []);
+  });
+  await t.test('own clean file bytes are authorized and digest checked; counterparty bytes and storage paths stay out', async () => {
+    const seedFile = async (personId: string, marker: string) => {
+      const body = Buffer.from(marker); const key = `synthetic-files/${randomUUID()}`;
+      await store.put(key, body);
+      const row = await withMaintenance(h.db.admin, (trx) => trx.insertInto('evidence_artifact').values({ owner_person_id: personId, parent_kind: 'person', parent_id: personId,
+        classification: 'owner_private', storage_key: key, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.length, media_type: 'text/plain', scan_state: 'clean', uploaded_by: personId }).returning('id').executeTakeFirstOrThrow());
+      return { ...row, key, body };
+    };
+    const own = await seedFile(subject.id, 'Synthetic own binary 8842');
+    const other = await seedFile(seed.people.boris, 'Synthetic counterparty binary 8843');
+    const created = await petr.post('/v1/privacy/exports', { subject });
+    const id = (created.body as { export: { id: string } }).export.id;
+    const result = await petr.get(`/v1/privacy/exports/${id}`);
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    const text = JSON.stringify(result.body);
+    assert.ok(text.includes(own.body.toString('base64')));
+    assert.ok(!text.includes(other.body.toString('base64')) && !text.includes(other.id));
+    assert.ok(!text.includes(own.key) && !text.includes('storage_key'));
+    await store.put(own.key, Buffer.from('corrupt'));
+    assert.equal((await petr.get(`/v1/privacy/exports/${id}`)).status, 500, 'corrupt content cannot be delivered as a successful archive');
+    await store.put(own.key, own.body);
+  });
+  await t.test('own publication drafts export through CNT projections without a counterparty draft', async () => {
+    await buildAdminWorld(h.db.admin);
+    const hubId = (await h.db.admin.query<{ id: string }>('SELECT id FROM trustwork.hub ORDER BY id LIMIT 1')).rows[0]!.id;
+    const create = async (personId: string, body: string) => withPrincipal(h.pool, await principalFor(h.db.admin, personId), (trx) => publications.create(trx, null, {
+      hubId, owner: { kind: 'person' }, format: 'article', articleFormat: null, language: 'en', licence: 'all_rights', requiresReview: false,
+      draft: { title: 'Synthetic private draft', body, language: 'en', sourceRefs: [], treatment: 'original_reporting', eventTime: null, assistantAssisted: false },
+      authorship: [{ kind: 'person', id: personId, credit: 'Synthetic author', assistantAssisted: false }],
+    }));
+    await create(subject.id, 'Synthetic own publication export 2481');
+    await create(seed.people.boris, 'Synthetic other publication excluded 7261');
+    const created = await petr.post('/v1/privacy/exports', { subject });
+    const id = (created.body as { export: { id: string } }).export.id;
+    const result = await petr.get(`/v1/privacy/exports/${id}`);
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    assert.ok(JSON.stringify(result.body).includes('Synthetic own publication export 2481'));
+    assert.ok(!JSON.stringify(result.body).includes('Synthetic other publication excluded 7261'));
+  });
+  await t.test('own personal agent reports export without other agents or employer internals', async () => {
+    const insert = async (personId: string, companyId: string | null, marker: string) => withPrincipal(h.pool, await principalFor(h.db.admin, personId), (trx) => agentReports.insert(trx, {
+      author_person_id: personId, principal_company_id: companyId, goal_id: null, run_id: null,
+      period_from: new Date(Date.now()-1000), period_to: new Date(), sections: [{ kind: 'summary', text: marker }],
+    }));
+    await insert(subject.id, null, 'Synthetic own agent report 4972');
+    await insert(seed.people.boris, null, 'Synthetic other agent report 4973');
+    await insert(seed.people.anna, company.id, 'Synthetic employer internal report 4974');
+    const created = await petr.post('/v1/privacy/exports', { subject });
+    const result = await petr.get(`/v1/privacy/exports/${(created.body as { export: { id: string } }).export.id}`);
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    const text = JSON.stringify(result.body);
+    assert.ok(text.includes('Synthetic own agent report 4972'));
+    assert.ok(!text.includes('Synthetic other agent report 4973') && !text.includes('Synthetic employer internal report 4974'));
+    const ownCompanyPerson = await anna.post('/v1/privacy/exports', { subject: { kind: 'person', id: seed.people.anna } });
+    const ownCompanyExport = await anna.get(`/v1/privacy/exports/${(ownCompanyPerson.body as { export: { id: string } }).export.id}`);
+    assert.equal(ownCompanyExport.status, 200, JSON.stringify(ownCompanyExport.body));
+    assert.ok(!JSON.stringify(ownCompanyExport.body).includes('Synthetic employer internal report 4974'), 'a person export does not become an employer export');
   });
   await t.test('an exactly ended paid subscription preserves export and excludes counterparty platform budgets', async () => {
     const hubId = randomUUID();
@@ -144,6 +206,9 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     const created = await anna.post('/v1/privacy/exports', { subject: company });
     assert.equal(created.status, 201, JSON.stringify(created.body));
     const id = (created.body as { export: { id: string } }).export.id;
+    const beforeRevocation = await anna.get(`/v1/privacy/exports/${id}`);
+    assert.equal(beforeRevocation.status, 200, JSON.stringify(beforeRevocation.body));
+    assert.ok(JSON.stringify(beforeRevocation.body).includes('Synthetic counterparty private sentinel 9371'), 'the company administrator receives the own-company private projection');
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('membership').set({ status: 'ended', ended_at: new Date(), ended_by: seed.people.anna, ended_reason: 'Synthetic revocation' }).where('id', '=', seed.memberships.anna).execute());
     assert.equal((await anna.get(`/v1/privacy/exports/${id}`)).status, 404);
   });

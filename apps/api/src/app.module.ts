@@ -17,6 +17,7 @@ import { SalesModule } from './modules/sales/sales.module.js';
 import { SourcesModule } from './modules/sources/sources.module.js';
 import { SupplierBaseModule } from './modules/supplier-base/supplier-base.module.js';
 import { SupportModule } from './modules/support/support.module.js';
+import { SupportService } from './modules/support/support.service.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { privacyExportPort } from './privacy-exporters.js';
 import { PrivacyModule } from './modules/platform-admin/privacy/privacy.module.js';
@@ -79,7 +80,7 @@ export class AppModule {
         SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         SupportModule.forRoot(ctx, identity),
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
-        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity)),
+        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity, files, { support: (principals) => new SupportService(ctx, principals) })),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),

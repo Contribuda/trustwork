@@ -1,11 +1,31 @@
+import { createHash } from 'node:crypto';
+import { OAuthService } from './modules/connections/oauth/oauth.service.js';
+import { oauthSettingsFromEnv } from './modules/connections/oauth/config.js';
+import { legalDocuments } from '../../../packages/data/src/repositories/hubs.js';
+import { toAcceptance } from './modules/hubs/views.js';
+import { screeningSubjects, ownComplianceStatus } from './modules/screening/deps.js';
+import { FilesService } from './modules/files/files.service.js';
+import { NoFileMandates } from './modules/files/mandates.js';
+import type { FilesModuleOptions } from './modules/files/config.js';
+import { ConsultationsService } from './modules/consultations/consultations.service.js';
+import { NoConsultationMandates } from './modules/consultations/mandates.js';
+import { NoPublishedCommission, ScreeningCommitmentGate } from './modules/consultations/ports.js';
+import { GoalsService } from './modules/assistant-goals/goals.service.js';
+import { reportView, jobSubscriptionView } from './modules/assistant-goals/common.js';
+import { ContentService } from './modules/content/content.service.js';
+import { ApprovalRoutesService } from './modules/approval-routes/approval-routes.service.js';
+import { NoApprovalMandates } from './modules/approval-routes/mandates.js';
+import { SupplierBaseService } from './modules/supplier-base/supplier-base.service.js';
+import { NoSupplierBaseMandates } from './modules/supplier-base/mandates.js';
+import { sanctionsScreening } from './modules/supplier-base/screening.js';
 import type { Transaction } from './deps/data.js';
-import type { Principal } from './deps/contracts.js';
+import { toSessionView, type Principal } from './deps/contracts.js';
 import type { RequestState } from './common/request.js';
 import type { AppContext } from './modules/identity/context.js';
 import type { PrincipalService } from './modules/identity/principal.service.js';
 import type { IdentityServices } from './modules/identity/identity.module.js';
-import { toPerson, toMembership } from './modules/identity/serializers.js';
-import { persons, emailBindings, credentials } from '../../../packages/data/src/repositories/identity.js';
+import { toPerson, toMembership, toSession } from './modules/identity/serializers.js';
+import { persons, emailBindings, credentials, sessions } from '../../../packages/data/src/repositories/identity.js';
 import { memberships } from '../../../packages/data/src/repositories/company.js';
 import { ExecutionService } from './modules/execution/execution.service.js';
 import { NoExecutionMandates } from './modules/execution/mandates.js';
@@ -17,20 +37,26 @@ import { FileLicensingFacets } from './modules/plans/facets.js';
 import { TasksService } from './modules/tasks/tasks.service.js';
 import { NoTaskMandates } from './modules/tasks/mandates.js';
 import { ConfiguredElectronicRecords } from './modules/transactions/electronic-records.js';
-import { SupportService } from './modules/support/support.service.js';
 import { CommunicationsService } from './modules/communications/communications.service.js';
 import { NoCommsMandates } from './modules/communications/mandates.js';
 import { communicationsSettingsFromEnv } from './modules/communications/communications.module.js';
-import { billingAccounts, subscriptions, priceAcceptances } from '../../../packages/data/src/repositories/billing.js';
-import { toPriceAcceptance, toBudget, toReservation } from './modules/billing/billing.service.js';
+import { exportOwnBilling } from './modules/billing/privacy-export.js';
 import type { PrivacySubject } from '../../../packages/contracts/src/privacy.js';
+
+export interface PrivacyOwningPorts {
+  support(principals: PrincipalService): {
+    ownCase(state: RequestState, id: string): Promise<unknown>;
+    ownActions(state: RequestState): Promise<unknown>;
+    ownAccessRecords(state: RequestState): Promise<unknown>;
+  };
+}
 
 /** Only composition-root readers; all calls share the download's real principal and locked transaction. */
 export async function composeModuleExports(input: {
-  ctx: AppContext; identity: IdentityServices; trx: Transaction; principals: PrincipalService;
+  ctx: AppContext; identity: IdentityServices; owningPorts: PrivacyOwningPorts; fileOptions: FilesModuleOptions; trx: Transaction; principals: PrincipalService;
   principal: Principal; state: RequestState; subject: PrivacySubject; projectIds: string[]; agreementIds: string[];
 }): Promise<Record<string, unknown>> {
-  const { ctx, identity, trx, principals, state, subject, projectIds, agreementIds } = input;
+  const { ctx, identity, fileOptions, owningPorts, trx, principals, state, subject, projectIds, agreementIds } = input;
   const data: Record<string, unknown> = {};
   const each = async <T, R>(items: readonly T[], read: (item: T) => Promise<R>) => {
     const result: R[] = [];
@@ -40,14 +66,52 @@ export async function composeModuleExports(input: {
   if (subject.kind === 'person') {
     const person = await persons.getById(trx, subject.id);
     if (!person) throw new Error('export subject disappeared');
-    data.identity = { person: toPerson(person, await emailBindings.listForPerson(trx, subject.id), await credentials.listForPerson(trx, subject.id)),
+    data.identity = { sessions: (await sessions.listForPerson(trx, subject.id)).map((row) => toSessionView(toSession(row))), person: toPerson(person, await emailBindings.listForPerson(trx, subject.id), await credentials.listForPerson(trx, subject.id)),
       memberships: (await trx.selectFrom('membership').selectAll().where('person_id', '=', subject.id).orderBy('created_at').execute()).map(toMembership) };
-    const support = new SupportService(ctx, principals);
+    const support = owningPorts.support(principals);
     // The UI's ownCases list is bounded at 200. Enumerate all ids, then use its owning projection for each.
     const cases = await trx.selectFrom('support_case').select('id').where('requester_person_id', '=', subject.id).orderBy('id').execute();
     data.support = { cases: await each(cases, (r) => support.ownCase(state, r.id)), actions: await support.ownActions(state), access: await support.ownAccessRecords(state) };
   } else {
     data.companyMemberships = (await memberships.listForCompany(trx, subject.id)).map(toMembership);
+  }
+  if (subject.kind === 'person') {
+    const oauth = new OAuthService(ctx, { ...identity, principals }, oauthSettingsFromEnv(ctx.config), null);
+    data.connections = await oauth.listConnections(state);
+    data.hubs = { legalAcceptances: (await legalDocuments.acceptances(trx)).map(toAcceptance) };
+  }
+  const compliance = await screeningSubjects.own(trx, subject.kind === 'company' ? subject.id : null);
+  data.screening = ownComplianceStatus(compliance.state, compliance.appealable);
+  if (fileOptions.store) {
+    const files = new FilesService(ctx, principals, identity.participations, { store: fileOptions.store, mandates: new NoFileMandates() });
+    const artifacts = await trx.selectFrom('evidence_artifact').selectAll().where(subject.kind === 'person' ? 'owner_person_id' : 'owner_company_id', '=', subject.id).orderBy('id').execute();
+    let remainingBytes = 64 * 1024 * 1024;
+    data.files = await each(artifacts, async (r) => {
+      const metadata = await files.get(r.id, state);
+      if (r.scan_state !== 'clean') return { metadata, binaryStatus: 'scan_unavailable' };
+      if (fileOptions.store!.kind !== 'filesystem') return { metadata, binaryStatus: 'external_storage_adapter_required' };
+      const size = Number(r.bytes);
+      if (!Number.isSafeInteger(size) || size < 0 || size > 16 * 1024 * 1024 || size > remainingBytes) return { metadata, binaryStatus: 'streaming_export_required' };
+      const bytes = await fileOptions.store!.read(r.storage_key, size);
+      if (!bytes || bytes.length !== size || createHash('sha256').update(bytes).digest('hex') !== r.sha256) throw new Error('privacy file digest verification failed');
+      remainingBytes -= size;
+      return { metadata, binaryStatus: 'included', encoding: 'base64', bytes: Buffer.from(bytes).toString('base64') };
+    });
+  } else data.files = { status: 'owning_storage_unavailable' };
+  const content = new ContentService(ctx, principals, identity.secondFactors, { hubId: () => null, reviewFormats: [], commentsEnabled: () => false });
+  const publications = await trx.selectFrom('publication').select('id').where(subject.kind === 'person' ? 'owner_person_id' : 'owner_company_id', '=', subject.id).orderBy('id').execute();
+  data.content = { publications: await each(publications, (r) => content.manage(state, r.id)) };
+  if (subject.kind === 'company') {
+    const approvalRoutes = new ApprovalRoutesService(ctx, principals, new NoApprovalMandates(), { routeActivationSecondPerson: true });
+    const routes = await trx.selectFrom('approval_route_version').select('id').where('owner_company_id', '=', subject.id).orderBy('id').execute();
+    const requests = await trx.selectFrom('approval_request').select('id').where('owner_company_id', '=', subject.id).orderBy('id').execute();
+    data['approval-routes'] = { routes: await each(routes, (r) => approvalRoutes.getRoute(state, r.id)),
+      requests: await each(requests, (r) => approvalRoutes.getRequest(state, r.id)), delegations: await approvalRoutes.listDelegations(state) };
+    const suppliers = new SupplierBaseService(ctx, principals, new NoSupplierBaseMandates(), sanctionsScreening);
+    const records = await trx.selectFrom('supplier_record').select('id').where('owner_company_id', '=', subject.id).orderBy('id').execute();
+    const counterparties = await trx.selectFrom('external_counterparty').select('id').where('owner_company_id', '=', subject.id).orderBy('id').execute();
+    data['supplier-base'] = { records: await each(records, async (r) => ({ record: await suppliers.getSupplier(state, r.id), assessments: await suppliers.listAssessments(state, r.id) })),
+      counterparties: await each(counterparties, (r) => suppliers.getCounterparty(state, r.id)) };
   }
   const plans = new PlansService(ctx, principals, identity.participations, new NoPlanMandates(), new FileLicensingFacets());
   const planRows = projectIds.length ? await trx.selectFrom('plan').select(['id', 'project_id']).where('project_id', 'in', projectIds).orderBy('id').execute() : [];
@@ -89,12 +153,26 @@ export async function composeModuleExports(input: {
     communications.channels = await comms.listGrants(state);
   }
   data.communications = communications;
-  const accounts = await billingAccounts.listForParty(trx, subject);
-  const budgets = await trx.selectFrom('budget').selectAll().where(subject.kind === 'person' ? 'owner_person_id' : 'owner_company_id', '=', subject.id).orderBy('id').execute();
-  data.billing = {
-    accounts: await each(accounts, async (account) => ({ account, subscriptions: await subscriptions.listForAccount(trx, account.id),
-      acceptances: (await priceAcceptances.listForAccount(trx, account.id)).map(toPriceAcceptance) })),
-    budgets: await each(budgets, async (b) => ({ budget: toBudget(b), reservations: (await trx.selectFrom('reservation').selectAll().where('budget_id', '=', b.id).orderBy('id').execute()).map(toReservation) })),
-  };
+  const consultations = new ConsultationsService(ctx, principals, new NoConsultationMandates(), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate());
+  const consultationRequests = await trx.selectFrom('consultation_request').select('id').where((eb) => subject.kind === 'company'
+    ? eb('offering_owner_company_id', '=', subject.id)
+    : eb.or([eb('requester_person_id', '=', subject.id), eb('offering_owner_person_id', '=', subject.id)])).orderBy('id').execute();
+  const bookings = await trx.selectFrom('consultation_booking').select('id').where((eb) => subject.kind === 'company'
+    ? eb('seller_company_id', '=', subject.id)
+    : eb.or([eb('client_person_id', '=', subject.id), eb('seller_person_id', '=', subject.id)])).orderBy('id').execute();
+  const offerings = (await consultations.listOfferings(state)).offerings.filter((r) => r.owner.kind === subject.kind && r.owner.id === subject.id);
+  data.consultations = { offerings, requests: await each(consultationRequests, (r) => consultations.getRequest(r.id, state)),
+    bookings: await each(bookings, (r) => consultations.getBooking(r.id, state)),
+    ...(subject.kind === 'person' ? { mentoring: await consultations.listMentoring(state) } : {}) };
+  if (subject.kind === 'person') {
+    const goals = new GoalsService(ctx, principals);
+    // A person's export never includes an employer's private goals/reports or another agent's internal state.
+    const ownGoals = await trx.selectFrom('goal').select('id').where('principal_person_id', '=', subject.id).where('on_behalf_company_id', 'is', null).orderBy('id').execute();
+    const reports = await trx.selectFrom('agent_report').selectAll().where('author_person_id', '=', subject.id).where('principal_company_id', 'is', null).orderBy('id').execute();
+    const subscriptions = await trx.selectFrom('job_subscription').selectAll().where('principal_person_id', '=', subject.id).where('on_behalf_company_id', 'is', null).orderBy('id').execute();
+    data['assistant-goals'] = { goals: await each(ownGoals, (r) => goals.getGoal(r.id, state)), reports: reports.map((r) => reportView(r, subject.id)),
+      subscriptions: subscriptions.map(jobSubscriptionView) };
+  }
+  data.billing = await exportOwnBilling(trx, subject);
   return data;
 }

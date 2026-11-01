@@ -14,23 +14,23 @@ Existing issue #93 claim remains active; continuation heartbeat: https://github.
 | Unregistered unconditional marketing objection | Constant public acknowledgement, minimal MAIL-compatible hashes, no subject read/erasure oracle | Implemented; restricted-PG tests pass |
 | Contact dispatch serialization | Worker transaction port; both race orders and rollback/retry; existing MAIL unsubscribe table populated | Real final-dispatch hook remains a coordinated SANC seam |
 | Configured fake DROP | Typed fake, bounded intake, pack cadence/deadline, UNKNOWN/unavailable and concurrent polls | Implemented intake; proof still required |
-| Full own-data export | Complete 32-module inventory; additional identity, billing, plans, communications, support, reputation, execution, trust and tasks owning projections | Partial; complete remains false |
+| Full own-data export | Complete 32-module inventory; additional identity/sessions, billing, plans, communications, support, reputation, execution, trust, tasks, consultations, content, company approval routes/supplier base, personal agent reports, connections, legal acceptances, minimal screening status and clean local file bytes | Partial; complete remains false |
 | Ended paid plan and authority boundaries | Exact ended paid subscription; counterparty budget/private fields excluded; company membership revoked before delivery | Restricted-PG/API tests pass |
-| Nonparticipant source proof | Exact field/action/source digest, opaque capability, current human case grant and recorded internal verification note | Implemented intake; no generic address erase authority |
-| Source refresh | Actual SRC staging insert consults durable do-not-collect | Implemented; pending batch activation/public projection integration remains |
+| Nonparticipant source proof | Exact field/action/source digest, opaque capability, current human case grant and recorded internal verification note | Public capability submission implemented; issuer still requires an existing real support case/grant; no generic address erase authority |
+| Source refresh | Actual SRC staging, previously staged batch activation and public provenance consult durable do-not-collect | Implemented; both collection orderings covered |
 | Sourced correction/deletion | Proof-bound pending requests, source revision invalidation, immutable original provenance | Owning correction/deletion operation still missing |
 | Two-person plan | Real ADM proposal/approval, exact inventory/digest, distinct humans, current case grants, authority fingerprint, hold/policy/subject locks | Execution admission implemented; every missing owning operation explicitly refused |
 | Agent limitations | Existing service denies delegated principals; no decision/execute capability in Draft type | Operator-agent Draft runtime integration still missing |
 | Retained journal | Independent identity/checkpoint preserved; withDecision now spans local DB callback; withRestore spans commit/fence lift; no TTL takeover or bootstrap | Focused cross-process/PG tests pass |
-| Restore CLI/physical drill | Local wrapper requires independent provisioned binding; physical/PITR synthetic privacy fixture added to existing drill | Restricted-PG CLI tests pass; physical execution awaits current-head CI |
+| Restore CLI/physical drill | Local wrapper requires independent provisioned binding; physical/PITR synthetic privacy fixture added to existing drill | Restricted-PG CLI tests pass; physical/PITR CI passed at 63146e0a; final-head rerun pending |
 | Retrieval/federation | Typed durable intents in replay transaction; isolated idempotent consumers, unknown-before-effect, process death/reconciliation | Consumer tests pass; owning ID/revision mapping and runtime registration absent; no send success claimed |
-| Exact-head full gate | Earlier first continuation head green; new implementation not yet pushed at this report revision | Current-head CI pending |
+| Exact-head full gate | 63146e0a physical/browser/stack passed; full check found three boundary violations, now corrected without weakening tests | Current-head CI pending |
 
 The complete module-by-module inventory is maintained in `docs/data/privacy-operations.md` and enforced against all API module directories. No unavailable module is omitted or reported exported/deleted. No package object/status was marked done; no dependent package was unlocked.
 
 ## Commands and evidence
 
-Current source tree before the implementation commit (the PR body records its resulting full SHA):
+Prior implementation evidence at `63146e0adea973c9994378bf46e2e2bf1f36b36b` (not final-head acceptance):
 
 | Command | Exit | Result |
 |---|---:|---|
@@ -51,7 +51,7 @@ Prior evidence, not promoted to current-head acceptance:
 ## Concrete engineering seams and owner-only decisions
 
 1. Active SANC: final MAIL dispatch transaction must call the worker contact barrier after the existing mail-row lock, holding it through transport/commit. Existing unknown-outcome reconciliation remains authoritative. Conductor was asked in issue #93; no response observed yet. No concurrent edits to those active files.
-2. SRC: staged-before-objection activation/public projection consumption and actual append-only correction/deletion resolution remain engineering work. Current intake and refresh insert guard are real, not a fake queue.
+2. SRC/SUP: staging, activation and public projection barriers now operate on real paths. Actual append-only correction/deletion resolution remains an owning command gap. The public request needs no session, but the verifying staff issuer uses a real case/grant, and current support case creation requires an existing requester/subject. A fully unregistered case port must avoid creating fake persons.
 3. Every owning module: complete export history/enumeration, authorized retention/redaction/pseudonymization operations and version fingerprints are required. Current safe gaps are explicit; no permissive substitute authorizer was created.
 4. Retrieval/federation: owning adapter must map a retained instruction to actual canonical object/revision/signature semantics and register its consumer. Unconfigured intents remain pending; unknown results are reconciled, not resent blindly.
 5. Operator-agent Draft integration needs the active operator-grant port. No human decision/execute method is exposed through a delegated principal.
@@ -63,4 +63,12 @@ These are concrete integration gaps and excluded production activities, not inve
 
 Draft continuation: https://github.com/Contribuda/trustwork/pull/502. Existing #93 claim/accepted heartbeat retained. New branch `work/PRV-001/continuation`; #471 is merged and receives no new commits. The original work branch is preserved.
 
-Additive migration timestamps 20261114100000 through 20261114100300 sort after the latest migration on fetched main (20261106100000). No applied migration, root dependency/config/lockfile was changed. Three newer main commits contain documentation/prototype/package work; published continuation history was not rewritten. All upstream package objects are preserved by leaving the package JSON untouched and making a narrow privacy status-row change.
+Additive migration timestamps 20261114100000 through 20261114100500 sort after the latest migration on fetched main (20261106100000). No applied migration, root dependency/config/lockfile was changed. Three newer main commits contain documentation/prototype/package work; published continuation history was not rewritten. All upstream package objects are preserved by leaving the package JSON untouched and making a narrow privacy status-row change.
+
+## Later continuation evidence
+
+- Implementation commit `63146e0adea973c9994378bf46e2e2bf1f36b36b`: physical restore/PITR CI [run 41278022926](https://github.com/Contribuda/trustwork/actions/runs/41278022926), exit 0, 1 passed. Actual archive-end and earlier PITR both restored privacy correction redaction, minimal suppression, owning MAIL suppression and a denied worker contact barrier. Measured recovery 4.9 seconds, data-loss window 5.5 seconds. This is privacy-owned redaction, not whole-subject deletion.
+- Full check on that commit: 2463 tests, 2456 passed, 3 failed, 4 expected opt-in skips. The failures were architecture boundaries for admin inventory, support composition and direct billing table reads. The follow-up moves inventory to contracts, supplies support through app.module.ts and creates an isolated billing-owned projection. Boundary tests are unchanged and pass (16 tests, exit 0).
+- Further focused exporter/source/plan checks before the final architecture adjustment: 50 passed, exit 0; local binary/digest check set: 16 passed, exit 0. Follow-up combined checks on the implementation sources before commit: `node --import tsx --test --test-concurrency=1 tests/privacy/*.test.ts tests/data/access.test.ts tests/admin/boundaries.test.ts tests/billing/policy.test.ts tests/support/boundaries.test.ts`, exit 0, 110 passed, 0 failed/skipped. Root types, changed-file lint, docs and diff checks each exit 0. PostgreSQL backend was Docker 18.3, with one focused PRV runner; no local full gate. An initial run exposed a missing local sequential helper in the new billing projection; it was fixed before these passing checks.
+
+Current export still excludes unavailable module histories and supports local binary payloads only up to 16 MiB per file / 64 MiB total; larger files carry streaming_export_required. No complete:true is emitted. The full CI checkbox remains unchecked until the final full SHA passes.
