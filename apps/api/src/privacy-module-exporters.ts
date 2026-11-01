@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { createHash } from 'node:crypto';
 import { OAuthService } from './modules/connections/oauth/oauth.service.js';
 import { oauthSettingsFromEnv } from './modules/connections/oauth/config.js';
@@ -81,6 +82,7 @@ export async function composeModuleExports(input: {
     const artifacts = await trx.selectFrom('evidence_artifact').selectAll().where(subject.kind === 'person' ? 'owner_person_id' : 'owner_company_id', '=', subject.id).orderBy('id').execute();
     let remainingBytes = 64 * 1024 * 1024;
     data.files = await each(artifacts, async (r) => {
+      if (r.scan_state === 'clean') await sql`SELECT trustwork.files_privacy_export_lock(${r.id}::uuid)`.execute(trx);
       const metadata = await files.get(r.id, state);
       if (r.scan_state !== 'clean') return { metadata, binaryStatus: 'scan_unavailable' };
       if (fileOptions.store!.kind !== 'filesystem') return { metadata, binaryStatus: 'external_storage_adapter_required' };

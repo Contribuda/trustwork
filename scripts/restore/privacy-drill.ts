@@ -5,14 +5,16 @@ import { mailAddressHash } from '../../packages/data/src/repositories/mail.js';
 import { provisionLocalPrivacyJournal, replayPrivacyLedger, type LocalJournalBinding, type PrivacyErasureLedger } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { inOwnerTransaction } from '../../infra/backup/src/retention.js';
 import { runLocalPrivacyRestoreCli } from './cli.js';
+import { provisionSourceDrill, recordSourceDrill, verifySourceDrill, type SourceDrillFixture } from './privacy-source-drill.js';
 import type { RestoreProject } from './stage.js';
 
 /** Synthetic privacy-owned redaction only; never claims that another module's subject records were erased. */
 export interface PrivacyDrillFixture {
+  sourceV2?: SourceDrillFixture;
   binding: LocalJournalBinding; ledger: PrivacyErasureLedger; requestId: string; subjectId: string; approverId: string;
   contactDigest: string; sourceDigest: string; sourceFieldId: string; sourceRecordId: string; hubId: string;
 }
-export async function provisionPrivacyDrill(work: string, admin: pg.Pool, people: string[]): Promise<PrivacyDrillFixture> {
+async function provisionPrivacyBase(work: string, admin: pg.Pool, people: string[]): Promise<PrivacyDrillFixture> {
   const binding = { authorityDirectory: join(work, 'privacy-authority'), journalDirectory: join(work, 'privacy-journal'), journalId: randomUUID() };
   const ledger = await provisionLocalPrivacyJournal(binding);
   const client = await admin.connect();
@@ -46,6 +48,11 @@ export async function provisionPrivacyDrill(work: string, admin: pg.Pool, people
     });
   } finally { client.release(); }
 }
+export async function provisionPrivacyDrill(work: string, admin: pg.Pool, people: string[]): Promise<PrivacyDrillFixture> {
+  const fixture = await provisionPrivacyBase(work, admin, people);
+  fixture.sourceV2 = await provisionSourceDrill(admin, fixture);
+  return fixture;
+}
 export async function recordPrivacyDrill(fixture: PrivacyDrillFixture, admin: pg.Pool): Promise<void> {
   await fixture.ledger.withDecision({ version: 1, requestId: fixture.requestId, subject: { kind: 'person', id: fixture.subjectId },
     executedBy: fixture.subjectId, approvedBy: fixture.approverId, policyDigest: 'a'.repeat(64), recordedAt: new Date().toISOString(),
@@ -53,6 +60,7 @@ export async function recordPrivacyDrill(fixture: PrivacyDrillFixture, admin: pg
     const client = await admin.connect();
     try { await inOwnerTransaction(client, () => replayPrivacyLedger(client, [entry])); } finally { client.release(); }
   });
+  await recordSourceDrill(admin, fixture);
 }
 export async function authorizePrivacyDrill(fixture: PrivacyDrillFixture, connectionString: string, project: RestoreProject, restoreId: string): Promise<string> {
   const output: string[] = []; const errors: string[] = [];
@@ -79,7 +87,7 @@ export async function verifyPrivacyDrill(fixture: PrivacyDrillFixture, admin: pg
           SELECT hub_id,record_kind,record_id,field,value,source_id,import_batch_id FROM trustwork.sourced_record_field WHERE id=$1`, [fixture.sourceFieldId]);
       } catch (error) { if ((error as { hint?: string }).hint !== 'privacy.do_not_collect') throw error; reimportDenied = true; }
       await client.query('ROLLBACK TO SAVEPOINT privacy_reimport');
-      return { correctionRedacted: JSON.stringify(row?.correction) === '{"redacted":true}', subjectNotClaimedDeleted: row?.state === 'open',
+      return { ...await verifySourceDrill(client, fixture), correctionRedacted: JSON.stringify(row?.correction) === '{"redacted":true}', subjectNotClaimedDeleted: row?.state === 'open',
         minimalSuppressionRestored: suppression === 2, owningMailSuppressionRestored: mail === 1, deliveryBarrierDenied: !allowed,
         sourceProjectionSuppressed: projected.fields.length === 0, sourceReimportDenied: reimportDenied,
         sourceEvidencePreserved: source?.value === 'Synthetic retained source evidence' };
