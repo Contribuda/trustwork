@@ -44,6 +44,9 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
       'admin.hub.read', 'admin.hub.identity.edit', 'admin.hub.modes.edit', 'admin.hub.lifecycle.request', 'admin.hub.launch.check', 'admin.hub.legal.edit',
       'admin.taxonomy.read', 'admin.staff.read', 'admin.audit.read', 'admin.federation.read', 'admin.trust.method.release', 'admin.agents.read',
       'admin.providers.read', 'admin.pipelines.read', 'admin.publications.read', 'admin.claims.read', 'admin.observability.read',
+      // HUBC-005: the hub owner drafts the agent product (modules, policy, extensions, jurisdiction settings) and reads its modules and billing.
+      'admin.agents.modules.edit', 'admin.agents.policy.edit', 'admin.agents.extensions.edit', 'admin.hub.jurisdiction.edit', 'admin.matching.read',
+      'admin.matching.policy.edit', 'admin.events.read', 'admin.learning.read', 'admin.commerce.flows.read', 'admin.commerce.usage.read', 'admin.notifications.read',
     ],
   },
   'staff-admin': { scopes: ['platform', 'node', 'hub'], permissions: ['admin.hub.read', 'admin.staff.read', 'admin.staff.assign', 'admin.staff.revoke', 'admin.staff.conflict.declare'] },
@@ -53,6 +56,8 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
       'admin.hub.read', 'admin.hub.legal.edit', 'admin.hub.legal.activate', 'admin.hub.residency.edit', 'admin.hub.country.edit', 'admin.hub.launch.check',
       'admin.hub.lifecycle.request', 'admin.claims.read', 'admin.claims.policy.edit', 'admin.providers.read', 'admin.providers.egress.edit', 'admin.sources.read',
       'admin.datasets.read', 'admin.federation.read',
+      // HUBC-005: the compliance officer is the second person for commitment modules, extensions and jurisdiction settings.
+      'admin.agents.read', 'admin.agents.modules.activate', 'admin.agents.extensions.activate', 'admin.hub.jurisdiction.activate',
     ],
   },
   'editor-in-chief': {
@@ -62,6 +67,10 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
       'admin.issues.read', 'admin.issues.curate', 'admin.issues.release', 'admin.issues.correct', 'admin.editorial.items.review', 'admin.editorial.calendar.edit',
       'admin.editorial.automation.edit', 'admin.pipelines.read', 'admin.pipelines.edit', 'admin.sources.read', 'admin.taxonomy.read', 'admin.taxonomy.edit',
       'admin.events.read', 'admin.learning.read',
+      // HUBC-005: plan templates, shared knowledge, events and learning review, communications.
+      'admin.planner.templates.edit', 'admin.planner.templates.publish', 'admin.knowledge.shares.review', 'admin.events.review', 'admin.events.policy.edit',
+      'admin.learning.review', 'admin.learning.accreditation.record', 'admin.learning.certificate.revoke', 'admin.notifications.read',
+      'admin.notifications.template.edit', 'admin.notifications.broadcast',
     ],
   },
   editor: {
@@ -69,6 +78,8 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
     permissions: [
       'admin.publications.read', 'admin.publications.review', 'admin.editorial.items.review', 'admin.issues.read', 'admin.events.read', 'admin.events.review',
       'admin.learning.read', 'admin.learning.review', 'admin.notifications.read', 'admin.taxonomy.read',
+      // HUBC-005: editors draft plan templates and message templates and review shared knowledge.
+      'admin.planner.templates.edit', 'admin.knowledge.shares.review', 'admin.notifications.template.edit',
     ],
   },
   moderator: {
@@ -84,6 +95,8 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
       'admin.claims.read', 'admin.claims.decide', 'admin.claims.clarify', 'admin.claims.revoke', 'admin.trust.evidence.decide', 'admin.trust.exclude',
       'admin.trust.appeals.decide', 'admin.credentials.types.edit', 'admin.credentials.issue', 'admin.credentials.revoke', 'admin.people.consent.read',
       'admin.people.consent.record', 'admin.people.portrait.licence', 'admin.people.flag', 'admin.matching.read',
+      // HUBC-005: matching method versions are released by trust review, not by the people who sell plans.
+      'admin.matching.method.release',
     ],
   },
   'support-agent': { scopes: ['platform', 'node', 'hub'], permissions: SUPPORT_AGENT },
@@ -117,6 +130,8 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
       'admin.models.route.edit', 'admin.usage.read', 'admin.pipelines.read', 'admin.pipelines.run', 'admin.pipelines.pause', 'admin.retrieval.read',
       'admin.retrieval.reindex', 'admin.agents.read', 'admin.agents.kill', 'admin.ops.backups.read', 'admin.ops.locales.read', 'admin.notifications.read',
       'admin.assistant.reconcile', 'admin.commerce.flows.read',
+      // HUBC-005: suspending an extension is one person; message templates are activated by operations.
+      'admin.agents.extensions.suspend', 'admin.agents.clients.manage', 'admin.notifications.template.edit',
     ],
   },
   'privacy-officer': {

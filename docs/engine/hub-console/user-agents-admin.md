@@ -36,7 +36,7 @@ Owner decision of 2026-10-31 ([ADR 010](../../adr/010-gathering-point-hubs-agent
 | Agent functionality | Kill switches: global, per module, per capability, per extension | Release | AGT-003, AGT-023 |
 | Agent functionality | Audit of every change; preview before activation | Not applicable | AGT-003, AGT-004, MODEL-001, HUBC-005, HUBC-009 |
 
-The console screens for these controls are built on fixtures by HUBC-002 (keys and models) and HUBC-005 (agents and billing) and wired to the API by HUBC-008 and HUBC-009.
+The console screens for these controls are built on fixtures by HUBC-002 (keys and models) and HUBC-005 (agents and billing) and wired to the API by HUBC-008 and HUBC-009. Since HUBC-005 the agent and billing screens (HC-80 to HC-85, HC-90 to HC-95) are a **Demo** on synthetic fixtures: every activation shows its stored preview and only creates a second-person request, cohorts under ten read "fewer than 10", the guard rails below are shown locked, and the command evaluation refuses any field that names a guard rail or one participant. The API behind them (AGT-003, AGT-004, AGT-023, BILL-003, BILL-004) is still proposed.
 
 ### Guard rails no administrator can switch off
 
