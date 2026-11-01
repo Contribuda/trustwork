@@ -67,3 +67,5 @@ export * from './communications.js';
 // hub-core stays server-side.
 export { LegalDocumentKindSchema, NO_ACTIVE_TERMS_VERSION, PublicLegalDocumentSchema, PublicLegalDocumentsSchema, termsAcceptanceVersion } from './hub-core.js';
 export type { LegalDocumentKind, PublicLegalDocument, PublicLegalDocuments } from './hub-core.js';
+
+export * from './payments.js';

@@ -2076,7 +2076,7 @@
       "id": "PAY-001",
       "title": "Payment provider port: licensed providers only, webhook inbox and reconciliation",
       "area": "billing",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "BILL-001",
         "REL-001",

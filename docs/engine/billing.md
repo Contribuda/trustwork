@@ -102,3 +102,9 @@ The commission levels of the reference hub are an open owner question ([ADR 012]
 - Budgets never go negative under concurrency.
 - No entitlement, fee or commission changes ranking, matching, recommendations or reputation.
 - No configuration routes participants' funds through an account of the operator or of Trustwork.
+
+## PAY-001 durable payment boundary (partial)
+
+See [Getting paid: implementation checkpoint](modules/getting-paid.md#pay-001-implementation-checkpoint) for the exact engineering and acceptance boundary. Payment intents reuse the immutable commercial order's BILL-001 transaction reservation; they do not reserve or charge the order twice. The durable effect hold survives timeouts and expired customer-action deadlines. Verified late outcomes can close that original reservation after fresh dispatch authority is revoked; neither an inbox row nor a local timeout proves payment success or failure. Provider refunds reference that exact settled reservation and original connected account.
+
+Shipped provider registration is empty. No licensed rail, connected account or owning hub/country projection is assumed. Restricted or unknown screening refuses before dispatch; unsupported configured routes produce `outside_platform`. Cross-hub authority is currently unavailable, rather than inferred from the local screening answer. This checkpoint is not acceptance of PAY-001 and does not activate billing fees or money movement.

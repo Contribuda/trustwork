@@ -36,6 +36,8 @@ export const KNOWN_JOB_MODES: Readonly<Record<string, JobMode>> = {
   'agents.start_occurrence': 'transactional',
   'outbox.redeliver': 'transactional',
   'mail.deliver': 'external',
+  'payments.dispatch': 'external',
+  'payments.reconcile': 'external',
   'mail.feedback': 'transactional',
   'files.scan': 'external',
   'files.delete': 'external',
