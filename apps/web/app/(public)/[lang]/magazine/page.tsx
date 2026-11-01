@@ -97,7 +97,7 @@ export default async function MagazinePage({ params }: { params: LangParams }) {
                 <ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" />
               </NextLink>
             </div>
-            <IssueLeaf pages={buildLeafPages(current)} number={current.number} readerHref={current.readerHref} />
+            {!current.live ? <IssueLeaf pages={buildLeafPages(current)} number={current.number} readerHref={current.readerHref} /> : null}
           </div>
         </section>
       ) : null}

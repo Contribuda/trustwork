@@ -1,3 +1,4 @@
+import { PublicationProvenance } from './magazine/PublicationProvenance';
 import type { ReactNode } from 'react';
 import NextLink from '@/components/locale/LocalLink';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Clock } from 'lucide-react';
@@ -122,24 +123,25 @@ export function MaterialPage({ item, section, more, moreTitle, issue, author, ct
                     {item.correction ? <span className="feed-row__flag">{`${t('detail.updatedDate')} ${shortDate(item.correction.date)}`}</span> : null}
                   </p>
                 </header>
-                <div className="art-cover__media" aria-hidden="true">
+                {!item.live ? <div className="art-cover__media" aria-hidden="true">
                   <MediaFrame media={cover} ratio="fill" radius="none" loading="eager" sizes="(max-width: 767px) 100vw, 704px" />
-                </div>
+                </div> : null}
               </section>
-              <p className="art-cover__credit">
+              {!item.live ? <p className="art-cover__credit">
                 <span>{cover.alt}</span>
                 <span>{credit(item)}</span>
-              </p>
+              </p> : null}
 
               {item.correction ? (
                 <div className="art-correction" role="status">
                   <strong>{t('detail.correctionBanner', { date: longDate(item.correction.date) })}</strong> {typo(item.correction.note)} <a href="#history">{t('detail.history')}</a>
                 </div>
               ) : null}
+              <PublicationProvenance item={item} />
               <Prose family="serif" measure="reader">
                 {bodyNodes}
               </Prose>
-              {item.assistantAssisted ? <p className="art-note">{t('articles.assistantAssisted')}</p> : null}
+              {item.assistantAssisted && !item.content ? <p className="art-note">{t('articles.assistantAssisted')}</p> : null}
               {item.mentions.length ? (
                 <section className="art-block" aria-labelledby="mentions-title">
                   <h2 className="art-block__title" id="mentions-title">

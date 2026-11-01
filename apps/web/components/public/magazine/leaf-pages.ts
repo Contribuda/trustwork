@@ -1,6 +1,6 @@
 import type { GlossaryEntry, IssuePoll, IssueView, RubricKey } from '@/app/_lib/data/types';
 import { cover, issueCover, storyCover } from '@/app/_lib/media';
-import { longDate } from '@/app/_lib/i18n';
+import { longDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
 import { rubricLabel } from './rubric';
 
@@ -127,6 +127,6 @@ export function buildLeafPages(issue: IssueView): LeafPage[] {
     corrections: issue.corrections.map((c) => typo(c.summary)),
     glossary: issue.glossary.slice(0, 4),
   });
-  pages.push({ no: pages.length + 1, kind: 'back', number: issue.number, rubrics: issue.rubrics.map(rubricLabel), poll: issue.poll, nextDate: longDate(issue.nextReleaseAt) });
+  pages.push({ no: pages.length + 1, kind: 'back', number: issue.number, rubrics: issue.rubrics.map(rubricLabel), poll: issue.poll, nextDate: issue.nextReleaseAt ? longDate(issue.nextReleaseAt) : t('content.nextUnknown') });
   return pages;
 }

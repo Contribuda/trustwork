@@ -43,7 +43,7 @@ export function IssueHero({ issue, isCurrent, headingLevel = 2, contentsHref }: 
           ) : null}
           <li>
             <FileText size={15} strokeWidth={2} aria-hidden="true" />
-            {issue.pdf.state === 'ready' ? t('magazine.pagesCount', { count: issue.pdf.pages }) : t('magazine.pdfPending')}
+            {issue.pdf.state === 'ready' ? t('magazine.pagesCount', { count: issue.pdf.pages }) : issue.pdf.state === 'available' ? t('magazine.downloadPdf') : t('magazine.pdfPending')}
           </li>
         </ul>
         {issue.edition > 1 ? (

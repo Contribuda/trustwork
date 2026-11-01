@@ -2,7 +2,7 @@
 
 Normative requirements: [News, articles, magazine and the editorial office](modules/publishing-and-editorial.md). Participants: [who uses what](participants/README.md).
 
-Requirements R17, R18. Status: issues, covers, reader, archive, rubric pages and RSS are **Demo**; issues, editions, corrections, render records and local digests are **Live** as an API (CNT-001; the reading pages still use demo data); the PDF layout pipeline is **Designed**; cross-hub digests are **Proposed**; the personalized journal is an **open opportunity**.
+Requirements R17, R18. Status: issues, editions, corrections, render records and local digests are **Live** as an API (CNT-001). The curated reader, archive, rubric pages and RSS/Atom/JSON Feed now use that API; the opt-in local PDF worker persists revision-bound bytes and guards delivery (CNT-003). Demo mode retains the synthetic preview. Public editorial provenance and stale-translation semantics require a contract, and manual screen-reader acceptance remains pending ([boundaries](../design/magazine/CNT-003-reader-boundaries.md)); cross-hub digests are **Proposed**; the personalized journal is an **open opportunity**.
 
 A news feed tells you what happened. A magazine tells you what mattered. Every hub can publish a numbered weekly issue, curated by its editors, that people read on a phone in a minute or download as a properly laid-out PDF for the weekend.
 
@@ -16,7 +16,7 @@ A news feed tells you what happened. A magazine tells you what mattered. Every h
 draft → curated → review → released → corrected edition (new revision)
 ```
 
-## Reading (Demo)
+## Reading (live API and synthetic demo)
 
 | Surface | What it does |
 |---|---|

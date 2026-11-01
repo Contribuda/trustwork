@@ -45,3 +45,7 @@ Scheduled publications are released by the worker entry point `content_publish_d
 - Topics are exposed as taxonomy codes in the contract's `topicIds`.
 - Agents cannot write publications yet (`403 access.mandate_scope`): no mandate kind covers publishing; drafting assistance is labelled through `assistantAssisted`.
 - Not wired yet: the worker loop for `content_publish_due`, the PDF renderer (Designed), hub configuration for review formats and comments (HUB-001), sanctions enforcement for posting bans, the web pages (fixtures today), the capability registry entries.
+
+## CNT-003 reader and PDF delivery
+
+Public reader schemas are shared unchanged from `packages/contracts/src/content-reader.ts`. The live DataPort consumes publications, version pins, archive and issue projections; workspace publication rows retain the caller session. `GET` and `HEAD /v1/magazine/issues/:number/pdf?edition=N` deliver only a durable local artifact whose captured public/licence projection still matches. The route returns 404 when unavailable and uses `private, no-store`; it never accepts a URL or fetches a remote asset. The local worker is opt-in with `CONTENT_PDF_RENDERER=local`. See [implementation boundaries](../../../../../docs/design/magazine/CNT-003-reader-boundaries.md) for provenance fields that remain proposed rather than inferred.

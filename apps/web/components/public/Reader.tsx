@@ -219,7 +219,7 @@ export function Reader({
     <div className={`mgr${useSpread ? ' is-spread' : ''}`} data-theme={theme}>
       <header className="mgr__bar" aria-label={t('reader.label')}>
         <div className="mgr__bar-left">
-          <NextLink href={issue.href} className="mgr__back">
+          <NextLink href={issue.href} className="mgr__back" aria-label={t('reader.backToIssue')}>
             <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
             <span>{t('reader.backToIssue')}</span>
           </NextLink>
@@ -237,7 +237,7 @@ export function Reader({
           </button>
         </div>
         <div className="mgr__bar-right">
-          <button type="button" className="mgr__ctl mgr__ctl--text mgr__ctl--toc" onClick={() => setTocOpen(true)}>
+          <button type="button" className="mgr__ctl mgr__ctl--text mgr__ctl--toc" aria-label={t('reader.contents')} onClick={() => setTocOpen(true)}>
             <List size={16} strokeWidth={2} aria-hidden="true" />
             <span>{t('reader.contents')}</span>
           </button>
@@ -391,7 +391,7 @@ export function Reader({
             {item.isCorrected ? (
               <div className="mg-banner mgr__banner" role="status">
                 <span className="mg-banner__body">
-                  {t('common.corrected')}: {correction ? typo(correction.summary) : t('magazine.edition', { edition: issue.edition, date: longDate(issue.releasedAt) })}
+                  {t('common.corrected')}: {item.correctionNote ? typo(item.correctionNote) : correction ? typo(correction.summary) : t('magazine.edition', { edition: issue.edition, date: longDate(issue.releasedAt) })}
                 </span>
                 <NextLink href={`${issue.href}#corrections`} className="mg-banner__link">
                   {t('magazine.corrections')}
@@ -478,7 +478,7 @@ export function Reader({
                   <div className="mgr__done">
                     <span className="mgr__done-title">{t('magazine.finishedTitle', { number: issue.number })}</span>
                     <span className="mgr__done-body">
-                      {t('magazine.finishedBody', { date: nextDate })}
+                      {nextDate ? t('magazine.finishedBody', { date: nextDate }) : null}
                       {totals.total ? ` ${t('magazine.quizIssueScore', { score: totals.score, total: totals.total })}.` : ''}
                     </span>
                     <span className="mgr__done-actions">

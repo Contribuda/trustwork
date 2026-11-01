@@ -1553,7 +1553,7 @@
       "id": "CNT-003",
       "title": "News, articles and the magazine on the API, with the PDF layout",
       "area": "content-magazine",
-      "status": "open",
+      "status": "in_review",
       "dependsOn": [
         "CNT-001",
         "WEB-004"
@@ -1580,12 +1580,12 @@
         "Every image in a rendered page or PDF has alt text or is marked decorative; a rendered byline never names AI as author (tests)."
       ],
       "paths": [
-        "apps/web/app/(public)/news",
-        "apps/web/app/(public)/articles",
-        "apps/web/app/(public)/magazine",
+        "apps/web/app/(public)/[lang]/news",
+        "apps/web/app/(public)/[lang]/articles",
+        "apps/web/app/(public)/[lang]/magazine",
         "apps/web/components/public/magazine",
         "apps/web/app/app/publications",
-        "apps/worker/src/render",
+        "apps/worker/src/content",
         "docs/design/magazine",
         "tests/web/content"
       ]

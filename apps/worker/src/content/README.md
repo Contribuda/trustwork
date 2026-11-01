@@ -1,0 +1,9 @@
+# Local content PDF worker (CNT-003)
+
+Enable with `CONTENT_PDF_RENDERER=local` on the existing worker. Chromium must already be installed locally; this module does not install a browser, fetch fonts or access a provider. No root dependency or configuration changes are required in the development workspace. A production packaging decision for the local Chromium runtime remains with maintainers.
+
+`registerContent` consumes CNT-001 `issue.render_requested` domain events and enqueues transactional `content.render_pdf` jobs. `content_render_prepare` resolves the render record to its released revision, serializes by revision and returns only public pinned content. `renderLocalPdf` escapes all text, disables JavaScript and blocks every network request. `content_render_finish` rechecks the projection and stores bounded bytes with SHA-256; the worker completes the job with its existing fencing check in the same transaction. Nothing durable occurs outside PostgreSQL.
+
+Duplicate jobs reuse the completed record. Separate render requests for one revision reuse the single blob. A crash/abort rolls the transaction back, so the existing transactional reconciliation protocol is safe. A licence/projection change before completion records failure; a change after completion makes delivery unavailable. The downloader never serves stale bytes from a cache. No automatic publication, scheduling policy, AI author, source preview or image import is added.
+
+See [reader boundaries](../../../../docs/design/magazine/CNT-003-reader-boundaries.md) for public provenance gaps and the conservative external-source rule. Run focused tests with `TRUSTWORK_TEST_PG_BACKEND=embedded TRUSTWORK_REQUIRE_PG=1 node --import tsx --test --test-reporter=spec tests/content/render.test.ts`. Set `CNT003_EVIDENCE_DIR` to retain the real PDF for page-by-page visual review.

@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "Բնագրի լեզուն՝ {language}",
+    "machineTranslation": "Մեքենայական աջակցությամբ թարգմանություն",
+    "retracted": "Հետ է կանչվել՝ {note}",
+    "withheld": "Այս նյութը հասանելի չէ։",
+    "sources": "Աղբյուրներ և արտոնագրեր",
+    "nextUnknown": "Հաջորդ համարի ամսաթիվը դեռ չի հայտարարվել։",
+    "pdfEdition": "Համար {number} · Հրատարակություն {edition} · {date}",
+    "pdfVersion": "Տարբերակ {version} · Լեզու՝ {language}",
+    "pdfCorrection": "Ուղղում՝ {note}",
+    "pdfAssisted": "Պատրաստվել է ԱԲ աջակցությամբ. պատասխանատվությունը կրում են նշված հեղինակները։"
+  }
+}

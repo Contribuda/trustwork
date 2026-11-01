@@ -1,0 +1,14 @@
+{
+  "content": {
+    "original": "Asl matn tili: {language}",
+    "machineTranslation": "Mashina yordamida tarjima",
+    "retracted": "Qaytarib olindi: {note}",
+    "withheld": "Bu material mavjud emas.",
+    "sources": "Manbalar va litsenziyalar",
+    "nextUnknown": "Keyingi son sanasi hali eʼlon qilinmagan.",
+    "pdfEdition": "Son {number} · Nashr {edition} · {date}",
+    "pdfVersion": "Versiya {version} · Til: {language}",
+    "pdfCorrection": "Tuzatish: {note}",
+    "pdfAssisted": "Sun’iy intellekt yordamida tayyorlangan; javobgarlik ko‘rsatilgan mualliflarda qoladi."
+  }
+}

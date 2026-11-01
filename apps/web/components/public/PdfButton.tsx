@@ -1,15 +1,12 @@
 'use client';
 
-import { Button, TooltipTrigger, Tooltip } from '@trustwork/ui';
+import { Button, ButtonLink, TooltipTrigger, Tooltip } from '@trustwork/ui';
 import type { IssueView } from '@/app/_lib/data';
 import { t } from '@/app/_lib/i18n';
 
-/**
- * PDF action for an issue. The download endpoint (`/magazine/[issue]/pdf`) is CNT-001's: until it exists
- * both states render a disabled button (`aria-disabled`, reason in a tooltip and in visually hidden text):
- * «PDF готовится» when no artifact exists for the edition, «PDF будет доступен после запуска» (with size) when it does.
- */
+/** Downloads a guarded live artifact; demo previews and pending editions remain unavailable. */
 export function PdfButton({ pdf, size = 'md' }: { pdf: IssueView['pdf']; size?: 'sm' | 'md' }) {
+  if (pdf.state === 'available') return <ButtonLink href={pdf.href} variant="secondary" size={size}>{t('magazine.downloadPdf')}</ButtonLink>;
   const ready = pdf.state === 'ready';
   const label = ready ? `${t('magazine.pdfAfterLaunch')} · ${t('magazine.downloadPdfMeta', { size: pdf.size })}` : t('magazine.pdfPending');
   const reason = ready ? t('magazine.pdfAfterLaunchReason') : t('magazine.pdfPendingReason');

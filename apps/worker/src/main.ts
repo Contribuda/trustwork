@@ -3,6 +3,7 @@ import type { DataPool } from '@trustwork/data';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { workerConfigFromEnv } from './config.js';
 import { consultationRemindersTask, registerConsultationReminders, ReminderChannelFake, type ReminderRuntime } from './consultations/reminders.js';
+import { registerContent } from './content/index.js';
 import { assertWorkerRole, createWorkerPool } from './db.js';
 import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntime } from './files/index.js';
 import { HandlerRegistry } from './handlers.js';
@@ -30,13 +31,14 @@ import { Worker } from './worker.js';
  * search projections and other consumers come later. Events of other types are marked published and counted as
  * `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export interface Domains { consultations?: ReminderRuntime | null; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
+export interface Domains { consultations?: ReminderRuntime | null; contentRenderer?: boolean; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
   // AST-001: agent action dispatch and reconciliation; only fake effect providers exist (ASSISTANT_EFFECTS=fake).
   if (domains.assistant) registerAssistant(registry, domains.assistant);
   // CONS-001: existing consultation context reminders; only a recording channel fake is configured.
   if (domains.consultations) registerConsultationReminders(registry, domains.consultations);
+  if (domains.contentRenderer) registerContent(registry);
   // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
   if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
   registerMail(registry, { consultationHubId: domains.consultations?.hubId ?? null, pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
@@ -68,7 +70,7 @@ async function main(): Promise<void> {
   const screening: ScreeningRuntime = { pool, metrics, log, config: screeningConfigFromEnv(process.env) };
   const rescreen: RescreenRuntime = { pool, metrics, log, config: rescreenConfigFromEnv(process.env), screening: screening.config };
   const consultations: ReminderRuntime | null = hubId ? { pool, hubId, render: mail.render, channels: new ReminderChannelFake() } : null;
-  const registry = buildRegistry({ consultations, pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
+  const registry = buildRegistry({ consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
     tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
