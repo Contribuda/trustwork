@@ -1,3 +1,6 @@
+import { taskFixture } from '../../../billing/fees/task-fixture.js';
+import { billingFees } from '../../../../packages/data/src/repositories/billing-fees.js';
+import { setTimeout as delay } from 'node:timers/promises';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { withMaintenance, withPrincipal, type Transaction } from '@trustwork/data';
@@ -54,6 +57,21 @@ export default {
       const approval = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'billing.activate_fee_version',scope:{kind:'hub',hubId:setup.hubId},actionDigest:f.digest}));
       await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,approval.id,'approve',f.digest));
       await exactlyOnce({action:'billing.fee_activate',client:activator,url:`/v1/admin/billing/fees/${f.id}/activate`,body:{reason:'Synthetic crash test',digest:f.digest,approvalId:approval.id},effects:()=>count('billing.fee_activated')});
+      const starts = new Date(Date.now()+2500);
+      for (const payer of ['buyer','seller'] as const) {
+        const fee = await as(h,setup.drafter,(trx,ctx)=>billingFees.draft(trx,ctx,setup.hubId,syntheticTerms({kind:'task',categoryKey:null,payer,effectiveFrom:starts.toISOString(),effectiveTo:null})));
+        const permit = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'billing.activate_fee_version',scope:{kind:'hub',hubId:setup.hubId},actionDigest:fee.digest}));
+        await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,permit.id,'approve',fee.digest));
+        await as(h,setup.activator,(trx,ctx)=>billingFees.activate(trx,ctx,setup.hubId,fee.id,fee.digest,permit.id));
+      }
+      await delay(Math.max(0,starts.getTime()-Date.now()+10));
+      const task = await taskFixture(h,{buyerId:setup.drafter,sellerId:setup.activator,buyerEmail:'synthetic-crash-fee-drafter@example.invalid',sellerEmail:'synthetic-crash-fee-activator@example.invalid',hubA:setup.hubId,hubB:setup.hubId,buyerClient:drafter,sellerClient:activator});
+      try {
+        const prepared=await task.prepare();
+        await exactlyOnce({action:'billing.task_fee_disclose',client:task.buyer,url:prepared.disclose,body:{},effects:async()=>
+          (await h.db.admin.query<{n:number}>('SELECT count(*)::int n FROM trustwork.billing_fee_disclosure d JOIN trustwork.billing_fee_scope s ON s.id=d.scope_id WHERE s.source_kind=$1 AND s.source_id=$2',['task',prepared.offer.id])).rows[0]!.n});
+      } finally {await task.close();}
+
     } finally { await app.close(); }
   },
 } satisfies CrashCase;

@@ -1,0 +1,31 @@
+# Governed fees and public pricing (BILL-003)
+
+Agent: Codex CLI (OpenAI) for Parshkov
+
+Status: implementation in progress; not complete acceptance. No operational price is activated. All positive test rates and participants are synthetic. No provider, payment custody, account setup or deployment is introduced.
+
+## Authority and immutable versions
+
+`POST /v1/admin/billing/fees` drafts immutable terms for the server-configured hub. `POST /v1/admin/billing/fees/:id/activate` consumes a real scoped, elevated second-person approval for the exact canonical activation digest. The activator differs from the drafter and the approval's decision-maker differs from its requester. Database commands independently enforce live staff assignment, scope, elevation and audit; a request body cannot confer authority. Published intervals are immutable, half-open, cannot be backdated and cannot overlap general or matching category rates. Ordered advisory locks serialize concurrent activation and binding.
+
+`GET /v1/pricing` is anonymous and returns only explicit public serializers. It lists current and future approved, nonexpired fee versions, active plan/price pairs and published service/module prices. It excludes private staff, approval, payer and provider-cost fields. Missing model/capability sale-price readers and approved credit-pack validity are explicitly unavailable. LLM-001 (#123, PR #406) is merged but contains no such catalogue reader; execution accounting is not a public sale price. Existing meter rates cannot be mislabeled as an exact model/capability version. The page at `/pricing` and its six localized routes uses the same HTTP DataPort, all seven locales, the shared language picker, `Intl` and the brand module.
+
+## Confirmation adapters
+
+The internal `bookingFees` repository accepts only an existing immutable source scope. No HTTP command can manufacture a scope, choose participants or supply home hubs. A disclosure stores both public fee snapshots and its exact digest. Confirmation and binding recheck actor, home hub, source digest, active interval and original fee IDs. A successor never replaces an expired shown version. Binding is append-only and single-consumption; the owning acceptance transaction rolls it back on failure.
+
+- **Consultations:** integrated only after CONS-001 PR #392 merged. New source provenance comes from creation through each server-configured hub. Proposals pin both fees in the existing immutable terms digest; buyer acceptance and seller confirmation bind the exact shown versions in the same transactions. Existing privacy, source-hub and mail-locking behavior remains in the owning module. Historical commission test adapters are explicit constructor injections, never selectable through production request/configuration.
+- **Tasks:** creation records request/offer provenance. `POST /v1/billing/fees/task-offers/:id/disclosures` returns an authorized immutable snapshot. Both existing acceptance commands require `feeConfirmation: { disclosureId, digest }` on the production adapter. The original task offer/request and `trustwork-digest-1` agreement digests remain unchanged; separate bindings record the disclosed fees. Buyer mandate/private ceilings include the fee; seller private floors use net proceeds. Generic task rates work; no taxonomy-to-fee-category mapping is invented. Database guards require both bindings before assignment. Existing historical tests explicitly inject their legacy adapter.
+- **Tickets and courses:** no implemented owning booking/confirmation path exists on this base. The internal adapter and negative tests are present; no source scope means unavailable. There is no fabricated live ticket or course integration.
+- **RFQ/quote marketplace:** the real acceptance API exists, but the frozen `MarketplaceFeeKind` has no marketplace/category value and no accepted mapping to one of its four kinds. Its acceptance remains unchanged. This is an actual unresolved contract/integration dependency, not a claim that the API is absent or that all acceptances are covered.
+- **Federation:** tests exercise two actual configured hub applications sharing the test database, proving own-participant bindings. Remote signed-envelope ingestion is not implemented here and is not claimed proven.
+
+## Remaining acceptance dependencies
+
+BIZ-001 (#79) remains open with no accepted pricing-screen artifact; this page is a functional implementation, not claimed design acceptance. AGT-003 owns the missing model/capability/credit-pack catalogue contract. ADR 018 is proposed and explicitly requires integrator acceptance for `growth.activate_referral_terms` and the associated permissions; the frozen second-person action catalogue does not contain it. No referral programme is enabled or activated under an unrelated fee action. BILL-003 stays `in_progress` while those criteria remain unresolved.
+
+Payment-neutrality schema tests reject ranking, matching, recommendation, reputation and participant-specific controls. Actual before/after tests compare directory order, commercial quote comparison, reputation and acceptance digests. The future matching/recommendation runtime is not present; no simulated matching engine is presented as runtime evidence.
+
+## Verification and migration scope
+
+Four new additive migrations use `20261111100000` through `20261111100003`, reserved by the conductor. Applied migrations, root configuration and the lockfile are unchanged. The acceptance matrix and exact-head command results are recorded in the draft PR and the handoff report. Focused suites under `tests/billing/fees` use real embedded PostgreSQL, scoped runtime roles, real authentication/elevation, negative authorization, races, outdated versions and crash recovery. The bounded browser suite uses the actual API and DataPort and records Russian desktop/375px evidence. Full local check/browser suites are intentionally excluded by the conductor's load rule; full CI remains unchecked until the exact head is green.

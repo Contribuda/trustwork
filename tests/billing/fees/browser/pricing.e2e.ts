@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-const evidence = resolve(import.meta.dirname, '../evidence');
+const evidence = process.env.BILL003_EVIDENCE_DIR ?? resolve(import.meta.dirname, '../evidence');
 test('real API/DataPort: Russian empty, published synthetic prices, phone, languages and unauthorized command', async ({ page, request }) => {
   mkdirSync(evidence, { recursive: true });
   await page.goto('/ru/pricing');

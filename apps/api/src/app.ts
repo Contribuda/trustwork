@@ -1,3 +1,4 @@
+import type { TaskFeePort } from './modules/billing/fees/task-adapter.js';
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import fastifyCookie from '@fastify/cookie';
@@ -35,6 +36,8 @@ import type { ConsultationCommissionPort } from './modules/consultations/ports.j
 import type { JurisdictionGate } from './modules/jurisdiction/deps.js';
 
 export interface CreateAppOptions {
+  /** Explicit historical task test adapter; production requires governed fee confirmations. */
+  taskFees?: TaskFeePort;
   /** Explicit consultation commission test adapter; production uses governed BILL-003 prices. */
   consultationCommission?: ConsultationCommissionPort;
   config?: Partial<ApiConfig>;
@@ -179,7 +182,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     bodyLimit: 256 * 1024,
   });
   const files = options.files ?? filesOptionsFromEnv(env);
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }, options.consultationCommission), adapter, { logger: new NestJsonLogger(logger) });
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config, files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }, options.consultationCommission, options.taskFees), adapter, { logger: new NestJsonLogger(logger) });
   const fastify = app.getHttpAdapter().getInstance() as unknown as FastifyInstance;
   instrumentHttp(fastify, { config, logger, telemetry });
   // The per-route limit must be attached before @fastify/rate-limit's own onRoute hook reads `config.rateLimit`

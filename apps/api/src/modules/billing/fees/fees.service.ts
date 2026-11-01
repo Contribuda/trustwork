@@ -1,3 +1,4 @@
+import { VersionedTaskFees } from './task-adapter.js';
 import type { z } from 'zod';
 import { withoutPrincipal } from '../../../common/db.js';
 import { ApiError } from '../../../common/errors.js';
@@ -32,6 +33,9 @@ export class FeesService {
     const hub = this.hub();
     return this.principals.runAs(state, (trx) => billingFees.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId)).catch((e: unknown) => this.refusal(e));
   }
+  taskDisclosure(state: RequestState, offerId: string) {
+    return this.principals.runAs(state, trx => new VersionedTaskFees(this.hubId).disclose(trx, offerId));
+  }
   async publicPricing(): Promise<PublicPricing> {
     if (!this.hubId) return { hubId: null, fees: [], prices: [], unavailable: ['fees', 'plans', 'models', 'capabilities', 'credit_packs'] };
     const fees = await billingFees.publicList(this.ctx.pool, this.hubId);
@@ -40,7 +44,7 @@ export class FeesService {
       return { rows: await catalogue.publishedPrices(trx, this.hubId!, this.ctx.clock.now()), plans: await feePricingReaders.publishedPlans(trx, this.hubId!) };
     });
     const planByPrice = new Map(plans.map((p) => [p.price_version_id, { id: p.id, version: p.version }]));
-    // Credit-pack expiry and model/capability catalogues have no published reader on this base. Fail closed.
+    // BILL-001 and merged LLM-001 expose no approved credit-pack validity or model/capability sale-price reader.
     const prices = rows.filter((r) => r.offer_kind !== 'marketplace_fee' && r.offer_kind !== 'credit_pack'
       && (r.offer_kind !== 'plan' || planByPrice.has(r.id))).map((r) => PublicPriceSchema.parse({
       id: r.id, version: r.version, kind: r.offer_kind, code: r.offer_code, currency: r.currency, amountMinor: r.amount_minor,

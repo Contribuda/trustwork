@@ -1,3 +1,4 @@
+import { FeeConfirmationSchema } from './billing-fees.js';
 import { z } from 'zod';
 import { PartySchema, type Party } from './access.js';
 import { AgentModuleManifestSchema, type AgentCapability, type AgentModuleManifest, type ContractRef } from './agent-catalog.js';
@@ -560,6 +561,7 @@ export const WithdrawTaskOfferCommandSchema = z.strictObject({ expectedRevision:
 
 /** The owner accepts the exact offer version against the current request version, by id and digest (consumer: a person's decision). */
 export const AcceptTaskOfferCommandSchema = z.strictObject({
+  feeConfirmation: FeeConfirmationSchema.optional(),
   offer: VersionRefSchema,
   requestVersion: VersionRefSchema,
   expectedRevision: RevisionSchema,
@@ -567,7 +569,7 @@ export const AcceptTaskOfferCommandSchema = z.strictObject({
   actor: TaskActorInputSchema,
 });
 /** The offeror confirms the agreement, stating the digest it accepts; the assignment is created in the same transaction. */
-export const ConfirmTaskAgreementCommandSchema = z.strictObject({ expectedRevision: RevisionSchema, acceptedTermsDigest: DigestSchema, electronicRecords: ElectronicRecordsConsentSchema.nullable(), actor: TaskActorInputSchema });
+export const ConfirmTaskAgreementCommandSchema = z.strictObject({ feeConfirmation: FeeConfirmationSchema.optional(), expectedRevision: RevisionSchema, acceptedTermsDigest: DigestSchema, electronicRecords: ElectronicRecordsConsentSchema.nullable(), actor: TaskActorInputSchema });
 export const DeclineTaskAgreementCommandSchema = z.strictObject({ expectedRevision: RevisionSchema, reason: ShortTextSchema, actor: TaskActorInputSchema });
 export const WithdrawTaskAgreementCommandSchema = z.strictObject({ expectedRevision: RevisionSchema, reason: ShortTextSchema, actor: TaskActorInputSchema });
 

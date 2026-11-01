@@ -16,6 +16,16 @@ export class PublicPricingController {
   constructor(@Inject(FeesService) private readonly fees: FeesService) {}
   @Get() get() { return this.fees.publicPricing(); }
 }
+@Controller('v1/billing/fees/task-offers')
+@Authenticated()
+export class TaskFeeDisclosureController {
+  constructor(@Inject(FeesService) private readonly fees: FeesService) {}
+  @Post(':id/disclosures') @HttpCode(201) @Idempotent('billing.task_fee_disclose')
+  disclose(@ReqState() state: RequestState, @Params(z.strictObject({ id: z.uuid() })) p: { id: string }, @Body(z.strictObject({})) _body: Record<string, never>) {
+    void _body; // The strict empty schema rejects caller-selected authority.
+    return this.fees.taskDisclosure(state, p.id);
+  }
+}
 @Controller('v1/admin/billing/fees')
 @Authenticated()
 @UseGuards(ElevationGuard)
@@ -33,7 +43,7 @@ export class FeeCommandsController {
 @Module({})
 export class FeesModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, env: NodeJS.ProcessEnv = process.env): DynamicModule {
-    return { module: FeesModule, controllers: [PublicPricingController, FeeCommandsController], providers: [
+    return { module: FeesModule, controllers: [PublicPricingController, FeeCommandsController, TaskFeeDisclosureController], providers: [
       { provide: FeesService, useValue: new FeesService(ctx, identity.principals, staffHubFromEnv(env)) },
       { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard,
     ] };
