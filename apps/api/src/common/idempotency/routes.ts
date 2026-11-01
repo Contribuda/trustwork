@@ -473,6 +473,17 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'payments.connected_account': IN_TRANSACTION,
   'payments.payout': IN_TRANSACTION,
   'payments.refund': IN_TRANSACTION,
+  // Pipelines (PIPE-001): staff commands complete in the principal transaction.
+  'pipelines.create': IN_TRANSACTION,
+  'pipelines.version_draft': IN_TRANSACTION,
+  'pipelines.version_activate': IN_TRANSACTION,
+  'pipelines.schedule_set': IN_TRANSACTION,
+  'pipelines.schedule_pause': IN_TRANSACTION,
+  'pipelines.schedule_resume': IN_TRANSACTION,
+  'pipelines.run_start': IN_TRANSACTION,
+  'pipelines.run_cancel': IN_TRANSACTION,
+  'pipelines.alert_decide': IN_TRANSACTION,
+  'pipelines.role_cap_set': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

@@ -3147,7 +3147,7 @@
       "id": "PIPE-001",
       "title": "Pipeline engine and scheduler",
       "area": "automation",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "SRC-001",
         "KEYS-001"
