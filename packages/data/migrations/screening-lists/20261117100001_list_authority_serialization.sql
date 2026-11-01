@@ -239,7 +239,7 @@ END $$;
 CREATE OR REPLACE FUNCTION trustwork.screening_list_set_status(p_ctx jsonb, p_list uuid, p_status text, p_reason text) RETURNS trustwork.screening_list
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
-  v_actor trustwork.admin_actor;
+  v_actor trustwork.admin_actor := trustwork.screening_staff_actor(p_ctx, 'admin.screening.lists.manage');
   v_before trustwork.screening_list%ROWTYPE;
   v_after trustwork.screening_list%ROWTYPE;
 BEGIN
@@ -268,7 +268,7 @@ END $$;
 CREATE OR REPLACE FUNCTION trustwork.screening_list_confirm_version(p_ctx jsonb, p_version uuid, p_reason text) RETURNS text
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
-  v_actor trustwork.admin_actor;
+  v_actor trustwork.admin_actor := trustwork.screening_staff_actor(p_ctx, 'admin.screening.lists.confirm');
   v_before trustwork.screening_list_version%ROWTYPE;
   v_after trustwork.screening_list_version%ROWTYPE;
   v_outcome text;
@@ -313,7 +313,7 @@ END $$;
 CREATE OR REPLACE FUNCTION trustwork.screening_list_propose(p_ctx jsonb, p_input jsonb) RETURNS uuid
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
- a trustwork.admin_actor;
+ a trustwork.admin_actor := trustwork.screening_staff_actor(p_ctx, 'admin.screening.lists.manage');
  s trustwork.screening_list_source%ROWTYPE;
  h uuid := (p_input->>'hubId')::uuid;
  i uuid := trustwork.new_uuid(); b text; d text;
@@ -339,7 +339,7 @@ END $$;
 CREATE OR REPLACE FUNCTION trustwork.screening_list_decide(p_ctx jsonb, p_id uuid, p_decision text, p_digest text, p_reason text) RETURNS uuid
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
- a trustwork.admin_actor;
+ a trustwork.admin_actor := trustwork.screening_staff_actor(p_ctx, 'admin.screening.lists.manage');
  p trustwork.screening_list_proposal%ROWTYPE; s trustwork.screening_list_source%ROWTYPE; l uuid;
 BEGIN
  PERFORM trustwork.screening_list_authority_lock();
