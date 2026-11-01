@@ -3065,7 +3065,7 @@
       "id": "SRC-001",
       "title": "Hub source registry with licence flags, legal basis and import review",
       "area": "content-sources",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "HUB-001",
         "CNT-001"

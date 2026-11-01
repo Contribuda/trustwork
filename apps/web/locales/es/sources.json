@@ -1,0 +1,120 @@
+{
+  "sources": {
+    "label": {
+      "sourced": "De fuentes",
+      "sourcedHint": "Recopilado de una fuente pública. La empresa aún no lo ha confirmado.",
+      "sponsored": "Patrocinado",
+      "sponsoredHint": "Una ubicación pagada, mostrada aparte. Nunca influye en la búsqueda, el emparejamiento, las recomendaciones ni la reputación.",
+      "machineAssisted": "Borrador asistido por IA",
+      "fromSource": "Fuente"
+    },
+    "status": {
+      "proposed": "Pendiente de activación",
+      "active": "Activa",
+      "paused": "En pausa",
+      "rejected": "Rechazada",
+      "retired": "Retirada",
+      "taken_down": "Retirada por solicitud"
+    },
+    "pauseReason": {
+      "robots_changed": "Cambió robots.txt",
+      "terms_changed": "Cambiaron las condiciones de uso",
+      "licence_ended": "La licencia terminó",
+      "error_streak": "Errores repetidos",
+      "budget": "Presupuesto alcanzado",
+      "manual": "Pausada por el personal",
+      "takedown": "Retirada por solicitud"
+    },
+    "use": {
+      "displayHeadlineAndLink": "Mostrar titular y enlace",
+      "displaySummary": "Mostrar un resumen breve",
+      "storeFullText": "Guardar el texto completo",
+      "indexForSearch": "Indexar para la búsqueda",
+      "sendToModelProviders": "Enviar a un proveedor de modelos",
+      "translate": "Traducir",
+      "rewriteWithAttribution": "Reescribir citando la fuente",
+      "reuseImages": "Reutilizar imágenes",
+      "syndicateToPeers": "Compartir con otros hubs"
+    },
+    "licence": {
+      "open_licence": "Licencia abierta",
+      "public_domain": "Dominio público",
+      "statutory_public": "Público por ley",
+      "publisher_agreement": "Acuerdo con el editor",
+      "press_release": "Comunicado de prensa",
+      "all_rights_reserved": "Todos los derechos reservados",
+      "unknown": "Licencia desconocida"
+    },
+    "legalBasis": {
+      "statutory_public_register": "Registro público por ley",
+      "open_licence": "Licencia abierta",
+      "contract": "Contrato",
+      "consent": "Consentimiento",
+      "legitimate_interest_assessed": "Interés legítimo (evaluado)",
+      "public_professional_data": "Datos profesionales públicos"
+    },
+    "rsl": {
+      "absent": "No hay condiciones RSL publicadas",
+      "parsed": "Condiciones RSL leídas",
+      "failed": "Condiciones RSL ilegibles: se aplican los ajustes más restrictivos",
+      "no_matching_content": "Las condiciones RSL no cubren esta dirección: se aplican los ajustes más restrictivos"
+    },
+    "crawl": {
+      "allowed": "Permitido por robots.txt",
+      "restricted": "Permitido en parte por robots.txt",
+      "forbidden": "No permitido por robots.txt"
+    },
+    "item": {
+      "queued": "Pendiente de revisión",
+      "drafted": "Convertido en borrador",
+      "discarded": "Descartado",
+      "taken_down": "Retirado por solicitud"
+    },
+    "batch": {
+      "staged": "Pendiente de una segunda persona",
+      "activated": "Activada",
+      "rejected": "Rechazada",
+      "taken_down": "Retirada por solicitud"
+    },
+    "takedownReason": {
+      "legal_demand": "Requerimiento legal",
+      "licence_ended": "La licencia terminó",
+      "rights_holder_request": "Solicitud del titular de los derechos",
+      "court_order": "Orden judicial",
+      "privacy_request": "Solicitud de privacidad"
+    },
+    "refusal": {
+      "self_activation": "Otra persona debe activar lo que usted preparó.",
+      "self_review": "Otra persona debe decidir sobre lo que usted importó o propuso.",
+      "robots_not_allowed": "robots.txt no permite recopilar este sitio.",
+      "terms_not_permitted": "Las condiciones de uso, revisadas por una persona, deben permitir el acceso automatizado.",
+      "licence_restricts_use": "Sin licencia solo se permiten el titular, el enlace, un resumen breve y la indexación para la búsqueda.",
+      "rewrite_needs_full_text": "Reescribir requiere el texto completo guardado con el que se compara.",
+      "rsl_forbids_use": "Las condiciones RSL del editor no permiten este uso.",
+      "legal_basis_required": "Una fuente con datos personales necesita una base legal registrada.",
+      "licence_forbids_summary": "La licencia no permite guardar un resumen.",
+      "licence_forbids_full_text": "La licencia no permite guardar el texto completo.",
+      "licence_forbids_model_use": "La licencia no permite enviar este elemento a un proveedor de modelos.",
+      "licence_forbids_syndication": "La licencia no permite compartir este elemento con otros hubs.",
+      "sponsored_off": "El contenido patrocinado está desactivado en este hub.",
+      "sponsor_unverified": "Este hub exige patrocinadores verificados.",
+      "batch_not_activated": "Primero una segunda persona debe activar la importación.",
+      "fresh_check_required": "Vuelva a realizar la comprobación antes de reanudar.",
+      "source_not_active": "La fuente no está activa.",
+      "taken_down": "Esto fue retirado por solicitud.",
+      "source_unreachable": "El sitio no respondió. No se registró nada; inténtelo más tarde.",
+      "publication_mismatch": "El borrador debe ser su propio borrador editorial que cita este elemento.",
+      "source_ref_exceeds_licence": "La licencia citada permite menos de lo que indica el borrador.",
+      "person_confirmation_required": "Una persona solo se vincula con su propia confirmación.",
+      "batch_decided": "Ya se decidió sobre esta importación.",
+      "item_decided": "Ya se decidió sobre este elemento.",
+      "link_decided": "Ya se decidió sobre esta propuesta de vínculo.",
+      "source_closed": "Esta fuente está cerrada.",
+      "invalid_transition": "La fuente no puede pasar a ese estado.",
+      "robots_domain": "La comprobación de robots.txt es de un dominio distinto al de la fuente.",
+      "takedown_reason_required": "Una retirada indica su motivo.",
+      "url_required": "Esta comprobación necesita la dirección de la fuente.",
+      "summary_missing": "Un borrador con resumen necesita un resumen guardado o asistido por IA."
+    }
+  }
+}

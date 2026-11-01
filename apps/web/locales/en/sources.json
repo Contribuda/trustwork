@@ -1,0 +1,120 @@
+{
+  "sources": {
+    "label": {
+      "sourced": "From sources",
+      "sourcedHint": "Collected from a public source. The company has not confirmed it yet.",
+      "sponsored": "Sponsored",
+      "sponsoredHint": "A paid placement, shown apart. It never affects search, matching, recommendations or reputation.",
+      "machineAssisted": "Machine-assisted draft",
+      "fromSource": "Source"
+    },
+    "status": {
+      "proposed": "Awaiting activation",
+      "active": "Active",
+      "paused": "Paused",
+      "rejected": "Rejected",
+      "retired": "Retired",
+      "taken_down": "Taken down"
+    },
+    "pauseReason": {
+      "robots_changed": "robots.txt changed",
+      "terms_changed": "Terms of use changed",
+      "licence_ended": "Licence ended",
+      "error_streak": "Repeated errors",
+      "budget": "Budget reached",
+      "manual": "Paused by staff",
+      "takedown": "Taken down"
+    },
+    "use": {
+      "displayHeadlineAndLink": "Show headline and link",
+      "displaySummary": "Show a short summary",
+      "storeFullText": "Store the full text",
+      "indexForSearch": "Index for search",
+      "sendToModelProviders": "Send to a model provider",
+      "translate": "Translate",
+      "rewriteWithAttribution": "Rewrite with attribution",
+      "reuseImages": "Reuse images",
+      "syndicateToPeers": "Share with other hubs"
+    },
+    "licence": {
+      "open_licence": "Open licence",
+      "public_domain": "Public domain",
+      "statutory_public": "Public by law",
+      "publisher_agreement": "Agreement with the publisher",
+      "press_release": "Press release",
+      "all_rights_reserved": "All rights reserved",
+      "unknown": "Licence unknown"
+    },
+    "legalBasis": {
+      "statutory_public_register": "Public register by law",
+      "open_licence": "Open licence",
+      "contract": "Contract",
+      "consent": "Consent",
+      "legitimate_interest_assessed": "Legitimate interest (assessed)",
+      "public_professional_data": "Public professional data"
+    },
+    "rsl": {
+      "absent": "No RSL terms published",
+      "parsed": "RSL terms read",
+      "failed": "RSL terms unreadable: most restrictive settings apply",
+      "no_matching_content": "RSL terms do not cover this address: most restrictive settings apply"
+    },
+    "crawl": {
+      "allowed": "Allowed by robots.txt",
+      "restricted": "Partly allowed by robots.txt",
+      "forbidden": "Not allowed by robots.txt"
+    },
+    "item": {
+      "queued": "Waiting for review",
+      "drafted": "Turned into a draft",
+      "discarded": "Discarded",
+      "taken_down": "Taken down"
+    },
+    "batch": {
+      "staged": "Waiting for a second person",
+      "activated": "Activated",
+      "rejected": "Rejected",
+      "taken_down": "Taken down"
+    },
+    "takedownReason": {
+      "legal_demand": "Legal demand",
+      "licence_ended": "Licence ended",
+      "rights_holder_request": "Request from the rights holder",
+      "court_order": "Court order",
+      "privacy_request": "Privacy request"
+    },
+    "refusal": {
+      "self_activation": "Another person must activate what you set up.",
+      "self_review": "Another person must decide on what you imported or proposed.",
+      "robots_not_allowed": "robots.txt does not allow collecting this site.",
+      "terms_not_permitted": "The terms of use, reviewed by a person, must permit automated access.",
+      "licence_restricts_use": "Without a licence only the headline, link, a short summary and search indexing are possible.",
+      "rewrite_needs_full_text": "Rewriting needs the stored full text it is checked against.",
+      "rsl_forbids_use": "The publisher’s RSL terms do not allow this use.",
+      "legal_basis_required": "A source with personal data needs a recorded legal basis.",
+      "licence_forbids_summary": "The licence does not allow storing a summary.",
+      "licence_forbids_full_text": "The licence does not allow storing the full text.",
+      "licence_forbids_model_use": "The licence does not allow sending this item to a model provider.",
+      "licence_forbids_syndication": "The licence does not allow sharing this item with other hubs.",
+      "sponsored_off": "Sponsored content is switched off in this hub.",
+      "sponsor_unverified": "This hub requires verified sponsors.",
+      "batch_not_activated": "A second person must activate the import first.",
+      "fresh_check_required": "Run the check again before resuming.",
+      "source_not_active": "The source is not active.",
+      "taken_down": "This was taken down.",
+      "source_unreachable": "The site did not answer. Nothing was recorded; try again later.",
+      "publication_mismatch": "The draft must be your own editorial draft citing this item.",
+      "source_ref_exceeds_licence": "The cited licence allows less than the draft claims.",
+      "person_confirmation_required": "A person is linked only with their own confirmation.",
+      "batch_decided": "This import was already decided.",
+      "item_decided": "This item was already decided.",
+      "link_decided": "This link proposal was already decided.",
+      "source_closed": "This source is closed.",
+      "invalid_transition": "The source cannot move to that state.",
+      "robots_domain": "The robots.txt check is for another domain than the source.",
+      "takedown_reason_required": "A takedown names its reason.",
+      "url_required": "This check needs the source’s address.",
+      "summary_missing": "A summary draft needs a stored or machine-assisted summary."
+    }
+  }
+}

@@ -241,6 +241,25 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // SRC-001: the hub source registry. Every route runs in one PrincipalService.runAs transaction through a sources_*
+  // SECURITY DEFINER command that writes its audit row there (the item decision also writes the CNT-001 draft there; the
+  // read-only robots.txt, RSL and drafter adapter calls happen inside it, bounded by a timeout, and are never recorded
+  // when they do not answer) and returns its result unchanged.
+  'sources.register': IN_TRANSACTION,
+  'sources.terms_set': IN_TRANSACTION,
+  'sources.terms_record': IN_TRANSACTION,
+  'sources.robots_check': IN_TRANSACTION,
+  'sources.rsl_check': IN_TRANSACTION,
+  'sources.status': IN_TRANSACTION,
+  'sources.takedown': IN_TRANSACTION,
+  'sources.batch_stage': IN_TRANSACTION,
+  'sources.batch_decide': IN_TRANSACTION,
+  'sources.item_decide': IN_TRANSACTION,
+  'sources.item_assist': IN_TRANSACTION,
+  'sources.item_takedown': IN_TRANSACTION,
+  'sources.link_propose': IN_TRANSACTION,
+  'sources.link_decide': IN_TRANSACTION,
+  'sources.sponsored_policy_set': IN_TRANSACTION,
   // PRC-003: the supplier base. Every route runs in one PrincipalService.runAs transaction (the owner-run command, its
   // audit row; no outbox event) and returns its result unchanged; an import writes all its rows in that transaction.
   'supplier_base.maintain': IN_TRANSACTION,

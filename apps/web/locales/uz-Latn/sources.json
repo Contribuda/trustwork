@@ -1,0 +1,120 @@
+{
+  "sources": {
+    "label": {
+      "sourced": "Manbalardan",
+      "sourcedHint": "Ochiq manbadan yig‘ilgan. Kompaniya hali tasdiqlamagan.",
+      "sponsored": "Homiylik materiali",
+      "sponsoredHint": "Pullik joylashtirish, alohida ko‘rsatiladi. Qidiruv, moslashtirish, tavsiyalar va obro‘ga hech qachon ta’sir qilmaydi.",
+      "machineAssisted": "Sun’iy intellekt yordamidagi qoralama",
+      "fromSource": "Manba"
+    },
+    "status": {
+      "proposed": "Faollashtirish kutilmoqda",
+      "active": "Faol",
+      "paused": "To‘xtatilgan",
+      "rejected": "Rad etilgan",
+      "retired": "Ishdan chiqarilgan",
+      "taken_down": "Talab bo‘yicha olib tashlangan"
+    },
+    "pauseReason": {
+      "robots_changed": "robots.txt o‘zgardi",
+      "terms_changed": "Foydalanish shartlari o‘zgardi",
+      "licence_ended": "Litsenziya tugadi",
+      "error_streak": "Takroriy xatolar",
+      "budget": "Byudjetga yetildi",
+      "manual": "Xodim tomonidan to‘xtatilgan",
+      "takedown": "Talab bo‘yicha olib tashlangan"
+    },
+    "use": {
+      "displayHeadlineAndLink": "Sarlavha va havolani ko‘rsatish",
+      "displaySummary": "Qisqa mazmunini ko‘rsatish",
+      "storeFullText": "To‘liq matnni saqlash",
+      "indexForSearch": "Qidiruv uchun indekslash",
+      "sendToModelProviders": "Model provayderiga yuborish",
+      "translate": "Tarjima qilish",
+      "rewriteWithAttribution": "Manbani ko‘rsatib qayta yozish",
+      "reuseImages": "Rasmlardan qayta foydalanish",
+      "syndicateToPeers": "Boshqa xablar bilan ulashish"
+    },
+    "licence": {
+      "open_licence": "Ochiq litsenziya",
+      "public_domain": "Jamoat mulki",
+      "statutory_public": "Qonun bo‘yicha ochiq",
+      "publisher_agreement": "Nashriyot bilan shartnoma",
+      "press_release": "Press-reliz",
+      "all_rights_reserved": "Barcha huquqlar himoyalangan",
+      "unknown": "Litsenziya noma’lum"
+    },
+    "legalBasis": {
+      "statutory_public_register": "Qonun bo‘yicha ochiq reyestr",
+      "open_licence": "Ochiq litsenziya",
+      "contract": "Shartnoma",
+      "consent": "Rozilik",
+      "legitimate_interest_assessed": "Qonuniy manfaat (baholangan)",
+      "public_professional_data": "Ochiq kasbiy ma’lumotlar"
+    },
+    "rsl": {
+      "absent": "RSL shartlari e’lon qilinmagan",
+      "parsed": "RSL shartlari o‘qildi",
+      "failed": "RSL shartlarini o‘qib bo‘lmadi: eng qat’iy sozlamalar qo‘llanadi",
+      "no_matching_content": "RSL shartlari bu manzilni qamrab olmaydi: eng qat’iy sozlamalar qo‘llanadi"
+    },
+    "crawl": {
+      "allowed": "robots.txt ruxsat beradi",
+      "restricted": "robots.txt qisman ruxsat beradi",
+      "forbidden": "robots.txt ruxsat bermaydi"
+    },
+    "item": {
+      "queued": "Ko‘rib chiqish kutilmoqda",
+      "drafted": "Qoralamaga aylantirildi",
+      "discarded": "Rad etildi",
+      "taken_down": "Talab bo‘yicha olib tashlangan"
+    },
+    "batch": {
+      "staged": "Ikkinchi xodim kutilmoqda",
+      "activated": "Faollashtirildi",
+      "rejected": "Rad etildi",
+      "taken_down": "Talab bo‘yicha olib tashlangan"
+    },
+    "takedownReason": {
+      "legal_demand": "Qonuniy talab",
+      "licence_ended": "Litsenziya tugadi",
+      "rights_holder_request": "Huquq egasining so‘rovi",
+      "court_order": "Sud qarori",
+      "privacy_request": "Shaxsiy ma’lumotlar bo‘yicha so‘rov"
+    },
+    "refusal": {
+      "self_activation": "Siz tayyorlaganingizni boshqa xodim faollashtirishi kerak.",
+      "self_review": "Siz import qilgan yoki taklif qilgan narsa bo‘yicha boshqa xodim qaror qabul qiladi.",
+      "robots_not_allowed": "robots.txt bu saytdan ma’lumot yig‘ishga ruxsat bermaydi.",
+      "terms_not_permitted": "Inson tomonidan tekshirilgan foydalanish shartlari avtomatik kirishga ruxsat berishi kerak.",
+      "licence_restricts_use": "Litsenziyasiz faqat sarlavha, havola, qisqa mazmun va qidiruv uchun indekslash mumkin.",
+      "rewrite_needs_full_text": "Qayta yozish uchun solishtiriladigan saqlangan to‘liq matn kerak.",
+      "rsl_forbids_use": "Nashriyotning RSL shartlari bunday foydalanishga ruxsat bermaydi.",
+      "legal_basis_required": "Shaxsiy ma’lumotli manba uchun yozib qo‘yilgan huquqiy asos kerak.",
+      "licence_forbids_summary": "Litsenziya qisqa mazmunni saqlashga ruxsat bermaydi.",
+      "licence_forbids_full_text": "Litsenziya to‘liq matnni saqlashga ruxsat bermaydi.",
+      "licence_forbids_model_use": "Litsenziya bu materialni model provayderiga yuborishga ruxsat bermaydi.",
+      "licence_forbids_syndication": "Litsenziya bu materialni boshqa xablar bilan ulashishga ruxsat bermaydi.",
+      "sponsored_off": "Bu xabda homiylik materiallari o‘chirilgan.",
+      "sponsor_unverified": "Bu xab faqat tasdiqlangan homiylarni qabul qiladi.",
+      "batch_not_activated": "Avval importni ikkinchi xodim faollashtirishi kerak.",
+      "fresh_check_required": "Davom ettirishdan oldin tekshiruvni qaytadan o‘tkazing.",
+      "source_not_active": "Manba faol emas.",
+      "taken_down": "Bu talab bo‘yicha olib tashlangan.",
+      "source_unreachable": "Sayt javob bermadi. Hech narsa yozilmadi, keyinroq urinib ko‘ring.",
+      "publication_mismatch": "Qoralama shu materialga havola qilgan o‘zingizning tahririy qoralamangiz bo‘lishi kerak.",
+      "source_ref_exceeds_licence": "Ko‘rsatilgan litsenziya qoralamada aytilganidan kamroq narsaga ruxsat beradi.",
+      "person_confirmation_required": "Inson faqat o‘zining tasdig‘i bilan bog‘lanadi.",
+      "batch_decided": "Bu import bo‘yicha qaror allaqachon qabul qilingan.",
+      "item_decided": "Bu material bo‘yicha qaror allaqachon qabul qilingan.",
+      "link_decided": "Bu bog‘lanish taklifi bo‘yicha qaror allaqachon qabul qilingan.",
+      "source_closed": "Bu manba yopilgan.",
+      "invalid_transition": "Manba bu holatga o‘ta olmaydi.",
+      "robots_domain": "robots.txt tekshiruvi manbadan boshqa domen uchun.",
+      "takedown_reason_required": "Olib tashlash uchun sabab ko‘rsatilishi kerak.",
+      "url_required": "Bu tekshiruv uchun manba manzili kerak.",
+      "summary_missing": "Qisqa mazmunli qoralama uchun saqlangan yoki sun’iy intellekt tayyorlagan mazmun kerak."
+    }
+  }
+}
