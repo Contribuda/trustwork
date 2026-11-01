@@ -51,6 +51,7 @@ export interface ScreeningListVersionTable {
   fetched_at: Date;
   mode: ScreeningListModeColumn;
   source_digest: string;
+  registered_source_id: Generated<string | null>;
   entry_count: number;
   digest: string;
   state: Generated<ScreeningListVersionStateColumn>;
@@ -108,7 +109,7 @@ export const TABLE_COLUMNS: TableColumns<ScreeningListsDatabase> = {
   screening_list_proposal: columns('screening_list_proposal', ['id','hub_id','source_id','requested_by','cadence_seconds','warn_after_seconds','stale_after_seconds','reason','evidence','before_digest','action_digest','state','created_at','expires_at','decided_by','decided_at','decision_reason']),
   screening_list: columns('screening_list', ['id', 'hub_id', 'code', 'name', 'authority', 'source_url', 'source_id', 'adapter', 'mode', 'cadence', 'warn_after', 'stale_after', 'max_drop_share',
     'min_entries', 'baseline', 'status', 'last_checked_at', 'last_attempt_at', 'last_outcome', 'last_error', 'created_at']),
-  screening_list_version: columns('screening_list_version', ['id', 'list_id', 'version', 'published_on', 'fetched_at', 'mode', 'source_digest', 'entry_count', 'digest', 'state',
+  screening_list_version: columns('screening_list_version', ['id', 'list_id', 'version', 'published_on', 'fetched_at', 'mode', 'source_digest', 'registered_source_id', 'entry_count', 'digest', 'state',
     'sanity', 'staged_at', 'activated_at', 'activated_by', 'activation_reason', 'decided_at', 'rejected_reason']),
   screening_list_entry: columns('screening_list_entry', ['list_version_id', 'entry_uid', 'entry_type', 'primary_name', 'programs', 'name_keys', 'attributes', 'entry_digest']),
 };

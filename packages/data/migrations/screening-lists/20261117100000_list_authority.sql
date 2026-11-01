@@ -25,6 +25,7 @@ BEGIN
 END $$;
 CREATE TRIGGER screening_list_source_guard BEFORE UPDATE OR DELETE ON trustwork.screening_list_source FOR EACH ROW EXECUTE FUNCTION trustwork.screening_list_source_guard();
 CREATE TRIGGER screening_list_source_no_truncate BEFORE TRUNCATE ON trustwork.screening_list_source FOR EACH STATEMENT EXECUTE FUNCTION trustwork.forbid_mutation();
+ALTER TABLE trustwork.screening_list_version ADD COLUMN registered_source_id uuid REFERENCES trustwork.screening_list_source(id);
 ALTER TABLE trustwork.screening_list ADD COLUMN source_id uuid REFERENCES trustwork.screening_list_source(id);
 ALTER TABLE trustwork.screening_list ADD CONSTRAINT screening_list_baseline_source CHECK (NOT baseline OR source_id IS NULL);
 
@@ -157,10 +158,15 @@ GRANT EXECUTE ON FUNCTION trustwork.screening_list_source_current(uuid) TO trust
 CREATE FUNCTION trustwork.screening_list_version_authority_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
 BEGIN
+ IF TG_OP='INSERT' THEN
+   SELECT source_id INTO NEW.registered_source_id FROM trustwork.screening_list WHERE id=NEW.list_id;
+ ELSIF NEW.registered_source_id IS DISTINCT FROM OLD.registered_source_id THEN
+   RAISE EXCEPTION 'version source snapshot is immutable' USING ERRCODE='23514';
+ END IF;
  IF (TG_OP='INSERT' OR NEW.state='active') AND EXISTS (
    SELECT 1 FROM trustwork.screening_list l LEFT JOIN trustwork.screening_list_source s ON s.id=l.source_id
    WHERE l.id=NEW.list_id AND l.source_id IS NOT NULL AND
-     (NOT s.current OR s.adapter<>l.adapter OR s.source_url<>l.source_url OR NEW.mode<>l.mode)) THEN
+     (NOT s.current OR s.adapter<>l.adapter OR s.source_url<>l.source_url OR NEW.mode<>l.mode OR NEW.registered_source_id IS DISTINCT FROM l.source_id)) THEN
    RAISE EXCEPTION 'registered source authority unavailable' USING ERRCODE='23514', HINT='screening.configuration_changed';
  END IF;
  RETURN NEW;
