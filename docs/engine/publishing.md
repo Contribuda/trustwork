@@ -45,6 +45,8 @@ draft → in_review (when the policy requires it) → scheduled | published → 
 
 ## Editorial workflow (Designed)
 
+The complete editorial office (content model across the system, collection, translation, workflow with decision points, notices, channels, the editorial agent team and every screen) is designed in [The editorial office](editorial-office.md) (Proposed).
+
 Editors work in the administration surface (see [Hub administration](hub-administration.md#editorial-and-community)):
 
 | Capability | Who |

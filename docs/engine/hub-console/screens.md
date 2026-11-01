@@ -292,6 +292,8 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 
 ## Editorial office
 
+Amendments to HC-40 … HC-49 and the new editorial screens HC-170 … HC-191 (intake, story board, fact-check, legal, notices, corrections, glossary, translation memory, languages, media, channels, licences, collection jobs and the editorial agent team) are specified in [The editorial office](../editorial-office.md#11-screens) (Proposed).
+
 ### HC-40 Desk — `/editorial`
 - **Purpose**: the newsroom's day.
 - **Data**: review queue size by language, items scheduled today, calendar slots unfilled, pipeline health (last runs, alerts), cost per published item this week, corrections pending.

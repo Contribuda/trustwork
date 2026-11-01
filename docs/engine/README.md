@@ -64,7 +64,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | Billing and commissions | [BIL](modules/billing-and-commissions.md) | [Billing, plans and budgets](billing.md) |
 | Events | [EVT](modules/events.md) | [Events](events.md) |
 | Learning and certificates | [LRN](modules/learning-and-certificates.md) | [Learning and certificates](learning.md) |
-| News, articles, the magazine and the autonomous editorial office | [PUB](modules/publishing-and-editorial.md) | [News, articles and walls](publishing.md), [The weekly magazine](magazine.md), [Autonomous editorial office](hub-console/autonomous-editorial.md) |
+| News, articles, the magazine and the autonomous editorial office | [PUB](modules/publishing-and-editorial.md) | [News, articles and walls](publishing.md), [The weekly magazine](magazine.md), [Autonomous editorial office](hub-console/autonomous-editorial.md), [The editorial office](editorial-office.md) |
 | Search and cited answers (RAG) | [SCH](modules/search-and-cited-answers.md) | [Search and knowledge](search-and-knowledge.md) |
 | Communications and notifications | [MSG](modules/communications-and-notifications.md) | [Communications](communications.md) |
 | Hubs and the hub console | [HBC](modules/hubs-and-console.md) | [Hubs](hubs.md), [Hub administration](hub-administration.md), [The hub console](hub-console/README.md) |

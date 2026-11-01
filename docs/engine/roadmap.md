@@ -303,6 +303,20 @@ Packages for capabilities the [module specifications](modules/README.md) added f
 | PRV-002 | Data-broker readiness and deletion-platform adapters | 4 (data mining and privacy) | open | PRV-001, MINE-001 |
 | FIN-001 | Financing partner referrals: licensed, labelled, never ranking | 3 (payments) | open | BILL-003, HUB-003 |
 
+## Editorial office (owner requests of 2026-11-01)
+
+Packages for the complete [editorial office](editorial-office.md) and the editorial agent team. Amendments to CNT-003, PIPE-001, PROV-001, EDIT-001, MAT-001, REC-001, HUBC-003, KNOW-001 and MODEL-001 are recorded in their acceptance; SRC-001 keeps its scope and SRC-002 carries its follow-ups.
+
+| ID | Title | Phase | Status | Depends on |
+|---|---|---|---|---|
+| SRC-002 | Pre-collection gate: AI-usage signals, TDM reservations, host policy and polite crawling | 4 (hubs, editorial office) | open | SRC-001, PIPE-001 |
+| TRN-001 | Translation memory, glossaries and post-editing workflow | 4 (hubs, editorial office) | open | CNT-001, PROV-001, PIPE-001 |
+| CNT-004 | Reader correction requests, notices, takedowns and statements of reasons | 2 (content, before user content goes public at scale) | open | CNT-001, SRC-001 |
+| CNT-005 | Newsletters and distribution channels | 2 (content) | open | CNT-003, COMMS-001 |
+| MEDIA-001 | Media library with rights, alt text and provenance | 2 (content) | open | FILE-001, PROV-001 |
+| EDIT-002 | Editorial agent team: roles, autonomy per role and content class, and standing publication policies | 4 (hubs, editorial office; needs ADR 015) | open | EDIT-001, TRN-001, MODEL-001 |
+| HUBC-012 | Console live wiring: editorial team, translation, notices, channels and media | 4 (hub console) | open | HUBC-008, EDIT-002, TRN-001, CNT-004, CNT-005, MEDIA-001 |
+
 ## Sanctions compliance engine (ADR 014)
 
 Owner decision 24 of [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md): the same engine as Contribuda, configurable per hub; no kill switch in the engine, enforcement on what we control ([ADR 014](../adr/014-sanctions-compliance-engine.md)). SANC-001 can start now; SANC-002 to SANC-005 follow in order; PAY-001, FED-001, HUB-004 and HUBC-009 wait for the slices they call; HUB-003 calls the screening engine for its sanctions check.
@@ -436,5 +450,6 @@ The critical path of phase 1 runs INTL-003 → WEB-006 → WEB-004 for the web a
 | Agent liability and disclosure wording per jurisdiction; electronic agreement validity | Counsel per hub | HUB-005 defaults, COM-002 and AGT-008 live use |
 | Practitioner interview programme | Owner | AGT-020 (blocked) |
 | Personalized journal policy | Owner | Not scheduled |
+| Editorial agent team in the console; which content classes may ever publish under a standing policy (decisions E1 to E13) | Owner decision 2026-11-01 for the team; defaults proposed for the owner ([editorial office](editorial-office.md#141-decisions-for-the-owner)) | EDIT-002, HUBC-003, HUBC-012, PROV-001, TRN-001 |
 | International by default: language and country-pack roadmap, honest review status | Decided 2026-10-31 by the owner ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 30) | LANG-PT … LANG-JA, INTL-005 … INTL-007, CTRY-EU, CTRY-CA … CTRY-AU |
 | Full sanctions-compliance engine with Contribuda parity; no kill switch in the engine, enforcement on our own services, deployment attestation, trademark | Decided 2026-10-31 by the owner ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 24, [ADR 014](../adr/014-sanctions-compliance-engine.md)); lists, geolocation adapter, thresholds and counsel wording open | SANC-001 … SANC-009, HUB-003, PAY-001, FED-001, HUB-004 |
