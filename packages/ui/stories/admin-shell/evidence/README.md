@@ -1,6 +1,6 @@
 # DS-005 focused browser evidence
 
-Verified source commit: `eea3505f7e8c4c332d9f8b9481fa2369be1d7b93`. This evidence-only follow-up does not change the tested implementation, dictionaries, stories or tests. Package status remains in_progress; conductor acceptance and exact-final-head remote CI are separate.
+Verified source commit: `eea3505f7e8c4c332d9f8b9481fa2369be1d7b93`. This evidence-only follow-up does not change the tested implementation, dictionaries, stories or tests. The [delegated maintainer accepted the bounded implementation](https://github.com/Contribuda/trustwork/issues/504#issuecomment-6555501685) and authorized DS-005 done, subject to exact-final-head required CI and actual merge. The subsequent acceptance documentation/status update does not change the rendered source.
 
 - UI unit suite: exit 0, 39 passed, 0 failed/skipped (including the existing DS-003 cases).
 - UI typecheck, focused ESLint, docs validation, work-package validation and package Storybook build: exit 0. Docs: 360 packages and 74 requirements.
