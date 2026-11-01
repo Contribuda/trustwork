@@ -21,7 +21,7 @@ import { SKIP_REASON, startHarness, type Client } from '../backend/helpers/app.j
 import { login, seedPersonas } from '../backend/helpers/personas.js';
 import { expectRefusal } from '../admin/helpers.js';
 import { stateOf, workerLogin } from '../assistant/helpers.js';
-import { PLANNER, PLANNER_COMMIT, PLANNER_READ, usHubPolicy, withSwitch } from './fixtures.js';
+import { PLANNER, PLANNER_COMMIT, PLANNER_READ, usHubPolicy as baseHubPolicy, withSwitch } from './fixtures.js';
 import { activatePolicy, buildAgentWorld, engage, engageNode, ok, release, type AgentWorld } from './helpers.js';
 
 /**
@@ -31,9 +31,17 @@ import { activatePolicy, buildAgentWorld, engage, engageNode, ok, release, type 
  * with dispatch through authorization epochs; and a capability switched off for the hub, a participant type or a plan is
  * refused identically by the interface, the agent runtime and MCP.
  */
+// This revoker matrix deliberately retains several unresolved operations. Give only this synthetic
+// policy enough capacity to exercise every revoker; focused admission tests verify the small limits.
+const usHubPolicy: typeof baseHubPolicy = (hubId, over = {}) => {
+  const policy = baseHubPolicy(hubId, over);
+  for (const module of policy.modules) module.limits.concurrentRuns = 20;
+  return policy;
+};
+
 const h = await startHarness('agent_modules_runtime');
 
-interface JobBody { request: { id: string; status: string; mandateProposalId: string; jobSubscriptionId: string | null; nextDueAt: string | null }; confirmation: { proposalId: string; digest: { algorithm: string; value: string }; mandate: { approvalPolicy: unknown; actions: string[] } } }
+interface JobBody { request: { executionAvailability: string; executionMessageKey: string | null; id: string; status: string; mandateProposalId: string; jobSubscriptionId: string | null; nextDueAt: string | null }; confirmation: { proposalId: string; digest: { algorithm: string; value: string }; mandate: { approvalPolicy: unknown; actions: string[] } } }
 const until = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
 const turnOn = (client: Client, over: Record<string, unknown> = {}) => client.post('/v1/assistant/jobs', { actingFor: 'self', moduleKey: 'project_planner', templateKey: 'weekly_plan_review', trigger: null, validUntil: until(90), ...over });
 
@@ -58,6 +66,8 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
   await t.test('turning a job on creates only a mandate proposal; nothing can fire until it is confirmed', async () => {
     const body = ok<JobBody>(await turnOn(petr), 201);
     assert.equal(body.request.status, 'pending');
+    assert.equal(body.request.executionAvailability, 'implementation_unavailable');
+    assert.equal(body.request.executionMessageKey, 'agentModules.refusal.moduleNotServing');
     assert.equal(body.request.jobSubscriptionId, null);
     assert.equal(body.confirmation.proposalId, body.request.mandateProposalId);
     assert.deepEqual(body.confirmation.mandate.approvalPolicy, { mode: 'ask_each' }, 'the hub default, never looser than the verb default');
@@ -151,12 +161,13 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
   const authority = new CapabilityAuthority({ hubId });
   const model = new ScriptedModel();
   const service = new AssistantService(h.created.ctx!, h.services().principals, assistantPolicySettings({ hubId }), DEFAULT_RUNTIME_SETTINGS, model, new FakeRetrieval([]), agentRuntimeGate(authority));
+  const effectProject = ok<{ id: string }>(await petr.post('/v1/projects', { owner: { kind: 'person', id: petrId }, name: 'Synthetic effect context', summary: null, leaderPersonId: null }), 201);
   const newMandate = async () => {
     h.clock.advance(1000);
     const c = h.client();
     await login(c, 'petr');
     return ok<{ id: string }>(await c.post('/v1/assistant/mandates', { draft: {
-      onBehalfOf: null, grantee: { kind: 'own_agent' }, moduleKeys: ['project_planner'], actions: ['publish', 'record_evidence'], contexts: [{ kind: 'profile', id: petrId }],
+      onBehalfOf: null, grantee: { kind: 'own_agent' }, moduleKeys: ['project_planner'], actions: ['publish', 'record_evidence'], contexts: [{ kind: 'project', id: effectProject.id }],
       limits: { ceiling: null, perActionCeiling: null, transactionBudgetId: null, platformBudgetId: null, perWindow: null }, conditions: [], approvalPolicy: { mode: 'pre_authorized' }, approvers: [],
       escalation: { kind: 'ask_principal' }, validUntil: until(30),
     } }), 201).id;
@@ -168,7 +179,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
   let turns = 0;
   const propose = async (capabilityId: string, action = ACTION_OF[capabilityId] ?? 'publish', effectOverride: { provider: string; operation: string } | null = null) => {
     model.push({ text: 'Proposed.', messageKey: null, usage: { inputTokens: 1, outputTokens: 1 }, toolCalls: [{
-      kind: 'propose_action', mandateId: actionMandate, capabilityId, moduleKey: 'project_planner', action, context: { kind: 'profile', id: petrId }, amount: null, projectId: null,
+      kind: 'propose_action', mandateId: actionMandate, capabilityId, moduleKey: 'project_planner', action, context: { kind: 'project', id: effectProject.id }, amount: null, projectId: null,
       effect: { provider: 'fake_publications', operation: 'plan.share', ...effectOverride, payload: { item: 'synthetic' } },
     }] });
     return (await service.converse({ text: 'Share the plan item' }, await stateOf(h, petr, `req-agt3-${++turns}`))).actions[0]!;
@@ -222,7 +233,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     assert.equal((await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, aId, aJob.id, null, aJob.fencing_token))).status, 'dispatch');
     otherModel.push({ text: 'Synthetic separate hub.', messageKey: null, usage: { inputTokens: 1, outputTokens: 1 }, toolCalls: [{
       kind: 'propose_action', mandateId: actionMandate, capabilityId: PLANNER_COMMIT, moduleKey: 'project_planner', action: 'publish',
-      context: { kind: 'profile', id: petrId }, amount: null, projectId: null,
+      context: { kind: 'project', id: effectProject.id }, amount: null, projectId: null,
       effect: { provider: 'fake_publications', operation: 'plan.share', payload: { item: 'synthetic-b' } },
     }] });
     const b = (await otherService.converse({ text: 'Synthetic hub B request' }, await stateOf(h, petr, `hub-b-${randomUUID()}`))).actions[0]!;

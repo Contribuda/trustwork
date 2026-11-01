@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { installSyntheticServingHub } from '../../agent-modules/serving-fixture.js';
-import { installSyntheticOrderManifest, SYNTHETIC_ORDER_MANIFEST, installSyntheticHumanManifest, SYNTHETIC_HUMAN_MANIFEST } from '../../assistant/manifest-fixture.js';
+import { syntheticEffectImplementations, installSyntheticOrderManifest, SYNTHETIC_ORDER_MANIFEST, installSyntheticHumanManifest, SYNTHETIC_HUMAN_MANIFEST } from '../../assistant/manifest-fixture.js';
 import { CapabilityAuthority, agentRuntimeGate } from '../../../apps/api/src/modules/agent-modules/authority.js';
 import { ENGINE_MANIFESTS } from '../../../apps/api/src/modules/agent-modules/ports.js';
 import type { AuthorizedEvidence } from '@trustwork/contracts';
@@ -39,7 +39,7 @@ export async function startRuntime(label = 'agent_safety'): Promise<StartedRunti
   const worker = await workerLogin(h);
   const seed = await seedPersonas(h);
   const providers = fakeEffectProviders();
-  const runtime: AssistantRuntime = { pool: worker.pool(6), providers: providers.all, hubId: null, log: silentLogger };
+  const runtime: AssistantRuntime = { pool: worker.pool(6), providers: providers.all, implementations: syntheticEffectImplementations(providers.all), hubId: null, log: silentLogger };
   const w = new Worker({ pool: runtime.pool, registry: registerAssistant(new HandlerRegistry(), runtime), config: { workerId: 'agent-safety', leaseSeconds: 30, retryJitter: 0 }, tasks: () => [] });
   const fakes = providers.all as FakeEffectProvider[];
   const effectsSince = (marks: readonly number[] = []): EffectRecord[] =>

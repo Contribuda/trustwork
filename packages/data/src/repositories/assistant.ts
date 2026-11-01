@@ -1,3 +1,4 @@
+import type { EffectImplementationDeclaration } from '../../../contracts/src/agent-modules.js';
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type {
@@ -245,11 +246,11 @@ export const serviceBacklog = {
 /* ---------- Worker entry points (trustwork_worker) ---------- */
 
 export type DispatchTarget =
-  | { status: 'dispatch'; attemptId: string; attemptNo: number; operationId: string; correlationKey: string; provider: string; operation: string; payload: unknown; amount: { minorUnits: string; currency: string } | null }
+  | { status: 'dispatch'; implementation: EffectImplementationDeclaration; attemptId: string; attemptNo: number; operationId: string; correlationKey: string; provider: string; operation: string; payload: unknown; amount: { minorUnits: string; currency: string } | null }
   | { status: 'skip'; state: string }
   | { status: 'refused'; reason: string };
 export type ReconciliationTarget =
-  | { status: 'reconcile'; attemptId: string; operationId: string; correlationKey: string; provider: string; operation: string }
+  | { status: 'reconcile'; implementation: EffectImplementationDeclaration | null; attemptId: string; operationId: string; correlationKey: string; provider: string; operation: string }
   | { status: 'skip'; state: string };
 export interface ObservedOutcome {
   kind: 'unknown' | 'acknowledged' | 'final';
@@ -260,6 +261,10 @@ export interface ObservedOutcome {
 }
 
 export const assistantWorker = {
+  async enterEffect(trx: Transaction, attemptId: string, jobId: string, fencingToken: string | number): Promise<boolean> {
+    const { rows } = await sql<{ ready: boolean }>`SELECT trustwork.agent_modules_enter_effect(${attemptId}::uuid,${jobId}::uuid,${fencingToken}::bigint) AS ready`.execute(trx);
+    return rows[0]?.ready === true;
+  },
   async beginAttempt(trx: Transaction, intentId: string, jobId: string, hubId: string | null, fencingToken: string | number): Promise<DispatchTarget> {
     const { rows } = await sql<{ r: DispatchTarget }>`SELECT trustwork.assistant_begin_attempt(${intentId}::uuid, ${jobId}::uuid, ${hubId}::uuid, ${fencingToken}::bigint) AS r`.execute(trx);
     return rows[0]!.r;
