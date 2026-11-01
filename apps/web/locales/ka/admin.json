@@ -546,7 +546,10 @@
           "release_payout_batch": "გაცემების პაკეტის გაშვება"
         },
         "payments": {
-          "change_settings": "გადახდის პარამეტრების შეცვლა"
+          "change_settings": "გადახდის პარამეტრების შეცვლა",
+          "register_source_adapter": "გადახდის წყაროს ადაპტერის რეგისტრაცია",
+          "accept_participant_binding": "მონაწილის გადახდის მიბმის მიღება",
+          "activate_account_binding": "გადახდის ანგარიშის მიბმის გააქტიურება"
         },
         "sponsored": {
           "enable": "სპონსორული მასალების ჩართვა"

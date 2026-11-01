@@ -546,7 +546,10 @@
           "release_payout_batch": "Ödəmə paketini burax"
         },
         "payments": {
-          "change_settings": "Ödəniş parametrlərini dəyiş"
+          "change_settings": "Ödəniş parametrlərini dəyiş",
+          "register_source_adapter": "Ödəniş mənbəyi adapterini qeydiyyatdan keçir",
+          "accept_participant_binding": "İştirakçının ödəniş bağlantısını qəbul et",
+          "activate_account_binding": "Ödəniş hesabı bağlantısını aktivləşdir"
         },
         "sponsored": {
           "enable": "Sponsor materiallarını aç"

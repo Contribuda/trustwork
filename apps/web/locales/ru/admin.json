@@ -546,7 +546,10 @@
           "release_payout_batch": "Выпустить пакет выплат"
         },
         "payments": {
-          "change_settings": "Изменить настройки платежей"
+          "change_settings": "Изменить настройки платежей",
+          "register_source_adapter": "Зарегистрировать адаптер источника платежей",
+          "accept_participant_binding": "Принять привязку платежей участника",
+          "activate_account_binding": "Активировать привязку платёжного счёта"
         },
         "sponsored": {
           "enable": "Включить спонсорские материалы"

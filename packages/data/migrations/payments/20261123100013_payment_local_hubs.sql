@@ -2,7 +2,7 @@
 -- Catalog gate precedes all payment admission/source/domain locks. Version1 snapshots stay version1.
 CREATE FUNCTION trustwork.payments_screen_hub_current(p_hub uuid,p_parties uuid[]) RETURNS jsonb
 LANGUAGE plpgsql SET search_path=trustwork,pg_temp AS $$
-DECLARE f record; required uuid[]:='{}'; subject uuid; result jsonb:='[]';
+DECLARE f record; required uuid[]:='{}'; result jsonb:='[]';
 BEGIN
  PERFORM trustwork.screening_list_authority_lock();
  PERFORM 1 FROM trustwork.hub_profile WHERE hub_id=p_hub AND node_id=trustwork.jurisdiction_node() FOR SHARE NOWAIT;
@@ -18,10 +18,8 @@ BEGIN
   required:=array_append(required,f.active_version_id);
   result:=result||jsonb_build_array(jsonb_build_object('listId',f.list_id,'versionId',f.active_version_id));
  END LOOP;
- FOREACH subject IN ARRAY p_parties LOOP
-  IF NOT EXISTS(SELECT 1 FROM trustwork.screening_subject_state WHERE subject_person_id=subject AND required<@screened_versions
-    AND last_outcome='clear') THEN RAISE EXCEPTION 'responsible hub list coverage unavailable' USING ERRCODE='42501'; END IF;
- END LOOP;
+ IF NOT trustwork.screening_persons_clear_for_versions(p_parties,required) THEN
+  RAISE EXCEPTION 'responsible hub list coverage unavailable' USING ERRCODE='42501'; END IF;
  RETURN result;
 END $$;
 CREATE FUNCTION trustwork.payments_hub_restrictions(p_hub uuid,p_places text[]) RETURNS void

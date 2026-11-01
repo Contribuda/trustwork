@@ -546,7 +546,10 @@
           "release_payout_batch": "Toʻlab berish paketini chiqarish"
         },
         "payments": {
-          "change_settings": "Toʻlov sozlamalarini oʻzgartirish"
+          "change_settings": "Toʻlov sozlamalarini oʻzgartirish",
+          "register_source_adapter": "Toʻlov manbasi adapterini roʻyxatdan oʻtkazish",
+          "accept_participant_binding": "Ishtirokchining toʻlov bogʻlanishini qabul qilish",
+          "activate_account_binding": "Toʻlov hisobi bogʻlanishini faollashtirish"
         },
         "sponsored": {
           "enable": "Homiylik materiallarini yoqish"
