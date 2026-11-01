@@ -1,3 +1,7 @@
+import { ModelGateway } from '../../apps/api/src/modules/models/gateway.js';
+import { FakeModelRegistry } from '../../apps/api/src/modules/models/ports.js';
+import { RuntimeModelAuthority } from '../../apps/api/src/modules/models/runtime-authority.js';
+import { syntheticGovernance } from './durable-helpers.js';
 import { DeterministicModel } from '../../apps/api/src/modules/models/fake.js';
 // Isolated fake-only process used by durability/cap tests. Configuration travels over IPC, never stdout or argv.
 import { createPool, withPrincipal } from '@trustwork/data';
@@ -10,12 +14,18 @@ import { computeDigest } from '@trustwork/contracts';
 
 process.once(
   'message',
-  async (config: { db: pg.PoolConfig; call: ModelCall; binding: ModelRuntimeBinding; mode: 'begin' | 'before_commit' | 'after_admit' | 'after_effect' }) => {
+  async (config: {
+    db: pg.PoolConfig;
+    call: ModelCall;
+    binding: ModelRuntimeBinding;
+    mode: 'call' | 'begin' | 'before_commit' | 'after_admit' | 'after_effect';
+  }) => {
     globalThis.fetch = async () => {
       throw new Error('network disabled in fake model test');
     };
     const pool = createPool({ ...config.db, max: 1 });
     const principal = { personId: config.call.principalId, authzEpoch: config.binding.authzEpoch };
+    let calls = 0;
     try {
       const route = await new KeysRouteResolver(pool).resolve(config.call);
       if (config.mode === 'before_commit') {
@@ -27,6 +37,28 @@ process.once(
         });
       }
       const store = new PostgresModelCallStore(pool, principal, config.binding, 1);
+      if (config.mode === 'call') {
+        const adapters = new FakeModelRegistry();
+        adapters.register(route.candidates[0]!.connectionId, {
+          mode: 'fake',
+          async invoke() {
+            calls++;
+            return { kind: 'unknown' };
+          },
+          async reconcile() {
+            return { kind: 'unknown' };
+          },
+        });
+        const gateway = new ModelGateway(
+          new KeysRouteResolver(pool),
+          new RuntimeModelAuthority(pool, principal, config.binding, syntheticGovernance),
+          store,
+          adapters,
+        );
+        const outcome = await gateway.call(config.call);
+        process.send?.({ kind: calls === 1 ? 'dispatch' : 'replay', calls, outcome: outcome.outcome });
+        return;
+      }
       const result = await store.begin(config.call, route, route.candidates[0]!);
       if (result.kind === 'dispatch' && config.mode !== 'begin') {
         await store.admit(result.call);
@@ -46,7 +78,7 @@ process.once(
       }
       process.send?.({ kind: result.kind });
     } catch (error) {
-      process.send?.({ error: (error as { hint?: string; code?: string }).hint ?? (error as { code?: string }).code ?? 'test_failure' });
+      process.send?.({ calls, error: (error as { hint?: string; code?: string }).hint ?? (error as { code?: string }).code ?? 'test_failure' });
     } finally {
       await pool.end();
       process.disconnect?.();
