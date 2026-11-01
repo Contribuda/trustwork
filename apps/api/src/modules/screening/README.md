@@ -7,7 +7,7 @@ The API side of the screening engine ([ADR 014](../../../../../docs/adr/014-sanc
 | Route | Who | What |
 |---|---|---|
 | `GET /v1/screening/me[?companyId=]` | the subject (or an administrator of the company) | `core.compliance_status`: status words only (`OwnComplianceStatusSchema`); never a list, an entry, a matched name or a reviewer |
-| `POST /v1/screening/me/appeal` | the subject, fresh step-up | `core.appeal_compliance_decision`: every confirmed match of the subject goes to `appeal` |
+| `POST /v1/screening/me/appeal` | the subject, fresh step-up | `core.appeal_compliance_decision`: every confirmed match of the subject goes to `appeal`; answers with the generic receipt `{ recorded: true }`, and a replay of a success stored before SANC-007 is minimized to the same receipt without running the command again |
 | `GET /v1/admin/screening/queue` | compliance staff, elevated | one item per subject waiting for a reviewer, late after `SCREENING_REVIEW_SERVICE_LEVEL_DAYS` business days (1 to 5, default 1) |
 | `GET /v1/admin/screening/subjects/:stateId`, `GET /v1/admin/screening/matches/:id` | compliance staff, elevated | the entry and the screened name side by side, the decision trail and any second-person request |
 | `GET /v1/admin/screening/rescreen-runs` | node compliance officer or auditor, elevated | operational SANC-005 run projection, newest first; progress suppressed below ten proven distinct people |

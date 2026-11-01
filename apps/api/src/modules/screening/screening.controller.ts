@@ -9,7 +9,7 @@ import { PrincipalService } from '../identity/principal.service.js';
 import { Elevation, ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../identity/second-factor/deps.js';
 import {
-  AppealComplianceDecisionCommandSchema, ConfirmScreeningMatchCommandSchema, DecideScreeningAppealCommandSchema, DecideScreeningProposalCommandSchema, ownComplianceStatus,
+  AppealComplianceDecisionCommandSchema, complianceAppealReceipt, ConfirmScreeningMatchCommandSchema, DecideScreeningAppealCommandSchema, DecideScreeningProposalCommandSchema, ownComplianceStatus,
   ProposeNotSamePersonCommandSchema, ReviewServiceLevelSchema, REVIEW_SERVICE_LEVEL_BOUNDS, screeningStaff, screeningSubjects, type ScreeningReportDraftRow,
 } from './deps.js';
 import { screeningRefusal } from './errors.js';
@@ -37,7 +37,9 @@ async function guarded<T>(fn: () => Promise<T>): Promise<T> {
 
 /**
  * The subject's own compliance status (`core.compliance_status`) and the appeal (`core.appeal_compliance_decision`,
- * fresh step-up). The answer is status words only: never a list, an entry, a matched name or a reviewer.
+ * fresh step-up). The status answer is status words only: never a list, an entry, a matched name or a reviewer. The
+ * appeal answers with a generic receipt (SANC-007), so neither its response nor a replay of it repeats the status; the
+ * form reads the current status again.
  */
 @Controller('v1/screening/me')
 @Authenticated()
@@ -60,8 +62,7 @@ export class ScreeningSelfController {
         actor_person_id: p.personId, action: 'screening.appeal_filed', object_kind: body.companyId ? 'company' : 'person', object_id: body.companyId ?? p.personId,
         request_id: state.requestId, authz_epoch: p.authzEpoch, basis: { appealed },
       });
-      const own = await screeningSubjects.own(trx, body.companyId);
-      return ownComplianceStatus(own.state, own.appealable);
+      return complianceAppealReceipt();
     }));
   }
 }
