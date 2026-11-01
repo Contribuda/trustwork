@@ -81,8 +81,7 @@ async function main(): Promise<void> {
   const registry = buildRegistry({ payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
-    tasks: (deps) => [agentOccurrencesTask(pool), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
-    tasks: (deps) => [paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+    tasks: (deps) => [agentOccurrencesTask(pool), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
       ...(consultations ? [consultationRemindersTask(consultations)] : []),
       ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),
