@@ -1,0 +1,47 @@
+{
+  "pricing": {
+    "title": "Narxlar va komissiyalar",
+    "intro": "E’lon qilingan versiyalar va amal qilish muddati. Tasdiqlashdan oldin aniq shartlarni tekshiring.",
+    "neutralTitle": "To‘lov nimalarni sotib olmaydi",
+    "neutral": "To‘lov saralash, moslashtirish, tavsiyalar, obro‘ yoki tasdiqlash belgilariga ta’sir qilmaydi. Asosiy ishtirok bepul qoladi.",
+    "custody": "Platforma ishtirokchilarning pulini saqlamaydi. To‘lovlar litsenziyalangan provayderlar orqali amalga oshiriladi.",
+    "error": "Narxlarni yuklab bo‘lmadi. Keyinroq qayta urinib ko‘ring.",
+    "fees": "Bozor yig‘imlari va komissiyalari",
+    "empty": "Faol versiyalar e’lon qilinmagan.",
+    "prices": "Rejalar va xizmat narxlari",
+    "validity": "{from} dan {to} gacha amal qiladi",
+    "noEnd": "tugash sanasi yo‘q",
+    "version": "{version}-versiya",
+    "category": "Toifa: {category}",
+    "allCategories": "Barcha toifalar",
+    "reference": "Versiya identifikatori: {reference}",
+    "packValidity": "Kredit muddati: {validity}",
+    "unavailable": "Hozir mavjud emas",
+    "noZero": "E’lon qilingan narx yo‘qligi bepul emas, mavjud emasligini bildiradi.",
+    "kind": {
+      "consultation": "Maslahat",
+      "task": "Vazifa",
+      "ticket": "Tadbir chiptasi",
+      "course": "Kurs",
+      "plan": "Agent rejasi",
+      "model": "Model",
+      "capability": "Imkoniyat",
+      "credit_pack": "Kredit to‘plami",
+      "deliverable": "Ish natijasi",
+      "verification_fee": "Tekshirish xizmati",
+      "agent_module": "Agent moduli"
+    },
+    "payer": {
+      "buyer": "Xaridor to‘laydi",
+      "seller": "Sotuvchi to‘laydi"
+    },
+    "unavailableKinds": {
+      "fees": "Bozor yig‘imlari va komissiyalari",
+      "plans": "Agent rejasi",
+      "models": "Model",
+      "capabilities": "Imkoniyat",
+      "credit_packs": "Kredit to‘plami"
+    },
+    "planVersion": "Reja versiyasi {version}"
+  }
+}

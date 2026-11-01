@@ -1,0 +1,47 @@
+{
+  "pricing": {
+    "title": "Qiymətlər və komissiyalar",
+    "intro": "Dərc edilmiş versiyalar və qüvvədə olma müddətləri. Təsdiqdən əvvəl dəqiq şərtləri yoxlayın.",
+    "neutralTitle": "Ödəniş nəyi almır",
+    "neutral": "Ödəniş sıralama, uyğunlaşdırma, tövsiyələr, nüfuz və ya yoxlama nişanlarını dəyişmir. Əsas iştirak pulsuz qalır.",
+    "custody": "Platforma iştirakçıların pulunu saxlamır. Ödənişlər lisenziyalı provayderlər vasitəsilə edilir.",
+    "error": "Qiymətlər yüklənmədi. Sonra yenidən cəhd edin.",
+    "fees": "Bazar haqları və komissiyalar",
+    "empty": "Aktiv versiyalar dərc edilməyib.",
+    "prices": "Planlar və xidmət qiymətləri",
+    "validity": "{from} tarixindən {to} tarixinədək qüvvədədir",
+    "noEnd": "bitmə tarixi yoxdur",
+    "version": "Versiya {version}",
+    "category": "Kateqoriya: {category}",
+    "allCategories": "Bütün kateqoriyalar",
+    "reference": "Versiya identifikatoru: {reference}",
+    "packValidity": "Kredit müddəti: {validity}",
+    "unavailable": "Hazırda mövcud deyil",
+    "noZero": "Dərc edilmiş qiymətin olmaması sıfır qiymət deyil, əlçatan olmamaq deməkdir.",
+    "kind": {
+      "consultation": "Məsləhət",
+      "task": "Tapşırıq",
+      "ticket": "Tədbir bileti",
+      "course": "Kurs",
+      "plan": "Agent planı",
+      "model": "Model",
+      "capability": "İmkan",
+      "credit_pack": "Kredit paketi",
+      "deliverable": "İş nəticəsi",
+      "verification_fee": "Yoxlama xidməti",
+      "agent_module": "Agent modulu"
+    },
+    "payer": {
+      "buyer": "Alıcı ödəyir",
+      "seller": "Satıcı ödəyir"
+    },
+    "unavailableKinds": {
+      "fees": "Bazar haqları və komissiyalar",
+      "plans": "Agent planı",
+      "models": "Model",
+      "capabilities": "İmkan",
+      "credit_packs": "Kredit paketi"
+    },
+    "planVersion": "Plan versiyası {version}"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "pricing": {
+    "title": "Precios y comisiones",
+    "intro": "Versiones publicadas y su vigencia. Revise las condiciones exactas antes de confirmar.",
+    "neutralTitle": "Lo que el pago nunca compra",
+    "neutral": "El pago nunca cambia la clasificación, las coincidencias, las recomendaciones, la reputación ni las insignias de verificación. La participación básica sigue siendo gratuita.",
+    "custody": "La plataforma no custodia dinero de los participantes. Los pagos utilizan proveedores autorizados.",
+    "error": "No se pudieron cargar los precios. Inténtelo de nuevo más tarde.",
+    "fees": "Tarifas y comisiones del mercado",
+    "empty": "No hay versiones activas publicadas.",
+    "prices": "Planes y precios de servicios",
+    "validity": "Válido desde {from} hasta {to}",
+    "noEnd": "sin fecha de fin",
+    "version": "Versión {version}",
+    "category": "Categoría: {category}",
+    "allCategories": "Todas las categorías",
+    "reference": "Referencia de versión: {reference}",
+    "packValidity": "Vigencia del crédito: {validity}",
+    "unavailable": "Actualmente no disponible",
+    "noZero": "Sin precio publicado significa no disponible, no coste cero.",
+    "kind": {
+      "consultation": "Consulta",
+      "task": "Tarea",
+      "ticket": "Entrada de evento",
+      "course": "Curso",
+      "plan": "Plan de agente",
+      "model": "Modelo",
+      "capability": "Capacidad",
+      "credit_pack": "Paquete de créditos",
+      "deliverable": "Entregable",
+      "verification_fee": "Servicio de verificación",
+      "agent_module": "Módulo de agente"
+    },
+    "payer": {
+      "buyer": "Paga el comprador",
+      "seller": "Paga el vendedor"
+    },
+    "unavailableKinds": {
+      "fees": "Tarifas y comisiones del mercado",
+      "plans": "Plan de agente",
+      "models": "Modelo",
+      "capabilities": "Capacidad",
+      "credit_packs": "Paquete de créditos"
+    },
+    "planVersion": "Versión del plan {version}"
+  }
+}

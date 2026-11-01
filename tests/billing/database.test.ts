@@ -93,10 +93,10 @@ test('billing persistence: versions, acceptances, two budget kinds, atomic reser
     const rate2 = await owner((trx) => catalogue.draftMeterRate(trx, { hubId: w.hubId, meter: 'model_tokens', providerClass: 'hosted_external', currency: 'USD', pricePerThousandMinor: '3', passThrough: true, effectiveFrom: days(5), draftedBy: p.drafter }));
     await rejects(owner((trx) => catalogue.activateMeterRate(trx, rate2.id, p.activator)), '23P01', 'billing.version_overlap');
     const fee = await owner((trx) => catalogue.draftFeeVersion(trx, { hubId: w.hubId, kind: 'consultation', categoryKey: 'structural_review', currency: 'USD', basisPoints: 500, fixedMinor: null, payer: 'buyer', effectiveFrom: days(1), acceptanceTextVersion: 'fee-1', draftedBy: p.drafter }));
-    await rejects(owner((trx) => trx.updateTable('marketplace_fee_version').set({ status: 'active', activated_by: p.activator }).where('id', '=', fee.id).execute()), '23514', 'billing.approval_missing');
-    await rejects(owner((trx) => catalogue.activateFeeVersion(trx, fee.id, p.drafter, randomUUID())), '23514', 'billing.activator_is_drafter');
-    const activeFee = await owner((trx) => catalogue.activateFeeVersion(trx, fee.id, p.activator, randomUUID()));
-    assert.equal(activeFee.status, 'active');
+    await rejects(owner((trx) => trx.updateTable('marketplace_fee_version').set({ status: 'active', activated_by: p.activator }).where('id', '=', fee.id).execute()), '42501', 'admin.approval_mismatch');
+    await rejects(owner((trx) => catalogue.activateFeeVersion(trx, fee.id, p.drafter, randomUUID())), '42501', 'admin.approval_mismatch');
+    // BILL-003 requires an actual consumed, scoped, exact-digest approval (covered in fees/authority.test.ts).
+    await rejects(owner((trx) => catalogue.activateFeeVersion(trx, fee.id, p.activator, randomUUID())), '42501', 'admin.approval_mismatch');
     await rejects(owner((trx) => catalogue.draftFeeVersion(trx, { hubId: w.hubId, kind: 'ticket', categoryKey: 'not_allowed', currency: 'USD', basisPoints: 100, fixedMinor: null, payer: 'buyer', effectiveFrom: days(1), acceptanceTextVersion: 'fee-1', draftedBy: p.drafter })), '23514');
   });
 

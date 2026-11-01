@@ -7,6 +7,7 @@ import { IdentityModule, type IdentityServices } from './modules/identity/identi
 import { ProjectsModule } from './modules/projects/projects.module.js';
 import { DirectoryModule } from './modules/directory/directory.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
+import { FeesModule } from './modules/billing/fees/fees.module.js';
 import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
 import { ProcurementModule } from './modules/procurement/procurement.module.js';
 import { ApprovalRoutesModule } from './modules/approval-routes/approval-routes.module.js';
@@ -90,6 +91,7 @@ export class AppModule {
         AssistantModule.forRoot(ctx, identity),
         AgentsModule.forRoot(ctx, identity),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
+        FeesModule.forRoot(ctx, identity, communications.env),
         HubsModule.forRoot(ctx, identity),
         // HUB-004: the setup wizard backend (told the gate mode, the blob store for the install check and the environment).
         HubsSetupModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode, objectStore: files.store, ...(communications.env ? { env: communications.env } : {}) }),

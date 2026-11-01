@@ -1,0 +1,7 @@
+.fee-pricing { max-width: 72rem; padding-block: 2rem 4rem; }
+.fee-pricing section { margin-block-start: 2rem; }
+.fee-pricing-policy { padding: 1.25rem; border: 1px solid currentColor; border-radius: .5rem; }
+.fee-pricing-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 1rem; }
+.fee-pricing-list li { border: 1px solid #767676; border-radius: .5rem; padding: 1.25rem; min-width: 0; overflow-wrap: anywhere; }
+.fee-pricing-amount { font-size: 1.5rem; font-weight: 700; }
+.fee-pricing-reference { font-size: .8rem; overflow-wrap: anywhere; }

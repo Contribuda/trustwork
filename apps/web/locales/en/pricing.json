@@ -1,0 +1,47 @@
+{
+  "pricing": {
+    "title": "Prices and fees",
+    "intro": "Published versions and their validity. Review the exact terms before confirming.",
+    "neutralTitle": "What payment never buys",
+    "neutral": "Payment never changes ranking, matching, recommendations, reputation or verification badges. Basic participation remains free.",
+    "custody": "The platform does not hold participants’ money. Payments use licensed providers.",
+    "error": "Prices could not be loaded. Please try again later.",
+    "fees": "Marketplace fees and commissions",
+    "empty": "No active versions are published.",
+    "prices": "Plans and service prices",
+    "validity": "Valid from {from} to {to}",
+    "noEnd": "no end date",
+    "version": "Version {version}",
+    "category": "Category: {category}",
+    "allCategories": "All categories",
+    "reference": "Version reference: {reference}",
+    "packValidity": "Credit validity: {validity}",
+    "unavailable": "Currently unavailable",
+    "noZero": "No published price means unavailable, not zero cost.",
+    "kind": {
+      "consultation": "Consultation",
+      "task": "Task",
+      "ticket": "Event ticket",
+      "course": "Course",
+      "plan": "Agent plan",
+      "model": "Model",
+      "capability": "Capability",
+      "credit_pack": "Credit pack",
+      "deliverable": "Deliverable",
+      "verification_fee": "Verification service",
+      "agent_module": "Agent module"
+    },
+    "payer": {
+      "buyer": "Buyer pays",
+      "seller": "Seller pays"
+    },
+    "unavailableKinds": {
+      "fees": "Marketplace fees and commissions",
+      "plans": "Agent plan",
+      "models": "Model",
+      "capabilities": "Capability",
+      "credit_packs": "Credit pack"
+    },
+    "planVersion": "Plan version {version}"
+  }
+}
