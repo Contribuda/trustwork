@@ -32,6 +32,8 @@ export type JobMode = 'external' | 'transactional';
  * effect is not.
  */
 export const KNOWN_JOB_MODES: Readonly<Record<string, JobMode>> = {
+  'agents.execute_occurrence': 'transactional',
+  'agents.start_occurrence': 'transactional',
   'outbox.redeliver': 'transactional',
   'mail.deliver': 'external',
   'mail.feedback': 'transactional',
