@@ -98,6 +98,7 @@ test('support workspace API', { skip: h ? false : SKIP_REASON }, async (t) => {
 
   await t.test('account card: only allowlisted fields (strict schema, leak probes), recorded and visible to the person as "support looked"', async () => {
     await withMaintenance(h.db.admin, async (trx) => {
+      // A billing account with a tax registration exists, but billing tables stay closed to the support module (payment neutrality).
       const offer = await trx.insertInto('offer').values({ hub_id: w.world.hubId, code: 'basic_free', name: 'Synthetic basic', kind: 'plan', status: 'active', created_by: w.world.people.owner }).returning('id').executeTakeFirstOrThrow();
       const account = await trx.insertInto('billing_account').values({ hub_id: w.world.hubId, owner_person_id: p.customer, currency: 'USD', created_by: p.customer, tax_registration_id: 'SYNTHETIC-TAX-0001' }).returning('id').executeTakeFirstOrThrow();
       await trx.insertInto('entitlement').values({ billing_account_id: account.id, offer_id: offer.id, valid_from: new Date(Date.now() - 86_400_000), source: 'free_basic', limits: JSON.stringify({ agentRuns: 30 }) }).execute();
@@ -115,7 +116,9 @@ test('support workspace API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(card.accountState, 'active');
     assert.equal(card.emailVerified, true);
     assert.deepEqual(card.secondFactor, { enrolled: false, methods: 0 });
-    assert.deepEqual(card.entitlements, [{ offerCode: 'basic_free', validUntil: null }]);
+    // Entitlements come from billing through a port; no billing read for staff exists yet, so the card says so.
+    assert.deepEqual(card.entitlements, []);
+    assert.equal(body(response).entitlementsAvailable, false);
     assert.deepEqual((card.consents as Body[]).map((x) => [x.kind, x.version, x.state]), [['marketing', 'marketing.v1', 'given']]);
     assert.equal(card.openCases, 1);
     const text = JSON.stringify(body(response));

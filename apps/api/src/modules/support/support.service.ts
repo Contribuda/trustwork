@@ -13,6 +13,7 @@ import {
 } from './deps.js';
 import { rethrowSupport } from './errors.js';
 import { explainAccess } from './explainer.js';
+import { UnavailableEntitlements, type SupportEntitlementsPort } from './ports.js';
 import type {
   AccountCardQuerySchema, ExplainQuerySchema, LookupQuerySchema, OpenCaseCommandSchema, OpenOwnCaseSchema, OwnCaseUpdateSchema, OwnNoteSchema, PlainCommandSchema, RequestActionCommandSchema,
   ShareDiagnosticsSchema, StaffNoteCommandSchema, UpdateCaseCommandSchema,
@@ -51,7 +52,7 @@ const isCooling = (action: string): boolean => (COOLING_OFF_ACTIONS as readonly 
  * issues a session for another person or acts as them: there is no such code path to call.
  */
 export class SupportService {
-  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService) {}
+  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly entitlements: SupportEntitlementsPort = new UnavailableEntitlements()) {}
 
   private get now(): Date {
     return this.ctx.clock.now();
@@ -162,7 +163,9 @@ export class SupportService {
   accountCard(e: Elevated, caseId: string, personId: string, body: z.infer<typeof AccountCardQuerySchema>) {
     return this.staff(e, this.queryContext(e, body.reason), async (trx, _p, cmd) => {
       const json = await supportAccess.accountCard(trx, cmd, caseId, personId, { threshold: this.ctx.config.lockout.accountThreshold, windowSeconds: this.ctx.config.lockout.windowSeconds });
-      return { account: toAccountCard(json) };
+      // Billing owns entitlements (payment neutrality); the card asks it through the port, after the database authorized the read.
+      const entitlements = await this.entitlements.entitlementsOf(trx, personId, this.now);
+      return { account: toAccountCard({ ...json, entitlements: entitlements ?? [] }), entitlementsAvailable: entitlements !== null };
     });
   }
 
