@@ -118,6 +118,31 @@ try {
   assert.ok(results.every(r => (r as { axeViolations: number }).axeViolations === 0), 'All pages must pass axe; see per-page reports');
   const raw = await fetch(`http://127.0.0.1:3468/ru/articles/${article.id}`).then(r => r.text());
   assert.match(raw, /application\/ld\+json/); assert.match(raw, /dateModified/); assert.match(raw, /Synthetic correction/);
+  // A real published title/correction must remain JSON data, even without CSP as a second defense.
+  const breakoutTitle = 'Synthetic </ScRiPt><script id="cnt003-breakout">window.jsonLdBreakout=true</script> <!-- & " \u2028\u2029';
+  const breakoutNote = 'Synthetic correction </script><img id="cnt003-breakout-image" src="https://example.invalid/never-fetch" onerror="window.jsonLdBreakout=true">';
+  let breakout = await make('article', breakoutTitle, true);
+  breakout = await w.act.as(p.writer, trx => publications.correct(trx, null, breakout.id, breakout.revision, draft({ title: breakoutTitle, body: 'Synthetic JSON-LD boundary test.', language: 'ru' }), breakoutNote, 'correction'));
+  const breakoutContext = await browser.newContext({ bypassCSP: true });
+  await breakoutContext.addCookies([{ name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }]);
+  const breakoutPage = await breakoutContext.newPage(), breakoutRequests: string[] = [], breakoutErrors: string[] = [];
+  breakoutPage.on('pageerror', error => breakoutErrors.push(error.message));
+  await breakoutPage.route('**/*', route => {
+    if (!['127.0.0.1', 'localhost'].includes(new URL(route.request().url()).hostname)) { breakoutRequests.push(route.request().url()); return route.abort(); }
+    return route.continue();
+  });
+  assert.equal((await breakoutPage.goto(`http://127.0.0.1:3468/ru/articles/${breakout.id}`, { waitUntil: 'networkidle' }))?.status(), 200);
+  const jsonScript = breakoutPage.locator('script[type="application/ld+json"]');
+  assert.equal(await jsonScript.count(), 1);
+  const jsonText = await jsonScript.textContent(); assert.ok(jsonText);
+  assert.equal(JSON.parse(jsonText).headline, breakoutTitle);
+  assert.equal(JSON.parse(jsonText).correction.text, breakoutNote);
+  assert.ok(!jsonText.includes('<'), 'script data contains no HTML delimiter');
+  assert.equal(await breakoutPage.locator('#cnt003-breakout, #cnt003-breakout-image').count(), 0);
+  assert.equal(await breakoutPage.evaluate(() => (window as unknown as { jsonLdBreakout?: boolean }).jsonLdBreakout), undefined);
+  assert.deepEqual(breakoutRequests, []); assert.deepEqual(breakoutErrors, []);
+  await writeFile(`${evidence}/jsonld-results.json`, JSON.stringify({ cspBypassedForNegativeTest: true, titleRoundTrip: true, correctionRoundTrip: true, injectedElements: 0, externalRequests: breakoutRequests, pageErrors: breakoutErrors }, null, 2));
+  await breakoutContext.close();
   for (const section of ['news', 'articles', 'magazine']) for (const file of ['feed.xml', 'atom.xml', 'feed.json']) {
     const r = await fetch(`http://127.0.0.1:3468/ru/${section}/${file}`), body = await r.text();
     assert.equal(r.status, 200, `${section}/${file}`); assert.ok(body.includes('Synthetic')); assert.ok(!body.includes('PRIVATE draft marker'));

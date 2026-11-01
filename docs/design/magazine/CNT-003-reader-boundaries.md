@@ -14,6 +14,8 @@ CNT-003's work package requests the responsible editor, agent role names and sta
 
 Consequently the implementation does not invent an editor, an agent role, a review claim or a stale-translation flag. JSON-LD includes type, headline, dates, language, available correction, disclosures and source citations; `editor` is absent. A translated item preserves the machine-assistance label even if the current link says reviewed. Human authorship is taken only from existing public credits. Atom entries require those credits; entries without public credits are omitted from Atom, while RSS and JSON Feed preserve the public entry without invented authorship.
 
+JSON-LD uses a React text child in an inert `application/ld+json` script, with HTML delimiters and line separators escaped in the JSON serialization. The public-tree raw-HTML prohibition remains unchanged. The real browser test publishes malicious mixed-case closing-script and image payloads in title/correction text, bypasses CSP only in the isolated negative test, and checks JSON round trips, absence of injected elements or execution, and zero external requests.
+
 A proposed additive public provenance contract should define:
 
 - A public, consent-checked responsible-editor credit, with the action/version that establishes responsibility.
