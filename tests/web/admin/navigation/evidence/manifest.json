@@ -1,12 +1,12 @@
 {
   "package": "HUBC-020",
-  "buildSourceCommit": "91c03721cb43110a627299eb75c2179938c83dba",
-  "browserTestSourceCommit": "fc49671322bc37de0e4da34331c5a3c22b22d8fc",
-  "buildId": "amHdTeU8dUUW483yl1vCd",
+  "buildSourceCommit": "bb2743e8a77e7cd9590437b8715e115a2050bf3e",
+  "browserTestSourceCommit": "bb2743e8a77e7cd9590437b8715e115a2050bf3e",
+  "buildId": "9BXRTrtSJ6XYnrXTqP0fd",
   "runtimeGitObjects": {
-    "apps/web/app/admin": "42c2cf36d709d4bed9fea71343bba3d49237584b",
+    "apps/web/app/admin": "d9cbbad4141ff9d944c1ed8c71ab398e798324e0",
     "apps/web/locales": "3f87681e5c2ea590ebc5e719cde016a166082d87",
-    "packages/ui/src": "c848c3b116bc40d8faadbf3dbcfbf627215a2f0b",
+    "packages/ui/src": "389bfe6a02ac567e1947166e24c21e5f493ab70a",
     "packages/ui/locales": "63060194014a6c493ec986431395cd86a58f331b",
     "packages/contracts/src": "e9c05435b28e40b23f21b9f8bb05c145fbb6b1cd",
     "apps/web/next.config.ts": "eefb02ce7526d29d8314edf1a093616bffb38ae2",
@@ -369,10 +369,10 @@
     },
     {
       "path": "ru-1280-inbox.png",
-      "sha256": "a9d5fe5eee5485479a99778be560256f5cb46a9cc7cc576a92b548868f69f6b3",
-      "bytes": 316009,
+      "sha256": "61402671ddee29bd36e4c24db564faace3271359880db880f54e984a4ecc40c9",
+      "bytes": 324255,
       "width": 1280,
-      "height": 2148
+      "height": 2174
     },
     {
       "path": "ru-1280-palette.png",
@@ -390,10 +390,10 @@
     },
     {
       "path": "ru-375-inbox.png",
-      "sha256": "460ffd3723903ebcc2e7bdff5b545f52cef0c5838d688aa2485e7c2a22b261a2",
-      "bytes": 260872,
+      "sha256": "c5dfd4419dd9c5e1fe7bb447bac87e849fbea2df5fc21ecedba59189ab2a3c72",
+      "bytes": 270364,
       "width": 375,
-      "height": 3248
+      "height": 3325
     },
     {
       "path": "ru-375-palette.png",
@@ -411,10 +411,10 @@
     },
     {
       "path": "ru-768-inbox.png",
-      "sha256": "0b3e69cfc7ef26a6115e50a71cbcad59019fa7058a2592fe818637c6d40fb8d0",
-      "bytes": 328060,
+      "sha256": "75ea40703052996b6f37192e8e3873102abedb5f5c76e9783ca86c88fbe544c3",
+      "bytes": 339720,
       "width": 768,
-      "height": 2584
+      "height": 2661
     },
     {
       "path": "ru-768-palette.png",
