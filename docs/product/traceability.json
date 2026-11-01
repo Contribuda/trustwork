@@ -429,7 +429,15 @@
         "FED-003",
         "FED-004",
         "FED-005",
-        "FED-006"
+        "FED-006",
+        "NET-000",
+        "NET-001",
+        "NET-002",
+        "NET-003",
+        "NET-004",
+        "MAP-001",
+        "HUBC-012",
+        "HUBC-013"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",

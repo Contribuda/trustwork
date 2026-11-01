@@ -3529,7 +3529,8 @@
       "goal": "Scheduled encrypted backups, restore drills with evidence, two-person restore and production migrations, update notices, readiness and health counts for the console.",
       "read": [
         "docs/engine/hub-console/operations.md",
-        "docs/operations/runbook.md"
+        "docs/operations/runbook.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Implement backup records and drills against an isolated environment.",
@@ -3539,7 +3540,8 @@
       "acceptance": [
         "A restore replays tombstones before reconnecting workers.",
         "A production migration without a fresh backup is refused (tested).",
-        "Restore and production migration need two people."
+        "Restore and production migration need two people.",
+        "Health aggregates include a federation tile (peers reachable, degraded, unreachable; tombstone deadlines missed) as node-level counts, and acknowledged security advisories link to the update screen with the affected-version check."
       ],
       "paths": [
         "apps/api/src/modules/operations",
@@ -3758,7 +3760,8 @@
       "read": [
         "docs/engine/hub-console/operations.md",
         "docs/engine/hub-console/README.md",
-        "docs/engine/hub-console/screens.md"
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Build federation, privacy, staff and audit, and operations sections.",
@@ -3768,7 +3771,8 @@
       "acceptance": [
         "Restore and production migration need two people.",
         "The locale completeness screen blocks activation of incomplete templates.",
-        "The restricted-places list is read-only."
+        "The restricted-places list is read-only.",
+        "HC-130 Peers moves to the Network area (HC-183, HUBC-012); the Federation section keeps Licences, Tombstones and Incoming links under the Network navigation group; NC-10 Directory service (docs/engine/hub-network.md) is built on fixtures in the node console."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/federation",
@@ -3909,13 +3913,15 @@
         "HUBC-007",
         "PRV-001",
         "OPS-004",
-        "FED-001"
+        "FED-001",
+        "NET-001"
       ],
       "handbook": "docs/engine/hub-console/operations.md",
       "goal": "Wire the M6 sections and the node console to the API.",
       "read": [
         "docs/engine/hub-console/operations.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Implement the API adapter methods for federation peers, privacy requests, staff, audit, operations and node console.",
@@ -3923,7 +3929,8 @@
       ],
       "acceptance": [
         "Erasure execution and restore need two people against the API (tested).",
-        "Raising a peering level above syndicate needs a second approver."
+        "Raising a peering level above syndicate needs a second approver.",
+        "NC-10 Directory service is wired to the directory module (NET-001); refusal rows show the place and dataset, never an address (tested)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/federation",
@@ -3943,14 +3950,16 @@
       "dependsOn": [
         "HUBC-008",
         "HUBC-009",
-        "HUBC-010"
+        "HUBC-010",
+        "HUBC-013"
       ],
       "handbook": "docs/engine/hub-administration.md",
       "goal": "Umbrella for the console packages (HUBC-000, ADM-002, HUBC-002 to HUBC-010): the console is complete when every section described in the handbook works against the API with the guard rails proven end to end.",
       "read": [
         "docs/engine/hub-console/README.md",
         "docs/engine/hub-administration.md",
-        "docs/design/screen-contracts/workspace/administration.md"
+        "docs/design/screen-contracts/workspace/administration.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Run the full console browser plan against the API at three widths in every hub language of the US demo hub (en, es) and one other example hub.",
@@ -3960,7 +3969,8 @@
       "acceptance": [
         "Every private object returns not found to staff without a case grant, through every console path.",
         "Activating a legal document without counsel approval fails.",
-        "No console control sets a score, position or badge directly."
+        "No console control sets a score, position or badge directly.",
+        "The network flows of docs/engine/hub-network.md pass end to end on the API: listing, peering request and acceptance with a second approver, an interaction-settings change with approval, suspension and defederation with the purge summary, an operator message thread and an advisory acknowledgement, including phone journeys."
       ],
       "paths": [
         "tests/web/admin/acceptance",
@@ -6031,7 +6041,8 @@
       "read": [
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Generate and store the node key through the secret store; serve the signed manifest at /.well-known/trustwork/manifest.json.",
@@ -6043,7 +6054,10 @@
         "Unsigned or wrongly signed requests are rejected.",
         "Peering above syndicate needs a second approver.",
         "Defederation stops feeds and deliveries without rewriting history.",
-        "A peer whose manifest, attestation or observed server location is a restricted place is refused at handshake through the SANC-008 admission check (tested)."
+        "A peer whose manifest, attestation or observed server location is a restricted place is refused at handshake through the SANC-008 admission check (tested).",
+        "Acceptance of a peering request is a handshake from the accepting node; a record becomes active on a side only after admission and a person's acceptance (double opt-in), with a second approver for deal_routing and identity (tested).",
+        "A changed peer manifest or attestation re-runs the SANC-008 admission; an expired attestation or a refused re-admission suspends all flows with that peer (tested).",
+        "Peering records and admission refusal records hold no network address (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/node",
@@ -6067,7 +6081,8 @@
       "read": [
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Implement cursor feeds per stream on the home node.",
@@ -6078,7 +6093,9 @@
       "acceptance": [
         "Replicas are read-only and never satisfy a write authorization.",
         "Items with syndication none never leave their node.",
-        "Tombstones reach search indexes and caches."
+        "Tombstones reach search indexes and caches.",
+        "Feeds and pulls consult a per-peer stream policy port (default: everything the level and agreed licences allow) so NET-002 can narrow them without changing syndication code.",
+        "A purge-by-peer operation removes a peer's replicas from replicas, search indexes, caches and saved answers, personal-data classes (person profiles, reputation snapshots, passport credentials) first (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/syndication",
@@ -6103,7 +6120,8 @@
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/federation.md",
-        "docs/engine/people-and-companies.md"
+        "docs/engine/people-and-companies.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Implement link proposals from identifier matches and signed statements (packages/data/migrations/federation-links).",
@@ -6113,7 +6131,8 @@
       "acceptance": [
         "No automatic merge.",
         "A peer badge is always labelled with the granting node.",
-        "Reputation is never recomputed on a replica."
+        "Reputation is never recomputed on a replica.",
+        "Links to records on a suspended peer are hidden; on defederation they are marked ended and kept as history, never merged (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/links",
@@ -6130,7 +6149,8 @@
       "status": "open",
       "dependsOn": [
         "FED-003",
-        "AGT-001"
+        "AGT-001",
+        "NET-002"
       ],
       "handbook": "docs/engine/federation.md",
       "goal": "Participants on different nodes exchange introductions, RFQ invitations, quote versions and agreements with identical digests on both sides.",
@@ -6139,7 +6159,8 @@
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/federation.md",
         "docs/engine/commerce.md",
-        "docs/engine/agents.md"
+        "docs/engine/agents.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Deliver shared_party envelopes to the counterparty's home node only.",
@@ -6149,7 +6170,8 @@
       "acceptance": [
         "Both nodes hold identical accepted terms proven by the same digest.",
         "Nothing on one node can authorize an action on the other.",
-        "No delivery is routed through a third node."
+        "No delivery is routed through a third node.",
+        "Cross-hub request kinds and cross-border deals are refused when the per-peer interaction settings (NET-002) turn them off or exceed their per-hour limits (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/deals",
@@ -6171,7 +6193,8 @@
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/federation.md",
-        "docs/adr/002-identity-and-access.md"
+        "docs/adr/002-identity-and-access.md",
+        "docs/engine/hub-network.md"
       ],
       "steps": [
         "Implement nodes as OIDC providers and relying parties for each other (packages/data/migrations/federation-identity).",
@@ -6181,7 +6204,8 @@
       "acceptance": [
         "No auto-linking by e-mail.",
         "A remote identity never gains local company authority.",
-        "Ending peering at identity level ends remote sessions."
+        "Ending peering at identity level ends remote sessions.",
+        "Sign-in assertions are accepted only while the per-peer policy port allows identity for that peer (tested)."
       ],
       "paths": [
         "apps/api/src/modules/federation/identity",
@@ -6218,6 +6242,302 @@
       "paths": [
         "apps/api/src/modules/activitypub",
         "tests/federation/activitypub"
+      ]
+    },
+    {
+      "id": "NET-000",
+      "title": "Hub network contracts: listings, interaction settings, operator messages, announcements and published statistics (trustwork-network/1)",
+      "area": "integrator-contracts",
+      "status": "open",
+      "dependsOn": [
+        "FED-000",
+        "HUBC-000",
+        "SANC-008",
+        "SANC-009"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "Freeze the documents the hub network needs beside the frozen mesh protocol: signed hub listings, per-peer interaction settings, operator messages and receipts, network announcements and retractions, and opt-in published hub statistics.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/hub-network.md",
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "packages/contracts/src/federation.ts",
+        "packages/contracts/src/hub.ts"
+      ],
+      "steps": [
+        "Record the integrator decision between the companion protocol trustwork-network/1 and a future trustwork-mesh/2 (ADR), then write the Zod contracts in packages/contracts/src/hub-network.ts.",
+        "Define HubListingSchema, ListingWithdrawalSchema, PeerInteractionPolicySchema, OperatorMessageSchema, OperatorMessageReceiptSchema, NetworkAnnouncementSchema, AnnouncementRetractionSchema and PublishedHubStatisticsSchema; reuse the mesh key chain, JCS and trustwork-digest-1 with the signing prefix trustwork-network/1.",
+        "Request the additive console contract changes with the integrator: network permissions, second-person actions and a protective flag that only narrowing settings versions may carry.",
+        "Publish conformance vectors for listings and operator messages."
+      ],
+      "acceptance": [
+        "A listing or message naming a restricted place, an IP literal or an address-shaped key does not parse (tested).",
+        "A network signature never verifies as a mesh signature and the reverse (tested with vectors).",
+        "Interaction settings cannot express a licence looser than the agreed term or a private projection (tested).",
+        "Published statistics accept only buckets and suppress anything below ten (tested).",
+        "No field or enum value matches FORBIDDEN_CONTROL_WORDS (tested)."
+      ],
+      "paths": [
+        "packages/contracts/src/hub-network.ts",
+        "tests/contracts/hub-network.test.ts",
+        "tests/federation/network-protocol"
+      ]
+    },
+    {
+      "id": "NET-001",
+      "title": "Hub directory service and listings",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "NET-000",
+        "FED-001"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "An engine directory module that accepts signed hub listings, admits them through the SANC-008 hub_directory check, mirrors other directories with re-verification and re-admission, and serves listings to admitted readers; plus the hub side that submits, refreshes and withdraws its listing.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/hub-network.md",
+        "docs/operations/sanctions-our-services.md",
+        "docs/engine/hubs.md"
+      ],
+      "steps": [
+        "Implement listing submission, refresh and withdrawal on the hub side, refused in demo data mode, before soft launch or without a valid attestation (packages/data/migrations/federation-directory).",
+        "Implement the directory module: fetch the listed node's manifest itself, verify signatures, run admitPeerAtHandshake-style admission with the hub_directory policy (declared, attested, observed), store refusal records with place and dataset only.",
+        "Implement the read endpoint with the jurisdiction gate, filters and alphabetical, distance or date order; directory-to-directory mirroring with re-verification and own admission."
+      ],
+      "acceptance": [
+        "A listing whose manifest, attestation or observed place is restricted is refused with 451 and nothing about it is served (tested).",
+        "A reader in a restricted place is refused at the door (tested).",
+        "A mirrored listing is re-verified and re-admitted by the mirror, and dropped when the source withdraws it or it expires (tested).",
+        "No record holds a network address and no listing order depends on payment or statistics (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/directory",
+        "packages/data/migrations/federation-directory",
+        "packages/data/src/schema/federation-directory.ts",
+        "packages/data/src/repositories/federation-directory.ts",
+        "tests/federation/directory"
+      ]
+    },
+    {
+      "id": "NET-002",
+      "title": "Peering requests, per-peer interaction settings, renewal, suspension and defederation handling",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "NET-000",
+        "FED-002"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "The review workflow around peering, versioned per-peer interaction settings that only narrow what the level and agreed licences allow, automatic renewal checks, suspension and the defederation data plan.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/hub-network.md",
+        "docs/engine/federation.md",
+        "docs/engine/hub-console/operations.md"
+      ],
+      "steps": [
+        "Implement peering requests with local states and review (packages/data/migrations/federation-peer-policy).",
+        "Implement interaction settings versions in the federation configuration domain with diff, effect lines, estimated counts and second-person activation; protective (narrowing) versions apply at once with a reason.",
+        "Provide the per-peer policy port consumed by syndication, deals and federated sign-in.",
+        "Implement renewal triggers (manifest, key, attestation, licences) with automatic re-admission and suspension, and the defederation plan through the FED-002 purge-by-peer operation."
+      ],
+      "acceptance": [
+        "A widening settings version cannot be activated without a second person bound to its digest; a narrowing one can be applied by one person with a reason and is shown to approvers afterwards (tested).",
+        "A looser peer manifest never loosens the agreed licences; a stricter one applies at once (tested).",
+        "An expired attestation or a refused re-admission suspends all flows in both directions (tested).",
+        "On defederation, personal-data replicas are purged within the agreed tombstone hours and shared_party deal replicas stay for the parties (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/peer-policy",
+        "packages/data/migrations/federation-peer-policy",
+        "packages/data/src/schema/federation-peer-policy.ts",
+        "packages/data/src/repositories/federation-peer-policy.ts",
+        "tests/federation/peer-policy"
+      ]
+    },
+    {
+      "id": "NET-003",
+      "title": "Operator channel and verified network announcements",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "NET-000",
+        "FED-001"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "A signed, typed, audited message channel between hubs' staff and pulled, signature-verified, retractable announcements from the engine maintainers, directories and peers.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/hub-network.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Implement the operator inbox with idempotent delivery, admission re-check, signature verification and routing by kind to roles (packages/data/migrations/federation-operator-channel).",
+        "Implement threads, receipts and first-contact limits; keep case_reference off unless counsel approval is recorded for the hub.",
+        "Implement announcement pulls with verification against the project key committed in the repository, retractions and acknowledgements."
+      ],
+      "acceptance": [
+        "A message carrying an address-shaped key, an IP literal or a forbidden payload key is refused (tested).",
+        "A received message or announcement never triggers an action (tested).",
+        "An unverifiable or retracted announcement is not shown as valid (tested).",
+        "case_reference messages are refused while the hub has no recorded counsel approval (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/operator-channel",
+        "packages/data/migrations/federation-operator-channel",
+        "packages/data/src/schema/federation-operator-channel.ts",
+        "packages/data/src/repositories/federation-operator-channel.ts",
+        "tests/federation/operator-channel"
+      ]
+    },
+    {
+      "id": "NET-004",
+      "title": "Network statistics: federation health, published hub statistics and the peering graph",
+      "area": "federation",
+      "status": "open",
+      "dependsOn": [
+        "NET-001",
+        "NET-002",
+        "ANL-001"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "Per-peer federation health as node-level aggregates, opt-in published hub statistics as buckets with a delay, network-wide aggregates of listed hubs and the peering graph.",
+      "read": [
+        "docs/product/specification.md",
+        "docs/adr/011-federation-mesh.md",
+        "docs/engine/federation-protocol.md",
+        "docs/engine/hub-network.md",
+        "docs/engine/modules/analytics.md"
+      ],
+      "steps": [
+        "Aggregate federation traffic, errors, lag, rate limiting and tombstone timing per peer per day in the worker (packages/data/migrations/federation-network-statistics).",
+        "Compute published hub statistics weekly from ANL-001 cohorts as buckets with a seven-day delay; include them in the listing only when opted in.",
+        "Build network-wide aggregates and the peering graph from listings that publish peers."
+      ],
+      "acceptance": [
+        "No response contains a count about people below ten (tested).",
+        "Published statistics contain no active-user, sign-in or per-person figures (tested).",
+        "Statistics never influence directory order (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/federation/network-statistics",
+        "apps/worker/src/network-statistics",
+        "packages/data/migrations/federation-network-statistics",
+        "packages/data/src/schema/federation-network-statistics.ts",
+        "packages/data/src/repositories/federation-network-statistics.ts",
+        "tests/federation/network-statistics"
+      ]
+    },
+    {
+      "id": "MAP-001",
+      "title": "Accessible world map component with an equal list view",
+      "area": "design-system",
+      "status": "open",
+      "dependsOn": [
+        "DS-001"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "A WorldMap component in packages/ui that draws a bundled public-domain world outline as SVG with territory-centroid markers and clusters, keyboard and screen-reader support and a list view of the same data, without third-party tiles or new dependencies.",
+      "read": [
+        "docs/engine/hub-network.md",
+        "docs/design/system/components.md"
+      ],
+      "steps": [
+        "Bundle Natural Earth 1:110m country outlines (public domain) as a compact projected asset with its licence note.",
+        "Build WorldMap: markers as buttons with unique names, shape plus text for state, clusters, pan and zoom buttons, arrow-key panning, a polite summary live region, reduced motion.",
+        "Stories and unit tests; axe checks in the design-system suite."
+      ],
+      "acceptance": [
+        "Every map action works without dragging (WCAG 2.2 SC 2.5.7) and with the keyboard (tested).",
+        "State is never conveyed by colour alone; markers and outlines meet 3:1 contrast in both themes (tested).",
+        "The component makes no network request (tested)."
+      ],
+      "paths": [
+        "packages/ui/src/components/WorldMap",
+        "packages/ui/media/geo",
+        "packages/ui/licenses/natural-earth.txt",
+        "packages/ui/stories/WorldMap.stories.tsx",
+        "packages/ui/tests/unit/world-map.test.ts"
+      ]
+    },
+    {
+      "id": "HUBC-012",
+      "title": "Console network area on fixtures: map and list, hub entry, listing, peers, request flow, settings with diff and approval, messages, announcements, statistics",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-002",
+        "MAP-001"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "Build the Network area of the hub console (HC-180 to HC-189) on fixtures with clearly synthetic hubs.",
+      "read": [
+        "docs/engine/hub-network.md",
+        "docs/engine/hub-console/README.md",
+        "docs/engine/hub-console/screens.md"
+      ],
+      "steps": [
+        "Build HC-180 to HC-189 under /admin/hubs/[hub]/network with the console components and WorldMap; synthetic hubs on example.invalid only.",
+        "Add the hubNetwork locale namespace in every engine language.",
+        "Playwright and axe plans, including phone journeys."
+      ],
+      "acceptance": [
+        "The list carries every fact the map shows with the same filters and order (tested).",
+        "Restricted places never appear in any filter, map or list (tested).",
+        "Widening settings show the approval card; the requester cannot approve (tested on fixtures).",
+        "A hub in demo data mode cannot list, peer or send operator messages, and the screens say why (tested)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/network",
+        "apps/web/locales/en/hubNetwork.json",
+        "apps/web/locales/es/hubNetwork.json",
+        "apps/web/locales/ru/hubNetwork.json",
+        "apps/web/locales/uz-Latn/hubNetwork.json",
+        "apps/web/locales/ka/hubNetwork.json",
+        "apps/web/locales/hy/hubNetwork.json",
+        "apps/web/locales/az-Latn/hubNetwork.json",
+        "tests/web/admin/network"
+      ]
+    },
+    {
+      "id": "HUBC-013",
+      "title": "Console network area live wiring",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "HUBC-012",
+        "HUBC-007",
+        "NET-001",
+        "NET-002",
+        "NET-003",
+        "NET-004"
+      ],
+      "handbook": "docs/engine/hub-network.md",
+      "goal": "Wire the Network area to the directory, peering policy, operator channel and statistics APIs.",
+      "read": [
+        "docs/engine/hub-network.md",
+        "docs/engine/federation.md"
+      ],
+      "steps": [
+        "Implement the API adapter methods for listings, peers, requests, settings versions, messages, announcements and statistics.",
+        "Run the network browser plan against the API."
+      ],
+      "acceptance": [
+        "A peering request at deal_routing reaches active only after both sides admit and a second approver confirms (tested against the API).",
+        "Defederation shows the purge summary returned by the API (tested)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/network",
+        "tests/web/admin/live-network"
       ]
     },
     {

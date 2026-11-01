@@ -46,6 +46,7 @@ Integrator choices recorded with the freeze (the owner may override them): break
 | [Support workspace](support.md) | Serving users lawfully: lookup, account card, sessions, second factor, recovery escalation, memberships, entitlements, data export, deletion, consents, communications history, support cases with case grants; why there is no impersonation and what replaces it |
 | [Operations](operations.md) | Staff and roles, approvals, audit, backups and restore, updates and migrations, health, feature flags, maintenance, incidents, locale completeness, accessibility, onboarding help |
 | [Data model view](data-model.md) | Every console section mapped to the entities it reads and writes and the projection layer it may use |
+| [The hub network](../hub-network.md) | The Network area of every hub console: world map and accessible list of hubs, directory listing, peering requests, per-peer interaction settings with diff and approval, suspension and defederation, operator messages between hubs, verified announcements, network statistics (screens HC-180 to HC-189, NC-10) |
 | [Screens](screens.md) | Screen-by-screen contract: purpose, data, actions, empty/error/denied states, mobile behaviour, locale namespace |
 
 ## Principles

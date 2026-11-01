@@ -2,7 +2,7 @@
 
 Phases order priority; they never remove scope from the design, and dependencies alone decide when a package can be claimed. The machine-readable list is [work-packages.json](work-packages.json): `npm run work` lists what can be picked up now, `npm run work:next` names the available package that unblocks the most other work, `node scripts/work-packages.mjs show <ID>` prints one package and `node scripts/work-packages.mjs issue <ID>` renders its GitHub issue. The file is the source of truth and is edited in pull requests; the tables below were regenerated from it on 2026-10-31 (dates in this repository are UTC) and may lag behind it.
 
-The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 258 packages (49 done when the sanctions packages were added); 9 of them are the sanctions compliance engine of [ADR 014](../adr/014-sanctions-compliance-engine.md) (SANC-001 … SANC-009); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71); MODEL-001 was added for the administrator's complete control set (ADR 010 decision 25, R73).
+The plan merges the wave-1 research and design (architecture audit, market scan, agent catalogue, data model, hub console) into one graph; how duplicates were merged and the defaults it needed are recorded in [ADR 012](../adr/012-integrator-decisions-2026-10-31.md). Today the graph has 266 packages (49 done when the sanctions packages were added); 9 of them are the sanctions compliance engine of [ADR 014](../adr/014-sanctions-compliance-engine.md) (SANC-001 … SANC-009); 20 of them are the MCP server slices of [ADR 013](../adr/013-mcp-server.md) (MCP-001 … MCP-090, with AGT-016 as their umbrella); 29 of them are the languages and country packs of ADR 012 decision 30, 4 are documentation packages (DOC-001 … DOC-004), 28 are the procurement and supply suite (R53) and 16 were added by the [full system specification](modules/README.md) of 2026-10-31 (R55–R71); MODEL-001 was added for the administrator's complete control set (ADR 010 decision 25, R73). Eight packages carry [the hub network](hub-network.md) (NET-000 … NET-004, MAP-001, HUBC-012, HUBC-013; the owner's request of 2026-11-01).
 
 ## Rules that keep parallel work safe
 
@@ -267,7 +267,7 @@ Governed hybrid retrieval (ADR 007) with permission-separated ingestion, deliver
 
 ## Phase 8: federation and the portable passport
 
-The mesh of ADR 011: protocol, node identity, syndication, directory links, cross-node deals, federated sign-in, an outbound ActivityPub bridge, and the reputation passport as verifiable credentials signed with node keys.
+The mesh of ADR 011: protocol, node identity, syndication, directory links, cross-node deals, federated sign-in, an outbound ActivityPub bridge, the hub network (directory, map, peering settings, operator channel, network statistics), and the reputation passport as verifiable credentials signed with node keys.
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
@@ -279,6 +279,14 @@ The mesh of ADR 011: protocol, node identity, syndication, directory links, cros
 | FED-005 | Federated sign-in between peered nodes | open | FED-001, BE-004 |
 | FED-006 | Outbound ActivityPub bridge for publications, issues and public events | open | FED-002 |
 | REP-002 | Portable reputation passport: hub-issued verifiable credentials | open | REP-001, FED-001, LRN-001 |
+| NET-000 | Hub network contracts: listings, interaction settings, operator messages, announcements and published statistics (trustwork-network/1) | open | FED-000, HUBC-000, SANC-008, SANC-009 |
+| NET-001 | Hub directory service and listings | open | NET-000, FED-001 |
+| NET-002 | Peering requests, per-peer interaction settings, renewal, suspension and defederation handling | open | NET-000, FED-002 |
+| NET-003 | Operator channel and verified network announcements | open | NET-000, FED-001 |
+| NET-004 | Network statistics: federation health, published hub statistics and the peering graph | open | NET-001, NET-002, ANL-001 |
+| MAP-001 | Accessible world map component with an equal list view | open | DS-001 |
+| HUBC-012 | Console network area on fixtures | open | ADM-002, MAP-001 |
+| HUBC-013 | Console network area live wiring | open | HUBC-012, HUBC-007, NET-001, NET-002, NET-003, NET-004 |
 
 ## Added by the full system specification (2026-10-31)
 

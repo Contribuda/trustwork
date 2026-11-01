@@ -108,6 +108,8 @@ Raising a peering level to `deal-routing` or `identity` needs a second approver 
 
 A community-run **mesh directory** may list nodes that ask to be listed, with their territories and languages. It is a phone book for discovery, not an authority: nothing in the mesh depends on it.
 
+**Managing the network.** Every hub's console has a Network area: a world map and an equal accessible list of listed hubs, the hub's own directory listing, peering requests with review and second approval, per-peer interaction settings (what is shared and received, module interoperation, translation, search, cross-hub requests, limits, trust level), suspension, renewal and defederation with a stated data plan, a signed operator channel between hubs, verified network announcements and network statistics as cohorts. Design: [The hub network](hub-network.md) (proposed; NET-000 … NET-004, MAP-001, HUBC-012, HUBC-013). The public hub directory is one of the services that refuse restricted places on our side (SANC-008).
+
 ## How country and city hubs complement each other
 
 | Situation | What happens |
@@ -201,6 +203,7 @@ Conditions attached to every licence: keep provenance and attribution visible, a
 | FED-003 | Directory federation and entity links |
 | FED-004 | Cross-node deals and agent envelopes |
 | FED-005 | Federated sign-in at `identity` level |
+| NET-000 … NET-004 | Hub network: listings and the directory service, per-peer interaction settings, operator channel and announcements, network statistics ([The hub network](hub-network.md)) |
 
 ## Open questions
 
