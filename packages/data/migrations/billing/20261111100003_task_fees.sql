@@ -85,9 +85,24 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwor
 BEGIN
  IF NEW.terms_kind='task' AND NEW.status='accepted_by_both' AND OLD.status='accepted_by_buyer'
  AND EXISTS(SELECT 1 FROM trustwork.billing_task_origin WHERE source_kind='offer' AND source_id=NEW.offer_ref_id)
- AND (SELECT count(DISTINCT d.side) FROM trustwork.billing_fee_binding b JOIN trustwork.billing_fee_confirmation c ON c.id=b.confirmation_id
-   JOIN trustwork.billing_fee_disclosure d ON d.id=c.disclosure_id JOIN trustwork.billing_fee_scope s ON s.id=d.scope_id
-   WHERE b.booking_id=NEW.id AND b.source_digest=NEW.accepted_terms_digest AND s.source_kind='task' AND s.source_id=NEW.offer_ref_id)<>2 THEN
+ AND NOT EXISTS(
+   SELECT 1 FROM trustwork.billing_fee_binding buyer
+   JOIN trustwork.billing_fee_confirmation bc ON bc.id=buyer.confirmation_id
+   JOIN trustwork.billing_fee_disclosure bd ON bd.id=bc.disclosure_id
+   JOIN trustwork.billing_fee_scope scope ON scope.id=bd.scope_id
+   JOIN trustwork.billing_fee_binding seller ON seller.booking_id=buyer.booking_id
+   JOIN trustwork.billing_fee_confirmation sc ON sc.id=seller.confirmation_id
+   JOIN trustwork.billing_fee_disclosure sd ON sd.id=sc.disclosure_id
+   JOIN trustwork.marketplace_fee_version bf ON bf.id=buyer.local_fee_id
+   JOIN trustwork.marketplace_fee_version sf ON sf.id=seller.local_fee_id
+   WHERE buyer.booking_id=NEW.id AND buyer.source_digest=NEW.accepted_terms_digest AND seller.source_digest=NEW.accepted_terms_digest
+   AND scope.source_kind='task' AND scope.source_id=NEW.offer_ref_id AND scope.source_digest=NEW.accepted_terms_digest AND sd.scope_id=scope.id AND bd.side='buyer' AND sd.side='seller'
+   AND buyer.source_hub_id=scope.buyer_hub_id AND seller.source_hub_id=scope.seller_hub_id
+   AND buyer.local_fee_id=seller.counterparty_fee_id AND buyer.counterparty_fee_id=seller.local_fee_id
+   AND bf.status='active' AND sf.status='active' AND bf.effective_from<=clock_timestamp() AND sf.effective_from<=clock_timestamp()
+   AND (bf.effective_to IS NULL OR bf.effective_to>clock_timestamp()) AND (sf.effective_to IS NULL OR sf.effective_to>clock_timestamp())
+   AND NOT EXISTS(SELECT 1 FROM trustwork.hub WHERE id IN(scope.buyer_hub_id,scope.seller_hub_id) AND lifecycle='closed')
+ ) THEN
   RAISE EXCEPTION 'both fee confirmations are required' USING ERRCODE='23514',HINT='billing.unavailable'; END IF;
  RETURN NEW;
 END $$;
