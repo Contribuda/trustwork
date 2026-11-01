@@ -145,7 +145,8 @@ export const PublicProvenanceSchema = z.discriminatedUnion('availability', [
   }),
 ]);
 export type PublicProvenance = z.infer<typeof PublicProvenanceSchema>;
-export const ProvenanceDeliveryQuerySchema = z.strictObject({ channel: ProvenanceChannelSchema.default('web') });
+/** PDF-only credit is available exclusively through the guarded renderer, never a public JSON override. */
+export const ProvenanceDeliveryQuerySchema = z.strictObject({ channel: z.enum(['web', 'feed']).default('web') });
 
 export const ProvenanceWorkspaceSchema = z.strictObject({
   publicationId: IdSchema, publicationRevision: z.int().positive(), ownerKind: z.enum(['person','company','editorial']), status: z.string(), credit: z.string(),

@@ -41,14 +41,22 @@ test('PROV actual CNT commands and channel-scoped public delivery', {skip:h?fals
     const body={provenanceId:originalView.record!.id,role:'responsible_editor',credit:'Synthetic Writer',channels:['web'],noticeVersion:'provenance.credit.v1',informedConsent:true};
     expectRefusal(await c.coauthor.post('/v1/provenance/consents',body),404,'access.not_found');
     const consent=ok<{consentId:string}>(await c.writer.post('/v1/provenance/consents',body),201);
-    for(const channel of ['web','feed','pdf']) {
+    for(const channel of ['web','feed']) {
       const response=await anonymous.get(`/v1/publications/${original.id}?channel=${channel}`);
       const p=PublicPublicationSchema.parse(ok(response)).current.provenance;
       assert.equal(p?.availability,'recorded');if(p?.availability==='recorded')assert.equal(p.credits.responsible_editor,channel==='web'?'Synthetic Writer':undefined);
       assert.match(String(response.headers['cache-control']??''),/no-store/);
     }
+    expectRefusal(await anonymous.get(`/v1/publications/${original.id}?channel=pdf`),422,'validation.schema');
+    expectRefusal(await anonymous.get(`/v1/publications/${original.id}/versions/1?channel=pdf`),422,'validation.schema');
     expectRefusal(await c.coauthor.post('/v1/provenance/revocations',{consentId:consent.consentId,reason:'Synthetic withdrawal'}),404,'access.not_found');
     ok(await c.writer.post('/v1/provenance/revocations',{consentId:consent.consentId,reason:'Synthetic withdrawal'}));
+    const p=PublicPublicationSchema.parse(ok(await anonymous.get(`/v1/publications/${original.id}`))).current.provenance;
+    if(p?.availability==='recorded')assert.deepEqual(p.credits,{});
+  });
+  await t.test('public JSON cannot request a PDF-only identity',async()=>{
+    ok(await c.writer.post('/v1/provenance/consents',{provenanceId:originalView.record!.id,role:'responsible_editor',credit:'Synthetic Writer',channels:['pdf'],noticeVersion:'provenance.credit.v1',informedConsent:true}),201);
+    for(const suffix of ['', '/versions/1'])expectRefusal(await anonymous.get(`/v1/publications/${original.id}${suffix}?channel=pdf`),422,'validation.schema');
     const p=PublicPublicationSchema.parse(ok(await anonymous.get(`/v1/publications/${original.id}`))).current.provenance;
     if(p?.availability==='recorded')assert.deepEqual(p.credits,{});
   });
