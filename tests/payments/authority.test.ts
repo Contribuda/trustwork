@@ -148,7 +148,7 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
       if (isWorker) {
         await relay.relayOnce();
         workerOperation = (await q('SELECT * FROM trustwork.payment_operation WHERE payment_id=$1 AND kind=$2', [view!.id, kind]))[0]!;
-        fake.plan(workerOperation.id as string, 'outcome_unknown');
+        fake.plan(workerOperation!.id as string, 'outcome_unknown');
       }
       const before = fake.calls.length;
       const writer = await h.db.admin.connect(), barrier = await h.db.admin.connect();
