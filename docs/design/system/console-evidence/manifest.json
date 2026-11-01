@@ -1,0 +1,130 @@
+{
+  "sourceCommit": "a367f034408793e9d49ffd595e76e514fa2a7e80",
+  "upstreamCommit": "ea906192912cb3aeb536262152204af8f5c29ab0",
+  "generatedAt": "2026-11-01T05:59:39.846778+00:00",
+  "browser": "Chromium via Playwright 1.64.1",
+  "axeTags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22aa"
+  ],
+  "browserStats": {
+    "startTime": "2026-11-01T05:54:51.265Z",
+    "duration": 155494.532,
+    "expected": 40,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "localResults": {
+    "uiUnits": {
+      "exit": 0,
+      "passed": 31,
+      "failed": 0
+    },
+    "uiTypes": {
+      "exit": 0
+    },
+    "webTypes": {
+      "exit": 0
+    },
+    "scopedLint": {
+      "exit": 0
+    },
+    "docs": {
+      "exit": 0,
+      "packages": 360,
+      "requirements": 74
+    },
+    "packageValidation": {
+      "exit": 0,
+      "packages": 360,
+      "available": 72
+    }
+  },
+  "browserCommand": "cd packages/ui && STORYBOOK_PORT=6213 npx --no-install playwright test tests/e2e/console.spec.ts tests/e2e/keyboard.spec.ts tests/e2e/mobile.spec.ts --project=desktop --project=mobile --workers=1 --grep 'DS-003|dialog traps|confirm dialog focuses|tabs move|password toggle|sortable table headers|assistant overlay is|data table collapses'",
+  "scope": "33 DS-003 tests (21 locale/viewport combinations plus 12 interactions) and 7 existing primitive regressions; no full local app suite",
+  "screenshots": [
+    {
+      "file": "access-ru-1280.png",
+      "sha256": "a1c53e71f88e1a8cd12b8eb8d8619248950f69180f5c9174f75fe924e17fe593",
+      "viewportWidth": 1280,
+      "viewportHeight": 900,
+      "imageWidth": 1280,
+      "imageHeight": 937,
+      "locale": "ru"
+    },
+    {
+      "file": "access-ru-375.png",
+      "sha256": "ddab06d8e884b377362a04e6d7d0cd7c2c43b21459c8f85e5284bf8d0b9e0b34",
+      "viewportWidth": 375,
+      "viewportHeight": 900,
+      "imageWidth": 375,
+      "imageHeight": 1356,
+      "locale": "ru"
+    },
+    {
+      "file": "activity-ru-1280.png",
+      "sha256": "b0e190729d1a00e5cf880b2a53436f1a3c052e5c21d4b20880b093ef37867fe9",
+      "viewportWidth": 1280,
+      "viewportHeight": 900,
+      "imageWidth": 1280,
+      "imageHeight": 2715,
+      "locale": "ru"
+    },
+    {
+      "file": "activity-ru-375.png",
+      "sha256": "eceda18f769d6d8042599494e62ecaf423e62035e8f98106d9710f2720ad7d21",
+      "viewportWidth": 375,
+      "viewportHeight": 900,
+      "imageWidth": 375,
+      "imageHeight": 2415,
+      "locale": "ru"
+    },
+    {
+      "file": "decisions-ru-1280.png",
+      "sha256": "402c082e7ed81f5ea6905b81fd7c356eda1da88b50d235bf093859e79f42fbc0",
+      "viewportWidth": 1280,
+      "viewportHeight": 900,
+      "imageWidth": 1280,
+      "imageHeight": 2045,
+      "locale": "ru"
+    },
+    {
+      "file": "decisions-ru-375.png",
+      "sha256": "5ffe2772bfeee9e1d56634068910552f372ca8c4e008dddf6735c737c025d1eb",
+      "viewportWidth": 375,
+      "viewportHeight": 900,
+      "imageWidth": 375,
+      "imageHeight": 2417,
+      "locale": "ru"
+    },
+    {
+      "file": "records-ru-1280.png",
+      "sha256": "21e0bcd213f350844ab2a3faa944b63875cd0a27843977fb63fb930444c21b4a",
+      "viewportWidth": 1280,
+      "viewportHeight": 900,
+      "imageWidth": 1280,
+      "imageHeight": 1066,
+      "locale": "ru"
+    },
+    {
+      "file": "records-ru-375.png",
+      "sha256": "ec3c7c711a741104d04c9b8431eb29dd1e1772dcb47e3162ee1f6303b1f4e7cb",
+      "viewportWidth": 375,
+      "viewportHeight": 900,
+      "imageWidth": 375,
+      "imageHeight": 1766,
+      "locale": "ru"
+    }
+  ],
+  "lintCommand": "npx --no-install eslint packages/ui/src/components/{DataTable,FilterBar,FacetPanel,SavedViews,BulkActionBar,DetailDrawer,AuditTrail,DiffViewer,ApprovalCard,PermissionMatrix,ScopePicker,EffectiveAccess,LockedRule,StepUpPrompt,CommandPalette,InboxList,InlineHelp,KeyboardShortcuts,RunHistory,CalendarAgenda,MetricChart,NetworkMap} packages/ui/stories/console packages/ui/tests/unit/console packages/ui/tests/unit/locale.test.ts packages/ui/tests/e2e/console.spec.ts packages/ui/src/index.ts packages/ui/src/i18n/dictionaries.ts apps/web/app/admin/_components/{ConsoleForm,shell}.tsx apps/web/components/ui.ts",
+  "preservation": {
+    "otherPackageObjectsUnchanged": 359,
+    "upstreamStatusTextPreserved": true,
+    "rootDependenciesAndConfigUnchanged": true,
+    "backendUnchanged": true
+  }
+}

@@ -666,6 +666,8 @@ flowchart LR
 
 ## 9. Component inventory for packages/ui
 
+DS-003 now implements the shared presentation kit described below; see the [component API](../../design/system/components.md#console-component-kit-ds-003) and [focused acceptance evidence](../../design/system/console-evidence/README.md). Implementation is under review. The New/Extend labels below describe the original design inventory, not backend or application-screen readiness.
+
 Existing components are documented in [components](../../design/system/components.md). "New" components are added by DS-003 unless noted; "extend" means a change to an existing component in a backward-compatible way.
 
 | Component | Status | Purpose | Accessibility notes |

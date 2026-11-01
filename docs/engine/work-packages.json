@@ -8970,7 +8970,7 @@
       "id": "DS-003",
       "title": "Console component kit in packages/ui",
       "area": "design-system",
-      "status": "in_progress",
+      "status": "in_review",
       "dependsOn": [
         "DS-001",
         "ADM-002"
