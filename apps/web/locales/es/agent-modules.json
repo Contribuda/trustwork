@@ -1,0 +1,134 @@
+{
+  "agentModules": {
+    "refusal": {
+      "unknown": "Esta función no existe en este hub.",
+      "moduleNotEnabled": "Este hub no ha activado esta parte de su agente.",
+      "moduleNotServing": "Esta parte de su agente no está disponible en este hub por ahora.",
+      "notEligible": "Esta función no se le ofrece en este hub.",
+      "verifiedCompanyRequired": "Solo una empresa verificada puede usar esta función.",
+      "offForHub": "Este hub ha desactivado esta función.",
+      "offForPrincipalKind": "Este hub ha desactivado esta función para la forma en que usted actúa.",
+      "offForPlan": "Esta función no forma parte de su plan en este hub.",
+      "paused": "El hub ha pausado esta función. No se envió ni se cambió nada.",
+      "connectionScope": "Su asistente conectado no recibió acceso a esta función."
+    },
+    "principalKind": {
+      "person": "En su propio nombre",
+      "company_member": "En nombre de su empleador",
+      "company_representative": "Representante de la empresa"
+    },
+    "moduleStatus": {
+      "draft": "Borrador",
+      "beta": "Beta",
+      "active": "Activo",
+      "retired": "Retirado"
+    },
+    "trigger": {
+      "schedule": "Según un horario",
+      "event": "Cuando ocurre algo",
+      "deadline": "Antes de una fecha límite",
+      "goal": "Mientras una meta está activa",
+      "request": "Cuando usted lo pida"
+    },
+    "closedDay": {
+      "skip": "Omitir los días en que el hub está cerrado",
+      "next_open_day": "Pasar al siguiente día hábil",
+      "run": "Ejecutar aunque el hub esté cerrado"
+    },
+    "approval": {
+      "ask_each": "Preguntarme cada vez",
+      "ask_first": "Preguntarme las primeras veces",
+      "ask_above": "Preguntarme por encima de un importe",
+      "pre_authorized": "Actuar dentro del mandato sin preguntar"
+    },
+    "cadence": {
+      "none": "Sin informes",
+      "monthly": "Mensual",
+      "weekly": "Semanal",
+      "daily": "Diario"
+    },
+    "channel": {
+      "platform": "En la plataforma",
+      "email": "Correo electrónico",
+      "sms": "Mensaje de texto",
+      "push": "Notificación push"
+    },
+    "job": {
+      "weeklyPlanReview": "Revisión semanal del plan de su proyecto",
+      "turnOn": "Activar esta tarea",
+      "turnOnNote": "Activar una tarea solo prepara un mandato para que usted lo confirme. Nada se ejecuta hasta que lo confirme.",
+      "runNow": "Ejecutar ahora",
+      "nextRun": "Próxima ejecución: {date}",
+      "status": {
+        "pending": "Esperando su confirmación",
+        "active": "Activada",
+        "withdrawn": "Retirada",
+        "lapsed": "El hub ya no la ofrece"
+      },
+      "reason": {
+        "proposal_declined": "Usted rechazó el mandato.",
+        "proposal_expired": "La propuesta de mandato venció.",
+        "proposal_superseded": "Una propuesta más reciente sustituyó a esta.",
+        "template_withdrawn": "El hub ya no ofrece esta tarea.",
+        "module_not_enabled": "El hub desactivó esta parte de su agente."
+      },
+      "fire": {
+        "due": "Iniciada",
+        "blocked": "Pausada por el hub",
+        "mandate_inactive": "Omitida: el mandato ya no está activo",
+        "subscription_inactive": "Omitida: la tarea está desactivada",
+        "template_withdrawn": "Omitida: el hub ya no ofrece esta tarea"
+      }
+    },
+    "settings": {
+      "approval": "Reglas de aprobación",
+      "outreachPerWeek": "Contactos por semana",
+      "reportCadence": "Informes",
+      "scheduleMinInterval": "Intervalo mínimo entre ejecuciones",
+      "channels": "Canales",
+      "hubMaximum": "Máximo del hub: {value}",
+      "tightenOnly": "Puede hacer estos ajustes más estrictos que el valor predeterminado del hub, nunca más amplios que el máximo del hub."
+    },
+    "admin": {
+      "registry": "Módulos incluidos en el motor",
+      "policy": "Política de agentes",
+      "draft": "Preparar una versión de la política",
+      "preview": "Vista previa",
+      "previewNote": "Las cifras solo se muestran para grupos de al menos 10. La segunda persona aprueba exactamente esta vista previa.",
+      "fewerThanTen": "menos de 10",
+      "affected": {
+        "mandates": "Mandatos activos afectados",
+        "jobSubscriptions": "Suscripciones a tareas afectadas",
+        "connections": "Asistentes conectados afectados",
+        "openRuns": "Ejecuciones abiertas afectadas"
+      },
+      "change": {
+        "enabled": "Activado",
+        "disabled": "Desactivado",
+        "narrowed": "Restringido",
+        "widened": "Ampliado",
+        "changed": "Cambiado"
+      },
+      "guardRails": "Ningún ajuste puede desactivar los mandatos, la confirmación de una persona para los compromisos, la revisión de sanciones, los lugares restringidos ni la neutralidad de los pagos.",
+      "noPerPersonAccess": "Los administradores gestionan el producto de agentes para todos. Nunca ven ni cambian el agente, los mandatos, los ajustes, las metas, las tareas ni las conexiones de un participante.",
+      "error": {
+        "previewStale": "La vista previa está desactualizada. Prepare la política de nuevo para ver su efecto actual.",
+        "policyUnvalidated": "El registro de módulos de agentes no revisó esta versión y no se puede activar.",
+        "guardRail": "Este ajuste debilitaría una protección que ningún hub puede desactivar.",
+        "widening": "Un hub puede restringir un módulo, nunca ampliarlo más allá de lo que incluye el motor."
+      },
+      "killSwitch": {
+        "engage": "Pausar ahora",
+        "release": "Reanudar",
+        "releaseNote": "La pausa surte efecto de inmediato. Reanudar requiere una segunda persona y una nota del incidente, y no reinicia nada de lo que se detuvo.",
+        "scope": {
+          "hub_agent_dispatch": "Todas las acciones de agentes en este hub",
+          "agent_module": "Un módulo",
+          "agent_capability": "Una función",
+          "agent_action": "Un tipo de acción",
+          "external_agent_api": "Asistentes conectados"
+        }
+      }
+    }
+  }
+}

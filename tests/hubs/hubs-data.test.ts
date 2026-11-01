@@ -321,7 +321,8 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
       await activate(p.owner, await draft(p.owner, hubA, domain, { policy: 'synthetic', searchEngineIndexing: true, includeDrafts: true, retentionDays: 1 }));
     }
     await activate(p.owner, await draft(p.owner, hubA, 'modes', { ...MODES_DEMO, searchEngineIndexing: false }));
-    for (const domain of ['egress', 'federation', 'providers', 'agents', 'payments'] as const) {
+    // `agents` is left out: AGT-003 activates only documents it validated (tests/agent-modules).
+    for (const domain of ['egress', 'federation', 'providers', 'payments'] as const) {
       await activateSensitive(p.owner, p.officer, await draft(p.owner, hubA, domain, { policy: 'synthetic', allowAllClasses: true }));
     }
     assert.deepEqual({ owner: await visible(p.owner), officer: await visible(p.officer), petr: await visible(seed.people.petr) }, before);

@@ -6,6 +6,7 @@ import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import { AgentsBase, envelopeView, isUuid, iso, mandateProof, sessionView, type AgentsSettings } from './common.js';
 import { actionDigest, actionIntents, companyMandates, decide, envelopes, negotiationSessions, type PolicySettings } from './deps.js';
+import type { Transaction } from '../../deps/data.js';
 
 /**
  * Agent-to-agent envelopes and negotiation sessions (AGT-001). The agent side sends a structured envelope; the server
@@ -15,8 +16,11 @@ import { actionDigest, actionIntents, companyMandates, decide, envelopes, negoti
  * repeats every check and applies the session rules and the receiver's own mandate decision. Notes are stored as
  * untrusted text and never read to decide anything.
  */
+/** The hub agent policy's protection limits (AGT-003), or `null` while no policy is active (the settings apply). */
+export type ProtectionLimitsSource = (trx: Transaction) => Promise<{ maxNegotiationRounds: number; envelopesPerCounterpartyPerDay: number } | null>;
+
 export class EnvelopesService extends AgentsBase {
-  constructor(ctx: AppContext, principals: PrincipalService, private readonly policy: PolicySettings, private readonly settings: AgentsSettings) {
+  constructor(ctx: AppContext, principals: PrincipalService, private readonly policy: PolicySettings, private readonly settings: AgentsSettings, private readonly protectionLimits: ProtectionLimitsSource | null = null) {
     super(ctx, principals);
   }
 
@@ -53,12 +57,13 @@ export class EnvelopesService extends AgentsBase {
         if (!cm) throw new ApiError('access.not_found', 'company mandate not found');
         subject = `company_mandate:${cm.id}:${cm.revision}`;
       }
+      const limits = this.protectionLimits ? await this.protectionLimits(trx) : null;
       const result = await envelopes.deliver(trx, body.actingAs, {
         to: body.to, context, intent: body.intent, refs: body.refs, note: body.note?.text ?? null, noteLocale: body.note?.locale ?? null, sessionId: body.negotiationSessionId,
         expiresAt: body.expiresAt, proof: mandateProof(this.settings, subject), homeNode: this.settings.homeNode,
       }, {
-        hubId: this.policy.hubId, moduleKeys: ENVELOPE_MODULE_KEYS, maxRounds: this.settings.maxNegotiationRounds, sessionTtlSeconds: this.settings.sessionTtlSeconds,
-        perCounterpartyPerDay: this.settings.envelopesPerCounterpartyPerDay,
+        hubId: this.policy.hubId, moduleKeys: ENVELOPE_MODULE_KEYS, maxRounds: limits?.maxNegotiationRounds ?? this.settings.maxNegotiationRounds, sessionTtlSeconds: this.settings.sessionTtlSeconds,
+        perCounterpartyPerDay: limits?.envelopesPerCounterpartyPerDay ?? this.settings.envelopesPerCounterpartyPerDay,
       });
       const envelope = result.envelope_id ? await envelopes.get(trx, result.envelope_id) : undefined;
       const session = result.session_id ? await negotiationSessions.get(trx, result.session_id) : undefined;

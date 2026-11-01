@@ -337,6 +337,14 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'hub.credential_register': IN_TRANSACTION,
   'hub.credential_activate': IN_TRANSACTION,
   'hub.credential_retire': IN_TRANSACTION,
+  // AGT-003: hub agent policy drafts (validated, preview stored) and activation (HUB-001's transaction), agent kill switches,
+  // turning a job on (a mandate proposal and a pending request only) and running a job now. One runAs transaction each.
+  'agent_modules.policy_draft': IN_TRANSACTION,
+  'agent_modules.policy_activate': IN_TRANSACTION,
+  'agent_modules.kill_switch_engage': IN_TRANSACTION,
+  'agent_modules.kill_switch_release': IN_TRANSACTION,
+  'agent_modules.job_turn_on': IN_TRANSACTION,
+  'agent_modules.job_run_now': IN_TRANSACTION,
   // AGT-001: goals, reports, job subscriptions, envelopes, escalations, the company representative and company mandates
   'agents.goal_create': IN_TRANSACTION,
   'agents.goal_confirm': IN_TRANSACTION,

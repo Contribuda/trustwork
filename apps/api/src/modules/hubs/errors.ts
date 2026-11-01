@@ -55,6 +55,9 @@ const HINTS: Readonly<Record<string, ErrorCode>> = {
   'hubs.version_immutable': 'validation.schema',
   'hubs.hub_closed': 'validation.revision_conflict',
   'hubs.no_node': 'validation.schema',
+  // AGT-003: the activation hook of the `agents` domain (a version the agent module registry did not validate, or a stale preview).
+  'agents.policy_unvalidated': 'validation.schema',
+  'agents.preview_stale': 'validation.revision_conflict',
 };
 
 interface PgError { code?: string; hint?: string; detail?: string; constraint?: string }
@@ -70,7 +73,7 @@ export function hubsRefusal(error: unknown): ApiError | null {
   if (typeof pg.hint !== 'string') return null;
   const code = HINTS[pg.hint];
   if (!code) return null;
-  const reason = pg.hint.replace(/^(admin|access|validation|hubs|kernel)\./, '');
+  const reason = pg.hint.replace(/^(admin|access|validation|hubs|kernel|agents)\./, '');
   const items = pg.detail ? pg.detail.split(',').filter(Boolean) : undefined;
   return new ApiError(code, code, { reason, ...(items ? { items } : {}), ...(pg.hint === 'admin.elevation_required' ? { required: 'elevation' } : pg.hint === 'admin.forbidden' ? { required: 'permission' } : {}) });
 }

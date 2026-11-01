@@ -112,6 +112,17 @@ export interface AssistantRuntimeSettings {
 }
 export const DEFAULT_RUNTIME_SETTINGS: AssistantRuntimeSettings = { approvalTtlSeconds: 24 * 3600, reservationTtlSeconds: 30 * 86400 };
 
+/**
+ * The shared capability check of AGT-003 (agent-modules `agentRuntimeGate`), asked before an agent action is recorded:
+ * a module or capability the hub switched off, or a kill switch, refuses it here exactly as on the interface and MCP.
+ */
+export type AgentCapabilityGate = (trx: Transaction, input: {
+  personId: string;
+  mandate: { onBehalfCompanyId: string | null; granteeKind: 'own_agent' | 'colleague_agent' | 'company_representative'; granteeCompanyId: string | null };
+  capabilityId: string;
+  action: string;
+}) => Promise<{ reason: string; messageKey: string } | null>;
+
 export type ActionProposalResult =
   | { state: 'queued' | 'proposed'; intentId: string; reasons: readonly string[] }
   | { state: 'denied'; reason: string };
@@ -130,6 +141,7 @@ export class AssistantService {
     private readonly runtime: AssistantRuntimeSettings,
     private readonly model: ModelPort,
     private readonly retrieval: RetrievalPort,
+    private readonly capabilityGate: AgentCapabilityGate | null = null,
   ) {}
 
   private now(): Date {
@@ -501,6 +513,12 @@ export class AssistantService {
     const context: ContextRef = call.context;
     const { outcome, row } = await decide(trx, { personId: p.personId, mandateId: call.mandateId, moduleKeys: [call.moduleKey], action: call.action, context, amount: call.amount, projectId: call.projectId, at: this.now() }, this.settings);
     if (outcome.effect === 'deny' || !row) return deny(outcome.effect === 'deny' ? outcome.reason : 'not_found');
+    if (this.capabilityGate) {
+      const refused = await this.capabilityGate(trx, {
+        personId: p.personId, mandate: { onBehalfCompanyId: row.on_behalf_company_id, granteeKind: row.grantee_kind, granteeCompanyId: row.grantee_company_id }, capabilityId: call.capabilityId, action: call.action,
+      });
+      if (refused) return deny(refused.reason);
+    }
     const recorded = await actionIntents.record(trx, {
       runId, mandateId: row.id, mandateRevision: row.revision, capabilityId: call.capabilityId, moduleKey: outcome.moduleKey, action: call.action, context: outcome.context,
       resolvedFromSelector: outcome.resolvedFromSelector, amount: call.amount,

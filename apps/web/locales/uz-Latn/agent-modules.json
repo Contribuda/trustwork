@@ -1,0 +1,134 @@
+{
+  "agentModules": {
+    "refusal": {
+      "unknown": "Bu xabda bunday imkoniyat yoʻq.",
+      "moduleNotEnabled": "Bu xab agentingizning bu qismini yoqmagan.",
+      "moduleNotServing": "Agentingizning bu qismi hozir bu xabda mavjud emas.",
+      "notEligible": "Bu xabda bu imkoniyat sizga taklif etilmaydi.",
+      "verifiedCompanyRequired": "Bu imkoniyatdan faqat tasdiqlangan kompaniya foydalana oladi.",
+      "offForHub": "Bu xab bu imkoniyatni oʻchirgan.",
+      "offForPrincipalKind": "Bu xab bu imkoniyatni siz kimning nomidan harakat qilayotganingiz uchun oʻchirgan.",
+      "offForPlan": "Bu imkoniyat bu xabdagi tarifingizga kirmaydi.",
+      "paused": "Xab bu imkoniyatni toʻxtatib qoʻydi. Hech narsa yuborilmadi va oʻzgartirilmadi.",
+      "connectionScope": "Ulangan yordamchingizga bu imkoniyatga ruxsat berilmagan."
+    },
+    "principalKind": {
+      "person": "Oʻz nomingizdan",
+      "company_member": "Ish beruvchingiz nomidan",
+      "company_representative": "Kompaniya vakili"
+    },
+    "moduleStatus": {
+      "draft": "Qoralama",
+      "beta": "Beta",
+      "active": "Faol",
+      "retired": "Foydalanishdan chiqarilgan"
+    },
+    "trigger": {
+      "schedule": "Jadval boʻyicha",
+      "event": "Biror narsa yuz berganda",
+      "deadline": "Muddatdan oldin",
+      "goal": "Maqsad faol ekan",
+      "request": "Siz soʻraganingizda"
+    },
+    "closedDay": {
+      "skip": "Xab ishlamaydigan kunlarni oʻtkazib yuborish",
+      "next_open_day": "Keyingi ish kuniga koʻchirish",
+      "run": "Xab yopiq boʻlsa ham bajarish"
+    },
+    "approval": {
+      "ask_each": "Har safar mendan soʻrash",
+      "ask_first": "Dastlabki bir necha marta soʻrash",
+      "ask_above": "Belgilangan summadan yuqori boʻlsa soʻrash",
+      "pre_authorized": "Mandat doirasida soʻramasdan harakat qilish"
+    },
+    "cadence": {
+      "none": "Hisobotlarsiz",
+      "monthly": "Har oy",
+      "weekly": "Har hafta",
+      "daily": "Har kuni"
+    },
+    "channel": {
+      "platform": "Platformada",
+      "email": "Elektron pochta",
+      "sms": "SMS xabar",
+      "push": "Push-bildirishnoma"
+    },
+    "job": {
+      "weeklyPlanReview": "Loyiha rejangizni har haftalik koʻrib chiqish",
+      "turnOn": "Bu vazifani yoqish",
+      "turnOnNote": "Vazifani yoqish faqat siz tasdiqlashingiz uchun mandat tayyorlaydi. Siz tasdiqlamaguningizcha hech narsa ishga tushmaydi.",
+      "runNow": "Hozir ishga tushirish",
+      "nextRun": "Keyingi ishga tushirish: {date}",
+      "status": {
+        "pending": "Tasdiqlashingizni kutmoqda",
+        "active": "Yoqilgan",
+        "withdrawn": "Qaytarib olingan",
+        "lapsed": "Xab endi buni taklif qilmaydi"
+      },
+      "reason": {
+        "proposal_declined": "Siz mandatni rad etdingiz.",
+        "proposal_expired": "Mandat taklifining muddati tugadi.",
+        "proposal_superseded": "Bu taklif yangiroq taklif bilan almashtirildi.",
+        "template_withdrawn": "Xab endi bu vazifani taklif qilmaydi.",
+        "module_not_enabled": "Xab agentingizning bu qismini oʻchirdi."
+      },
+      "fire": {
+        "due": "Ishga tushirildi",
+        "blocked": "Xab tomonidan toʻxtatildi",
+        "mandate_inactive": "Oʻtkazib yuborildi: mandat endi faol emas",
+        "subscription_inactive": "Oʻtkazib yuborildi: vazifa oʻchirilgan",
+        "template_withdrawn": "Oʻtkazib yuborildi: xab endi bu vazifani taklif qilmaydi"
+      }
+    },
+    "settings": {
+      "approval": "Tasdiqlash qoidalari",
+      "outreachPerWeek": "Haftasiga murojaatlar",
+      "reportCadence": "Hisobotlar",
+      "scheduleMinInterval": "Ishga tushirishlar orasidagi eng qisqa oraliq",
+      "channels": "Kanallar",
+      "hubMaximum": "Xab maksimumi: {value}",
+      "tightenOnly": "Bu sozlamalarni xabning standart qiymatidan qattiqroq qilishingiz mumkin, lekin xab maksimumidan yumshoqroq qila olmaysiz."
+    },
+    "admin": {
+      "registry": "Dvigatel bilan birga keladigan modullar",
+      "policy": "Agentlar siyosati",
+      "draft": "Siyosat versiyasini tayyorlash",
+      "preview": "Oldindan koʻrish",
+      "previewNote": "Sonlar faqat kamida 10 kishilik guruhlar uchun koʻrsatiladi. Ikkinchi shaxs aynan shu oldindan koʻrishni tasdiqlaydi.",
+      "fewerThanTen": "10 dan kam",
+      "affected": {
+        "mandates": "Taʼsirlangan faol mandatlar",
+        "jobSubscriptions": "Taʼsirlangan vazifa obunalari",
+        "connections": "Taʼsirlangan ulangan yordamchilar",
+        "openRuns": "Taʼsirlangan tugallanmagan ishga tushirishlar"
+      },
+      "change": {
+        "enabled": "Yoqildi",
+        "disabled": "Oʻchirildi",
+        "narrowed": "Toraytirildi",
+        "widened": "Kengaytirildi",
+        "changed": "Oʻzgartirildi"
+      },
+      "guardRails": "Hech bir sozlama mandatlarni, majburiyatlar uchun shaxsning tasdigʻini, sanksiyalar tekshiruvini, taqiqlangan joylarni yoki toʻlov betarafligini oʻchira olmaydi.",
+      "noPerPersonAccess": "Administratorlar agentlar mahsulotini hamma uchun boshqaradi. Ular hech qachon alohida ishtirokchining agentini, mandatlarini, sozlamalarini, maqsadlarini, vazifalarini yoki ulanishlarini koʻrmaydi va oʻzgartirmaydi.",
+      "error": {
+        "previewStale": "Oldindan koʻrish eskirgan. Joriy taʼsirini koʻrish uchun siyosatni qayta tayyorlang.",
+        "policyUnvalidated": "Bu versiya agent modullari reyestri tomonidan tekshirilmagan va faollashtirilmaydi.",
+        "guardRail": "Bu sozlama hech bir xab oʻchira olmaydigan himoyani zaiflashtirgan boʻlardi.",
+        "widening": "Xab modulni toraytirishi mumkin, lekin uni dvigatel bergan doiradan kengaytira olmaydi."
+      },
+      "killSwitch": {
+        "engage": "Hozir toʻxtatish",
+        "release": "Toʻxtatishni bekor qilish",
+        "releaseNote": "Toʻxtatish darhol kuchga kiradi. Bekor qilish uchun ikkinchi shaxs va hodisa haqida yozuv kerak; toʻxtatilgan narsa qayta ishga tushmaydi.",
+        "scope": {
+          "hub_agent_dispatch": "Bu xabdagi barcha agent harakatlari",
+          "agent_module": "Bitta modul",
+          "agent_capability": "Bitta imkoniyat",
+          "agent_action": "Harakatning bitta turi",
+          "external_agent_api": "Ulangan yordamchilar"
+        }
+      }
+    }
+  }
+}

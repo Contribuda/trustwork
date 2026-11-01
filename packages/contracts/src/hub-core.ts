@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { HubAgentPolicySchema } from './agent-catalog.js';
+import { AgentPolicyDocumentSchema } from './agent-modules.js';
 import { IdSchema, IanaTimeZoneSchema, NameSchema, RevisionSchema, ShortTextSchema, TimestampSchema } from './common/ids.js';
 import { CurrencySchema } from './common/money.js';
 import {
@@ -206,7 +206,9 @@ export type PrivacyConfigPayload = z.infer<typeof PrivacyConfigPayloadSchema>;
 /** Domains whose payload HUB-001 (or the contract it reuses) knows; others are objects checked by the generic rules. */
 export const CONFIG_PAYLOAD_SCHEMAS: Readonly<Partial<Record<HubConfigDomain, z.ZodType>>> = {
   identity: IdentityConfigPayloadSchema, country: CountryConfigPayloadSchema, residency: ResidencyConfigPayloadSchema, legal: LegalConfigPayloadSchema,
-  jurisdiction: JurisdictionConfigPayloadSchema, privacy: PrivacyConfigPayloadSchema, modes: HubModesSchema, payments: HubPaymentSettingsSchema, agents: HubAgentPolicySchema,
+  jurisdiction: JurisdictionConfigPayloadSchema, privacy: PrivacyConfigPayloadSchema, modes: HubModesSchema, payments: HubPaymentSettingsSchema,
+  // AGT-003: the AGT-002 HubAgentPolicy wrapped with module controls, capability switches, defaults, job templates and the stored preview.
+  agents: AgentPolicyDocumentSchema,
 };
 const GenericPayloadSchema = z.record(z.string().min(1).max(100), z.unknown());
 const MAX_PAYLOAD_BYTES = 65_536;

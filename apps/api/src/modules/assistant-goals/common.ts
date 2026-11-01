@@ -76,7 +76,7 @@ export function mapAgentsError(error: unknown): never {
   return mapDatabaseError(error);
 }
 
-/** Settings of agent-to-agent work; protection limits come from the hub agent policy when HUB-002 stores it. */
+/** Settings of agent-to-agent work; while a hub agent policy is active (AGT-003) its protection limits replace these. */
 export interface AgentsSettings {
   hubId: string | null;
   /** Protection limits (identical across plans, never purchasable): `maxNegotiationRounds`, `envelopesPerCounterpartyPerDay`. */
