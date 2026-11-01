@@ -1,0 +1,26 @@
+{
+  "sourceCommit": "5e0dc186a99190ff27c084895eba2b42a94c89c3",
+  "browserBuildSource": "9919cdb6c71de5dd3ba89a125f1d931a8de8bfc4",
+  "webSourceByteIdentical": true,
+  "visualReview": "All eight PDF pages inspected; no raw revision UUID or digest on covers; no clipping, overlap or missing glyphs. Source-link PDF has no full body.",
+  "manualScreenReader": "not performed",
+  "nativeLanguageReview": "not performed",
+  "files": {
+    "current-source-repair/issue-link-page-1.png": "499db7110fb0ef3d0438a0d1bfdfe89349be4aaa9850cde2e380bec2150ac360",
+    "current-source-repair/issue-link-page-2.png": "3aaea65ad8a2472ce4b174c088bea70317c2914ab9fa77f8723aa9ba8d3297c2",
+    "current-source-repair/issue-link.pdf": "c75e6bb425a0edad72c8d8d6a20d703eb5ece63cf94af2bbe06f7708f72980f7",
+    "current-source-repair/issue-ru-page-1.png": "a0af2f387298966e0235e810836464225ea9f9c227f66cc4d613d0dcb17e5a8f",
+    "current-source-repair/issue-ru-page-2.png": "f744bc4d9d0c72353a3c5c07c05b3794c0a16f818be509b0ed46b79f414a09da",
+    "current-source-repair/issue-ru.pdf": "e12eafea986deea2ae5bcb7ddab3380d967caf0e7f66158a6c36a3b71d819f91",
+    "current-source-repair/issue-source-page-1.png": "0ae5e67324e57997a43324c8458ae750b753a28df25ec965de0e7744ba97e424",
+    "current-source-repair/issue-source-page-2.png": "a47bdd5563257927db92de4760a6c745e32f912cd89edf44174f7de591302950",
+    "current-source-repair/issue-source.pdf": "d7db8570b4c40a61d407c3c1670cc4609be7b19a53282ae86036bae969f495d3",
+    "current-source-repair/page-results.json": "e9ff44f73326a607c27deb6a2591b900b279155d6aa49ba7d0541e031fa816fd",
+    "current-source-repair/rights-allowed-reader-375.png": "b8d71561f6a296e044a5482c17d58c5b860a4bd3d30058f0539afdbbd950cc81",
+    "current-source-repair/rights-results.json": "3c5af1a11a9b486fbf2f693fb8a317238e19c52921b2fd2a7f5fc23ad646c254",
+    "current-source-repair/rights-revoked-reader-375.png": "a0e75da0f85599fd6201bf8b625202b7c679680381289d9db3a8e21f693bba71",
+    "issue-live-ru-page-1.png": "41396a0b022ab4305c8a764df4cb33337f7da0effdaed36d3f9d89242a87d901",
+    "issue-live-ru-page-2.png": "2c4f9aab5239601a6b7719196466c5e7ec929697677ad2ac4abc17adc712a97c",
+    "issue-live-ru.pdf": "3174f4c9a103bafb4adb776cd6d71a09d22a573157f063412e5918588670757a"
+  }
+}

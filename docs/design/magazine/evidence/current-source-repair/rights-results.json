@@ -1,0 +1,182 @@
+{
+  "feedEvidence": [
+    {
+      "phase": "allowed",
+      "path": "/ru/news/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/news/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/news/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/articles/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/articles/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/articles/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/magazine/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/magazine/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "allowed",
+      "path": "/ru/magazine/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/news/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/news/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/news/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/articles/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/articles/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/articles/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/magazine/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/magazine/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "consent-withdrawn",
+      "path": "/ru/magazine/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/news/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/news/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/news/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/articles/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/articles/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/articles/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/magazine/feed.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/magazine/atom.xml",
+      "status": 200,
+      "cache": "no-store"
+    },
+    {
+      "phase": "revoked",
+      "path": "/ru/magazine/feed.json",
+      "status": 200,
+      "cache": "no-store"
+    }
+  ],
+  "externalRequests": [],
+  "sourceId": "01a19567-f8b7-77c4-9025-670658b8873e",
+  "publicationId": "01a19567-fa2f-7e37-84ad-4be29509434b",
+  "pinnedVersion": 1,
+  "checks": [
+    "initial rights",
+    "committed revocation",
+    "private source fields absent",
+    "consent credit withdrawn",
+    "headline link body withheld",
+    "pinned issue withheld",
+    "magazine/archive/rubric",
+    "PDF agrees",
+    "moderation",
+    "retraction"
+  ]
+}

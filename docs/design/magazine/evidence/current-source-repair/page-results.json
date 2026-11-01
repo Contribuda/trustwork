@@ -1,0 +1,506 @@
+[
+  {
+    "locale": "en",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-news-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-news-detail-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-articles-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-article-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-magazine-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-issue-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-archive-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-rubric-375.png"
+  },
+  {
+    "locale": "en",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "en-reader-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-news-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-news-detail-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-articles-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-article-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-magazine-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-issue-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-archive-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-rubric-375.png"
+  },
+  {
+    "locale": "es",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "es-reader-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-news-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-news-detail-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-articles-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-article-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-magazine-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-issue-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-archive-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-rubric-375.png"
+  },
+  {
+    "locale": "ru",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ru-reader-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-news-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-news-detail-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-articles-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-article-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-magazine-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-issue-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-archive-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-rubric-375.png"
+  },
+  {
+    "locale": "uz-Latn",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "uz-Latn-reader-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-news-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-news-detail-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-articles-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-article-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-magazine-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-issue-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-archive-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-rubric-375.png"
+  },
+  {
+    "locale": "ka",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "ka-reader-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-news-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-news-detail-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-articles-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-article-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-magazine-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-issue-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-archive-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-rubric-375.png"
+  },
+  {
+    "locale": "hy",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "hy-reader-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/news",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-news-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/news/01a19566-4c54-725a-89db-25873e21077e",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-news-detail-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/articles",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-articles-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/articles/01a19566-4c31-782d-a003-7bc1eb3cca76",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-article-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/magazine",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-magazine-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/magazine/1",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-issue-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/magazine/archive",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-archive-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/magazine/rubric/practice",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-rubric-375.png"
+  },
+  {
+    "locale": "az-Latn",
+    "route": "/magazine/1/read",
+    "status": 200,
+    "viewport": 375,
+    "axeViolations": 0,
+    "screenshot": "az-Latn-reader-375.png"
+  }
+]
