@@ -546,7 +546,10 @@
           "release_payout_batch": "Release a payout batch"
         },
         "payments": {
-          "change_settings": "Change payment settings"
+          "change_settings": "Change payment settings",
+          "register_source_adapter": "Register a payment source adapter",
+          "accept_participant_binding": "Accept a participant payment binding",
+          "activate_account_binding": "Activate a payment account binding"
         },
         "sponsored": {
           "enable": "Enable sponsored content"

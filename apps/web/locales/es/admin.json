@@ -546,7 +546,10 @@
           "release_payout_batch": "Liberar un lote de pagos a participantes"
         },
         "payments": {
-          "change_settings": "Cambiar la configuración de pagos"
+          "change_settings": "Cambiar la configuración de pagos",
+          "register_source_adapter": "Registrar un adaptador de origen de pagos",
+          "accept_participant_binding": "Aceptar la vinculación de pagos de un participante",
+          "activate_account_binding": "Activar la vinculación de una cuenta de pagos"
         },
         "sponsored": {
           "enable": "Habilitar el contenido patrocinado"

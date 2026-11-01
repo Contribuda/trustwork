@@ -546,7 +546,10 @@
           "release_payout_batch": "Թողարկել վճարումների փաթեթը"
         },
         "payments": {
-          "change_settings": "Փոխել վճարումների կարգավորումները"
+          "change_settings": "Փոխել վճարումների կարգավորումները",
+          "register_source_adapter": "Գրանցել վճարման աղբյուրի ադապտեր",
+          "accept_participant_binding": "Ընդունել մասնակցի վճարման կապը",
+          "activate_account_binding": "Ակտիվացնել վճարային հաշվի կապը"
         },
         "sponsored": {
           "enable": "Միացնել հովանավորված նյութերը"
