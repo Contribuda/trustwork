@@ -59,6 +59,10 @@ export const goals = {
 };
 
 export const goalProgress = {
+  /** Narrow source lookup; the same goal-owner RLS as the progress list applies. */
+  get(trx: Transaction, id: string): Promise<GoalProgressRow | undefined> {
+    return trx.selectFrom('goal_progress').selectAll().where('id', '=', id).executeTakeFirst();
+  },
   append(trx: Transaction, row: { goal_id: string; event_kind: string; evidence_refs?: unknown[]; detail?: unknown; recorded_by_person_id: string }): Promise<GoalProgressRow> {
     return trx.insertInto('goal_progress').values({
       goal_id: row.goal_id, event_kind: row.event_kind, evidence_refs: json(row.evidence_refs ?? []), detail: json(row.detail ?? {}), recorded_by_person_id: row.recorded_by_person_id,
@@ -70,6 +74,10 @@ export const goalProgress = {
 };
 
 export const jobSubscriptions = {
+  /** Own subscription only; staff receive no additional read grant. */
+  get(trx: Transaction, id: string): Promise<JobSubscriptionRow | undefined> {
+    return trx.selectFrom('job_subscription').selectAll().where('id', '=', id).executeTakeFirst();
+  },
   insert(trx: Transaction, row: { principal_person_id: string; on_behalf_company_id: string | null; module_key: string; job_template_key: string; trigger: unknown; goal_id: string | null; mandate_id: string | null }): Promise<JobSubscriptionRow> {
     return trx.insertInto('job_subscription').values({ ...row, trigger: json(row.trigger) }).returningAll().executeTakeFirstOrThrow();
   },

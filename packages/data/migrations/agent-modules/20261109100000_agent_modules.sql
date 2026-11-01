@@ -696,6 +696,10 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'unknown job' USING ERRCODE = 'no_data_found', HINT = 'access.not_found';
   END IF;
+  -- Attribution is stored with the request. Neither worker input nor a process default may move it to another hub.
+  IF v_schedule.hub_id IS NULL OR p_hub IS DISTINCT FROM v_schedule.hub_id THEN
+    RAISE EXCEPTION 'job hub provenance is missing or conflicts' USING ERRCODE = 'insufficient_privilege', HINT = 'agents.hub_mismatch';
+  END IF;
   SELECT outcome INTO v_existing FROM trustwork.agent_job_fire WHERE job_subscription_id = p_subscription AND due_at = p_due_at;
   IF FOUND THEN
     RETURN v_existing;
@@ -706,9 +710,9 @@ BEGIN
     v_outcome := 'subscription_inactive';
   ELSIF v_sub.mandate_id IS NULL OR v_mandate.status <> 'active' OR v_mandate.valid_until <= clock_timestamp() THEN
     v_outcome := 'mandate_inactive';
-  ELSIF NOT trustwork.agent_modules_template_offered(coalesce(p_hub, v_schedule.hub_id), v_sub.module_key, v_sub.job_template_key) THEN
+  ELSIF NOT trustwork.agent_modules_template_offered(v_schedule.hub_id, v_sub.module_key, v_sub.job_template_key) THEN
     v_outcome := 'template_withdrawn';
-  ELSIF trustwork.agent_modules_dispatch_refusal(coalesce(p_hub, v_schedule.hub_id), v_sub.module_key, NULL, NULL, v_sub.principal_person_id, NULL,
+  ELSIF trustwork.agent_modules_dispatch_refusal(v_schedule.hub_id, v_sub.module_key, NULL, NULL, v_sub.principal_person_id, NULL,
       CASE WHEN v_mandate.grantee_kind = 'company_representative' THEN v_mandate.grantee_company_id END) IS NOT NULL THEN
     v_outcome := 'blocked';
   ELSE

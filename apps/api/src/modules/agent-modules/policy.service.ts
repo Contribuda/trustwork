@@ -20,6 +20,7 @@ interface Cmd { idempotencyKey: string; reason: string }
 
 /** Database refusals of this module (SQLSTATE plus hint) as contract codes; the hint travels in `details.reason`. */
 const HINTS: Readonly<Record<string, { code: ConstructorParameters<typeof ApiError>[0]; reason: string }>> = {
+  'agents.hub_mismatch': { code: 'access.forbidden', reason: 'hub_mismatch' },
   'agents.preview_stale': { code: 'validation.revision_conflict', reason: 'preview_stale' },
   'agents.policy_unvalidated': { code: 'validation.schema', reason: 'policy_unvalidated' },
   'agents.policy_invalid': { code: 'validation.schema', reason: 'policy_invalid' },

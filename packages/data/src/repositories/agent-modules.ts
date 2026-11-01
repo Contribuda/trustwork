@@ -123,6 +123,10 @@ export const agentJobs = {
 
 export interface DueJobRow { job_subscription_id: string; hub_id: string | null; due_at: Date; trigger: unknown; on_closed_day: 'skip' | 'next_open_day' | 'run'; anchor: Date; calendar: unknown }
 export const agentJobWorker = {
+  /** Persist every currently authorized goal horizon offset, invalidating obsolete pending revisions. */
+  async syncGoalDeadlines(trx: Transaction, subscriptionId: string): Promise<number> {
+    return (await one(sql<{ n: number }>`SELECT trustwork.agent_modules_sync_goal_deadlines(${subscriptionId}::uuid) AS n`.execute(trx), 'agent_modules_sync_goal_deadlines')).n;
+  },
   async due(trx: Transaction, limit: number): Promise<DueJobRow[]> {
     return (await sql<DueJobRow>`SELECT * FROM trustwork.agent_modules_due_jobs(${limit}::integer)`.execute(trx)).rows;
   },
