@@ -2,7 +2,7 @@
 
 Normative requirements: [Hubs and the hub console](modules/hubs-and-console.md). Participants: [who uses what](participants/README.md).
 
-Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub-scoped staff, versioned hub configuration, the hub lifecycle and the launch checklist are **Live** as an API without a console (HUB-001, [module](../../apps/api/src/modules/hubs/README.md)); the console screens are **Proposed**; the United States reference hub (hosting, operator, demo-only start) is **decided** and not deployed.
+Requirement R36. Status: country selection, packs and localization are **Live** and **Demo**; the hub model, territories, hub-scoped staff, versioned hub configuration, the hub lifecycle and the launch checklist are **Live** as an API without a console (HUB-001, [module](../../apps/api/src/modules/hubs/README.md)); jurisdiction settings have **blocked, partial groundwork** (HUB-005: comparison contracts, pack evidence and draft preflight; no activation or runtime integration, [dependencies](../../apps/api/src/modules/hubs/jurisdiction/README.md)); the console screens are **Proposed**; the United States reference hub (hosting, operator, demo-only start) is **decided** and not deployed.
 
 The engine is not one website. It is something people run for a place they care about. A **hub** is the platform for one territory: a country, a region, or a city. Whoever runs it is the **hub operator**: an industry association, a trade publisher, a chamber of commerce, a university, an entrepreneur, a community of engineers. The operator brings local knowledge, legal responsibility and people; the engine brings everything else.
 
