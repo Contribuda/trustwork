@@ -15,7 +15,7 @@ export async function listCrashCases(h: Harness, first: Client, second: Client, 
   const node = (await h.db.admin.query<{id:string}>('SELECT id FROM trustwork.admin_node LIMIT 1')).rows[0]!.id;
   const person = (await h.db.admin.query<{person_id:string}>("SELECT person_id FROM trustwork.staff_role_assignment WHERE role='compliance-officer' AND revoked_at IS NULL LIMIT 1")).rows[0]!.person_id;
   const hub = await withMaintenance(h.db.admin,async(trx)=>{
-    const row=await trx.insertInto('hub').values({slug:`synthetic-list-${crypto.randomUUID()}`,lifecycle:'draft',pack_code:null,pack_version:null}).returning('id').executeTakeFirstOrThrow();
+    const row=await trx.insertInto('hub').values({slug:`synthetic-list-${crypto.randomUUID().slice(0,8)}`,lifecycle:'draft',pack_code:null,pack_version:null}).returning('id').executeTakeFirstOrThrow();
     await trx.insertInto('hub_profile').values({hub_id:row.id,node_id:node,name:{en:'Synthetic list crash hub'},default_locale:'en',locales:['en'],time_zone:'UTC',currency:'USD',brand_overlay:null,created_by:person}).execute();
     return row.id;
   });
