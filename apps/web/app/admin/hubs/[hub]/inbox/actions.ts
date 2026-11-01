@@ -5,7 +5,7 @@ import { demoModeEnabled } from '@/app/_lib/persona';
 import { primeLocale } from '@/app/_lib/locale';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { resolveConsoleRequest } from '../../../_data/personas';
-import { consolePort } from '../../../_data/index';
+import { consolePort } from '../../../_data/server';
 import type { CommandState } from '../../../_data/command-state';
 import { inboxCommand } from './authority';
 import { FixtureReceiptSchema, type FixtureReceipt } from './transaction';

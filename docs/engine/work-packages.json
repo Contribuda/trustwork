@@ -3902,7 +3902,7 @@
       "id": "HUBC-007",
       "title": "Console live wiring: shell, setup, hub settings, approvals and staff",
       "area": "hubs-web",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "ADM-002",
         "HUB-004",

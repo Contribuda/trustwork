@@ -36,14 +36,20 @@ import {
  * `tests/web/admin/shell/console-fixtures.test.ts`, so a fixture that violates an invariant fails the build.
  */
 
-const Synthetic = { synthetic: z.literal(true) } as const;
+/**
+ * `true` on every fixture record (asserted in tests/web/admin/shell/console-data.test.ts); `false` on records the API
+ * adapter reads from a live backend (HUBC-007), so the console can label demo data without trusting live data to be demo.
+ */
+const Synthetic = { synthetic: z.boolean() } as const;
+/** A host name: fixtures use the reserved `.invalid` top-level domain (asserted in the fixture tests), live hubs their own. */
+const HostSchema = z.string().min(1).max(253).regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/);
 
 /** A synthetic person shown in the console (staff, requesters). Names are invented; e-mail domains are `example.invalid`. */
 export const ConsolePersonSchema = z.strictObject({ id: IdSchema, displayName: NameSchema, nameLang: LocaleTagSchema, ...Synthetic });
 export type ConsolePerson = z.infer<typeof ConsolePersonSchema>;
 
 /** The node that hosts the hubs (one installation). */
-export const ConsoleNodeSchema = z.strictObject({ id: IdSchema, name: NameSchema, domain: z.string().regex(/^[a-z0-9.-]+\.invalid$/), engineVersion: z.string().min(1).max(40), ...Synthetic });
+export const ConsoleNodeSchema = z.strictObject({ id: IdSchema, name: NameSchema, domain: HostSchema, engineVersion: z.string().min(1).max(40), ...Synthetic });
 export type ConsoleNode = z.infer<typeof ConsoleNodeSchema>;
 
 export const BudgetUseSchema = z.strictObject({ budget: ProviderBudgetSchema, spentMinorUnits: NonNegativeMinorUnitsSchema });
@@ -56,8 +62,9 @@ export const HubExampleSchema = z.enum(['us_reference', 'samarkand_example']);
 export const HubRecordSchema = z.strictObject({
   hub: HubSchema,
   modes: HubModesSchema,
-  example: HubExampleSchema,
-  domain: z.string().regex(/^[a-z0-9.-]+\.invalid$/),
+  /** Which worked example a fixture hub is; null for a live hub. */
+  example: HubExampleSchema.nullable(),
+  domain: HostSchema,
   sodMode: SodModeSchema,
   gates: z.array(LaunchGateSchema),
   configVersions: z.array(HubConfigVersionSchema),

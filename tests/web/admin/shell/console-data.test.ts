@@ -18,7 +18,7 @@ import { elevationState } from '../../../../apps/web/app/admin/_data/elevation.j
 import { consoleHref, resolveConsoleRequest, STAFF_PERSONA_IDS } from '../../../../apps/web/app/admin/_data/personas.js';
 import { GROUPS, SECTIONS, sectionByPath } from '../../../../apps/web/app/admin/_data/sections.js';
 import { FIXTURE_NOW, HUB_SAMARKAND_ID, HUB_US_ID, NODE_ID } from '../../../../apps/web/app/admin/_fixtures/ids.js';
-import { HUBS, OVERVIEWS } from '../../../../apps/web/app/admin/_fixtures/hubs.js';
+import { HUBS, NODE, OVERVIEWS } from '../../../../apps/web/app/admin/_fixtures/hubs.js';
 import { DEMO_FRESH_SETUP_TOKEN, DEMO_SETUP_TOKEN } from '../../../../apps/web/app/admin/_fixtures/setup.js';
 import { STAFF, STAFF_PERSONAS } from '../../../../apps/web/app/admin/_fixtures/staff.js';
 import { APPROVAL_DECISIONS, APPROVAL_REQUESTS } from '../../../../apps/web/app/admin/hubs/[hub]/approvals/_fixtures.js';
@@ -74,6 +74,11 @@ test('fixtures are synthetic, cover both example hubs and use placeholder identi
   }
   assert.ok(us.hub.territories.some((t) => t.code === 'US-CA:san-diego'), 'the US reference hub is San Diego (ADR 012 decision 31)');
   for (const o of OPERATORS) assert.match(o.identifier.value, /^0+[-0]*$/);
+  // The read models also accept live records (HUBC-007: `synthetic: false`, real host names, no worked example);
+  // the fixtures stay synthetic, on `.invalid` names, and each hub is one of the two worked examples.
+  assert.equal(NODE.synthetic, true);
+  assert.match(NODE.domain, /\.invalid$/);
+  for (const p of STAFF.people) assert.equal(p.synthetic, true, p.id);
   assert.equal(OVERVIEWS.length, HUBS.length);
 });
 
@@ -124,6 +129,7 @@ test('live mode never reads the query; demo mode reads persona and scenario', ()
 });
 
 test('live mode: the unavailable adapter has no viewer, no hub, no setup run and answers every command with not_found', async () => {
+  // Without a live adapter (server code passes the API adapter, HUBC-007, tests/web/admin/live-core) live mode serves nothing.
   const live = consolePort(false);
   assert.equal(live.source, 'unavailable');
   assert.equal(await live.viewer({ demo: false }), null);
