@@ -57,3 +57,5 @@ Focused PG/API tests cover absent, withdrawn, stale, cross-person, cross-hub and
 ## Integration order
 
 The three unpublished provenance migrations use `20261120100000` through `20261120100002`, sequenced after the sanctions and privacy continuations. The move from the original 12xxx allocation changes filenames only; all SQL bytes and previously applied migrations remain unchanged. Historical verification remains tied to its original source commits.
+
+The shared principal transaction accepts snapshot isolation independently of the no-refresh admission option. Integrated privacy/content tests preserve both options, including the existing default refresh and transaction isolation for unrelated callers.
