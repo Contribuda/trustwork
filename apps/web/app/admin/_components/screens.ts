@@ -1,6 +1,8 @@
 import type { Screen } from './screen';
 import { screen as overview } from '../hubs/[hub]/_screen';
 import { screen as approvals } from '../hubs/[hub]/approvals/_screen';
+import { screen as inbox } from '../hubs/[hub]/inbox/_screen';
+import { screen as users } from '../hubs/[hub]/users/_screen';
 import { screen as help } from '../hubs/[hub]/help/_screen';
 import { screen as identity } from '../hubs/[hub]/hub/identity/_screen';
 import { screen as modes } from '../hubs/[hub]/hub/modes/_screen';
@@ -55,7 +57,7 @@ import { screen as communicationsAnnouncements } from '../hubs/[hub]/communicati
 
 /** Every built hub console screen; sections with status `demo` in their group file must have one here (tested). */
 export const SCREENS: readonly Screen[] = [
-  overview, approvals, help, identity, modes, modules, legal, residency, country, taxonomy, launch,
+  overview, approvals, inbox, users, help, identity, modes, modules, legal, residency, country, taxonomy, launch,
   // HUBC-004
   people, companies, claims, verification, credentials, consents, supportLookup, supportCases, supportRecovery, supportExplain,
   moderation, disputes, reputation, appeals, screening, confirmations,
