@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { createPool, withPrincipal } from '@trustwork/data';
 import { computeDigest } from '@trustwork/contracts';
 import type pg from 'pg';
@@ -57,9 +58,14 @@ process.once('message', async (config: RecoveryWorkerConfig) => {
       await send({ outcome: result.outcome, calls });
       return;
     }
-    const prepared = await withPrincipal(pool, principal, (trx) =>
-      assistantModelTurns.begin(trx, config.key, computeDigest({ text: config.text }).value, config.text),
-    );
+    const prepared = await withPrincipal(pool, principal, async trx => {
+      const result = await assistantModelTurns.begin(trx, config.key, computeDigest({ text: config.text }).value, config.text);
+      if (result.fresh) {
+        const binding = await trx.selectFrom('agent_serving_hub').select('id').where('origin', '=', 'https://trustwork.test').where('active', '=', true).executeTakeFirstOrThrow();
+        await sql`SELECT trustwork.agent_modules_bind_run(${result.turn.run_id}::uuid,${binding.id}::uuid,${config.binding.sessionId}::uuid)`.execute(trx);
+      }
+      return result;
+    });
     const call = {
       ...config.call,
       operationId: prepared.turn.id,

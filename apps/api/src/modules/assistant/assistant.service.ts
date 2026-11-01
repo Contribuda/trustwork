@@ -378,7 +378,10 @@ export class AssistantService {
         if (previous.input_digest !== computeDigest(body).value) throw new ApiError('validation.idempotency_conflict', 'different conversation command');
         return previous.result as ConversationResult;
       }
+      if (!state.session || state.session.personId !== p.personId) throw new ApiError('auth.session_invalid', 'session required');
+      const binding = await servingHub(trx, this.ctx.config.publicOrigin);
       const run = await runs.start(trx, { principal_person_id: p.personId, kind: 'conversation' });
+      await sql`SELECT trustwork.agent_modules_bind_run(${run.id}::uuid,${binding.id}::uuid,${state.session.id}::uuid)`.execute(trx);
       const asked = await conversationTurns.append(trx, { person_id: p.personId, role: 'person', content: body.text, run_id: run.id });
       const answer = await conversationTurns.append(trx, { person_id: p.personId, role: 'system', content: 'assistant.overlay.stateUnavailable', run_id: run.id });
       await runSteps.append(trx, { run_id: run.id, kind: 'model_call', tool: null, input_digest: computeDigest({ text: body.text }).value,

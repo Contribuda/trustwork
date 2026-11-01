@@ -45,6 +45,19 @@ test('first-party serving provenance is explicit, immutable and independent of p
     } finally { process.env.TRUSTWORK_HUB_ID = previous; }
   });
 
+  await t.test('local unavailable-model conversations and manual goal reports also persist trusted run provenance', async () => {
+    const conversation = ok<{ run: { id: string } }>(await client.post('/v1/assistant/conversation', { text: 'Synthetic local turn' }));
+    const created = ok<{ goal: { id: string }; confirmation: { digest: unknown } }>(await client.post('/v1/assistant/goals', {
+      onBehalfOf: null, text: 'Synthetic manual report', successCriteria: ['Private progress'], needs: [], budgetRange: null,
+      horizon: new Date(Date.now() + 30 * 86_400_000).toISOString(), reportCadence: 'none',
+    }), 201);
+    ok(await client.post(`/v1/assistant/goals/${created.goal.id}/confirm`, { digest: created.confirmation.digest }));
+    const report = ok<{ generatedByRunId: string }>(await client.post(`/v1/assistant/goals/${created.goal.id}/report`, {}), 201);
+    const rows = (await h.db.admin.query<{ run_id: string; hub_id: string }>('SELECT run_id,hub_id FROM trustwork.agent_run_provenance WHERE run_id=ANY($1::uuid[])', [[conversation.run.id, report.generatedByRunId]])).rows;
+    assert.equal(rows.length, 2);
+    assert.ok(rows.every(row => row.hub_id === world.hubId));
+  });
+
   await t.test('staff, other participants and workers cannot read private provenance or rewrite routing', async () => {
     for (const personId of [seed.people.carl, world.w.people.owner]) await as(h, personId, async (trx) => {
       assert.equal((await trx.selectFrom('agent_job_provenance').selectAll().execute()).length, 0);
@@ -66,6 +79,9 @@ test('first-party serving provenance is explicit, immutable and independent of p
     const r = await client.post('/v1/assistant/jobs', body);
     assert.equal(r.status, 403);
     assert.match(JSON.stringify(r.body), /hub_provenance_unavailable/);
+    const conversation = await client.post('/v1/assistant/conversation', { text: 'Synthetic unbound turn' });
+    assert.equal(conversation.status, 403);
+    assert.match(JSON.stringify(conversation.body), /hub_provenance_unavailable/);
     assert.equal((await h.db.admin.query('SELECT id FROM trustwork.agent_job_request')).rowCount, 1);
   });
 });

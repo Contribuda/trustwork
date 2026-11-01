@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sql } from 'kysely';
@@ -55,6 +56,7 @@ function ok<T>(r: Response, status = 200): T {
 test('tasks database: frozen offers, isolation, private halves, staleness, agreements, assignments, site, records and reviews', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const { petr, carl, boris, xenia } = seed.people;

@@ -176,3 +176,15 @@ Remaining: other participant service factories, public-read boundaries, the full
 The MCP lock port `agent_modules_lock_connection_consent` derives the current person, locks only that person's stored consent and its bound mandates, returns no private data and cannot be used by worker roles. The read role receives no UPDATE grants merely to obtain row locks.
 
 The OPS-owned restore registry requires entries for `agents.start_occurrence` and `agents.execute_occurrence`, both transactional. The conductor report records the exact seam; restore source files were not modified.
+
+
+## Execution and model integration continuation
+
+- `execution-bindings.ts` and `apps/api/src/modules/execution/execution.module.ts` bind all seven execution service operations inside their existing transactions. Agreement-side classification calls the real `executionAgreements.side/get` ports; claim/dispute references are resolved under the principal RLS. Existing agreement, membership, mandate and projection authority remains mandatory.
+- `task-bindings.ts` supplies explicit bindings for the existing task service, including mixed personal/company projections and structured delivery decisions. It does not replace fee or mandate ports. BILL-003 owns the production task/consultation factories in PR #501; the conductor must wire the adapter while preserving its exact fee constructor dependencies. A real-service test proves default missing-mandate denial. This is not production task parity.
+- Fresh local unavailable-model conversation runs and manual goal reports now persist the same serving/session provenance as model and worker runs. Existing-operation recovery is checked before fresh admission.
+- `model-governance.ts` contributes only stored run/hub and exact current capability authority to the mandatory model governance port. It sends no prompt to the SQL check. Model/role/source/retention/residency decisions still require an owning port; its default remains unavailable.
+- `20261109100800_agent_model_authority.sql` wraps the merged foundation's shared fresh-authority helper, preserving its complete original implementation. Durable model begin, fallback and final admission therefore also enforce AGT inside their real transaction. Receipt/recovery functions are unchanged. No external adapter or permissive governance is installed.
+- Model test fixtures install an exact synthetic research manifest and bind runs using the existing real test session and explicit synthetic origin. They do not register a production research capability or fabricate an authenticated worker.
+
+Model tests cover wrong hub/run, unknown capability, action/context substitution, missing owning governance, both serving-withdrawal/admission orders and preservation of unknown financial holds. Generic model protection-quota integration and the remaining service/revoker matrix are still incomplete; this evidence does not complete LLM.
