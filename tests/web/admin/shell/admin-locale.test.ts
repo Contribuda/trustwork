@@ -71,7 +71,14 @@ test('value families built from contract vocabularies are complete', () => {
   ];
   const missing = families.flatMap(([prefix, values]) => values.filter((v) => !has(`${prefix}.${v}`)).map((v) => `${prefix}.${v}`));
   for (const action of CONSOLE_SECOND_PERSON_ACTIONS) if (!has(`admin.approvals.actions.${action}`)) missing.push(`admin.approvals.actions.${action}`);
-  for (const { group, section } of SECTIONS) if (!has(`admin.sections.${group.id}.${section.id}`)) missing.push(`admin.sections.${group.id}.${section.id}`);
+  for (const { group, section } of SECTIONS) {
+    if (section.labelKey) {
+      for (const tag of tags) {
+        const navigation = new Map(leaves(JSON.parse(readFileSync(join(LOCALES, tag, 'console-navigation.json'), 'utf8'))));
+        if (!navigation.get(section.labelKey)?.trim()) missing.push(`${tag}:${section.labelKey}`);
+      }
+    } else if (!has(`admin.sections.${group.id}.${section.id}`)) missing.push(`admin.sections.${group.id}.${section.id}`);
+  }
   for (const slug of Object.values(STEP_SLUGS)) for (const leaf of ['title', 'purpose']) if (!has(`admin.setup.${slug}.${leaf}`)) missing.push(`admin.setup.${slug}.${leaf}`);
   assert.deepEqual(missing, []);
 });
