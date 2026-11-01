@@ -14,6 +14,7 @@ import { Metrics, startMetricsServer, type MetricsServer } from './metrics.js';
 import { paymentReconcileTask, registerPayments, type PaymentRuntime } from './payments/index.js';
 import { startPaymentIngress } from './payments/ingress.js';
 import { PaymentProviders } from './payments/provider.js';
+import { PipelineStepRegistry, pipelineMaintenanceTask, pipelineRunTask, pipelineScheduleTask } from './pipelines/index.js';
 import { providersSecretSweepTask } from './providers/index.js';
 import { registerRescreen, rescreenConfigFromEnv, rescreenTickTask, rescreenWeeklyTask, type RescreenRuntime } from './rescreen/index.js';
 import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
@@ -78,10 +79,13 @@ async function main(): Promise<void> {
   const consultations: ReminderRuntime | null = hubId ? { pool, hubId, render: mail.render, channels: new ReminderChannelFake() } : null;
   const payments: PaymentRuntime = { pool, providers: new PaymentProviders() };
   const paymentIngress = process.env.PAYMENTS_WEBHOOK_PORT ? await startPaymentIngress(payments, Number(process.env.PAYMENTS_WEBHOOK_PORT)) : null;
+  // Step implementations arrive with the packages that own them (source collection, drafting, outreach).
+  const pipelineSteps = new PipelineStepRegistry();
   const registry = buildRegistry({ payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
     tasks: (deps) => [agentOccurrencesTask(pool), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+      pipelineScheduleTask({ pool, log }), pipelineRunTask({ pool, log, steps: pipelineSteps, workerId: config.workerId }), pipelineMaintenanceTask({ pool, log }),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
       ...(consultations ? [consultationRemindersTask(consultations)] : []),
       ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),
