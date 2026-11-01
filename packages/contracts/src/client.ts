@@ -56,6 +56,7 @@ export * from './directory.js';
 export * from './privacy.js';
 // Profiles, consent records, portraits and experience (PPL-001); the web reads public profiles through the live adapter.
 export * from './profiles.js';
+export * from './provenance.js';
 // Sanctions compliance: jurisdiction gate, address primitives and holds (SANC-001, ADR 014).
 export * from './sanctions.js';
 // Deployment-location attestation: command, record, refusal rule and status (SANC-009, ADR 014 decisions 3 to 5).
