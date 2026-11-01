@@ -6,7 +6,7 @@ import { jobs, withMaintenance, withPrincipal } from '@trustwork/data';
 import { inTransaction } from '@trustwork/worker';
 import type { ExternalConnection } from '../../packages/contracts/src/agent-catalog.js';
 import { assistantWorker } from '../../packages/data/src/repositories/assistant.js';
-import { agentJobWorker } from '../../packages/data/src/repositories/agent-modules.js';
+import { agentAuthority, agentJobWorker } from '../../packages/data/src/repositories/agent-modules.js';
 import { AssistantService, DEFAULT_RUNTIME_SETTINGS } from '../../apps/api/src/modules/assistant/assistant.service.js';
 import { assistantPolicySettings } from '../../apps/api/src/modules/assistant/assistant.module.js';
 import { FakeRetrieval, ScriptedModel } from '../../apps/api/src/modules/assistant/ports.js';
@@ -159,9 +159,9 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     'project_planner.share_item': 'publish', 'project_planner.revoke_share': 'publish', 'project_planner.record_change': 'record_evidence', 'project_planner.add_diary_entry': 'record_evidence',
   };
   let turns = 0;
-  const propose = async (capabilityId: string) => {
+  const propose = async (capabilityId: string, action = ACTION_OF[capabilityId] ?? 'publish') => {
     model.push({ text: 'Proposed.', messageKey: null, usage: { inputTokens: 1, outputTokens: 1 }, toolCalls: [{
-      kind: 'propose_action', mandateId: actionMandate, capabilityId, moduleKey: 'project_planner', action: ACTION_OF[capabilityId] ?? 'publish', context: { kind: 'profile', id: petrId }, amount: null, projectId: null,
+      kind: 'propose_action', mandateId: actionMandate, capabilityId, moduleKey: 'project_planner', action, context: { kind: 'profile', id: petrId }, amount: null, projectId: null,
       effect: { provider: 'fake_publications', operation: 'plan.share', payload: { item: 'synthetic' } },
     }] });
     return (await service.converse({ text: 'Share the plan item' }, await stateOf(h, petr, `req-agt3-${++turns}`))).actions[0]!;
@@ -182,6 +182,11 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     const client = await trx.insertInto('oauth_client').values({ client_id: 'synthetic-client-agt3', registration: 'pre_registered', client_name: 'Synthetic desktop assistant', redirect_uris: ['https://client.example/cb'], application_type: 'web', token_endpoint_auth_method: 'none' }).returning('id').executeTakeFirstOrThrow();
     const consent = await trx.insertInto('connection_consent').values({ person_id: petrId, client_ref: client.id, client_id: 'synthetic-client-agt3', redirect_uri: 'https://client.example/cb', surface: 'participant', scopes: ['read.public', 'read.me', 'read.private', 'propose', 'act'], private_data_classes: ['private_projects', 'budgets'], toolsets: ['plans'], mandate_bindings: sql`${JSON.stringify([{ mandateId: actionMandate, revision: 1 }])}::jsonb` as never, consent_text_version: 1, step_up: true, locale: 'en', expires_at: new Date(Date.now() + 30 * 86_400_000) }).returning('id').executeTakeFirstOrThrow();
     return (await trx.insertInto('connection').values({ person_id: petrId, surface: 'participant', client_ref: client.id, client_id: 'synthetic-client-agt3', resource: 'https://trustwork.test/mcp', redirect_uri: 'https://client.example/cb', consent_id: consent.id }).returning('id').executeTakeFirstOrThrow()).id;
+  });
+
+  await t.test('the runtime refuses a capability paired with another action even when the mandate grants both verbs', async () => {
+    assert.deepEqual(await propose(PLANNER_COMMIT, 'record_evidence'), { state: 'denied', reason: 'capability.unknown' });
+    assert.deepEqual(await propose(PLANNER_READ, 'publish'), { state: 'denied', reason: 'capability.unknown' });
   });
 
   await t.test('each kill switch blocks the next action check; releasing reactivates nothing it stopped', async () => {
@@ -210,7 +215,10 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     // Outbound messages stop only verbs that message other parties.
     const outbound = await engage(world, 'outbound_messages');
     assert.equal((await check()).allowed, true);
-    assert.deepEqual(await check({}, PLANNER_READ, 'communicate').then((d) => (d.allowed ? null : d.blockedBy?.kind)), 'outbound_messages');
+    const outboundRefusal = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => agentAuthority.dispatchRefusal(trx, {
+      hubId, moduleKey: 'project_planner', capabilityId: null, action: 'communicate', personId: petrId, connectionId: null, representativeOf: null,
+    }));
+    assert.equal(outboundRefusal?.kind, 'outbound_messages');
     await release(world, outbound);
     // External agents: only calls through a connection are stopped.
     const ext = await engage(world, 'external_agent_api');
