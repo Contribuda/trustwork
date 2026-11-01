@@ -1740,7 +1740,7 @@
       "id": "CONS-001",
       "title": "Consultations and mentoring from plan items",
       "area": "gathering-point",
-      "status": "in_review",
+      "status": "done",
       "dependsOn": [
         "PLAN-001",
         "COM-002",
