@@ -21,6 +21,7 @@ import { ProvidersModule } from './modules/providers/providers.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
 import { RecordingModerationTargets } from './modules/platform-admin/ports.js';
+import { ConsultationsModule } from './modules/consultations/consultations.module.js';
 import { ContentModule } from './modules/content/content.module.js';
 import { ContentModerationTargets } from './modules/content/moderation.js';
 import { ExecutionModule } from './modules/execution/execution.module.js';
@@ -46,7 +47,7 @@ export class HealthController {
 /**
  * Composition root: health always; identity, projects, directory, plans, catalogue, procurement,
  * sales, supplier base, transactions, profiles, tasks, execution, reputation and platform administration
- * only with a configured database. The same boundary registers support, content, sources (SRC-001),
+ * only with a configured database. The same boundary registers support, consultations (CONS-001), content, sources (SRC-001),
  * assistant goals and representation, attestation (SANC-009), hubs (HUB-001), setup (HUB-004),
  * providers (KEYS-001), communications (COMMS-001) and MCP authorization (MCP-002).
  * Files additionally require a blob store. Module agent checks use the one AST-001 mandate store;
@@ -80,6 +81,8 @@ export class AppModule {
         ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity),
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
+        // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
+        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']) }),
         ContentModule.forRoot(ctx, identity),
         AssistantModule.forRoot(ctx, identity),
         AgentsModule.forRoot(ctx, identity),

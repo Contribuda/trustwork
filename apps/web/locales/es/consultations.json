@@ -1,0 +1,114 @@
+{
+  "consultations": {
+    "capability": {
+      "listPublicOfferings": "Ver ofertas de consultoría",
+      "listOfferings": "Ver mis ofertas de consultoría",
+      "listAvailability": "Ver mi disponibilidad",
+      "listRequests": "Ver solicitudes de consultoría",
+      "getRequest": "Abrir mi solicitud de consultoría",
+      "getBrief": "Leer el resumen de una consulta",
+      "listBookings": "Ver reservas de consultoría",
+      "getBooking": "Abrir una reserva",
+      "getCalendar": "Descargar el archivo de calendario",
+      "listMentoring": "Ver relaciones de mentoría",
+      "registerOffering": "Ofrecer una consultoría",
+      "updateOffering": "Cambiar una oferta de consultoría",
+      "openWindow": "Abrir disponibilidad",
+      "closeWindow": "Cerrar disponibilidad",
+      "request": "Pedir una consultoría",
+      "setRequestPrivate": "Fijar mi límite de presupuesto privado",
+      "withdrawRequest": "Retirar una solicitud",
+      "declineRequest": "Rechazar una solicitud",
+      "propose": "Proponer condiciones de consultoría",
+      "withdrawProposal": "Retirar una propuesta",
+      "acceptProposal": "Reservar la consultoría propuesta",
+      "declineProposal": "Rechazar una propuesta",
+      "withdrawAcceptance": "Retirar mi aceptación de la reserva",
+      "confirmBooking": "Confirmar una reserva",
+      "declineAgreement": "Rechazar una reserva",
+      "cancel": "Cancelar una reserva",
+      "recordSession": "Registrar que la sesión se realizó",
+      "deliver": "Entregar el resultado de la consultoría",
+      "decideDeliverable": "Aceptar o rechazar el resultado",
+      "publishDeliverable": "Publicar el resultado de mi consultoría",
+      "proposeMentoring": "Proponer una mentoría",
+      "respondMentoring": "Responder a una propuesta de mentoría",
+      "changeMentoring": "Pausar, reanudar o terminar una mentoría"
+    },
+    "kind": {
+      "session": "Sesión de asesoría",
+      "drawing_review": "Revisión de planos",
+      "quote_review": "Revisión de presupuestos",
+      "site_visit": "Visita a la obra",
+      "mentoring": "Sesión de mentoría"
+    },
+    "mode": {
+      "video": "Videollamada",
+      "chat": "Chat",
+      "phone": "Llamada telefónica",
+      "in_person": "En persona",
+      "async": "Por escrito, sin reunión"
+    },
+    "deliverableKind": {
+      "written_advice": "Recomendación escrita",
+      "marked_up_document": "Documento con anotaciones",
+      "site_report": "Informe de visita",
+      "checklist": "Lista de verificación",
+      "recording": "Grabación"
+    },
+    "pricing": {
+      "free": "Gratis",
+      "fixed": "Precio fijo",
+      "hourly": "Tarifa por hora"
+    },
+    "requestStatus": {
+      "requested": "Esperando propuesta",
+      "offered": "Propuesta recibida",
+      "booked": "Reservada",
+      "withdrawn": "Retirada",
+      "expired": "Vencida",
+      "declined": "Rechazada por el experto"
+    },
+    "bookingStatus": {
+      "proposed": "Propuesta",
+      "booked": "Reservada",
+      "held": "Sesión realizada",
+      "delivered": "Resultado entregado",
+      "accepted": "Completada",
+      "cancelled": "Cancelada",
+      "declined": "Rechazada",
+      "withdrawn": "Retirada",
+      "disputed": "En disputa"
+    },
+    "mentoringStatus": {
+      "proposed": "Propuesta",
+      "active": "Activa",
+      "paused": "En pausa",
+      "declined": "Rechazada",
+      "ended": "Terminada"
+    },
+    "credential": {
+      "checked": "Licencia verificada por este hub",
+      "self_declared": "Licencia declarada por el experto, no verificada por este hub",
+      "expired": "Licencia vencida",
+      "suspended": "Licencia suspendida",
+      "revoked": "Licencia revocada"
+    },
+    "commission": {
+      "price": "Precio",
+      "none_published": "Este hub no cobra comisión por las consultorías",
+      "published": "Comisión del hub",
+      "clientTotal": "Usted paga",
+      "expertAmount": "El experto recibe"
+    },
+    "refusal": {
+      "party_cannot_transact_now": "La otra parte no puede asumir compromisos en este momento.",
+      "screening_review_pending": "Hay una revisión de cumplimiento pendiente en su cuenta. Hasta que termine, las reservas están en pausa.",
+      "screening_unavailable": "No se puede verificar la reserva en este momento. Inténtelo más tarde.",
+      "licence_required": "Esta asesoría requiere un profesional con licencia y este experto no tiene una licencia registrada.",
+      "capacity_exhausted": "Este horario ya no está disponible.",
+      "slot_overlaps": "El experto ya tiene una reserva a esta hora."
+    },
+    "siteNotice": "La dirección de la obra se comparte con el experto solo después de reservar la visita."
+  }
+}
