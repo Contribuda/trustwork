@@ -1,6 +1,6 @@
 # ADR 017 — Outreach to people and companies who are not participants
 
-Date: 2026-11-01. Status: **Proposed** (architect: Claude, an AI agent working for the repository owner Dmitry Parshkov, on the owner's request of 2026-11-01). Nothing here changes a rule until the owner accepts this ADR **and** counsel approves a hub's policy; until then the existing strict rule stays the default in every hub. Design: [Discovery, sourced pages, claims and outreach](../engine/discovery-and-outreach.md). Work: OUTR-001, OUTR-002, OUTR-003, ENT-001, OUTR-004 and amendments listed in that chapter. Not legal advice.
+Date: 2026-11-01. Status: **Accepted** 2026-11-01 as the policy design, with the owner-delegated answers of [ADR 025](025-owner-delegated-product-decisions-2026-11-01.md) decisions 9 to 14 (the reference hub stays in option A until counsel answers). Originally proposed (architect: Claude, an AI agent working for the repository owner Dmitry Parshkov, on the owner's request of 2026-11-01). Nothing here changes a rule until the owner accepts this ADR **and** counsel approves a hub's policy; until then the existing strict rule stays the default in every hub. Design: [Discovery, sourced pages, claims and outreach](../engine/discovery-and-outreach.md). Work: OUTR-001, OUTR-002, OUTR-003, ENT-001, OUTR-004 and amendments listed in that chapter. Not legal advice.
 
 ## Context
 

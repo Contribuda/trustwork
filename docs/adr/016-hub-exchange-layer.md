@@ -1,6 +1,6 @@
 # ADR 016 — The hub exchange layer: schema registry, capability profiles, usage policies and `trustwork-mesh/2`
 
-Date: 2026-11-01. Status: **Proposed** (architecture agent for the owner's request of 2026-11-01; escalated to the owner and the integrator). Not implemented. Number 015 is reserved for the editorial office proposal; outreach policy is ADR 017. Full design: [Hub exchange architecture](../engine/hub-exchange-architecture.md).
+Date: 2026-11-01. Status: **Accepted** 2026-11-01 with the owner-delegated answers of [ADR 025](025-owner-delegated-product-decisions-2026-11-01.md) decisions 1 to 8; counsel questions stay open. Originally proposed (architecture agent for the owner's request of 2026-11-01; escalated to the owner and the integrator). Not implemented. Number 015 is reserved for the editorial office proposal; outreach policy is ADR 017. Full design: [Hub exchange architecture](../engine/hub-exchange-architecture.md).
 
 ## Context
 
