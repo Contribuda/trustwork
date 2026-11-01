@@ -421,7 +421,9 @@ function GridInteractionExample() {
       <Button id="grid-interaction-after" onPress={() => setRequest("")}>
         {t("consoleKit.clear")}
       </Button>
-      <output data-request="">{request}</output>
+      <output data-request={request}>
+        {request ? t("consoleKit.saved") : ""}
+      </output>
     </div>
   );
 }

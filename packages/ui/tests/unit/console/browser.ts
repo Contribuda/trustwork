@@ -109,7 +109,10 @@ for (const language of languages)
               cell.getByRole("button", { name: k.share, exact: true }),
             ).toBeFocused();
             await page.keyboard.press("Enter");
-            await expect(page.locator("[data-request]")).toHaveText("share:1");
+            await expect(page.locator("[data-request]")).toHaveAttribute(
+              "data-request",
+              "share:1",
+            );
             await page.keyboard.press("Shift+Tab");
             await expect(
               cell.getByRole("button", { name: k.openPage, exact: true }),
@@ -634,11 +637,17 @@ for (const width of widths) {
       await page.keyboard.press("Enter");
       await expect(first).toBeFocused();
       await page.keyboard.press("Enter");
-      await expect(page.locator("[data-request]")).toHaveText("open:1");
+      await expect(page.locator("[data-request]")).toHaveAttribute(
+        "data-request",
+        "open:1",
+      );
       await page.keyboard.press("Tab");
       await expect(second).toBeFocused();
       await page.keyboard.press("Enter");
-      await expect(page.locator("[data-request]")).toHaveText("share:1");
+      await expect(page.locator("[data-request]")).toHaveAttribute(
+        "data-request",
+        "share:1",
+      );
       await page.keyboard.press("Tab");
       await expect(link).toBeFocused();
       await page.keyboard.press("Shift+Tab");
@@ -733,7 +742,8 @@ for (const width of widths) {
             await expect(
               cell(selection ? 1 : 0, selection ? 0 : count - 1),
             ).toBeFocused();
-            await expect(page.locator("[data-request]")).toHaveText(
+            await expect(page.locator("[data-request]")).toHaveAttribute(
+              "data-request",
               `1:${data === 1 ? "value" : "name"}:First draft`,
             );
             // Last visible data cell: forwards includes actions, wraps rows, or exits.
@@ -742,7 +752,8 @@ for (const width of widths) {
             await grid.getByRole("textbox").fill("Last draft");
             await page.keyboard.press("Tab");
             await expect(cell(2, offset + data - 1)).toHaveText("Last draft");
-            await expect(page.locator("[data-request]")).toHaveText(
+            await expect(page.locator("[data-request]")).toHaveAttribute(
+              "data-request",
               "2:value:Last draft",
             );
             if (actions) await expect(cell(2, count - 1)).toBeFocused();
@@ -793,7 +804,8 @@ for (const width of widths) {
         await page.keyboard.press("F2");
         await grid.getByRole("textbox").fill(`Draft ${behavior}`);
         await page.keyboard.press("Tab");
-        await expect(page.locator("[data-request]")).toHaveText(
+        await expect(page.locator("[data-request]")).toHaveAttribute(
+          "data-request",
           `1:name:Draft ${behavior}`,
         );
         const status = page.getByRole("status").filter({
