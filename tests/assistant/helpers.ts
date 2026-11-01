@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { SYNTHETIC_ORDER_MANIFEST } from './manifest-fixture.js';
+import { ENGINE_MANIFESTS } from '../../apps/api/src/modules/agent-modules/ports.js';
+import { CapabilityAuthority, agentRuntimeGate } from '../../apps/api/src/modules/agent-modules/authority.js';
 import { createHash, randomBytes } from 'node:crypto';
 import { createPool, withPrincipal, type DataPool, type Transaction } from '@trustwork/data';
 import type { RequestState } from '../../apps/api/src/common/request.js';
@@ -49,7 +52,7 @@ export function personalBudget(h: Harness, personId: string, kind: 'transaction'
 }
 
 export function assistantService(h: Harness, model = new ScriptedModel(), retrieval = new FakeRetrieval([])): { service: AssistantService; model: ScriptedModel; retrieval: FakeRetrieval } {
-  const service = new AssistantService(h.created.ctx!, h.services().principals, assistantPolicySettings({ hubId: null }), DEFAULT_RUNTIME_SETTINGS, model, retrieval);
+  const service = new AssistantService(h.created.ctx!, h.services().principals, assistantPolicySettings({ hubId: null }), DEFAULT_RUNTIME_SETTINGS, model, retrieval, agentRuntimeGate(new CapabilityAuthority({ hubId: null, manifests: [...ENGINE_MANIFESTS, SYNTHETIC_ORDER_MANIFEST] })));
   return { service, model, retrieval };
 }
 export function mandateStore(h: Harness): AssistantMandateStore {

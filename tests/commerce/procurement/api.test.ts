@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -53,6 +54,7 @@ function noLeak(value: unknown, extra: readonly string[] = []): void {
 test('commerce API: catalogue, needs, RFQs and invitations with negative authorization, staleness and concurrency', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   // Anna (mixed company administrator) may also publish; everyone else keeps the fixture permissions.

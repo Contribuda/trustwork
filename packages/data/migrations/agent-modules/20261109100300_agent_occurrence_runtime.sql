@@ -179,8 +179,14 @@ BEGIN
     UPDATE trustwork.agent_job_occurrence SET state = 'refused',reason = v_reason,finished_at = clock_timestamp(),worker_job_id = j.id,fencing_token = p_fence WHERE id = o.id;
     RETURN jsonb_build_object('state','refused','reason',v_reason);
   END IF;
-  INSERT INTO trustwork.run(principal_person_id,mandate_id,goal_id,kind,state,checkpoint)
-    VALUES(o.principal_person_id,o.mandate_id,o.goal_id,'goal_report','queued',jsonb_build_object('occurrenceId',o.id,'hubId',o.hub_id,'templateVersion',o.template_version)) RETURNING id INTO v_run;
+  v_run := gen_random_uuid();
+  v_reason := trustwork.agent_modules_reserve_quota(o.hub_id,o.principal_person_id,'core',v_run,o.id,'run');
+  IF v_reason IS NOT NULL THEN
+    UPDATE trustwork.agent_job_occurrence SET state='refused',reason=v_reason,finished_at=clock_timestamp() WHERE id=o.id;
+    RETURN jsonb_build_object('state','refused','reason',v_reason);
+  END IF;
+  INSERT INTO trustwork.run(id,principal_person_id,mandate_id,goal_id,kind,state,checkpoint)
+    VALUES(v_run,o.principal_person_id,o.mandate_id,o.goal_id,'goal_report','queued',jsonb_build_object('occurrenceId',o.id,'hubId',o.hub_id,'templateVersion',o.template_version)) RETURNING id INTO v_run;
   INSERT INTO trustwork.run_step(run_id,kind,tool,state,output_ref) VALUES(v_run,'checkpoint','core.generate_goal_report','recorded',jsonb_build_object('occurrenceId',o.id));
   UPDATE trustwork.agent_job_occurrence SET run_id = v_run,state = 'running',worker_job_id = j.id,fencing_token = p_fence WHERE id = o.id;
   INSERT INTO trustwork.job(kind,payload) VALUES('agents.execute_occurrence',jsonb_build_object('occurrenceId',o.id));
@@ -208,6 +214,9 @@ BEGIN
   IF r.state IN ('completed','failed','cancelled') THEN v_reason := 'run_' || r.state; END IF;
   IF o.source_kind = 'deadline' AND NOT EXISTS (SELECT 1 FROM trustwork.agent_policy_current
     WHERE hub_id = o.hub_id AND config_version_id::text = o.source ->> 'calendarVersionId') THEN v_reason := 'calendar_changed'; END IF;
+  IF v_reason IS NULL THEN
+    v_reason := trustwork.agent_modules_reserve_quota(o.hub_id,o.principal_person_id,'core',o.run_id,o.id,'action');
+  END IF;
   IF v_reason IS NOT NULL THEN
     UPDATE trustwork.agent_job_occurrence SET state = CASE WHEN r.state = 'cancelled' THEN 'cancelled' ELSE 'refused' END,
       reason = v_reason,finished_at = clock_timestamp(),worker_job_id = j.id,fencing_token = p_fence WHERE id = o.id;

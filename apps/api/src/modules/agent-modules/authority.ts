@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { connectionMayInvoke, type AgentCapability, type AgentModuleManifest, type ExternalConnection } from '../../deps/contracts.js';
 import type { Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
@@ -26,8 +27,8 @@ export type AuthorityDecision =
 
 export interface AuthorityOptions {
   /**
-   * This deployment's hub, or a function read at every check (the environment's `TRUSTWORK_HUB_ID`); `null` applies the
-   * engine default policy and every hub-scoped switch (fail-closed).
+   * Trusted serving, persisted operation or validated connection hub. An unbound check is unavailable;
+   * process configuration, locale and payload are not execution authority.
    */
   hubId: string | null | (() => string | null);
   extensions?: ExtensionCatalogPort;
@@ -97,14 +98,16 @@ export class CapabilityAuthority {
   }
 
   async check(trx: Transaction, actor: AgentActor, capabilityId: string, action: string | null = null): Promise<AuthorityDecision> {
-    const registry = await this.registry();
     const moduleKey = capabilityId.split('.')[0] ?? '';
+    if (this.hubId === null) return { allowed: false, capabilityId, moduleKey, reason: 'capability.unknown', messageKey: REFUSAL_MESSAGE_KEYS['capability.unknown'], blockedBy: null };
+    await agentAuthority.lockCurrent(trx, this.hubId, actor.representativeOf ?? actor.onBehalfCompanyId, actor.connectionId);
+    const registry = await this.registry();
     const { document } = await this.policy(trx, registry);
     const policyReason = capabilityRefusal(document, registry, capabilityId, await this.principalOf(trx, actor));
     if (policyReason !== null) return { allowed: false, capabilityId, moduleKey, reason: policyReason, messageKey: REFUSAL_MESSAGE_KEYS[policyReason], blockedBy: null };
     const enabled = document.policy.enabledModules.find((m) => m.moduleKey === moduleKey);
     const capability = enabled ? moduleCapabilities(registry, moduleKey, enabled.moduleVersion, document.policy.activeExtensionVersionIds).find((c) => c.id === capabilityId) : undefined;
-    if (capability && action !== null && action !== capability.mandateAction) {
+    if (!capability || (action !== null && action !== capability.mandateAction)) {
       return { allowed: false, capabilityId, moduleKey, reason: 'capability.unknown', messageKey: REFUSAL_MESSAGE_KEYS['capability.unknown'], blockedBy: null };
     }
     const blocked = await agentAuthority.dispatchRefusal(trx, {
@@ -166,7 +169,7 @@ export async function requireCapability(authority: CapabilityAuthority, trx: Tra
 
 /** What the agent runtime knows about an action it is about to record (from the acting mandate). */
 export interface RuntimeActionInput {
-  hubId?: string;
+  hubId: string;
   personId: string;
   mandate: { onBehalfCompanyId: string | null; granteeKind: 'own_agent' | 'colleague_agent' | 'company_representative'; granteeCompanyId: string | null };
   capabilityId: string;
@@ -182,7 +185,7 @@ export function agentRuntimeGate(authority: CapabilityAuthority): CapabilityGate
       representativeOf: input.mandate.granteeKind === 'company_representative' ? input.mandate.granteeCompanyId : null,
       connectionId: null,
     };
-    const scoped = input.hubId ? authority.forHub(input.hubId) : authority;
+    const scoped = authority.forHub(input.hubId);
     const d = await scoped.check(trx, actor, input.capabilityId, input.action);
     return d.allowed ? null : { reason: d.reason, messageKey: d.messageKey };
   };
@@ -195,15 +198,38 @@ export type McpDecision =
  * MCP surface (wired by MCP-001/MCP-003 when the transport lands): the connection's scopes first (`connectionMayInvoke`,
  * AGT-002), then the same authority check as everywhere else, as the connection's person.
  */
-export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, connection: ExternalConnection, capability: AgentCapability, onBehalfCompanyId: string | null = null): Promise<McpDecision> {
-  const scoped = connectionMayInvoke(capability, connection);
-  if (scoped === 'deny') return { decision: 'deny', reason: 'connection.scope', messageKey: 'agentModules.refusal.connectionScope' };
-  const personId = connection.owner.kind === 'person' ? connection.owner.personId : connection.consent.personId;
-  const actor: AgentActor = {
-    personId, onBehalfCompanyId: connection.owner.kind === 'company_representative' ? null : onBehalfCompanyId,
-    representativeOf: connection.owner.kind === 'company_representative' ? connection.owner.companyId : null, connectionId: connection.id,
-  };
-  const d = await authority.check(trx, actor, capability.id, capability.mandateAction);
+export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, connection: ExternalConnection, capability: AgentCapability, onBehalfCompanyId: string | null = null, validatedAudience: string | null = null): Promise<McpDecision> {
+  const deny = (): McpDecision => ({ decision: 'deny', reason: 'connection.scope', messageKey: 'agentModules.refusal.connectionScope' });
+  // The transport supplies an already validated token audience. Payload hub/scopes/owner are never authority.
+  if (validatedAudience === null || connection.owner.kind !== 'person') return deny();
+  let stored = await trx.selectFrom('connection').selectAll().where('id', '=', connection.id).executeTakeFirst();
+  if (!stored?.hub_id || stored.person_id !== connection.owner.personId || stored.hub_id !== connection.hubId || stored.resource !== validatedAudience
+    || stored.client_id !== connection.clientId || stored.protocol !== connection.protocol || stored.surface !== 'participant') return deny();
+  await agentAuthority.lockCurrent(trx, stored.hub_id, onBehalfCompanyId, stored.id);
+  stored = await trx.selectFrom('connection').selectAll().where('id', '=', connection.id).executeTakeFirst();
+  if (!stored?.hub_id || stored.status !== 'active' || stored.revision !== connection.revision || stored.resource !== validatedAudience) return deny();
+  const locked = await sql<{ valid: boolean }>`SELECT trustwork.agent_modules_lock_connection_consent(${stored.id}::uuid) AS valid`.execute(trx);
+  if (!locked.rows[0]?.valid) return deny();
+  const consent = await trx.selectFrom('connection_consent').selectAll().where('id', '=', stored.consent_id)
+    .where('withdrawn_at', 'is', null).where('expires_at', '>', sql<Date>`clock_timestamp()`).executeTakeFirst();
+  if (!consent || consent.person_id !== stored.person_id || !consent.step_up
+    || connection.scopes.some(s => !consent.scopes.includes(s)) || connection.privateDataClasses.some(c => !consent.private_data_classes.includes(c))) return deny();
+  for (const binding of connection.mandateBindings) {
+    if (!consent.mandate_bindings.some(b => b.mandateId === binding.mandateId && b.revision === binding.revision)) return deny();
+    const mandate = await trx.selectFrom('mandate').select('id').where('id', '=', binding.mandateId).where('revision', '=', binding.revision)
+      .where('principal_person_id', '=', stored.person_id).where('status', '=', 'active').where('valid_until', '>', sql<Date>`clock_timestamp()`).executeTakeFirst();
+    if (!mandate) return deny();
+  }
+  const scopedAuthority = authority.forHub(stored.hub_id);
+  const registry = await scopedAuthority.registry();
+  const { document } = await scopedAuthority.policy(trx, registry);
+  const entry = document.policy.enabledModules.find(m => m.moduleKey === capability.id.split('.')[0]);
+  const canonical = entry ? moduleCapabilities(registry, entry.moduleKey, entry.moduleVersion, document.policy.activeExtensionVersionIds).find(c => c.id === capability.id) : undefined;
+  // Check the shared policy first, preserving identical refusal reasons for disabled modules/capabilities.
+  const actor: AgentActor = { personId: stored.person_id, onBehalfCompanyId, representativeOf: null, connectionId: stored.id };
+  const d = await scopedAuthority.check(trx, actor, capability.id, capability.mandateAction);
   if (!d.allowed) return { decision: 'deny', reason: d.reason, messageKey: d.messageKey };
-  return { decision: scoped };
+  if (!canonical || canonical.version !== capability.version) return deny();
+  const decision = connectionMayInvoke(canonical, connection);
+  return decision === 'deny' ? deny() : { decision };
 }

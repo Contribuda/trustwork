@@ -10,7 +10,7 @@ import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';
 import { principalFor } from '../../../data/helpers/seed.js';
 import { approvals, staffAssignments, type CommandContext } from '../../../../packages/data/src/repositories/admin.js';
 import { sessionElevations } from '../../../../packages/data/src/repositories/identity.js';
-import { usHubPolicy } from '../../../agent-modules/fixtures.js';
+import { runtimeHubPolicy } from '../../../agent-modules/fixtures.js';
 import type { CrashCase } from '../cases.js';
 
 const count = async (h: Harness, query: string, params: unknown[] = []): Promise<number> => (await h.db.admin.query<{ n: number }>(`SELECT count(*)::int AS n FROM (${query}) q`, params)).rows[0]?.n ?? 0;
@@ -50,9 +50,10 @@ export default {
       const participant = await person('Synthetic Agent Modules Participant');
       await trx.insertInto('email_binding').values({ person_id: participant, email_normalized: 'crash-agt3-participant@example.invalid', is_primary: true, verified_at: new Date('2026-10-01T09:00:00Z') }).execute();
       await trx.insertInto('credential').values({ person_id: participant, kind: 'password', password_hash: passwordHash }).execute();
-      const hub = await trx.insertInto('hub').values({ slug: `synthetic-agt3-${randomBytes(3).toString('hex')}`, lifecycle: 'draft' }).returning('id').executeTakeFirstOrThrow();
+      const binding = await trx.selectFrom('agent_serving_hub').select('hub_id').where('origin', '=', h.created.config.publicOrigin).executeTakeFirst();
+      const hub = binding ? { id: binding.hub_id } : await trx.insertInto('hub').values({ slug: `synthetic-agt3-${randomBytes(3).toString('hex')}`, lifecycle: 'draft' }).returning('id').executeTakeFirstOrThrow();
       await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: founder.node, name: { en: 'Synthetic agent modules hub' }, default_locale: 'en', locales: ['en'], time_zone: 'America/New_York', currency: 'USD', created_by: founder.person_id }).execute();
-      await sql`INSERT INTO trustwork.agent_serving_hub (origin, hub_id) VALUES (${h.created.config.publicOrigin}, ${hub.id}::uuid)`.execute(trx);
+      if (!binding) await sql`INSERT INTO trustwork.agent_serving_hub (origin, hub_id) VALUES (${h.created.config.publicOrigin}, ${hub.id}::uuid)`.execute(trx);
       return { drafter: await person('Synthetic Agent Policy Drafter'), activator: await person('Synthetic Agent Policy Activator'), participant, hubId: hub.id };
     });
     for (const [personId, role] of [[ids.drafter, 'ops-engineer'], [ids.activator, 'trust-reviewer']] as const) {
@@ -81,7 +82,7 @@ export default {
 
       // Policy: draft (validated, preview stored), then activation without an approval asks a second person.
       const drafted = body<{ version: { versionId: string; revision: number; activation: { actionDigest: string } } }>(await exactlyOnce({
-        action: 'agent_modules.policy_draft', client: clients.drafter, url: `${base}/policy`, body: cmd('agent_modules.policy_draft', { document: usHubPolicy(ids.hubId) }),
+        action: 'agent_modules.policy_draft', client: clients.drafter, url: `${base}/policy`, body: cmd('agent_modules.policy_draft', { document: runtimeHubPolicy(ids.hubId) }),
         effects: () => count(h, 'SELECT 1 FROM trustwork.agent_policy_version WHERE hub_id = $1', [ids.hubId]),
       }));
       const v = drafted.version;
@@ -103,13 +104,20 @@ export default {
         effects: () => count(h, "SELECT 1 FROM trustwork.second_person_approval WHERE hub_id = $1 AND action = 'kill_switch.release'", [ids.hubId]),
       });
 
-      // Jobs: turning one on is a proposal only; once confirmed on the first-party form, "run now" records one firing.
+      // Jobs: confirmation binds one supported template; run-now records one durable occurrence in the API operation.
       const participant = h.client();
       const login = await participant.post('/v1/auth/login', { email: 'crash-agt3-participant@example.invalid', password: PASSWORD }, { idempotencyKey: null });
       assert.equal(login.status, 200);
+      const proposedGoal = await participant.post('/v1/assistant/goals', {
+        onBehalfOf: null, text: 'Synthetic crash-tested report goal', successCriteria: ['One private local report'], needs: [], budgetRange: null,
+        horizon: new Date(Date.now() + 30 * 86_400_000).toISOString(), reportCadence: 'none',
+      });
+      assert.equal(proposedGoal.status, 201, JSON.stringify(proposedGoal.body));
+      const goal = body<{ goal: { id: string }; confirmation: { digest: unknown } }>(proposedGoal);
+      assert.equal((await participant.post(`/v1/assistant/goals/${goal.goal.id}/confirm`, { digest: goal.confirmation.digest })).status, 200);
       const turned = body<{ request: { id: string }; confirmation: { proposalId: string; digest: unknown } }>(await exactlyOnce({
         action: 'agent_modules.job_turn_on', client: participant, url: '/v1/assistant/jobs',
-        body: { actingFor: 'self', moduleKey: 'project_planner', templateKey: 'weekly_plan_review', trigger: null, validUntil: new Date(Date.now() + 90 * 86_400_000).toISOString() },
+        body: { actingFor: 'self', moduleKey: 'core', templateKey: 'goal_progress_report', trigger: { kind: 'request' }, goalContextIds: [goal.goal.id], validUntil: new Date(Date.now() + 90 * 86_400_000).toISOString() },
         effects: () => count(h, 'SELECT 1 FROM trustwork.agent_job_request WHERE principal_person_id = $1', [ids.participant]),
       }));
       const fresh = h.client();
@@ -118,7 +126,7 @@ export default {
       assert.equal(confirmed.status, 200, JSON.stringify(confirmed.body));
       await exactlyOnce({
         action: 'agent_modules.job_run_now', client: participant, url: `/v1/assistant/jobs/${turned.request.id}/run`, body: {},
-        effects: () => count(h, "SELECT 1 FROM trustwork.agent_job_fire WHERE principal_person_id = $1 AND cause = 'request'", [ids.participant]),
+        effects: () => count(h, "SELECT 1 FROM trustwork.agent_job_occurrence WHERE principal_person_id = $1 AND source_kind = 'request'", [ids.participant]),
       });
     } finally {
       if (previousHub === undefined) delete process.env.TRUSTWORK_HUB_ID;

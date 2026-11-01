@@ -1,4 +1,5 @@
 import { HistoricalTaskFees } from '../billing/fees/historical.js';
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -94,6 +95,7 @@ const refOf = (v: Ref) => ({ id: v.id, version: v.version, digest: v.digest! });
 test('tasks API: plan item to task, isolated offers, one assignment, execution and reviews, with negative authorization and concurrency', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(async () => { await h.close(); await rm(privacyFiles, { recursive: true, force: true }); });
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const as = async (key: Parameters<typeof login>[1]): Promise<Client> => { const c = h.client(); await login(c, key); return c; };

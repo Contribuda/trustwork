@@ -3,7 +3,6 @@ import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
 import { ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import { SecondFactorService } from '../identity/second-factor/second-factor.service.js';
-import { hubIdFromEnv } from '../assistant/assistant.module.js';
 import { AdminAgentModulesController, AgentJobsController } from './agent-modules.controller.js';
 import { CapabilityAuthority, type AuthorityOptions } from './authority.js';
 import { AgentJobsService } from './jobs.service.js';
@@ -15,9 +14,9 @@ export interface AgentModulesModuleOptions {
   authorityOptions?: Partial<AuthorityOptions>;
 }
 
-/** The shared authority check of this deployment (hub from `TRUSTWORK_HUB_ID`, read at each check; fakes for entitlements and extensions). */
+/** Unbound until a real request, stored run or validated connection provides its hub. */
 export function agentModulesAuthority(options: Partial<AuthorityOptions> = {}): CapabilityAuthority {
-  return new CapabilityAuthority({ ...options, hubId: options.hubId !== undefined ? options.hubId : () => hubIdFromEnv() });
+  return new CapabilityAuthority({ ...options, hubId: options.hubId ?? null });
 }
 
 /** Agent module registry, hub agent policy, job subscriptions and kill switches (AGT-003). */

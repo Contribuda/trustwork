@@ -28,6 +28,10 @@ const db = await provisionTestDatabase('models_recovery');
 test('real PostgreSQL conversation crash, cancellation and receipt recovery fences', { skip: db ? false : SKIP_REASON }, async (t) => {
   if (!db) return;
   const w = await durableWorld(db);
+  await db.admin.query(
+    "INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES ($1,$2)",
+    ['https://trustwork.test', w.hubId],
+  );
   const app = await createApp({
     pool: w.pool,
     env: {

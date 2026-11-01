@@ -23,7 +23,7 @@ test('durable occurrences execute private goal reports through real worker lease
   const policy = usHubPolicy(world.hubId);
   const core = CORE_AGENT_MANIFEST;
   policy.policy.enabledModules.push({ moduleKey: core.key, moduleVersion: core.version, freeQuota: [], settings: {} });
-  policy.modules.push({ ...policy.modules[0]!, moduleKey: core.key, actions: ['prepare'], capabilityIds: core.capabilities.map((c) => c.id), dataClasses: [] });
+  policy.modules.push({ ...policy.modules[0]!, moduleKey: core.key, limits: { ...policy.modules[0]!.limits, concurrentRuns: 20 }, actions: ['prepare'], capabilityIds: core.capabilities.map((c) => c.id), dataClasses: ['budgets'] });
   policy.participantSettings.approval.defaultMode = 'pre_authorized';
   policy.jobTemplates.push({ moduleKey: 'core', templateKey: 'goal_progress_report', labelKey: 'agents.report.goalProgress', actions: ['prepare'],
     triggerKinds: ['request', 'schedule', 'goal', 'event', 'deadline'], defaultTrigger: { kind: 'request' }, minIntervalMinutes: 60, onClosedDay: 'run' });
@@ -154,6 +154,38 @@ test('durable occurrences execute private goal reports through real worker lease
     await drain();
     const result = (await h.db.admin.query('SELECT state,reason,run_id FROM trustwork.agent_job_occurrence WHERE id = $1', [occurrence])).rows[0]!;
     assert.deepEqual(result, { state: 'refused', reason: 'capability.off_for_hub', run_id: null });
+  });
+
+  await t.test('concurrent admissions share protection quotas and retries consume each measure once', async () => {
+    const limited = structuredClone(policy);
+    limited.modules.find(m => m.moduleKey === 'core')!.limits.concurrentRuns = 1;
+    await activatePolicy(h, world, limited);
+    const ids = [];
+    for (let i = 0; i < 2; i++) ids.push(ok<{ occurrenceId: string }>(await client.post(`/v1/assistant/jobs/${request.requestId}/run`, {})).occurrenceId);
+    const leased = await inTransaction(pool, trx => jobs.lease(trx, ['agents.start_occurrence'], 'synthetic-quota-race', 60, 2));
+    assert.equal(leased.length, 2);
+    const started = await Promise.all(leased.map(job => inTransaction(pool, async trx => {
+      const id = (job.payload as { occurrenceId: string }).occurrenceId;
+      const result = await sql<{ value: { state: string; reason?: string } }>`SELECT trustwork.agent_modules_start_occurrence(${id}::uuid,${job.id}::uuid,${job.fencing_token}::bigint) AS value`.execute(trx);
+      await sql`SELECT trustwork.agent_modules_start_occurrence(${id}::uuid,${job.id}::uuid,${job.fencing_token}::bigint)`.execute(trx);
+      await jobs.complete(trx, job.id, job.fencing_token);
+      return result.rows[0]!.value;
+    })));
+    assert.deepEqual(started.map(r => r.state).sort(), ['refused', 'running']);
+    assert.equal(started.find(r => r.state === 'refused')?.reason, 'quota_concurrent');
+    await drain();
+    const usage = await h.db.admin.query<{ measure: string; n: string }>('SELECT measure,count(*) AS n FROM trustwork.agent_runtime_usage WHERE operation_id=ANY($1::uuid[]) GROUP BY measure ORDER BY measure', [ids]);
+    assert.deepEqual(usage.rows, [{ measure: 'action', n: '1' }, { measure: 'run', n: '1' }]);
+    for (const measure of ['run', 'action'] as const) {
+      const narrowed = structuredClone(policy);
+      narrowed.modules.find(m => m.moduleKey === 'core')!.limits[measure === 'run' ? 'runsPerDay' : 'actionsPerDay'] = 0;
+      await activatePolicy(h, world, narrowed);
+      const id = ok<{ occurrenceId: string }>(await client.post(`/v1/assistant/jobs/${request.requestId}/run`, {})).occurrenceId;
+      await drain();
+      const row: { state: string; reason: string; report_id: string | null } = (await h.db.admin.query('SELECT state,reason,report_id FROM trustwork.agent_job_occurrence WHERE id=$1', [id])).rows[0]!;
+      assert.deepEqual(row, { state: 'refused', reason: `quota_${measure}_daily`, report_id: null });
+    }
+    await activatePolicy(h, world, policy);
   });
 
   await t.test('staff and another participant cannot read occurrences or dispatch a worker function', async () => {

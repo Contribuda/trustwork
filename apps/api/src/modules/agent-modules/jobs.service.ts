@@ -71,13 +71,17 @@ export class AgentJobsService {
 
   /** Interface surface: every governed capability with its availability; an unavailable one carries its explanation key. */
   capabilities(state: RequestState, actingFor: ActingFor) {
-    return this.run(state, async (trx, p) => ({ capabilities: await this.authority.availability(trx, this.actor(p, actingFor)) }));
+    return this.run(state, async (trx, p) => {
+      const authority = this.authority.forHub((await servingHub(trx, this.ctx.config.publicOrigin)).hubId);
+      return { capabilities: await authority.availability(trx, this.actor(p, actingFor)) };
+    });
   }
 
   /** Interface surface for one capability: available, or the same refusal the agent runtime and MCP give. */
   capability(state: RequestState, capabilityId: string, actingFor: ActingFor) {
     return this.run(state, async (trx, p) => {
-      await requireCapability(this.authority, trx, this.actor(p, actingFor), capabilityId);
+      const authority = this.authority.forHub((await servingHub(trx, this.ctx.config.publicOrigin)).hubId);
+      await requireCapability(authority, trx, this.actor(p, actingFor), capabilityId);
       return { capabilityId, available: true };
     });
   }
@@ -85,7 +89,8 @@ export class AgentJobsService {
   /** Hub defaults and maximums for the participant's agent settings (AGT-022 lets the person tighten, never widen). */
   bounds(state: RequestState) {
     return this.run(state, async (trx) => {
-      const { document, versionId } = await this.authority.policy(trx);
+      const authority = this.authority.forHub((await servingHub(trx, this.ctx.config.publicOrigin)).hubId);
+      const { document, versionId } = await authority.policy(trx);
       return { versionId, participantSettings: document.participantSettings, protectionLimits: document.policy.protectionLimits, calendar: { timeZone: document.calendar.timeZone } };
     });
   }
@@ -94,11 +99,12 @@ export class AgentJobsService {
   templates(state: RequestState, actingFor: ActingFor) {
     return this.run(state, async (trx, p) => {
       const actor = this.actor(p, actingFor);
-      const registry = await this.authority.registry();
-      const { document } = await this.authority.policy(trx, registry);
+      const authority = this.authority.forHub((await servingHub(trx, this.ctx.config.publicOrigin)).hubId);
+      const registry = await authority.registry();
+      const { document } = await authority.policy(trx, registry);
       const out = [];
       for (const t of document.jobTemplates) {
-        const refusal = await this.templateRefusal(trx, actor, t);
+        const refusal = await this.templateRefusal(trx, actor, t, authority);
         const implemented = jobImplementation(t.moduleKey, t.templateKey) !== null;
         out.push({ ...t, available: refusal === null && implemented, reason: refusal ? REFUSAL_MESSAGE_KEYS[refusal.reason] : implemented ? null : REFUSAL_MESSAGE_KEYS['module.not_serving'] });
       }
