@@ -36,6 +36,12 @@ test('PRV human subject plans: digest, authority and same-transaction admission'
     assert.equal((await h.db.admin.query('SELECT count(*)::int n FROM trustwork.privacy_replay_receipt')).rows[0].n, 0);
     await assert.rejects(h.pool.query('SELECT * FROM trustwork.privacy_subject_plan'), /permission denied/);
   });
+  await t.test('a proposer whose grant was revoked after proposal cannot receive approval', async () => {
+    const f = await prepare();
+    await w.as(w.people.reviewer, (trx) => caseGrants.revoke(trx, f.reviewCtx, f.first.id));
+    await assert.rejects(approve(f), (e: { hint?: string }) => e.hint === 'privacy.case_grant_required');
+    assert.equal((await h.db.admin.query('SELECT status FROM trustwork.second_person_approval WHERE id=$1', [f.plan.approvalId])).rows[0].status, 'pending');
+  });
   await t.test('reviewed synthetic policy cannot manufacture missing owning-module capabilities', async () => {
     await withMaintenance(h.db.admin, (trx) => trx.insertInto('privacy_country_policy').values({ country: 'ZZ', version: 'synthetic-plan-1', review: 'verified', sources: JSON.stringify(['https://example.invalid/synthetic-policy']),
       deadline_days: 3, retention_days: 0, registry_poll_hours: null, registry_deadline_days: null }).execute());

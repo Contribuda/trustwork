@@ -41,6 +41,25 @@ test('PRV source requests bind real case grants, human evidence, action and sour
       { items: [item(randomUUID())], fields: [f.field], links: [] })), (e: { hint?: string }) => e.hint === 'privacy.do_not_collect');
     assert.equal((await h.db.admin.query('SELECT count(*)::int n FROM trustwork.privacy_replay_receipt')).rows[0].n, 0, 'objection is not represented as completed erasure');
   });
+  await t.test('staging first: objection waits, then blocks activation and the real public provenance projection', async () => {
+    const f = await privacySourceFixture(h, world);
+    await h.db.admin.query("UPDATE trustwork.hub SET lifecycle='public' WHERE id=$1", [f.source.hub_id]);
+    const before = await h.pool.query<{ v: { fields: unknown[] } }>('SELECT trustwork.sources_public_provenance($1,$2,$3) AS v', [f.source.hub_id, f.field.recordKind, f.field.recordId]);
+    assert.equal(before.rows[0]!.v.fields.length, 1);
+    await world.as(world.people.officer, (trx) => privacy.sourceProof(trx, f.ctx, f.body));
+    const locked = gate(); const release = gate();
+    const staging = world.as(world.people.officer, async (trx) => {
+      const batch = await importBatches.stage(trx, f.ctx, f.source.id, { items: [item(randomUUID())], fields: [f.field], links: [] });
+      locked.open(); await release.promise; return batch;
+    });
+    await locked.promise; const objection = submit(f.proof); release.open(); const batch = await staging;
+    assert.equal((await objection).status, 202);
+    await assert.rejects(world.as(world.people.reviewer, (trx) => importBatches.decide(trx, f.reviewCtx, batch.id, batch.revision, 'activate')),
+      (e: { hint?: string }) => e.hint === 'privacy.do_not_collect');
+    const after = await h.pool.query<{ v: { fields: unknown[] } }>('SELECT trustwork.sources_public_provenance($1,$2,$3) AS v', [f.source.hub_id, f.field.recordKind, f.field.recordId]);
+    assert.deepEqual(after.rows[0]!.v.fields, []);
+    assert.equal((await h.db.admin.query('SELECT value FROM trustwork.sourced_record_field WHERE id=$1', [f.fieldId])).rows[0].value, f.field.value, 'lawful source evidence was not rewritten');
+  });
   await t.test('revocation winning the race invalidates an issued capability before intake', async () => {
     const f = await privacySourceFixture(h, world);
     await world.as(world.people.officer, (trx) => privacy.sourceProof(trx, f.ctx, f.body));

@@ -1,10 +1,6 @@
 /** Every implemented API module participates in subject planning, even when its exporter is unavailable. */
-export const PRIVACY_MODULE_INVENTORY = [
-  'approval-routes', 'assistant', 'assistant-goals', 'billing', 'catalogue', 'communications', 'connections', 'consultations',
-  'content', 'directory', 'execution', 'files', 'hubs', 'identity', 'jurisdiction', 'models', 'plans', 'platform-admin',
-  'procurement', 'profiles', 'projects', 'providers', 'reputation', 'sales', 'screening', 'screening-gates', 'sources',
-  'supplier-base', 'support', 'tasks', 'transactions', 'trust',
-] as const;
+import { PRIVACY_MODULE_INVENTORY } from '../../../../../../packages/contracts/src/privacy.js';
+export { PRIVACY_MODULE_INVENTORY };
 
 /** Operator assistants can prepare this data only. It deliberately contains no approval or execution capability. */
 export interface PrivacyResponseDraft {
