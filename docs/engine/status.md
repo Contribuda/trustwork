@@ -94,4 +94,4 @@ The statements on this page, in [Architecture](architecture.md), in [API convent
 
 ## DS-005 implementation note
 
-DS-005 is in progress: shared administrative shell composition in `packages/ui`, using the merged DS-003 kit and the narrow technical acceptance in [ADR 019](../adr/019-admin-ui-libraries.md). It adds no application route or live console data and does not complete ADM-UX-001. Browser evidence and conductor acceptance remain pending. Existing module statuses and prototype journeys remain unchanged.
+DS-005 is in progress: shared administrative shell composition in `packages/ui`, using the merged DS-003 kit and the narrow technical acceptance in [ADR 019](../adr/019-admin-ui-libraries.md). It adds no application route or live console data and does not complete ADM-UX-001. The [consumer contract and focused checks](../../packages/ui/src/components/AdminShell/README.md) describe seven-language 375/1280 Storybook coverage, keyboard/focus/landmark checks and the explicit native/manual review limits. Conductor acceptance remains pending. Existing module statuses and prototype journeys remain unchanged.
