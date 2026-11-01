@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { once } from 'node:events';
 import test from 'node:test';
 import pg from 'pg';
 import { withDrillOwnerTransaction } from '../../scripts/restore/drill.js';
@@ -25,8 +24,9 @@ test('OPS-003 intentional primary loss stays an awaited transaction failure, nev
     const id = randomUUID(); const entered = gate(); const finish = gate(); let pid = 0;
     const transaction = withDrillOwnerTransaction(pool, async (client) => {
       await marker(client, id); pid = Number((await client.query('SELECT pg_backend_pid() AS pid')).rows[0].pid);
-      const socketError = once(client, 'error'); entered.open();
-      await finish.promise; await socketError;
+      // Observe closure only: an error listener in the test would mask the original uncaught-error regression.
+      const closed = gate(); client.once('end', () => closed.open()); entered.open();
+      await finish.promise; await closed.promise;
     });
     const rejected = assert.rejects(transaction, /not queryable|terminated|connection|closed/i);
     await entered.promise;
