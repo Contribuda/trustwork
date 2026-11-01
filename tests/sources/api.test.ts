@@ -266,6 +266,7 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
     const [first, second] = await stageAndActivate(feed.id, [stagedItem('t1'), stagedItem('t2')], [{ recordKind: 'company', recordId: record, field: 'legalName', value: 'Synthetic Takedown LLC', itemExternalId: 'api-t1' }]);
     const provenance = PublicProvenanceSchema.parse(ok(await new Client(app).get(`/v1/hubs/${w.hubId}/sourced-records/company/${record}/provenance`)));
     assert.deepEqual([provenance.label, provenance.fields[0]?.value], ['sourced', 'Synthetic Takedown LLC']);
+    assert.equal(provenance.fields[0]?.correction, null);
     expectRefusal(await command('editorA', `${base}/source-items/${first!.id}/takedown`, { reasonCategory: 'legal_demand', note: 'Synthetic' }), 403, 'access.forbidden', 'forbidden');
     const one = TakedownViewSchema.parse(ok<{ takedown: unknown }>(await command('stewardA', `${base}/source-items/${first!.id}/takedown`, { reasonCategory: 'rights_holder_request', note: 'Synthetic rights holder request' })).takedown);
     assert.deepEqual([one.itemsTakenDown, one.fieldsDeactivated], [1, 1]);

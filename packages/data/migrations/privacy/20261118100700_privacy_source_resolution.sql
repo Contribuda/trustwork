@@ -275,7 +275,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
   SELECT jsonb_build_object('recordKind', p_kind, 'recordId', p_record, 'label', 'sourced', 'fields', coalesce(jsonb_agg(jsonb_build_object(
       'field', f.field, 'value', f.value, 'observedAt', to_char(f.observed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
       'source', jsonb_build_object('name', s.name, 'attribution', s.attribution_template, 'url', s.url),
-      'correction', CASE WHEN r.id IS NOT NULL THEN jsonb_build_object('kind','verified_subject_correction','at',r.created_at) ELSE NULL END) ORDER BY f.field, f.observed_at, f.id), '[]'::jsonb))
+      'correction', CASE WHEN r.id IS NOT NULL THEN jsonb_build_object('kind','verified_subject_correction','at',to_char(r.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')) ELSE NULL END) ORDER BY f.field, f.observed_at, f.id), '[]'::jsonb))
   FROM trustwork.sourced_record_field f
   LEFT JOIN trustwork.source_field_resolution r ON r.replacement_field_id=f.id
   JOIN trustwork.import_batch b ON b.id = f.import_batch_id AND b.status = 'activated'
