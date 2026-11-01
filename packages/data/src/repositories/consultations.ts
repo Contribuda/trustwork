@@ -306,4 +306,3 @@ export const consultationProjects = {
     return trx.selectFrom('project').select(['owner_person_id', 'owner_company_id']).where('id', '=', projectId).executeTakeFirst();
   },
 };
-
