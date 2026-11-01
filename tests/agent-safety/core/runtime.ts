@@ -61,11 +61,17 @@ export async function startRuntime(label = 'agent_safety'): Promise<StartedRunti
     return p;
   }
 
+  // Idle means two consecutive passes in which the runner leased nothing and the relay published nothing: an effect
+  // enqueued through the outbox after one empty pass (a loaded CI runner) is still drained.
   async function drain(): Promise<void> {
-    for (let i = 0; i < 50; i++) {
+    let quiet = 0;
+    for (let i = 0; i < 100; i++) {
       const leased = await w.runner.tick();
       await w.idle();
-      if (leased === 0) return;
+      const relayed = await w.relay.relayOnce();
+      quiet = leased === 0 && relayed === 0 ? quiet + 1 : 0;
+      if (quiet === 2) return;
+      if (quiet === 1) await new Promise((resolve) => setTimeout(resolve, 50));
     }
     throw new Error('the worker did not become idle');
   }
