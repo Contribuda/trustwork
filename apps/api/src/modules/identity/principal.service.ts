@@ -107,7 +107,8 @@ export class PrincipalService {
 
   /**
    * Runs `fn` as the request principal. A stale epoch (authority changed since resolution) re-resolves the principal
-   * from the same session once and retries; a second failure surfaces as a conflict.
+   * from the same session once and retries; a second failure surfaces as a conflict. Commands whose decisions
+   * bind the resolved request authority pass refreshStale=false and fail closed without a refresh or retry.
    */
   async runAs<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>, options: { snapshot?: true; refreshStale?: boolean } = {}): Promise<T> {
     if (!state.principal || !state.session) throw new ApiError('auth.session_invalid', 'authentication required');
