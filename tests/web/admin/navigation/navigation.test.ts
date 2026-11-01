@@ -108,3 +108,37 @@ test('synthetic receipts are session-scoped, idempotent for the exact operation 
   assert.throws(() => recordReceipt(session, 'elsewhere', receipt, decision.decidedBy, 'foreign', decision.requestId));
   assert.equal(readReceipt(storage(), 'receipt'), null);
 });
+
+test('stored receipts reject malformed records and preserve decision and approval invariants', () => {
+  const decision = APPROVAL_DECISIONS.find((row) => row.approval)!;
+  const approval = decision.approval!;
+  const receipt: FixtureReceipt = { operationId: '00000000-0000-4000-8000-000000000001', digest: approval.actionDigest.value, decision };
+  for (const valid of APPROVAL_DECISIONS) {
+    const session = storage();
+    const value = { ...receipt, decision: valid };
+    assert.deepEqual(recordReceipt(session, 'receipt', value, valid.decidedBy, valid.hubId, valid.requestId), value);
+    assert.deepEqual(readReceipt(session, 'receipt'), value);
+  }
+  const invalid: unknown[] = [
+    { ...receipt, extra: true },
+    { ...receipt, operationId: 'not-a-uuid' },
+    { ...receipt, digest: 'not-a-digest' },
+    ...[
+      { extra: true }, { synthetic: false }, { requestId: '' }, { action: 'unknown.action' },
+      { decidedAt: 'not-a-timestamp' }, { decidedBy: decision.requestedBy },
+      { approval: null }, { decision: 'decline' },
+      ...[
+        { extra: true }, { requestedBy: 'another-requester' }, { approvedBy: 'another-approver' },
+        { action: 'sponsored.enable' }, { scope: { kind: 'unknown' } },
+        { expiresAt: approval.approvedAt },
+      ].map((changes) => ({ approval: { ...approval, ...changes } })),
+    ].map((changes) => ({ ...receipt, decision: { ...decision, ...changes } })),
+  ];
+  for (const value of invalid) {
+    const session = storage();
+    session.setItem('receipt', JSON.stringify(value));
+    assert.throws(() => readReceipt(session, 'receipt'));
+    assert.throws(() => recordReceipt(session, 'new-receipt', value as FixtureReceipt, decision.decidedBy, decision.hubId, decision.requestId));
+    assert.equal(session.getItem('new-receipt'), null, 'invalid receipts never reach storage');
+  }
+});
