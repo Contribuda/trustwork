@@ -80,7 +80,6 @@ export class AppModule {
         IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity),
         PlansModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.plans), capabilities }),
         PaymentsModule.forRoot(identity),
-        PlansModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.plans) }),
         CatalogueModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ProcurementModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
