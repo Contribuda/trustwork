@@ -4,6 +4,11 @@ interface EvidenceTable {
   id: Generated<string>; document: ColumnType<unknown, string, never>; digest: string; created_at: Generated<Date>;
 }
 export interface JurisdictionPolicyDatabase {
+  jurisdiction_consent_receipt: {
+    id: Generated<string>; person_id: string; session_id: string; authz_epoch: number;
+    notice_digest: string; notice: ColumnType<unknown, string, never>; locale: string; granted_at: Generated<Date>;
+  };
+  jurisdiction_consent_revocation: { receipt_id: string; person_id: string; session_id: string; revoked_at: Generated<Date> };
   jurisdiction_source: EvidenceTable;
   jurisdiction_source_current: { jurisdiction: string; source_id: string; revision: Generated<number> };
   jurisdiction_applicability: EvidenceTable;
@@ -16,6 +21,8 @@ declare module './index.js' {
 }
 const columns = columnsOf<JurisdictionPolicyDatabase>();
 export const TABLE_COLUMNS = {
+  jurisdiction_consent_receipt: columns('jurisdiction_consent_receipt', ['id', 'person_id', 'session_id', 'authz_epoch', 'notice_digest', 'notice', 'locale', 'granted_at']),
+  jurisdiction_consent_revocation: columns('jurisdiction_consent_revocation', ['receipt_id', 'person_id', 'session_id', 'revoked_at']),
   jurisdiction_source: columns('jurisdiction_source', ['id', 'document', 'digest', 'created_at']),
   jurisdiction_source_current: columns('jurisdiction_source_current', ['jurisdiction', 'source_id', 'revision']),
   jurisdiction_applicability: columns('jurisdiction_applicability', ['id', 'document', 'digest', 'created_at']),

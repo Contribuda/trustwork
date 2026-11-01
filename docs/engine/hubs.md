@@ -121,3 +121,5 @@ You can launch a hub entirely on your own: the engine, the handbook and the cons
 ## Operator responsibilities
 
 The operator is responsible for compliance with the law of their territory: privacy and data residency, consumer protection, media and advertising rules, electronic commerce and signatures, taxes, sanctions and export controls. The engine provides controls, audit, templates and guard rails; it does not provide legal advice. The licence (AGPL-3.0-only) requires publishing modifications of the engine when it is offered as a network service.
+
+HUB-005 continuation adds a registered exact-notice consent API for personal quote parties, with immutable receipts and revocation. It remains partial: key-only policies, company consent, missing owning applicability, registered assistant dispatch and OUTR-002 runtime integration are unavailable; real legal values remain UNKNOWN. See the [jurisdiction module](../../apps/api/src/modules/hubs/jurisdiction/README.md).

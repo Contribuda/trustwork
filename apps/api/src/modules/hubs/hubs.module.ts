@@ -4,6 +4,8 @@ import type { IdentityServices } from '../identity/identity.module.js';
 import { ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import { SecondFactorService } from '../identity/second-factor/second-factor.service.js';
 import { AdminHubsController, HubsParticipantController, PublicLegalController } from './hubs.controller.js';
+import { JurisdictionConsentController } from './jurisdiction/consent.controller.js';
+import { JurisdictionConsentService } from './jurisdiction/consent.service.js';
 import { HubsService } from './hubs.service.js';
 
 /** Hubs, territories, versioned hub configuration, launch gates and the lifecycle (HUB-001). `HubsService` is exported for the setup wizard and the runtime loader. */
@@ -13,8 +15,8 @@ export class HubsModule {
     const service = new HubsService(ctx, identity.principals);
     return {
       module: HubsModule,
-      controllers: [AdminHubsController, HubsParticipantController, PublicLegalController],
-      providers: [{ provide: HubsService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
+      controllers: [AdminHubsController, HubsParticipantController, JurisdictionConsentController, PublicLegalController],
+      providers: [{ provide: JurisdictionConsentService, useValue: new JurisdictionConsentService(identity.principals) }, { provide: HubsService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
       exports: [HubsService],
     };
   }

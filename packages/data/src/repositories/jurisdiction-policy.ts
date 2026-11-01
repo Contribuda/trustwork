@@ -1,7 +1,7 @@
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import '../schema/jurisdiction-policy.js';
-import { JurisdictionApplicabilitySchema, JurisdictionLimitsSchema, JurisdictionSourceSchema } from '../../../contracts/src/jurisdiction.js';
+import { JurisdictionApplicabilitySchema, JurisdictionLimitsSchema, JurisdictionSourceSchema, JurisdictionConsentPreviewSchema, JurisdictionConsentReceiptSchema } from '../../../contracts/src/jurisdiction.js';
 
 /** Owner-module maintenance port only. No API/worker/staff role has table writes or source assertion privileges. */
 export const jurisdictionEvidence = {
@@ -45,5 +45,22 @@ export const jurisdictionWorker = {
   async beginAttempt(trx: Transaction, intentId: string, jobId: string, fencingToken: string) {
     const { rows } = await sql<{ result: import('./assistant.js').DispatchTarget }>`SELECT trustwork.jurisdiction_begin_attempt(${intentId}::uuid,${jobId}::uuid,${fencingToken}::bigint) AS result`.execute(trx);
     return rows[0]!.result;
+  },
+};
+
+
+/** First-party consent only. Session IDs come from resolved request state, not request input. */
+export const jurisdictionConsent = {
+  async preview(trx: Transaction, sessionId: string, quoteId: string) {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_consent_preview(${sessionId}::uuid,${quoteId}::uuid) AS result`.execute(trx);
+    return JurisdictionConsentPreviewSchema.parse(rows[0]?.result);
+  },
+  async grant(trx: Transaction, sessionId: string, quoteId: string, noticeDigest: string, locale: string) {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_consent_grant(${sessionId}::uuid,${quoteId}::uuid,${noticeDigest},${locale}) AS result`.execute(trx);
+    return JurisdictionConsentReceiptSchema.parse(rows[0]?.result);
+  },
+  async revoke(trx: Transaction, sessionId: string, receiptId: string) {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_consent_revoke(${sessionId}::uuid,${receiptId}::uuid) AS result`.execute(trx);
+    return JurisdictionConsentReceiptSchema.parse(rows[0]?.result);
   },
 };

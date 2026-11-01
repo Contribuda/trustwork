@@ -180,6 +180,14 @@ export function evaluateJurisdictionAction(resolution: JurisdictionResolution, a
 }
 
 
+/** A requirement key alone does not identify whose consent or its purpose. No scope is inferred. */
+export const JurisdictionConsentScopeSchema = z.strictObject({
+  requirement: Key, purpose: Key, action: MandateActionV2Schema,
+  affectedParty: z.enum(['actor', 'buyer', 'seller']), noticeKey: Key,
+});
+const ConsentScopes = z.array(JurisdictionConsentScopeSchema).max(100)
+  .refine((v) => unique(v.map((s) => `${s.requirement}:${s.action}:${s.affectedParty}:${s.purpose}`)), 'duplicate consent scope');
+
 /** ADR 022: reviewed machine-readable rules are separate from prose facts. Empty requirements are explicit. */
 export const JurisdictionSourceSchema = z.strictObject({
   schemaVersion: z.literal(2),
@@ -197,6 +205,7 @@ export const JurisdictionSourceSchema = z.strictObject({
   mandatoryAreas: z.array(JurisdictionSettingAreaSchema).refine(unique),
   advisoryAreas: z.array(JurisdictionSettingAreaSchema).refine(unique),
   policy: JurisdictionPolicySchema,
+  consentScopes: ConsentScopes.optional(),
 }).superRefine((s, ctx) => {
   const areas = [...s.mandatoryAreas, ...s.advisoryAreas];
   if (!unique(areas) || areas.length !== JurisdictionSettingAreaSchema.options.length) ctx.addIssue({ code: 'custom', message: 'each area explicitly mandatory or advisory' });
@@ -216,6 +225,7 @@ export const ExecutableJurisdictionPayloadSchema = z.strictObject({
       jurisdiction: JurisdictionCodeSchema,
       sourceId: z.uuid(), sourceRevision: z.int().min(1), sourceDigest: z.string().regex(/^[a-f0-9]{64}$/),
       policy: JurisdictionPolicySchema,
+      consentScopes: ConsentScopes.optional(),
       legalBindings: z.array(JurisdictionLegalBindingSchema).min(1).max(500)
         .refine((v) => unique(v.map((r) => `${r.locale}:${r.key}`)), 'duplicate legal binding'),
     })).min(1).max(100).refine((v) => unique(v.map((s) => s.jurisdiction)), 'duplicate jurisdiction'),
@@ -239,7 +249,33 @@ export const JurisdictionLimitsSchema = z.strictObject({
   hubId: z.uuid().nullable(),
   approval: JurisdictionApprovalSchema,
   approvalAbove: z.array(NonNegativeMoneySchema),
+  consentSatisfied: z.boolean().optional(),
   consentRequirements: z.array(Key), recordKeeping: z.array(JurisdictionRecordRuleSchema),
   liabilityAllocationKey: Key.nullable(),
 });
 export type JurisdictionLimits = z.infer<typeof JurisdictionLimitsSchema>;
+
+
+/** Inputs carry an exact notice digest, never a caller-selected party, country, hub, legal text or consent state. */
+export const JurisdictionConsentCommandSchema = z.strictObject({
+  noticeDigest: z.string().regex(/^[a-f0-9]{64}$/), locale: LocaleTagSchema,
+});
+export const JurisdictionConsentNoticeSchema = z.strictObject({
+  noticeDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  policyBindingDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  quoteId: z.uuid(), actorId: z.uuid(), action: z.literal('send_quote'),
+  affectedPersonId: z.uuid(), requirement: Key, purpose: Key,
+  documents: z.array(z.strictObject({
+    key: Key, locale: LocaleTagSchema, documentId: z.uuid(), bodyDigest: z.string().regex(/^[a-f0-9]{64}$/),
+    version: z.int().positive(), body: z.string().min(1).max(200000),
+  })).min(1).max(500),
+});
+export const JurisdictionConsentPreviewSchema = z.strictObject({
+  status: z.enum(['available', 'unavailable']), reasons: z.array(z.string()),
+  notices: z.array(JurisdictionConsentNoticeSchema).max(100),
+});
+export const JurisdictionConsentReceiptSchema = z.strictObject({
+  receiptId: z.uuid(), noticeDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  locale: LocaleTagSchema, grantedAt: z.iso.datetime(), revoked: z.boolean(),
+});
+export type JurisdictionConsentPreview = z.infer<typeof JurisdictionConsentPreviewSchema>;

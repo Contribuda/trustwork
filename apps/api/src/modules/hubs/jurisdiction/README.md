@@ -40,3 +40,11 @@ The projection returns restrictive limits, safe reason codes, configuration IDs/
 ## Verification
 
 `tests/hubs/jurisdiction` uses embedded PostgreSQL with restricted API and worker logins, real hub/legal/approval commands, real projects/RFQs/invitations/quotes, confirmed mandates and durable intents. Fixtures are explicitly synthetic and establish no country's legal readiness. Source, approval and language races observe actual waiting database transactions. The module access inventory and schema mirror are registered without editing shared inline lists. Exact commands, counts and head are recorded in draft PR #405 and the conductor result report.
+
+## Typed consent continuation
+
+The registered `/v1/jurisdiction-consents/quotes/:quoteId` API returns only the authenticated affected person's current public counsel notice, with all configured languages. Granting binds the exact notice digest, purpose, action, person, quote actor, policy binding and immutable legal versions; revocation is a separate immutable fact. Generic legal acceptance, profile consent and action approval cannot substitute. Key-only policies and company consent without a separately scoped mandate remain unavailable. The current implementation supports personal buyer/seller quotes only. No real country consent scope is seeded.
+
+The authority lock has a three-second acquisition timeout. Current session and identity epoch are checked after domain waits; row locks serialize the check against actual session and epoch updates. Transactions contain no provider I/O. Receipt storage does not define a retention duration or execute erasure/legal-hold policy; that remains an owning privacy authority integration. There is no receipt-history listing.
+
+This is engineering groundwork, not complete HUB-005 acceptance. Registered assistant/dispatch integration awaits the conductor's allocation after AGT-003 merges; OUTR-002 has no runtime; broader owning applicability and company consent remain unavailable. No UI or native language/accessibility acceptance is claimed.
