@@ -255,6 +255,20 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     assert.equal(fake.calls.filter((id) => id === op.id).length, 1);
     assert.equal(fake.lookups.length, lookups);
   });
+  await t.test('a recovered QR acknowledgement resolves only the dispatch job, retains the hold and continues lookup', async () => {
+    const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
+    const op = await operation(view.id); fake.plan(op.id, 'pending_customer_action', true); await tick();
+    assert.equal((await operation(view.id)).state, 'outcome_unknown');
+    assert.equal(await reconcilePayment(runtime, op.id, AbortSignal.timeout(1000)), 'applied');
+    assert.equal((await operation(view.id)).state, 'pending_customer_action');
+    assert.equal((await q('SELECT state FROM trustwork.job WHERE id=(SELECT job_id FROM trustwork.payment_operation WHERE id=$1)', [op.id]))[0]!.state, 'succeeded');
+    assert.equal((await reservation(view.id)).state, 'reserved');
+    assert.equal((await reservation(view.id)).effect_pending, true);
+    const lookedUp = fake.lookups.length;
+    assert.equal(await reconcilePayment(runtime, op.id, AbortSignal.timeout(1000)), 'duplicate');
+    assert.equal(fake.lookups.length, lookedUp + 1);
+    assert.equal(fake.calls.filter((id) => id === op.id).length, 1);
+  });
   await t.test('final dispatch rechecks elapsed session authority after a competing lock wait', async () => {
     const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
     await relay.relayOnce();
