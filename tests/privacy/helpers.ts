@@ -25,7 +25,7 @@ export async function privacyWorld(h: Harness) {
   const people = await withMaintenance(h.db.admin, async (trx) => {
     await staffRoleDefinitions.release(trx, { version: 137, role: 'privacy-officer', scopes: ['platform'],
       permissions: ['admin.privacy.hold', 'admin.privacy.erasure.execute', 'admin.privacy.request.read', 'admin.privacy.export',
-        'admin.support.case.create', 'admin.support.grant.request', 'admin.support.grant.approve', 'admin.sources.manage', 'admin.sources.import.activate'],
+        'admin.support.case.create', 'admin.support.grant.request', 'admin.support.grant.approve', 'admin.sources.manage', 'admin.sources.import.activate', 'admin.sources.takedown'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 24 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     const officer = await trx.insertInto('person').values({ display_name: 'Synthetic Privacy Officer' }).returning('id').executeTakeFirstOrThrow();
     const subject = await trx.insertInto('person').values({ display_name: 'Synthetic Privacy Subject' }).returning('id').executeTakeFirstOrThrow();

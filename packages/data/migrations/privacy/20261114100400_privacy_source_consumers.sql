@@ -39,7 +39,7 @@ REVOKE EXECUTE ON FUNCTION trustwork.privacy_source_activation_guard() FROM PUBL
 CREATE OR REPLACE FUNCTION trustwork.privacy_source_submit(p_token_hash text, p_action text, p_value text) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE v_proof trustwork.privacy_source_proof%ROWTYPE; v_field trustwork.sourced_record_field%ROWTYPE;
-  v_grant trustwork.case_access_grant%ROWTYPE; v_key text;
+  v_grant trustwork.case_access_grant%ROWTYPE; v_key text; v_source_id uuid;
 BEGIN
   SELECT * INTO v_proof FROM trustwork.privacy_source_proof WHERE token_hash = p_token_hash FOR UPDATE;
   IF NOT FOUND OR v_proof.used_at IS NOT NULL OR v_proof.expires_at <= clock_timestamp() OR v_proof.action IS DISTINCT FROM p_action THEN RETURN; END IF;
@@ -47,8 +47,13 @@ BEGIN
   PERFORM 1 FROM trustwork.staff_role_assignment WHERE person_id = v_proof.verified_by ORDER BY id FOR SHARE;
   PERFORM 1 FROM trustwork.support_case WHERE id = v_grant.support_case_id FOR SHARE;
   SELECT * INTO v_grant FROM trustwork.case_access_grant WHERE id = v_proof.grant_id FOR SHARE;
+  -- Resolve identity without a child lock, then follow SRC's parent-before-child order.
+  SELECT source_id INTO v_source_id FROM trustwork.sourced_record_field WHERE id = v_proof.source_field_id;
+  IF NOT FOUND THEN RETURN; END IF;
+  PERFORM 1 FROM trustwork.source WHERE id = v_source_id FOR SHARE;
+  IF NOT FOUND THEN RETURN; END IF;
   SELECT * INTO v_field FROM trustwork.sourced_record_field WHERE id = v_proof.source_field_id FOR SHARE;
-  PERFORM 1 FROM trustwork.source WHERE id = v_field.source_id FOR SHARE;
+  IF NOT FOUND OR NOT v_field.active OR v_field.source_id IS DISTINCT FROM v_source_id THEN RETURN; END IF;
   v_key := trustwork.privacy_source_key(v_field.record_kind, v_field.record_id);
   PERFORM trustwork.privacy_contact_lock(v_key);
   IF v_proof.expires_at <= clock_timestamp() OR v_grant.expires_at <= clock_timestamp()
