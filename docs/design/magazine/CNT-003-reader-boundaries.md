@@ -51,7 +51,7 @@ The current publication and the pinned version must each pass. Correction, moder
 
 All content API responses and all nine RSS/Atom/JSON Feed routes are `private, no-store`; DataPort fetches are also `no-store`. PostgreSQL statement snapshots determine concurrent read order: a read before a revocation commit may return the previously authorized projection; every later read under the API's READ COMMITTED transactions sees the committed restriction. Tests cover both orders, including an already open transaction re-reading after commit. Previously downloaded client bytes cannot be recalled.
 
-The PDF cover contains only reader-facing issue information and contents. Raw revision UUID and digest stay in the database snapshot/artifact binding, not visible cover text.
+The PDF cover contains only reader-facing issue information and contents. Raw revision UUID and digest stay in the database snapshot/artifact binding, not visible cover text. Internal `presentationVersion: 2` participates in the captured digest. Earlier stored covers and in-flight version-1 snapshots are therefore unavailable after this migration; immutable bytes are retained and a new issue edition is required. New completion metadata identifies `cnt003-local-2`.
 
 ## Verification limits
 
