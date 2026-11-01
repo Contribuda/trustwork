@@ -30,6 +30,8 @@ export async function receivePaymentWebhook(runtime: PaymentRuntime, connectionI
 
 /** Late outcomes remain consumable after fresh dispatch authority is revoked; lookup never creates an effect. */
 export async function reconcilePayment(runtime: PaymentRuntime, operationId: string, signal: AbortSignal): Promise<string> {
+  // Commit elapsed-deadline uncertainty before a missing, aborted or uncooperative lookup.
+  await inTransaction(runtime.pool, (trx) => payments.expireCustomerAction(trx, operationId));
   const recorded = await inTransaction(runtime.pool, (trx) => payments.reconcileRecorded(trx, operationId));
   if (recorded) return recorded;
   const instruction = await inTransaction(runtime.pool, (trx) => payments.instruction(trx, operationId));
