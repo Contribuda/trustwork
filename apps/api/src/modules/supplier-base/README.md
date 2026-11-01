@@ -17,7 +17,8 @@ Status: Live in the API with no interface yet (WEB-011). Nothing here contacts a
 | Screening and payee verification on the onboarding checklist are never marked done by the buyer: the card derives the screening item from SANC-003's port | `supplier_base_onboarding_ok`, `card.ts`, `screening.ts` |
 | Records, counterparties and assessments are never deleted (archive a record with status `archived`); revisions are checked under a row lock, so concurrent changes resolve once | Guards, `supplier_base_lock_record`, `supplier_base_lock_counterparty` |
 | Assessments are drafts until recorded, then frozen; `reputation_input` is `false` by constraint; sharing is the buyer's explicit choice at recording and needs a linked platform company; the supplier sees only the assessment (never the record's status, notes, terms or onboarding) and answers once (administrator or `company.deals.manage`) | `supplier_assessment_guard`, `supplier_base_record_assessment`, `supplier_base_shared_assessments`, `supplier_base_respond` |
-| No command appends an outbox event, so no notification, feed, index, federation or statistic can learn that a supplier is listed; audit rows carry identifiers and the names of changed fields only | Migration, `SupplierBaseService` |
+| A status the company's `supplier_status` approval route reviews (PRC-001; `supplier_status_in` and the other structured conditions) is not applied: the change is submitted, bound to the record's revision and a digest of the change, and applied only when a maintainer names the approved request while the record is unchanged. A new record or an imported row with such a status starts as `prospect` | `approvals.ts`, `SupplierBaseService.maintain`, `importSuppliers` |
+| No supplier base command appends an outbox event (an approval request appends PRC-001's identifier-only events naming the private record), so no notification, feed, index, federation or statistic can learn that a supplier is listed; audit rows carry identifiers and the names of changed fields only | Migration, `SupplierBaseService` |
 
 ## Routes
 
@@ -26,7 +27,7 @@ All routes need a session; mutations carry CSRF metadata and an `Idempotency-Key
 | Route | Result |
 |---|---|
 | `GET /v1/supplier-base/suppliers[?status=&limit=]`, `GET /v1/supplier-base/suppliers/:id` | The company's records (`audience: party_private`), a record with its counterparty |
-| `POST /v1/supplier-base/suppliers` | `MaintainSupplierCommand` (+ details, `actor`): `supplierRecordId: null` adds a record; an id changes it (omitted details keep their value); a different `link` of kind `company` is the move to the claimed company |
+| `POST /v1/supplier-base/suppliers` | `MaintainSupplierCommand` (+ details, `approvalRequestId`, `actor`): `supplierRecordId: null` adds a record; an id changes it (omitted details keep their value); a different `link` of kind `company` is the move to the claimed company; `approval` in the answer names the request a reviewed status waits for |
 | `GET /v1/supplier-base/suppliers/:id/card` | The supplier card: the record, figures from the buyer's own agreements and orders (read under the person's own row-level security), honest `coverage` per source, public facts (claim status, the latest public reputation snapshot) and the one screening fact a counterparty may know |
 | `GET /v1/supplier-base/counterparties`, `GET /v1/supplier-base/counterparties/:id`, `POST /v1/supplier-base/counterparties`, `POST /v1/supplier-base/counterparties/:id` | External counterparties: name, country-pack identifiers, private contacts; one per normalized name in a base |
 | `GET /v1/supplier-base/suppliers/:id/assessments`, `POST /v1/supplier-base/suppliers/:id/assessments` | Assessments of a record; drafting (`DraftSupplierAssessmentCommand` plus the scores) |
@@ -34,7 +35,7 @@ All routes need a session; mutations carry CSRF metadata and an `Idempotency-Key
 | `GET /v1/supplier-base/import/template`, `POST /v1/supplier-base/import` | CSV (text) or XLSX (base64) of existing suppliers within the 256 KiB body limit, up to 1,000 rows; `dryRun` previews. All or nothing: any row error creates nothing; names already in the base are skipped. Every row becomes one external counterparty (`source: import`) and one record, never a company, membership, claim, handle or public record |
 | `GET /v1/supplier-base/shared-assessments`, `POST /v1/supplier-base/shared-assessments/:id/respond` | The supplier's side: assessments buyers chose to share with the caller's company (`audience: shared_party`) and the one answer |
 
-Refusals use the contract codes: `access.forbidden` (`details.reason`: `not_authorised`, `row_security`), `access.not_found`, `access.mandate_scope` (`mandate_scope`, or `confirmation_required` for an agent asking to block a supplier), `validation.revision_conflict` (`revision_conflict`, `already_listed`, `name_taken`, `already_answered`, `invalid_transition`), `validation.schema` (`invalid_link`, `not_shareable`, `invalid_region`, `restricted_place`, `import_file`, `idempotency_key`) and `commercial.version_immutable` (`frozen`, `record_permanent`) (`errors.ts`).
+Refusals use the contract codes: `access.forbidden` (`details.reason`: `not_authorised`, `row_security`, `approval_pending`), `access.approval_digest_mismatch` (the record changed after the approval), `access.not_found`, `access.mandate_scope` (`mandate_scope`, or `confirmation_required` for an agent asking to block a supplier), `validation.revision_conflict` (`revision_conflict`, `already_listed`, `name_taken`, `already_answered`, `invalid_transition`), `validation.schema` (`invalid_link`, `not_shareable`, `invalid_region`, `restricted_place`, `import_file`, `idempotency_key`) and `commercial.version_immutable` (`frozen`, `record_permanent`) (`errors.ts`).
 
 ## Screening
 
@@ -48,7 +49,7 @@ Refusals use the contract codes: `access.forbidden` (`details.reason`: `not_auth
 
 - Country-pack document types for the onboarding checklist and their expiry (PRC-012); prequalification passport sections shared by consent (PREQ-001); due-diligence packs (DD-001).
 - Card figures for receipts, discrepancies, match exceptions, invoices and documents once PRC-008, PRC-010 and PRC-012 exist (`coverage` says `not_available` until then).
-- Status changes through an approval route of subject kind `supplier_status` once PRC-001 is on main; a notification to the supplier when a buyer shares an assessment (COMMS-001), still without revealing status or notes.
+- A notification to the supplier when a buyer shares an assessment (COMMS-001), still without revealing status or notes; applying an approved status change automatically from the `approval.request_closed` event (today the maintainer applies it).
 - Imports larger than the API body limit through a FILE-001 file reference; the web screens (WEB-011) and the registry entries (PRC-023).
 
 ## Tests

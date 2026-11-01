@@ -10,7 +10,7 @@ import { FEDERATED_OBJECT_KINDS, GLOBAL_ID_KINDS, payloadProblems } from '../../
 import { SourceKindSchema } from '../../packages/contracts/src/retrieval.js';
 import { SUPPLIER_BASE_PRIVATE_FIELDS } from '../../packages/contracts/src/supply/suppliers.js';
 import { expectError, SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
-import { count, ok, seedDeal, seedWorld, signIn, syncKernel, uuid, xlsx, type Person, type World } from './helpers.js';
+import { count, grant, ok, seedDeal, seedWorld, signIn, syncKernel, uuid, xlsx, type Person, type World } from './helpers.js';
 
 /**
  * PRC-003 through HTTP, against the acceptance criteria:
@@ -137,8 +137,9 @@ test('supplier base API: journey, privacy across projections, search, notificati
     // Notifications: no outbox event, no mail.
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.outbox_event'), outboxBefore);
     assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.mail_delivery'), mailBefore);
-    const notificationTable = (await h.db.admin.query<{ t: string | null }>("SELECT to_regclass('trustwork.notification')::text AS t")).rows[0]?.t;
-    if (notificationTable) assert.equal(await count(h.db.admin, `SELECT 1 FROM ${notificationTable} n WHERE n::text LIKE '%' || $1 || '%'`, [supplierRecord]), 0);
+    // COMMS-001 notifications: none for any member of the supplier, none naming the record.
+    assert.equal(await count(h.db.admin, 'SELECT 1 FROM trustwork.notification WHERE recipient_person_id = ANY ($1::uuid[])', [[w.people.sam, w.people.sid]]), 0);
+    assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.notification n WHERE n.link_id = $1::uuid OR n.params::text LIKE '%' || $2::text || '%'", [supplierRecord, PRIVATE_NOTE]), 0);
     // Federation: no federated or global-id kind for the supplier base; every buyer-side response is refused by the backstop.
     for (const kind of [...FEDERATED_OBJECT_KINDS, ...GLOBAL_ID_KINDS]) assert.ok(!/supplier_record|counterparty|supplier_assessment/.test(kind), kind);
     for (const url of [`/v1/supplier-base/suppliers/${supplierRecord}`, '/v1/supplier-base/suppliers', `/v1/supplier-base/suppliers/${supplierRecord}/card`, `/v1/supplier-base/suppliers/${supplierRecord}/assessments`, '/v1/supplier-base/counterparties']) {
@@ -277,6 +278,57 @@ test('supplier base API: journey, privacy across projections, search, notificati
     assert.equal(moved.record.externalCounterpartyId, null);
     assert.equal(text(await otto.get('/v1/supplier-base/shared-assessments')), otherBefore);
     expectError(await otto.get(`/v1/supplier-base/suppliers/${record.record.id}`), 404, 'access.not_found');
+  });
+
+  await t.test('approval routes (PRC-001): a status the supplier-status route reviews waits for approval and is applied only as approved', async () => {
+    const outboxAtStart = await count(h.db.admin, 'SELECT 1 FROM trustwork.outbox_event');
+    await grant(h.db.admin, w, 'rita', 'procurement.approval.decide');
+    const payload = {
+      steps: [{ key: 'review', order: 1, conditions: [{ kind: 'supplier_status_in', statuses: ['blocked', 'preferred'] }], selector: { kind: 'permission_holders', permission: 'procurement.approval.decide', scope: 'company' }, quorum: 1, timeoutHours: 48, escalation: { kind: 'route_owner' } }],
+      receiverSoleApprovalThreshold: null,
+    };
+    const route = ok<{ id: string; digest: unknown }>(await ada.post('/v1/approvals/routes', { owner: { kind: 'company', id: w.buyer }, subjectKind: 'supplier_status', payload, templateKey: null }), 201);
+    ok(await send(ada, `/v1/approvals/routes/${route.id}/activate`, { routeVersionId: route.id, digest: route.digest, expectedRevision: 1 }));
+    interface Pending { audience: string; record: RecordView['record']; approval: { request: { id: string; status: string; revision: number; subjectDigest: unknown }; status: string } | null }
+    // Adding a supplier as preferred: the record starts as a prospect and the status waits for approval.
+    const cp = ok<CounterpartyView>(await rita.post('/v1/supplier-base/counterparties', { name: 'Synthetic Routed Formwork' }), 201);
+    const added = ok<Pending>(await send(rita, '/v1/supplier-base/suppliers', { supplierRecordId: null, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'preferred', expectedRevision: 1 }));
+    assert.equal(added.record.status, 'prospect');
+    assert.equal(added.approval?.status, 'preferred');
+    assert.equal(added.approval?.request.status, 'pending');
+    // A status no step reviews applies at once.
+    const onHold = ok<Pending>(await send(rita, '/v1/supplier-base/suppliers', { supplierRecordId: added.record.id, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'on_hold', expectedRevision: added.record.revision }));
+    assert.equal(onHold.record.status, 'on_hold');
+    assert.equal(onHold.approval, null);
+    // Blocking with a note: the note applies now, the block waits; the pending request of 'preferred' is superseded.
+    const blocking = ok<Pending>(await send(rita, '/v1/supplier-base/suppliers', { supplierRecordId: added.record.id, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'blocked', expectedRevision: onHold.record.revision, internalNotes: 'Synthetic: unpaid returns' }));
+    assert.equal(blocking.record.status, 'on_hold');
+    assert.equal(blocking.record.internalNotes, 'Synthetic: unpaid returns');
+    const request = blocking.approval!.request;
+    assert.equal((await h.db.admin.query<{ status: string }>('SELECT status FROM trustwork.approval_request WHERE id = $1', [added.approval!.request.id])).rows[0]?.status, 'superseded');
+    const apply = (approvalRequestId: string, expectedRevision: number) => send(rita, '/v1/supplier-base/suppliers', { supplierRecordId: added.record.id, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'blocked', expectedRevision, approvalRequestId });
+    expectError(await apply(request.id, blocking.record.revision), 403, 'access.forbidden');
+    expectError(await apply(uuid(), blocking.record.revision), 404, 'access.not_found');
+    // The requester never decides; another approver does, binding the digest.
+    const decide = (client: Client) => send(client, `/v1/approvals/requests/${request.id}/decide`, { approvalRequestId: request.id, step: 'review', decision: 'approve', subjectDigest: request.subjectDigest, reason: null, expectedRevision: request.revision });
+    expectError(await decide(rita), 403, 'access.forbidden');
+    ok(await decide(ada));
+    const applied = ok<Pending>(await apply(request.id, blocking.record.revision));
+    assert.equal(applied.record.status, 'blocked');
+    // An approval binds the record as it was: a change in between makes it stale.
+    const preferredAgain = ok<Pending>(await send(ada, '/v1/supplier-base/suppliers', { supplierRecordId: added.record.id, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'preferred', expectedRevision: applied.record.revision }));
+    const second = preferredAgain.approval!.request;
+    ok(await send(rita, `/v1/approvals/requests/${second.id}/decide`, { approvalRequestId: second.id, step: 'review', decision: 'approve', subjectDigest: second.subjectDigest, reason: null, expectedRevision: second.revision }));
+    const noted = ok<Pending>(await send(ada, '/v1/supplier-base/suppliers', { supplierRecordId: added.record.id, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'blocked', expectedRevision: preferredAgain.record.revision, internalNotes: 'Synthetic: later note' }));
+    expectError(await send(ada, '/v1/supplier-base/suppliers', { supplierRecordId: added.record.id, link: { kind: 'external_counterparty', id: cp.counterparty.id }, status: 'preferred', expectedRevision: noted.record.revision, approvalRequestId: second.id }), 409, 'access.approval_digest_mismatch');
+    // An import keeps reviewed statuses as prospects and says so.
+    const imported = ok<ImportView & { statusPendingApproval: number[] }>(await rita.post('/v1/supplier-base/import', { file: { format: 'csv', text: 'name,status\nSynthetic Routed Import Preferred,preferred\nSynthetic Routed Import Approved,approved\n' } }));
+    assert.deepEqual(imported.statusPendingApproval, [2]);
+    // The approval events name the private record only, never the supplier.
+    assert.ok(await count(h.db.admin, 'SELECT 1 FROM trustwork.outbox_event') > outboxAtStart);
+    const leaking = await h.db.admin.query<{ type: string; payload: unknown }>("SELECT type, payload FROM trustwork.outbox_event WHERE type LIKE 'approval.%' AND (payload::text LIKE '%' || $1::text || '%' OR payload::text LIKE '%' || $2::text || '%')", [w.supplier, cp.counterparty.id]);
+    assert.deepEqual(leaking.rows, []);
+    expectError(await sam.get(`/v1/approvals/requests/${request.id}`), 404, 'access.not_found');
   });
 
   await t.test('agents: the same use cases under maintain_records, prepare and communicate mandates; blocking stays with the person', async () => {
