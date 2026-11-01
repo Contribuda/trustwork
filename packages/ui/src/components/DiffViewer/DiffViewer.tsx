@@ -24,7 +24,7 @@ export function DiffViewer({
         {t("consoleKit.showUnchanged")}
       </Checkbox>
       <div className={s.scroll} tabIndex={0} role="region" aria-label={label}>
-        <table className={s.table}>
+        <table className={`${s.table} ${s.diffTable}`}>
           <caption>{label}</caption>
           <thead>
             <tr>
@@ -50,6 +50,7 @@ export function DiffViewer({
           </tbody>
         </table>
       </div>
+      <p className={s.muted}>{t("common.tableScrollHint")}</p>
     </div>
   );
 }

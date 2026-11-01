@@ -520,6 +520,7 @@
       "fake": "Fake",
       "manual": "Manual"
     },
-    "language": "Language"
+    "language": "Language",
+    "sort": "Sort by"
   }
 }
