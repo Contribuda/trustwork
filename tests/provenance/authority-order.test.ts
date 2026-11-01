@@ -167,9 +167,8 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
     }
   }
 
-  for (const action of ['declare', 'review', 'consent', 'revoke-consent', 'prepare-correction', 'release-correction'] as const) {
-    for (const expiry of ['idle_expires_at', 'absolute_expires_at'] as const) {
-      await t.test(`${action}: current-clock ${expiry} after an actual domain wait refuses mutation`, async () => {
+  const actions = ['declare', 'review', 'consent', 'revoke-consent', 'prepare-correction', 'release-correction'] as const;
+  async function commandFixture(action: typeof actions[number]) {
         const f = await pair(false); let table = 'publication', id = f.translation.id;
         const key = action === 'review' ? 'coauthor' : 'writer';
         const context = ctx(key);
@@ -199,6 +198,12 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
             command = trx => publications.correct(trx, context, original.id, original.revision, changed, 'Synthetic correction', 'Synthetic correction');
           }
         }
+    return { f, key, context, table, id, command };
+  }
+  for (const action of actions) {
+    for (const expiry of ['idle_expires_at', 'absolute_expires_at'] as const) {
+      await t.test(`${action}: current-clock ${expiry} after an actual domain wait refuses mutation`, async () => {
+        const { f, key, context, table, id, command } = await commandFixture(action);
         const error = await afterWait(p[key], table, id, command, async () => {
           await withMaintenance(db.admin, trx => expiry === 'idle_expires_at'
             ? sql`UPDATE trustwork.session SET idle_expires_at=clock_timestamp()+interval '100 milliseconds' WHERE id=${context.sessionId}::uuid`.execute(trx)
@@ -212,6 +217,25 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
         assert.equal(error?.hint, 'provenance.first_party_required');
         await withMaintenance(db.admin, trx => sql`UPDATE trustwork.session SET idle_expires_at=clock_timestamp()+interval '1 day',absolute_expires_at=clock_timestamp()+interval '1 day' WHERE id=${context.sessionId}::uuid`.execute(trx));
         assert.equal((await as(p.writer, trx => provenance.history(trx, f.translation.id))).length, 1);
+      });
+    }
+  }
+
+  for (const action of actions) {
+    for (const first of ['revocation', 'command'] as const) {
+      await t.test(`${action} versus actual session revocation: ${first} first`, async () => {
+        const { key, context, table, id, command } = await commandFixture(action);
+        const beforeAudit = await withMaintenance(db.admin, trx => trx.selectFrom('audit_event').select('id').where('request_id', '=', context.requestId).execute());
+        const revoke = async (trx: Transaction) => { assert.ok(await sessions.revoke(trx, context.sessionId, 'logout')); };
+        if (first === 'command') assert.equal(await ordered(p[key], command, p[key], revoke), null);
+        else {
+          const error = await afterWait(p[key], table, id, command, () => as(p[key], revoke));
+          assert.equal(error?.hint, 'provenance.first_party_required');
+          const audit = await withMaintenance(db.admin, trx => trx.selectFrom('audit_event').select('id').where('request_id', '=', context.requestId).execute());
+          assert.equal(audit.length, beforeAudit.length, 'delayed refused command commits no new audit or domain mutation');
+        }
+        const session = await withMaintenance(db.admin, trx => trx.insertInto('session').values({ person_id: p[key], token_hash: randomBytes(32), idle_expires_at: new Date(Date.now()+86400000), absolute_expires_at: new Date(Date.now()+86400000), auth_method: 'password' }).returning('id').executeTakeFirstOrThrow());
+        w.admin.sessions[key] = session.id;
       });
     }
   }
@@ -307,6 +331,22 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
     }
     const f = await pair(false);
     await refused(as(p.coauthor, trx => provenance.review(trx, { ...ctx('coauthor'), sessionId: w.admin.sessions.writer! }, f.review)), '42501', 'provenance.first_party_required');
+  });
+
+  await t.test('gate contention respects a stricter timeout and returns a conflict without retry', async () => {
+    const f = await pair(false), holder = await db.admin.connect();
+    try {
+      await holder.query('BEGIN'); await holder.query('SELECT pg_advisory_xact_lock(731209,97)');
+      await refused(as(p.coauthor, async trx => {
+        await sql`SET LOCAL lock_timeout='50ms'`.execute(trx);
+        return provenance.review(trx, ctx('coauthor'), f.review);
+      }), '40001', 'content.authority_busy');
+    } finally { await holder.query('ROLLBACK'); holder.release(); }
+  });
+  await t.test('a valid elevation from a different session cannot authorize the request', async () => {
+    const f = await pair(false), elevation = await w.act.elevate(p.editorB);
+    const secondSession = await withMaintenance(db.admin, trx => trx.insertInto('session').values({ person_id: p.editorB, token_hash: randomBytes(32), idle_expires_at: new Date(Date.now()+86400000), absolute_expires_at: new Date(Date.now()+86400000), auth_method: 'password' }).returning('id').executeTakeFirstOrThrow());
+    await refused(as(p.editorB, trx => provenance.review(trx, { ...elevation, ...ctx('editorB'), sessionId: secondSession.id }, f.review)), '42501', 'admin.elevation_required');
   });
 
 });
