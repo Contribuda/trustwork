@@ -210,6 +210,8 @@ test('OPS-003 job modes match the production worker registry (unknown kinds are 
     // The Worker registers outbox.redeliver itself (transactional).
     assert.deepEqual({ ...registered, 'outbox.redeliver': 'transactional' }, KNOWN_JOB_MODES);
     assert.equal(jobMode('something.new'), 'external');
+    assert.equal(jobMode('agents.start_occurrence'), 'transactional');
+    assert.equal(jobMode('agents.execute_occurrence'), 'transactional');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
