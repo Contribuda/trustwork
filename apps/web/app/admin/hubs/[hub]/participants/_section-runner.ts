@@ -5,7 +5,7 @@ import { primeLocale } from '@/app/_lib/locale';
 import type { CommandState } from '../../../_data/command-state';
 import { consolePort } from '../../../_data/index';
 import { resolveConsoleRequest } from '../../../_data/personas';
-import type { SectionEvaluator, SectionOutcome } from './_section-command';
+import type { SectionCommandContext, SectionCommandInput, SectionEvaluator, SectionOutcome } from './_section-command';
 
 /** The server-side runner of HUBC-004's section commands (server only; each group's `_actions.ts` calls it). */
 
@@ -28,6 +28,11 @@ export function sectionMessage(outcome: SectionOutcome): CommandState {
  * field only in demo mode, the viewer, hub and access are resolved again, and the group's evaluator decides.
  */
 export async function runSectionCommand(form: FormData, evaluate: SectionEvaluator): Promise<CommandState> {
+  return runSectionCommandWith(form, evaluate, sectionMessage);
+}
+
+/** The same runner with a group's own outcomes and messages (OUTR-004's outreach commands). */
+export async function runSectionCommandWith<O>(form: FormData, evaluate: (input: SectionCommandInput, ctx: SectionCommandContext) => O, message: (outcome: O) => CommandState): Promise<CommandState> {
   return runWithLocaleScope(async () => {
     await primeLocale();
     const enabled = demoModeEnabled();
@@ -50,6 +55,6 @@ export async function runSectionCommand(form: FormData, evaluate: SectionEvaluat
       { command, reason: text('reason'), expectedRevision: Number.isInteger(revision) ? revision : null, fields },
       { viewer, access, hub, now: port.now(), offline: request.demo && request.scenario === 'offline' },
     );
-    return sectionMessage(outcome);
+    return message(outcome);
   });
 }

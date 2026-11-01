@@ -70,3 +70,13 @@ export { LegalDocumentKindSchema, NO_ACTIVE_TERMS_VERSION, PublicLegalDocumentSc
 export type { LegalDocumentKind, PublicLegalDocument, PublicLegalDocuments } from './hub-core.js';
 
 export * from './payments.js';
+// Outreach policy (OUTR-001) for the console outreach section (OUTR-004). `CONSENT_BASES` stays module-local here
+// because the federation contract exports a different list under that name from the server barrel.
+export {
+  DEFAULT_OUTREACH_POLICY, floorViolations, IDENTIFICATION_ITEMS, IdentificationItemSchema, moreProtective, NOTICE_TIMINGS, NoticeTimingSchema, OUTREACH_BASES, OUTREACH_CHANNELS,
+  OUTREACH_ENGINE_FLOOR, OUTREACH_MODES, OutreachBasisSchema, OutreachChannelSchema, OutreachJurisdictionPolicySchema, OutreachModeSchema, OutreachPolicySchema,
+  PROPOSED_OUTREACH_HUMAN_GATES, RECIPIENT_CLASSES, RecipientClassSchema, resolveOutreach,
+} from './outreach-policy.js';
+export type {
+  OutreachBasis, OutreachChannel, OutreachChannelRules, OutreachDecision, OutreachJurisdictionPolicy, OutreachMode, OutreachPackRule, OutreachPolicy, OutreachRequest, OutreachRule, RecipientClass,
+} from './outreach-policy.js';

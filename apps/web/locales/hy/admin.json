@@ -93,7 +93,8 @@
       "federation": "Ֆեդերացիա",
       "privacy": "Գաղտնիություն",
       "staff": "Անձնակազմ և աուդիտ",
-      "ops": "Շահագործում"
+      "ops": "Շահագործում",
+      "outreach": "Դիմումներ"
     },
     "sections": {
       "home": {
@@ -222,6 +223,16 @@
         "incidents": "Միջադեպեր",
         "locales": "Լեզուներ",
         "accessibility": "Մատչելիություն"
+      },
+      "outreach": {
+        "overview": "Ակնարկ",
+        "policies": "Քաղաքականություններ",
+        "campaigns": "Արշավներ",
+        "templates": "Ձևանմուշներ",
+        "replies": "Պատասխաններ",
+        "suppression": "Արգելափակման ցուցակ",
+        "deliverability": "Առաքման արդյունավետություն",
+        "lifecycle": "Կյանքի ցիկլի սցենարներ"
       }
     },
     "common": {

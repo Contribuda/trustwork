@@ -23,7 +23,7 @@ export type SectionDef = {
 };
 export const GROUP_IDS = [
   'home', 'hub', 'participants', 'support', 'editorial', 'data', 'modules', 'trust', 'agents', 'billing', 'integrations', 'automation',
-  'communications', 'federation', 'privacy', 'staff', 'ops',
+  'communications', 'outreach', 'federation', 'privacy', 'staff', 'ops',
 ] as const;
 export type GroupId = (typeof GROUP_IDS)[number];
 export type GroupDef = { id: GroupId; sections: readonly SectionDef[] };

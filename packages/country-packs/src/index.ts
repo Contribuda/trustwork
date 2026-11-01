@@ -19,6 +19,7 @@ export * from './restricted.js';
 export * from './adapters.js';
 export { facetProblems, levelFromNotes, packProblems, scopeChain, upgradePack, validatePack, type FacetCheckContext, type LayerResolution, type PackCheck, type PackCheckOptions } from './validate.js';
 export * from './facts.js';
+export { OUTREACH_LAW_TOPICS, outreachPackRules, type OutreachLawFactView } from './outreach-law.js';
 export * from './calendar.js';
 export { BUILT_IN_PACKS, checkPackFile, enabledPacks, getPack, installPacks, packs, resetPacks, type PackFileCheck } from './registry.js';
 
@@ -77,11 +78,15 @@ export function getCountry(code: string): Country | null {
 
 const displayNames = new Map<string, Intl.DisplayNames | null>();
 
-/** Country name in a locale: the pack's own name, then `Intl.DisplayNames`, then the dataset (en, ru). */
+/**
+ * Country name in a locale: the pack's own name in that locale, then `Intl.DisplayNames`, then the pack's or the
+ * dataset's fallback (English first). A pack without the locale (UZ has no Georgian name) no longer shows English
+ * where the runtime knows the name.
+ */
 export function countryName(code: string, locale: string): string {
   const upper = code.toUpperCase();
   const pack = getPack(upper);
-  if (pack) return pick(pack.name, locale);
+  if (pack?.name[locale]) return pack.name[locale];
   const country = getCountry(upper);
   let names = displayNames.get(locale);
   if (names === undefined) {
@@ -98,6 +103,7 @@ export function countryName(code: string, locale: string): string {
   } catch {
     /* unknown region for Intl: fall through to the dataset */
   }
+  if (pack) return pick(pack.name, locale);
   return country ? pick(country.name, locale) : upper;
 }
 

@@ -4,6 +4,7 @@
  */
 export type AppMessages =
   typeof import('./en/admin.json')
+  & typeof import('./en/admin-outreach.json')
   & typeof import('./en/admin-participants.json')
   & typeof import('./en/agent-modules.json')
   & typeof import('./en/agents.json')

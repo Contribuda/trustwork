@@ -93,7 +93,8 @@
       "federation": "ფედერაცია",
       "privacy": "კონფიდენციალურობა",
       "staff": "პერსონალი და აუდიტი",
-      "ops": "ექსპლუატაცია"
+      "ops": "ექსპლუატაცია",
+      "outreach": "მიმართვები"
     },
     "sections": {
       "home": {
@@ -222,6 +223,16 @@
         "incidents": "ინციდენტები",
         "locales": "ენები",
         "accessibility": "ხელმისაწვდომობა"
+      },
+      "outreach": {
+        "overview": "მიმოხილვა",
+        "policies": "პოლიტიკები",
+        "campaigns": "კამპანიები",
+        "templates": "შაბლონები",
+        "replies": "პასუხები",
+        "suppression": "დაბლოკვის სია",
+        "deliverability": "მიწოდებადობა",
+        "lifecycle": "სასიცოცხლო ციკლის სცენარები"
       }
     },
     "common": {

@@ -39,3 +39,10 @@ test('money formats for any ISO currency with the right minor units', () => {
   assert.match(formatMoney('123456', 'JPY', 'en'), /123,456/);
   assert.match(formatMoney('123456', 'EUR', 'en'), /1,234\.56/);
 });
+
+test('a pack without a name in the locale uses Intl before the English fallback', () => {
+  assert.equal(countryName('UZ', 'uz-Latn'), 'Oʻzbekiston', 'the pack name in its own locale');
+  assert.equal(countryName('UZ', 'ka'), new Intl.DisplayNames(['ka'], { type: 'region' }).of('UZ'), 'Georgian from Intl, not "Uzbekistan"');
+  assert.notEqual(countryName('UZ', 'ka'), 'Uzbekistan');
+  assert.equal(countryName('UZ', 'en'), 'Uzbekistan');
+});

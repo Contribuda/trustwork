@@ -102,6 +102,11 @@ test('coverage counts every namespace', () => {
   const reference = coverage('en');
   const perNamespace = appNamespaces().reduce((sum, namespace) => sum + JSON.stringify(appNamespace('en', namespace)).match(/":\s*(?:"|\[)/g)!.length, 0);
   assert.equal(reference.total, perNamespace);
-  for (const tag of appLocales()) assert.deepEqual(coverage(tag), { total: reference.total, translated: reference.total }, `${tag} is complete`);
+  // Russian is not maintained (ADR 009 decision 11): it is counted, but only the maintained languages must be complete.
+  for (const tag of appLocales()) {
+    const counted = coverage(tag);
+    assert.equal(counted.total, reference.total, `${tag} counts every key`);
+    if (tag !== 'ru') assert.equal(counted.translated, reference.total, `${tag} is complete`);
+  }
   assert.deepEqual(coverage('xx-unknown'), { total: reference.total, translated: 0 });
 });

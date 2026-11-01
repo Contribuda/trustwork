@@ -61,8 +61,8 @@ async function expectNoEnglish(page: Page) {
     .replace(/\b[A-Z]{2}(?:-[A-Z0-9]{1,3})?\b/g, ' ')
     .replace(LATIN_OK, ' ');
   const latin = text.match(/\b[A-Za-z]{3,}\b/g) ?? [];
-  expect(latin, `English copy found: ${[...new Set(latin)].join(', ')}`).toEqual([]);
-  expect(text).toMatch(/[А-Яа-яЁё]{3,}/);
+  expect(latin, `${page.url()}: English copy found: ${[...new Set(latin)].join(', ')}`).toEqual([]);
+  expect(text).toMatch(/[\u10A0-\u10FF]{3,}/); // Georgian script: the page really is localized
 }
 
 test.describe('hub console product screens (English)', () => {
@@ -169,7 +169,10 @@ test.describe('hub console product screens (English)', () => {
   });
 });
 
-test.describe('hub console product screens in Russian', () => {
+test.describe('hub console product screens in Georgian', () => {
+  // Russian is not maintained (ADR 009 decision 11) and falls back to English; Georgian is a maintained non-Latin
+  // language, so any Latin word on these screens is English copy that escaped the locale files.
+  test.use({ storageState: { cookies: [cookie('trustwork.locale', 'ka'), cookie('trustwork.country', 'UZ')], origins: [] } });
   test('no English copy on the agent, billing, module and communications screens', async ({ page }) => {
     const paths = [
       at(`${US}/agents/modules`, 'hub-owner'),
@@ -189,7 +192,7 @@ test.describe('hub console product screens in Russian', () => {
       await expectNoEnglish(page);
     }
     await page.goto(at(`${US}/agents/usage`, 'hub-owner'));
-    await expect(page.getByTestId('usage-table')).toContainText('меньше 10');
+    await expect(page.getByTestId('usage-table')).toContainText('10-ზე ნაკლები');
   });
 });
 

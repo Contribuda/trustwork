@@ -190,7 +190,10 @@ test.describe('HUBC-004 in English', () => {
   });
 });
 
-test.describe('HUBC-004 in Russian', () => {
+test.describe('HUBC-004 in Georgian', () => {
+  // Russian is not maintained (ADR 009 decision 11) and falls back to English; Georgian is a maintained non-Latin
+  // language, so any Latin word on these screens is English copy that escaped the locale files.
+  test.use({ storageState: { cookies: [cookie('trustwork.locale', 'ka'), cookie('trustwork.country', 'UZ')], origins: [] } });
   test('no English copy on the screens (data in another language, codes and select options excluded)', async ({ page }) => {
     for (const [path, persona] of PAGES) {
       await page.goto(at(path, persona));

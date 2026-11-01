@@ -18,6 +18,8 @@ import { STEP_SLUGS } from '../../../../apps/web/app/admin/setup/steps.js';
 
 const LOCALES = resolve('apps/web/locales');
 const CODE = resolve('apps/web/app/admin');
+/** Languages that are not maintained and fall back to English key by key (ADR 009 decision 11). */
+const UNMAINTAINED = new Set(['ru']);
 const tags = readdirSync(LOCALES).filter((name) => statSync(join(LOCALES, name)).isDirectory());
 
 function leaves(node: unknown, path = ''): Array<[string, string]> {
@@ -86,7 +88,8 @@ test('value families built from contract vocabularies are complete', () => {
 test('every language defines exactly the English keys, with the same placeholders', () => {
   for (const tag of tags) {
     const dict = dictionary(tag);
-    assert.deepEqual([...en.keys()].filter((k) => !dict.has(k)), [], `${tag}: missing keys`);
+    // Russian is not maintained (ADR 009 decision 11): its missing keys fall back to English; it may not invent keys.
+    if (!UNMAINTAINED.has(tag)) assert.deepEqual([...en.keys()].filter((k) => !dict.has(k)), [], `${tag}: missing keys`);
     assert.deepEqual([...dict.keys()].filter((k) => !en.has(k)), [], `${tag}: keys not in English`);
     for (const [key, value] of dict) {
       const names = (s: string) => [...s.matchAll(/\{(\w+)[,}]/g)].map((m) => m[1]).sort();

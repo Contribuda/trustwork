@@ -54,6 +54,15 @@ import { screen as communicationsSenders } from '../hubs/[hub]/communications/se
 import { screen as communicationsTemplates } from '../hubs/[hub]/communications/templates/_screen';
 import { screen as communicationsDeliverability } from '../hubs/[hub]/communications/deliverability/_screen';
 import { screen as communicationsAnnouncements } from '../hubs/[hub]/communications/announcements/_screen';
+// OUTR-004: outreach.
+import { screen as outreachOverview } from '../hubs/[hub]/outreach/_screen';
+import { screen as outreachPolicies } from '../hubs/[hub]/outreach/policies/_screen';
+import { screen as outreachCampaigns } from '../hubs/[hub]/outreach/campaigns/_screen';
+import { screen as outreachTemplates } from '../hubs/[hub]/outreach/templates/_screen';
+import { screen as outreachReplies } from '../hubs/[hub]/outreach/replies/_screen';
+import { screen as outreachSuppression } from '../hubs/[hub]/outreach/suppression/_screen';
+import { screen as outreachDeliverability } from '../hubs/[hub]/outreach/deliverability/_screen';
+import { screen as outreachLifecycle } from '../hubs/[hub]/outreach/lifecycle/_screen';
 
 /** Every built hub console screen; sections with status `demo` in their group file must have one here (tested). */
 export const SCREENS: readonly Screen[] = [
@@ -63,6 +72,8 @@ export const SCREENS: readonly Screen[] = [
   moderation, disputes, reputation, appeals, screening, confirmations,
   // HUBC-005
   modulesProjects, modulesPlanner, modulesMarketplace, modulesKnowledgeSharing, modulesEvents, modulesLearning, modulesMatching, modulesCommerce, agentsModules, agentsPolicy, agentsExtensions, agentsExternal, agentsUsage, agentsAbuse, billingOffers, billingPrices, billingInvoices, billingPayouts, billingCredits, billingTax, communicationsSenders, communicationsTemplates, communicationsDeliverability, communicationsAnnouncements,
+  // OUTR-004
+  outreachOverview, outreachPolicies, outreachCampaigns, outreachTemplates, outreachReplies, outreachSuppression, outreachDeliverability, outreachLifecycle,
 ];
 
 export function screenFor(groupId: string, sectionId: string): Screen | null {
