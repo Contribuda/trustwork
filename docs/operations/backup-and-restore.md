@@ -135,3 +135,11 @@ Designed, not implemented. Railway volumes belong to one service, so the spool c
 - Provider receipt exports exist only as the journal format and the drill's fake; each provider adapter needs an export or lookup.
 - Retrieval generations and federation tombstones (RAG, FED packages) join the replay step when they exist.
 - Manual restore exercises with a witness, and restore of production-sized data, remain separate evidence.
+
+## PRV-001 compatibility boundary
+
+The existing restore CLI and FILE-001 tombstone workflow remain available for installations that have never enabled PRV-001 subject erasure. There is no production subject-erasure executor or activation path in this release. The CLI does not select the new local privacy journal from environment variables or silently create a temporary journal.
+
+The separate `authorizeLocalPrivacyRestore` entry point is a local proof with a trusted, independently provisioned retained-authority binding, checkpoint verification, a cross-process freeze held through commit and fence lift, and a permanent journal seal. It is not production integration. An erasure-enabled installation must never fall back to the legacy CLI: absence of receipts in an old database does not prove absence of erasure decisions. Production enablement requires a retained installation registry enforced by every startup, writer and restore; it remains unavailable. Keep such installations fenced until their original authority is recovered and a complete recovery path is verified.
+
+See [Privacy implementation coverage](../data/privacy-operations.md#compatibility-and-irreversible-retention-boundary) for retention obligations, process-death behavior and the incomplete production integration. Local test proof does not replace the physical backup drill or whole-subject acceptance.
