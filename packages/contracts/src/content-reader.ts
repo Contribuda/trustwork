@@ -96,4 +96,3 @@ export const PublicDigestSchema = z.strictObject({
     z.strictObject({ position: z.int(), homeNode: z.string(), globalId: z.string(), version: z.int(), withheld: z.literal(true) }),
   ])),
 });
-
