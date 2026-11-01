@@ -1126,3 +1126,27 @@ export const ScreeningConsoleRunSchema = z.strictObject({
   blockedReason: z.literal('lists_unavailable').nullable(),
   progress: z.strictObject({ subjectsDone: z.int().min(10), subjectsTotal: z.int().min(10) }).nullable(),
 });
+
+
+/** SANC-006 list authority: source, adapter and paths come only from the maintenance-installed catalogue. */
+export const ScreeningListConfigurationSchema = z.strictObject({
+  hubId: z.uuid(), sourceId: z.uuid(),
+  cadenceSeconds: z.int().min(60).max(604800),
+  warnAfterSeconds: z.int().min(120).max(1209599),
+  staleAfterSeconds: z.int().min(180).max(1209600),
+  reason: z.string().trim().min(1).max(500),
+  evidence: z.enum(['official_export', 'source_review']),
+}).refine((v) => v.cadenceSeconds <= v.warnAfterSeconds && v.warnAfterSeconds < v.staleAfterSeconds, { message: 'cadence <= warning < stale is required' });
+export const ScreeningListDecisionSchema = z.strictObject({
+  decision: z.enum(['approve', 'reject']), actionDigest: z.string().regex(/^[0-9a-f]{64}$/),
+  reason: z.string().trim().min(1).max(500),
+});
+export const ScreeningListStatusCommandSchema = z.strictObject({ status: z.enum(['active', 'paused']), reason: z.string().trim().min(1).max(500) });
+export const ScreeningListConfirmCommandSchema = z.strictObject({ reason: z.string().trim().min(1).max(500) });
+export const ScreeningListAuthoritySchema = z.strictObject({
+  sources: z.array(z.strictObject({ id: z.uuid(), packCode: z.string(), packVersion: z.string(), factId: z.string(), code: z.string(), sourceDigest: z.string(), adapter: z.string() })),
+  proposals: z.array(z.strictObject({ id: z.uuid(), hubId: z.uuid(), sourceId: z.uuid(), requestedBy: z.uuid(),
+    actionDigest: z.string(), state: z.enum(['pending', 'approved', 'rejected']), createdAt: z.iso.datetime(), expiresAt: z.iso.datetime(),
+    cadenceSeconds: z.int(), warnAfterSeconds: z.int(), staleAfterSeconds: z.int(), reason: z.string(), evidence: z.string(),
+  })),
+});

@@ -15,6 +15,7 @@ import { SecondFactorService } from './second-factor/second-factor.service.js';
 import { JurisdictionGeolocationController } from '../jurisdiction/geolocation.controller.js';
 import { JurisdictionHoldsController, JurisdictionRelayController } from '../jurisdiction/jurisdiction.controller.js';
 import { ScreeningConsoleController } from '../screening/console.controller.js';
+import { ScreeningListAuthorityController } from '../screening/list-authority.controller.js';
 import { ScreeningRescreenController } from '../screening/rescreen.controller.js';
 import { ScreeningSelfController, ScreeningStaffController } from '../screening/screening.controller.js';
 
@@ -51,7 +52,7 @@ export class IdentityModule {
       // The jurisdiction gate's relay and staff routes (SANC-001) live with identity: a hold is part of admission. So do
       // the screening routes (SANC-003): a confirmed match suspends the account, and staff decide behind an elevation.
       controllers: [AuthController, MeController, CompaniesController, MeSecondFactorController, SecondFactorLoginController, AdminSessionController, SupportSecondFactorController, JurisdictionGeolocationController, JurisdictionHoldsController, JurisdictionRelayController,
-        ScreeningConsoleController, ScreeningRescreenController, ScreeningSelfController, ScreeningStaffController],
+        ScreeningConsoleController, ScreeningListAuthorityController, ScreeningRescreenController, ScreeningSelfController, ScreeningStaffController],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },
         { provide: AuthService, useValue: services.auth },

@@ -200,6 +200,28 @@
         "lateMatches": "Late reviews",
         "notSamePersonShare": "Not-the-same-person share",
         "gateRefusals": "Gate refusals by kind"
+      },
+      "listControls": {
+        "title": "Additional list configuration",
+        "boundary": "The baseline stays on. File imports use registered country-pack facts and implemented adapters. Another compliance officer approves the exact configuration. Live downloads require separate provider authority and are unavailable here.",
+        "propose": "Propose file list configuration",
+        "source": "Registered source",
+        "cadence": "Refresh interval (seconds)",
+        "warning": "Warning age (seconds)",
+        "stale": "Stale age (seconds)",
+        "exportEvidence": "Official export checked",
+        "reviewEvidence": "Source fact reviewed",
+        "noSources": "No eligible export source is registered. Query adapters and unreviewed facts cannot be used as list imports.",
+        "history": "Configuration history",
+        "approve": "Approve list configuration",
+        "pause": "Pause additional list",
+        "resume": "Resume additional list",
+        "confirmVersion": "Confirm reduced list version",
+        "proposalStates": {
+          "pending": "Pending",
+          "approved": "Approved",
+          "rejected": "Rejected"
+        }
       }
     }
   }

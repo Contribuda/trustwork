@@ -250,6 +250,11 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.appeal_file': IN_TRANSACTION,
   // SANC-007: append routing history, move the versioned pointer and audit atomically.
   'screening.appeal_reassign': IN_TRANSACTION,
+  // SANC-006: list authority commands complete with their audit in the request transaction.
+  'screening.list_confirm': IN_TRANSACTION,
+  'screening.list_decide': IN_TRANSACTION,
+  'screening.list_propose': IN_TRANSACTION,
+  'screening.list_status': IN_TRANSACTION,
   'screening.match_confirm': IN_TRANSACTION,
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,

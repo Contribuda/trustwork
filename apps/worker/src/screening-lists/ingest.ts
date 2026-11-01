@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { checkListSanity, type ListIngestOutcome } from '../../../../packages/contracts/src/sanctions.js';
 import { findListAdapter, listDigest, MalformedListError, type ParsedList } from '../../../../packages/compliance/src/lists/index.js';
 import { screeningListWorker } from '../../../../packages/data/src/repositories/screening-lists.js';
@@ -34,6 +35,8 @@ export async function ingestList(trx: Transaction, listId: string, deps: IngestD
     return { listId, code: list.code, outcome, versionId, error };
   };
   if (list.status !== 'active') return finish('refused', 'list_paused', null);
+  const authority = await sql<{ current: boolean }>`SELECT trustwork.screening_list_source_current(${listId}::uuid) AS current`.execute(trx);
+  if (!authority.rows[0]?.current) return finish('refused', 'source_authority_retired', null);
   const adapter = findListAdapter(list.adapter);
   if (!adapter) return finish('refused', `unknown_adapter:${list.adapter}`, null);
 
