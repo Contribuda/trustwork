@@ -232,6 +232,9 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
       };
       try {
         const sent = await inTransaction(pool, async (trx) => {
+          // Feedback locks mail before inserting suppression. Keep that order through the fake/provider call,
+          // so a concurrent complaint cannot hold mail while waiting for our shared suppression lock.
+          await mailDeliveries.lockForDelivery(trx, delivery.id);
           if (!(await consultationCommunications.mailAllowed(trx, delivery.id, runtime.consultationHubId ?? null))) {
             await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'consultation access revoked');
             return false;

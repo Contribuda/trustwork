@@ -3,6 +3,7 @@ import { createPool } from '@trustwork/data';
 import type { PoolConfig } from 'pg';
 import { buildRegistry } from '../../../apps/worker/src/main.js';
 import { consultationRemindersTask, produceReminder, ReminderChannelFake } from '../../../apps/worker/src/consultations/reminders.js';
+import { Scheduler } from '../../../apps/worker/src/scheduler.js';
 import { inTransaction } from '../../../apps/worker/src/db.js';
 import { FakeMailTransport, mailConfigFromEnv } from '../../../apps/worker/src/mail/index.js';
 import { Metrics, silentLogger, Worker } from '../../../apps/worker/src/index.js';
@@ -34,7 +35,7 @@ process.on('message', (command: Command) => {
       const worker = new Worker({ pool, registry, metrics: new Metrics(), tasks: () => [], config: { concurrency: 1, pollIntervalMs: 10 } });
       execute = async (c) => {
         if (c.action === 'produce') return inTransaction(pool, (trx) => produceReminder(trx, runtime, c.reminderId!));
-        if (c.action === 'tick') return consultationRemindersTask(runtime).run();
+        if (c.action === 'tick') return new Scheduler({ pool, registry, config: worker.config, metrics: new Metrics(), log: silentLogger }, [consultationRemindersTask(runtime)]).tick();
         if (c.action === 'close') { await worker.stop(1000); await pool.end(); return null; }
         holdId = c.holdId;
         await drain(worker);

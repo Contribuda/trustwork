@@ -16,6 +16,7 @@ import type { BookingView, ExpertRequestView, RequesterRequestView } from '../..
 import { ENGINE_TEMPLATE_LANGUAGES, ThreadSchema, ThreadViewSchema } from '../../packages/contracts/src/communications.js';
 import { consultationRemindersTask, produceReminder, ReminderChannelFake, type ReminderRuntime } from '../../apps/worker/src/consultations/reminders.js';
 import { inTransaction } from '../../apps/worker/src/db.js';
+import { applyFeedback } from '../../apps/worker/src/mail/delivery.js';
 import { buildRegistry } from '../../apps/worker/src/main.js';
 import { FakeMailTransport, mailConfigFromEnv } from '../../apps/worker/src/mail/index.js';
 import { Metrics, silentLogger, Worker } from '../../apps/worker/src/index.js';
@@ -357,7 +358,8 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
       assert.equal(await processA.command('produce', { reminderId: dueId(legacy) }), false);
       // Even the SQL producer independently refuses the wrong hub.
       assert.deepEqual(await tx((trx) => comms.produce(trx, dueId(b), hubId, 'Wrong hub copy')), []);
-      await Promise.all([processA.command('produce', { reminderId: dueId(a) }), processB.command('produce', { reminderId: dueId(b) })]);
+      const ticks = await Promise.all([processA.command<string[]>('tick'), processB.command<string[]>('tick')]);
+      assert.deepEqual(ticks, [[`consultation.reminders.${hubId}`], [`consultation.reminders.${otherHub}`]], 'both source hubs own an independent scheduler slot');
       const messages = (await h.db.admin.query('SELECT r.id,m.body FROM trustwork.consultation_reminder r JOIN trustwork.message m ON m.id=r.message_id WHERE r.id=ANY($1::uuid[])', [[dueId(a), dueId(b)]])).rows;
       assert.equal(messages.find((r) => r.id === dueId(a)).body, texts.en!.body);
       assert.equal(messages.find((r) => r.id === dueId(b)).body, `B ${texts.en!.body}`);
@@ -489,5 +491,27 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
       } finally { child.release(); await child.close(); }
     });
   }
+
+
+  await t.test('complaint feedback waits for final mail dispatch without a mail/suppression lock inversion', async () => {
+    const b = await book();
+    await tx((trx) => produceReminder(trx, runtime, dueId(b)));
+    const effectId = (await h.db.admin.query("SELECT d.mail_delivery_id FROM trustwork.consultation_reminder r JOIN trustwork.notification n ON n.dedupe_key='message:' || r.message_id::text JOIN trustwork.delivery d ON d.notification_id=n.id WHERE r.id=$1 AND d.recipient_person_id=$2 AND d.channel='email'", [dueId(b), P.carl])).rows[0].mail_delivery_id;
+    const child = await reminderProcess(pool.options, hubId);
+    try {
+      const atEffect = child.atEffect();
+      const sending = child.command<SentEffects>('drain', { holdId: effectId });
+      await atEffect;
+      let committed = false;
+      const feedback = tx((trx) => applyFeedback(trx, { provider: 'fake', eventId: randomUUID(), kind: 'complaint', deliveryId: effectId })).then(() => { committed = true; });
+      try {
+        await waitFor(async () => (await h.db.admin.query('SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND cardinality(pg_blocking_pids(pid))>0) AS blocked')).rows[0].blocked, 10_000, 'feedback waits for dispatch mail lock');
+        assert.equal(committed, false);
+      } finally { child.release(); }
+      assert.equal((await sending).mail.filter((x) => x.id === effectId).length, 1);
+      await feedback;
+      assert.equal(await tx((trx) => comms.mailAllowed(trx, effectId, hubId)), false);
+    } finally { child.release(); await child.close(); }
+  });
 
 });
