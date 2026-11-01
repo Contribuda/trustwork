@@ -10,6 +10,9 @@ test.describe('public resource', () => {
     await expect(nav.getByRole('link')).toHaveText([...PUBLIC_NAV]);
     await expect(nav.getByRole('link', { name: 'Главная' })).toHaveAttribute('aria-current', 'page');
     await expect(page.getByRole('link', { name: 'Войти в сервис' }).first()).toBeVisible();
+    // While the banner streams in, React briefly keeps the Suspense fallback (the static banner) next to it; strict
+    // locators fail at once rather than retry, so wait until exactly one banner is left.
+    await expect(page.getByTestId('demo-banner')).toHaveCount(1);
     await expect(page.getByTestId('demo-banner')).toContainText('Демонстрация: синтетические данные');
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
