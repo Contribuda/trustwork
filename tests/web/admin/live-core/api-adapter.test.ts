@@ -145,6 +145,72 @@ test('live mode refuses every command and serves no fixture data for unwired sec
   assert.deepEqual(await p.legal(HUB_ID), { operator: null, documents: [] });
 });
 
+/* ---------- Live commands: approval decisions through the API ---------- */
+
+type Sent = { path: string; body: Record<string, unknown>; key: string };
+function commandPort(answer: { status: number; code: string | null }, extra: Routes = {}) {
+  const api = fakeApi(staffRoutes({
+    [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions: ['admin.providers.toggle'], breakglassOnly: [] },
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { items: [approval(), approval({ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', requestedBy: STAFF })] },
+    ...extra,
+  }));
+  const sent: Sent[] = [];
+  const withPost: ConsoleApi = { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return answer; } };
+  return { sent, port: createApiConsolePort({ api: withPost, siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' }) };
+}
+const decide = (fields: Record<string, string>, reason = 'Checked the provider contract') =>
+  ({ command: 'approvals.decide', hubSlug: 'san-diego', setupToken: null, reason, expectedRevision: null, fields }) as const;
+const REQUEST = '55555555-5555-4555-8555-555555555555';
+
+test('approve: the console checks first, then posts the restated digest with the same key in header and body; the API answer decides', async () => {
+  const { sent, port: p } = commandPort({ status: 200, code: null });
+  assert.deepEqual(await p.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST })), { status: 'applied' });
+  assert.deepEqual(sent, [{
+    path: `/v1/admin/approvals/${REQUEST}/approve`,
+    body: { contractVersion: '1.0.0', idempotencyKey: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', reason: 'Checked the provider contract', actionDigest: DIGEST },
+    key: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  }]);
+  const declined = commandPort({ status: 200, code: null });
+  assert.deepEqual(await declined.port.command(live, decide({ requestId: REQUEST, decision: 'decline', digest: DIGEST })), { status: 'applied' });
+  assert.equal(declined.sent[0]?.path, `/v1/admin/approvals/${REQUEST}/decline`);
+  assert.equal('actionDigest' in declined.sent[0]!.body, false);
+});
+
+test('refused before any call: another digest, one\'s own request, no reason, no elevation, a demo request, an unwired command', async () => {
+  const cases: Array<[unknown, ReturnType<typeof commandPort>]> = [];
+  const digest = commandPort({ status: 200, code: null });
+  assert.equal(((await digest.port.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: 'b'.repeat(64) }))) as { code: string }).code, 'digest_mismatch');
+  cases.push([null, digest]);
+  const own = commandPort({ status: 200, code: null });
+  assert.equal(((await own.port.command(live, decide({ requestId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', decision: 'approve', digest: DIGEST }))) as { code: string }).code, 'own_request');
+  cases.push([null, own]);
+  const reason = commandPort({ status: 200, code: null });
+  assert.equal(((await reason.port.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST }, '  '))) as { code: string }).code, 'reason_required');
+  cases.push([null, reason]);
+  const elevation = commandPort({ status: 200, code: null }, { '/v1/admin/session': () => { throw new Failure(403); } });
+  assert.equal(((await elevation.port.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST }))) as { code: string }).code, 'elevation_required');
+  cases.push([null, elevation]);
+  const demo = commandPort({ status: 200, code: null });
+  assert.deepEqual(await demo.port.command({ demo: true, persona: 'hub-owner', scenario: 'default' }, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST })), { status: 'not_found' });
+  cases.push([null, demo]);
+  const unwired = commandPort({ status: 200, code: null });
+  assert.deepEqual(await unwired.port.command(live, { command: 'identity.save', hubSlug: 'san-diego', setupToken: null, reason: 'x', expectedRevision: 1, fields: {} }), { status: 'not_found' });
+  cases.push([null, unwired]);
+  for (const [, c] of cases) assert.deepEqual(c.sent, [], 'nothing was sent');
+});
+
+test('API refusals become console refusals: forbidden, a second approver required, not found, conflict', async () => {
+  const code = async (status: number, apiCode: string | null) => {
+    const outcome = await commandPort({ status, code: apiCode }).port.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST }));
+    return outcome.status === 'rejected' ? outcome.code : outcome.status;
+  };
+  assert.equal(await code(403, 'access.forbidden'), 'denied');
+  assert.equal(await code(403, 'access.second_approver_required'), 'own_request');
+  assert.equal(await code(404, 'access.not_found'), 'not_found');
+  assert.equal(await code(409, 'validation.idempotency_conflict'), 'request_void');
+  assert.equal(await code(503, null), 'invalid');
+});
+
 test('scan: the live adapter imports no fixture module', () => {
   const source = readFileSync(resolve('apps/web/app/admin/_data/api-adapter.ts'), 'utf8');
   const imports = [...source.matchAll(/from '([^']+)'/g)].map((m) => m[1]!);

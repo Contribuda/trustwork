@@ -236,6 +236,7 @@
       }
     },
     "common": {
+      "applied": "Done: the change is recorded.",
       "demoNotSaved": "Demo: changes are not saved.",
       "demoSecondPerson": "Demo: this would create a second-person request to “{action}”; nothing is saved.",
       "reason": "Reason",
