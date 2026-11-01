@@ -227,6 +227,20 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'supplier_base.assessment_record': IN_TRANSACTION,
   'supplier_base.assessment_respond': IN_TRANSACTION,
   'supplier_base.import': IN_TRANSACTION,
+  // SUP-001: support workspace. Staff commands run their SECURITY DEFINER command (packages/data/migrations/support), audit row, notices and
+  // outbox intents in the request transaction; the person's own support routes likewise.
+  'support.case_open': IN_TRANSACTION,
+  'support.case_update': IN_TRANSACTION,
+  'support.case_note': IN_TRANSACTION,
+  'support.action_request': IN_TRANSACTION,
+  'support.action_activate': IN_TRANSACTION,
+  'support.action_execute': IN_TRANSACTION,
+  'support.action_cancel': IN_TRANSACTION,
+  'support.own_case_open': IN_TRANSACTION,
+  'support.own_case_note': IN_TRANSACTION,
+  'support.own_case_update': IN_TRANSACTION,
+  'support.diagnostics_share': IN_TRANSACTION,
+  'support.own_action_cancel': IN_TRANSACTION,
   // HUB-001: hubs, territories, versioned configuration, launch gates, lifecycle, legal documents and credential
   // references. Every route runs in one PrincipalService.runAs transaction through a hubs_* SECURITY DEFINER command that
   // writes its audit row there (a two-person action without an approval writes the approval request instead).

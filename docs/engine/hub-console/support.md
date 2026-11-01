@@ -1,6 +1,6 @@
 # Support workspace: serving users lawfully
 
-Status: **Proposed**. Contract: `SupportAccountSummarySchema`, `AccountServiceActionSchema`, `ACCOUNT_SERVICE_ACTIONS`, `COOLING_OFF_ACTIONS` in [`hub.ts`](../../../packages/contracts/src/hub.ts); `CaseAccessGrantSchema`, `AccessLogEntrySchema`, `ProjectionClassSchema` in `admin.ts`; `PolicyDecisionSchema` in `access.ts`. Screens HC-30…HC-36 in [screens](screens.md#support). Backend: proposed SUP-001.
+Status: **Live** as an API ([support module](../../../apps/api/src/modules/support/README.md), SUP-001; not deployed); the console screens are **Proposed**; the company card, communications history, data rights flows and metrics are **Proposed** (follow-ups, PRV-001 for exports and erasure). Contract: `SupportAccountSummarySchema`, `AccountServiceActionSchema`, `ACCOUNT_SERVICE_ACTIONS`, `COOLING_OFF_ACTIONS` in [`hub.ts`](../../../packages/contracts/src/hub.ts); `CaseAccessGrantSchema`, `AccessLogEntrySchema`, `ProjectionClassSchema` in `admin.ts`; `PolicyDecisionSchema` in `access.ts`. Screens HC-30…HC-36 in [screens](screens.md#support). Backend: SUP-001.
 
 People will lose access, get stuck, ask what happened to their data, and want to leave. Support must solve these problems quickly and kindly **without** becoming a back door: no staff member ever becomes the user, reads private data by default, or changes how someone signs in without evidence, a second person and time for the real owner to object.
 
