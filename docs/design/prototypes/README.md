@@ -1,6 +1,6 @@
 # Administrative prototype continuation
 
-Status: **Proposed design; package registration pending**. Agent: Codex CLI (OpenAI) for Parshkov.
+Status: **Proposed design; implementation packages open**. Agent: Codex CLI (OpenAI) for Parshkov.
 
 This continues all six stopped studies and the existing console v2 sources. The HTML files are offline interaction studies with explicitly synthetic data. They do not implement application routes, grant permissions, connect providers or establish live acceptance. Proposed ADR 019 remains Proposed. The current result and publication blockers are recorded in [the continuation report](evidence/final-continuation-result.md).
 
@@ -54,10 +54,10 @@ The older `source/l10n-work/tools/verify.mjs` now resolves generated artifacts i
 
 The checks cover the named synthetic scenarios, not every possible input/state combination. They do not establish backend authorization, concurrency, production readiness, full WCAG conformance, screen-reader acceptance, native translation accuracy or owner/maintainer design acceptance. Real implementation needs those separate checks. Inert navigation context is identified as such; simulated confirmations remain inside the persistent prototype context.
 
-## Publication dependency
+## Implementation boundary
 
-The requested `ADM-UX-001` and `ADM-UX-002` names conflict with the existing registry's ID pattern. The owner's naming/scope question remains pending. This continuation does not change that validator, assign replacement IDs, write registry entries or promote a design to accepted/live. Integration PR #399 is merged; the worker report records that verification. Preserve upstream status wording and package IDs when integrating.
+DS-005, DS-006, ADM-UX-001 and ADM-UX-002 are registered as open packages with explicit dependencies and non-overlapping paths. The literal owner-requested ADM-UX names are supported by a narrow validator/parser extension approved by the conductor as maintainer. No existing package is renamed or marked done. The historical worker reports preserve the earlier naming question; this paragraph records its resolution.
 
-See [administrative guidelines](../admin-ui-guidelines.md) and [Proposed ADR 019](../../adr/019-admin-ui-libraries.md). ADRs 015-018 retain their reservations. Handbook, status and index links are drafted in the worktree. The draft design PR preserves this finished review material. Package registry publication and merge readiness remain pending the package-ID decision. Integration PR #399 is merged; this branch was rebased without replaying duplicate inherited designs.
+See [administrative guidelines](../admin-ui-guidelines.md) and [Proposed ADR 019](../../adr/019-admin-ui-libraries.md). Integration PR #399 is merged; its inherited designs are preserved. Native-language, human screen-reader and owner visual acceptance remain separate from automated prototype evidence.
 
 Embedded script fragments and object-expression dictionaries use `.js.fragment` filenames: they are generator inputs, not standalone JavaScript modules. Their bytes are preserved; generated script syntax is checked by the prototype validator. The current executable tooling remains covered by the repository linter.

@@ -72,7 +72,7 @@ All fixtures must say synthetic. Names are examples, never accounts, testimonial
 
 ## Delivery packages
 
-These are the owner-requested package names, not registered assignments. Registry publication is pending the owner's decision: `ADM-UX-001` and `ADM-UX-002` do not match the current validator. No replacement IDs or validator changes are authorized.
+These are the owner-requested literal package names, registered as open work. The conductor approved a narrow validator and PR-reference parser extension for `ADM-UX` under the handoff maintainer role; no existing IDs were renamed. Existing dependency, claim and scope rules still apply.
 
 | Package | Responsibility | Boundary |
 |---|---|---|

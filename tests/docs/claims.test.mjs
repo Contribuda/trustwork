@@ -325,3 +325,18 @@ test('every package in the real work-packages.json can be claimed with its own p
     assert.deepEqual(parsed.fields.scope, p.paths, p.id);
   }
 });
+
+test('compound ADM-UX IDs retain exact issue, claim and PR ownership identity', () => {
+  const id = 'ADM-UX-001';
+  const fixture = { schemaVersion: 1, packages: [pkg(id, ['apps/admin-shell']), pkg('UX-001', ['apps/other-shell'])] };
+  const body = claimBody(id, 'octocat', { scope: ['apps/admin-shell'] });
+  assert.equal(packageIdFromTitle(`[WP ${id}] Synthetic shell`), id);
+  assert.equal(parseCommand(body).id, id);
+  const result = reconcile({ packages: fixture, issues: [issue(42, id, [comment('octocat', body)])], now: T0 + 60_000 });
+  assert.equal(result.claims.length, 1);
+  assert.equal(result.claims[0].package, id);
+  const pr = goodBody().replace('Work package: none · issue #12', `Work package: ${id} · issue #42`);
+  assert.deepEqual(checkPullRequest({ body: pr, author: 'octocat', packages: fixture, changedFiles: ['apps/admin-shell/index.ts'] }), { errors: [], warnings: [] });
+  assert.match(checkPullRequest({ body: pr.replace(id, 'UX-001'), author: 'octocat', packages: fixture, changedFiles: ['apps/admin-shell/index.ts'] }).errors.join('\n'), /ADM-UX-001/);
+  assert.match(checkPullRequest({ body: pr.replace(id, 'ADM-UX-999'), author: 'octocat', packages: fixture }).warnings.join('\n'), /ADM-UX-999 is not a work package id/);
+});

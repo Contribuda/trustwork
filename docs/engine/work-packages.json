@@ -12954,6 +12954,154 @@
         "packages/country-packs/procurement",
         "tests/country-packs/procurement"
       ]
+    },
+    {
+      "id": "DS-005",
+      "title": "Shared administrative shell and responsive navigation compositions",
+      "area": "design-system",
+      "status": "open",
+      "dependsOn": [
+        "DS-003"
+      ],
+      "handbook": "docs/design/admin-ui-guidelines.md",
+      "goal": "Compose the existing accessible primitives into the proposed console shell without duplicating domain authority.",
+      "read": [
+        "docs/design/admin-ui-guidelines.md",
+        "docs/adr/019-admin-ui-libraries.md",
+        "docs/design/prototypes/README.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Build shared shell, header, contextual navigation and responsive menu compositions using existing tokens and primitives.",
+        "Preserve one avatar, one participant company and one assistant; staff scope switches never impersonate participants.",
+        "Provide seven-language messages, keyboard stories and narrow-screen evidence."
+      ],
+      "acceptance": [
+        "All seven languages fit at 375 and 1280 px without whole-document overflow.",
+        "Menu and palette focus returns correctly; landmarks and current location are announced.",
+        "No root dependency, hard-coded brand, domain permission or new authorization path is introduced."
+      ],
+      "paths": [
+        "packages/ui/src/components/AdminShell",
+        "packages/ui/stories/admin-shell",
+        "packages/ui/tests/unit/admin-shell"
+      ]
+    },
+    {
+      "id": "DS-006",
+      "title": "Shared administrative review and recovery compositions",
+      "area": "design-system",
+      "status": "open",
+      "dependsOn": [
+        "DS-003",
+        "DS-005"
+      ],
+      "handbook": "docs/design/admin-ui-guidelines.md",
+      "goal": "Give console domains reusable loading, forbidden, second-person review and unknown-outcome states with unchanged authority semantics.",
+      "read": [
+        "docs/design/admin-ui-guidelines.md",
+        "docs/adr/019-admin-ui-libraries.md",
+        "docs/design/prototypes/README.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Compose existing review, reason, audit and approval primitives into operational state layouts.",
+        "Keep saving, requesting approval, activation and reconciliation distinct.",
+        "Provide locale-complete examples and keyboard, status-announcement and focus tests."
+      ],
+      "acceptance": [
+        "Unknown outcomes never render as success or encourage a blind retry.",
+        "Unavailable and forbidden states reveal no private object fields.",
+        "Second-person, stale-digest and required-reason states remain usable by keyboard at 375 px in every language."
+      ],
+      "paths": [
+        "packages/ui/src/components/AdminOperationState",
+        "packages/ui/src/components/AdminReviewFlow",
+        "packages/ui/stories/admin-operation-states",
+        "packages/ui/tests/unit/admin-operation-states"
+      ]
+    },
+    {
+      "id": "ADM-UX-001",
+      "title": "Apply the administrative shell to the existing console",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "DS-005",
+        "ADM-002",
+        "HUBC-020"
+      ],
+      "handbook": "docs/design/admin-ui-guidelines.md",
+      "goal": "Apply the reviewed shell compositions to the existing administrative routes while preserving their data adapters and permission checks.",
+      "read": [
+        "docs/design/admin-ui-guidelines.md",
+        "docs/adr/019-admin-ui-libraries.md",
+        "docs/design/prototypes/README.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Replace the console shell and responsive navigation presentation using DS-005 and HUBC-020.",
+        "Preserve deep links, real versus fixture mode, scoped staff identity, the account menu and all existing domain routes.",
+        "Add dedicated seven-language shell copy and focused keyboard, mobile, no-impersonation and denied-scope regression evidence."
+      ],
+      "acceptance": [
+        "Existing routes and deep links remain reachable with the same authorization and data adapter.",
+        "All seven locales fit at 375 and 1280 px; keyboard menu/palette and focus restoration pass.",
+        "One avatar and no participant agent-management or company-switcher surface is introduced."
+      ],
+      "paths": [
+        "apps/web/app/admin/layout.tsx",
+        "apps/web/app/admin/admin.css",
+        "apps/web/app/admin/_components/shell.tsx",
+        "apps/web/app/admin/_components/NavSheet.tsx",
+        "apps/web/locales/en/admin-shell.json",
+        "apps/web/locales/es/admin-shell.json",
+        "apps/web/locales/ru/admin-shell.json",
+        "apps/web/locales/uz-Latn/admin-shell.json",
+        "apps/web/locales/ka/admin-shell.json",
+        "apps/web/locales/hy/admin-shell.json",
+        "apps/web/locales/az-Latn/admin-shell.json",
+        "tests/web/admin/ux-shell"
+      ]
+    },
+    {
+      "id": "ADM-UX-002",
+      "title": "Integrate administrative review journeys and acceptance evidence",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-UX-001",
+        "DS-006",
+        "HUBC-008",
+        "HUBC-009",
+        "HUBC-010",
+        "HUBC-012",
+        "HUBC-024",
+        "OUTR-004"
+      ],
+      "handbook": "docs/design/admin-ui-guidelines.md",
+      "goal": "Integrate shared operational journeys across completed domain screens without replacing their domain authority or API adapters.",
+      "read": [
+        "docs/design/admin-ui-guidelines.md",
+        "docs/adr/019-admin-ui-libraries.md",
+        "docs/design/prototypes/README.md",
+        "docs/engine/hub-console/console-design.md"
+      ],
+      "steps": [
+        "Add shared journey compositions and integration evidence for completed domain routes, coordinating any owning-route edits in their issues.",
+        "Carry reason, current digest, second-person, private-denial and unknown-outcome states through actual API-backed flows.",
+        "Record seven-language responsive, keyboard and human accessibility review evidence; preserve unfinished domain status."
+      ],
+      "acceptance": [
+        "A domain integration cannot turn fixture-only or unavailable behavior into a live acceptance claim.",
+        "Negative authorization, stale-digest, self-approval and concurrent-decision tests cover each adopted authority flow.",
+        "Every integrated journey has non-English phone screenshots and explicit native-language and screen-reader review status."
+      ],
+      "paths": [
+        "apps/web/app/admin/_journeys",
+        "tests/web/admin/ux-journeys",
+        "docs/design/admin-ux-acceptance"
+      ]
     }
   ]
 }

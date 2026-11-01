@@ -29,7 +29,7 @@ ADR numbers 015 (editorial), 016 (exchange), 017 (outreach) and 018 (operating c
 
 ## Consequences
 
-The names below are the requested draft package names. Registry publication is blocked on the owner's decision about the incompatible `ADM-UX-001` and `ADM-UX-002` IDs; this proposal does not register or rename them.
+The names below are the owner-requested literal package names, registered as open. The conductor approved a narrow `ADM-UX` validator/parser extension; existing IDs and claim rules are unchanged.
 
 DS-005 covers shell/navigation compositions; DS-006 covers operational states and recovery. ADM-UX-001 applies the shell, and ADM-UX-002 connects completed domain journeys. Existing packages keep their scope and status. Their acceptance includes 375 px layouts, all seven locales, keyboard and screen-reader evidence, offline asset policy and real negative authorization/concurrency tests where authority is involved.
 
