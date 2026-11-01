@@ -1,0 +1,142 @@
+[
+  {
+    "tag": "en",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 221.609375,
+        "height": 44
+      },
+      {
+        "width": 145.53125,
+        "height": 44
+      },
+      {
+        "width": 181.84375,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  },
+  {
+    "tag": "es",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 209.609375,
+        "height": 44
+      },
+      {
+        "width": 172.328125,
+        "height": 44
+      },
+      {
+        "width": 247.53125,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  },
+  {
+    "tag": "ru",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 190.640625,
+        "height": 44
+      },
+      {
+        "width": 171.609375,
+        "height": 44
+      },
+      {
+        "width": 214.5625,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  },
+  {
+    "tag": "uz-Latn",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 204,
+        "height": 44
+      },
+      {
+        "width": 178.640625,
+        "height": 44
+      },
+      {
+        "width": 186.96875,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  },
+  {
+    "tag": "ka",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 241.140625,
+        "height": 44
+      },
+      {
+        "width": 248.265625,
+        "height": 44
+      },
+      {
+        "width": 285.375,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  },
+  {
+    "tag": "hy",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 235.234375,
+        "height": 44
+      },
+      {
+        "width": 235.390625,
+        "height": 44
+      },
+      {
+        "width": 241.703125,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  },
+  {
+    "tag": "az-Latn",
+    "width": 1280,
+    "targets": [
+      {
+        "width": 182.421875,
+        "height": 44
+      },
+      {
+        "width": 172.40625,
+        "height": 44
+      },
+      {
+        "width": 150.890625,
+        "height": 44
+      }
+    ],
+    "axeViolations": 0,
+    "horizontalOverflow": false
+  }
+]
