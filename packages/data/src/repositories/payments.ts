@@ -4,11 +4,17 @@ import type { PaymentEvidence, PaymentInstruction } from '../../../contracts/src
 import { PaymentViewSchema } from '../../../contracts/src/payments.js';
 
 export const payments = {
+  async expireCustomerAction(trx: Transaction, operationId: string): Promise<void> {
+    await sql`SET LOCAL statement_timeout = '5s'`.execute(trx);
+    await sql`SELECT trustwork.payments_expire_customer_action(${operationId}::uuid)`.execute(trx);
+  },
   async reconcileRecorded(trx: Transaction, operationId: string): Promise<string | null> {
+    await sql`SET LOCAL statement_timeout = '5s'`.execute(trx);
     const r = await sql<{ value: string | null }>`SELECT trustwork.payments_reconcile_recorded(${operationId}::uuid) AS value`.execute(trx);
     return r.rows[0]?.value ?? null;
   },
   async reconcileDue(trx: Transaction): Promise<string[]> {
+    await sql`SET LOCAL statement_timeout = '5s'`.execute(trx);
     return (await sql<{ id: string }>`SELECT trustwork.payments_reconcile_due() AS id`.execute(trx)).rows.map((r) => r.id);
   },
   async request(trx: Transaction, agreementId: string, budgetId: string, sessionId: string) {
@@ -39,6 +45,7 @@ export const payments = {
     await sql`SELECT trustwork.payments_dispatch_guard(${operationId}::uuid,${jobId}::uuid,${fence}::bigint,${attempt})`.execute(trx);
   },
   async instruction(trx: Transaction, operationId: string): Promise<PaymentInstruction | null> {
+    await sql`SET LOCAL statement_timeout = '5s'`.execute(trx);
     const r = await sql<{ value: PaymentInstruction | null }>`SELECT trustwork.payments_instruction(${operationId}::uuid) AS value`.execute(trx);
     return r.rows[0]?.value ?? null;
   },

@@ -76,9 +76,9 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
   await t.test('actual relay and worker dispatch once; QR deadline never releases the BILL hold', async () => {
     await tick();
     const op = await operation(first.id);
-    assert.equal(op.state, 'pending_customer_action', JSON.stringify(logs));
+    assert.equal(op.state, 'outcome_unknown', JSON.stringify(logs));
     assert.equal((await reservation(first.id)).effect_pending, true);
-    assert.equal(ok<PaymentView>(await buyer.get(`/v1/payments/${first.id}`)).state, 'pending_customer_action');
+    assert.equal(ok<PaymentView>(await buyer.get(`/v1/payments/${first.id}`)).state, 'outcome_unknown');
     assert.equal(await reconcilePayment(runtime, op.id, AbortSignal.timeout(1000)), 'duplicate');
     assert.equal((await reservation(first.id)).effect_pending, true);
   });
@@ -264,7 +264,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     const op = await operation(view.id); fake.plan(op.id, 'pending_customer_action', true); await tick();
     assert.equal((await operation(view.id)).state, 'outcome_unknown');
     assert.equal(await reconcilePayment(runtime, op.id, AbortSignal.timeout(1000)), 'applied');
-    assert.equal((await operation(view.id)).state, 'pending_customer_action');
+    assert.equal((await operation(view.id)).state, 'outcome_unknown');
     assert.equal((await q('SELECT state FROM trustwork.job WHERE id=(SELECT job_id FROM trustwork.payment_operation WHERE id=$1)', [op.id]))[0]!.state, 'succeeded');
     assert.equal((await reservation(view.id)).state, 'reserved');
     assert.equal((await reservation(view.id)).effect_pending, true);

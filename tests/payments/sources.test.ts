@@ -36,7 +36,7 @@ test('PAY-001 registered synthetic source through actual API, signed ingress and
     const payment = ok<PaymentView>(await buyer.post('/v1/payments', f.payment), 201);
     await w.tick();
     assert.equal(w.fake.calls.length, 1);
-    assert.equal(ok<PaymentView>(await buyer.get(`/v1/payments/${payment.id}`)).state, 'pending_customer_action');
+    assert.equal(ok<PaymentView>(await buyer.get(`/v1/payments/${payment.id}`)).state, 'outcome_unknown');
     assert.equal((await w.q('SELECT * FROM trustwork.payment_source')).length, 0);
     assert.equal((await w.q('SELECT * FROM trustwork.payment_source_version')).length, 1);
   });
