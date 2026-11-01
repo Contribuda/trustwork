@@ -156,6 +156,11 @@ export function matchView(row: ScreeningMatchRow, decisions: readonly ScreeningD
 }
 
 export const screeningStaff = {
+  /** Exact lookup in the existing staff-only state table, with no participant/profile join or bypass of RLS. */
+  subjectStateFor(trx: Transaction, subject: ScreeningSubjectRef): Promise<ScreeningSubjectStateRow | undefined> {
+    return trx.selectFrom('screening_subject_state').selectAll()
+      .where(subject.kind === 'person' ? 'subject_person_id' : 'subject_company_id', '=', subject.id).executeTakeFirst();
+  },
   /** One queue item per subject with matches waiting for a reviewer, oldest first; late after the service level. */
   async queue(trx: Transaction, input: { serviceLevelDays: number; now: Date; limit?: number }): Promise<ScreeningQueueItem[]> {
     const rows = await trx.selectFrom('screening_match as m')

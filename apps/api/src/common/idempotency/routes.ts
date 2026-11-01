@@ -236,11 +236,13 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'assistant.backlog_status': IN_TRANSACTION,
   // SANC-003: screening review cases. Every decision, its second-person approval, the suspension, the report draft, the
   // audit row and the outbox events commit in the request transaction; the subject's appeal likewise.
+  'screening.appeal_decide': IN_TRANSACTION,
   'screening.appeal_file': IN_TRANSACTION,
   'screening.match_confirm': IN_TRANSACTION,
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
-  'screening.appeal_decide': IN_TRANSACTION,
+  // SANC-006: manual re-screen request and audit complete in the same transaction as the response.
+  'screening.rescreen_request': IN_TRANSACTION,
   // SRC-001: the hub source registry. Every route runs in one PrincipalService.runAs transaction through a sources_*
   // SECURITY DEFINER command that writes its audit row there (the item decision also writes the CNT-001 draft there; the
   // read-only robots.txt, RSL and drafter adapter calls happen inside it, bounded by a timeout, and are never recorded

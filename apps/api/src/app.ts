@@ -154,7 +154,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     return name === 'google' ? new GoogleOidcProvider(client) : new AppleSignInProvider(client);
   };
   const ctx: AppContext | null = pool ? {
-    config, pool, clock,
+    config, pool, clock, ...(jurisdictionGate ? { jurisdictionGate } : {}),
     mail: options.mail ?? new OutboxMail(mailSecretKeyFromEnv(env)),
     providers: { google: providerFor('google'), apple: providerFor('apple') },
     mandates: options.mandates ?? new AssistantMandateRevocation(pool),

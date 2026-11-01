@@ -1084,3 +1084,45 @@ export const RescreenRunFinishedEventSchema = z.strictObject({
   runId: IdSchema, trigger: RescreenTriggerSchema, mode: z.enum(['delta', 'full']), subjectsTotal: count, subjectsDone: count, matchesOpened: count, durationSeconds: count,
 });
 export const RescreenRunAlertEventSchema = z.strictObject({ runId: IdSchema, trigger: RescreenTriggerSchema, alert: z.enum(['failed', 'overdue']), mutable: z.literal(false) });
+
+/** SANC-006 read projections. No list entries, source URLs, credentials or activation commands. */
+export const ScreeningVersionSummarySchema = z.strictObject({
+  id: z.uuid(), version: z.int().positive(), state: z.enum(['staged', 'active', 'superseded', 'rejected']),
+  mode: z.enum(['fake', 'file', 'live']), publishedOn: z.string().nullable(), fetchedAt: z.iso.datetime(),
+  entryCount: z.int().nonnegative(), digest: z.string(), activatedAt: z.iso.datetime().nullable(),
+});
+export const ScreeningListsOverviewSchema = z.strictObject({
+  checkedAt: z.iso.datetime(), available: z.boolean(),
+  items: z.array(z.strictObject({
+    id: z.uuid(), code: z.string(), baseline: z.boolean(), hubId: z.uuid().nullable(),
+    mode: z.enum(['fake', 'file', 'live']), status: z.enum(['active', 'paused']),
+    freshness: ScreeningListFreshnessSchema, activeVersion: ScreeningVersionSummarySchema.nullable(),
+  })),
+});
+export const ScreeningVersionsSchema = z.strictObject({ items: z.array(ScreeningVersionSummarySchema) });
+export const ScreeningSubjectPanelSchema = z.strictObject({
+  subjectStateId: z.uuid(), subject: ScreeningSubjectRefSchema, moneyHeld: z.boolean(), suspended: z.boolean(),
+  lastOutcome: ScreeningOutcomeSchema.nullable(), lastScreenedAt: z.iso.datetime().nullable(), matches: z.array(ScreeningMatchSchema),
+});
+export const ScreeningGeolocationSchema = z.strictObject({
+  checkedAt: z.iso.datetime(), gate: JurisdictionGateDescriptionSchema,
+  ageMonths: z.int().nonnegative().nullable(), freshness: z.enum(['known', 'stale', 'unknown']),
+});
+/** A missing cohort definition is not a zero or a suppressed numeric row. */
+export const ScreeningMetricsSchema = z.strictObject({
+  checkedAt: z.iso.datetime(), hubId: z.uuid(), minimumDistinctPrincipals: z.literal(10),
+  metrics: z.array(z.strictObject({
+    key: z.enum(['refusals', 'openHolds', 'clearedHolds', 'medianClearSeconds', 'openedMatches', 'decidedMatches', 'lateMatches', 'notSamePersonShare', 'gateRefusals']),
+    state: z.literal('unknown'), value: z.null(),
+    reason: z.enum(['hub_attribution_missing', 'distinct_principals_missing', 'gate_counter_missing']),
+  })),
+  rescreenDurations: z.array(z.strictObject({ runId: z.uuid(), seconds: z.number().nonnegative() })),
+  rescreenScope: z.literal('node'),
+});
+
+/** Browser projection of operational runs: participant counters require a proven cohort, never a count surrogate. */
+export const ScreeningConsoleRunSchema = z.strictObject({
+  id: z.uuid(), state: RescreenRunStateSchema, queuedAt: z.iso.datetime(), overdue: z.boolean(),
+  blockedReason: z.literal('lists_unavailable').nullable(),
+  progress: z.strictObject({ subjectsDone: z.int().min(10), subjectsTotal: z.int().min(10) }).nullable(),
+});

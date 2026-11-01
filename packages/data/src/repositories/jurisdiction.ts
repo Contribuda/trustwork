@@ -60,3 +60,11 @@ export const jurisdictionHolds = {
     return trx.selectFrom('jurisdiction_refusal_count').selectAll().where('day', '>=', sinceDay).orderBy('day').orderBy('place').orderBy('door').execute();
   },
 };
+
+/** Same node authority as the existing forced-RLS policies; never inferred from a generic staff role. */
+export const jurisdictionStaff = {
+  async canRead(trx: Transaction): Promise<boolean> {
+    const { rows } = await sql<{ allowed: boolean }>`SELECT trustwork.jurisdiction_staff_reader() AS allowed`.execute(trx);
+    return rows[0]?.allowed === true;
+  },
+};

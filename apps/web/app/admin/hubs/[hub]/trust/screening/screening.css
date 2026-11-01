@@ -1,0 +1,18 @@
+.screening-console { max-width: 76rem; margin: auto; padding: clamp(1rem, 3vw, 2.5rem); overflow-wrap: anywhere; }
+.screening-console header { margin-block: 1rem 2rem; }
+.screening-console nav { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1rem; }
+.screening-console section { margin-block: 1.5rem; }
+.screening-console .screening-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; }
+.screening-console .screening-card { border: 1px solid var(--border, #c4ccd4); border-radius: .5rem; padding: 1rem; margin-block: 1rem; }
+.screening-console .screening-form fieldset { display: grid; gap: .75rem; border: 0; padding: 0; min-width: 0; }
+.screening-console .screening-form legend { font-weight: 600; margin-block: .5rem; }
+.screening-console label { display: grid; gap: .4rem; }
+.screening-console textarea, .screening-console select { width: 100%; max-width: 100%; font: inherit; padding: .65rem; border: 1px solid #6b7785; border-radius: .25rem; background: white; color: #192b3a; }
+.screening-console .screening-form button { min-height: 44px; padding: .65rem 1rem; border-radius: .3rem; border: 1px solid #214c64; background: #214c64; color: white; font: inherit; cursor: pointer; }
+.screening-console .screening-form button:disabled { opacity: .6; cursor: default; }
+.screening-console :focus-visible { outline: 3px solid #0066aa; outline-offset: 3px; }
+.screening-console dl { display: grid; grid-template-columns: minmax(6rem, 1fr) 2fr; gap: .5rem 1rem; }
+.screening-console dd { margin: 0; }
+.screening-console code { font-size: .85em; }
+.screening-console .screening-warning { border-left: 4px solid #ad6800; padding: 1rem; background: #fff4d6; color: #493500; }
+@media (max-width: 600px) { .screening-console dl { grid-template-columns: 1fr; } .screening-console dd { margin-bottom: .5rem; } }
