@@ -1,6 +1,6 @@
 # Federation mesh
 
-Module code `MSH`. Status: **Proposed** ([ADR 011](../../adr/011-federation-mesh.md); R39); data licences for peers are decided by the integrator under the owner's delegation (ADR 010 decision 10). Packages: FED-000 … FED-006, REP-002, AGT-017. Narrative: [Federation: one worldwide mesh](../federation.md). Wire protocol (Contract, FED-000): [Mesh protocol `trustwork-mesh/1`](../federation-protocol.md). Data: [§26 Federation](../../data/model.md#26-federation).
+Module code `MSH`. Status: **Proposed** ([ADR 011](../../adr/011-federation-mesh.md); R39); data licences for peers are decided by the integrator under the owner's delegation (ADR 010 decision 10). Packages: FED-000 … FED-006, REP-002, AGT-017, XCH-001 … XCH-016. Exchange layer (schemas, capability negotiation, usage policies, delivery, translation and cross-border commerce): [Hub exchange architecture](../hub-exchange-architecture.md) (Proposed, [ADR 016](../../adr/016-hub-exchange-layer.md)). Narrative: [Federation: one worldwide mesh](../federation.md). Wire protocol (Contract, FED-000): [Mesh protocol `trustwork-mesh/1`](../federation-protocol.md). Data: [§26 Federation](../../data/model.md#26-federation).
 
 ## Purpose
 
@@ -19,6 +19,8 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | MSH-S3 | As a person on one hub, I want to register for an event on a peered hub without a second account | Proposed |
 | MSH-S4 | As a company verified on its home hub, I want peers to show my badge as "verified by hub X", not re-verify or rescore me | Proposed |
 | MSH-S5 | As a reader on the fediverse, I want to follow a hub's publications and public events | Proposed |
+| MSH-S6 | As a buyer in San Diego, I want to send an RFQ in English to a supplier on a Mexico hub who reads it in Spanish, see both hubs' fees and the applicable rules before accepting, and know that the English original is what binds | Proposed |
+| MSH-S7 | As a supplier, I want my licence check and completed-jobs snapshot from my home hub verified by a buyer's hub in another country without re-verification | Proposed |
 
 ## Functional requirements
 
@@ -44,6 +46,18 @@ Node operators and hub owners who peer; every participant indirectly (wider mark
 | MSH-F18 | Search across the mesh indexes public replicas as a separate source class with licence flags; private queries never forwarded | Proposed | FED-002, RAG-201 |
 | MSH-F19 | The merge algorithm for links, tombstones and replica conflicts carries a method version from the first release (`trustwork-merge-1`) | Contract | FED-000 |
 | MSH-F20 | Protocol conformance tests let a node call itself compatible; conformance never certifies data quality or legal compliance | Contract (vectors and schema tests in `tests/federation/protocol`) | FED-000 |
+| MSH-F21 | Every object that crosses a node boundary has a registered exchange schema with additive-only minor versions, down-projection and essential members | Proposed | XCH-001 |
+| MSH-F22 | A strict superset protocol `trustwork-mesh/2` adds schema, language, policy and context members and the kinds the exchange layer needs; version 1 objects verify forever | Proposed (ADR 016) | XCH-002 |
+| MSH-F23 | Nodes publish signed capability statements; peers send nothing outside the computed exchange profile; deals pin their schema versions | Proposed | XCH-003 |
+| MSH-F24 | Addressed deliveries use a transactional outbox, idempotent inbox, context order and reconciliation by identical resend | Proposed | XCH-004 |
+| MSH-F25 | Shared and consented data carry usage policies (purpose, retention, residency, onward sharing, model use); personal data classes flow only with a recorded transfer basis | Proposed | XCH-005, XCH-015 |
+| MSH-F26 | Translations across hubs are labelled, never binding, never enter agreement digests; deal text is translated only on the reader's hub and never enters translation memory | Proposed | XCH-006, XCH-010 |
+| MSH-F27 | Cross-border terms (trade terms, informational reference rates, tax treatment with sources, applicable rules, consumer role, documents, export-control declarations) are explicit and never decided by the engine | Proposed | XCH-007 |
+| MSH-F28 | Both hubs screen both parties before the first commercial message; restricted places refused for parties, delivery place and declared origin | Proposed | FED-004, SANC-004 |
+| MSH-F29 | Cross-hub agreements and orders show both hubs' fees, the applicable rules and the language of record before acceptance; payments only through licensed providers; no currency conversion by the engine | Proposed | XCH-008, XCH-016 |
+| MSH-F30 | Each hub decides disputes and appeals of its own participant; joint evidence packages from records both parties see | Proposed | XCH-009 |
+| MSH-F31 | A hub verifies another hub's passport presentations against its key chain and status list and never imports raw reviews | Proposed | XCH-011 |
+| MSH-F32 | Federated public search is opt-in, public-only, without requester identity, and inherits the intersection of source audiences | Proposed | XCH-012 |
 
 ## Agent capabilities
 

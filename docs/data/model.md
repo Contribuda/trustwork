@@ -731,6 +731,8 @@ Owner module: `federation`. Handbook: [Federation](../engine/federation.md); [AD
 | `tombstone_application` | `tombstone_id`, `peer_node_id`, `acknowledged_at`, `applied_at` | SC | missing acknowledgements feed defederation decisions | operational | Proposed |
 | `takedown_notice` | ref(object) \| `global_id`, `reason_category`, `requested_by`, `legal_basis`, `received_at`, `status` | SC | pushed to peers' inboxes | case | Proposed |
 
+Proposed by the [hub exchange architecture](../engine/hub-exchange-architecture.md) ([ADR 016](../adr/016-hub-exchange-layer.md), Proposed): `capability_statement` (this node's signed statement and peers' statements with digests, XCH-003), `exchange_profile` (`peer_node_id`, `profile jsonb`, `profile_digest`, `local_statement_digest`, `peer_statement_digest`, `computed_at`; computed, never edited), `deal_schema_pin` (context ref, schema versions pinned at the first cross-hub version), `usage_policy` (signed policy documents referenced by deliveries, XCH-005), `peer_transfer_basis` (`peering_agreement_id`, personal data class, basis, evidence reference; XCH-005), `context_sequence` (per context and direction: last applied `seq` and digest, XCH-004), and on `federation_delivery` the states `retry_wait`, `reconciling` and `dead_letter` (XCH-004).
+
 Passport credentials (section 20) are verified against the issuing node's manifest key and status list; peers display passports and credentials as replicas with attribution and never re-issue them.
 
 ## 27. Administration, support and privacy operations

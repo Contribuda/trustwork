@@ -70,7 +70,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | Hubs and the hub console | [HBC](modules/hubs-and-console.md) | [Hubs](hubs.md), [Hub administration](hub-administration.md), [The hub console](hub-console/README.md) |
 | Data mining and sources | [DMS](modules/data-mining-and-sources.md) | [Local data mining](hub-console/data-mining.md), [Automation and scheduling](hub-console/automation-and-scheduling.md) |
 | Country packs and localization | [LOC](modules/country-packs-and-localization.md) | [Countries and languages](localization.md), [Country specifics](country-specifics.md) |
-| Federation mesh | [MSH](modules/federation-mesh.md) | [Federation: one worldwide mesh](federation.md) |
+| Federation mesh | [MSH](modules/federation-mesh.md) | [Federation: one worldwide mesh](federation.md), [Mesh protocol](federation-protocol.md), [Hub exchange architecture](hub-exchange-architecture.md) |
 | Trust, safety, privacy and compliance | [TSP](modules/trust-safety-privacy-compliance.md) | [Security, trust and privacy](trust-safety-privacy.md) |
 | Security architecture | [SEC](modules/security-architecture.md) | [Architecture](architecture.md), [Security, trust and privacy](trust-safety-privacy.md) |
 | Integrations | [INT](modules/integrations.md) | [Keys, providers and models](hub-console/providers-and-models.md) |

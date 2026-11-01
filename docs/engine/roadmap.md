@@ -280,6 +280,29 @@ The mesh of ADR 011: protocol, node identity, syndication, directory links, cros
 | FED-006 | Outbound ActivityPub bridge for publications, issues and public events | open | FED-002 |
 | REP-002 | Portable reputation passport: hub-issued verifiable credentials | open | REP-001, FED-001, LRN-001 |
 
+### The hub exchange layer (proposed 2026-11-01)
+
+Schemas, capability negotiation, usage policies, delivery guarantees, translation across hubs and cross-border commerce: [Hub exchange architecture](hub-exchange-architecture.md), [ADR 016](../adr/016-hub-exchange-layer.md) (Proposed). XCH-002 stays blocked until ADR 016 is decided. FED-004 now also depends on XCH-004 and SANC-004.
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| XCH-001 | Exchange schema registry and compatibility checker | open | FED-000 |
+| XCH-002 | Protocol trustwork-mesh/2: contracts and conformance vectors | blocked | XCH-001 |
+| XCH-003 | Capability statements and per-peer exchange profiles | open | XCH-002, FED-001 |
+| XCH-004 | Federation delivery engine: outbox, inbox processing, ordering, retries and reconciliation | open | FED-001 |
+| XCH-005 | Usage policies: purpose, retention, residency, onward sharing and transfer bases | open | XCH-003, PRV-001 |
+| XCH-006 | Cross-hub language negotiation and translation records | open | XCH-002, PROV-001 |
+| XCH-007 | Cross-border commercial terms contract | open | COM-002, CTRY-002 |
+| XCH-008 | Cross-hub agreements, orders, documents, signatures and payments | open | FED-004, XCH-007, XCH-005, ESIG-001, PAY-001, PRC-012, BILL-003 |
+| XCH-009 | Cross-hub disputes, appeals and moderation referrals | open | XCH-008, DISP-001 |
+| XCH-010 | Federated context threads with reading translations | open | FED-004, XCH-004, XCH-006 |
+| XCH-011 | Passport presentation and verification across hubs | open | REP-002, XCH-003 |
+| XCH-012 | Federated public search with permission intersection | open | FED-002, RAG-301, XCH-003 |
+| XCH-013 | Module interop and version-skew conformance suite | open | XCH-003, FED-004 |
+| XCH-014 | Compromised hub response, abuse controls and defederation effects | open | FED-001, XCH-004 |
+| XCH-015 | Cross-border transfer, residency and lawful-request policy for federation (counsel research) | open |  |
+| XCH-016 | Cross-hub deal screens: home-hub labels, both hubs' fees, applicable rules, original and reading translation | open | XCH-008, XCH-010, WEB-004 |
+
 ## Added by the full system specification (2026-10-31)
 
 Packages for capabilities the [module specifications](modules/README.md) added from the [worldwide competitive landscape](../research/competitive-landscape-2026-11.md) and the specification work ([ideas](ideas.md), requirements R55–R71). The phase column says where each belongs by priority; dependencies alone decide when it can be claimed. Existing packages amended by the same change: MATCH-002 (request receipt and charter), PREQ-001 (national question sets and statutory partner checks), REG-001 (register catalogue and expiry watch), HOME-001 (deposit-limit templates), MAT-001 (free knowledge feed, aggregate signals), KNOW-001 (product links without affiliate fees), PRV-001 (export at any time), EVT-001 (hosted-buyer meetings), REP-001 (explained limitations).
