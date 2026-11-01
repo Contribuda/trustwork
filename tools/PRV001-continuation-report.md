@@ -3,6 +3,8 @@
 Agent: Codex CLI (OpenAI) for Parshkov
 
 Status: in_progress. This draft is not acceptance and unlocks no dependent package.
+Implementation SHA: `282201efed0d9d2dc0c9ade45365bc27cc22e7d0`. This report publication is documentation-only; the PR body records the current full publication SHA and exact-head gate results.
+
 Foundation #471 was observed MERGED at 2026-11-01T05:12:47Z, merge commit `72f7c62c7c80f30b476b2e64a72c36c58bbe8cbb`.
 The continuation branch starts at that actual main commit. The original branch and reviewed journal are preserved.
 Existing issue #93 claim remains active; continuation heartbeat: https://github.com/Contribuda/trustwork/issues/93#issuecomment-6553808801.
@@ -22,9 +24,9 @@ Existing issue #93 claim remains active; continuation heartbeat: https://github.
 | Two-person plan | Real ADM proposal/approval, exact inventory/digest, distinct humans, current case grants, authority fingerprint, hold/policy/subject locks | Execution admission implemented; every missing owning operation explicitly refused |
 | Agent limitations | Existing service denies delegated principals; no decision/execute capability in Draft type | Operator-agent Draft runtime integration still missing |
 | Retained journal | Independent identity/checkpoint preserved; withDecision now spans local DB callback; withRestore spans commit/fence lift; no TTL takeover or bootstrap | Focused cross-process/PG tests pass |
-| Restore CLI/physical drill | Local wrapper requires independent provisioned binding; physical/PITR synthetic privacy fixture added to existing drill | Restricted-PG CLI tests pass; physical/PITR CI passed at 63146e0a; final-head rerun pending |
+| Restore CLI/physical drill | Local wrapper requires independent provisioned binding; physical/PITR synthetic privacy fixture added to existing drill | Restricted-PG CLI tests pass; expanded physical/PITR CI passed at 282201ef, including actual restored SRC consumers |
 | Retrieval/federation | Typed durable intents in replay transaction; isolated idempotent consumers, unknown-before-effect, process death/reconciliation | Consumer tests pass; owning ID/revision mapping and runtime registration absent; no send success claimed |
-| Exact-head full gate | 63146e0a physical/browser/stack passed; full check found three boundary violations, now corrected without weakening tests | Current-head CI pending |
+| Exact-head full gate | 63146e0a physical/browser/stack passed; full check found three boundary violations, now corrected without weakening tests | Final publication gate is recorded at the exact PR head |
 
 The complete module-by-module inventory is maintained in `docs/data/privacy-operations.md` and enforced against all API module directories. No unavailable module is omitted or reported exported/deleted. No package object/status was marked done; no dependent package was unlocked.
 
@@ -86,3 +88,11 @@ The physical fixture now provisions a real, explicitly synthetic professional-cr
 Focused fixture verification: `node --import tsx --test --test-concurrency=1 tests/privacy/restore-consumers.test.ts`, exit 0, 1 passed, 0 skipped on PostgreSQL 18.3. Before replay the public projection and import are allowed; after replay both are blocked. An initial synthetic hub slug exceeded the existing schema limit; only the fixture slug was shortened before the passing run. Root types, changed-file ESLint, docs and diff checks exit 0. Physical execution of this expanded fixture is reserved for CI.
 
 Previous implementation SHA `e2f33a9969a08f4e25ba4a1680ca21671bb1c59d`: physical/PITR [run 41279505155](https://github.com/Contribuda/trustwork/actions/runs/41279505155), exit 0, 1 passed; recovery 5.815 seconds, data-loss window 4.748 seconds. That run predates the restored source-record checks. Full check was still running at this report update and is not asserted successful. The draft PR body carries the current full publication SHA and its separate exact-head CI status.
+
+## Latest pinned implementation evidence
+
+At full implementation SHA `282201efed0d9d2dc0c9ade45365bc27cc22e7d0`, [physical/PITR run 41279892254](https://github.com/Contribuda/trustwork/actions/runs/41279892254) completed successfully: exit 0, 1 test passed, 0 failed. Both archive-end restore and earlier PITR returned all eight checks true: correctionRedacted, subjectNotClaimedDeleted, minimalSuppressionRestored, owningMailSuppressionRestored, deliveryBarrierDenied, sourceProjectionSuppressed, sourceReimportDenied, sourceEvidencePreserved. Recovery was 5.553 seconds; the measured data-loss window was 4.33 seconds.
+
+The full npm check and browser jobs had started at this evidence capture and were not yet complete. Final publication checks must be read from [the draft PR checks](https://github.com/Contribuda/trustwork/pull/502/checks) and its exact-head evidence comment, rather than inferred from a prior implementation SHA. This documentation-only report update does not change implementation, migrations, fixtures or tests. PRV-001 remains in_progress regardless of CI success because the engineering gaps above remain.
+
+No new owner-only product decision is required. The active-owner seams remain pending conductor coordination; absence of a response does not authorize edits to their active files. The original branch, all upstream work-package objects, the existing accepted claim and independently provisioned journal protocol are preserved.
