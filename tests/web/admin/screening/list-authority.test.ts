@@ -94,8 +94,8 @@ test('file list registration is current-authority, digest-bound, independently a
   const nextId=(next.body as {id:string}).id;
   const row=(await w.h.db.admin.query<{action_digest:string;requested_by:string}>('SELECT action_digest,requested_by FROM trustwork.screening_list_proposal WHERE id=$1',[nextId])).rows[0]!;
   const expired=randomUUID();
-  await w.h.db.admin.query(`INSERT INTO trustwork.screening_list_proposal(id,hub_id,source_id,requested_by,cadence_seconds,warn_after_seconds,stale_after_seconds,reason,evidence,before_digest,action_digest,expires_at)
-    SELECT $1,hub_id,source_id,requested_by,cadence_seconds,warn_after_seconds,stale_after_seconds,reason,evidence,before_digest,action_digest,now()-interval '1 second' FROM trustwork.screening_list_proposal WHERE id=$2`,[expired,nextId]);
+  await w.h.db.admin.query(`INSERT INTO trustwork.screening_list_proposal(id,hub_id,source_id,requested_by,cadence_seconds,warn_after_seconds,stale_after_seconds,reason,evidence,before_digest,action_digest,requested_elevation_id,authority_node_id,requested_authz_epoch,expires_at)
+    SELECT $1,hub_id,source_id,requested_by,cadence_seconds,warn_after_seconds,stale_after_seconds,reason,evidence,before_digest,action_digest,requested_elevation_id,authority_node_id,requested_authz_epoch,now()-interval '1 second' FROM trustwork.screening_list_proposal WHERE id=$2`,[expired,nextId]);
   expectError(await w.second.post(`/v1/admin/screening/list-proposals/${expired}/decision`,{...decision,actionDigest:row.action_digest}),409,'validation.revision_conflict');
   await withMaintenance(w.h.db.admin,trx=>trx.updateTable('staff_role_assignment').set({revoked_at:new Date(),revoked_by:w.seed.people.boris,revoke_reason:'Synthetic current-authority denial'}).where('person_id','=',row.requested_by).where('role','=','compliance-officer').execute());
   expectError(await w.second.post(`/v1/admin/screening/list-proposals/${nextId}/decision`,{...decision,actionDigest:row.action_digest}),403,'access.forbidden');
