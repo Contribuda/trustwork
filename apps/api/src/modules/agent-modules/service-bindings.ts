@@ -10,8 +10,8 @@ import { requireParticipantCapability } from './service-authority.js';
 import { requirePublicServingContext } from './serving-hub.js';
 import type { CapabilityAuthority } from './authority.js';
 
-export interface ServiceCapabilityTarget { capabilityId: string; companyId: string | null }
-export type ServiceCapabilityBinding = {
+export interface ServiceCapabilityTarget { capabilityId: string; companyId: string | null; representativeOf?: string | null }
+export type ServiceCapabilityBinding = ({
   /** An explicitly inventoried owning authority boundary, never a default for an unknown method. */
   boundary: 'first_party_control' | 'public_projection';
   reason: string;
@@ -24,7 +24,7 @@ export type ServiceCapabilityBinding = {
 } | {
   /** Mixed owning projections require every represented scope; an empty resolution never allows an operation. */
   resolve: (trx: Transaction, principal: Principal, args: readonly unknown[]) => Promise<readonly ServiceCapabilityTarget[]>;
-};
+}) & { serializeNegotiation?: boolean };
 export type ServiceCapabilityBindings<T> = Record<Extract<keyof T, string>, ServiceCapabilityBinding>;
 export type PublicServiceBoundary = (trx: Transaction) => Promise<void>;
 
@@ -59,6 +59,7 @@ export function bindServiceCapabilities<T extends object>(
         const current = invocation.getStore();
         if (!current) throw new ApiError('access.forbidden', 'service operation has no capability binding', { reason: 'capability.unknown' });
         return target.runAs(state, async (trx, principal) => {
+          if (current.binding.serializeNegotiation) await sql`SELECT trustwork.agent_modules_lock_envelope_boundary()`.execute(trx);
           if ('boundary' in current.binding) {
             if (current.binding.boundary === 'public_projection') await publicBoundary(trx);
             else {
@@ -74,7 +75,7 @@ export function bindServiceCapabilities<T extends object>(
             capabilityId: current.binding.capabilityId, companyId: await current.binding.company?.(trx, principal, current.args) ?? null,
           }];
           if (checks.length === 0) throw new ApiError('access.forbidden', 'service authority is unavailable', { reason: 'capability.unknown' });
-          for (const check of checks) await requireParticipantCapability(ctx, trx, principal, check.capabilityId, check.companyId, authority);
+          for (const check of checks) await requireParticipantCapability(ctx, trx, principal, check.capabilityId, check.companyId, authority, 'representativeOf' in check ? check.representativeOf : null);
           await lockAuthenticated(trx, state, principal);
           return execute(trx, principal);
         }, options);

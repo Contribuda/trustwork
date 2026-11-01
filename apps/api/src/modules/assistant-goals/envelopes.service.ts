@@ -1,3 +1,4 @@
+import { servingHub } from '../agent-modules/serving-hub.js';
 import { computeDigest, type ContextRef } from '../../deps/contracts.js';
 import { ENVELOPE_INTENT_ACTION, ENVELOPE_MODULE_KEYS, type SendEnvelopeCommand } from './contracts.js';
 import { ApiError } from '../../common/errors.js';
@@ -27,6 +28,7 @@ export class EnvelopesService extends AgentsBase {
   send(body: SendEnvelopeCommand, state: RequestState) {
     return this.run(state, async (trx, p) => {
       if (!isUuid(body.to.id) || !isUuid(body.context.id) || (body.negotiationSessionId !== null && !isUuid(body.negotiationSessionId))) throw new ApiError('access.not_found', 'party, context or session not found');
+      const binding = await servingHub(trx, this.ctx.config.publicOrigin);
       const action = ENVELOPE_INTENT_ACTION[body.intent];
       const context: ContextRef = { kind: body.context.kind, id: body.context.id };
       const noteDigest = body.note === null ? null : computeDigest({ text: body.note.text }).value;
@@ -34,7 +36,7 @@ export class EnvelopesService extends AgentsBase {
       const effect = { provider: 'agent_mesh', operation: 'envelope.send', payload: { to: body.to, context, intent: body.intent, refs: body.refs, noteDigest, expiresAt: body.expiresAt } };
       let subject: string;
       if (body.actingAs.kind === 'own_agent') {
-        const { outcome, row } = await decide(trx, { personId: p.personId, mandateId: body.actingAs.mandateId, moduleKeys: ENVELOPE_MODULE_KEYS, action, context, amount: null, projectId: null, at: this.now() }, this.policy);
+        const { outcome, row } = await decide(trx, { personId: p.personId, mandateId: body.actingAs.mandateId, moduleKeys: ENVELOPE_MODULE_KEYS, action, context, amount: null, projectId: null, at: this.now() }, { ...this.policy, hubId: binding.hubId });
         if (outcome.effect === 'deny' || !row) {
           const reason = outcome.effect === 'deny' ? outcome.reason : 'not_found';
           if (reason === 'not_found') throw new ApiError('access.not_found', 'mandate not found');
@@ -62,7 +64,7 @@ export class EnvelopesService extends AgentsBase {
         to: body.to, context, intent: body.intent, refs: body.refs, note: body.note?.text ?? null, noteLocale: body.note?.locale ?? null, sessionId: body.negotiationSessionId,
         expiresAt: body.expiresAt, proof: mandateProof(this.settings, subject), homeNode: this.settings.homeNode,
       }, {
-        hubId: this.policy.hubId, moduleKeys: ENVELOPE_MODULE_KEYS, maxRounds: limits?.maxNegotiationRounds ?? this.settings.maxNegotiationRounds, sessionTtlSeconds: this.settings.sessionTtlSeconds,
+        hubId: binding.hubId, moduleKeys: ENVELOPE_MODULE_KEYS, maxRounds: limits?.maxNegotiationRounds ?? this.settings.maxNegotiationRounds, sessionTtlSeconds: this.settings.sessionTtlSeconds,
         perCounterpartyPerDay: limits?.envelopesPerCounterpartyPerDay ?? this.settings.envelopesPerCounterpartyPerDay,
       });
       const envelope = result.envelope_id ? await envelopes.get(trx, result.envelope_id) : undefined;

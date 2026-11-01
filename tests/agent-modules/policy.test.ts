@@ -155,7 +155,7 @@ test('agent product administration: policy versions with previews, second person
       return people;
     });
     await addLogins(h, cohort);
-    for (const [personId, email] of cohort) {
+    for (const [index, [personId, email]] of cohort.entries()) {
       const person = h.client();
       await signIn(person, email);
       ok(await person.post('/v1/assistant/mandates', { draft: {
@@ -163,6 +163,10 @@ test('agent product administration: policy versions with previews, second person
         limits: { ceiling: null, perActionCeiling: null, transactionBudgetId: null, platformBudgetId: null, perWindow: null }, conditions: [], approvalPolicy: { mode: 'ask_each' }, approvers: [],
         escalation: { kind: 'ask_principal' }, validUntil: new Date(Date.now() + 30 * 86_400_000).toISOString(),
       } }), 201);
+      if (index === 7) {
+        const nine = await world.a.cmd(w.people.owner, trx => agentPolicies.previewCounts(trx, hubId, [PROFILE.key]));
+        assert.equal(nine.mandates, null, 'nine distinct people remain suppressed even with eighteen mandates');
+      }
     }
     // Drafted again, the preview shows the cohort and activates.
     const again = (await draft({ ...disable, policy: { ...disable.policy, enabledModules: disable.policy.enabledModules.filter((e) => e.moduleKey !== PROFILE.key) }, modules: [disable.modules[0]!] })).version;

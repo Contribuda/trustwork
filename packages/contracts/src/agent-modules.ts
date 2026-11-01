@@ -319,14 +319,26 @@ export function participantSettingAllowed(bounds: ParticipantSettingsBounds, set
 
 /* ---------- Engine default policy (no agents version active) ---------- */
 
+export const EXPLICIT_ACTIVATION_MODULES: readonly string[] = ['negotiation', 'representative'];
+
+/** Full manifest-bounded controls for an explicit hub draft; this does not activate the module. */
+export function engineModuleControl(m: AgentModuleManifest): AgentPolicyDraft['modules'][number] {
+  const commits = m.actions.some((a) => (COMMITMENT_MANDATE_KINDS as readonly string[]).includes(a));
+  return {
+    moduleKey: m.key, status: 'active' as const, principalKinds: [...AGENT_PRINCIPAL_KINDS], verifiedCompanyRequired: commits, actions: [...m.actions], capabilityIds: m.capabilities.map((c) => c.id), dataClasses: [...new Set(m.capabilities.flatMap((c) => c.privateDataClasses))],
+    limits: { runsPerDay: 50, actionsPerDay: 100, concurrentRuns: 2, outreachPerWeek: m.actions.some((a) => OUTREACH_ACTIONS.includes(a)) ? 10 : null },
+  };
+}
+
 /**
- * What applies while a hub has no active `agents` version: every shipped module at its manifest's full extent for every
- * participant type, nothing switched off, conservative participant bounds. Kill switches and guard rails always apply.
+ * What applies without an active agents version. Newly inventoried negotiation/representative modules require
+ * explicit hub activation; existing defaults retain their extent. Kill switches and guard rails always apply.
  */
 export function engineDefaultPolicy(hubId: string, registry: ModuleRegistry, calendarTimeZone = 'UTC'): AgentPolicyDraft {
+  const defaults = registry.manifests.filter(m => !EXPLICIT_ACTIVATION_MODULES.includes(m.key));
   const policy: HubAgentPolicy = {
     hubId,
-    enabledModules: registry.manifests.map((m) => ({ moduleKey: m.key, moduleVersion: m.version, freeQuota: m.freeFloor.map((q) => ({ ...q })), settings: {} })),
+    enabledModules: defaults.map((m) => ({ moduleKey: m.key, moduleVersion: m.version, freeQuota: m.freeFloor.map((q) => ({ ...q })), settings: {} })),
     protectionLimits: {
       openIntroductionsPerPerson: 5, newCounterpartiesPerDay: 10, maxNegotiationRounds: 6, consumerMaxRounds: 4, envelopesPerCounterpartyPerDay: 20,
       publicRecordsPerConnectionPerDay: 1000, connectionsPerPerson: 3, connectionIdleExpiryDays: 90,
@@ -337,13 +349,7 @@ export function engineDefaultPolicy(hubId: string, registry: ModuleRegistry, cal
   return {
     schemaVersion: AGENT_MODULES_CONTRACT_VERSION,
     policy,
-    modules: registry.manifests.map((m) => {
-      const commits = m.actions.some((a) => (COMMITMENT_MANDATE_KINDS as readonly string[]).includes(a));
-      return {
-        moduleKey: m.key, status: 'active' as const, principalKinds: [...AGENT_PRINCIPAL_KINDS], verifiedCompanyRequired: commits, actions: [...m.actions], capabilityIds: m.capabilities.map((c) => c.id), dataClasses: [...new Set(m.capabilities.flatMap((c) => c.privateDataClasses))],
-        limits: { runsPerDay: 50, actionsPerDay: 100, concurrentRuns: 2, outreachPerWeek: m.actions.some((a) => OUTREACH_ACTIONS.includes(a)) ? 10 : null },
-      };
-    }),
+    modules: defaults.map(engineModuleControl),
     capabilities: [],
     participantSettings: {
       approval: { defaultMode: 'ask_each', loosestMode: 'pre_authorized' }, outreachPerWeek: { default: 5, max: 10 }, reportCadence: { default: 'weekly', max: 'daily' },

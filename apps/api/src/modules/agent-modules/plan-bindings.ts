@@ -20,4 +20,5 @@ export const PLAN_SERVICE_BINDINGS = {
   approve: operation('approve_version'), returnVersion: operation('return_version'), recordChange: operation('record_change'), decideChange: operation('decide_change'),
   share: operation('share_item'), revokeShare: operation('revoke_share'), updateItemState: operation('update_item_state'),
   recordPermit: operation('record_permit'), addDiaryEntry: operation('add_diary_entry'), setLocation: operation('set_location'),
+  privacyShared: { boundary: 'first_party_control', reason: 'Own statutory privacy inventory remains available under disabled commercial policy; owning subject authorization and private projections still apply.' },
 } satisfies ServiceCapabilityBindings<PlansService>;

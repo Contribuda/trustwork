@@ -1,3 +1,5 @@
+import { NEGOTIATION_SERVICE_BINDINGS } from '../agent-modules/negotiation-bindings.js';
+import { REPRESENTATIVE_SERVICE_BINDINGS } from '../agent-modules/representative-bindings.js';
 import type { CapabilityAuthority } from '../agent-modules/authority.js';
 import { Module, type DynamicModule } from '@nestjs/common';
 import type { AppContext } from '../identity/context.js';
@@ -28,8 +30,8 @@ export class AgentsModule {
     const policy = assistantPolicySettings(options.policy);
     const settings = { ...agentsSettingsFromEnv(process.env, policy.hubId), ...options.settings };
     const goals = bindServiceCapabilities(ctx, identity.principals, CORE_SERVICE_BINDINGS, principals => new GoalsService(ctx, principals), options.capabilities);
-    const envelopes = new EnvelopesService(ctx, identity.principals, policy, settings, options.protectionLimits ?? null);
-    const representatives = new RepresentativeService(ctx, identity.principals, policy);
+    const envelopes = bindServiceCapabilities(ctx, identity.principals, NEGOTIATION_SERVICE_BINDINGS, principals => new EnvelopesService(ctx, principals, policy, settings, options.protectionLimits ?? null), options.capabilities);
+    const representatives = bindServiceCapabilities(ctx, identity.principals, REPRESENTATIVE_SERVICE_BINDINGS, principals => new RepresentativeService(ctx, principals), options.capabilities);
     return {
       module: AgentsModule,
       controllers: [AgentsController, CompanyRepresentativeController],

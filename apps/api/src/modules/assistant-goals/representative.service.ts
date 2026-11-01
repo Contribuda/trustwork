@@ -1,3 +1,5 @@
+import { sql } from 'kysely';
+import { findServingHub } from '../agent-modules/serving-hub.js';
 import { randomUUID } from 'node:crypto';
 import type { z } from 'zod';
 import { computeDigest, mandateChangeAllowed, MandateV2Schema, type Grantee, type Principal } from '../../deps/contracts.js';
@@ -8,7 +10,7 @@ import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import { AgentsBase, companyMandateView, isUuid, iso, isoOrNull, representativeView } from './common.js';
-import { companyMandates, mandateDigest, mandates, representatives, stops, type CompanyMandateRow, type PolicySettings } from './deps.js';
+import { companyMandates, mandateDigest, mandates, representatives, stops, type CompanyMandateRow } from './deps.js';
 
 type In<T extends z.ZodType> = z.infer<T>;
 const NOBODY = '00000000-0000-0000-0000-000000000000';
@@ -28,7 +30,7 @@ function granteeOf(row: Pick<CompanyMandateRow, 'executor_kind' | 'executor_pers
  * first-party form by members holding company.deals.manage. Any company administrator suspends it instantly.
  */
 export class RepresentativeService extends AgentsBase {
-  constructor(ctx: AppContext, principals: PrincipalService, private readonly policy: PolicySettings) {
+  constructor(ctx: AppContext, principals: PrincipalService) {
     super(ctx, principals);
   }
 
@@ -36,7 +38,9 @@ export class RepresentativeService extends AgentsBase {
   private async blockedBy(trx: Transaction): Promise<'hub_kill_switch' | 'node_kill_switch' | null> {
     const node = await stops.blockedBy(trx, { hubId: randomUUID(), moduleKey: 'representative', action: 'communicate', personId: NOBODY, connectionId: null });
     if (node) return 'node_kill_switch';
-    const hub = await stops.blockedBy(trx, { hubId: this.policy.hubId, moduleKey: 'representative', action: 'communicate', personId: NOBODY, connectionId: null });
+    const binding = await findServingHub(trx, this.ctx.config.publicOrigin);
+    if (!binding) return null;
+    const hub = await stops.blockedBy(trx, { hubId: binding.hubId, moduleKey: 'representative', action: 'communicate', personId: NOBODY, connectionId: null });
     return hub ? 'hub_kill_switch' : null;
   }
 
@@ -139,6 +143,9 @@ export class RepresentativeService extends AgentsBase {
     if (!parsed.success) throw new ApiError('validation.schema', 'the mandate is not valid', { reason: 'mandate_invalid', issues: parsed.error.issues.slice(0, 10).map((i) => i.message) });
     const verdict = mandateChangeAllowed({ kind: 'person', personId: p.personId, via: 'first_party_form' }, null, parsed.data);
     if (verdict !== 'ok') throw new ApiError('access.forbidden', verdict, { reason: verdict });
-    return mandates.confirm(trx, { snapshot: parsed.data, contexts: parsed.data.contexts, digest: mandateDigest(parsed.data), expectedRevision: null, stepUp: this.steppedUp(state), proposalId: null });
+    const row = await mandates.confirm(trx, { snapshot: parsed.data, contexts: parsed.data.contexts, digest: mandateDigest(parsed.data), expectedRevision: null, stepUp: this.steppedUp(state), proposalId: null });
+    const binding = await findServingHub(trx, this.ctx.config.publicOrigin);
+    if (binding && state.session) await sql`SELECT trustwork.agent_modules_bind_mandate(${row.id}::uuid,${binding.id}::uuid,${state.session.id}::uuid)`.execute(trx);
+    return row;
   }
 }

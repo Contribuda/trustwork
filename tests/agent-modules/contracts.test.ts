@@ -24,13 +24,13 @@ import { PLANNER, PLANNER_COMMIT, PLANNER_READ, REGISTRY, usHubPolicy, withSwitc
 const HUB = 'hub-us-demo';
 const person = { kind: 'person' as const, planKey: 'free', companyVerified: false };
 
-test('engine manifests load, and the engine default policy is a valid document that switches nothing off', () => {
+test('engine manifests load, and the engine defaults preserve existing modules and require explicit activation of the registry tail', () => {
   assert.ok(ENGINE_MANIFESTS.length >= 5);
   for (const manifest of ENGINE_MANIFESTS) assert.ok(AgentModuleManifestSchema.safeParse(manifest).success, manifest.key);
   const def = m.engineDefaultPolicy(HUB, REGISTRY);
   assert.ok(m.AgentPolicyDraftSchema.safeParse(def).success);
   assert.deepEqual(m.policyDocumentViolations(def, REGISTRY), []);
-  for (const manifest of ENGINE_MANIFESTS) for (const c of manifest.capabilities) assert.equal(m.capabilityRefusal(def, REGISTRY, c.id, person), null, c.id);
+  for (const manifest of ENGINE_MANIFESTS) for (const c of manifest.capabilities) assert.equal(m.capabilityRefusal(def, REGISTRY, c.id, person), m.EXPLICIT_ACTIVATION_MODULES.includes(manifest.key) ? 'module.not_enabled' : null, c.id);
   // Commitment modules never act for an unverified company, even by default.
   const task = ENGINE_MANIFESTS.find((x) => x.key === 'task_marketplace')!;
   assert.equal(m.capabilityRefusal(def, REGISTRY, 'task_marketplace.accept_offer', { kind: 'company_member', planKey: 'free', companyVerified: false }), 'module.verified_company_required');

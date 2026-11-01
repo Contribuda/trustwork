@@ -1,3 +1,5 @@
+import { engineDefaultPolicy, engineModuleControl } from '../../packages/contracts/src/agent-modules.js';
+import { NEGOTIATION_MANIFEST } from '../../packages/contracts/src/agents.js';
 import { CORE_AGENT_MANIFEST } from '../../packages/contracts/src/agents.js';
 import { ENGINE_MANIFESTS } from '../../apps/api/src/modules/agent-modules/ports.js';
 import type { AgentPolicyDraft, ModuleRegistry } from '../../packages/contracts/src/agent-modules.js';
@@ -72,4 +74,12 @@ export function runtimeHubPolicy(hubId: string): AgentPolicyDraft {
   policy.jobTemplates.push({ moduleKey: 'core', templateKey: 'goal_progress_report', labelKey: 'agents.report.goalProgress', actions: ['prepare'],
     triggerKinds: ['request', 'schedule', 'goal', 'event', 'deadline'], defaultTrigger: { kind: 'request' }, minIntervalMinutes: 60, onClosedDay: 'run' });
   return policy;
+}
+
+/** Explicit synthetic hub activation, never a production default or a validation bypass. */
+export function negotiationPolicy(hubId: string): AgentPolicyDraft {
+  const base = engineDefaultPolicy(hubId, REGISTRY);
+  base.policy.enabledModules.push({ moduleKey: NEGOTIATION_MANIFEST.key, moduleVersion: NEGOTIATION_MANIFEST.version, freeQuota: [], settings: {} });
+  base.modules.push(engineModuleControl(NEGOTIATION_MANIFEST));
+  return base;
 }
