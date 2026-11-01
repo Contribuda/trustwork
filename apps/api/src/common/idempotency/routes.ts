@@ -22,12 +22,6 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'billing.fee_activate': IN_TRANSACTION,
   'billing.fee_draft': IN_TRANSACTION,
   'billing.task_fee_disclose': IN_TRANSACTION,
-  // PAY-001
-  'payments.create': IN_TRANSACTION,
-  'payments.confirm': IN_TRANSACTION,
-  'payments.connected_account': IN_TRANSACTION,
-  'payments.payout': IN_TRANSACTION,
-  'payments.refund': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,
   'person.set_handle': IN_TRANSACTION,
@@ -456,6 +450,12 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'comms.channel_grant_revoke': IN_TRANSACTION,
   'comms.template_draft': IN_TRANSACTION,
   'comms.template_activate': IN_TRANSACTION,
+  // PAY-001
+  'payments.create': IN_TRANSACTION,
+  'payments.confirm': IN_TRANSACTION,
+  'payments.connected_account': IN_TRANSACTION,
+  'payments.payout': IN_TRANSACTION,
+  'payments.refund': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
