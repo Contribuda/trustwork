@@ -39,7 +39,7 @@ export interface ContentServiceOptions {
 
 /** Hints that mean "the record is not in the state this action needs" (409); every other content hint is a 422. */
 const STATE_HINTS = new Set(['use_correction', 'not_draft', 'review_required', 'invalid_transition', 'retracted', 'not_published', 'no_draft', 'draft_pending', 'issue_frozen',
-  'digest_frozen', 'immutable', 'authorship_frozen', 'retained', 'moderation_mismatch', 'render_not_allowed', 'issue_empty']);
+  'digest_frozen', 'immutable', 'authorship_frozen', 'retained', 'moderation_mismatch', 'render_not_allowed', 'issue_empty', 'authority_busy']);
 const FORBIDDEN_HINTS = new Set(['not_authorised', 'self_grant', 'self_review', 'editorial_staff_only']);
 
 /** Database refusals of the content commands as contract errors with a `details.reason` (never a private value). */
@@ -52,6 +52,7 @@ export function mapContentError(error: unknown): never {
     if (hint === 'admin.forbidden') throw new ApiError('access.forbidden', 'the staff role does not hold this permission at the hub', { reason: 'staff_permission_missing' });
     if (hint === 'admin.context_invalid') throw new ApiError('validation.schema', 'a staff reason is required', { reason: 'staff_reason_required' });
     if (hint === 'access.no_principal') throw new ApiError('auth.session_invalid', 'authentication required');
+    if (hint === 'provenance.first_party_required' || hint === 'provenance.authority_changed') throw new ApiError('access.forbidden', 'current request authority required');
     if (hint.startsWith('content.')) {
       const reason = hint.slice('content.'.length);
       if (reason === 'not_found') throw new ApiError('access.not_found', 'not found');
@@ -98,7 +99,7 @@ export class ContentService {
       // Publishing, correcting and retracting are the person's own acts: no agent mandate kind covers them yet.
       if (principal.delegation) throw new ApiError('access.mandate_scope', 'publications are written by the person on the first-party form');
       return fn(trx, principal);
-    }).catch(mapContentError);
+    }, { refreshStale: false }).catch(mapContentError);
   }
 
   private read<T>(fn: (trx: Transaction) => Promise<T>): Promise<T> {
@@ -220,7 +221,7 @@ export class ContentService {
     return this.command(state, id, body.staff, body.scheduledFor ? 'publication.scheduled' : 'publication.published', (trx, c) => publications.publish(trx, c, id, body.expectedRevision, body.scheduledFor));
   }
   correct(state: RequestState, id: string, body: In<typeof CorrectCommandSchema>) {
-    return this.command(state, id, body.staff, 'publication.corrected', (trx, c) => publications.correct(trx, c, id, body.expectedRevision, asDraft(body.draft), body.note, body.reason));
+    return this.command(state, id, body.staff, 'publication.corrected', (trx, c) => publications.correct(trx, { ...c, sessionId: state.session!.id, requestId: state.requestId }, id, body.expectedRevision, asDraft(body.draft), body.note, body.reason));
   }
   retract(state: RequestState, id: string, body: { expectedRevision: number; note: string; staff?: StaffAct }) {
     return this.command(state, id, body.staff, 'publication.retracted', (trx, c) => publications.retract(trx, c, id, body.expectedRevision, body.note));

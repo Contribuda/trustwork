@@ -27,6 +27,8 @@ export type MagazineDigestRow = Selectable<MagazineDigestTable>;
 
 /** The staff context the editorial commands require (same shape as DATA-002's CommandContext). */
 export interface ContentStaffContext { elevationId: string; requestId: string; reasonCode: string; reasonText: string }
+/** Correction release retains the exact first-party request session, including participant commands. */
+export type ContentCorrectionContext = { sessionId: string; requestId: string } & Partial<ContentStaffContext>;
 /** A draft as the commands take it; sourceRefs keep the contract shape plus name, kind and allowedUses. */
 export interface DraftInput {
   title: string;
@@ -40,7 +42,7 @@ export interface DraftInput {
 export interface AuthorshipInput { kind: 'person' | 'company' | 'editorial'; id?: string | undefined; credit: string; assistantAssisted: boolean }
 export interface IssueItemInput { position: number; section: string; publicationId: string; publicationVersionId: string }
 
-const ctx = (c: ContentStaffContext | null) => (c ? JSON.stringify(c) : null);
+const ctx = (c: ContentStaffContext | ContentCorrectionContext | null) => (c ? JSON.stringify(c) : null);
 const json = (v: unknown) => (v === null || v === undefined ? null : JSON.stringify(v));
 async function one<T>(query: RawBuilder<T>, trx: Transaction, what: string): Promise<T> {
   const { rows } = await query.execute(trx);
@@ -70,7 +72,7 @@ export const publications = {
   publish(trx: Transaction, c: ContentStaffContext | null, id: string, expectedRevision: number, scheduledFor: string | null): Promise<PublicationRow> {
     return one(sql<PublicationRow>`SELECT * FROM trustwork.content_publish(${ctx(c)}::jsonb, ${id}::uuid, ${expectedRevision}::int, ${scheduledFor}::timestamptz)`, trx, 'content_publish');
   },
-  correct(trx: Transaction, c: ContentStaffContext | null, id: string, expectedRevision: number, draft: DraftInput, note: string, reason: string): Promise<PublicationRow> {
+  correct(trx: Transaction, c: ContentStaffContext | ContentCorrectionContext | null, id: string, expectedRevision: number, draft: DraftInput, note: string, reason: string): Promise<PublicationRow> {
     return one(sql<PublicationRow>`SELECT * FROM trustwork.content_correct(${ctx(c)}::jsonb, ${id}::uuid, ${expectedRevision}::int, ${json(draft)}::jsonb, ${note}, ${reason})`, trx, 'content_correct');
   },
   retract(trx: Transaction, c: ContentStaffContext | null, id: string, expectedRevision: number, note: string): Promise<PublicationRow> {

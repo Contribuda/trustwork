@@ -11,12 +11,12 @@ import type { ContentWorld } from './helpers.js';
  * This does not create translation reviews, consent, source grants or runtime evidence.
  */
 export function withProvenanceFixtures(w: ContentWorld) {
-  async function context(trx: Transaction, staff: ContentStaffContext | null): Promise<ProvenanceContext> {
+  async function context(trx: Transaction, staff: ContentStaffContext | import('../../packages/data/src/repositories/content.js').ContentCorrectionContext | null): Promise<ProvenanceContext> {
     const person=(await sql<{id:string}>`SELECT trustwork.current_person_id() AS id`.execute(trx)).rows[0]!.id;
     const key=Object.keys(w.people).find(key=>w.people[key as keyof typeof w.people]===person)!;
     return {sessionId:w.admin.sessions[key]!,requestId:`synthetic-prov-${randomUUID()}`,...staff};
   }
-  async function declare(trx: Transaction, staff: ContentStaffContext | null,id:string) {
+  async function declare(trx: Transaction, staff: ContentStaffContext | import('../../packages/data/src/repositories/content.js').ContentCorrectionContext | null,id:string) {
     const v=(await publications.versions(trx,id)).at(-1);if(!v)return;
     const previous=(await provenance.history(trx,id)).filter(r=>r.version_id===v.id).at(-1);
     const refs=v.source_refs as Array<{uri:string;sourceTime?:string;observedAt:string;license?:string}>;
@@ -34,7 +34,7 @@ export function withProvenanceFixtures(w: ContentWorld) {
       const [trx,staff,id,revision,draft,note,reason]=args;
       const row=(await sql<{revision:number}>`SELECT revision FROM trustwork.provenance_prepare_correction(${JSON.stringify(await context(trx,staff))}::jsonb,${id}::uuid,${revision},${JSON.stringify(draft)}::jsonb,${note})`.execute(trx)).rows[0]!;
       await declare(trx,staff,id);
-      return publications.correct(trx,staff,id,row.revision,draft,note,reason);
+      return publications.correct(trx,await context(trx,staff),id,row.revision,draft,note,reason);
     },
   };
 }
