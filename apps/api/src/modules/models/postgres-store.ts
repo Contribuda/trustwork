@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { computeDigest } from '../../../../../packages/contracts/src/common/digest.js';
 import {
   ModelCallMetadataSchema,
@@ -103,6 +104,13 @@ export class PostgresModelCallStore extends PostgresModelReceiptStore implements
   }
   async fallback(operation: ReservedModelCall, candidate: PinnedCandidate) {
     return reserved(await this.as((trx) => modelCalls.fallback(trx, operation.operationId, operation.dispatchToken, PinnedCandidateSchema.parse(candidate))));
+  }
+  withDispatchAuthority<T>(operation: ReservedModelCall, invoke: () => Promise<T>): Promise<T> {
+    return this.as(async trx => {
+      const checked = await sql<{ allowed: boolean }>`SELECT trustwork.agent_modules_enter_model_effect(${operation.operationId},${operation.dispatchToken}::uuid) AS allowed`.execute(trx);
+      if (checked.rows[0]?.allowed !== true) throw new ModelRefusal('dispatch_authority_withdrawn');
+      return invoke();
+    });
   }
   admit(operation: ReservedModelCall) {
     return this.as((trx) => modelCalls.admit(trx, operation.operationId, operation.dispatchToken));

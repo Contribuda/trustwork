@@ -94,13 +94,13 @@ export class ModelGateway {
       let timer: ReturnType<typeof setTimeout> | undefined;
       let result: ModelAdapterResult;
       try {
-        result = receipt(await Promise.race([
+        result = await this.store.withDispatchAuthority(operation, async () => receipt(await Promise.race([
           this.adapters.get(candidate).invoke({ operationId: operation.operationId, model: { ...candidate }, prompt: call.prompt,
             maxInputTokens: call.maxInputTokens, maxOutputTokens: call.maxOutputTokens, signal: controller.signal }),
           new Promise<ModelAdapterResult>((resolve) => {
             timer = setTimeout(() => { controller.abort(); resolve({ kind: 'unknown' }); }, route.limits.timeoutMs);
           }),
-        ]));
+        ])));
       } catch {
         result = { kind: 'unknown' };
       } finally {

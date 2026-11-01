@@ -58,6 +58,8 @@ export interface ModelCallStore extends ModelReceiptStore {
   fallback(operation: ReservedModelCall, candidate: PinnedCandidate): Promise<ReservedModelCall>;
   /** Durable one-use fence. False means another execution or reconciliation owns this intent. */
   admit(operation: ReservedModelCall): Promise<boolean>;
+  /** Hold current AGT/owning invocation authority through the callback after durable one-use admission. */
+  withDispatchAuthority<T>(operation: ReservedModelCall, invoke: () => Promise<T>): Promise<T>;
   finish(operation: ReservedModelCall, metadata: ModelCallMetadata): Promise<void>;
   /** Reconciliation may only return an already dispatched operation belonging to this principal. */
   settled(operationId: string, principalId: string): Promise<ModelCallMetadata | null>;

@@ -28,6 +28,10 @@ BEGIN
   v_representative := CASE WHEN m.grantee_kind='company_representative' THEN m.grantee_company_id END;
   SELECT connection_id INTO v_connection FROM trustwork.connection_call WHERE action_intent_id=p_intent ORDER BY at LIMIT 1;
   PERFORM trustwork.agent_modules_lock_epochs(p.hub_id,v_representative,p.principal_person_id,v_connection);
+  -- MCP-003 has not supplied an immutable original access-token/proof binding for deferred effects.
+  -- A connection_call family or caller snapshot cannot enlarge token authority. Immediate owning adapters
+  -- retain their existing token/consent transaction; generic deferred connection effects stay unavailable.
+  IF v_connection IS NOT NULL THEN RETURN 'connection_dispatch_authority_unavailable'; END IF;
   SELECT authz_epoch INTO v_epoch FROM trustwork.person WHERE id=p.principal_person_id FOR SHARE;
   IF v_epoch IS DISTINCT FROM p.person_authz_epoch THEN RETURN 'owning_authority_changed'; END IF;
   IF p.company_id IS NOT NULL THEN
@@ -50,7 +54,7 @@ BEGIN
   IF NOT (trustwork.agent_modules_capability_binding(p.hub_id,i.capability_id) -> 'contextKinds') ? i.context_kind THEN RETURN 'capability_binding'; END IF;
   IF NOT trustwork.agent_modules_effect_binding(p.hub_id,i.capability_id,i.effect ->> 'provider',i.effect ->> 'operation') THEN RETURN 'capability_binding'; END IF;
   IF cardinality(i.ask_reasons)>0 THEN
-    PERFORM 1 FROM trustwork.approval WHERE action_intent_id=i.id AND action_digest=i.action_digest AND mandate_revision=i.mandate_revision AND revoked_at IS NULL FOR SHARE;
+    PERFORM 1 FROM trustwork.approval WHERE action_intent_id=i.id AND action_digest=i.action_digest AND mandate_revision=i.mandate_revision AND revoked_at IS NULL AND expires_at>clock_timestamp() FOR SHARE;
     IF NOT FOUND THEN RETURN 'approval_missing'; END IF;
   END IF;
   IF i.reservation_id IS NOT NULL THEN
