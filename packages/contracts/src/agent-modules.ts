@@ -612,6 +612,8 @@ export const TurnOnJobCommandSchema = z.strictObject({
   templateKey: z.string().regex(/^[a-z][a-z0-9_]{1,60}$/),
   /** `null` takes the template's default trigger (a schedule in the hub's time zone becomes the principal's choice). */
   trigger: JobTriggerSchema.nullable(),
+  /** Exact own goals shown in the mandate proposal; never a wildcard subscription to other parties' events. */
+  goalContextIds: z.array(IdSchema).max(20).optional(),
   /** The mandate's validity; at most one year. */
   validUntil: TimestampSchema,
 });

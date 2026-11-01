@@ -206,7 +206,11 @@ test('agent product administration: policy versions with previews, second person
       }
     }
     assert.ok(adminRoutes.length > 30, 'the inventory found the admin routes');
-    for (const route of adminRoutes) assert.doesNotMatch(route, /mandate|goal|job|connection|agent-settings|conversation|assistant/i, route);
+    // KEYS-001 owns hub provider connections, not a participant's external AI connection. Keep the exception exact;
+    // a new participant-shaped route must still fail this inventory and the real RLS checks below.
+    const providerConnections = new Set(['', '/:connectionId', '/:connectionId/update', '/:connectionId/secret', '/:connectionId/secret/revoke',
+      '/:connectionId/test', '/:connectionId/enable', '/:connectionId/disable'].map((suffix) => `v1/admin/hubs/:hubId/providers/connections${suffix}`));
+    for (const route of adminRoutes) if (!providerConnections.has(route)) assert.doesNotMatch(route, /mandate|goal|job|connection|agent-settings|conversation|assistant/i, route);
     // Staff with every agent product permission, elevated, see only their own agent objects through participant routes.
     for (const path of ['/v1/assistant/jobs', '/v1/assistant/mandates', '/v1/assistant/goals', '/v1/assistant/job-subscriptions', '/v1/assistant/mandate-proposals']) {
       const body = ok<Record<string, unknown[]>>(await staff.owner.get(path));
@@ -214,7 +218,7 @@ test('agent product administration: policy versions with previews, second person
     }
     // In the database, under the runtime role, staff read none of petr's rows; the preview function is staff-only and counts.
     const ownerPrincipal = await principalFor(h.db.admin, w.people.owner);
-    for (const table of ['mandate', 'mandate_proposal', 'goal', 'job_subscription', 'agent_job_request', 'agent_job_schedule', 'agent_job_fire', 'connection', 'action_intent', 'run', 'agent_authz_epoch']) {
+    for (const table of ['mandate', 'mandate_proposal', 'goal', 'job_subscription', 'agent_job_request', 'agent_job_schedule', 'agent_job_fire', 'agent_job_deadline', 'connection', 'action_intent', 'run', 'agent_authz_epoch']) {
       const visible: number = await withPrincipal(h.pool, ownerPrincipal, async (trx) => Number((await sql<{ n: string }>`SELECT count(*) AS n FROM ${sql.table(`trustwork.${table}`)}`.execute(trx)).rows[0]!.n))
         .catch((error: { code?: string }) => {
           assert.equal(error.code, '42501', `${table}: only a permission refusal may replace a count`);

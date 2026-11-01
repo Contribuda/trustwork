@@ -79,6 +79,21 @@ export interface AgentJobFireTable {
   fired_at: GeneratedTimestamp;
 }
 
+export interface AgentJobDeadlineTable {
+  id: GeneratedUuid;
+  job_subscription_id: string;
+  subscription_revision: number;
+  principal_person_id: string;
+  hub_id: string;
+  goal_id: string;
+  source_revision: number;
+  calendar_version_id: string;
+  offset_days: number;
+  due_at: Timestamp;
+  state: 'pending' | 'elapsed' | 'invalidated' | 'fired';
+  created_at: GeneratedTimestamp;
+}
+
 export interface AgentModulesDatabase {
   agent_policy_version: AgentPolicyVersionTable;
   agent_policy_current: AgentPolicyCurrentTable;
@@ -86,6 +101,7 @@ export interface AgentModulesDatabase {
   agent_job_request: AgentJobRequestTable;
   agent_job_schedule: AgentJobScheduleTable;
   agent_job_fire: AgentJobFireTable;
+  agent_job_deadline: AgentJobDeadlineTable;
 }
 
 export type AgentPolicyVersionRow = Selectable<AgentPolicyVersionTable>;
@@ -110,4 +126,5 @@ export const TABLE_COLUMNS: TableColumns<AgentModulesDatabase> = {
   ]),
   agent_job_schedule: columns('agent_job_schedule', ['job_subscription_id', 'principal_person_id', 'hub_id', 'job_request_id', 'next_due_at', 'last_fired_at', 'revision', 'updated_at']),
   agent_job_fire: columns('agent_job_fire', ['id', 'job_subscription_id', 'principal_person_id', 'cause', 'due_at', 'outcome', 'fired_at']),
+  agent_job_deadline: columns('agent_job_deadline', ['id', 'job_subscription_id', 'subscription_revision', 'principal_person_id', 'hub_id', 'goal_id', 'source_revision', 'calendar_version_id', 'offset_days', 'due_at', 'state', 'created_at']),
 };

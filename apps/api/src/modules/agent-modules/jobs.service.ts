@@ -148,11 +148,12 @@ export class AgentJobsService {
       const validUntil = new Date(body.validUntil);
       if (validUntil.getTime() <= now.getTime() || validUntil.getTime() - now.getTime() > MAX_JOB_VALIDITY_MS) throw new ApiError('validation.schema', 'a job mandate lasts at most a year', { reason: 'validity_invalid' });
       const goalId = trigger.kind === 'goal' ? trigger.goalId : null;
-      if (goalId !== null) {
-        const goal = await trx.selectFrom('goal').select(['id', 'status']).where('id', '=', goalId).where('principal_person_id', '=', p.personId).executeTakeFirst();
-        if (!goal || !['active', 'paused'].includes(goal.status)) throw new ApiError('access.not_found', 'goal not found', { reason: 'goal_not_active' });
+      const goalContextIds = [...new Set([...(body.goalContextIds ?? []), ...(goalId ? [goalId] : [])])];
+      for (const contextGoalId of goalContextIds) {
+        const goal = await trx.selectFrom('goal').select(['id', 'status', 'on_behalf_company_id']).where('id', '=', contextGoalId).where('principal_person_id', '=', p.personId).executeTakeFirst();
+        if (!goal || !['active', 'paused'].includes(goal.status) || goal.on_behalf_company_id !== actor.onBehalfCompanyId) throw new ApiError('access.not_found', 'goal not found', { reason: 'goal_not_active' });
       }
-      const contexts: MandateContext[] = [actor.onBehalfCompanyId ? { kind: 'company', id: actor.onBehalfCompanyId } : { kind: 'profile', id: p.personId }, ...(goalId ? [{ kind: 'goal' as const, id: goalId }] : [])];
+      const contexts: MandateContext[] = [actor.onBehalfCompanyId ? { kind: 'company', id: actor.onBehalfCompanyId } : { kind: 'profile', id: p.personId }, ...goalContextIds.map((id) => ({ kind: 'goal' as const, id }))];
       const proposed = MandateV2Schema.parse({
         id: randomUUID(), schemaVersion: 2, principal: { personId: p.personId, onBehalfOf: actor.onBehalfCompanyId ? { kind: 'company', id: actor.onBehalfCompanyId } : null }, grantee: { kind: 'own_agent' },
         moduleKeys: [template.moduleKey], actions: template.actions, contexts,
