@@ -95,6 +95,9 @@ export interface AgentJobDeadlineTable {
 }
 
 export interface AgentModulesDatabase {
+  agent_serving_hub: { id: GeneratedUuid; origin: string; hub_id: string; active: Generated<boolean>; created_at: GeneratedTimestamp };
+  agent_job_provenance: { job_request_id: string; principal_person_id: string; serving_binding_id: string; hub_id: string; session_id: string; operation_id: string; created_at: GeneratedTimestamp };
+  agent_mandate_usage: { job_request_id: string; principal_person_id: string; hub_id: string; mandate_id: string; mandate_revision: number; mandate_digest: string; created_at: GeneratedTimestamp };
   agent_policy_version: AgentPolicyVersionTable;
   agent_policy_current: AgentPolicyCurrentTable;
   agent_authz_epoch: AgentAuthzEpochTable;
@@ -117,6 +120,9 @@ declare module './index.js' {
 
 const columns = columnsOf<AgentModulesDatabase>();
 export const TABLE_COLUMNS: TableColumns<AgentModulesDatabase> = {
+  agent_serving_hub: columns('agent_serving_hub', ['id', 'origin', 'hub_id', 'active', 'created_at']),
+  agent_job_provenance: columns('agent_job_provenance', ['job_request_id', 'principal_person_id', 'serving_binding_id', 'hub_id', 'session_id', 'operation_id', 'created_at']),
+  agent_mandate_usage: columns('agent_mandate_usage', ['job_request_id', 'principal_person_id', 'hub_id', 'mandate_id', 'mandate_revision', 'mandate_digest', 'created_at']),
   agent_policy_version: columns('agent_policy_version', ['config_version_id', 'hub_id', 'document', 'payload_digest', 'base_version_id', 'narrowed_module_keys', 'drafted_by', 'created_at']),
   agent_policy_current: columns('agent_policy_current', ['hub_id', 'config_version_id', 'document', 'activated_at', 'revision', 'updated_at']),
   agent_authz_epoch: columns('agent_authz_epoch', ['scope_kind', 'scope_id', 'epoch', 'changed_at']),
