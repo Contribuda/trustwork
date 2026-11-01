@@ -48,6 +48,8 @@ Integrator choices recorded with the freeze (the owner may override them): break
 | [Data model view](data-model.md) | Every console section mapped to the entities it reads and writes and the projection layer it may use |
 | [Screens](screens.md) | Screen-by-screen contract: purpose, data, actions, empty/error/denied states, mobile behaviour, locale namespace |
 
+The discovery and outreach screens (HC-55 Entity review, HC-56 Sourced pages, the outreach section HC-170 to HC-177 and extensions to HC-41, HC-50 and HC-140) are designed with their engine in [Discovery, sourced pages, claims and outreach](../discovery-and-outreach.md#admin-screens) (proposed, ADR 017) and reuse this folder's components and conventions.
+
 ## Principles
 
 1. **Configuration, not code.** Anything that differs between countries, cities or operators is a pack fact, a versioned hub configuration record or an adapter choice. If an operator needs a code change to launch, the console has a gap.
