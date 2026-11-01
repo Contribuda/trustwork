@@ -49,6 +49,18 @@ END $$;
 REVOKE ALL ON FUNCTION trustwork.agent_modules_lock_envelope_boundary() FROM PUBLIC,trustwork_worker;
 GRANT EXECUTE ON FUNCTION trustwork.agent_modules_lock_envelope_boundary() TO trustwork_app;
 
+-- Membership withdrawal can revoke the original company mandate and representative in its owning AFTER hooks.
+-- Enter the same ordering fence before those row locks, without changing any identity authorizer or trigger body.
+CREATE FUNCTION trustwork.agent_modules_membership_envelope_order() RETURNS trigger
+LANGUAGE plpgsql SET search_path=trustwork,pg_temp AS $$
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtextextended('trustwork.agent-envelope-authority.v1',0));
+  RETURN NULL;
+END $$;
+REVOKE ALL ON FUNCTION trustwork.agent_modules_membership_envelope_order() FROM PUBLIC,trustwork_app,trustwork_worker;
+CREATE TRIGGER agent_modules_membership_envelope_order BEFORE UPDATE ON trustwork.membership
+FOR EACH STATEMENT EXECUTE FUNCTION trustwork.agent_modules_membership_envelope_order();
+
 ALTER FUNCTION trustwork.agents_deliver_envelope(jsonb,jsonb,jsonb) RENAME TO agent_modules_deliver_envelope_owned;
 REVOKE ALL ON FUNCTION trustwork.agent_modules_deliver_envelope_owned(jsonb,jsonb,jsonb) FROM PUBLIC,trustwork_app,trustwork_worker;
 CREATE FUNCTION trustwork.agents_deliver_envelope(p_actor jsonb,p_envelope jsonb,p_settings jsonb)
