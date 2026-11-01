@@ -75,8 +75,10 @@ test('file list registration is current-authority, digest-bound, independently a
   const fake=await withWorker(w.worker,trx=>ingestList(trx,list.id,deps,new AbortController().signal));assert.equal(fake.outcome,'activated');
   const versionSource=(await w.h.db.admin.query<{registered_source_id:string}>('SELECT registered_source_id FROM trustwork.screening_list_version WHERE id=$1',[fake.versionId])).rows[0]!.registered_source_id;
   assert.equal(versionSource,source.id,'immutable version preserves its registered source snapshot');
+  await assert.rejects(w.h.db.admin.query('UPDATE trustwork.screening_list_version SET registered_source_id=NULL WHERE id=$1',[fake.versionId]),/immutable/);
   await withMaintenance(w.h.db.admin,trx=>syncScreeningListSources(trx,[]));
   const retired=await withWorker(w.worker,trx=>ingestList(trx,list.id,deps,new AbortController().signal));assert.equal(retired.error,'source_authority_retired');
+  await assert.rejects(w.worker.query(`SELECT trustwork.screening_list_stage($1::uuid,'2026-10-31',now(),'fake',repeat('a',64),1,repeat('b',64),'{}'::jsonb)`,[list.id]),/registered source authority unavailable/);
  });
  await t.test('baseline cannot be paused, additional controls require reasons, history cannot be rewritten',async()=>{
   const baseline=(await w.h.db.admin.query<{id:string}>('SELECT id FROM trustwork.screening_list WHERE baseline LIMIT 1')).rows[0]!.id;
