@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { buildAgentWorld } from '../agent-modules/helpers.js';
 import assert from 'node:assert/strict';
 import { AssistantService, DEFAULT_RUNTIME_SETTINGS } from '../../apps/api/src/modules/assistant/assistant.service.js';
 import { assistantPolicySettings } from '../../apps/api/src/modules/assistant/assistant.module.js';
@@ -8,12 +9,15 @@ import { login, seedPersonas } from '../backend/helpers/personas.js';
 import { stateOf } from '../assistant/helpers.js';
 import { bindCompletion, InTransactionCompletion } from '../../apps/api/src/common/idempotency/completion.js';
 import { assistantModelTurns } from '../../packages/data/src/repositories/assistant-model.js';
-import { withPrincipal } from '@trustwork/data';
+import { sql } from 'kysely';
+import { withMaintenance, withPrincipal } from '@trustwork/data';
 
 const h = await startHarness('models_ast_boundary');
 test('AST model boundary commits before effect, serializes conversation and finalizes exactly once', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await buildAgentWorld(h);
+  h.clock.reset();
   await seedPersonas(h);
   const client = h.client();
   await login(client, 'petr');
@@ -93,6 +97,8 @@ test('AST model boundary commits before effect, serializes conversation and fina
     };
     const before = calls;
     await assert.rejects(service.converse({ text: 'Synthetic crash input' }, await state('model-boundary-crash')));
+    await withMaintenance(h.db.admin, (trx) => sql`UPDATE trustwork.agent_serving_hub SET active = false`.execute(trx));
+    await assert.rejects(service.converse({ text: 'No fresh dispatch after binding withdrawal' }, await state('model-boundary-unavailable')));
     await assert.rejects(service.converse({ text: 'Synthetic crash input' }, await state('model-boundary-crash')));
     assert.equal(calls, before + 1);
     recovery = success;
@@ -100,6 +106,7 @@ test('AST model boundary commits before effect, serializes conversation and fina
     assert.equal(recovered.run.state, 'completed');
     assert.equal(calls, before + 1);
     assert.ok(recoveries >= 2);
+    await withMaintenance(h.db.admin, (trx) => sql`UPDATE trustwork.agent_serving_hub SET active = true`.execute(trx));
   });
   await t.test('HTTP completion failure rolls back final response but retains committed intent and stable operation', async () => {
     handler = async () => success;

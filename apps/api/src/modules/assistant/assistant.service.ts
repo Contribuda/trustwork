@@ -12,6 +12,7 @@ import type { AssistantModelTurnRow } from '../../../../../packages/data/src/sch
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
+import { findServingHub, servingHub } from '../agent-modules/serving-hub.js';
 import { mapDatabaseError } from '../procurement/common.js';
 import {
   actionIntents, conversationTurns, mandateProposals, mandates, runs, runSteps, serviceBacklog, stops,
@@ -117,6 +118,7 @@ export const DEFAULT_RUNTIME_SETTINGS: AssistantRuntimeSettings = { approvalTtlS
  * a module or capability the hub switched off, or a kill switch, refuses it here exactly as on the interface and MCP.
  */
 export type AgentCapabilityGate = (trx: Transaction, input: {
+  hubId: string;
   personId: string;
   mandate: { onBehalfCompanyId: string | null; granteeKind: 'own_agent' | 'colleague_agent' | 'company_representative'; granteeCompanyId: string | null };
   capabilityId: string;
@@ -271,6 +273,8 @@ export class AssistantService {
     const row = await mandates.confirm(trx, {
       snapshot: parsed.data, contexts: parsed.data.contexts, digest: mandateDigest(parsed.data), expectedRevision: before?.revision ?? null, stepUp: candidate.confirmation.stepUp, proposalId,
     });
+    const binding = await findServingHub(trx, this.ctx.config.publicOrigin);
+    if (binding && state.session) await sql`SELECT trustwork.agent_modules_bind_mandate(${row.id}::uuid,${binding.id}::uuid,${state.session.id}::uuid)`.execute(trx);
     await this.audit(trx, p, state, 'assistant.mandate_confirmed', 'mandate', row.id, { revision: row.revision, digest: row.digest, proposalId, actions: parsed.data.actions });
     return mandateView(row);
   }
@@ -387,13 +391,19 @@ export class AssistantService {
       if (!state.session || state.session.personId !== p.personId) throw new ApiError('auth.session_invalid', 'session required');
       await this.closeStoppedTurns(trx, p, false);
       const begun = await assistantModelTurns.begin(trx, key, computeDigest(body).value, body.text);
+      if (begun.fresh) {
+        const binding = await servingHub(trx, this.ctx.config.publicOrigin);
+        await sql`SELECT trustwork.agent_modules_bind_run(${begun.turn.run_id}::uuid,${binding.id}::uuid,${state.session.id}::uuid)`.execute(trx);
+      }
+      // Recovery reloads original provenance without requiring fresh-dispatch permission or an active binding.
+      const provenance = await trx.selectFrom('agent_run_provenance').select('hub_id').where('run_id', '=', begun.turn.run_id).executeTakeFirst();
       const history = (await conversationTurns.list(trx, p.personId, 21)).filter((t) => t.id !== begun.turn.asked_id).slice(0, 20).reverse().map((t) => ({ role: t.role, content: t.content }));
-      return { ...begun, principal: p, history };
+      return { ...begun, principal: p, history, executionHubId: provenance?.hub_id ?? null };
     });
     type Result = ConversationResult;
     if (prepared.turn.state === 'completed') return this.run(state, async () => prepared.turn.result as Result);
     const input: ModelInput = { personId: prepared.principal.personId, history: prepared.history, text: body.text, evidence: [],
-      execution: { operationId: prepared.turn.id, runId: prepared.turn.run_id, hubId: this.settings.hubId, principal: prepared.principal, sessionId: state.session!.id } };
+      execution: { operationId: prepared.turn.id, runId: prepared.turn.run_id, hubId: prepared.executionHubId, principal: prepared.principal, sessionId: state.session!.id } };
     // A pending turn after a crash is never reclaimed for dispatch, even after an HTTP lease expires.
     const reply = prepared.fresh ? await this.model.respond(input) : await this.model.recover?.(input);
     if (!prepared.fresh && !this.model.recover) return this.run(state, async (trx, p) => {
@@ -510,12 +520,14 @@ export class AssistantService {
       throw error;
     }
     if (!call.capabilityId.startsWith(`${call.moduleKey}.`) || !/^[a-z][a-z0-9_]{1,40}$/.test(call.effect.provider) || !/^[a-z][a-z0-9_.]{1,80}$/.test(call.effect.operation)) return deny('invalid_capability');
+    const provenance = await trx.selectFrom('agent_run_provenance').select('hub_id').where('run_id', '=', runId).where('principal_person_id', '=', p.personId).executeTakeFirst();
+    if (!provenance) return deny('hub_provenance_unavailable');
     const context: ContextRef = call.context;
-    const { outcome, row } = await decide(trx, { personId: p.personId, mandateId: call.mandateId, moduleKeys: [call.moduleKey], action: call.action, context, amount: call.amount, projectId: call.projectId, at: this.now() }, this.settings);
+    const { outcome, row } = await decide(trx, { personId: p.personId, mandateId: call.mandateId, moduleKeys: [call.moduleKey], action: call.action, context, amount: call.amount, projectId: call.projectId, at: this.now() }, { ...this.settings, hubId: provenance.hub_id });
     if (outcome.effect === 'deny' || !row) return deny(outcome.effect === 'deny' ? outcome.reason : 'not_found');
     if (this.capabilityGate) {
       const refused = await this.capabilityGate(trx, {
-        personId: p.personId, mandate: { onBehalfCompanyId: row.on_behalf_company_id, granteeKind: row.grantee_kind, granteeCompanyId: row.grantee_company_id }, capabilityId: call.capabilityId, action: call.action,
+        hubId: provenance.hub_id, personId: p.personId, mandate: { onBehalfCompanyId: row.on_behalf_company_id, granteeKind: row.grantee_kind, granteeCompanyId: row.grantee_company_id }, capabilityId: call.capabilityId, action: call.action,
       });
       if (refused) return deny(refused.reason);
     }

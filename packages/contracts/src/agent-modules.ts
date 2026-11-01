@@ -172,6 +172,8 @@ export function cohortCount(n: number): number | null {
 const ChangeSchema = z.enum(['enabled', 'disabled', 'narrowed', 'widened', 'changed']);
 /** What activating the version changes, computed on current data, never naming a participant. */
 export const PolicyPreviewSchema = z.strictObject({
+  /** Exact proven attribution snapshot; legacy stored documents remain readable but cannot activate again. */
+  attributionDigest: z.string().regex(/^[a-f0-9]{64}$/).nullable().default(null),
   computedAt: TimestampSchema,
   baseVersionId: IdSchema.nullable(),
   modules: z.array(z.strictObject({ moduleKey: AgentModuleKeySchema, change: ChangeSchema })).max(200),
@@ -401,7 +403,7 @@ export function moduleRefusal(doc: AgentPolicyDraft, registry: ModuleRegistry, m
 /* ---------- Preview: what changes between two documents ---------- */
 
 /** The changes of `after` against `before` (null: the engine default applies now). Counts are filled from the database. */
-export function diffPolicies(before: AgentPolicyDraft | null, after: AgentPolicyDraft, registry: ModuleRegistry): Omit<PolicyPreview, 'computedAt' | 'baseVersionId' | 'affected' | 'registeredModuleKeys'> {
+export function diffPolicies(before: AgentPolicyDraft | null, after: AgentPolicyDraft, registry: ModuleRegistry): Omit<PolicyPreview, 'computedAt' | 'baseVersionId' | 'affected' | 'registeredModuleKeys' | 'attributionDigest'> {
   const base = before ?? engineDefaultPolicy(after.policy.hubId, registry);
   const modules: PolicyPreview['modules'] = [];
   const narrowed = new Set<string>();

@@ -196,7 +196,7 @@ test('the preview diff names changed modules and capabilities, narrowed modules,
   assert.equal(m.PolicyPreviewSchema.safeParse({ ...previewOf(diff), affected: { mandates: 3, jobSubscriptions: null, connections: null, openRuns: null } }).success, false, 'a count below 10 never appears');
 });
 function previewOf(diff: ReturnType<typeof m.diffPolicies>): m.PolicyPreview {
-  return { computedAt: '2026-11-01T00:00:00.000Z', baseVersionId: null, registeredModuleKeys: ['project_planner'], ...diff, affected: { mandates: null, jobSubscriptions: 12, connections: null, openRuns: null } };
+  return { attributionDigest: 'a'.repeat(64), computedAt: '2026-11-01T00:00:00.000Z', baseVersionId: null, registeredModuleKeys: ['project_planner'], ...diff, affected: { mandates: null, jobSubscriptions: 12, connections: null, openRuns: null } };
 }
 
 test('schedule triggers fire in the principal\'s time zone and respect the hub calendar; deadlines, events and goals', () => {

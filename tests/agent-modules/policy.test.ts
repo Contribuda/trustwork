@@ -12,8 +12,12 @@ import { agentProtectionLimits, CapabilityAuthority } from '../../apps/api/src/m
 import { principalFor } from '../data/helpers/seed.js';
 import { Client, SKIP_REASON, startHarness, type Response } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
-import { expectRefusal } from '../admin/helpers.js';
-import { rejects } from '../hubs/helpers.js';
+import { addLogins, expectRefusal, signIn } from '../admin/helpers.js';
+import { rejects, US_HUB } from '../hubs/helpers.js';
+import { AssistantService, DEFAULT_RUNTIME_SETTINGS } from '../../apps/api/src/modules/assistant/assistant.service.js';
+import { assistantPolicySettings } from '../../apps/api/src/modules/assistant/assistant.module.js';
+import { UnavailableModel, UnavailableRetrieval } from '../../apps/api/src/modules/assistant/ports.js';
+import { stateOf } from '../assistant/helpers.js';
 import { PLANNER_COMMIT, PROFILE, usHubPolicy, withSwitch } from './fixtures.js';
 import { buildAgentWorld, command, documentFor, ok, type AgentWorld } from './helpers.js';
 
@@ -140,24 +144,54 @@ test('agent product administration: policy versions with previews, second person
     assert.equal(small.preview.affected.mandates, null);
     const ownCounts = await world.a.cmd(w.people.owner, (trx) => agentPolicies.previewCounts(trx, hubId, [PROFILE.key]));
     assert.equal(ownCounts.mandates, null, 'ten mandates of one person never form a publishable cohort');
-    await withMaintenance(h.db.admin, async (trx) => {
-      const source = await trx.selectFrom('mandate').selectAll().where('principal_person_id', '=', seed.people.petr).executeTakeFirstOrThrow();
+    // Counts remain suppressed, but changed proven attribution still invalidates the approved snapshot.
+    expectRefusal(await activate(c), 409, 'validation.revision_conflict', 'preview_stale');
+    const cohort = await withMaintenance(h.db.admin, async (trx) => {
+      const people: [string, string][] = [];
       for (let i = 0; i < 9; i++) {
         const person = await trx.insertInto('person').values({ display_name: `Synthetic cohort ${i}` }).returning('id').executeTakeFirstOrThrow();
-        const id = randomUUID();
-        const snapshot = source.snapshot as Record<string, unknown>;
-        await trx.insertInto('mandate').values({ ...source, id, principal_person_id: person.id, confirmed_by_person_id: person.id,
-          snapshot: JSON.stringify({ ...snapshot, id, principal: { personId: person.id, onBehalfOf: null }, confirmation: { ...(snapshot.confirmation as Record<string, unknown>), personId: person.id } }),
-        }).execute();
+        people.push([person.id, `synthetic-cohort-${i}@example.invalid`]);
       }
+      return people;
     });
-    expectRefusal(await activate(c), 409, 'validation.revision_conflict', 'preview_stale');
+    await addLogins(h, cohort);
+    for (const [personId, email] of cohort) {
+      const person = h.client();
+      await signIn(person, email);
+      ok(await person.post('/v1/assistant/mandates', { draft: {
+        onBehalfOf: null, grantee: { kind: 'own_agent' }, moduleKeys: [PROFILE.key], actions: ['maintain_profile'], contexts: [{ kind: 'profile', id: personId }],
+        limits: { ceiling: null, perActionCeiling: null, transactionBudgetId: null, platformBudgetId: null, perWindow: null }, conditions: [], approvalPolicy: { mode: 'ask_each' }, approvers: [],
+        escalation: { kind: 'ask_principal' }, validUntil: new Date(Date.now() + 30 * 86_400_000).toISOString(),
+      } }), 201);
+    }
     // Drafted again, the preview shows the cohort and activates.
     const again = (await draft({ ...disable, policy: { ...disable.policy, enabledModules: disable.policy.enabledModules.filter((e) => e.moduleKey !== PROFILE.key) }, modules: [disable.modules[0]!] })).version;
     assert.equal(again.preview.affected.mandates, 19);
     ok(await activate(again));
     // Back to the reference policy for the rest of the suite.
     ok(await activate((await draft()).version));
+  });
+
+  await t.test('hub B previews exclude proven hub A mandates; unproven legacy authority is unavailable', async () => {
+    const otherHub = (await world.a.createHub(`synthetic-preview-b-${randomUUID().slice(0, 8)}`, US_HUB)).hub_id;
+    await world.a.assignSensitive({ personId: w.people.owner, role: 'hub-owner', scope: { kind: 'hub', hubId: otherHub } });
+    const a = await world.a.cmd(w.people.owner, (trx) => agentPolicies.previewSnapshot(trx, hubId, [PROFILE.key]));
+    const b = await world.a.cmd(w.people.owner, (trx) => agentPolicies.previewSnapshot(trx, otherHub, [PROFILE.key]));
+    assert.equal(a.affected.mandates, 19);
+    assert.deepEqual(b.affected, { mandates: null, jobSubscriptions: null, connections: null, openRuns: null });
+    assert.notEqual(a.attributionDigest, b.attributionDigest);
+    const unbound = new AssistantService({ ...h.created.ctx!, config: { ...h.created.config, publicOrigin: 'https://synthetic-unregistered.example.invalid' } },
+      h.services().principals, assistantPolicySettings({ hubId: null }), DEFAULT_RUNTIME_SETTINGS, new UnavailableModel(), new UnavailableRetrieval());
+    const legacy = await unbound.createMandate({ draft: {
+      onBehalfOf: null, grantee: { kind: 'own_agent' }, moduleKeys: [PROFILE.key], actions: ['maintain_profile'], contexts: [{ kind: 'profile', id: seed.people.petr }],
+      limits: { ceiling: null, perActionCeiling: null, transactionBudgetId: null, platformBudgetId: null, perWindow: null }, conditions: [], approvalPolicy: { mode: 'ask_each' }, approvers: [],
+      escalation: { kind: 'ask_principal' }, validUntil: new Date(Date.now() + 30 * 86_400_000).toISOString(),
+    } }, await stateOf(h, petr, `unbound-confirm-${randomUUID()}`));
+    await assert.rejects(world.a.cmd(w.people.owner, (trx) => agentPolicies.previewSnapshot(trx, hubId, [PROFILE.key])),
+      (error: unknown) => (error as { hint?: string }).hint === 'agents.attribution_unavailable');
+    assert.equal((await h.db.admin.query('SELECT mandate_id FROM trustwork.agent_mandate_provenance WHERE mandate_id = $1', [legacy.id])).rowCount, 0);
+    ok(await petr.post(`/v1/assistant/mandates/${legacy.id}/revoke`, { expectedRevision: legacy.revision, reason: 'Synthetic unknown attribution retired' }));
+    assert.equal((await world.a.cmd(w.people.owner, (trx) => agentPolicies.previewSnapshot(trx, hubId, [PROFILE.key]))).affected.mandates, 19);
   });
 
   await t.test('an agents version drafted around AGT-003 (the generic configuration route) never activates', async () => {

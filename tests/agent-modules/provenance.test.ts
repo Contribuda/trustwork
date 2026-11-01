@@ -56,6 +56,11 @@ test('first-party serving provenance is explicit, immutable and independent of p
     await assert.rejects(withMaintenance(h.db.admin, (trx) => sql`UPDATE trustwork.agent_serving_hub SET origin = 'https://forged.example.invalid'`.execute(trx)));
   });
 
+  await t.test('the capability gate is not an oracle for another person private stop status', async () => {
+    for (const personId of [seed.people.carl, world.w.people.owner]) await as(h, personId, (trx) =>
+      fails(sql`SELECT trustwork.agent_modules_dispatch_refusal(${world.hubId}::uuid,'core','core.generate_goal_report','prepare',${seed.people.petr}::uuid,NULL::uuid,NULL::uuid)`.execute(trx), '42501'));
+  });
+
   await t.test('an absent routing registration is denied even when the process default names a real hub', async () => {
     await withMaintenance(h.db.admin, (trx) => sql`UPDATE trustwork.agent_serving_hub SET active = false`.execute(trx));
     const r = await client.post('/v1/assistant/jobs', body);
