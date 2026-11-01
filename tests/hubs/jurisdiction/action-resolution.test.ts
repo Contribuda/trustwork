@@ -45,7 +45,7 @@ test('owning action resolution refuses unsupported actions and contexts despite 
   });
 
   for (const action of MANDATE_ACTIONS_V2.filter(action => action !== 'send_quote')) {
-    await t.test(`${action}: a real quote and an explicit rule do not supply an owning resolver`, async () => {
+    await t.test(`${action}: ${['negotiate', 'place_order'].includes(action) ? 'a seller quote does not grant buyer action authority' : 'a real quote and an explicit rule do not supply an owning resolver'}`, async () => {
       await rejects(a.as(p.moderator, trx => jurisdictionAuthority.limits(trx, deal.quoteId, action)), '42501');
       // Even the internal resolver, invoked here only by maintenance, must not reinterpret the verb.
       const result = await withMaintenance(db.admin, async trx => {

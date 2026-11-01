@@ -30,20 +30,20 @@ export async function syntheticSourceAuthority(admin: DataPool, f: World) {
   const registration: JurisdictionIssuer = {
     schemaVersion: 2, issuerId: randomUUID(), hubId: f.hubId, ...SYNTHETIC_JURISDICTION_VERIFIER,
     keyId: 'synthetic.localKey', publicKey: publicKey.export({ type: 'spki', format: 'pem' }).toString(), evidenceMode: 'synthetic',
-    subjectKinds: ['person', 'company', 'project'], actions: ['send_quote'], contextKinds: ['quote'], jurisdictions: ['US', 'GB', 'US-CA'],
+    subjectKinds: ['person', 'company', 'project'], actions: ['send_quote', 'negotiate', 'place_order', 'accept_order'], contextKinds: ['quote', 'agreement'], jurisdictions: ['US', 'GB', 'US-CA'],
     competenceDigest: 'd'.repeat(64), independence: 'required', effectiveFrom: new Date(Date.now() - 1000).toISOString(), effectiveUntil: new Date(Date.now() + 3600_000).toISOString(),
   };
   const proposed = await f.a.cmd(f.p.owner, (trx, ctx) => jurisdictionIssuers.propose(trx, f.world.sessions.owner, ctx, registration));
   await f.a.cmd(f.p.officer, (trx, ctx) => jurisdictionIssuers.activate(trx, f.world.sessions.officer, ctx, proposed.id, proposed.digest));
   const envelope = (payload: JurisdictionProofPayload) => ({ payload, signature: sign(null, Buffer.from(jurisdictionProofDigest(payload), 'hex'), privateKey).toString('base64') });
-  const payload = async (kind: 'person' | 'company' | 'project', id: string, quoteId: string, jurisdictions = ['US']) => withMaintenance(admin, async trx => {
-    const snapshots = await sql<{ subject: unknown; context: unknown; demo: unknown }>`SELECT trustwork.jurisdiction_owning_subject(${kind},${id}::uuid,${quoteId}::uuid) AS subject,trustwork.jurisdiction_owning_quote(${quoteId}::uuid) AS context,trustwork.jurisdiction_demo_authority(${f.hubId}::uuid) AS demo`.execute(trx);
-    const recordId = `synthetic.${kind}.${id}.${quoteId}`;
+  const payload = async (kind: 'person' | 'company' | 'project', id: string, quoteId: string, jurisdictions = ['US'], action: JurisdictionProofPayload['action'] = 'send_quote', contextKind: 'quote' | 'agreement' = 'quote') => withMaintenance(admin, async trx => {
+    const snapshots = await sql<{ subject: unknown; context: unknown; demo: unknown }>`SELECT trustwork.jurisdiction_context_subject(${kind},${id}::uuid,${contextKind},${quoteId}::uuid) AS subject,trustwork.jurisdiction_owning_context(${contextKind},${quoteId}::uuid,${action}) AS context,trustwork.jurisdiction_demo_authority(${f.hubId}::uuid) AS demo`.execute(trx);
+    const recordId = `synthetic.${kind}.${id}.${quoteId}.${action}.${contextKind}`;
     const revisions = await sql<{ revision: number }>`SELECT coalesce(max(record_revision),0)+1 AS revision FROM trustwork.jurisdiction_proof_record WHERE issuer_id=${registration.issuerId}::uuid AND record_id=${recordId}`.execute(trx);
     return JurisdictionProofPayloadSchema.parse({
       schemaVersion: 2, issuerVersionId: proposed.id, issuerDigest: proposed.digest, keyId: registration.keyId,
       audienceHubId: f.hubId, originHubId: f.hubId, evidenceMode: 'synthetic', demoAuthority: snapshots.rows[0]!.demo, recordId, recordRevision: revisions.rows[0]!.revision,
-      action: 'send_quote', subject: snapshots.rows[0]!.subject, context: snapshots.rows[0]!.context,
+      action, subject: snapshots.rows[0]!.subject, context: snapshots.rows[0]!.context,
       linkage: { kind: 'verified_engine_subject', evidenceDigest: 'e'.repeat(64) },
       coverage: { status: 'complete', jurisdictions, basisDigest: 'b'.repeat(64), competenceDigest: registration.competenceDigest, independenceEvidenceDigest: 'a'.repeat(64) },
       issuedAt: new Date().toISOString(), effectiveFrom: new Date(Date.now() - 1000).toISOString(), effectiveUntil: new Date(Date.now() + 1800_000).toISOString(),
@@ -55,5 +55,5 @@ export async function syntheticSourceAuthority(admin: DataPool, f: World) {
     await f.a.cmd(f.p.officer, (trx, ctx) => jurisdictionApplicabilityReview.activate(trx, f.world.sessions.officer, ctx, review.reviewId, e.digest));
     return e;
   };
-  return { registration, proposed, payload, envelope, stage, activate, issue: async (kind: 'person' | 'company' | 'project', id: string, quoteId: string, jurisdictions = ['US']) => activate(await stage(await payload(kind, id, quoteId, jurisdictions))) };
+  return { registration, proposed, payload, envelope, stage, activate, issue: async (kind: 'person' | 'company' | 'project', id: string, quoteId: string, jurisdictions = ['US'], action: JurisdictionProofPayload['action'] = 'send_quote', contextKind: 'quote' | 'agreement' = 'quote') => activate(await stage(await payload(kind, id, quoteId, jurisdictions, action, contextKind))) };
 }
