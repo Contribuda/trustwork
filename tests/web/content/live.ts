@@ -259,8 +259,9 @@ try {
   await writeFile(`${evidence}/issue-translation-es.pdf`,Buffer.from(await translationPdf.arrayBuffer()));
   await trPage.goto('http://127.0.0.1:3468/ru/magazine/15/read',{waitUntil:'networkidle'});
   const originalLabel=JSON.parse(await readFile('apps/web/locales/ru/content.json','utf8')).content.original;
-  assert.ok((await trPage.locator('body').innerText()).includes(originalLabel.replace('{language}','ru')));
-  assert.ok(!(await trPage.locator('body').innerText()).includes(originalLabel.replace('{language}','es')));
+  const normalizedPageText=async()=>(await trPage.locator('body').innerText()).replace(/\s+/gu,' ');
+  assert.ok((await normalizedPageText()).includes(originalLabel.replace('{language}','ru')));
+  assert.ok(!(await normalizedPageText()).includes(originalLabel.replace('{language}','es')));
   assert.equal(await trPage.locator(`a[href="/ru/articles/${article.id}?version=2"]`).count(),1);
   await trPage.screenshot({path:`${evidence}/ru-translation-reader-375.png`,fullPage:true});
   for(const section of ['articles','magazine'])for(const file of ['feed.xml','atom.xml','feed.json']){
@@ -271,8 +272,8 @@ try {
   article=await w.act.as(p.writer,trx=>withProvenanceFixtures(w).correct(trx,null,article.id,article.revision,draft({language:'ru',title:'Synthetic current original',body:'Synthetic revised original.',assistantAssisted:true}),'Synthetic original update','Synthetic update'));
   await trPage.goto(`http://127.0.0.1:3468/ru/articles/${translated.id}`,{waitUntil:'networkidle'});
   assert.ok((await trPage.locator('body').innerText()).includes(labels.stale));
-  assert.ok((await trPage.locator('body').innerText()).includes(originalLabel.replace('{language}','ru')));
-  assert.ok(!(await trPage.locator('body').innerText()).includes(originalLabel.replace('{language}','es')));
+  assert.ok((await normalizedPageText()).includes(originalLabel.replace('{language}','ru')));
+  assert.ok(!(await normalizedPageText()).includes(originalLabel.replace('{language}','es')));
   const structured=JSON.parse((await trPage.locator('script[type="application/ld+json"]').textContent())!);
   assert.equal(structured.translationOfWork.identifier,version.content_digest);
   assert.ok(structured.translationOfWork.url.endsWith(`${article.id}?version=2`));
