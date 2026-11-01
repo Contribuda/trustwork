@@ -281,12 +281,28 @@ test('the pull request check accepts a complete description and explains every g
 test('a pull request that changes a package\'s paths must name the package, or say "Work package: none" with an issue', () => {
   const touching = { author: 'octocat', packages, changedFiles: ['apps/b/x.ts', 'apps/a/old.ts', 'README.md'] };
   const withoutEscape = goodBody().replace('Work package: none · issue #12', 'Implements it.');
-  assert.match(checkPullRequest({ ...touching, body: withoutEscape }).errors.join('\n'), /1 changed file\(s\) belong to BBB-001 \(for example apps\/b\/x.ts\)/);
-  assert.deepEqual(checkPullRequest({ ...touching, body: withoutEscape.replace('Implements it.', 'Work package: `BBB-001` · issue #2') }).errors, []);
+  const unnamed = checkPullRequest({ ...touching, body: withoutEscape }).errors.join('\n');
+  assert.match(unnamed, /1 changed file\(s\) belong to BBB-001 \(for example apps\/b\/x.ts\)/);
+  assert.match(unnamed, /1 changed file\(s\) belong to AAA-001 \(for example apps\/a\/old.ts\)/, 'a done package still owns its paths');
+  assert.deepEqual(checkPullRequest({ ...touching, body: withoutEscape.replace('Implements it.', 'Work package: `BBB-001` · issue #2; fixes `AAA-001` (issue #1)') }).errors, []);
   const escape = checkPullRequest({ ...touching, body: goodBody() });
   assert.deepEqual(escape.errors, []);
   assert.match(escape.warnings.join('\n'), /maintainer must confirm/);
   assert.deepEqual(checkPullRequest({ ...touching, changedFiles: ['packages/c/nested/x.ts'], body: withoutEscape.replace('Implements it.', 'Part of EEE-001') }).errors, [], 'naming any owning package is enough');
+});
+
+test('a done package keeps owning its paths, so a broader open package does not shadow it; rejected packages own nothing', () => {
+  // QA-002 regression: a package that marks itself done in its own pull request was attributed to the broader open package.
+  const nested = {
+    schemaVersion: 1,
+    packages: [pkg('QQQ-001', ['tests/release']), pkg('QQQ-002', ['tests/release/platform'], { status: 'done' }), pkg('RRR-001', ['apps/r'], { status: 'rejected' })],
+  };
+  const withoutEscape = goodBody().replace('Work package: none · issue #12', 'Implements it.');
+  const files = { author: 'octocat', packages: nested, changedFiles: ['tests/release/platform/run.mjs'] };
+  assert.match(checkPullRequest({ ...files, body: withoutEscape }).errors.join('\n'), /belong to QQQ-001 or QQQ-002 \(for example tests\/release\/platform\/run.mjs\)/);
+  assert.deepEqual(checkPullRequest({ ...files, body: withoutEscape.replace('Implements it.', 'Work package: `QQQ-002` · issue #66') }).errors, [], 'the done package itself is enough');
+  assert.deepEqual(checkPullRequest({ ...files, body: withoutEscape.replace('Implements it.', 'Work package: `QQQ-001` · issue #65') }).errors, [], 'the broader open package is still accepted');
+  assert.deepEqual(checkPullRequest({ ...files, changedFiles: ['apps/r/x.ts'], body: withoutEscape }).errors, [], 'a rejected package owns no path');
 });
 
 test('agent-facing workflows pin actions by SHA, keep minimal permissions and never interpolate comment text into a shell', () => {

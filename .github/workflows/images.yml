@@ -32,7 +32,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPOSE: docker compose -f infra/compose.yaml --profile stack
+  # Its own project name, as on a developer machine (docs/operations/images.md): never the development project.
+  COMPOSE: docker compose -p trustwork-stack -f infra/compose.yaml --profile stack
   TRUSTWORK_STACK_PORT: '8080'
   # Pinned SBOM generator (Syft, Apache-2.0), run as a container against each saved image archive.
   SYFT_IMAGE: anchore/syft:v1.54.1@sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa

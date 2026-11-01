@@ -186,7 +186,7 @@ Rules for agent communication:
 
 ## 8. Handing work back
 
-Use `.github/PULL_REQUEST_TEMPLATE.md`. The **PR description** check (`.github/workflows/pull-request.yml`, logic in `scripts/claims.mjs pr`) fails until the description has what changed and why, a ticked `npm run check` box with the commit SHA and results, exactly one of the "No" / "Yes" agent boxes with a filled `Agent: <tool and model> for <human handle>` line when "Yes", the ticked DCO box, and the package id for every changed file inside an open package's paths. Draft pull requests get warnings only. The separate **DCO sign-off** job checks that every commit carries `Signed-off-by`. A pull request is ready when it contains:
+Use `.github/PULL_REQUEST_TEMPLATE.md`. The **PR description** check (`.github/workflows/pull-request.yml`, logic in `scripts/claims.mjs pr`) fails until the description has what changed and why, a ticked `npm run check` box with the commit SHA and results, exactly one of the "No" / "Yes" agent boxes with a filled `Agent: <tool and model> for <human handle>` line when "Yes", the ticked DCO box, and the package id for every changed file inside a package's paths (open or done: a done package still owns its paths, so a fix to its files names it or a broader package that also covers them; only rejected packages own nothing). Draft pull requests get warnings only. The separate **DCO sign-off** job checks that every commit carries `Signed-off-by`. A pull request is ready when it contains:
 
 1. **What and why**, linked to the work package issue.
 2. **Verification**: every command you ran with exit codes and test counts (`npm run check`, focused tests, browser tests when UI changed), and the commit SHA they ran on.
