@@ -6,6 +6,8 @@ import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
+import { requirePublicServingContext } from '../agent-modules/serving-hub.js';
+import type { PublicServiceBoundary } from '../agent-modules/service-bindings.js';
 import { columnsOf, partyOf } from '../execution/execution.service.js';
 import { iso, isoDate, mapDatabaseError, UUID } from '../procurement/common.js';
 import {
@@ -84,6 +86,7 @@ export interface ReputationServiceOptions {
   /** The hub this API serves (TRUSTWORK_HUB_ID): credential checks are recorded by it and appeals go to its queue. */
   hubId: string | null | (() => string | null);
   register: CredentialRegisterPort;
+  publicBoundary?: PublicServiceBoundary;
 }
 
 /**
@@ -252,6 +255,7 @@ export class ReputationService {
     if (!UUID.test(subject.id)) throw new ApiError('access.not_found');
     const today = isoDate(this.now().toISOString());
     const read = async (trx: Transaction): Promise<ReputationBuilderPublicView> => {
+      await (this.options.publicBoundary?.(trx) ?? requirePublicServingContext(trx, this.ctx.config.publicOrigin));
       const cols = columnsOf(subject);
       const [creds, entries] = await Promise.all([reputationPublic.credentials(trx, cols), reputationPublic.portfolio(trx, cols)]);
       return ReputationBuilderPublicViewSchema.parse({

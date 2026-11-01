@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -40,6 +41,7 @@ const profileBody = (over: Record<string, unknown> = {}) => ({
 test('profiles API: consent-driven public profiles, portraits, experience and private records', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   const reference = await kernelReference.fromRepository();
   await withMaintenance(h.db.admin, (trx) => kernelSync.apply(trx, reference));

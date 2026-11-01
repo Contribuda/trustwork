@@ -6,6 +6,8 @@ import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
+import { requirePublicServingContext } from '../agent-modules/serving-hub.js';
+import type { PublicServiceBoundary } from '../agent-modules/service-bindings.js';
 import {
   bookmarks, consentRecords, CONSENT_NOTICE_VERSIONS, CONSENT_PURPOSES, directory, experienceEntries, follows, mediaLicences, MyProfileViewSchema, personPreferences, personProfiles, portraits,
   profileIdentity, publicProfiles, readingProgress, CompanyPeopleSchema, ConsentListSchema, ExperienceListSchema, FollowListSchema, BookmarkListSchema, ReadingProgressListSchema,
@@ -57,7 +59,8 @@ const conflict = () => new ApiError('validation.revision_conflict', 'the record 
  * neither audited nor announced, so no behaviour log exists for anyone to read.
  */
 export class ProfilesService {
-  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly mandates: ProfileMandatePort) {}
+  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly mandates: ProfileMandatePort,
+    private readonly publicBoundary: PublicServiceBoundary = trx => requirePublicServingContext(trx, ctx.config.publicOrigin)) {}
 
   private run<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>): Promise<T> {
     return this.principals.runAs(state, fn).catch(mapDatabaseError);
@@ -411,7 +414,7 @@ export class ProfilesService {
   // ---- Public reads (identical for every caller) ----------------------------------------------------------------------------
 
   private publicRead<T>(fn: (trx: Transaction) => Promise<T>): Promise<T> {
-    return withoutPrincipal(this.ctx.pool, fn);
+    return withoutPrincipal(this.ctx.pool, async trx => { await this.publicBoundary(trx); return fn(trx); });
   }
 
   async publicProfile(personId: string): Promise<PublicPersonProfile> {

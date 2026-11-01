@@ -1,3 +1,4 @@
+import { installSyntheticMcpToken } from './mcp-token-fixture.js';
 import { installSyntheticHandler } from '../assistant/manifest-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -335,17 +336,24 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       scopes: ['read.public', 'read.me', 'read.private', 'propose', 'act'], privateDataClasses: ['private_projects', 'budgets'], mandateBindings: [{ mandateId: actionMandate, revision: mandateRow.revision }],
       rateLimitProfile: 'standard', consent: { via: 'first_party_form', personId: petrId, at: new Date().toISOString(), stepUp: true }, status: 'active', createdAt: new Date().toISOString(), lastUsedAt: null, revokedAt: null, revision: 1,
     };
+    const token = await installSyntheticMcpToken(h, connectionId, connection.scopes);
     const capability = PLANNER.capabilities.find((c) => c.id === PLANNER_COMMIT)!;
+    const narrowToken = await installSyntheticMcpToken(h, connectionId, ['read.public']);
+    for (const proof of [null, narrowToken, { ...token, accessTokenHash: Buffer.alloc(32) }, { ...token, dpopJkt: 'a'.repeat(43) }]) {
+      assert.equal((await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx => mcpGate(authority, trx, connection, capability, null, proof))).decision, 'deny',
+        'a snapshot with broad consent cannot enlarge a missing, narrower, unknown or differently bound token');
+    }
+    assert.equal((await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx => mcpGate(authority, trx, { ...connection, mandateBindings: [] }, capability, null, token))).decision, 'deny');
     for (const forged of [
       { ...connection, hubId: randomUUID() },
       { ...connection, owner: { kind: 'person' as const, personId: seed.people.carl } },
       { ...connection, revision: connection.revision + 1 },
     ]) {
-      const d: Awaited<ReturnType<typeof mcpGate>> = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx => mcpGate(authority, trx, forged, capability, null, 'https://trustwork.test/mcp'));
+      const d: Awaited<ReturnType<typeof mcpGate>> = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx => mcpGate(authority, trx, forged, capability, null, token));
       assert.equal(d.decision, 'deny', 'a forged connection field cannot choose authority');
     }
     assert.equal((await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx =>
-      mcpGate(authority, trx, connection, capability, null, 'https://forged.example.invalid/mcp'))).decision, 'deny');
+      mcpGate(authority, trx, connection, capability, null, { ...token, audience: 'https://forged.example.invalid/mcp' }))).decision, 'deny');
     const surfaces = async () => {
       const ui = await petr.get(`/v1/assistant/capabilities/${PLANNER_COMMIT}`);
       const uiReason = ui.status === 200 ? null : [(ui.body as { details: { reason: string; messageKey: string } }).details.reason, (ui.body as { details: { messageKey: string } }).details.messageKey];
@@ -354,7 +362,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
         hubId, personId: petrId, mandate: { onBehalfCompanyId: null, granteeKind: 'own_agent', granteeCompanyId: null }, capabilityId: PLANNER_COMMIT, action: 'publish',
       }));
       const runtimeReason = action.state === 'denied' ? [action.reason, gate?.messageKey] : null;
-      const mcp = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => mcpGate(authority, trx, connection, capability, null, 'https://trustwork.test/mcp'));
+      const mcp = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => mcpGate(authority, trx, connection, capability, null, token));
       const mcpReason = mcp.decision === 'deny' ? [mcp.reason, mcp.messageKey] : null;
       return { ui: uiReason, runtime: runtimeReason, mcp: mcpReason, mcpDecision: mcp.decision };
     };
