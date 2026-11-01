@@ -1,7 +1,18 @@
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type { SetupRunRow } from '../schema/setup.js';
-import type { CandidateRow } from './screening.js';
+
+/** A candidate list entry for screening the operator entity (the shape the SANC-003 matcher compares). */
+export interface SetupCandidateRow {
+  listCode: string;
+  listVersionId: string;
+  entryUid: string;
+  entryType: 'individual' | 'entity' | 'vessel' | 'aircraft';
+  primaryName: string;
+  programs: string[];
+  nameKeys: string[];
+  entryDigest: string;
+}
 
 /**
  * Setup wizard persistence (HUB-004, migration packages/data/migrations/setup). Every call takes the SHA-256 of the
@@ -56,8 +67,8 @@ export const setupRuns = {
     return { available: rows.length > 0 && rows.every((r) => r.available), versions: rows.map((r) => ({ listCode: r.list_code, baseline: r.baseline, versionId: r.version_id })) };
   },
   /** Candidate entries of the active versions sharing a name-key token (or an initial) with the operator's name. */
-  async screeningCandidates(trx: Transaction, tokenHash: string, input: { entryTypes: readonly string[]; tokens: readonly string[]; initials: readonly string[] }): Promise<CandidateRow[]> {
-    const { rows } = await sql<{ list_code: string; list_version_id: string; entry_uid: string; entry_type: CandidateRow['entryType']; primary_name: string; programs: string[]; name_keys: string[]; entry_digest: string }>`
+  async screeningCandidates(trx: Transaction, tokenHash: string, input: { entryTypes: readonly string[]; tokens: readonly string[]; initials: readonly string[] }): Promise<SetupCandidateRow[]> {
+    const { rows } = await sql<{ list_code: string; list_version_id: string; entry_uid: string; entry_type: SetupCandidateRow['entryType']; primary_name: string; programs: string[]; name_keys: string[]; entry_digest: string }>`
       SELECT * FROM trustwork.setup_screening_candidates(${tokenHash}::text, ${[...input.entryTypes]}::text[], ${[...input.tokens]}::text[], ${[...input.initials]}::text[])`.execute(trx);
     return rows.map((r) => ({ listCode: r.list_code, listVersionId: r.list_version_id, entryUid: r.entry_uid, entryType: r.entry_type, primaryName: r.primary_name, programs: r.programs, nameKeys: r.name_keys, entryDigest: r.entry_digest }));
   },

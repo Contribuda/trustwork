@@ -3,9 +3,8 @@
  * repository files directly so the shared package entries stay untouched (integrator bookkeeping).
  */
 export * from '../../../../../../packages/contracts/src/hub-setup.js';
-export { setupRuns } from '../../../../../../packages/data/src/repositories/setup.js';
+export { setupRuns, type SetupCandidateRow } from '../../../../../../packages/data/src/repositories/setup.js';
 export type { SetupRunRow } from '../../../../../../packages/data/src/schema/setup.js';
-export type { CandidateRow } from '../../../../../../packages/data/src/repositories/screening.js';
 export { configPayloadProblems, splitDeploymentConfig } from '../../../../../../packages/contracts/src/hub-core.js';
 export { hubConfig, hubs } from '../../../../../../packages/data/src/repositories/hubs.js';
 export { deploymentAttestations } from '../../../../../../packages/data/src/repositories/attestation.js';
