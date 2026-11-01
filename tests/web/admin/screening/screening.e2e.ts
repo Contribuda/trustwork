@@ -119,7 +119,7 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     }
     expect((await request.post(`http://127.0.0.1:${process.env.SANC006_CONTROL_PORT ?? 4582}/stage-additional-list`)).status()).toBe(200);
     await reviewer.reload();
-    const confirmVersion = reviewer.locator('form').filter({has:reviewer.getByRole('button',{name:c.listControls.confirmVersion,exact:true})});
+    const confirmVersion = reviewer.locator('form').filter({has:reviewer.getByRole('button',{name:c.listControls.confirmVersion,exact:true,includeHidden:true})});
     await confirmVersion.locator('xpath=ancestor::details').locator('summary').click();
     await confirmVersion.getByRole('button').click();
     expect(await confirmVersion.locator('textarea').evaluate((el:HTMLTextAreaElement)=>el.validity.valueMissing)).toBe(true);
