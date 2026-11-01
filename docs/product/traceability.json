@@ -445,7 +445,15 @@
         "XCH-013",
         "XCH-014",
         "XCH-015",
-        "XCH-016"
+        "XCH-016",
+        "NET-000",
+        "NET-001",
+        "NET-002",
+        "NET-003",
+        "NET-004",
+        "MAP-001",
+        "HUBC-023",
+        "HUBC-024"
       ],
       "spec": "docs/product/specification.md",
       "verification": "Task acceptance plus docs/quality/validation.md; designs in docs/engine are proposed",

@@ -80,7 +80,7 @@ Consumer mode and jurisdiction settings may raise a confirmation at run time (fo
 | HBC | [Hubs and the hub console](hubs-and-console.md) | Contract console schemas (1.0.0); Proposed console | HUBC-000 (done), HUB-001 … HUB-005, ADM-002, HUBC-002 … HUBC-011 |
 | DMS | [Data mining and sources](data-mining-and-sources.md) | Proposed | SRC-001, PIPE-001, MINE-001, REG-001 |
 | LOC | [Country packs and localization](country-packs-and-localization.md) | Live packs v1 and seven languages; Contract pack v2 schema; Proposed v2 facts and more languages | CTRY-*, LANG-*, INTL-* |
-| MSH | [Federation mesh](federation-mesh.md) | Proposed | FED-000 … FED-006 |
+| MSH | [Federation mesh](federation-mesh.md) | Proposed | FED-000 … FED-006, NET-000 … NET-004, MAP-001, HUBC-023, HUBC-024 |
 | TSP | [Trust, safety, privacy and compliance](trust-safety-privacy-compliance.md) | Live projections; Designed moderation and privacy operations | PRV-001, PRV-002, REV-001, RANK-001, DSA-001, WORD-001 |
 | SNC | [Sanctions compliance](sanctions-compliance.md) | Live restricted places, the ownership declaration, the jurisdiction gate and holds (SANC-001) and the deployment-location attestation API (SANC-009); Proposed list screening, review, gates and re-screening (ADR 014) | INTL-SAN (done), SANC-001 … SANC-009 |
 | SEC | [Security architecture](security-architecture.md) | Live identity hardening; Designed the rest | BE-002, BE-004, OPS-001, CI-001 |
