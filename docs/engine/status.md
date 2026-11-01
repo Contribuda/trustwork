@@ -91,3 +91,7 @@ The statements on this page, in [Architecture](architecture.md), in [API convent
 - No real company, person, review or rating exists in the engine.
 - Translations into Uzbek, Georgian, Armenian and Azerbaijani are machine drafts produced by the integrator and await review by native speakers.
 - Country facts that cite only secondary sources are marked as pending official confirmation inside each pack.
+
+## DS-005 implementation note
+
+DS-005 is in progress: shared administrative shell composition in `packages/ui`, using the merged DS-003 kit and the narrow technical acceptance in [ADR 019](../adr/019-admin-ui-libraries.md). It adds no application route or live console data and does not complete ADM-UX-001. Browser evidence and conductor acceptance remain pending. Existing module statuses and prototype journeys remain unchanged.

@@ -524,5 +524,42 @@
     },
     "language": "Til",
     "sort": "Saralash"
+  },
+  "adminShell": {
+    "scope": "Bu sahifa quyidagiga tegishli: {scope}",
+    "back": "{page} sahifasiga qaytish",
+    "emptyNavigation": "Bu doirada mavjud bo‘limlar yo‘q.",
+    "accountUnavailable": "Mavjud bo‘lmagan hisob amallarini bu yerda bajarib bo‘lmaydi.",
+    "emptyAccount": "Bu yerda hisob amallari mavjud emas.",
+    "scrollNavigation": "Barcha bo‘limlarni ko‘rish uchun aylantiring.",
+    "unavailable": "Bu bo‘lim namoyishda mavjud emas.",
+    "emptyTitle": "Tekshiriladigan narsa yo‘q",
+    "emptyBody": "Bu doirada tekshirish uchun ish paydo bo‘lganda, u shu yerda ko‘rsatiladi.",
+    "scopeName": "Namunaviy hab · San-Diyego",
+    "person": "Namunaviy xodim",
+    "company": "Namunaviy kompaniya",
+    "longTitle": "Vaqtinchalik xodimlar va tashqi hamkorlarning kirish huquqlari va ruxsatlarini tekshirish",
+    "translationNote": "Tarjimalar ona tilida so‘zlashuvchilar tekshiruvini kutayotgan qoralamalardir.",
+    "previewNotice": "Sun’iy ma’lumotli namoyish. Navigatsiya faqat shu misolni o‘zgartiradi; hech narsa saqlanmaydi.",
+    "requestNotice": "Bu amal namoyishda mavjud emas. Hech narsa o‘zgarmadi.",
+    "title": "Boshqaruv",
+    "navigation": "Asosiy navigatsiya",
+    "skip": "Kontentga oʻtish",
+    "overview": "Umumiy koʻrinish",
+    "editorial": "Tahririyat",
+    "outreach": "Jalb qilish",
+    "network": "Tarmoq",
+    "approvals": "Tasdiqlashlar",
+    "notifications": "Bildirishnomalar",
+    "help": "Yordam",
+    "languages": {
+      "en": "English",
+      "es": "Español",
+      "ru": "Русский",
+      "uz-Latn": "O‘zbekcha",
+      "ka": "ქართული",
+      "hy": "Հայերեն",
+      "az-Latn": "Azərbaycanca"
+    }
   }
 }

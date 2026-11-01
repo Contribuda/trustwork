@@ -12959,7 +12959,7 @@
       "id": "DS-005",
       "title": "Shared administrative shell and responsive navigation compositions",
       "area": "design-system",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "DS-003"
       ],

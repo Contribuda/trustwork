@@ -524,5 +524,42 @@
     },
     "language": "Language",
     "sort": "Sort by"
+  },
+  "adminShell": {
+    "scope": "This page acts on: {scope}",
+    "back": "Back to {page}",
+    "emptyNavigation": "No sections are available in this scope.",
+    "accountUnavailable": "Unavailable account actions cannot be used here.",
+    "emptyAccount": "No account actions are available here.",
+    "scrollNavigation": "Scroll to see all sections.",
+    "unavailable": "This section is not available in this preview.",
+    "emptyTitle": "Nothing to review",
+    "emptyBody": "Items will appear here when there is work to review in this scope.",
+    "scopeName": "Example hub · San Diego",
+    "person": "Example staff member",
+    "company": "Example company",
+    "longTitle": "Access reviews and permissions for temporary staff and external collaborators",
+    "translationNote": "Translations are drafts awaiting native review.",
+    "previewNotice": "Synthetic preview. Navigation changes this example only; nothing is saved.",
+    "requestNotice": "This action is unavailable in this preview. Nothing changed.",
+    "title": "Admin",
+    "navigation": "Main navigation",
+    "skip": "Skip to content",
+    "overview": "Overview",
+    "editorial": "Editorial",
+    "outreach": "Outreach",
+    "network": "Network",
+    "approvals": "Approvals",
+    "notifications": "Notifications",
+    "help": "Help",
+    "languages": {
+      "en": "English",
+      "es": "Español",
+      "ru": "Русский",
+      "uz-Latn": "O‘zbekcha",
+      "ka": "ქართული",
+      "hy": "Հայերեն",
+      "az-Latn": "Azərbaycanca"
+    }
   }
 }
