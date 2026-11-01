@@ -309,7 +309,7 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     // No generic wrapper prefix is exempt, and runtime roles must not invoke the unfenced bodies.
     const internalHubReaders = ['callback_unfenced_hubs_activate_config', 'callback_unfenced_hubs_cancel_config', 'callback_unfenced_hubs_create', 'callback_unfenced_hubs_draft_config'];
     for (const name of internalHubReaders) {
-      const rows = (await db.admin.query<{ args: string; app: boolean; worker: boolean }>(
+      const rows: { args: string; app: boolean; worker: boolean }[] = (await db.admin.query<{ args: string; app: boolean; worker: boolean }>(
         "SELECT oidvectortypes(p.proargtypes) AS args, has_function_privilege('trustwork_app',p.oid,'EXECUTE') AS app, has_function_privilege('trustwork_worker',p.oid,'EXECUTE') AS worker FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='trustwork' AND p.proname=$1", [name])).rows;
       assert.equal(rows.length, 1, name);
       assert.deepEqual([rows[0]!.app, rows[0]!.worker], [false, false], name);
