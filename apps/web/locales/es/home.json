@@ -72,6 +72,7 @@
     "kindEvent": "Evento",
     "moreNews": "Todas las noticias",
     "moreEvents": "Todos los eventos",
-    "allMaterials": "Todos los materiales"
+    "allMaterials": "Todos los materiales",
+    "publicationsUnavailable": "Algunas publicaciones no están disponibles temporalmente. Vuelve a intentarlo más tarde."
   }
 }

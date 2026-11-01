@@ -3,6 +3,7 @@ import NextLink from '@/components/locale/LocalLink';
 import { ArrowRight, ArrowUpRight, BookOpen, ChartColumn, ChevronRight, ClipboardCheck, Clock, FileSearch, FileText, FolderOpen, MessageCircleQuestion } from 'lucide-react';
 import { MagazineCover, MediaFrame, VisuallyHidden } from '@/components/ui';
 import { HomeHero, type HeroSlide } from '@/components/home/HomeHero';
+import { homePublications } from '@/components/home/publication-feed';
 import { formatLabel, topicLabel } from '@/components/public/parts';
 import { data } from '@/app/_lib/data';
 import type { PublicationCard, TopicKey } from '@/app/_lib/data/types';
@@ -55,8 +56,8 @@ function isTopic(value: string | undefined): value is TopicKey {
 
 /**
  * Public home. Blocks follow the approved layout: lead carousel with two side tiles,
- * the industry feed with topic chips and the sticky «Полезно под рукой» aside, the magazine band, people stories,
- * the meeting block and the navy call-to-action. Every block draws from one shared «used» set (lead → tiles →
+ * the industry feed with topic chips and the sticky useful-links aside, the magazine band, people stories,
+ * the meeting block and the navy call-to-action. Every block draws from one shared used set (lead → tiles →
  * picks → utility → stories → feed), so a story never appears twice on the page. The topic filter is a
  * query parameter, so the page stays a server component.
  */
@@ -70,8 +71,7 @@ export async function HomeView({ lang, query }: ViewProps) {
   const topic = isTopic(topicParam) ? topicParam : null;
 
   const home = await data.getHome();
-  const articles = await data.listArticles();
-  const news = await data.listNews();
+  const { articles, news, unavailable: publicationsUnavailable } = await homePublications(data);
   const all = [...articles, ...news];
   const used = new Set<string>();
   const claim = (cards: PublicationCard[]): PublicationCard[] => {
@@ -146,6 +146,7 @@ export async function HomeView({ lang, query }: ViewProps) {
                 </NextLink>
               ))}
             </div>
+            {publicationsUnavailable ? <p className="feed-row__dek" role="status">{t('home.publicationsUnavailable')}</p> : null}
             {feed.length || feedEvents.length ? (
               <div className="pub-rows">
                 {feed.map((card) => (
@@ -213,7 +214,7 @@ export async function HomeView({ lang, query }: ViewProps) {
                   );
                 })}
               </div>
-            ) : (
+            ) : publicationsUnavailable ? null : (
               <p className="feed-row__dek">{t('articles.empty')}</p>
             )}
             {feedMoreHref ? (
