@@ -1,3 +1,6 @@
+import { listCrashCases } from './list-crashes.js';
+import { installCrashPoints, recordState } from '../../../backend/idempotency/helpers.js';
+import { IDEMPOTENCY_TAKEOVER_LEASE_MS } from '../../../../apps/api/src/common/idempotency/index.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -49,6 +52,20 @@ test('file list registration is current-authority, digest-bound, independently a
  });
  const list=(await w.h.db.admin.query<{id:string;source_id:string;mode:string}>('SELECT id,source_id,mode FROM trustwork.screening_list WHERE hub_id=$1',[w.hubId])).rows[0]!;
  assert.equal(list.source_id,source.id);assert.equal(list.mode,'file');
+ await t.test('stale configuration and withdrawn source cannot be approved; raw roles cannot bypass staff elevation',async()=>{
+  const next=await w.first.post('/v1/admin/screening/list-proposals',{...body,reason:'Synthetic subsequent configuration'});
+  assert.equal(next.status,200);
+  const nextId=(next.body as {id:string}).id;
+  const nextProposal=(await read()).proposals.find(p=>p.id===nextId)!;
+  assert.equal((await w.first.post(`/v1/admin/screening/lists/${list.id}/status`,{status:'paused',reason:'Synthetic concurrent pause'})).status,200);
+  expectError(await w.second.post(`/v1/admin/screening/list-proposals/${nextId}/decision`,{...decision,actionDigest:nextProposal.actionDigest}),409,'validation.revision_conflict');
+  assert.equal((await w.first.post(`/v1/admin/screening/lists/${list.id}/status`,{status:'active',reason:'Synthetic resume'})).status,200);
+  await withMaintenance(w.h.db.admin,trx=>syncScreeningListSources(trx,[]));
+  expectError(await w.second.post(`/v1/admin/screening/list-proposals/${nextId}/decision`,{...decision,actionDigest:nextProposal.actionDigest}),409,'validation.revision_conflict');
+  assert.equal((await w.second.post(`/v1/admin/screening/list-proposals/${nextId}/decision`,{...decision,decision:'reject',actionDigest:nextProposal.actionDigest})).status,200);
+  await assert.rejects(w.h.pool.query('SELECT trustwork.screening_list_propose($1::jsonb,$2::jsonb)',[JSON.stringify({}),JSON.stringify(body)]));
+  await installSyntheticListSources(w.h.db.admin);
+ });
  await t.test('file missing and live unavailable stay honest; local fake ingestion is test-only',async()=>{
   const deps={sources:{file:fileListSource({dir:null,maxBytes:1048576}),fake:fakeListSource({production:false}),live:liveListSource({fetcher:null,activation:()=>null,maxBytes:1048576})}};
   const missing=await withWorker(w.worker,trx=>ingestList(trx,list.id,deps,new AbortController().signal));assert.equal(missing.outcome,'source_missing');
@@ -65,5 +82,25 @@ test('file list registration is current-authority, digest-bound, independently a
   expectError(await w.first.post(`/v1/admin/screening/lists/${list.id}/status`,{status:'paused',reason:''}),422,'validation.schema');
   assert.equal((await w.first.post(`/v1/admin/screening/lists/${list.id}/status`,{status:'paused',reason:'Synthetic pause'})).status,200);
   await assert.rejects(w.h.db.admin.query("UPDATE trustwork.screening_list_proposal SET reason='rewritten' WHERE id=$1",[id]),/immutable/);
+ });
+});
+
+
+test('all list command crash boundaries roll back and replay the exact response once', {timeout:240000},async(t)=>{
+ const w=await screeningWorld('sanc006_list_crashes');t.after(()=>w.close());
+ const crash=await installCrashPoints(w.h.db.admin);t.after(()=>crash.clear());
+ await listCrashCases(w.h,w.first,w.second,w.worker,async(route)=>{
+  const key=`sanc006-crash-${route.action}`;
+  const send=()=>route.client.post(route.url,route.body,{idempotencyKey:key});
+  const before=await route.effects();
+  try {
+   await crash.arm('handler','bookkeeping');assert.equal((await send()).status,500,route.action);assert.equal(await route.effects(),before);
+   await crash.disarm('handler');expectError(await send(),409,'validation.idempotency_in_progress');
+   w.h.clock.advance(IDEMPOTENCY_TAKEOVER_LEASE_MS+1000);
+   const done=await send();assert.equal(done.status,200,JSON.stringify(done.body));
+   assert.equal((await recordState(w.h.db.admin,key))?.state,'completed');assert.equal(await route.effects(),before+1);
+   w.h.clock.advance(IDEMPOTENCY_TAKEOVER_LEASE_MS+1000);assert.deepEqual((await send()).body,done.body);assert.equal(await route.effects(),before+1);
+   return done;
+  } finally {await crash.clear();w.h.clock.reset();}
  });
 });

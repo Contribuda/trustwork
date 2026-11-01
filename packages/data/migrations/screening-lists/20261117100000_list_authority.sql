@@ -86,6 +86,7 @@ BEGIN
  IF NOT FOUND THEN RAISE EXCEPTION 'hub unavailable' USING ERRCODE = 'P0002', HINT = 'access.not_found'; END IF;
  SELECT * INTO s FROM trustwork.screening_list_source WHERE id = (p_input->>'sourceId')::uuid AND current FOR SHARE;
  IF NOT FOUND THEN RAISE EXCEPTION 'source unavailable' USING ERRCODE = 'P0002', HINT = 'access.not_found'; END IF;
+ PERFORM 1 FROM trustwork.screening_list WHERE hub_id=h AND code=s.code FOR UPDATE;
  b := trustwork.screening_list_configuration_digest(h, s.code);
  d := trustwork.admin_digest(jsonb_build_object('action','screening.configure_file_list','proposalId',i,'input',p_input,'sourceDigest',s.source_digest,'beforeDigest',b,'requestedBy',a.person_id));
  INSERT INTO trustwork.screening_list_proposal(id, hub_id, source_id, requested_by, cadence_seconds, warn_after_seconds, stale_after_seconds, reason, evidence, before_digest, action_digest)
@@ -118,6 +119,7 @@ BEGIN
    IF p.expires_at <= now() THEN RAISE EXCEPTION 'proposal expired' USING ERRCODE = '23514', HINT = 'admin.approval_expired'; END IF;
    SELECT * INTO s FROM trustwork.screening_list_source WHERE id = p.source_id AND current FOR SHARE;
    IF NOT FOUND THEN RAISE EXCEPTION 'source retired' USING ERRCODE = '23514', HINT = 'screening.configuration_changed'; END IF;
+   PERFORM 1 FROM trustwork.screening_list WHERE hub_id=p.hub_id AND code=s.code FOR UPDATE;
    IF p.before_digest <> trustwork.screening_list_configuration_digest(p.hub_id,s.code) THEN
      RAISE EXCEPTION 'configuration changed' USING ERRCODE = '23514', HINT = 'screening.configuration_changed';
    END IF;
@@ -151,4 +153,18 @@ CREATE POLICY staff_read ON trustwork.screening_list_proposal FOR SELECT TO trus
 GRANT SELECT ON trustwork.screening_list_source,trustwork.screening_list_proposal TO trustwork_app;
 GRANT EXECUTE ON FUNCTION trustwork.screening_list_propose(jsonb,jsonb),trustwork.screening_list_decide(jsonb,uuid,text,text,text) TO trustwork_app;
 GRANT EXECUTE ON FUNCTION trustwork.screening_list_source_current(uuid) TO trustwork_worker;
+-- Raw worker entry points cannot stage or activate a revoked registered source either.
+CREATE FUNCTION trustwork.screening_list_version_authority_guard() RETURNS trigger
+LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
+BEGIN
+ IF (TG_OP='INSERT' OR NEW.state='active') AND EXISTS (
+   SELECT 1 FROM trustwork.screening_list l LEFT JOIN trustwork.screening_list_source s ON s.id=l.source_id
+   WHERE l.id=NEW.list_id AND l.source_id IS NOT NULL AND
+     (NOT s.current OR s.adapter<>l.adapter OR s.source_url<>l.source_url OR NEW.mode<>l.mode)) THEN
+   RAISE EXCEPTION 'registered source authority unavailable' USING ERRCODE='23514', HINT='screening.configuration_changed';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER screening_list_version_authority_guard BEFORE INSERT OR UPDATE ON trustwork.screening_list_version
+FOR EACH ROW EXECUTE FUNCTION trustwork.screening_list_version_authority_guard();
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;

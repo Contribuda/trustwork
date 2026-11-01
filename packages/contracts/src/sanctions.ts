@@ -1148,5 +1148,6 @@ export const ScreeningListAuthoritySchema = z.strictObject({
   proposals: z.array(z.strictObject({ id: z.uuid(), hubId: z.uuid(), sourceId: z.uuid(), requestedBy: z.uuid(),
     actionDigest: z.string(), state: z.enum(['pending', 'approved', 'rejected']), createdAt: z.iso.datetime(), expiresAt: z.iso.datetime(),
     cadenceSeconds: z.int(), warnAfterSeconds: z.int(), staleAfterSeconds: z.int(), reason: z.string(), evidence: z.string(),
+    source: z.strictObject({packCode:z.string(),factId:z.string(),adapter:z.string(),sourceDigest:z.string(),sourceUrl:z.string(),code:z.string()}),
   })),
 });

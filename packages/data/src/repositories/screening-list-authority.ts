@@ -23,10 +23,12 @@ export async function syncScreeningListSources(trx: Transaction, sources: readon
 export async function screeningListAuthority(trx: Transaction, hubId: string) {
   const sources = await sql`SELECT id,pack_code AS "packCode",pack_version AS "packVersion",fact_id AS "factId",code,
     source_digest AS "sourceDigest",adapter FROM trustwork.screening_list_source WHERE current ORDER BY pack_code,fact_id`.execute(trx);
-  const proposals = await sql<{ createdAt: Date; expiresAt: Date }>`SELECT id,hub_id AS "hubId",source_id AS "sourceId",requested_by AS "requestedBy",
-    action_digest AS "actionDigest",state,created_at AS "createdAt",expires_at AS "expiresAt",cadence_seconds AS "cadenceSeconds",
-    warn_after_seconds AS "warnAfterSeconds",stale_after_seconds AS "staleAfterSeconds",reason,evidence
-    FROM trustwork.screening_list_proposal WHERE hub_id=${hubId}::uuid ORDER BY created_at DESC,id LIMIT 50`.execute(trx);
+  const proposals = await sql<{ createdAt: Date; expiresAt: Date }>`SELECT p.id,hub_id AS "hubId",source_id AS "sourceId",requested_by AS "requestedBy",
+    action_digest AS "actionDigest",state,p.created_at AS "createdAt",expires_at AS "expiresAt",cadence_seconds AS "cadenceSeconds",
+    warn_after_seconds AS "warnAfterSeconds",stale_after_seconds AS "staleAfterSeconds",reason,evidence,
+    jsonb_build_object('packCode',s.pack_code,'factId',s.fact_id,'adapter',s.adapter,'sourceDigest',s.source_digest,'sourceUrl',s.source_url,'code',s.code) AS source
+    FROM trustwork.screening_list_proposal p JOIN trustwork.screening_list_source s ON s.id=p.source_id
+    WHERE hub_id=${hubId}::uuid ORDER BY p.created_at DESC,p.id LIMIT 50`.execute(trx);
   return ScreeningListAuthoritySchema.parse({sources:sources.rows,proposals:proposals.rows.map((p)=>({...p,createdAt:p.createdAt.toISOString(),expiresAt:p.expiresAt.toISOString()}))});
 }
 export async function proposeScreeningList(trx: Transaction, ctx: CommandContext, input: z.infer<typeof ScreeningListConfigurationSchema>) {
