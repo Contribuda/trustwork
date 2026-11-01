@@ -2,7 +2,7 @@
 
 Agent: Codex CLI (OpenAI) for Parshkov
 
-This inventory records the implemented owning services, exact shared-gate bindings and explicit unavailable boundaries. A manifest declaration is not evidence that the service calls `CapabilityAuthority`. The current continuation shares the AGT-001 private report projection with the leased occurrence worker. PR #406 is merged; shared authority integration continues on its preserved model recovery/accounting foundation. AGT-003 remains incomplete.
+This inventory records the implemented owning services, exact shared-gate bindings and explicit unavailable boundaries. A manifest declaration is not evidence that the service calls `CapabilityAuthority`. The current continuation shares the AGT-001 private report projection with the leased occurrence worker. PR #406 is merged; shared authority integration continues on its preserved model recovery/accounting foundation. AGT-003 remains in progress pending final CI and conductor acceptance.
 
 ## Source ports implemented in this slice
 
@@ -15,9 +15,9 @@ This inventory records the implemented owning services, exact shared-gate bindin
 
 No wildcard event listener, arbitrary-principal query port, synthetic worker session or external provider was added. No historical outbox replay is authorized. Project, commerce, consultation, mail and content events are not subscribed by these adapters.
 
-## Real service operations requiring shared enforcement
+## Real service operations and shared enforcement
 
-All method names below refer to actual service entry points, not the availability endpoint. The integration must check capability and resource authority inside the same serialized transaction used by the operation. A preflight outside that transaction does not close revocation races. Anonymous public projection paths also need an explicit serving-context treatment; they must not be converted into an invented participant.
+All method names below refer to actual service entry points, not the availability endpoint. The integration must check capability and resource authority inside the same serialized transaction used by the operation. A preflight outside that transaction does not close revocation races. Anonymous public projections use the explicit trusted serving-context boundary, without an invented participant.
 
 ### Project planner
 
@@ -132,7 +132,7 @@ Owner: `apps/api/src/modules/tasks/tasks.service.ts`, `TasksService`. Authorizer
 
 ## Historical foundation and current integration
 
-The original five manifests declare 74 capability entries. The additional core manifest registers the existing goal/subscription operations from `packages/contracts/src/agents.ts`; the deterministic report binds `prepare` to `core.generate_goal_report`. The inventory above exposes missing method bindings rather than declaring parity complete. Existing agent and MCP adapter checks do not prove actual participant-service enforcement, and adapter tests do not prove MCP transport E2E.
+The original five manifests declare 74 capability entries. The additional core manifest registers the existing goal/subscription operations from `packages/contracts/src/agents.ts`; the deterministic report binds `prepare` to `core.generate_goal_report`. That initial inventory has been extended to all nine manifests and exhaustive owning-service bindings described below. Existing agent and MCP adapter checks do not prove actual participant-service enforcement, and adapter tests do not prove MCP transport E2E.
 
 Occurrence request/run provenance, the versioned deterministic report handler, leased entry points and paired registration are implemented and tested. The continuations below implement the owning service bindings, final callback revoker matrix and model governance callbacks against the merged recovery/accounting foundation. Missing model, role, source, retention or residency policy stays unavailable. Original-operation model recovery must remain independent of fresh-dispatch permission.
 
@@ -267,3 +267,6 @@ ADR013 governance remains first-party handoff-only: the invocation adapter refus
 Merged PRV exports `PlansService.privacyShared`, `TasksService.privacyExport`, and `ConsultationsService.privacyInventory` have explicit non-purchasable first-party bindings. Their owning subject/RLS/projection and snapshot transaction semantics remain unchanged; no PRV exporter is modified. Actual tests cover own export under disabled policy and foreign-subject refusal.
 
 `negotiation-parity.test.ts` exercises every negotiation capability through actual service operations, four disable dimensions and shared agent/stored-token refusals; real delivery and private projections; raw internal-command denial; both representative/company-mandate revocation orders; token withdrawal; rollback before local delivery/withdrawal commits; and legacy unknown refusal. Original AGT-001 negative/concurrency suites remain. Policy tests explicitly distinguish nine people/eighteen mandates (suppressed) from ten people/nineteen mandates (publishable), preserving exact all-hub isolation and current-source invalidation.
+
+
+The observed CI601 HUB reader scan now recognizes only the four exact preserved internal HUB configuration implementations, with actual app/worker invocation negatives and privilege checks; no wrapper prefix is exempt. Consultation outbox tests validate exact allowed fields and UUID/enum types before distinguishing identifier digits from private values. A deterministic UUID containing `40000` reproduces the historical substring failure; deliberate amount, note and wrong-type payloads still fail. Production HUB/consultation code is unchanged by these test repairs.
