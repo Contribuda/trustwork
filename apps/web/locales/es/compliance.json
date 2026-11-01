@@ -1,0 +1,20 @@
+{
+  "compliance": {
+    "title": "Cumplimiento",
+    "generic": "Para obtener información sobre tu cuenta, contacta al operador mediante los datos de contacto de las condiciones de uso.",
+    "terms": "Condiciones de uso",
+    "privacy": "Aviso de privacidad",
+    "appealTitle": "Apelar una decisión",
+    "appealHelp": "Explica por qué solicitas una revisión. Incluye pruebas pertinentes en tu explicación; no incluyas contraseñas ni información personal ajena al caso.",
+    "reason": "Motivo y pruebas",
+    "submit": "Enviar apelación",
+    "submitted": "Tu apelación quedó registrada. Esto no significa que se haya asignado un revisor ni que se haya cambiado la decisión.",
+    "unavailable": "No se pudo cargar la información de tu cuenta. Inténtalo de nuevo.",
+    "retry": "Intentar de nuevo",
+    "reviewNotice": "La traducción y el texto jurídico no han sido revisados por un hablante nativo ni por asesoría jurídica.",
+    "back": "Volver a configuración",
+    "mailSubject": "Información de la cuenta",
+    "mailAction": "Abrir cumplimiento de la cuenta",
+    "pending": "Enviando…"
+  }
+}

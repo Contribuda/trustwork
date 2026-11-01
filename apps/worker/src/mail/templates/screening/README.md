@@ -1,0 +1,11 @@
+# Screening notices (SANC-007)
+
+`screening_notice` uses the existing mail delivery, outbox consumer and transport. The isolated additive migration records personal hold, cleared-hold, review, decision, appeal-received and appeal-outcome intents in the same transaction as the authoritative event. Rollback removes both. Only verified subject addresses are used, with the subject's stored identity-mail locale; an absent preference uses the existing mail fallback. Delivery retries, recipient scrubbing and suppression remain MAIL-001 responsibilities.
+
+All six kinds deliberately render the same generic contact notice. There is no authoritative activated country-law notice-disclosure configuration in this engine. A transition kind is internal routing data, not permission to disclose it. No template accepts a name, list, entry, decision reason, evidence, subject id, reviewer id, free-form message or URL. The only link comes from the operator's existing mail origin and fixed compliance path. The outbox payload is empty; the recipient stays in the existing restricted delivery store until delivery scrubs it.
+
+The seven dictionaries and `screeningTranslationReview` explicitly mark the English reference and translations unreviewed by native speakers and counsel. These flags do not approve the inherited jurisdiction or screening copy. The participant page uses its own generic `compliance` namespace; SANC-006-owned screening dictionaries are untouched.
+
+This is personal-account delivery. Company decisions do not mail an arbitrary company member. Company delivery requires an authoritative authorized-recipient policy and is not implemented here. Staff review-queue notifications retain their existing SANC-003 path. The append-only appeal assignment records an independent eligible node officer, or null when none exists; it never permits the original decider or bypasses a second-person decision.
+
+See the [acceptance and verification report](../../../../../../tests/web/compliance/README.md). Tests use the production worker registry with `FakeMailTransport`; no real messages are sent.

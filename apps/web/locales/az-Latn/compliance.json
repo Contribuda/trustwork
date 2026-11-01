@@ -1,0 +1,20 @@
+{
+  "compliance": {
+    "title": "Tələblərə uyğunluq",
+    "generic": "Hesabınız haqqında məlumat üçün istifadə şərtlərindəki əlaqə məlumatları vasitəsilə operatorla əlaqə saxlayın.",
+    "terms": "İstifadə şərtləri",
+    "privacy": "Məxfilik bildirişi",
+    "appealTitle": "Qərardan şikayət",
+    "appealHelp": "Nə üçün yenidən baxılmasını istədiyinizi izah edin. Müvafiq sübutları daxil edin; parolları və işə aid olmayan şəxsi məlumatları daxil etməyin.",
+    "reason": "Səbəb və sübutlar",
+    "submit": "Şikayəti göndər",
+    "submitted": "Şikayətiniz qeydə alındı. Bu, yoxlayıcının təyin edildiyi və ya qərarın dəyişdiyi demək deyil.",
+    "unavailable": "Hesab məlumatları yüklənmədi. Yenidən cəhd edin.",
+    "retry": "Yenidən cəhd et",
+    "reviewNotice": "Tərcümə və hüquqi mətn ana dili daşıyıcısı və ya hüquqşünas tərəfindən yoxlanılmayıb.",
+    "back": "Parametrlərə qayıt",
+    "mailSubject": "Hesab məlumatları",
+    "mailAction": "Hesabın uyğunluq bölməsini aç",
+    "pending": "Göndərilir…"
+  }
+}

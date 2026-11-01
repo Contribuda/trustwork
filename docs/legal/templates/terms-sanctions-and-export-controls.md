@@ -1,6 +1,6 @@
 # Terms of use — section template: Sanctions and export controls
 
-Status: template (INTL-SAN, 2026-10-29). Mirrors the "Sanctions and export controls" section of the hosting platform's terms of use (read 2026-10-29). The operator inserts this section into their terms unchanged in substance; wording may be adapted to the deployment's language through the locale files. The owner of the reference deployment is a US person, so the restrictions follow US sanctions and export-control law regardless of where the deployment is hosted.
+Status: **Counsel draft, not approved or activated** (INTL-SAN; SANC-007 clarification). The operator and counsel must review the wording, applicable law, actual configuration and all placeholders before publication. No legal opinion, approval, deadline or provider setup is supplied by this template.
 
 ---
 
@@ -20,14 +20,16 @@ Status: template (INTL-SAN, 2026-10-29). Mirrors the "Sanctions and export contr
 
 **{N}.7 Screening and enforcement.** The operator determines your location from your network address and other signals and may screen accounts, companies, payments and payouts against sanctions and export-restriction lists at any time. The operator may refuse, pause or close access, hold or decline payments, block property where the law requires, and report to the authorities where the law requires, without liability to you. A screening that has not run is shown as "pending", never as "clear".
 
-**{N}.8 Appeals.** If your access was paused because the service believes you are in a restricted place and you are not, contact {operator contact} with evidence of your location; the operator reviews such requests within {review period}.
+**{N}.8 Appeals.** If your access was paused because the service believes you are in a restricted place and you are not, contact {operator contact} with evidence of your location; the operator reviews the request under its published review process. Where account access is permitted, an eligible screening decision may be appealed through Account Compliance after a fresh identity check. The appeal is recorded with its explanation and evidence and routed for independent review. The decider of the appealed decision cannot decide the appeal; reversal requires a second person. Submission does not mean assignment, reversal or restored access. Notices disclose only what the applicable law permits and never identify another person or a source entry. If no authoritative disclosure policy is available, only a generic contact notice is shown.
 
 ---
 
 ## Operator notes (remove from the published terms)
 
 - `{N}` is the section number in the operator's terms; keep the clauses together and in this order.
-- `{operator contact}` is the compliance contact of the deployment; `{review period}` is the committed review time (the reference deployment uses 10 working days).
+- `{operator contact}` is the verified compliance contact of the deployment. Do not invent a review period; insert one only from an approved operator policy.
 - The restricted-places list in `packages/country-packs/packs/restricted.json` and `RESTRICTED_PLACES` in `packages/compliance` must match this clause; a change in one is a change in all three.
-- Screening uses the US Consolidated Screening List adapter in `packages/compliance`; the operator provisions the API key. Without a key the platform shows "screening pending" and routes the partner to manual review.
+- The engine uses configured baseline and additional screening sources. An optional adapter without its required credentials never establishes a clear result. Describe only the adapters actually enabled by the operator; this draft authorizes no provider account, credentials or external calls.
 - This template does not claim compliance with the local law of the deployment country (ADR-009); counsel adds the local sections.
+
+See the companion [privacy notice draft](privacy-location-and-sanctions.md) for location data, restricted disclosure, retained evidence and conditional dataset attribution. Neither draft changes the restricted-places list or supplies a counsel approval.
