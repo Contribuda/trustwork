@@ -1,5 +1,5 @@
 import { resolve, sep } from 'node:path';
-import { getCountryPack, packs, type CountryPack } from '@trustwork/country-packs';
+import { getCountryPack, packs, type ClientPack, type CountryPack } from '@trustwork/country-packs';
 import { isCountryOffered, resolveDeployment, type Deployment, type Env } from '@trustwork/config';
 import { currentDeployment, dataPath, languageDirectories, type LoadedDeployment } from '@trustwork/config/server';
 
@@ -44,7 +44,7 @@ export function isOfferedLanguage(tag: string, deployment: Deployment = currentD
 }
 
 /** The language a country starts in: the configured one for that country, else the pack's own when offered, else the deployment default. */
-export function defaultLanguageFor(pack: CountryPack, deployment: Deployment = currentDeployment()): string {
+export function defaultLanguageFor(pack: Pick<ClientPack, 'code' | 'defaultLocale'>, deployment: Deployment = currentDeployment()): string {
   const offered = offeredLanguages(deployment);
   const configured = deployment.languages.byCountry[pack.code];
   if (configured && offered.includes(configured)) return configured;
@@ -52,7 +52,7 @@ export function defaultLanguageFor(pack: CountryPack, deployment: Deployment = c
 }
 
 /** Languages a visitor may pick for any country: the country's default first, then the deployment default, then every other offered language (owner decision 2026-10-29: any country × any language). */
-export function localesFor(pack: CountryPack, deployment: Deployment = currentDeployment()): string[] {
+export function localesFor(pack: Pick<ClientPack, 'code' | 'defaultLocale'>, deployment: Deployment = currentDeployment()): string[] {
   return [...new Set([defaultLanguageFor(pack, deployment), deployment.languages.default, ...offeredLanguages(deployment)])];
 }
 
@@ -61,7 +61,7 @@ export function localesFor(pack: CountryPack, deployment: Deployment = currentDe
  * country gets that country's default language; a visitor who has not chosen one gets the deployment's default
  * language (English unless configured, ADR 012 decision 27), never the language of whichever country is the default.
  */
-export function negotiate(acceptLanguage: string | null, pack: CountryPack, countryChosen: boolean, deployment: Deployment = currentDeployment()): string {
+export function negotiate(acceptLanguage: string | null, pack: Pick<ClientPack, 'code' | 'defaultLocale'>, countryChosen: boolean, deployment: Deployment = currentDeployment()): string {
   const wanted = (acceptLanguage ?? '')
     .split(',')
     .map((part) => part.split(';')[0]?.trim().toLowerCase() ?? '')

@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { isRestricted } from './restricted.js';
 import type { CountryPack } from './schema.js';
 import { findIdentifierKind } from './facts.js';
-import { BUILT_IN_PACKS, getPack, packs } from './registry.js';
+import { BUILT_IN_PACKS, getPack } from './registry.js';
+import { genericClientPack, pick } from './client.js';
 import countriesJson from '../countries/countries.json' with { type: 'json' };
 
 /**
@@ -30,38 +31,16 @@ export type CountryCode = CountryPack['code'];
  */
 export const PACKS: readonly CountryPack[] = BUILT_IN_PACKS;
 
-export const FALLBACK_LOCALE = 'en';
-/** Every locale a built-in pack lists, plus the engine fallback; `ru` is optional and never a default. The languages a deployment offers are configuration (`@trustwork/config`). */
-export const ALL_LOCALES: readonly string[] = [...new Set([FALLBACK_LOCALE, ...PACKS.flatMap((p) => p.locales)])];
-
-export function isLocale(value: string): boolean {
-  return ALL_LOCALES.includes(value);
-}
-
-/** Picks a localized string: the locale, then the engine fallback, then the first value present. */
-export function pick(text: Record<string, string>, locale: string): string {
-  return text[locale] ?? text[FALLBACK_LOCALE] ?? Object.values(text)[0] ?? '';
-}
-
-export function regionName(pack: CountryPack, code: string, locale: string): string {
-  const region = pack.regions.find((r) => r.code === code);
-  return region ? pick(region.name, locale) : code;
-}
+/**
+ * Shared with the browser entry (`./client.ts`, `@trustwork/country-packs/client`), which carries only the v1 subset of
+ * the built-in packs; on the server its registry mirrors this one, so these helpers see the same packs here and there.
+ */
+export { ALL_LOCALES, FALLBACK_LOCALE, currencyMeta, formatMoney, genericClientPack, isLocale, pick, regionName, toClientPack, type ClientPack, type ClientRegion, type GenericCountry } from './client.js';
 
 /** Checks a value against the primary identifier pattern, or against another kind declared in the pack. */
 export function validateIdentifier(pack: CountryPack, value: string, kind: string = pack.registrationIdentifier.kind): boolean {
   const info = findIdentifierKind(pack, kind);
   return info ? new RegExp(info.pattern).test(value.trim()) : false;
-}
-
-/** Money from contract minor units in the pack's currency, formatted for the locale (no hard-coded currency anywhere). */
-export function formatMoney(minorUnits: string, currency: string, locale: string, options: { fractionDigits?: number | undefined } = {}): string {
-  const pack = packs().find((p) => p.currency.code === currency);
-  const meta = pack?.currency ?? currencyMeta(currency);
-  const digits = meta.minorUnitDigits;
-  const major = Number(minorUnits) / 10 ** digits;
-  const fraction = options.fractionDigits ?? meta.displayFractionDigits;
-  return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: fraction, maximumFractionDigits: fraction }).format(major);
 }
 
 /*
@@ -122,20 +101,6 @@ export function countryName(code: string, locale: string): string {
   return country ? pick(country.name, locale) : upper;
 }
 
-type CurrencyMeta = CountryPack['currency'];
-
-/** Minor-unit digits and symbol of any ISO 4217 code from `Intl` (packs state theirs explicitly). */
-export function currencyMeta(code: string): CurrencyMeta {
-  try {
-    const format = new Intl.NumberFormat('en', { style: 'currency', currency: code });
-    const digits = format.resolvedOptions().maximumFractionDigits ?? 2;
-    const symbol = format.formatToParts(1).find((part) => part.type === 'currency')?.value ?? code;
-    return { code, minorUnitDigits: digits, displayFractionDigits: digits, symbol };
-  } catch {
-    return { code, minorUnitDigits: 2, displayFractionDigits: 2, symbol: code };
-  }
-}
-
 const DATASET_SOURCE = { url: 'https://github.com/mledoze/countries', what: 'ISO 3166-1 codes, names, currencies, calling codes and time zones (ODbL 1.0)', accessed: '2026-10-29', verification: 'secondary dataset; a contributed pack replaces it' };
 
 const genericPacks = new Map<string, CountryPack>();
@@ -144,39 +109,20 @@ const genericPacks = new Map<string, CountryPack>();
 export function genericPack(country: Country): CountryPack {
   const cached = genericPacks.get(country.code);
   if (cached) return cached;
-  // XXX is ISO 4217 "no currency": a country the dataset gives no currency is never assigned another country's.
-  const currency = currencyMeta(country.currency ?? 'XXX');
-  const callingCode = country.callingCode && /^\+\d{1,4}$/.test(country.callingCode) ? country.callingCode : '+0';
+  const base = genericClientPack(country);
   const pack: CountryPack = {
+    ...base,
     schemaVersion: 2,
-    code: country.code,
-    name: country.name,
-    enabled: true,
     status: 'draft',
-    locales: [...ALL_LOCALES],
-    defaultLocale: FALLBACK_LOCALE,
-    currency,
-    secondaryCurrencies: country.currencies.filter((c) => c !== currency.code),
     verificationLevel: 'secondary',
-    formats: {
-      timeZone: country.timeZones[0] ?? 'UTC',
-      phone: { callingCode, nationalLength: 15, example: callingCode },
-      postalCode: { pattern: '^.{0,16}$', example: '' },
-    },
-    timeZones: [country.timeZones[0] ?? 'UTC'],
+    timeZones: [base.formats.timeZone],
     registrationIdentifier: {
-      kind: `${country.code}-REGNO`,
-      label: { en: 'Company registration number', ru: 'Регистрационный номер компании' },
-      pattern: '^[A-Za-z0-9 .\\-/]{2,32}$',
-      example: '0000000',
+      ...base.registrationIdentifier,
       issuer: { name: { en: 'National business registry' }, url: 'https://example.invalid/registry' },
       verification: 'Set by the operator of this country; the engine accepts any value that matches the pattern',
       verificationLevel: 'pending',
       sources: [DATASET_SOURCE],
     },
-    legalEntityTypes: [{ code: 'other', name: { en: 'Legal entity', ru: 'Юридическое лицо' } }],
-    regions: [],
-    address: { lines: ['street', 'city', 'region', 'postalCode'], cityFirst: false },
     legalTemplates: { terms: 'terms', privacy: 'privacy', sanctions: 'sanctions-and-export-controls' },
     dataResidency: { required: false, note: { en: 'Not assessed for this country; the operator confirms before launch.' }, verificationLevel: 'pending', sources: [DATASET_SOURCE] },
     facets: {},

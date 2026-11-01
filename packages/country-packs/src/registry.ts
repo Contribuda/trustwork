@@ -1,6 +1,7 @@
 import { isRestricted } from './restricted.js';
 import type { CountryPack } from './schema.js';
 import { packProblems, validatePack } from './validate.js';
+import { installClientPacks } from './client.js';
 import uz from '../packs/uz.json' with { type: 'json' };
 import ge from '../packs/ge.json' with { type: 'json' };
 import am from '../packs/am.json' with { type: 'json' };
@@ -9,7 +10,8 @@ import us from '../packs/us.json' with { type: 'json' };
 
 /**
  * The pack registry (CFG-001). The packs in `packages/country-packs/packs` ship with the engine as data (built in, so
- * the browser bundle and the database kernel sync can read them without a file system). A deployment adds or replaces
+ * the database kernel sync can read them without a file system; the browser bundle carries only their client subset,
+ * `./client.ts`). A deployment adds or replaces
  * packs at start from its data directory (`<dataDir>/country-packs/<code>.json`, loaded by `@trustwork/config`); every
  * file goes through the same validator as the built-in ones, so an invalid or restricted pack never becomes active.
  * The registry holds no default country: which country a visitor starts in is deployment configuration.
@@ -48,6 +50,8 @@ export function installPacks(extra: readonly CountryPack[]): void {
   for (const pack of extra) merged.set(pack.code, pack);
   active = [...merged.values()];
   byCode = new Map(active.map((p) => [p.code, p]));
+  // The browser entry's registry follows, so helpers shared by server and client components see the same packs here.
+  installClientPacks(extra);
 }
 
 /** Back to the built-in packs only (tests, and a deployment without a data directory). */

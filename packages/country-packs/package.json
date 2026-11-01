@@ -6,7 +6,11 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./client": "./src/client.ts",
     "./layers": "./src/layers.ts"
+  },
+  "scripts": {
+    "generate:client": "node --import tsx bin/generate-client-packs.ts"
   },
   "dependencies": {
     "zod": "4.6.7"

@@ -1,4 +1,4 @@
-import { formatMoney as packMoney, genericPack, getCountryPack, getPack, packs, pick, regionName, type CountryPack } from '@trustwork/country-packs';
+import { clientPacks, formatMoney as packMoney, genericClientPack, getClientPack, pick, regionName, type ClientPack } from '@trustwork/country-packs/client';
 import { localeTag } from '@trustwork/ui/i18n';
 import { getLocaleStore } from '@trustwork/i18n-runtime';
 
@@ -6,9 +6,14 @@ import { getLocaleStore } from '@trustwork/i18n-runtime';
  * Active country pack and locale for the app (ADR-009): both come from the request-scoped store primed by
  * `primeLocale()`; every region label, currency and registration-identifier label comes from the pack,
  * never from a hard-coded list.
+ *
+ * Client components import this module, so it reads packs only through the browser entry
+ * (`@trustwork/country-packs/client`: the v1 subset of each pack, no facets). The server registers the full resolver
+ * (`setCountryPackResolver` in `locale.ts`) so a country without a contributed pack gets its generic profile; in the
+ * browser the server has already handed that profile over (`rootClientLocale`, `LocaleProvider`).
  */
 
-let neutral: CountryPack | null = null;
+let neutral: ClientPack | null = null;
 
 /**
  * The profile of a visitor without a country (CFG-001, ADR 012 decision 11): nothing chosen and nothing configured.
@@ -16,13 +21,24 @@ let neutral: CountryPack | null = null;
  * visitor chooses in the first-visit window or the header switcher. `ZZ` is the ISO 3166 user-assigned code CLDR uses
  * for an unknown region; it is never offered, stored or sent anywhere.
  */
-export function neutralPack(): CountryPack {
-  neutral ??= genericPack({ code: 'ZZ', name: { en: '—' }, currency: 'XXX', currencies: [], region: null, subregion: null, independent: false, unMember: false, callingCode: null, timeZones: ['UTC'], pack: false });
+export function neutralPack(): ClientPack {
+  neutral ??= genericClientPack({ code: 'ZZ', name: { en: '—' }, currency: 'XXX', currencies: [], callingCode: null, timeZones: ['UTC'] });
   return neutral;
 }
 
+let countryPackResolver: (code: string) => ClientPack | null = getClientPack;
+
+/** The server's resolver for any selectable country (`getCountryPack` of the full entry: contributed pack or generic profile). */
+export function setCountryPackResolver(resolver: (code: string) => ClientPack | null): void {
+  countryPackResolver = resolver;
+}
+
+function getCountryPack(code: string): ClientPack | null {
+  return countryPackResolver(code);
+}
+
 /** The pack of the active country; with none chosen, the deployment's default country; with neither, the neutral profile. */
-export function activePack(): CountryPack {
+export function activePack(): ClientPack {
   const country = getLocaleStore().country;
   const pack = country ? getCountryPack(country) : null;
   if (pack) return pack;
@@ -40,7 +56,7 @@ export function setDefaultCountryReader(reader: () => string | null): void {
   defaultCountryReader = reader;
 }
 
-function defaultPack(): CountryPack | null {
+function defaultPack(): ClientPack | null {
   const code = defaultCountryReader?.() ?? null;
   return code ? getCountryPack(code) : null;
 }
@@ -78,7 +94,7 @@ export function regionLabel(code: string | null | undefined): string {
   if (!code) return '';
   const pack = activePack();
   if (pack.regions.some((r) => r.code === code)) return regionName(pack, code, activeLocale());
-  const owner = getPack(code.split('-')[0] ?? '');
+  const owner = getClientPack(code.split('-')[0] ?? '');
   return owner ? regionName(owner, code, activeLocale()) : code;
 }
 
@@ -89,7 +105,7 @@ export function regionLabel(code: string | null | undefined): string {
 export function identifierLabel(kind: string): string {
   const pack = activePack();
   if (kind === pack.registrationIdentifier.kind) return pick(pack.registrationIdentifier.label, activeLocale());
-  const owner = packs().find((p) => p.registrationIdentifier.kind === kind);
+  const owner = clientPacks().find((p) => p.registrationIdentifier.kind === kind);
   return owner ? pick(owner.registrationIdentifier.label, activeLocale()) : kind;
 }
 

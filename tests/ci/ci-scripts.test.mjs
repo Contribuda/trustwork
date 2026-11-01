@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { checkLockfile, expressionAllowed } from '../../scripts/ci/licenses.mjs';
-import { compare, measure } from '../../scripts/ci/bundle-budget.mjs';
+import { compare, measure, serverOnlyHits } from '../../scripts/ci/bundle-budget.mjs';
 import { dirtyEntries } from '../../scripts/ci/assert-clean-tree.mjs';
 import { formatSkipSummary } from '../../scripts/ci/skip-summary-reporter.mjs';
 
@@ -80,6 +80,22 @@ test('bundle budget: measures shared, per-route and total gzip bytes and fails a
   assert.equal(cli.status, 1, cli.stderr);
   assert.match(cli.stderr, /bundle budget exceeded: all client chunks/);
   assert.throws(() => measure(join(dir, 'missing')), /build the web app first/);
+});
+
+test('bundle budget: a server-only marker in any client chunk fails the check and names the chunk', (t) => {
+  const dir = scratch(t);
+  const gz = fakeNextBuild(dir, { main: 400, page: 600, unused: 300 });
+  const markers = [{ marker: 'candidateAdapters', reason: 'country-pack facets stay on the server' }];
+  assert.deepEqual(serverOnlyHits(dir, markers), []);
+  writeFileSync(join(dir, 'static/chunks/app/(public)/projects/[slug]/page.js'), 'self.x={"candidateAdapters":["a"]};');
+  assert.deepEqual(serverOnlyHits(dir, markers), [{ marker: 'candidateAdapters', chunk: join('static/chunks/app/(public)/projects/[slug]/page.js') }]);
+  const roomy = { sharedGzipBytes: 1e9, largestRouteGzipBytes: 1e9, totalGzipBytes: 1e9 + gz.main };
+  writeFileSync(join(dir, 'budget.json'), JSON.stringify({ ...roomy, serverOnlyMarkers: markers }));
+  const cli = spawnSync(process.execPath, [resolve('scripts/ci/bundle-budget.mjs'), dir, join(dir, 'budget.json')], { encoding: 'utf8' });
+  assert.equal(cli.status, 1, cli.stderr);
+  assert.match(cli.stderr, /server-only text "candidateAdapters" in client chunk static\/chunks\/app\/\(public\)\/projects\/\[slug\]\/page\.js: country-pack facets stay on the server/);
+  writeFileSync(join(dir, 'budget.json'), JSON.stringify(roomy));
+  assert.equal(spawnSync(process.execPath, [resolve('scripts/ci/bundle-budget.mjs'), dir, join(dir, 'budget.json')], { encoding: 'utf8' }).status, 0, 'no markers configured: only the byte budgets apply');
 });
 
 test('clean-tree guard: a rewritten tracked file or a new untracked file is reported, ignored output is not', (t) => {

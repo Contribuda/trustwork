@@ -1,5 +1,5 @@
 import { formatDate, formatMessage, formatNumber, intlTag, localeTag, messageOrUndefined, type LocaleParams } from '@trustwork/ui/i18n';
-import { formatMoney as packMoney } from '@trustwork/country-packs';
+import { formatMoney as packMoney } from '@trustwork/country-packs/client';
 
 /**
  * Application i18n (ADR-009): keys are dot paths into `apps/web/locales/en/*.json` (the reference) layered over the
