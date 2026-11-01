@@ -54,8 +54,8 @@ test('durable fake-only model intent, owning BILL/AST commands and cross-process
     cost: { minorUnits: cost, currency: 'USD' },
     outcome,
   });
-  const child = (call: ModelCall, mode: 'begin' | 'before_commit' | 'after_admit' | 'after_effect' = 'begin') =>
-    new Promise<{ kind?: string; error?: string; effect?: string; receipt?: ModelAdapterResult; exit: number | null }>((resolve, reject) => {
+  const child = (call: ModelCall, mode: 'call' | 'begin' | 'before_commit' | 'after_admit' | 'after_effect' = 'begin') =>
+    new Promise<{ kind?: string; error?: string; calls?: number; effect?: string; receipt?: ModelAdapterResult; exit: number | null }>((resolve, reject) => {
       const p = fork(new URL('./process-worker.ts', import.meta.url), [], { execArgv: ['--import', 'tsx'], stdio: ['ignore', 'ignore', 'pipe', 'ipc'] });
       let data: Record<string, unknown> = {};
       let stderr = '';
@@ -129,7 +129,9 @@ test('durable fake-only model intent, owning BILL/AST commands and cross-process
     await assert.rejects(gateway().call({ ...call, principalId: w.world.people.officer }));
     await assert.rejects(gateway().call({ ...call, runId: w.world.sessions.officer }));
     await assert.rejects(gateway().call({ ...call, mandateRevision: 99 }));
-    await assert.rejects(gateway(new RuntimeModelAuthority(w.pool, { ...w.principal, authzEpoch: 2 }, { ...w.binding, authzEpoch: 2 }, syntheticGovernance)).call(call));
+    await assert.rejects(
+      gateway(new RuntimeModelAuthority(w.pool, { ...w.principal, authzEpoch: 2 }, { ...w.binding, authzEpoch: 2 }, syntheticGovernance)).call(call),
+    );
     await assert.rejects(
       gateway(
         new RuntimeModelAuthority(w.pool, w.principal, { ...w.binding, context: { kind: 'profile', id: w.world.people.officer } }, syntheticGovernance),
@@ -164,7 +166,13 @@ test('durable fake-only model intent, owning BILL/AST commands and cross-process
       const b = await w.budget(sharedMandate ? '100' : '10');
       const m = await w.mandate(b, '10');
       const other = sharedMandate ? m : await w.mandate(b, '10');
-      const results = await Promise.all([child(await w.call(m.id)), child(await w.call(other.id))]);
+      const results = await Promise.all([child(await w.call(m.id), 'call'), child(await w.call(other.id), 'call')]);
+      assert.equal(
+        results.reduce((sum, r) => sum + (r.calls ?? 0), 0),
+        1,
+        JSON.stringify(results),
+      );
+      assert.equal(results.find((r) => r.error)?.calls, 0);
       assert.equal(results.filter((r) => r.kind === 'dispatch').length, 1, JSON.stringify(results));
       assert.equal(results.filter((r) => r.error === (sharedMandate ? 'mandate.limit' : 'commercial.budget_insufficient')).length, 1, JSON.stringify(results));
       assert.equal((await as((trx) => budgets.balance(trx, b)))!.heldMinor, '7');
