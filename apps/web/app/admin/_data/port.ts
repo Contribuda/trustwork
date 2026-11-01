@@ -16,6 +16,7 @@ import type {
   TaxonomyTree,
 } from './schemas.js';
 import type { SectionDef } from './section-types.js';
+import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
 
 /**
  * The console's data boundary (ADM-002, docs/engine/hub-console/README.md "Data"). Pages and server actions use only
@@ -56,6 +57,8 @@ export interface ConsoleDataPort {
   localAdditions(hubId: string): Promise<LocalAddition[]>;
   taxonomy(hubId: string): Promise<TaxonomyTree[]>;
   brandChecks(hubId: string): Promise<Array<{ locale: string; ratio: string; passes: boolean }>>;
+  /** The agent product, product modules, billing and communications of a hub (HUBC-005), or null. */
+  product(hubId: string): Promise<HubProduct | null>;
   /** The setup run a one-time token opens, or null (unknown, expired, or setup already finished). */
   setup(token: string): Promise<SetupRun | null>;
   command(request: ConsoleRequest, input: CommandInput): Promise<CommandOutcome>;

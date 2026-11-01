@@ -3741,7 +3741,7 @@
       "id": "HUBC-005",
       "title": "Console M5: modules, agents, extensions and billing screens on fixtures",
       "area": "hubs-web",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "ADM-002"
       ],

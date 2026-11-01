@@ -15,6 +15,7 @@ import { LEGAL_DOCUMENTS, OPERATORS } from '../hubs/[hub]/hub/legal/_fixtures.js
 import { RESIDENCY } from '../hubs/[hub]/hub/residency/_fixtures.js';
 import { LOCAL_ADDITIONS } from '../hubs/[hub]/hub/country/_fixtures.js';
 import { TAXONOMY } from '../hubs/[hub]/hub/taxonomy/_fixtures.js';
+import { productFor } from '../hubs/[hub]/modules/_kit/product.js';
 
 /**
  * Fixture adapter of the console (demo mode only). Synthetic data from `_fixtures` and the section folders, states
@@ -87,6 +88,9 @@ export const fixtureConsolePort: ConsoleDataPort = {
   async brandChecks(hubId) {
     return [...(BRAND_CHECKS[hubId] ?? [])];
   },
+  async product(hubId) {
+    return productFor(hubId);
+  },
   async setup(token) {
     if (!token) return null;
     const hash = sha256(token);
@@ -108,6 +112,7 @@ export const fixtureConsolePort: ConsoleDataPort = {
       documents: hub ? LEGAL_DOCUMENTS.filter((d) => d.hubId === hub.hub.id) : [],
       setup: input.setupToken ? await this.setup(input.setupToken) : null,
       isRestricted,
+      product: hub ? productFor(hub.hub.id) : null,
     });
   },
 };
