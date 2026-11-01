@@ -350,5 +350,16 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
     await refused(as(p.editorB, trx => provenance.review(trx, { ...elevation, ...ctx('editorB'), sessionId: secondSession.id }, f.review)), '42501', 'admin.elevation_required');
   });
 
+  await t.test('correction refuses an inverse membership writer as an explicit authority conflict', async () => {
+    const { command } = await commandFixture('release-correction');
+    const membership = await withMaintenance(db.admin, trx => trx.insertInto('membership').values({ person_id: p.writer, company_id: w.company, role: 'member', permissions: [], status: 'active', valid_from: new Date() }).returning('id').executeTakeFirstOrThrow());
+    const holder = await db.admin.connect();
+    try {
+      await holder.query('BEGIN');
+      await holder.query('SELECT id FROM trustwork.membership WHERE id=$1 FOR UPDATE', [membership.id]);
+      await refused(as(p.writer, command), '40001', 'content.authority_busy');
+    } finally { await holder.query('ROLLBACK'); holder.release(); }
+  });
+
 });
 let issueNumber = 200;

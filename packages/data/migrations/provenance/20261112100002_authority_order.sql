@@ -269,6 +269,8 @@ BEGIN
     PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, v_row.hub_id, 'publication.corrected', 'publication', v_row.id, v_before, to_jsonb(v_row));
   END IF;
   RETURN v_row;
+EXCEPTION WHEN lock_not_available THEN
+  RAISE EXCEPTION 'request authority busy; reload' USING ERRCODE='40001',HINT='content.authority_busy';
 END;
 END $$;
 
