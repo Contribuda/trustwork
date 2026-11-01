@@ -162,7 +162,7 @@ export function ActivationRequest({
   blocked?: string | null | undefined;
   submit?: string | undefined;
 }) {
-  const disabledReason = ctx.offline ? t('admin.common.offlineDisabled') : !canRequest ? t('admin.common.readOnly') : (blocked ?? null);
+  const disabledReason = ctx.offline ? t('admin.common.offlineDisabled') : !canRequest ? t('admin.common.readOnly') : (blocked ?? (!secondPerson ? t('admin.errors.activation_unavailable') : null));
   const hidden = ctx.hidden(command, { ...Object.fromEntries(Object.entries(target).map(([k, v]) => [`f.${k}`, v])), ...(preview ? { 'f.previewDigest': preview.digest.value } : {}) });
   return (
     <div className="admin-subsection" data-testid="activation-request" data-second-person={secondPerson ?? 'none'}>

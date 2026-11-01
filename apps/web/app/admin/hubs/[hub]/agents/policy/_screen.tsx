@@ -78,7 +78,7 @@ async function AgentPolicy(ctx: HubContext) {
       <Panel id="jurisdictions" title={t('admin.agents.policy.jurisdictions')}>
         <p>{t('admin.agents.policy.jurisdictionsLede')}</p>
         {policy.jurisdictions.length ? (
-          policy.jurisdictions.map(({ ref, rows }) => {
+          policy.jurisdictions.map(({ ref, rows, preview }) => {
             const missing = disclosureLocalesMissing(ref, ctx.record.hub);
             return (
               <div key={ref.configVersionId} className="admin-subsection" data-testid={`jurisdiction-${ref.jurisdiction}`}>
@@ -124,10 +124,10 @@ async function AgentPolicy(ctx: HubContext) {
                     ctx={ctx}
                     command="jurisdiction.request_activation"
                     target={{ configVersionId: ref.configVersionId }}
-                    preview={null}
+                    preview={preview}
                     secondPerson="jurisdiction.activate_settings"
                     canRequest={ctx.can('admin.hub.jurisdiction.edit')}
-                    blocked={missing.length ? t('admin.agents.policy.disclosureMissing', { items: list(missing.map(languageName)) }) : null}
+                    blocked={!preview ? t('admin.errors.preview_missing') : missing.length ? t('admin.agents.policy.disclosureMissing', { items: list(missing.map(languageName)) }) : null}
                   />
                 ) : null}
               </div>

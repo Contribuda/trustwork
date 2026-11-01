@@ -1,0 +1,12 @@
+/* Keep translated labels in normal flow so multiline labels cannot overlap the next cell. */
+@media (max-width: 1023px) {
+  .admin .plain-table.agent-capabilities td {
+    padding: 0;
+  }
+
+  .admin .plain-table.agent-capabilities td::before {
+    position: static;
+    display: block;
+    width: auto;
+  }
+}

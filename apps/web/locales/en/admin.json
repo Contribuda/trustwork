@@ -302,7 +302,9 @@
       "lawful_basis_missing": "No recorded lawful basis: announcements go only to people who opted in.",
       "source_required": "A source address starting with HTTPS is required.",
       "licence_requires_verified": "Licensed categories accept only verified providers, and agents accept only with verified counterparties.",
-      "not_draft": "Only a draft version can be activated or cancelled."
+      "not_draft": "Only a draft version can be activated or cancelled.",
+      "activation_unavailable": "Activation is unavailable until a second-person approval action is defined. One person cannot activate this change.",
+      "preview_missing": "Activation requires a stored preview. Create and review the preview first."
     },
     "details": {
       "demo_data_only_before_soft_launch": "demo data is allowed only before soft launch",
@@ -2108,7 +2110,8 @@
         "requestsPerWeek": "Requests per week",
         "salePrice": "Sale price per unit (cents)",
         "threshold": "Threshold",
-        "validity": "Validity (days)"
+        "validity": "Validity (days)",
+        "recordKeepingYears": "Record keeping (years)"
       },
       "values": {
         "capability": {

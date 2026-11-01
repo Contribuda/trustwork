@@ -1,3 +1,4 @@
+import './capabilities.css';
 import NextLink from '@/components/locale/LocalLink';
 import { COMMITMENT_MANDATE_KINDS, unitMargin } from '@trustwork/contracts/client';
 import { t, tDynamic } from '@/app/_lib/i18n';
@@ -80,7 +81,7 @@ function ModulePanel({ ctx, module, scopes }: { ctx: HubContext; module: AgentMo
       />
       <details className="admin-disclosure">
         <summary>{t('admin.agents.modules.capabilities', { count: module.capabilities.length })}</summary>
-        <table className="plain-table">
+        <table className="plain-table agent-capabilities">
           <thead>
             <tr>
               <th scope="col">{t('admin.agents.modules.capability')}</th>

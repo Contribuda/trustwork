@@ -117,6 +117,22 @@ test.describe('hub console product screens (English)', () => {
     await expect(page.locator('#activate-fee-consultation-2').getByTestId('activation-request')).toHaveAttribute('data-second-person', 'billing.activate_fee_version');
   });
 
+  test('agent policy and non-commitment module activation are blocked; jurisdiction shows its stored preview', async ({ page }) => {
+    await page.goto(at(`${US}/agents/modules`, 'hub-owner'));
+    const planner = page.locator('#module-project_planner');
+    await expect(planner.getByTestId('activation-preview')).toBeVisible();
+    await expect(planner.getByRole('button', { name: 'Request activation' })).toBeDisabled();
+    await expect(planner).toContainText('One person cannot activate this change.');
+    await page.goto(at(`${US}/agents/policy`, 'hub-owner'));
+    const policy = page.locator('#policy-draft');
+    await expect(policy.getByRole('button', { name: 'Request activation' })).toBeDisabled();
+    await expect(policy).toContainText('One person cannot activate this change.');
+    const jurisdiction = page.getByTestId('jurisdiction-US-TX');
+    await expect(jurisdiction.getByTestId('activation-preview')).toContainText('Record keeping (years)');
+    await expect(jurisdiction.locator('input[name="f.previewDigest"]')).toHaveValue(/^[a-f0-9]{64}$/);
+    await expect(jurisdiction.getByRole('button', { name: 'Request activation' })).toBeDisabled();
+  });
+
   test('there is no list of anyone\'s agent, and guard rails are locked without a control', async ({ page }) => {
     await page.goto(at(`${US}/agents/modules`, 'hub-owner'));
     await expect(page.getByTestId('no-agent-list')).toBeVisible();
@@ -202,6 +218,11 @@ test.describe('hub console product screens: layout and accessibility', () => {
         await expect(page.locator('.admin'), path).toBeVisible();
         await axe(page);
         await noHorizontalScroll(page);
+        const overflowingLabels = await page.locator('.agent-capabilities td').evaluateAll((cells) => cells.filter((cell) => {
+          const label = getComputedStyle(cell, '::before');
+          return parseFloat(label.height) > cell.getBoundingClientRect().height + 1;
+        }).length);
+        expect(overflowingLabels, 'translated table labels stay inside their cells').toBe(0);
       }
     });
   }

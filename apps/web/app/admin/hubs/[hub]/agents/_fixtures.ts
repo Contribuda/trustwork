@@ -45,6 +45,15 @@ const policyPreview: ActivationPreview = preview('pv-agents-policy-4', 'c3', {
   estimatedMonthlyCostChange: null,
 });
 
+const jurisdictionPreview: ActivationPreview = preview('pv-jur-us-tx-1', 'f3', {
+  changes: [{ field: 'recordKeepingYears', before: { kind: 'text', value: '4', lang: 'en' }, after: { kind: 'text', value: '5', lang: 'en' } }],
+  affected: { mandates: c(25), jobSubscriptions: null, externalConnections: null, openRuns: c(2), payers: null },
+  audiences: ['person', 'company_member', 'company_representative'],
+  plans: [],
+  advanceNoticeDays: null,
+  estimatedMonthlyCostChange: null,
+});
+
 const extensionPreview: ActivationPreview = preview('pv-ext-catalog-2', 'd4', {
   changes: [{ field: 'extensionStatus', before: { kind: 'key', key: 'product.values.extension.tested' }, after: { kind: 'key', key: 'product.values.extension.active' } }],
   affected: { mandates: c(58), jobSubscriptions: c(19), externalConnections: c(4), openRuns: c(0), payers: c(31) },
@@ -177,6 +186,7 @@ export const US_AGENT_PRODUCT: AgentProduct = AgentProductSchema.parse({
           ],
           weakerThanMandatoryPackRule: false, disclosureLocales: ['en', 'es'], status: 'active',
         },
+        preview: null,
         rows: [
           { area: 'agent_disclosure', packDefault: { text: 'Automated messages that try to influence a transaction say they are automated.', lang: 'en', fact: { packCode: 'US', packVersion: '0.3.0', factKey: 'agents/disclosure/bot-disclosure' }, mandatory: true }, hubValue: { text: 'Every agent message says it is automated and names the person it acts for.', lang: 'en' }, comparison: 'stricter' },
           { area: 'liability_allocation', packDefault: { text: 'The principal is bound by commitments made within the mandate.', lang: 'en', fact: { packCode: 'US', packVersion: '0.3.0', factKey: 'agents/liability/principal-bound' }, mandatory: false }, hubValue: { text: 'The principal is bound by commitments made within the mandate.', lang: 'en' }, comparison: 'same' },
@@ -191,6 +201,7 @@ export const US_AGENT_PRODUCT: AgentProduct = AgentProductSchema.parse({
           // The Spanish disclosure is missing, so this draft cannot be activated yet.
           weakerThanMandatoryPackRule: false, disclosureLocales: ['en'], status: 'draft',
         },
+        preview: jurisdictionPreview,
         rows: [
           { area: 'agent_disclosure', packDefault: { text: 'Agent messages are labelled as automated.', lang: 'en', fact: { packCode: 'US', packVersion: '0.3.0', factKey: 'agents/disclosure/general' }, mandatory: true }, hubValue: { text: 'Agent messages are labelled as automated.', lang: 'en' }, comparison: 'same' },
           { area: 'record_keeping', packDefault: { text: 'Keep records of commitments for four years.', lang: 'en', fact: { packCode: 'US', packVersion: '0.3.0', factKey: 'records/commitments/retention' }, mandatory: false }, hubValue: { text: 'Keep records of commitments for five years.', lang: 'en' }, comparison: 'stricter' },
