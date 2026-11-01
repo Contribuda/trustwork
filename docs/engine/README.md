@@ -72,6 +72,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | Country packs and localization | [LOC](modules/country-packs-and-localization.md) | [Countries and languages](localization.md), [Country specifics](country-specifics.md) |
 | Federation mesh | [MSH](modules/federation-mesh.md) | [Federation: one worldwide mesh](federation.md), [Mesh protocol](federation-protocol.md), [Hub exchange architecture](hub-exchange-architecture.md) |
 | Trust, safety, privacy and compliance | [TSP](modules/trust-safety-privacy-compliance.md) | [Security, trust and privacy](trust-safety-privacy.md) |
+| Sanctions compliance | [SNC](modules/sanctions-compliance.md) | [Sanctions controls on our own services](../operations/sanctions-our-services.md), [ADR 014](../adr/014-sanctions-compliance-engine.md) |
 | Security architecture | [SEC](modules/security-architecture.md) | [Architecture](architecture.md), [Security, trust and privacy](trust-safety-privacy.md) |
 | Integrations | [INT](modules/integrations.md) | [Keys, providers and models](hub-console/providers-and-models.md) |
 | Mobile and offline | [MOB](modules/mobile-and-offline.md) | [Communications](communications.md) |
@@ -99,6 +100,25 @@ Each person has one agent, their representative; every participant-facing capabi
 |---|---|
 | [Architecture for contributors](architecture.md) | Processes, layout, modules, data and reliability, conventions, quality gates |
 | [Security, trust and privacy](trust-safety-privacy.md) | Access decisions, hardening, integrity, trust and safety, privacy, AI safety, sanctions, incidents |
+| [Onboarding for AI coding agents](agent-onboarding.md) | Running the engine, claiming work, shared registration files, the merge queue and handing work back |
+
+## Operating and releasing
+
+| Document | What it covers |
+|---|---|
+| [Operations, release and recovery runbook](../operations/runbook.md) | Releasing, operating and recovering a node |
+| [Container images and the local stack](../operations/images.md) | The images and the compose stack that mirrors the production topology |
+| [Backup and restore](../operations/backup-and-restore.md) | Encrypted backups, point-in-time restore and the drill |
+| [Retrieval operations](../operations/retrieval.md) | Deletion and generation lifecycle of the retrieval runtime (design and runbook only) |
+| [Sanctions controls on our own services](../operations/sanctions-our-services.md) | The shared admission check (Contract) and the designed controls on the services Contribuda runs |
+| [Platform release candidate](../quality/release/platform.md) | The US demo hub on a deployable stack (QA-002), on synthetic data |
+| [Deployment configuration](../country-packs/configuration.md) | Configuring a deployment without a default country, data-directory packs and dictionaries |
+
+## In design
+
+These chapters are being written in open pull requests and are not part of the handbook until they are merged:
+
+- The editorial office and the editorial agent team (pull request #367)
 
 ## Deeper references
 
