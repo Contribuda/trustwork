@@ -1,0 +1,1652 @@
+{
+  "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93",
+  "browserTests": {
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "exit": 0
+  },
+  "axeScans": 154,
+  "axeViolations": 0,
+  "captures": [
+    {
+      "screenshot": "az-Latn-1280-account.png",
+      "sha256": "abcb6009fa764b8f60dede96ac5011f69157bf51b1ee3982c117932649385923",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-closed.png",
+      "sha256": "145970bcde708a1bb1e90100932748b07b00087219b9bc8d71211fb5c028e65c",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-empty-account.png",
+      "sha256": "2607c4b0a4184847d2b967f2705888d16192e0e52dfdad1bd6c1b03492ac561f",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-empty.png",
+      "sha256": "8614e27232f086ac39d739b360a33925982b4aaa2adc9989884065b1b628b918",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-long-open.png",
+      "sha256": "6ed8bcd4b9dfa552c5f1f0fea2e07df7489793450a28488eaf5b9773ab6863c4",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-long.png",
+      "sha256": "dd587cc6dd66858815d8db25fe1469530ca892d301858f354cc67a458b463773",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-navigation.png",
+      "sha256": "2612ea2a07619e71521f4ecc090ddc9d1cf6d34cc499d9afb970c66b9d89a89c",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-palette-empty.png",
+      "sha256": "7c2af8ca08e7cae726bdd447fb7834dab92426130a33a361934e51fda8b8613e",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-1280-palette.png",
+      "sha256": "3c4dff95ff978110dbf031d45bd7fbccdd95f85cff9f1bcf7fe4b344ccee90c4",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-account.png",
+      "sha256": "0e0ab91a2c2f9f903eed55cd63bb260d17a44e270a54a5d2388f6c934e25a645",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-closed.png",
+      "sha256": "6a9fa931ebc7707faaeb7f2dfee8cfb552a3c72aea95b26700de638f20a8845c",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-empty-account.png",
+      "sha256": "d5e8a2b5843d1f215c807c1301854fd16742f3220594cde9d0c54f8765bcb9f1",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-empty.png",
+      "sha256": "8eeaf7664c7a2cf7fa804cd1a0f072bf88388ef0727dc1ddcae668a16b55d7e4",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-long-open.png",
+      "sha256": "170c531aea7c4fed6de201327c6306eb3c8d7b419e54e527a6976e5aff08c2bb",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-long.png",
+      "sha256": "6cbf74befb44cf7f0c377eccb2d1c95a4fb9c37bd37c6012a4242c8d9eedafed",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-navigation.png",
+      "sha256": "af3ef4db4e059c653ef64ac5d7406e33fdfa9084fc9d119c18f30bbb1f43db6c",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-palette-empty.png",
+      "sha256": "a23bda5d8fa29608c2340ef721ffc98101466637c0a62245ff7db12afe60004a",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "az-Latn-375-palette.png",
+      "sha256": "cd3cab2c499606d3b151eb233a7138526a7f157dcf2f7a9936ef8c696ffa0ec1",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "az-Latn",
+      "state": "az-Latn-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-account.png",
+      "sha256": "4426e3b36cb89e27d97e7aea5456553a1b9881e1dd3b3b6e979c764d4849dba2",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-closed.png",
+      "sha256": "906cf215df9249118f5c233f0e5b89b8a57457e1c9e063484d9c730fdf4f3a79",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-empty-account.png",
+      "sha256": "ee277b10897ceb0f3418c5e9ed3d9d2857c68256666962bd68fa0cf498c3d68b",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-empty.png",
+      "sha256": "cf0be7439d6383486cc6d78153a01506a2b699d38c31530d161b4b7a28594bb3",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-long-open.png",
+      "sha256": "f0e71960da2b57bf47872d55dc84065334642fb0977b1f83398d763b5ca36d91",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-long.png",
+      "sha256": "89b78ec7f00d83de15619547c3bb605bd7bdb92c4ec142e39b4960f0d8eadd16",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-navigation.png",
+      "sha256": "37b65cfccf96208396ecb8f03db4e416cae4753703984c7ddaaecb3e1d910086",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-palette-empty.png",
+      "sha256": "eb6188a94eb74a046b192c191be668f404169d2e440eae812aa9eaffdf096b32",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-1280-palette.png",
+      "sha256": "d5fb5776311febf93a412ab9147ba18f7f5b5e2f5fce72a41e3c9584ffc27763",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-account.png",
+      "sha256": "56442b7ef8ce640ac78be809c76cf1ce6e43a4a066a8781606b7050de0b787ea",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-closed.png",
+      "sha256": "0612fb4f5311ebd627e819b20d33c8e02714913fab07376f5fa03f9551135f99",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-empty-account.png",
+      "sha256": "916a76d7460b0b226bf00e6060612e28ede58468f6f918312b2ac26e63972f8c",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-empty.png",
+      "sha256": "8ce157657b1ca86510f8e18ddb75c1f81a08f992c2301e1432296bfe8c91b204",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-long-open.png",
+      "sha256": "3fd099bf919fb96c6b67ab41874b254ece68cd98bda3642b47f7822cbff2eeef",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-long.png",
+      "sha256": "42093f984eefd26aa7a250516a9c74d6f9d66be522f41a5ea1b95be233628740",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-navigation.png",
+      "sha256": "4a4d05d9a85398ce9d42fbaabcd9a0b7e55de5205dd12164dadae514e17b04c4",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-palette-empty.png",
+      "sha256": "ecc99f6c77c7a709f07969f4ed2e29c016cea3d3c7a14d3757f3503017478c75",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "en-375-palette.png",
+      "sha256": "9496bfe1c18d7f5aa14ac6940d7fddc396ba8676303fba26c1b6fe6a33f3d089",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "en",
+      "state": "en-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-account.png",
+      "sha256": "011c7556f9adaac69b5fcf247db7c66cb68c1eeba3d249eed956db3bb4bc79be",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-closed.png",
+      "sha256": "41787841576a28991f27e8f3ce1a69492acfe394dcca866f39a50c6561990725",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-empty-account.png",
+      "sha256": "31786198e74e130af54cc8c5441e1d09854bd8e09a0d2a4be1a5417c35fb4fd1",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-empty.png",
+      "sha256": "b56ad8d6467d61c375441920b212d6abca59bda414ae9f69726be24b60cbfa62",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-long-open.png",
+      "sha256": "82254f9f455e151803e05688b6aa3819fc0c3abcc4f2fcf579e38c0d080aba8c",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-long.png",
+      "sha256": "50067d2f4f00a01a4a3cc1facb7d23b90028d055a1204fc51ca65d7ded337322",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-navigation.png",
+      "sha256": "e3f7efa2e2263433d56808784c02b597858b4311e636f468d352e7770b2b2a4b",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-palette-empty.png",
+      "sha256": "e342b95d48bed27f09d624883a9c8b2d843f4b791914fafe389ffa130dad9d3c",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-1280-palette.png",
+      "sha256": "668c75a071125320642de33c98051f8eac036db1adc9e3c89c666c0f291c97d7",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-account.png",
+      "sha256": "8a7e21896e26173ec27fb541c4b9d61f04dd483f2087af76f969ba1919885b2a",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-closed.png",
+      "sha256": "0b31093a0e217d9acdc9fe0a1f4de163414b9b9aa39d1a53c764322ce2dadc5f",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-empty-account.png",
+      "sha256": "6315b26cb7a92f93d7c90d2c52e2accfc06188934c0687535fd58b89ba87ec84",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-empty.png",
+      "sha256": "65c229e5c1f48c6647580a494f0bac5caacc53100e44a8bfed0547d2b0bf51f4",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-long-open.png",
+      "sha256": "f8b87f61d702a72af5cba919b2b0951280d3ac01119a49c4d95888967db05015",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-long.png",
+      "sha256": "4d1c7f147c2bb258ee297f5be5c415ce3ebe724062bf49970afa73f8eecc8d44",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-navigation.png",
+      "sha256": "00b9fc5fb66c8b69226e913e5d0746be1a06e67bb90cc8e51aa699c84a87d53f",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-palette-empty.png",
+      "sha256": "5fbac79debfad8745a90f7db59adf43e384c24c4ad0d6d754804fe436e3b3a7a",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "es-375-palette.png",
+      "sha256": "cd760ab5c7467f419671737a839edd72b1525851f7bad0627af8538e92eaa3d6",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "es",
+      "state": "es-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-account.png",
+      "sha256": "08e8c90a6f15aa78527671fe0ad1709ddf2099fc533aeffb18683487eec83cda",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-closed.png",
+      "sha256": "66bbf63663533b46f575875444e82d52672637c2873788a407ad3b68277cd809",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-empty-account.png",
+      "sha256": "e10ac7782b72f5b392d14527a1013067767caad927098d898dc283ea16bcf961",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-empty.png",
+      "sha256": "a2cbcc3e49b7834c03ae63021f113a499f127f416280e4c9071f0345ffd71c99",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-long-open.png",
+      "sha256": "af8211df1a304326cfac5bec15560965e3d0fb351b27ffe01528ccd7cf4ff5c5",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-long.png",
+      "sha256": "ae5e16b9b107fd1bbca8d654ecc24348a87d14c8812ce98b74e739d0c09f6997",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-navigation.png",
+      "sha256": "b019d6dee0ea804c95c73db20c66129e0023bd3c8539beaf6702c5f42a1fcac8",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-palette-empty.png",
+      "sha256": "19d7a81dfeb940a073332dc0b797e75a243df7dbd556620c16dde4b8cae74dc0",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-1280-palette.png",
+      "sha256": "ae0a582b88f61a6c4d69c605d85fb2f5e75de469f741fa8de0f3a73bd0b17d7f",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-account.png",
+      "sha256": "1ba73072bd7ce4324949c32682e5e127ab8047d595ae6195b794a7539341c90b",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-closed.png",
+      "sha256": "0d36b40138fca398973c9685f0700bceed990e487e8669999abc79333f7a64f9",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-empty-account.png",
+      "sha256": "2621d11aec4c7bcb1f25b4f508daa713b9be46b2179a76acf9f91b14ca00901d",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-empty.png",
+      "sha256": "1d4a2bafaa9574f7ccab220509c7e2a887c0cf9cebeb726a149751ca8a4d6a14",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-long-open.png",
+      "sha256": "76570c24cd90a125641a2628b02bf6b4261e89e847ccf966818a516f8de1977e",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-long.png",
+      "sha256": "661975585b37c1295c1c77d9e4ddc4c92d5d7e6c9ea786af252585b7889a4110",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-navigation.png",
+      "sha256": "abb6fe0bd166650c4b817fa7ba0d03612a154e2b828218152a88a3d9dad7444c",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-palette-empty.png",
+      "sha256": "b170621eef1d9a87fdd3f20c130cf05212d50b55a0a4b02e2bf1a2ba1f697c0f",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "hy-375-palette.png",
+      "sha256": "9284116e92fa6c329f0177d0aec23856fded2e5f3cca365ddab7e28a6a44fa7d",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "hy",
+      "state": "hy-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-account.png",
+      "sha256": "67d86ea33879f97a5298056d1a9b7f57eda96faf41c51f95ab78db1ef8e818d0",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-closed.png",
+      "sha256": "185cc67b3fd64d15880cde524e59dd9ede4d4c324b93f843c26e06f432b80b77",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-empty-account.png",
+      "sha256": "e709a88ead0817995925f99bb5fc971963004e10926efb608094831665bb67c1",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-empty.png",
+      "sha256": "3baca042a2375c83e5fe7094cf00900832bd62c8b632da09ce030cc76dbf5df6",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-long-open.png",
+      "sha256": "448f7688431d72b66a25e695d9cfa491312c480de8e68d4d68be10c71987c1a5",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-long.png",
+      "sha256": "4962dc8605676641354978412fa22dfb3607bc12059a672b3b202b83aa320b68",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-navigation.png",
+      "sha256": "f9a924bc95af100eb826897bbd24f7c3fc15971fd44118dd25738741e27f4ab8",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-palette-empty.png",
+      "sha256": "e117c1c8684643aad77883810785c6011c30c756bff77a057a63085ef60f363e",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-1280-palette.png",
+      "sha256": "c51ecb65221b82ac082cba04df59c626d23255262a03e45d7192916d92fdfe96",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-account.png",
+      "sha256": "92f344c106ac682bf7d1c32c40b7af1d8ed97f88164c0b601ba29b3a5ab80dfd",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-closed.png",
+      "sha256": "d11cbeecee361a2d199d6b94a0f27557bfb6b63d6e4df1854c076210947cd5b7",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-empty-account.png",
+      "sha256": "5cb36347d17c29f56c5d277b77f626a8a6d8fc725000c05a7201f7776620e5c7",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-empty.png",
+      "sha256": "f85c6dc18a2d7816bdfd4c2d5a27773908d2b51e508f6cb606d906fb82a6e3ad",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-long-open.png",
+      "sha256": "3c846e0ca4cb52b32d93bf6726991411eebc068bb70b047d8ea30e6862b1cd97",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-long.png",
+      "sha256": "a697d9f9f496898f978700e009d755f0d0fe860f5297329c221fec20744a8fa7",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-navigation.png",
+      "sha256": "64dd1146b69c7b06b40ef5a490bbaaabb3262854b02c46af2f68b35b15922c25",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-palette-empty.png",
+      "sha256": "98dc3c8eb4ac4d05682033bc8500ed031c5b821793fd1d3571cdd96c3047d0e6",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ka-375-palette.png",
+      "sha256": "2d72133598ed50d4c85a125074bff225027565c806dbe7646bb4e678c38921d5",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ka",
+      "state": "ka-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-account.png",
+      "sha256": "ee4c6a1f4ea83165a24cfcdecd5830d81dc0ded408e154996cbfd59bdf116717",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-closed.png",
+      "sha256": "c9a2552643fff09cb36c064102910546859b3f122611b415d4a80b1b49683caf",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-empty-account.png",
+      "sha256": "a5ee92f8b4799b83d57b92c0c87030d1147163b482f444fe26aa505d8c0ca3e9",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-empty.png",
+      "sha256": "8e3141baa84c43b5b22a15ce9bd1f2a089966c0186324ff9dba0d95b946c9363",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-long-open.png",
+      "sha256": "f0dac3f6d0eb576d921b544124662fae4235b3f9aec68d5b205af540f4b0ab81",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-long.png",
+      "sha256": "715be8adb1e5bfc7a92cabc5911e5dc802c799a2860fc017be05df1657420679",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-navigation.png",
+      "sha256": "09ba9830e56a40ddd61ad30755ee2bae947dec087c86d80e86a4ffdef1839fd9",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-palette-empty.png",
+      "sha256": "85e56f9e0d0e3210409403a70a22ca4b3edcd4c73c1b3b728110e6aaddf1f63c",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-1280-palette.png",
+      "sha256": "c50f7c373914c5c45e2f0f7edaebfc7bd4308cdf2ec76b2d8fac19374e8b5d52",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-account.png",
+      "sha256": "90fd3789afce70967fc29cd82d940059b03295e98a8e35f06cfdeb32d00af098",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-closed.png",
+      "sha256": "509b7204dba1d7a3f54da6f8a4651199aedadec06cb9b312aae01db17a80ec02",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-empty-account.png",
+      "sha256": "b1bd358c2ce5241d95a52d98a8b479bd856a6a5275be94300d5062b3220ee29c",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-empty.png",
+      "sha256": "236264f82ad23ece49ac3c6ed6864afcd7d75a60f651f85d98dee7b5e404abb3",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-long-open.png",
+      "sha256": "f52d691aa6244a87b9c1fee0b5281cd0998881c3a752e26ecb32b85e33144b95",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-long.png",
+      "sha256": "9e48e8fca0503feed640f8d025a64286904e4d81cfb110a65ae31b24e2baca23",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-navigation.png",
+      "sha256": "5f25d118d51fdbcca8ac719c83c49d6d4a4f34ab7677b9ad91ab302722403688",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-palette-empty.png",
+      "sha256": "b4dd41226013d0a5a775db5626b38761f5c575f21da4015511b5a5159deb5ceb",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "ru-375-palette.png",
+      "sha256": "17e327200cf087173a97da67c8a977650b114d6cc72d0d404069b74eead38c76",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "ru",
+      "state": "ru-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-account.png",
+      "sha256": "7b0cc6c3ea418cd2ba56fca67bc7eeb57d52cc20b7425816cf963e97271627a3",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-closed.png",
+      "sha256": "d17715573671eb8ec4c9861d29644158c80a0b09b0e8c528f6dbf8fc20388756",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-empty-account.png",
+      "sha256": "60013aad6df65b23da6cfa85f8bedb6d000397174227ae2ab9a5c4fb359ce78c",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-empty.png",
+      "sha256": "50c64b21f217aff0311d45b1d65b8c46a4c5817c2d301af69e85da3bdb1343d8",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-long-open.png",
+      "sha256": "0c19257a21a35f1d54778c3e6ee65bea5049d66e86e7216043e3caba85ac17eb",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-long.png",
+      "sha256": "8ef18c654f287fe1ebb283c3e87a81631ff774a76a0eff2f2216655866eb6079",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-navigation.png",
+      "sha256": "371ccd045af059f6fbcd9a519382456640af52ab8424cbc6f0cbfa488a8c4103",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-palette-empty.png",
+      "sha256": "6b1adce08559274e7de273a6d97b95bca3c0027814f0c97a07553b8ee2536084",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-1280-palette.png",
+      "sha256": "80aae5451f4af0ad0ccb44818c909da1b1d7c637dc23000f8126d24f194b94cb",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-1280-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-account.png",
+      "sha256": "87152a98792258bccab4465301db96d2f847ca7996442c74737a12bc9eff9519",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-closed.png",
+      "sha256": "1213994a14bbfc7632b5c47bb80b3aaec9b320c19e0e3385ce15225ed1cc95db",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-closed",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": true,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-empty-account.png",
+      "sha256": "4ed1571d7ba7d60337262e6317df93f73015e368b85a0c43ce9285c6a8e936ef",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-empty-account",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-empty.png",
+      "sha256": "bd8d4ad4ee67de6cb823dcde0bc2b6cb7b729b85cdd95569651d45da650253c3",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-long-open.png",
+      "sha256": "484a1aab88bf90c62f2fe2dcb756f7e7d27dec878b4483b0d86e713e3123a255",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-long-open",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-long.png",
+      "sha256": "d89670df9db624d225896b466af7b97b2a493011df246dc6cf41ac18f7bc9016",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-long",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-navigation.png",
+      "sha256": "e8ba6ed486851d5ece386aa47a612e008bea13e9f95de5aa75679a56b8db42af",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-navigation",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-palette-empty.png",
+      "sha256": "cfe4b209cf4917edd8afb1430544f3f64a27418fbb5257f8d7765b9f9f51e003",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-palette-empty",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    },
+    {
+      "screenshot": "uz-Latn-375-palette.png",
+      "sha256": "6f45bd08c979d9583094509726c0fd36ec2e2a6562636b04b45cc6bc98d65936",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "locale": "uz-Latn",
+      "state": "uz-Latn-375-palette",
+      "inspectedByAutomation": true,
+      "visuallyInspectedByAgent": false,
+      "testedSource": "eea3505f7e8c4c332d9f8b9481fa2369be1d7b93"
+    }
+  ],
+  "inspectionNote": "11 captures individually viewed by the agent. Other captures checked automatically, not claimed visually reviewed. No native-language, native screen-reader or physical-device acceptance."
+}
