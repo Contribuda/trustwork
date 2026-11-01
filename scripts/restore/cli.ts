@@ -3,7 +3,8 @@ import { blobStoreFromEnv } from '../../packages/data/src/files/config.js';
 import { keyringFromEnv } from '../../infra/backup/src/crypto.js';
 import { backupTargetFromEnv } from '../../infra/backup/src/target.js';
 import { HbaFence, RoleFence, type RestoreFence } from './fence.js';
-import { authorizeRestore, readReceiptJournal, reconcileRestore, resolveOutboxEvent } from './reconcile.js';
+import { authorizeLocalPrivacyRestore, authorizeRestore, readReceiptJournal, reconcileRestore, resolveOutboxEvent } from './reconcile.js';
+import { PrivacyErasureLedger, type LocalJournalBinding } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { replayTombstones, restoreObjects, verifyDigests, verifySchema } from './recover.js';
 import { destroyRestore, planRestore, restoreExec, stageRestore, startRestored, PGDATA, type RestoreProject } from './stage.js';
 
@@ -57,6 +58,19 @@ function project(argv: string[]): RestoreProject {
 }
 
 export async function runRestoreCli(argv: string[], env: NodeJS.ProcessEnv, io: CliIo): Promise<number> {
+  return runCli(argv, env, io);
+}
+
+/** Local installation harness only: the pin comes from independent provisioning, never the restored DB or CLI flags. */
+export async function runLocalPrivacyRestoreCli(argv: string[], env: NodeJS.ProcessEnv, io: CliIo, binding: LocalJournalBinding): Promise<number> {
+  if (!binding || env.NODE_ENV === 'production') {
+    io.err(JSON.stringify({ error: 'independently provisioned local privacy authority required' }));
+    return 1;
+  }
+  return runCli(argv, env, io, binding);
+}
+
+async function runCli(argv: string[], env: NodeJS.ProcessEnv, io: CliIo, binding?: LocalJournalBinding): Promise<number> {
   const [command, ...rest] = argv;
   const admin = () => {
     if (!env.RESTORE_DATABASE_URL) throw new Error('RESTORE_DATABASE_URL is required (operator login on the restored server)');
@@ -131,7 +145,10 @@ export async function runRestoreCli(argv: string[], env: NodeJS.ProcessEnv, io: 
         const logins = option(rest, '--logins');
         if (logins) fence = new RoleFence(pool, logins.split(','));
         else fence = new HbaFence(restoreExec(project(rest)), `${PGDATA}/pg_hba.conf`);
-        const result = await authorizeRestore({ admin: pool, fence, restoreId: required(rest, '--restore-id'), reference: required(rest, '--reference'), operator: required(rest, '--operator') });
+        const input = { admin: pool, fence, restoreId: required(rest, '--restore-id'), reference: required(rest, '--reference'), operator: required(rest, '--operator') };
+        const result = binding
+          ? await authorizeLocalPrivacyRestore({ ...input, privacyLedger: new PrivacyErasureLedger(binding), retainedAuthority: { directory: binding.authorityDirectory, journalId: binding.journalId } })
+          : await authorizeRestore(input);
         io.out(JSON.stringify(result));
         return 0;
       }

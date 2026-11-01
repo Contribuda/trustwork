@@ -16,6 +16,7 @@ import { composeExecPrefix, PgExec } from '../../infra/backup/src/pg.js';
 import { inOwnerTransaction } from '../../infra/backup/src/retention.js';
 import { filesystemTarget } from '../../infra/backup/src/target.js';
 import { HbaFence } from './fence.js';
+import { authorizePrivacyDrill, provisionPrivacyDrill, recordPrivacyDrill, verifyPrivacyDrill } from './privacy-drill.js';
 import { FakeProvider } from './provider.js';
 import { authorizeRestore, AuthorizationRefused, readReceiptJournal, reconcileRestore, resolveOutboxEvent, type ReconcileReport } from './reconcile.js';
 import { replayTombstones, restoreObjects, verifyDigests, verifySchema } from './recover.js';
@@ -36,6 +37,8 @@ import { destroyRestore, planRestore, restoreExec, stageRestore, startRestored, 
  */
 export interface DrillOptions {
   evidencePath: string | null;
+  /** Explicit synthetic local authority; does not enable production erasure. */
+  privacyFixture?: boolean;
   keep: boolean;
   pitrCheck: boolean;
   logicalCheck: boolean;
@@ -197,6 +200,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
       }
       return { people, files };
     });
+    const privacy = options.privacyFixture ? await provisionPrivacyDrill(work, src, seed.people) : null;
     const [a1, a2, a3] = seed.files as [{ id: string; key: string }, { id: string; key: string }, { id: string; key: string }];
 
     // ---------------------------------------------------------------------------------------------------------- 2
@@ -317,6 +321,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
     const j5 = (await owner(src, async (c) => (await c.query<{ id: string }>("SELECT id FROM trustwork.job WHERE payload->>'eventId' = $1", [e3])).rows[0]!.id));
     await deleteFile(a2, 'delete');
     await deleteFile(a3, 'erase');
+    if (privacy) await recordPrivacyDrill(privacy, src);
     check('source: phase C effects happened on the primary', (await jobState(src, j2)) === 'succeeded' && (await jobState(src, j5)) === 'succeeded', { j2: await jobState(src, j2), j5: await jobState(src, j5) });
     await sleep(1500);
 
@@ -383,10 +388,20 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
     check('reconciliation: effect after the recovery point closed by its receipt, never re-sent', report.jobs.closedByReceipt.map((j) => j.id).join() === j2, report.jobs.closedByReceipt);
     check('reconciliation: lost lease released, untouched queue kept', report.jobs.releasedToQueue.map((j) => j.id).join() === j7 && report.jobs.keptQueued.map((j) => j.id).join() === j3, { released: report.jobs.releasedToQueue, kept: report.jobs.keptQueued });
     check('reconciliation: receipt of lost work reported, pending event marked ambiguous', report.orphanReceipts.length === 1 && report.orphanReceipts[0]?.effectKey === `job:${j5}` && report.ambiguousOutbox.join() === e3, { orphans: report.orphanReceipts.length, ambiguous: report.ambiguousOutbox });
-    const early = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR }).then(() => null, (error: unknown) => error);
-    check('authorization refused while an outbox event is undecided', early instanceof AuthorizationRefused && (await fence.isApplied()), early instanceof Error ? early.message : early);
+    if (!privacy) {
+      const early = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR }).then(() => null, (error: unknown) => error);
+      check('authorization refused while an outbox event is undecided', early instanceof AuthorizationRefused && (await fence.isApplied()), early instanceof Error ? early.message : early);
+    } else {
+      // A failed retained-journal operation intentionally keeps its lock. Reconcile uncertainty before entering it.
+      check('privacy restore remains fenced while reconciliation has an undecided event', report.ambiguousOutbox.includes(e3) && await fence.isApplied());
+    }
     await resolveOutboxEvent({ admin: rst, restoreId: id, eventId: e3, decision: 'delivered', reference: report.orphanReceipts[0]?.reference ?? 'unknown', operator: OPERATOR });
-    const { authorizedAt } = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR });
+    const authorizedAt = privacy ? await authorizePrivacyDrill(privacy, restoredMigrator, restore, id)
+      : (await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR })).authorizedAt;
+    if (privacy) {
+      const result = await verifyPrivacyDrill(privacy, rst, pool(restoredWorkerUrl));
+      check('privacy-owned redaction and collection/delivery barriers survive physical restore', Object.values(result).every(Boolean), result);
+    }
     phase('reconcile_and_authorize');
     const recoverySeconds = (Date.parse(authorizedAt) - restoreStartedAt.getTime()) / 1000;
     mark('authorized');
@@ -448,6 +463,16 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
         target: pitrTarget.toISOString(), boundaryCommits: boundary, afterStartedAt: pitr.afterStartedAt.toISOString(),
         markerAcknowledgedBefore: pitrMarker?.seq ?? null, lastMarker: Number(maxSeq), markersStartedAfterTarget: Number(later), j1: j1State, recoveryPoint: recoveryPoint?.toISOString() ?? null,
       });
+      if (privacy) {
+        const pitrUrl = url(pitrProject.port, 'trustwork_stack_migrator', passwords.migrator);
+        const pitrAdmin = pool(pitrUrl);
+        const pitrFence = new HbaFence(pexec, `${PGDATA}/pg_hba.conf`);
+        check('PITR privacy replay starts behind the runtime fence', await pitrFence.isApplied());
+        await reconcileRestore({ admin: pitrAdmin, restoreId: `${id}-pitr`, recoveryPoint: recoveryPoint!, restoreStartedAt, journal, operator: OPERATOR });
+        await authorizePrivacyDrill(privacy, pitrUrl, pitrProject, `${id}-pitr`);
+        const result = await verifyPrivacyDrill(privacy, pitrAdmin, pool(url(pitrProject.port, 'trustwork_stack_worker', passwords.worker)));
+        check('privacy-owned redaction and collection/delivery barriers survive earlier PITR', Object.values(result).every(Boolean), result);
+      }
       await destroyRestore(pitrProject);
     }
 
@@ -510,6 +535,7 @@ export function parseDrillArgs(argv: string[], base: DrillOptions = DEFAULT_DRIL
     const arg = argv[i];
     if (arg === '--evidence') options.evidencePath = argv[++i] ?? null;
     else if (arg === '--keep') options.keep = true;
+    else if (arg === '--privacy-fixture') options.privacyFixture = true;
     else if (arg === '--no-pitr') options.pitrCheck = false;
     else if (arg === '--no-logical') options.logicalCheck = false;
     else if (arg === '--source-port') options.sourcePort = Number(argv[++i]);

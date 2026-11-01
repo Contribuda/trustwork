@@ -9,7 +9,7 @@ import type { IdentityServices } from '../../identity/identity.module.js';
 import type { CommandContext } from '../../../../../../packages/data/src/repositories/admin.js';
 import { privacy } from '../../../../../../packages/data/src/repositories/privacy.js';
 import type { BlobStore } from '../../../../../../packages/data/src/files/blob-store.js';
-import type { PrivacyHoldCommandSchema, PrivacyPreferenceCommand, PrivacyRequestCommand, PrivacySubject } from '../../../../../../packages/contracts/src/privacy.js';
+import type { PrivacyHoldCommandSchema, PrivacyPreferenceCommand, PrivacyRequestCommand, PrivacySubject, PrivacySourceProofSchema, PrivacySourceSubmissionSchema } from '../../../../../../packages/contracts/src/privacy.js';
 import type { PrivacyExportPort } from './ports.js';
 import { mailAddressHash } from '../../../../../../packages/data/src/repositories/mail.js';
 
@@ -25,6 +25,26 @@ export class PrivacyService {
   constructor(private readonly ctx: AppContext, private readonly identity: IdentityServices, private readonly store: BlobStore | null, private readonly exports: PrivacyExportPort) {}
   async objectToMarketing(address: string): Promise<{ accepted: true }> {
     await this.ctx.pool.query('SELECT trustwork.privacy_marketing_object($1::text)', [mailAddressHash(address)]);
+    return { accepted: true };
+  }
+  sourceProof(state: RequestState, elevationId: string, input: z.infer<typeof PrivacySourceProofSchema>) {
+    return this.run(state, async (trx) => {
+      // The verifying client retains the random capability; neither audit nor idempotency stores its plaintext.
+      const id = await privacy.sourceProof(trx, this.staffContext(state, elevationId, 'source_identity_verification'), input);
+      return { id };
+    });
+  }
+  proposePlan(state: RequestState, elevationId: string, requestId: string, grantId: string) {
+    return this.run(state, (trx) => privacy.proposePlan(trx, this.staffContext(state, elevationId, 'privacy_plan_propose'), requestId, grantId));
+  }
+  approvePlan(state: RequestState, elevationId: string, id: string, grantId: string, digest: string) {
+    return this.run(state, (trx) => privacy.approvePlan(trx, this.staffContext(state, elevationId, 'privacy_plan_approve'), id, grantId, digest));
+  }
+  executePlan(state: RequestState, elevationId: string, id: string, digest: string) {
+    return this.run(state, (trx) => privacy.executePlan(trx, this.staffContext(state, elevationId, 'privacy_plan_execute'), id, digest));
+  }
+  async sourceSubmission(input: z.infer<typeof PrivacySourceSubmissionSchema>): Promise<{ accepted: true }> {
+    await this.ctx.pool.query('SELECT trustwork.privacy_source_submit($1, $2, $3)', [createHash('sha256').update(input.proof).digest('hex'), input.action, input.proposedValue]);
     return { accepted: true };
   }
   private run<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>): Promise<T> {

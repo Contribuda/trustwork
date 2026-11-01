@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { privacyWorld } from '../../../privacy/helpers.js';
 import type { CrashCase, CrashContext } from '../cases.js';
 import type { Harness } from '../../helpers/app.js';
+import { privacySourceFixture } from '../../../privacy/source-fixture.js';
+import { privacyPlanFixture } from '../../../privacy/plan-fixture.js';
 
 export async function privacyCrashRoutes(h: Harness, exactlyOnce: CrashContext['exactlyOnce'], world: Awaited<ReturnType<typeof privacyWorld>>) {
   const count = async (table: string, condition = 'true') => (await h.db.admin.query<{ n: number }>(`SELECT count(*)::int AS n FROM trustwork.${table} WHERE ${condition}`)).rows[0]!.n;
@@ -18,6 +20,13 @@ export async function privacyCrashRoutes(h: Harness, exactlyOnce: CrashContext['
     body: { requestId: id, reasonCode: 'litigation', evidenceRef: randomUUID() }, effects: () => count('legal_hold') });
   await exactlyOnce({ action: 'privacy.hold_release', client: world.officer, url: `/v1/admin/privacy/holds/${(held.body as { id: string }).id}/release`,
     body: { reasonCode: 'hold_resolved' }, effects: () => count('legal_hold', 'released_at IS NOT NULL') });
+  const source = await privacySourceFixture(h, world);
+  await exactlyOnce({ action: 'privacy.source_proof', client: world.officer, url: '/v1/admin/privacy/source-proofs', body: source.body, effects: () => count('privacy_source_proof') });
+  const planFixture = await privacyPlanFixture(h, world);
+  const proposed = await exactlyOnce({ action: 'privacy.plan_propose', client: world.officer, url: '/v1/admin/privacy/plans', body: { requestId: planFixture.request.id, grantId: planFixture.first.id }, effects: () => count('privacy_subject_plan') });
+  const plan = proposed.body as { id: string; digest: string };
+  await exactlyOnce({ action: 'privacy.plan_approve', client: world.reviewer, url: `/v1/admin/privacy/plans/${plan.id}/approve`, body: { grantId: planFixture.second.id, digest: plan.digest }, effects: () => count('privacy_subject_plan', "state='approved'") });
+  await exactlyOnce({ action: 'privacy.plan_execute', client: world.officer, url: `/v1/admin/privacy/plans/${plan.id}/execute`, body: { digest: plan.digest }, effects: () => count('privacy_subject_plan', "state='blocked'") });
 }
 export default {
   name: 'PRV-001: requests, preferences, exports and audited holds',

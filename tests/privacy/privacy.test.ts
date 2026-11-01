@@ -18,12 +18,16 @@ import { installCrashPoints, recordState } from '../backend/idempotency/helpers.
 import { IDEMPOTENCY_TAKEOVER_LEASE_MS } from '../../apps/api/src/common/idempotency/index.js';
 import { provisionLocalPrivacyJournal } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { RoleFence } from '../../scripts/restore/fence.js';
+import { runLocalPrivacyRestoreCli } from '../../scripts/restore/cli.js';
 import { authorizeLocalPrivacyRestore, reconcileRestore } from '../../scripts/restore/reconcile.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { buildAgreement, businessDate } from '../trust/helpers.js';
+import { billingAccounts, catalogue as billingCatalogue, subscriptions, priceAcceptances, budgets } from '../../packages/data/src/repositories/billing.js';
+import { PRIVACY_MODULE_INVENTORY } from '../../apps/api/src/modules/platform-admin/privacy/inventory.js';
 
 test('PRV-001: authenticated requests, preferences and delivery through real module projections', async (t) => {
   await t.test('privacy reaches other product modules only through the composition-root export port', async () => {
+    assert.deepEqual([...PRIVACY_MODULE_INVENTORY].sort(), (await readdir(resolve('apps/api/src/modules'), { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name).sort(), 'every implemented module must have an inventory entry');
     const directory = resolve('apps/api/src/modules/platform-admin/privacy');
     for (const file of await readdir(directory)) {
       if (!file.endsWith('.ts')) continue;
@@ -110,6 +114,32 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.equal(result.headers['cache-control'], 'no-store');
     assert.deepEqual(await store.list('privacy-exports/'), []);
   });
+  await t.test('an exactly ended paid subscription preserves export and excludes counterparty platform budgets', async () => {
+    const hubId = randomUUID();
+    const owner = <T>(fn: Parameters<typeof withMaintenance<T>>[1]) => withMaintenance(h.db.admin, fn);
+    const as = async <T>(personId: string, fn: Parameters<typeof withPrincipal<T>>[2]) => withPrincipal(h.pool, await principalFor(h.db.admin, personId), fn);
+    const offer = await owner((trx) => billingCatalogue.createOffer(trx, { hubId, code: 'synthetic_privacy_paid_plan', name: 'Synthetic Paid Plan', kind: 'plan', status: 'active', createdBy: seed.people.anna }));
+    let price = await owner((trx) => billingCatalogue.draftPriceVersion(trx, { offerId: offer.id, amountMinor: '39900', currency: 'USD', effectiveFrom: new Date(Date.now() + 60000), acceptanceTextVersion: 'synthetic-terms-1', draftedBy: seed.people.anna }));
+    price = await owner((trx) => billingCatalogue.activatePriceVersion(trx, price.id, seed.people.boris));
+    const account = await as(subject.id, (trx) => billingAccounts.open(trx, { hubId, owner: subject, currency: 'USD', createdBy: subject.id }));
+    const accepted = await as(subject.id, (trx) => priceAcceptances.accept(trx, { priceVersionId: price.id, billingAccountId: account.id, payer: subject,
+      acceptedBy: subject.id, amountMinor: price.amount_minor, currency: 'USD', acceptanceTextVersion: price.acceptance_text_version }));
+    const sub = await owner((trx) => subscriptions.start(trx, { billingAccountId: account.id, offerId: offer.id, planVersionId: null, priceVersionId: price.id, priceAcceptanceId: accepted.id,
+      status: 'active', periodStart: new Date(Date.now() - 86400000), periodEnd: new Date(Date.now() - 1000), renewsAt: null }));
+    await owner((trx) => trx.updateTable('subscription').set({ status: 'ended' }).where('id', '=', sub.id).execute());
+    const secretBudget = await as(seed.people.boris, (trx) => budgets.grant(trx, { kind: 'platform', owner: 'person', projectId: null, employeePersonId: null,
+      periodFrom: new Date(Date.now() - 1000), periodTo: new Date(Date.now() + 86400000), limitMinor: '938471', currency: 'USD' }));
+    const created = await petr.post('/v1/privacy/exports', { subject });
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    const result = await petr.get(`/v1/privacy/exports/${(created.body as { export: { id: string } }).export.id}`);
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    const text = JSON.stringify(result.body);
+    assert.ok(text.includes(sub.id)); assert.ok(text.includes('ended')); assert.ok(text.includes('39900'));
+    assert.ok(!text.includes(secretBudget)); assert.ok(!text.includes('938471'));
+    const archive = (result.body as { archive: { complete: boolean; coverage: { module: string }[] } }).archive;
+    assert.equal(archive.complete, false);
+    assert.deepEqual(archive.coverage.map((r) => r.module).sort(), [...PRIVACY_MODULE_INVENTORY].sort());
+  });
   await t.test('company authority is checked again at delivery after membership revocation', async () => {
     const created = await anna.post('/v1/privacy/exports', { subject: company });
     assert.equal(created.status, 201, JSON.stringify(created.body));
@@ -146,7 +176,7 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.deepEqual(audit.rows.map((a) => a.action), ['privacy.hold_placed', 'privacy.hold_released']);
     assert.ok(audit.rows.every((a) => !a.reason_text.includes('Synthetic private correction')));
   });
-  await t.test('all five privacy mutations survive crash before and lost response after commit', async () => {
+  await t.test('privacy mutations survive crash before and lost response after commit', async () => {
     const crash = await installCrashPoints(h.db.admin as unknown as pg.Pool);
     await privacyCrashRoutes(h, async (route) => {
       const key = `privacy-local-crash-${route.action}`;
@@ -204,7 +234,14 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     const authorization = { admin, fence, retainedAuthority: { directory: binding.authorityDirectory, journalId: binding.journalId }, restoreId: 'synthetic-privacy-restore', reference: 'synthetic-fixture', operator: 'synthetic-privacy-test' };
     await assert.rejects(authorizeLocalPrivacyRestore({ ...authorization, privacyLedger: undefined! }), /retained privacy authority/);
     assert.ok(await fence.isApplied());
-    await authorizeLocalPrivacyRestore({ ...authorization, privacyLedger: ledger });
+    const cli = (pin: typeof binding) => runLocalPrivacyRestoreCli(['authorize', '--restore-id', authorization.restoreId,
+      '--reference', authorization.reference, '--operator', authorization.operator, '--logins', h.db.appLoginRole],
+    { RESTORE_DATABASE_URL: new URL(`/${h.db.databaseName}`, h.db.clusterUrl).toString() }, { out: () => undefined, err: () => undefined }, pin);
+    assert.equal(await cli(undefined!), 1, 'the local privacy CLI cannot omit its independent authority');
+    assert.ok(await fence.isApplied());
+    assert.equal(await cli({ ...binding, authorityDirectory: join(root, 'missing-authority') }), 1);
+    assert.ok(await fence.isApplied());
+    assert.equal(await cli(binding), 0);
     assert.equal(await fence.isApplied(), false);
     assert.equal((await admin.query('SELECT correction FROM trustwork.privacy_request WHERE subject_id=$1 AND correction IS NOT NULL', [subject.id])).rows[0]?.correction.redacted, true);
     assert.deepEqual(await readRestored(), []);
