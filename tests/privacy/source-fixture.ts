@@ -6,7 +6,7 @@ import { importBatches, sources } from '../../packages/data/src/repositories/sou
 import { sourceInput, item } from '../sources/helpers.js';
 
 /** A synthetic unclaimed source record, with real two-person grants and a recorded human verification note. */
-export async function privacySourceFixture(h: Harness, world: Awaited<ReturnType<typeof privacyWorld>>) {
+export async function privacySourceFixture(h: Harness, world: Awaited<ReturnType<typeof privacyWorld>>, expiresInSeconds = 3600) {
   const ctx = await world.context(world.people.officer); const reviewCtx = await world.context(world.people.reviewer);
   const hubId = (await h.db.admin.query<{ id: string }>('SELECT id FROM trustwork.hub ORDER BY id LIMIT 1')).rows[0]!.id;
   let source = await world.as(world.people.officer, (trx) => sources.register(trx, ctx, hubId, sourceInput(world.people.officer)));
@@ -20,7 +20,7 @@ export async function privacySourceFixture(h: Harness, world: Awaited<ReturnType
     subject: { kind: 'person', id: world.people.subject }, category: 'privacy', summary: 'Synthetic nonparticipant record verification' }));
   const note = await world.as(world.people.officer, (trx) => supportCases.addNote(trx, ctx, support.id, 'Synthetic signed statement reviewed for this exact sourced record; no identity documents retained.', 'internal'));
   let grant = await world.as(world.people.officer, (trx) => caseGrants.request(trx, ctx, { supportCaseId: support.id, objectType: 'sourced_record_field', objectIds: [fieldId],
-    projectionClass: 'support_private_limited', purpose: 'Synthetic record identity tie', expiresInSeconds: 3600 }));
+    projectionClass: 'support_private_limited', purpose: 'Synthetic record identity tie', expiresInSeconds }));
   grant = await world.as(world.people.reviewer, (trx) => caseGrants.decide(trx, reviewCtx, grant.id, 'approve', grant.request_digest));
   const proof = randomBytes(32).toString('hex');
   return { ctx, reviewCtx, source, field, fieldId, grant, proof, body: { sourceFieldId: fieldId, grantId: grant.id,
