@@ -244,6 +244,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   // audit row and the outbox events commit in the request transaction; the subject's appeal likewise.
   'screening.appeal_decide': IN_TRANSACTION,
   'screening.appeal_file': IN_TRANSACTION,
+  // SANC-007: append routing history, move the versioned pointer and audit atomically.
+  'screening.appeal_reassign': IN_TRANSACTION,
   'screening.match_confirm': IN_TRANSACTION,
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,

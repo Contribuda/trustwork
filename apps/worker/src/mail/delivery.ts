@@ -1,5 +1,6 @@
 import { sql } from 'kysely';
 import { consultationCommunications } from '../../../../packages/data/src/repositories/communications.js';
+import { screeningNoticeAllowed } from '../../../../packages/data/src/repositories/screening-notices.js';
 import { deriveMailSecretKey, inbox, jobs, MAIL_AGGREGATE, MAIL_REQUESTED, mailDeliveries, suppressions, unsealMailSecret, type DataPool, type MailDelivery, type Transaction } from '@trustwork/data';
 import { inTransaction } from '../db.js';
 import { PermanentJobError, RetryableJobError, type ExternalJobHandler, type HandlerRegistry, type JobContext } from '../handlers.js';
@@ -237,6 +238,12 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
           await mailDeliveries.lockForDelivery(trx, delivery.id);
           if (!(await consultationCommunications.mailAllowed(trx, delivery.id, runtime.consultationHubId ?? null))) {
             await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'consultation access revoked');
+            return false;
+          }
+          // A screening notice belongs to the event-time person and binding, never to a later address holder.
+          // Retain the binding's FOR SHARE lock through the transport effect and receipt commit.
+          if (delivery.template === 'screening_notice' && !await screeningNoticeAllowed(trx, delivery.id)) {
+            await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'screening notice authority unavailable');
             return false;
           }
           context.signal.throwIfAborted();

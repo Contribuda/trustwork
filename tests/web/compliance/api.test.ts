@@ -155,6 +155,29 @@ test('screening through the API', { skip: h ? false : SKIP_REASON, timeout: 240_
       (appeal_id, match_id, original_decision_id, original_decider, reviewer_id)
       VALUES (${assignment.originalDecisionId}::uuid, ${matchId}::uuid, ${assignment.originalDecisionId}::uuid, ${people.anna}::uuid, ${people.anna}::uuid)`.execute(trx)));
     const boris = await staffClient('boris');
+    const routingUrl = `/v1/admin/screening/matches/${matchId}/appeal-assignment`;
+    const routing = { expectedVersion: 1, reviewerId: people.boris, reason: 'Synthetic reassignment review' };
+    expectError(await anna.post(routingUrl, routing), 403, 'access.forbidden');
+    expectError(await outsider.post(routingUrl, routing), 403, 'access.forbidden');
+    for (const reviewerId of [people.anna, people.petr, people.carl]) {
+      expectError(await boris.post(routingUrl, { ...routing, reviewerId }), 403, 'access.forbidden');
+    }
+    expectError(await boris.post(routingUrl, { ...routing, expectedVersion: 99 }), 409, 'validation.revision_conflict');
+    assert.equal((await boris.post(routingUrl, { ...routing, law: 'invented' })).status, 422);
+    const concurrentRoutes = await Promise.all([
+      boris.post(routingUrl, { ...routing, reviewerId: null }),
+      boris.post(routingUrl, routing),
+    ]);
+    assert.deepEqual(concurrentRoutes.map((r) => r.status).sort(), [200, 409]);
+    const afterRace = ok<{ assignment: { version: number } }>(await boris.get(routingUrl)).assignment;
+    assert.equal(afterRace.version, 2);
+    const options = { idempotencyKey: 'sanc007-routing-replay' };
+    const body = { ...routing, expectedVersion: 2 };
+    const assigned = await boris.post(routingUrl, body, options);
+    assert.equal(assigned.status, 200, JSON.stringify(assigned.body));
+    assert.deepEqual((await boris.post(routingUrl, body, options)).body, assigned.body);
+    assert.equal((await h.db.admin.query('SELECT * FROM trustwork.screening_appeal_routing_history WHERE appeal_id = $1', [assignment.appealId])).rows.length, 3);
+    assert.equal((await h.db.admin.query("SELECT * FROM trustwork.admin_audit_event WHERE action = 'screening.appeal_reassigned' AND object_id = $1", [matchId])).rows.length, 2);
     const proposed = ok<{ match: MatchView }>(await boris.post(`/v1/admin/screening/matches/${matchId}/appeal-decision`, { decision: 'propose_reversal', reason: 'Synthetic: identifiers belong to someone else', evidence: 'identity_document' }));
     assert.equal(proposed.match.state, 'pending_reversal');
     const digest = proposed.match.pendingApproval!.actionDigest;

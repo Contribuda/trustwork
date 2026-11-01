@@ -1,4 +1,4 @@
-import { appealAssignment } from './appeal-assignment.js';
+import { appealAssignment, reassignScreeningAppeal, ReassignScreeningAppealCommandSchema } from './appeal-assignment.js';
 import { Controller, Get, HttpCode, Inject, Post, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 import { ApiError } from '../../common/errors.js';
@@ -128,6 +128,13 @@ export class ScreeningStaffController {
   @Get('report-drafts')
   drafts(@ReqState() state: RequestState) {
     return this.principals.runAs(state, async (trx) => ({ items: (await screeningStaff.reportDrafts(trx)).map(draftView) }));
+  }
+
+  @Post('matches/:id/appeal-assignment') @HttpCode(200) @Idempotent('screening.appeal_reassign', 'id')
+  reassign(@Params(UuidParams) params: z.infer<typeof UuidParams>, @Body(ReassignScreeningAppealCommandSchema) body: z.infer<typeof ReassignScreeningAppealCommandSchema>, @ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow) {
+    return guarded(() => this.principals.runAs(state, async (trx) => ({
+      assignment: await reassignScreeningAppeal(trx, this.ctx(state, elevation, 'screening_appeal_reassigned', body.reason), { matchId: params.id, ...body }),
+    })));
   }
 
   private ctx(state: RequestState, elevation: SessionElevationRow, reasonCode: string, reasonText: string) {

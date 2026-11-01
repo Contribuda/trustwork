@@ -61,6 +61,15 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   const channels = new ReminderChannelFake();
   const mail = mailConfigFromEnv({ MAIL_TRANSPORT: 'fake' });
   const transport = new FakeMailTransport();
+  // Hold transitions also send independent SANC-007 notices through this real mail registry.
+  // Count reminder effects by durable delivery provenance, without suppressing or replacing other sends.
+  const reminderSends = async () => {
+    const ids = new Set((await h.db.admin.query<{ id: string }>(`SELECT m.id FROM trustwork.mail_delivery m
+      JOIN trustwork.delivery d ON d.mail_delivery_id = m.id JOIN trustwork.notification n ON n.id = d.notification_id
+      JOIN trustwork.consultation_reminder r ON n.dedupe_key = 'message:' || r.message_id::text
+      WHERE m.template = 'notification' AND r.source_hub_id = $1`, [hubId])).rows.map((row) => row.id));
+    return transport.sent.filter((item) => ids.has(item.headers['X-Entity-Ref-ID']!));
+  };
   const runtime: ReminderRuntime = { pool, hubId, render: mail.render, channels };
   const registry = buildRegistry({ pool, mail, mailTransport: transport, log: silentLogger, metrics: new Metrics(), consultations: runtime });
   const worker = new Worker({ pool, registry, metrics: new Metrics(), tasks: () => [], config: { concurrency: 2, pollIntervalMs: 10 } });
@@ -136,16 +145,16 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     const records = (await h.db.admin.query('SELECT params FROM trustwork.notification UNION ALL SELECT params FROM trustwork.mail_delivery')).rows;
     assert.ok(!JSON.stringify(records).includes('PRIVATE'));
     assert.ok(!JSON.stringify(records).includes('987654321'));
-    assert.equal(transport.sent.length, 0, 'mail enqueue is not provider delivery');
+    assert.equal((await reminderSends()).length, 0, 'mail enqueue is not provider delivery');
     const threadId = (await h.db.admin.query('SELECT id FROM trustwork.context_thread WHERE context_id=$1', [first.agreement!.id])).rows[0].id;
     const view = ThreadViewSchema.parse(ok(await client.get(`/v1/threads/${threadId}`)));
     assert.deepEqual(view.messages[0]!.author, { kind: 'system' });
     assert.equal(view.messages[0]!.body, texts.en!.body);
     await drain(worker);
-    assert.equal(transport.sent.length, 2);
-    assert.ok(transport.sent.some((mail) => mail.locale === 'es' && mail.text.includes(texts.es!.body)));
+    assert.equal((await reminderSends()).length, 2);
+    assert.ok((await reminderSends()).some((mail) => mail.locale === 'es' && mail.text.includes(texts.es!.body)));
     await drain(worker);
-    assert.equal(transport.sent.length, 2, 'duplicate relay/ticks never resend');
+    assert.equal((await reminderSends()).length, 2, 'duplicate relay/ticks never resend');
   });
 
   await t.test('cancellation before production and between enqueue and dispatch suppresses effects', async () => {
@@ -157,7 +166,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await tx((trx) => produceReminder(trx, runtime, dueId(queued)));
     await cancel(queued);
     await drain(worker);
-    assert.equal(transport.sent.length, 2);
+    assert.equal((await reminderSends()).length, 2);
     assert.equal(await count("SELECT 1 FROM trustwork.mail_delivery WHERE state='suppressed'"), 2);
   });
 
@@ -170,29 +179,30 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await tx((trx) => produceReminder(trx, runtime, dueId(b)));
     await holdPerson(h.db.admin, P.carl);
     await drain(worker);
-    assert.equal(transport.sent.length, 2);
+    assert.equal((await reminderSends()).length, 2);
+    assert.equal(transport.sent.length, 5, 'three independent hold/clear notices are delivered alongside the two earlier reminders');
     await clearHold(h.db.admin, P.carl, P.petr);
     await withMaintenance(h.db.admin, (trx) => trx.insertInto('notification_preference').values({ person_id: P.petr, category: 'messages', channel: 'email', frequency: 'off' }).execute());
     const off = await book();
     await tx((trx) => produceReminder(trx, runtime, dueId(off)));
-    const mailBefore = transport.sent.length;
+    const mailBefore = (await reminderSends()).length;
     await drain(worker);
-    assert.equal(transport.sent.length, mailBefore + 1, 'recipient off gets a context signal but no email');
+    assert.equal((await reminderSends()).length, mailBefore + 1, 'recipient off gets a context signal but no email');
     const changed = await book();
     await tx((trx) => produceReminder(trx, runtime, dueId(changed)));
     await withMaintenance(h.db.admin, (trx) => trx.insertInto('notification_preference').values({ person_id: P.carl, category: 'messages', channel: 'email', frequency: 'off' }).execute());
     await drain(worker);
-    assert.equal(transport.sent.length, mailBefore + 1, 'an off preference changed after enqueue still prevents sending');
+    assert.equal((await reminderSends()).length, mailBefore + 1, 'an off preference changed after enqueue still prevents sending');
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('notification_preference').set({ frequency: 'immediate' }).where('person_id', '=', P.carl).execute());
   });
 
   await t.test('withdrawn mail verification suppresses a queued reminder; ambiguous mail parks without replay', async () => {
     const unverified = await book();
     await tx((trx) => produceReminder(trx, runtime, dueId(unverified)));
-    const before = transport.sent.length;
+    const before = (await reminderSends()).length;
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('email_binding').set({ verified_at: null }).where('person_id', '=', P.carl).execute());
     await drain(worker);
-    assert.equal(transport.sent.length, before);
+    assert.equal((await reminderSends()).length, before);
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('email_binding').set({ verified_at: new Date() }).where('person_id', '=', P.carl).execute());
     const ambiguous = await book();
     await tx((trx) => produceReminder(trx, runtime, dueId(ambiguous)));
@@ -200,12 +210,12 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await drain(worker);
     const parked = (await h.db.admin.query("SELECT id FROM trustwork.job WHERE kind LIKE 'consultation.mail.%' AND state='outcome_unknown'")).rows;
     assert.equal(parked.length, 1);
-    assert.equal(transport.sent.length, before + 1);
+    assert.equal((await reminderSends()).length, before + 1);
     await drain(worker);
-    assert.equal(transport.sent.length, before + 1, 'unknown mail is never automatically retried');
+    assert.equal((await reminderSends()).length, before + 1, 'unknown mail is never automatically retried');
     await tx((trx) => reconcileJob(trx, { jobId: parked[0].id, outcome: 'succeeded', reference: 'synthetic mailbox evidence', mode: 'manual' }));
     await drain(worker);
-    assert.equal(transport.sent.length, before + 1, 'reconciliation records evidence without resending');
+    assert.equal((await reminderSends()).length, before + 1, 'reconciliation records evidence without resending');
   });
 
   await t.test('real confirmation mandates authorize the empty participant thread; unknown and revoked mandates fail closed', async () => {
@@ -252,10 +262,10 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     const w = ok<{ id: string }>(await anna.post('/v1/consultation-availability', { startsAt: at(0.01), endsAt: at(23), timeZone: 'America/Los_Angeles', capacity: 20, actor: PERSON }));
     const revoked = await book(anna, id, w.id);
     await tx((trx) => produceReminder(trx, runtime, dueId(revoked)));
-    const before = transport.sent.length;
+    const before = (await reminderSends()).length;
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('membership').set({ permissions: ['company.page.edit'] }).where('id', '=', seed.memberships.anna).execute());
     await drain(worker);
-    assert.equal(transport.sent.length, before, 'the former company deal manager receives no mail');
+    assert.equal((await reminderSends()).length, before, 'the former company deal manager receives no mail');
     const threadId = (await h.db.admin.query('SELECT id FROM trustwork.context_thread WHERE context_id=$1', [revoked.agreement!.id])).rows[0].id;
     assert.equal((await anna.get(`/v1/threads/${threadId}`)).status, 404);
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('membership').set({ permissions: ['company.page.edit', 'company.deals.manage', 'company.catalogue.edit', 'company.publish'] }).where('id', '=', seed.memberships.anna).execute());
@@ -263,7 +273,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await tx((trx) => produceReminder(trx, runtime, dueId(expired)));
     ok(await anna.post('/v1/reputation-builder/credentials', { ...credentialBody, number: 'SYNTHETIC-124', supersedesId: licence.id }));
     await drain(worker);
-    assert.equal(transport.sent.length, before, 'superseding the pinned licence stops final dispatch');
+    assert.equal((await reminderSends()).length, before, 'superseding the pinned licence stops final dispatch');
   });
 
   await t.test('cancellation serializes with local rollback and with the final fake provider call', async () => {
@@ -297,7 +307,8 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     try { await waitFor(blocked, 5000, 'cancellation waits for the final dispatch lock'); } finally { finishSend(); transport.send = original; }
     await sendingWork;
     await cancelDuringSend;
-    assert.equal(await tx((trx) => comms.mailAllowed(trx, (transport.sent.at(-1)!.headers['X-Entity-Ref-ID'])!, hubId)), false);
+    const lastReminder = (await reminderSends()).at(-1)!;
+    assert.equal(await tx((trx) => comms.mailAllowed(trx, lastReminder.headers['X-Entity-Ref-ID']!, hubId)), false);
   });
 
   await t.test('fake channel unknown outcomes park durably; reconciliation never blindly sends again', async () => {

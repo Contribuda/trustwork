@@ -85,6 +85,7 @@ export default {
       const subject = h.client();
       await signIn(subject, 'crash-screening-subject@example.invalid');
       await exactlyOnce({ action: 'screening.appeal_file', client: subject, url: '/v1/screening/me/appeal', body: { companyId: null, reason: 'Synthetic: that is not me' }, effects: () => count(h, "SELECT 1 FROM trustwork.audit_event WHERE action = 'screening.appeal_filed'") });
+      await exactlyOnce({ action: 'screening.appeal_reassign', client: second, url: `/v1/admin/screening/matches/${miloMatch}/appeal-assignment`, body: { expectedVersion: 1, reviewerId: null, reason: 'Synthetic routing crash check' }, effects: audits('screening.appeal_reassigned') });
       await exactlyOnce({ action: 'screening.appeal_decide', client: second, url: `/v1/admin/screening/matches/${miloMatch}/appeal-decision`, body: { decision: 'propose_reversal', reason: 'Synthetic: another person', evidence: 'identity_document' }, effects: audits('screening.reversal_proposed') });
       const digest = (await h.db.admin.query<{ approval_digest: string }>("SELECT approval_digest FROM trustwork.screening_decision WHERE match_id = $1 AND kind = 'propose_reversal'", [miloMatch])).rows[0]!.approval_digest;
       await exactlyOnce({ action: 'screening.proposal_decide', client: first, url: `/v1/admin/screening/matches/${miloMatch}/proposal-decision`, body: { decision: 'approve', actionDigest: digest, reason: 'Synthetic: agreed' }, effects: audits('screening.reversal_approved') });
