@@ -11,7 +11,7 @@ import { kernelReference, kernelSync } from '../../packages/data/src/repositorie
 import { screenEveryoneClear, clearHold } from '../screening-gates/helpers.js';
 import { workerLogin } from '../assistant/helpers.js';
 import { agreement, paymentHub, paymentVerifier, ok } from './helpers.js';
-import type { PaymentBinding, PaymentInstruction, PaymentView } from '../../packages/contracts/src/payments.js';
+import type { PaymentBinding, PaymentInstruction, PaymentKind, PaymentView } from '../../packages/contracts/src/payments.js';
 import { PaymentProviders, DeterministicPaymentFake } from '../../apps/worker/src/payments/provider.js';
 import { receivePaymentWebhook, reconcilePayment, registerPayments } from '../../apps/worker/src/payments/index.js';
 import { HandlerRegistry } from '../../apps/worker/src/handlers.js';
@@ -45,11 +45,12 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
   let enteredEffect: (() => void) | undefined;
   let effectBarrier: Promise<void> | undefined;
   class GatedFake extends DeterministicPaymentFake {
-    override async create(i: PaymentInstruction, signal: AbortSignal) {
-      enteredEffect?.();
-      if (effectBarrier) await effectBarrier;
-      return super.create(i, signal);
-    }
+    private async gate() { enteredEffect?.(); if (effectBarrier) await effectBarrier; }
+    override async create(i: PaymentInstruction, signal: AbortSignal) { await this.gate(); return super.create(i, signal); }
+    override async confirm(i: PaymentInstruction, signal: AbortSignal) { await this.gate(); return super.confirm(i, signal); }
+    override async refund(i: PaymentInstruction, signal: AbortSignal) { await this.gate(); return super.refund(i, signal); }
+    override async payout(i: PaymentInstruction, signal: AbortSignal) { await this.gate(); return super.payout(i, signal); }
+    override async connectedAccount(i: PaymentInstruction, signal: AbortSignal) { await this.gate(); return super.connectedAccount(i, signal); }
   }
   const fake = new GatedFake();
   const runtime = { pool, receiptPool: verifier.pool, providers: new PaymentProviders(new Map([[hub.connectionId, fake]])) };
@@ -72,10 +73,10 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
     await q('INSERT INTO trustwork.payment_source(agreement_id,binding) VALUES($1,$2)', [a.id, binding]);
     const order = (await q('SELECT * FROM trustwork.commercial_order WHERE agreement_id=$1', [a.id]))[0]!;
     const session = await h.services().principals.resolve(buyer.sessionCookie!); assert.ok(session);
-    return { agreementId: a.id, budgetId: order.transaction_budget_id as string, sessionId: session.session.id, reservationId: order.reservation_id as string };
+    return { kind: 'create' as PaymentKind, agreementId: a.id, budgetId: order.transaction_budget_id as string, sessionId: session.session.id, reservationId: order.reservation_id as string };
   };
   type Fixture = Awaited<ReturnType<typeof fresh>>;
-  type Mutation = { name: string; actor?: string; prepare?(): Promise<void>; route?: boolean; epochOnly?: boolean; sql(f: Fixture): [string, unknown[]]; restore?(f: Fixture): Promise<unknown> };
+  type Mutation = { name: string; actor?: string; prepare?(): Promise<void>; route?: boolean; epochOnly?: boolean; kinds?: PaymentKind[]; sql(f: Fixture): [string, unknown[]]; restore?(f: Fixture): Promise<unknown> };
   const mutations: Mutation[] = [
     { name: 'exact session revocation', sql: (f) => ["UPDATE trustwork.session SET revoked_at=clock_timestamp(),revoked_reason='logout' WHERE id=$1", [f.sessionId]] },
     { name: 'person epoch', epochOnly: true, sql: () => ['UPDATE trustwork.person SET authz_epoch=authz_epoch+1 WHERE id=$1', [seed.people.anna]] },
@@ -83,7 +84,9 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
     { name: 'billing membership permission', sql: () => ["UPDATE trustwork.membership SET permissions=array_remove(permissions,'company.billing.manage') WHERE id=$1", [seed.memberships.anna]], restore: () => withMaintenance(h.db.admin, async (trx) => { const m = await trx.selectFrom('membership').select('permissions').where('id', '=', seed.memberships.anna).executeTakeFirstOrThrow(); await trx.updateTable('membership').set({ permissions: [...new Set([...m.permissions, 'company.billing.manage'])] }).where('id', '=', seed.memberships.anna).execute(); }) },
     { name: 'owning source revocation', sql: (f) => ['UPDATE trustwork.payment_source SET revoked_at=clock_timestamp() WHERE agreement_id=$1', [f.agreementId]] },
     { name: 'provider connection disable', route: true, sql: () => ["UPDATE trustwork.provider_connection SET status='disabled',enabled_by=NULL,enabled_at=NULL,approval_id=NULL WHERE id=$1", [hub.connectionId]], restore: () => q("UPDATE trustwork.provider_connection SET status='enabled',enabled_by=$2,enabled_at=clock_timestamp() WHERE id=$1", [hub.connectionId, hub.w.people.owner]) },
-    { name: 'rail capability removal', route: true, sql: () => ["UPDATE trustwork.payment_rail SET capabilities=ARRAY['connected_account'] WHERE connection_id=$1", [hub.connectionId]], restore: () => q("UPDATE trustwork.payment_rail SET capabilities=ARRAY['create','confirm','refund','payout','connected_account'] WHERE connection_id=$1", [hub.connectionId]) },
+    { name: 'rail capability removal', route: true, sql: (f) => ["UPDATE trustwork.payment_rail SET capabilities=array_remove(capabilities,$2) WHERE connection_id=$1", [hub.connectionId, f.kind]], restore: () => q("UPDATE trustwork.payment_rail SET capabilities=ARRAY['create','confirm','refund','payout','connected_account'] WHERE connection_id=$1", [hub.connectionId]) },
+    { name: 'provider payment capability removal', route: true, sql: () => ["UPDATE trustwork.provider_connection SET capabilities=array_remove(capabilities,'payments') WHERE id=$1", [hub.connectionId]], restore: () => q("UPDATE trustwork.provider_connection SET capabilities=ARRAY['payments','payouts'] WHERE id=$1", [hub.connectionId]) },
+    { name: 'provider payout capability removal', route: true, kinds: ['payout'], sql: () => ["UPDATE trustwork.provider_connection SET capabilities=array_remove(capabilities,'payouts') WHERE id=$1", [hub.connectionId]], restore: () => q("UPDATE trustwork.provider_connection SET capabilities=ARRAY['payments','payouts'] WHERE id=$1", [hub.connectionId]) },
     { name: 'rail revocation', route: true, sql: () => ['UPDATE trustwork.payment_rail SET revoked_at=clock_timestamp() WHERE connection_id=$1', [hub.connectionId]], restore: () => q('UPDATE trustwork.payment_rail SET revoked_at=NULL WHERE connection_id=$1', [hub.connectionId]) },
     ...[seed.people.anna, seed.people.carl].map((id, i): Mutation => ({ name: `${i ? 'payee' : 'actor'} screening`, sql: () => ["UPDATE trustwork.screening_subject_state SET last_outcome='not_screened' WHERE subject_person_id=$1", [id]], restore: () => screenEveryoneClear(h.db.admin) })),
     { name: 'company screening', sql: () => ["UPDATE trustwork.screening_subject_state SET last_outcome='not_screened' WHERE subject_company_id=$1", [seed.companies.mixed]], restore: () => screenEveryoneClear(h.db.admin) },
@@ -126,19 +129,27 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
       } });
   }
   await fresh();
-  for (const mutation of mutations) for (const surface of ['create', 'confirm', 'refund', 'payout', 'connected_account', 'worker'] as const) for (const revokerFirst of [true, false]) {
+  for (const mutation of mutations) for (const surface of ['create', 'confirm', 'refund', 'payout', 'connected_account', 'worker', 'worker_confirm', 'worker_refund', 'worker_payout', 'worker_connected_account'] as const) for (const revokerFirst of [true, false]) {
     // Epoch-only changes invalidate queued admission, while a newly resolved HTTP command may use current authority.
-    if (mutation.epochOnly && surface !== 'worker') continue;
+    const isWorker = surface.startsWith('worker');
+    const kind = (surface === 'worker' ? 'create' : surface.replace(/^worker_/, '')) as PaymentKind;
+    if (mutation.epochOnly && !isWorker || mutation.kinds && !mutation.kinds.includes(kind)) continue;
     await t.test(`${mutation.name}; ${surface}; ${revokerFirst ? 'revoker' : 'payment'} first`, async () => {
-      const f = await fresh();
+      const f = await fresh(); f.kind = kind;
       await mutation.prepare?.();
       let view: PaymentView | undefined;
       if (surface !== 'create') view = ok(await buyer.post('/v1/payments', { agreementId: f.agreementId, budgetId: f.budgetId }), 201);
-      if (surface !== 'create' && surface !== 'worker') {
+      if (kind !== 'create') {
         const original = (await q("SELECT id FROM trustwork.payment_operation WHERE payment_id=$1 AND kind='create'", [view!.id]))[0]!;
-        fake.plan(original.id as string, surface === 'confirm' ? 'requires_confirmation' : 'succeeded'); await tick();
+        fake.plan(original.id as string, kind === 'confirm' ? 'requires_confirmation' : 'succeeded'); await tick();
+        if (isWorker) ok(await buyer.post(`/v1/payments/${view!.id}/${kind === 'connected_account' ? 'connected-account' : kind}`, {}));
       }
-      if (surface === 'worker') await relay.relayOnce();
+      let workerOperation: Record<string, unknown> | undefined;
+      if (isWorker) {
+        await relay.relayOnce();
+        workerOperation = (await q('SELECT * FROM trustwork.payment_operation WHERE payment_id=$1 AND kind=$2', [view!.id, kind]))[0]!;
+        fake.plan(workerOperation.id as string, 'outcome_unknown');
+      }
       const before = fake.calls.length;
       const writer = await h.db.admin.connect(), barrier = await h.db.admin.connect();
       let task: Promise<unknown> | undefined, write: Promise<unknown> | undefined;
@@ -146,7 +157,7 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
       let resumeGuard: (() => void) | undefined;
       let response: Awaited<ReturnType<typeof buyer.post>> | undefined;
       const run = async () => {
-        if (surface === 'worker') { await runner.tick(); await runner.idle(); }
+        if (isWorker) { await runner.tick(); await runner.idle(); }
         else response = await buyer.post(surface === 'create' ? '/v1/payments' : `/v1/payments/${view!.id}/${surface === 'connected_account' ? 'connected-account' : surface}`, surface === 'create' ? { agreementId: f.agreementId, budgetId: f.budgetId } : {});
       };
       try {
@@ -156,7 +167,7 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
         await writer.query('SELECT trustwork.set_principal($1,(SELECT authz_epoch FROM trustwork.person WHERE id=$1))', [actor]);
         const pid = (await writer.query('SELECT pg_backend_pid() AS pid')).rows[0]!.pid as number;
         if (revokerFirst) {
-          if (surface === 'worker') {
+          if (isWorker) {
             let reached!: () => void;
             const ready = new Promise<void>((r) => { reached = r; });
             const resume = new Promise<void>((r) => { resumeGuard = r; });
@@ -171,12 +182,12 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
           }
           await pendingPayment();
           await writer.query('COMMIT'); await task;
-          if (surface === 'worker') assert.equal(fake.calls.length, before);
+          if (isWorker) assert.equal(fake.calls.length, before);
           else if (surface === 'create' && mutation.route) assert.equal(ok<PaymentView>(response!, 201).state, 'outside_platform');
           else assert.ok([401, 403].includes(response!.status), JSON.stringify(response));
         } else {
           let entered: Promise<void> | undefined;
-          if (surface === 'worker') {
+          if (isWorker) {
             entered = new Promise<void>((r) => { enteredEffect = r; });
             effectBarrier = new Promise<void>((r) => { releaseEffect = r; });
           } else await barrier.query('SELECT pg_advisory_lock(827001,1)');
@@ -184,16 +195,16 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
           if (entered) await Promise.race([entered, new Promise<never>((_, reject) => setTimeout(() => reject(new Error('worker did not reach provider')), 3000))]);
           else await pendingPayment();
           write = writer.query(...mutation.sql(f)); void write.catch(() => {}); await blocked(pid);
-          if (surface === 'worker') releaseEffect!();
+          if (isWorker) releaseEffect!();
           else await barrier.query('SELECT pg_advisory_unlock(827001,1)');
           await task; await write; await writer.query('COMMIT');
-          if (surface === 'worker') assert.equal(fake.calls.length, before + 1);
+          if (isWorker) assert.equal(fake.calls.length, before + 1);
           else assert.equal(response!.status, surface === 'create' ? 201 : 200, JSON.stringify(response));
         }
-        if (surface === 'worker') {
+        if (isWorker) {
           const r = (await q('SELECT state,effect_pending FROM trustwork.reservation WHERE id=$1', [f.reservationId]))[0]!;
-          assert.deepEqual(r, { state: 'reserved', effect_pending: true });
-          const op = (await q("SELECT * FROM trustwork.payment_operation WHERE payment_id=$1 AND kind='create'", [view!.id]))[0]!;
+          assert.deepEqual(r, { state: ['create', 'confirm'].includes(kind) ? 'reserved' : 'settled', effect_pending: true });
+          const op = workerOperation!;
           await runner.tick(); await runner.idle();
           assert.equal(fake.calls.length, before + (revokerFirst ? 0 : 1), 'no duplicate dispatch');
           if (!revokerFirst) {
@@ -260,11 +271,11 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
       }
     });
   }
-  for (const surface of ['create', 'connected-account'] as const) for (const expiry of ['session', 'budget', 'screening'] as const) {
+  for (const surface of ['create', 'confirm', 'refund', 'payout', 'connected-account'] as const) for (const expiry of ['session', 'budget', 'screening'] as const) {
     await t.test(`HTTP ${surface} rechecks ${expiry} time after domain wait`, async () => {
       const f = await fresh();
       let v: PaymentView | undefined;
-      if (surface !== 'create') { v = ok(await buyer.post('/v1/payments', { agreementId: f.agreementId, budgetId: f.budgetId }), 201); await tick(); }
+      if (surface !== 'create') { v = ok(await buyer.post('/v1/payments', { agreementId: f.agreementId, budgetId: f.budgetId }), 201); const op = (await q("SELECT id FROM trustwork.payment_operation WHERE payment_id=$1 AND kind='create'", [v!.id]))[0]!; fake.plan(op.id as string, surface === 'confirm' ? 'requires_confirmation' : 'succeeded'); await tick(); }
       if (expiry === 'session') await q("UPDATE trustwork.session SET idle_expires_at=clock_timestamp()+interval '1 second' WHERE id=$1", [f.sessionId]);
       else if (expiry === 'budget') await q("UPDATE trustwork.budget SET period_to=clock_timestamp()+interval '1 second' WHERE id=$1", [f.budgetId]);
       else await q("UPDATE trustwork.screening_list SET last_checked_at=clock_timestamp()-least(stale_after,interval '14 days') WHERE baseline");
@@ -272,9 +283,9 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
       let pending: ReturnType<typeof buyer.post> | undefined;
       try {
         await blocker.query('BEGIN');
-        if (surface === 'create') await blocker.query('SELECT id FROM trustwork.budget WHERE id=$1 FOR UPDATE', [f.budgetId]);
-        else await blocker.query('SELECT id FROM trustwork.payment_intent WHERE id=$1 FOR UPDATE', [v!.id]);
-        pending = buyer.post(surface === 'create' ? '/v1/payments' : `/v1/payments/${v!.id}/connected-account`, surface === 'create' ? { agreementId: f.agreementId, budgetId: f.budgetId } : {});
+        // The final durable outbox append can wait after all authority and funds locks were taken.
+        await blocker.query('SELECT pg_advisory_xact_lock(827001,1)');
+        pending = buyer.post(surface === 'create' ? '/v1/payments' : `/v1/payments/${v!.id}/${surface}`, surface === 'create' ? { agreementId: f.agreementId, budgetId: f.budgetId } : {});
         await pendingPayment();
         await wait(async () => expiry === 'screening'
           ? (await q('SELECT trustwork.screening_available(clock_timestamp()) AS available'))[0]!.available === false
@@ -282,7 +293,7 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
             : (await q('SELECT idle_expires_at<=clock_timestamp() AS expired FROM trustwork.session WHERE id=$1', [f.sessionId]))[0]!.expired === true, 'authority clock expiry');
         await blocker.query('COMMIT');
         assert.equal((await pending).status, 403);
-        assert.equal((await q("SELECT o.id FROM trustwork.payment_operation o JOIN trustwork.payment_intent p ON p.id=o.payment_id WHERE p.agreement_id=$1 AND o.kind=$2", [f.agreementId, surface === 'create' ? 'create' : 'connected_account'])).length, 0);
+        assert.equal((await q("SELECT o.id FROM trustwork.payment_operation o JOIN trustwork.payment_intent p ON p.id=o.payment_id WHERE p.agreement_id=$1 AND o.kind=$2", [f.agreementId, surface === 'connected-account' ? 'connected_account' : surface])).length, 0);
       } finally {
         await blocker.query('ROLLBACK'); blocker.release(); await pending;
         if (expiry === 'screening') await q('UPDATE trustwork.screening_list SET last_checked_at=clock_timestamp() WHERE baseline');
