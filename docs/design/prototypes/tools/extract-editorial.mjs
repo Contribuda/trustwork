@@ -1,4 +1,4 @@
-const fs=require('fs');const path=require('path');const {createRequire}=require('module');const ts=createRequire(path.resolve(process.env.PROTOTYPE_DEPS||'.','package.json'))('typescript');
+import fs from 'node:fs';import path from 'node:path';import {createRequire} from 'node:module';const ts=createRequire(path.resolve(process.env.PROTOTYPE_DEPS||'.','package.json'))('typescript');
 const html=fs.readFileSync('docs/design/prototypes/source/original-prototypes/editorial-prototype.html','utf8');
 const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];const ast=ts.createSourceFile('editorial.js',js,ts.ScriptTarget.Latest,true);const pairs={};
 function visit(n){if(ts.isCallExpression(n)&&n.expression.getText(ast)==='tt'&&n.arguments.length===2&&n.arguments.every(ts.isStringLiteral)){pairs[n.arguments[0].text]=n.arguments[1].text;}
