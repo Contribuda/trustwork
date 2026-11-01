@@ -468,6 +468,13 @@
   text-underline-offset: 4px;
 }
 
+.pub-feed__status {
+  max-width: 68ch;
+  font-size: var(--text-body-size);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
 .feed-row__dek {
   max-width: 68ch;
   font-size: var(--text-body-size);
