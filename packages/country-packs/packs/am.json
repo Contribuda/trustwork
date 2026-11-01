@@ -694,6 +694,25 @@
         ],
         "verification": "official"
       }
+    ],
+    "outreachLaw": [
+      {
+        "id": "outreach-am-personal-data-law",
+        "topic": "other",
+        "summary": {
+          "en": "Law of the Republic of Armenia HO-49-N \"On Protection of Personal Data\" (2015) governs contact data of natural persons. Its rule for direct marketing to non-participants is not yet sourced, so no basis is recorded and outreach resolves to no contact."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://arlis.am/en/acts/117034",
+            "what": "Law of the Republic of Armenia HO-49-N \"On Protection of Personal Data\" (2015)",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "Official text located; the direct-marketing rule is not yet read and counsel review is pending."
+      }
     ]
   },
   "notes": [

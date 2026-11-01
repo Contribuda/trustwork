@@ -1,6 +1,7 @@
 import { ENGINE_ADAPTERS, findAdapter, type EngineAdapter } from './adapters.js';
 import { listFacts, type AnyFact, type FacetName, type Facets, type VerificationLevel } from './facets.js';
 import { isRestricted } from './restricted.js';
+import { outreachLawProblems, type OutreachLawFactView } from './outreach-law.js';
 import { CountryPackSchema, type CountryPack, type CountryPackInput, type Region } from './schema.js';
 
 /**
@@ -121,6 +122,9 @@ export function facetProblems(facets: Facets | undefined, context: FacetCheckCon
         if (f.verification === 'official' && f.counselReview !== 'done') problems.push(`${at}: agent-law defaults stay unverified until counsel review (counselReview: done)`);
         break;
       }
+      case 'outreachLaw':
+        problems.push(...outreachLawProblems(fact as OutreachLawFactView, at));
+        break;
       default:
         break;
     }

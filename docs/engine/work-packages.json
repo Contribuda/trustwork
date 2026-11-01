@@ -10141,7 +10141,7 @@
       "id": "OUTR-001",
       "title": "Outreach and collection policy as country-pack facts and hub configuration",
       "area": "communications",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "HUB-001",
         "CTRY-002",

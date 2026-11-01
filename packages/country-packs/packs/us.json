@@ -4195,6 +4195,105 @@
         "verification": "secondary",
         "verificationNote": "Statute text checked on govinfo.gov; counsel review pending."
       }
+    ],
+    "outreachLaw": [
+      {
+        "id": "outreach-us-email-opt-out",
+        "topic": "basis",
+        "summary": {
+          "en": "Commercial e-mail may be sent until the recipient opts out; the opt-out must be honoured within 10 business days (CAN-SPAM). The engine floor still forbids consumer outreach."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section7704&num=0&edition=prelim",
+            "what": "15 U.S.C. 7704 (CAN-SPAM Act): requirements for commercial electronic mail, opt-out within 10 business days, postal address and identification",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Statute text on the US Code site; the engine reading awaits counsel review.",
+        "recipientClasses": [
+          "organisation_generic",
+          "business_role",
+          "business_named_contact",
+          "sole_proprietor",
+          "consumer"
+        ],
+        "channels": [
+          "email"
+        ],
+        "basis": "opt_out",
+        "honourOptOutWithinDays": 10
+      },
+      {
+        "id": "outreach-us-email-identification",
+        "topic": "identification",
+        "summary": {
+          "en": "A commercial e-mail identifies itself as an advertisement where required, carries a valid postal address of the sender, a working opt-out and non-deceptive headers and subject lines (CAN-SPAM)."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section7704&num=0&edition=prelim",
+            "what": "15 U.S.C. 7704 (CAN-SPAM Act): requirements for commercial electronic mail, opt-out within 10 business days, postal address and identification",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Statute text checked; counsel review pending."
+      },
+      {
+        "id": "outreach-us-automated-calls-texts",
+        "topic": "basis",
+        "summary": {
+          "en": "Telemarketing calls and texts that use an autodialer or an artificial or prerecorded voice need the recipient’s prior express written consent (TCPA and 47 CFR 64.1200)."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title47-section227&num=0&edition=prelim",
+            "what": "47 U.S.C. 227 (Telephone Consumer Protection Act): restrictions on automated telephone equipment and artificial or prerecorded voice calls",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-64/subpart-L/section-64.1200",
+            "what": "47 CFR 64.1200: prior express written consent for telemarketing calls and texts using an autodialer or an artificial or prerecorded voice",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "Statute and regulation text checked; counsel review pending.",
+        "recipientClasses": [
+          "organisation_generic",
+          "business_role",
+          "business_named_contact",
+          "sole_proprietor",
+          "consumer"
+        ],
+        "channels": [
+          "phone_automated",
+          "sms_messenger"
+        ],
+        "basis": "prior_express_written_consent"
+      },
+      {
+        "id": "outreach-us-ai-voice",
+        "topic": "other",
+        "summary": {
+          "en": "AI-generated voices count as artificial voices under the TCPA, so AI voice calls fall under the same consent rule (FCC 24-17)."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://docs.fcc.gov/public/attachments/FCC-24-17A1.pdf",
+            "what": "FCC 24-17 declaratory ruling (2024): AI-generated voices are artificial voices under the TCPA",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "secondary",
+        "verificationNote": "FCC ruling text checked; counsel review pending."
+      }
     ]
   },
   "notes": [
