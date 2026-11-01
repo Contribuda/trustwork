@@ -8,7 +8,7 @@ test.describe('mobile (375 px) behaviour', () => {
     await expect(page.getByRole('table')).toHaveCount(0);
     const cards = page.getByRole('list').first().getByRole('listitem');
     await expect(cards).toHaveCount(4);
-    await expect(cards.first().getByRole('term')).toHaveText(['Проект', 'Вид', 'Статус', 'Срок', 'Предложения']);
+    await expect(cards.first().getByRole('term')).toHaveText(['Потребность', 'Проект', 'Вид', 'Статус', 'Срок', 'Предложения']);
     await expect(page.locator('html')).toHaveJSProperty('scrollWidth', await page.evaluate(() => document.documentElement.clientWidth));
   });
 
