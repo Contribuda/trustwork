@@ -1,3 +1,4 @@
+import { ProvenanceDeliveryQuerySchema } from '../../../../../packages/contracts/src/provenance.js';
 import type { FastifyReply } from 'fastify';
 import { Controller, Get, Header, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
 import type { z } from 'zod';
@@ -128,14 +129,14 @@ export class PublicContentController {
 
   @Header('Cache-Control', 'private, no-store')
   @Get('publications/:id')
-  publication(@Params(IdParams) params: Id) {
-    return this.content.publication(params.id);
+  publication(@Params(IdParams) params: Id, @Query(ProvenanceDeliveryQuerySchema) query: P<typeof ProvenanceDeliveryQuerySchema>) {
+    return this.content.publication(params.id, query.channel);
   }
 
   @Header('Cache-Control', 'private, no-store')
   @Get('publications/:id/versions/:version')
-  version(@Params(VersionParams) params: P<typeof VersionParams>) {
-    return this.content.version(params.id, params.version);
+  version(@Params(VersionParams) params: P<typeof VersionParams>, @Query(ProvenanceDeliveryQuerySchema) query: P<typeof ProvenanceDeliveryQuerySchema>) {
+    return this.content.version(params.id, params.version, query.channel);
   }
 
   @Header('Cache-Control', 'private, no-store')

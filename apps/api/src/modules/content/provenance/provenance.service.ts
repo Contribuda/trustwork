@@ -1,3 +1,5 @@
+import { sql } from 'kysely';
+import type { DraftInput } from '../../../../../../packages/data/src/repositories/content.js';
 import type { PrincipalService } from "../../identity/principal.service.js";
 import type { SecondFactorService } from "../../identity/second-factor/second-factor.service.js";
 import type { RequestState } from "../../../common/request.js";
@@ -63,6 +65,18 @@ export class ProvenanceService {
           );
         return mapContentError(error);
       });
+  }
+  workspace(state: RequestState, id: string) {
+    return this.run(state, undefined, async (trx, ctx) => {
+      const result = await sql<{ value: unknown }>`SELECT trustwork.provenance_workspace(${JSON.stringify(ctx)}::jsonb,${id}::uuid) AS value`.execute(trx);
+      return result.rows[0]!.value;
+    });
+  }
+  prepareCorrection(state: RequestState, id: string, expectedRevision: number, draft: DraftInput, note: string, staff?: { reason: string }) {
+    return this.run(state, staff, async (trx, ctx) => {
+      const result = await sql<{ id: string; revision: number }>`SELECT id,revision FROM trustwork.provenance_prepare_correction(${JSON.stringify(ctx)}::jsonb,${id}::uuid,${expectedRevision},${JSON.stringify(draft)}::jsonb,${note})`.execute(trx);
+      return result.rows[0]!;
+    });
   }
   declare(
     state: RequestState,

@@ -100,6 +100,7 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'reading_progress.record': IN_TRANSACTION,
   // PROV-001: first-party provenance decisions.
   'provenance.declare': IN_TRANSACTION,
+  'provenance.prepare_correction': IN_TRANSACTION,
   'provenance.review': IN_TRANSACTION,
   'provenance.consent': IN_TRANSACTION,
   'provenance.revoke': IN_TRANSACTION,

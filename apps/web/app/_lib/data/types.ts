@@ -41,7 +41,7 @@ export type PublicationCard = {
 
 export type PublicationDetail = PublicationCard & {
   body: string;
-  content?: { language: string; notices: string[]; sources: Array<{ name: string; url: string | null; licence: string | null }>; modifiedAt: string; retracted: boolean };
+  content?: { provenance?: import('@trustwork/contracts/client').PublicProvenance; language: string; notices: string[]; sources: Array<{ name: string; url: string | null; licence: string | null }>; modifiedAt: string; retracted: boolean };
   version: number;
   correction: { note: string; date: string; fromVersion: number } | null;
   history: Array<{ version: number; publishedAt: string | null; note: string | null }>;

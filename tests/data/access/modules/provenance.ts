@@ -9,6 +9,8 @@ export default {
     "provenance_image_attachment",
   ],
   apiDefiners: [
+    "provenance_workspace",
+    "provenance_prepare_correction",
     "provenance_declare",
     "provenance_review_translation",
     "provenance_consent",
