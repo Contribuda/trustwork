@@ -133,8 +133,7 @@
       "confirmHelp": "Al terminar se crea el hub como borrador, se registra su configuración y este enlace deja de valer. Confirme con su contraseña y el código de su aplicación de autenticación.",
       "password": "Contraseña",
       "code": "Código de autenticación",
-      "finished": "Configuración terminada. El hub es un borrador; continúe en la consola.",
-      "openConsole": "Abrir la consola"
+      "finished": "Configuración terminada. El hub es un borrador; continúe en la consola."
     }
   }
 }

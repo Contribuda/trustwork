@@ -133,8 +133,7 @@
       "confirmHelp": "Yakunlash xabni qoralama sifatida yaratadi, konfiguratsiyasini yozib qoʻyadi va bu havolani bekor qiladi. Parolingiz va autentifikator ilovasidagi kod bilan tasdiqlang.",
       "password": "Parol",
       "code": "Autentifikator kodi",
-      "finished": "Sozlash yakunlandi. Xab qoralama holatida; konsolda davom eting.",
-      "openConsole": "Konsolni ochish"
+      "finished": "Sozlash yakunlandi. Xab qoralama holatida; konsolda davom eting."
     }
   }
 }

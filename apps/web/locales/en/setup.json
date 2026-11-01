@@ -133,8 +133,7 @@
       "confirmHelp": "Finishing creates the hub as a draft, records its configuration and invalidates this link. Confirm with your password and the code from your authenticator app.",
       "password": "Password",
       "code": "Authenticator code",
-      "finished": "Setup finished. The hub is a draft; continue in the console.",
-      "openConsole": "Open the console"
+      "finished": "Setup finished. The hub is a draft; continue in the console."
     }
   }
 }
