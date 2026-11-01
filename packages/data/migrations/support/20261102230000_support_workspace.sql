@@ -304,7 +304,7 @@ BEGIN
 END $$;
 
 -- The diagnostic account card (admin.support.account.read): the allowlist of SupportAccountSummarySchema, built here so
--- no address, token, IP, device, secret or private object ever leaves the database. Lockout facts come from the API
+-- no address, token, IP, device, secret or private object ever leaves the database (entitlements come from billing). Lockout facts come from the API
 -- configuration (threshold and window). Recorded with the case.
 CREATE FUNCTION trustwork.support_account_card(p_ctx jsonb, p_case uuid, p_person uuid, p_lock_threshold integer, p_lock_window interval) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
@@ -357,9 +357,9 @@ BEGIN
     'recovery', v_recovery,
     'employer', (SELECT jsonb_build_object('companyId', c.id, 'companyName', c.display_name, 'role', m.role) FROM trustwork.membership m JOIN trustwork.company c ON c.id = m.company_id
                   WHERE m.person_id = p_person AND m.status = 'active' ORDER BY m.valid_from DESC LIMIT 1),
-    'entitlements', coalesce((SELECT jsonb_agg(jsonb_build_object('offerCode', o.code, 'validUntil', e.valid_until) ORDER BY o.code, e.valid_until)
-                  FROM trustwork.entitlement e JOIN trustwork.billing_account a ON a.id = e.billing_account_id JOIN trustwork.offer o ON o.id = e.offer_id
-                  WHERE a.owner_person_id = p_person AND e.revoked_at IS NULL AND e.valid_from <= now() AND (e.valid_until IS NULL OR e.valid_until > now())), '[]'::jsonb),
+    -- Entitlements are economic rights owned by billing; no module outside billing reads its tables (payment neutrality).
+    -- The API adds them through the billing port of the support module.
+    'entitlements', '[]'::jsonb,
     'openCases', (SELECT count(*)::integer FROM trustwork.support_case c WHERE (c.subject_person_id = p_person OR c.requester_person_id = p_person) AND c.status <> 'closed'),
     'consents', coalesce((SELECT jsonb_agg(jsonb_build_object('kind', r.purpose, 'version', r.notice_version, 'state', CASE WHEN r.withdrawn_at IS NULL THEN 'given' ELSE 'withdrawn' END,
                   'at', coalesce(r.withdrawn_at, r.granted_at)) ORDER BY r.granted_at, r.id) FROM trustwork.consent_record r WHERE r.subject_person_id = p_person), '[]'::jsonb));
