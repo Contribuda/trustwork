@@ -9,7 +9,7 @@ const PLURAL = new Set(["zero", "one", "two", "few", "many", "other"]);
 const load = (f) => new Function("return (" + fs.readFileSync(f, "utf8") + ")")();
 const msgs = {};
 for (const tag of TAGS) {
-  const f = path.join(root, "msg", name, tag + ".js");
+  const f = path.join(root, "msg", name, tag + ".js.fragment");
   if (!fs.existsSync(f)) { console.error("missing file", f); process.exitCode = 1; continue; }
   msgs[tag] = load(f);
 }
@@ -42,7 +42,7 @@ const count = (o) => Object.values(o).reduce((n, v) => n + (typeof v === "string
 console.log(`${name}: ${count(msgs.en)} messages x ${TAGS.length} languages OK`);
 if (process.argv.includes("--check-only")) process.exit(0);
 let html = fs.readFileSync(path.join(root, "src", name + ".html"), "utf8");
-const kitJs = fs.readFileSync(path.join(root, "src", "kit.js"), "utf8");
+const kitJs = fs.readFileSync(path.join(root, "src", "kit.js.fragment"), "utf8");
 const kitCss = fs.readFileSync(path.join(root, "src", "kit.css"), "utf8");
 const table = "/* Interface strings: one object per language (English is the reference; the others are unreviewed drafts). */\nconst MESSAGES = {\n" +
   TAGS.map((t) => JSON.stringify(t) + ": " + JSON.stringify(msgs[t])).join(",\n") + "\n};";

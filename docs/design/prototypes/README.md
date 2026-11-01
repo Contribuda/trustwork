@@ -42,7 +42,7 @@ node docs/design/prototypes/tools/review-localization.mjs
 
 Both browser commands accept study names to narrow a rerun. The interaction runner also accepts `PROTOTYPE_LOCALES` and `PROTOTYPE_WIDTHS` as comma-separated filters; omit them for all seven locales at 1280 and 375 px. It imports the inherited outreach/tender scenarios, adds the other four studies, and verifies keyboard behavior and locale persistence. All browser requests outside local/data resources are aborted and reported. Runtime errors, document overflow, unnamed visible controls, assertion failures or external requests make the command fail.
 
-The older `source/l10n-work/tools/verify.mjs` now resolves generated artifacts inside this repository and accepts `PROTOTYPE_DEPS`; its original scenarios are preserved. Use the commands above for the complete current suite. `tools/extract-editorial.cjs` records the original bilingual extraction and accepts the same dependency path for TypeScript; normal generation uses the committed dictionaries and does not require extraction.
+The older `source/l10n-work/tools/verify.mjs` now resolves generated artifacts inside this repository and accepts `PROTOTYPE_DEPS`; its original scenarios are preserved. Use the commands above for the complete current suite. `tools/extract-editorial.mjs` records the original bilingual extraction and accepts the same dependency path for TypeScript; normal generation uses the committed dictionaries and does not require extraction.
 
 ## Evidence and limits
 
@@ -59,3 +59,5 @@ The checks cover the named synthetic scenarios, not every possible input/state c
 The requested `ADM-UX-001` and `ADM-UX-002` names conflict with the existing registry's ID pattern. The owner's naming/scope question remains pending. This continuation does not change that validator, assign replacement IDs, write registry entries or promote a design to accepted/live. Integration PR #399 is merged; the worker report records that verification. Preserve upstream status wording and package IDs when integrating.
 
 See [administrative guidelines](../admin-ui-guidelines.md) and [Proposed ADR 019](../../adr/019-admin-ui-libraries.md). ADRs 015-018 retain their reservations. Handbook, status and index links are drafted in the worktree. The draft design PR preserves this finished review material. Package registry publication and merge readiness remain pending the package-ID decision. Integration PR #399 is merged; this branch was rebased without replaying duplicate inherited designs.
+
+Embedded script fragments and object-expression dictionaries use `.js.fragment` filenames: they are generator inputs, not standalone JavaScript modules. Their bytes are preserved; generated script syntax is checked by the prototype validator. The current executable tooling remains covered by the repository linter.
