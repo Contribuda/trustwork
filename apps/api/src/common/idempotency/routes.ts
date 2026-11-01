@@ -18,6 +18,12 @@ export type CompletionMode = { kind: 'in_transaction' } | { kind: 'lease'; reaso
 const IN_TRANSACTION: CompletionMode = { kind: 'in_transaction' };
 
 export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
+  // PRV-001: commands and their replay response commit in the same principal transaction.
+  'privacy.export_create': IN_TRANSACTION,
+  'privacy.hold_place': IN_TRANSACTION,
+  'privacy.hold_release': IN_TRANSACTION,
+  'privacy.preference_set': IN_TRANSACTION,
+  'privacy.request_create': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,
   'person.set_handle': IN_TRANSACTION,

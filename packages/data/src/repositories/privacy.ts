@@ -1,0 +1,32 @@
+import { sql } from 'kysely';
+import type { Transaction } from '../pool.js';
+import type { LegalHoldRow, PrivacyExportRow, PrivacyPreferenceRow, PrivacyRequestRow } from '../schema/privacy.js';
+import type { CommandContext } from './admin.js';
+
+export const privacy = {
+  async authorized(trx: Transaction, kind: 'person' | 'company', id: string): Promise<boolean> {
+    const r = await sql<{ allowed: boolean }>`SELECT trustwork.privacy_subject_authorized(${kind}, ${id}::uuid) AS allowed`.execute(trx);
+    return r.rows[0]?.allowed === true;
+  },
+  async request(trx: Transaction, input: unknown): Promise<PrivacyRequestRow> {
+    return (await sql<PrivacyRequestRow>`SELECT * FROM trustwork.privacy_request_create(${JSON.stringify(input)}::jsonb)`.execute(trx)).rows[0]!;
+  },
+  requests(trx: Transaction) { return trx.selectFrom('privacy_request').selectAll().orderBy('created_at').orderBy('id').execute(); },
+  async preference(trx: Transaction, input: unknown): Promise<PrivacyPreferenceRow> {
+    return (await sql<PrivacyPreferenceRow>`SELECT * FROM trustwork.privacy_preference_set(${JSON.stringify(input)}::jsonb)`.execute(trx)).rows[0]!;
+  },
+  preferences(trx: Transaction) { return trx.selectFrom('privacy_preference').selectAll().executeTakeFirst(); },
+  async createExport(trx: Transaction, kind: 'person' | 'company', id: string, coverage: unknown): Promise<PrivacyExportRow> {
+    return (await sql<PrivacyExportRow>`SELECT * FROM trustwork.privacy_export_create(${kind}, ${id}::uuid, ${JSON.stringify(coverage)}::jsonb)`.execute(trx)).rows[0]!;
+  },
+  export(trx: Transaction, id: string) { return trx.selectFrom('privacy_export').selectAll().where('id', '=', id).executeTakeFirst(); },
+  async hold(trx: Transaction, ctx: CommandContext, requestId: string, reasonCode: string, evidenceRef: string): Promise<LegalHoldRow> {
+    return (await sql<LegalHoldRow>`SELECT * FROM trustwork.privacy_hold_place(${JSON.stringify(ctx)}::jsonb, ${requestId}::uuid, ${reasonCode}, ${evidenceRef}::uuid)`.execute(trx)).rows[0]!;
+  },
+  async releaseHold(trx: Transaction, ctx: CommandContext, id: string): Promise<LegalHoldRow> {
+    return (await sql<LegalHoldRow>`SELECT * FROM trustwork.privacy_hold_release(${JSON.stringify(ctx)}::jsonb, ${id}::uuid)`.execute(trx)).rows[0]!;
+  },
+  async erasureCheck(trx: Transaction, ctx: CommandContext, id: string): Promise<{ ready: false; reason: string }> {
+    return (await sql<{ result: { ready: false; reason: string } }>`SELECT trustwork.privacy_erasure_check(${JSON.stringify(ctx)}::jsonb, ${id}::uuid) AS result`.execute(trx)).rows[0]!.result;
+  },
+};

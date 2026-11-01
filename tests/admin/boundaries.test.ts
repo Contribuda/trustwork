@@ -42,7 +42,8 @@ test('no module imports platform-admin; only the composition root mounts it', ()
   }
   assert.deepEqual(importing, ['apps/api/src/app.module.ts']);
   // The module itself reaches other modules only through identity (sessions, elevation) and its own ports.
-  const own = sources(join(ROOT, 'apps/api/src/modules/platform-admin'));
+  // PRV-001 is a separate module nested here by its package scope; its own boundary test enforces ports.
+  const own = sources(join(ROOT, 'apps/api/src/modules/platform-admin')).filter((file) => !relative(ROOT, file).startsWith('apps/api/src/modules/platform-admin/privacy/'));
   for (const file of own) {
     for (const match of readFileSync(file, 'utf8').matchAll(/from\s+['"](\.\.\/[^'"]+)['"]/g)) {
       const target = match[1] as string;

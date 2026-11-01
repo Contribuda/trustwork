@@ -50,6 +50,8 @@ export type {
 } from './retrieval.js';
 // Directory projections, handles and pagination (BE-003); the web reads them through the live adapter (WEB-004).
 export * from './directory.js';
+// Minimal privacy intake and local journal shapes (PRV-001); coverage is explicitly partial.
+export * from './privacy.js';
 // Profiles, consent records, portraits and experience (PPL-001); the web reads public profiles through the live adapter.
 export * from './profiles.js';
 // Sanctions compliance: jurisdiction gate, address primitives and holds (SANC-001, ADR 014).

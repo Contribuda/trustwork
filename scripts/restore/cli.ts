@@ -1,3 +1,4 @@
+import { privacyLedgerFromEnv } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import pg from 'pg';
 import { blobStoreFromEnv } from '../../packages/data/src/files/config.js';
 import { keyringFromEnv } from '../../infra/backup/src/crypto.js';
@@ -131,7 +132,7 @@ export async function runRestoreCli(argv: string[], env: NodeJS.ProcessEnv, io: 
         const logins = option(rest, '--logins');
         if (logins) fence = new RoleFence(pool, logins.split(','));
         else fence = new HbaFence(restoreExec(project(rest)), `${PGDATA}/pg_hba.conf`);
-        const result = await authorizeRestore({ admin: pool, fence, restoreId: required(rest, '--restore-id'), reference: required(rest, '--reference'), operator: required(rest, '--operator') });
+        const result = await authorizeRestore({ admin: pool, fence, restoreId: required(rest, '--restore-id'), reference: required(rest, '--reference'), operator: required(rest, '--operator'), privacyLedger: privacyLedgerFromEnv(env) });
         io.out(JSON.stringify(result));
         return 0;
       }

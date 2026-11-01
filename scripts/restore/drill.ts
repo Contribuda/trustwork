@@ -1,3 +1,4 @@
+import { PrivacyErasureLedger } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -102,6 +103,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
   const key = deriveBackupKey('drill', randomBytes(32));
   const ring = new Keyring(key);
   const liveStore = new FilesystemBlobStore({ root: join(work, 'objects') });
+  const privacyLedger = new PrivacyErasureLedger(new FilesystemBlobStore({ root: join(work, 'privacy-ledger'), bucket: 'trustwork-privacy-ledger' }));
   const ledger = new TombstoneLedger(new FilesystemBlobStore({ root: join(work, 'ledger'), bucket: 'trustwork-tombstones' }));
   const provider = new FakeProvider(join(work, 'provider'));
   const timeline: Record<string, string> = {};
@@ -361,10 +363,10 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
     check('reconciliation: effect after the recovery point closed by its receipt, never re-sent', report.jobs.closedByReceipt.map((j) => j.id).join() === j2, report.jobs.closedByReceipt);
     check('reconciliation: lost lease released, untouched queue kept', report.jobs.releasedToQueue.map((j) => j.id).join() === j7 && report.jobs.keptQueued.map((j) => j.id).join() === j3, { released: report.jobs.releasedToQueue, kept: report.jobs.keptQueued });
     check('reconciliation: receipt of lost work reported, pending event marked ambiguous', report.orphanReceipts.length === 1 && report.orphanReceipts[0]?.effectKey === `job:${j5}` && report.ambiguousOutbox.join() === e3, { orphans: report.orphanReceipts.length, ambiguous: report.ambiguousOutbox });
-    const early = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR }).then(() => null, (error: unknown) => error);
+    const early = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR, privacyLedger }).then(() => null, (error: unknown) => error);
     check('authorization refused while an outbox event is undecided', early instanceof AuthorizationRefused && (await fence.isApplied()), early instanceof Error ? early.message : early);
     await resolveOutboxEvent({ admin: rst, restoreId: id, eventId: e3, decision: 'delivered', reference: report.orphanReceipts[0]?.reference ?? 'unknown', operator: OPERATOR });
-    const { authorizedAt } = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR });
+    const { authorizedAt } = await authorizeRestore({ admin: rst, fence, restoreId: id, reference: `drill:${id}`, operator: OPERATOR, privacyLedger });
     phase('reconcile_and_authorize');
     const recoverySeconds = (Date.parse(authorizedAt) - restoreStartedAt.getTime()) / 1000;
     mark('authorized');

@@ -1,3 +1,5 @@
+import { PrivacyErasureLedger } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
+import { FilesystemBlobStore } from '../../packages/data/src/files/filesystem.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -25,6 +27,7 @@ test('OPS-003 restore reconciliation on real PostgreSQL: fenced workers, receipt
     await env.close();
   });
   const admin = env.db.admin as unknown as pg.Pool;
+  const privacyLedger = new PrivacyErasureLedger(new FilesystemBlobStore({ root: dir, bucket: 'privacy-restore-ledger' }));
   const calls: string[] = [];
   const registry = () => new HandlerRegistry()
     .onJob({ kind: 'restore.external', mode: 'external', run: async (ctx) => void calls.push(ctx.effectKey) })
@@ -91,7 +94,7 @@ test('OPS-003 restore reconciliation on real PostgreSQL: fenced workers, receipt
   });
 
   await t.test('authorization is refused before reconciliation', async () => {
-    await assert.rejects(authorizeRestore({ admin, fence, restoreId: 'r1', reference: 'ticket-1', operator: 'operator' }), (e) => e instanceof AuthorizationRefused && /not been reconciled/.test(e.message));
+    await assert.rejects(authorizeRestore({ admin, fence, restoreId: 'r1', reference: 'ticket-1', operator: 'operator', privacyLedger }), (e) => e instanceof AuthorizationRefused && /not been reconciled/.test(e.message));
     assert.ok(await fence.isApplied());
   });
 
@@ -121,12 +124,12 @@ test('OPS-003 restore reconciliation on real PostgreSQL: fenced workers, receipt
   });
 
   await t.test('an ambiguous pending event blocks authorization until an operator decides', async () => {
-    await assert.rejects(authorizeRestore({ admin, fence, restoreId: 'r1', reference: 'ticket-1', operator: 'operator' }), (e) => e instanceof AuthorizationRefused && e.message.includes(pending));
+    await assert.rejects(authorizeRestore({ admin, fence, restoreId: 'r1', reference: 'ticket-1', operator: 'operator', privacyLedger }), (e) => e instanceof AuthorizationRefused && e.message.includes(pending));
     assert.ok(await fence.isApplied(), 'a refused authorization leaves the fence in place');
     await assert.rejects(resolveOutboxEvent({ admin, restoreId: 'r1', eventId: '999999', decision: 'relay', reference: 'x', operator: 'operator' }), /not found/);
     await assert.rejects(resolveOutboxEvent({ admin, restoreId: 'r1', eventId: pending, decision: 'maybe' as never, reference: 'x', operator: 'operator' }), /delivered or relay/);
     await resolveOutboxEvent({ admin, restoreId: 'r1', eventId: pending, decision: 'relay', reference: 'provider log has no message for pending-1', operator: 'operator' });
-    const { authorizedAt } = await authorizeRestore({ admin, fence, restoreId: 'r1', reference: 'ticket-1', operator: 'operator' });
+    const { authorizedAt } = await authorizeRestore({ admin, fence, restoreId: 'r1', reference: 'ticket-1', operator: 'operator', privacyLedger });
     assert.ok(Date.parse(authorizedAt) > 0);
     assert.equal(await fence.isApplied(), false);
   });
@@ -161,7 +164,7 @@ test('OPS-003 restore reconciliation on real PostgreSQL: fenced workers, receipt
     assert.equal((await row(unknown)).state, 'succeeded');
     await resolveOutboxEvent({ admin, restoreId: 'r2', eventId: delivered, decision: 'delivered', reference: 'msg-8', operator: 'operator' });
     await assert.rejects(resolveOutboxEvent({ admin, restoreId: 'r2', eventId: delivered, decision: 'relay', reference: 'x', operator: 'operator' }), /already published/);
-    await authorizeRestore({ admin, fence, restoreId: 'r2', reference: 'ticket-2', operator: 'operator' });
+    await authorizeRestore({ admin, fence, restoreId: 'r2', reference: 'ticket-2', operator: 'operator', privacyLedger });
     const worker = new Worker({ pool: workerPool(2), registry: registry(), config: { workerId: 'restored-2', leaseSeconds: 30, retryJitter: 0 }, tasks: () => [] });
     await drain(worker);
     assert.deepEqual(calls, [], 'nothing was sent again');

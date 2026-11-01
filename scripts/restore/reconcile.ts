@@ -1,3 +1,4 @@
+import { replayPrivacyLedger, type PrivacyErasureLedger } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { readFile } from 'node:fs/promises';
 import type pg from 'pg';
 import { inOwnerTransaction } from '../../infra/backup/src/retention.js';
@@ -259,7 +260,7 @@ export class AuthorizationRefused extends Error {
  * event is still ambiguous (orphan receipts or an incomplete journal, and no operator decision). Parked jobs do not
  * block: a parked job is never leased, and the worker's reconcile CLI resolves it with evidence afterwards.
  */
-export async function authorizeRestore(input: { admin: pg.Pool; fence: RestoreFence; restoreId: string; reference: string; operator: string }): Promise<{ authorizedAt: string }> {
+export async function authorizeRestore(input: { admin: pg.Pool; fence: RestoreFence; restoreId: string; reference: string; operator: string; privacyLedger?: PrivacyErasureLedger }): Promise<{ authorizedAt: string }> {
   checkText('restoreId', input.restoreId);
   checkText('reference', input.reference);
   checkText('operator', input.operator);
@@ -279,6 +280,10 @@ export async function authorizeRestore(input: { admin: pg.Pool; fence: RestoreFe
         if (open.length) reasons.push(`${open.length} pending outbox events need a decision (delivered or relay): ${open.slice(0, 20).join(', ')}`);
       }
       if (reasons.length) throw new AuthorizationRefused(reasons);
+      // Never trust a restorable receipt as proof that the external erasure journal is current.
+      if (!input.privacyLedger) throw new AuthorizationRefused(['external privacy ledger is required before the restore fence can lift']);
+      if (!await input.fence.isApplied()) throw new AuthorizationRefused(['restore fence must remain applied during privacy replay']);
+      await replayPrivacyLedger(client, input.privacyLedger);
       const { rows: now } = await client.query<{ now: Date }>('SELECT now() AS now');
       await audit(client, 'restore.authorized', input.restoreId, `restore authorized by ${input.operator}`, { reference: input.reference, operator: input.operator, fence: input.fence.describe() });
       return (now[0] as { now: Date }).now.toISOString();
