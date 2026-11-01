@@ -22,6 +22,7 @@ export type AppMessages =
   & typeof import('./en/map.json')
   & typeof import('./en/onboarding.json')
   & typeof import('./en/people.json')
+  & typeof import('./en/pricing.json')
   & typeof import('./en/procurement.json')
   & typeof import('./en/projects.json')
   & typeof import('./en/public.json')

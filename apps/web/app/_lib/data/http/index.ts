@@ -1,5 +1,6 @@
 import { apiOrigin } from './config';
 import { contentData } from './content';
+import { PublicPricingSchema } from '@trustwork/contracts/client';
 import { cache } from 'react';
 import {
   CompanyDirectoryPageSchema,
@@ -350,6 +351,7 @@ export function createHttpDataPort(transport: Transport, pdfAvailable?: (path: s
     listCourses: empty,
     getPlatformCertificate: none,
     getLegalDocuments,
+    getPublicPricing: async () => PublicPricingSchema.parse(await publicGet('/v1/pricing')),
     getOverview,
     listRfqs: async (principal) => (person(principal), []),
     listLeads: async (principal) => (person(principal), []),

@@ -2169,7 +2169,7 @@
       "id": "BILL-003",
       "title": "Hub commissions and fees as versioned, disclosed settings",
       "area": "billing",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "BILL-001",
         "HUB-001",

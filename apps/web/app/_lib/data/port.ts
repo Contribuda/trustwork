@@ -1,4 +1,4 @@
-import type { PublicLegalDocuments } from '@trustwork/contracts/client';
+import type { PublicLegalDocuments, PublicPricing } from '@trustwork/contracts/client';
 import type { DemoContext } from '../persona';
 import type {
   AssistantView,
@@ -79,6 +79,7 @@ export interface PublicDataPort {
    * show as a labelled draft notice.
    */
   getLegalDocuments(): Promise<PublicLegalDocuments>;
+  getPublicPricing(): Promise<PublicPricing>;
 }
 
 /**
