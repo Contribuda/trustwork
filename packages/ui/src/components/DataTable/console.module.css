@@ -194,3 +194,16 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+.table th {
+  text-align: start;
+}
+.diffTable {
+  min-width: 32rem;
+}
+.diffTable th:first-child {
+  width: 50%;
+}
+.diffTable td {
+  width: 25%;
+}

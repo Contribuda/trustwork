@@ -51,6 +51,14 @@ export function CalendarAgenda({
         · {timeZone}
       </p>
       <div className={s.calendar} aria-hidden="true">
+        {Array.from({ length: 7 }, (_, day) => (
+          <strong key={`weekday-${day}`}>
+            {new Intl.DateTimeFormat(intlTag(), {
+              weekday: "short",
+              timeZone: "UTC",
+            }).format(new Date(Date.UTC(2026, 10, day + 2)))}
+          </strong>
+        ))}
         {days.map((day, i) => (
           <div
             className={s.day}

@@ -427,7 +427,7 @@ export function DataTable<Row extends object>({
       <div className={s.row}>
         {asCards && shown.some((c) => c.sortable) && (
           <Select
-            label={t("common.sortNone")}
+            label={t("consoleKit.sort")}
             options={shown
               .filter((c) => c.sortable)
               .flatMap((c) =>

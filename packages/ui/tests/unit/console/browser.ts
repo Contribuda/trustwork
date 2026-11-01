@@ -295,7 +295,7 @@ for (const width of widths) {
           page.getByRole("columnheader", { name: /Name/ }),
         ).toHaveAttribute("aria-sort", "ascending");
       }
-      await page.getByRole("checkbox", { name: "Select this page" }).check();
+      await page.getByRole("checkbox", { name: "Select this page" }).press("Space");
       await expect(
         page
           .getByRole("status")
@@ -340,6 +340,38 @@ for (const width of widths) {
       await expect(
         page.getByRole("status").filter({ hasText: "Synthetic saved view" }),
       ).toBeVisible();
+      await page
+        .getByRole("button", { name: "Next page", exact: true })
+        .click();
+      await expect(
+        page.getByRole("navigation").locator('[aria-current="page"]'),
+      ).toContainText("2");
+      await expect(trigger).toBeVisible(); // The fixed server fixture never fabricates a fetched page.
+      await page.locator("summary").click();
+      const columns = page.locator("details");
+      await columns
+        .getByRole("checkbox", { name: "Status", exact: true })
+        .press("Space");
+      if (width >= 768)
+        await expect(
+          page.getByRole("columnheader", { name: /Status/ }),
+        ).toHaveCount(0);
+      else
+        await expect(
+          page.getByRole("term").filter({ hasText: "Status" }),
+        ).toHaveCount(0);
+      await columns
+        .getByRole("checkbox", { name: "Status", exact: true })
+        .press("Space");
+      await columns
+        .getByRole("button", { name: "Move Name down", exact: true })
+        .click();
+      if (width >= 768)
+        await expect(page.getByRole("columnheader").nth(1)).toContainText(
+          "Status",
+        );
+      else await expect(page.getByRole("term").first()).toHaveText("Status");
+      await page.locator("summary").click();
     } finally {
       await context.close();
     }
@@ -360,6 +392,19 @@ for (const width of widths) {
       ).toBeDisabled();
       await expect(
         page.getByRole("button", { name: "Decline", exact: true }),
+      ).toBeDisabled();
+      await page
+        .getByRole("textbox", { name: "Reason" })
+        .first()
+        .fill("Synthetic reason");
+      await expect(
+        page.getByText("484 characters left", { exact: true }),
+      ).toHaveCount(2);
+      await expect(
+        page.getByRole("button", { name: "Decline", exact: true }),
+      ).toBeEnabled();
+      await expect(
+        page.getByRole("button", { name: "Request release", exact: true }),
       ).toBeDisabled();
       const trigger = page.getByRole("button", {
         name: "Type Synthetic record 1 to confirm",
@@ -438,7 +483,7 @@ for (const width of widths) {
       await page.getByRole("button", { name: "Keyboard shortcuts" }).click();
       await page
         .getByRole("checkbox", { name: "Enable single-key shortcuts" })
-        .check();
+        .press("Space");
       await page.keyboard.press("Escape");
       await page.getByRole("button", { name: "Keyboard shortcuts" }).click();
       await expect(
