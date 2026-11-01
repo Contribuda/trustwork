@@ -250,27 +250,33 @@ export const consultationCommunications = {
   async reconcileChannels(trx: Transaction): Promise<number> {
     return (await sql<{ n: number }>`SELECT trustwork.comms_consultation_channel_reconcile() AS n`.execute(trx)).rows[0]!.n;
   },
-  async due(trx: Transaction): Promise<string[]> {
-    const { rows } = await sql<{ id: string }>`SELECT trustwork.comms_consultation_due() AS id`.execute(trx);
+  async mailHub(trx: Transaction, id: string): Promise<string | null> {
+    return (await sql<{ hub: string | null }>`SELECT trustwork.comms_consultation_mail_hub(${id}::uuid) AS hub`.execute(trx)).rows[0]?.hub ?? null;
+  },
+  async forHub(trx: Transaction, id: string, kind: 'reminder' | 'mail' | 'channel', hubId: string | null): Promise<boolean> {
+    return (await sql<{ ok: boolean }>`SELECT trustwork.comms_consultation_for_hub(${id}::uuid,${kind},${hubId}::uuid) AS ok`.execute(trx)).rows[0]?.ok === true;
+  },
+  async due(trx: Transaction, hubId: string): Promise<string[]> {
+    const { rows } = await sql<{ id: string }>`SELECT trustwork.comms_consultation_due(${hubId}::uuid) AS id`.execute(trx);
     return rows.map((r) => r.id);
   },
   async templates(trx: Transaction, hubId: string): Promise<{ locale: string; subject: string; body: string }[]> {
     return (await sql<{ locale: string; subject: string; body: string }>`SELECT * FROM trustwork.comms_consultation_templates(${hubId}::uuid)`.execute(trx)).rows;
   },
-  async produce(trx: Transaction, reminderId: string, body: string): Promise<PlannedDelivery[]> {
-    return (await sql<PlannedDelivery>`SELECT * FROM trustwork.comms_produce_consultation_reminder(${reminderId}::uuid,${body})`.execute(trx)).rows;
+  async produce(trx: Transaction, reminderId: string, hubId: string, body: string): Promise<PlannedDelivery[]> {
+    return (await sql<PlannedDelivery>`SELECT * FROM trustwork.comms_produce_consultation_reminder(${reminderId}::uuid,${hubId}::uuid,${body})`.execute(trx)).rows;
   },
   async enqueueMail(trx: Transaction, id: string, locale: string, subject: string, body: string): Promise<string> {
     return (await sql<{ state: string }>`SELECT trustwork.comms_consultation_enqueue_mail(${id}::uuid,${locale},${subject},${body},'/app/notifications') AS state`.execute(trx)).rows[0]!.state;
   },
-  async mailAllowed(trx: Transaction, id: string): Promise<boolean> {
-    return (await sql<{ ok: boolean }>`SELECT trustwork.comms_consultation_mail_allowed(${id}::uuid) AS ok`.execute(trx)).rows[0]?.ok === true;
+  async mailAllowed(trx: Transaction, id: string, hubId: string | null): Promise<boolean> {
+    return (await sql<{ ok: boolean }>`SELECT trustwork.comms_consultation_mail_allowed(${id}::uuid,${hubId}::uuid) AS ok`.execute(trx)).rows[0]?.ok === true;
   },
   async channelJob(trx: Transaction, id: string, job: string): Promise<void> {
     await sql`SELECT trustwork.comms_consultation_channel_job(${id}::uuid,${job}::uuid)`.execute(trx);
   },
-  async claimChannel(trx: Transaction, id: string, job: string, fence: string): Promise<{ deliveryId: string; provider: string; account: string; languages: string[] } | null> {
-    const { rows } = await sql<{ value: { deliveryId: string; provider: string; account: string; languages: string[] } | null }>`SELECT trustwork.comms_consultation_channel_claim(${id}::uuid,${job}::uuid,${fence}::bigint) AS value`.execute(trx);
+  async claimChannel(trx: Transaction, id: string, job: string, fence: string, hubId: string): Promise<{ deliveryId: string; provider: string; account: string; languages: string[] } | null> {
+    const { rows } = await sql<{ value: { deliveryId: string; provider: string; account: string; languages: string[] } | null }>`SELECT trustwork.comms_consultation_channel_claim(${id}::uuid,${job}::uuid,${fence}::bigint,${hubId}::uuid) AS value`.execute(trx);
     return rows[0]?.value ?? null;
   },
   async settleChannel(trx: Transaction, id: string, job: string, fence: string, state: 'sent' | 'failed' | 'outcome_unknown' | 'skipped', ref: string | null): Promise<void> {

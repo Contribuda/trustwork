@@ -185,6 +185,8 @@ export class ConsultationsService {
     private readonly records: ElectronicRecordsPolicySource,
     private readonly commission: ConsultationCommissionPort,
     private readonly screening: ConsultationScreeningGate,
+    /** Trusted served-hub context, captured only at authenticated confirmation; never request input. */
+    private readonly sourceHubId: string | null = null,
   ) {}
 
   /* ---------- Plumbing ---------- */
@@ -850,7 +852,7 @@ export class ConsultationsService {
       await threads.open(trx, { kind: 'agreement', id: agreementId, counterparty: { person: null, company: null },
         subject: ConsultationRequestTermsSchema.parse(request.terms).question.slice(0, 200), openedBy: p.personId });
       await consultationSessions.open(trx, booking.id);
-      await consultationReminders.insertMany(trx, reminderTimes(terms.slot, this.now()).map((r) => ({ booking_id: booking.id, agreement_id: agreementId, remind_at: r.remindAt, offset_minutes: r.offsetMinutes })));
+      await consultationReminders.insertMany(trx, reminderTimes(terms.slot, this.now()).map((r) => ({ booking_id: booking.id, agreement_id: agreementId, source_hub_id: this.sourceHubId, remind_at: r.remindAt, offset_minutes: r.offsetMinutes })));
       await this.audit(trx, p, state, 'consultation.booked', 'consultation_booking', booking.id, { agreementId, requestId: request.id, digest: saved.accepted_terms_digest, eventId: event.id, via: actor.via, mandateId: actor.mandateId, electronicRecords: consent.disclosureKey });
       await this.event(trx, 'agreement', agreementId, saved.revision, 'consultation.booked', { agreementId, requestId: request.id, bookingId: booking.id, eventKind: 'seller_accepts_order', termsKind: 'consultation', via: actor.via });
       return this.bookingView(trx, p, (await consultationBookings.get(trx, booking.id)) as ConsultationBookingRow);

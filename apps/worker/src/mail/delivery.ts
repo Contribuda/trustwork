@@ -2,7 +2,7 @@ import { sql } from 'kysely';
 import { consultationCommunications } from '../../../../packages/data/src/repositories/communications.js';
 import { deriveMailSecretKey, inbox, jobs, MAIL_AGGREGATE, MAIL_REQUESTED, mailDeliveries, suppressions, unsealMailSecret, type DataPool, type MailDelivery, type Transaction } from '@trustwork/data';
 import { inTransaction } from '../db.js';
-import { PermanentJobError, RetryableJobError, type HandlerRegistry, type JobContext } from '../handlers.js';
+import { PermanentJobError, RetryableJobError, type ExternalJobHandler, type HandlerRegistry, type JobContext } from '../handlers.js';
 import { describeError, type Logger } from '../log.js';
 import type { Metrics } from '../metrics.js';
 import type { ScheduledTask } from '../scheduler.js';
@@ -30,6 +30,8 @@ export function redactAddresses(text: string): string {
 }
 
 export interface MailRuntime {
+  /** Served hub for consultation provenance; absent configuration cannot dispatch consultation mail. */
+  consultationHubId?: string | null;
   pool: DataPool;
   config: MailConfig;
   transport: MailTransport;
@@ -129,7 +131,8 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
         count('_unknown', 'duplicate');
         return;
       }
-      const job = await context.enqueue({ kind: MAIL_DELIVER_KIND, payload: { deliveryId: event.aggregateId } satisfies DeliverPayload, maxAttempts: MAIL_DELIVER_ATTEMPTS });
+      const sourceHub = await consultationCommunications.mailHub(context.trx, event.aggregateId);
+      const job = await context.enqueue({ kind: sourceHub ? `consultation.mail.${sourceHub}` : MAIL_DELIVER_KIND, payload: { deliveryId: event.aggregateId } satisfies DeliverPayload, maxAttempts: MAIL_DELIVER_ATTEMPTS });
       await mailDeliveries.setJob(context.trx, event.aggregateId, job.id);
     },
   });
@@ -179,12 +182,15 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
     throw new PermanentJobError(reason, cause === undefined ? undefined : { cause });
   };
 
-  registry.onJob<DeliverPayload>({
+  const deliverHandler: ExternalJobHandler<DeliverPayload> = {
     kind: MAIL_DELIVER_KIND,
     mode: 'external',
     timeoutMs: transport.maxDurationMs + 5000,
     parse: parseDeliver,
     run: async (context) => {
+      if (!(await inTransaction(pool, (trx) => consultationCommunications.forHub(trx, context.payload.deliveryId, 'mail', runtime.consultationHubId ?? null)))) {
+        throw new RetryableJobError('consultation mail requires its source hub worker');
+      }
       const claimed = await claim(context);
       if (claimed.kind === 'throttled') {
         count('_unknown', 'throttled');
@@ -226,7 +232,7 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
       };
       try {
         const sent = await inTransaction(pool, async (trx) => {
-          if (!(await consultationCommunications.mailAllowed(trx, delivery.id))) {
+          if (!(await consultationCommunications.mailAllowed(trx, delivery.id, runtime.consultationHubId ?? null))) {
             await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'consultation access revoked');
             return false;
           }
@@ -260,7 +266,10 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
         throw new Error(redactAddresses(describeError(error)));
       }
     },
-  });
+  };
+
+  registry.onJob(deliverHandler);
+  if (runtime.consultationHubId) registry.onJob({ ...deliverHandler, kind: `consultation.mail.${runtime.consultationHubId}` });
 
   registry.onJob<MailFeedbackEvent>({
     kind: MAIL_FEEDBACK_KIND,

@@ -6,6 +6,8 @@ import { withMaintenance, withPrincipal } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { adminSetup, staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
 import { consultationCommunications as comms, threads } from '../../packages/data/src/repositories/communications.js';
+import { ConsultationsModule } from '../../apps/api/src/modules/consultations/consultations.module.js';
+import { reminderProcess, type SentEffects } from './process-helper.js';
 import { ConsultationsService } from '../../apps/api/src/modules/consultations/consultations.service.js';
 import { NoConsultationMandates } from '../../apps/api/src/modules/consultations/mandates.js';
 import { NoPublishedCommission, ScreeningCommitmentGate } from '../../apps/api/src/modules/consultations/ports.js';
@@ -45,9 +47,9 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   await withMaintenance(h.db.admin, async (trx) => {
     await kernelSync.apply(trx, await kernelReference.fromRepository());
     await trx.insertInto('hub').values({ id: hubId, slug: 'synthetic-reminders', lifecycle: 'public' }).execute();
-    await staffRoleDefinitions.release(trx, { version: 1, role: 'editor', scopes: ['hub'], permissions: ['admin.notifications.template.edit'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
-    await staffRoleDefinitions.release(trx, { version: 1, role: 'ops-engineer', scopes: ['hub'], permissions: ['admin.notifications.template.edit', 'admin.config.edit'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
-    for (const [personId, role] of [[P.boris, 'editor'], [P.xenia, 'ops-engineer']] as const) await adminSetup.bootstrapFirstAdmin(trx, { personId, role, scope: { kind: 'hub', hubId }, definitionVersion: 1, reason: 'Synthetic template review' });
+    await staffRoleDefinitions.release(trx, { version: 1, role: 'editor', scopes: ['hub', 'platform'], permissions: ['admin.notifications.template.edit'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+    await staffRoleDefinitions.release(trx, { version: 1, role: 'ops-engineer', scopes: ['hub', 'platform'], permissions: ['admin.notifications.template.edit', 'admin.config.edit'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+    for (const [personId, role] of [[P.boris, 'editor'], [P.xenia, 'ops-engineer']] as const) await adminSetup.bootstrapFirstAdmin(trx, { personId, role, scope: { kind: 'platform' }, definitionVersion: 1, reason: 'Synthetic template review' });
   });
   const as = async (key: Parameters<typeof login>[1]) => { const c = h.client(); await login(c, key); return c; };
   const [client, expert, editor, reviewer, outsider] = await Promise.all([as('petr'), as('carl'), as('boris'), as('xenia'), as('anna')]);
@@ -76,20 +78,20 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   // Only the injected service clock moves: SQL, the principal, the booked slot and reminder identity stay real.
   // This simulates a reminder becoming due without sleeps or disabling any production trigger.
   const service = new ConsultationsService({ ...h.created.ctx!, clock: { now: () => new Date(Date.now() - 48 * HOUR) } }, h.services().principals,
-    new NoConsultationMandates(), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate());
+    new NoConsultationMandates(), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate(), hubId);
   const prepare = async (seller: Client = expert, selectedOffering = offeringId, selectedWindow = window.id) => {
     const req = ok<RequesterRequestView>(await client.post('/v1/consultation-requests', { source: { kind: 'direct' }, offeringId: selectedOffering, actor: PERSON, mentoringRelationshipId: null,
       privateConstraint: { budgetCeiling: { minorUnits: '987654321', currency: 'USD' }, requesterNotes: 'PRIVATE-reminder' }, terms: { kind: 'session', question: 'PRIVATE shared question', fields: [], preferredModes: ['video'], preferredTimes: [], sharedMaterials: [], licenceRequired: false, languages: ['en'] } }));
-    const proposed = ok<ExpertRequestView>(await seller.post(`/v1/consultation-requests/${req.request.id}/proposals`, { expectedRevision: req.request.revision, mode: 'video', slot: { windowId: selectedWindow, start: at(nextStart++) }, deliverableDue: null, validUntil: at(24), note: null, actor: PERSON }));
+    const proposed = ok<ExpertRequestView>(await seller.post(`/v1/consultation-requests/${req.request.id}/proposals`, { expectedRevision: req.request.revision, mode: 'video', slot: { windowId: selectedWindow, start: at(2 + (nextStart++ - 2) * 0.4) }, deliverableDue: null, validUntil: at(24), note: null, actor: PERSON }));
     const b = proposed.bookings[0]!;
     const fresh = ok<RequesterRequestView>(await client.get(`/v1/consultation-requests/${req.request.id}`));
     const accepted = ok<RequesterRequestView>(await client.post(`/v1/consultation-requests/${req.request.id}/acceptances`, { booking: { id: b.id, version: 1, digest: b.digest }, request: { id: req.request.id, version: 1, digest: req.request.digest }, expectedRevision: fresh.request.revision, recordingConsent: false, electronicRecords: CONSENT, actor: PERSON }));
     const a = accepted.agreements[0]!;
     return a;
   };
-  const book = async (seller: Client = expert, selectedOffering = offeringId, selectedWindow = window.id) => {
+  const book = async (seller: Client = expert, selectedOffering = offeringId, selectedWindow = window.id, confirmer = service) => {
     const a = await prepare(seller, selectedOffering, selectedWindow);
-    return service.confirmBooking(a.id, { expectedRevision: a.revision, acceptedTermsDigest: a.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON }, randomUUID(), await stateOf(h, seller, randomUUID()));
+    return confirmer.confirmBooking(a.id, { expectedRevision: a.revision, acceptedTermsDigest: a.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON }, randomUUID(), await stateOf(h, seller, randomUUID()));
   };
   const dueId = (b: BookingView) => b.reminders.find((r) => r.offsetMinutes === 1440)!.id;
   const cancel = async (b: BookingView) => ok(await client.post(`/v1/consultation-bookings/${b.booking.id}/cancel`, { expectedRevision: b.booking.revision, kind: 'client', absentSide: null, reason: 'Synthetic cancellation', actor: PERSON }));
@@ -107,7 +109,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await withPrincipal(h.pool, principal, async (trx) => {
       assert.equal((await threads.open(trx, { kind: 'agreement', id: first.agreement!.id, counterparty: { person: null, company: null }, openedBy: P.carl, subject: 'Ignored duplicate' })).thread.id, thread.id);
     });
-    await assert.rejects(withPrincipal(h.pool, principal, (trx) => comms.produce(trx, dueId(first), 'forbidden')), /permission denied/);
+    await assert.rejects(withPrincipal(h.pool, principal, (trx) => comms.produce(trx, dueId(first), hubId, 'forbidden')), /permission denied/);
     await assert.rejects(pool.query('SELECT * FROM trustwork.context_thread'), /permission denied/);
     assert.equal(await tx((trx) => produceReminder(trx, runtime, dueId(first))), false, 'no active template means no local effect');
   });
@@ -195,7 +197,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await tx((trx) => produceReminder(trx, runtime, dueId(ambiguous)));
     transport.failNext('unknown');
     await drain(worker);
-    const parked = (await h.db.admin.query("SELECT id FROM trustwork.job WHERE kind='mail.deliver' AND state='outcome_unknown'")).rows;
+    const parked = (await h.db.admin.query("SELECT id FROM trustwork.job WHERE kind LIKE 'consultation.mail.%' AND state='outcome_unknown'")).rows;
     assert.equal(parked.length, 1);
     assert.equal(transport.sent.length, before + 1);
     await drain(worker);
@@ -294,7 +296,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     try { await waitFor(blocked, 5000, 'cancellation waits for the final dispatch lock'); } finally { finishSend(); transport.send = original; }
     await sendingWork;
     await cancelDuringSend;
-    assert.equal(await tx((trx) => comms.mailAllowed(trx, (transport.sent.at(-1)!.headers['X-Entity-Ref-ID'])!)), false);
+    assert.equal(await tx((trx) => comms.mailAllowed(trx, (transport.sent.at(-1)!.headers['X-Entity-Ref-ID'])!, hubId)), false);
   });
 
   await t.test('fake channel unknown outcomes park durably; reconciliation never blindly sends again', async () => {
@@ -310,7 +312,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     await tx((trx) => produceReminder(trx, runtime, dueId(b)));
     channels.script({ kind: 'unknown', reason: 'synthetic timeout' });
     await drain(worker);
-    const parked = (await h.db.admin.query("SELECT id FROM trustwork.job WHERE kind='consultation.notify' AND state='outcome_unknown'")).rows;
+    const parked = (await h.db.admin.query("SELECT id FROM trustwork.job WHERE kind LIKE 'consultation.notify.%' AND state='outcome_unknown'")).rows;
     assert.equal(parked.length, 1);
     assert.equal(channels.sent.length, 1);
     await drain(worker);
@@ -324,4 +326,168 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     assert.equal(await tx((trx) => comms.reconcileChannels(trx)), 1);
     assert.equal(await count("SELECT 1 FROM trustwork.delivery WHERE channel='messenger' AND state='sent'"), 1);
   });
+
+  await t.test('two hub processes use immutable confirmation provenance, distinct templates and scoped jobs; legacy stays scheduled', async () => {
+    const otherHub = randomUUID();
+    await withMaintenance(h.db.admin, async (trx) => {
+      await trx.insertInto('hub').values({ id: otherHub, slug: 'synthetic-reminders-b', lifecycle: 'public' }).execute();
+    });
+    for (const locale of ENGINE_TEMPLATE_LANGUAGES) ok(await editor.post(`/v1/hubs/${otherHub}/message-templates/thread.message/drafts`, { version: 1, locale, subject: `B ${texts[locale]!.subject}`, body: `B ${texts[locale]!.body}` }));
+    ok(await reviewer.post(`/v1/hubs/${otherHub}/message-templates/thread.message/versions/1/activate`, { reason: 'Synthetic second hub review' }));
+    // Exercise the owning module's actual environment wiring, not a caller-supplied public field.
+    const moduleService = (sourceHub: string | null) => {
+      const mod = ConsultationsModule.forRoot({ ...h.created.ctx!, clock: { now: () => new Date(Date.now() - 48 * HOUR) } }, h.services(), {}, sourceHub ? { TRUSTWORK_HUB_ID: sourceHub } : {});
+      return (mod.providers![0] as { useValue: ConsultationsService }).useValue;
+    };
+    const a = await book(expert, offeringId, window.id, moduleService(hubId));
+    const b = await book(expert, offeringId, window.id, moduleService(otherHub));
+    const legacy = await book(expert, offeringId, window.id, moduleService(null));
+    const rows = (await h.db.admin.query('SELECT id,source_hub_id FROM trustwork.consultation_reminder WHERE id=ANY($1::uuid[])', [[dueId(a), dueId(b), dueId(legacy)]])).rows;
+    assert.equal(rows.find((r) => r.id === dueId(a)).source_hub_id, hubId);
+    assert.equal(rows.find((r) => r.id === dueId(b)).source_hub_id, otherHub);
+    assert.equal(rows.find((r) => r.id === dueId(legacy)).source_hub_id, null);
+    await assert.rejects(withMaintenance(h.db.admin, (trx) => trx.updateTable('consultation_reminder').set({ source_hub_id: hubId }).where('id', '=', dueId(legacy)).execute()), /immutable|frozen/);
+    assert.ok(!(await tx((trx) => comms.due(trx, hubId))).includes(dueId(b)));
+    assert.ok(!(await tx((trx) => comms.due(trx, hubId))).includes(dueId(legacy)));
+    const processA = await reminderProcess(pool.options, hubId);
+    const processB = await reminderProcess(pool.options, otherHub);
+    try {
+      assert.equal(await processA.command('produce', { reminderId: dueId(b) }), false);
+      assert.equal(await processB.command('produce', { reminderId: dueId(a) }), false);
+      assert.equal(await processA.command('produce', { reminderId: dueId(legacy) }), false);
+      // Even the SQL producer independently refuses the wrong hub.
+      assert.deepEqual(await tx((trx) => comms.produce(trx, dueId(b), hubId, 'Wrong hub copy')), []);
+      await Promise.all([processA.command('produce', { reminderId: dueId(a) }), processB.command('produce', { reminderId: dueId(b) })]);
+      const messages = (await h.db.admin.query('SELECT r.id,m.body FROM trustwork.consultation_reminder r JOIN trustwork.message m ON m.id=r.message_id WHERE r.id=ANY($1::uuid[])', [[dueId(a), dueId(b)]])).rows;
+      assert.equal(messages.find((r) => r.id === dueId(a)).body, texts.en!.body);
+      assert.equal(messages.find((r) => r.id === dueId(b)).body, `B ${texts.en!.body}`);
+      const aSent = await processA.command<SentEffects>('drain');
+      const bDeliveries = (await h.db.admin.query('SELECT d.id,d.mail_delivery_id FROM trustwork.consultation_reminder r JOIN trustwork.notification n ON n.dedupe_key=\'message:\' || r.message_id::text JOIN trustwork.delivery d ON d.notification_id=n.id WHERE r.id=$1', [dueId(b)])).rows;
+      assert.ok(bDeliveries.length > 0);
+      for (const d of bDeliveries) {
+        assert.ok(!aSent.mail.some((x) => x.id === d.mail_delivery_id));
+        assert.ok(!aSent.channels.some((x) => x.id === d.id));
+        if (d.mail_delivery_id) assert.equal(await tx((trx) => comms.mailAllowed(trx, d.mail_delivery_id, hubId)), false);
+      }
+      const bSent = await processB.command<SentEffects>('drain');
+      assert.ok(bSent.mail.length + bSent.channels.length > 0);
+      assert.ok([...bSent.mail, ...bSent.channels].every((x) => x.text.includes('B ')));
+      assert.equal(await count("SELECT 1 FROM trustwork.consultation_reminder WHERE id=$1 AND status='scheduled' AND message_id IS NULL", [dueId(legacy)]), 1);
+    } finally { await processA.close(); await processB.close(); }
+  });
+
+  // Both orders use the real preference HTTP API and a separate OS worker process against embedded PG.
+  // The writer-first barrier pauses AFTER the production write trigger has acquired its lock, before API commit.
+  for (const channel of ['email', 'messenger'] as const) {
+    for (const order of ['writer-first', 'dispatch-first'] as const) {
+      await t.test(`absent ${channel} preference: actual API ${order} serializes with the final separate-process fake effect`, async () => {
+        await withMaintenance(h.db.admin, (trx) => trx.deleteFrom('notification_preference').where('person_id', '=', P.petr).where('category', '=', 'messages').where('channel', '=', channel).execute());
+        const b = await book();
+        await tx((trx) => produceReminder(trx, runtime, dueId(b)));
+        const row = (await h.db.admin.query('SELECT d.id,d.mail_delivery_id FROM trustwork.consultation_reminder r JOIN trustwork.notification n ON n.dedupe_key=\'message:\' || r.message_id::text JOIN trustwork.delivery d ON d.notification_id=n.id WHERE r.id=$1 AND d.recipient_person_id=$2 AND d.channel=$3', [dueId(b), P.petr, channel])).rows[0];
+        assert.ok(row, 'default immediate schedules the channel before the first explicit preference exists');
+        const effectId = channel === 'email' ? row.mail_delivery_id : row.id;
+        assert.ok(effectId);
+        const child = await reminderProcess(pool.options, hubId);
+        const revoke = () => client.post('/v1/me/notification-preferences', { category: 'messages', channel, frequency: 'off' });
+        const selected = (effects: SentEffects) => (channel === 'email' ? effects.mail : effects.channels).filter((x) => x.id === effectId);
+        try {
+          if (order === 'dispatch-first') {
+            const atEffect = child.atEffect();
+            const sending = child.command<SentEffects>('drain', { holdId: effectId });
+            await atEffect;
+            let committed = false;
+            const revoking = revoke().then((r) => { ok(r); committed = true; });
+            try {
+              await waitFor(async () => (await h.db.admin.query("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND query LIKE '%insert into \"notification_preference\"%' AND cardinality(pg_blocking_pids(pid))>0) AS blocked")).rows[0].blocked, 10_000, 'actual preference API waits for the fake effect');
+              assert.equal(committed, false);
+            } finally { child.release(); }
+            const effects = await sending;
+            await revoking;
+            assert.equal(selected(effects).length, 1, 'the effect precedes revocation commit');
+            assert.equal(selected(await child.command<SentEffects>('drain')).length, 1, 'committed revocation cannot trigger another effect');
+          } else {
+            const gate = await h.db.admin.connect();
+            let revoking: Promise<Response> | undefined;
+            let sending: Promise<SentEffects> | undefined;
+            try {
+              await gate.query('SELECT pg_advisory_lock(764021)');
+              const gatePid = (await gate.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+              await h.db.admin.query(`CREATE FUNCTION trustwork.test_preference_barrier() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+                IF NEW.person_id='${P.petr}'::uuid AND NEW.category='messages' AND NEW.channel='${channel}' THEN PERFORM pg_advisory_xact_lock(764021); END IF; RETURN NEW; END $$;
+                CREATE TRIGGER zz_test_preference_barrier AFTER INSERT ON trustwork.notification_preference FOR EACH ROW EXECUTE FUNCTION trustwork.test_preference_barrier()`);
+              revoking = revoke();
+              let writerPid = 0;
+              await waitFor(async () => {
+                const waiting = (await h.db.admin.query('SELECT pid FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))', [gatePid])).rows[0];
+                writerPid = waiting?.pid ?? 0; return writerPid > 0;
+              }, 10_000, 'actual API holds the preference lock before commit');
+              sending = child.command<SentEffects>('drain');
+              await waitFor(async () => (await h.db.admin.query('SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))) AS blocked', [writerPid])).rows[0].blocked, 10_000, 'final worker preflight waits for actual API commit');
+            } finally {
+              await gate.query('SELECT pg_advisory_unlock(764021)');
+              gate.release();
+              if (revoking) ok(await revoking);
+              if (sending) assert.equal(selected(await sending).length, 0, 'revocation committed first, so no fake effect');
+              await h.db.admin.query('DROP TRIGGER IF EXISTS zz_test_preference_barrier ON trustwork.notification_preference; DROP FUNCTION IF EXISTS trustwork.test_preference_barrier()');
+            }
+          }
+          const saved = (await h.db.admin.query('SELECT frequency FROM trustwork.notification_preference WHERE person_id=$1 AND category=\'messages\' AND channel=$2', [P.petr, channel])).rows[0];
+          assert.equal(saved.frequency, 'off');
+        } finally { child.release(); await child.close(); }
+      });
+    }
+  }
+
+  for (const order of ['writer-first', 'dispatch-first'] as const) {
+    await t.test(`first unsubscribe: actual API ${order} serializes with final separate-process mail`, async () => {
+      const addressHash = (await h.db.admin.query('SELECT trustwork.comms_mail_hash(email_normalized) AS hash FROM trustwork.email_binding WHERE person_id=$1 AND is_primary', [P.petr])).rows[0].hash;
+      await withMaintenance(h.db.admin, (trx) => trx.deleteFrom('suppression_entry').where('address_hash', '=', addressHash).execute());
+      ok(await client.post('/v1/me/notification-preferences', { category: 'messages', channel: 'email', frequency: 'immediate' }));
+      const b = await book();
+      await tx((trx) => produceReminder(trx, runtime, dueId(b)));
+      const effectId = (await h.db.admin.query('SELECT d.mail_delivery_id FROM trustwork.consultation_reminder r JOIN trustwork.notification n ON n.dedupe_key=\'message:\' || r.message_id::text JOIN trustwork.delivery d ON d.notification_id=n.id WHERE r.id=$1 AND d.recipient_person_id=$2 AND d.channel=\'email\'', [dueId(b), P.petr])).rows[0].mail_delivery_id;
+      const child = await reminderProcess(pool.options, hubId);
+      const blocked = async () => (await h.db.admin.query('SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND cardinality(pg_blocking_pids(pid))>0) AS blocked')).rows[0].blocked;
+      try {
+        if (order === 'dispatch-first') {
+          const atEffect = child.atEffect();
+          const sending = child.command<SentEffects>('drain', { holdId: effectId });
+          await atEffect;
+          let committed = false;
+          const unsubscribing = client.post('/v1/me/mail-unsubscribe').then((r) => { ok(r); committed = true; });
+          try { await waitFor(blocked, 10_000, 'unsubscribe waits for final dispatch'); assert.equal(committed, false); }
+          finally { child.release(); }
+          assert.equal((await sending).mail.filter((x) => x.id === effectId).length, 1);
+          await unsubscribing;
+        } else {
+          const gate = await h.db.admin.connect();
+          let unsubscribing: Promise<Response> | undefined;
+          let sending: Promise<SentEffects> | undefined;
+          try {
+            await gate.query('SELECT pg_advisory_lock(764022)');
+            const gatePid = (await gate.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+            await h.db.admin.query(`CREATE FUNCTION trustwork.test_suppression_barrier() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+              PERFORM pg_advisory_xact_lock(764022); RETURN NEW; END $$;
+              CREATE TRIGGER zz_test_suppression_barrier AFTER INSERT ON trustwork.suppression_entry FOR EACH ROW EXECUTE FUNCTION trustwork.test_suppression_barrier()`);
+            unsubscribing = client.post('/v1/me/mail-unsubscribe');
+            let writerPid = 0;
+            await waitFor(async () => {
+              writerPid = (await h.db.admin.query('SELECT pid FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))', [gatePid])).rows[0]?.pid ?? 0;
+              return writerPid > 0;
+            }, 10_000, 'unsubscribe holds its production lock before API commit');
+            sending = child.command<SentEffects>('drain');
+            await waitFor(async () => (await h.db.admin.query('SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))) AS blocked', [writerPid])).rows[0].blocked, 10_000, 'mail preflight waits for unsubscribe commit');
+          } finally {
+            await gate.query('SELECT pg_advisory_unlock(764022)'); gate.release();
+            if (unsubscribing) ok(await unsubscribing);
+            if (sending) assert.equal((await sending).mail.filter((x) => x.id === effectId).length, 0);
+            await h.db.admin.query('DROP TRIGGER IF EXISTS zz_test_suppression_barrier ON trustwork.suppression_entry; DROP FUNCTION IF EXISTS trustwork.test_suppression_barrier()');
+          }
+        }
+        assert.equal(await tx((trx) => comms.mailAllowed(trx, effectId, hubId)), false);
+      } finally { child.release(); await child.close(); }
+    });
+  }
+
 });
