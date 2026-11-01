@@ -468,10 +468,10 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
         const pitrAdmin = pool(pitrUrl);
         const pitrFence = new HbaFence(pexec, `${PGDATA}/pg_hba.conf`);
         check('PITR privacy replay starts behind the runtime fence', await pitrFence.isApplied());
-        const older = (await pitrAdmin.query<{ active: boolean; requests: number; plans: number }>(`SELECT active,
+        const older = await owner(pitrAdmin, async (client) => (await client.query<{ active: boolean; requests: number; plans: number }>(`SELECT active,
           (SELECT count(*)::int FROM trustwork.privacy_source_request WHERE id=$2) AS requests,
           (SELECT count(*)::int FROM trustwork.privacy_source_plan WHERE id=$3) AS plans
-          FROM trustwork.sourced_record_field WHERE id=$1`, [privacy.sourceV2!.fieldId, privacy.sourceV2!.requestId, privacy.sourceV2!.planId])).rows[0]!;
+          FROM trustwork.sourced_record_field WHERE id=$1`, [privacy.sourceV2!.fieldId, privacy.sourceV2!.requestId, privacy.sourceV2!.planId])).rows[0]!);
         check('source-v2 physical PITR predates the exact request, plan and deactivation', older.active && older.requests === 0 && older.plans === 0, older);
         await reconcileRestore({ admin: pitrAdmin, restoreId: `${id}-pitr`, recoveryPoint: recoveryPoint!, restoreStartedAt, journal, operator: OPERATOR });
         await authorizePrivacyDrill(privacy, pitrUrl, pitrProject, `${id}-pitr`);

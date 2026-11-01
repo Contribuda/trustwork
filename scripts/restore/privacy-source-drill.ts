@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type pg from 'pg';
+import { sql } from 'kysely';
 import { bindTransaction, withMaintenance, type Transaction } from '@trustwork/data';
 import { adminSetup, staffRoleDefinitions, caseGrants, type CommandContext } from '../../packages/data/src/repositories/admin.js';
 import { sessionElevations } from '../../packages/data/src/repositories/identity.js';
@@ -32,13 +33,14 @@ export async function provisionSourceDrill(admin: pg.Pool, fixture: PrivacyDrill
       import_batch_id: original.import_batch_id, record_kind: original.record_kind, record_id: recordId,
       field: 'description', value: 'Synthetic v2 immutable source evidence' }).returning('id').executeTakeFirstOrThrow();
     return { officer, reviewer, fieldId: field.id, recordId, sourceId: original.source_id, evidenceDigest: '' };
-  }).then(async (source) => ({ ...source, evidenceDigest: (await admin.query<{ digest: string }>(
-    "SELECT trustwork.admin_digest(to_jsonb(f)-'active'-'deactivated_at'-'takedown_id') AS digest FROM trustwork.sourced_record_field f WHERE id=$1", [source.fieldId])).rows[0]!.digest }));
+  }).then(async (source) => ({ ...source, evidenceDigest: await withMaintenance(admin, async (trx) =>
+    (await sql<{ digest: string }>`SELECT trustwork.admin_digest(to_jsonb(f)-'active'-'deactivated_at'-'takedown_id') AS digest
+      FROM trustwork.sourced_record_field f WHERE id=${source.fieldId}::uuid`.execute(trx)).rows[0]!.digest) }));
 }
 async function as<T>(admin: pg.Pool, person: string, fn: (trx: Transaction) => Promise<T>): Promise<T> {
   const client = await admin.connect();
   try {
-    await client.query('BEGIN'); await client.query('SET LOCAL ROLE trustwork_app');
+    await client.query('BEGIN'); await client.query('SET LOCAL ROLE trustwork_owner');
     await client.query('SET LOCAL search_path=trustwork,pg_temp');
     await client.query('SELECT trustwork.set_principal($1,(SELECT authz_epoch FROM trustwork.auth_person_epoch($1)))', [person]);
     const value = await fn(bindTransaction(client)); await client.query('COMMIT'); return value;
@@ -47,7 +49,7 @@ async function as<T>(admin: pg.Pool, person: string, fn: (trx: Transaction) => P
 async function context(admin: pg.Pool, person: string): Promise<CommandContext> {
   const session = await withMaintenance(admin, (trx) => trx.insertInto('session').values({ person_id: person, token_hash: randomBytes(32),
     idle_expires_at: new Date(Date.now() + 3600_000), absolute_expires_at: new Date(Date.now() + 3600_000), auth_method: 'password' }).returning('id').executeTakeFirstOrThrow());
-  const elevation = await as(admin, person, (trx) => sessionElevations.insert(trx, { personId: person, sessionId: session.id,
+  const elevation = await withMaintenance(admin, (trx) => sessionElevations.insert(trx, { personId: person, sessionId: session.id,
     factorKind: 'totp', createdAt: new Date(), expiresAt: new Date(Date.now() + 900_000) }));
   return { elevationId: elevation.id, requestId: `synthetic-${randomUUID()}`, reasonCode: 'synthetic_drill', reasonText: 'Synthetic source restore decision' };
 }
@@ -65,10 +67,10 @@ export async function recordSourceDrill(admin: pg.Pool, fixture: PrivacyDrillFix
   await as(admin, s.officer, (trx) => privacy.sourceProof(trx, ctx, { sourceFieldId: s.fieldId, grantId: grant.id, action: 'erasure',
     method: 'signed_statement', evidenceRef: intake.evidenceRef, tokenHash }));
   await admin.query('SELECT trustwork.privacy_source_submit($1,$2,NULL)', [tokenHash, 'erasure']);
-  s.requestId = (await admin.query<{ id: string }>('SELECT id FROM trustwork.privacy_source_request WHERE source_field_id=$1', [s.fieldId])).rows[0]!.id;
+  s.requestId = await withMaintenance(admin, async (trx) => (await trx.selectFrom('privacy_source_request').select('id').where('source_field_id', '=', s.fieldId).executeTakeFirstOrThrow()).id);
   const plan = await as(admin, s.officer, (trx) => privacy.proposeSourcePlan(trx, ctx, s.requestId!, grant.id)); s.planId = plan.id;
   await as(admin, s.reviewer, (trx) => privacy.approveSourcePlan(trx, review, plan.id, second.id, plan.digest));
-  await executeLocalSourceErasure({ admin, personId: s.officer, authzEpoch: (await admin.query<{ authz_epoch: number }>('SELECT authz_epoch FROM trustwork.person WHERE id=$1', [s.officer])).rows[0]!.authz_epoch,
+  await executeLocalSourceErasure({ admin, personId: s.officer, authzEpoch: await withMaintenance(admin, async (trx) => (await trx.selectFrom('person').select('authz_epoch').where('id', '=', s.officer).executeTakeFirstOrThrow()).authz_epoch),
     context: ctx, planId: plan.id, digest: plan.digest, ledger: fixture.ledger,
     retainedAuthority: { directory: fixture.binding.authorityDirectory, journalId: fixture.binding.journalId } });
 }

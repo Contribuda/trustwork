@@ -4,14 +4,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { withPrincipal } from '@trustwork/data';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
 import { addLogins, signIn } from '../admin/helpers.js';
-import { principalFor } from '../data/helpers/seed.js';
 import { FilesystemBlobStore } from '../../packages/data/src/files/filesystem.js';
-import { files } from '../../packages/data/src/repositories/files.js';
-import { sessions } from '../../packages/data/src/repositories/identity.js';
-import { memberships } from '../../packages/data/src/repositories/company.js';
+import { privacy } from '../../packages/data/src/repositories/privacy.js';
 import { PrivacyService } from '../../apps/api/src/modules/platform-admin/privacy/privacy.service.js';
 import { gate, waitFor } from '../worker/helpers/worker-db.js';
 
@@ -33,7 +29,7 @@ test('PRV export admission: exact resolved session and current authority through
     return { people: { anna: person, petr: person }, companies: { mixed: company }, memberships: { anna: membership } };
   };
   for (const mode of ['json', 'file'] as const) for (const change of ['session', 'membership', 'epoch', 'file'] as const) {
-    for (const order of ['revocation-first', 'delivery-first'] as const) await t.test(`${mode}: ${change}, ${order}`, async () => {
+    for (const order of ['revocation-first', 'snapshot-first', 'delivery-first'] as const) await t.test(`${mode}: ${change}, ${order}`, async () => {
       const seed = await fixture();
       const person = seed.people.anna;
       const email = `synthetic-${randomUUID()}@example.invalid`;
@@ -50,20 +46,26 @@ test('PRV export admission: exact resolved session and current authority through
       const created = await client.post('/v1/privacy/exports', { subject }); assert.equal(created.status, 201);
       const exportId = (created.body as { export: { id: string } }).export.id;
       const url = `/v1/privacy/exports/${exportId}${mode === 'file' ? `/files/${fileId}` : ''}`;
-      const principal = await principalFor(h.db.admin, person);
       const mutate = async () => {
-        if (change === 'session') return withPrincipal(h.pool, principal, (trx) => sessions.revoke(trx, sessionId, 'logout'));
-        if (change === 'membership') return withPrincipal(h.pool, principal, (trx) => memberships.endWithRevocation(trx, seed.memberships.anna, 'Synthetic authority revocation'));
-        if (change === 'file') return withPrincipal(h.pool, principal, (trx) => files.requestDeletion(trx, fileId));
+        if (change === 'session') { const r = await otherSession.post('/v1/me/sessions/revoke', { sessionId }, { idempotencyKey: null }); assert.equal(r.status, 204, JSON.stringify(r)); return; }
+        if (change === 'membership') { const r = await otherSession.post(`/v1/companies/${subject.id}/memberships/end`, { membershipId: seed.memberships.anna, expectedRevision: 1, reason: 'Synthetic authority revocation' }); assert.equal(r.status, 200, JSON.stringify(r)); return; }
+        if (change === 'file') { const r = await otherSession.post(`/v1/files/${fileId}/delete`, { actor: { via: 'person' } }); assert.equal(r.status, 200, JSON.stringify(r)); return; }
         return h.db.admin.query('UPDATE trustwork.person SET authz_epoch=authz_epoch+1 WHERE id=$1', [person]);
       };
       const entered = gate(); const release = gate();
+      const readExport = privacy.export.bind(privacy);
       const attach = h.services().principals.attach.bind(h.services().principals);
       const download = service.download.bind(service); const downloadFile = service.downloadFile.bind(service);
       if (order === 'revocation-first') {
         h.services().principals.attach = async (request, reply) => {
           await attach(request, reply);
           if (request.url === url) { entered.open(); await release.promise; }
+        };
+      } else if (order === 'snapshot-first') {
+        privacy.export = async (trx, id) => {
+          const row = await readExport(trx, id);
+          if (id === exportId) { entered.open(); await release.promise; }
+          return row;
         };
       } else if (mode === 'file') {
         service.downloadFile = (state, id, fid, consume) => downloadFile(state, id, fid, async (file) => { entered.open(); await release.promise; await consume(file); });
@@ -75,12 +77,12 @@ test('PRV export admission: exact resolved session and current authority through
       try {
         await Promise.race([entered.promise, response.then((r) => { throw new Error(`delivery did not reach barrier: ${JSON.stringify(r)}`); })]);
         mutation = mutate();
-        if (order === 'revocation-first') await mutation;
+        if (order !== 'delivery-first') await mutation;
         else await waitFor(async () => (await h.db.admin.query(`SELECT EXISTS(SELECT 1 FROM pg_stat_activity
           WHERE datname=current_database() AND cardinality(pg_blocking_pids(pid))>0) AS blocked`)).rows[0].blocked, 5000, 'revocation waits for delivery locks');
       } finally {
         release.open();
-        h.services().principals.attach = attach; service.download = download; service.downloadFile = downloadFile;
+        privacy.export = readExport; h.services().principals.attach = attach; service.download = download; service.downloadFile = downloadFile;
       }
       const result = await response; await mutation;
       if (order === 'delivery-first') assert.equal(result.status, 200, JSON.stringify(result.body));
