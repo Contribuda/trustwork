@@ -2,8 +2,8 @@ import { withMaintenance, type DataPool } from '@trustwork/data';
 import { jurisdictionEvidence } from '../../../packages/data/src/repositories/jurisdiction-policy.js';
 import { authorityFixture, createQuote, sourceDocument } from './authority-fixture.js';
 
-export async function consentFixture(admin: DataPool, app: DataPool) {
-  const f = await authorityFixture(admin, app);
+export async function consentFixture(admin: DataPool, app: DataPool, shared?: Parameters<typeof authorityFixture>[2], completeLanguages = false) {
+  const f = await authorityFixture(admin, app, shared, completeLanguages);
   const deal = await createQuote(f.a.as, f.p.outsider, f.p.moderator);
   await f.attest('person', f.p.outsider);
   await f.attest('person', f.p.moderator);

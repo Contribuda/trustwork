@@ -279,3 +279,22 @@ export const JurisdictionConsentReceiptSchema = z.strictObject({
   locale: LocaleTagSchema, grantedAt: z.iso.datetime(), revoked: z.boolean(),
 });
 export type JurisdictionConsentPreview = z.infer<typeof JurisdictionConsentPreviewSchema>;
+
+/** Review only already-staged owning-domain evidence. Caller scope or geography is never an input. */
+export const JurisdictionApplicabilityReviewCommandSchema = z.strictObject({
+  evidenceDigest: z.string().regex(/^[a-f0-9]{64}$/), reason: z.string().min(1).max(500),
+});
+export const JurisdictionApplicabilityReviewResultSchema = z.strictObject({
+  reviewId: z.uuid(), evidenceDigest: z.string().regex(/^[a-f0-9]{64}$/), state: z.enum(['pending_second_person', 'active']),
+});
+
+/** HUB-owned immutable text projection. It does not authorize a campaign, template activation or sending. */
+export const JurisdictionDisclosureBundleSchema = z.strictObject({
+  policyVersionId: z.uuid(), policyDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  locales: z.array(LocaleTagSchema).min(1).max(50).refine(unique),
+  bindings: z.array(z.strictObject({
+    jurisdiction: JurisdictionCodeSchema, key: Key, locale: LocaleTagSchema,
+    documentId: z.uuid(), bodyDigest: z.string().regex(/^[a-f0-9]{64}$/), version: z.int().positive(), body: z.string().min(1).max(200000),
+  })).min(1).max(500),
+});
+export type JurisdictionDisclosureBundle = z.infer<typeof JurisdictionDisclosureBundleSchema>;
