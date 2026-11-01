@@ -38,4 +38,5 @@ export const CONSULTATION_SERVICE_BINDINGS = {
   cancel: booking('cancel'), recordSession: booking('record_session'), deliver: booking('deliver'), decideDeliverable: booking('decide_deliverable', 'deliverable'),
   publishDeliverable: booking('publish_deliverable', 'deliverable'), getBooking: booking('get_booking'), listBookings: mixed('list_bookings'), calendar: booking('get_calendar'),
   proposeMentoring: personal('propose_mentoring'), respondMentoring: personal('respond_mentoring'), changeMentoring: personal('change_mentoring'), listMentoring: personal('list_mentoring'),
+  privacyInventory: { boundary: 'first_party_control', reason: 'Own statutory privacy inventory remains available under disabled commercial policy; owning subject authorization and private projections still apply.' },
 } satisfies ServiceCapabilityBindings<ConsultationsService>;

@@ -334,7 +334,8 @@ const ENVELOPE_CONTEXTS: ContextKindV2[] = ['rfq', 'quote'];
 /**
  * Every AGT-001 operation, defined once. `core.*` are the person's goals, reports, subscriptions and decisions;
  * `negotiation.*` the agent-to-agent envelopes (one capability per mandate verb, one route); `representative.*` the
- * company page. Governance (confirmations, the representative, company mandates) is never exposed to connections.
+ * company page. Authority-changing governance is first-party handoff-only. Declared MCP reads require their exact
+ * stored consent and narrow summary projection; the full first-party company page is not that projection.
  */
 export const AGENT_CAPABILITIES: readonly AgentsCapabilityEntry[] = [
   entry({ id: 'core.list_goals', kind: 'read', input: 'CreateGoalCommandSchema', output: 'GoalConfirmationSchema', reads: OWNER, privateData: ['budgets'], effects: ['none'], route: 'GET /v1/assistant/goals' }),
@@ -377,4 +378,16 @@ export const CORE_AGENT_MANIFEST = AgentModuleManifestSchema.parse({
   key: 'core', version: '1.0.0', family: 'core', status: 'live', actions: ['prepare'],
   capabilities: AGENT_CAPABILITIES.filter((entry) => entry.capability.id.startsWith('core.')).map((entry) => entry.capability),
   meters: [], suits: [], freeFloor: [], safetySuite: 'tests/agent-modules',
+});
+
+/** Existing AGT-001 vocabulary only; hubs must explicitly activate these newly registered modules. */
+export const NEGOTIATION_MANIFEST = AgentModuleManifestSchema.parse({
+  key: 'negotiation', version: '1.0.0', family: 'deal', status: 'live', actions: ['negotiate', 'communicate', 'schedule', 'introduce'],
+  capabilities: AGENT_CAPABILITIES.filter(entry => entry.capability.id.startsWith('negotiation.')).map(entry => entry.capability),
+  meters: ['agent_actions'], suits: [], freeFloor: [], safetySuite: 'tests/assistant-goals',
+});
+export const REPRESENTATIVE_MANIFEST = AgentModuleManifestSchema.parse({
+  key: 'representative', version: '1.0.0', family: 'core', status: 'live', actions: [],
+  capabilities: AGENT_CAPABILITIES.filter(entry => entry.capability.id.startsWith('representative.')).map(entry => entry.capability),
+  meters: [], suits: [], freeFloor: [], safetySuite: 'tests/assistant-goals',
 });

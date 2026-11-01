@@ -1,3 +1,4 @@
+import { PlansService } from '../../apps/api/src/modules/plans/plans.service.js';
 import { TasksService } from '../../apps/api/src/modules/tasks/tasks.service.js';
 import { ConsultationsService } from '../../apps/api/src/modules/consultations/consultations.service.js';
 import { CreateTaskRequestCommandSchema } from '../../packages/contracts/src/tasks.js';
@@ -90,6 +91,11 @@ test('actual Profile, Reputation, Core, Task and Consultation operations preserv
     });
   }
   await t.test('consent, subscription stops and public projections survive disabled modules without invented participants', async () => {
+    assert.ok(Array.isArray(await h.created.app.get(PlansService).privacyShared(state, person)));
+    await tasks.privacyExport(state, person);
+    await consultations.privacyInventory(state, person);
+    await assert.rejects(tasks.privacyExport(state, { kind: 'person', id: seed.people.carl }));
+    await assert.rejects(consultations.privacyInventory(state, { kind: 'person', id: seed.people.carl }));
     const visibility = ok<{ person: { profileVisibility: string } }>(await client.post('/v1/me/profile/visibility', { visibility: 'public', noticeVersion: 'profile_public.v1' }));
     assert.equal(visibility.person.profileVisibility, 'public');
     assert.equal((await anonymous.get(`/v1/people/${person.id}/profile`)).status, 200);

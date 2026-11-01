@@ -7,12 +7,12 @@ import { servingHub } from './serving-hub.js';
 /** Called inside the owning service transaction; its resource authorizer/projection still decides access. */
 export async function requireParticipantCapability(
   ctx: AppContext, trx: Transaction, principal: Principal, capabilityId: string, onBehalfCompanyId: string | null = null,
-  configuredAuthority: CapabilityAuthority = new CapabilityAuthority({ hubId: null }),
+  configuredAuthority: CapabilityAuthority = new CapabilityAuthority({ hubId: null }), representativeOf: string | null = null,
 ): Promise<void> {
   const binding = await servingHub(trx, ctx.config.publicOrigin);
   const authority = configuredAuthority.forHub(binding.hubId);
   await requireCapability(authority, trx, {
-    personId: principal.personId, onBehalfCompanyId, representativeOf: null, connectionId: null,
+    personId: principal.personId, onBehalfCompanyId, representativeOf, connectionId: null,
   }, capabilityId);
   // Binding withdrawal takes the same hub epoch; re-read after acquiring the gate locks.
   await servingHub(trx, ctx.config.publicOrigin);

@@ -1,3 +1,5 @@
+import { activatePolicy, buildAgentWorld } from '../agent-modules/helpers.js';
+import { negotiationPolicy } from '../agent-modules/fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sql } from 'kysely';
@@ -26,6 +28,8 @@ interface EscalationView { id: string; source: string; owner: { kind: string; id
 test('envelopes: structured intents only, untrusted notes, no spoofing, privacy, sessions, escalation and kill switches', { skip: h ? false : SKIP_REASON, timeout: 300_000 }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  const agentWorld = await buildAgentWorld(h);
+  await activatePolicy(h, agentWorld, negotiationPolicy(agentWorld.hubId));
   const w = await buildWorld(h);
   const { petr, boris, pure, carl, anna } = w.clients;
   const company = w.seed.companies.supplier;
@@ -209,15 +213,15 @@ test('envelopes: structured intents only, untrusted notes, no spoofing, privacy,
     const ids = await withMaintenance(h.db.admin, async (trx) => {
       const node = (await sql<{ id: string }>`INSERT INTO trustwork.admin_node (label) VALUES ('Synthetic node') ON CONFLICT DO NOTHING RETURNING id`.execute(trx)).rows[0]?.id
         ?? (await sql<{ id: string }>`SELECT id FROM trustwork.admin_node LIMIT 1`.execute(trx)).rows[0]!.id;
-      const hub = (await sql<{ id: string }>`INSERT INTO trustwork.hub (slug) VALUES ('agents-test-hub') RETURNING id`.execute(trx)).rows[0]!.id;
+      const hub = agentWorld.hubId;
       return { node, hub };
     });
     const engage = (scope: 'hub_agent_dispatch' | 'node') => withMaintenance(h.db.admin, (trx) => sql`INSERT INTO trustwork.kill_switch (scope_kind, node_id, hub_id, engaged_by, reason)
       VALUES (${scope}, ${scope === 'node' ? ids.node : null}::uuid, ${scope === 'node' ? null : ids.hub}::uuid, ${w.seed.people.anna}::uuid, 'Synthetic incident')`.execute(trx));
     await engage('hub_agent_dispatch');
-    expectError(await send(petr, { actingAs: { kind: 'own_agent', mandateId: petrMandate }, to: w.supplier, context: rfqCtx, intent: 'clarify' }), 403, 'access.mandate_revoked');
-    expectError(await send(boris, { actingAs: rep, to: w.petrParty, context: rfqCtx, intent: 'clarify' }), 403, 'access.mandate_revoked');
-    expectError(await send(pure, { actingAs: { kind: 'colleague_agent', companyMandateId: pureCm.id }, to: w.petrParty, context: rfqCtx, intent: 'clarify' }), 403, 'access.mandate_revoked');
+    expectError(await send(petr, { actingAs: { kind: 'own_agent', mandateId: petrMandate }, to: w.supplier, context: rfqCtx, intent: 'clarify' }), 403, 'access.forbidden');
+    expectError(await send(boris, { actingAs: rep, to: w.petrParty, context: rfqCtx, intent: 'clarify' }), 403, 'access.forbidden');
+    expectError(await send(pure, { actingAs: { kind: 'colleague_agent', companyMandateId: pureCm.id }, to: w.petrParty, context: rfqCtx, intent: 'clarify' }), 403, 'access.forbidden');
     assert.equal(ok<{ representative: { blockedBy: string | null } }>(await boris.get(`/v1/companies/${company}/representative`)).representative.blockedBy, 'hub_kill_switch');
     await engage('node');
     assert.equal(ok<{ representative: { blockedBy: string | null } }>(await boris.get(`/v1/companies/${company}/representative`)).representative.blockedBy, 'node_kill_switch');

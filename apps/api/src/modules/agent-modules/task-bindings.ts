@@ -52,4 +52,5 @@ export const TASK_SERVICE_BINDINGS = {
     const input = args[1] as Parameters<TasksService['record']>[1];
     return [target(input.kind === 'delivery_claim' ? 'record_delivery' : 'decide_delivery', await assignmentCompany(trx, p, args))];
   } },
+  privacyExport: { boundary: 'first_party_control', reason: 'Own statutory privacy inventory remains available under disabled commercial policy; owning subject authorization and private projections still apply.' },
 } satisfies ServiceCapabilityBindings<TasksService>;

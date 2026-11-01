@@ -244,6 +244,9 @@ export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, 
   const d = await scopedAuthority.check(trx, actor, capability.id, capability.mandateAction);
   if (!d.allowed) return { decision: 'deny', reason: d.reason, messageKey: d.messageKey };
   if (!canonical || canonical.version !== capability.version) return deny();
+  // The declared representative reads require a strict MCP summary projector. The first-party page includes
+  // accountability history and company mandates and cannot serve that contract. Keep these reads unavailable.
+  if (['representative.get', 'representative.list_my_company_mandates', 'representative.list_company_mandates'].includes(canonical.id)) return deny();
   const decision = connectionMayInvoke(canonical, connection);
   if (decision === 'execute_under_mandate') {
     let covered = false;

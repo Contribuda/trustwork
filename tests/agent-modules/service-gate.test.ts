@@ -31,7 +31,7 @@ test('actual plan service transactions share the capability gate and retain owni
 
   await t.test('every exported plan operation is explicitly bound and SQL manifests equal the engine registry', async () => {
     const exported = Object.keys(PLAN_SERVICE_BINDINGS);
-    assert.equal(exported.length, 26);
+    assert.equal(exported.length, 27);
     const rows = (await h.db.admin.query<{ document: unknown }>('SELECT document FROM trustwork.agent_engine_manifest ORDER BY module_key')).rows;
     assert.deepEqual(rows.map(r => r.document), [...ENGINE_MANIFESTS].sort((a,b) => a.key.localeCompare(b.key)));
     await assert.rejects(as(h, seed.people.petr, trx => sql`UPDATE trustwork.agent_engine_manifest SET module_version = '9.9.9'`.execute(trx)));
