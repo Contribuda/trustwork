@@ -39,7 +39,7 @@ export function buildRegistry(domains: Domains): HandlerRegistry {
   if (domains.consultations) registerConsultationReminders(registry, domains.consultations);
   // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
   if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
-  registerMail(registry, { pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
+  registerMail(registry, { consultationHubId: domains.consultations?.hubId ?? null, pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
   // SANC-005: re-screening of every subject on each activated list version, weekly and on a compliance officer's request.
   if (domains.rescreen) registerRescreen(registry, domains.rescreen);
   // SANC-003: screening of persons and companies; the fuzzy layer stays off unless SCREENING_FUZZY_THRESHOLD is set.
@@ -62,7 +62,7 @@ async function main(): Promise<void> {
   const files = storage ? { ...storage, scanner: scannerFromEnv(process.env) } : null;
   if (files && !files.scanner) log('warn', 'files storage configured without a scanner: uploads stay pending until FILES_SCANNER is set');
   const hubValue = process.env.TRUSTWORK_HUB_ID?.trim() ?? '';
-  const hubId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(hubValue) ? hubValue : null;
+  const hubId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(hubValue) ? hubValue.toLowerCase() : null;
   const assistant: AssistantRuntime | null = process.env.ASSISTANT_EFFECTS === 'fake' ? { pool, providers: fakeEffectProviders().all, hubId, log } : null;
   const screeningLists: ScreeningListsRuntime = { pool, metrics, log, config: screeningListsConfigFromEnv(process.env) };
   const screening: ScreeningRuntime = { pool, metrics, log, config: screeningConfigFromEnv(process.env) };

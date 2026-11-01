@@ -242,7 +242,7 @@ export const consultationDeliverables = {
 };
 
 export const consultationReminders = {
-  async insertMany(trx: Transaction, rows: { booking_id: string; agreement_id: string; remind_at: string; offset_minutes: number }[]): Promise<ConsultationReminderRow[]> {
+  async insertMany(trx: Transaction, rows: { booking_id: string; agreement_id: string; source_hub_id: string | null; remind_at: string; offset_minutes: number }[]): Promise<ConsultationReminderRow[]> {
     if (rows.length === 0) return [];
     return trx.insertInto('consultation_reminder').values(rows).returningAll().execute();
   },

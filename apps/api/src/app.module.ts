@@ -82,7 +82,7 @@ export class AppModule {
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
-        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']) }),
+        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']) }, communications.env),
         ContentModule.forRoot(ctx, identity),
         AssistantModule.forRoot(ctx, identity),
         AgentsModule.forRoot(ctx, identity),

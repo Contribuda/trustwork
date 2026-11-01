@@ -1,6 +1,7 @@
 import { Module, type DynamicModule } from '@nestjs/common';
 import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
+import { staffHubFromEnv } from '../identity/staff-roles.js';
 import { ConfiguredElectronicRecords, type ElectronicRecordsPolicySource } from '../transactions/electronic-records.js';
 import {
   ConsultationAgreementsController, ConsultationAvailabilityController, ConsultationBookingsController, ConsultationDeliverablesController, ConsultationOfferingsController,
@@ -23,10 +24,10 @@ export interface ConsultationsModuleOptions {
 
 @Module({})
 export class ConsultationsModule {
-  static forRoot(ctx: AppContext, identity: IdentityServices, options: ConsultationsModuleOptions = {}): DynamicModule {
+  static forRoot(ctx: AppContext, identity: IdentityServices, options: ConsultationsModuleOptions = {}, env: NodeJS.ProcessEnv = process.env): DynamicModule {
     const service = new ConsultationsService(
       ctx, identity.principals, options.mandates ?? new NoConsultationMandates(), options.electronicRecords ?? new ConfiguredElectronicRecords(),
-      options.commission ?? new NoPublishedCommission(), options.screening ?? new ScreeningCommitmentGate(),
+      options.commission ?? new NoPublishedCommission(), options.screening ?? new ScreeningCommitmentGate(), staffHubFromEnv(env),
     );
     return {
       module: ConsultationsModule,

@@ -4,7 +4,7 @@ import { consultationCommunications as comms } from '../../../../packages/data/s
 import { renderTemplateText } from '../../../../packages/contracts/src/communications.js';
 import type { ChannelOutcome, OutboundChannelMessage } from '../../../api/src/modules/communications/channels.js';
 import { inTransaction } from '../db.js';
-import type { HandlerRegistry } from '../handlers.js';
+import { RetryableJobError, type HandlerRegistry } from '../handlers.js';
 import type { ScheduledTask } from '../scheduler.js';
 import { brandFor, type RenderConfig } from '../mail/templates.js';
 
@@ -50,15 +50,16 @@ async function textFor(trx: Transaction, runtime: ReminderRuntime, languages: re
 
 /** One atomic local effect: message, preference-filtered fanout, local receipt, mail intents/jobs and sent marking. */
 export async function produceReminder(trx: Transaction, runtime: ReminderRuntime, id: string): Promise<boolean> {
+  if (!(await comms.forHub(trx, id, 'reminder', runtime.hubId))) return false;
   const text = await textFor(trx, runtime, [runtime.render.defaultLocale]);
   if (!text) return false; // Unactivated/incomplete governed copy leaves the durable reminder scheduled.
-  const planned = await comms.produce(trx, id, text.body);
+  const planned = await comms.produce(trx, id, runtime.hubId, text.body);
   for (const item of planned) {
     const recipientText = await textFor(trx, runtime, item.languages);
     if (!recipientText) throw new Error('active template changed during reminder production');
     if (item.channel === 'email') await comms.enqueueMail(trx, item.delivery_id, recipientText.locale, recipientText.subject, recipientText.body);
     else {
-      const job = await jobs.enqueue(trx, { kind: CONSULTATION_NOTIFY, payload: { deliveryId: item.delivery_id } });
+      const job = await jobs.enqueue(trx, { kind: `${CONSULTATION_NOTIFY}.${runtime.hubId}`, payload: { deliveryId: item.delivery_id } });
       await comms.channelJob(trx, item.delivery_id, job.id);
     }
   }
@@ -71,7 +72,7 @@ export function consultationRemindersTask(runtime: ReminderRuntime): ScheduledTa
     name: 'consultation.reminders', intervalSeconds: 60,
     run: async () => {
       const reconciled = await inTransaction(runtime.pool, (trx) => comms.reconcileChannels(trx));
-      const due = await inTransaction(runtime.pool, (trx) => comms.due(trx));
+      const due = await inTransaction(runtime.pool, (trx) => comms.due(trx, runtime.hubId));
       let attempted = 0;
       for (const id of due) if (await inTransaction(runtime.pool, (trx) => produceReminder(trx, runtime, id))) attempted++;
       return { attempted, reconciled };
@@ -81,7 +82,7 @@ export function consultationRemindersTask(runtime: ReminderRuntime): ScheduledTa
 
 export function registerConsultationReminders(registry: HandlerRegistry, runtime: ReminderRuntime): void {
   registry.onJob<{ deliveryId: string }>({
-    kind: CONSULTATION_NOTIFY, mode: 'external',
+    kind: `${CONSULTATION_NOTIFY}.${runtime.hubId}`, mode: 'external',
     parse(value) {
       const id = (value as { deliveryId?: unknown } | null)?.deliveryId;
       if (typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new Error('expected a delivery UUID');
@@ -89,16 +90,19 @@ export function registerConsultationReminders(registry: HandlerRegistry, runtime
     },
     run: async (context) => {
       const id = context.payload.deliveryId;
+      if (!(await inTransaction(runtime.pool, (trx) => comms.forHub(trx, id, 'channel', runtime.hubId)))) {
+        throw new RetryableJobError('consultation delivery requires its source hub worker');
+      }
       const job = context.job.id;
       const fence = String(context.job.fencing_token);
       // Persist uncertainty before the adapter can run. Only reconciliation can make this leased job run again.
-      const claimed = await inTransaction(runtime.pool, (trx) => comms.claimChannel(trx, id, job, fence));
+      const claimed = await inTransaction(runtime.pool, (trx) => comms.claimChannel(trx, id, job, fence, runtime.hubId));
       if (!claimed) {
         await inTransaction(runtime.pool, (trx) => comms.settleChannel(trx, id, job, fence, 'skipped', null));
         return;
       }
       const outcome = await inTransaction(runtime.pool, async (trx) => {
-        const current = await comms.claimChannel(trx, id, job, fence);
+        const current = await comms.claimChannel(trx, id, job, fence, runtime.hubId);
         if (!current) { await comms.settleChannel(trx, id, job, fence, 'skipped', null); return null; }
         const text = await textFor(trx, runtime, current.languages);
         if (!text) { await comms.settleChannel(trx, id, job, fence, 'skipped', null); return null; }
