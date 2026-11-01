@@ -27,7 +27,8 @@ async function context(w: World, person: string) {
 async function beginActor(w: World) {
  const c=await w.h.pool.connect(); await c.query('BEGIN');
  await c.query("SET LOCAL statement_timeout='15s'");
- await c.query('SELECT trustwork.set_principal($1,1)',[w.seed.people.boris]);
+ const epoch=(await w.h.db.admin.query<{authz_epoch:number}>('SELECT authz_epoch FROM trustwork.person WHERE id=$1',[w.seed.people.boris])).rows[0]!.authz_epoch;
+ try {await c.query('SELECT trustwork.set_principal($1,$2)',[w.seed.people.boris,epoch]);} catch(error) {await c.query('ROLLBACK');c.release();throw error;}
  return c;
 }
 async function blocked(w: World, c: pg.PoolClient) {
@@ -59,7 +60,7 @@ test('actual ingestion and raw SQL serialize source retirement in both orders', 
   if(outcome==='needs_confirmation') await withMaintenance(w.h.db.admin,trx=>trx.updateTable('screening_list').set({max_drop_share:'0.01'}).where('id','=',id).execute());
   if(outcome==='activated') await withMaintenance(w.h.db.admin,trx=>trx.updateTable('screening_list').set({max_drop_share:'0.99'}).where('id','=',id).execute());
   const entered=gate(),release=gate();
-  const source:ListSource={async obtain(...args){entered.open();await release.promise;return text?{text,obtainedAt:new Date(),sourceDigest:'a'.repeat(64)}:fake.obtain(...args);}};
+  const source:ListSource={mode:'fake',async obtain(...args){entered.open();await release.promise;return text?{text,obtainedAt:new Date(),sourceDigest:'a'.repeat(64)}:fake.obtain(...args);}};
   const ingest=tx(w.worker,trx=>ingestList(trx,id,deps(source),new AbortController().signal));
   const c=await w.h.db.admin.connect();
   try {
@@ -67,7 +68,7 @@ test('actual ingestion and raw SQL serialize source retirement in both orders', 
    release.open();const result=await ingest;assert.equal(result.outcome,outcome);
    await retiring;await c.query('COMMIT');
    const after=(await w.h.db.admin.query('SELECT last_checked_at,last_outcome FROM trustwork.screening_list WHERE id=$1',[id])).rows[0];
-   const refused=await tx(w.worker,trx=>ingestList(trx,id,deps({async obtain(){throw new Error('retired source must not be obtained');}}),new AbortController().signal));
+   const refused=await tx(w.worker,trx=>ingestList(trx,id,deps({mode:'fake',async obtain(){throw new Error('retired source must not be obtained');}}),new AbortController().signal));
    assert.equal(refused.error,'source_authority_retired');
    assert.equal((await w.h.db.admin.query('SELECT last_checked_at FROM trustwork.screening_list WHERE id=$1',[id])).rows[0].last_checked_at?.toISOString(),after.last_checked_at?.toISOString());
   } finally {release.open();await c.query('ROLLBACK');c.release();}
@@ -79,7 +80,7 @@ test('actual ingestion and raw SQL serialize source retirement in both orders', 
   const retirement=await w.h.db.admin.connect(),worker=await w.worker.connect();
   try {
    await retirement.query('BEGIN');await retire(retirement);await worker.query('BEGIN');
-   const action=path==='worker'?ingestList(bindTransaction(worker),id,deps({async obtain(){throw new Error('retired source obtained');}}),new AbortController().signal):path==='raw unchanged'?worker.query("SELECT trustwork.screening_list_record_attempt($1,'unchanged',NULL,now())",[id]):path==='raw stage'?worker.query("SELECT trustwork.screening_list_stage($1,current_date,now(),'fake',repeat('a',64),1,repeat('b',64),'{}')",[id]):worker.query('SELECT trustwork.screening_list_activate($1)',[version]);
+   const action=path==='worker'?ingestList(bindTransaction(worker),id,deps({mode:'fake',async obtain(){throw new Error('retired source obtained');}}),new AbortController().signal):path==='raw unchanged'?worker.query("SELECT trustwork.screening_list_record_attempt($1,'unchanged',NULL,now())",[id]):path==='raw stage'?worker.query("SELECT trustwork.screening_list_stage($1,current_date,now(),'fake',repeat('a',64),1,repeat('b',64),'{}')",[id]):worker.query('SELECT trustwork.screening_list_activate($1)',[version]);
    const checked=path==='worker'?action.then(r=>assert.equal((r as {error:string}).error,'source_authority_retired')):denied(action);
    await blocked(w,worker);await retirement.query('COMMIT');await checked;
    await worker.query(path==='worker'?'COMMIT':'ROLLBACK');
