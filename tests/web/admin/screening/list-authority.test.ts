@@ -73,6 +73,8 @@ test('file list registration is current-authority, digest-bound, independently a
   const live=await withWorker(w.worker,trx=>ingestList(trx,list.id,deps,new AbortController().signal));assert.equal(live.outcome,'refused');assert.match(live.error!,/live_not_activated/);
   await withMaintenance(w.h.db.admin,trx=>trx.updateTable('screening_list').set({mode:'fake'}).where('id','=',list.id).execute());
   const fake=await withWorker(w.worker,trx=>ingestList(trx,list.id,deps,new AbortController().signal));assert.equal(fake.outcome,'activated');
+  const versionSource=(await w.h.db.admin.query<{registered_source_id:string}>('SELECT registered_source_id FROM trustwork.screening_list_version WHERE id=$1',[fake.versionId])).rows[0]!.registered_source_id;
+  assert.equal(versionSource,source.id,'immutable version preserves its registered source snapshot');
   await withMaintenance(w.h.db.admin,trx=>syncScreeningListSources(trx,[]));
   const retired=await withWorker(w.worker,trx=>ingestList(trx,list.id,deps,new AbortController().signal));assert.equal(retired.error,'source_authority_retired');
  });
@@ -82,6 +84,19 @@ test('file list registration is current-authority, digest-bound, independently a
   expectError(await w.first.post(`/v1/admin/screening/lists/${list.id}/status`,{status:'paused',reason:''}),422,'validation.schema');
   assert.equal((await w.first.post(`/v1/admin/screening/lists/${list.id}/status`,{status:'paused',reason:'Synthetic pause'})).status,200);
   await assert.rejects(w.h.db.admin.query("UPDATE trustwork.screening_list_proposal SET reason='rewritten' WHERE id=$1",[id]),/immutable/);
+ });
+ await t.test('approval requires an unexpired proposal and a requester with current staff authority',async()=>{
+  await installSyntheticListSources(w.h.db.admin);
+  const next=await w.first.post('/v1/admin/screening/list-proposals',{...body,reason:'Synthetic current-authority boundary'});
+  assert.equal(next.status,200);
+  const nextId=(next.body as {id:string}).id;
+  const row=(await w.h.db.admin.query<{action_digest:string;requested_by:string}>('SELECT action_digest,requested_by FROM trustwork.screening_list_proposal WHERE id=$1',[nextId])).rows[0]!;
+  const expired=randomUUID();
+  await w.h.db.admin.query(`INSERT INTO trustwork.screening_list_proposal(id,hub_id,source_id,requested_by,cadence_seconds,warn_after_seconds,stale_after_seconds,reason,evidence,before_digest,action_digest,expires_at)
+    SELECT $1,hub_id,source_id,requested_by,cadence_seconds,warn_after_seconds,stale_after_seconds,reason,evidence,before_digest,action_digest,now()-interval '1 second' FROM trustwork.screening_list_proposal WHERE id=$2`,[expired,nextId]);
+  expectError(await w.second.post(`/v1/admin/screening/list-proposals/${expired}/decision`,{...decision,actionDigest:row.action_digest}),409,'validation.revision_conflict');
+  await withMaintenance(w.h.db.admin,trx=>trx.updateTable('staff_role_assignment').set({revoked_at:new Date(),revoked_by:w.seed.people.boris}).where('person_id','=',row.requested_by).where('role','=','compliance-officer').execute());
+  expectError(await w.second.post(`/v1/admin/screening/list-proposals/${nextId}/decision`,{...decision,actionDigest:row.action_digest}),403,'access.forbidden');
  });
 });
 
