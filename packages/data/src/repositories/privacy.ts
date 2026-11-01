@@ -4,6 +4,13 @@ import type { LegalHoldRow, PrivacyExportRow, PrivacyPreferenceRow, PrivacyReque
 import type { CommandContext } from './admin.js';
 
 export const privacy = {
+  async registryReceive(trx: Transaction, ctx: CommandContext, registrationId: string, items: unknown): Promise<{ status: 'UNKNOWN' | 'not_due' | 'received'; received: number; nextPollAt: string | null }> {
+    return (await sql<{ result: { status: 'UNKNOWN' | 'not_due' | 'received'; received: number; nextPollAt: string | null } }>`SELECT trustwork.privacy_registry_receive(${JSON.stringify(ctx)}::jsonb, ${registrationId}::uuid, ${JSON.stringify(items)}::jsonb) AS result`.execute(trx)).rows[0]!.result;
+  },
+  /** Worker-only; the delivery row must already be locked. Keep this transaction through dispatch. */
+  async marketingAllowed(trx: Transaction, digest: string): Promise<boolean> {
+    return (await sql<{ allowed: boolean }>`SELECT trustwork.privacy_marketing_allowed(${digest}) AS allowed`.execute(trx)).rows[0]?.allowed === true;
+  },
   async authorized(trx: Transaction, kind: 'person' | 'company', id: string): Promise<boolean> {
     const r = await sql<{ allowed: boolean }>`SELECT trustwork.privacy_subject_authorized(${kind}, ${id}::uuid) AS allowed`.execute(trx);
     return r.rows[0]?.allowed === true;

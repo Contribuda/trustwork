@@ -11,6 +11,7 @@ import { privacy } from '../../../../../../packages/data/src/repositories/privac
 import type { BlobStore } from '../../../../../../packages/data/src/files/blob-store.js';
 import type { PrivacyHoldCommandSchema, PrivacyPreferenceCommand, PrivacyRequestCommand, PrivacySubject } from '../../../../../../packages/contracts/src/privacy.js';
 import type { PrivacyExportPort } from './ports.js';
+import { mailAddressHash } from '../../../../../../packages/data/src/repositories/mail.js';
 
 function refusal(error: unknown): never {
   const hint = (error as { hint?: string }).hint;
@@ -22,6 +23,10 @@ function refusal(error: unknown): never {
 
 export class PrivacyService {
   constructor(private readonly ctx: AppContext, private readonly identity: IdentityServices, private readonly store: BlobStore | null, private readonly exports: PrivacyExportPort) {}
+  async objectToMarketing(address: string): Promise<{ accepted: true }> {
+    await this.ctx.pool.query('SELECT trustwork.privacy_marketing_object($1::text)', [mailAddressHash(address)]);
+    return { accepted: true };
+  }
   private run<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>): Promise<T> {
     if (state.principal?.delegation) throw new ApiError('access.forbidden', 'privacy governance requires the person');
     return this.identity.principals.runAs(state, fn).catch(refusal);
