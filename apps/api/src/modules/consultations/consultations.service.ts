@@ -1,3 +1,5 @@
+import { requirePublicServingContext } from '../agent-modules/serving-hub.js';
+import type { PublicServiceBoundary } from '../agent-modules/service-bindings.js';
 import { randomUUID } from 'node:crypto';
 import { threads } from '../../../../../packages/data/src/repositories/communications.js';
 import type { z } from 'zod';
@@ -187,6 +189,7 @@ export class ConsultationsService {
     private readonly screening: ConsultationScreeningGate,
     /** Trusted served-hub context, captured only at authenticated confirmation; never request input. */
     private readonly sourceHubId: string | null = null,
+    private readonly publicBoundary: PublicServiceBoundary = trx => requirePublicServingContext(trx, ctx.config.publicOrigin),
   ) {}
 
   /* ---------- Plumbing ---------- */
@@ -201,7 +204,8 @@ export class ConsultationsService {
     return this.principals.runAs(state, fn).catch(mapConsultationError);
   }
   private read<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>): Promise<T> {
-    return (state.principal ? this.principals.runAs(state, (trx) => fn(trx)) : withoutPrincipal(this.ctx.pool, fn)).catch(mapConsultationError);
+    const read = async (trx: Transaction) => { await this.publicBoundary(trx); return fn(trx); };
+    return (state.principal ? this.principals.runAs(state, read) : withoutPrincipal(this.ctx.pool, read)).catch(mapConsultationError);
   }
   /** A person acts for themself; a company through members holding the permission (deal managers by default). */
   private actsFor(principal: Principal, party: Party, permission = 'company.deals.manage'): boolean {

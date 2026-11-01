@@ -4,6 +4,7 @@
  * Unknown entries never inherit a boundary from their prefix or action name.
  */
 export const NON_PURCHASABLE_CAPABILITIES: ReadonlySet<string> = new Set([
+  'consultation.list_public_offerings',
   'core.get_goal_confirmation', 'core.confirm_goal', 'core.set_goal_status', 'core.share_report',
   'core.list_job_subscriptions', 'core.set_job_subscription_status', 'core.list_escalations', 'core.resolve_escalation',
   'profile_keeper.get_public_profile', 'profile_keeper.set_visibility', 'profile_keeper.grant_consent',

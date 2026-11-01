@@ -2,10 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { TasksService } from '../../apps/api/src/modules/tasks/tasks.service.js';
-import { NoTaskMandates } from '../../apps/api/src/modules/tasks/mandates.js';
-import { ConfiguredElectronicRecords } from '../../apps/api/src/modules/transactions/electronic-records.js';
-import { bindServiceCapabilities } from '../../apps/api/src/modules/agent-modules/service-bindings.js';
-import { TASK_SERVICE_BINDINGS } from '../../apps/api/src/modules/agent-modules/task-bindings.js';
 import { engineDefaultPolicy } from '../../packages/contracts/src/agent-modules.js';
 import { CreateTaskRequestCommandSchema } from '../../packages/contracts/src/tasks.js';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
@@ -23,9 +19,8 @@ test('task binding calls the owning service and preserves missing mandate author
   await activatePolicy(h, world, engineDefaultPolicy(world.hubId, REGISTRY));
   const client = h.client();
   await login(client, 'petr');
-  // Integration seam only: BILL-003 owns the production factory and every fee-confirming source transition.
-  const service = bindServiceCapabilities(h.created.ctx!, h.services().principals, TASK_SERVICE_BINDINGS,
-    principals => new TasksService(h.created.ctx!, principals, new NoTaskMandates(), new ConfiguredElectronicRecords()));
+  // Actual post-BILL501 factory, including its fail-closed fee and owning mandate ports.
+  const service = h.created.app.get(TasksService);
   const state = await stateOf(h, client, 'task-owning-port');
   assert.deepEqual(await service.listOpen(state), { requests: [] });
   const stop = await engage(world, 'agent_capability', { capabilityId: 'task_marketplace.list_open_requests' });

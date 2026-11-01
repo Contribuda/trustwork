@@ -1,3 +1,6 @@
+import { TasksService } from '../../apps/api/src/modules/tasks/tasks.service.js';
+import { ConsultationsService } from '../../apps/api/src/modules/consultations/consultations.service.js';
+import { CreateTaskRequestCommandSchema } from '../../packages/contracts/src/tasks.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
@@ -15,7 +18,7 @@ import { activatePolicy, buildAgentWorld, ok } from './helpers.js';
 import { installSyntheticMcpConnection } from './mcp-token-fixture.js';
 
 const h = await startHarness('agent_domain_parity');
-test('actual Profile, Reputation and Core operations preserve owning authority under shared policy', { skip: h ? false : SKIP_REASON }, async t => {
+test('actual Profile, Reputation, Core, Task and Consultation operations preserve owning authority under shared policy', { skip: h ? false : SKIP_REASON }, async t => {
   if (!h) return;
   t.after(() => h.close());
   const world = await buildAgentWorld(h);
@@ -28,13 +31,27 @@ test('actual Profile, Reputation and Core operations preserve owning authority u
   const profiles = h.created.app.get(ProfilesService);
   const reputation = h.created.app.get(ReputationService);
   const goals = h.created.app.get(GoalsService);
+  const tasks = h.created.app.get(TasksService);
+  const consultations = h.created.app.get(ConsultationsService);
   const person = { kind: 'person' as const, id: seed.people.petr };
   const state = await stateOf(h, client, 'domain-parity');
   const authority = new CapabilityAuthority({ hubId: world.hubId });
   const mcp = await installSyntheticMcpConnection(h, person.id, world.hubId);
   const base = () => engineDefaultPolicy(world.hubId, REGISTRY);
   await activatePolicy(h, world, base());
+  const project = ok<{ id: string }>(await client.post('/v1/projects', { owner: person, name: 'Synthetic task parity', summary: null, leaderPersonId: null }), 201);
+  const content = { summary: null, assumptions: [], budget: null, timeline: null, dependencies: [], items: [{ key: 'synthetic-task', kind: 'task', parentKey: null, title: 'Synthetic task', description: null,
+    stepTerms: ['work.envelope.roofing'], requiredSkills: [], quantity: null, estimate: null, duration: null, window: null, riskLevel: null, decisionQuestion: null, sources: [], attachments: [], privateNotes: null }] };
+  const plan = ok<{ draft: { id: string; revision: number } }>(await client.post(`/v1/projects/${project.id}/plan`, { timeZone: 'UTC', actor: { via: 'person' }, content }), 201);
+  const proposed = ok<{ revision: number; digest: unknown }>(await client.post(`/v1/projects/${project.id}/plan/versions/${plan.draft.id}/propose`, { expectedRevision: plan.draft.revision, actor: { via: 'person' } }));
+  ok(await client.post(`/v1/projects/${project.id}/plan/versions/${plan.draft.id}/approve`, { expectedRevision: proposed.revision, digest: proposed.digest }));
+  const taskInput = CreateTaskRequestCommandSchema.parse({ source: { projectId: project.id, itemKey: 'synthetic-task' }, audience: 'invited', actor: { via: 'person' }, privateConstraint: null,
+    terms: { title: 'Synthetic task', fields: ['scope'], scopeNote: null, milestoneItemKeys: ['synthetic-task'], acceptanceCriteria: ['Synthetic evidence'], responseDeadline: '2027-06-01T00:00:00Z', currency: 'USD' } });
   const operations = [
+    { capability: 'task_marketplace.list_requests', call: () => tasks.listRequests(state) },
+    { capability: 'task_marketplace.draft_request', call: () => tasks.createRequest(taskInput, state) },
+    { capability: 'consultation.list_availability', call: () => consultations.listWindows(state) },
+    { capability: 'consultation.open_window', call: () => consultations.openWindow({ startsAt: '2027-05-01T10:00:00Z', endsAt: '2027-05-01T11:00:00Z', timeZone: 'UTC', capacity: 1, actor: { via: 'person' } }, state) },
     { capability: 'profile_keeper.get_my_profile', call: () => profiles.myProfile(state) },
     { capability: 'profile_keeper.add_experience', call: () => profiles.addExperience({ organisation: { companyId: null, name: 'Synthetic experience' }, role: 'Builder', summary: null, from: '2026-01-01', to: null, visibility: 'private' }, state) },
     { capability: 'reputation_builder.explain_my_reputation', call: () => reputation.own(person, state) },
@@ -49,7 +66,7 @@ test('actual Profile, Reputation and Core operations preserve owning authority u
   for (const mode of ['module', 'capability', 'participant', 'plan'] as const) {
     await t.test(`${mode} disable refuses actual reads and mutations identically to the agent adapter`, async () => {
       const policy = base();
-      if (mode === 'module') policy.policy.enabledModules = policy.policy.enabledModules.filter(m => !['profile_keeper', 'reputation_builder', 'core'].includes(m.moduleKey));
+      if (mode === 'module') policy.policy.enabledModules = policy.policy.enabledModules.filter(m => !['profile_keeper', 'reputation_builder', 'core', 'task_marketplace', 'consultation'].includes(m.moduleKey));
       else policy.capabilities = operations.map(({ capability }) => ({ capabilityId: capability, offForHub: mode === 'capability', offForPrincipalKinds: mode === 'participant' ? ['person'] : [], offForPlans: mode === 'plan' ? ['free'] : [] }));
       await activatePolicy(h, world, policy);
       for (const operation of operations) {
@@ -77,6 +94,7 @@ test('actual Profile, Reputation and Core operations preserve owning authority u
     assert.equal(visibility.person.profileVisibility, 'public');
     assert.equal((await anonymous.get(`/v1/people/${person.id}/profile`)).status, 200);
     assert.equal((await anonymous.get(`/v1/reputation-builder/people/${person.id}`)).status, 200);
+    assert.equal((await anonymous.get(`/v1/consultation-offerings/public?ownerKind=person&ownerId=${person.id}`)).status, 200);
     assert.equal((await client.get('/v1/me/consents')).status, 200);
     assert.equal((await client.get('/v1/assistant/job-subscriptions')).status, 200);
     const withdrawn = await client.post('/v1/me/profile/visibility', { visibility: 'private', reason: 'Synthetic withdrawal' });

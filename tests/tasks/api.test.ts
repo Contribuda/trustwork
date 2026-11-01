@@ -97,6 +97,8 @@ test('tasks API: plan item to task, isolated offers, one assignment, execution a
   t.after(async () => { await h.close(); await rm(privacyFiles, { recursive: true, force: true }); });
   await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
+  // Synthetic verified-company eligibility for the governed agent modules; no product badge is fabricated.
+  await withMaintenance(h.db.admin, trx => trx.updateTable('company').set({ claim_status: 'verified' }).where('id', 'in', Object.values(seed.companies)).execute());
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const as = async (key: Parameters<typeof login>[1]): Promise<Client> => { const c = h.client(); await login(c, key); return c; };
   const [petr, carl, boris, xenia, anna] = [await as('petr'), await as('carl'), await as('boris'), await as('xenia'), await as('anna')];
