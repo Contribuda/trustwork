@@ -24,6 +24,9 @@ import { consentPublicProfiles } from '../../data/helpers/seed.js';
 
 const evidence = process.env.CNT003_EVIDENCE_DIR;
 assert.ok(evidence, 'CNT003_EVIDENCE_DIR is required');
+// Next freezes rewrites at build time: build with TRUSTWORK_API_ORIGIN=http://127.0.0.1:3467 first.
+const routes=JSON.parse(await readFile('apps/web/.next/routes-manifest.json','utf8'));
+assert.ok(routes.rewrites.beforeFiles.some((route: {source:string;destination:string})=>route.source==='/v1/:path*'&&route.destination==='http://127.0.0.1:3467/v1/:path*'),'Build Next with the local API rewrite before live acceptance');
 const h = await startHarness('cnt003_live'); assert.ok(h);
 const world = await buildContentHttpWorld(h), { w } = world, p = w.people;
 let server: ReturnType<typeof spawn> | undefined;
@@ -76,7 +79,8 @@ try {
   }
   await mkdir(evidence, { recursive: true });
   const results: object[] = [];
-  for (const locale of ['en', 'es', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']) {
+  const browserLocales=(process.env.PROV_BROWSER_LOCALES ?? 'en,es,ru,uz-Latn,ka,hy,az-Latn').split(',').filter(Boolean);
+  for (const locale of browserLocales) {
     const context = await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: 'reduce' });
     await context.addCookies([{ name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }, { name: 'trustwork.locale', value: locale, domain: '127.0.0.1', path: '/' }]);
     const page = await context.newPage();
@@ -106,6 +110,10 @@ try {
         await page.setViewportSize({ width: 1280, height: 900 });
         const link = page.locator('a[href*="/v1/magazine/issues/1/pdf"]').first(); assert.equal(await link.count(), 1);
         const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+        const downloadFailure=await download.failure();
+        const downloadResponse=await fetch(download.url());
+        await writeFile(`${evidence}/pdf-download-diagnostic.json`,JSON.stringify({url:download.url(),failure:downloadFailure,status:downloadResponse.status,headers:Object.fromEntries(downloadResponse.headers)},null,2));
+        assert.equal(downloadFailure,null);
         const downloadPath = await download.path(); assert.ok(downloadPath); assert.deepEqual(await readFile(downloadPath), livePdf);
         await page.screenshot({ path: `${evidence}/ru-reader-desktop.png`, fullPage: true }); await page.setViewportSize({ width: 375, height: 812 });
       }
@@ -166,6 +174,7 @@ try {
   const labels=JSON.parse(await readFile('apps/web/locales/ru/provenance.json','utf8')).publicationProvenance;
   await page.goto(`http://127.0.0.1:3468/app/publications/${hidden.id}/edit`,{waitUntil:'networkidle'});
   await page.getByLabel(labels.heading,{exact:true}).fill('Synthetic UI publication');
+  assert.equal(await page.getByRole('button',{name:labels.declare,exact:true}).isDisabled(),true,'unsaved text must not declare the older binding');
   await page.getByLabel(labels.body,{exact:true}).fill('Synthetic UI declaration workflow.');
   await page.getByLabel(labels.reason,{exact:true}).fill('Synthetic browser verification');
   assert.equal(await page.getByLabel(labels.language,{exact:true}).locator('option').count(),7);
@@ -256,6 +265,10 @@ try {
   article=await w.act.as(p.writer,trx=>withProvenanceFixtures(w).correct(trx,null,article.id,article.revision,draft({language:'ru',title:'Synthetic current original',body:'Synthetic revised original.',assistantAssisted:true}),'Synthetic original update','Synthetic update'));
   await trPage.goto(`http://127.0.0.1:3468/ru/articles/${translated.id}`,{waitUntil:'networkidle'});
   assert.ok((await trPage.locator('body').innerText()).includes(labels.stale));
+  const structured=JSON.parse((await trPage.locator('script[type="application/ld+json"]').textContent())!);
+  assert.equal(structured.translationOfWork.identifier,version.content_digest);
+  assert.ok(structured.translationOfWork.url.endsWith(`${article.id}?version=2`));
+  assert.equal(structured.editor,undefined,'reviewer PDF/feed consent never becomes web editor consent');
   assert.equal(await trPage.locator(`a[href="/ru/articles/${article.id}?version=2"]`).count(),1);
   await trPage.screenshot({path:`${evidence}/ru-stale-translation-375.png`,fullPage:true});
   await writeFile(`${evidence}/translation-results.json`,JSON.stringify({distinctReviewerForm:true,reviewerConsent:['feed','pdf'],exactOriginalVersion:2,originalDigest:version.content_digest,staleAfterCorrection:true,pdfWithdrawalStatus:404},null,2));
@@ -348,7 +361,14 @@ try {
     checks: ['initial rights', 'committed revocation', 'private source fields absent', 'consent credit withdrawn', 'headline link body withheld', 'pinned issue withheld', 'magazine/archive/rubric', 'PDF agrees', 'moderation', 'retraction'] }, null, 2));
   await writeFile(`${evidence}/live-results.json`, JSON.stringify({ results, articleId: article.id, newsId: news.id, checks: ['inert content', 'private draft absent publicly', 'correction in feeds and JSON-LD', 'owner workspace draft', 'real worker PDF through the web origin'], manualScreenReader: 'not performed' }, null, 2));
   await writeFile(`${evidence}/next-server.log`, serverLog);
-  console.log(`PASS: ${results.length} live pages, seven languages, 375px, keyboard focus and axe; nine feeds; private draft and owner workspace checks.`);
+  console.log(`PASS: ${results.length} public pages, ${browserLocales.length} public locales; seven editor locales; nine feeds; real consent, review, PDF and rights checks.`);
+} catch(error) {
+  let n=0;
+  for(const context of browser.contexts())for(const page of context.pages()){
+    await page.screenshot({path:`${evidence}/failure-${++n}.png`,fullPage:true}).catch(()=>{});
+    await writeFile(`${evidence}/failure-${n}.txt`,`${page.url()}\n${await page.locator('body').innerText().catch(()=>'<unavailable>')}`);
+  }
+  throw error;
 } finally {
   if (server) { server.kill('SIGTERM'); await new Promise(r => server!.once('exit', r)); }
   await worker?.stop(); await workerPool?.end();

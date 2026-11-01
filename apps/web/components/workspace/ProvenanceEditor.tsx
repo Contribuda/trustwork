@@ -44,14 +44,16 @@ export function ProvenanceEditor({ publicationId }: { publicationId: string }) {
   }
   const staff = view?.ownerKind==='editorial' ? {staff:{reason}} : {};
   const valid = !!reason.trim() && !busy;
+  const dirty = !!view && !!draft && JSON.stringify(draft)!==JSON.stringify(view.draft);
   return <section className="prov-editor" aria-busy={busy}>
     <h1>{t('publicationProvenance.title')}</h1><p role="status">{message}</p>
     <button type="button" disabled={busy} onClick={() => { void load().catch(() => setMessage(t('publicationProvenance.error'))); }}>{t('publicationProvenance.refresh')}</button>
     {view && draft ? <>
+      {dirty ? <p role="status">{t('publicationProvenance.unsavedDraft')}</p> : null}
       <p>{t('content.pdfVersion',{version:formatNumber(view.binding.version),language:draft.language})}</p>
       <label>{t('publicationProvenance.heading')}<input value={draft.title} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
-      <label>{t('publicationProvenance.body')}<textarea rows={10} value={draft.body} onChange={e=>setDraft({...draft,body:e.target.value})}/></label>
-      <label>{t('publicationProvenance.language')}<select value={draft.language} onChange={e=>setDraft({...draft,language:e.target.value})}>{['en','es','ru','uz-Latn','ka','hy','az-Latn'].map(language=><option key={language} value={language}>{new Intl.DisplayNames([language],{type:'language'}).of(language)}</option>)}</select></label>
+      <label htmlFor="provenance-body">{t('publicationProvenance.body')}</label><textarea id="provenance-body" rows={10} value={draft.body} onChange={e=>setDraft({...draft,body:e.target.value})}/>
+      <label htmlFor="provenance-language">{t('publicationProvenance.language')}</label><select id="provenance-language" value={draft.language} onChange={e=>setDraft({...draft,language:e.target.value})}>{['en','es','ru','uz-Latn','ka','hy','az-Latn'].map(language=><option key={language} value={language}>{new Intl.DisplayNames([language],{type:'language'}).of(language)}</option>)}</select>
       <label>{t('publicationProvenance.reason')}<input value={reason} onChange={e=>setReason(e.target.value)} maxLength={500}/></label>
       <label>{t('publicationProvenance.correctionNote')}<input value={note} onChange={e=>setNote(e.target.value)} maxLength={500}/></label>
       <div className="prov-actions">
@@ -66,8 +68,8 @@ export function ProvenanceEditor({ publicationId }: { publicationId: string }) {
         <button disabled={busy} onClick={()=>{void fetch(withBase(`/v1/publications/${encodeURIComponent(originalId)}`),{cache:'no-store'}).then(async response=>{if(!response.ok)throw new Error('unavailable');const p=PublicPublicationSchema.parse(await response.json());setOriginal({publicationId:p.id,version:p.current.version,digest:{algorithm:'trustwork-digest-1',value:p.current.contentDigest}});}).catch(()=>setMessage(t('publicationProvenance.originalUnavailable')));}}>{t('publicationProvenance.loadOriginal')}</button>
         <p>{original ? `${t('publicationProvenance.originalVersion')}: ${formatNumber(original.version)}`:t('publicationProvenance.confirmOriginal')}</p></fieldset>:null}
       <div className="prov-actions">
-        <button disabled={!valid || kind==='machine_translation'&&!original} onClick={()=>void command('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:view.record?.revision??0,kind,roles:kind==='none'?[]:roles,evidence:'human_declaration',original:kind==='machine_translation'?original:null,reason},...staff})}>{t('publicationProvenance.declare')}</button>
-        {view.record?.kind==='machine_translation'&&view.record.original?<button disabled={!valid || !view.record.exact} onClick={()=>void command('/v1/provenance/reviews',{review:{provenanceId:view.record!.id,binding:view.binding,original:view.record!.original,reason},...staff})}>{t('publicationProvenance.review')}</button>:null}
+        <button disabled={!valid || dirty || kind==='machine_translation'&&!original} onClick={()=>void command('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:view.record?.revision??0,kind,roles:kind==='none'?[]:roles,evidence:'human_declaration',original:kind==='machine_translation'?original:null,reason},...staff})}>{t('publicationProvenance.declare')}</button>
+        {view.record?.kind==='machine_translation'&&view.record.original?<button disabled={!valid || dirty || !view.record.exact} onClick={()=>void command('/v1/provenance/reviews',{review:{provenanceId:view.record!.id,binding:view.binding,original:view.record!.original,reason},...staff})}>{t('publicationProvenance.review')}</button>:null}
       </div>
       {view.record && (view.record.canConsentEditor||view.record.canConsentReviewer)?<fieldset><legend>{t('publicationProvenance.credit')}: {view.credit}</legend>
         <p>{t('publicationProvenance.consentNotice')}</p>
@@ -78,7 +80,7 @@ export function ProvenanceEditor({ publicationId }: { publicationId: string }) {
       {view.consents.filter(c=>!c.revoked).map(c=><div key={c.id}><p>{c.credit} · {c.channels.map(channel=>t(`publicationProvenance.${channel}`)).join(' · ')}</p><button disabled={!valid} onClick={()=>void command('/v1/provenance/revocations',{consentId:c.id,reason})}>{t('publicationProvenance.revokeConsent')}</button></div>)}
       <div className="prov-actions">
         {view.status==='draft'?<button disabled={!valid} onClick={()=>void command(`/v1/publications/${publicationId}/submit`,{expectedRevision:view.publicationRevision,...staff})}>{t('publicationProvenance.submit')}</button>:null}
-        {view.versionStatus==='draft'?<button disabled={!valid || !view.record?.exact} onClick={()=>void command(`/v1/publications/${publicationId}/${view.correctionNote?'corrections':'publish'}`,view.correctionNote?{expectedRevision:view.publicationRevision,draft:view.draft,note:view.correctionNote,reason,...staff}:{expectedRevision:view.publicationRevision,scheduledFor:null,...staff})}>{t(view.correctionNote?'publicationProvenance.releaseCorrection':'publicationProvenance.publish')}</button>:null}
+        {view.versionStatus==='draft'?<button disabled={!valid || dirty || !view.record?.exact} onClick={()=>void command(`/v1/publications/${publicationId}/${view.correctionNote?'corrections':'publish'}`,view.correctionNote?{expectedRevision:view.publicationRevision,draft:view.draft,note:view.correctionNote,reason,...staff}:{expectedRevision:view.publicationRevision,scheduledFor:null,...staff})}>{t(view.correctionNote?'publicationProvenance.releaseCorrection':'publicationProvenance.publish')}</button>:null}
       </div>
     </>:null}
   </section>;

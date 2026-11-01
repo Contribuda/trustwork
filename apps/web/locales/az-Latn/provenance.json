@@ -67,6 +67,7 @@
     "originalUnavailable": "Orijinal əlçatan deyil",
     "currentOriginal": "Cari orijinal",
     "refresh": "Yenilə",
-    "submit": "Redaksiya yoxlamasına göndər"
+    "submit": "Redaksiya yoxlamasına göndər",
+    "unsavedDraft": "Bu versiyanı bəyan etməzdən, yoxlamazdan və ya dərc etməzdən əvvəl qaralamanı saxlayın."
   }
 }
