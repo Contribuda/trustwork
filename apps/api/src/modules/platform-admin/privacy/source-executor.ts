@@ -24,6 +24,8 @@ export async function executeLocalSourceErasure(input: {
       policyDigest: input.digest, recordedAt: new Date().toISOString(), modules: ['sources'] });
     // The owner-only mutation is reachable only after the independently retained checkpoint is durable.
     return await input.ledger.withDecision(record, async (entry) => {
+      // Locks protect row changes, but time can advance while fsync waits. Recheck admission before mutation.
+      await client.query('SELECT trustwork.privacy_source_plan_admit($1::jsonb,$2::uuid,$3)', [JSON.stringify(input.context), input.planId, input.digest]);
       await client.query('SELECT trustwork.admin_consume_approval($1,$2,$3,NULL,NULL,$4,$5)',
         [admission.approvalId, 'privacy.execute_erasure', 'platform', input.digest, input.planId]);
       await client.query('RESET ROLE');

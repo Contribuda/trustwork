@@ -18,8 +18,8 @@ Exports are currently **partial** and say `complete: false`. The composition roo
 | billing | partial: own accounts, subscriptions, accepted prices, budgets and reservations; ledger and usage history pending | Unavailable; exact gap recorded in the plan |
 | catalogue | partial: all own offerings and versions with owning private-knowledge projection; audit history pending | Unavailable; exact gap recorded in the plan |
 | communications | partial: full project/agreement thread history, paginated own notifications, preferences and channels; other contexts pending | Unavailable; exact gap recorded in the plan |
-| connections | partial: own current connection/consent projections without bearer tokens; consent history pending | Unavailable; exact gap recorded in the plan |
-| consultations | partial: own requests and bookings through current owning projections, offerings and personal mentoring; historical reminders and availability pending | Unavailable; exact gap recorded in the plan |
+| connections | partial: own connections and all consent history, without tokens, credentials or elevation ids | Unavailable; exact gap recorded in the plan |
+| consultations | partial: own requests/bookings, all offerings, availability including closed windows and personal mentoring; internal reminder delivery records excluded | Unavailable; exact gap recorded in the plan |
 | content | partial: all owned publication working views with published versions and corrections; comment, wall and editorial history pending | Unavailable; exact gap recorded in the plan |
 | directory | partial: existing member projection; member directory not included | Unavailable; exact gap recorded in the plan |
 | execution | partial: authorized confirmed agreement execution projections; full audit history pending | Unavailable; exact gap recorded in the plan |
@@ -28,7 +28,7 @@ Exports are currently **partial** and say `complete: false`. The composition roo
 | identity | partial: person, emails, provider identities, memberships and all session views without token hashes; account-change history pending | Unavailable; exact gap recorded in the plan |
 | jurisdiction | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
 | models | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
-| plans | partial: owner plans, all versions, item states, changes, timing, shares, locations, permits and diary; participation-only enumeration pending | Unavailable; exact gap recorded in the plan |
+| plans | partial: owner plans, all versions/states/changes/timing/shares/locations/permits/diary plus current addressed shared-item projections; revoked private shares excluded | Unavailable; exact gap recorded in the plan |
 | platform-admin | partial: own request and preference records | Unavailable; exact gap recorded in the plan |
 | procurement | partial: own needs, all RFQ versions and invitations; personal supplier invitations and pinned shared RFQ versions; company invitation history pending | Unavailable; exact gap recorded in the plan |
 | profiles | supported: owner profile, consents, licences, portraits, experience, preferences, follows, bookmarks and reading progress | Unavailable; exact gap recorded in the plan |
@@ -91,11 +91,11 @@ The existing version-1 `privacy` replay adapter provides: correction redaction, 
 
 Replay also writes typed retrieval/federation propagation intents in the same database transaction. The isolated consumers serialize by operation ID, commit outcome_unknown before any adapter effect, reconcile after process death, and accept only the exact digest receipt. No adapter is enabled by default. Owning index/federation ID/revision mapping, signing and runtime registration remain gaps; pending intents are not fabricated send success.
 
-Whole-subject erasure, remaining suppression consumers, complete module exports, retrieval/federation runtime dispatch, production immutable storage and production restore integration are incomplete. PRV-001 stays `in_progress`; dependent work remains locked until full acceptance. No production or provider action was performed.
+Whole-subject erasure, complete module exports, retrieval/federation runtime dispatch, production immutable storage and production restore integration are incomplete. PRV-001 stays `in_progress`; dependent work remains locked until full acceptance. No production or provider action was performed.
 
 ## Coordination seams
 
-- Active CONS paths: `packages/data/src/repositories/communications.ts`, `packages/data/src/repositories/mail.ts` and their workers need an atomic shared suppression lock/check at queued delivery and cancellation. A privacy-only mock queue would not prove the acceptance criterion.
+- After PR485 actually merged, the rebased final MAIL handler now checks the retained marketing barrier after the mail-row lock and before COMMS suppression locks. The lock spans transport, receipt and commit. Immutable SANC recipient/binding authority is unchanged. Both lock orders, late receipts and process death after the fake effect are tested; unknown outcomes remain parked without resend.
 - Active BILL/AST/LLM paths retain their files. A new isolated billing-owned privacy port performs the payer projection under the existing transaction; no ranking or entitlement input was introduced. Remaining agent/model histories need owning projections.
 - SRC consumes do-not-collect at staging, activation and public provenance. Verified external-subject cases bind the exact field digest, action, proposed-value digest, evidence and attesting human without creating a person/company. Existing grant request/approval authorizers remain mandatory. Source plans recheck both humans, case grants, source version, policy/retention and holds in the mutation transaction. Correction appends a new field and immutable resolution; the old evidence remains. Version-2 local retained decisions replay exact source deactivation, including into older snapshots without a plan. Runtime erasure stays blocked without retained authority; no subject-wide deletion is claimed.
 - Each completed owning module needs explicit retained/deleted/redacted fields and an idempotent command before a subject erasure plan can be approved. A broad maintenance dump or delete is not an adapter.
@@ -105,3 +105,7 @@ These seams were reported in issue #93 while independent privacy work continued.
 ## Authenticated file attachments
 
 `GET /v1/privacy/exports/:id/files/:fileId` rechecks the current export subject and the existing FILE owner authority. Only exact owned clean local files are available. A private temporary spool verifies every byte and the stored digest before HTTP delivery; 64 KiB reads keep memory bounded. The same transaction holds file and state locks through response completion, then removes the spool. The JSON manifest identifies separately downloadable files instead of calling a 16 MiB cutoff a complete export. External storage remains unavailable without an owning streaming adapter.
+
+## Source resolution limits
+
+The public intake accepts a capability previously bound by an elevated staff member to an exact external-subject case and verified evidence. It never treats an arbitrary contact address as deletion authority or discovers source records by identity search. Staff grant approval, case status and the exact source digest are rechecked. An ordinary support case remains valid for the inherited objection flow; mutation plans require the explicit external-subject case contract. Source-specific holds currently have an immutable placement port and no release workflow. Correction and deactivation preserve original lawful provenance. A corrected field carries a structured correction marker in the owning public projection; stale reimport requires a new review.

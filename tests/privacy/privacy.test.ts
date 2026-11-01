@@ -30,6 +30,7 @@ import { agentReports } from '../../packages/data/src/repositories/agents.js';
 import { publications } from '../../packages/data/src/repositories/content.js';
 import { rfqInvitations } from '../../packages/data/src/repositories/commerce.js';
 import { PRIVACY_MODULE_INVENTORY } from '../../apps/api/src/modules/platform-admin/privacy/inventory.js';
+import { registerClient, tokensFor } from '../connections/oauth/helpers.js';
 
 test('PRV-001: authenticated requests, preferences and delivery through real module projections', async (t) => {
   await t.test('privacy reaches other product modules only through the composition-root export port', async () => {
@@ -234,6 +235,54 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.equal(result.status, 200, JSON.stringify(result.body));
     assert.ok(JSON.stringify(result.body).includes('Synthetic own publication export 2481'));
     assert.ok(!JSON.stringify(result.body).includes('Synthetic other publication excluded 7261'));
+  });
+  await t.test('owning consent history and closed availability export without another subject or token material', async () => {
+    const clientId = await registerClient(h);
+    const first = await tokensFor(h, petr, clientId, { prompt: 'consent' });
+    const second = await tokensFor(h, petr, clientId, { prompt: 'consent' });
+    const other = await tokensFor(h, boris, clientId, { prompt: 'consent' });
+    const opened = await petr.post('/v1/consultation-availability', { startsAt: new Date(Date.now() + 3600000).toISOString(), endsAt: new Date(Date.now() + 7200000).toISOString(), timeZone: 'UTC', capacity: 1, actor: { via: 'person' } });
+    assert.equal(opened.status, 201, JSON.stringify(opened.body)); const window = opened.body as { id: string; revision: number };
+    assert.equal((await petr.post(`/v1/consultation-availability/${window.id}/close`, { expectedRevision: window.revision, actor: { via: 'person' } })).status, 200);
+    const created = await petr.post('/v1/privacy/exports', { subject }); const id = (created.body as { export: { id: string } }).export.id;
+    const result = await petr.get(`/v1/privacy/exports/${id}`); assert.equal(result.status, 200, JSON.stringify(result.body));
+    const data = (result.body as { archive: { data: { connections: { consents: { withdrawnReason: string | null }[] }; consultations: { availability: { id: string; status: string }[] } } } }).archive.data;
+    assert.equal(data.connections.consents.length, 2); assert.ok(data.connections.consents.some((r) => r.withdrawnReason === 'superseded'));
+    assert.equal(data.consultations.availability.find((r) => r.id === window.id)!.status, 'closed');
+    for (const tokens of [first, second, other]) for (const secret of [tokens.access_token, tokens.refresh_token]) assert.ok(!JSON.stringify(result.body).includes(secret));
+    assert.ok(!JSON.stringify(data.connections).includes('elevationId'));
+  });
+  await t.test('owning export includes history beyond UI caps and never support internals', async () => {
+    const hubId = (await h.db.admin.query('SELECT id FROM trustwork.hub ORDER BY id LIMIT 1')).rows[0].id;
+    const ids: string[] = [];
+    for (let i = 0; i < 201; i++) {
+      const r = await petr.post('/v1/support/cases', { hubId, category: 'privacy', summary: `Synthetic export history ${i}` });
+      assert.equal(r.status, 201, JSON.stringify(r.body)); ids.push((r.body as { case: { id: string } }).case.id);
+    }
+    const diagnostic = await petr.post(`/v1/support/cases/${ids[0]}/diagnostics`, { pageId: 'privacy', appVersion: 'synthetic-v1', locale: 'en', featureFlags: [], errorCodes: [], requestIds: [], objects: [] });
+    assert.equal(diagnostic.status, 201, JSON.stringify(diagnostic.body));
+    await withMaintenance(h.db.admin, async (trx) => {
+      await trx.insertInto('support_case_note').values({ support_case_id: ids[0]!, author_person_id: seed.people.anna, visibility: 'internal', body: 'Synthetic internal note must stay private' }).execute();
+      for (let i = 0; i < 201; i++) {
+        await trx.insertInto('support_access_record').values({ hub_id: hubId, actor_person_id: seed.people.anna, subject_person_id: subject.id, support_case_id: ids[0]!, kind: 'account_card' }).execute();
+      }
+    });
+    const message = (body: string) => ({ body, links: [], onBehalfOfCompany: false, actor: { via: 'person' } });
+    const opened = await petr.post('/v1/threads', { context: { kind: 'project', id: seed.project }, subject: 'Synthetic history', counterparty: null, message: message('Synthetic first historical message') });
+    assert.equal(opened.status, 201, JSON.stringify(opened.body)); const threadId = (opened.body as { thread: { id: string } }).thread.id;
+    for (let i = 0; i < 200; i++) {
+      const r = await petr.post(`/v1/threads/${threadId}/messages`, message(`Synthetic history ${i}`)); assert.equal(r.status, 201, JSON.stringify(r.body));
+    }
+    const created = await petr.post('/v1/privacy/exports', { subject }); const id = (created.body as { export: { id: string } }).export.id;
+    const result = await petr.get(`/v1/privacy/exports/${id}`); assert.equal(result.status, 200, JSON.stringify(result.body));
+    const data = (result.body as { archive: { data: { support: { cases: { case: { id: string }; diagnostics: unknown[] }[]; access: { records: unknown[] } }; communications: { threads: { thread: { id: string }; messages: unknown[] }[] } } } }).archive.data;
+    assert.equal(data.support.cases.length, 201); assert.equal(data.support.access.records.length, 201);
+    assert.equal(data.support.cases.find((r) => r.case.id === ids[0])!.diagnostics.length, 1);
+    assert.equal(data.communications.threads.find((r) => r.thread.id === threadId)!.messages.length, 201);
+    assert.ok(JSON.stringify(data.communications).includes('Synthetic first historical message'));
+    assert.ok(!JSON.stringify(data.support).includes('Synthetic internal note must stay private'));
+    assert.ok(!JSON.stringify(data.support).includes(seed.people.anna));
+    assert.equal((await boris.get(`/v1/privacy/exports/${id}`)).status, 404);
   });
   await t.test('own personal agent reports export without other agents or employer internals', async () => {
     const insert = async (personId: string, companyId: string | null, marker: string) => withPrincipal(h.pool, await principalFor(h.db.admin, personId), (trx) => agentReports.insert(trx, {

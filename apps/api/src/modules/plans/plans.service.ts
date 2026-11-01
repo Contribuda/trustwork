@@ -184,6 +184,19 @@ export class PlansService {
     return this.run(state, (trx, p) => this.invited(trx, p, projectId));
   }
 
+  /** Enumerate only currently addressed shares, then use the same deliberately narrow invited projection. */
+  privacyShared(state: RequestState, subject: { kind: 'person' | 'company'; id: string }) {
+    return this.run(state, async (trx, p) => {
+      const ids = await trx.selectFrom('plan_share').select('project_id').distinct()
+        .where(subject.kind === 'person' ? 'invitee_person_id' : 'invitee_company_id', '=', subject.id)
+        .where('revoked_at', 'is', null).where((eb) => eb.or([eb('valid_until', 'is', null), eb('valid_until', '>', this.now())]))
+        .orderBy('project_id').execute();
+      const views = [];
+      for (const row of ids) views.push(await this.invited(trx, p, row.project_id));
+      return views;
+    });
+  }
+
   async getVersion(projectId: string, versionId: string, state: RequestState): Promise<PlanVersion> {
     return this.run(state, async (trx, p) => {
       this.ownerSide(p, await this.project(trx, projectId), 'read.owner_private');

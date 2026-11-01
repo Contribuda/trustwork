@@ -425,6 +425,27 @@ export class ConsultationsService {
     });
   }
 
+  /** Export enumeration is not the bounded scheduling UI; all values still use the owning projections. */
+  privacyInventory(state: RequestState, subject: Party) {
+    return this.run(state, async (trx, p) => {
+      if (!this.actsFor(p, subject, 'company.catalogue.edit')) throw new ApiError('access.not_found');
+      const offerings = [];
+      for (const row of await trx.selectFrom('consultation_offering').selectAll()
+        .where(subject.kind === 'person' ? 'owner_person_id' : 'owner_company_id', '=', subject.id).orderBy('offering_id').execute()) {
+        offerings.push(await this.offeringView(trx, row));
+      }
+      const availability = []; const mentoring = [];
+      if (subject.kind === 'person') {
+        for (const row of await trx.selectFrom('availability_window').selectAll().where('expert_person_id', '=', subject.id).orderBy('starts_at').orderBy('id').execute()) {
+          availability.push(windowContract(row, await availabilityWindows.booked(trx, row.id)));
+        }
+        for (const row of await trx.selectFrom('mentoring_relationship').selectAll()
+          .where((eb) => eb.or([eb('mentor_person_id', '=', subject.id), eb('mentee_person_id', '=', subject.id)])).orderBy('id').execute()) mentoring.push(mentoringContract(row));
+      }
+      return { offerings, availability, mentoring: { relationships: mentoring } };
+    });
+  }
+
   /** Public: active offerings of one owner with their terms, public catalogue fields and the licence label; anonymous too. */
   async publicOfferings(owner: Party, state: RequestState): Promise<z.infer<typeof PublicConsultationOfferingListSchema>> {
     if (!UUID.test(owner.id)) throw new ApiError('access.not_found');

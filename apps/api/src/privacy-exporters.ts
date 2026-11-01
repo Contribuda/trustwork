@@ -32,20 +32,20 @@ const MODULE_COVERAGE = [
   { module: 'supplier-base', status: 'partial', includes: 'all own-company supplier records, assessments and external counterparties; sharing history pending' },
   { module: 'agreements', status: 'partial', includes: 'authorized agreement/order projections, acceptance events and order-change history; audit records pending' },
   { module: 'assistant-goals', status: 'partial', includes: 'own personal goals/progress, authored personal reports and job subscriptions; agent negotiation and employer internals excluded' },
-  { module: 'consultations', status: 'partial', includes: 'own requests and bookings through current owning projections, offerings and personal mentoring; historical reminders and availability pending' },
+  { module: 'consultations', status: 'partial', includes: 'own requests/bookings through owning projections, all own offerings, availability including closed windows and personal mentoring; internal reminder delivery records excluded' },
   { module: 'assistant', status: 'unsupported', includes: 'requires owning-module exporter' },
   { module: 'billing', status: 'partial', includes: 'own accounts, subscriptions, accepted prices, budgets and reservations; ledger and usage history pending' },
   { module: 'catalogue', status: 'partial', includes: 'all own offerings and versions with owning private-knowledge projection; audit history pending' },
-  { module: 'communications', status: 'partial', includes: 'project/agreement threads, paginated own notifications, preferences and channels; other contexts pending' },
+  { module: 'communications', status: 'partial', includes: 'full project/agreement thread history, paginated own notifications, preferences and channels; other contexts pending' },
   { module: 'company', status: 'partial', includes: 'existing member projection; member directory not included' },
-  { module: 'connections', status: 'partial', includes: 'own current connection/consent projections without bearer tokens; consent history pending' },
+  { module: 'connections', status: 'partial', includes: 'own connection projections and all own consent history without tokens, credentials or elevation ids' },
   { module: 'hubs', status: 'partial', includes: 'own legal-document acceptance history; operator records require separate owning projection' },
   { module: 'screening', status: 'partial', includes: 'own minimal compliance status; sensitive match/reviewer internals excluded' },
   { module: 'content', status: 'partial', includes: 'all owned publication working views with published versions and corrections; comment, wall and editorial history pending' },
   { module: 'execution', status: 'partial', includes: 'authorized confirmed agreement execution projections; full audit history pending' },
   { module: 'files', status: 'partial', includes: 'own authorized metadata and clean local bytes with digest checks; authenticated bounded streams include all clean local file sizes; external storage remains explicit' },
   { module: 'identity', status: 'partial', includes: 'person, emails, provider identities, memberships and all session views without token hashes; account-change history pending' },
-  { module: 'plans', status: 'partial', includes: 'owner plans, all versions, item states, changes, timing, shares, locations, permits and diary; participation-only enumeration pending' },
+  { module: 'plans', status: 'partial', includes: 'owner plans, all versions/states/changes/timing/shares/locations/permits/diary plus currently addressed shared-item projections; revoked private shares excluded' },
   { module: 'privacy', status: 'supported', includes: 'own request and preference records' },
   { module: 'procurement', status: 'partial', includes: 'own needs, all RFQ versions and invitations; personal supplier invitations and pinned shared RFQ versions; company invitation history pending' },
   { module: 'profiles', status: 'supported', includes: 'owner profile, consents, licences, portraits, experience, preferences, follows, bookmarks and reading progress' },
@@ -118,7 +118,10 @@ export async function composeExport(ctx: AppContext, identity: IdentityServices,
     };
   }
   data.sales = await mapSequential(await sided('quote'), (r) => sales.getQuote(r.id, readState));
-  data.agreements = await mapSequential(agreementRows, (r) => agreements.getAgreement(r.id, readState));
+  // Task and consultation agreements belong to their own projections; the commerce reader deliberately rejects them.
+  const commerceAgreementRows = agreementRows.length ? await trx.selectFrom('agreement').select('id').where('id', 'in', agreementRows.map((r) => r.id))
+    .where('terms_kind', '=', 'rfq_quote').orderBy('id').execute() : [];
+  data.agreements = await mapSequential(commerceAgreementRows, (r) => agreements.getAgreement(r.id, readState));
   Object.assign(data, await composeModuleExports({ ctx, identity, fileOptions, owningPorts, trx, principals, principal: caller, state: readState, subject, projectIds: projectRows.map((r) => r.id), agreementIds: agreementRows.map((r) => r.id) }));
   return data;
 }

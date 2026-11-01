@@ -45,7 +45,12 @@ BEGIN
   SELECT * INTO v_grant FROM trustwork.case_access_grant WHERE id=p_grant FOR SHARE;
   IF v_grant.support_case_id IS DISTINCT FROM p_case OR NOT coalesce(trustwork.admin_grant_usable(p_person,p_grant,'sourced_record_field',p_field),false)
     OR v_grant.expires_at<=clock_timestamp()
-    OR NOT EXISTS(SELECT 1 FROM trustwork.admin_resolve_permission(p_person,'admin.privacy.erasure.execute',NULL,v_grant.hub_id) r WHERE r.role IS NOT NULL) THEN
+    OR NOT EXISTS(SELECT 1 FROM trustwork.admin_resolve_permission(p_person,'admin.privacy.erasure.execute',NULL,v_grant.hub_id) r
+      JOIN trustwork.staff_role_assignment a ON a.person_id=p_person AND a.role=r.role
+      JOIN trustwork.staff_role_definition_version d ON d.role=a.role AND d.version=a.definition_version
+      WHERE a.revoked_at IS NULL AND a.valid_from<=clock_timestamp() AND (a.valid_until IS NULL OR a.valid_until>clock_timestamp())
+        AND 'admin.privacy.erasure.execute'=ANY(d.permissions) AND a.scope_kind=ANY(d.scopes)
+        AND (a.scope_kind='platform' OR a.scope_kind='node' OR a.hub_id=v_grant.hub_id)) THEN
     RAISE EXCEPTION 'current exact source case grant required' USING ERRCODE='42501',HINT='privacy.case_grant_required';
   END IF;
 END $$;
@@ -147,7 +152,9 @@ BEGIN
     RAISE EXCEPTION 'source plan changed' USING ERRCODE='40001',HINT='privacy.plan_changed';
   END IF;
   IF jsonb_array_length(v_snapshot->'holds')>0 THEN RAISE EXCEPTION 'legal hold' USING ERRCODE='42501',HINT='privacy.legal_hold'; END IF;
-  IF v_snapshot#>>'{policy,review}' IS DISTINCT FROM 'verified' THEN RAISE EXCEPTION 'policy unknown' USING ERRCODE='42501',HINT='privacy.country_policy_UNKNOWN'; END IF;
+  IF v_snapshot#>>'{policy,review}' IS DISTINCT FROM 'verified' OR v_snapshot#>>'{policy,retention_days}' IS NULL THEN
+    RAISE EXCEPTION 'policy or retention unknown' USING ERRCODE='42501',HINT='privacy.country_policy_UNKNOWN';
+  END IF;
   IF (v_snapshot->>'retentionStartedAt')::timestamptz + make_interval(days=>(v_snapshot#>>'{policy,retention_days}')::int)>clock_timestamp() THEN
     RAISE EXCEPTION 'retention not elapsed' USING ERRCODE='42501',HINT='privacy.retention_required';
   END IF;
@@ -283,6 +290,26 @@ $$;
 
 
 -- A correction cannot be silently undone by importing the old value again. A new review is required.
+CREATE OR REPLACE FUNCTION trustwork.privacy_source_activation_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
+DECLARE v_key text;
+BEGIN
+  IF NEW.status='activated' AND OLD.status IS DISTINCT FROM NEW.status THEN
+    FOR v_key IN SELECT DISTINCT trustwork.privacy_source_key(record_kind,record_id) FROM trustwork.sourced_record_field WHERE import_batch_id=NEW.id ORDER BY 1 LOOP
+      PERFORM trustwork.privacy_contact_lock(v_key);
+      IF EXISTS(SELECT 1 FROM trustwork.privacy_suppression WHERE digest=v_key AND do_not_collect) THEN
+        RAISE EXCEPTION 'record activation blocked' USING ERRCODE='42501',HINT='privacy.do_not_collect';
+      END IF;
+    END LOOP;
+    IF EXISTS(SELECT 1 FROM trustwork.sourced_record_field pending JOIN trustwork.sourced_record_field original
+      ON original.record_kind=pending.record_kind AND original.record_id=pending.record_id AND original.field=pending.field
+      JOIN trustwork.source_field_resolution r ON r.source_field_id=original.id WHERE pending.import_batch_id=NEW.id) THEN
+      RAISE EXCEPTION 'resolved field requires new review' USING ERRCODE='42501',HINT='privacy.source_review_required';
+    END IF;
+  END IF;
+  RETURN NEW;
+END $$;
+
 CREATE OR REPLACE FUNCTION trustwork.privacy_source_collect_guard() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
 DECLARE v_key text:=trustwork.privacy_source_key(NEW.record_kind,NEW.record_id);
