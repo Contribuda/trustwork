@@ -117,6 +117,15 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
       await control.getByLabel(c.reason,{exact:true}).fill('Synthetic list control evidence'); await control.getByRole('button').click();
       await expect(reviewer.getByRole('button',{name:label,exact:true})).toHaveCount(0);
     }
+    expect((await request.post(`http://127.0.0.1:${process.env.SANC006_CONTROL_PORT ?? 4582}/stage-additional-list`)).status()).toBe(200);
+    await reviewer.reload();
+    const confirmVersion = reviewer.locator('form').filter({has:reviewer.getByRole('button',{name:c.listControls.confirmVersion,exact:true})});
+    await confirmVersion.locator('xpath=ancestor::details').locator('summary').click();
+    await confirmVersion.getByRole('button').click();
+    expect(await confirmVersion.locator('textarea').evaluate((el:HTMLTextAreaElement)=>el.validity.valueMissing)).toBe(true);
+    await confirmVersion.getByLabel(c.reason,{exact:true}).fill('Synthetic reduced official export reviewed');
+    await confirmVersion.getByRole('button').click();
+    await expect(reviewer.getByRole('button',{name:c.listControls.confirmVersion,exact:true})).toHaveCount(0);
     // Real appeal: confirmation by the first officer, subject login/appeal, different reviewer, second-person reversal.
     const appealPath = `/admin/hubs/${setup.hub}/participants/people/${setup.appealId}`;
     await page.goto(appealPath);
