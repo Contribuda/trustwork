@@ -174,5 +174,81 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
   FROM trustwork.magazine_digest d WHERE d.id = p_digest AND d.hub_id = p_hub AND d.status = 'released'
 $$;
 
+-- Presentation changes invalidate legacy stored PDFs without modifying their immutable bytes.
+-- The version participates in the snapshot digest and rejects old in-flight completion snapshots too.
+CREATE OR REPLACE FUNCTION trustwork.content_render_snapshot(p_revision uuid) RETURNS jsonb
+LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
+DECLARE r trustwork.issue_revision; i trustwork.issue; pin record; p trustwork.publication; v trustwork.publication_version;
+  items jsonb := '[]'::jsonb; pub jsonb;
+BEGIN
+  SELECT * INTO r FROM trustwork.issue_revision WHERE id = p_revision AND status = 'released';
+  IF NOT FOUND THEN RETURN NULL; END IF;
+  SELECT * INTO i FROM trustwork.issue WHERE id = r.issue_id AND current_edition IS NOT NULL;
+  IF NOT FOUND THEN RETURN NULL; END IF;
+  FOR pin IN SELECT * FROM trustwork.issue_item WHERE issue_revision_id = r.id ORDER BY position LOOP
+    SELECT * INTO p FROM trustwork.publication WHERE id = pin.publication_id;
+    SELECT * INTO v FROM trustwork.publication_version WHERE id = pin.publication_version_id;
+    IF p.hub_id <> i.hub_id OR v.status <> 'published' OR NOT trustwork.content_public_current_ok(p)
+      OR p.status = 'retracted' OR NOT trustwork.content_render_source_ok(p, v) THEN RETURN NULL; END IF;
+    pub := trustwork.content_publication_json(p);
+    -- Only public, consent-filtered credits leave the database for rendering.
+    pub := jsonb_set(pub, '{authorship}', (SELECT coalesce(jsonb_agg(a), '[]'::jsonb)
+      FROM jsonb_array_elements(pub -> 'authorship') a WHERE a ->> 'kind' = 'editorial' OR a ->> 'id' IS NOT NULL));
+    items := items || jsonb_build_array(jsonb_build_object('position', pin.position, 'section', pin.section,
+      'publication', pub, 'version', trustwork.content_public_version(i.hub_id, p.id, v.version)));
+  END LOOP;
+  IF jsonb_array_length(items) = 0 THEN RETURN NULL; END IF;
+  RETURN jsonb_build_object('presentationVersion', 2, 'revisionId', r.id, 'issue', trustwork.content_issue_json(i, r) - 'renderArtifacts', 'items', items);
+END $$;
+
+CREATE OR REPLACE FUNCTION trustwork.content_render_prepare(p_render uuid) RETURNS jsonb
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+DECLARE r trustwork.render_artifact; snap jsonb; b trustwork.content_render_blob;
+BEGIN
+  SELECT * INTO r FROM trustwork.render_artifact WHERE id = p_render;
+  IF NOT FOUND OR r.format <> 'pdf' THEN RETURN NULL; END IF;
+  -- Serialize all requests for the same revision, including duplicate outbox jobs and different render ids.
+  PERFORM pg_advisory_xact_lock(hashtextextended(r.issue_revision_id::text, 3));
+  SELECT * INTO r FROM trustwork.render_artifact WHERE id = p_render FOR UPDATE;
+  IF r.status <> 'queued' THEN RETURN NULL; END IF;
+  snap := trustwork.content_render_snapshot(r.issue_revision_id);
+  IF snap IS NULL THEN
+    UPDATE trustwork.render_artifact SET status = 'failed', failure_reason = 'public_projection_or_licence_unavailable', completed_at = now() WHERE id = r.id;
+    RETURN NULL;
+  END IF;
+  SELECT * INTO b FROM trustwork.content_render_blob WHERE issue_revision_id = r.issue_revision_id;
+  IF FOUND THEN
+    IF b.snapshot_digest = trustwork.admin_digest(snap) THEN
+      UPDATE trustwork.render_artifact SET status = 'rendered', sha256 = b.sha256, renderer_version = 'cnt003-local-2', completed_at = now() WHERE id = r.id;
+    ELSE
+      UPDATE trustwork.render_artifact SET status = 'failed', failure_reason = 'projection_changed_new_edition_required', completed_at = now() WHERE id = r.id;
+    END IF;
+    RETURN NULL;
+  END IF;
+  RETURN snap;
+END $$;
+
+CREATE OR REPLACE FUNCTION trustwork.content_render_finish(p_render uuid, p_snapshot jsonb, p_bytes bytea) RETURNS boolean
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+DECLARE r trustwork.render_artifact; snap jsonb; hash text;
+BEGIN
+  SELECT * INTO r FROM trustwork.render_artifact WHERE id = p_render FOR UPDATE;
+  IF NOT FOUND OR r.status <> 'queued' OR r.format <> 'pdf' THEN RETURN false; END IF;
+  PERFORM pg_advisory_xact_lock(hashtextextended(r.issue_revision_id::text, 3));
+  snap := trustwork.content_render_snapshot(r.issue_revision_id);
+  IF snap IS NULL OR snap IS DISTINCT FROM p_snapshot THEN
+    UPDATE trustwork.render_artifact SET status = 'failed', failure_reason = 'public_projection_changed', completed_at = now() WHERE id = r.id;
+    RETURN false;
+  END IF;
+  IF octet_length(p_bytes) NOT BETWEEN 5 AND 20971520 OR substring(p_bytes FROM 1 FOR 5) <> convert_to('%PDF-', 'UTF8') THEN
+    RAISE EXCEPTION 'invalid PDF bytes' USING ERRCODE = 'check_violation';
+  END IF;
+  hash := encode(sha256(p_bytes), 'hex');
+  INSERT INTO trustwork.content_render_blob (issue_revision_id, render_id, snapshot_digest, sha256, bytes)
+    VALUES (r.issue_revision_id, r.id, trustwork.admin_digest(snap), hash, p_bytes);
+  UPDATE trustwork.render_artifact SET status = 'rendered', sha256 = hash, renderer_version = 'cnt003-local-2', completed_at = now() WHERE id = r.id;
+  RETURN true;
+END $$;
+
 REVOKE ALL ON FUNCTION trustwork.content_source_current_ok(trustwork.publication, trustwork.publication_version),
   trustwork.content_public_current_ok(trustwork.publication) FROM PUBLIC, trustwork_app, trustwork_worker;

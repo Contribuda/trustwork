@@ -187,6 +187,30 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
     });
     assert.equal(await pdf(i.number), undefined); assert.equal(await pdf(next.number), undefined);
   });
+  await t.test('legacy cover bytes remain immutable but cannot be delivered or reused after presentation changes', async () => {
+    const i = await issueFor(await publish()), r = await request(i.id);
+    const snapshot = await tx(pool, trx => prepare(trx, r.id)) as Record<string, unknown>;
+    assert.equal(snapshot.presentationVersion, 2);
+    const legacy = { ...snapshot }; delete legacy.presentationVersion;
+    const bytes = Buffer.from('%PDF-synthetic-legacy-cover-with-internal-identity');
+    const hash = createHash('sha256').update(bytes).digest('hex');
+    // Persist the shape the earlier implementation actually stored, without changing any existing row.
+    await withMaintenance(env.db.admin, trx => sql`INSERT INTO trustwork.content_render_blob
+      (issue_revision_id, render_id, snapshot_digest, sha256, bytes)
+      VALUES (${snapshot.revisionId}::uuid, ${r.id}::uuid, trustwork.admin_digest(${JSON.stringify(legacy)}::jsonb), ${hash}, ${bytes}::bytea)`.execute(trx));
+    await act(p.editorA, trx => issues.recordRender(trx, ctxA, r.id, { status: 'rendered', artifactId: null, sha256: hash, rendererVersion: 'cnt003-local-1', failureReason: null }));
+    assert.equal(await pdf(i.number), undefined, 'a legacy snapshot cannot authorize old-cover delivery');
+    const retry = await request(i.id);
+    assert.equal(await tx(pool, trx => prepare(trx, retry.id)), null, 'legacy bytes are not reused under a new renderer label');
+    const row = await env.db.admin.query('SELECT failure_reason FROM trustwork.render_artifact WHERE id = $1', [retry.id]);
+    assert.equal(row.rows[0].failure_reason, 'projection_changed_new_edition_required');
+    const retained = await env.db.admin.query('SELECT bytes FROM trustwork.content_render_blob WHERE render_id = $1', [r.id]);
+    assert.deepEqual(retained.rows[0].bytes, bytes);
+    const next = await request((await issueFor(await publish())).id);
+    const current = await tx(pool, trx => prepare(trx, next.id)) as Record<string, unknown>;
+    delete current.presentationVersion;
+    assert.equal(await tx(pool, trx => finish(trx, next.id, current)), false, 'an old renderer snapshot cannot finish after the presentation upgrade');
+  });
   await t.test('headline-only source permissions produce a body-free real PDF and total revocation denies it', async () => {
     const f = await currentSourceFixture(sw, env.db.admin, 90, { treatment: 'headline_link' });
     let current = await sw.cmd(p.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, f.registered.id, f.registered.revision, { ...f.input, allowedUses: DISPLAY_ONLY }));
