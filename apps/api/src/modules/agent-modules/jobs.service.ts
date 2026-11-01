@@ -17,6 +17,7 @@ import {
 } from './contracts.js';
 import { agentJobs, mandateDigest, mandateProposals, type AgentJobRequestRow, type AgentJobScheduleRow } from './deps.js';
 import { agentModulesRefusal } from './policy.service.js';
+import { jobImplementation } from './templates.js';
 import { servingHub } from './serving-hub.js';
 
 const iso = (v: Date | string | null): string | null => (v === null ? null : new Date(v).toISOString());
@@ -98,7 +99,8 @@ export class AgentJobsService {
       const out = [];
       for (const t of document.jobTemplates) {
         const refusal = await this.templateRefusal(trx, actor, t);
-        out.push({ ...t, available: refusal === null, reason: refusal === null ? null : REFUSAL_MESSAGE_KEYS[refusal.reason] });
+        const implemented = jobImplementation(t.moduleKey, t.templateKey) !== null;
+        out.push({ ...t, available: refusal === null && implemented, reason: refusal ? REFUSAL_MESSAGE_KEYS[refusal.reason] : implemented ? null : REFUSAL_MESSAGE_KEYS['module.not_serving'] });
       }
       return { templates: out, minIntervalMinutes: document.participantSettings.scheduleMinIntervalMinutes, calendar: document.calendar };
     });
@@ -204,7 +206,13 @@ export class AgentJobsService {
     return this.run(state, async (trx) => {
       const request = await agentJobs.request(trx, requestId);
       if (!request || request.job_subscription_id === null) throw new ApiError('access.not_found', 'access.not_found', { reason: request ? 'job_not_active' : 'not_found' });
-      return { outcome: await agentJobs.requestRun(trx, request.job_subscription_id, this.authority.hubId) };
+      if (!jobImplementation(request.module_key, request.template_key)) throw new ApiError('access.forbidden', 'template implementation unavailable', { reason: 'template_unavailable', messageKey: REFUSAL_MESSAGE_KEYS['module.not_serving'] });
+      const binding = await servingHub(trx, this.ctx.config.publicOrigin);
+      const operationId = completionRecordId(state);
+      if (!operationId) throw new ApiError('access.forbidden', 'operation identity is required', { reason: 'operation_identity_missing' });
+      const result = await sql<{ id: string }>`SELECT trustwork.agent_modules_request_occurrence(
+        ${request.job_subscription_id}::uuid, ${binding.id}::uuid, ${operationId}::uuid) AS id`.execute(trx);
+      return { outcome: 'queued', occurrenceId: result.rows[0]?.id };
     });
   }
 }

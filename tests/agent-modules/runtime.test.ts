@@ -134,10 +134,13 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     await makeDue(subscriptionId);
     assert.deepEqual((await inTransaction(pool, (trx) => runDueJobs(trx))).outcomes, { template_withdrawn: 1 });
     await activatePolicy(h, world, usHubPolicy(hubId));
-    assert.deepEqual(ok<{ outcome: string }>(await petr.post(`/v1/assistant/jobs/${requestId}/run`)), { outcome: 'due' });
+    expectRefusal(await petr.post(`/v1/assistant/jobs/${requestId}/run`), 403, 'access.forbidden', 'template_unavailable');
+    assert.equal(await count('SELECT 1 FROM trustwork.agent_job_occurrence WHERE job_subscription_id = $1', [subscriptionId]), 0, 'a legacy readiness template has no executable handler');
     const mandate = (await h.db.admin.query<{ revision: number }>('SELECT revision FROM trustwork.mandate WHERE id = $1', [mandateId])).rows[0]!;
     ok(await petr.post(`/v1/assistant/mandates/${mandateId}/revoke`, { expectedRevision: mandate.revision, reason: 'Synthetic: no more reviews' }));
-    assert.deepEqual(ok<{ outcome: string }>(await petr.post(`/v1/assistant/jobs/${requestId}/run`)), { outcome: 'mandate_inactive' });
+    expectRefusal(await petr.post(`/v1/assistant/jobs/${requestId}/run`), 403, 'access.forbidden', 'template_unavailable');
+    await makeDue(subscriptionId);
+    assert.deepEqual((await inTransaction(pool, (trx) => runDueJobs(trx))).outcomes, { mandate_inactive: 1 });
   });
 
   // ---------- Kill switches and the agent runtime ----------

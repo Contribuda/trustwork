@@ -132,6 +132,19 @@ Owner: `apps/api/src/modules/tasks/tasks.service.ts`, `TasksService`. Authorizer
 
 ## Remaining authority integration
 
-The five loaded manifests declare 74 capability entries. Core goal/subscription operations are separately declared in `packages/contracts/src/agents.ts`; they are not presently an engine manifest in `ports.ts`. The inventory above exposes missing method bindings rather than declaring parity complete. Existing agent and MCP adapter checks do not prove actual participant-service enforcement, and adapter tests do not prove MCP transport E2E.
+The original five manifests declare 74 capability entries. The additional core manifest registers the existing goal/subscription operations from `packages/contracts/src/agents.ts`; the deterministic report binds `prepare` to `core.generate_goal_report`. The inventory above exposes missing method bindings rather than declaring parity complete. Existing agent and MCP adapter checks do not prove actual participant-service enforcement, and adapter tests do not prove MCP transport E2E.
 
 The shared implementation still needs immutable trusted hub provenance, per-hub distinct-principal cohort counts, final-dispatch epoch/lock checks, engine-versioned supported template handlers, a leased occurrence-to-run entry point, and paired consumer/scheduler registration. The model governance port must be derived from real owning policy ports after the reviewed recovery/accounting foundation lands. Missing model, role, source, retention or residency policy stays unavailable. Original-operation model recovery must remain independent of fresh-dispatch permission.
+
+
+## Occurrence execution paths
+
+| Path | Owning purpose and authority |
+|---|---|
+| `packages/data/migrations/agent-modules/20261109100300_agent_occurrence_runtime.sql` | AGT/AST occurrence ledger, immutable source signals, worker-only lease admission/final effect; request entry derives current owner and existing idempotency operation. No arbitrary principal parameter is granted to runtime roles. |
+| `apps/worker/src/agent-modules/` and minimal `main.ts` registrations | REL paired source consumer/scheduler and transactional leased handlers. Loads without API runtime files. |
+| `apps/api/src/modules/assistant-goals/goals.service.ts` | AGT-001 private deterministic report uses the same bounded owning projection as the worker. No communications/content/task/consultation service is edited. |
+| `packages/contracts/src/agents.ts` | Registers the existing core capabilities and exact report action binding; no new standing action class. |
+| `tests/agent-modules/execution.test.ts` | Real-role source-to-run tests, request replay, duplicate evidence, crash/restart, stale lease, policy/resource denial and staff isolation. |
+
+The worker derives the goal from confirmed explicit contexts, uses the existing mandate coverage/member authority and screening hold ports, and rechecks the active policy and stop/switch epochs. The local private report is not a money or commitment effect. Unknown model/source/residency/retention rules remain unavailable through the merged model governance port; this runtime evidence does not complete LLM work.

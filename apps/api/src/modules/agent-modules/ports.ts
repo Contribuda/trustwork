@@ -1,5 +1,6 @@
 import { AgentModuleManifestSchema, type AgentCapability, type AgentModuleManifest } from '../../deps/contracts.js';
 import type { Transaction } from '../../deps/data.js';
+import { CORE_AGENT_MANIFEST } from '../../../../../packages/contracts/src/agents.js';
 import {
   DEFAULT_PLAN_KEY, EXECUTION_EVIDENCE_MANIFEST, PROFILE_KEEPER_MANIFEST, PROJECT_PLANNER_MANIFEST, REPUTATION_BUILDER_MANIFEST, TASK_MARKETPLACE_MANIFEST, type ModuleRegistry,
 } from './contracts.js';
@@ -10,7 +11,7 @@ import {
  * process at start, not at the first authority check.
  */
 export const ENGINE_MANIFESTS: readonly AgentModuleManifest[] = [
-  EXECUTION_EVIDENCE_MANIFEST, PROFILE_KEEPER_MANIFEST, PROJECT_PLANNER_MANIFEST, REPUTATION_BUILDER_MANIFEST, TASK_MARKETPLACE_MANIFEST,
+  CORE_AGENT_MANIFEST, EXECUTION_EVIDENCE_MANIFEST, PROFILE_KEEPER_MANIFEST, PROJECT_PLANNER_MANIFEST, REPUTATION_BUILDER_MANIFEST, TASK_MARKETPLACE_MANIFEST,
 ].map((m) => AgentModuleManifestSchema.parse(m));
 
 /**
