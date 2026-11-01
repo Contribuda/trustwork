@@ -28,7 +28,7 @@
       "nodeScope": "These records and decisions cover the whole node, including every hub.",
       "api": "Service data",
       "incomplete": "Some cohort metrics are unavailable",
-      "unavailable": "Unknown metrics need recorded hub cohorts. Additional-list setup is not available here.",
+      "unavailable": "Unknown metrics need recorded hub cohorts.",
       "saved": "Saved. The current record has been refreshed.",
       "refused": "The action was refused. Refresh and check your access. Request:",
       "unknownOutcome": "The outcome is unknown. Retry the same submission to retrieve its result; do not submit a changed decision.",

@@ -28,7 +28,7 @@
       "nodeScope": "Estos registros y decisiones abarcan todo el nodo, incluidos todos sus centros.",
       "api": "Datos del servicio",
       "incomplete": "Algunas métricas de cohorte no están disponibles",
-      "unavailable": "Las métricas desconocidas necesitan cohortes registradas por centro. Aquí no se configuran listas adicionales.",
+      "unavailable": "Las métricas desconocidas necesitan cohortes registradas por centro.",
       "saved": "Guardado. Se ha actualizado el registro.",
       "refused": "Se rechazó la acción. Actualice y compruebe su acceso. Solicitud:",
       "unknownOutcome": "El resultado es desconocido. Reintente el mismo envío para recuperar el resultado; no envíe una decisión modificada.",
