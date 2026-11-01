@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from 'react';
 import NextLink from '@/components/locale/LocalLink';
-import { ButtonLink, EmptyState, Skeleton, SkeletonGroup, StatusChip } from '@/components/ui';
+import { ButtonLink, EmptyState, Skeleton, SkeletonGroup, StatusLabel as SharedStatusLabel } from '@/components/ui';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';
 import { STAFF_PERSONA_IDS, consoleHref, type ConsoleRequest } from '../_data/personas';
@@ -14,12 +14,7 @@ import { NavSheet } from './NavSheet';
 
 /** Live / Demo / Contract / Designed / Proposed, always as text (never colour alone). */
 export function StatusLabel({ status }: { status: SectionStatus | 'live' | 'contract' | 'proposed' }) {
-  const tone = status === 'live' ? 'success' : status === 'demo' ? 'info' : 'neutral';
-  return (
-    <StatusChip size="sm" tone={tone}>
-      {tDynamic(`admin.status.${status}`, status)}
-    </StatusChip>
-  );
+  return <SharedStatusLabel status={status} label={tDynamic(`admin.status.${status}`, status)} />;
 }
 
 /** Every page header names the one hub it acts on (no hub switcher anywhere). */

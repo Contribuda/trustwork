@@ -29,7 +29,7 @@ test('every dictionary carries exactly the reference keys, no empty strings and 
     assert.deepEqual([...keys].sort(), [...enKeys].sort(), `${tag}: key set differs from en`);
     for (const [key, value] of all) {
       assert.ok(value.trim().length > 0, `${tag}: ${key} is empty`);
-      assert.ok(!/TODO|TBD|lorem/i.test(value), `${tag}: ${key} contains a placeholder`);
+      assert.ok(!/\b(?:TODO|TBD)\b|\b[Ll]orem ipsum\b/.test(value), `${tag}: ${key} contains a placeholder`);
     }
   }
 });

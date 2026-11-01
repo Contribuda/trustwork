@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useRef, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, TextArea, useToast } from '@trustwork/ui';
+import { Button, ReasonField, AuditNote, useToast } from '@trustwork/ui';
 import type { CommandState } from '../_data/command-state';
 
 export type ConsoleFormLabels = {
@@ -69,11 +69,11 @@ export function ConsoleForm({ action, hidden, labels, withReason = true, disable
       <fieldset className="admin-form__fields" disabled={disabled || pending}>
         {children}
         {withReason ? (
-          <TextArea name="reason" label={labels.reason ?? ''} description={labels.reasonHelp} isRequired rows={2} maxLength={500} isDisabled={disabled} />
+          <ReasonField showCounter={false} name="reason" label={labels.reason ?? ''} description={labels.reasonHelp ?? ""} isRequired rows={2} maxLength={500} isDisabled={disabled} />
         ) : null}
       </fieldset>
       {labels.secondPersonNote ? <p className="admin-note admin-note--second">{labels.secondPersonNote}</p> : null}
-      {withReason && labels.auditNote ? <p className="admin-note">{labels.auditNote}</p> : null}
+      {withReason && labels.auditNote ? <AuditNote className="admin-note">{labels.auditNote}</AuditNote> : null}
       {disabledReason ? <p className="admin-note admin-note--disabled">{disabledReason}</p> : null}
       <div className="admin-form__actions">
         <Button type="submit" variant={submitVariant} isDisabled={disabled} isLoading={pending}>
