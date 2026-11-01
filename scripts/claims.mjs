@@ -45,7 +45,7 @@ const isMaintainer = (author, association) => MAINTAINER_ASSOCIATIONS.has(associ
 const DAY = 24 * 60 * 60 * 1000;
 const MARKER = 'trustwork-claims';
 const HANDLE = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
-const PACKAGE_ID = /\b([A-Z][A-Z0-9]*-(?:\d{3}|[A-Z]{2,3}))\b/g;
+const PACKAGE_ID = /\b(ADM-UX-\d{3}|[A-Z][A-Z0-9]*-(?:\d{3}|[A-Z]{2,3}))\b/g;
 const LIST_KEYS = new Set(['scope', 'plan']);
 const KEYS = new Set(['human', 'agent', 'scope', 'until', 'plan']);
 
@@ -461,7 +461,7 @@ export function checkPullRequest({ body, author = '', changedFiles = [], package
 
   const mentioned = new Set([...text.matchAll(PACKAGE_ID)].map((m) => m[1]));
   const byId = new Map(packages.packages.map((p) => [p.id, p]));
-  for (const id of mentioned) if (!byId.has(id) && /^[A-Z]+-\d{3}$/.test(id)) warnings.push(`${id} is not a work package id`);
+  for (const id of mentioned) if (!byId.has(id) && /^(?:[A-Z]+|ADM-UX)-\d{3}$/.test(id)) warnings.push(`${id} is not a work package id`);
   const unreferenced = new Map();
   // A done package still owns its paths: a later change to them names it (or a broader open package), so a package
   // that sets itself to done in its own pull request is not shadowed by an open package with broader paths. Only

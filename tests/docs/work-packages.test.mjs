@@ -101,3 +101,13 @@ test('issue renders the GitHub issue the claims bot and the issue template expec
   assert.ok(plain.startsWith(`[WP CTRY-002] ${byId.get('CTRY-002').title}\n\n**Package:**`));
   assert.throws(() => execFileSync(process.execPath, ['scripts/work-packages.mjs', 'issue', 'NOPE-001'], { encoding: 'utf8', stdio: 'pipe' }), (e) => e.status === 2);
 });
+
+test('literal ADM-UX identifiers validate without admitting arbitrary compound prefixes', () => {
+  const base = { title: 'Synthetic package', area: 'test', status: 'open', dependsOn: [], handbook: 'docs/engine/README.md', goal: 'g', read: [], steps: ['s'], acceptance: ['a'], paths: ['apps/synthetic'] };
+  for (const id of ['ADM-UX-001', 'ADM-UX-002', 'ADM-001', 'CTRY-MX']) {
+    assert.deepEqual(validate({ schemaVersion: 1, packages: [{ ...base, id }] }, { exists: () => true }), [], id);
+  }
+  for (const id of ['ADM-UX-01', 'ADM-UX-0001', 'ADM-UX-001-extra', 'OTHER-UX-001']) {
+    assert.ok(validate({ schemaVersion: 1, packages: [{ ...base, id }] }, { exists: () => true }).length, id);
+  }
+});

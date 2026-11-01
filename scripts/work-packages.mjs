@@ -26,7 +26,7 @@ const FILE = resolve(root, 'docs/engine/work-packages.json');
 
 export const STATUSES = ['open', 'in_progress', 'in_review', 'done', 'blocked', 'rejected'];
 const FIELDS = ['id', 'title', 'area', 'status', 'dependsOn', 'handbook', 'goal', 'read', 'steps', 'acceptance', 'paths'];
-const ID = /^[A-Z][A-Z0-9]*-\d{3}$|^[A-Z]{2,5}-[A-Z]{2,3}$/;
+const ID = /^(?:[A-Z][A-Z0-9]*|ADM-UX)-\d{3}$|^[A-Z]{2,5}-[A-Z]{2,3}$/;
 export const validPath = (p) => typeof p === 'string' && p.length > 0 && !p.startsWith('/') && !p.includes('\\') && p.split('/').every((part) => part && part !== '.' && part !== '..');
 
 export function load(file = FILE) {
