@@ -14,9 +14,11 @@ test('pricing resolves actual consultation and task registry labels in every lan
     const consultations=JSON.parse(readFileSync(`apps/web/locales/${locale}/consultations.json`,'utf8')).consultations.kind;
     const pricing=JSON.parse(readFileSync(`apps/web/locales/${locale}/pricing.json`,'utf8')).pricing;
     const taxonomy=JSON.parse(readFileSync(`data/taxonomy/locales/${locale}.json`,'utf8')).labels;
+    const codes: string[]=JSON.parse(readFileSync('data/taxonomy/terms/work-types.json','utf8')).terms.map((term:{code:string})=>term.code);
+    assert.deepEqual(pricing.taskCategories,Object.fromEntries(codes.map(code=>[code,taxonomy[code]])));
     const translate=(key:string)=>key==='pricing.allCategories'?pricing.allCategories:consultations[key.split('.').at(-1)!];
     for(const kind of Object.keys(consultations)) assert.equal(publicFeeCategory('consultation',kind,locale,translate),consultations[kind]);
-    assert.equal(publicFeeCategory('task','work.envelope.roofing',locale,translate),taxonomy['work.envelope.roofing']);
+    for(const code of codes) assert.equal(publicFeeCategory('task',code,locale,translate),taxonomy[code]);
     assert.equal(publicFeeCategory('task',null,locale,translate),pricing.allCategories);
     assert.equal(publicFeeCategory('consultation','synthetic_review',locale,translate),null);
     assert.equal(publicFeeCategory('task','synthetic_review',locale,translate),null);

@@ -1,15 +1,15 @@
 import { CONSULTATION_KINDS } from '../../../../../../packages/contracts/src/consultations.js';
-import workTypes from '../../../../../../data/taxonomy/terms/work-types.json' with { type: 'json' };
-import en from '../../../../../../data/taxonomy/locales/en.json' with { type: 'json' };
-import es from '../../../../../../data/taxonomy/locales/es.json' with { type: 'json' };
-import ru from '../../../../../../data/taxonomy/locales/ru.json' with { type: 'json' };
-import uz from '../../../../../../data/taxonomy/locales/uz-Latn.json' with { type: 'json' };
-import ka from '../../../../../../data/taxonomy/locales/ka.json' with { type: 'json' };
-import hy from '../../../../../../data/taxonomy/locales/hy.json' with { type: 'json' };
-import az from '../../../../../../data/taxonomy/locales/az-Latn.json' with { type: 'json' };
+import en from '../../../../locales/en/pricing.json' with { type: 'json' };
+import es from '../../../../locales/es/pricing.json' with { type: 'json' };
+import ru from '../../../../locales/ru/pricing.json' with { type: 'json' };
+import uz from '../../../../locales/uz-Latn/pricing.json' with { type: 'json' };
+import ka from '../../../../locales/ka/pricing.json' with { type: 'json' };
+import hy from '../../../../locales/hy/pricing.json' with { type: 'json' };
+import az from '../../../../locales/az-Latn/pricing.json' with { type: 'json' };
 
-const taskCodes = new Set<string>(workTypes.terms.map(term => term.code));
-const labels: Record<string, Record<string, string>> = { en: en.labels, es: es.labels, ru: ru.labels, 'uz-Latn': uz.labels, ka: ka.labels, hy: hy.labels, 'az-Latn': az.labels };
+// Checked against data/taxonomy in the owning test; locale assets also ship in the web image.
+const taskCodes = new Set<string>(Object.keys(en.pricing.taskCategories));
+const labels: Record<string, Record<string, string>> = { en: en.pricing.taskCategories, es: es.pricing.taskCategories, ru: ru.pricing.taskCategories, 'uz-Latn': uz.pricing.taskCategories, ka: ka.pricing.taskCategories, hy: hy.pricing.taskCategories, 'az-Latn': az.pricing.taskCategories };
 
 /** Presentation lookup only: a taxonomy label never authorizes a fee mapping or creates a commercial category. */
 type CategoryMessage = 'pricing.allCategories' | `consultations.kind.${(typeof CONSULTATION_KINDS)[number]}`;
