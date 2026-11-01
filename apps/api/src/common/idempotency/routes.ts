@@ -218,6 +218,15 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'screening.match_propose': IN_TRANSACTION,
   'screening.proposal_decide': IN_TRANSACTION,
   'screening.appeal_decide': IN_TRANSACTION,
+  // PRC-003: the supplier base. Every route runs in one PrincipalService.runAs transaction (the owner-run command, its
+  // audit row; no outbox event) and returns its result unchanged; an import writes all its rows in that transaction.
+  'supplier_base.maintain': IN_TRANSACTION,
+  'supplier_base.counterparty_create': IN_TRANSACTION,
+  'supplier_base.counterparty_update': IN_TRANSACTION,
+  'supplier_base.assessment_draft': IN_TRANSACTION,
+  'supplier_base.assessment_record': IN_TRANSACTION,
+  'supplier_base.assessment_respond': IN_TRANSACTION,
+  'supplier_base.import': IN_TRANSACTION,
   // HUB-001: hubs, territories, versioned configuration, launch gates, lifecycle, legal documents and credential
   // references. Every route runs in one PrincipalService.runAs transaction through a hubs_* SECURITY DEFINER command that
   // writes its audit row there (a two-person action without an approval writes the approval request instead).
