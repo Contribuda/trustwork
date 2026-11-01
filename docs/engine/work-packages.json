@@ -4384,7 +4384,7 @@
       "id": "LLM-001",
       "title": "Model gateway with egress-policy routing and per-mandate cost caps",
       "area": "assistant",
-      "status": "open",
+      "status": "blocked",
       "dependsOn": [
         "KEYS-001",
         "AST-001",
