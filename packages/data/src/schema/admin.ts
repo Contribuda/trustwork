@@ -43,7 +43,7 @@ export type AppealSubjectKind =
 export type AppealStatus = 'submitted' | 'in_review' | 'upheld' | 'overturned' | 'partially_overturned' | 'withdrawn';
 export type FlagEffect = 'ui' | 'behaviour' | 'content' | 'operations';
 export type KillSwitchScopeKind =
-  | 'node' | 'hub_agent_dispatch' | 'agent_module' | 'agent_action' | 'agent_extension' | 'external_agent_api'
+  | 'node' | 'hub_agent_dispatch' | 'agent_module' | 'agent_capability' | 'agent_action' | 'agent_extension' | 'external_agent_api'
   | 'provider_connection' | 'model_job' | 'pipeline' | 'outbound_messages';
 
 export interface AdminNodeTable { id: GeneratedUuid; label: string; created_at: GeneratedTimestamp }
@@ -129,7 +129,7 @@ export interface MaintenanceWindowTable {
 }
 export interface KillSwitchTable {
   id: GeneratedUuid; scope_kind: KillSwitchScopeKind; node_id: string | null; hub_id: string | null; module_key: string | null; action: string | null; extension_id: string | null;
-  connection_id: string | null; job: string | null; pipeline_id: string | null; state: Generated<'engaged' | 'released'>; engaged_by: string; engaged_at: GeneratedTimestamp;
+  connection_id: string | null; job: string | null; pipeline_id: string | null; capability_id: string | null; state: Generated<'engaged' | 'released'>; engaged_by: string; engaged_at: GeneratedTimestamp;
   reason: string; incident_id: string | null; released_by: string | null; released_at: Timestamp | null; release_approval_id: string | null; incident_note: string | null;
   revision: GeneratedInt; updated_at: GeneratedTimestamp;
 }
@@ -217,6 +217,6 @@ export const TABLE_COLUMNS: TableColumns<AdminDatabase> = {
   feature_flag: columns('feature_flag', ['id', 'key', 'scope_kind', 'node_id', 'hub_id', 'value', 'description', 'declared_effect', 'owner_person_id', 'expires_at', 'changed_by',
     'revision', 'created_at', 'updated_at']),
   maintenance_window: columns('maintenance_window', ['id', 'scope_kind', 'node_id', 'hub_id', 'starts_at', 'ends_at', 'reason', 'read_only', 'created_by', 'cancelled_at', 'cancelled_by', 'created_at']),
-  kill_switch: columns('kill_switch', ['id', 'scope_kind', 'node_id', 'hub_id', 'module_key', 'action', 'extension_id', 'connection_id', 'job', 'pipeline_id', 'state', 'engaged_by',
+  kill_switch: columns('kill_switch', ['id', 'scope_kind', 'node_id', 'hub_id', 'module_key', 'action', 'extension_id', 'connection_id', 'job', 'pipeline_id', 'capability_id', 'state', 'engaged_by',
     'engaged_at', 'reason', 'incident_id', 'released_by', 'released_at', 'release_approval_id', 'incident_note', 'revision', 'updated_at']),
 };

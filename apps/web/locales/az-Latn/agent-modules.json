@@ -1,0 +1,134 @@
+{
+  "agentModules": {
+    "refusal": {
+      "unknown": "Bu habda belə imkan yoxdur.",
+      "moduleNotEnabled": "Bu hab agentinizin bu hissəsini aktivləşdirməyib.",
+      "moduleNotServing": "Agentinizin bu hissəsi hazırda bu habda əlçatan deyil.",
+      "notEligible": "Bu habda bu imkan sizə təklif edilmir.",
+      "verifiedCompanyRequired": "Bu imkandan yalnız təsdiqlənmiş şirkət istifadə edə bilər.",
+      "offForHub": "Bu hab bu imkanı söndürüb.",
+      "offForPrincipalKind": "Bu hab bu imkanı kimin adından hərəkət etdiyinizə görə söndürüb.",
+      "offForPlan": "Bu imkan bu habdakı planınıza daxil deyil.",
+      "paused": "Hab bu imkanı dayandırıb. Heç nə göndərilmədi və dəyişdirilmədi.",
+      "connectionScope": "Qoşulmuş köməkçinizə bu imkana giriş verilməyib."
+    },
+    "principalKind": {
+      "person": "Öz adınızdan",
+      "company_member": "İşəgötürəniniz adından",
+      "company_representative": "Şirkət nümayəndəsi"
+    },
+    "moduleStatus": {
+      "draft": "Qaralama",
+      "beta": "Beta",
+      "active": "Aktiv",
+      "retired": "İstifadədən çıxarılıb"
+    },
+    "trigger": {
+      "schedule": "Cədvəl üzrə",
+      "event": "Nəsə baş verəndə",
+      "deadline": "Son tarixdən əvvəl",
+      "goal": "Məqsəd aktiv olduqca",
+      "request": "Siz istədiyiniz zaman"
+    },
+    "closedDay": {
+      "skip": "Habın işləmədiyi günləri ötürmək",
+      "next_open_day": "Növbəti iş gününə keçirmək",
+      "run": "Hab bağlı olsa da icra etmək"
+    },
+    "approval": {
+      "ask_each": "Hər dəfə məndən soruşmaq",
+      "ask_first": "İlk bir neçə dəfə soruşmaq",
+      "ask_above": "Müəyyən məbləğdən yuxarı olduqda soruşmaq",
+      "pre_authorized": "Mandat çərçivəsində soruşmadan hərəkət etmək"
+    },
+    "cadence": {
+      "none": "Hesabat yoxdur",
+      "monthly": "Aylıq",
+      "weekly": "Həftəlik",
+      "daily": "Gündəlik"
+    },
+    "channel": {
+      "platform": "Platformada",
+      "email": "E-poçt",
+      "sms": "SMS",
+      "push": "Push-bildiriş"
+    },
+    "job": {
+      "weeklyPlanReview": "Layihə planınızın həftəlik nəzərdən keçirilməsi",
+      "turnOn": "Bu tapşırığı aktivləşdirmək",
+      "turnOnNote": "Tapşırığı aktivləşdirmək yalnız təsdiqiniz üçün mandat hazırlayır. Siz təsdiqləyənə qədər heç nə işə düşmür.",
+      "runNow": "İndi işə salmaq",
+      "nextRun": "Növbəti işə salma: {date}",
+      "status": {
+        "pending": "Təsdiqinizi gözləyir",
+        "active": "Aktivdir",
+        "withdrawn": "Geri götürülüb",
+        "lapsed": "Hab artıq bunu təklif etmir"
+      },
+      "reason": {
+        "proposal_declined": "Siz mandatı rədd etdiniz.",
+        "proposal_expired": "Mandat təklifinin müddəti bitdi.",
+        "proposal_superseded": "Bu təklif daha yeni təkliflə əvəz olundu.",
+        "template_withdrawn": "Hab artıq bu tapşırığı təklif etmir.",
+        "module_not_enabled": "Hab agentinizin bu hissəsini söndürdü."
+      },
+      "fire": {
+        "due": "İşə salındı",
+        "blocked": "Hab tərəfindən dayandırıldı",
+        "mandate_inactive": "Ötürüldü: mandat artıq aktiv deyil",
+        "subscription_inactive": "Ötürüldü: tapşırıq söndürülüb",
+        "template_withdrawn": "Ötürüldü: hab artıq bu tapşırığı təklif etmir"
+      }
+    },
+    "settings": {
+      "approval": "Təsdiq qaydaları",
+      "outreachPerWeek": "Həftədə müraciət sayı",
+      "reportCadence": "Hesabatlar",
+      "scheduleMinInterval": "İşə salmalar arasında ən qısa interval",
+      "channels": "Kanallar",
+      "hubMaximum": "Hab üçün maksimum: {value}",
+      "tightenOnly": "Bu ayarları habın standart dəyərindən daha sərt edə bilərsiniz, amma habın maksimumundan daha yumşaq edə bilməzsiniz."
+    },
+    "admin": {
+      "registry": "Mühərriklə birgə gələn modullar",
+      "policy": "Agent siyasəti",
+      "draft": "Siyasət versiyası hazırlamaq",
+      "preview": "Öncədən baxış",
+      "previewNote": "Rəqəmlər yalnız ən azı 10 nəfərlik qruplar üçün göstərilir. İkinci şəxs məhz bu öncədən baxışı təsdiqləyir.",
+      "fewerThanTen": "10-dan az",
+      "affected": {
+        "mandates": "Təsirə məruz qalan aktiv mandatlar",
+        "jobSubscriptions": "Təsirə məruz qalan tapşırıq abunələri",
+        "connections": "Təsirə məruz qalan qoşulmuş köməkçilər",
+        "openRuns": "Təsirə məruz qalan bitməmiş işə salmalar"
+      },
+      "change": {
+        "enabled": "Aktivləşdirildi",
+        "disabled": "Söndürüldü",
+        "narrowed": "Daraldıldı",
+        "widened": "Genişləndirildi",
+        "changed": "Dəyişdirildi"
+      },
+      "guardRails": "Heç bir ayar mandatları, öhdəliklər üçün şəxsin təsdiqini, sanksiya yoxlamasını, qadağan olunmuş yerləri və ya ödəniş neytrallığını söndürə bilməz.",
+      "noPerPersonAccess": "Administratorlar agent məhsulunu hamı üçün idarə edir. Onlar heç vaxt ayrıca iştirakçının agentini, mandatlarını, ayarlarını, məqsədlərini, tapşırıqlarını və ya qoşulmalarını görmür və dəyişmir.",
+      "error": {
+        "previewStale": "Öncədən baxış köhnəlib. Cari təsirini görmək üçün siyasəti yenidən hazırlayın.",
+        "policyUnvalidated": "Bu versiya agent modulları reyestri tərəfindən yoxlanılmayıb və aktivləşdirilə bilməz.",
+        "guardRail": "Bu ayar heç bir habın söndürə bilmədiyi qorunmanı zəiflədərdi.",
+        "widening": "Hab modulu daralda bilər, amma onu mühərrikin verdiyindən artıq genişləndirə bilməz."
+      },
+      "killSwitch": {
+        "engage": "İndi dayandırmaq",
+        "release": "Dayandırmanı aradan qaldırmaq",
+        "releaseNote": "Dayandırma dərhal qüvvəyə minir. Aradan qaldırmaq üçün ikinci şəxs və insident qeydi lazımdır; dayandırılmış heç nə yenidən işə düşmür.",
+        "scope": {
+          "hub_agent_dispatch": "Bu habdakı bütün agent hərəkətləri",
+          "agent_module": "Bir modul",
+          "agent_capability": "Bir imkan",
+          "agent_action": "Bir hərəkət növü",
+          "external_agent_api": "Qoşulmuş köməkçilər"
+        }
+      }
+    }
+  }
+}

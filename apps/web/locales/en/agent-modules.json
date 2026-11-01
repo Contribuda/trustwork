@@ -1,0 +1,134 @@
+{
+  "agentModules": {
+    "refusal": {
+      "unknown": "This capability does not exist in this hub.",
+      "moduleNotEnabled": "This hub has not turned on this part of your agent.",
+      "moduleNotServing": "This part of your agent is not available in this hub right now.",
+      "notEligible": "This capability is not offered to you in this hub.",
+      "verifiedCompanyRequired": "Only a verified company can use this capability.",
+      "offForHub": "This hub has switched this capability off.",
+      "offForPrincipalKind": "This hub has switched this capability off for the way you are acting.",
+      "offForPlan": "This capability is not part of your plan in this hub.",
+      "paused": "The hub has paused this capability. Nothing was sent or changed.",
+      "connectionScope": "Your connected assistant was not given access to this capability."
+    },
+    "principalKind": {
+      "person": "Acting for yourself",
+      "company_member": "Acting for your employer",
+      "company_representative": "Company representative"
+    },
+    "moduleStatus": {
+      "draft": "Draft",
+      "beta": "Beta",
+      "active": "Active",
+      "retired": "Retired"
+    },
+    "trigger": {
+      "schedule": "On a schedule",
+      "event": "When something happens",
+      "deadline": "Before a deadline",
+      "goal": "While a goal is active",
+      "request": "When you ask"
+    },
+    "closedDay": {
+      "skip": "Skip days the hub is closed",
+      "next_open_day": "Move to the next open day",
+      "run": "Run even when the hub is closed"
+    },
+    "approval": {
+      "ask_each": "Ask me every time",
+      "ask_first": "Ask me the first few times",
+      "ask_above": "Ask me above an amount",
+      "pre_authorized": "Act within the mandate without asking"
+    },
+    "cadence": {
+      "none": "No reports",
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "daily": "Daily"
+    },
+    "channel": {
+      "platform": "On the platform",
+      "email": "Email",
+      "sms": "Text message",
+      "push": "Push notification"
+    },
+    "job": {
+      "weeklyPlanReview": "Weekly review of your project plan",
+      "turnOn": "Turn this job on",
+      "turnOnNote": "Turning a job on only prepares a mandate for you to confirm. Nothing runs until you confirm it.",
+      "runNow": "Run it now",
+      "nextRun": "Next run: {date}",
+      "status": {
+        "pending": "Waiting for your confirmation",
+        "active": "On",
+        "withdrawn": "Withdrawn",
+        "lapsed": "No longer offered by the hub"
+      },
+      "reason": {
+        "proposal_declined": "You declined the mandate.",
+        "proposal_expired": "The mandate proposal expired.",
+        "proposal_superseded": "A newer proposal replaced this one.",
+        "template_withdrawn": "The hub no longer offers this job.",
+        "module_not_enabled": "The hub turned this part of your agent off."
+      },
+      "fire": {
+        "due": "Started",
+        "blocked": "Paused by the hub",
+        "mandate_inactive": "Skipped: the mandate is no longer active",
+        "subscription_inactive": "Skipped: the job is off",
+        "template_withdrawn": "Skipped: the hub no longer offers this job"
+      }
+    },
+    "settings": {
+      "approval": "Approval rules",
+      "outreachPerWeek": "Outreach per week",
+      "reportCadence": "Reports",
+      "scheduleMinInterval": "Shortest interval between runs",
+      "channels": "Channels",
+      "hubMaximum": "Hub maximum: {value}",
+      "tightenOnly": "You can make these stricter than the hub default, never looser than the hub maximum."
+    },
+    "admin": {
+      "registry": "Modules shipped with the engine",
+      "policy": "Agent policy",
+      "draft": "Draft a policy version",
+      "preview": "Preview",
+      "previewNote": "Counts are shown only for groups of at least 10. The second person approves exactly this preview.",
+      "fewerThanTen": "fewer than 10",
+      "affected": {
+        "mandates": "Active mandates affected",
+        "jobSubscriptions": "Job subscriptions affected",
+        "connections": "Connected assistants affected",
+        "openRuns": "Open runs affected"
+      },
+      "change": {
+        "enabled": "Turned on",
+        "disabled": "Turned off",
+        "narrowed": "Narrowed",
+        "widened": "Widened",
+        "changed": "Changed"
+      },
+      "guardRails": "No setting can switch off mandates, a person's confirmation for commitments, sanctions screening, restricted places or payment neutrality.",
+      "noPerPersonAccess": "Administrators manage the agent product for everyone. They never see or change one participant's agent, mandates, settings, goals, jobs or connections.",
+      "error": {
+        "previewStale": "The preview is out of date. Draft the policy again to see its current effect.",
+        "policyUnvalidated": "This version was not checked by the agent module registry and cannot be activated.",
+        "guardRail": "This setting would weaken a guard rail that no hub can switch off.",
+        "widening": "A hub can narrow a module, never widen it beyond what the engine ships."
+      },
+      "killSwitch": {
+        "engage": "Pause now",
+        "release": "Release",
+        "releaseNote": "Pausing takes effect at once. Releasing needs a second person and an incident note, and restarts nothing that was stopped.",
+        "scope": {
+          "hub_agent_dispatch": "Every agent action in this hub",
+          "agent_module": "One module",
+          "agent_capability": "One capability",
+          "agent_action": "One kind of action",
+          "external_agent_api": "Connected assistants"
+        }
+      }
+    }
+  }
+}

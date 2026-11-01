@@ -763,6 +763,8 @@ export const KillSwitchScopeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('node'), nodeId: IdSchema }),
   z.strictObject({ kind: z.literal('hub_agent_dispatch'), hubId: IdSchema }),
   z.strictObject({ kind: z.literal('agent_module'), hubId: IdSchema, moduleKey: z.string().regex(/^[a-z][a-z0-9_]{1,40}$/) }),
+  /** One capability registry entry (AGT-003, additive with the integrator's agreement): refused alike on every surface. */
+  z.strictObject({ kind: z.literal('agent_capability'), hubId: IdSchema, capabilityId: z.string().regex(/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/).max(100) }),
   z.strictObject({ kind: z.literal('agent_action'), hubId: IdSchema, action: MandateActionSchema }),
   z.strictObject({ kind: z.literal('agent_extension'), hubId: IdSchema, extensionId: IdSchema }),
   z.strictObject({ kind: z.literal('external_agent_api'), hubId: IdSchema }),

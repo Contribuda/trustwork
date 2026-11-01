@@ -35,6 +35,8 @@ import { ContentModerationTargets } from './modules/content/moderation.js';
 import { ExecutionModule } from './modules/execution/execution.module.js';
 import { TrustModule } from './modules/trust/trust.module.js';
 import { ReputationModule } from './modules/reputation/reputation.module.js';
+import { AgentModulesModule, agentModulesAuthority } from './modules/agent-modules/agent-modules.module.js';
+import { agentProtectionLimits, agentRuntimeGate } from './modules/agent-modules/authority.js';
 import { AssistantModule, assistantMandateStore } from './modules/assistant/assistant.module.js';
 import { MODULE_KEYS } from './modules/assistant/mandate-store.js';
 import { AgentsModule } from './modules/assistant-goals/agents.module.js';
@@ -67,6 +69,8 @@ export class AppModule {
     communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort, taskFees?: TaskFeePort): DynamicModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
+    // AGT-003: one shared authority check for the interface, the agent runtime and (when it lands) MCP.
+    const capabilities = agentModulesAuthority();
     return {
       module: AppModule,
       controllers: [HealthController],
@@ -94,8 +98,9 @@ export class AppModule {
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
         ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
         ContentModule.forRoot(ctx, identity),
-        AssistantModule.forRoot(ctx, identity),
-        AgentsModule.forRoot(ctx, identity),
+        AgentModulesModule.forRoot(ctx, identity, { authority: capabilities }), // AGT-003
+        AssistantModule.forRoot(ctx, identity, { capabilityGate: agentRuntimeGate(capabilities) }),
+        AgentsModule.forRoot(ctx, identity, { protectionLimits: agentProtectionLimits(capabilities) }),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FeesModule.forRoot(ctx, identity, communications.env),
         HubsModule.forRoot(ctx, identity),

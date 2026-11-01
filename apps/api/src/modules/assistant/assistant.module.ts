@@ -3,7 +3,7 @@ import type { MandateActionV2 } from '../../deps/contracts.js';
 import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
 import { AssistantController } from './assistant.controller.js';
-import { AssistantService, DEFAULT_RUNTIME_SETTINGS, type AssistantRuntimeSettings } from './assistant.service.js';
+import { AssistantService, DEFAULT_RUNTIME_SETTINGS, type AgentCapabilityGate, type AssistantRuntimeSettings } from './assistant.service.js';
 import { AssistantMandateStore } from './mandate-store.js';
 import { restrictedPlacesFromPacks, type PolicySettings } from './policy.js';
 import { UnavailableModel, UnavailableRetrieval, type ModelPort, type RetrievalPort } from './ports.js';
@@ -15,6 +15,8 @@ export interface AssistantModuleOptions {
   retrieval?: RetrievalPort;
   policy?: Partial<PolicySettings>;
   runtime?: Partial<AssistantRuntimeSettings>;
+  /** The shared capability check (AGT-003); app.module.ts passes the agent-modules authority. */
+  capabilityGate?: AgentCapabilityGate;
 }
 
 /** Hub id of this deployment for kill-switch scoping (`TRUSTWORK_HUB_ID`); null applies every hub-scoped switch. */
@@ -44,7 +46,7 @@ export class AssistantModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: AssistantModuleOptions = {}): DynamicModule {
     const service = new AssistantService(
       ctx, identity.principals, assistantPolicySettings(options.policy), { ...DEFAULT_RUNTIME_SETTINGS, ...options.runtime },
-      options.model ?? new UnavailableModel(), options.retrieval ?? new UnavailableRetrieval(),
+      options.model ?? new UnavailableModel(), options.retrieval ?? new UnavailableRetrieval(), options.capabilityGate ?? null,
     );
     return {
       module: AssistantModule,

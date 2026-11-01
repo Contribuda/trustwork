@@ -42,7 +42,7 @@ All mutations: authenticated session, CSRF metadata, `Idempotency-Key`, complete
 - The receiver's decision uses a deterministic, fail-closed subset of `evaluateMandateV2` (exact contexts or selectors without categories, regions or project; any condition, approver rule or non-pre-authorized policy escalates).
 - Company mandates that ask for approval escalate to the company's members holding `company.deals.manage`; named approver rules are recorded but not yet routed per approver.
 - The worker sweeps (`agents_expire_sessions`, `agents_lapse_reconfirmations`) are granted to the worker role but not yet scheduled; the API applies expiry and lapsed windows lazily on access.
-- Protection limits use engine defaults until the hub agent policy (HUB-002) is stored.
+- Protection limits (`maxNegotiationRounds`, `envelopesPerCounterpartyPerDay`) come from the hub's active agent policy (AGT-003); without one the engine defaults apply.
 
 ## Tests
 

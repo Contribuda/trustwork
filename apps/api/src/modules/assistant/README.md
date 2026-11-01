@@ -16,6 +16,7 @@ Status: Live in the API and the worker with fake providers only. No model, retri
 | Money actions hold a budget | `assistant_queue_intent` reserves through BILL-001's `billing_reserve` with the intent's correlation key; outcomes settle (final success) or release (failure, revocation, cancellation) it; `outcome_unknown` keeps it |
 | Private constraints never leave | An effect payload with a private field name (floor, ceiling, budget, private, constraint, notes, limits, conditions, approvers, reservation) is refused (`private_field`); worker entry points return only the structured effect; errors carry reason codes, never values |
 | Stop control | `POST /v1/assistant/stop` suspends every active mandate and revokes every not yet started action in one transaction, never needs step-up; releasing it reactivates nothing |
+| Hub capability switches and every kill-switch level (AGT-003) | `proposeAction` asks the shared authority check of the [agent-modules module](../agent-modules/README.md) (`agentRuntimeGate`, wired in `app.module.ts`) before recording an action; `assistant_begin_attempt`, extended by AGT-003, locks the authorization epochs first and also refuses capability switches (`kill_switch`) and policy switches (`capability_off`); an engagement fences executing actions to reconciliation |
 
 ## One mandate port for every module
 

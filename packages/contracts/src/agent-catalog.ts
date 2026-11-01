@@ -1186,7 +1186,7 @@ const OUTBOUND_ACTIONS: readonly MandateActionV2[] = ['communicate', 'send_quote
 /** First engaged switch that blocks this dispatch, or null. Kill switches never delete history; executing actions go to reconciliation. */
 export function agentDispatchBlocked(
   switches: { hub: readonly KillSwitch[]; participant: readonly ParticipantStop[] },
-  target: { nodeId: string; hubId: string; moduleKey: string; action: MandateActionV2; personId: string; companyRepresentativeOf: string | null; connectionId: string | null },
+  target: { nodeId: string; hubId: string; moduleKey: string; action: MandateActionV2; personId: string; companyRepresentativeOf: string | null; connectionId: string | null; capabilityId?: string | null },
 ): string | null {
   for (const k of switches.hub) {
     if (k.state !== 'engaged') continue;
@@ -1195,6 +1195,7 @@ export function agentDispatchBlocked(
       (s.kind === 'node' && s.nodeId === target.nodeId) ||
       (s.kind === 'hub_agent_dispatch' && s.hubId === target.hubId) ||
       (s.kind === 'agent_module' && s.hubId === target.hubId && s.moduleKey === target.moduleKey) ||
+      (s.kind === 'agent_capability' && s.hubId === target.hubId && s.capabilityId === (target.capabilityId ?? null)) ||
       (s.kind === 'agent_action' && s.hubId === target.hubId && s.action === target.action) ||
       (s.kind === 'external_agent_api' && s.hubId === target.hubId && target.connectionId !== null) ||
       (s.kind === 'outbound_messages' && s.hubId === target.hubId && OUTBOUND_ACTIONS.includes(target.action));
