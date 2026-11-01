@@ -1,3 +1,4 @@
+import { withProvenanceFixtures } from './provenance-fixture.js';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import { publications, issues, type DraftInput } from '../../packages/data/src/repositories/content.js';
 import { sources, importBatches, sourceItems } from '../../packages/data/src/repositories/sources.js';
@@ -34,7 +35,7 @@ export async function currentSourceFixture(sw: SourcesWorld, admin: DataPool, nu
     await act(p.editorA, trx => sourceItems.decide(trx, ctxA, second.id, second.revision, 'draft', pub.id));
   }
   pub = await act(p.editorA, trx => publications.transition(trx, ctxA, pub.id, pub.revision, 'in_review'));
-  pub = await act(p.chief, trx => publications.publish(trx, ctxC, pub.id, pub.revision, null));
+  pub = await act(p.chief, trx => withProvenanceFixtures(w).publish(trx, ctxC, pub.id, pub.revision, null));
   const version = (await act(p.chief, trx => publications.versions(trx, pub.id)))[0]!;
   let issue = await act(p.editorA, trx => issues.create(trx, ctxA, { hubId: w.hubId, number, date: '2026-11-01', theme: 'Synthetic rights verification', coverAssetId: null, editorLetterId: null }));
   issue = await act(p.editorA, trx => issues.curate(trx, ctxA, issue.id, issue.revision, { items: [{ position: 1, section: 'practice', publicationId: pub.id, publicationVersionId: version.id }], theme: null, coverAssetId: null, editorLetterId: null }));

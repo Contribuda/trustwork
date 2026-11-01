@@ -1,3 +1,4 @@
+import { withProvenanceFixtures } from './provenance-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sql } from 'kysely';
@@ -9,7 +10,7 @@ import { buildContentHttpWorld } from './http.js';
 import { buildSourcesWorld, DISPLAY_ONLY } from '../sources/helpers.js';
 import { SKIP_REASON } from '../data/helpers/postgres.js';
 import { currentSourceFixture } from './current-sources.js';
-import { draft, credit, source } from './helpers.js';
+import { draft, credit, source, refused } from './helpers.js';
 
 const h = await startHarness('content_current_sources');
 test('current source authority in real public API projections', { skip: h ? false : SKIP_REASON, timeout: 120_000 }, async t => {
@@ -64,17 +65,17 @@ test('current source authority in real public API projections', { skip: h ? fals
     assert.equal((await detail(f.pub.id)).body && ((await detail(f.pub.id)).body as { current: { body: null } }).current.body, null);
   });
   await t.test('ambiguous linkage fails closed, regardless of both sources granting rights', async () => {
-    await deny(await currentSourceFixture(sw, h.db.admin, 14, { ambiguous: true }));
+    await refused(currentSourceFixture(sw, h.db.admin, 14, { ambiguous: true }), '23514', 'content.provenance_source_unavailable');
   });
   await t.test('URL equality and another publication never authorize an unlinked reference; own reporting needs no source row', async () => {
     const f = await currentSourceFixture(sw, h.db.admin, 15);
-    let copy = await w.act.as(p.writer, trx => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'en', licence: 'cc_by', requiresReview: false,
+    const copy = await w.act.as(p.writer, trx => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'en', licence: 'cc_by', requiresReview: false,
       draft: draft({ sourceRefs: [source({ uri: f.external.url })], treatment: 'summary' }), authorship: credit(p.writer) }));
-    copy = await w.act.as(p.writer, trx => publications.publish(trx, null, copy.id, copy.revision, null));
+    await refused(w.act.as(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, copy.id, copy.revision, null)), '23514', 'content.provenance_source_unavailable');
     assert.equal((await detail(copy.id)).status, 404);
     const own = await w.act.as(p.writer, trx => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'en', licence: 'cc_by', requiresReview: false,
       draft: draft(), authorship: credit(p.writer) }));
-    await w.act.as(p.writer, trx => publications.publish(trx, null, own.id, own.revision, null));
+    await w.act.as(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, own.id, own.revision, null));
     assert.equal((await detail(own.id)).status, 200);
     assert.equal(await withMaintenance(h.db.admin, trx => publicContent.publication(trx, w.otherHubId, f.pub.id)), null);
   });
@@ -83,9 +84,9 @@ test('current source authority in real public API projections', { skip: h ? fals
     for (const mismatch of ['source', 'hub'] as const) {
       const f = await currentSourceFixture(sw, h.db.admin, mismatch === 'source' ? 16 : 17);
       const uri = `${f.external.url}-mismatch`;
-      let copy = await w.act.as(p.writer, trx => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'en', licence: 'cc_by', requiresReview: false,
+      const copy = await w.act.as(p.writer, trx => publications.create(trx, null, { hubId: w.hubId, owner: { kind: 'person' }, format: 'article', articleFormat: 'practice', language: 'en', licence: 'cc_by', requiresReview: false,
         draft: draft({ sourceRefs: [source({ uri })], treatment: 'summary' }), authorship: credit(p.writer) }));
-      copy = await w.act.as(p.writer, trx => publications.publish(trx, null, copy.id, copy.revision, null));
+      await refused(w.act.as(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, copy.id, copy.revision, null)), '23514', 'content.provenance_source_unavailable');
       // Deliberately inconsistent imported fixture, not a production mutation path. Immutable real rows stay intact.
       await withMaintenance(h.db.admin, trx => sql`INSERT INTO trustwork.source_item
         (hub_id, source_id, import_batch_id, external_id, url, title, content_digest, licence_snapshot, status, decided_by, decided_at, publication_id)
@@ -93,13 +94,14 @@ test('current source authority in real public API projections', { skip: h ? fals
           ${mismatch === 'source' ? other.registered.id : f.registered.id}::uuid, import_batch_id, external_id || '-mismatch', ${uri}, title,
           content_digest, licence_snapshot, 'drafted', decided_by, decided_at, ${copy.id}::uuid
         FROM trustwork.source_item WHERE id = ${f.imported.id}::uuid`.execute(trx));
+      await refused(w.act.as(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, copy.id, copy.revision, null)), '23514', 'content.provenance_source_unavailable');
       assert.equal((await detail(copy.id)).status, 404); assert.equal((await pin(copy.id)).status, 404);
     }
   });
   await t.test('a correction to original reporting does not revive the revoked pinned source version', async () => {
     const f = await currentSourceFixture(sw, h.db.admin, 19);
     const ctx = await w.act.elevate(p.chief);
-    await w.act.as(p.chief, trx => publications.correct(trx, ctx, f.pub.id, f.pub.revision, draft(), 'Synthetic replacement with own reporting', 'correction'));
+    await w.act.as(p.chief, trx => withProvenanceFixtures(w).correct(trx, ctx, f.pub.id, f.pub.revision, draft(), 'Synthetic replacement with own reporting', 'correction'));
     await sw.cmd(p.stewardA, (trx, c) => sources.setTerms(trx, c, f.registered.id, f.registered.revision, { ...f.input, allowedUses: DISPLAY_ONLY }));
     assert.equal((await detail(f.pub.id)).status, 200); assert.equal((await pin(f.pub.id)).status, 404);
     const pinned = await issue(19); assert.equal((pinned.body as { items: { withheld: boolean }[] }).items[0]!.withheld, true);

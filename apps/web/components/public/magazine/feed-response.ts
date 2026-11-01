@@ -10,15 +10,16 @@ export async function contentFeedResponse(section: 'news' | 'articles' | 'magazi
   if (section === 'magazine') {
     for (const issue of (await data.getMagazine('feed')).archive) entries.push({ id: link(issue.href), url: link(issue.readerHref), title: issue.title, language: currentLocale(), published: issue.releasedAt,
       modified: issue.corrections.at(-1)?.date ?? issue.releasedAt, authors: [...new Set(issue.items.map(i => i.authorLabel).filter(Boolean))],
-      text: [...issue.corrections.map(c => `${t('common.corrected')}: ${c.summary}`), ...issue.items.map(i => `${i.title}\n${i.correctionNote ? `${t('common.corrected')}: ${i.correctionNote}\n` : ''}${i.body}`)].join('\n\n') });
+      text: [...issue.corrections.map(c => `${t('common.corrected')}: ${c.summary}`), ...issue.items.map(i => `${i.title}\n${i.correctionNote ? `${t('common.corrected')}: ${i.correctionNote}\n` : ''}${i.originalHref ? `${t('publicationProvenance.originalLink')}: ${link(i.originalHref)}\n` : ''}${i.body}`)].join('\n\n') });
   } else {
     const cards = section === 'news' ? await data.listNews() : await data.listArticles();
     for (const card of cards.slice(0, 50)) {
       const item = await data.getPublication(card.slug, section === 'news' ? 'news' : 'article', 'feed');
       if (!item) continue;
+      const original=item.content?.provenance?.availability==='recorded'?item.content.provenance.translation:undefined;
       entries.push({ id: link(item.href), url: link(item.href), title: item.title, published: item.publishedAt,
         authors: item.authorLabel ? [item.authorLabel] : [], modified: item.content?.modifiedAt ?? item.correctedAt ?? item.publishedAt, language: item.content?.language ?? currentLocale(),
-        text: [item.correction ? `${t('common.corrected')}: ${item.correction.note}` : '', ...(item.content?.notices ?? []), item.body,
+        text: [original ? `${t('publicationProvenance.originalLink')}: ${link(`/${original.originalFormat==='news'?'news':'articles'}/${original.originalPublicationId}?version=${original.originalVersion}`)}` : '',item.correction ? `${t('common.corrected')}: ${item.correction.note}` : '', ...(item.content?.notices ?? []), item.body,
           ...(item.content?.sources.map(s => `${s.name}${s.url ? ` (${s.url})` : ''}${s.licence ? ` · ${s.licence}` : ''}`) ?? [])].filter(Boolean).join('\n\n') });
     }
   }

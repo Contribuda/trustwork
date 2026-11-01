@@ -1,3 +1,6 @@
+import { withMaintenance } from '@trustwork/data';
+import { contentWorker } from '../../packages/data/src/repositories/content.js';
+import { refused } from '../content/helpers.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
@@ -42,7 +45,7 @@ test('PROV actual CNT commands and channel-scoped public delivery', {skip:h?fals
       const response=await anonymous.get(`/v1/publications/${original.id}?channel=${channel}`);
       const p=PublicPublicationSchema.parse(ok(response)).current.provenance;
       assert.equal(p?.availability,'recorded');if(p?.availability==='recorded')assert.equal(p.credits.responsible_editor,channel==='web'?'Synthetic Writer':undefined);
-      assert.match(response.headers['cache-control']??'',/no-store/);
+      assert.match(String(response.headers['cache-control']??''),/no-store/);
     }
     expectRefusal(await c.coauthor.post('/v1/provenance/revocations',{consentId:consent.consentId,reason:'Synthetic withdrawal'}),404,'access.not_found');
     ok(await c.writer.post('/v1/provenance/revocations',{consentId:consent.consentId,reason:'Synthetic withdrawal'}));
@@ -60,6 +63,14 @@ test('PROV actual CNT commands and channel-scoped public delivery', {skip:h?fals
     translationView=await workspace(translation.id);
     ok(await c.writer.post(`/v1/publications/${translation.id}/publish`,{expectedRevision:translationView.publicationRevision,scheduledFor:null}));
   });
+  await t.test('published translation disclosure cannot erase its immutable original',async()=>{
+    expectRefusal(await c.writer.post('/v1/provenance/declarations',{declaration:{binding:translationView.binding,expectedRevision:translationView.record!.revision,kind:'ai_assisted',roles:['editorial_writer'],evidence:'human_declaration',original:null,reason:'Synthetic downgrade attempt'}}),422,'validation.schema');
+  });
+  const scheduled=await create('ka');
+  const scheduledView=await declare(scheduled.id,originalView.binding);
+  ok(await c.writer.post(`/v1/publications/${scheduled.id}/editors`,{personId:w.people.coauthor,rights:'publish'}));
+  ok(await c.coauthor.post('/v1/provenance/reviews',{review:{provenanceId:scheduledView.record!.id,binding:scheduledView.binding,original:originalView.binding,reason:'Synthetic scheduled review'}}),201);
+  ok(await c.writer.post(`/v1/publications/${scheduled.id}/publish`,{expectedRevision:(await workspace(scheduled.id)).publicationRevision,scheduledFor:'2099-01-01T00:00:00Z'}));
   await t.test('correction prepares, declares and releases exact content without mutating original digest',async()=>{
     originalView=await workspace(original.id);const corrected=draft({body:'Synthetic corrected body.',assistantAssisted:true});
     expectRefusal(await c.writer.post(`/v1/publications/${original.id}/corrections`,{expectedRevision:originalView.publicationRevision,draft:corrected,note:'Synthetic correction',reason:'Synthetic correction'}),422,'validation.schema','provenance_required');
@@ -70,6 +81,12 @@ test('PROV actual CNT commands and channel-scoped public delivery', {skip:h?fals
     assert.equal(pinned.contentDigest,translationView.record!.original!.digest.value);
     const p=PublicPublicationSchema.parse(ok(await anonymous.get(`/v1/publications/${translation.id}`))).current.provenance;
     assert.equal(p?.availability,'recorded');if(p?.availability==='recorded'){assert.equal(p.translation?.stale,true);assert.equal(p.translation?.originalDigest,pinned.contentDigest);}
+  });
+  await t.test('actual scheduled worker rechecks original at release and rolls back stale publication',async()=>{
+    await withMaintenance(h.db.admin,trx=>trx.updateTable('publication').set({scheduled_for:new Date(Date.now()-1000)}).where('id','=',scheduled.id).execute());
+    await refused(withMaintenance(h.db.admin,trx=>contentWorker.publishDue(trx)), '23514','content.provenance_original_unavailable');
+    assert.equal((await workspace(scheduled.id)).status,'scheduled');
+    expectRefusal(await anonymous.get(`/v1/publications/${scheduled.id}`),404,'access.not_found');
   });
   await t.test('retracted original withholds translation on detail, pinned version and feed',async()=>{
     originalView=await workspace(original.id);

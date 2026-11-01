@@ -1,3 +1,4 @@
+import { withProvenanceFixtures } from '../content/provenance-fixture.js';
 import {
   FakeC2paIptcAdapter,
   attachImageProvenance,
@@ -444,7 +445,7 @@ test(
           publications.get(trx, pub.id),
         ))!;
         const corrected = await as(p.writer, (trx) =>
-          publications.correct(
+          withProvenanceFixtures(w).correct(
             trx,
             null,
             pub.id,
@@ -475,7 +476,7 @@ test(
       async () => {
         const original = await create("writer");
         await as(p.writer, (trx) =>
-          publications.publish(trx, null, original.id, original.revision, null),
+          withProvenanceFixtures(w).publish(trx, null, original.id, original.revision, null),
         );
         const d = await create("writer", "es");
         const i = declaration(d.id, "es", {
@@ -526,7 +527,7 @@ test(
         for (const change of ["revoke", "correct"] as const) {
           const original = await create("writer");
           await as(p.writer, (trx) =>
-            publications.publish(
+            withProvenanceFixtures(w).publish(
               trx,
               null,
               original.id,
@@ -564,7 +565,7 @@ test(
               await publications.revokeEditor(trx, d.id, p.coauthor);
             else {
               const pub = (await publications.get(trx, original.id))!;
-              await publications.correct(
+              await withProvenanceFixtures(w).correct(
                 trx,
                 null,
                 original.id,

@@ -36,8 +36,8 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
     if (!value) throw new Error(`Missing content PDF locale key: ${key}`);
     return value.replace(/\{(\w+)\}/g, (_, name: string) => args[name] ?? `{${name}}`);
   };
-  const provenanceDictionary = JSON.parse(await readFile(new URL(`../../../web/locales/${locale}/provenance.json`, import.meta.url), 'utf8')) as { provenance: Record<string,string | Record<string,string>> };
-  const provLabel = (key: string) => { const value = provenanceDictionary.provenance[key]; if (typeof value !== 'string') throw new Error(`Missing provenance label: ${key}`); return value; };
+  const provenanceDictionary = JSON.parse(await readFile(new URL(`../../../web/locales/${locale}/provenance.json`, import.meta.url), 'utf8')) as { publicationProvenance: Record<string,string | Record<string,string>> };
+  const provLabel = (key: string) => { const value = provenanceDictionary.publicationProvenance[key]; if (typeof value !== 'string') throw new Error(`Missing provenance label: ${key}`); return value; };
   const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(snapshot.issue.date));
   const edition = label('pdfEdition', { number: number(snapshot.issue.number), edition: number(snapshot.issue.edition), date });
@@ -62,8 +62,8 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
       ...(recorded && recorded.kind !== 'none' ? [provLabel(recorded.kind === 'machine_translation' ? 'machineReviewed' : recorded.kind === 'generated' ? 'generated' : 'aiAssisted')] : []),
       ...(recorded?.credits.responsible_editor ? [`${provLabel('responsibleEditor')}: ${recorded.credits.responsible_editor}`] : recorded ? [provLabel('revoked')] : []),
       ...(recorded?.credits.translation_reviewer ? [`${provLabel('reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
-      ...(recorded?.roles.length ? [`${provLabel('declaredRoles')}: ${recorded.roles.map(role => (provenanceDictionary.provenance.roles as Record<string,string>)[role]).join(' · ')}`] : []),
-      ...(recorded?.translation ? [`${provLabel('originalLink')}: ${recorded.translation.originalLanguage} · ${number(recorded.translation.originalVersion)}`] : []),
+      ...(recorded?.roles.length ? [`${provLabel('declaredRoles')}: ${recorded.roles.map(role => (provenanceDictionary.publicationProvenance.roles as Record<string,string>)[role]).join(' · ')}`] : []),
+      ...(recorded?.translation ? [`${provLabel('originalLink')}: ${recorded.translation.originalLanguage} · ${number(recorded.translation.originalVersion)} · ${recorded.translation.originalPublicationId} · ${recorded.translation.originalDigest}`] : []),
       ...(recorded?.translation?.stale ? [provLabel('stale')] : []),
     ];
     const credits = i.publication.authorship.filter(a => (a.kind === 'editorial' || a.id !== null) && !/^(ai|artificial intelligence|chatgpt|claude|codex|\u0438\u0438)$/iu.test(a.credit.trim())).map(a => a.credit).join(' · ');

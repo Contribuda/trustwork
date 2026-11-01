@@ -23,6 +23,7 @@ BEGIN
    SELECT * INTO original FROM trustwork.publication WHERE id=o.publication_id FOR SHARE;
    IF original.id IS NULL OR original.hub_id<>p.hub_id OR original.status='retracted' OR NOT trustwork.content_public_ok(original)
      OR o.content_digest IS DISTINCT FROM r.original_digest OR original.current_version_id<>o.id
+     OR NOT trustwork.provenance_original_available(original.id,ARRAY[p.id])
      THEN RETURN 'provenance_original_unavailable'; END IF;
    IF NOT EXISTS(SELECT 1 FROM trustwork.provenance_review review WHERE review.provenance_id=r.id
      AND review.reviewer_person_id<>r.responsible_person_id AND review.reviewer_person_id<>v.drafted_by)
@@ -399,3 +400,22 @@ BEGIN
 END $$;
 CREATE TRIGGER provenance_edition_guard BEFORE INSERT OR UPDATE ON trustwork.edition_link FOR EACH ROW EXECUTE FUNCTION trustwork.provenance_edition_guard();
 REVOKE ALL ON FUNCTION trustwork.provenance_edition_guard() FROM PUBLIC,trustwork_app,trustwork_worker;
+
+-- Appending disclosure cannot erase the original of an already published translation.
+CREATE FUNCTION trustwork.provenance_preserve_translation() RETURNS trigger
+LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
+DECLARE previous trustwork.provenance_record; v trustwork.publication_version;
+BEGIN
+ SELECT * INTO v FROM trustwork.publication_version WHERE id=NEW.version_id;
+ SELECT r.* INTO previous FROM trustwork.provenance_record r
+   JOIN trustwork.publication_version pv ON pv.id=r.version_id
+   WHERE r.publication_id=NEW.publication_id AND pv.version<=v.version AND r.kind='machine_translation'
+   ORDER BY pv.version DESC,r.revision DESC LIMIT 1;
+ IF previous.id IS NOT NULL AND (NEW.kind<>'machine_translation'
+   OR (v.status='published' AND previous.version_id=v.id AND (NEW.original_version_id IS DISTINCT FROM previous.original_version_id OR NEW.original_digest IS DISTINCT FROM previous.original_digest))) THEN
+   RAISE EXCEPTION 'translation original is immutable' USING ERRCODE='23514',HINT='provenance.binding_mismatch';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER provenance_preserve_translation BEFORE INSERT ON trustwork.provenance_record FOR EACH ROW EXECUTE FUNCTION trustwork.provenance_preserve_translation();
+REVOKE ALL ON FUNCTION trustwork.provenance_preserve_translation() FROM PUBLIC,trustwork_app,trustwork_worker;
