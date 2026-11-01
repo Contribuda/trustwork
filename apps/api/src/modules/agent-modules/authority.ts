@@ -97,8 +97,10 @@ export class CapabilityAuthority {
     const { document } = await this.policy(trx, registry);
     const policyReason = capabilityRefusal(document, registry, capabilityId, await this.principalOf(trx, actor));
     if (policyReason !== null) return { allowed: false, capabilityId, moduleKey, reason: policyReason, messageKey: REFUSAL_MESSAGE_KEYS[policyReason], blockedBy: null };
+    const enabled = document.policy.enabledModules.find((m) => m.moduleKey === moduleKey);
+    const capability = enabled ? moduleCapabilities(registry, moduleKey, enabled.moduleVersion, document.policy.activeExtensionVersionIds).find((c) => c.id === capabilityId) : undefined;
     const blocked = await agentAuthority.dispatchRefusal(trx, {
-      hubId: this.hubId, moduleKey, capabilityId, action, personId: actor.personId, connectionId: actor.connectionId, representativeOf: actor.representativeOf,
+      hubId: this.hubId, moduleKey, capabilityId, action: action ?? capability?.mandateAction ?? null, personId: actor.personId, connectionId: actor.connectionId, representativeOf: actor.representativeOf,
     });
     if (blocked) return { allowed: false, capabilityId, moduleKey, reason: 'kill_switch', messageKey: REFUSAL_MESSAGE_KEYS.kill_switch, blockedBy: blocked };
     return { allowed: true, capabilityId, moduleKey };

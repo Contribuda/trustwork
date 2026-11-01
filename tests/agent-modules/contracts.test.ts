@@ -57,6 +57,7 @@ test('a hub never widens a module beyond its manifest: actions, capabilities (to
   assert.ok(m.policyDocumentViolations(unknown, REGISTRY).includes('unknown module order_desk@1.0.0'));
   const lowered = { ...ok, policy: { ...ok.policy, enabledModules: ok.policy.enabledModules.map((e) => ({ ...e, freeQuota: [] })) } };
   assert.ok(m.policyDocumentViolations(lowered, REGISTRY).some((p) => p.startsWith('free floor reduced')));
+  assert.ok(m.policyDocumentViolations({ ...ok, policy: { ...ok.policy, activeExtensionVersionIds: ['missing-extension'] } }, REGISTRY).some((p) => p.includes('not an activated registry version')));
   // Extensions add capabilities only when their version is active in the policy.
   const extension: AgentCapability = { ...PLANNER.capabilities.find((c) => c.id === PLANNER_READ)!, id: 'project_planner.weather_window', source: { kind: 'extension', extensionId: 'ext-weather', extensionVersion: 1 }, labelKey: 'ext.weather' };
   const registry = { ...REGISTRY, extensions: [{ extensionVersionId: 'extv-1', moduleKey: 'project_planner', capabilities: [extension] }] };
@@ -100,6 +101,7 @@ test('eligibility, defaults within maximums, and job templates that never hold m
   assert.ok(job({ moduleKey: 'reputation_builder' }).some((p) => p.includes('module not enabled')));
   assert.ok(job({ defaultTrigger: { kind: 'schedule', rrule: 'FREQ=DAILY;BYHOUR=9,10', timeZone: 'America/New_York' } }).some((p) => p.includes('below its minimum interval')));
   assert.ok(job({ minIntervalMinutes: 60 }).length === 0);
+  assert.ok(job({ defaultTrigger: { kind: 'schedule', rrule: 'FREQ=DAILY;BYHOUR=99', timeZone: 'America/New_York' } }).some((p) => p.includes('invalid default schedule')));
   assert.ok(m.policyDocumentViolations({ ...ok, participantSettings: { ...ps, scheduleMinIntervalMinutes: 2880 } }, REGISTRY).some((p) => p.includes('interval below the hub minimum')));
   for (const action of ['place_order', 'confirm_execution', 'generate_deliverable', 'release_payment'] as const) {
     assert.ok(m.policyDocumentViolations({ ...commit, modules: commit.modules.map((x) => (x.moduleKey === task.key ? { ...x, verifiedCompanyRequired: true } : x)), jobTemplates: [{ ...template, moduleKey: task.key, actions: [action] }] }, REGISTRY)

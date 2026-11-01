@@ -97,6 +97,8 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     ok(await petr.post(`/v1/assistant/mandate-proposals/${body.request.mandateProposalId}/confirm`, { digest: body.confirmation.digest }));
     const view = ok<{ jobs: { id: string; status: string; jobSubscriptionId: string | null; nextDueAt: string | null }[] }>(await petr.get('/v1/assistant/jobs')).jobs.find((j) => j.id === requestId)!;
     assert.equal(view.status, 'active');
+    expectRefusal(await world.staff.owner.post(`/v1/assistant/jobs/${requestId}/run`), 404, 'access.not_found');
+    expectRefusal(await world.staff.owner.post(`/v1/assistant/mandate-proposals/${body.request.mandateProposalId}/confirm`, { digest: body.confirmation.digest }), 404, 'access.not_found');
     assert.ok(view.jobSubscriptionId && view.nextDueAt);
     subscriptionId = view.jobSubscriptionId;
     const sub = (await h.db.admin.query<{ status: string; mandate_id: string }>('SELECT status, mandate_id FROM trustwork.job_subscription WHERE id = $1', [subscriptionId])).rows[0]!;
@@ -192,6 +194,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       const intentId = (queued as { intentId: string }).intentId;
       const job = await leaseFor(intentId);
       const id = await engage(world, kind, target);
+      expectRefusal(await petr.get(`/v1/assistant/capabilities/${PLANNER_COMMIT}`), 403, 'access.forbidden', 'kill_switch');
       const d = await check();
       assert.deepEqual(d.allowed ? null : [d.reason, d.blockedBy?.kind, d.messageKey], ['kill_switch', kind, 'agentModules.refusal.paused'], kind);
       // The next check of the runtime itself: the dispatch recheck refuses and revokes before any call.
@@ -291,7 +294,13 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       ['participant type', { capabilityId: PLANNER_COMMIT, offForHub: false, offForPrincipalKinds: ['person' as const], offForPlans: [] }, 'capability.off_for_principal_kind', 'agentModules.refusal.offForPrincipalKind'],
       ['plan', { capabilityId: PLANNER_COMMIT, offForHub: false, offForPrincipalKinds: [], offForPlans: ['free'] }, 'capability.off_for_plan', 'agentModules.refusal.offForPlan'],
     ] as const) {
+      await activatePolicy(h, world, usHubPolicy(hubId));
+      const queued = await propose(PLANNER_COMMIT);
+      assert.equal(queued.state, 'queued');
+      const intentId = (queued as { intentId: string }).intentId;
+      const job = await leaseFor(intentId);
       await activatePolicy(h, world, withSwitch(usHubPolicy(hubId), { ...s, offForPrincipalKinds: [...s.offForPrincipalKinds], offForPlans: [...s.offForPlans] }));
+      assert.deepEqual(await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId)), { status: 'refused', reason: 'capability_off' }, `${label}: queued actions recheck the new policy`);
       const r = await surfaces();
       assert.deepEqual(r.ui, [reason, key], `${label}: interface`);
       assert.deepEqual(r.runtime, r.ui, `${label}: agent runtime`);

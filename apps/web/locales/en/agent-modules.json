@@ -73,7 +73,7 @@
         "module_not_enabled": "The hub turned this part of your agent off."
       },
       "fire": {
-        "due": "Started",
+        "due": "Ready to run",
         "blocked": "Paused by the hub",
         "mandate_inactive": "Skipped: the mandate is no longer active",
         "subscription_inactive": "Skipped: the job is off",
