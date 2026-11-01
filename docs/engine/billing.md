@@ -2,13 +2,43 @@
 
 Normative requirements: [Billing and commissions](modules/billing-and-commissions.md), [Getting paid](modules/getting-paid.md). Participants: [who uses what](participants/README.md).
 
-Requirements R19, R20, R46, R47. Status: billing state in settings is **Demo**; budgets, price versions and acceptances are **Contract**; offers, entitlements, usage and payment adapters are **Designed** (work package BILL-001); licensed payment providers only (Trustwork never holds money), hub commissions have **partial implementation** ([BILL-003 boundaries](../../apps/api/src/modules/billing/fees/README.md)); other hub-level commercial settings remain **Proposed** ([ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20 and 21; PAY-001, BILL-002, BILL-003, PAY-002).
+Requirements R19, R20, R46, R47. Status: billing state in settings is **Demo**; the BILL-001 service/database foundation implements entitlements, immutable price acceptance, two budget kinds, reservations and a balanced ledger ([implementation boundary](../../apps/api/src/modules/billing/README.md)). It does not establish provider payments or complete public catalogue delivery. Hub commissions have **partial implementation** ([BILL-003 boundaries](../../apps/api/src/modules/billing/fees/README.md)). The business-model playbook and [public pricing screen contract](../design/screen-contracts/public/pricing.md) are **Designed** (BIZ-001); payment adapters, invoices and complete public fee/model/capability/credit readers remain separate implementation work (PAY-001, BILL-002, BILL-003, PAY-002). [ADR 010](../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20, 21 and 25 govern those implementations; no operational prices or providers are selected here.
 
 ## Free to participate, fair to pay
 
 Both commercial sides and non-commercial readers and authors get **free minimum participation**: reading, a profile, publishing under the hub's rules, responding to RFQs, basic company presence. A hub earns money from things that cost money to provide or that create clear value: agent work beyond a trial, generated deliverables, tiered subscriptions with more capacity, paid event tickets and courses (as a marketplace), and services such as verification where checks have a real cost. Actual prices, trial lengths and tiers are open (O03) and set by each hub.
 
 **Money never buys ranking, matching position, reputation or a verified badge.**
+
+## Hub business-model playbook
+
+This playbook applies the existing owner decisions; it does not activate an offer. A hub first identifies the actual service, the payer, the budget kind, the published price version and the evidence that proves delivery. A second person activates the version. Missing legal, provider, price or consent authority leaves the paid operation unavailable. A synthetic catalogue is labelled test/demo evidence and never supplies an operational price.
+
+| Revenue option | What the participant pays for | Invariant and disclosure |
+|---|---|---|
+| Capacity subscription | Published additional capacity, integrations or workspace features above the engine's free floor | Participation and basic RFQ responses stay free. More capacity never changes directory order, matching, recommendations, reputation or verification. Publish included quotas, billing period and cancellation/renewal terms; a paid plan grants no staff or resource authority. |
+| Metered agent work | A named model/capability meter or action beyond the published allowance, charged to the platform budget | Publish the unit, fixed participant price version, included usage and any explicit overage limit before admission. Reserve against the correct budget and settle only from evidence; unknown outcomes retain their reconciliation state. No outcome-based agent fee, purchasable introduction quota or ranking advantage. |
+| Generated deliverable | A specified report, export or other output with a price and delivery definition | Price the work, never access to another party's private data or a favourable conclusion. Existing source licences, projections and mandates still apply. A paid due-diligence report does not buy a badge, score or recommendation. |
+| Consultations and tasks | A disclosed category commission or fee on the actual booked service or accepted task | Same published category terms for everyone; zero requires an explicit valid zero version. Bind both parties' applicable disclosures to the real immutable booking/agreement. A commission never influences candidate selection, ranking, recommendations or reputation. |
+| Events and courses | A published marketplace fee or organiser capacity subscription for a ticket/course service | Show the participant's full applicable fee breakdown before acceptance. Never sell attendee contacts, profile views or better matching; certificates describe earned completion, not purchased verification. The owning booking and licensed-provider paths must exist first. |
+| Verification at cost | The real cost of a documented check or manual review, independently of any plan | Same published check price for everyone; the hub may waive the cost under its policy. Payment never guarantees success, changes evidence, buys a badge or affects rankings, matching or reputation. Publish the check's scope and limits. |
+| Labelled sponsorship | A separately identified editorial, newsletter, event or training placement where hub policy permits it | Off by default. Never a directory/search/matching/plan-suggestion position and never a change to editorial evidence or reputation. No private-data targeting, contact exports or implied endorsement. Existing editorial and consent rules remain mandatory. |
+
+Amounts, tiers, trials, commission levels, waiver criteria and real legal/tax/refund text remain owner/operator decisions. A markup, if chosen, is materialized into a fixed participant price version; it is not a hidden spread or a mutable checkout calculation. Model/provider credentials and internal cost records are not part of the public participant-price projection.
+
+The engine does not sell leads, introductions, received RFQs, higher matching positions, featured directory slots, badges, ratings, awards tied to purchases, attendee lists, profile-view data or worker data. It does not target advertisements using private data, convert a trial into recurring billing without separate explicit acceptance, or collect participants' funds into an operator/platform account. Paying for software never bypasses sanctions, mandates, privacy or human confirmation.
+
+The reference research's optional public-data licensing and payment-orchestration ideas are not additional enabled products. They require their own accepted ownership, legal/licence and provider contracts. No engine-code dual licence, referral programme, autonomous payment release or operational price is established by this playbook.
+
+### Before offering a paid service
+
+1. Keep the engine's free participation floor available and identify the actual owning service and fulfilment evidence.
+2. Publish the complete applicable price/fee, unit, currency, scope, dates and acceptance/refund/renewal terms in every supported language; obtain the existing second-person activation.
+3. Bind disclosure and acceptance to the real operation and current authorized payer. A transaction budget never authorizes platform spending, or the reverse.
+4. Use only the configured licensed-provider path for charges, refunds and payouts; otherwise leave payment unavailable or record agreed off-platform payment where the owning contract permits it. Never invent a successful charge.
+5. Compare directory, matching, recommendation and reputation results with and without payment state. Catalogue visibility must not depend on the viewer's plan. Preserve immutable accepted versions when prices change.
+
+The [public pricing contract](../design/screen-contracts/public/pricing.md) distinguishes a confirmed empty section from a missing reader or failed request. Missing prices never mean free service. Fair renewal, cancellation and credit terms remain governed by BILL-004 and the existing [billing requirements](modules/billing-and-commissions.md), including advance disclosure and no silent credit expiry.
 
 ## Two kinds of budget
 
