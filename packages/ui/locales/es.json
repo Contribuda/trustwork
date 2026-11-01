@@ -511,6 +511,8 @@
     "negativeMargin": "Margen negativo",
     "editHint": "{enter} o {edit} para editar; {escape} para cancelar",
     "saved": "Cambio solicitado",
+    "changeRequested": "Cambio solicitado: {value}. No se ha confirmado que se haya guardado.",
+    "changeRejected": "La solicitud de cambio falló: {value}. Vuelva a abrir la celda para revisar el borrador.",
     "statuses": {
       "live": "En funcionamiento",
       "demo": "Demostración",

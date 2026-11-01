@@ -511,6 +511,8 @@
     "negativeMargin": "Mənfi marja",
     "editHint": "Redaktə: {enter} və ya {edit}; ləğv: {escape}",
     "saved": "Dəyişiklik tələb edilib",
+    "changeRequested": "Dəyişiklik tələb edilib: {value}. Yadda saxlanması təsdiqlənməyib.",
+    "changeRejected": "Dəyişiklik sorğusu uğursuz oldu: {value}. Qaralamanı yoxlamaq üçün xananı yenidən açın.",
     "statuses": {
       "live": "İşləyir",
       "demo": "Nümayiş",

@@ -7,6 +7,7 @@ const widths = [375, 768, 1280];
 const stories = [
   "records",
   "editable-grid",
+  "grid-interactions",
   "access",
   "decisions",
   "activity",
@@ -94,6 +95,50 @@ for (const language of languages)
             await expect(page.getByRole("textbox")).toBeFocused();
             await page.keyboard.press("Escape");
           }
+          if (story === "grid-interactions") {
+            const cell = page.locator(
+              '[data-grid-row="1"][data-grid-column="3"]',
+            );
+            await cell.focus();
+            await page.keyboard.press("F2");
+            await expect(
+              cell.getByRole("button", { name: k.openPage, exact: true }),
+            ).toBeFocused();
+            await page.keyboard.press("Tab");
+            await expect(
+              cell.getByRole("button", { name: k.share, exact: true }),
+            ).toBeFocused();
+            await page.keyboard.press("Enter");
+            await expect(page.locator("[data-request]")).toHaveText("share:1");
+            await page.keyboard.press("Shift+Tab");
+            await expect(
+              cell.getByRole("button", { name: k.openPage, exact: true }),
+            ).toBeFocused();
+            await page.keyboard.press("Escape");
+            await expect(cell).toBeFocused();
+            await expect(
+              page.getByRole("grid").locator('[tabindex="0"]'),
+            ).toHaveCount(1);
+            const edit = page.locator(
+              '[data-grid-row="1"][data-grid-column="1"]',
+            );
+            await edit.focus();
+            await page.keyboard.press("Enter");
+            await page
+              .getByRole("textbox", { name: k.name, exact: true })
+              .fill("123");
+            await page.keyboard.press("Tab");
+            await expect(
+              page
+                .getByRole("status")
+                .filter({
+                  hasText: k.changeRequested.replace("{value}", "123"),
+                }),
+            ).toBeVisible();
+            await expect(
+              page.locator('[data-grid-row="1"][data-grid-column="2"]'),
+            ).toBeFocused();
+          }
           if (story === "access") {
             if (width >= 768) {
               await page
@@ -109,6 +154,50 @@ for (const language of languages)
             }
           }
           if (story === "decisions") {
+            const diff = page
+              .getByRole("region")
+              .filter({ has: page.getByRole("table") });
+            const table = diff.getByRole("table");
+            await expect(table.getByRole("columnheader")).toHaveText([
+              k.field,
+              k.before,
+              k.after,
+            ]);
+            await expect(table.getByRole("row")).toHaveCount(4);
+            if (width === 375) {
+              await diff.focus();
+              for (let key = 0; key < 20; key++)
+                await page.keyboard.press("ArrowRight");
+              await expect
+                .poll(() =>
+                  diff.evaluate((node) =>
+                    Math.abs(
+                      node.scrollWidth - node.clientWidth - node.scrollLeft,
+                    ),
+                  ),
+                )
+                .toBeLessThan(2);
+              const after = await table
+                .getByRole("columnheader", { name: k.after, exact: true })
+                .boundingBox();
+              const region = await diff.boundingBox();
+              expect(after!.x).toBeGreaterThanOrEqual(region!.x);
+              expect(after!.x + after!.width).toBeLessThanOrEqual(
+                region!.x + region!.width + 1,
+              );
+              await expect(diff).toBeFocused();
+              if (language === "ru") {
+                mkdirSync("dist/console-evidence", { recursive: true });
+                await diff.screenshot({
+                  path: "dist/console-evidence/decisions-after-ru-375.png",
+                });
+              }
+              for (let key = 0; key < 20; key++)
+                await page.keyboard.press("ArrowLeft");
+              await expect
+                .poll(() => diff.evaluate((node) => node.scrollLeft))
+                .toBe(0);
+            }
             const show = page.getByRole("checkbox", { name: k.showUnchanged });
             await show.focus();
             await page.keyboard.press("Space");
@@ -295,7 +384,9 @@ for (const width of widths) {
           page.getByRole("columnheader", { name: /Name/ }),
         ).toHaveAttribute("aria-sort", "ascending");
       }
-      await page.getByRole("checkbox", { name: "Select this page" }).press("Space");
+      await page
+        .getByRole("checkbox", { name: "Select this page" })
+        .press("Space");
       await expect(
         page
           .getByRole("status")
@@ -507,6 +598,232 @@ for (const width of widths) {
         page.getByRole("status").filter({ hasText: "ge" }),
       ).toBeVisible();
       await expect(map.getByRole("list").getByRole("listitem")).toHaveCount(2);
+    } finally {
+      await context.close();
+    }
+  });
+}
+
+for (const width of widths) {
+  test(`DS-003 multiple cell controls, disabled skipping and outer Tab ${width}`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      locale: "en",
+      viewport: { width, height: 900 },
+    });
+    const page = await context.newPage();
+    try {
+      await open(page, "grid-interactions");
+      const grid = page.getByRole("grid");
+      const cell = grid.locator('[data-grid-row="1"][data-grid-column="3"]');
+      const first = cell.getByRole("button", { name: "Open as page" });
+      const second = cell.getByRole("button", { name: "Share with team" });
+      const link = cell.getByRole("link");
+      await cell.focus();
+      await page.keyboard.press("Enter");
+      await expect(first).toBeFocused();
+      await page.keyboard.press("Enter");
+      await expect(page.locator("[data-request]")).toHaveText("open:1");
+      await page.keyboard.press("Tab");
+      await expect(second).toBeFocused();
+      await page.keyboard.press("Enter");
+      await expect(page.locator("[data-request]")).toHaveText("share:1");
+      await page.keyboard.press("Tab");
+      await expect(link).toBeFocused();
+      await page.keyboard.press("Shift+Tab");
+      await expect(second).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(cell).toBeFocused();
+      await expect(grid.locator('[tabindex="0"]')).toHaveCount(1);
+      await page.keyboard.press("F2");
+      await page.keyboard.press("Shift+Tab");
+      await expect(
+        grid.locator('[data-grid-row="1"][data-grid-column="2"]'),
+      ).toBeFocused();
+      await cell.focus();
+      await page.keyboard.press("F2");
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Tab");
+      const selection = grid.locator(
+        '[data-grid-row="2"][data-grid-column="0"]',
+      );
+      await expect(selection).toBeFocused();
+      await page.keyboard.press("F2");
+      await expect(selection.getByRole("checkbox")).toBeFocused();
+      await page.keyboard.press("Space");
+      await expect(selection.getByRole("checkbox")).toBeChecked();
+      await page.keyboard.press("Escape");
+      await expect(selection).toBeFocused();
+      await page.keyboard.press("Control+End");
+      await page.keyboard.press("F2");
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Tab");
+      // Selection's ordinary toolbar follows this table, so Tab must leave it.
+      await expect(grid.locator(":focus")).toHaveCount(0);
+      await page.keyboard.press("Shift+Tab");
+      await expect(
+        grid.locator('[data-grid-row="2"][data-grid-column="3"]'),
+      ).toBeFocused();
+      await axe(page);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test(`DS-003 edit Tab uses every rendered column and both boundaries ${width}`, async ({
+    browser,
+  }) => {
+    test.setTimeout(90_000);
+    const context = await browser.newContext({
+      locale: "en",
+      viewport: { width, height: 900 },
+    });
+    const page = await context.newPage();
+    try {
+      for (const selection of [false, true])
+        for (const actions of [false, true])
+          for (const data of [1, 2]) {
+            await open(page, "grid-interactions");
+            if (!selection)
+              await page
+                .getByRole("checkbox", {
+                  name: "Select this page",
+                  exact: true,
+                })
+                .first()
+                .press("Space");
+            if (!actions)
+              await page
+                .getByRole("checkbox", { name: "Row actions", exact: true })
+                .press("Space");
+            if (data === 1) {
+              await page.locator("summary").click();
+              await page
+                .locator("details")
+                .getByRole("checkbox", { name: "Name", exact: true })
+                .press("Space");
+              await page.locator("summary").click();
+            }
+            const grid = page.getByRole("grid");
+            const offset = selection ? 1 : 0;
+            const count = data + offset + (actions ? 1 : 0);
+            const cell = (row: number, column: number) =>
+              grid.locator(
+                `[data-grid-row="${row}"][data-grid-column="${column}"]`,
+              );
+            // First visible data cell: backwards reaches selection or the preceding header.
+            await cell(1, offset).focus();
+            await page.keyboard.press("F2");
+            await grid.getByRole("textbox").fill("First draft");
+            await page.keyboard.press("Shift+Tab");
+            await expect(cell(1, offset)).toHaveText("First draft");
+            await expect(
+              cell(selection ? 1 : 0, selection ? 0 : count - 1),
+            ).toBeFocused();
+            await expect(page.locator("[data-request]")).toHaveText(
+              `1:${data === 1 ? "value" : "name"}:First draft`,
+            );
+            // Last visible data cell: forwards includes actions, wraps rows, or exits.
+            await cell(2, offset + data - 1).focus();
+            await page.keyboard.press("Enter");
+            await grid.getByRole("textbox").fill("Last draft");
+            await page.keyboard.press("Tab");
+            await expect(cell(2, offset + data - 1)).toHaveText("Last draft");
+            await expect(page.locator("[data-request]")).toHaveText(
+              "2:value:Last draft",
+            );
+            if (actions) await expect(cell(2, count - 1)).toBeFocused();
+            else await expect(grid.locator(":focus")).toHaveCount(0);
+            // Forward from first data cell uses the actual displayed column order.
+            await cell(1, offset).focus();
+            await page.keyboard.press("Enter");
+            await grid.getByRole("textbox").fill("Next draft");
+            await page.keyboard.press("Tab");
+            await expect(
+              cell(
+                offset + 1 < count ? 1 : 2,
+                offset + 1 < count ? offset + 1 : 0,
+              ),
+            ).toBeFocused();
+            await expect(cell(1, offset)).toHaveText("Next draft");
+            // Navigation Tab, including reverse at the first header, leaves the grid.
+            await cell(0, 0).focus();
+            await page.keyboard.press("Shift+Tab");
+            await expect(grid.locator(":focus")).toHaveCount(0);
+            await page.keyboard.press("Tab");
+            await expect(cell(0, 0)).toBeFocused();
+          }
+    } finally {
+      await context.close();
+    }
+  });
+
+  test(`DS-003 controlled requests never claim persistence ${width}`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      locale: "en",
+      viewport: { width, height: 900 },
+    });
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    try {
+      for (const behavior of ["delay", "reject", "none", "throw"]) {
+        await open(page, "grid-interactions");
+        await page.getByLabel("Status", { exact: true }).selectOption(behavior);
+        const grid = page.getByRole("grid");
+        const cell = grid.locator('[data-grid-row="1"][data-grid-column="1"]');
+        await cell.focus();
+        await page.keyboard.press("F2");
+        await grid.getByRole("textbox").fill(`Draft ${behavior}`);
+        await page.keyboard.press("Tab");
+        await expect(page.locator("[data-request]")).toHaveText(
+          `1:name:Draft ${behavior}`,
+        );
+        const status = page
+          .getByRole("status")
+          .filter({
+            hasText:
+              behavior === "reject" || behavior === "throw"
+                ? `Change request failed: Draft ${behavior}`
+                : `Change requested: Draft ${behavior}`,
+          });
+        await expect(status).toBeVisible();
+        await expect(
+          page.getByRole("status").filter({ hasText: /\bSaved\b/ }),
+        ).toHaveCount(0);
+        if (behavior === "throw") {
+          await expect(grid.getByRole("textbox")).toBeFocused();
+          await expect(grid.getByRole("textbox")).toHaveValue("Draft throw");
+          await page.keyboard.press("Escape");
+        } else {
+          await expect(cell).toHaveText("Synthetic record 1");
+          await expect(
+            grid.locator('[data-grid-row="1"][data-grid-column="2"]'),
+          ).toBeFocused();
+          if (behavior === "delay") {
+            await page
+              .getByRole("button", { name: "Verify", exact: true })
+              .click();
+            await expect(cell).toHaveText("Draft delay");
+            await expect(status).toContainText("Persistence is not confirmed");
+          } else {
+            await cell.focus();
+            await page.keyboard.press("F2");
+            await expect(grid.getByRole("textbox")).toHaveValue(
+              `Draft ${behavior}`,
+            );
+            await page.keyboard.press("Escape");
+            await expect(cell).toHaveText("Synthetic record 1");
+          }
+        }
+        await axe(page);
+      }
+      expect(errors).toEqual([]);
     } finally {
       await context.close();
     }
