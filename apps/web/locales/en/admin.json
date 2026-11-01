@@ -325,7 +325,10 @@
       "yourRoles": "Your roles here",
       "open": "Open the console",
       "nodeConsole": "Node console",
-      "nodeConsoleStatus": "Hubs, node staff, updates, backups, keys and node-wide kill switches get their own console in a later package."
+      "nodeConsoleStatus": "Hubs, node staff, updates, backups, keys and node-wide kill switches get their own console in a later package.",
+      "demoChooserTitle": "Demo hub console",
+      "demoChooserLede": "Choose a staff role to open the console with. Each role sees only the sections its permissions allow.",
+      "demoChooserNote": "Demo: synthetic data; commands are checked but nothing is saved. In live mode the console opens only for signed-in staff."
     },
     "capabilities": {
       "llm": "Language models",

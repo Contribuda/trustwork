@@ -64,8 +64,18 @@ async function expectNoEnglish(page: Page) {
 }
 
 test.describe('hub console: who can reach it', () => {
-  test('anonymous visitors get 404 on every console route, the wizard included', async ({ page }) => {
-    for (const path of ['/admin', US, `${US}/approvals`, `${US}/hub/identity`, `${US}/integrations/providers`, SAM, '/admin/setup', '/admin/setup/check', '/admin/hubs/no-such-hub']) {
+  test('demo /admin without a persona lists the staff roles; each opens the console as that role', async ({ page }) => {
+    const response = await page.goto('/admin');
+    expect(response?.status()).toBe(200);
+    await expect(page.getByTestId('admin-demo-chooser')).toBeVisible();
+    await expect(page.getByTestId('admin-demo-chooser').getByRole('link')).toHaveCount(13);
+    await page.getByTestId('admin-demo-persona-hub-owner').click();
+    await expect(page).toHaveURL(/persona=hub-owner/);
+    await expect(page.getByTestId('admin-demo-chooser')).toHaveCount(0);
+  });
+
+  test('anonymous visitors get 404 on every other console route, the wizard included', async ({ page }) => {
+    for (const path of [US, `${US}/approvals`, `${US}/hub/identity`, `${US}/integrations/providers`, SAM, '/admin/setup', '/admin/setup/check', '/admin/hubs/no-such-hub']) {
       expect((await page.goto(path))?.status(), path).toBe(404);
     }
     expect((await page.goto(`${US}?persona=mixed`))?.status(), 'a workspace persona is not a staff persona').toBe(404);

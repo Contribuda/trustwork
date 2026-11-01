@@ -3,7 +3,7 @@ import NextLink from '@/components/locale/LocalLink';
 import { notFound, redirect } from 'next/navigation';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';
-import { consoleHref } from './_data/personas';
+import { consoleHref, type StaffPersonaId } from './_data/personas';
 import { consoleRequest, type PageSearchParams } from './_components/context';
 import { country, localized } from './_components/format';
 import { AdminShell, DeniedState, KeyValues, Panel, roleList, StatusLabel } from './_components/shell';
@@ -16,11 +16,39 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * `/admin` (docs/engine/hub-console/README.md): a viewer whose roles cover one hub goes straight to its overview;
  * a viewer covering several (node or platform roles) gets the node's hub list, never a switcher; a signed-in person
- * without a staff role sees the denied state; anyone else gets "not found".
+ * without a staff role sees the denied state; anyone else gets "not found". In demo mode only, `/admin` without a
+ * staff persona lists the demo staff roles to open the console with (synthetic data; live mode stays "not found").
  */
+const DEMO_PERSONA_ROLES: ReadonlyArray<readonly [StaffPersonaId, string]> = [
+  ['hub-owner', 'hub-owner'], ['staff-admin', 'staff-admin'], ['compliance', 'compliance-officer'], ['editor', 'editor'], ['data-steward', 'data-steward'],
+  ['trust-reviewer', 'trust-reviewer'], ['support', 'support-lead'], ['support-agent', 'support-agent'], ['commercial', 'commercial-admin'], ['ops', 'ops-engineer'],
+  ['privacy', 'privacy-officer'], ['auditor', 'auditor'], ['node-operator', 'node-operator'],
+];
+
+function DemoPersonaChooser() {
+  return (
+    <main className="admin-main" id="main" data-testid="admin-demo-chooser" style={{ maxWidth: '48rem', margin: '0 auto', padding: '2rem 1rem' }}>
+      <header className="admin-head">
+        <h1 tabIndex={-1} className="admin-h1">{t('admin.landing.demoChooserTitle')}</h1>
+        <p className="admin-lede">{t('admin.landing.demoChooserLede')}</p>
+      </header>
+      <ul className="admin-cards" style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '0.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(14rem, 1fr))' }}>
+        {DEMO_PERSONA_ROLES.map(([persona, role]) => (
+          <li key={persona}>
+            <NextLink href={consoleHref('/admin', { demo: true, persona, scenario: 'default' })} data-testid={`admin-demo-persona-${persona}`}>
+              {tDynamic(`admin.roles.${role}`, role)}
+            </NextLink>
+          </li>
+        ))}
+      </ul>
+      <p className="admin-note">{t('admin.landing.demoChooserNote')}</p>
+    </main>
+  );
+}
 export default async function AdminLanding({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
   const { request, port } = await consoleRequest(searchParams);
+  if (request.demo && request.persona === null) return <DemoPersonaChooser />;
   const viewer = await port.viewer(request);
   if (!viewer) notFound();
   const node = await port.node();

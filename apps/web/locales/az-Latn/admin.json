@@ -325,7 +325,10 @@
       "yourRoles": "Buradakı rollarınız",
       "open": "Konsolu aç",
       "nodeConsole": "Qovşaq konsolu",
-      "nodeConsoleStatus": "Hablar, qovşaq kadrları, yeniləmələr, ehtiyat nüsxələr, açarlar və qovşağın qəza açarları növbəti paketlərdən birində ayrıca konsol alacaq."
+      "nodeConsoleStatus": "Hablar, qovşaq kadrları, yeniləmələr, ehtiyat nüsxələr, açarlar və qovşağın qəza açarları növbəti paketlərdən birində ayrıca konsol alacaq.",
+      "demoChooserTitle": "Habın demo konsolu",
+      "demoChooserLede": "Konsolu açmaq üçün işçi rolunu seçin. Hər rol yalnız öz icazələrinin imkan verdiyi bölmələri görür.",
+      "demoChooserNote": "Demo: sintetik məlumatlar; əmrlər yoxlanılır, lakin heç nə saxlanılmır. İş rejimində konsol yalnız daxil olmuş işçilər üçün açılır."
     },
     "capabilities": {
       "llm": "Dil modelləri",
