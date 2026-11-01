@@ -52,12 +52,12 @@ export class ProvenanceService {
             "provenance is a first-party human decision",
           );
         return fn(trx, ctx);
-      })
+      }, { refreshStale: false })
       .catch((error: unknown) => {
         const pg = error as { hint?: string };
         if (pg.hint?.startsWith("provenance."))
           throw new ApiError(
-            pg.hint === "provenance.first_party_required"
+            pg.hint === "provenance.first_party_required" || pg.hint === "provenance.authority_changed"
               ? "access.forbidden"
               : "validation.schema",
             "provenance command refused",

@@ -1,5 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from 'node:crypto';
+import { withMaintenance } from '@trustwork/data';
+import { ProvenanceService } from '../../apps/api/src/modules/content/provenance/provenance.service.js';
+import { ProvenanceDeclarationSchema } from '../../packages/contracts/src/provenance.js';
+import type { RequestState } from '../../apps/api/src/common/request.js';
 import { computeDigest } from "@trustwork/contracts";
 import { startHarness, SKIP_REASON } from "../backend/helpers/app.js";
 import { buildContentHttpWorld, ok, expectRefusal } from "../content/http.js";
@@ -238,5 +243,19 @@ test(
         );
       },
     );
+    await t.test('an admitted request epoch is never silently refreshed for a provenance decision', async () => {
+      const services = world.app.services!;
+      const token = c.writer.sessionCookie!;
+      const resolved = (await services.principals.resolve(token))!;
+      assert.ok(resolved);
+      const state: RequestState = { ...resolved, requestId: 'synthetic-stale-provenance', sessionTokenHash: createHash('sha256').update(token).digest('hex'), client: { ip: '127.0.0.1', ipPrefix: '127.0.0', userAgentFamily: 'test' } };
+      const before = state.principal;
+      await withMaintenance(h.db.admin, trx => trx.updateTable('person').set({ authz_epoch: resolved.principal.authzEpoch + 1 }).where('id', '=', w.people.writer).execute());
+      const service = new ProvenanceService(services.principals, services.secondFactors);
+      await assert.rejects(service.declare(state, ProvenanceDeclarationSchema.parse({ ...body.declaration, expectedRevision: 1 })), { code: 'access.stale_epoch' });
+      assert.equal(state.principal, before, 'request identity and epoch must remain the original binding');
+      const records = await withMaintenance(h.db.admin, trx => trx.selectFrom('provenance_record').selectAll().where('publication_id', '=', id).execute());
+      assert.equal(records.length, 1, 'no declaration was reauthorized with a refreshed principal');
+    });
   },
 );
