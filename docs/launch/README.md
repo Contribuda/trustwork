@@ -429,11 +429,11 @@ Ranked by the [scorecard](../research/top-10-launch-countries-2026-11.md#scoreca
 | 3 | Kenya | [ke.md](countries/ke.md) | 81 | English | Proposed CTRY-KE |
 | 4 | Ghana | [gh.md](countries/gh.md) | 80 | English | Proposed CTRY-GH |
 | 5 | Colombia | [co.md](countries/co.md) | 80 | Spanish | Proposed CTRY-CO |
-| 6 | Dominican Republic | Second pull request of this work | 78 | Spanish | Proposed CTRY-DO |
-| 7 | Uzbekistan | Second pull request of this work | 75 | Uzbek (Latin), Russian | Live (v2) |
-| 8 | Nigeria | Second pull request of this work | 73 | English | Proposed CTRY-NG |
-| 9 | Mexico | Second pull request of this work | 72 | Spanish | Implemented CTRY-MX (#381) |
-| 10 | Rwanda | Second pull request of this work | 72 | English | Proposed CTRY-RW |
+| 6 | Dominican Republic | [do.md](countries/do.md) | 78 | Spanish | Proposed CTRY-DO |
+| 7 | Uzbekistan | [uz.md](countries/uz.md) | 75 | Uzbek (Latin), Russian | Live (v2) |
+| 8 | Nigeria | [ng.md](countries/ng.md) | 73 | English | Proposed CTRY-NG |
+| 9 | Mexico | [mx.md](countries/mx.md) | 72 | Spanish | Implemented CTRY-MX (#381) |
+| 10 | Rwanda | [rw.md](countries/rw.md) | 72 | English | Proposed CTRY-RW |
 
 Not in the ten but ready to use this playbook: South Africa (deep dive and Cape Town plan in the companion market scan, [pull request #370](https://github.com/Contribuda/trustwork/pull/370)), Georgia (pack and language live), Ecuador and Guatemala (Spanish, daily OCDS), Tanzania (after Swahili, LANG-SW).
 
