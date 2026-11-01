@@ -55,3 +55,11 @@ The age of a list counts from `last_checked_at`, when its active content was las
 ## Database role
 
 The worker has no grant on the three tables. It uses only the owner-run entry points `screening_list_due`, `screening_list_lock`, `screening_list_record_attempt`, `screening_list_stage`, `screening_list_add_entries`, `screening_list_activate`, `screening_list_reject`, `screening_list_freshness` and `screening_available`.
+
+## Registered additional sources (SANC-006)
+
+Run the maintenance command `node --import tsx apps/worker/src/screening-lists/sync-sources.ts --dry-run` to inspect sources derived from the installed, validated country packs. Without `--dry-run`, it uses the migrator connection to synchronize immutable source snapshots and retire absent facts. It does not choose a list for a hub. Runtime and worker roles cannot install source authority.
+
+Only official `sanctions` facts naming both a registered engine adapter and an implemented list export parser are eligible, with a bounded HTTPS URL on the adapter's exact official origin. No built-in additional export fact currently qualifies: the CSL is a keyed query adapter, not an export parser. Do not invent a reviewed fact or change that adapter into an export importer. Supply a reviewed country-pack contribution through the existing contribution process; synthetic configured facts belong only in tests.
+
+Two elevated node compliance officers propose and approve a source-bound file-list configuration in the screening console. The worker reads the export from the established `<lists directory>/<hub UUID>/<generated code>.xml` path. No browser chooses paths, URLs or adapters. A retired source refuses ingestion and raw version activation; missing files remain `source_missing`. Live mode still needs KEYS-001 activation and egress authority; this continuation neither supplies a fetcher nor enables live providers.
