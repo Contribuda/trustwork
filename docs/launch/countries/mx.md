@@ -4,14 +4,14 @@ Rank 9 of 10 (score 72, estimate, medium uncertainty; [scorecard](../../research
 
 ## Summary
 
-Mexico is a **large Spanish-speaking market where self-build dominates housing**: INEGI's housing satellite account puts self-construction at 55.6 percent of the housing market by value. 110 million people are online, Spanish is a live interface language and a country pack is already planned and claimed (CTRY-MX); this playbook's leads are for its maintainer. The cycle is weak (construction GDP down about 1 percent in 2025, civil works down sharply, public works at their lowest since records began) and lead marketplaces such as Habitissimo and Cronoshare are present, so the competition rating is 3. The opportunity is the self-builder and the families abroad who pay for homes, with plans, guides and evidence-based reputation for maestros. A new federal data protection law took effect in March 2025 and a new authority replaced the former transparency institute.
+Mexico is a **large Spanish-speaking market where self-build dominates housing**: INEGI's housing satellite account puts self-construction at 55.6 percent of the housing market by value. 110 million people are online, Spanish is a live interface language and the MX country pack is implemented (CTRY-MX, merged #381); this playbook's research leads remain follow-ups for its maintainer. The cycle is weak (construction GDP down about 1 percent in 2025, civil works down sharply, public works at their lowest since records began) and lead marketplaces such as Habitissimo and Cronoshare are present, so the competition rating is 3. The opportunity is the self-builder and the families abroad who pay for homes, with plans, guides and evidence-based reputation for maestros. A new federal data protection law took effect in March 2025 and a new authority replaced the former transparency institute.
 
 | Item | Value |
 |---|---|
 | Suggested first territory | Monterrey (Nuevo Leon) or Guadalajara (Jalisco), where states publish procurement data; Mexico City later |
 | Languages | Spanish (`es`, live); English optional for cross-border suppliers |
 | Currency, time zone | MXN; several time zones (`America/Mexico_City`, `America/Monterrey` and others from the pack) |
-| Country pack | Planned CTRY-MX (claimed; leads for its maintainer in this playbook) |
+| Country pack | Implemented CTRY-MX (#381); leads below require comparison with its sourced facts |
 | Suggested first outreach mode after counsel | `strict` |
 | Fastest growth path | Self-builder guides with cement and materials partners, the construction industry chamber, families abroad (PLAN-005), state-level public works data |
 
@@ -53,7 +53,7 @@ Mexico is a **large Spanish-speaking market where self-build dominates housing**
 - **Digital habits:** 110 million internet users (83.5 percent), 145 million connections, Facebook ad reach 93.5 million, Messenger 54.6 million, median mobile download 45.21 Mbps ([DataReportal Digital 2026 Mexico](https://datareportal.com/reports/digital-2026-mexico)). WhatsApp is the everyday business channel.
 - **Language and literacy:** Spanish; many Indigenous languages; adult literacy 95.6 percent (World Bank WDI, 2024).
 - **Security:** extortion affects construction in some states; never expose active site locations or values (ADDR-001).
-- **Calendar:** national holidays, Holy Week, 16 September, Day of the Dead, December holidays (to be sourced in CTRY-MX); the rainy season (roughly June to October) and hurricanes on the coasts.
+- **Calendar:** national holidays, Holy Week, 16 September, Day of the Dead, December holidays (to verify against the implemented CTRY-MX pack); the rainy season (roughly June to October) and hurricanes on the coasts.
 
 ## 5. Law and compliance (for counsel)
 
@@ -62,14 +62,14 @@ Mexico is a **large Spanish-speaking market where self-build dominates housing**
 | Data protection | A new federal law on personal data held by private parties was published on 20 March 2025 and took effect the next day; the former INAI's functions for private parties passed to the Secretariat for Anti-corruption and Good Government | [EY Mexico](https://www.ey.com/es_mx/technical/tax/boletines-fiscales/nueva-ley-federal-proteccion-datos-personal-posesion-particulares) *(secondary)*; [Garrigues](https://www.garrigues.com/es_ES/noticia/mexico-nueva-ley-federal-proteccion-datos-personales-posesion-particulares-introduce) *(secondary)*; [Por Esto](https://www.poresto.com/mexico/2025/3/21/gobierno-formaliza-la-extincion-del-inai-y-traslada-funciones-a-nueva-secretaria-anticorrupcion-y-de-buen-gobierno.html) *(secondary)* | Privacy notice, consent and transfer rules under the new law |
 | Public procurement | ComprasMX replaced CompraNet in April 2025 under the anti-corruption secretariat; reformed public works and acquisitions laws | [Proyectos Mexico](https://www.proyectosmexico.gob.mx/139305-2/); [Expansion](https://politica.expansion.mx/congreso/2025/04/10/adios-compranet-senado-aprueba-su-desaparicion) *(secondary)* | Reuse of ComprasMX data; subnational OCDS publications (Nuevo Leon, Jalisco municipalities, Mexico City and others) |
 | Company identifiers, tax, e-invoicing | RFC from SAT; mandatory CFDI electronic invoices (the competitive landscape notes CFDI as Mexico's e-invoicing network) | [Country specifics](../../engine/country-specifics.md#tax-and-invoicing) | Operator invoices |
-| Contractor registration | Public works contractor registers at federal and state level (to be sourced in CTRY-MX) | To source | Display of registers |
+| Contractor registration | Public works contractor registers at federal and state level (to verify against the implemented CTRY-MX pack) | To source | Display of registers |
 | E-signature, consumer protection | e.firma (advanced electronic signature) and PROFECO (to be sourced) | To source | Signatory tie; paid services |
 
 ## 6. Payments
 
 | Rail | Notes |
 |---|---|
-| SPEI | The central bank's instant interbank transfers (to be sourced in CTRY-MX) |
+| SPEI | The central bank's instant interbank transfers (to verify against the implemented CTRY-MX pack) |
 | Cards, cash vouchers, wallets | Through licensed providers (candidates in PAY-003) |
 | Remittances | Through licensed remittance providers; the hub records milestones, never funds |
 
@@ -100,7 +100,7 @@ The construction industry chamber and its state delegations; housing developers'
 
 | Wizard step | Value |
 |---|---|
-| Starting point | Country pack `MX` when CTRY-MX lands; generic profile with the RFC as a local addition until then |
+| Starting point | Implemented country pack `MX`; verify remaining sourced/candidate facts and launch gates before use |
 | Territory | Country `MX`; region `MX-NLE` (Nuevo Leon) or `MX-JAL` (Jalisco) for the first hub |
 | Hub name | "Trustwork Mexico" |
 | Languages | `es`; `en` optional |
@@ -179,7 +179,7 @@ Operator and screening; counsel on terms, privacy notice (2025 law), ComprasMX a
 
 ### Feature gaps for Mexico
 
-CTRY-MX (claimed; leads: self-build share, ComprasMX and subnational OCDS, the 2025 data protection law and its authority, taxonomy permit answers), PLAN-004, PLAN-005, REP-003, PROC-003 (subnational OCDS), REG-002 (RFC validation, contractor registers), PAY-003 (SPEI through licensed providers).
+CTRY-MX (implemented; follow-up research leads: self-build share, ComprasMX and subnational OCDS, the 2025 data protection law and its authority, taxonomy permit answers), PLAN-004, PLAN-005, REP-003, PROC-003 (subnational OCDS), REG-002 (RFC validation, contractor registers), PAY-003 (SPEI through licensed providers).
 
 ## Sources
 
