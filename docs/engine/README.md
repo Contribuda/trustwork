@@ -55,6 +55,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | Tasks and mentoring | [TSK](modules/tasks-and-mentoring.md) | [Agent catalogue: task marketplace](agent-catalog.md#task-marketplace) |
 | Knowledge sharing | [KNW](modules/knowledge-sharing.md) | [Agent catalogue: knowledge sharing](agent-catalog.md#knowledge-sharing) |
 | Procurement and supply (requisition to pay) | [PRC](modules/procurement-and-supply.md) | [Procurement and supply](procurement-and-supply.md), [Buying and selling](commerce.md) |
+| Bid desk (supplier side of tenders) | [BID](modules/bid-desk.md) | [The supplier bid desk](tender-desk.md) |
 | Sales | [SAL](modules/sales.md) | [Buying and selling](commerce.md#the-sales-journey) |
 | Catalogue and manufacturer knowledge | [CAT](modules/catalogue-and-manufacturer-knowledge.md) | [Buying and selling: catalogue](commerce.md#the-catalogue), [Search and knowledge](search-and-knowledge.md#manufacturer-and-supplier-knowledge-proposed) |
 | Matching and partners | [MCH](modules/matching-and-partners.md) | [Partners and matching](partners-and-matching.md) |

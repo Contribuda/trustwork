@@ -3486,19 +3486,22 @@
       "goal": "Let a company keep one prequalification passport (licences, insurance certificates with expiry reminders, bonding capacity, safety record, references, financial summary) and share a chosen subset with a client by consent for a limited time, free for subcontractors.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/hub-administration.md"
+        "docs/engine/hub-administration.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Define passport sections with sourced, claimed and verified status per item and expiry.",
         "Collect insurance certificates as claimed documents; confirm them with the issuer where the hub configures a recipe; remind before expiry.",
         "Share by consent grants with scope, recipient and expiry; revocation stops access immediately.",
-        "Map passport sections to national question sets and statutory partner checks from country packs (for example the UK Common Assessment Standard and Finland's contractor obligations) so one passport answers many clients."
+        "Map passport sections to national question sets and statutory partner checks from country packs (for example the UK Common Assessment Standard and Finland's contractor obligations) so one passport answers many clients.",
+        "Let the company's own bid desk read its passport sections for eligibility gates and as library sources (BID-001, BID-003) without a consent grant, since the data stays inside the company."
       ],
       "acceptance": [
         "A client sees only the sections granted, only until expiry (negative tests).",
         "Self-declared items are labelled claimed until a document is reviewed.",
         "Subcontractors are never charged to hold or share a passport.",
-        "A client in a country with a statutory partner-check list sees which required items are present, missing or expired."
+        "A client in a country with a statutory partner-check list sees which required items are present, missing or expired.",
+        "A bid desk eligibility gate shows pass, fail or unknown from passport sections with their verification level and expiry (test)."
       ],
       "paths": [
         "apps/api/src/modules/prequalification",
@@ -4538,20 +4541,23 @@
         "docs/engine/agent-catalog.md",
         "docs/engine/partners-and-matching.md",
         "docs/engine/discovery-and-outreach.md",
-        "docs/adr/017-outreach-policy.md"
+        "docs/adr/017-outreach-policy.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Implement standing selectors over needs, partner posts, invitations and imported procurement notices.",
         "Implement go or no-go notes with eligibility pass, fail and unknown.",
         "Implement engagements for individuals with availability hidden from the current employer by default.",
         "Label every agent-sent request and draw from the principal's quota.",
-        "Agent requests involving sourced companies go through the outreach gate chain (OUTR-002) and the platform suppression list; agents never send directly to a sourced contact."
+        "Agent requests involving sourced companies go through the outreach gate chain (OUTR-002) and the platform suppression list; agents never send directly to a sourced contact.",
+        "Hand followed opportunities to the bid desk as draft pursuits (BID-001) and reuse its match explanation contract for go or no-go notes."
       ],
       "acceptance": [
         "Alerts are dispatched in the same batch for every plan (tested).",
         "Sourced companies never receive bulk outreach.",
         "Applications to employment are never accepted by an agent.",
-        "A suppressed sourced company is never contacted by any agent module (test)."
+        "A suppressed sourced company is never contacted by any agent module (test).",
+        "Go or no-go notes never use another company's activity on the same opportunity (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/opportunity",
@@ -4571,19 +4577,22 @@
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/engine/commerce.md",
-        "docs/engine/hub-exchange-architecture.md"
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Implement need intake with evidence per line, quoting from catalogue under standing mandates and revalidation after amendments.",
         "Implement negotiation inside party-private floors and ceilings with round limits.",
         "Implement procurement comparison, orders and order-desk acceptance with approver rules.",
-        "Implement consumer mode from jurisdiction settings (HUB-005) and the anti-splitting guard for every buyer."
+        "Implement consumer mode from jurisdiction settings (HUB-005) and the anti-splitting guard for every buyer.",
+        "Treat quotes for pursuits marked formal (BID-007) as binding bids: send_quote requires person_each_step_up whatever the standing quoting mandate says."
       ],
       "acceptance": [
         "Competing sellers never receive each other's pricing or participation (test).",
         "Consumer commitments are never pre-authorized.",
         "Splitting an order below an approval threshold triggers approval.",
-        "Consumer mode applies when either hub classifies a party as a consumer; envelopes to another node pass the same mandate checks as local ones (tested)."
+        "Consumer mode applies when either hub classifies a party as a consumer; envelopes to another node pass the same mandate checks as local ones (tested).",
+        "A quote for a formal pursuit is never sent under a pre-authorized or ask_above mandate (test)."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/deal",
@@ -4603,16 +4612,19 @@
       "goal": "Help public and institutional clients prepare and keep procurement transparent without ever replacing the statutory procedure.",
       "read": [
         "docs/engine/agent-catalog.md",
-        "docs/engine/commerce.md"
+        "docs/engine/commerce.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Implement market research notices labelled as not a solicitation.",
         "Implement equal-treatment clarifications published to all invited parties at once.",
-        "Implement the quiet period for meetings with bidders and the anti-splitting guard with thresholds from facets; official notices come from PROC-001 imports."
+        "Implement the quiet period for meetings with bidders and the anti-splitting guard with thresholds from facets; official notices come from PROC-001 imports.",
+        "Accept bidder clarify envelopes from supplier bid desks (BID-005) as untrusted data and publish approved answers to every invited party at once without the asker's identity."
       ],
       "acceptance": [
         "No agent submits to an official portal, awards or signs.",
-        "A clarification answer is never delivered to one bidder before others (tested)."
+        "A clarification answer is never delivered to one bidder before others (tested).",
+        "A published answer never identifies the bidder who asked (test)."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/public-tender",
@@ -5652,17 +5664,20 @@
       "goal": "Generate a dated, cited report on one counterparty from sourced facts, verification results the requester may see, sanctions screening outcome, public procurement history and published reputation, billed from the platform budget.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/hub-administration.md"
+        "docs/engine/hub-administration.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Define the report contract with a citation for every statement and the projection used.",
         "Compose the report through the requester's projection serializer; never read private data of the subject.",
-        "Reserve and settle cost under generate_deliverable with the platform budget; show the subject aggregate counts of packs, never who requested them."
+        "Reserve and settle cost under generate_deliverable with the platform budget; show the subject aggregate counts of packs, never who requested them.",
+        "Allow a supplier to generate a pack on a buyer or a prospective teaming partner from a pursuit, through the requester projection only."
       ],
       "acceptance": [
         "Every statement has a source citation (test).",
         "A requester without rights to a verification result never sees it (negative test).",
-        "No pack contains party_private or owner_private fields of the subject."
+        "No pack contains party_private or owner_private fields of the subject.",
+        "A pack generated from a pursuit never reveals the pursuit or the requester to the subject (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/due-diligence",
@@ -5796,20 +5811,23 @@
         "docs/engine/partners-and-matching.md",
         "docs/data/model.md",
         "docs/engine/discovery-and-outreach.md",
-        "docs/adr/017-outreach-policy.md"
+        "docs/adr/017-outreach-policy.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Model capability profiles with per-field visibility, open needs, partner posts, match method versions, runs, candidates, introductions, outreach quotas and alert subscriptions (packages/data/migrations/matching).",
         "Implement hard eligibility (region, licence, sanctions) with pass, fail and unknown results.",
         "Implement versioned ranking with explanations and uncertainty over structured attributes (semantic recall arrives with RAG-301); requester-tunable weights.",
         "Implement introductions with quotas shared by people and their agents, labelled agent requests, contact reveal on acceptance and alerts.",
-        "Sourced external candidates can be contacted only through the outreach gate chain of OUTR-002 under the hub policy; in strict mode the interface keeps the outreach-not-permitted note."
+        "Sourced external candidates can be contacted only through the outreach gate chain of OUTR-002 under the hub policy; in strict mode the interface keeps the outreach-not-permitted note.",
+        "Accept partner requests from pursuits (BID-006): candidates for a scope, explained and payment-blind, through double-opt-in introductions within the shared quota."
       ],
       "acceptance": [
         "Rankings are identical with and without paid entitlements (test).",
         "Matching never reads private quotes, budgets or floors.",
         "Contact details appear only after an introduction is accepted; unknown eligibility is shown as unknown.",
-        "In a hub whose outreach policy is strict, no matching or introduction path sends anything to a sourced company (test)."
+        "In a hub whose outreach policy is strict, no matching or introduction path sends anything to a sourced company (test).",
+        "Partner candidates never reveal whether a candidate follows or bids for the same opportunity (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/matching",
@@ -5864,15 +5882,19 @@
       "goal": "Give participants the matching screens: needs board, partner posts, explained candidates with uncertainty, introduction requests and responses.",
       "read": [
         "docs/engine/partners-and-matching.md",
-        "docs/design/screen-contracts/README.md"
+        "docs/design/screen-contracts/README.md",
+        "docs/engine/tender-desk.md",
+        "docs/design/screen-contracts/workspace/tender-desk.md"
       ],
       "steps": [
         "Screen contracts and screens for needs, partner posts, candidates with explanations and introductions.",
-        "Strings in a matching locale namespace; Playwright and axe at three widths."
+        "Strings in a matching locale namespace; Playwright and axe at three widths.",
+        "From an open need or an imported public opportunity, offer \"Follow in Tenders\" that creates a pursuit in the bid desk."
       ],
       "acceptance": [
         "Every candidate shows why it matched and what is unknown.",
-        "Contact details appear only after acceptance (browser test with two personas)."
+        "Contact details appear only after acceptance (browser test with two personas).",
+        "The needs board never shows how many companies follow an opportunity (browser test)."
       ],
       "paths": [
         "apps/web/app/app/needs",
@@ -5893,17 +5915,21 @@
       "goal": "Import public opportunities (SAM.gov for the US hub, state and municipal portals where terms permit, OCDS elsewhere) as read-only open needs, show a bid calendar and record awards as sourced project history.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/partners-and-matching.md"
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Map SAM.gov notices, USAspending awards and OCDS releases to open-need and sourced-project contracts.",
         "Implement importers with fakes as pipelines; record each portal's reuse terms; keys only as KEYS-001 secret references.",
-        "Link awards to companies only through identifiers, never by name alone; add a bid calendar for followed needs."
+        "Link awards to companies only through identifiers, never by name alone; add a bid calendar for followed needs.",
+        "Expose followed notices to the supplier bid desk as pursuit sources (BID-001) with structured deadlines in the buyer time zone, the official clarification channel and amendment links taken from structured notice data only."
       ],
       "acceptance": [
         "Imported needs cannot receive Trustwork RFQ responses unless their owner is a participant who published them.",
         "Awards linked by name only are rejected.",
-        "Statistics use only public award data."
+        "Statistics use only public award data.",
+        "Notices whose buyer, place of performance or delivery is in a restricted place are never stored or shown (test).",
+        "Deadlines and clarification channels come only from structured fields, never from document text (test)."
       ],
       "paths": [
         "packages/contracts/src/public-procurement.ts",
@@ -8149,18 +8175,21 @@
         "docs/engine/procurement-and-supply.md",
         "docs/data/model.md",
         "docs/engine/hub-console/providers-and-models.md",
-        "docs/engine/trust-safety-privacy.md"
+        "docs/engine/trust-safety-privacy.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Migrations for intake_document, extraction_run, extraction_review and line_match.",
         "Extraction adapter port with a deterministic fake; structured UBL parsing; model routes only through the gateway and the hub egress matrix.",
         "Normalize units through the unit catalogue and sourced packaging conversions; flag discrepancies against RFQ, quote and order lines.",
-        "Human review queue: accepted reviews create drafts only; meter document pages."
+        "Human review queue: accepted reviews create drafts only; meter document pages.",
+        "Keep the extraction adapter port and review queue reusable for tender documents (BID-002): fields carry a citation with document id, version digest, page and region."
       ],
       "acceptance": [
         "No intake path creates an approved, ordered or paid record (test).",
         "Text in a document never changes a payee, sends a message or calls a tool (injection suite).",
-        "Every extracted field carries confidence and locator (contract test); egress refused for disallowed data classes (test)."
+        "Every extracted field carries confidence and locator (contract test); egress refused for disallowed data classes (test).",
+        "The extraction port returns a locator with page and region for every extracted field of a PDF tender document (contract test)."
       ],
       "paths": [
         "apps/api/src/modules/document-intake",
@@ -8188,17 +8217,20 @@
         "docs/engine/procurement-and-supply.md",
         "docs/data/model.md",
         "docs/engine/hub-console/autonomous-editorial.md",
-        "docs/engine/projects.md"
+        "docs/engine/projects.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Migrations for equivalence_rule_version, product_unit_conversion and substitution_request.",
         "Match lines as equivalent only by a rule that cites its basis; keep equivalent distinct from approved.",
-        "Route substitution requests through the approval route kind substitution; keep approved equals with scope and expiry."
+        "Route substitution requests through the approval route kind substitution; keep approved equals with scope and expiry.",
+        "Expose equivalence results to the supplier's specification checks (BID-004) through a read use case over public and company-private rules."
       ],
       "acceptance": [
         "No agent or rule approves a substitution (test).",
         "A rule without a basis citation cannot be activated (test).",
-        "Conversions without a source stay unconverted and flagged (test)."
+        "Conversions without a source stay unconverted and flagged (test).",
+        "A supplier specification check shows equivalent by rule only with the rule and its basis and never marks a substitution approved (test)."
       ],
       "paths": [
         "apps/api/src/modules/equivalence",
@@ -8577,16 +8609,19 @@
         "docs/engine/procurement-and-supply.md",
         "docs/data/model.md",
         "docs/engine/hub-console/data-mining.md",
-        "docs/research/market-and-ideas-2026-10.md"
+        "docs/research/market-and-ideas-2026-10.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Migrations for price_index_series, price_index_observation and escalation_watch.",
         "Pipelines through the source registry with licence flags; revisions append.",
-        "Alerts as decisions waiting with the series, period and computation shown."
+        "Alerts as decisions waiting with the series, period and computation shown.",
+        "Serve index series and escalation computations to the supplier's private pricing workbook (BID-004)."
       ],
       "acceptance": [
         "Series without a licence allowing display are not shown (test).",
-        "Alerts never reveal one company's commitments to another (negative test)."
+        "Alerts never reveal one company's commitments to another (negative test).",
+        "Escalation computed for one company's workbook never appears in another company's alerts or statistics (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/price-indices",
@@ -8901,7 +8936,8 @@
         "HUBC-009",
         "PRC-001",
         "PRC-005",
-        "PRC-012"
+        "PRC-012",
+        "BID-000"
       ],
       "handbook": "docs/engine/hub-console/modules.md",
       "goal": "Add the procurement and supply section of the hub console: approval route templates, document types and requirement-set templates, e-invoicing networks, integrations, AI intake settings, tolerance and fraud-control defaults, benchmark and pooling policy, unit conversions; first on fixtures, then live.",
@@ -8909,17 +8945,20 @@
         "docs/engine/hub-console/modules.md",
         "docs/engine/hub-console/screens.md",
         "docs/engine/hub-console/data-model.md",
-        "docs/engine/procurement-and-supply.md"
+        "docs/engine/procurement-and-supply.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Screen HC-68 at /modules/procurement on fixtures, then wired to hub configuration domain procurement and provider connections.",
         "Second-person activation for fraud-control, benchmark and pooling policy and for live adapters; counsel record required for benchmarks and pooling.",
-        "Strings under admin.modules.procurement in every engine language."
+        "Strings under admin.modules.procurement in every engine language.",
+        "Add bid desk settings to the procurement section: module enablement, tender sources with recorded terms, extraction routes and meters, scorecard, review and teaming templates, approval route templates for bid_decision and bid_submission, the per-country competition-law note and retention classes."
       ],
       "acceptance": [
         "No company's routes, suppliers, budgets, invoices, stock or payments are readable without a case grant (negative tests).",
         "Fraud-control values below the engine minimum are rejected (test).",
-        "Cohort counts below ten companies are suppressed (test)."
+        "Cohort counts below ten companies are suppressed (test).",
+        "Staff never see pursuits, workbooks or tender documents without a case grant (negative test)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/modules/procurement",
@@ -9276,17 +9315,20 @@
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/engine/procurement-and-supply.md",
-        "docs/engine/agents.md"
+        "docs/engine/agents.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Module manifests with jobs, triggers, mandate templates, meters and locale keys for every engine language.",
         "Use only the parity registry capabilities; approvals, acceptance and risk-signal clearance stay human_only.",
-        "Safety suite: document injection, payee-change attempts through documents and other agents, competitor price disclosure, reminder quotas."
+        "Safety suite: document injection, payee-change attempts through documents and other agents, competitor price disclosure, reminder quotas.",
+        "Keep buyer-side supply modules and the supplier bid desk separated inside a company that both buys and bids: sourcing desk data never feeds a pursuit and pursuit data never feeds sourcing."
       ],
       "acceptance": [
         "No module can approve, clear a risk signal or change a payee (tests).",
         "Competing suppliers never receive each other's prices or participation (test).",
-        "release_payment respects the cooling-off period and open risk signals under every approval policy (test)."
+        "release_payment respects the cooling-off period and open risk signals under every approval policy (test).",
+        "A company that is both buyer and bidder on related work cannot read its buyer-side levelling data from a pursuit or the reverse (negative test)."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/supply",
@@ -9568,18 +9610,23 @@
         "docs/engine/partners-and-matching.md",
         "docs/research/competitive-landscape-2026-11.md",
         "docs/engine/hub-exchange-architecture.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/engine/tender-desk.md"
       ],
       "steps": [
         "Define an OCDS-based mapping contract for notices and awards.",
         "Add adapters with fakes and recorded fixtures per portal family; register each as a source with licence flags.",
-        "Feed notices to the opportunities board and awards to sourced track records."
+        "Feed notices to the opportunities board and awards to sourced track records.",
+        "Record per portal the automated-access and redistribution terms (CTRY-004 automated_access_terms); use only official APIs or bulk data with a hub-held system account key from KEYS-001; fetch notice attachments only where the terms allow redistribution.",
+        "Map eForms and OCDS submission deadlines, enquiry periods, lots, award criteria and the electronic-submission address to structured fields of the notice contract."
       ],
       "acceptance": [
         "No adapter submits bids or contacts buyers (test).",
         "A portal whose terms forbid reuse cannot be activated as a source.",
         "Imported notices are labelled from a public source and never appear as platform members' needs.",
-        "Imported notices federate only as link_only unless the source licence allows redisplay, and keep their ocid as an external identifier (tested)."
+        "Imported notices federate only as link_only unless the source licence allows redisplay, and keep their ocid as an external identifier (tested).",
+        "No adapter uses or stores a participant's personal portal login (test).",
+        "Attachments of a portal whose terms forbid redistribution are never served to participants (test)."
       ],
       "paths": [
         "apps/worker/src/tenders",
@@ -12351,6 +12398,560 @@
         "apps/api/src/modules/community-programmes",
         "packages/data/migrations/community-programmes",
         "tests/community-programmes"
+      ]
+    },
+    {
+      "id": "BID-000",
+      "title": "Freeze the supplier bid desk contracts",
+      "area": "integrator-contracts",
+      "status": "open",
+      "dependsOn": [
+        "PRC-000",
+        "AGT-002",
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Freeze the contracts of the supplier bid desk (pursuits, requirements with citations, compliance matrices, library, response versions, pricing workbooks and price schedules, clarifications, teaming, reviews, submissions, outcomes and the registry entries) before any storage, with the additive changes to frozen contracts reviewed by the integrator.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/procurement-and-supply.md",
+        "docs/engine/capability-registry.md",
+        "docs/adr/012-integrator-decisions-2026-10-31.md"
+      ],
+      "steps": [
+        "Zod schemas in packages/contracts/src/bid-desk/ (pursuits, requirements, library, documents, pricing, spec-checks, clarifications, teaming, reviews, outcomes, capabilities) with state machines and tests.",
+        "BidPriceScheduleSchema carries only buyer-required fields; CitationSchema requires document id, version digest and page; SubmissionRecordSchema keeps platform quote references or portal receipts with file digests.",
+        "Propose to the integrator the additive changes: ApprovalSubjectKindSchema adds bid_decision and bid_submission; agreement terms_kind adds teaming; ContextKindV2 adds pursuit."
+      ],
+      "acceptance": [
+        "BidPriceScheduleSchema rejects cost, margin, floor, rate-source and note fields (schema test).",
+        "A requirement without a complete citation cannot be accepted (contract test).",
+        "Pursuit, requirement, response, workbook, clarification, teaming and submission transitions match the design states (tests)."
+      ],
+      "paths": [
+        "packages/contracts/src/bid-desk",
+        "tests/contracts/bid-desk"
+      ]
+    },
+    {
+      "id": "BID-001",
+      "title": "Pursuits, alert profiles, match explanations and bid/no-bid decisions",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-000",
+        "PROC-001",
+        "MATCH-001",
+        "PREQ-001",
+        "REP-001",
+        "PRC-001"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Let a supplier company follow opportunities from public notices, platform invitations, open needs and manual uploads as private pursuits, see why each matches, and decide bid or no bid for stated reasons through its approval route.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/execution-and-reputation.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-desk for pursuit, alert_profile and bid_scorecard_version; match explanations are computed per request, not stored.",
+        "Match explanations from the company's own capability profile, credentials, passport sections, declared capacity and track record against the opportunity's public data; pass, fail or unknown with evidence.",
+        "Scorecards with hard gates, company weights and cited evidence; decisions through the approval route subject kind bid_decision; an amendment flags the decision for re-confirmation.",
+        "Alerts in the same batch for every plan; deadlines in the buyer's and the person's time zones in the bid calendar."
+      ],
+      "acceptance": [
+        "Pursuits, scorecards and no-bid reasons never appear in another company's projection, search or notifications (forbidden-field tests).",
+        "No endpoint returns who else follows or bids on an opportunity (negative test with two companies).",
+        "Opportunity ranking is identical with and without paid entitlements (comparison test).",
+        "No agent can record a bid decision (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-desk",
+        "packages/data/migrations/bid-desk",
+        "packages/data/src/schema/bid-desk.ts",
+        "packages/data/src/repositories/bid-desk.ts",
+        "tests/bid-desk"
+      ]
+    },
+    {
+      "id": "BID-002",
+      "title": "Tender documents, requirement extraction with citations and the compliance matrix",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-001",
+        "PRC-005",
+        "LLM-001",
+        "FILE-001"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Turn untrusted tender documents into reviewed requirements, each quoted and cited to document, version and page, and keep a versioned compliance matrix that flags changes from addenda.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-requirements for tender_document, bid_requirement and compliance_matrix_version.",
+        "Deterministic mapping of structured notices (eForms, OCDS); extraction of PDFs, DOCX, XLSX and scans through the PRC-005 adapter port and the model gateway under the hub egress rules; worker jobs in apps/worker/src/bid-requirements.",
+        "Quarantine of documents that appear to be another bidder's proposal or source selection material; a person decides.",
+        "Human review side by side with the cited page; addenda flag affected rows stale; pages meter."
+      ],
+      "acceptance": [
+        "Text in a tender document never changes a deadline, channel, recipient, mandate or tool call (injection suite).",
+        "Every accepted requirement carries a citation with document id, version digest and page (test).",
+        "A quarantined document is never extracted or shown to the agent (test).",
+        "Company-private material reaches a model provider only under an egress allow rule (negative test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-requirements",
+        "apps/worker/src/bid-requirements",
+        "packages/data/migrations/bid-requirements",
+        "packages/data/src/schema/bid-requirements.ts",
+        "packages/data/src/repositories/bid-requirements.ts",
+        "tests/bid-requirements"
+      ]
+    },
+    {
+      "id": "BID-003",
+      "title": "Content library and document builder in the buyer's formats and languages",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-002",
+        "PREQ-001",
+        "PROV-001",
+        "PPL-001"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Keep a current, versioned library of bid content tied to its sources of truth and assemble response versions in the buyer's outline, formats and languages with labelled translations and clean exports.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/localization.md",
+        "docs/quality/accessibility.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-content for library_item, library_item_version, personal_content_consent, bid_response_version and export_record.",
+        "Library items read credentials (REP-001) and passport sections (PREQ-001) from their sources; owners, review cycles and expiry raise decisions waiting.",
+        "Response versions bind library item versions and drafts and freeze with a digest; translations through the translation module stay labelled until a named reviewer approves (PROV-001).",
+        "Rendering adapter with a fake in apps/worker/src/bid-documents: tagged PDF, DOCX and XLSX, buyer templates filled in place, metadata, comments, tracked changes and hidden sheets and cells removed and listed."
+      ],
+      "acceptance": [
+        "A CV is inserted only with the person's recorded consent for that use (negative test).",
+        "Exports contain no author metadata, comments, tracked changes, hidden sheets or hidden cells (export test).",
+        "An expired credential cannot be inserted without a visible warning (test).",
+        "A machine-assisted translation cannot enter a frozen response version unreviewed (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-content",
+        "apps/worker/src/bid-documents",
+        "packages/data/migrations/bid-content",
+        "packages/data/src/schema/bid-content.ts",
+        "packages/data/src/repositories/bid-content.ts",
+        "tests/bid-content"
+      ]
+    },
+    {
+      "id": "BID-004",
+      "title": "Pricing workbook, margin guard, price schedules and specification checks",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-002",
+        "PRC-006",
+        "PRC-017",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Price a bid privately with sourced quantities and rates, escalation and a deterministic margin guard, send the buyer only its schedule, and check offered products against the specification.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/procurement-and-supply.md",
+        "docs/engine/commerce.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-pricing for pricing_workbook_version, bid_price_schedule, bid_security_reference and spec_check.",
+        "Workbook lines with quantity and rate sources, cost build-up in minor units, escalation from PRC-017 series, alternates and currency snapshots; data class negotiation_constraints.",
+        "Margin guard: floors, arithmetic, unbalanced pricing, coverage and consistency; deterministic, no model call.",
+        "Specification checks: exact, equivalent by rule (PRC-006), substitution proposed, missing, non-compliant, with evidence."
+      ],
+      "acceptance": [
+        "A price schedule never contains a cost, margin, floor, rate source or note (schema and projection tests).",
+        "A call carrying negotiation_constraints to a model connection without an allow rule is refused (negative test).",
+        "Bid security is stored only as a provider reference; no money field can be paid through the platform (test).",
+        "Concurrent edits of a workbook version resolve with optimistic concurrency (real PostgreSQL test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-pricing",
+        "packages/data/migrations/bid-pricing",
+        "packages/data/src/schema/bid-pricing.ts",
+        "packages/data/src/repositories/bid-pricing.ts",
+        "tests/bid-pricing"
+      ]
+    },
+    {
+      "id": "BID-005",
+      "title": "Clarifications, deadlines and expert suggestions",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-002",
+        "COMMS-001",
+        "CONS-001"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Ask the buyer questions through the official channel before the deadline, bring answers and addenda back into the matrix, and suggest real experts through consultations when a pursuit needs advice.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/communications.md",
+        "docs/engine/modules/consultations.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-clarifications for bid_clarification and addendum_link.",
+        "Channels: rfq_clarification on platform RFQs; for public notices the channel from structured notice data, sent through a channel grant or recorded after the person posts on the portal.",
+        "Deadline reminders, quiet-period refusal of meetings with the buyer, amendment acknowledgements on the checklist.",
+        "Expert suggestions with reasons, payment-blind, booked through CONS-001 with a scope chosen item by item; a conflict on the same opportunity makes the expert decline privately."
+      ],
+      "acceptance": [
+        "No message is sent to an address found only in document text (test).",
+        "A clarification send requires the person's confirmation each time (test).",
+        "The requester never learns why an expert declined for a conflict (negative test).",
+        "Expert suggestions are identical with and without paid entitlements and commissions (comparison test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-clarifications",
+        "packages/data/migrations/bid-clarifications",
+        "packages/data/src/schema/bid-clarifications.ts",
+        "packages/data/src/repositories/bid-clarifications.ts",
+        "tests/bid-clarifications"
+      ]
+    },
+    {
+      "id": "BID-006",
+      "title": "Teaming and subcontractor sourcing with the anti-collusion guard",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-002",
+        "MATCH-001",
+        "SANC-004",
+        "COM-002"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Find partners for gaps, share only their scope, receive their quotes privately and bind teaming agreements by both parties' confirmation after screening, with a guard against collusion and competitor signals.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/modules/sanctions-compliance.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-teaming for partner_request, scope_package and competition_note_acknowledgement; teaming agreements as COM-002 agreements with terms_kind teaming once the integrator accepts it.",
+        "Partner candidates through MATCH-001 introductions within quota; scope packages limited to the partner's requirements, files and dates.",
+        "Potential-competitor teaming shows the hub's competition-law note and requires a recorded reason; exclusivity clauses flagged.",
+        "Guard: block attaching workbooks to partner threads; warn on own totals, margins or strategy in partner messages; screening gate before binding."
+      ],
+      "acceptance": [
+        "A teaming agreement with a party that is matched, held, unscreened, stale or unreadable in screening is refused (gate test, fails closed).",
+        "A subcontractor never sees which primes or other subcontractors take part; a prime sees only its own sub-quotes (negative tests).",
+        "A workbook cannot be attached to a partner thread (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-teaming",
+        "packages/data/migrations/bid-teaming",
+        "packages/data/src/schema/bid-teaming.ts",
+        "packages/data/src/repositories/bid-teaming.ts",
+        "tests/bid-teaming"
+      ]
+    },
+    {
+      "id": "BID-007",
+      "title": "Review rounds, approvals, the submission checklist and the human submission step",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-003",
+        "BID-004",
+        "BID-006",
+        "PRC-001",
+        "SANC-004",
+        "ESIG-001"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Review and approve bids against bound versions, compute a submission checklist that blocks on failures, and let only a person submit: on the platform as a digest-bound quote version, on an official portal by the person with a recorded receipt.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/procurement-and-supply.md",
+        "docs/engine/commerce.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-submissions for review_round, review_comment, submission_checklist and submission_record.",
+        "Review rounds bind response and workbook digests; approval route subject kind bid_submission; segregation of duties between the price writer and the approver above a company threshold.",
+        "Checklist from the matrix, outline, margin guard, pack facts and screening state; failures block.",
+        "Platform submission through COM-002 send_quote with person_each_step_up; portal submission recorded with receipt and file digests compared with the frozen export; unknown outcomes go to reconciliation."
+      ],
+      "acceptance": [
+        "No mandate, extension or connection can submit, record a portal submission or withdraw a bid without step-up confirmation (test over every approval policy).",
+        "A new response or workbook version supersedes pending reviews and approvals (test).",
+        "Concurrent confirmations of the same submission resolve once (real PostgreSQL test).",
+        "The desk stores no portal credentials (configuration test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-submissions",
+        "packages/data/migrations/bid-submissions",
+        "packages/data/src/schema/bid-submissions.ts",
+        "packages/data/src/repositories/bid-submissions.ts",
+        "tests/bid-submissions"
+      ]
+    },
+    {
+      "id": "BID-008",
+      "title": "Outcomes, debriefs, lessons, awards as sourced history and hand-off to execution",
+      "area": "commerce-backend",
+      "status": "open",
+      "dependsOn": [
+        "BID-007",
+        "PROC-001",
+        "EXE-001",
+        "PLAN-001"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Record outcomes, track debrief and standstill windows from pack facts, keep lessons, turn public awards into sourced track record and hand wins to execution.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/execution-and-reputation.md",
+        "docs/engine/projects.md"
+      ],
+      "steps": [
+        "Migrations in packages/data/migrations/bid-outcomes for bid_outcome, debrief_record, lesson and external_contract_record.",
+        "Outcomes from PRC-004 notices, PROC-001 awards linked by identifier, or a person's record with evidence.",
+        "Debrief request drafts through the official channel; lessons linked to library items; company-level metrics with a self-view.",
+        "Hand-off: platform agreements to EXE-001; off-platform contracts to a private external contract record with obligations drafted into a company project."
+      ],
+      "acceptance": [
+        "An award linked by name only is rejected (test).",
+        "A public award appears as a sourced portfolio line, never as a client confirmation (test).",
+        "No metric is computed per person for a viewer other than that person (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-outcomes",
+        "packages/data/migrations/bid-outcomes",
+        "packages/data/src/schema/bid-outcomes.ts",
+        "packages/data/src/repositories/bid-outcomes.ts",
+        "tests/bid-outcomes"
+      ]
+    },
+    {
+      "id": "BID-009",
+      "title": "Bid desk entries in the shared capability registry (agent parity)",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "BID-000",
+        "AGT-002"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Apply ADR 010 decision 23 to the bid desk: every operation is one registry entry used by the agent runtime, MCP connections and the interface, and the CI parity report shows no gap.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/capability-registry.md",
+        "docs/engine/mcp-server.md"
+      ],
+      "steps": [
+        "Register the entries of packages/contracts/src/bid-desk/capabilities.ts; until the engine-wide registry runtime exists (MCP-001), serve them from this module behind the same interface.",
+        "Bind each capability to one use case; the web route and the agent tool call the same use case.",
+        "govern entries are never exposed to MCP or A2A; person_each_step_up commits cannot be confirmed by a connection."
+      ],
+      "acceptance": [
+        "A parity test fails when a capability lacks a web route or an agent tool, or when a route or tool lacks a capability (test).",
+        "Only reads and drafts accept untrusted text (registry invariant test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/bid-desk-capabilities",
+        "tests/bid-desk-capabilities"
+      ]
+    },
+    {
+      "id": "AGT-025",
+      "title": "Bid desk agent module for suppliers",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "AGT-007",
+        "AGT-008",
+        "BID-009",
+        "BID-007",
+        "BID-008"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Ship the bid_desk agent module so a supplier's one agent can watch and qualify opportunities, draft scorecards, extract requirements, draft sections and translations, check specifications and prices, draft questions, find partners, prepare reviews and the checklist, and track outcomes, all within mandates, with submission and decisions left to people.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/data/model.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/agents.md",
+        "docs/engine/trust-safety-privacy.md"
+      ],
+      "steps": [
+        "Module manifest with jobs, triggers, mandate templates, meters and locale keys for every engine language; only registry capabilities of BID-009 and CONS-001.",
+        "Refuse collusive goals and mandates with the hub's competition-law note; repeated attempts open a case for a person.",
+        "Safety suite on the EVAL-001 harness: injected instructions in tender documents and addenda, deadline and channel spoofing, price and margin disclosure to partners and buyers, competitor-information requests, submission through chat text, consultation booking without confirmation."
+      ],
+      "acceptance": [
+        "The module cannot submit, withdraw, accept a teaming agreement, decide bid or no bid or approve a review (tests).",
+        "Workbook data never appears in an outbound message or a model call without an egress allow rule (tests).",
+        "Every safety scenario produces no external effect without a valid mandate and the person's confirmation (suite)."
+      ],
+      "paths": [
+        "apps/api/src/modules/agent-modules/bid-desk",
+        "tests/agent-modules/bid-desk"
+      ]
+    },
+    {
+      "id": "WEB-013",
+      "title": "Bid desk on the web: dashboard, opportunities, bid/no-bid, compliance matrix, library and document builder",
+      "area": "frontend-commerce",
+      "status": "open",
+      "dependsOn": [
+        "BID-003",
+        "BID-009",
+        "WEB-002",
+        "LANG-ES"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Build the first half of the supplier bid desk screens under Sales on the API, following the screen contract, with every action mapped to a registry capability.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/design/screen-contracts/workspace/tender-desk.md",
+        "docs/product/information-architecture.md",
+        "docs/design/screen-contracts/workspace/sales.md"
+      ],
+      "steps": [
+        "Routes under apps/web/app/app/sales/tenders for the dashboard, opportunities, library and the pursuit overview, requirements and documents tabs; components in apps/web/components/bid-desk.",
+        "Strings in a bid-desk namespace in every engine language; dates, numbers and money through Intl.",
+        "Playwright and axe at three widths with two companies to prove isolation."
+      ],
+      "acceptance": [
+        "No screen shows how many companies follow or bid on an opportunity (browser test).",
+        "Citations open the cited page; agent drafts and machine translations are labelled (browser tests).",
+        "Keyboard, screen reader, 375 px, empty, error, denied and offline states verified.",
+        "Every screen action maps to a capability of the parity registry (test)."
+      ],
+      "paths": [
+        "apps/web/app/app/sales/tenders",
+        "apps/web/components/bid-desk",
+        "apps/web/locales/en/bid-desk.json",
+        "apps/web/locales/ru/bid-desk.json",
+        "apps/web/locales/uz-Latn/bid-desk.json",
+        "apps/web/locales/ka/bid-desk.json",
+        "apps/web/locales/hy/bid-desk.json",
+        "apps/web/locales/az-Latn/bid-desk.json",
+        "apps/web/locales/es/bid-desk.json",
+        "tests/web/bid-desk"
+      ]
+    },
+    {
+      "id": "WEB-014",
+      "title": "Bid desk on the web: pricing workbook, clarifications, team, reviews, submission and outcomes",
+      "area": "frontend-commerce",
+      "status": "open",
+      "dependsOn": [
+        "WEB-013",
+        "BID-004",
+        "BID-005",
+        "BID-006",
+        "BID-007",
+        "BID-008"
+      ],
+      "handbook": "docs/engine/tender-desk.md",
+      "goal": "Complete the supplier bid desk screens: pricing with the margin guard, questions, team and partners, reviews and approvals, the submission checklist with the person's confirmation, and outcomes.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/modules/bid-desk.md",
+        "docs/design/screen-contracts/workspace/tender-desk.md",
+        "docs/design/screen-contracts/workspace/sales.md"
+      ],
+      "steps": [
+        "Pursuit tabs pricing, clarifications, team, reviews, submission and outcome, and the outcomes list, as sub-routes of the WEB-013 tenders routes; strings added to the bid-desk namespace in every engine language.",
+        "Submission confirmation names the recipient, the files' digests and the deadline before step-up; portal submissions are recorded with the receipt.",
+        "Playwright journeys at three widths in a non-English language."
+      ],
+      "acceptance": [
+        "The pricing tab never renders for a member without the pricing right, and the buyer preview shows no cost or margin (browser tests).",
+        "Submitting requires the first-party confirmation with step-up; chat text in the assistant never submits (browser test).",
+        "Keyboard, screen reader and 375 px checks pass on the workbook with the wide-screen hint."
+      ],
+      "paths": [
+        "apps/web/app/app/sales/tenders/[pursuit]/pricing",
+        "apps/web/app/app/sales/tenders/[pursuit]/clarifications",
+        "apps/web/app/app/sales/tenders/[pursuit]/team",
+        "apps/web/app/app/sales/tenders/[pursuit]/reviews",
+        "apps/web/app/app/sales/tenders/[pursuit]/submission",
+        "apps/web/app/app/sales/tenders/[pursuit]/outcome",
+        "apps/web/app/app/sales/tenders/outcomes",
+        "apps/web/components/bid-desk/pricing",
+        "apps/web/components/bid-desk/submission",
+        "apps/web/locales/en/bid-desk.json",
+        "apps/web/locales/ru/bid-desk.json",
+        "apps/web/locales/uz-Latn/bid-desk.json",
+        "apps/web/locales/ka/bid-desk.json",
+        "apps/web/locales/hy/bid-desk.json",
+        "apps/web/locales/az-Latn/bid-desk.json",
+        "apps/web/locales/es/bid-desk.json",
+        "tests/web/bid-desk-submission"
+      ]
+    },
+    {
+      "id": "CTRY-004",
+      "title": "Public procurement facets for bid desks in country packs",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002",
+        "INTL-US",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "Let the bid desk read every country-specific procurement rule from packs and layers: notice standards, supplier registrations, self-declaration forms, submission rules, bid security, debrief and standstill windows, integrity forms, automated-access terms, record retention and classification schemes.",
+      "read": [
+        "docs/engine/tender-desk.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md"
+      ],
+      "steps": [
+        "Add the fact types as an additive schema module in packages/country-packs/src/procurement-facts.ts referenced by the procurement facet, with validation tests in tests/country-packs/procurement.",
+        "Source the United States facts (SAM.gov registration and terms, FAR debrief, bid guarantee and bond rules, record retention, NAICS and PSC) and the EU layer facts (eForms, ESPD and eCertis, standstill, CPV) from official sources with verification levels, in a data file per scope under packages/country-packs/procurement.",
+        "Leave UK and other national facts to their pack packages; record South Africa (eTenders OCDS and CSD) as a candidate example only."
+      ],
+      "acceptance": [
+        "Every fact cites an official source with retrieval date and verification level; secondary-only facts stay pending (validation test).",
+        "The engine reads these facts without any country branch in code (test with a synthetic pack)."
+      ],
+      "paths": [
+        "packages/country-packs/src/procurement-facts.ts",
+        "packages/country-packs/procurement",
+        "tests/country-packs/procurement"
       ]
     }
   ]

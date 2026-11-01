@@ -65,6 +65,7 @@ Consumer mode and jurisdiction settings may raise a confirmation at run time (fo
 | TSK | [Tasks and mentoring](tasks-and-mentoring.md) | Proposed | TASK-001, CONS-001 |
 | KNW | [Knowledge sharing](knowledge-sharing.md) | Proposed | KNOW-001 |
 | PRC | [Procurement and supply](procurement-and-supply.md) | Demo lists; Contract RFQ and quote versions; Proposed suite | COM-001, COM-002, PRC-000 … PRC-023, WEB-011, WEB-012, HUBC-011, AGT-024 |
+| BID | [Bid desk](bid-desk.md) | Proposed | BID-000 … BID-009, AGT-025, WEB-013, WEB-014, CTRY-004 |
 | SAL | [Sales](sales.md) | Demo lists; Contract quote versions; Designed flows | COM-001, COM-002, WEB-002 |
 | CAT | [Catalogue and manufacturer knowledge](catalogue-and-manufacturer-knowledge.md) | Contract offerings; Proposed sourced pages | COM-001, MAT-001 |
 | MCH | [Matching and partners](matching-and-partners.md) | Demo directories; Proposed matching | MATCH-001, MATCH-002, WEB-010, PROC-001 |

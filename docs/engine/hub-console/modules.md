@@ -129,6 +129,8 @@ Configured in the [editorial office](autonomous-editorial.md): sources, pipeline
 
 The company-side suite from plan step to payment ([Procurement and supply](../procurement-and-supply.md), R53). Status: **Proposed** (HUBC-011: on fixtures first, then live). Companies own their routes, suppliers, budgets, documents and payments; the hub only publishes templates and policies and enables adapters.
 
+The supplier **bid desk** adds settings to this section (proposed, HUBC-011 with BID-000): module enablement, tender sources with recorded terms, extraction routes and meters, scorecard, review and teaming templates, approval route templates for `bid_decision` and `bid_submission`, the per-country competition-law note and retention classes ([design](../tender-desk.md#hub-console-coverage)).
+
 | | |
 |---|---|
 | **Sees** | Template and policy versions; adapter connections and modes; cohort counts (companies using the suite, documents processed by kind, median requisition-to-receipt and receipt-to-payment times across at least ten companies); unknown payment and e-document outcomes (identifiers and states only) |
