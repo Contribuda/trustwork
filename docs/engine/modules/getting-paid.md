@@ -1,6 +1,6 @@
 # Getting paid
 
-Module code `PAY`. Status: **Proposed** ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 20; R46). Budgets, reservations and the reconciliation rules it relies on are **Contract**. Packages: PAY-001, PAY-002, BILL-002, EXE-001, INTL-US, HOME-001, FIN-001, DISP-001. Narrative: [Trustwork never holds money](../billing.md#trustwork-never-holds-money), [market scan: getting paid](../../research/market-and-ideas-2026-10.md#4-missing-high-value-capabilities). Data: [§23 Billing, budgets and payments](../../data/model.md#23-billing-budgets-and-payments), [§18 Transactions](../../data/model.md#18-transactions).
+Module code `PAY`. Status: **Partial implementation (PAY-001); not accepted or operational** ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decision 20; R46). BILL-001 budgets, reservations and the ledger are implemented; PAY-001 reuses the owning commercial order reservation. Packages: PAY-001, PAY-002, BILL-002, EXE-001, INTL-US, HOME-001, FIN-001, DISP-001. Narrative: [Trustwork never holds money](../billing.md#trustwork-never-holds-money), [market scan: getting paid](../../research/market-and-ideas-2026-10.md#4-missing-high-value-capabilities). Data: [§23 Billing, budgets and payments](../../data/model.md#23-billing-budgets-and-payments), [§18 Transactions](../../data/model.md#18-transactions).
 
 ## Purpose
 
@@ -115,3 +115,11 @@ sequenceDiagram
 ## Open points
 
 Counsel review of statutory waiver templates per state before any live use; which providers the reference hub uses (ADR 012 question 12).
+
+## PAY-001 implementation checkpoint
+
+The participant API accepts an agreement and its existing transaction budget, never a caller-selected party, hub, country, amount, provider or payout destination. The worker persists a stable operation before dispatch, rechecks current authority while holding its database locks through the adapter call, and only queries that operation after an unknown outcome. Verified evidence is bound to the original amount, currency, connected account and provider. Delivery deduplication and conflicting semantic outcomes are separate; immutable receipts cannot double-settle the BILL-001 ledger. A synthetic success is labelled `synthetic_no_money_moves`.
+
+The payment port includes create, confirm, full refund, connected-account verification, connected-account payout and lookup. The deterministic fake makes no network call. A bounded raw HTTP ingress authenticates bytes before accepting evidence; recurring lookup jobs handle unresolved outcomes and phone/QR waits. A customer-action deadline never proves non-payment or permits another charge. No card or bank details, currency conversion, operator balance, ranking or reputation dependency is introduced.
+
+This is not full PAY-001 acceptance. Owning modules do not yet publish authoritative collecting/home hubs, party countries and connected-account bindings; no operational source or rail is seeded. Task/consultation owning projections and two-sided remote screening remain unavailable and fail closed. The implemented positive integration tests use explicitly synthetic fixtures, real agreement/quote/order HTTP flows, current hub/provider configuration, restricted PostgreSQL roles and the actual worker. Production licensed providers, approved rails, legal eligibility and operator policies remain UNKNOWN. No account registration or provider SDK is included.

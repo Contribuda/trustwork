@@ -11,6 +11,9 @@ import { HandlerRegistry } from './handlers.js';
 import { describeError, jsonLogger, type Logger } from './log.js';
 import { assertDictionariesComplete, createMailTransport, mailConfigFromEnv, mailSettleTask, registerMail, type MailConfig, type MailTransport } from './mail/index.js';
 import { Metrics, startMetricsServer, type MetricsServer } from './metrics.js';
+import { paymentReconcileTask, registerPayments, type PaymentRuntime } from './payments/index.js';
+import { startPaymentIngress } from './payments/ingress.js';
+import { PaymentProviders } from './payments/provider.js';
 import { providersSecretSweepTask } from './providers/index.js';
 import { registerRescreen, rescreenConfigFromEnv, rescreenTickTask, rescreenWeeklyTask, type RescreenRuntime } from './rescreen/index.js';
 import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
@@ -32,7 +35,7 @@ import { Worker } from './worker.js';
  * search projections and other consumers come later. Events of other types are marked published and counted as
  * `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export interface Domains { consultations?: ReminderRuntime | null; contentRenderer?: boolean; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
+export interface Domains { payments?: PaymentRuntime; consultations?: ReminderRuntime | null; contentRenderer?: boolean; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
   registerAgentOccurrences(registry);
@@ -44,6 +47,7 @@ export function buildRegistry(domains: Domains): HandlerRegistry {
   // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
   if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
   registerMail(registry, { consultationHubId: domains.consultations?.hubId ?? null, pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
+  registerPayments(registry, domains.payments ?? { pool: domains.pool, providers: new PaymentProviders() });
   // SANC-005: re-screening of every subject on each activated list version, weekly and on a compliance officer's request.
   if (domains.rescreen) registerRescreen(registry, domains.rescreen);
   // SANC-003: screening of persons and companies; the fuzzy layer stays off unless SCREENING_FUZZY_THRESHOLD is set.
@@ -72,10 +76,13 @@ async function main(): Promise<void> {
   const screening: ScreeningRuntime = { pool, metrics, log, config: screeningConfigFromEnv(process.env) };
   const rescreen: RescreenRuntime = { pool, metrics, log, config: rescreenConfigFromEnv(process.env), screening: screening.config };
   const consultations: ReminderRuntime | null = hubId ? { pool, hubId, render: mail.render, channels: new ReminderChannelFake() } : null;
-  const registry = buildRegistry({ consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
+  const payments: PaymentRuntime = { pool, providers: new PaymentProviders() };
+  const paymentIngress = process.env.PAYMENTS_WEBHOOK_PORT ? await startPaymentIngress(payments, Number(process.env.PAYMENTS_WEBHOOK_PORT)) : null;
+  const registry = buildRegistry({ payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
     tasks: (deps) => [agentOccurrencesTask(pool), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+    tasks: (deps) => [paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
       ...(consultations ? [consultationRemindersTask(consultations)] : []),
       ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),
@@ -97,6 +104,7 @@ async function main(): Promise<void> {
     stopping = true;
     log('info', 'shutdown requested', { signal, graceMs: config.shutdownGraceMs });
     worker.stop()
+      .then(() => paymentIngress?.close())
       .then(() => metricsServer?.close())
       .then(() => pool.end())
       .then(() => process.exit(0), (error: unknown) => {
