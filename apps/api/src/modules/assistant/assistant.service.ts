@@ -8,6 +8,7 @@ import { auditEvents, type Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
 import { completionRecordId } from '../../common/idempotency/completion.js';
 import { assistantModelTurns } from '../../../../../packages/data/src/repositories/assistant-model.js';
+import type { AssistantModelTurnRow } from '../../../../../packages/data/src/schema/assistant-model.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
@@ -101,6 +102,7 @@ function turnView(row: ConversationTurnRow) {
 function backlogView(row: ServiceBacklogItemRow) {
   return { id: row.id, title: row.title, proposal: row.proposal, sourceRunId: row.source_run_id, status: row.status, revision: row.revision, createdAt: iso(row.created_at) };
 }
+type ConversationResult = { run: ReturnType<typeof runView>; turns: ReturnType<typeof turnView>[]; proposals: ReturnType<typeof proposalView>[]; actions: ActionProposalResult[]; citations: string[] };
 
 export interface AssistantRuntimeSettings {
   /** How long an approval of an asked action stays usable (module checks keep it until the identical retry). */
@@ -286,7 +288,11 @@ export class AssistantService {
   cancelRun(id: string, body: In<typeof CancelRunCommandSchema>, state: RequestState) {
     return this.run(state, async (trx, p) => {
       if (!isUuid(id)) throw new ApiError('access.not_found', 'run not found');
+      await assistantModelTurns.lockConversation(trx, p.personId);
+      const existing = await assistantModelTurns.forRun(trx, id);
+      const turn = existing ? await assistantModelTurns.lock(trx, existing.id) : undefined;
       const row = await runs.cancel(trx, id, body.reason ?? 'cancelled by the person');
+      if (turn?.state === 'pending') await this.finishUnavailableTurn(trx, p, turn, row);
       await this.audit(trx, p, state, 'assistant.run_cancelled', 'run', row.id, { reason: body.reason });
       return runView(row);
     });
@@ -316,6 +322,29 @@ export class AssistantService {
 
   /* ---------- The agent side: it can only propose ---------- */
 
+  /** Local finalization never settles or releases model accounting. Unknown effects remain reconcile-only. */
+  private async finishUnavailableTurn(trx: Transaction, p: Principal, turn: AssistantModelTurnRow, run: RunRow): Promise<ConversationResult> {
+    await assistantModelTurns.fence(trx, turn.id);
+    const asked = await trx.selectFrom('conversation_turn').selectAll().where('id', '=', turn.asked_id).executeTakeFirstOrThrow();
+    const answer = await conversationTurns.append(trx, { person_id: p.personId, role: 'system', content: 'assistant.overlay.stateUnavailable', run_id: run.id });
+    const result: ConversationResult = { run: runView(run), turns: [turnView(asked), turnView(answer)], proposals: [], actions: [], citations: [] };
+    await assistantModelTurns.finish(trx, turn.id, result);
+    return result;
+  }
+
+  private async closeStoppedTurns(trx: Transaction, p: Principal, unavailable: boolean): Promise<void> {
+    await assistantModelTurns.lockConversation(trx, p.personId);
+    for (const pending of await assistantModelTurns.pending(trx, p.personId)) {
+      const turn = await assistantModelTurns.lock(trx, pending.id);
+      if (!turn || turn.state === 'completed') continue;
+      let run = await trx.selectFrom('run').selectAll().where('id', '=', turn.run_id).forUpdate().executeTakeFirstOrThrow();
+      if (unavailable && !['cancelled', 'failed', 'completed'].includes(run.state)) {
+        run = (await runs.setState(trx, run.id, 'failed'))!;
+      }
+      if (['cancelled', 'failed', 'completed'].includes(run.state)) await this.finishUnavailableTurn(trx, p, turn, run);
+    }
+  }
+
   /**
    * One conversation turn. The person's text is stored as content and handed to the model as data; the model's reply
    * is stored as content; its tool calls become proposals (mandate changes, backlog items) or actions decided by the
@@ -324,7 +353,14 @@ export class AssistantService {
   async converse(body: In<typeof ConversationCommandSchema>, state: RequestState) {
     // The built-in unavailable model has no effect or adapter; retain the existing single-commit no-model route.
     if (this.model instanceof UnavailableModel) return this.run(state, async (trx, p) => {
-      if (!await assistantModelTurns.available(trx,p.personId)) throw new ApiError('validation.idempotency_in_progress', 'model outcome unresolved');
+      await this.closeStoppedTurns(trx, p, true);
+      // A restarted process may receive the old command after replacing its model with the default.
+      const previous = await trx.selectFrom('assistant_model_turn').selectAll().where('person_id', '=', p.personId)
+        .where('request_key', '=', completionRecordId(state) ?? state.requestId).executeTakeFirst();
+      if (previous) {
+        if (previous.input_digest !== computeDigest(body).value) throw new ApiError('validation.idempotency_conflict', 'different conversation command');
+        return previous.result as ConversationResult;
+      }
       const run = await runs.start(trx, { principal_person_id: p.personId, kind: 'conversation' });
       const asked = await conversationTurns.append(trx, { person_id: p.personId, role: 'person', content: body.text, run_id: run.id });
       const answer = await conversationTurns.append(trx, { person_id: p.personId, role: 'system', content: 'assistant.overlay.stateUnavailable', run_id: run.id });
@@ -337,30 +373,33 @@ export class AssistantService {
     // Commit intent first. The HTTP idempotency completion belongs only to the final transaction.
     const prepared = await this.run({ ...state }, async (trx, p) => {
       if (!state.session || state.session.personId !== p.personId) throw new ApiError('auth.session_invalid', 'session required');
+      await this.closeStoppedTurns(trx, p, false);
       const begun = await assistantModelTurns.begin(trx, key, computeDigest(body).value, body.text);
       const history = (await conversationTurns.list(trx, p.personId, 21)).filter((t) => t.id !== begun.turn.asked_id).slice(0, 20).reverse().map((t) => ({ role: t.role, content: t.content }));
       return { ...begun, principal: p, history };
     });
-    type Result = { run: ReturnType<typeof runView>; turns: ReturnType<typeof turnView>[]; proposals: ReturnType<typeof proposalView>[]; actions: ActionProposalResult[]; citations: string[] };
+    type Result = ConversationResult;
     if (prepared.turn.state === 'completed') return this.run(state, async () => prepared.turn.result as Result);
     const input: ModelInput = { personId: prepared.principal.personId, history: prepared.history, text: body.text, evidence: [],
       execution: { operationId: prepared.turn.id, runId: prepared.turn.run_id, hubId: this.settings.hubId, principal: prepared.principal, sessionId: state.session!.id } };
     // A pending turn after a crash is never reclaimed for dispatch, even after an HTTP lease expires.
     const reply = prepared.fresh ? await this.model.respond(input) : await this.model.recover?.(input);
+    if (!prepared.fresh && !this.model.recover) return this.run(state, async (trx, p) => {
+      const turn = (await assistantModelTurns.lock(trx, prepared.turn.id))!;
+      if (turn.state === 'completed') return turn.result as Result;
+      let run = await trx.selectFrom('run').selectAll().where('id', '=', turn.run_id).forUpdate().executeTakeFirstOrThrow();
+      if (!['cancelled', 'failed', 'completed'].includes(run.state)) run = (await runs.setState(trx, run.id, 'failed'))!;
+      return this.finishUnavailableTurn(trx, p, turn, run);
+    });
     if (!reply) throw new ApiError('validation.idempotency_in_progress', 'model outcome unresolved');
     return this.run(state, async (trx, p) => {
       const turn = await assistantModelTurns.lock(trx, prepared.turn.id);
       if (!turn) throw new ApiError('access.not_found', 'turn not found');
       if (turn.state === 'completed') return turn.result as Result;
-      const run = await runs.get(trx, turn.run_id);
+      const run = await trx.selectFrom('run').selectAll().where('id', '=', turn.run_id).forUpdate().executeTakeFirst();
       const asked = await trx.selectFrom('conversation_turn').selectAll().where('id','=',turn.asked_id).executeTakeFirst();
       if (!run || !asked) throw new ApiError('access.not_found', 'active conversation not found');
-      if (['cancelled', 'failed'].includes(run.state)) {
-        const answer = await conversationTurns.append(trx, { person_id: p.personId, role: 'system', content: 'assistant.overlay.stateUnavailable', run_id: run.id });
-        const result: Result = { run: runView(run), turns: [turnView(asked), turnView(answer)], proposals: [], actions: [], citations: [] };
-        await assistantModelTurns.finish(trx, turn.id, result);
-        return result;
-      }
+      if (['cancelled', 'failed', 'completed'].includes(run.state)) return this.finishUnavailableTurn(trx, p, turn, run);
       await runSteps.append(trx, { run_id: run.id, kind: 'model_call', tool: null, input_digest: computeDigest({ text: body.text }).value, output_ref: { provider: this.model.provider, usage: reply.usage, toolCalls: reply.toolCalls.length }, state: 'succeeded' });
       const proposals: ReturnType<typeof proposalView>[] = [];
       const actions: ActionProposalResult[] = [];

@@ -47,7 +47,7 @@ export interface ModelReply {
 export interface ModelPort {
   readonly provider: string;
   respond(input: ModelInput): Promise<ModelReply>;
-  /** Lookup only after a crash, never resend. Null means unresolved; leave the conversation serialized. */
+  /** Lookup only after a crash, never resend. Null means unresolved; cancellation can close chat while retaining holds. */
   recover?(input: ModelInput): Promise<ModelReply | null>;
 }
 

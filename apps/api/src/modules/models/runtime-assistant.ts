@@ -2,10 +2,10 @@ import type { ModelCall, ModelRuntimeBinding } from '../../../../../packages/con
 import type { DataPool } from '../../../../../packages/data/src/pool.js';
 import type { ModelInput } from '../assistant/ports.js';
 import { GatewayAssistantModel } from './assistant-model.js';
-import { ModelGateway } from './gateway.js';
+import { ModelGateway, reconcileModelOperation } from './gateway.js';
 import { KeysRouteResolver } from './keys-route-resolver.js';
 import { FakeModelRegistry, ModelRefusal } from './ports.js';
-import { PostgresModelCallStore } from './postgres-store.js';
+import { PostgresModelCallStore, PostgresModelReceiptStore } from './postgres-store.js';
 import { RuntimeModelAuthority, UnavailableModelGovernance, type ModelGovernancePort } from './runtime-authority.js';
 
 type Execution = NonNullable<ModelInput['execution']>;
@@ -30,6 +30,12 @@ export function createRuntimeAssistantModel(
   policy: ModelExecutionPolicyPort = new UnavailableModelExecutionPolicy(),
 ): GatewayAssistantModel {
   return new GatewayAssistantModel({
+    async recover(execution) {
+      const store = new PostgresModelReceiptStore(pool, execution.principal, {
+        sessionId: execution.sessionId, authzEpoch: execution.principal.authzEpoch,
+      });
+      return reconcileModelOperation(store, adapters, execution.operationId, execution.principal.personId);
+    },
     async resolve(execution) {
       if (!execution.hubId) throw new ModelRefusal('hub_required');
       const selected = await policy.select(execution);

@@ -39,6 +39,12 @@ export interface ReservedModelCall {
   candidate: PinnedCandidate;
 }
 export type ModelReplay = { kind: 'replay'; outcome: ModelCallMetadata['outcome']; metadata: ModelCallMetadata | null };
+export type ModelRecovery = { kind: 'undispatched' } | { kind: 'settled'; metadata: ModelCallMetadata } | { kind: 'unknown'; call: ReservedModelCall };
+/** Receipt-only authority: authenticates ownership and fences undispatched work, never authorizes new effects. */
+export interface ModelReceiptStore {
+  recover(operationId: string, principalId: string): Promise<ModelRecovery>;
+  finish(operation: ReservedModelCall, metadata: ModelCallMetadata): Promise<void>;
+}
 /**
  * MUST be durable and atomic across processes. Begin binds the exact command digest, principal, mandate revision,
  * run, route and provider revision. It reserves platform AND operator budgets before returning dispatch ownership.
@@ -46,7 +52,7 @@ export type ModelReplay = { kind: 'replay'; outcome: ModelCallMetadata['outcome'
  * Finish settles/releases both reservations and records only allowlisted metadata in the same transaction.
  * The PostgreSQL implementation accepts fake connections only, as KEYS assigns them zero operator cost.
  */
-export interface ModelCallStore {
+export interface ModelCallStore extends ModelReceiptStore {
   begin(call: ModelCall, route: ResolvedModelRoute, candidate: PinnedCandidate): Promise<{ kind: 'dispatch'; call: ReservedModelCall } | ModelReplay>;
   /** Only after authoritative evidence of no effect; atomically move operator holds to the fallback connection. */
   fallback(operation: ReservedModelCall, candidate: PinnedCandidate): Promise<ReservedModelCall>;

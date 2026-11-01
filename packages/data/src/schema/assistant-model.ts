@@ -8,6 +8,7 @@ export interface AssistantModelTurnTable {
   run_id: string;
   asked_id: string;
   state: Generated<'pending' | 'completed'>;
+  dispatch_closed: Generated<boolean>;
   result: ColumnType<unknown, string | null, string | null>;
   created_at: GeneratedTimestamp;
 }
@@ -29,6 +30,7 @@ export const TABLE_COLUMNS: TableColumns<AssistantModelDatabase> = {
     'run_id',
     'asked_id',
     'state',
+    'dispatch_closed',
     'result',
     'created_at',
   ]),
