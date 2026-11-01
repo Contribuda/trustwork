@@ -65,13 +65,17 @@ COPY --from=deps /out/api/node_modules ./node_modules
 COPY --from=build /src/.image-build/apps/api ./apps/api
 COPY --from=build /src/.image-build/packages/contracts ./packages/contracts
 COPY --from=build /src/.image-build/packages/data ./packages/data
+# HUB-004 (ADR 014 decision 19): the setup wizard screens the operator entity with the SANC-003 matcher and name
+# normalization; only the compiled files the API imports exist.
+COPY --from=build /src/.image-build/packages/compliance ./packages/compliance
 # The readiness probe compares the database ledger with the migrations this build ships.
 COPY packages/data/migrations ./packages/data/migrations
 COPY --from=build /src/infra/images/runtime-layout.mjs /tmp/layout/
 COPY --from=build /src/apps/api/package.json /tmp/layout/apps/api/package.json
 COPY --from=build /src/packages/contracts/package.json /tmp/layout/packages/contracts/package.json
 COPY --from=build /src/packages/data/package.json /tmp/layout/packages/data/package.json
-RUN node /tmp/layout/runtime-layout.mjs /tmp/layout /app apps/api packages/contracts packages/data && rm -rf /tmp/layout
+COPY --from=build /src/packages/compliance/package.json /tmp/layout/packages/compliance/package.json
+RUN node /tmp/layout/runtime-layout.mjs /tmp/layout /app apps/api packages/contracts packages/data packages/compliance && rm -rf /tmp/layout
 USER 1000:1000
 ENV API_HOST=:: API_PORT=3001
 EXPOSE 3001
