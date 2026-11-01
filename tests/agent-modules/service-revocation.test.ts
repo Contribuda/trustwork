@@ -1,3 +1,4 @@
+import { bindServiceCapabilities } from '../../apps/api/src/modules/agent-modules/service-bindings.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
@@ -46,6 +47,12 @@ test('actual service invocation retains the original session and current role ba
       await assert.rejects(service.addPortfolioEntry({ holder: company, context: null, externalDescription: 'Synthetic work', title: 'Synthetic', role: 'Builder', period: { from:null,to:null }, scopeSummary:'Synthetic',visibility:'private',supersedesId:null },state),deny);
       assert.equal((await h.db.admin.query<{ n: number }>('SELECT count(*)::int AS n FROM trustwork.portfolio_entry WHERE holder_company_id=$1',[company.id])).rows[0]!.n,0);
     } finally { await blocker.query('ROLLBACK'); blocker.release(); await read; await revoker; }
+  });
+  await t.test('the invocation seam preserves the owning snapshot transaction option',async()=>{
+    const snapshot=bindServiceCapabilities(h.created.ctx!,h.services().principals,{read:{boundary:'first_party_control',reason:'Synthetic snapshot control'}},principals=>({
+      read:()=>principals.runAs(state,async trx=>(await sql<{isolation:string}>`SELECT current_setting('transaction_isolation') AS isolation`.execute(trx)).rows[0]!.isolation,{snapshot:true}),
+    }));
+    assert.equal(await snapshot.read(),'repeatable read');
   });
   await t.test('a revoked real session cannot use a cached service state, including mandatory personal controls', async () => {
     const fresh = await stateOf(h,client,'synthetic-session-revocation');
