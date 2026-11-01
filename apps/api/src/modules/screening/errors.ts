@@ -23,6 +23,7 @@ export function screeningRefusal(error: unknown): never {
     case 'access.approval_digest_mismatch':
       throw new ApiError('access.approval_digest_mismatch', 'the reviewed digest differs from the proposal');
     case 'screening.match_state':
+    case 'screening.routing_conflict':
     case 'screening.nothing_to_appeal':
     case 'admin.approval_not_pending':
     case 'admin.approval_expired':
