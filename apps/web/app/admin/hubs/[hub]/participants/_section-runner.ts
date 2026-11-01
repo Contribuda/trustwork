@@ -3,7 +3,7 @@ import { demoModeEnabled } from '@/app/_lib/persona';
 import { formatDate, t, tDynamic } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';
 import type { CommandState } from '../../../_data/command-state';
-import { consolePort } from '../../../_data/index';
+import { consolePort } from '../../../_data/server';
 import { resolveConsoleRequest } from '../../../_data/personas';
 import type { SectionCommandContext, SectionCommandInput, SectionEvaluator, SectionOutcome } from './_section-command';
 

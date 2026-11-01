@@ -5,7 +5,7 @@ import { demoModeEnabled } from '@/app/_lib/persona';
 import { primeLocale } from '@/app/_lib/locale';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { resolveConsoleRequest } from '../../../_data/personas';
-import { consolePort } from '../../../_data/index';
+import { consolePort } from '../../../_data/server';
 import type { CommandState } from '../../../_data/command-state';
 import { inboxCommand } from './authority';
 import { FixtureReceiptSchema, type FixtureReceipt } from './transaction';
@@ -23,7 +23,7 @@ async function run(form: FormData, reconcile: boolean): Promise<InboxResult> {
       command, hubSlug: text('hub'), setupToken: null, expectedRevision: Number(text('expectedRevision')), reason: text('reason'),
       fields: { requestId: text('f.requestId'), digest: text('f.digest'), decision: text('f.decision') },
     }, text('actor'), reconcile);
-    const message = outcome.status === 'demo_not_saved' ? t('consoleNav.synthetic') : outcome.status === 'not_found' ? t('admin.errors.not_found') : tDynamic(`admin.errors.${outcome.code}`, t('admin.errors.invalid'));
+    const message = outcome.status === 'demo_not_saved' ? t('consoleNav.synthetic') : outcome.status === 'applied' ? t('admin.common.applied') : outcome.status === 'not_found' ? t('admin.errors.not_found') : tDynamic(`admin.errors.${outcome.code}`, t('admin.errors.invalid'));
     let receipt: FixtureReceipt | null = null;
     if (!reconcile && outcome.status === 'demo_not_saved') {
       const port = consolePort(demo);

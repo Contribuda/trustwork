@@ -236,6 +236,7 @@
       }
     },
     "common": {
+      "applied": "Edildi: dəyişiklik qeydə alındı.",
       "demoNotSaved": "Nümayiş: dəyişikliklər saxlanmır.",
       "demoSecondPerson": "Nümayiş: burada ikinci əməkdaşa «{action}» sorğusu yaradılardı; heç nə saxlanmadı.",
       "reason": "Səbəb",

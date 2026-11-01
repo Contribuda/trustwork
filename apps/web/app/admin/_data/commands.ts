@@ -118,6 +118,8 @@ export type CommandInput = {
 
 export type CommandOutcome =
   | { status: 'demo_not_saved'; secondPerson: ConsoleSecondPersonAction | null }
+  /** Live mode: the API applied the command (HUBC-007). */
+  | { status: 'applied' }
   | { status: 'rejected'; code: RejectCode; field: string | null; detail: string[] }
   | { status: 'not_found' };
 

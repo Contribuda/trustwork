@@ -5,7 +5,8 @@ import type { PreferenceStorage } from '../../../_navigation/preferences.js';
 export const FixtureReceiptSchema = z.strictObject({
   operationId: z.uuid(),
   digest: z.string().regex(/^[a-f0-9]{64}$/),
-  decision: ApprovalDecisionSchema,
+  /** Session-only receipts exist for synthetic decisions only; a live decision (`synthetic: false`) is never stored here. */
+  decision: ApprovalDecisionSchema.refine((d) => d.synthetic, { message: 'only a synthetic decision has a session receipt', path: ['synthetic'] }),
 });
 export type FixtureReceipt = z.infer<typeof FixtureReceiptSchema>;
 

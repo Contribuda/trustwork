@@ -7,7 +7,7 @@ import { primeLocale } from '@/app/_lib/locale';
 import { languageName, violationLabel } from '../_components/format';
 import { isCommandId, type CommandInput, type CommandOutcome } from './commands';
 import type { CommandState } from './command-state';
-import { consolePort } from './index';
+import { consolePort } from './server';
 import { resolveConsoleRequest } from './personas';
 
 const FIELD_PREFIX = 'f.';
@@ -26,6 +26,7 @@ function message(outcome: CommandOutcome): CommandState {
       ? { status: 'done', tone: 'info', at, message: t('admin.common.demoSecondPerson', { action: tDynamic(`admin.approvals.actions.${outcome.secondPerson}`, outcome.secondPerson) }) }
       : { status: 'done', tone: 'info', at, message: t('admin.common.demoNotSaved') };
   }
+  if (outcome.status === 'applied') return { status: 'done', tone: 'info', at, message: t('admin.common.applied') };
   if (outcome.status === 'not_found') return { status: 'rejected', tone: 'error', at, message: t('admin.errors.not_found') };
   const items = outcome.detail.map(detailLabel).join(', ');
   return { status: 'rejected', tone: outcome.code === 'stale' ? 'warning' : 'error', at, message: tDynamic(`admin.errors.${outcome.code}`, t('admin.errors.invalid'), { items }) };
