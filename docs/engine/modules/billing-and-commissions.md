@@ -1,6 +1,6 @@
 # Billing and commissions
 
-Module code `BIL`. Status: billing state in settings is **Demo**; two budget kinds, price versions and acceptances are **Contract**; offers, entitlements, usage and payment adapters are **Designed** (BILL-001); licensed providers only, hub commissions and fees as disclosed settings, invoices and tax, agent metering, the business-model playbook and fair subscription controls are **Proposed** ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20 and 21; R19, R20, R46, R47). Packages: BIZ-001, BILL-001, BILL-002, BILL-003, BILL-004, PAY-001, AGT-004. Narrative: [Billing, plans and budgets](../billing.md). Data: [§23 Billing, budgets and payments](../../data/model.md#23-billing-budgets-and-payments).
+Module code `BIL`. Status: billing state in settings is **Demo**; the BILL-001 service/database foundation implements entitlements, immutable price acceptance, budgets, reservations and a balanced ledger. BILL-003 implements scoped fee governance, partial public pricing and exact consultation/task fee bindings; other readers, marketplace mapping and referral authority remain incomplete. The BIZ-001 business-model playbook and public pricing screen design are **Accepted design**. Payment providers, invoices/tax and complete agent metering remain **Proposed**; only licensed providers may handle funds ([ADR 010](../../adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 20 and 21; R19, R20, R46, R47). Packages: BIZ-001, BILL-001, BILL-002, BILL-003, BILL-004, PAY-001, AGT-004. Narrative: [Billing, plans and budgets](../billing.md). Data: [§23 Billing, budgets and payments](../../data/model.md#23-billing-budgets-and-payments).
 
 ## Purpose
 
@@ -31,7 +31,7 @@ Payers (persons and companies), company administrators who allocate budgets, hub
 | BIL-F04 | Customers accept a specific price version with a specific acceptance-text version; acceptances are immutable | Contract | BILL-001 |
 | BIL-F05 | Entitlements are separate from roles; personal and company payers are both supported | Designed | BILL-001 |
 | BIL-F06 | Commissions and fees (consultations, tasks, marketplace categories, tickets, courses, agent capacity) are versioned hub price records with category scope, amount or percentage, effective date and second-person activation; the same for every participant in a category; zero allowed | Proposed | BILL-003 |
-| BIL-F07 | Every active price, fee and commission is listed on the hub's public price page in every hub language and shown to both sides before a booking or acceptance; the booking records the version shown | Proposed | BILL-003, BIZ-001 |
+| BIL-F07 | Every active price, fee and commission is listed on the hub's public price page in every hub language and shown to both sides before a booking or acceptance; the booking records the version shown | Accepted design; partial public pricing and consultation/task binding implementation | BILL-003, BIZ-001 |
 | BIL-F08 | No hidden fees, no per-lead fees, no purchasable introduction quotas and no outcome-based fees for agent work | Proposed | BILL-003 |
 | BIL-F09 | Payment, entitlements, fees and commissions never change ranking, matching, recommendations, reputation or badges; tests compare behaviour with and without paid entitlements | Designed | BILL-003, MATCH-001, REC-001 |
 | BIL-F10 | Fair subscription controls: recurring price shown before purchase; renewal reminder ahead of each term; online cancellation in no more steps than joining; no early-termination fees; price increases announced with notice and applied only from the next renewal; the engine refuses plan versions that break these rules | Proposed | BILL-004 |
@@ -42,7 +42,7 @@ Payers (persons and companies), company administrators who allocate budgets, hub
 | BIL-F15 | Verification at cost is a pass-through fee, the same for everyone, available independently of any plan and waivable by the hub | Proposed | BILL-003, HUB-003 |
 | BIL-F16 | Credits for goodwill or corrections are capped per staff role and audited; never a hidden refund | Designed | BILL-001 |
 | BIL-F17 | A participant's plan never appears in any projection other than their own billing view | Designed | BILL-001 |
-| BIL-F18 | The business-model playbook documents acceptable and unacceptable revenue options for hubs and the public price-transparency page | Proposed | BIZ-001 |
+| BIL-F18 | The business-model playbook documents acceptable and unacceptable revenue options for hubs and the public price-transparency page | Accepted design | BIZ-001 |
 
 ## Agent capabilities
 
@@ -61,7 +61,7 @@ Payers (persons and companies), company administrators who allocate budgets, hub
 | Surface | Where | Status |
 |---|---|---|
 | Billing state in settings | `/app/settings` | Demo |
-| Public price page | `/pricing` | Proposed (BIZ-001 design, BILL-003) |
+| Public price page | `/pricing` | Accepted BIZ-001 design; partial BILL-003 implementation |
 | Checkout with price and fee disclosure | Booking, ticket, course, plan dialogs | Proposed |
 | Company budgets | `/app/company` → Budgets | Proposed |
 | Renewal reminders and cancellation | Settings → Billing | Proposed |

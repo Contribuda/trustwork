@@ -22,7 +22,7 @@ The internal `bookingFees` repository accepts only an existing immutable source 
 
 ## Remaining acceptance dependencies
 
-BIZ-001 (#79) remains open with no accepted pricing-screen artifact; this page is a functional implementation, not claimed design acceptance. AGT-003 owns the missing model/capability/credit-pack catalogue contract. ADR 018 is proposed and explicitly requires integrator acceptance for `growth.activate_referral_terms` and the associated permissions; the frozen second-person action catalogue does not contain it. No referral programme is enabled or activated under an unrelated fee action. BILL-003 stays `in_progress` while those criteria remain unresolved.
+BIZ-001 (#79) now provides an accepted [pricing-screen design](../../../../../../docs/design/screen-contracts/public/pricing.md). This partial implementation still needs verification against the complete design and the remaining runtime criteria. AGT-003 owns the missing model/capability/credit-pack catalogue contract. ADR 018 is proposed and explicitly requires integrator acceptance for `growth.activate_referral_terms` and the associated permissions; the frozen second-person action catalogue does not contain it. No referral programme is enabled or activated under an unrelated fee action. BILL-003 stays `in_progress` while those criteria remain unresolved.
 
 Payment-neutrality schema tests reject ranking, matching, recommendation, reputation and participant-specific controls. Actual before/after tests compare directory order, commercial quote comparison, reputation and acceptance digests. The future matching/recommendation runtime is not present; no simulated matching engine is presented as runtime evidence.
 
