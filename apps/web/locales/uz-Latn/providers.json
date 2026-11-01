@@ -8,6 +8,7 @@
       "secret_store_unconfigured": "Maxfiy kalitlar omborida hali kalitlarni shifrlash kaliti yoʻq, shuning uchun maxfiy kalitni saqlab boʻlmaydi.",
       "secret_required": "Haqiqiy provayder ulanishi yoqilishidan oldin maxfiy kalitga ega boʻlishi kerak.",
       "secret_not_found": "Maxfiy kalitni omboridan oʻqib boʻlmadi.",
+      "secret_unreadable": "Saqlangan maxfiy kalit bu ulanishga tegishli emas yoki oʻzgartirilgan, shuning uchun u ishlatilmadi.",
       "credential_not_active": "Bogʻlangan hisob maʼlumotlari havolasi bu xabda faol emas.",
       "test_required": "Avval joriy sozlamani sinovdan oʻtkazing.",
       "test_failed": "Oxirgi ulanish sinovi muvaffaqiyatsiz boʻldi.",

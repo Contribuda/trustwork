@@ -8,6 +8,7 @@
       "secret_store_unconfigured": "The secret store has no key-encryption key yet, so no secret can be saved.",
       "secret_required": "A live vendor connection needs its secret before it can be enabled.",
       "secret_not_found": "The secret could not be read from its store.",
+      "secret_unreadable": "The stored secret does not belong to this connection or was altered, so it was not used.",
       "credential_not_active": "The linked credential reference is not active in this hub.",
       "test_required": "Test the current configuration before enabling it.",
       "test_failed": "The last connection test did not pass.",

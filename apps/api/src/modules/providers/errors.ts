@@ -38,7 +38,7 @@ interface PgError { code?: string; hint?: string; detail?: string; constraint?: 
 export function providersRefusal(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof SecretStoreError) {
-    return new ApiError('validation.schema', 'the secret store cannot serve this request', { reason: error.code === 'unconfigured' ? 'secret_store_unconfigured' : 'secret_not_found' });
+    return new ApiError('validation.schema', 'the secret store cannot serve this request', { reason: error.code === 'unconfigured' ? 'secret_store_unconfigured' : error.code === 'unreadable' || error.code === 'kek_mismatch' ? 'secret_unreadable' : 'secret_not_found' });
   }
   const pg = error as PgError | null;
   if (!pg || typeof pg.code !== 'string') return null;

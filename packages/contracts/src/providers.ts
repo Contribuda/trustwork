@@ -584,7 +584,7 @@ export type ProviderConfigChange = z.infer<typeof ProviderConfigChangeSchema>;
 
 /** Refusals of the providers commands (database hints without their `providers.` prefix). */
 export const PROVIDER_COMMAND_REASONS = [
-  'restricted_place', 'endpoint_not_allowed', 'adapter_mode_fake_only', 'fake_holds_no_secret', 'secret_store_unconfigured', 'secret_required', 'secret_not_found',
+  'restricted_place', 'endpoint_not_allowed', 'adapter_mode_fake_only', 'fake_holds_no_secret', 'secret_store_unconfigured', 'secret_required', 'secret_not_found', 'secret_unreadable',
   'credential_not_active', 'test_required', 'test_failed', 'connection_not_enabled', 'connection_killed', 'revision_conflict', 'invalid_transition', 'route_unpinned',
   'route_connection_unusable', 'route_outside_residency', 'route_fallbacks_forbidden', 'route_public_only', 'route_budget_unknown', 'drafter_cannot_activate',
   'egress_training', 'egress_broker', 'egress_not_in_residency', 'egress_retention', 'cap_currency', 'cap_scope_unknown', 'kill_engaged', 'kill_not_engaged',

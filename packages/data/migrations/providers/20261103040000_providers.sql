@@ -887,7 +887,9 @@ END $$;
 
 -- Stores a sealed secret (the API sealed it; no plaintext reaches the database). A rotation keeps the previous version in
 -- grace for p_grace_hours (0 destroys it at once).
-CREATE FUNCTION trustwork.providers_store_secret(p_ctx jsonb, p_connection uuid, p_expected integer, p_fingerprint text, p_ciphertext bytea, p_iv bytea, p_tag bytea,
+-- p_version is the version the API bound the ciphertext to (its AAD names the connection and the version); a different
+-- next version means a concurrent write and is refused.
+CREATE FUNCTION trustwork.providers_store_secret(p_ctx jsonb, p_connection uuid, p_expected integer, p_version integer, p_fingerprint text, p_ciphertext bytea, p_iv bytea, p_tag bytea,
   p_wrapped bytea, p_kek text, p_grace_hours integer) RETURNS trustwork.secret_ref
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
@@ -919,6 +921,9 @@ BEGIN
     PERFORM trustwork.providers_log(v_actor, p_ctx, v_conn.hub_id, 'secret_ref', v_previous.id, 'providers.secret_rotated', to_jsonb(v_previous), to_jsonb(v_previous_after));
   END IF;
   SELECT coalesce(max(version), 0) + 1 INTO v_version FROM trustwork.secret_ref WHERE connection_id = p_connection;
+  IF p_version IS DISTINCT FROM v_version THEN
+    RAISE EXCEPTION 'the secret was sealed for version %, the next is %', p_version, v_version USING ERRCODE = 'check_violation', HINT = 'providers.revision_conflict';
+  END IF;
   INSERT INTO trustwork.secret_ref (connection_id, hub_id, ref, keyed_fingerprint, version, created_by)
   VALUES (p_connection, v_conn.hub_id, 'connection:' || p_connection::text || ':v' || v_version, p_fingerprint, v_version, v_actor.person_id) RETURNING * INTO v_row;
   INSERT INTO trustwork.secret_version (secret_ref_id, ciphertext, iv, auth_tag, wrapped_key, kek_id) VALUES (v_row.id, p_ciphertext, p_iv, p_tag, p_wrapped, p_kek);
@@ -959,7 +964,7 @@ END $$;
 -- What a connection test needs: the sealed secret of the active version (or the credential reference) and the digest of
 -- the configuration it tests. Staff with admin.providers.test only; nothing is recorded until the result is.
 CREATE FUNCTION trustwork.providers_test_material(p_ctx jsonb, p_connection uuid)
-RETURNS TABLE (config_digest text, secret_ref_id uuid, ciphertext bytea, iv bytea, auth_tag bytea, wrapped_key bytea, kek_id text, credential_store text, credential_ref text, credential_status text)
+RETURNS TABLE (config_digest text, secret_ref_id uuid, secret_version integer, ciphertext bytea, iv bytea, auth_tag bytea, wrapped_key bytea, kek_id text, credential_store text, credential_ref text, credential_status text)
 LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
   v_conn trustwork.provider_connection%ROWTYPE;
@@ -970,7 +975,7 @@ BEGIN
   END IF;
   PERFORM trustwork.admin_authorize(p_ctx, ARRAY['admin.providers.test'], NULL, v_conn.hub_id);
   RETURN QUERY
-    SELECT trustwork.providers_config_digest(v_conn.id), r.id, v.ciphertext, v.iv, v.auth_tag, v.wrapped_key, v.kek_id, cr.secret_store, cr.secret_ref, cr.status
+    SELECT trustwork.providers_config_digest(v_conn.id), r.id, r.version, v.ciphertext, v.iv, v.auth_tag, v.wrapped_key, v.kek_id, cr.secret_store, cr.secret_ref, cr.status
     FROM (SELECT 1) one
     LEFT JOIN trustwork.secret_ref r ON r.connection_id = v_conn.id AND r.status = 'active'
     LEFT JOIN trustwork.secret_version v ON v.secret_ref_id = r.id
@@ -1574,12 +1579,13 @@ END $$;
 -- The sealed secret for a call: only for an open decision of the last 15 minutes, one of its candidates, still enabled
 -- and not killed. The ciphertext is useless without the node's key-encryption key, which the database never holds.
 CREATE FUNCTION trustwork.providers_call_secret(p_decision uuid, p_connection uuid)
-RETURNS TABLE (secret_ref_id uuid, ciphertext bytea, iv bytea, auth_tag bytea, wrapped_key bytea, kek_id text, credential_store text, credential_ref text)
+RETURNS TABLE (secret_ref_id uuid, secret_version integer, ciphertext bytea, iv bytea, auth_tag bytea, wrapped_key bytea, kek_id text, credential_store text, credential_ref text)
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
   v_usage trustwork.provider_usage%ROWTYPE;
   v_conn trustwork.provider_connection%ROWTYPE;
   v_ref uuid;
+  v_version integer;
 BEGIN
   SELECT * INTO v_usage FROM trustwork.provider_usage WHERE id = p_decision;
   IF NOT FOUND OR v_usage.state <> 'reserved' OR v_usage.created_at < now() - interval '15 minutes' OR NOT (p_connection = ANY (v_usage.candidates)) THEN
@@ -1589,13 +1595,13 @@ BEGIN
   IF v_conn.status <> 'enabled' OR trustwork.providers_connection_killed(p_connection) THEN
     RAISE EXCEPTION 'the connection stopped' USING ERRCODE = 'check_violation', HINT = 'providers.connection_not_enabled';
   END IF;
-  SELECT r.id INTO v_ref FROM trustwork.secret_ref r WHERE r.connection_id = p_connection AND r.status IN ('active', 'grace')
+  SELECT r.id, r.version INTO v_ref, v_version FROM trustwork.secret_ref r WHERE r.connection_id = p_connection AND r.status IN ('active', 'grace')
    ORDER BY (r.status = 'active') DESC, r.version DESC LIMIT 1;
   IF v_ref IS NOT NULL THEN
     UPDATE trustwork.secret_ref SET last_used_at = now() WHERE id = v_ref;
   END IF;
   RETURN QUERY
-    SELECT v_ref, v.ciphertext, v.iv, v.auth_tag, v.wrapped_key, v.kek_id, cr.secret_store, cr.secret_ref
+    SELECT v_ref, v_version, v.ciphertext, v.iv, v.auth_tag, v.wrapped_key, v.kek_id, cr.secret_store, cr.secret_ref
     FROM (SELECT 1) one
     LEFT JOIN trustwork.secret_version v ON v.secret_ref_id = v_ref
     LEFT JOIN trustwork.provider_credential_ref cr ON cr.id = v_conn.credential_ref_id AND cr.status = 'active';
@@ -1705,7 +1711,7 @@ GRANT SELECT ON trustwork.provider_connection, trustwork.secret_ref, trustwork.c
 GRANT EXECUTE ON FUNCTION
   trustwork.providers_create_connection(jsonb, uuid, text, text, text, text[], text, text, text, boolean, boolean, boolean, text, text, uuid),
   trustwork.providers_update_connection(jsonb, uuid, integer, text, text[], text, text, text, boolean, boolean, boolean, text, text, uuid),
-  trustwork.providers_store_secret(jsonb, uuid, integer, text, bytea, bytea, bytea, bytea, text, integer),
+  trustwork.providers_store_secret(jsonb, uuid, integer, integer, text, bytea, bytea, bytea, bytea, text, integer),
   trustwork.providers_revoke_secret(jsonb, uuid, integer),
   trustwork.providers_test_material(jsonb, uuid),
   trustwork.providers_record_test(jsonb, uuid, text, text, integer, integer, bigint, text, text, uuid),
