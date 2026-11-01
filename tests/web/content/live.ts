@@ -1,7 +1,7 @@
 /** CNT-003 bounded live acceptance: real PostgreSQL/API/DataPort, local Next and Chromium; synthetic content only. */
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { createPool, type DataPool } from '@trustwork/data';
+import { createPool, withMaintenance, type DataPool } from '@trustwork/data';
 import { HandlerRegistry, Worker } from '@trustwork/worker';
 import { registerContent } from '../../../apps/worker/src/content/index.js';
 import { renderLocalPdf } from '../../../apps/worker/src/content/render.js';
@@ -12,7 +12,14 @@ import AxeBuilder from '@axe-core/playwright';
 import { startHarness } from '../../backend/helpers/app.js';
 import { buildContentHttpWorld, consoleCommand } from '../../content/http.js';
 import { credit, draft } from '../../content/helpers.js';
-import { publications, issues } from '../../../packages/data/src/repositories/content.js';
+import { publications, issues, contentModeration } from '../../../packages/data/src/repositories/content.js';
+
+import { buildSourcesWorld, DISPLAY_ONLY } from '../../sources/helpers.js';
+import { currentSourceFixture } from '../../content/current-sources.js';
+import { sources } from '../../../packages/data/src/repositories/sources.js';
+import { moderation } from '../../../packages/data/src/repositories/admin.js';
+import { consentRecords } from '../../../packages/data/src/repositories/profiles.js';
+import { consentPublicProfiles } from '../../data/helpers/seed.js';
 
 const evidence = process.env.CNT003_EVIDENCE_DIR;
 assert.ok(evidence, 'CNT003_EVIDENCE_DIR is required');
@@ -130,6 +137,92 @@ try {
   assert.match(await page.locator('body').innerText(), /PRIVATE draft marker/);
   assert.ok(!(await page.locator('body').innerText()).includes('\u041d\u0438\u0433\u0434\u0435'), 'unknown placement must not be represented as nowhere');
   await page.screenshot({ path: `${evidence}/workspace-publications-375.png`, fullPage: true }); await context.close();
+  // The actual live DataPort and all nine feed routes must re-read rights after committed revocation.
+  const sw = await buildSourcesWorld(h.db.admin, h.pool, w);
+  await withMaintenance(h.db.admin, async trx => {
+    await consentPublicProfiles(trx, [p.coauthor]);
+    await trx.updateTable('person').set({ profile_visibility: 'public' }).where('id', '=', p.coauthor).execute();
+  });
+  const licensed = await currentSourceFixture(sw, h.db.admin, 11, { coauthor: true });
+  const licensedNews = await currentSourceFixture(sw, h.db.admin, 12, { format: 'news' });
+  const linked = await currentSourceFixture(sw, h.db.admin, 13, { treatment: 'headline_link' });
+  await sw.cmd(sw.people.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, linked.registered.id, linked.registered.revision, { ...linked.input, allowedUses: DISPLAY_ONLY }));
+  const rightsContext = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  await rightsContext.addCookies([{ name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }]);
+  const rightsPage = await rightsContext.newPage();
+  const externalRequests: string[] = [];
+  await rightsPage.route('**/*', route => { if (!['127.0.0.1', 'localhost'].includes(new URL(route.request().url()).hostname)) { externalRequests.push(route.request().url()); return route.abort(); } return route.continue(); });
+  const readWeb = async (path: string) => {
+    const r = await fetch(`http://127.0.0.1:3468${path}`);
+    assert.match(r.headers.get('cache-control') ?? '', /no-store/, path);
+    return { status: r.status, body: await r.text() };
+  };
+  const feedEvidence: object[] = [];
+  const checkFeeds = async (phase: 'allowed' | 'consent-withdrawn' | 'revoked') => {
+    for (const section of ['news', 'articles', 'magazine']) for (const file of ['feed.xml', 'atom.xml', 'feed.json']) {
+      const path = `/ru/${section}/${file}`, r = await readWeb(path);
+      assert.equal(r.status, 200);
+      const f = section === 'news' ? licensedNews : licensed;
+      if (phase === 'revoked') for (const denied of [licensed, licensedNews]) {
+        assert.ok(!r.body.includes(denied.marker), `${path} leaks ${denied.marker}`);
+        assert.ok(!r.body.includes(denied.external.url), `${path} leaks revoked source URL`);
+      } else assert.ok(r.body.includes(`${f.marker} body`), `${path} must initially serve licensed text`);
+      assert.ok(!r.body.includes(`${linked.marker} body`), 'headline-link never carries full text');
+      if (phase !== 'allowed') assert.ok(!r.body.includes(`${licensed.marker} coauthor`));
+      await writeFile(`${evidence}/rights-${phase}-${section}-${file}`, r.body);
+      feedEvidence.push({ phase, path, status: r.status, cache: 'no-store' });
+    }
+  };
+  await rightsPage.goto(`http://127.0.0.1:3468/ru/magazine/11/read`, { waitUntil: 'networkidle' });
+  assert.match(await rightsPage.locator('body').innerText(), /Synthetic licensed 11 body/);
+  await rightsPage.screenshot({ path: `${evidence}/rights-allowed-reader-375.png`, fullPage: true });
+  await checkFeeds('allowed');
+  // Real worker PDF from the same linked source publication, before any rights change.
+  await world.elevate('editorA');
+  assert.equal((await consoleCommand(world.c.editorA, `/v1/admin/content/issues/${licensed.issue.id}/renders`, { edition: 1, format: 'pdf' })).status, 201);
+  await worker.runOnce({ rethrow: true }); await worker.idle();
+  const sourcePdf = await fetch('http://127.0.0.1:3468/v1/magazine/issues/11/pdf?edition=1');
+  assert.equal(sourcePdf.status, 200); await writeFile(`${evidence}/issue-source.pdf`, Buffer.from(await sourcePdf.arrayBuffer()));
+  await w.act.as(p.coauthor, async trx => {
+    const consent = (await consentRecords.listForSubject(trx, p.coauthor)).find(c => c.target_id === licensed.pub.id)!;
+    assert.ok(consent); await consentRecords.withdraw(trx, consent.id, 'Synthetic first-party withdrawal');
+  });
+  const consentProjection = await readWeb(`/v1/publications/${licensed.pub.id}`);
+  assert.equal(consentProjection.status, 200); assert.ok(!consentProjection.body.includes(`${licensed.marker} coauthor`));
+  await checkFeeds('consent-withdrawn');
+  assert.equal((await readWeb('/v1/magazine/issues/11/pdf?edition=1')).status, 404, 'web and stored PDF honor consent change');
+  for (const f of [licensed, licensedNews]) await sw.cmd(sw.people.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, f.registered.id, f.registered.revision, { ...f.input, allowedUses: DISPLAY_ONLY }));
+  for (const f of [licensed, licensedNews]) {
+    for (const path of [`/v1/publications/${f.pub.id}`, `/v1/publications/${f.pub.id}/versions/1`, `/ru/${f.pub.format === 'news' ? 'news' : 'articles'}/${f.pub.id}`]) {
+      const r = await readWeb(path); assert.equal(r.status, 404, path); assert.ok(!r.body.includes(f.marker));
+    }
+    const pinned = await readWeb(`/v1/magazine/issues/${f.issue.number}?edition=1`);
+    assert.equal(pinned.status, 200); assert.ok(!pinned.body.includes(f.marker)); assert.equal(JSON.parse(pinned.body).items[0].withheld, true);
+  }
+  await checkFeeds('revoked');
+  for (const path of ['/ru/magazine', '/ru/magazine/archive', '/ru/magazine/rubric/practice', '/ru/magazine/11/read']) {
+    await rightsPage.goto(`http://127.0.0.1:3468${path}`, { waitUntil: 'networkidle' });
+    const text = await rightsPage.locator('body').innerText();
+    for (const f of [licensed, licensedNews]) assert.ok(!text.includes(f.marker), path);
+  }
+  await rightsPage.screenshot({ path: `${evidence}/rights-revoked-reader-375.png`, fullPage: true });
+  assert.equal((await readWeb('/v1/magazine/issues/11/pdf?edition=1')).status, 404);
+  // Existing removal and retraction controls still apply through the same live reader.
+  const ctxM = await w.act.elevate(p.moderator);
+  await w.act.as(p.moderator, async trx => {
+    const c = await moderation.openCase(trx, ctxM, { hubId: w.hubId, targetKind: 'publication', targetId: article.id, subject: { kind: 'person', id: p.writer }, clauseCodes: ['community.misinformation'], emergencyHold: true });
+    await moderation.decide(trx, ctxM, c.id, 'content_removed');
+    await contentModeration.apply(trx, c.id, 'remove');
+  });
+  assert.equal((await readWeb(`/ru/articles/${article.id}`)).status, 404);
+  assert.equal((await readWeb('/v1/magazine/issues/1/pdf?edition=1')).status, 404);
+  const withheldIssue = await readWeb('/ru/magazine/1/read'); assert.ok(!withheldIssue.body.includes('Synthetic corrected construction report.'));
+  await w.act.as(p.writer, trx => publications.retract(trx, null, news.id, news.revision, 'Synthetic withdrawn report'));
+  const retracted = await readWeb(`/v1/publications/${news.id}`); assert.equal(JSON.parse(retracted.body).current.body, null);
+  const newsFeed = await readWeb('/ru/news/feed.json'); assert.ok(!newsFeed.body.includes('Synthetic construction report.'));
+  assert.deepEqual(externalRequests, []); await rightsContext.close();
+  await writeFile(`${evidence}/rights-results.json`, JSON.stringify({ feedEvidence, externalRequests, sourceId: licensed.registered.id, publicationId: licensed.pub.id, pinnedVersion: 1,
+    checks: ['initial rights', 'committed revocation', 'private source fields absent', 'consent credit withdrawn', 'headline link body withheld', 'pinned issue withheld', 'magazine/archive/rubric', 'PDF agrees', 'moderation', 'retraction'] }, null, 2));
   await writeFile(`${evidence}/live-results.json`, JSON.stringify({ results, articleId: article.id, newsId: news.id, checks: ['inert content', 'private draft absent publicly', 'correction in feeds and JSON-LD', 'owner workspace draft', 'real worker PDF through the web origin'], manualScreenReader: 'not performed' }, null, 2));
   await writeFile(`${evidence}/next-server.log`, serverLog);
   console.log(`PASS: ${results.length} live pages, seven languages, 375px, keyboard focus and axe; nine feeds; private draft and owner workspace checks.`);

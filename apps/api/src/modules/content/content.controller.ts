@@ -1,5 +1,5 @@
 import type { FastifyReply } from 'fastify';
-import { Controller, Get, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
 import type { z } from 'zod';
 import { Authenticated, Idempotent, Req, ReqState, type RequestState, type TrustworkRequest } from '../../common/request.js';
 import { Body, Params, Query } from '../../common/zod.js';
@@ -120,31 +120,37 @@ export class PublicationsController {
 export class PublicContentController {
   constructor(@Inject(ContentService) private readonly content: ContentService) {}
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('publications')
   feed(@Query(FeedQuerySchema) query: P<typeof FeedQuerySchema>) {
     return this.content.feed(query);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('publications/:id')
   publication(@Params(IdParams) params: Id) {
     return this.content.publication(params.id);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('publications/:id/versions/:version')
   version(@Params(VersionParams) params: P<typeof VersionParams>) {
     return this.content.version(params.id, params.version);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('publications/:id/comments')
   comments(@Params(IdParams) params: Id) {
     return this.content.comments(params.id);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('magazine/issues')
   archive(@Query(ArchiveQuerySchema) query: P<typeof ArchiveQuerySchema>) {
     return this.content.archive(query.year);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('magazine/issues/:number/pdf')
   async pdf(@Params(IssueNumberParams) params: P<typeof IssueNumberParams>, @Query(IssueQuerySchema) query: P<typeof IssueQuerySchema>, @Res() reply: FastifyReply) {
     const artifact = await this.content.pdf(params.number, query.edition);
@@ -154,16 +160,19 @@ export class PublicContentController {
       .type('application/pdf').send(artifact.bytes);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('magazine/issues/:number')
   issue(@Params(IssueNumberParams) params: P<typeof IssueNumberParams>, @Query(IssueQuerySchema) query: P<typeof IssueQuerySchema>) {
     return this.content.issue(params.number, query.edition);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('magazine/digests/:id')
   digest(@Params(IdParams) params: Id) {
     return this.content.digest(params.id);
   }
 
+  @Header('Cache-Control', 'private, no-store')
   @Get('walls/:kind/:id')
   wall(@Params(WallParams) params: P<typeof WallParams>) {
     return this.content.wall(params.kind, params.id);

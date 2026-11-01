@@ -102,8 +102,8 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     const pub = await publicOf(post.id);
     assert.equal(pub?.status, 'published');
     assert.equal((pub?.current as { body: string }).body, 'Synthetic body text for tests.');
-    assert.deepEqual((pub?.authorship as { id: string | null; credit: string }[]).map((a) => [a.id, a.credit]), [[p.writer, 'Synthetic Writer'], [null, 'Synthetic Co-author']],
-      'a credited co-author is identified only with their consent');
+    assert.deepEqual((pub?.authorship as { id: string | null; credit: string }[]).map((a) => [a.id, a.credit]), [[p.writer, 'Synthetic Writer']],
+      'a co-author credit is withheld without current consent');
     noForbiddenKeys(pub);
   });
 
@@ -140,12 +140,13 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     const own = await tryPublish(await news({ treatment: 'original_reporting', sourceRefs: [{ uri: 'https://example.invalid/site-visit', name: 'Own reporting', kind: 'own_reporting', sourceTime: null, observedAt: '2026-10-29T10:00:00.000Z', license: null }] }));
     assert.equal(own.status, 'published');
     const display = await tryPublish(await news({ treatment: 'headline_link', sourceRefs: [source({}, { displaySummary: false, storeFullText: false, sendToModelProviders: false })] }));
-    const pub = await publicOf(display.id) as Pub;
+    assert.equal(await publicOf(display.id), null, 'unlinked external snapshots do not grant public display');
+    const pub = await publicOf(own.id) as Pub;
     const current = pub.current as { eventTime: string; publishedAt: string; sourceRefs: { name: string; kind: string }[]; contentDigest: string };
     assert.equal(current.eventTime, '2026-10-28T08:00:00.000Z', 'event time and publication time are separate');
     assert.ok(current.publishedAt && current.publishedAt !== current.eventTime);
-    assert.equal(current.sourceRefs[0]?.name, 'Synthetic Standards Bulletin');
-    const v = (await as(p.writer, (trx) => publications.versions(trx, display.id)))[0]!;
+    assert.equal(current.sourceRefs[0]?.name, 'Own reporting');
+    const v = (await as(p.writer, (trx) => publications.versions(trx, own.id)))[0]!;
     const refs = (v.source_refs as Array<Record<string, unknown>>).map((s) => ({ uri: s.uri, sourceTime: s.sourceTime, observedAt: s.observedAt, license: s.license }));
     assert.equal(current.contentDigest, computeDigest({ title: v.title, body: v.body, language: 'en', sourceRefs: refs, eventTime: '2026-10-28T08:00:00.000Z', correctionOf: null, correctionNote: null }).value);
   });

@@ -15,6 +15,7 @@ import { buildSourcesWorld, sourceInput, item as sourceItem, DISPLAY_ONLY } from
 import { sources, importBatches, sourceItems } from '../../packages/data/src/repositories/sources.js';
 import { consentPublicProfiles } from '../data/helpers/seed.js';
 import { SKIP_REASON } from '../data/helpers/postgres.js';
+import { currentSourceFixture } from './current-sources.js';
 import { consentToMention, credit, draft, refused, source } from './helpers.js';
 
 const env = await provisionWorkerDatabase('content_render');
@@ -185,6 +186,23 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
       assert.equal(await finish(trx, nextRender.id, snap), false);
     });
     assert.equal(await pdf(i.number), undefined); assert.equal(await pdf(next.number), undefined);
+  });
+  await t.test('headline-only source permissions produce a body-free real PDF and total revocation denies it', async () => {
+    const f = await currentSourceFixture(sw, env.db.admin, 90, { treatment: 'headline_link' });
+    let current = await sw.cmd(p.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, f.registered.id, f.registered.revision, { ...f.input, allowedUses: DISPLAY_ONLY }));
+    const r = await request(f.issue.id);
+    await tx(pool, async trx => {
+      const snap = await prepare(trx, r.id) as { items: { version: { body: string | null } }[] };
+      assert.ok(snap); assert.equal(snap.items[0]!.version.body, null);
+      assert.ok(!JSON.stringify(snap).includes(`${f.marker} body`));
+      const bytes = process.env.CNT003_EVIDENCE_DIR ? await renderLocalPdf(snap, new AbortController().signal) : Buffer.from('%PDF-synthetic-headline-only');
+      const result = await sql<{ ok: boolean }>`SELECT trustwork.content_render_finish(${r.id}::uuid, ${JSON.stringify(snap)}::jsonb, ${bytes}::bytea) AS ok`.execute(trx);
+      assert.equal(result.rows[0]!.ok, true);
+      if (process.env.CNT003_EVIDENCE_DIR) await writeFile(`${process.env.CNT003_EVIDENCE_DIR}/issue-link.pdf`, bytes);
+    });
+    assert.ok(await pdf(90));
+    current = await sw.cmd(p.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, current.id, current.revision, { ...f.input, allowedUses: { ...DISPLAY_ONLY, displayHeadlineAndLink: false } }));
+    assert.equal(await pdf(90), undefined);
   });
   await t.test('consent revocation invalidates the public projection of a stored artifact', async () => {
     const pub = await publish(), i = await issueFor(pub), r = await request(i.id);
