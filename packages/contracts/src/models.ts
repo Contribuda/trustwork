@@ -18,6 +18,8 @@ export const ModelCallSchema = z.strictObject({
   capabilityId: z.string().regex(/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/),
   extensionId: IdSchema.nullable(),
   pipelineId: IdSchema.nullable(),
+  /** Exact owning policy source versions; absent only in historical receipt records, never fresh execution authority. */
+  sourceBindings: z.array(z.strictObject({ sourceId: IdSchema, version: z.string().min(1).max(200), digest: z.string().regex(/^[a-f0-9]{64}$/) })).min(1).max(100).optional(),
   dataClasses: z.array(DataClassSchema).min(1).max(5),
   allowedConnections: z.array(IdSchema).min(1).max(100),
   residencyCountries: z.array(z.string().regex(/^[A-Z]{2}$/)).min(1),

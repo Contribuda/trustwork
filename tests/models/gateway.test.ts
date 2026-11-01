@@ -18,6 +18,25 @@ function harness() {
   return { routes, authority, store, registry, adapter, logs, gateway };
 }
 
+test('check-only authority or route ports never authorize a callback', async () => {
+  const h=harness();
+  const checkOnlyAuthority={check:h.authority.check.bind(h.authority)};
+  const checkOnlyRoutes={resolve:h.routes.resolve.bind(h.routes),recheck:h.routes.recheck.bind(h.routes)};
+  await assert.rejects(new ModelGateway(h.routes,checkOnlyAuthority,h.store,h.registry).call(request),ModelRefusal);
+  await assert.rejects(new ModelGateway(checkOnlyRoutes,h.authority,h.store,h.registry).call(request),ModelRefusal);
+  assert.equal(h.adapter.calls.length,0);assert.equal(h.store.begins,0);
+});
+
+test('missing or caller-substituted source versions cannot enlarge the owning source policy', async () => {
+  const h=harness();const {sourceBindings:_sourceBindings,...unbound}=request;void _sourceBindings;
+  for(const input of [unbound,{...request,sourceBindings:[{sourceId:'different-source',version:'synthetic-1',digest:'a'.repeat(64)}]},
+    {...request,sourceBindings:[{...request.sourceBindings![0]!,version:'different-version'}]},
+    {...request,sourceBindings:[{...request.sourceBindings![0]!,digest:'b'.repeat(64)}]}]) {
+    await assert.rejects(h.gateway.call(input),ModelRefusal);
+  }
+  assert.equal(h.adapter.calls.length,0);assert.equal(h.store.begins,0);
+});
+
 test('gateway forwards the exact pin and returns a synthetic response without logging bodies', async () => {
   const h = harness();
   const result = await h.gateway.call(request);
@@ -28,7 +47,7 @@ test('gateway forwards the exact pin and returns a synthetic response without lo
   assert.ok(!JSON.stringify(h.logs).includes(request.prompt));
   assert.ok(!JSON.stringify(h.logs).includes('Synthetic model response.'));
   assert.ok(!JSON.stringify([...h.store.rows.values()]).includes(request.prompt));
-  assert.equal(h.routes.checks.length, 4);
+  assert.equal(h.routes.checks.length, 5, 'the final check runs inside callback authority');
 });
 
 test('all mandatory kill scopes, including unknown, refuse before adapter invocation', async (t) => {

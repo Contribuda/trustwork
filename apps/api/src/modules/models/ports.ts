@@ -11,16 +11,20 @@ export interface RouteResolutionPort {
   resolve(call: ModelCall): Promise<ResolvedModelRoute>;
   /** Recheck the current route and current policy for THIS exact candidate, immediately before dispatch. */
   recheck(call: ModelCall, route: ResolvedModelRoute, candidate: PinnedCandidate): Promise<void>;
+  /** Missing callback authority is unavailable; a check snapshot never supplies this lease. */
+  withAuthority?<T>(operation: ReservedModelCall, invoke: () => Promise<T>): Promise<T>;
 }
 
 /** Supplied by trusted application services, never by a request body or model output. */
 export interface ModelAuthorityPort {
+  withAuthority?<T>(call: ModelCall, candidate: PinnedCandidate, invoke: (facts: Awaited<ReturnType<ModelAuthorityPort['check']>>) => Promise<T>): Promise<T>;
   check(call: ModelCall, candidate: PinnedCandidate, purpose?: 'invoke' | 'reconcile'): Promise<{
     principalId: string;
     mandateId: string;
     mandateRevision: number;
     runId: string;
     sourceAllowsModelUse: boolean;
+    sourceBindings?: ModelCall['sourceBindings'];
     /** Exact connection facts after intersecting hub, model, mandate and source policies. */
     processingCountry: string;
     storageCountry: string | null;

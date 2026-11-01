@@ -22,6 +22,11 @@ export const syntheticGovernance: ModelGovernancePort = {
     const answer = new SyntheticAuthority().answer;
     return { ...answer, principalId: call.principalId, mandateId: call.mandateId, mandateRevision: call.mandateRevision, runId: call.runId };
   },
+  async withAuthority(call,candidate,binding,invoke) {
+    // Explicit local fixture policy; never accepts caller-invented source versions.
+    if (JSON.stringify(call.sourceBindings)!==JSON.stringify(request.sourceBindings)) throw new Error('synthetic source binding unavailable');
+    return invoke(await this.check(call,candidate,binding));
+  },
 };
 export async function durableWorld(db: NonNullable<Awaited<ReturnType<typeof provisionTestDatabase>>>, protectionLimits?: { runsPerDay: number; actionsPerDay: number; concurrentRuns: number }) {
   await db.migrate();

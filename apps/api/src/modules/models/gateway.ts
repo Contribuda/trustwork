@@ -41,24 +41,29 @@ export class ModelGateway {
     if (call.maxInputTokens > route.limits.maxInputTokens || call.maxOutputTokens > route.limits.maxOutputTokens) throw new ModelRefusal('token_limit');
     if (['embeddings', 'rerank'].includes(call.job) && (route.stage === 'canary' || route.candidates.length !== 1)) throw new ModelRefusal('vectors_must_not_mix');
     const authority = await this.authority.check(call, candidate, purpose);
+    this.checkFacts(call, authority);
+    this.adapters.get(candidate);
+    await this.routes.recheck(call, route, candidate);
+  }
+
+  private checkFacts(call: ModelCall, authority: Awaited<ReturnType<ModelAuthorityPort['check']>>): void {
     if (authority.principalId !== call.principalId || authority.mandateId !== call.mandateId || authority.mandateRevision !== call.mandateRevision || authority.runId !== call.runId) {
       throw new ModelRefusal('authority_mismatch');
     }
     if (!authority.sourceAllowsModelUse) throw new ModelRefusal('source_forbids_model_use');
+    if (!call.sourceBindings?.length || JSON.stringify(authority.sourceBindings) !== JSON.stringify(call.sourceBindings)) throw new ModelRefusal('source_binding_unavailable');
     if (authority.restricted) throw new ModelRefusal('restricted_place');
     if (!call.residencyCountries.includes(authority.processingCountry) || (authority.storageCountry !== null && !call.residencyCountries.includes(authority.storageCountry))) throw new ModelRefusal('residency');
     if (call.requireZeroRetention && !authority.zeroRetention) throw new ModelRefusal('retention');
     for (const scope of MODEL_KILL_SCOPES) {
       if (authority.killed[scope] !== false) throw new ModelRefusal(`${scope}_killed_or_unknown`);
     }
-    this.adapters.get(candidate);
-    // Last await before invocation: resolves CURRENT egress for this exact fallback/canary, never reuses a permit.
-    await this.routes.recheck(call, route, candidate);
   }
 
   async call(input: ModelCall): Promise<GatewayResult> {
     // Parse a fresh copy: a caller cannot mutate a pin, scope or estimate while an async check is in progress.
     const call = ModelCallSchema.parse(input);
+    if (!this.authority.withAuthority || !this.routes.withAuthority || !call.sourceBindings?.length) throw new ModelRefusal('callback_authority_unavailable');
     const route = ResolvedModelRouteSchema.parse(await this.routes.resolve(call));
     const first = route.candidates[0]!;
     await this.check(call, route, first);
@@ -94,13 +99,16 @@ export class ModelGateway {
       let timer: ReturnType<typeof setTimeout> | undefined;
       let result: ModelAdapterResult;
       try {
-        result = await this.store.withDispatchAuthority(operation, async () => receipt(await Promise.race([
+        result = await this.authority.withAuthority(call, candidate, async facts => {
+          this.checkFacts(call, facts);
+          return this.store.withDispatchAuthority(operation, () => this.routes.withAuthority!(operation, async () => receipt(await Promise.race([
           this.adapters.get(candidate).invoke({ operationId: operation.operationId, model: { ...candidate }, prompt: call.prompt,
             maxInputTokens: call.maxInputTokens, maxOutputTokens: call.maxOutputTokens, signal: controller.signal }),
           new Promise<ModelAdapterResult>((resolve) => {
             timer = setTimeout(() => { controller.abort(); resolve({ kind: 'unknown' }); }, route.limits.timeoutMs);
           }),
-        ])));
+          ]))));
+        });
       } catch {
         result = { kind: 'unknown' };
       } finally {
