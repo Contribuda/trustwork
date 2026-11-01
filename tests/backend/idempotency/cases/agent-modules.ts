@@ -83,9 +83,10 @@ export default {
 
       const policy = runtimeHubPolicy(ids.hubId);
       const defaults = engineDefaultPolicy(ids.hubId, REGISTRY);
-      // The later REP crash case exercises governed writes through the real factory.
-      policy.policy.enabledModules.push(...defaults.policy.enabledModules.filter(m => m.moduleKey === 'reputation_builder'));
-      policy.modules.push(...defaults.modules.filter(m => m.moduleKey === 'reputation_builder'));
+      // Later owning-service crash cases exercise these governed writes through their real factories.
+      const owningModules = ['reputation_builder', 'task_marketplace', 'consultation'];
+      policy.policy.enabledModules.push(...defaults.policy.enabledModules.filter(m => owningModules.includes(m.moduleKey)));
+      policy.modules.push(...defaults.modules.filter(m => owningModules.includes(m.moduleKey)));
       // Policy: draft (validated, preview stored), then activation without an approval asks a second person.
       const drafted = body<{ version: { versionId: string; revision: number; activation: { actionDigest: string } } }>(await exactlyOnce({
         action: 'agent_modules.policy_draft', client: clients.drafter, url: `${base}/policy`, body: cmd('agent_modules.policy_draft', { document: policy }),

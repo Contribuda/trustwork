@@ -16,12 +16,7 @@ BEGIN
   IF s.id IS NULL OR s.revoked_at IS NOT NULL OR s.idle_expires_at<=clock_timestamp() OR s.absolute_expires_at<=clock_timestamp() THEN RETURN false; END IF;
   -- Existing owning helper locks the exact mandate and run and checks current context and budget ownership.
   v_budget := trustwork.assistant_model_check(r.request,r.binding);
-  PERFORM 1 FROM trustwork.budget WHERE id=v_budget AND status='active' AND period_from<=clock_timestamp() AND period_to>clock_timestamp() FOR SHARE;
-  IF NOT FOUND THEN RETURN false; END IF;
-  IF r.reservation_id IS NOT NULL THEN
-    PERFORM 1 FROM trustwork.reservation WHERE id=r.reservation_id FOR SHARE;
-    IF NOT trustwork.billing_reservation_open(r.reservation_id) THEN RETURN false; END IF;
-  END IF;
+  IF NOT trustwork.billing_lock_effect_authority(r.reservation_id,v_budget) THEN RETURN false; END IF;
   PERFORM 1 FROM trustwork.model_call WHERE operation_id=p_operation AND dispatch_token=p_token AND invoked AND state='outcome_unknown' FOR UPDATE;
   RETURN FOUND;
 END $$;

@@ -58,12 +58,7 @@ BEGIN
     IF NOT FOUND THEN RETURN 'approval_missing'; END IF;
   END IF;
   IF i.reservation_id IS NOT NULL THEN
-    -- Preserve BILL's reservation ownership and lock order; this port grants no money or spending authority.
-    PERFORM b.id FROM trustwork.budget b JOIN trustwork.reservation q ON q.budget_id=b.id
-      WHERE q.id=i.reservation_id AND b.status='active' AND b.period_from<=clock_timestamp() AND b.period_to>clock_timestamp() FOR SHARE OF b;
-    IF NOT FOUND THEN RETURN 'budget_authority_unavailable'; END IF;
-    PERFORM 1 FROM trustwork.reservation WHERE id=i.reservation_id FOR SHARE;
-    IF NOT trustwork.billing_reservation_open(i.reservation_id) THEN RETURN 'reservation_closed'; END IF;
+    IF NOT trustwork.billing_lock_effect_authority(i.reservation_id) THEN RETURN 'budget_authority_unavailable'; END IF;
   END IF;
   RETURN NULL;
 END $$;

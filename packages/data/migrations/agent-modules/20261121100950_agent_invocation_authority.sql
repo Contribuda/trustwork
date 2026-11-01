@@ -4,8 +4,9 @@ CREATE FUNCTION trustwork.agent_modules_lock_authenticated_invocation(p_session 
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
 DECLARE v_person uuid := trustwork.current_person_id(); v_epoch integer; v_company uuid; s trustwork.session%ROWTYPE;
 BEGIN
-  -- Exclusive current-person lock avoids share-to-write upgrades in owning profile commands. No other person is locked.
-  SELECT authz_epoch INTO v_epoch FROM trustwork.person WHERE id=v_person FOR UPDATE;
+  -- Serialize owning profile writes and epoch revocation while allowing nested mandate FK references.
+  -- No other person is locked; KEY SHARE cannot update identity authority.
+  SELECT authz_epoch INTO v_epoch FROM trustwork.person WHERE id=v_person FOR NO KEY UPDATE;
   IF v_epoch IS NULL OR v_epoch IS DISTINCT FROM nullif(current_setting('trustwork.authz_epoch',true),'')::integer THEN
     RAISE EXCEPTION 'current identity basis changed' USING ERRCODE='28000',HINT='access.stale_epoch';
   END IF;
