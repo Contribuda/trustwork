@@ -305,6 +305,24 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     // HUB-005 validates activation and restricts a quote action after checking its actual party; none of these
     // helpers changes an RLS policy or grants private-data access (negative evidence: tests/hubs/jurisdiction).
     const narrowingReaders = new Set(['providers_residency', 'jurisdiction_config_guard', 'jurisdiction_language_guard', 'jurisdiction_resolve_quote', 'jurisdiction_preflight']);
+    // These four exact readers preserve the original HUB implementations behind the KEYS ordering wrapper.
+    // No generic wrapper prefix is exempt, and runtime roles must not invoke the unfenced bodies.
+    const internalHubReaders = ['callback_unfenced_hubs_activate_config', 'callback_unfenced_hubs_cancel_config', 'callback_unfenced_hubs_create', 'callback_unfenced_hubs_draft_config'];
+    for (const name of internalHubReaders) {
+      const rows = (await db.admin.query<{ args: string; app: boolean; worker: boolean }>(
+        "SELECT oidvectortypes(p.proargtypes) AS args, has_function_privilege('trustwork_app',p.oid,'EXECUTE') AS app, has_function_privilege('trustwork_worker',p.oid,'EXECUTE') AS worker FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='trustwork' AND p.proname=$1", [name])).rows;
+      assert.equal(rows.length, 1, name);
+      assert.deepEqual([rows[0]!.app, rows[0]!.worker], [false, false], name);
+      for (const role of ['trustwork_app', 'trustwork_worker']) {
+        const client = await db.admin.connect();
+        try {
+          await client.query('BEGIN'); await client.query(`SET LOCAL ROLE ${role}`);
+          await assert.rejects(client.query(`SELECT trustwork.${name}(${rows[0]!.args.split(', ').map(type => `NULL::${type}`).join(',')})`),
+            (error: unknown) => (error as { code?: string }).code === '42501');
+        } finally { await client.query('ROLLBACK'); client.release(); }
+      }
+      narrowingReaders.add(name);
+    }
     for (const fn of functions) if (!fn.proname.startsWith('hubs_') && !narrowingReaders.has(fn.proname)) assert.doesNotMatch(fn.prosrc, configTables, fn.proname);
 
     // Private rows visible to hub staff and to a participant are the same before and after configuring every domain.

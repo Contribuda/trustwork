@@ -8,6 +8,7 @@ import { withMaintenance, withPrincipal } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import type { PlanContent, PlanItem, PlanVersion, OwnerPlanView } from '../../packages/contracts/src/plans.js';
 import {
+  BookingStatusSchema, CancellationKindSchema, ConsultationKindSchema, MentoringStatusSchema, OfferingStatusSchema, RequestStatusSchema, WindowStatusSchema,
   CONSULTATION_EVENT_PAYLOAD_KEYS, CONSULTATION_EXPERT_FORBIDDEN_KEYS, type BookingView, type ConsultationOffering, type ConsultationOfferingTerms, type ConsultationRequestTerms,
   type ExpertRequestView, type RequesterRequestView,
 } from '../../packages/contracts/src/consultations.js';
@@ -83,6 +84,26 @@ function noLeak(value: unknown, keys: readonly string[], secrets: readonly strin
   const json = JSON.stringify(value);
   for (const key of keys) assert.ok(!json.includes(`"${key}"`), `${key} leaked: ${json.slice(0, 400)}`);
   for (const secret of secrets) assert.ok(!json.includes(secret), `${secret} leaked: ${json.slice(0, 400)}`);
+}
+/** Outbox identifiers are opaque UUIDs; private values remain forbidden at every other structural path. */
+function assertOutboxPayload(payload: Record<string, unknown>): void {
+  const nonIdentifiers: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    assert.ok((CONSULTATION_EVENT_PAYLOAD_KEYS as readonly string[]).includes(key), `outbox.${key} is forbidden`);
+    if (key.endsWith('Id')) {
+      assert.ok((key === 'agreementId' && value === null) || (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)), `outbox.${key}: invalid UUID ${JSON.stringify(value)}`);
+      continue;
+    }
+    nonIdentifiers[key] = value;
+    const allowed = key === 'status' ? [BookingStatusSchema, MentoringStatusSchema, OfferingStatusSchema, RequestStatusSchema, WindowStatusSchema].some(schema => schema.safeParse(value).success)
+      : key === 'kind' ? ConsultationKindSchema.safeParse(value).success || CancellationKindSchema.safeParse(value).success
+      : key === 'via' ? value === 'person' || value === 'agent'
+      : key === 'termsKind' ? value === 'consultation'
+      : key === 'eventKind' && ['buyer_accepts_terms', 'withdrawn', 'seller_accepts_order', 'seller_declines'].includes(value as string);
+    assert.ok(allowed, `outbox.${key}: unexpected value ${JSON.stringify(value)}`);
+  }
+  noLeak(payload, CONSULTATION_EXPERT_FORBIDDEN_KEYS, [...REQUESTER_SECRETS.filter(secret => !/^\d+$/.test(secret)), 'Beam span', 'snow load']);
+  noLeak(nonIdentifiers, CONSULTATION_EXPERT_FORBIDDEN_KEYS, REQUESTER_SECRETS.filter(secret => /^\d+$/.test(secret)));
 }
 async function fails(promise: Promise<unknown>, expected: string): Promise<void> {
   try {
@@ -703,11 +724,16 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
   });
 
   await t.test('outbox events carry identifiers only', async () => {
+    const collision = { bookingId: '00040000-0000-4000-8000-000000000000', status: 'booked' };
+    assert.throws(() => noLeak(collision, [], ['40000']), /40000 leaked/, 'deterministically reproduces the old UUID substring false positive');
+    assert.doesNotThrow(() => assertOutboxPayload(collision));
+    for (const payload of [{ amount: '40000' }, { amount: 40000 }, { note: 'Private floor 40000 USD' }, { status: '40000' }, { bookingId: '40000' }]) {
+      assert.throws(() => assertOutboxPayload(payload));
+    }
     const events = await outbox(0);
     const ours = events.filter((e) => e.type.startsWith('consultation.'));
     assert.ok(ours.length >= 10);
-    for (const e of ours) for (const key of Object.keys(e.payload)) assert.ok((CONSULTATION_EVENT_PAYLOAD_KEYS as readonly string[]).includes(key), `${e.type}: ${key}`);
-    noLeak(ours, CONSULTATION_EXPERT_FORBIDDEN_KEYS, [...REQUESTER_SECRETS, 'Beam span', 'snow load']);
+    for (const e of ours) assertOutboxPayload(e.payload);
     assert.ok(await lastOutbox() > 0);
   });
 });
