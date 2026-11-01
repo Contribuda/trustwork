@@ -189,7 +189,8 @@ Each planned pack has a work package that lists the facets to source for its cou
 | Middle East | CTRY-TR, CTRY-AE |
 | Asia-Pacific | CTRY-IN, CTRY-AU |
 | Africa | CTRY-ZA (South Africa, with the Cape Town demo hub DEMO-ZA); other African countries are leads in the [market-opportunities note](../research/market-opportunities-2026-11.md) |
-| Everywhere else | No pack planned yet: the generic profile works today, and a contributed pack is welcome |
+| Launch countries ([launch playbooks](../launch/README.md)) | CTRY-PE, CTRY-PH, CTRY-KE, CTRY-GH, CTRY-CO, CTRY-DO, CTRY-NG, CTRY-RW; Mexico is CTRY-MX and Uzbekistan's pack is live |
+| Everywhere else | The generic profile works today, and a contributed pack is welcome |
 
 ## Adding a country
 

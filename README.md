@@ -42,6 +42,7 @@ Trustwork is not one website. It is something people run for a place they care a
 - **Configured for local reality.** Country packs carry each country's registration numbers, regions, currencies, languages and legal facts, every one with a source. Hub operators connect local registers to verify companies, register news and data sources, choose payment and e-signature providers, and publish legal documents reviewed by their counsel. Engine code stays country-agnostic.
 - **A hub is a real object.** Territories, versioned configuration with second-person activation of sensitive settings, legal document versions and launch gates that block a public launch until every check passes are **Live** in the API; the operator's console runs today on synthetic data.
 - **Lawful by design.** Operators comply with local law; the engine gives them the controls, the audit trail and the guard rails. Nobody, not even staff, can read private data without a scoped, time-limited, second-person-approved case grant.
+- **A playbook for launching.** [Launching a hub in a new country](docs/launch/README.md) describes the proposed launch steps, automation boundaries and ten candidate-country playbooks.
 - **Any country, any language.** Pick any country that is not under sanctions and, independently, any language the engine speaks. Seven languages work today and eleven more are on the [roadmap](#languages-and-countries).
 
 ## Languages and countries
@@ -142,6 +143,8 @@ npm test -- tests/content                                              # focused
 Without `TRUSTWORK_DEFAULT_COUNTRY=US` the demo opens the original Uzbekistan example. In the demo, try `?persona=mixed` for someone who buys and sells, `?persona=reader` for a reader, and `/es/` or `?country=GE&lang=ka` for Spanish or Georgian. Without `TRUSTWORK_DEMO_MODE=1` the web app runs on the live API (`npm run dev:api`). `npm run check` runs the full gate (lint, types, every test suite, docs, builds, smoke); it is heavy, and continuous integration runs it on every pull request. The live API, the local database and browser tests are described in the [agent onboarding guide](docs/engine/agent-onboarding.md#3-install-and-run), which is just as useful for humans.
 
 ## Read more
+
+- **[Launching a hub in a new country](docs/launch/README.md)**: proposed launch guidance and [candidate-country research](docs/research/top-10-launch-countries-2026-11.md); no launch authorization.
 
 - **[How it works for you](docs/guides/README.md)**: short step-by-step guides for homeowners and clients, professionals and contractors, experts and mentors, companies, suppliers and manufacturers, event organizers, authors and editors, and hub operators, with an honest status for every step; and [connect your own AI chat](docs/guides/connect-your-ai-chat.md).
 - **[The engine handbook](docs/engine/README.md)**: every chapter, implemented and designed.

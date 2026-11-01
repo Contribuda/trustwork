@@ -2089,13 +2089,15 @@
         "docs/adr/004-delivery-and-providers.md",
         "docs/research/architecture-audit-2026-10.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/hub-exchange-architecture.md"
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/launch/README.md"
       ],
       "steps": [
         "Define the payment port (create intent, confirm, refund, payout through the provider's connected accounts, lookup outcome) and a deterministic fake.",
         "Process provider webhooks idempotently through inbox_receipt; reconcile unknown outcomes instead of retrying.",
         "Tie payments to BILL-001 reservations and ledger entries in integer minor units; store provider references, never card or bank data.",
-        "Keep rails configurable per hub; refuse configurations that would route funds through an account of the operator; no Russian providers or rails; no account registration or real charge."
+        "Keep rails configurable per hub; refuse configurations that would route funds through an account of the operator; no Russian providers or rails; no account registration or real charge.",
+        "Model asynchronous push-to-phone authorisation used by mobile money and QR schemes: a payment waits in pending_customer_action until the provider's callback or a status query, expires on the provider's deadline and is never marked paid without the provider's confirmation (launch playbooks; adapters in PAY-003)."
       ],
       "acceptance": [
         "Duplicate and out-of-order webhooks never double-settle (tests).",
@@ -2104,7 +2106,8 @@
         "Ranking, matching, recommendation and reputation code has no dependency on payment state (tested).",
         "Payout account creation and every payout ask the screening gate (SANC-004) and refuse while money is held or the answer is unknown; a restricted payout country is refused before the provider is called (tested).",
         "For a cross-hub agreement only providers enabled on the collecting hub that support the payer's country and currency are offered, after both screening gates are clear; with none, the agreement records payment outside the platform (tested).",
-        "No code path converts currency or computes a settlement from a reference rate (tested)."
+        "No code path converts currency or computes a settlement from a reference rate (tested).",
+        "A push-to-phone payment whose callback never arrives stays outcome_unknown until a status query reconciles it and is never retried as a new charge (test)."
       ],
       "paths": [
         "packages/contracts/src/payments.ts",
@@ -9501,17 +9504,20 @@
       "goal": "Let people prove identity and professional attributes with digital identity wallets (EU Digital Identity Wallet, mobile driver's licences, national eID where a hub enables them) through an adapter with a fake, storing verification results and claims, never raw credentials.",
       "read": [
         "docs/engine/people-and-companies.md",
-        "docs/research/competitive-landscape-2026-11.md"
+        "docs/research/competitive-landscape-2026-11.md",
+        "docs/launch/README.md"
       ],
       "steps": [
         "Define the verification-level contract (email_verified, document_checked, wallet_verified, in_person) with issuer and date.",
         "Add a relying-party adapter port with a deterministic fake and per-country configuration from packs.",
-        "Record results as evidence usable by claims and credentials; show categories, never documents."
+        "Record results as evidence usable by claims and credentials; show categories, never documents.",
+        "National digital identity checks used in the launch countries (for example Ghana Card, PhilSys, NIN, Maisha Namba, MyID) run only through licensed verification providers configured per hub, minimised to a result, a level, the issuer and a date."
       ],
       "acceptance": [
         "No raw credential or document is stored (test).",
         "A wallet presentation from a restricted place is refused.",
-        "Verification results appear in projections only as categories and dates."
+        "Verification results appear in projections only as categories and dates.",
+        "No national identity number, document image or biometric is stored; only the verification result, level, issuer and date (test)."
       ],
       "paths": [
         "packages/contracts/src/identity-verification.ts",
@@ -9530,11 +9536,12 @@
         "PIPE-001"
       ],
       "handbook": "docs/engine/modules/matching-and-partners.md",
-      "goal": "Import public tenders and awards from national portals (SAM.gov, the UK Central Digital Platform, TED, Brazil's PNCP, Chile's Mercado Publico, India's GeM and others) through adapters that map to the Open Contracting Data Standard, each with licence flags and a fake.",
+      "goal": "Import public tenders and awards from national portals (SAM.gov, the UK Central Digital Platform, TED, Brazil's PNCP, Chile's Mercado Publico, India's GeM and others) through adapters that map to the Open Contracting Data Standard, each with licence flags and a fake. The launch-country portals of the launch playbooks are added on top of this mapping by PROC-003.",
       "read": [
         "docs/engine/partners-and-matching.md",
         "docs/research/competitive-landscape-2026-11.md",
-        "docs/engine/hub-exchange-architecture.md"
+        "docs/engine/hub-exchange-architecture.md",
+        "docs/launch/README.md"
       ],
       "steps": [
         "Define an OCDS-based mapping contract for notices and awards.",
@@ -9631,17 +9638,20 @@
       "goal": "Make the web app installable and dependable on site: manifest and offline shell, encrypted offline caches cleared on sign-out, low-data and sunlight-readable modes, and web push only with permission per category.",
       "read": [
         "docs/engine/communications.md",
-        "docs/quality/accessibility.md"
+        "docs/quality/accessibility.md",
+        "docs/launch/README.md"
       ],
       "steps": [
         "Add the web app manifest and an offline shell that never caches other people's data.",
         "Add low-data and high-contrast large-target preferences in every engine language.",
-        "Add web push with per-category permission and quiet hours."
+        "Add web push with per-category permission and quiet hours.",
+        "Honour the Save-Data request header and the low-data preference on public pages: text first, images on demand, no client JavaScript needed to read an article, a company page or an event (launch playbooks: Kenya, Nigeria, Rwanda and rural areas everywhere)."
       ],
       "acceptance": [
         "Signing out or losing access clears offline caches at the next sync (test).",
         "The shell works offline for assigned items only (browser test).",
-        "Push is never sent without permission for that category."
+        "Push is never sent without permission for that category.",
+        "In low-data mode the public article, company and event pages stay within a documented transfer budget on a throttled 3G profile and remain readable without client JavaScript (browser test)."
       ],
       "paths": [
         "apps/web/app/manifest.ts",
@@ -11063,6 +11073,853 @@
       "paths": [
         "apps/web/app/admin/hubs/[hub]/network",
         "tests/web/admin/live-network"
+      ]
+    },
+    {
+      "id": "CTRY-PE",
+      "title": "Peru country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Peru pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Peru is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: the regions and Lima Metropolitana (ISO 3166-2:PE); America/Lima; PEN; phone +51.",
+        "Companies and identifiers: RUC (11 digits) issued by SUNAT with its check digit; DNI only as a sensitive personal identifier; entity forms (S.A.C., S.A., E.I.R.L., S.R.L.).",
+        "Facets to source: construction licensing and qualification (the OECE Registro Nacional de Proveedores with works capacity; Colegio de Ingenieros and Colegio de Arquitectos registration); building permits (municipal licences under Law 29090); codes (the national building regulation and seismic standard); procurement (Law 32069 in force since 22 April 2025, OECE, OCDS publications); tax (IGV and SUNAT electronic invoicing); e-signature (Law 27269); payments (Yape and Plin interoperability, CCE transfers, cards); privacy (Law 29733 and its regulation, database registration); commercial messages (Consumer Code article 58, Law 32323); holidays; units (metric).",
+        "Languages: es (default).",
+        "Add data/taxonomy/jurisdictions/PE.json with the permit, inspection and decision answers for Peru, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country PE sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/pe.json",
+        "tests/country-packs/pe",
+        "data/taxonomy/jurisdictions/PE.json"
+      ]
+    },
+    {
+      "id": "CTRY-PH",
+      "title": "Philippines country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Philippines pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Philippines is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: regions and provinces (ISO 3166-2:PH, National Capital Region PH-00); Asia/Manila; PHP; phone +63.",
+        "Companies and identifiers: TIN from the BIR; SEC registration numbers for corporations; DTI business name registration for sole proprietors (personal data).",
+        "Facets to source: construction licensing (PCAB under Republic Act 4566: categories, regular, special and pakyaw licences, suspended and revoked lists); professionals (PRC licence verification); building permits (National Building Code, local building officials); procurement (Republic Act 12009, PhilGEPS); tax (VAT and mandatory e-invoicing for covered taxpayers by 31 December 2026); e-signature (Republic Act 8792); platform law (Internet Transactions Act, Republic Act 11967, and its rules); payments (InstaPay, PESONet, QR Ph, e-wallets); privacy (Data Privacy Act, Republic Act 10173); SIM registration; holidays and the typhoon season as a calendar note; units (metric).",
+        "Languages: en (default) and fil (after LANG-FIL).",
+        "Add data/taxonomy/jurisdictions/PH.json with the permit, inspection and decision answers for Philippines, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country PH sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ph.json",
+        "tests/country-packs/ph",
+        "data/taxonomy/jurisdictions/PH.json"
+      ]
+    },
+    {
+      "id": "CTRY-KE",
+      "title": "Kenya country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Kenya pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Kenya is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: the 47 counties (ISO 3166-2:KE); Africa/Nairobi; KES; phone +254.",
+        "Companies and identifiers: KRA PIN; Business Registration Service company numbers (personal data for sole proprietors).",
+        "Facets to source: construction licensing (NCA registration categories NCA1 to NCA8, renewals with continuous professional development points); professionals (Engineers Board of Kenya, architects and quantity surveyors board); building permits (county approvals, the building code); procurement (Public Procurement and Asset Disposal Act, PPRA OCDS, the e-GP system and the September 2025 court order); tax (VAT and eTIMS); e-signature; payments (M-Pesa, Airtel Money, PesaLink, cards); privacy (Data Protection Act 2019, ODPC registration, section 37 on commercial use); AGPO preference for youth, women and persons with disabilities; holidays; units (metric).",
+        "Languages: en (default) and sw (after LANG-SW).",
+        "Add data/taxonomy/jurisdictions/KE.json with the permit, inspection and decision answers for Kenya, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country KE sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ke.json",
+        "tests/country-packs/ke",
+        "data/taxonomy/jurisdictions/KE.json"
+      ]
+    },
+    {
+      "id": "CTRY-GH",
+      "title": "Ghana country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Ghana pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Ghana is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: the 16 regions (ISO 3166-2:GH); Africa/Accra; GHS; phone +233.",
+        "Companies and identifiers: ORC company numbers under the Companies Act, 2019 (Act 992); TIN based on the Ghana Card (sensitive personal identifier).",
+        "Facets to source: contractor classification (Ministry of Works and Housing building classes; Ministry of Roads and Highways road classes; whether a construction authority law is in force); building permits (assembly permits); procurement (Public Procurement Authority, OCDS monthly); tax (VAT Act, 2025, Act 1151, from 1 January 2026); e-signature; payments (interoperable mobile money, cards); privacy (Data Protection Act, 2012, Act 843, and registration); addresses (GhanaPostGPS digital addresses, for ADDR-001); holidays and rainy seasons; units (metric).",
+        "Languages: en (default).",
+        "Add data/taxonomy/jurisdictions/GH.json with the permit, inspection and decision answers for Ghana, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country GH sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/gh.json",
+        "tests/country-packs/gh",
+        "data/taxonomy/jurisdictions/GH.json"
+      ]
+    },
+    {
+      "id": "CTRY-CO",
+      "title": "Colombia country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Colombia pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Colombia is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: departments and the Capital District (ISO 3166-2:CO); America/Bogota; COP; phone +57.",
+        "Companies and identifiers: NIT from DIAN with its check digit; commercial registry and RUES; RUP for public-works bidders; cedula only as a sensitive personal identifier.",
+        "Facets to source: professionals (engineering and architecture councils' registration); building permits (urban licences by curadurias and municipalities); codes (the seismic-resistant building regulation); procurement (SECOP II and OCDS publications); tax (VAT and DIAN electronic invoicing); e-signature (Law 527 of 1999); payments (Bre-B instant payments since 2025, wallets, cards); privacy (Law 1581 of 2012, database registration); contact rules (Law 2300 of 2023); holidays (Monday holidays); units (metric).",
+        "Languages: es (default).",
+        "Add data/taxonomy/jurisdictions/CO.json with the permit, inspection and decision answers for Colombia, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country CO sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/co.json",
+        "tests/country-packs/co",
+        "data/taxonomy/jurisdictions/CO.json"
+      ]
+    },
+    {
+      "id": "CTRY-DO",
+      "title": "Dominican Republic country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Dominican Republic pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Dominican Republic is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: provinces and the National District (ISO 3166-2:DO); America/Santo_Domingo; DOP; phone +1 809, 829, 849.",
+        "Companies and identifiers: RNC from DGII; commercial registry at chambers of commerce; cedula only as a sensitive personal identifier.",
+        "Facets to source: professionals (CODIA registration of engineers, architects and surveyors); building permits (the housing and buildings ministry); procurement (Law 47-25 in force since 28 January 2026, its regulation, DGCP, the state suppliers register, OCDS daily); tax (ITBIS and electronic fiscal vouchers under Law 32-23 with the last deadline in November 2026); e-signature (Law 126-02); payments (instant payments now and the central bank's planned system for 2027, cards); privacy (Law 172-13); consumer protection; holidays; units (metric, with square metres and some imperial usage noted).",
+        "Languages: es (default).",
+        "Add data/taxonomy/jurisdictions/DO.json with the permit, inspection and decision answers for Dominican Republic, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country DO sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/do.json",
+        "tests/country-packs/do",
+        "data/taxonomy/jurisdictions/DO.json"
+      ]
+    },
+    {
+      "id": "CTRY-NG",
+      "title": "Nigeria country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Nigeria pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Nigeria is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: the 36 states and the Federal Capital Territory (ISO 3166-2:NG); Africa/Lagos; NGN; phone +234.",
+        "Companies and identifiers: CAC registration numbers (RC and BN); TIN; NIN only as a sensitive personal identifier.",
+        "Facets to source: professionals and builders (COREN for engineers, ARCON for architects, CORBON for builders); building permits (state planning and building control agencies); procurement (Public Procurement Act 2007, BPP, NOCOPO and state OCDS publications); tax (VAT and the 2025 tax reform laws; e-invoicing); e-signature (Evidence Act provisions); payments (NIP instant transfers, licensed gateways, mobile money operators); privacy (NDPA 2023 and the GAID 2025, registration of data controllers of major importance); telecom rules for SMS sender IDs and do-not-disturb; holidays; units (metric).",
+        "Languages: en (default); ha, yo and ig after LANG-HA, LANG-YO and LANG-IG.",
+        "Add data/taxonomy/jurisdictions/NG.json with the permit, inspection and decision answers for Nigeria, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country NG sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack."
+      ],
+      "paths": [
+        "packages/country-packs/packs/ng.json",
+        "tests/country-packs/ng",
+        "data/taxonomy/jurisdictions/NG.json"
+      ]
+    },
+    {
+      "id": "CTRY-RW",
+      "title": "Rwanda country pack",
+      "area": "country-packs",
+      "status": "open",
+      "dependsOn": [
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "A sourced Rwanda pack, modelled on the United States pack (INTL-US), with the taxonomy's permit and inspection answers, so a hub in Rwanda is configured with data and settings, never with code. The facts listed below are leads from the launch playbook to confirm, not pack facts.",
+      "read": [
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/country-specifics.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Regions and formats: the City of Kigali and provinces (ISO 3166-2:RW); Africa/Kigali; RWF; phone +250.",
+        "Companies and identifiers: RDB company codes and TIN; national ID only as a sensitive personal identifier.",
+        "Facets to source: professionals (Institution of Engineers Rwanda, Rwanda Institute of Architects); building permits (Kubaka, the permit system that replaced BPMIS in 2025, and the ministerial order on building categories); procurement (RPPA, the e-procurement system, OCDS daily); tax (VAT and electronic billing); e-signature; payments (mobile money, interoperable switch, cards); privacy (Law 058/2021: storage in Rwanda unless the NCSA registration certificate authorises otherwise, controller registration); holidays; units (metric).",
+        "Languages: en (default) and rw (after LANG-RW); fr optional (after LANG-FR).",
+        "Add data/taxonomy/jurisdictions/RW.json with the permit, inspection and decision answers for Rwanda, each unverified until sourced, following data/taxonomy/jurisdictions/US.json.",
+        "Every fact with an official primary source, retrieval date and verification level; facts found only in secondary sources stay labelled pending; candidate register, payment and e-signature adapters are named as candidates only (no live call); agent-law and outreach-law defaults stay unverified until counsel review (HUB-005)."
+      ],
+      "acceptance": [
+        "The pack validates under the v2 schema; every fact cites an official source or is labelled with its lower verification level.",
+        "A visitor with country RW sees the right currency, formats and subdivisions.",
+        "No engine code branches on the country; no Russian provider or payment rail appears in the pack.",
+        "The pack records the residency rule as a data-residency fact with its source, so the setup wizard warns before storage outside Rwanda."
+      ],
+      "paths": [
+        "packages/country-packs/packs/rw.json",
+        "tests/country-packs/rw",
+        "data/taxonomy/jurisdictions/RW.json"
+      ]
+    },
+    {
+      "id": "LANG-SW",
+      "title": "Swahili (sw)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Swahili across the interface and demo content through configuration only, for hubs in Kenya, Tanzania, Uganda and Rwanda and for fundis who read Swahili more easily than English. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add sw files for every namespace in apps/web/locales/sw and the design-system dictionary packages/ui/locales/sw.json with full key coverage; Swahili uses the CLDR one and other plural categories.",
+        "Add sw overrides for the demo content (the synthetic US demo hub of DEMO-US) in apps/web/fixtures/i18n/sw.json.",
+        "Register sw through configuration (no TypeScript change) and extend the locale and leak tests to sw; where Intl lacks data for the language, fall back to the language's documented formats and record it.",
+        "Record the review status in apps/web/locales/sw.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Swahili speakers, preferably construction practitioners."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in sw; the brand reads Trustwork.",
+        "Every public page renders in sw without Russian or untranslated text (leak test).",
+        "The language picker and the languages table show the honest review status; no review is claimed that did not happen.",
+        "Construction terms follow a glossary reviewed by a practitioner (glossary file committed with the translation)."
+      ],
+      "paths": [
+        "apps/web/locales/sw",
+        "apps/web/locales/sw.meta.json",
+        "packages/ui/locales/sw.json",
+        "apps/web/fixtures/i18n/sw.json",
+        "tests/web/sw"
+      ]
+    },
+    {
+      "id": "LANG-FIL",
+      "title": "Filipino (fil)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Filipino across the interface and demo content through configuration only, for hubs in the Philippines, next to English. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add fil files for every namespace in apps/web/locales/fil and the design-system dictionary packages/ui/locales/fil.json with full key coverage; keep ICU plural forms as Intl.PluralRules reports for fil.",
+        "Add fil overrides for the demo content (the synthetic US demo hub of DEMO-US) in apps/web/fixtures/i18n/fil.json.",
+        "Register fil through configuration (no TypeScript change) and extend the locale and leak tests to fil; where Intl lacks data for the language, fall back to the language's documented formats and record it.",
+        "Record the review status in apps/web/locales/fil.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Filipino speakers, preferably construction practitioners."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in fil; the brand reads Trustwork.",
+        "Every public page renders in fil without Russian or untranslated text (leak test).",
+        "The language picker and the languages table show the honest review status; no review is claimed that did not happen.",
+        "Construction terms follow a glossary reviewed by a practitioner (glossary file committed with the translation)."
+      ],
+      "paths": [
+        "apps/web/locales/fil",
+        "apps/web/locales/fil.meta.json",
+        "packages/ui/locales/fil.json",
+        "apps/web/fixtures/i18n/fil.json",
+        "tests/web/fil"
+      ]
+    },
+    {
+      "id": "LANG-HA",
+      "title": "Hausa (ha)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Hausa across the interface and demo content through configuration only, for Nigerian hubs in the north and for Hausa speakers across West Africa. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add ha files for every namespace in apps/web/locales/ha and the design-system dictionary packages/ui/locales/ha.json with full key coverage; keep ICU plural forms as Intl.PluralRules reports for ha; Latin script (Boko) with hooked letters supported by the fonts.",
+        "Add ha overrides for the demo content (the synthetic US demo hub of DEMO-US) in apps/web/fixtures/i18n/ha.json.",
+        "Register ha through configuration (no TypeScript change) and extend the locale and leak tests to ha; where Intl lacks data for the language, fall back to the language's documented formats and record it.",
+        "Record the review status in apps/web/locales/ha.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Hausa speakers, preferably construction practitioners."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in ha; the brand reads Trustwork.",
+        "Every public page renders in ha without Russian or untranslated text (leak test).",
+        "The language picker and the languages table show the honest review status; no review is claimed that did not happen.",
+        "Construction terms follow a glossary reviewed by a practitioner (glossary file committed with the translation)."
+      ],
+      "paths": [
+        "apps/web/locales/ha",
+        "apps/web/locales/ha.meta.json",
+        "packages/ui/locales/ha.json",
+        "apps/web/fixtures/i18n/ha.json",
+        "tests/web/ha"
+      ]
+    },
+    {
+      "id": "LANG-YO",
+      "title": "Yoruba (yo)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Yoruba across the interface and demo content through configuration only, for Nigerian hubs in the south-west. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add yo files for every namespace in apps/web/locales/yo and the design-system dictionary packages/ui/locales/yo.json with full key coverage; keep ICU plural forms; tone marks and dotted letters rendered correctly by the fonts.",
+        "Add yo overrides for the demo content (the synthetic US demo hub of DEMO-US) in apps/web/fixtures/i18n/yo.json.",
+        "Register yo through configuration (no TypeScript change) and extend the locale and leak tests to yo; where Intl lacks data for the language, fall back to the language's documented formats and record it.",
+        "Record the review status in apps/web/locales/yo.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Yoruba speakers, preferably construction practitioners."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in yo; the brand reads Trustwork.",
+        "Every public page renders in yo without Russian or untranslated text (leak test).",
+        "The language picker and the languages table show the honest review status; no review is claimed that did not happen.",
+        "Construction terms follow a glossary reviewed by a practitioner (glossary file committed with the translation)."
+      ],
+      "paths": [
+        "apps/web/locales/yo",
+        "apps/web/locales/yo.meta.json",
+        "packages/ui/locales/yo.json",
+        "apps/web/fixtures/i18n/yo.json",
+        "tests/web/yo"
+      ]
+    },
+    {
+      "id": "LANG-IG",
+      "title": "Igbo (ig)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Igbo across the interface and demo content through configuration only, for Nigerian hubs in the south-east. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add ig files for every namespace in apps/web/locales/ig and the design-system dictionary packages/ui/locales/ig.json with full key coverage; keep ICU plural forms; dotted vowels rendered correctly by the fonts.",
+        "Add ig overrides for the demo content (the synthetic US demo hub of DEMO-US) in apps/web/fixtures/i18n/ig.json.",
+        "Register ig through configuration (no TypeScript change) and extend the locale and leak tests to ig; where Intl lacks data for the language, fall back to the language's documented formats and record it.",
+        "Record the review status in apps/web/locales/ig.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Igbo speakers, preferably construction practitioners."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in ig; the brand reads Trustwork.",
+        "Every public page renders in ig without Russian or untranslated text (leak test).",
+        "The language picker and the languages table show the honest review status; no review is claimed that did not happen.",
+        "Construction terms follow a glossary reviewed by a practitioner (glossary file committed with the translation)."
+      ],
+      "paths": [
+        "apps/web/locales/ig",
+        "apps/web/locales/ig.meta.json",
+        "packages/ui/locales/ig.json",
+        "apps/web/fixtures/i18n/ig.json",
+        "tests/web/ig"
+      ]
+    },
+    {
+      "id": "LANG-RW",
+      "title": "Kinyarwanda (rw)",
+      "area": "international",
+      "status": "open",
+      "dependsOn": [
+        "CFG-001",
+        "INTL-004",
+        "INTL-007",
+        "DEMO-US"
+      ],
+      "handbook": "docs/engine/localization.md",
+      "goal": "Kinyarwanda across the interface and demo content through configuration only, for hubs in Rwanda next to English. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
+      "read": [
+        "docs/engine/localization.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add rw files for every namespace in apps/web/locales/rw and the design-system dictionary packages/ui/locales/rw.json with full key coverage; keep ICU plural forms as Intl.PluralRules reports for rw.",
+        "Add rw overrides for the demo content (the synthetic US demo hub of DEMO-US) in apps/web/fixtures/i18n/rw.json.",
+        "Register rw through configuration (no TypeScript change) and extend the locale and leak tests to rw; where Intl lacks data for the language, fall back to the language's documented formats and record it.",
+        "Record the review status in apps/web/locales/rw.meta.json (machine draft until reviewers sign off), update the languages table in the localization chapter, and open a review request for Kinyarwanda speakers, preferably construction practitioners."
+      ],
+      "acceptance": [
+        "No missing or placeholder keys in rw; the brand reads Trustwork.",
+        "Every public page renders in rw without Russian or untranslated text (leak test).",
+        "The language picker and the languages table show the honest review status; no review is claimed that did not happen.",
+        "Construction terms follow a glossary reviewed by a practitioner (glossary file committed with the translation)."
+      ],
+      "paths": [
+        "apps/web/locales/rw",
+        "apps/web/locales/rw.meta.json",
+        "packages/ui/locales/rw.json",
+        "apps/web/fixtures/i18n/rw.json",
+        "tests/web/rw"
+      ]
+    },
+    {
+      "id": "PAY-003",
+      "title": "Mobile money and instant-payment provider adapters for the launch countries",
+      "area": "billing",
+      "status": "open",
+      "dependsOn": [
+        "PAY-001",
+        "KEYS-001"
+      ],
+      "handbook": "docs/engine/billing.md",
+      "goal": "Let a hub configure licensed mobile-money operators, instant-payment schemes and local gateways through the payment port, each as an adapter with a deterministic fake, so hubs in Peru, the Philippines, Kenya, Ghana, Colombia, the Dominican Republic, Uzbekistan, Nigeria, Mexico and Rwanda can take payments for consultations, courses and tickets without Trustwork or the operator ever holding funds (ADR 010 decision 20).",
+      "read": [
+        "docs/engine/billing.md",
+        "docs/adr/004-delivery-and-providers.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Define the adapter capability set the port needs from a provider: create a push-to-phone or QR request, receive the asynchronous callback, query status, refund where supported, pay out through the provider's licensed accounts; map provider states to the port's states including pending_customer_action and outcome_unknown.",
+        "Add a deterministic fake per provider family (mobile money push, QR code scheme, alias-based instant transfer, card gateway) with recorded fixtures of callbacks, timeouts, duplicates and reversals; no real account, key or charge.",
+        "List candidate providers per launch country as country-pack payment facts at candidate level only (for example mobile-money operators in Kenya, Ghana and Rwanda; QR Ph and e-wallet gateways in the Philippines; Yape and Plin through acquirers in Peru; Bre-B through participating providers in Colombia; SPEI in Mexico; national card schemes and licensed payment organisations in Uzbekistan; NIP gateways in Nigeria); register adapter ids in ENGINE_ADAPTERS only with a maintainer's agreement.",
+        "Refuse any configuration that routes funds through an account of the operator or the engine; refuse sanctioned banks, restricted-place payout countries and Russian rails before the provider is called."
+      ],
+      "acceptance": [
+        "A push-to-phone request whose callback never arrives stays outcome_unknown until a status query reconciles it, and is never retried as a new charge (test).",
+        "Duplicate and out-of-order callbacks never double-settle (test).",
+        "No adapter credits a balance held by Trustwork or the hub operator (test and review checklist).",
+        "Every adapter runs only after a second person activates it (KEYS-001) and a synthetic test passes; fakes are labelled as fakes everywhere."
+      ],
+      "paths": [
+        "apps/api/src/modules/payments/providers",
+        "apps/worker/src/payments/providers",
+        "tests/payments/providers"
+      ]
+    },
+    {
+      "id": "CHAN-002",
+      "title": "USSD and feature-phone access to a person's own agent and tasks",
+      "area": "communications",
+      "status": "open",
+      "dependsOn": [
+        "CHAN-001",
+        "COMMS-001"
+      ],
+      "handbook": "docs/engine/communications.md",
+      "goal": "Let people on basic phones (fundis, artisans, small suppliers) read their task and quote status, confirm a structured step and receive a claim or verification code through USSD menus and SMS, through a licensed aggregator adapter with a fake, under per-channel grants.",
+      "read": [
+        "docs/engine/communications.md",
+        "docs/engine/modules/mobile-and-offline.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Define a USSD session port (start, menu step, end, timeout) and an aggregator adapter with a deterministic fake; sender short codes and registration data live in hub configuration and country-pack communications facts.",
+        "Offer read-only menus (my tasks, my quotes, my confirmations) and structured confirmations that map to existing capabilities through the capability registry; free text never authorises anything.",
+        "Localise every menu in the hub languages within USSD length limits; record per-country quiet hours and opt-out keywords from the pack.",
+        "Never send marketing or outreach over USSD or SMS; only transactional messages to people who granted the channel."
+      ],
+      "acceptance": [
+        "A USSD session that drops mid-confirmation leaves no commitment (test).",
+        "No menu exposes another person's private data; sessions are bound to the verified phone number of the person (negative test).",
+        "Messages go only to people who granted the channel; outreach purposes are refused on this channel (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/communications/ussd",
+        "tests/channels/ussd"
+      ]
+    },
+    {
+      "id": "ACCT-001",
+      "title": "Phone-number accounts: sign-up and recovery by mobile number with SIM-swap protection",
+      "area": "backend",
+      "status": "open",
+      "dependsOn": [
+        "BE-002",
+        "BE-004",
+        "CHAN-001"
+      ],
+      "handbook": "docs/engine/modules/identity-and-accounts.md",
+      "goal": "As a hub option, let a person sign up with a mobile number and a password instead of an e-mail address, proving possession of the number by a one-time code, because many tradespeople in the launch countries use a phone without e-mail; recovery by phone carries a cooling period and SIM-swap protection.",
+      "read": [
+        "docs/engine/modules/identity-and-accounts.md",
+        "docs/engine/people-and-companies.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add a phone identifier kind alongside e-mail (E.164, country from the number), verified by a one-time code over the SMS channel adapter; the password policy and second-factor rules stay unchanged; one-time codes are never the only sign-in factor.",
+        "Responses to sign-up, sign-in and recovery stay identical whether a number exists or not; rate limits per number and per source.",
+        "Recovery by phone starts a cooling period (hub setting) during which sensitive actions are blocked and the person is notified on every other channel; a number recently ported or re-assigned (where an adapter can tell) needs extra evidence.",
+        "Let a person add an e-mail later and choose which identifier signs in; hub configuration decides whether phone accounts are offered."
+      ],
+      "acceptance": [
+        "No session exists before the number is verified (test).",
+        "Sign-up and recovery responses do not reveal whether a number is registered (test).",
+        "A recovery by phone cannot change the password and payout details in the same cooling period (test).",
+        "Phone numbers never appear in public projections (negative test)."
+      ],
+      "paths": [
+        "packages/contracts/src/phone-accounts.ts",
+        "tests/contracts/phone-accounts.test.ts",
+        "apps/api/src/modules/identity/phone",
+        "packages/data/migrations/identity-phone",
+        "tests/identity-phone"
+      ]
+    },
+    {
+      "id": "ADDR-001",
+      "title": "Informal addresses and coarse public locations",
+      "area": "backend",
+      "status": "open",
+      "dependsOn": [
+        "DATA-003",
+        "CTRY-002"
+      ],
+      "handbook": "docs/engine/country-specifics.md",
+      "goal": "Represent locations where streets have no names or numbers (plot and block descriptions, landmarks, national digital address codes such as GhanaPostGPS, Open Location Codes) and show public pages only coarse locations, so no active site, home or delivery address helps theft or extortion.",
+      "read": [
+        "docs/engine/country-specifics.md",
+        "docs/engine/projects.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Define an address contract with optional structured parts, a landmark description per language, an optional national digital address code (kind and pattern from the country pack) and an optional Open Location Code; coordinates are private.",
+        "Derive a public location at the precision the hub sets (district, ward or place) and never publish exact coordinates, plot numbers or digital address codes of homes and active sites.",
+        "Add country-pack address facets for digital address systems (kind, pattern, issuer, licence) at candidate level, and parsing helpers with tests.",
+        "Use OpenStreetMap data for places with ODbL attribution."
+      ],
+      "acceptance": [
+        "Public projections never contain coordinates, plot numbers or digital address codes of homes or active sites (negative test).",
+        "A digital address code is validated against the pack pattern (test).",
+        "Coarsening is deterministic and documented per precision level (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/informal-address.ts",
+        "tests/contracts/informal-address.test.ts",
+        "apps/api/src/modules/places",
+        "tests/places"
+      ]
+    },
+    {
+      "id": "REP-003",
+      "title": "Informal-sector reputation path for workers and crews without a registered company",
+      "area": "execution-trust",
+      "status": "open",
+      "dependsOn": [
+        "REP-001",
+        "TASK-001",
+        "CHAN-001"
+      ],
+      "handbook": "docs/engine/execution-and-reputation.md",
+      "goal": "Let master builders, fundis, artisans and labour crews who have no registered company build and confirm reputation as people: crew profiles of named members, client confirmations of real tasks reachable by phone, and worker certificates from national training bodies presented by the holder, never sourced pages about individuals and never paid.",
+      "read": [
+        "docs/engine/execution-and-reputation.md",
+        "docs/engine/people-and-companies.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add a crew (group of named people with a lead, not a company) that can take tasks, with each member's consent; a crew never becomes a company page and dissolves without losing members' own records.",
+        "Let a client confirm a completed task by a link sent to the client's own verified phone or e-mail (REP-001 rules: a recorded relationship, one request plus one reminder, no incentives).",
+        "Accept worker certificates from national training bodies (for example SENCICO in Peru, TESDA in the Philippines, trade tests in Kenya, SENA in Colombia, CTVET in Ghana) as holder-presented credentials with the issuer named; verification only through the issuer's public check or an adapter; country-pack facts list issuers at candidate level.",
+        "Offline capture of evidence (photos, notes) with device and server times, synced later (CHAN-001); location stripped from public projections."
+      ],
+      "acceptance": [
+        "No profile, page or score is created about a person who did not join (negative test).",
+        "A confirmation without a recorded task relationship is rejected (test).",
+        "Certificates show issuer and date and never claim verification the hub did not perform (test).",
+        "Crew membership changes never delete a member's confirmed records (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/informal-reputation.ts",
+        "tests/contracts/informal-reputation.test.ts",
+        "apps/api/src/modules/reputation/informal",
+        "packages/data/migrations/reputation-informal",
+        "tests/reputation-informal"
+      ]
+    },
+    {
+      "id": "PLAN-004",
+      "title": "Progressive (incremental) building plans",
+      "area": "projects",
+      "status": "open",
+      "dependsOn": [
+        "PLAN-001",
+        "AGT-010"
+      ],
+      "handbook": "docs/engine/projects.md",
+      "goal": "Support homes built in stages over years, the most common way families build in the launch countries: a plan with phases that pause and resume, structural decisions made for future floors before the first is built, materials bought ahead, budget ranges per phase and reminders when a family is ready for the next phase.",
+      "read": [
+        "docs/engine/projects.md",
+        "data/taxonomy/README.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add phase states (planned, active, paused, resumed, done) and a horizon per phase to plan versions; a paused phase keeps its requests closed and its evidence intact.",
+        "Add \"design for later\" decisions (foundations and columns sized for future floors, service routes) as plan decisions that later phases inherit, with a prompt to consult a registered engineer.",
+        "Let the planner agent (AGT-010) propose phases from a goal and a budget range per period, citing guides; estimates always show sources and the word estimate.",
+        "Let a household record materials bought ahead and where they are stored (private), so later phases see them."
+      ],
+      "acceptance": [
+        "A paused phase cannot receive new quotes or tasks until resumed (test).",
+        "Inherited decisions appear on every later phase with their source (test).",
+        "Plan data stays private unless the owner publishes a redacted version (negative test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/plans/progressive",
+        "tests/plans-progressive"
+      ]
+    },
+    {
+      "id": "PLAN-005",
+      "title": "Remote owner oversight with a delegated local representative",
+      "area": "projects",
+      "status": "open",
+      "dependsOn": [
+        "PLAN-001",
+        "FIELD-001",
+        "AST-001"
+      ],
+      "handbook": "docs/engine/projects.md",
+      "goal": "Let an owner who lives abroad, often a family member sending money home, follow a project through time-stamped evidence and milestone confirmations by a local representative acting under a limited, revocable delegation, while payments go only through licensed providers and never through the hub.",
+      "read": [
+        "docs/engine/projects.md",
+        "docs/engine/agents.md",
+        "docs/launch/README.md"
+      ],
+      "steps": [
+        "Add a project delegate role bound to a structured delegation (what the delegate may confirm, until when, which milestones); the owner can revoke at any time; the delegate never gains the owner's budget authority unless the owner grants a budget.",
+        "Add evidence requests per milestone (photo sets with device and server times, short videos, receipts) and a weekly digest for the owner in the owner's language and time zone.",
+        "A milestone is accepted only by the owner or by the delegate within the delegation; chat text never accepts a milestone or instructs a payment.",
+        "Link to licensed remittance or payment providers through the payment port only (PAY-001); record references, never funds."
+      ],
+      "acceptance": [
+        "A delegate cannot accept a milestone outside the delegation or after revocation (test).",
+        "Evidence shows both device and server times; location is stripped from anything shared beyond the owner (test).",
+        "No code path moves money or stores card or bank data in this module (review checklist and test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/plans/remote-owner",
+        "tests/plans-remote-owner"
+      ]
+    },
+    {
+      "id": "REG-002",
+      "title": "Contractor, professional and business register connectors for the launch countries",
+      "area": "verification",
+      "status": "open",
+      "dependsOn": [
+        "REG-001"
+      ],
+      "handbook": "docs/engine/hub-administration.md",
+      "goal": "Turn the registers named in the launch playbooks into register-fact adapters with deterministic fakes and recorded fixtures (manual mode first, live only after terms are confirmed and a second person activates them), linked to companies by identifier only.",
+      "read": [
+        "docs/engine/hub-administration.md",
+        "docs/engine/hub-console/data-mining.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "For each launch country, add a register catalogue entry (access method, licence and terms, refresh cadence, personal-data note) and a fake with recorded fixtures: Peru (SUNAT taxpayer list, OECE supplier register), Philippines (PCAB licence verification, PRC verification), Kenya (NCA register), Ghana (ORC search), Colombia (RUES and RUP through chambers), Dominican Republic (DGII RNC list, DGCP suppliers register), Uzbekistan (statistics register, licences portal), Nigeria (CAC search, COREN), Mexico (SAT RFC validation, state contractor registers), Rwanda (RDB, Institution of Engineers).",
+        "Default every connector to manual mode (a reviewer looks up and records the result with evidence) until counsel confirms the source's terms allow automated access and display.",
+        "Map each register's statuses (active, suspended, revoked, expired, category) to sourced facts with observed and valid-until times and feed the expiry watch of REG-001."
+      ],
+      "acceptance": [
+        "No connector runs in live mode without recorded terms permitting automated access and a second person's activation (test).",
+        "Facts link to companies only through identifiers from the pack, never by name alone (test).",
+        "Natural persons in registers are used only for verification evidence and never displayed publicly (negative test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/registers/connectors",
+        "tests/registers/connectors"
+      ]
+    },
+    {
+      "id": "PROC-003",
+      "title": "OCDS tender adapters for the launch-country portals",
+      "area": "matching",
+      "status": "open",
+      "dependsOn": [
+        "PROC-002"
+      ],
+      "handbook": "docs/engine/modules/matching-and-partners.md",
+      "goal": "Import public tenders and awards from the Open Contracting publications of the launch countries through the PROC-002 mapping, each registered as a source with licence flags and a fake with recorded fixtures.",
+      "read": [
+        "docs/engine/partners-and-matching.md",
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md"
+      ],
+      "steps": [
+        "Add adapters for the publications listed in the Open Contracting data registry: Peru (OECE and PeruCompras, daily), Kenya (PPRA, daily), Ghana (PPA, monthly), Colombia (Colombia Compra Eficiente SECOP II, daily; ANI), Dominican Republic (DGCP, daily), Rwanda (RPPA, daily), Nigeria (BPP and state publications), Mexico (subnational publishers), with Tanzania, Uganda, Ecuador and Guatemala as follow-ups.",
+        "Record each publication's licence, update frequency and last successful fetch; a stale or failing feed pauses itself.",
+        "Classify works tenders with the plan-step taxonomy and hub categories; awards feed sourced track records linked by identifier only."
+      ],
+      "acceptance": [
+        "No adapter submits bids or contacts buyers (test).",
+        "A publication whose licence forbids reuse cannot be activated (test).",
+        "Imported notices are labelled as public procurement notices and never appear as members' needs (test)."
+      ],
+      "paths": [
+        "apps/worker/src/tenders/ocds-portals",
+        "tests/tenders/ocds-portals"
+      ]
+    },
+    {
+      "id": "LAUNCH-001",
+      "title": "Launch kits: per-country source lists and hub presets imported as proposals",
+      "area": "hubs",
+      "status": "open",
+      "dependsOn": [
+        "HUB-004",
+        "SRC-001",
+        "CTRY-002"
+      ],
+      "handbook": "docs/launch/README.md",
+      "goal": "Make a country launch repeatable and largely automatic: a reviewed, machine-readable launch kit per country (candidate sources with legal-check notes, register catalogue references, wizard presets, outreach mode default, seed-content plan by plan stage, calendar notes) that the setup wizard and the source registry import as proposals for people to approve, never as active configuration.",
+      "read": [
+        "docs/launch/README.md",
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/engine/hub-console/setup-wizard.md",
+        "docs/engine/hub-console/autonomous-editorial.md"
+      ],
+      "steps": [
+        "Define a launch-kit contract (Zod): country, suggested territories, languages, currency and time zone, residency notes, candidate sources (kind, URL, feed or API, licence status, robots and terms notes, personal data, cadence), register references (REG-002 ids), outreach mode default (strict), seed guides per taxonomy stage, calendar notes, and the approvals checklist.",
+        "Write kits for the ten launch countries in data/launch-kits/<CC>.json from the launch playbooks; every source is a candidate with its evidence link; nothing is marked verified.",
+        "Let the setup wizard prefill hub identity, residency questions and modes from a kit, and let the source registry import kit sources as proposals (proposedBy: launch_kit) that a data steward must review and activate.",
+        "Validate kits in CI (schema, no restricted places, URLs well formed, sources not duplicated)."
+      ],
+      "acceptance": [
+        "Importing a kit creates only proposals; no source, dataset, provider or outreach policy becomes active without a person (test).",
+        "A kit naming a restricted place or a Russian provider fails validation (test).",
+        "Every kit source carries an evidence link and an access date (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/launch-kit.ts",
+        "tests/contracts/launch-kit.test.ts",
+        "data/launch-kits",
+        "tests/launch-kits"
       ]
     }
   ]

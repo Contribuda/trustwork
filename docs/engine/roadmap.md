@@ -415,6 +415,37 @@ International by default ([ADR 012 decision 30](../adr/012-integrator-decisions-
 | CTRY-ZA | South Africa country pack | open | CTRY-002 |
 | DEMO-ZA | Cape Town demo hub: synthetic South African dataset | open | CTRY-ZA, DEMO-US, CFG-001 |
 
+## Launch countries (top 10 research, 2026-11)
+
+Packages added from the [launch playbooks](../launch/README.md) and the [top 10 launch countries](../research/top-10-launch-countries-2026-11.md) research (owner request of 2026-11-01). The order of the country packs follows the ranking. Existing packages amended by the same change (open and unclaimed only; acceptance or steps added, status unchanged): PAY-001 (asynchronous push-to-phone authorisation), MOB-001 (low-data budget and Save-Data), PROC-002 (launch-country portals through PROC-003), IDV-001 (national digital ID through licensed verifiers, nothing raw stored), CTRY-MX (launch-playbook leads and taxonomy permit answers).
+
+| ID | Title | Status | Depends on |
+|---|---|---|---|
+| CTRY-PE | Peru country pack | open | CTRY-002 |
+| CTRY-PH | Philippines country pack | open | CTRY-002 |
+| CTRY-KE | Kenya country pack | open | CTRY-002 |
+| CTRY-GH | Ghana country pack | open | CTRY-002 |
+| CTRY-CO | Colombia country pack | open | CTRY-002 |
+| CTRY-DO | Dominican Republic country pack | open | CTRY-002 |
+| CTRY-NG | Nigeria country pack | open | CTRY-002 |
+| CTRY-RW | Rwanda country pack | open | CTRY-002 |
+| LANG-SW | Swahili (sw) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-FIL | Filipino (fil) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-HA | Hausa (ha) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-YO | Yoruba (yo) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-IG | Igbo (ig) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| LANG-RW | Kinyarwanda (rw) | open | CFG-001, INTL-004, INTL-007, DEMO-US |
+| PAY-003 | Mobile money and instant-payment provider adapters for the launch countries | open | PAY-001, KEYS-001 |
+| CHAN-002 | USSD and feature-phone access to a person's own agent and tasks | open | CHAN-001, COMMS-001 |
+| ACCT-001 | Phone-number accounts: sign-up and recovery by mobile number with SIM-swap protection | open | BE-002, BE-004, CHAN-001 |
+| ADDR-001 | Informal addresses and coarse public locations | open | DATA-003, CTRY-002 |
+| REP-003 | Informal-sector reputation path for workers and crews without a registered company | open | REP-001, TASK-001, CHAN-001 |
+| PLAN-004 | Progressive (incremental) building plans | open | PLAN-001, AGT-010 |
+| PLAN-005 | Remote owner oversight with a delegated local representative | open | PLAN-001, FIELD-001, AST-001 |
+| REG-002 | Contractor, professional and business register connectors for the launch countries | open | REG-001 |
+| PROC-003 | OCDS tender adapters for the launch-country portals | open | PROC-002 |
+| LAUNCH-001 | Launch kits: per-country source lists and hub presets imported as proposals | open | HUB-004, SRC-001, CTRY-002 |
+
 ## Documentation
 
 The handbook, the [guides for participants](../guides/README.md) and the ADRs are kept current in every pull request. Three documentation packages need working software first, so each waits for the packages that build what it documents.

@@ -86,6 +86,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | Chapter | What it covers |
 |---|---|
 | [Hubs](hubs.md) | Nodes and hubs, territories, how country and city hubs complement each other, launch checklist, growing a hub, the San Diego reference hub |
+| [Launching a hub in a new country](../launch/README.md) | The generic launch playbook (decisions, setup, data sourcing, agent teams, outreach and claims, compliance gates, 90 days, costs, KPIs, approvals) and deep dives with launch plans for the [top 10 launch countries](../research/top-10-launch-countries-2026-11.md) |
 | [Hub administration](hub-administration.md) | The operator's console: legal, sources, counterparty verification, sanctions, editorial, commerce, agents policy, privacy, federation |
 | [The hub console](hub-console/README.md) | Installing the engine and running a hub without code: setup wizard, keys and models, autonomous editorial office, data mining, scheduling, agent product, every module, support, operations, screen contracts |
 | [Discovery, sourced pages, claims and outreach](discovery-and-outreach.md) | Filling a hub from public registers and licensed datasets: entity resolution by links, cited sourced pages, change watch, verified claim and hand-over, per-country outreach policy as pack data and hub configuration (strict by default, [ADR 017](../adr/017-outreach-policy.md)), suppression, objection and erasure, lifecycle messages, the operator's agent team, admin screens |
