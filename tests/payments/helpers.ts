@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { withMaintenance } from '@trustwork/data';
+import { createPool, withMaintenance } from '@trustwork/data';
 import type { OwnerRfqView } from '../../packages/contracts/src/commerce.js';
 import type { BuyerAgreementView, SellerAgreementView, SellerQuoteView } from '../../packages/contracts/src/deals.js';
 import { adminSetup, staffRoleDefinitions, staffAssignments, approvals, adminDigests } from '../../packages/data/src/repositories/admin.js';
@@ -9,7 +9,8 @@ import { providerConnections } from '../../packages/data/src/repositories/provid
 import { configActivationDigestInput } from '../../packages/contracts/src/hub-core.js';
 import { actors, KEYS, type Key, type HubWorld } from '../hubs/helpers.js';
 import { PROVIDER_DEFINITIONS, setUpHubs, activateResidency, SELF_US } from '../providers/helpers.js';
-import { personalBudget } from '../assistant/helpers.js';
+import { as, personalBudget } from '../assistant/helpers.js';
+import { budgets } from '../../packages/data/src/repositories/billing.js';
 import type { Harness, Client, Response } from '../backend/helpers/app.js';
 
 export function ok<T>(r: Response, code = 200): T { assert.equal(r.status, code, JSON.stringify(r.body)); return r.body as T; }
@@ -20,9 +21,9 @@ const date = { date: '2027-03-20', timeZone: 'America/Los_Angeles' };
 const ref = (v: { id: string; version: number; digest: unknown }) => ({ id: v.id, version: v.version, digest: v.digest });
 
 /** Real immutable RFQ/quote/acceptance path, with labelled synthetic parties and an integer total. */
-export async function agreement(h: Harness, buyer: Client, seller: Client, buyerId: string, sellerId: string, amount = '1250'): Promise<BuyerAgreementView> {
+export async function agreement(h: Harness, buyer: Client, seller: Client, buyerId: string, sellerId: string, amount = '1250', buyerCompanyId?: string): Promise<BuyerAgreementView> {
   let rfq = ok<OwnerRfqView>(await buyer.post('/v1/rfqs', {
-    owner: { kind: 'person', id: buyerId }, projectId: null, category: 'landscaping', publicProjection: { enabled: false, fields: [] }, privateConstraint: null, source: null, actor,
+    owner: buyerCompanyId ? { kind: 'company', id: buyerCompanyId } : { kind: 'person', id: buyerId }, projectId: null, category: 'landscaping', publicProjection: { enabled: false, fields: [] }, privateConstraint: null, source: null, actor,
     payload: { title: 'Synthetic payment fixture', currency: 'USD', responseDeadline: '2027-02-15T17:00:00.000Z', attachments: [], paymentTermsRequested: 'Net 30', acceptanceCriteria: 'Synthetic acceptance',
       deliveryTerms: { location: { region: 'US-CA' }, window: { from: date, to: date } },
       lines: [{ lineId: 'goods', kind: 'goods', description: 'Synthetic goods', specification: { thickness: '60 mm' }, quantity: { value: '1', unit: 'm2' }, alternativesAllowed: false }] },
@@ -37,7 +38,7 @@ export async function agreement(h: Harness, buyer: Client, seller: Client, buyer
   quote = ok(await seller.post(`/v1/quotes/${quote.quote.id}/send`, { quoteId: quote.quote.id, version: 1, expectedRevision: quote.quote.revision, actor }));
   const created = ok<BuyerAgreementView>(await buyer.post('/v1/agreements', { rfqId: rfq.rfq.id, quoteVersion: ref(quote.versions[0]!), rfqVersion: ref(rfq.versions[0]!), expectedRevision: quote.quote.revision, electronicRecords, actor }), 201);
   const id = created.agreement.id;
-  const transactionBudgetId = await personalBudget(h, buyerId, 'transaction', '1000000');
+  const transactionBudgetId = buyerCompanyId ? await as(h, buyerId, (trx) => budgets.grant(trx, { kind: 'transaction', owner: 'company', projectId: null, employeePersonId: null, periodFrom: new Date(Date.now() - 3600_000), periodTo: new Date(Date.now() + 365 * 86400_000), limitMinor: '1000000', currency: 'USD' })) : await personalBudget(h, buyerId, 'transaction', '1000000');
   ok(await buyer.post(`/v1/agreements/${id}/orders`, { action: 'place_order', context: { kind: 'rfq', id: rfq.rfq.id }, agreementId: id, quoteVersion: created.agreement.acceptedTerms.quoteVersion, rfqVersion: created.agreement.acceptedTerms.rfqVersion, expectedRevision: created.agreement.revision, transactionBudgetId, platformBudgetId: null, externalReference: null, actor }), 201);
   const side = ok<SellerAgreementView>(await seller.get(`/v1/agreements/${id}`));
   ok(await seller.post(`/v1/agreements/${id}/accept`, { expectedRevision: side.agreement.revision, acceptedTermsDigest: side.agreement.acceptedTerms.digest, electronicRecords, actor }));
@@ -89,4 +90,20 @@ export async function paymentHub(h: Harness) {
   await a.cmd(w.people.officer, (trx, ctx) => hubConfig.activate(trx, ctx, v.id, null, approval));
   await h.db.admin.query("INSERT INTO trustwork.payment_rail(connection_id,currencies,countries,rails,capabilities,custody,evidence_mode,approval_ref) VALUES($1,ARRAY['USD'],ARRAY['US'],ARRAY['qr'],ARRAY['create','confirm','refund','payout','connected_account'],'provider_connected_accounts','synthetic','synthetic-fixture-only')", [c.id]);
   return { hubId: hubA, connectionId: c.id, a, w };
+}
+
+/** Synthetic test-only verifier login; never inherits app/worker privileges or owns data. */
+export async function paymentVerifier(h: Harness) {
+  const role = `payment_verifier_test_${randomBytes(4).toString('hex')}`;
+  const password = randomBytes(12).toString('hex');
+  await h.db.admin.query(`CREATE ROLE ${role} LOGIN PASSWORD '${password}' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`);
+  await h.db.admin.query(`GRANT USAGE ON SCHEMA trustwork TO ${role}`);
+  await h.db.admin.query(`GRANT EXECUTE ON FUNCTION trustwork.payments_receipt(jsonb) TO ${role}`);
+  const pool = createPool({ ...h.db.appConfig, user: role, password, max: 4 });
+  return { pool, async close() {
+    await pool.end();
+    await h.db.admin.query(`REVOKE ALL ON FUNCTION trustwork.payments_receipt(jsonb) FROM ${role}`);
+    await h.db.admin.query(`REVOKE USAGE ON SCHEMA trustwork FROM ${role}`);
+    await h.db.admin.query(`DROP ROLE ${role}`);
+  } };
 }

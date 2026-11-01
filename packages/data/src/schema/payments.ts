@@ -34,6 +34,7 @@ export interface PaymentOperationTable {
   payment_id: string;
   kind: PaymentKind;
   session_id: string;
+  admitted_authority: Json | null;
   original_provider_ref: string | null;
   state: Generated<PaymentState>;
   job_id: string | null;
@@ -69,6 +70,6 @@ export const TABLE_COLUMNS: TableColumns<PaymentsDatabase> = {
   payment_source: columns('payment_source', ['agreement_id', 'binding', 'revoked_at', 'created_at']),
   payment_rail: columns('payment_rail', ['connection_id', 'currencies', 'countries', 'rails', 'capabilities', 'custody', 'evidence_mode', 'approval_ref', 'revoked_at']),
   payment_intent: columns('payment_intent', ['id', 'agreement_id', 'binding', 'requested_by', 'session_id', 'reservation_id', 'state', 'created_at']),
-  payment_operation: columns('payment_operation', ['id', 'payment_id', 'kind', 'original_provider_ref', 'session_id', 'state', 'job_id', 'attempt_id', 'fencing_token', 'invoked_at', 'provider_ref', 'customer_action_deadline', 'created_at', 'next_reconcile_at']),
+  payment_operation: columns('payment_operation', ['id', 'payment_id', 'admitted_authority', 'kind', 'original_provider_ref', 'session_id', 'state', 'job_id', 'attempt_id', 'fencing_token', 'invoked_at', 'provider_ref', 'customer_action_deadline', 'created_at', 'next_reconcile_at']),
   payment_receipt: columns('payment_receipt', ['connection_id', 'event_id', 'operation_id', 'evidence', 'disposition', 'received_at']),
 };

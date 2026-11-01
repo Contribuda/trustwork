@@ -6,14 +6,24 @@ import type { ScheduledTask } from '../scheduler.js';
 import type { HandlerRegistry } from '../handlers.js';
 import { PaymentProviders, awaitPaymentProvider } from './provider.js';
 
-export interface PaymentRuntime { pool: DataPool; providers: PaymentProviders }
+export interface PaymentRuntime {
+  pool: DataPool;
+  providers: PaymentProviders;
+  /** Separate trusted verifier identity. Never grant this command to the raw app/worker role. */
+  receiptPool?: DataPool;
+}
+
+function recordEvidence(runtime: PaymentRuntime, evidence: Parameters<typeof payments.receipt>[1]): Promise<string> {
+  if (!runtime.receiptPool) throw new Error('payment verifier unavailable');
+  return inTransaction(runtime.receiptPool, (trx) => payments.receipt(trx, evidence));
+}
 
 /** Trusted ingress verifies the original bytes before any inbox or semantic state is accepted. */
 export async function receivePaymentWebhook(runtime: PaymentRuntime, connectionId: string, raw: Uint8Array, signature: string): Promise<string> {
   const provider = runtime.providers.get(connectionId);
   const evidence = provider.verifyWebhook(raw, signature);
   if (evidence.connectionId !== connectionId || evidence.evidenceMode !== provider.evidenceMode) throw new Error('payment sender mismatch');
-  return inTransaction(runtime.pool, (trx) => payments.receipt(trx, evidence));
+  return recordEvidence(runtime, evidence);
 }
 
 /** Late outcomes remain consumable after fresh dispatch authority is revoked; lookup never creates an effect. */
@@ -27,7 +37,7 @@ export async function reconcilePayment(runtime: PaymentRuntime, operationId: str
   if (!raw) return 'outcome_unknown';
   const evidence = PaymentEvidenceSchema.parse(raw);
   if (evidence.evidenceMode !== provider.evidenceMode) throw new Error('payment evidence mode mismatch');
-  const outcome = await inTransaction(runtime.pool, (trx) => payments.receipt(trx, evidence));
+  const outcome = await recordEvidence(runtime, evidence);
   await inTransaction(runtime.pool, (trx) => payments.reconcileRecorded(trx, operationId));
   return outcome;
 }
@@ -55,7 +65,7 @@ export function registerPayments(registry: HandlerRegistry, runtime: PaymentRunt
         return PaymentEvidenceSchema.parse(await awaitPaymentProvider(ctx.signal, () => provider[method](instruction, ctx.signal)));
       });
       if (evidence.evidenceMode !== provider.evidenceMode) throw new Error('payment evidence mode mismatch');
-      await inTransaction(runtime.pool, (trx) => payments.receipt(trx, evidence));
+      await recordEvidence(runtime, evidence);
     },
   });
   registry.onJob({ kind: 'payments.reconcile', mode: 'external', parse: PaymentJobSchema.parse,
