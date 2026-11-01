@@ -6,7 +6,7 @@ PRV-001 / issue #93. Status: **partial, pending conductor review and integration
 
 Requests, preferences, export metadata, legal holds and replay receipts use PostgreSQL with forced RLS and narrow security-definer commands. The requester is the authenticated person; another person's id is refused. A company request requires a current administrator membership. Company data still passes through each existing module's finer permissions; administration is not a way to bypass a deal permission. A staff case grant never becomes a subject-export credential.
 
-Exports are currently **partial** and say `complete: false`. The composition root invokes existing profile, project, catalogue, procurement, quote, agreement and company serializers in the real principal transaction. The delivery route checks current authority, locks the person's authorization row, checks company membership and recomposes; possession of an export id grants nothing. Local FILE/blob storage verifies the generated JSON digest, then removes the temporary bytes. There are no signed download URLs, caller-supplied paths or provider calls. Billing and paid-plan state are not consulted. Tests demonstrate an unpaid person, an exactly ended paid subscription, counterparty private-budget exclusion and ownership revocation at delivery.
+Exports are currently **partial** and say `complete: false`. The composition root invokes existing profile, project, catalogue, procurement, quote, agreement and company serializers in the real principal transaction. The delivery route checks current authority, locks the person's authorization row, checks company membership and recomposes; possession of an export id grants nothing. Local FILE/blob storage verifies the generated JSON digest, then removes the temporary bytes. There are no signed download URLs, caller-supplied paths or provider calls. Billing and paid-plan state are not consulted. Personal participating projects are enumerated from live, unexpired subject grants and still pass through the owning shared projection. Personal supplier invitations include only their pinned shared RFQ versions. Employer participation and invitations are excluded from a personal export. Existing catalogue, quote and agreement readers already include their version/event history; coverage records that rather than inventing a second serializer. Tests demonstrate an unpaid person, an exactly ended paid subscription, counterparty private-budget exclusion and ownership revocation at delivery.
 
 ## Export and erasure inventory
 
@@ -16,7 +16,7 @@ Exports are currently **partial** and say `complete: false`. The composition roo
 | assistant | unsupported: requires owning-module exporter | Unavailable; exact gap recorded in the plan |
 | assistant-goals | partial: own personal goals/progress, authored personal reports and job subscriptions; agent negotiation and employer internals excluded | Unavailable; exact gap recorded in the plan |
 | billing | partial: own accounts, subscriptions, accepted prices, budgets and reservations; ledger and usage history pending | Unavailable; exact gap recorded in the plan |
-| catalogue | partial: authorized offering view; historical versions not yet composed | Unavailable; exact gap recorded in the plan |
+| catalogue | partial: all own offerings and versions with owning private-knowledge projection; audit history pending | Unavailable; exact gap recorded in the plan |
 | communications | partial: project/agreement threads, paginated own notifications, preferences and channels; other contexts pending | Unavailable; exact gap recorded in the plan |
 | connections | partial: own current connection/consent projections without bearer tokens; consent history pending | Unavailable; exact gap recorded in the plan |
 | consultations | partial: own requests and bookings through current owning projections, offerings and personal mentoring; historical reminders and availability pending | Unavailable; exact gap recorded in the plan |
@@ -30,19 +30,19 @@ Exports are currently **partial** and say `complete: false`. The composition roo
 | models | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
 | plans | partial: owner plans, all versions, item states, changes, timing, shares, locations, permits and diary; participation-only enumeration pending | Unavailable; exact gap recorded in the plan |
 | platform-admin | partial: own request and preference records | Unavailable; exact gap recorded in the plan |
-| procurement | partial: own needs and RFQs; supplier invitation views not yet composed | Unavailable; exact gap recorded in the plan |
+| procurement | partial: own needs, all RFQ versions and invitations; personal supplier invitations and pinned shared RFQ versions; company invitation history pending | Unavailable; exact gap recorded in the plan |
 | profiles | supported: owner profile, consents, licences, portraits, experience, preferences, follows, bookmarks and reading progress | Unavailable; exact gap recorded in the plan |
-| projects | partial: owned project projections; participation-only projects not yet composed | Unavailable; exact gap recorded in the plan |
+| projects | partial: owned and currently participating project projections; ownership-transfer and participation history pending | Unavailable; exact gap recorded in the plan |
 | providers | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
 | reputation | partial: own reputation builder and confirmation inbox; historical credentials pending | Unavailable; exact gap recorded in the plan |
-| sales | partial: authorized buyer/seller quote views; historical versions not yet composed | Unavailable; exact gap recorded in the plan |
+| sales | partial: authorized buyer/seller quote versions, negotiation rounds and amendment requests; audit history pending | Unavailable; exact gap recorded in the plan |
 | screening | partial: own minimal compliance status; sensitive match/reviewer internals excluded | Unavailable; exact gap recorded in the plan |
 | screening-gates | unsupported: Owning exporter unavailable | Unavailable; exact gap recorded in the plan |
 | sources | unsupported: nonparticipant identity proof and sourced-record projection seam pending | Unavailable; exact gap recorded in the plan |
 | supplier-base | partial: all own-company supplier records, assessments and external counterparties; sharing history pending | Unavailable; exact gap recorded in the plan |
 | support | partial: all own cases through case serializer, own actions and access records; historical diagnostics pending | Unavailable; exact gap recorded in the plan |
 | tasks | partial: own requests, offers, assignments and invitations; historical version coverage pending | Unavailable; exact gap recorded in the plan |
-| transactions | partial: current authorized agreement/order projections; historical events not yet composed | Unavailable; exact gap recorded in the plan |
+| transactions | partial: authorized agreement/order projections, acceptance events and order-change history; audit records pending | Unavailable; exact gap recorded in the plan |
 | trust | partial: confirmed agreement reviews and responses; historical reputation snapshots pending | Unavailable; exact gap recorded in the plan |
 
 The inventory covers every implemented API module directory and is checked against the filesystem. Empty fixtures do not establish completeness. Local file export includes only currently authorized clean bytes, verifies their recorded digest and never exposes a storage key. Inline limits are 16 MiB per object and 64 MiB total; larger binaries explicitly require a future streaming export, and `complete` stays false.
