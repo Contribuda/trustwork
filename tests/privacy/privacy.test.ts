@@ -122,6 +122,27 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.equal(result.headers['cache-control'], 'no-store');
     assert.deepEqual(await store.list('privacy-exports/'), []);
   });
+  await t.test('RFQ and quote histories use owning COMMS projections without exporting employer threads as personal data', async () => {
+    const fixture = await buildAgreement({ admin: h.db.admin, app: h.pool, people: seed.people, supplier: seed.companies.supplier, project: seed.project }, businessDate(20));
+    const ids: string[] = [];
+    for (const kind of ['rfq', 'quote'] as const) {
+      const opened = await petr.post('/v1/threads', { context: { kind, id: kind === 'rfq' ? fixture.agreement.rfq_id : fixture.agreement.quote_id },
+        subject: 'Synthetic privacy context history', counterparty: kind === 'rfq' ? { kind: 'company', id: seed.companies.supplier } : null,
+        message: { body: `Synthetic ${kind} context private-to-parties 6492`, links: [], onBehalfOfCompany: false, actor: { via: 'person' } } });
+      assert.equal(opened.status, 201, JSON.stringify(opened.body)); ids.push((opened.body as { thread: { id: string } }).thread.id);
+    }
+    const own = await petr.post('/v1/privacy/exports', { subject });
+    const response = await petr.get(`/v1/privacy/exports/${(own.body as { export: { id: string } }).export.id}`);
+    assert.equal(response.status, 200, JSON.stringify(response.body));
+    for (const id of ids) assert.ok(JSON.stringify(response.body).includes(id));
+    assert.ok(JSON.stringify(response.body).includes('Synthetic rfq context private-to-parties 6492'));
+    assert.ok(JSON.stringify(response.body).includes('Synthetic quote context private-to-parties 6492'));
+    const personal = await boris.post('/v1/privacy/exports', { subject: { kind: 'person', id: seed.people.boris } });
+    const excluded = await boris.get(`/v1/privacy/exports/${(personal.body as { export: { id: string } }).export.id}`);
+    assert.equal(excluded.status, 200, JSON.stringify(excluded.body));
+    const personalThreads = (excluded.body as { archive: { data: { communications: { threads: unknown[] } } } }).archive.data.communications.threads;
+    for (const id of ids) assert.ok(!JSON.stringify(personalThreads).includes(id), 'employer threads stay outside the personal export; own notifications retain their permitted links');
+  });
   await t.test('personal participating projects use shared projections and disappear after actual revocation', async () => {
     const target = { kind: 'person', id: seed.people.boris };
     const created = await boris.post('/v1/privacy/exports', { subject: target });

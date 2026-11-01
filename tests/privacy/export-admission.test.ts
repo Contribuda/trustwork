@@ -26,9 +26,9 @@ test('PRV export admission: exact resolved session and current authority through
     const backup = (await h.db.admin.query<{ id: string }>("INSERT INTO trustwork.person(display_name) VALUES('Synthetic Backup Administrator') RETURNING id")).rows[0]!.id;
     await h.db.admin.query(`INSERT INTO trustwork.membership(person_id,company_id,role,permissions,status,valid_from)
       VALUES($1,$2,'administrator',ARRAY['company.members.manage'],'active',now())`, [backup, company]);
-    return { people: { anna: person, petr: person }, companies: { mixed: company }, memberships: { anna: membership } };
+    return { people: { anna: person, petr: person }, companies: { mixed: company }, memberships: { anna: membership }, backup };
   };
-  for (const mode of ['json', 'file'] as const) for (const change of ['session', 'membership', 'epoch', 'file'] as const) {
+  for (const mode of ['json', 'file'] as const) for (const change of ['session', 'membership', 'epoch', 'file', 'erasure'] as const) {
     for (const order of ['revocation-first', 'snapshot-first', 'delivery-first'] as const) await t.test(`${mode}: ${change}, ${order}`, async () => {
       const seed = await fixture();
       const person = seed.people.anna;
@@ -50,6 +50,7 @@ test('PRV export admission: exact resolved session and current authority through
         if (change === 'session') { const r = await otherSession.post('/v1/me/sessions/revoke', { sessionId }, { idempotencyKey: null }); assert.equal(r.status, 204, JSON.stringify(r)); return; }
         if (change === 'membership') { const r = await otherSession.post(`/v1/companies/${subject.id}/memberships/end`, { membershipId: seed.memberships.anna, expectedRevision: 1, reason: 'Synthetic authority revocation' }); assert.equal(r.status, 200, JSON.stringify(r)); return; }
         if (change === 'file') { const r = await otherSession.post(`/v1/files/${fileId}/delete`, { actor: { via: 'person' } }); assert.equal(r.status, 200, JSON.stringify(r)); return; }
+        if (change === 'erasure') return h.db.admin.query('SELECT trustwork.files_request_erasure($1,$2,$3,$4)', [fileId, `synthetic-${randomUUID()}`, person, seed.backup]);
         return h.db.admin.query('UPDATE trustwork.person SET authz_epoch=authz_epoch+1 WHERE id=$1', [person]);
       };
       const entered = gate(); const release = gate();
@@ -87,7 +88,7 @@ test('PRV export admission: exact resolved session and current authority through
       const result = await response; await mutation;
       if (order === 'delivery-first') assert.equal(result.status, 200, JSON.stringify(result.body));
       else {
-        assert.ok([401, 404, 409, ...(mode === 'json' && change === 'file' ? [200] : [])].includes(result.status), JSON.stringify(result));
+        assert.ok([401, 404, 409, ...(mode === 'json' && (change === 'file' || change === 'erasure') ? [200] : [])].includes(result.status), JSON.stringify(result));
         assert.ok(!JSON.stringify(result.body).includes(bytes.toString('base64')));
         assert.ok(!JSON.stringify(result.body).includes('Synthetic exact-session private payload'));
       }
