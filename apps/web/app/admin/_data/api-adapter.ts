@@ -77,7 +77,8 @@ const ApprovalViewSchema = z.object({
   declinedBy: z.string().nullable(),
   revokedAt: z.iso.datetime().nullable(),
 });
-const ApprovalsViewSchema = z.object({ items: z.array(z.unknown()) });
+/** `GET /v1/admin/approvals`: requests waiting for the viewer, the viewer's own requests, and decided ones. */
+const ApprovalsViewSchema = z.object({ forMe: z.array(z.unknown()).default([]), mine: z.array(z.unknown()).default([]), decided: z.array(z.unknown()).default([]) });
 
 /** The keys a strict contract schema allows, so an API view with extra fields (activation hints, digests) still parses. */
 function pick(row: Record<string, unknown>, schema: { shape: Record<string, unknown> }): Record<string, unknown> {
@@ -92,6 +93,17 @@ const shapeOf = (schema: unknown): { shape: Record<string, unknown> } => {
 /** HTTP status of a rejection from the transport (`ApiFailure`), or null. */
 function statusOf(error: unknown): number | null {
   return error && typeof error === 'object' && typeof (error as { status?: unknown }).status === 'number' ? (error as { status: number }).status : null;
+}
+
+/** A read the viewer may not make (401/403) shows nothing; any other failure stays a failure. */
+async function orNothing<T>(read: Promise<T>): Promise<T | null> {
+  try {
+    return await read;
+  } catch (error) {
+    const status = statusOf(error);
+    if (status === 401 || status === 403) return null;
+    throw error;
+  }
 }
 
 export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
@@ -163,7 +175,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   async function hubs(request: ConsoleRequest): Promise<HubRecord[]> {
     if (request.demo) return [];
-    const list = HubsViewSchema.safeParse(await api.get('/v1/admin/hubs'));
+    const list = HubsViewSchema.safeParse(await orNothing(api.get('/v1/admin/hubs')));
     if (!list.success) return [];
     const records = await Promise.all(list.data.items.map(record));
     return records.filter((r): r is HubRecord => r !== null);
@@ -171,26 +183,29 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   async function access(v: StaffViewer, target: { nodeId: string; hubId: string | null }): Promise<ConsoleAccess> {
     const query = target.hubId ? `hubId=${target.hubId}` : `nodeId=${target.nodeId}`;
-    const view = AccessViewSchema.safeParse(await api.get(`/v1/admin/access?${query}`));
+    const view = AccessViewSchema.safeParse(await orNothing(api.get(`/v1/admin/access?${query}`)));
     void v; // the API answers for the session's own person; the viewer argument only keeps the port's signature
     if (!view.success) return { roles: [], permissions: [] };
     return { roles: view.data.roles as HubStaffRole[], permissions: view.data.permissions as ConsolePermission[] };
   }
 
   async function rolesGranting(section: SectionDef): Promise<HubStaffRole[]> {
-    const view = DefinitionsViewSchema.safeParse(await api.get('/v1/admin/staff/definitions'));
+    const view = DefinitionsViewSchema.safeParse(await orNothing(api.get('/v1/admin/staff/definitions')));
     if (!view.success) return [];
     const read = section.read;
     return view.data.items.filter((d) => read === 'staff' || read.some((p) => d.permissions.includes(p))).map((d) => d.role as HubStaffRole);
   }
 
   async function approvals(hubId: string): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[] }> {
-    const list = ApprovalsViewSchema.safeParse(await api.get(`/v1/admin/approvals?hubId=${hubId}`));
+    const list = ApprovalsViewSchema.safeParse(await orNothing(api.get(`/v1/admin/approvals?hubId=${hubId}`)));
     const requests: ApprovalRequest[] = [];
     const decisions: ApprovalDecision[] = [];
-    for (const raw of list.data?.items ?? []) {
+    const seen = new Set<string>();
+    const rows = list.success ? [...list.data.forMe, ...list.data.mine, ...list.data.decided] : [];
+    for (const raw of rows) {
       const a = ApprovalViewSchema.safeParse(raw);
-      if (!a.success) continue;
+      if (!a.success || seen.has(a.data.id)) continue;
+      seen.add(a.data.id);
       const action = ConsoleSecondPersonActionSchema.safeParse(a.data.action);
       if (!action.success || a.data.scope.kind !== 'hub' || a.data.scope.hubId !== hubId) continue;
       const digest = { algorithm: DIGEST_ALGORITHM, value: a.data.actionDigest };
@@ -204,7 +219,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
           state: a.data.status, synthetic: false,
         });
         if (parsed.success) requests.push(parsed.data);
-      } else if (a.data.status === 'approved' && a.data.approvedBy && a.data.approvedAt && a.data.expiresAt) {
+      } else if ((a.data.status === 'approved' || a.data.status === 'consumed') && a.data.approvedBy && a.data.approvedAt && a.data.expiresAt) {
         const parsed = ApprovalDecisionSchema.safeParse({
           requestId: a.data.id, hubId, action: action.data, requestedBy: a.data.requestedBy, decision: 'approve', decidedBy: a.data.approvedBy, decidedAt: a.data.approvedAt,
           approval: { id: a.data.id, action: action.data, scope, actionDigest: digest, requestedBy: a.data.requestedBy, approvedBy: a.data.approvedBy, approvedAt: a.data.approvedAt, expiresAt: a.data.expiresAt, revokedAt: a.data.revokedAt },

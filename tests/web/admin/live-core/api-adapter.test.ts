@@ -123,8 +123,8 @@ test('node, access and roles come from the API', async () => {
 
 test('approvals: pending requests and approvals of this hub only, bound to their digest; other hubs and unknown actions dropped', async () => {
   const { port: p } = port(staffRoutes({
-    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { items: [
-      approval(),
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { mine: [], forMe: [approval()], decided: [
+
       approval({ id: '66666666-6666-4666-8666-666666666666', status: 'approved', approvedBy: STAFF, approvedAt: '2026-11-01T11:00:00.000Z', expiresAt: '2026-11-01T23:00:00.000Z' }),
       approval({ id: '77777777-7777-4777-8777-777777777777', scope: { kind: 'hub', hubId: OTHER } }),
       approval({ id: '88888888-8888-4888-8888-888888888888', action: 'unknown.action' }),
@@ -151,7 +151,7 @@ type Sent = { path: string; body: Record<string, unknown>; key: string };
 function commandPort(answer: { status: number; code: string | null }, extra: Routes = {}) {
   const api = fakeApi(staffRoutes({
     [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions: ['admin.providers.toggle'], breakglassOnly: [] },
-    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { items: [approval(), approval({ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', requestedBy: STAFF })] },
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { forMe: [approval()], mine: [approval({ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', requestedBy: STAFF })], decided: [] },
     ...extra,
   }));
   const sent: Sent[] = [];
