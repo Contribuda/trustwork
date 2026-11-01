@@ -683,7 +683,7 @@
    "unMember": true,
    "callingCode": "+1204",
    "timeZones": [],
-   "pack": false
+   "pack": true
   },
   {
    "code": "CC",

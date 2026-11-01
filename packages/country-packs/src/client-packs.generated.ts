@@ -3686,5 +3686,178 @@ export const BUILT_IN_CLIENT_PACKS: readonly ClientPack[] = [
       ],
       "cityFirst": false
     }
+  },
+  {
+    "code": "CA",
+    "name": {
+      "en": "Canada"
+    },
+    "enabled": true,
+    "locales": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "currency": {
+      "code": "CAD",
+      "minorUnitDigits": 2,
+      "displayFractionDigits": 2,
+      "symbol": "$"
+    },
+    "secondaryCurrencies": [],
+    "formats": {
+      "timeZone": "America/Toronto",
+      "phone": {
+        "callingCode": "+1",
+        "nationalLength": 10,
+        "example": "+1 613 555 0100"
+      },
+      "postalCode": {
+        "pattern": "^[ABCEGHJ-NPRSTVXY][0-9][ABCEGHJ-NPRSTVWXYZ] [0-9][ABCEGHJ-NPRSTVWXYZ][0-9]$",
+        "example": "K1A 0B1"
+      }
+    },
+    "registrationIdentifier": {
+      "kind": "CA-BN",
+      "label": {
+        "en": "Business Number (BN)"
+      },
+      "pattern": "^[0-9]{9}$",
+      "example": "123456789"
+    },
+    "legalEntityTypes": [
+      {
+        "code": "sole-proprietorship",
+        "name": {
+          "en": "Sole proprietorship"
+        }
+      },
+      {
+        "code": "partnership",
+        "name": {
+          "en": "Partnership"
+        }
+      },
+      {
+        "code": "federal-corporation",
+        "name": {
+          "en": "Federal corporation"
+        }
+      },
+      {
+        "code": "provincial-corporation",
+        "name": {
+          "en": "Provincial or territorial corporation"
+        }
+      },
+      {
+        "code": "cooperative",
+        "name": {
+          "en": "Cooperative"
+        }
+      }
+    ],
+    "regions": [
+      {
+        "code": "CA-AB",
+        "name": {
+          "en": "Alberta"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-BC",
+        "name": {
+          "en": "British Columbia"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-MB",
+        "name": {
+          "en": "Manitoba"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-NB",
+        "name": {
+          "en": "New Brunswick"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-NL",
+        "name": {
+          "en": "Newfoundland and Labrador"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-NS",
+        "name": {
+          "en": "Nova Scotia"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-NT",
+        "name": {
+          "en": "Northwest Territories"
+        },
+        "kind": "territory"
+      },
+      {
+        "code": "CA-NU",
+        "name": {
+          "en": "Nunavut"
+        },
+        "kind": "territory"
+      },
+      {
+        "code": "CA-ON",
+        "name": {
+          "en": "Ontario"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-PE",
+        "name": {
+          "en": "Prince Edward Island"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-QC",
+        "name": {
+          "en": "Quebec"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-SK",
+        "name": {
+          "en": "Saskatchewan"
+        },
+        "kind": "province"
+      },
+      {
+        "code": "CA-YT",
+        "name": {
+          "en": "Yukon"
+        },
+        "kind": "territory"
+      }
+    ],
+    "address": {
+      "lines": [
+        "street",
+        "street2",
+        "city",
+        "region",
+        "postalCode"
+      ],
+      "cityFirst": false
+    }
   }
 ];

@@ -1,0 +1,2442 @@
+{
+  "schemaVersion": 2,
+  "code": "CA",
+  "name": {
+    "en": "Canada"
+  },
+  "enabled": true,
+  "status": "partial",
+  "locales": [
+    "en"
+  ],
+  "defaultLocale": "en",
+  "currency": {
+    "code": "CAD",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 2,
+    "symbol": "$"
+  },
+  "secondaryCurrencies": [],
+  "formats": {
+    "timeZone": "America/Toronto",
+    "phone": {
+      "callingCode": "+1",
+      "nationalLength": 10,
+      "example": "+1 613 555 0100"
+    },
+    "postalCode": {
+      "pattern": "^[ABCEGHJ-NPRSTVXY][0-9][ABCEGHJ-NPRSTVWXYZ] [0-9][ABCEGHJ-NPRSTVWXYZ][0-9]$",
+      "example": "K1A 0B1"
+    }
+  },
+  "timeZones": [
+    "America/Atikokan",
+    "America/Blanc-Sablon",
+    "America/Cambridge_Bay",
+    "America/Creston",
+    "America/Dawson",
+    "America/Dawson_Creek",
+    "America/Edmonton",
+    "America/Fort_Nelson",
+    "America/Glace_Bay",
+    "America/Goose_Bay",
+    "America/Halifax",
+    "America/Inuvik",
+    "America/Iqaluit",
+    "America/Moncton",
+    "America/Rankin_Inlet",
+    "America/Regina",
+    "America/Resolute",
+    "America/St_Johns",
+    "America/Swift_Current",
+    "America/Toronto",
+    "America/Vancouver",
+    "America/Whitehorse",
+    "America/Winnipeg"
+  ],
+  "verificationLevel": "official",
+  "registrationIdentifier": {
+    "kind": "CA-BN",
+    "label": {
+      "en": "Business Number (BN)"
+    },
+    "pattern": "^[0-9]{9}$",
+    "example": "123456789",
+    "issuer": {
+      "name": {
+        "en": "Canada Revenue Agency"
+      },
+      "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/business-registration/business-number-program-account.html"
+    },
+    "verification": "Nine-digit format only; the example is illustrative and is not evidence of registration, ownership, tax status or authority. No check-digit algorithm or live register is used.",
+    "verificationLevel": "official",
+    "sources": [
+      {
+        "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/business-registration/business-number-program-account.html",
+        "what": "CRA: the Business Number (BN) is a unique nine-digit business identifier.",
+        "accessed": "2026-11-01"
+      }
+    ]
+  },
+  "legalEntityTypes": [
+    {
+      "code": "sole-proprietorship",
+      "name": {
+        "en": "Sole proprietorship"
+      }
+    },
+    {
+      "code": "partnership",
+      "name": {
+        "en": "Partnership"
+      }
+    },
+    {
+      "code": "federal-corporation",
+      "name": {
+        "en": "Federal corporation"
+      }
+    },
+    {
+      "code": "provincial-corporation",
+      "name": {
+        "en": "Provincial or territorial corporation"
+      }
+    },
+    {
+      "code": "cooperative",
+      "name": {
+        "en": "Cooperative"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "code": "CA-AB",
+      "name": {
+        "en": "Alberta"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Edmonton"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Alberta"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in Alberta"
+            },
+            "standardRate": null,
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship and Industry Training"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ],
+        "privacy": [
+          {
+            "id": "provincial-private-sector-privacy",
+            "type": "law",
+            "name": {
+              "en": "Alberta Personal Information Protection Act"
+            },
+            "summary": {
+              "en": "Substantially similar provincial private-sector legislation. It may apply to local activity while PIPEDA still applies to federal businesses and cross-border flows."
+            },
+            "sources": [
+              {
+                "url": "https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/r_o_p/prov-pipeda/",
+                "what": "OPC: Alberta, British Columbia and Quebec have substantially similar private-sector laws; federal businesses and cross-border commercial personal information remain subject to PIPEDA.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ],
+        "calendar": [
+          {
+            "id": "family-day",
+            "type": "holiday",
+            "name": {
+              "en": "Alberta Family Day"
+            },
+            "holiday": "state",
+            "nonWorking": false,
+            "rule": {
+              "kind": "nth-weekday",
+              "month": 2,
+              "weekday": "mon",
+              "nth": 3
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.alberta.ca/alberta-general-holidays",
+                "what": "Alberta government general holiday table includes Family Day on the third Monday in February.",
+                "accessed": "2026-11-01",
+                "verification": "Official search table checked; workplace-specific entitlement still requires review."
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "A provincial general holiday; confirm workplace coverage and substitute days before scheduling closures."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-BC",
+      "name": {
+        "en": "British Columbia"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Vancouver",
+        "America/Edmonton",
+        "America/Creston",
+        "America/Dawson_Creek",
+        "America/Fort_Nelson"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in British Columbia"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in British Columbia"
+            },
+            "standardRate": "7",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Skilled Trades BC"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ],
+        "privacy": [
+          {
+            "id": "provincial-private-sector-privacy",
+            "type": "law",
+            "name": {
+              "en": "British Columbia Personal Information Protection Act"
+            },
+            "summary": {
+              "en": "Substantially similar provincial private-sector legislation. It may apply to local activity while PIPEDA still applies to federal businesses and cross-border flows."
+            },
+            "sources": [
+              {
+                "url": "https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/r_o_p/prov-pipeda/",
+                "what": "OPC: Alberta, British Columbia and Quebec have substantially similar private-sector laws; federal businesses and cross-border commercial personal information remain subject to PIPEDA.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-MB",
+      "name": {
+        "en": "Manitoba"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Winnipeg"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Manitoba"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in Manitoba"
+            },
+            "standardRate": "7",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship Manitoba"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-NB",
+      "name": {
+        "en": "New Brunswick"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Moncton"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "HST in New Brunswick"
+            },
+            "standardRate": "15",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship and Occupational Certification Branch"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-NL",
+      "name": {
+        "en": "Newfoundland and Labrador"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/St_Johns",
+        "America/Goose_Bay"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "HST in Newfoundland and Labrador"
+            },
+            "standardRate": "15",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship and Trades Certification Division"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-NS",
+      "name": {
+        "en": "Nova Scotia"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Halifax",
+        "America/Glace_Bay"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "HST in Nova Scotia"
+            },
+            "standardRate": "14",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "effectiveFrom": "2025-04-01",
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship Training and Skill Development"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-NT",
+      "name": {
+        "en": "Northwest Territories"
+      },
+      "kind": "territory",
+      "timeZones": [
+        "America/Edmonton",
+        "America/Inuvik"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Northwest Territories"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in Northwest Territories"
+            },
+            "standardRate": null,
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship, Trades and Occupations"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-NU",
+      "name": {
+        "en": "Nunavut"
+      },
+      "kind": "territory",
+      "timeZones": [
+        "America/Iqaluit",
+        "America/Atikokan",
+        "America/Resolute",
+        "America/Rankin_Inlet",
+        "America/Cambridge_Bay"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Nunavut"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in Nunavut"
+            },
+            "standardRate": null,
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship, Trade and Occupations Certification"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-ON",
+      "name": {
+        "en": "Ontario"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Toronto",
+        "America/Atikokan",
+        "America/Winnipeg"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "HST in Ontario"
+            },
+            "standardRate": "13",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Skilled Trades Ontario"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ],
+        "registers": [
+          {
+            "id": "ontario-business-registry",
+            "name": {
+              "en": "Ontario Business Registry (OCN)"
+            },
+            "url": "https://www.ontario.ca/page/ontario-business-registry-all-services",
+            "query": "manual",
+            "covers": [],
+            "candidateAdapters": [
+              "Ontario Business Registry lookup (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.ontario.ca/page/ontario-business-registry-all-services",
+                "what": "Ontario Business Registry services name the Ontario Corporation Number (OCN); its complete format rules are not confirmed.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed excerpt checked; no entity lookup performed."
+              }
+            ],
+            "verification": "candidate",
+            "verificationNote": "OCN is named in official services guidance. Number length, historical formats, search licence and API remain unverified; no permissive invented regex is added."
+          }
+        ],
+        "payments": [
+          {
+            "id": "ontario-prompt-payment",
+            "type": "payment-terms",
+            "summary": {
+              "en": "Construction Act: owner payment generally within 28 days of a proper invoice, subject to notice of non-payment; disputes can use Part II.1 adjudication. Confirm applicability before using deadlines."
+            },
+            "sources": [
+              {
+                "url": "https://www.ontario.ca/laws/statute/90c30",
+                "what": "Ontario Construction Act section 6.4: owner pays a proper invoice within 28 days subject to notice of non-payment; Part II.1 addresses adjudication.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed text checked; full page returned HTTP 403. Transitional application and amendments need counsel review."
+              }
+            ],
+            "verification": "pending",
+            "verificationNote": "The 28-day owner-to-contractor rule and adjudication are confirmed in the official indexed text, but current transitions, proper-invoice rules and non-payment notices require counsel review. No unconditional deadline is emitted."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-PE",
+      "name": {
+        "en": "Prince Edward Island"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Halifax"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "HST in Prince Edward Island"
+            },
+            "standardRate": "15",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship Section"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-QC",
+      "name": {
+        "en": "Quebec"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Toronto",
+        "America/Blanc-Sablon"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Quebec"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "QST in Quebec"
+            },
+            "standardRate": "9.975",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Centre administratif de la qualification professionnelle"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          },
+          {
+            "id": "rbq-construction-licence",
+            "type": "activity",
+            "name": {
+              "en": "RBQ construction licensing for work within its statutory scope"
+            },
+            "authority": {
+              "name": {
+                "en": "Regie du batiment du Quebec"
+              },
+              "url": "https://www.rbq.gouv.qc.ca/"
+            },
+            "required": true,
+            "sources": [
+              {
+                "url": "https://open.canada.ca/data/dataset/755b45d6-7aee-46df-a216-748a0191c79f",
+                "what": "Official metadata for active RBQ licences: construction work requires a licence unless legally exempt.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed excerpt checked; full page returned HTTP 403; licence classes and exemptions not reviewed."
+              }
+            ],
+            "verification": "pending",
+            "verificationNote": "Official metadata confirms a licensing regime with exemptions. Full source access, covered work, licence subclasses and current exemptions need review before gating work."
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "quebec-enterprise-number",
+            "kind": "CA-QC-NEQ",
+            "role": "register",
+            "label": {
+              "en": "Quebec Enterprise Number (NEQ)"
+            },
+            "pattern": "^[0-9]{10}$",
+            "example": "1234567890",
+            "issuer": {
+              "name": {
+                "en": "Registraire des entreprises"
+              },
+              "url": "https://www.quebec.ca/en/businesses-and-self-employed-workers/start-entreprise/register-constitute-enterprise/learn-about-registration/quebec-enterprise-number-neq"
+            },
+            "register": "quebec-enterprise-register",
+            "sources": [
+              {
+                "url": "https://www.quebec.ca/en/businesses-and-self-employed-workers/start-entreprise/register-constitute-enterprise/learn-about-registration/quebec-enterprise-number-neq",
+                "what": "Quebec: NEQ has ten numeric digits; registered enterprise information is available through the enterprise register.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Ten-digit syntax only. No checksum or registry existence check; the example is illustrative."
+          }
+        ],
+        "registers": [
+          {
+            "id": "quebec-enterprise-register",
+            "name": {
+              "en": "Quebec enterprise register"
+            },
+            "url": "https://www.quebec.ca/en/businesses-and-self-employed-workers/start-entreprise/register-constitute-enterprise/learn-about-registration/quebec-enterprise-number-neq",
+            "query": "manual",
+            "covers": [
+              "CA-QC-NEQ"
+            ],
+            "candidateAdapters": [
+              "Quebec enterprise register lookup (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.quebec.ca/en/businesses-and-self-employed-workers/start-entreprise/register-constitute-enterprise/learn-about-registration/quebec-enterprise-number-neq",
+                "what": "Quebec: NEQ has ten numeric digits; registered enterprise information is available through the enterprise register.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Official information page confirms the register and NEQ. Search automation, data licence and redistribution permissions are not reviewed."
+          }
+        ],
+        "procurement": [
+          {
+            "id": "quebec-seao",
+            "type": "portal",
+            "name": {
+              "en": "Quebec electronic tendering system (SEAO)"
+            },
+            "url": "https://seao.gouv.qc.ca/",
+            "level": "state",
+            "openData": false,
+            "sources": [
+              {
+                "url": "https://www.legisquebec.gouv.qc.ca/en/pdf/cs/C-65.1.pdf",
+                "what": "Act respecting contracting by public bodies identifies SEAO as the approved electronic tendering system.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed text checked; open-data and integration terms not reviewed."
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Legal designation confirmed in the official indexed text. No bid submission, import licence or API access is enabled."
+          }
+        ],
+        "privacy": [
+          {
+            "id": "provincial-private-sector-privacy",
+            "type": "law",
+            "name": {
+              "en": "Quebec private-sector privacy Act (as amended by Law 25)"
+            },
+            "summary": {
+              "en": "The private-sector Act governs covered enterprises; section 17 requires a privacy impact assessment before communicating personal information outside Quebec."
+            },
+            "sources": [
+              {
+                "url": "https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/r_o_p/prov-pipeda/",
+                "what": "OPC: Alberta, British Columbia and Quebec have substantially similar private-sector laws; federal businesses and cross-border commercial personal information remain subject to PIPEDA.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/p-39.1",
+                "what": "Quebec private-sector privacy Act, as amended by 2021 chapter 25 (Law 25): section 17 requires a privacy impact assessment before communicating personal information outside Quebec.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official"
+          },
+          {
+            "id": "quebec-data-transfers",
+            "type": "data-residency",
+            "required": false,
+            "sources": [
+              {
+                "url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/p-39.1",
+                "what": "Quebec private-sector privacy Act, as amended by 2021 chapter 25 (Law 25): section 17 requires a privacy impact assessment before communicating personal information outside Quebec.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "note": {
+              "en": "Section 17 requires a privacy impact assessment, adequate protection and a written agreement for transfers outside Quebec; false does not mean unrestricted transfer. Public-sector rules are separate."
+            }
+          }
+        ],
+        "calendar": [
+          {
+            "id": "quebec-national-holiday",
+            "type": "holiday",
+            "name": {
+              "en": "Quebec National Holiday"
+            },
+            "holiday": "state",
+            "nonWorking": false,
+            "rule": {
+              "kind": "fixed",
+              "month": 6,
+              "day": 24
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.cnesst.gouv.qc.ca/en/working-conditions/leave/statutory-holidays/statutory-holidays",
+                "what": "CNESST: Quebec statutory days include June 24, Patriots Day and Good Friday OR Easter Monday; November 11 and September 30 are federal-only holidays.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Quebec statutory holiday; work and compensatory-day rules require the applicable workplace calendar."
+          },
+          {
+            "id": "quebec-patriots-day",
+            "type": "holiday",
+            "name": {
+              "en": "National Patriots Day"
+            },
+            "holiday": "state",
+            "nonWorking": false,
+            "rule": {
+              "kind": "dates",
+              "dates": [
+                "2026-05-18"
+              ]
+            },
+            "observed": "none",
+            "sources": [
+              {
+                "url": "https://www.cnesst.gouv.qc.ca/en/working-conditions/leave/statutory-holidays/statutory-holidays",
+                "what": "CNESST: Quebec statutory days include June 24, Patriots Day and Good Friday OR Easter Monday; November 11 and September 30 are federal-only holidays.",
+                "accessed": "2026-11-01"
+              },
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+                "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Monday preceding May 25; only the 2026 date is recorded. Federal holidays inherited in this view do not imply Quebec entitlement. Good Friday or Easter Monday is an employer choice, not two compulsory days."
+          }
+        ],
+        "contentLaw": [
+          {
+            "id": "quebec-language",
+            "topic": "other",
+            "summary": {
+              "en": "French is the official and common language of Quebec. A Quebec hub needs French defaults and counsel-reviewed language obligations before launch."
+            },
+            "sources": [
+              {
+                "url": "https://www.quebec.ca/en/immigration/french-in-quebec",
+                "what": "Quebec government: French is the official and common language under the Charter of the French Language.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed excerpt checked; hub legal copy still needs counsel."
+              }
+            ],
+            "verification": "official"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-SK",
+      "name": {
+        "en": "Saskatchewan"
+      },
+      "kind": "province",
+      "timeZones": [
+        "America/Regina",
+        "America/Swift_Current",
+        "America/Edmonton"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Saskatchewan"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in Saskatchewan"
+            },
+            "standardRate": "6",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship and Trade Certification Commission"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA-YT",
+      "name": {
+        "en": "Yukon"
+      },
+      "kind": "territory",
+      "timeZones": [
+        "America/Whitehorse",
+        "America/Dawson"
+      ],
+      "facets": {
+        "tax": [
+          {
+            "id": "gst-hst",
+            "type": "rate",
+            "taxKind": "gst",
+            "name": {
+              "en": "GST in Yukon"
+            },
+            "standardRate": "5",
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          },
+          {
+            "id": "provincial-sales-tax",
+            "type": "rate",
+            "taxKind": "sales",
+            "name": {
+              "en": "Provincial sales tax in Yukon"
+            },
+            "standardRate": null,
+            "reducedRates": [],
+            "localRates": "none",
+            "registrationThreshold": null,
+            "calculation": "adapter",
+            "candidateAdapters": [
+              "Canadian place-of-supply and tax applicability calculator (not implemented)"
+            ],
+            "sources": [
+              {
+                "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+                "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+          }
+        ],
+        "licensing": [
+          {
+            "id": "trade-certification",
+            "type": "profession",
+            "name": {
+              "en": "Provincial or territorial skilled-trade certification"
+            },
+            "body": {
+              "name": {
+                "en": "Apprenticeship Training, Yukon Education"
+              },
+              "url": "https://red-seal.ca/eng/contact/contact.shtml"
+            },
+            "sources": [
+              {
+                "url": "https://red-seal.ca/eng/contact/contact.shtml",
+                "what": "Red Seal official directory: apprenticeship and certification authority for each province and territory; this is not a list of contractor licence requirements.",
+                "accessed": "2026-11-01"
+              }
+            ],
+            "verification": "official",
+            "verificationNote": "Authority identified by the Red Seal directory. Compulsory trades, contractor licences, municipal permits and register access need jurisdiction-specific review; no general permission to perform construction is inferred."
+          }
+        ]
+      }
+    }
+  ],
+  "address": {
+    "lines": [
+      "street",
+      "street2",
+      "city",
+      "region",
+      "postalCode"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
+  "dataResidency": {
+    "required": false,
+    "note": {
+      "en": "PIPEDA does not impose a blanket Canada-only processing rule. Accountability, safeguards and transparency remain necessary. This is not clearance for a hub: provincial, public-sector, sector-specific and tax-record rules must be reviewed; Quebec transfers require a separate assessment."
+    },
+    "verificationLevel": "official",
+    "sources": [
+      {
+        "url": "https://www.priv.gc.ca/en/privacy-topics/airports-and-borders/gl_dab_090127/",
+        "what": "OPC guidance permits cross-border processing under PIPEDA with accountability and safeguards; public-sector and provincial restrictions require separate assessment.",
+        "accessed": "2026-11-01"
+      }
+    ]
+  },
+  "facets": {
+    "identifiers": [
+      {
+        "id": "cra-program-account",
+        "kind": "CA-PROGRAM",
+        "role": "tax",
+        "label": {
+          "en": "CRA program account"
+        },
+        "pattern": "^[0-9]{9}[A-Z]{2}[0-9]{4}$",
+        "example": "123456789RP0002",
+        "issuer": {
+          "name": {
+            "en": "Canada Revenue Agency"
+          },
+          "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/business-registration/business-number-program-account/need-program-accounts.html"
+        },
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/business-registration/business-number-program-account/need-program-accounts.html",
+            "what": "CRA: a program account combines the nine-digit BN, two-letter program identifier and four-digit reference; RT identifies GST/HST.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Unspaced canonical format. The two-letter code must still correspond to an issued program; matching syntax does not establish an account."
+      },
+      {
+        "id": "gst-hst-account",
+        "kind": "CA-GSTHST",
+        "role": "vat",
+        "label": {
+          "en": "GST/HST program account"
+        },
+        "pattern": "^[0-9]{9}RT[0-9]{4}$",
+        "example": "123456789RT0001",
+        "issuer": {
+          "name": {
+            "en": "Canada Revenue Agency"
+          },
+          "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/business-registration/business-number-program-account/need-program-accounts.html"
+        },
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/business-registration/business-number-program-account/need-program-accounts.html",
+            "what": "CRA: a program account combines the nine-digit BN, two-letter program identifier and four-digit reference; RT identifies GST/HST.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "federal-corporation-number",
+        "kind": "CA-CORP",
+        "role": "register",
+        "label": {
+          "en": "Federal corporation number"
+        },
+        "pattern": "^[0-9]{7}$",
+        "example": "1234567",
+        "issuer": {
+          "name": {
+            "en": "Corporations Canada"
+          },
+          "url": "https://ised-isde.canada.ca/site/corporations-canada/en/search-tips"
+        },
+        "register": "corporations-canada",
+        "sources": [
+          {
+            "url": "https://ised-isde.canada.ca/site/corporations-canada/en/search-tips",
+            "what": "Corporations Canada search guidance: seven-digit federal corporation number; provincial corporations are outside this database; Canada Business Registries is a separate search.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The published search guide specifies seven digits. This format is not a BN and does not validate provincial corporations; other issued formats require an official-source update."
+      }
+    ],
+    "registers": [
+      {
+        "id": "corporations-canada",
+        "name": {
+          "en": "Corporations Canada federal corporation search"
+        },
+        "url": "https://ised-isde.canada.ca/site/corporations-canada/en/federal-corporation-search",
+        "query": "manual",
+        "covers": [
+          "CA-CORP"
+        ],
+        "candidateAdapters": [
+          "Corporations Canada lookup (terms and adapter not implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://ised-isde.canada.ca/site/corporations-canada/en/search-tips",
+            "what": "Corporations Canada search guidance: seven-digit federal corporation number; provincial corporations are outside this database; Canada Business Registries is a separate search.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal scope and number search confirmed in official guidance; no live entity search, API or reuse licence reviewed."
+      },
+      {
+        "id": "canadas-business-registries",
+        "name": {
+          "en": "Canada's Business Registries"
+        },
+        "url": "https://ised-isde.canada.ca/cbr-rec/en/search",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "Participating provincial business registry lookup (not implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://ised-isde.canada.ca/site/corporations-canada/en/search-tips",
+            "what": "Corporations Canada search guidance: seven-digit federal corporation number; provincial corporations are outside this database; Canada Business Registries is a separate search.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "Directory referral confirmed; coverage and access terms of participating provincial registries need review. No universal provincial identifier format is asserted."
+      }
+    ],
+    "licensing": [
+      {
+        "id": "engineering-regulators",
+        "type": "profession",
+        "name": {
+          "en": "Engineering licensure through provincial and territorial regulators"
+        },
+        "body": {
+          "name": {
+            "en": "Provincial and territorial engineering regulators (Engineers Canada directory)"
+          },
+          "url": "https://engineerscanada.ca/regulatory-excellence/engineering-regulators"
+        },
+        "sources": [
+          {
+            "url": "https://engineerscanada.ca/regulatory-excellence/engineering-regulators",
+            "what": "Engineers Canada directory of provincial and territorial engineering regulators, which license professional engineers.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Engineers Canada is the directory, not the licensing body. Local regulators determine licences and scope."
+      },
+      {
+        "id": "architecture-regulators",
+        "type": "profession",
+        "name": {
+          "en": "Architecture registration through provincial and territorial regulators"
+        },
+        "body": {
+          "name": {
+            "en": "Provincial and territorial architecture regulators (ROAC directory)"
+          },
+          "url": "https://roac.ca/about-cala/member-organizations/"
+        },
+        "sources": [
+          {
+            "url": "https://roac.ca/about-cala/member-organizations/",
+            "what": "Regulatory Organizations of Architecture in Canada: provincial and territorial architectural regulators and requirement for registration.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "ROAC lists the regulators; it does not issue a nationwide architecture licence."
+      }
+    ],
+    "standards": [
+      {
+        "id": "national-building-code",
+        "system": {
+          "en": "National Building Code of Canada (national model code)"
+        },
+        "body": {
+          "name": {
+            "en": "National Research Council Canada"
+          },
+          "url": "https://nrc.canada.ca/"
+        },
+        "publications": "https://doi.org/10.4224/26fz-gg26",
+        "textLicence": "Link only; reproduction and indexing rights not reviewed.",
+        "sources": [
+          {
+            "url": "https://doi.org/10.4224/26fz-gg26",
+            "what": "NRC Publications Archive: National Building Code of Canada 2025, a national model code; jurisdictional adoption must be checked separately.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed publication description checked; no assertion of province-wide adoption."
+          },
+          {
+            "url": "https://nrc.canada.ca/en/certifications-evaluations-standards/codes-canada/policy-paper-accessibility-buildings",
+            "what": "NRC: the National Building Code is a national model code; provinces and territories determine adoption.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed excerpt checked."
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Publication is not adoption. Provincial, territorial and local enactments, editions and amendments must be checked for each project."
+      },
+      {
+        "id": "csa-standards",
+        "system": {
+          "en": "CSA construction and electrical standards"
+        },
+        "body": {
+          "name": {
+            "en": "CSA Group"
+          },
+          "url": "https://www.csagroup.org/standards/"
+        },
+        "publications": "https://www.csagroup.org/standards/",
+        "textLicence": "Link only; no licence to copy standards is asserted.",
+        "sources": [
+          {
+            "url": "https://www.csagroup.org/standards/",
+            "what": "CSA Group develops standards including construction, infrastructure and electrical standards; this is not permission to reproduce their texts.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "procurement": [
+      {
+        "id": "canadabuys",
+        "type": "portal",
+        "name": {
+          "en": "CanadaBuys federal tender opportunities"
+        },
+        "url": "https://canadabuys.canada.ca/en/tender-opportunities",
+        "level": "federal",
+        "openData": false,
+        "candidateAdapters": [
+          "CanadaBuys tender feed (licence and adapter not reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/treasury-board-secretariat/services/policy-notice/2025-8.html",
+            "what": "Treasury Board Notice 2025-8: federal CFTA construction threshold CAD 139000; CETA/WTO-GPA construction CAD 9200000 for covered departments/agencies, 2026-2027; CanadaBuys publishes notices.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Publication portal confirmed; openData false means no import licence is recorded here."
+      },
+      {
+        "id": "cfta-federal-construction-threshold",
+        "type": "threshold",
+        "summary": {
+          "en": "CFTA construction threshold for covered federal departments and agencies; not provincial, municipal or Crown-corporation thresholds."
+        },
+        "amount": {
+          "minorUnits": "13900000",
+          "currency": "CAD"
+        },
+        "effectiveFrom": "2026-01-01",
+        "effectiveTo": "2027-12-31",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/treasury-board-secretariat/services/policy-notice/2025-8.html",
+            "what": "Treasury Board Notice 2025-8: federal CFTA construction threshold CAD 139000; CETA/WTO-GPA construction CAD 9200000 for covered departments/agencies, 2026-2027; CanadaBuys publishes notices.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "ceta-wto-federal-construction-threshold",
+        "type": "threshold",
+        "summary": {
+          "en": "CETA and WTO-GPA construction threshold for covered federal departments and agencies, subject to coverage and exclusions."
+        },
+        "amount": {
+          "minorUnits": "920000000",
+          "currency": "CAD"
+        },
+        "effectiveFrom": "2026-01-01",
+        "effectiveTo": "2027-12-31",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/treasury-board-secretariat/services/policy-notice/2025-8.html",
+            "what": "Treasury Board Notice 2025-8: federal CFTA construction threshold CAD 139000; CETA/WTO-GPA construction CAD 9200000 for covered departments/agencies, 2026-2027; CanadaBuys publishes notices.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "tax": [
+      {
+        "id": "gst-hst",
+        "type": "rate",
+        "taxKind": "gst",
+        "name": {
+          "en": "GST outside participating HST provinces"
+        },
+        "standardRate": "5",
+        "reducedRates": [],
+        "localRates": "none",
+        "registrationThreshold": null,
+        "calculation": "adapter",
+        "candidateAdapters": [
+          "Canadian place-of-supply and tax applicability calculator (not implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate/calculator.html",
+            "what": "CRA provincial table: GST/HST and general PST/QST rates, including Nova Scotia HST 14% from 2025-04-01; liability depends on supply, place and recipient.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Published general rate only. Exemptions, zero rating, registration and construction-specific treatment require a tax adapter; null registrationThreshold means not recorded."
+      },
+      {
+        "id": "e-invoicing-review",
+        "type": "e-invoicing",
+        "system": {
+          "en": "Structured e-invoicing mandate status not verified"
+        },
+        "mandatory": false,
+        "scope": [
+          "B2B",
+          "B2G",
+          "B2C"
+        ],
+        "signatureRequired": false,
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate.html",
+            "what": "CRA receipt and invoice requirements; HST is shown as a combined rate. This page does not establish whether all e-invoicing mandates exist or are absent.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Unverified: CRA invoice-content guidance alone cannot prove the presence or absence of a nationwide B2B/B2G/B2C structured e-invoicing mandate. mandatory and signatureRequired are false placeholders, not legal conclusions; do not activate until reviewed."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "federal-electronic-signatures",
+        "kind": "signature",
+        "name": {
+          "en": "PIPEDA Part 2 federal electronic documents and signatures"
+        },
+        "strength": "simple",
+        "legalBasis": {
+          "en": "Federal electronic-document framework; certain uses require a secure electronic signature. This is not blanket approval of private construction agreements."
+        },
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/government/system/digital-government/online-security-privacy/identity-credential-access-management/government-canada-guidance-using-electronic-signatures.html",
+            "what": "Treasury Board guidance: PIPEDA Part 2 addresses federal electronic documents; most provinces and territories have electronic commerce legislation; some federal uses require secure signatures.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "simple records the general electronic-signature category, not equivalence to every statutory secure-signature requirement."
+      },
+      {
+        "id": "provincial-electronic-commerce",
+        "kind": "signature",
+        "name": {
+          "en": "Provincial and territorial electronic commerce legislation"
+        },
+        "strength": "simple",
+        "legalBasis": {
+          "en": "Applicable provincial or territorial electronic commerce law must be identified for the transaction. No country-wide enforceability determination is made."
+        },
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/government/system/digital-government/online-security-privacy/identity-credential-access-management/government-canada-guidance-using-electronic-signatures.html",
+            "what": "Treasury Board guidance: PIPEDA Part 2 addresses federal electronic documents; most provinces and territories have electronic commerce legislation; some federal uses require secure signatures.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Federal guidance confirms provincial/territorial legislation exists; each applicable act, exclusions and agreement form remain to be checked by counsel."
+      }
+    ],
+    "payments": [
+      {
+        "id": "interac-e-transfer",
+        "type": "scheme",
+        "name": {
+          "en": "Interac e-Transfer"
+        },
+        "rails": [
+          "credit-transfer"
+        ],
+        "candidateAdapters": [
+          "Participating financial institution Interac e-Transfer service (not implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.interac.ca/en/payments/personal/send-receive-money-with-interac-e-transfer/",
+            "what": "Interac operator describes sending and receiving e-Transfers through Canadian financial institutions.",
+            "accessed": "2026-11-01",
+            "verification": "Official operator search excerpt checked; provider onboarding and commercial terms not reviewed."
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "No universal settlement-time promise or automatic finality; limits and access depend on the financial institution."
+      },
+      {
+        "id": "eft-acss",
+        "type": "scheme",
+        "name": {
+          "en": "Automated funds transfers through ACSS"
+        },
+        "rails": [
+          "credit-transfer",
+          "direct-debit"
+        ],
+        "candidateAdapters": [
+          "Canadian financial institution EFT service (not implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.payments.ca/systems-services/payment-systems/retail-batch-payment-system",
+            "what": "Payments Canada: ACSS clears automated funds transfer credits (direct deposits), debits (pre-authorized debits) and point-of-sale payments.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "debit-card-payments",
+        "type": "scheme",
+        "name": {
+          "en": "Debit card point-of-sale payments"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "Canadian licensed card acquirer (not implemented)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.payments.ca/systems-services/payment-systems/retail-batch-payment-system",
+            "what": "Payments Canada: ACSS clears automated funds transfer credits (direct deposits), debits (pre-authorized debits) and point-of-sale payments.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "privacy": [
+      {
+        "id": "pipeda",
+        "type": "law",
+        "name": {
+          "en": "Personal Information Protection and Electronic Documents Act (PIPEDA)"
+        },
+        "summary": {
+          "en": "Federal commercial privacy framework; substantially similar provincial laws may govern intraprovincial activity. Federal businesses and cross-border flows require separate PIPEDA assessment."
+        },
+        "appliesWhen": {
+          "en": "Commercial personal information within federal coverage, including cross-border flows; not a determination that all records of every hub are covered."
+        },
+        "sources": [
+          {
+            "url": "https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/r_o_p/prov-pipeda/",
+            "what": "OPC: Alberta, British Columbia and Quebec have substantially similar private-sector laws; federal businesses and cross-border commercial personal information remain subject to PIPEDA.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "calendar": [
+      {
+        "id": "new-years-day",
+        "type": "holiday",
+        "name": {
+          "en": "New Year's Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "good-friday",
+        "type": "holiday",
+        "name": {
+          "en": "Good Friday"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "dates",
+          "dates": [
+            "2026-04-03"
+          ]
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "victoria-day",
+        "type": "holiday",
+        "name": {
+          "en": "Victoria Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "dates",
+          "dates": [
+            "2026-05-18"
+          ]
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "canada-day",
+        "type": "holiday",
+        "name": {
+          "en": "Canada Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 7,
+          "day": 1
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "labour-day",
+        "type": "holiday",
+        "name": {
+          "en": "Labour Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "nth-weekday",
+          "month": 9,
+          "weekday": "mon",
+          "nth": 1
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "truth-reconciliation",
+        "type": "holiday",
+        "name": {
+          "en": "National Day for Truth and Reconciliation"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 9,
+          "day": 30
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "thanksgiving",
+        "type": "holiday",
+        "name": {
+          "en": "Thanksgiving Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "nth-weekday",
+          "month": 10,
+          "weekday": "mon",
+          "nth": 2
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "remembrance-day",
+        "type": "holiday",
+        "name": {
+          "en": "Remembrance Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 11
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "christmas",
+        "type": "holiday",
+        "name": {
+          "en": "Christmas Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      },
+      {
+        "id": "boxing-day",
+        "type": "holiday",
+        "name": {
+          "en": "Boxing Day"
+        },
+        "holiday": "federal",
+        "nonWorking": false,
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 26
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/services/jobs/workplace/federal-labour-standards/vacations-holidays.html",
+            "what": "Canada Labour Code guidance lists ten general holidays for federally regulated employers; substitute days depend on scheduled workdays and agreements.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html",
+            "what": "CRA 2026 holiday calendar supplies Good Friday (April 3) and Victoria Day (May 18) dates; CRA-only additional holidays are not generalized.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Federal entitlement, not a nationwide construction closure. Hub must resolve employment coverage and substitutions before scheduling non-working days."
+      }
+    ],
+    "units": [
+      {
+        "id": "measurement-system",
+        "type": "system",
+        "system": "mixed",
+        "common": [
+          "m",
+          "m2",
+          "m3",
+          "kg",
+          "t",
+          "mm",
+          "ft",
+          "ft2",
+          "in",
+          "lb"
+        ],
+        "sources": [
+          {
+            "url": "https://laws-lois.justice.gc.ca/eng/acts/W-6/FullText.html",
+            "what": "Weights and Measures Act section 7 permits scheduled SI and Canadian units; schedules include metre, foot and pound. Metric-only is not a correct statement of this law.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "The Act permits SI and Canadian units, not metric alone. These are supported catalogue units, not a measurement of market prevalence. How commonly imperial units are used in residential construction is not verified."
+      }
+    ],
+    "scripts": [
+      {
+        "id": "english-script",
+        "language": "en",
+        "scripts": [
+          "Latn"
+        ],
+        "direction": "ltr",
+        "sources": [
+          {
+            "url": "https://laws-lois.justice.gc.ca/eng/acts/O-3.01/FullText.html",
+            "what": "Official Languages Act: federal English/French language status; provincial language regimes differ.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed text checked."
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Official language status confirmed; script and direction are descriptive defaults pending a dedicated language reference review."
+      },
+      {
+        "id": "french-script",
+        "language": "fr",
+        "scripts": [
+          "Latn"
+        ],
+        "direction": "ltr",
+        "sources": [
+          {
+            "url": "https://laws-lois.justice.gc.ca/eng/acts/O-3.01/FullText.html",
+            "what": "Official Languages Act: federal English/French language status; provincial language regimes differ.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed text checked."
+          },
+          {
+            "url": "https://www.quebec.ca/en/immigration/french-in-quebec",
+            "what": "Quebec government: French is the official and common language under the Charter of the French Language.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed excerpt checked; hub legal copy still needs counsel."
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "French is not activated as an engine locale by this fact; LANG-FR and a Quebec hub default are separate configuration work."
+      }
+    ],
+    "agentLaw": [
+      {
+        "id": "agent-consent-and-liability-review",
+        "topic": "other",
+        "summary": {
+          "en": "Agent disclosures, consent, liability, record keeping and per-action limits require Canadian and applicable provincial counsel review before activation."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://www.canada.ca/en/government/system/digital-government/online-security-privacy/identity-credential-access-management/government-canada-guidance-using-electronic-signatures.html",
+            "what": "Treasury Board guidance: PIPEDA Part 2 addresses federal electronic documents; most provinces and territories have electronic commerce legislation; some federal uses require secure signatures.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.priv.gc.ca/en/privacy-topics/airports-and-borders/gl_dab_090127/",
+            "what": "OPC guidance permits cross-border processing under PIPEDA with accountability and safeguards; public-sector and provincial restrictions require separate assessment.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "HUB-005 counsel review has not occurred. No disclosure wording, liability allocation, retention period or financial authority is approved by this pack."
+      }
+    ]
+  },
+  "notes": [
+    "CTRY-CA: sources accessed 2026-11-01 UTC. Official means the specific statement was read in a primary source, not legal approval or entity verification. Indexed-only evidence is identified in each source note; unresolved interpretations remain pending or candidate.",
+    "English is enabled now and formats derive as en-CA. French (fr, formatted fr-CA) awaits LANG-FR. A Quebec hub must configure French as its default once its French dictionaries are installed; v2 has no subdivision defaultLocale field. The language-law fact is data, not an automatic locale switch.",
+    "There are six conventional time-zone families, including Newfoundland half-hour time. IANA zones also capture local exceptions and history; current rules and offsets come from runtime tzdata, not a hard-coded six-offset table. Region zone lists follow IANA geographic comments.",
+    "All identifier examples are format examples only, not real company records. Additional provincial/territorial corporate number formats, contractor licence classes and local permits remain unverified; the Ontario registry and Quebec examples do not stand for all provinces.",
+    "Calendar entries identify legal holidays, not universal site closures. nonWorking is false and observed is none until a hub resolves federal/provincial employment coverage, work schedules, substitutions and construction collective agreements. Movable dates are published only for 2026.",
+    "GST/HST is one overridden fact per jurisdiction; never add GST to HST. PST/QST facts are separate where applicable. Rates are snapshots, not a tax computation or tax advice.",
+    "No register, procurement, payment or signing integration is enabled. Adapters are candidates only. Unknown e-invoicing requirements and all agent-law defaults remain pending counsel review (HUB-005).",
+    "Pack facts have English fallback text as in INTL-US and CTRY-003. A partial pack does not claim reviewed translations, complete provincial coverage or production readiness."
+  ],
+  "sources": [
+    {
+      "url": "https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/enabling-interoperability/gc-enterprise-data-reference-standards/data-reference-standard-canadian-provinces-territories.html",
+      "what": "Federal data reference standard: 13 provinces and territories with Canada Post alpha codes, aligned with ISO 3166-2.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://our-languages.canada.ca/en/writing-tips-plus/abbreviations-canadian-provinces-and-territories",
+      "what": "Government language portal: names and postal abbreviations of the ten provinces and three territories.",
+      "accessed": "2026-11-01",
+      "verification": "Official search excerpt and table; province names are not translations reviewed for product copy."
+    },
+    {
+      "url": "https://data.iana.org/time-zones/tzdb/zone.tab",
+      "what": "IANA tzdb country entries for CA and their geographic coverage; zone identifiers, not fixed offsets. Runtime tzdata determines transitions.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://laws-lois.justice.gc.ca/eng/acts/C-52/FullText.html",
+      "what": "Currency Act section 3: Canadian dollar and cents; one cent is one hundredth of a dollar.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.cnac.ca/canadian_dial_plan/Canadian_Dial_Plan_Table.pdf",
+      "what": "Canadian Numbering Administrator, 2023-06-30: country code 1 followed by a ten-digit national number.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.cnac.ca/other_codes/555/555_line_numbers.htm",
+      "what": "Canadian Numbering Administrator: 555 line-number resource and status; 555-0100 through 555-0199 reserved for fictional use.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.canadapost-postescanada.ca/cpc/en/support/articles/addressing-guidelines/postal-codes.page",
+      "what": "Canada Post: six-character postal codes use ANA NAN, separating forward sortation area and local delivery unit.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www150.statcan.gc.ca/n1/pub/92-154-g/92-154-g2017001-eng.htm",
+      "what": "Statistics Canada PCCF reference guide: postal codes omit D, F, I, O, Q, U; the first position also omits W and Z. Format only, not address validation.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/justice-and-public-safety/types-of-businesses",
+      "what": "Government of PEI: sole proprietorship, partnership, cooperative and corporation; incorporation can be provincial or federal. Province-specific formation rules are not generalized.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://laws-lois.justice.gc.ca/eng/acts/O-3.01/FullText.html",
+      "what": "Official Languages Act: federal English/French language status; provincial language regimes differ.",
+      "accessed": "2026-11-01",
+      "verification": "Official indexed text checked."
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/french-in-quebec",
+      "what": "Quebec government: French is the official and common language under the Charter of the French Language.",
+      "accessed": "2026-11-01",
+      "verification": "Official indexed excerpt checked; hub legal copy still needs counsel."
+    }
+  ]
+}
