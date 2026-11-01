@@ -29,7 +29,7 @@ export function publicationView(p: PublicPublication, v: PublicPublication['curr
     ...(recorded?.credits.translation_reviewer ? [`${t('publicationProvenance.reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
     ...(recorded?.roles.length ? [`${t('publicationProvenance.declaredRoles')}: ${recorded.roles.map(role => t(`publicationProvenance.roles.${role}`)).join(' · ')}`] : []),
     ...(recorded?.translation?.stale ? [t('publicationProvenance.stale')] : []),
-    ...(v.language !== currentLocale() ? [t('content.original', { language: v.language })] : []),
+    ...(recorded?.translation || v.language !== currentLocale() ? [t('content.original', { language: recorded?.translation?.originalLanguage ?? v.language })] : []),
     ...(v.assistantAssisted || p.authorship.some(a => a.assistantAssisted) ? [t('articles.assistantAssisted')] : []),
     ...(translation?.machineAssisted ? [t('content.machineTranslation')] : []),
     ...(p.retraction ? [t('content.retracted', { note: p.retraction.note })] : []),
