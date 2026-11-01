@@ -3,7 +3,7 @@ import { columnsOf, type TableColumns, type Timestamp, type GeneratedTimestamp }
 type Json = ColumnType<unknown, string, string>;
 interface Version { id: Generated<string>; created_at: GeneratedTimestamp; expires_at: Timestamp; revoked_at: Timestamp | null }
 export interface PaymentSourceRegistrationTable extends Version {
-  hub_id: string; connection_id: string; fact: 'identity_link' | 'account' | 'publisher'; payload: Json; digest: string;
+  hub_id: string; connection_id: string | null; fact: 'identity_link' | 'account' | 'publisher' | 'outside_platform_publisher'; payload: Json; digest: string;
   proposed_by: string; proposed_epoch: number; proposed_elevation_id: string;
 }
 export interface PaymentAdapterActivationTable {
@@ -29,7 +29,16 @@ export interface PaymentAuthorizationVersionTable extends Version {
 export interface PaymentAuthorizationAcceptanceTable { authorization_id: string; person_id: string; session_id: string; person_epoch: number; digest: string; created_at: GeneratedTimestamp }
 export interface PaymentSourceVersionTable extends Version { authorization_id: string; agreement_id: string; binding: Json; digest: string }
 export interface PaymentSourceCurrentTable { agreement_id: string; source_version_id: string }
+export interface PaymentOutsideVersionTable extends Version {
+  agreement_id: string; payer_id: string; payee_id: string; publisher_registration_id: string;
+  input: Json; snapshot: Json; digest: string; created_by: string; created_session_id: string; created_epoch: number;
+}
+export interface PaymentOutsideAcceptanceTable {
+  decision_id: string; person_id: string; session_id: string; person_epoch: number; digest: string; created_at: GeneratedTimestamp;
+}
 export interface PaymentSourcesDatabase {
+  payment_outside_platform_version: PaymentOutsideVersionTable;
+  payment_outside_platform_acceptance: PaymentOutsideAcceptanceTable;
   payment_source_registration: PaymentSourceRegistrationTable;
   payment_adapter_activation: PaymentAdapterActivationTable;
   payment_source_challenge: PaymentSourceChallengeTable;
@@ -50,6 +59,8 @@ declare module './index.js' {
 const columns = columnsOf<PaymentSourcesDatabase>();
 const version = ['id', 'created_at', 'expires_at', 'revoked_at'] as const;
 export const TABLE_COLUMNS: TableColumns<PaymentSourcesDatabase> = {
+  payment_outside_platform_version: columns('payment_outside_platform_version', [...version, 'agreement_id', 'payer_id', 'payee_id', 'publisher_registration_id', 'input', 'snapshot', 'digest', 'created_by', 'created_session_id', 'created_epoch']),
+  payment_outside_platform_acceptance: columns('payment_outside_platform_acceptance', ['decision_id', 'person_id', 'session_id', 'person_epoch', 'digest', 'created_at']),
   payment_source_registration: columns('payment_source_registration', [...version, 'hub_id', 'connection_id', 'fact', 'payload', 'digest', 'proposed_by', 'proposed_epoch', 'proposed_elevation_id']),
   payment_adapter_activation: columns('payment_adapter_activation', ['registration_id', 'approval_id', 'activated_by', 'reviewer_id', 'reviewer_elevation_id', 'created_at']),
   payment_source_challenge: columns('payment_source_challenge', ['id', 'person_id', 'session_id', 'person_epoch', 'hub_id', 'connection_id', 'identity_registration_id', 'account_registration_id', 'purpose', 'nonce', 'nonce_digest', 'created_at', 'expires_at']),

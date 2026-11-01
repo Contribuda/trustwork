@@ -5,6 +5,7 @@ import { Client, type Harness, type Response } from '../backend/helpers/app.js';
 import { PAYMENT_SOURCE_PERMISSIONS, type PaymentAdapterRegistration, type PaymentAuthorizationView, type PaymentSourceAssertion } from '../../packages/contracts/src/payment-sources.js';
 import { approvals, staffAssignments, staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
 import { paymentSources } from '../../packages/data/src/repositories/payment-sources.js';
+import { providerConnections } from '../../packages/data/src/repositories/providers.js';
 import { hubConfig } from '../../packages/data/src/repositories/hubs.js';
 import { configActivationDigestInput } from '../../packages/contracts/src/hub-core.js';
 import { paymentHub, paymentVerifier, agreement, ok } from './helpers.js';
@@ -24,13 +25,13 @@ import { OutboxRelay } from '../../apps/worker/src/relay.js';
 import { JobRunner } from '../../apps/worker/src/runner.js';
 
 /** Synthetic signed issuers use installation-only registration; no final source projection is inserted by a test. */
-export async function sourceWorld(h: Harness) {
-  const hub = await paymentHub(h), { a, w } = hub;
+export async function sourceWorld(h: Harness, slug?: string) {
+  const hub = await paymentHub(h, slug), { a, w } = hub;
   const q = async (query: string, args: unknown[] = []) => (await h.db.admin.query(query, args)).rows;
   await withMaintenance(h.db.admin, async (trx) => {
     for (const role of ['hub-owner', 'compliance-officer', 'moderator'] as const) {
       const def = PROVIDER_DEFINITIONS.find((d) => d.role === role)!;
-      await staffRoleDefinitions.release(trx, { ...def, version: 30, permissions: [...def.permissions, ...PAYMENT_SOURCE_PERMISSIONS], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+      if (!await trx.selectFrom('staff_role_definition_version').select('role').where('role', '=', role).where('version', '=', 30).executeTakeFirst()) await staffRoleDefinitions.release(trx, { ...def, version: 30, permissions: [...def.permissions, ...(role === 'hub-owner' || role === 'compliance-officer' ? ['admin.hub.payments.edit' as const] : []), ...PAYMENT_SOURCE_PERMISSIONS], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     }
   });
   for (const [key, role] of [['owner', 'hub-owner'], ['officer', 'compliance-officer'], ['moderator', 'moderator']] as const) {
@@ -56,10 +57,10 @@ export async function sourceWorld(h: Harness) {
   };
   const install = async <T>(fn: Parameters<typeof withPrincipal<T>>[2]) => withPrincipal(h.db.admin, await a.principal(w.people.owner), fn);
   const issuers = {} as Record<'identity_link' | 'account' | 'publisher', { id: string; input: PaymentAdapterRegistration; privateKey: ReturnType<typeof generateKeyPairSync>['privateKey'] }>;
-  const registerIssuer = async (fact: 'identity_link' | 'account' | 'publisher') => {
+  const registerIssuer = async (fact: 'identity_link' | 'account' | 'publisher', version = 1) => {
     const keys = generateKeyPairSync('ed25519');
     const input: PaymentAdapterRegistration = { schemaVersion: 1, hubId: hub.hubId, connectionId: hub.connectionId, fact,
-      implementationDigest: createHash('sha256').update(`synthetic-${fact}-v1`).digest('hex'), algorithm: 'ed25519', keyId: `synthetic-${fact}`,
+      implementationDigest: createHash('sha256').update(`synthetic-${fact}-v${version}`).digest('hex'), algorithm: 'ed25519', keyId: `synthetic-${fact}`,
       publicKey: keys.publicKey.export({ format: 'pem', type: 'spki' }).toString(), evidenceMode: 'synthetic', expiresAt: new Date(Date.now() + 86400000).toISOString() };
     const ctx = await a.elevate(w.people.owner);
     const proposal = await install((trx) => paymentSources.proposeAdapter(trx, ctx, input));
@@ -132,10 +133,24 @@ export async function sourceWorld(h: Harness) {
     const budget = (await q('SELECT transaction_budget_id FROM trustwork.commercial_order WHERE agreement_id=$1', [accepted.id]))[0]!;
     return { authorization, body, payment: { agreementId: accepted.id, budgetId: budget.transaction_budget_id as string }, payer, payee };
   };
+  const registerDecisionPublisher = async () => {
+    const ctx = await a.elevate(w.people.owner);
+    const registration = await install((trx) => paymentSources.proposeAdapter(trx, ctx, { schemaVersion: 2, hubId: hub.hubId, fact: 'outside_platform_publisher',
+      implementationDigest: createHash('sha256').update('synthetic-outside-platform-publisher-v1').digest('hex'), evidenceMode: 'synthetic', expiresAt: new Date(Date.now() + 86400000).toISOString() }));
+    const approval = await approveDigest(w.people.owner, w.people.officer, 'payments.register_source_adapter', registration.digest);
+    await install((trx) => paymentSources.activateAdapter(trx, ctx, registration.id, approval));
+    return registration;
+  };
+  const providerEnabled = async (enabled: boolean) => a.cmd(w.people.owner, async (trx, ctx) => {
+    const connection = (await providerConnections.get(trx, hub.connectionId))!;
+    if ((connection.status === 'enabled') === enabled) return;
+    if (enabled) await providerConnections.enable(trx, ctx, connection.id, connection.revision, null);
+    else await providerConnections.disable(trx, ctx, connection.id, connection.revision);
+  });
   const registry = new HandlerRegistry(); registerPayments(registry, runtime);
   const deps = { pool, registry, config: defaultWorkerConfig({ concurrency: 1, relayBatchSize: 1000 }), metrics: new Metrics(), log: () => {} };
   const relay = new OutboxRelay(deps), runner = new JobRunner(deps);
-  return { ...hub, issuers, registerIssuer, runtime, pool, fake, q, send, challenge, bind, fresh, staffClient, approveDigest, install, relay, runner,
+  return { ...hub, registerDecisionPublisher, providerEnabled, issuers, registerIssuer, runtime, pool, fake, q, send, challenge, bind, fresh, staffClient, approveDigest, install, relay, runner,
     tick: async () => { await relay.relayOnce(); await runner.tick(); await runner.idle(); },
     async close() { for (const app of staffApps) await app.close(); await ingress.close(); await sourcePool.end(); await verifier.close(); await pool.end(); await worker.close();
       await h.db.admin.query(`REVOKE ALL ON FUNCTION trustwork.payments_source_verifier_registration(uuid),trustwork.payments_source_record_assertion(jsonb) FROM ${role}`);

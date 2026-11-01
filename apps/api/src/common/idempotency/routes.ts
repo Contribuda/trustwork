@@ -451,6 +451,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'comms.template_draft': IN_TRANSACTION,
   'comms.template_activate': IN_TRANSACTION,
   // PAY-001
+  'payments.outside_draft': IN_TRANSACTION,
+  'payments.outside_accept': IN_TRANSACTION,
   'payments.source_challenge': IN_TRANSACTION,
   'payments.authorization_draft': IN_TRANSACTION,
   'payments.authorization_accept': IN_TRANSACTION,
