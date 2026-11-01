@@ -359,7 +359,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
       // Even the SQL producer independently refuses the wrong hub.
       assert.deepEqual(await tx((trx) => comms.produce(trx, dueId(b), hubId, 'Wrong hub copy')), []);
       const ticks = await Promise.all([processA.command<string[]>('tick'), processB.command<string[]>('tick')]);
-      assert.deepEqual(ticks, [[`consultation.reminders.${hubId}`], [`consultation.reminders.${otherHub}`]], 'both source hubs own an independent scheduler slot');
+      assert.deepEqual(ticks, [[`consultation.reminders.${hubId.replaceAll('-', '')}`], [`consultation.reminders.${otherHub.replaceAll('-', '')}`]], 'both source hubs own an independent scheduler slot');
       const messages = (await h.db.admin.query('SELECT r.id,m.body FROM trustwork.consultation_reminder r JOIN trustwork.message m ON m.id=r.message_id WHERE r.id=ANY($1::uuid[])', [[dueId(a), dueId(b)]])).rows;
       assert.equal(messages.find((r) => r.id === dueId(a)).body, texts.en!.body);
       assert.equal(messages.find((r) => r.id === dueId(b)).body, `B ${texts.en!.body}`);
