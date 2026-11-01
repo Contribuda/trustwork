@@ -1,3 +1,6 @@
+import type { CapabilityAuthority } from '../agent-modules/authority.js';
+import { bindServiceCapabilities } from '../agent-modules/service-bindings.js';
+import { CONSULTATION_SERVICE_BINDINGS } from '../agent-modules/consultation-bindings.js';
 import { Module, type DynamicModule } from '@nestjs/common';
 import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
@@ -13,6 +16,7 @@ import { VersionedConsultationFees } from '../billing/fees/consultation-adapter.
 import { ScreeningCommitmentGate, type ConsultationCommissionPort, type ConsultationScreeningGate } from './ports.js';
 
 export interface ConsultationsModuleOptions {
+  capabilities?: CapabilityAuthority;
   /** Agent mandate check; defaults to "no mandate store", which refuses every agent request. */
   mandates?: ConsultationMandatePort;
   /** The hub's electronic-records policy; defaults to consent required with the engine's generic disclosure. */
@@ -26,10 +30,10 @@ export interface ConsultationsModuleOptions {
 @Module({})
 export class ConsultationsModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: ConsultationsModuleOptions = {}, env: NodeJS.ProcessEnv = process.env): DynamicModule {
-    const service = new ConsultationsService(
-      ctx, identity.principals, options.mandates ?? new NoConsultationMandates(), options.electronicRecords ?? new ConfiguredElectronicRecords(),
-      options.commission ?? new VersionedConsultationFees(staffHubFromEnv(env)), options.screening ?? new ScreeningCommitmentGate(), staffHubFromEnv(env),
-    );
+    const service = bindServiceCapabilities(ctx, identity.principals, CONSULTATION_SERVICE_BINDINGS, (principals, publicBoundary) => new ConsultationsService(
+      ctx, principals, options.mandates ?? new NoConsultationMandates(), options.electronicRecords ?? new ConfiguredElectronicRecords(),
+      options.commission ?? new VersionedConsultationFees(staffHubFromEnv(env)), options.screening ?? new ScreeningCommitmentGate(), staffHubFromEnv(env), publicBoundary,
+    ), options.capabilities);
     return {
       module: ConsultationsModule,
       controllers: [

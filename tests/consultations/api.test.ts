@@ -100,6 +100,8 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
   t.after(() => h.close());
   await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
+  // Synthetic verified-company eligibility for the governed agent modules; no product badge is fabricated.
+  await withMaintenance(h.db.admin, trx => trx.updateTable('company').set({ claim_status: 'verified' }).where('id', 'in', Object.values(seed.companies)).execute());
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   // Anna (mixed company) runs its design office: she may edit the catalogue and manage deals.
   await withMaintenance(h.db.admin, (trx) => trx.updateTable('membership').set({ permissions: ['company.page.edit', 'company.members.manage', 'company.deals.manage', 'company.catalogue.edit', 'company.publish'] }).where('id', '=', seed.memberships.anna).execute());

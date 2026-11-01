@@ -92,12 +92,12 @@ export class AppModule {
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles), capabilities }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),
-        TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks), ...(communications.env ? {env: communications.env} : {}), ...(taskFees ? { fees: taskFees } : {}) }),
+        TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks), capabilities, ...(communications.env ? {env: communications.env} : {}), ...(taskFees ? { fees: taskFees } : {}) }),
         ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution), capabilities }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity, { capabilities }),
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
-        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
+        ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), capabilities, ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
         ContentModule.forRoot(ctx, identity),
         AgentModulesModule.forRoot(ctx, identity, { authority: capabilities }), // AGT-003
         AssistantModule.forRoot(ctx, identity, { capabilityGate: agentRuntimeGate(capabilities) }),

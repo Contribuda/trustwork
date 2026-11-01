@@ -10,3 +10,5 @@ export { PROFILE_KEEPER_MANIFEST } from '../../../../../packages/contracts/src/p
 export { REPUTATION_BUILDER_MANIFEST } from '../../../../../packages/contracts/src/reputation-builder.js';
 export { TASK_MARKETPLACE_MANIFEST } from '../../../../../packages/contracts/src/tasks.js';
 export { EXECUTION_EVIDENCE_MANIFEST } from '../execution/contracts.js';
+
+export { CONSULTATION_MANIFEST } from '../../../../../packages/contracts/src/consultations.js';
