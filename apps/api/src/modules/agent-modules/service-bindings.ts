@@ -55,7 +55,7 @@ export function bindServiceCapabilities<T extends object>(
         const value: unknown = Reflect.get(target, key);
         return typeof value === 'function' ? value.bind(target) : value;
       }
-      return <R>(state: RequestState, execute: (trx: Transaction, principal: Principal) => Promise<R>): Promise<R> => {
+      return <R>(state: RequestState, execute: (trx: Transaction, principal: Principal) => Promise<R>, options?: Parameters<PrincipalService['runAs']>[2]): Promise<R> => {
         const current = invocation.getStore();
         if (!current) throw new ApiError('access.forbidden', 'service operation has no capability binding', { reason: 'capability.unknown' });
         return target.runAs(state, async (trx, principal) => {
@@ -77,7 +77,7 @@ export function bindServiceCapabilities<T extends object>(
           for (const check of checks) await requireParticipantCapability(ctx, trx, principal, check.capabilityId, check.companyId, authority);
           await lockAuthenticated(trx, state, principal);
           return execute(trx, principal);
-        });
+        }, options);
       };
     },
   });
