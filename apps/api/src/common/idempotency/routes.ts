@@ -98,6 +98,11 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'bookmark.add': IN_TRANSACTION,
   'bookmark.remove': IN_TRANSACTION,
   'reading_progress.record': IN_TRANSACTION,
+  // PROV-001: first-party provenance decisions.
+  'provenance.declare': IN_TRANSACTION,
+  'provenance.review': IN_TRANSACTION,
+  'provenance.consent': IN_TRANSACTION,
+  'provenance.revoke': IN_TRANSACTION,
   // KEYS-001: provider connections, egress, routes, caps, cost records and kill switches. Every route runs in one
   // PrincipalService.runAs transaction through a providers_* SECURITY DEFINER command that writes its audit and change-log
   // rows there (a two-person action without an approval writes the approval request instead). A connection test calls

@@ -3234,7 +3234,7 @@
       "id": "PROV-001",
       "title": "AI provenance and labelling for text, translations and images",
       "area": "trust-safety",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "CNT-001"
       ],

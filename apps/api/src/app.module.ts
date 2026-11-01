@@ -23,6 +23,7 @@ import { privacyExportPort } from './privacy-exporters.js';
 import type { PrivacyOwningPorts } from './privacy-module-exporters.js';
 import { PrivacyModule } from './modules/platform-admin/privacy/privacy.module.js';
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
+import { ProvenanceModule } from './modules/content/provenance/provenance.module.js';
 import { ProvidersModule } from './modules/providers/providers.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
@@ -83,6 +84,7 @@ export class AppModule {
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
         PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity, files, { compliance: privacyCompliance, support: (principals) => new SupportService(ctx, principals) })),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
+        ProvenanceModule.forRoot(identity),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),
         TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks), ...(communications.env ? {env: communications.env} : {}), ...(taskFees ? { fees: taskFees } : {}) }),
