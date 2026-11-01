@@ -12,7 +12,7 @@ type Company = { id: string; handle: string | null; name: string; origin: string
 type MyProject = { id: string; handle: string | null; relation: 'owner' | 'participant'; owner: { kind: string; id: string }; published: boolean };
 const COMPANY_KEYS = ['claimStatus', 'handle', 'id', 'legalIdentifiers', 'name', 'origin', 'publicDescription'];
 const PERSON_KEYS = ['displayName', 'handle', 'id', 'publicProfile'];
-const PROJECT_KEYS = ['handle', 'id', 'name', 'openNeedIds', 'publicParticipantIds', 'publishedStory', 'status', 'summary'];
+const PROJECT_KEYS = ['handle', 'id', 'name', 'openNeedIds', 'publicOwner', 'publicParticipantIds', 'publishedStory', 'status', 'summary'];
 const MY_PROJECT_KEYS = ['createdAt', 'handle', 'id', 'leaderPersonId', 'name', 'owner', 'published', 'relation', 'status', 'summary'];
 /** Values that exist only in private columns of the seeded rows; no directory response may contain them. */
 const PRIVATE_MARKERS = ['owner_private', 'internalNotes', 'internal_notes', 'billingAccountId', 'privateNotes', 'private_notes', 'emailBindings', 'example.invalid', 'verifiedDomains', 'membershipRequests', 'budgets', 'tokenHash'];
@@ -275,5 +275,43 @@ test('directory API: company creation, handles with redirects, keyset directorie
     assert.ok(nameless, 'listed like any public profile');
     assert.equal(nameless.displayName, null, 'no name is invented; clients render personPage.unnamed');
     noPrivateMarkers(await anonymous.get('/v1/people?limit=100'));
+  });
+
+  // Runs last: it publishes more projects, which the earlier subtests do not expect.
+  await t.test('QA-002 D2: the public projection names the owner (a company, or a person with a public consented profile); a company lists its published projects', async () => {
+    const nameOf = async (table: 'company' | 'person', id: string) => (await admin.query<{ display_name: string }>(`SELECT display_name FROM trustwork.${table} WHERE id = $1`, [id])).rows[0]!.display_name;
+    const companyOwner = { kind: 'company', id: seed.companies.mixed, name: await nameOf('company', seed.companies.mixed), handle: 'mixed-facades' };
+    for (const client of [anonymous, petr, anna, xenia]) {
+      const listed = (await walk<{ id: string; publicOwner: unknown }>(client, '/v1/projects', 100)).find((p) => p.id === mixedPublic);
+      assert.deepEqual(listed?.publicOwner, companyOwner, 'the directory names the owning company');
+      assert.deepEqual(ok<{ item: { publicOwner: unknown } }>(await client.get('/v1/projects/by-handle/facade-retrofit')).item.publicOwner, companyOwner);
+      const read = ok<{ projection: string; project: { publicOwner?: unknown } }>(await client.get(`/v1/projects/${mixedPublic}`));
+      if (read.projection === 'public') assert.deepEqual(read.project.publicOwner, companyOwner, 'the public read names it too');
+      const page = ok<Page<{ id: string }>>(await client.get(`/v1/companies/${seed.companies.mixed}/projects?limit=100`));
+      assert.deepEqual(page.items.map((p) => p.id), [mixedPublic], 'the company page lists published projects only, never the private one');
+      keysOf(page.items, PROJECT_KEYS);
+      noPrivateMarkers(await client.get(`/v1/companies/${seed.companies.mixed}/projects`));
+    }
+    assert.equal(ok<{ projection: string }>(await anonymous.get(`/v1/projects/${mixedPublic}`)).projection, 'public');
+    assert.deepEqual(ok<Page<unknown>>(await anonymous.get(`/v1/companies/${roofing.id}/projects`)).items, [], 'a company without published projects lists none');
+    expectError(await anonymous.get('/v1/companies/00000000-0000-4000-8000-000000000000/projects'), 404, 'access.not_found');
+    expectError(await anonymous.get('/v1/companies/not-a-uuid/projects'), 404, 'access.not_found');
+
+    // Person owners: named only with a public profile and a live profile_public consent; otherwise null, never the raw party.
+    const pureProject = ok<{ id: string }>(await pure.post('/v1/projects', { owner: { kind: 'person', id: seed.people.pure }, name: 'Pure builder house', summary: null, leaderPersonId: null }), 201).id;
+    const petrProject = ok<{ id: string }>(await petr.post('/v1/projects', { owner: { kind: 'person', id: seed.people.petr }, name: 'Private profile house', summary: null, leaderPersonId: null }), 201).id;
+    await withMaintenance(admin, (trx) => trx.updateTable('project').set({ publicity_enabled: true }).where('id', 'in', [pureProject, petrProject]).execute());
+    const personOwner = { kind: 'person', id: seed.people.pure, name: await nameOf('person', seed.people.pure), handle: 'pure-builder' };
+    for (const client of [anonymous, xenia]) {
+      const listed = await walk<{ id: string; publicOwner: unknown }>(client, '/v1/projects', 100);
+      assert.deepEqual(listed.find((p) => p.id === pureProject)?.publicOwner, personOwner, 'a consenting public person is named');
+      assert.equal(listed.find((p) => p.id === petrProject)?.publicOwner, null, 'a private profile stays unnamed');
+      const read = await client.get(`/v1/projects/${petrProject}`);
+      assert.equal(ok<{ project: { publicOwner: unknown } }>(read).project.publicOwner, null);
+      assert.ok(!JSON.stringify(read.body).includes(seed.people.petr), 'the owner party of a private person never leaks');
+    }
+    await withMaintenance(admin, (trx) => trx.updateTable('consent_record').set({ withdrawn_at: new Date(), withdrawn_reason: 'synthetic withdrawal' }).where('subject_person_id', '=', seed.people.pure).where('purpose', '=', 'profile_public').where('withdrawn_at', 'is', null).execute());
+    const after = await walk<{ id: string; publicOwner: unknown }>(anonymous, '/v1/projects', 100);
+    assert.equal(after.find((p) => p.id === pureProject)?.publicOwner, null, 'a withdrawn consent hides the person again');
   });
 });

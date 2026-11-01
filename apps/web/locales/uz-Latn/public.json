@@ -156,5 +156,21 @@
     "validity": "Amal qiladi",
     "expired": "Muddati oʻtgan",
     "certificatesEmpty": "Sertifikatlar va ruxsatnomalar eʼlon qilinmagan."
+  },
+  "legal": {
+    "kicker": "Huquqiy ma’lumot",
+    "terms": {
+      "title": "Foydalanish shartlari",
+      "draftBody": "Bu hubda foydalanish shartlarining hech bir versiyasi hali kuchda emas. Matn tayyorlanmoqda va yurist tekshiruvidan keyin shu yerda e’lon qilinadi."
+    },
+    "privacy": {
+      "title": "Maxfiylik siyosati",
+      "draftBody": "Bu hubda maxfiylik siyosatining hech bir versiyasi hali kuchda emas. Matn tayyorlanmoqda va yurist tekshiruvidan keyin shu yerda e’lon qilinadi."
+    },
+    "draftTitle": "Qoralama: kuchda emas",
+    "draftNoAgreement": "Bu sahifada versiya e’lon qilinmaguncha, bu joylashtirish oldindan ko‘rish uchun va undagi hech narsa majburiy kelishuv emas.",
+    "inForce": "{version}-versiya, {date} dan beri kuchda",
+    "otherLanguage": "Bu matn faqat shu tilda e’lon qilingan: {language}.",
+    "digest": "Matn izi ({algorithm}): {digest}"
   }
 }

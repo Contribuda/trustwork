@@ -5,7 +5,7 @@ import { IdSchema, NameSchema, TextSchema, TimestampSchema } from './common/ids.
 import { CursorSchema, decodeCursor, encodeCursor, PAGE_LIMIT_MAX, pageSchema } from './common/pagination.js';
 import { pickFields } from './common/projection.js';
 import { PublicPersonSchema, toPublicPerson, type Person } from './identity.js';
-import { ProjectStatusSchema, PublicProjectSchema, toPublicProject, type Project } from './projects.js';
+import { ProjectStatusSchema, PublicProjectSchema, toPublicProject, type Project, type PublicProjectOwner } from './projects.js';
 
 /**
  * Directory contracts (BE-003, ADR 012 decision 18): public handles for people, companies and projects, company
@@ -103,9 +103,9 @@ export function toCompanyDirectoryEntry(record: Pick<CompanyDirectoryEntry, (typ
 
 export const ProjectDirectoryEntrySchema = PublicProjectSchema.extend({ handle: HandleSchema.nullable() });
 export type ProjectDirectoryEntry = z.infer<typeof ProjectDirectoryEntrySchema>;
-/** Published projects only; prices, files, notes, budgets and participants never pass. */
-export function toProjectDirectoryEntry(project: Project, handle: string | null): ProjectDirectoryEntry | null {
-  const pub = toPublicProject(project);
+/** Published projects only; prices, files, notes, budgets and participants never pass. The owner only as `publicOwner`. */
+export function toProjectDirectoryEntry(project: Project, handle: string | null, publicOwner: PublicProjectOwner | null = null): ProjectDirectoryEntry | null {
+  const pub = toPublicProject(project, publicOwner);
   return pub ? ProjectDirectoryEntrySchema.parse({ ...pub, handle }) : null;
 }
 

@@ -39,6 +39,12 @@ export class DirectoryController {
     return this.directory.projects(query, state);
   }
 
+  /** Published projects of a company for its public page (QA-002 D2): the same public projection for every caller. */
+  @Get('companies/:id/projects')
+  companyProjects(@Params(IdParams) params: z.infer<typeof IdParams>, @Query(DirectoryPageQuerySchema) query: DirectoryPageQuery) {
+    return this.directory.companyProjects(params.id, query);
+  }
+
   @Get('me/projects') @Authenticated()
   myProjects(@Query(DirectoryPageQuerySchema) query: DirectoryPageQuery, @ReqState() state: RequestState) {
     return this.directory.myProjects(query, state);

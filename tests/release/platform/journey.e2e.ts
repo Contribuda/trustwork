@@ -124,28 +124,37 @@ test('sign-up, e-mail verification, company, colleague invitation, project publi
     await expect(page.getByText(t('company.inviteForm.sent'))).toBeVisible();
   });
 
-  await test.step('the invitation mail arrives over SMTP; the colleague accepts with the mailed token', async () => {
-    const { link } = await waitForMail(colleagueEmail, /^\/invitations\//);
+  await test.step('the invitation mail arrives over SMTP; the colleague opens the mailed link and accepts on its page', async () => {
+    const { mail, link } = await waitForMail(colleagueEmail, /^\/invitations\//);
     expect(link.origin).toBe(STACK_ORIGIN);
+    // QA-002 D5: the invitation is written in the invitee's own language (recorded when they verified the address).
+    expect(mail.language?.split('-')[0], 'the invitation mail is in the invitee\'s language').toBe(language);
     const [, , membershipId, rawToken] = link.pathname.split('/');
     expect(membershipId).toMatch(/^[0-9a-f-]{36}$/);
-    // Known defect QA-002-D1 (docs/quality/release/platform.md): the web app has no page at the mailed invitation path
-    // and the link does not name the company the accept route needs. Record what the link opens, then accept the way
-    // that page would, through the same-origin API with the colleague's session.
+    // QA-002 D1 fixed: the mailed link opens the invitation page, which shows the company (checked without spending the
+    // token) and accepts with one button; the link needs no company id.
     const opened = await colleague.goto(link.pathname);
-    info.annotations.push({ type: 'invitation-link-status', description: String(opened?.status()) });
-    const accept = await colleague.request.post(`/v1/companies/${companyId}/memberships/accept`, {
-      headers: { ...SAME_ORIGIN, 'Idempotency-Key': `release-accept-${stamp}` },
-      data: { membershipId, invitationToken: decodeURIComponent(rawToken!) },
-    });
-    expect(accept.status(), await accept.text()).toBe(200);
-    expect(((await accept.json()) as { status: string }).status).toBe('active');
-    // A second use of the same token is refused.
-    const again = await colleague.request.post(`/v1/companies/${companyId}/memberships/accept`, {
+    expect(opened?.status()).toBe(200);
+    await expect(colleague.getByRole('heading', { level: 1, name: t('auth.invitation.title') })).toBeVisible();
+    await expect(colleague.getByText(companyName).first()).toBeVisible();
+    await shot(colleague, project, '05a-invitation');
+    const [accepted] = await Promise.all([
+      colleague.waitForResponse((r) => r.url().endsWith('/v1/invitations/accept') && r.request().method() === 'POST'),
+      colleague.getByRole('button', { name: t('auth.invitation.accept') }).click(),
+    ]);
+    expect(accepted.status(), await accepted.text()).toBe(200);
+    await expect(colleague.getByText(t('auth.invitation.accepted', { company: companyName }))).toBeVisible();
+    // A second use of the same link is refused, through the page's route and the company route alike.
+    const again = await colleague.request.post('/v1/invitations/accept', {
       headers: { ...SAME_ORIGIN, 'Idempotency-Key': `release-accept-again-${stamp}` },
       data: { membershipId, invitationToken: decodeURIComponent(rawToken!) },
     });
     expect(again.status()).toBe(404);
+    const viaCompany = await colleague.request.post(`/v1/companies/${companyId}/memberships/accept`, {
+      headers: { ...SAME_ORIGIN, 'Idempotency-Key': `release-accept-company-${stamp}` },
+      data: { membershipId, invitationToken: decodeURIComponent(rawToken!) },
+    });
+    expect(viaCompany.status()).toBe(404);
     await colleague.goto('/app/company');
     await expect(colleague.getByText(companyName).first()).toBeVisible();
     await expectNoFixtureData(colleague, 'colleague /app/company');
@@ -197,6 +206,8 @@ test('sign-up, e-mail verification, company, colleague invitation, project publi
     await check(`/projects/${projectId}`);
     await expect(visitor.getByRole('heading', { level: 1 })).toHaveText(projectName);
     await expect(visitor.getByText(story).first()).toBeVisible();
+    // QA-002 D2: the owner is the company, by name and link (no longer "Owner ?").
+    await expect(visitor.locator('.pj-owner__name').first()).toHaveText(companyName);
     await expectAccessible(visitor);
     await shot(visitor, project, '08-public-project');
     // Directories page their results; the search field narrows them to the new record.
@@ -205,11 +216,19 @@ test('sign-up, e-mail verification, company, colleague invitation, project publi
     await check(`/companies/${handle}`);
     await expect(visitor.getByRole('heading', { level: 1 })).toHaveText(companyName);
     await expect(visitor.getByText(t('status.registered')).first()).toBeVisible();
+    // QA-002 D2: the company page lists its published project.
+    await expect(visitor.locator('#projects').getByText(projectName).first()).toBeVisible();
     await expectAccessible(visitor);
     await shot(visitor, project, '09-public-company');
     await check(`/companies?q=${encodeURIComponent(companyName)}`);
     await expect(visitor.getByText(companyName).first()).toBeVisible();
     for (const path of ['/', '/projects', '/companies', '/people', '/news', '/events', `/search?q=${encodeURIComponent('Sample')}`]) await check(path);
+    // QA-002 D4: real legal pages; this stack serves no hub, so both say plainly that no version is in force.
+    for (const legal of ['terms', 'privacy']) {
+      await check(`/legal/${legal}`);
+      await expect(visitor.getByRole('heading', { level: 1 })).toHaveText(t(`legal.${legal}.title`));
+      await expect(visitor.getByText(t('legal.draftTitle'))).toBeVisible();
+    }
     await shot(visitor, project, '10-home');
     await anonymous.close();
   });

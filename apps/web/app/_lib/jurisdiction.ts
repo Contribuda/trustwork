@@ -12,7 +12,9 @@ import {
  *
  * - a page request (GET or HEAD, HTML, not a server action) from a restricted place renders `/restricted` in place, in
  *   the visitor's language; anything else is answered 451 with `jurisdiction.restricted`;
- * - the only open path is the refusal page itself (Next assets and icons never reach the proxy);
+ * - open doors (ADR 014 decision 6): the refusal page and its own assets, and the legal pages (`/legal/terms`,
+ *   `/legal/privacy`, in every language); see `jurisdictionOpenPath`. Everything else is refused, every other
+ *   `/_next/` path (the image optimizer) and repository media included (QA-002 D3);
  * - when the refused request carries a session cookie, the proxy relays it to the API (`/v1/jurisdiction/sighting`,
  *   with the visitor's address in `X-Forwarded-For`) so the API's gate, the single writer of holds, can hold the
  *   person; the API must trust this hop (`API_TRUSTED_PROXY_HOPS`, already required for rate limits). A failed relay
@@ -36,7 +38,22 @@ export function clientAddressOf(get: (name: string) => string | null): string | 
 
 export const JURISDICTION_REFUSAL_PATH = '/restricted';
 const OPEN_PATHS = new Set([JURISDICTION_REFUSAL_PATH]);
-export const jurisdictionOpenPath = (pathname: string): boolean => OPEN_PATHS.has(pathname.replace(/\/$/, '') || '/');
+/**
+ * The refusal page's own assets (QA-002 D3, decided with the SANC-001 rule "the refusal page and its assets stay open,
+ * everything else is refused"): the immutable build output under `/_next/static/` (the scripts, styles and fonts the
+ * refusal page loads; build code, never content or data) and the document's icons and web manifest. The proxy matcher
+ * (`apps/web/proxy.ts`) skips exactly these, so they never reach the gate; every other path, `/_next/image` included,
+ * goes through it. tests/jurisdiction/web-gate.test.ts checks that the two lists agree.
+ */
+export const REFUSAL_PAGE_ASSET_PREFIXES: readonly string[] = ['/_next/static/', '/icons/'];
+export const REFUSAL_PAGE_ASSET_FILES: readonly string[] = ['/favicon.ico', '/icon.svg', '/apple-icon.png', '/manifest.webmanifest'];
+export const refusalPageAsset = (pathname: string): boolean => REFUSAL_PAGE_ASSET_FILES.includes(pathname) || REFUSAL_PAGE_ASSET_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+/** The legal pages in every language: `/legal/terms`, `/legal/privacy`, `/<lang>/legal/...` (ADR 014 decision 6). */
+const LEGAL_PAGE = /^(?:\/[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*)?\/legal\/(?:terms|privacy)$/;
+export const jurisdictionOpenPath = (pathname: string): boolean => {
+  const path = pathname.replace(/\/$/, '') || '/';
+  return OPEN_PATHS.has(path) || LEGAL_PAGE.test(path) || refusalPageAsset(pathname);
+};
 
 type GateState = { gate: JurisdictionGate; broken: false } | { gate: null; broken: true };
 let cached: GateState | null = null;

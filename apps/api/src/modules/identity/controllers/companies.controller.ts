@@ -1,11 +1,12 @@
 import { Controller, Get, HttpCode, Inject, Post } from '@nestjs/common';
 import { z } from 'zod';
-import { AcceptMembershipCommandSchema, ChangeMembershipCommandSchema, EndMembershipCommandSchema, IdSchema, InviteMemberCommandSchema } from '../../../deps/contracts.js';
+import { AcceptMembershipCommandSchema, ChangeMembershipCommandSchema, EndMembershipCommandSchema, IdSchema, InvitationLinkCommandSchema, InviteMemberCommandSchema } from '../../../deps/contracts.js';
 import { auth } from '../../../deps/data.js';
 import { ApiError } from '../../../common/errors.js';
 import { Authenticated, Idempotent, ReqState, type RequestState } from '../../../common/request.js';
 import { Body, Params } from '../../../common/zod.js';
 import { APP_CONTEXT, type AppContext } from '../context.js';
+import { ReqLocales } from '../mail.js';
 import { MembershipService } from '../membership.service.js';
 import { publicPersonFromRow } from '../serializers.js';
 
@@ -37,13 +38,27 @@ export class CompaniesController {
   }
 
   @Post('companies/:id/memberships') @HttpCode(202) @Authenticated('step_up') @Idempotent('membership.invite', 'id')
-  invite(@Params(IdParams) params: z.infer<typeof IdParams>, @Body(InviteMemberCommandSchema) body: z.infer<typeof InviteMemberCommandSchema>, @ReqState() state: RequestState) {
-    return this.membershipsService.invite(params.id, body, state);
+  invite(@Params(IdParams) params: z.infer<typeof IdParams>, @Body(InviteMemberCommandSchema) body: z.infer<typeof InviteMemberCommandSchema>, @ReqState() state: RequestState, @ReqLocales() locales: string[]) {
+    return this.membershipsService.invite(params.id, body, state, locales);
   }
 
   @Post('companies/:id/memberships/accept') @HttpCode(200) @Authenticated() @Idempotent('membership.accept', 'id')
   accept(@Params(IdParams) params: z.infer<typeof IdParams>, @Body(AcceptMembershipCommandSchema) body: z.infer<typeof AcceptMembershipCommandSchema>, @ReqState() state: RequestState) {
     return this.membershipsService.accept(params.id, body, state);
+  }
+
+  /**
+   * The mailed invitation link (QA-002 D1): `/invitations/<membershipId>/<token>` carries no company id, so these routes
+   * resolve it from the membership. Preview checks the proof without spending it; accept spends it once.
+   */
+  @Post('invitations/preview') @HttpCode(200) @Authenticated()
+  previewInvitation(@Body(InvitationLinkCommandSchema) body: z.infer<typeof InvitationLinkCommandSchema>, @ReqState() state: RequestState) {
+    return this.membershipsService.previewLink(body, state);
+  }
+
+  @Post('invitations/accept') @HttpCode(200) @Authenticated() @Idempotent('membership.accept_link')
+  acceptInvitation(@Body(InvitationLinkCommandSchema) body: z.infer<typeof InvitationLinkCommandSchema>, @ReqState() state: RequestState) {
+    return this.membershipsService.acceptLink(body, state);
   }
 
   @Post('companies/:id/memberships/change') @HttpCode(200) @Authenticated('step_up') @Idempotent('membership.change', 'id')

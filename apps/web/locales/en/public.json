@@ -156,5 +156,21 @@
     "validity": "Valid",
     "expired": "Expired",
     "certificatesEmpty": "No certificates or permits published."
+  },
+  "legal": {
+    "kicker": "Legal",
+    "terms": {
+      "title": "Terms of use",
+      "draftBody": "No version of the terms of use is in force on this hub yet. The text is being prepared and will be published here after review by counsel."
+    },
+    "privacy": {
+      "title": "Privacy notice",
+      "draftBody": "No version of the privacy notice is in force on this hub yet. The text is being prepared and will be published here after review by counsel."
+    },
+    "draftTitle": "Draft: not in force",
+    "draftNoAgreement": "Until a version is published on this page, this deployment is a preview and nothing on it is a binding agreement.",
+    "inForce": "Version {version}, in force since {date}",
+    "otherLanguage": "This text is published in {language} only.",
+    "digest": "Text fingerprint ({algorithm}): {digest}"
   }
 }

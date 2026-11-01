@@ -1,10 +1,13 @@
 import {
   OwnershipTransferSchema, ProjectSchema, toParticipantProject, toPublicProject,
-  type Capability, type GrantAudience, type ObjectParticipation, type OwnershipTransfer, type ParticipantProject, type Party, type Principal, type Project, type PublicProject, type ResourceRef,
+  type Capability, type GrantAudience, type ObjectParticipation, type OwnershipTransfer, type ParticipantProject, type Party, type Principal, type Project, type PublicProject, type PublicProjectOwner, type ResourceRef,
 } from '../../deps/contracts.js';
 import { admission, admissionScopes, auditEvents, auth, leadershipAssignments, outbox, ownershipTransfers, participations, projects, type Transaction } from '../../deps/data.js';
 import type * as db from '../../deps/data.js';
+import { withoutPrincipal } from '../../common/db.js';
 import { ApiError } from '../../common/errors.js';
+import { directory } from '../directory/deps.js';
+import { toPublicOwner } from '../directory/directory.service.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import { LEADER_CAPABILITIES, OWNER_CAPABILITIES, type PolicyResource } from '../identity/policy/policy.js';
@@ -100,6 +103,12 @@ export class ProjectsService {
     });
   }
 
+  /** The public owner of a published project (QA-002 D2) through the owner-run directory lookup, or null. */
+  private async publicOwner(id: string): Promise<PublicProjectOwner | null> {
+    const [row] = await withoutPrincipal(this.ctx.pool, (trx) => directory.publicProjectOwners(trx, [id]));
+    return row ? toPublicOwner(row) : null;
+  }
+
   /** Projection by the highest readable layer; anonymous callers get the public projection through the owner-run lookup. */
   async get(id: string, state: RequestState): Promise<ProjectView> {
     if (!UUID.test(id)) throw new ApiError('access.not_found');
@@ -109,7 +118,7 @@ export class ProjectsService {
       const project = toPublicProject(ProjectSchema.parse({
         id: pub.id, owner: { kind: 'person', id: pub.id }, creatorPersonId: pub.id, leaderPersonId: null, name: pub.name, summary: pub.summary, status: pub.status,
         publicity: { enabled: true, publishedStory: pub.published_story, openNeedIds: [], publicParticipantIds: [] }, milestones: [], sharedFiles: [], baselinePlanId: null, budgets: [], participantIds: [], privateFiles: [], privateNotes: null, revision: pub.revision, createdAt: new Date(0).toISOString(),
-      }));
+      }), await this.publicOwner(pub.id));
       if (!project) throw new ApiError('access.not_found');
       return { projection: 'public', project };
     }
@@ -120,7 +129,7 @@ export class ProjectsService {
       const full = toProject(row, rows);
       if (readable.projection === 'owner_private' || readable.projection === 'staff_case') return { projection: 'owner_private', project: full };
       if (readable.projection === 'public') {
-        const project = toPublicProject(full);
+        const project = toPublicProject(full, await this.publicOwner(full.id));
         if (!project) throw new ApiError('access.not_found');
         return { projection: 'public', project };
       }

@@ -15,6 +15,7 @@ import {
   PublicPersonProfileSchema,
   PublicPersonSchema,
   PublicProjectSchema,
+  PublicLegalDocumentsSchema,
   handleLookupSchema,
   ParticipantProjectSchema,
   SessionViewSchema,
@@ -24,7 +25,7 @@ import {
 import { notificationView } from '@/app/app/notifications/_lib/view';
 import { z } from 'zod';
 import type { DataPort, Handle } from '../port';
-import type { AuthenticatedPrincipal, CompanyWorkspaceView, HomeView, MeView, OverviewView, Principal, SettingsView, TopicKey, WorkspaceProjectDetail, WorkspaceProjectRow } from '../types';
+import type { AuthenticatedPrincipal, CompanyDetail, CompanyWorkspaceView, HomeView, MeView, OverviewView, Principal, ProjectCard, SettingsView, TopicKey, WorkspaceProjectDetail, WorkspaceProjectRow } from '../types';
 import { createTransport, type Transport } from './transport';
 import {
   fromDirectoryCompany,
@@ -160,13 +161,30 @@ export function createHttpDataPort(transport: Transport): DataPort {
     return body === null ? [] : ProjectDirectoryPageSchema.parse(body).items.map((entry) => toProjectCard(entry));
   }
 
+  /** The company's published projects (`GET /v1/companies/:id/projects`, QA-002 D2), newest first, at most one page. */
+  async function companyProjects(id: string): Promise<ProjectCard[]> {
+    const body = await publicGet(`/v1/companies/${segment(id)}/projects?limit=${LIST_LIMIT}`);
+    return body === null ? [] : ProjectDirectoryPageSchema.parse(body).items.map((entry) => toProjectCard(entry));
+  }
+
+  async function withProjects(detail: CompanyDetail): Promise<CompanyDetail> {
+    const projects = await companyProjects(detail.id);
+    return { ...detail, projects, projectsCount: projects.length };
+  }
+
   async function getCompany(handle: Handle) {
     if (UUID.test(handle)) {
       const body = await publicGet(`/v1/companies/${segment(handle)}`);
-      return body === null ? null : toCompanyDetail(await companyById(CompanyReadSchema.parse(body).company));
+      return body === null ? null : withProjects(toCompanyDetail(await companyById(CompanyReadSchema.parse(body).company)));
     }
     const body = await publicGet(`/v1/companies/by-handle/${segment(handle)}`);
-    return body === null ? null : toCompanyDetail(fromDirectoryCompany(CompanyLookupSchema.parse(body).item));
+    return body === null ? null : withProjects(toCompanyDetail(fromDirectoryCompany(CompanyLookupSchema.parse(body).item)));
+  }
+
+  /** Active legal texts of the hub (anonymous: the same for every visitor); an API without the route answers none. */
+  async function getLegalDocuments() {
+    const body = await publicGet('/v1/legal');
+    return body === null ? { hubConfigured: false, documents: [] } : PublicLegalDocumentsSchema.parse(body);
   }
 
   /**
@@ -336,6 +354,7 @@ export function createHttpDataPort(transport: Transport): DataPort {
     listRubricEntries: empty,
     listMagazineAuthors: empty,
     getIssue: none,
+    getLegalDocuments,
     getOverview,
     listRfqs: async (principal) => (person(principal), []),
     listLeads: async (principal) => (person(principal), []),

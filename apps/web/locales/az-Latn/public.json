@@ -156,5 +156,21 @@
     "validity": "Etibarlıdır",
     "expired": "Müddəti bitib",
     "certificatesEmpty": "Sertifikat və ya icazə dərc edilməyib."
+  },
+  "legal": {
+    "kicker": "Hüquqi məlumat",
+    "terms": {
+      "title": "İstifadə şərtləri",
+      "draftBody": "Bu hubda istifadə şərtlərinin heç bir versiyası hələ qüvvədə deyil. Mətn hazırlanır və hüquqşünas yoxlamasından sonra burada dərc olunacaq."
+    },
+    "privacy": {
+      "title": "Məxfilik siyasəti",
+      "draftBody": "Bu hubda məxfilik siyasətinin heç bir versiyası hələ qüvvədə deyil. Mətn hazırlanır və hüquqşünas yoxlamasından sonra burada dərc olunacaq."
+    },
+    "draftTitle": "Layihə: qüvvədə deyil",
+    "draftNoAgreement": "Bu səhifədə versiya dərc olunana qədər bu yerləşdirmə ilkin baxışdır və orada heç nə məcburi razılaşma deyil.",
+    "inForce": "Versiya {version}, {date} tarixindən qüvvədədir",
+    "otherLanguage": "Bu mətn yalnız bu dildə dərc olunub: {language}.",
+    "digest": "Mətnin izi ({algorithm}): {digest}"
   }
 }

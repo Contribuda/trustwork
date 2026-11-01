@@ -90,5 +90,13 @@ export function wouldRemoveLastAdministrator(target: Membership, companyMembersh
 
 export const InviteMemberCommandSchema = z.strictObject({ companyId: IdSchema, inviteeEmail: EmailSchema, role: MembershipRoleSchema, permissions: z.array(CompanyPermissionSchema) });
 export const AcceptMembershipCommandSchema = z.strictObject({ membershipId: IdSchema, invitationToken: z.string().min(16).max(256) });
+/**
+ * The invitation link of the mail, `/invitations/<membershipId>/<token>` (QA-002 D1): the membership and its mailbox
+ * proof, no company id. The API resolves the company from the membership; previewing never spends the proof.
+ */
+export const InvitationLinkCommandSchema = AcceptMembershipCommandSchema;
+/** What the invitee sees before accepting: the inviting company's public name and the offered role, nothing else. */
+export const InvitationPreviewSchema = z.strictObject({ membershipId: IdSchema, company: z.strictObject({ id: IdSchema, name: NameSchema }), role: MembershipRoleSchema });
+export type InvitationPreview = z.infer<typeof InvitationPreviewSchema>;
 export const ChangeMembershipCommandSchema = z.strictObject({ membershipId: IdSchema, role: MembershipRoleSchema, permissions: z.array(CompanyPermissionSchema), expectedRevision: RevisionSchema });
 export const EndMembershipCommandSchema = z.strictObject({ membershipId: IdSchema, reason: ShortTextSchema, expectedRevision: RevisionSchema });

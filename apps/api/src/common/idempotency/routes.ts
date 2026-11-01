@@ -29,6 +29,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
     reason: 'The response is a constant acknowledgement that must not reveal whether the address belongs to an account, so there is not always a request transaction to complete in; the mailbox proof is issued in its own owner-run transaction before it and the invitation mail is sent after COMMIT. A takeover after a crash re-issues a fresh proof and re-sends the mail; the membership row is not duplicated because a pending invitation is re-sent instead of inserted again.',
   },
   'membership.accept': IN_TRANSACTION,
+  // The mailed invitation link without a company id (QA-002 D1).
+  'membership.accept_link': IN_TRANSACTION,
   'membership.change': IN_TRANSACTION,
   'membership.end': IN_TRANSACTION,
   // Projects

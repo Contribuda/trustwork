@@ -1,4 +1,4 @@
-import { PersonSchema, ProjectSchema, type Party, type Principal } from '../../deps/contracts.js';
+import { PersonSchema, ProjectSchema, type Party, type Principal, type PublicProjectOwner } from '../../deps/contracts.js';
 import { auditEvents, companies, memberships, outbox, persons, projects, type Transaction } from '../../deps/data.js';
 import { withoutPrincipal } from '../../common/db.js';
 import { ApiError } from '../../common/errors.js';
@@ -11,7 +11,7 @@ import {
   CompanyDirectoryPageSchema, CompanyLookupSchema, CreateCompanyResultSchema, decodeDirectoryCursor, directory, encodeDirectoryCursor, HandleAssignmentSchema, HandleResolutionSchema, HandleSchema,
   MyProjectPageSchema, PersonDirectoryPageSchema, PersonLookupSchema, ProjectDirectoryPageSchema, ProjectLookupSchema, toCompanyDirectoryEntry, toMyProject, toPersonDirectoryEntry, toProjectDirectoryEntry,
   type CompanyDirectoryEntry, type CompanyDirectoryRow, type CreateCompanyCommand, type CreateCompanyResult, type DirectoryPage, type DirectoryPageQuery, type HandleAssignment, type HandleKind,
-  type HandleResolution, type MyProject, type MyProjectRow, type PersonDirectoryEntry, type PersonDirectoryRow, type ProjectDirectoryEntry, type ProjectDirectoryRow,
+  type HandleResolution, type MyProject, type MyProjectRow, type PersonDirectoryEntry, type PersonDirectoryRow, type ProjectDirectoryEntry, type ProjectDirectoryRow, type PublicProjectOwnerRow,
 } from './deps.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -52,13 +52,19 @@ function companyEntry(row: CompanyDirectoryRow): CompanyDirectoryEntry {
     legalIdentifiers: row.legal_identifiers as CompanyDirectoryEntry['legalIdentifiers'], publicDescription: row.public_description,
   });
 }
-function projectEntry(row: ProjectDirectoryRow): ProjectDirectoryEntry {
+/** Public owner row -> contract (QA-002 D2): only the public name and the current handle. */
+export function toPublicOwner(row: PublicProjectOwnerRow): PublicProjectOwner {
+  return row.owner_kind === 'company'
+    ? { kind: 'company', id: row.owner_id, name: row.owner_name ?? '', handle: row.owner_handle }
+    : { kind: 'person', id: row.owner_id, name: row.owner_name, handle: row.owner_handle };
+}
+function projectEntry(row: ProjectDirectoryRow, publicOwner: PublicProjectOwner | null = null): ProjectDirectoryEntry {
   const project = ProjectSchema.parse({
     id: row.id, owner: { kind: 'person', id: row.id }, creatorPersonId: row.id, leaderPersonId: null, name: row.name, summary: row.summary, status: row.status,
     publicity: { enabled: true, publishedStory: row.published_story, openNeedIds: [], publicParticipantIds: [] }, milestones: [], sharedFiles: [], baselinePlanId: null,
     budgets: [], participantIds: [], privateFiles: [], privateNotes: null, revision: 1, createdAt: row.sort_key,
   });
-  const entry = toProjectDirectoryEntry(project, row.handle);
+  const entry = toProjectDirectoryEntry(project, row.handle, publicOwner);
   if (!entry) throw new ApiError('access.not_found');
   return entry;
 }
@@ -115,10 +121,32 @@ export class DirectoryService {
     return CompanyDirectoryPageSchema.parse(this.paginate(rows, page, companyEntry));
   }
 
+  /**
+   * Public owners of published projects by id (QA-002 D2), through the owner-run lookup: the public projection is the
+   * same for every caller, so signed-in and anonymous reads use the same function. Absent ids have no public owner.
+   */
+  async publicOwners(ids: readonly string[]): Promise<Map<string, PublicProjectOwner>> {
+    const rows = await withoutPrincipal(this.ctx.pool, (trx) => directory.publicProjectOwners(trx, ids));
+    return new Map(rows.map((row) => [row.project_id, toPublicOwner(row)]));
+  }
+
   async projects(query: DirectoryPageQuery, state: RequestState): Promise<Page<ProjectDirectoryEntry>> {
     const page = this.page(query);
     const rows = await this.read(state, (trx) => directory.listProjects(trx, page), (trx) => directory.publicProjects(trx, page));
-    return ProjectDirectoryPageSchema.parse(this.paginate(rows, page, projectEntry));
+    const owners = await this.publicOwners(rows.map((r) => r.id));
+    return ProjectDirectoryPageSchema.parse(this.paginate(rows, page, (row) => projectEntry(row, owners.get(row.id) ?? null)));
+  }
+
+  /** Published projects of a company for its public page (QA-002 D2); an unknown company is not found. */
+  async companyProjects(companyId: string, query: DirectoryPageQuery): Promise<Page<ProjectDirectoryEntry>> {
+    if (!UUID.test(companyId)) throw new ApiError('access.not_found');
+    const page = this.page(query);
+    const rows = await withoutPrincipal(this.ctx.pool, async (trx) => {
+      if (!(await companies.getById(trx, companyId))) throw new ApiError('access.not_found');
+      return directory.publicCompanyProjects(trx, companyId, page);
+    });
+    const owners = await this.publicOwners(rows.map((r) => r.id));
+    return ProjectDirectoryPageSchema.parse(this.paginate(rows, page, (row) => projectEntry(row, owners.get(row.id) ?? null)));
   }
 
   /**
@@ -152,8 +180,10 @@ export class DirectoryService {
   lookupCompany(requested: string, state: RequestState) {
     return this.lookup('company', requested, state, directory.company, directory.company, companyEntry, CompanyLookupSchema);
   }
-  lookupProject(requested: string, state: RequestState) {
-    return this.lookup('project', requested, state, directory.project, directory.publicProject, projectEntry, ProjectLookupSchema);
+  async lookupProject(requested: string, state: RequestState) {
+    const found = await this.lookup('project', requested, state, directory.project, directory.publicProject, (row) => projectEntry(row), ProjectLookupSchema);
+    const owner = (await this.publicOwners([found.item.id])).get(found.item.id) ?? null;
+    return ProjectLookupSchema.parse({ ...found, item: { ...found.item, publicOwner: owner } });
   }
 
   private async lookup<R extends { handle: string | null }, E, S extends { parse(value: unknown): unknown }>(

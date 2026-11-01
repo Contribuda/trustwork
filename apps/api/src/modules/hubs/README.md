@@ -34,6 +34,7 @@ All mutations: CSRF header, `Idempotency-Key`, and a console command body (`cont
 | `GET /v1/admin/hubs/:hubId/legal`, `POST .../legal`, `POST .../legal/counsel-approvals`, `POST .../legal/:documentId/activate` | `admin.hub.legal.edit`; activation `admin.hub.legal.activate` and a second person | Legal document versions per kind and language, counsel approvals, activation |
 | `GET /v1/admin/hubs/:hubId/credentials`, `POST .../credentials`, `POST .../credentials/:id/activate`, `POST .../credentials/:id/retire` | `admin.providers.secret.write`; `admin.providers.toggle` | References to secrets; a non-fake provider needs a second person; activation rotates the previous reference |
 | `GET /v1/hubs/:hubId/legal`, `POST /v1/hubs/:hubId/legal/:documentId/accept` | any signed-in person | Active texts of a launched hub; the proof that the person accepted the exact text |
+| `GET /v1/legal` | everyone, no session (an open door of the jurisdiction gate) | `{ hubConfigured, documents }`: the active texts of the hub this API serves (`TRUSTWORK_HUB_ID`, read per request), never a draft and nothing before the hub is visible to everyone; the web's terms and privacy pages and the terms version sign-up records (QA-002 D4) |
 
 `HubsService.deploymentSettings(hubId)` returns the active `identity` and `country` payloads without a principal; `joinDeploymentConfig` in `hub-core.ts` turns them back into a CFG-001 document for the runtime loader.
 

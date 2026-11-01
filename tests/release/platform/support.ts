@@ -18,7 +18,8 @@ export const EDGE_REGION_HEADER = 'x-release-edge-region';
 
 export type Language = 'en' | 'es';
 export const PASSWORD = 'release candidate passphrase 2026';
-export const TERMS_VERSION = 'draft-2026-10';
+/** The release stack serves no hub, so no terms text is in force: sign-up records the explicit marker (QA-002 D4). */
+export const TERMS_VERSION = 'no-active-terms';
 
 const dictionaries = new Map<Language, Record<string, unknown>[]>();
 function layers(language: Language): Record<string, unknown>[] {

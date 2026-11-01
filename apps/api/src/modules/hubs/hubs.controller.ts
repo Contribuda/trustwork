@@ -173,6 +173,20 @@ export class AdminHubsController {
   }
 }
 
+/**
+ * The active legal texts of the hub this API serves, for everyone (QA-002 D4): the web's terms and privacy pages and the
+ * terms version sign-up records. No session; a legal page is an open door of the jurisdiction gate (ADR 014 decision 6).
+ */
+@Controller('v1/legal')
+export class PublicLegalController {
+  constructor(@Inject(HubsService) private readonly hubs: HubsService) {}
+
+  @Get()
+  legal() {
+    return this.hubs.servedLegal();
+  }
+}
+
 /** Participant routes: the active legal texts of a launched hub, and accepting one (proof of the exact text). */
 @Controller('v1/hubs')
 export class HubsParticipantController {

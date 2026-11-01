@@ -354,6 +354,7 @@
     "actionViewing": "Agendar una visita",
     "actionRequest": "Solicitar las condiciones",
     "actionJoin": "Dejar una solicitud",
-    "commercialTermsTitle": "Condiciones comerciales"
+    "commercialTermsTitle": "Condiciones comerciales",
+    "ownerUnnamed": "No se muestra públicamente"
   }
 }

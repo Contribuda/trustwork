@@ -38,6 +38,8 @@ export interface MyProjectRow {
   status: ProjectStatus; publicity_enabled: boolean; revision: number; created_at: Date; handle: string | null; sort_key: string;
 }
 export interface HandleResolutionRow { subject_id: string; current_handle: string }
+/** Public owner of a published project (QA-002 D2): a company, or a person with a public, consented profile. */
+export interface PublicProjectOwnerRow { project_id: string; owner_kind: 'company' | 'person'; owner_id: string; owner_name: string | null; owner_handle: string | null }
 
 /** Query builders (exported so tests can EXPLAIN exactly the SQL the API runs). `id` narrows to one subject. */
 export const directoryQueries = {
@@ -158,6 +160,17 @@ export const directory = {
   async publicProject(trx: Transaction, id: string): Promise<ProjectDirectoryRow | undefined> {
     const { rows } = await sql<Omit<ProjectDirectoryRow, 'handle' | 'sort_key'>>`SELECT id, name, summary, status, published_story FROM trustwork.public_project_read(${id}::uuid)`.execute(trx);
     return rows[0] ? { ...rows[0], handle: null, sort_key: EPOCH_KEY } : undefined;
+  },
+  /** Public owners of published projects (owner-run; at most 101 ids; private person owners and unpublished projects are absent). */
+  async publicProjectOwners(trx: Transaction, ids: readonly string[]): Promise<PublicProjectOwnerRow[]> {
+    if (ids.length === 0) return [];
+    const { rows } = await sql<PublicProjectOwnerRow>`SELECT * FROM trustwork.directory_public_project_owners(${[...ids]}::uuid[])`.execute(trx);
+    return rows;
+  },
+  /** Published projects of one company in directory order (owner-run, public columns only). */
+  async publicCompanyProjects(trx: Transaction, companyId: string, page: DirectoryPage): Promise<ProjectDirectoryRow[]> {
+    const { rows } = await sql<ProjectDirectoryRow>`SELECT * FROM trustwork.directory_public_company_projects(${companyId}::uuid, ${page.after?.createdAt ?? null}::timestamptz, ${page.after?.id ?? null}::uuid, ${page.limit})`.execute(trx);
+    return rows;
   },
   async publicResolve(trx: Transaction, kind: HandleKind, handle: string): Promise<HandleResolutionRow | undefined> {
     const { rows } = await sql<HandleResolutionRow>`SELECT * FROM trustwork.directory_public_resolve(${kind}, ${handle})`.execute(trx);

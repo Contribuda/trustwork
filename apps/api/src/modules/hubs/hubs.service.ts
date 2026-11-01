@@ -3,12 +3,14 @@ import {
   computeDigest, HUB_CONSOLE_CONTRACT_VERSION, type ConsoleCommandResult, type ConsolePermission, type HubConfigDomain, type HubLifecycle, type Principal,
 } from '../../deps/contracts.js';
 import { withPrincipal, type Transaction } from '../../deps/data.js';
+import { withoutPrincipal } from '../../common/db.js';
 import { ApiError } from '../../common/errors.js';
+import { staffHubFromEnv } from '../identity/staff-roles.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import {
-  adminAudit, approvals, hubConfig, hubs, launchGates, legalDocuments, providerCredentials, type CommandContext, type HubConfigVersionRow, type StaffRole, configActivationAction, configActivationDigestInput, configDraftPermissions, configPayloadProblems, credentialActivationDigestInput, legalActivationDigestInput, lifecycleTransitionDigestInput, splitDeploymentConfig, transitionAction, type ActivateConfigVersionCommand, type CreateHubCommand, type DraftConfigVersionCommand, type ImportDeploymentCommand, type LegalDocumentKind, type TransitionHubCommand, type UpdateHubProfileCommand, type AddTerritoryCommandSchema, type CheckLaunchGateCommandSchema, type DraftLegalDocumentCommandSchema, type InvalidateLaunchGateCommandSchema, type PlainHubCommandSchema, type RecordCounselApprovalCommandSchema, type ActivateLegalDocumentCommandSchema, type RegisterCredentialCommandSchema, type ActivateCredentialCommandSchema, type AcceptLegalDocumentCommandSchema,
+  adminAudit, approvals, hubConfig, hubs, launchGates, legalDocuments, providerCredentials, type CommandContext, type HubConfigVersionRow, type StaffRole, configActivationAction, configActivationDigestInput, configDraftPermissions, configPayloadProblems, credentialActivationDigestInput, legalActivationDigestInput, lifecycleTransitionDigestInput, splitDeploymentConfig, transitionAction, type ActivateConfigVersionCommand, type CreateHubCommand, type DraftConfigVersionCommand, type ImportDeploymentCommand, type LegalDocumentKind, type TransitionHubCommand, type UpdateHubProfileCommand, type AddTerritoryCommandSchema, type CheckLaunchGateCommandSchema, type DraftLegalDocumentCommandSchema, type InvalidateLaunchGateCommandSchema, type PlainHubCommandSchema, type RecordCounselApprovalCommandSchema, type ActivateLegalDocumentCommandSchema, type RegisterCredentialCommandSchema, type ActivateCredentialCommandSchema, type AcceptLegalDocumentCommandSchema, PublicLegalDocumentsSchema, type PublicLegalDocuments,
 } from './deps.js';
 import { hubsRefusal, isAuthorityRefusal } from './errors.js';
 import {
@@ -323,6 +325,17 @@ export class HubsService {
       const active = await legalDocuments.activate(trx, cmd, documentId, body.expectedRevision, body.approvalId);
       return { result: await this.result(trx, cmd, 'applied', active.id, active.revision, null), document: toLegalDocument(active, null) };
     });
+  }
+
+  /**
+   * Active legal texts of the hub this API serves (`TRUSTWORK_HUB_ID`, read per request) for everyone, signed in or not
+   * (QA-002 D4: the legal pages and sign-up). Read without an identity: the row policy shows active texts of a hub that
+   * is visible to everyone (from soft launch on) and never a draft; before that the list is empty.
+   */
+  async servedLegal(hubId: string | null = staffHubFromEnv(process.env)): Promise<PublicLegalDocuments> {
+    if (!hubId) return { hubConfigured: false, documents: [] };
+    const rows = await withoutPrincipal(this.ctx.pool, (trx) => legalDocuments.list(trx, hubId));
+    return PublicLegalDocumentsSchema.parse({ hubConfigured: true, documents: rows.filter((d) => d.status === 'active').map(toPublicLegalDocument) });
   }
 
   /** Active legal texts of a hub that is visible to the caller (from soft launch on). */

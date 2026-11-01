@@ -21,8 +21,11 @@ import {
  * comes from. The address is never logged or stored: log lines and records name the place and the dataset.
  */
 
-/** Paths that answer whoever asks: the platform's probes. Provider webhooks and unsubscribe links join this list when they exist. */
-const OPEN_PATHS = new Set(['/health', '/health/live', '/health/ready']);
+/**
+ * Paths that answer whoever asks: the platform's probes and the hub's active legal texts (`/v1/legal`, the data of the
+ * legal pages, an open door of ADR 014 decision 6). Provider webhooks and unsubscribe links join this list when they exist.
+ */
+const OPEN_PATHS = new Set(['/health', '/health/live', '/health/ready', '/v1/legal']);
 export function jurisdictionOpenPath(url: string): boolean {
   const path = url.split('?')[0] ?? url;
   return OPEN_PATHS.has(path);

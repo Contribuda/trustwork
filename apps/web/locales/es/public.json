@@ -156,5 +156,21 @@
     "validity": "Vigencia",
     "expired": "Vencido",
     "certificatesEmpty": "No hay certificados ni permisos publicados."
+  },
+  "legal": {
+    "kicker": "Información legal",
+    "terms": {
+      "title": "Términos de uso",
+      "draftBody": "Todavía no hay ninguna versión de los términos de uso en vigor en este hub. El texto se está preparando y se publicará aquí tras la revisión de un abogado."
+    },
+    "privacy": {
+      "title": "Política de privacidad",
+      "draftBody": "Todavía no hay ninguna versión de la política de privacidad en vigor en este hub. El texto se está preparando y se publicará aquí tras la revisión de un abogado."
+    },
+    "draftTitle": "Borrador: no está en vigor",
+    "draftNoAgreement": "Hasta que se publique una versión en esta página, este despliegue es una vista previa y nada en él es un acuerdo vinculante.",
+    "inForce": "Versión {version}, en vigor desde el {date}",
+    "otherLanguage": "Este texto solo está publicado en {language}.",
+    "digest": "Huella del texto ({algorithm}): {digest}"
   }
 }

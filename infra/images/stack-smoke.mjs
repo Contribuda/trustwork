@@ -62,7 +62,7 @@ await step('/v1/* is served by the API through the proxy (anonymous /v1/me is 40
 
 const email = `stack-smoke-${Date.now()}-${randomBytes(3).toString('hex')}@example.invalid`;
 const password = `stack smoke ${randomBytes(9).toString('base64url')}`;
-const signup = { name: 'Stack Smoke', email, password, acceptedTermsVersion: 'draft-2026-10' };
+const signup = { name: 'Stack Smoke', email, password, acceptedTermsVersion: 'no-active-terms' };
 
 await step('mutations without the CSRF header or from another origin are rejected', async () => {
   const noHeader = await post('/v1/auth/signup', signup, { 'content-type': 'application/json', origin });

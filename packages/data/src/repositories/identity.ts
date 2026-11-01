@@ -2,7 +2,7 @@ import { sql } from 'kysely';
 import { PrincipalError, type Transaction } from '../pool.js';
 import type { AuthTokenKind, Credential, EmailBinding, NewSession, Person, PersonUpdate, Session, SessionRevokedReason } from '../schema.js';
 import { hashToBuffer } from './auth.js';
-import type { SecondFactorResetRow, SecondFactorRow, SessionElevationRow } from '../schema/identity.js';
+import type { MailLocaleSource, SecondFactorResetRow, SecondFactorRow, SessionElevationRow } from '../schema/identity.js';
 
 /** Identity repositories: run inside withPrincipal; RLS limits every row to the current person. */
 export const persons = {
@@ -386,3 +386,19 @@ export async function clearOwnSecondFactorFailures(trx: Transaction): Promise<nu
   const { rows } = await sql<{ n: number }>`SELECT trustwork.auth_clear_second_factor_failures() AS n`.execute(trx);
   return rows[0]?.n ?? 0;
 }
+
+/**
+ * QA-002 D5: the language a person last used for their own account actions. `record` writes the current person's own
+ * row (RLS); `forMail` reads another person's tag through the owner-run identity_mail_locale (the tag only, or null).
+ */
+export const mailLocales = {
+  async record(trx: Transaction, personId: string, locale: string, source: MailLocaleSource): Promise<void> {
+    await trx.insertInto('person_mail_locale').values({ person_id: personId, locale, source })
+      .onConflict((oc) => oc.column('person_id').doUpdateSet({ locale, source, updated_at: sql<Date>`now()` }))
+      .execute();
+  },
+  async forMail(trx: Transaction, personId: string): Promise<string | null> {
+    const { rows } = await sql<{ locale: string | null }>`SELECT trustwork.identity_mail_locale(${personId}::uuid) AS locale`.execute(trx);
+    return rows[0]?.locale ?? null;
+  },
+};

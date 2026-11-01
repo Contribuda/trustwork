@@ -122,8 +122,8 @@ const cases: Case[] = [
   [
     'PublicProjectSchema',
     c.PublicProjectSchema,
-    { id: 'p', name: 'n', summary: null, status: 'active', publishedStory: null, openNeedIds: [], publicParticipantIds: [] },
-    { id: 'p', name: 'n', summary: null, status: 'active', publishedStory: null, openNeedIds: [], publicParticipantIds: [], budgets: [] },
+    { id: 'p', name: 'n', summary: null, status: 'active', publishedStory: null, openNeedIds: [], publicParticipantIds: [], publicOwner: null },
+    { id: 'p', name: 'n', summary: null, status: 'active', publishedStory: null, openNeedIds: [], publicParticipantIds: [], publicOwner: null, budgets: [] },
   ],
   ['ParticipantProjectSchema', c.ParticipantProjectSchema, fixtures['personal-project']!.expectations.participantProject, rec('personal-project', 'Project')],
   ['MilestoneSchema', c.MilestoneSchema, { id: 'm', title: 't', due: { date: '2026-11-01', timeZone: 'UTC' }, budget: null, shared: true }, { id: 'm', title: 't', due: '2026-11-01', budget: null, shared: true }],

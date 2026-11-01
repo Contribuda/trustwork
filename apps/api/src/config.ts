@@ -281,7 +281,8 @@ export function apiConfigFromEnv(env: NodeJS.ProcessEnv): ApiConfig {
     providers: { mode, google: client(e.GOOGLE_CLIENT_ID, e.GOOGLE_CLIENT_SECRET), apple: client(e.APPLE_CLIENT_ID, e.APPLE_CLIENT_SECRET) },
     production,
     flowSecret,
-    termsVersion: e.TERMS_VERSION ?? 'draft-2026-10',
+    // Not a version that looks final (QA-002 D4): sign-up records the active terms text id from GET /v1/legal, or this marker.
+    termsVersion: e.TERMS_VERSION ?? 'no-active-terms',
     database: {
       poolMax: e.API_DB_POOL_MAX,
       statementTimeoutMs: e.API_DB_STATEMENT_TIMEOUT_MS,
