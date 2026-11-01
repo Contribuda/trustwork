@@ -16,7 +16,9 @@ ADR numbers 015 (editorial), 016 (exchange), 017 (outreach) and 018 (operating c
 
 On 2026-11-01 the conductor, under delegated maintainer authority, accepted only the existing-stack composition boundary for DS-005 in [issue #504, comment 6555259864](https://github.com/Contribuda/trustwork/issues/504#issuecomment-6555259864). This permits reuse of merged DS-003 React Aria primitives, current tokens, CSS Modules, local fonts/icons and shared locale/brand sources. It accepts no new dependency, product policy, domain permission or authorization path. Controlled navigation callbacks confer no authority. One account avatar, one participant company and one assistant surface remain the boundary.
 
-Owner visual approval, native-language review, manual accessibility and native screen-reader acceptance are unperformed. This technical acceptance is not DS-005 implementation acceptance or acceptance of ADM-UX-001, ADM-UX-002, or live console data.
+Owner visual approval, native-language review, manual accessibility and native screen-reader acceptance are unperformed. The initial technical acceptance alone did not accept the implementation or any consuming application.
+
+On 2026-11-01 the conductor separately [accepted the bounded DS-005 implementation](https://github.com/Contribuda/trustwork/issues/504#issuecomment-6555501685) under delegated maintainer authority, subject to passing exact-final-head required CI and actual merge. This authorizes marking only DS-005 done after the reviewed implementation and browser evidence. It does not accept ADM-UX-001, ADM-UX-002, DS-006, live console data, new policy or dependencies; the owner and native/manual approvals above remain unperformed.
 
 ## Technical boundary and remaining proposals
 
@@ -39,7 +41,7 @@ The names below are the owner-requested literal package names, registered as ope
 
 DS-005 covers shell/navigation compositions; DS-006 covers operational states and recovery. ADM-UX-001 applies the shell, and ADM-UX-002 connects completed domain journeys. Existing packages keep their scope and status. Their acceptance includes 375 px layouts, all seven locales, keyboard and screen-reader evidence, offline asset policy and real negative authorization/concurrency tests where authority is involved.
 
-The prototype source can carry technical debt that must not cross into production: fixture scenario switches, in-memory state, simulated delays, fake credentials and illustrative model activity. Full application tests, human design acceptance and native translation review remain separate. No package is marked done by this ADR.
+The prototype source can carry technical debt that must not cross into production: fixture scenario switches, in-memory state, simulated delays, fake credentials and illustrative model activity. Full application tests, human design acceptance and native translation review remain separate. Only DS-005 has the separate bounded implementation acceptance recorded above; no other package status changes through this ADR.
 
 ## Evidence and open decisions
 

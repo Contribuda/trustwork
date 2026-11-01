@@ -1,6 +1,6 @@
 # Administrative shell (DS-005)
 
-Status: implementation in progress, pending conductor acceptance. This is a shared presentation composition, not the ADM-UX-001 application migration or a live console. ADR 019 records only the existing-stack technical acceptance in issue #504, comment 6555259864. Owner visual, native-language and manual assistive-technology acceptance are unperformed.
+Status: bounded implementation accepted by the [delegated maintainer](https://github.com/Contribuda/trustwork/issues/504#issuecomment-6555501685), subject to exact-final-head required CI and actual merge. This is a shared presentation composition, not the ADM-UX-001 application migration or a live console. ADR 019 records the initial existing-stack technical acceptance in issue #504, comment 6555259864, and the separate bounded implementation acceptance. Owner visual, native-language and manual assistive-technology acceptance are unperformed.
 
 `AdminShell` composes the existing `Brand`, `AvatarButton`, `Menu`, `Dialog` and DS-003 `CommandPalette`. `AdminContextNavigation` is also exported for contextual placement. The header is an internal composition, not a replacement primitive. The allocated baseline has `ConsoleHeader` in the application, but no existing exported `AdminHeader`; the application remains untouched. `DetailDrawer` stays the existing non-modal inspection primitive and is not used as a mobile modal, which would leave the background interactive.
 
