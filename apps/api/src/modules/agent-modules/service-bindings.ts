@@ -1,6 +1,7 @@
+import { sql } from 'kysely';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Principal } from '../../deps/contracts.js';
-import type { Transaction } from '../../deps/data.js';
+import { PrincipalError, type Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
@@ -36,6 +37,17 @@ export function bindServiceCapabilities<T extends object>(
   ctx: AppContext, principals: PrincipalService, bindings: ServiceCapabilityBindings<T>, create: (principals: PrincipalService, publicBoundary: PublicServiceBoundary) => T,
   authority?: CapabilityAuthority,
 ): T {
+  const lockAuthenticated = async (trx: Transaction, state: RequestState, principal: Principal) => {
+    try {
+      await sql`SELECT trustwork.agent_modules_lock_authenticated_invocation(${state.session?.id ?? null}::uuid,
+        ${principal.membership?.companyId ?? null}::uuid,${principal.membership?.companyAuthzEpoch ?? null}::integer)`.execute(trx);
+    } catch (error) {
+      const dbError = error as { code?: string; hint?: string };
+      if (dbError.code === '28000' && dbError.hint === 'auth.session_invalid') throw new ApiError('auth.session_invalid', 'current authenticated session unavailable');
+      if (dbError.code === '28000' && dbError.hint === 'access.stale_epoch') throw new PrincipalError('access.stale_epoch', 'current owning authority changed');
+      throw error;
+    }
+  };
   const invocation = new AsyncLocalStorage<{ binding: ServiceCapabilityBinding; args: readonly unknown[] }>();
   const guardedPrincipals = new Proxy(principals, {
     get(target, key) {
@@ -49,7 +61,10 @@ export function bindServiceCapabilities<T extends object>(
         return target.runAs(state, async (trx, principal) => {
           if ('boundary' in current.binding) {
             if (current.binding.boundary === 'public_projection') await publicBoundary(trx);
-            else if (principal.delegation) throw new ApiError('access.mandate_scope', 'this control requires the person on the first-party surface');
+            else {
+              if (principal.delegation) throw new ApiError('access.mandate_scope', 'this control requires the person on the first-party surface');
+              await lockAuthenticated(trx, state, principal);
+            }
             return execute(trx, principal);
           }
           if ('firstPartyOnly' in current.binding && current.binding.firstPartyOnly && principal.delegation) {
@@ -60,6 +75,7 @@ export function bindServiceCapabilities<T extends object>(
           }];
           if (checks.length === 0) throw new ApiError('access.forbidden', 'service authority is unavailable', { reason: 'capability.unknown' });
           for (const check of checks) await requireParticipantCapability(ctx, trx, principal, check.capabilityId, check.companyId, authority);
+          await lockAuthenticated(trx, state, principal);
           return execute(trx, principal);
         });
       };

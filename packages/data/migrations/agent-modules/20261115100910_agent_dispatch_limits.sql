@@ -52,7 +52,7 @@ BEGIN
     IF NOT trustwork.agent_modules_model_admit_foundation(p_operation,p_token) THEN RETURN false; END IF;
     SELECT * INTO r FROM trustwork.model_call WHERE operation_id=p_operation AND principal_id=trustwork.current_person_id();
     v_reason := trustwork.agent_modules_reserve_quota((r.request ->> 'hubId')::uuid,r.principal_id,r.request ->> 'moduleKey',r.run_id,r.run_id,'run');
-    IF v_reason IS NULL THEN v_reason := trustwork.agent_modules_reserve_quota((r.request ->> 'hubId')::uuid,r.principal_id,r.request ->> 'moduleKey',r.run_id,r.reservation_id,'action'); END IF;
+    IF v_reason IS NULL THEN v_reason := trustwork.agent_modules_reserve_quota((r.request ->> 'hubId')::uuid,r.principal_id,r.request ->> 'moduleKey',r.run_id,r.mandate_use_id,'action'); END IF;
     IF v_reason IS NOT NULL THEN RAISE EXCEPTION 'runtime protection limit' USING ERRCODE='PAG01',HINT=v_reason; END IF;
     RETURN true;
   EXCEPTION WHEN SQLSTATE 'PAG01' THEN RETURN false;

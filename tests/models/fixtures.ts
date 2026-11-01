@@ -62,6 +62,7 @@ export class MemoryStore implements ModelCallStore {
     return next;
   }
   async admit(): Promise<boolean> { return true; }
+  withDispatchAuthority<T>(_operation: ReservedModelCall, invoke: () => Promise<T>): Promise<T> { return invoke(); }
   async recover(operationId: string, principalId: string) {
     const completed = await this.settled(operationId, principalId);
     if (completed) return { kind: 'settled' as const, metadata: completed };

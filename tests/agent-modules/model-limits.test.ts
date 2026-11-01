@@ -41,6 +41,19 @@ test('actual model admission serializes free protection capacity and preserves u
     await assert.rejects(withPrincipal(w.pool, w.principal, trx => sql`SELECT trustwork.agent_modules_reserve_quota(NULL,NULL,NULL,NULL,NULL,NULL)`.execute(trx)),
       (error: unknown) => (error as { code?: string }).code === '42501');
   });
+  await t.test('a zero-cost invocation has distinct action identity without needing a financial reservation', async () => {
+    const call = await w.call(mandate.id, '0');
+    const route = await routes.resolve(call);
+    const begun = await store.begin(call, route, route.candidates[0]!);
+    assert.equal(begun.kind, 'dispatch');
+    if (begun.kind !== 'dispatch') throw new Error('expected zero-cost dispatch');
+    assert.equal(begun.call.reservationId, null);
+    await assert.rejects(withPrincipal(w.pool,w.principal,async trx => {
+      assert.equal(await modelCalls.admit(trx,begun.call.operationId,begun.call.dispatchToken),true);
+      throw new Error('synthetic zero-cost crash');
+    }),/synthetic zero-cost crash/);
+    assert.equal(await usage(),0);
+  });
   await t.test('concurrent actual admissions never exceed two; denial rolls back both measures and the invocation fence', async () => {
     assert.equal(await store.admit(a.begun.call), true);
     const admitted = await Promise.all([store.admit(b.begun.call), store.admit(c.begun.call)]);
