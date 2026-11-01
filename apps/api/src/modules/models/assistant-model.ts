@@ -7,6 +7,7 @@ import { ModelRefusal } from './ports.js';
 /** Trusted runtime selection; no mandate, scope, price or permission is ever parsed out of the chat text. */
 export interface AssistantModelContextPort {
   resolve(execution: NonNullable<ModelInput['execution']>): Promise<{ gateway: ModelGateway; call: Omit<ModelCall, 'prompt'> }>;
+  recover(execution: NonNullable<ModelInput['execution']>): Promise<GatewayResult>;
 }
 const unavailable = (): ModelReply => ({
   text: null,
@@ -58,7 +59,7 @@ export class GatewayAssistantModel implements ModelPort {
     }
   }
   async recover(input: ModelInput): Promise<ModelReply | null> {
-    const { gateway, call } = await this.context(input);
-    return reply(await gateway.reconcile(call.operationId, call.principalId));
+    if (!input.execution || input.personId !== input.execution.principal.personId) throw new ModelRefusal('authority_mismatch');
+    return reply(await this.contexts.recover(input.execution));
   }
 }

@@ -4,7 +4,7 @@ import {
   type ModelCall, type ModelCallMetadata, type PinnedCandidate, type ResolvedModelRoute,
 } from '../../../../../packages/contracts/src/models.js';
 import { sameCandidate } from './keys-route-resolver.js';
-import { FakeModelRegistry, ModelRefusal, type ModelAdapterResult, type ModelAuthorityPort, type ModelCallStore, type ReservedModelCall, type RouteResolutionPort } from './ports.js';
+import { FakeModelRegistry, ModelRefusal, type ModelAdapterResult, type ModelAuthorityPort, type ModelCallStore, type ModelReceiptStore, type ReservedModelCall, type RouteResolutionPort } from './ports.js';
 
 // Adapter output is untrusted at runtime even when an implementation is written in TypeScript.
 const AdapterResultSchema = z.discriminatedUnion('kind', [
@@ -56,34 +56,6 @@ export class ModelGateway {
     await this.routes.recheck(call, route, candidate);
   }
 
-  private metadata(operation: ReservedModelCall, outcome: ModelCallMetadata['outcome'], latencyMs: number, result?: Extract<ModelAdapterResult, { kind: 'succeeded' }>): ModelCallMetadata {
-    return ModelCallMetadataSchema.parse({
-      operationId: operation.operationId, routeId: operation.route.routeId, routeVersion: operation.route.routeVersion,
-      model: operation.candidate, stage: operation.route.stage, fallbackUsed: !sameCandidate(operation.candidate, operation.route.candidates[0]!),
-      latencyMs: Math.max(0, Math.round(latencyMs)), inputTokens: result?.inputTokens ?? 0, outputTokens: result?.outputTokens ?? 0,
-      cost: { minorUnits: result?.costMinorUnits ?? (outcome === 'outcome_unknown' ? operation.request.estimatedCost.minorUnits : '0'), currency: operation.request.estimatedCost.currency }, outcome,
-    });
-  }
-
-  private validSuccess(result: Extract<ModelAdapterResult, { kind: 'succeeded' }>, call: Omit<ModelCall, 'prompt'>): boolean {
-    return typeof result.text === 'string' && result.text.length <= 1_000_000 && /^(0|[1-9][0-9]{0,17})$/.test(result.costMinorUnits)
-      && BigInt(result.costMinorUnits) <= BigInt(call.estimatedCost.minorUnits)
-      && Number.isSafeInteger(result.inputTokens) && result.inputTokens >= 0 && result.inputTokens <= call.maxInputTokens
-      && Number.isSafeInteger(result.outputTokens) && result.outputTokens >= 0 && result.outputTokens <= call.maxOutputTokens;
-  }
-
-  private async finish(operation: ReservedModelCall, metadata: ModelCallMetadata, text: string | null): Promise<GatewayResult> {
-    try {
-      await this.store.finish(operation, metadata);
-    } catch {
-      // The durable dispatch intent still holds its reservation if settlement failed or its commit is ambiguous.
-      // Never return success, release, retry, or print a database/provider error that could carry a body.
-      return { operationId: operation.operationId, outcome: 'outcome_unknown', text: null, metadata: null };
-    }
-    try { this.log(ModelCallMetadataSchema.parse(metadata)); } catch { /* Logging must not repeat a committed call. */ }
-    return { operationId: operation.operationId, outcome: metadata.outcome, text, metadata };
-  }
-
   async call(input: ModelCall): Promise<GatewayResult> {
     // Parse a fresh copy: a caller cannot mutate a pin, scope or estimate while an async check is in progress.
     const call = ModelCallSchema.parse(input);
@@ -108,7 +80,7 @@ export class ModelGateway {
         // The reservation call may wait behind another process. Recheck ALL current policy after it returns.
         await this.check(call, route, candidate);
       } catch {
-        return this.finish(operation, this.metadata(operation, 'refused', performance.now() - started), null);
+        return finish(this.store, this.log, operation, metadata(operation, 'refused', performance.now() - started), null);
       }
       // Commit the one-use dispatch fence before the effect. An ambiguous admission never authorizes sending.
       try {
@@ -117,7 +89,7 @@ export class ModelGateway {
         return { operationId: operation.operationId, outcome: 'outcome_unknown', text: null, metadata: null };
       }
       try { await this.check(call, route, candidate); }
-      catch { return this.finish(operation, this.metadata(operation, 'refused', performance.now() - started), null); }
+      catch { return finish(this.store, this.log, operation, metadata(operation, 'refused', performance.now() - started), null); }
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
       let result: ModelAdapterResult;
@@ -137,39 +109,73 @@ export class ModelGateway {
       const elapsed = performance.now() - started;
       if (result.kind === 'not_sent') {
         if (index + 1 < route.candidates.length) continue;
-        return this.finish(operation, this.metadata(operation, 'failed', elapsed), null);
+        return finish(this.store, this.log, operation, metadata(operation, 'failed', elapsed), null);
       }
-      if (result.kind === 'succeeded' && this.validSuccess(result, call)) {
-        return this.finish(operation, this.metadata(operation, 'succeeded', elapsed, result), result.text);
+      if (result.kind === 'succeeded' && validSuccess(result, call)) {
+        return finish(this.store, this.log, operation, metadata(operation, 'succeeded', elapsed, result), result.text);
       }
       // Timeouts, malformed receipts, over-budget receipts and exceptions never activate a fallback.
-      return this.finish(operation, this.metadata(operation, 'outcome_unknown', elapsed), null);
+      return finish(this.store, this.log, operation, metadata(operation, 'outcome_unknown', elapsed), null);
     }
     throw new Error('Unreachable model route');
   }
 
-  async reconcile(operationId: string, principalId: string): Promise<GatewayResult> {
-    const completed = await this.store.settled(operationId, principalId);
-    if (completed) return { operationId, outcome: completed.outcome, text: null, metadata: completed };
-    const operation = await this.store.unknown(operationId, principalId);
-    if (!operation || operation.request.principalId !== principalId) throw new ModelRefusal('operation_not_found');
-    const call = ModelCallSchema.parse({ ...operation.request, prompt: '' });
-    await this.check(call, operation.route, operation.candidate, 'reconcile');
-    let result: ModelAdapterResult;
-    const started = performance.now();
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    try {
-      result = receipt(await Promise.race([
-        this.adapters.get(operation.candidate).reconcile(operationId, operation.candidate),
-        new Promise<ModelAdapterResult>((resolve) => { timer = setTimeout(() => resolve({ kind: 'unknown' }), operation.route.limits.timeoutMs); }),
-      ]));
-    } catch { result = { kind: 'unknown' }; }
-    finally { if (timer) clearTimeout(timer); }
-    const elapsed = performance.now() - started;
-    if (result.kind === 'succeeded' && this.validSuccess(result, call)) {
-      return this.finish(operation, this.metadata(operation, 'succeeded', elapsed, result), null);
-    }
-    if (result.kind === 'not_sent') return this.finish(operation, this.metadata(operation, 'failed', elapsed), null);
-    return this.finish(operation, this.metadata(operation, 'outcome_unknown', elapsed), null);
+  reconcile(operationId: string, principalId: string): Promise<GatewayResult> {
+    return reconcileModelOperation(this.store, this.adapters, operationId, principalId, this.log);
   }
+}
+
+function metadata(operation: ReservedModelCall, outcome: ModelCallMetadata['outcome'], latencyMs: number, result?: Extract<ModelAdapterResult, { kind: 'succeeded' }>): ModelCallMetadata {
+  return ModelCallMetadataSchema.parse({
+    operationId: operation.operationId, routeId: operation.route.routeId, routeVersion: operation.route.routeVersion,
+    model: operation.candidate, stage: operation.route.stage, fallbackUsed: !sameCandidate(operation.candidate, operation.route.candidates[0]!),
+    latencyMs: Math.max(0, Math.round(latencyMs)), inputTokens: result?.inputTokens ?? 0, outputTokens: result?.outputTokens ?? 0,
+    cost: { minorUnits: result?.costMinorUnits ?? (outcome === 'outcome_unknown' ? operation.request.estimatedCost.minorUnits : '0'), currency: operation.request.estimatedCost.currency }, outcome,
+  });
+}
+
+function validSuccess(result: Extract<ModelAdapterResult, { kind: 'succeeded' }>, call: Omit<ModelCall, 'prompt'>): boolean {
+  return typeof result.text === 'string' && result.text.length <= 1_000_000 && /^(0|[1-9][0-9]{0,17})$/.test(result.costMinorUnits)
+    && BigInt(result.costMinorUnits) <= BigInt(call.estimatedCost.minorUnits)
+    && Number.isSafeInteger(result.inputTokens) && result.inputTokens >= 0 && result.inputTokens <= call.maxInputTokens
+    && Number.isSafeInteger(result.outputTokens) && result.outputTokens >= 0 && result.outputTokens <= call.maxOutputTokens;
+}
+
+async function finish(store: ModelReceiptStore, log: (metadata: ModelCallMetadata) => void, operation: ReservedModelCall, metadata: ModelCallMetadata, text: string | null): Promise<GatewayResult> {
+  try {
+    await store.finish(operation, metadata);
+  } catch {
+    // The durable dispatch intent still holds its reservation if settlement failed or its commit is ambiguous.
+    // Never return success, release, retry, or print a database/provider error that could carry a body.
+    return { operationId: operation.operationId, outcome: 'outcome_unknown', text: null, metadata: null };
+  }
+  try { log(ModelCallMetadataSchema.parse(metadata)); } catch { /* Logging must not repeat a committed call. */ }
+  return { operationId: operation.operationId, outcome: metadata.outcome, text, metadata };
+}
+export async function reconcileModelOperation(store: ModelReceiptStore, adapters: FakeModelRegistry, operationId: string, principalId: string,
+  log: (metadata: ModelCallMetadata) => void = () => {}): Promise<GatewayResult> {
+  const recovered = await store.recover(operationId, principalId);
+  if (recovered.kind === 'undispatched') return { operationId, outcome: 'refused', text: null, metadata: null };
+  if (recovered.kind === 'settled') return { operationId, outcome: recovered.metadata.outcome, text: null, metadata: recovered.metadata };
+  const operation = recovered.call;
+  if (operation.request.principalId !== principalId) throw new ModelRefusal('authority_mismatch');
+  const call = ModelCallSchema.parse({ ...operation.request, prompt: '' });
+  // Lookup carries only stable operation identity and the original pin. It cannot invoke, select a new route,
+  // export prompt/context, or authorize tools. Current dispatch policy is deliberately not receipt authority.
+  let result: ModelAdapterResult;
+  const started = performance.now();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    result = receipt(await Promise.race([
+      adapters.get(operation.candidate).reconcile(operationId, operation.candidate),
+      new Promise<ModelAdapterResult>((resolve) => { timer = setTimeout(() => resolve({ kind: 'unknown' }), operation.route.limits.timeoutMs); }),
+    ]));
+  } catch { result = { kind: 'unknown' }; }
+  finally { if (timer) clearTimeout(timer); }
+  const elapsed = performance.now() - started;
+  if (result.kind === 'succeeded' && validSuccess(result, call)) {
+    return finish(store, log, operation, metadata(operation, 'succeeded', elapsed, result), null);
+  }
+  if (result.kind === 'not_sent') return finish(store, log, operation, metadata(operation, 'failed', elapsed), null);
+  return finish(store, log, operation, metadata(operation, 'outcome_unknown', elapsed), null);
 }

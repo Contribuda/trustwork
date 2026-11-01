@@ -2,6 +2,14 @@ import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type { ModelCallRow } from '../schema/models.js';
 export const modelCalls = {
+  async recover(trx: Transaction, operationId: string, binding: unknown) {
+    return (
+      await sql<{
+        result: { kind: 'undispatched' } | { kind: 'operation'; row: ModelCallRow };
+      }>`
+      SELECT trustwork.models_recover(${operationId},${JSON.stringify(binding)}::jsonb) AS result`.execute(trx)
+    ).rows[0]!.result;
+  },
   async begin(trx: Transaction, request: unknown, binding: unknown, digest: string, route: unknown, candidate: unknown, ttlSeconds: number) {
     const { rows } = await sql<{
       result: { fresh: boolean; row: ModelCallRow };
@@ -23,13 +31,17 @@ export const modelCalls = {
       .rows[0]!;
   },
   async admit(trx: Transaction, operationId: string, token: string): Promise<boolean> {
-    return (await sql<{ ok: boolean }>`SELECT trustwork.models_admit(${operationId},${token}::uuid) AS ok`.execute(trx)).rows[0]!.ok;
+    return (
+      await sql<{
+        ok: boolean;
+      }>`SELECT trustwork.models_admit(${operationId},${token}::uuid) AS ok`.execute(trx)
+    ).rows[0]!.ok;
   },
   async finish(trx: Transaction, operationId: string, token: string, metadata: unknown): Promise<unknown> {
     return (
-      await sql<{ metadata: unknown }>`SELECT trustwork.models_finish(${operationId},${token}::uuid,${JSON.stringify(metadata)}::jsonb) AS metadata`.execute(
-        trx,
-      )
+      await sql<{
+        metadata: unknown;
+      }>`SELECT trustwork.models_finish(${operationId},${token}::uuid,${JSON.stringify(metadata)}::jsonb) AS metadata`.execute(trx)
     ).rows[0]!.metadata;
   },
 };

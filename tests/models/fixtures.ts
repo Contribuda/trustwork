@@ -62,6 +62,13 @@ export class MemoryStore implements ModelCallStore {
     return next;
   }
   async admit(): Promise<boolean> { return true; }
+  async recover(operationId: string, principalId: string) {
+    const completed = await this.settled(operationId, principalId);
+    if (completed) return { kind: 'settled' as const, metadata: completed };
+    const call = await this.unknown(operationId, principalId);
+    if (!call) throw new ModelRefusal('operation_not_found');
+    return { kind: 'unknown' as const, call };
+  }
   async finish(operation: ReservedModelCall, metadata: ModelCallMetadata) {
     if (this.failFinish) throw new Error('PRIVATE_STORAGE_ERROR_CANARY');
     this.rows.get(operation.operationId)!.metadata = metadata;

@@ -216,9 +216,15 @@ test('durable fake-only model intent, owning BILL/AST commands and cross-process
       assert.equal(replay.outcome, 'outcome_unknown');
       assert.equal(adapter.calls.length, before);
       const reconciled = await gateway().reconcile(call.operationId, w.personId);
-      assert.equal(reconciled.outcome, 'outcome_unknown');
+      assert.equal(reconciled.outcome, mode === 'begin' ? 'refused' : 'outcome_unknown');
       assert.equal(adapter.calls.length, before);
-      assert.equal((await as((trx) => budgets.balance(trx, b)))!.heldMinor, '7');
+      assert.equal((await as((trx) => budgets.balance(trx, b)))!.heldMinor, mode === 'begin' ? '0' : '7');
+      if (mode === 'begin') {
+        const row = await as((trx) => modelCalls.get(trx, call.operationId));
+        assert.equal(row!.invoked, false);
+        assert.equal(await as((trx) => modelCalls.admit(trx, call.operationId, row!.dispatch_token)), false);
+        continue;
+      }
       const o = await store.unknown(call.operationId, w.personId);
       assert.ok(o);
       if (mode === 'after_effect') {
