@@ -7,7 +7,7 @@ import { jurisdictionAuthority } from '../../../../../../packages/data/src/repos
 import { evaluateJurisdictionAction, type JurisdictionLimits } from '../../../../../../packages/contracts/src/jurisdiction.js';
 
 export function evaluateLimits(limits: JurisdictionLimits, amount: Money | null) {
-  if (limits.consentRequirements.length) return { effect: 'deny' as const, reasons: ['jurisdiction_consent_evidence_unavailable'] };
+  if (limits.consentRequirements.length && limits.consentSatisfied !== true) return { effect: 'deny' as const, reasons: ['jurisdiction_consent_evidence_unavailable'] };
   if (limits.approval === 'human_only') return { effect: 'deny' as const, reasons: ['jurisdiction_human_only'] };
   return evaluateJurisdictionAction({ ...limits, jurisdictions: [], disclosureTextKeys: {}, legalTextKeys: {} }, amount);
 }
