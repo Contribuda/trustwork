@@ -49,12 +49,12 @@ Trustwork is not one website. It is something people run for a place they care a
 
 Trustwork is international by default ([ADR 012, decision 30](docs/adr/012-integrator-decisions-2026-10-31.md#owner-decision-of-2026-10-31-international-by-default)). No region is privileged, and every country and language is welcome.
 
-**Languages**
+**Languages** (each row ordered by total number of speakers)
 
 | Status | Languages |
 |---|---|
-| **Live** | English (reference) · Russian · Uzbek · Georgian · Armenian · Azerbaijani · Spanish |
-| **Planned** | Portuguese · French · German · Italian · Polish · Ukrainian · Turkish · Arabic (right to left) · Chinese (Simplified) · Hindi · Japanese |
+| **Live** | English (reference) · Spanish · Russian · Uzbek · Azerbaijani · Armenian · Georgian |
+| **Planned** | Chinese (Simplified) · Hindi · Arabic (right to left) · French · Portuguese · German · Japanese · Turkish · Italian · Polish · Ukrainian |
 | **Yours** | Any language you bring: [add a language](docs/engine/localization.md#adding-a-language) |
 
 English pages have no language prefix and every other language has its own address (`/es/news`), with `hreflang` links between them. Translations may start as machine drafts, and each one says honestly whether it is a machine draft, community reviewed or native reviewed: Uzbek, Georgian, Armenian, Azerbaijani and Spanish are machine drafts waiting for native speakers.
