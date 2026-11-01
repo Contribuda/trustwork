@@ -462,6 +462,26 @@ export class TasksService {
     });
   }
 
+  /** Privacy export uses the same private projections, without the interactive list caps. */
+  privacyExport(state: RequestState, subject: Party) {
+    return this.run(state, async (trx, p) => {
+      if (!this.actsFor(p, subject)) throw new ApiError('access.not_found');
+      const requests = [];
+      if (subject.kind === 'person') {
+        for (const row of await trx.selectFrom('task_request').selectAll().where('owner_person_id', '=', subject.id).orderBy('id').execute()) {
+          requests.push(await this.ownerView(trx, row));
+        }
+      }
+      const groups = await trx.selectFrom('task_offer').select('task_request_id').distinct()
+        .where(subject.kind === 'person' ? 'offeror_person_id' : 'offeror_company_id', '=', subject.id).orderBy('task_request_id').execute();
+      const offers = [];
+      for (const group of groups) offers.push(await this.offerorView(trx, group.task_request_id, subject));
+      const invitations = (await trx.selectFrom('task_invitation').selectAll()
+        .where(subject.kind === 'person' ? 'party_person_id' : 'party_company_id', '=', subject.id).orderBy('created_at').orderBy('id').execute()).map(invitationContract);
+      return { requests, offers, invitations };
+    });
+  }
+
   /** The open board: published open requests of others, payment-blind newest first, with only their public picks. */
   async listOpen(state: RequestState): Promise<z.infer<typeof OpenTaskRequestListSchema>> {
     return this.run(state, async (trx, p) => {

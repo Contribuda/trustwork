@@ -59,7 +59,8 @@ BEGIN
   IF v_proof.expires_at <= clock_timestamp() OR v_grant.expires_at <= clock_timestamp()
     OR NOT coalesce(trustwork.admin_grant_usable(v_proof.verified_by, v_proof.grant_id, 'sourced_record_field', v_field.id), false)
     OR NOT EXISTS(SELECT 1 FROM trustwork.admin_resolve_permission(v_proof.verified_by, 'admin.privacy.request.read', NULL, v_field.hub_id) r WHERE r.role IS NOT NULL)
-    OR trustwork.privacy_source_digest(v_field.id) IS DISTINCT FROM v_proof.source_digest THEN RETURN; END IF;
+    OR trustwork.privacy_source_digest(v_field.id) IS DISTINCT FROM v_proof.source_digest
+    OR NOT coalesce(trustwork.support_external_source_matches(v_grant.support_case_id,v_field.id,p_action,p_value,v_proof.method,v_proof.verified_by,v_proof.evidence_ref,true),false) THEN RETURN; END IF;
   INSERT INTO trustwork.privacy_source_request(proof_id, source_field_id, action, proposed_value, state)
     VALUES(v_proof.id, v_field.id, p_action, p_value, CASE WHEN p_action = 'objection' THEN 'objection_applied' ELSE 'received' END);
   UPDATE trustwork.privacy_source_proof SET used_at = now() WHERE id = v_proof.id;

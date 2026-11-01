@@ -75,3 +75,23 @@ export const PRIVACY_MODULE_INVENTORY = [
   'procurement', 'profiles', 'projects', 'providers', 'reputation', 'sales', 'screening', 'screening-gates', 'sources',
   'supplier-base', 'support', 'tasks', 'transactions', 'trust',
 ] as const;
+
+/** A human attests to an exact external request; a contact address is never an identity or deletion credential. */
+export const PrivacyExternalSourceCaseSchema = z.object({
+  hubId: z.uuid(), sourceFieldId: z.uuid(), action: z.enum(['correction', 'erasure', 'objection']),
+  proposedValue: z.string().min(1).max(2000).nullable().default(null), country: z.string().regex(/^[A-Z]{2}$/),
+  method: z.enum(['signed_statement', 'record_control', 'verified_representative']), evidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict().refine((r) => (r.action === 'correction') === (r.proposedValue !== null));
+
+/** Retained decision for one source field, never an assertion that a person/company was erased. */
+export const PrivacySourceTombstoneSchema = z.object({
+  version: z.literal(2), requestId: z.uuid(), planId: z.uuid(), sourceFieldId: z.uuid(), sourceId: z.uuid(),
+  recordKind: z.string().min(1).max(80), recordId: z.uuid(), evidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  executedBy: z.uuid(), approvedBy: z.uuid(), policyDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  recordedAt: z.iso.datetime(), modules: z.tuple([z.literal('sources')]),
+}).strict().refine((r) => r.executedBy !== r.approvedBy);
+export const PrivacyRetainedDecisionSchema = z.union([PrivacyTombstoneSchema, PrivacySourceTombstoneSchema]);
+export type PrivacySourceTombstone = z.infer<typeof PrivacySourceTombstoneSchema>;
+export type PrivacyRetainedDecision = z.infer<typeof PrivacyRetainedDecisionSchema>;
+
+export const PrivacyFileParamsSchema = z.object({ id: z.uuid(), fileId: z.uuid() }).strict();

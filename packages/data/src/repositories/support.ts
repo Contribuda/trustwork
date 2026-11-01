@@ -45,6 +45,10 @@ export interface ExplainInputsJson {
 export type AddressPurpose = 'verified' | 'verification' | 'new_email';
 
 export const supportAccess = {
+  async exportOwn(trx: Transaction): Promise<Array<{ id: string; at: Date; kind: string; support_case_id: string | null }>> {
+    const { rows } = await sql<{ id: string; at: Date; kind: string; support_case_id: string | null }>`SELECT * FROM trustwork.support_privacy_access_records()`.execute(trx);
+    return rows;
+  },
   /** admin.support.account.read: exact e-mail, ids, legal identifier, or a name prefix inside a case; recorded. */
   async lookup(trx: Transaction, ctx: CommandContext, input: { hubId: string; caseId: string | null; kind: LookupKind; value: string }): Promise<LookupRow[]> {
     const { rows } = await sql<LookupRow>`SELECT * FROM trustwork.support_lookup(${ctxJson(ctx)}::jsonb, ${input.hubId}::uuid, ${input.caseId}::uuid, ${input.kind}, ${input.value})`.execute(trx);
@@ -70,6 +74,9 @@ export const supportAccess = {
 };
 
 export const serviceActions = {
+  exportForSubject(trx: Transaction, personId: string): Promise<AccountServiceActionRow[]> {
+    return trx.selectFrom('account_service_action').select(ACCOUNT_SERVICE_ACTION_COLUMNS).where('subject_person_id', '=', personId).orderBy('requested_at').orderBy('id').execute();
+  },
   async request(trx: Transaction, ctx: CommandContext, input: {
     caseId: string; subjectPersonId: string; action: AccountServiceActionColumn; evidenceRefs: string[]; params: Record<string, unknown>;
   }): Promise<AccountServiceActionRow> {

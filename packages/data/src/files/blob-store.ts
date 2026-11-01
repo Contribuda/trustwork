@@ -30,6 +30,8 @@ export interface BlobStore {
   head(key: string, signal?: AbortSignal): Promise<BlobHead | null>;
   /** The whole object, refused with `BlobTooLargeError` above `maxBytes`; null when missing. */
   read(key: string, maxBytes: number, signal?: AbortSignal): Promise<Uint8Array | null>;
+  /** Optional owning streaming port. Implementations yield bounded chunks; consumers verify size and digest. */
+  stream?(key: string, signal?: AbortSignal): AsyncIterable<Uint8Array>;
   put(key: string, body: Uint8Array, contentType: string, signal?: AbortSignal): Promise<void>;
   /** Server-side copy; `BlobNotFoundError` when the source is missing. Copying identical bytes again is harmless. */
   copy(fromKey: string, toKey: string, signal?: AbortSignal): Promise<void>;

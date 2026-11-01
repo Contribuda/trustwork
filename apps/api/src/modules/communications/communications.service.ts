@@ -183,13 +183,20 @@ export class CommunicationsService {
     return this.run(state, async (trx) => this.view(trx, id));
   }
 
-  private async view(trx: Transaction, id: string): Promise<ThreadView> {
+  /** Same current context authority and projection, including older messages omitted by the UI. */
+  privacyThread(id: string, state: RequestState): Promise<ThreadView> {
+    return this.run(state, async (trx) => this.view(trx, id, true));
+  }
+
+  private async view(trx: Transaction, id: string, history = false): Promise<ThreadView> {
     if (!isUuid(id)) throw new ApiError('access.not_found', 'not found');
     const row = await threads.getById(trx, id);
     if (!row) throw new ApiError('access.not_found', 'not found');
     const side = await commsContexts.mySide(trx, row.context_kind, row.context_id);
     if (!side) throw new ApiError('access.not_found', 'not found');
-    const list = await messages.listForThread(trx, id);
+    const list = history
+      ? await trx.selectFrom('message').selectAll().where('thread_id', '=', id).orderBy('seq').execute()
+      : await messages.listForThread(trx, id);
     const links = await messages.linksFor(trx, list.map((m) => m.id));
     const names = await threads.people(trx, id);
     return ThreadViewSchema.parse({ thread: threadContract(row), side, messages: list.map((m) => messageContract(m, links, names)) });

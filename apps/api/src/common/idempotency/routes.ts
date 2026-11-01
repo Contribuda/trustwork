@@ -73,6 +73,10 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'privacy.plan_propose': IN_TRANSACTION,
   'privacy.preference_set': IN_TRANSACTION,
   'privacy.request_create': IN_TRANSACTION,
+  'privacy.external_source_case': IN_TRANSACTION,
+  'privacy.source_plan_propose': IN_TRANSACTION,
+  'privacy.source_plan_approve': IN_TRANSACTION,
+  'privacy.source_plan_execute': IN_TRANSACTION,
   'privacy.source_proof': IN_TRANSACTION,
   // Profiles, consent, portraits, experience and private records (PPL-001): every route runs in one
   // PrincipalService.runAs transaction (consent withdrawal, unpublication and tombstones included) and returns its

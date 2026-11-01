@@ -28,6 +28,17 @@ export interface DataBrokerRegistrationTable {
   id: Generated<string>; country: string; registry: 'fake_drop'; registration_ref: string; last_polled_at: Date | null; next_poll_at: Date | null;
 }
 export interface PrivacyDatabase {
+  source_field_resolution: {
+    id: string; request_id: string; source_field_id: string; replacement_field_id: string | null; action: 'correction' | 'erasure';
+    source_digest: string; decision_digest: string; retained_digest: string | null; executed_by: string; approved_by: string; created_at: Generated<Date>;
+  };
+  source_privacy_replay_receipt: { request_id: string; source_field_id: string; retained_digest: string; created_at: Generated<Date> };
+  privacy_source_hold: { id: Generated<string>; source_field_id: string; placed_by: string; reason_code: string; evidence_ref: string; created_at: Generated<Date> };
+  privacy_source_plan: {
+    id: Generated<string>; request_id: string; proposed_by: string; proposer_grant_id: string; reviewer_grant_id: string | null;
+    proposer_authority_digest: string; reviewer_authority_digest: string | null; approval_id: string; snapshot: unknown; digest: string;
+    state: Generated<'proposed' | 'approved' | 'applied'>; created_at: Generated<Date>;
+  };
   privacy_propagation: {
     id: Generated<string>; request_id: string; target: 'retrieval' | 'federation'; decision_digest: string; payload: unknown;
     state: Generated<'pending' | 'outcome_unknown' | 'acknowledged'>; receipt: string | null; created_at: Generated<Date>; acknowledged_at: Date | null;
@@ -69,6 +80,10 @@ export type PrivacyExportRow = Selectable<PrivacyExportTable>;
 export type LegalHoldRow = Selectable<LegalHoldTable>;
 const c = columnsOf<PrivacyDatabase>();
 export const TABLE_COLUMNS: TableColumns<PrivacyDatabase> = {
+  source_field_resolution: c('source_field_resolution', ['id', 'request_id', 'source_field_id', 'replacement_field_id', 'action', 'source_digest', 'decision_digest', 'retained_digest', 'executed_by', 'approved_by', 'created_at']),
+  source_privacy_replay_receipt: c('source_privacy_replay_receipt', ['request_id', 'source_field_id', 'retained_digest', 'created_at']),
+  privacy_source_hold: c('privacy_source_hold', ['id', 'source_field_id', 'placed_by', 'reason_code', 'evidence_ref', 'created_at']),
+  privacy_source_plan: c('privacy_source_plan', ['id', 'request_id', 'proposed_by', 'proposer_grant_id', 'reviewer_grant_id', 'proposer_authority_digest', 'reviewer_authority_digest', 'approval_id', 'snapshot', 'digest', 'state', 'created_at']),
   privacy_propagation: c('privacy_propagation', ['id', 'request_id', 'target', 'decision_digest', 'payload', 'state', 'receipt', 'created_at', 'acknowledged_at']),
   privacy_subject_plan: c('privacy_subject_plan', ['id', 'request_id', 'proposed_by', 'proposer_grant_id', 'proposer_authority_digest', 'reviewer_grant_id', 'reviewer_authority_digest', 'approval_id', 'snapshot', 'digest', 'state', 'created_at']),
   privacy_source_proof: c('privacy_source_proof', ['id', 'token_hash', 'source_field_id', 'source_digest', 'action', 'grant_id', 'verified_by', 'evidence_ref', 'method', 'expires_at', 'used_at', 'created_at']),

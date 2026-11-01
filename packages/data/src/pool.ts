@@ -82,9 +82,10 @@ async function runBound<T>(pool: DataPool, prepare: (client: pg.PoolClient) => P
  * (transaction-local; gone at COMMIT/ROLLBACK). Missing or stale identity fails closed in the database.
  * `fn` must not open nested transactions; everything it does is committed together or not at all.
  */
-export async function withPrincipal<T>(pool: DataPool, principal: Principal, fn: (trx: Transaction) => Promise<T>): Promise<T> {
+export async function withPrincipal<T>(pool: DataPool, principal: Principal, fn: (trx: Transaction) => Promise<T>, options?: { snapshot: true }): Promise<T> {
   validatePrincipal(principal);
   return runBound(pool, async (client) => {
+    if (options?.snapshot) await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     try {
       await client.query(`SELECT ${SCHEMA}.set_principal($1::uuid, $2::integer)`, [principal.personId, principal.authzEpoch]);
     } catch (error) {
