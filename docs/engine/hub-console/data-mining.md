@@ -65,7 +65,7 @@ When a mined record seems to describe something the hub already knows (a company
 | `subject_confirmation` | The person confirmed both records are theirs |
 | `peer_link` | A federation peer proposed the link |
 
-The data steward accepts or rejects; the effect is always `link` (the contract has no merge). Links involving **people** require the person's own confirmation or a signed statement. The canonical display uses the record with the strongest claim status and shows provenance per field ([Federation](../federation.md#entity-links-never-merges)).
+The data steward accepts or rejects; the effect is always `link` (the contract has no merge). Links involving **people** require the person's own confirmation or a signed statement. The canonical display uses the record with the strongest claim status and shows provenance per field ([Federation](../federation.md#entity-links-never-merges)). Canonical entities, cited fields, page assembly and the entity review screen (link, split, mark distinct) are designed in [Discovery, sourced pages, claims and outreach](../discovery-and-outreach.md#2-entity-resolution-and-confidence).
 
 ## Review queues
 

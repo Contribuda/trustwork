@@ -87,6 +87,7 @@ Each person has one agent, their representative; every participant-facing capabi
 | [Hubs](hubs.md) | Nodes and hubs, territories, how country and city hubs complement each other, launch checklist, growing a hub, the San Diego reference hub |
 | [Hub administration](hub-administration.md) | The operator's console: legal, sources, counterparty verification, sanctions, editorial, commerce, agents policy, privacy, federation |
 | [The hub console](hub-console/README.md) | Installing the engine and running a hub without code: setup wizard, keys and models, autonomous editorial office, data mining, scheduling, agent product, every module, support, operations, screen contracts |
+| [Discovery, sourced pages, claims and outreach](discovery-and-outreach.md) | Filling a hub from public registers and licensed datasets: entity resolution by links, cited sourced pages, change watch, verified claim and hand-over, per-country outreach policy as pack data and hub configuration (strict by default, [ADR 017](../adr/017-outreach-policy.md)), suppression, objection and erasure, lifecycle messages, the operator's agent team, admin screens |
 | [Country specifics](country-specifics.md) | Facets of national difference, pack v2, shared layers such as the EU, starting points for the example countries |
 | [Countries and languages](localization.md) | Any country with any language, how strings resolve, adding a language |
 | [Federation: one worldwide mesh](federation.md) | Node identity, signed envelopes, peering, links not merges, deals across nodes |
