@@ -553,13 +553,13 @@
     "notifications": "Bildirishnomalar",
     "help": "Yordam",
     "languages": {
-      "en": "English",
-      "es": "Español",
-      "ru": "Русский",
-      "uz-Latn": "O‘zbekcha",
-      "ka": "ქართული",
-      "hy": "Հայերեն",
-      "az-Latn": "Azərbaycanca"
+      "en": "inglizcha",
+      "es": "ispancha",
+      "ru": "ruscha",
+      "uz-Latn": "o‘zbek",
+      "ka": "gruzincha",
+      "hy": "arman",
+      "az-Latn": "ozarbayjon"
     }
   }
 }
