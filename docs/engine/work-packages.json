@@ -9949,7 +9949,8 @@
       "dependsOn": [
         "EDIT-001",
         "TRN-001",
-        "MODEL-001"
+        "MODEL-001",
+        "AGT-030"
       ],
       "handbook": "docs/engine/editorial-office.md",
       "goal": "Implement the owner decision of 2026-11-01: an internal team of AI roles (scout, collector, researcher, writer, fact-checker, translator, post-editor, editor-assistant, layout, designer, illustrator, photo researcher, metadata, distribution, curator, licence, accessibility, corrections watch, knowledge packager) with registry capabilities, model routes, caps, schedules, quality floors and an autonomy level per role and content class, plus standing publication policies for the eligible classes only.",
