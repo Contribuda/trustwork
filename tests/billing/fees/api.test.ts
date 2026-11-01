@@ -21,7 +21,8 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.equal(r.status, 200);
     const p = PublicPricingSchema.parse(r.body);
     assert.deepEqual(p.fees, []); assert.deepEqual(p.prices, []);
-    assert.deepEqual(new Set(p.unavailable), new Set(['fees', 'plans', 'models', 'capabilities', 'credit_packs']));
+    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'unavailable',capabilities:'unavailable',credit_packs:'unavailable'});
+    assert.deepEqual(new Set(p.unavailable), new Set(['models', 'capabilities', 'credit_packs']));
   });
   await t.test('anonymous and un-elevated staff cannot draft', async () => {
     assert.equal((await w.anonymous.post(url, body)).status, 401);
@@ -93,10 +94,63 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.ok(view.unavailable.includes('credit_packs'));assert.ok(view.unavailable.includes('models'));assert.ok(view.unavailable.includes('capabilities'));
     assert.ok(!view.unavailable.includes('plans'));
     assert.ok(!JSON.stringify(view).includes(w.p.owner));
+    assert.equal(view.prices[0]?.disclosure?.name,'Synthetic synthetic_plan');
+    assert.deepEqual(view.prices[0]?.disclosure?.plan,{payerKind:'person',moduleKeys:['consultation'],includedQuota:[],connections:1,channels:0,representativeIncluded:false});
+  });
+  await t.test('authenticated participants and anonymous readers receive equal public scope and versions', async () => {
+    const anonymous = PublicPricingSchema.parse((await w.anonymous.get(`/v1/pricing?hubId=${w.hubB}&lang=ru`)).body);
+    for (const client of [w.clients.owner, w.clients.otherOwner, w.clients.outsider]) {
+      const signed = PublicPricingSchema.parse((await client.get('/v1/pricing?lang=es')).body);
+      assert.deepEqual({ ...signed, coverage: signed.coverage?.sections }, { ...anonymous, coverage: anonymous.coverage?.sections });
+    }
+  });
+  await t.test('a real PostgreSQL reader permission error is explicit and does not poison successful sibling transactions', async () => {
+    await h.db.admin.query('REVOKE SELECT ON trustwork.subscription_plan_version FROM trustwork_app');
+    try {
+      const response = await w.anonymous.get('/v1/pricing');
+      assert.equal(response.status, 200);
+      const view = PublicPricingSchema.parse(response.body);
+      assert.equal(view.coverage?.sections.plans, 'error');
+      assert.equal(view.coverage?.sections.services, 'available');
+      assert.equal(view.coverage?.sections.fees, 'available');
+      assert.equal(view.prices.filter(p => p.kind === 'plan').length, 0);
+      assert.equal(view.prices.filter(p => p.kind === 'deliverable').length, 1);
+      assert.equal(view.fees.length, 1);
+    } finally { await h.db.admin.query('GRANT SELECT ON trustwork.subscription_plan_version TO trustwork_app'); }
+    assert.equal(PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body).coverage?.sections.plans, 'available');
+  });
+  await t.test('malformed, stale and mismatched plan bindings fail the section without hiding services', async () => {
+    const mutations = [
+      { id: randomUUID() }, { version: 9 }, { offerId: randomUUID() }, { priceVersionId: randomUUID() },
+      { payerKind: 'company' }, { status: 'superseded' }, { moduleKeys: [] }, { providerCost: 'PRIVATE_SENTINEL' },
+    ];
+    for (const [i, change] of mutations.entries()) {
+      const offer = await withMaintenance(h.db.admin, async trx => {
+        const offer = await catalogue.createOffer(trx, {hubId:w.hubA,code:`synthetic_invalid_${i}`,name:'Synthetic invalid plan',kind:'plan',createdBy:w.p.owner,status:'active'});
+        const price = await catalogue.draftPriceVersion(trx, {offerId:offer.id,amountMinor:'0',currency:'USD',effectiveFrom:new Date(Date.now()+3600000),acceptanceTextVersion:'synthetic-1',draftedBy:w.p.owner});
+        await catalogue.activatePriceVersion(trx,price.id,w.p.officer);
+        const id = randomUUID();
+        const payload = {id,offerId:offer.id,version:1,payerKind:'person',moduleKeys:['consultation'],includedQuota:[],connections:1,channels:0,representativeIncluded:false,priceVersionId:price.id,status:'draft',...change};
+        await trx.insertInto('subscription_plan_version').values({id,offer_id:offer.id,version:1,payer_kind:'person',payload:JSON.stringify(payload),price_version_id:price.id,drafted_by:w.p.owner}).execute();
+        await catalogue.activatePlanVersion(trx,id,w.p.officer);
+        return offer;
+      });
+      const view = PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body);
+      assert.equal(view.coverage?.sections.plans, 'error', JSON.stringify(change));
+      assert.equal(view.coverage?.sections.services, 'available');
+      assert.ok(!JSON.stringify(view).includes('PRIVATE_SENTINEL'));
+      await withMaintenance(h.db.admin,trx=>catalogue.setOfferStatus(trx,offer.id,'retired'));
+    }
+  });
+  await t.test('a failed serving-hub authority lookup fails the request, never an empty successful section', async () => {
+    await h.db.admin.query('REVOKE EXECUTE ON FUNCTION trustwork.billing_fee_hub_available(uuid) FROM trustwork_app');
+    try { assert.equal((await w.anonymous.get('/v1/pricing')).status, 403); }
+    finally { await h.db.admin.query('GRANT EXECUTE ON FUNCTION trustwork.billing_fee_hub_available(uuid) TO trustwork_app'); }
   });
   await t.test('closed served hub never publishes its fees', async () => {
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('hub').set({ lifecycle: 'closed' }).where('id', '=', w.hubA).execute());
     const closed=PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body);
     assert.deepEqual(closed.fees, []);assert.deepEqual(closed.prices, []);
+    assert.equal(closed.hubId,null);assert.ok(Object.values(closed.coverage!.sections).every(s=>s==='unavailable'));
   });
 });

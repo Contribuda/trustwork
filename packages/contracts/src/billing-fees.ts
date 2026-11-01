@@ -31,11 +31,27 @@ export const PublicPriceSchema = z.strictObject({
   effectiveFrom: Timestamp, effectiveTo: Timestamp.nullable(),
   validity: z.string().nullable(),
   planVersion: z.strictObject({ id: Id, version: z.int().positive() }).nullable(),
+  disclosure: z.strictObject({
+    offerId: Id, name: z.string().min(1), acceptanceTextVersion: z.string().min(1),
+    plan: z.strictObject({
+      payerKind: z.enum(['person', 'company']), moduleKeys: z.array(z.string()),
+      includedQuota: z.array(z.strictObject({ moduleKey: z.string(), meter: z.string(), units: Minor, window: z.string() })),
+      connections: z.int().nonnegative(), channels: z.int().nonnegative(), representativeIncluded: z.boolean(),
+    }).nullable(),
+  }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;
 export const PublicPricingSchema = z.strictObject({
   hubId: Id.nullable(), fees: z.array(PublicFeeSchema), prices: z.array(PublicPriceSchema),
   unavailable: z.array(z.enum(['fees', 'plans', 'models', 'capabilities', 'credit_packs'])),
+  coverage: z.strictObject({
+    generatedAt: Timestamp,
+    sections: z.strictObject({
+      fees: z.enum(['available', 'unavailable', 'error']), plans: z.enum(['available', 'unavailable', 'error']),
+      services: z.enum(['available', 'unavailable', 'error']), models: z.enum(['available', 'unavailable', 'error']),
+      capabilities: z.enum(['available', 'unavailable', 'error']), credit_packs: z.enum(['available', 'unavailable', 'error']),
+    }),
+  }).optional(),
 });
 export type PublicPricing = z.infer<typeof PublicPricingSchema>;
 export const FeeConfirmationSchema = z.strictObject({ disclosureId: Id, digest: Digest });
