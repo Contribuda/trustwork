@@ -4,14 +4,14 @@ Rank 9 of 10 (score 72, estimate, medium uncertainty; [scorecard](../../research
 
 ## Summary
 
-Mexico is a **large Spanish-speaking market where self-build dominates housing**: INEGI's housing satellite account puts self-construction at 55.6 percent of the housing market by value. 110 million people are online, Spanish is a live interface language and a country pack is already planned (CTRY-MX, amended here with the playbook's leads). The cycle is weak (construction GDP down about 1 percent in 2025, civil works down sharply, public works at their lowest since records began) and lead marketplaces such as Habitissimo and Cronoshare are present, so the competition rating is 3. The opportunity is the self-builder and the families abroad who pay for homes, with plans, guides and evidence-based reputation for maestros. A new federal data protection law took effect in March 2025 and a new authority replaced the former transparency institute.
+Mexico is a **large Spanish-speaking market where self-build dominates housing**: INEGI's housing satellite account puts self-construction at 55.6 percent of the housing market by value. 110 million people are online, Spanish is a live interface language and a country pack is already planned and claimed (CTRY-MX); this playbook's leads are for its maintainer. The cycle is weak (construction GDP down about 1 percent in 2025, civil works down sharply, public works at their lowest since records began) and lead marketplaces such as Habitissimo and Cronoshare are present, so the competition rating is 3. The opportunity is the self-builder and the families abroad who pay for homes, with plans, guides and evidence-based reputation for maestros. A new federal data protection law took effect in March 2025 and a new authority replaced the former transparency institute.
 
 | Item | Value |
 |---|---|
 | Suggested first territory | Monterrey (Nuevo Leon) or Guadalajara (Jalisco), where states publish procurement data; Mexico City later |
 | Languages | Spanish (`es`, live); English optional for cross-border suppliers |
 | Currency, time zone | MXN; several time zones (`America/Mexico_City`, `America/Monterrey` and others from the pack) |
-| Country pack | Planned CTRY-MX (amended with launch leads) |
+| Country pack | Planned CTRY-MX (claimed; leads for its maintainer in this playbook) |
 | Suggested first outreach mode after counsel | `strict` |
 | Fastest growth path | Self-builder guides with cement and materials partners, the construction industry chamber, families abroad (PLAN-005), state-level public works data |
 
@@ -179,7 +179,7 @@ Operator and screening; counsel on terms, privacy notice (2025 law), ComprasMX a
 
 ### Feature gaps for Mexico
 
-CTRY-MX (amended), PLAN-004, PLAN-005, REP-003, PROC-003 (subnational OCDS), REG-002 (RFC validation, contractor registers), PAY-003 (SPEI through licensed providers).
+CTRY-MX (claimed; leads: self-build share, ComprasMX and subnational OCDS, the 2025 data protection law and its authority, taxonomy permit answers), PLAN-004, PLAN-005, REP-003, PROC-003 (subnational OCDS), REG-002 (RFC validation, contractor registers), PAY-003 (SPEI through licensed providers).
 
 ## Sources
 
