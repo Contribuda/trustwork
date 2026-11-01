@@ -85,3 +85,16 @@ npm run test:unit -w @trustwork/ui
 npm run test:a11y -w @trustwork/ui      # Storybook build + axe (initial + opened states) + keyboard + mobile + contrast; prints "axe: 170 stories scanned, 0 violations"
 npm run storybook -w @trustwork/ui      # interactive review with the a11y addon panel (violations shown as errors)
 ```
+
+
+## DS-003 focused evidence (2026-11-01 UTC)
+
+This section is a separate engineering snapshot; it does not replace or relabel the historical DS-001/DS-002 evidence above. Verified implementation/test commit: `a367f034408793e9d49ffd595e76e514fa2a7e80`, rebased onto the PR #446 merge `ea906192912cb3aeb536262152204af8f5c29ab0`.
+
+The focused local gate passed **40 browser tests** (33 DS-003 plus 7 existing primitive regressions) and **31 UI unit tests**, exit 0. Nine real rendered stories run at **375, 768 and 1280 px** in **en, es, ru, uz-Latn, ka, hy and az-Latn**: 189 story/locale/width combinations, plus opened dialogs/palette/shortcut help and detailed interaction scenarios. Axe WCAG 2.0 A/AA, 2.1 A/AA and 2.2 AA scans reported zero violations; no uncaught page errors, external browser requests or page-level horizontal overflow were observed.
+
+Keyboard evidence covers grid navigation/edit/cancel/commit, permission matrix/list, filters, selection/live counts, column visibility/order, server pagination without pretending to fetch, saved-view creation, non-modal drawer focus return, typed-confirmation and step-up clipboard paste/autocomplete, palette/disclosure/shortcut preference and map markers. Read-only tables remain semantic tables; chart and map have complete equivalent table/list views. Unit checks include all-matching query snapshot invalidation and every canonical restricted territory code.
+
+[Eight Russian phone/desktop screenshots and hashes](console-evidence/README.md) were retained and visually inspected. The final result report records command scopes, exits, counts, compatibility adapters and follow-ups. UI and web typechecks, scoped lint and documentation validation are separate from full exact-head CI; no full local check or application browser suite was run.
+
+**Not acceptance:** no human VoiceOver/NVDA session, native-language review, real-device pass, Firefox/WebKit pass, high-contrast review or 400% zoom pass was performed. The synthetic component fixtures do not prove real backend authorization, persistence, authentication or application workflows. Existing quarantine entries were not modified.
