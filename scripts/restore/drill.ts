@@ -89,6 +89,35 @@ export interface DrillEvidence {
   environment: { postgresImage: string; node: string; platform: string; commit: string | null; synthetic: true };
 }
 
+/**
+ * The drill deliberately kills the primary with a marker transaction in flight. A checked-out pg client emits
+ * socket errors on the client, not the pool. Keep those errors inside the awaited transaction result, discard the
+ * broken connection, and never let an unacknowledged marker count as committed or an error become a false success.
+ */
+export async function withDrillOwnerTransaction<T>(pool: pg.Pool, fn: (client: pg.PoolClient) => Promise<T>): Promise<T> {
+  const client = await pool.connect();
+  let socketError: Error | undefined;
+  let failed = false;
+  const onError = (error: Error) => { socketError = error; };
+  client.on('error', onError);
+  try {
+    const result = await inOwnerTransaction(client, () => fn(client));
+    if (socketError) throw socketError;
+    return result;
+  } catch (error) {
+    failed = true;
+    throw error;
+  } finally {
+    if (failed || socketError) {
+      // Leave the listener on this discarded client through socket shutdown (a second error may arrive).
+      client.release(true);
+    } else {
+      client.release();
+      client.off('error', onError);
+    }
+  }
+}
+
 export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<DrillEvidence> {
   const log = options.log;
   const id = `drill-${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')}-${randomBytes(2).toString('hex')}`.toLowerCase();
@@ -129,14 +158,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
     pools.push(p);
     return p;
   };
-  const owner = async <T>(p: pg.Pool, fn: (c: pg.PoolClient) => Promise<T>): Promise<T> => {
-    const c = await p.connect();
-    try {
-      return await inOwnerTransaction(c, () => fn(c));
-    } finally {
-      c.release();
-    }
-  };
+  const owner = withDrillOwnerTransaction;
 
   let shipping = true;
   let shipper: Promise<void> | null = null;
