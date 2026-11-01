@@ -169,35 +169,35 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
 
   const actions = ['declare', 'review', 'consent', 'revoke-consent', 'prepare-correction', 'release-correction'] as const;
   async function commandFixture(action: typeof actions[number]) {
-        const f = await pair(false); let table = 'publication', id = f.translation.id;
-        const key = action === 'review' ? 'coauthor' : 'writer';
-        const context = ctx(key);
-        let command: (trx: Transaction) => Promise<unknown>;
-        if (action === 'declare') command = trx => provenance.declare(trx, context, { ...f.input, expectedRevision: 1 });
-        else if (action === 'review') command = trx => provenance.review(trx, context, f.review);
-        else if (action === 'consent' || action === 'revoke-consent') {
-          const consent = { provenanceId: f.record.id, role: 'responsible_editor', credit: 'Synthetic Writer', channels: ['web'], noticeVersion: 'provenance.credit.v1', informedConsent: true } as const;
-          if (action === 'consent') {
-            table = 'provenance_record'; id = f.record.id;
-            command = trx => provenance.consent(trx, context, { ...consent, channels: ['web'] });
-          } else {
-            const c = await as(p.writer, trx => provenance.consent(trx, context, { ...consent, channels: ['web'] }));
-            table = 'provenance_credit_consent'; id = c.id;
-            command = trx => provenance.revoke(trx, context, c.id, 'Synthetic withdrawal');
-          }
-        } else {
-          let original = (await as(p.writer, trx => publications.get(trx, f.original.id)))!;
-          id = original.id;
-          const changed = draft({ body: 'Synthetic next correction', assistantAssisted: true });
-          if (action === 'prepare-correction') command = trx => sql`SELECT trustwork.provenance_prepare_correction(${JSON.stringify(context)}::jsonb,${id}::uuid,${original.revision},${JSON.stringify(changed)}::jsonb,'Synthetic correction')`.execute(trx);
-          else {
-            await as(p.writer, trx => sql`SELECT trustwork.provenance_prepare_correction(${JSON.stringify(context)}::jsonb,${id}::uuid,${original.revision},${JSON.stringify(changed)}::jsonb,'Synthetic correction')`.execute(trx));
-            await as(p.writer, trx => withProvenanceFixtures(w).declare(trx, null, id));
-            original = (await as(p.writer, trx => publications.get(trx, id)))!;
-            table = 'publication_version'; id = (await as(p.writer, trx => publications.versions(trx, original.id))).at(-1)!.id;
-            command = trx => publications.correct(trx, context, original.id, original.revision, changed, 'Synthetic correction', 'Synthetic correction');
-          }
-        }
+    const f = await pair(false); let table = 'publication', id = f.translation.id;
+    const key: 'coauthor' | 'writer' = action === 'review' ? 'coauthor' : 'writer';
+    const context = ctx(key);
+    let command: (trx: Transaction) => Promise<unknown>;
+    if (action === 'declare') command = trx => provenance.declare(trx, context, { ...f.input, expectedRevision: 1 });
+    else if (action === 'review') command = trx => provenance.review(trx, context, f.review);
+    else if (action === 'consent' || action === 'revoke-consent') {
+      const consent = { provenanceId: f.record.id, role: 'responsible_editor', credit: 'Synthetic Writer', channels: ['web'], noticeVersion: 'provenance.credit.v1', informedConsent: true } as const;
+      if (action === 'consent') {
+        table = 'provenance_record'; id = f.record.id;
+        command = trx => provenance.consent(trx, context, { ...consent, channels: ['web'] });
+      } else {
+        const c = await as(p.writer, trx => provenance.consent(trx, context, { ...consent, channels: ['web'] }));
+        table = 'provenance_credit_consent'; id = c.id;
+        command = trx => provenance.revoke(trx, context, c.id, 'Synthetic withdrawal');
+      }
+    } else {
+      let original = (await as(p.writer, trx => publications.get(trx, f.original.id)))!;
+      id = original.id;
+      const changed = draft({ body: 'Synthetic next correction', assistantAssisted: true });
+      if (action === 'prepare-correction') command = trx => sql`SELECT trustwork.provenance_prepare_correction(${JSON.stringify(context)}::jsonb,${id}::uuid,${original.revision},${JSON.stringify(changed)}::jsonb,'Synthetic correction')`.execute(trx);
+      else {
+        await as(p.writer, trx => sql`SELECT trustwork.provenance_prepare_correction(${JSON.stringify(context)}::jsonb,${id}::uuid,${original.revision},${JSON.stringify(changed)}::jsonb,'Synthetic correction')`.execute(trx));
+        await as(p.writer, trx => withProvenanceFixtures(w).declare(trx, null, id));
+        original = (await as(p.writer, trx => publications.get(trx, id)))!;
+        table = 'publication_version'; id = (await as(p.writer, trx => publications.versions(trx, original.id))).at(-1)!.id;
+        command = trx => publications.correct(trx, context, original.id, original.revision, changed, 'Synthetic correction', 'Synthetic correction');
+      }
+    }
     return { f, key, context, table, id, command };
   }
   for (const action of actions) {
@@ -328,6 +328,7 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
     }
     for (const table of ['publication', 'publication_version', 'issue_revision', 'magazine_digest', 'edition_link', 'provenance_record', 'provenance_review']) {
       await assert.rejects(db.app.query(`UPDATE trustwork.${table} SET id=id`), { code: '42501' });
+      await assert.rejects(db.app.query(`SELECT id FROM trustwork.${table} FOR UPDATE`), { code: '42501' });
     }
     const f = await pair(false);
     await refused(as(p.coauthor, trx => provenance.review(trx, { ...ctx('coauthor'), sessionId: w.admin.sessions.writer! }, f.review)), '42501', 'provenance.first_party_required');
