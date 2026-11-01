@@ -24,7 +24,7 @@ test('runtime probe: async results, handle and id addressing, private projects a
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout) as Record<string, unknown>;
   assert.equal(report.source, 'fixtures');
-  assert.equal(report.methods, 30, 'the port exposes the 30 data functions');
+  assert.equal(report.methods, 31, 'the port exposes the 31 data functions');
   assert.deepEqual(report.nonPromise, [], 'every port method returns a promise');
   assert.deepEqual(report.syncThrows, [], 'failures arrive as rejections, never as synchronous throws');
   assert.equal(report.personHandleRoundTrip, true);

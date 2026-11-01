@@ -20,13 +20,13 @@ export type BoundaryIsThePort = Assert<Equal<typeof data, DataPort>>;
 // 2. The adapter adds nothing beyond the port (pages cannot reach fixture-only helpers through it).
 export type NoExtraMembers = Assert<Equal<Exclude<keyof typeof fixtureDataPort, keyof DataPort>, never>>;
 
-// 3. Every data function of the port is asynchronous: 30 methods, each returning a Promise.
+// 3. Every data function of the port is asynchronous: 31 methods (getLegalDocuments added by QA-002 D4), each returning a Promise.
 type Method = { [K in keyof DataPort]: DataPort[K] extends (...args: never[]) => unknown ? K : never }[keyof DataPort];
 type Returns = { [K in Method]: DataPort[K] extends (...args: never[]) => infer R ? R : never };
 export type AllAsync = Assert<Equal<{ [K in Method]: Returns[K] extends Promise<unknown> ? true : false }[Method], true>>;
 type UnionLength<U, Acc extends unknown[] = []> = [U] extends [never] ? Acc['length'] : UnionLength<Exclude<U, LastOf<U>>, [...Acc, LastOf<U>]>;
 type LastOf<U> = ((U extends unknown ? (x: () => U) => void : never) extends (x: infer I) => void ? I : never) extends () => infer L ? L : never;
-export type ThirtyMethods = Assert<Equal<UnionLength<Method>, 30>>;
+export type ThirtyOneMethods = Assert<Equal<UnionLength<Method>, 31>>;
 
 // 4. Public entities are looked up by handle, workspace objects by id (parameter names are part of the contract docs; types are strings).
 export type PersonByHandle = Assert<Equal<Parameters<DataPort['getPerson']>, [handle: string]>>;
