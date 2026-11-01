@@ -32,7 +32,7 @@ export default {
       const a = (await agreement(h, buyer, seller, seed.people.petr, seed.people.carl)).agreement;
       const binding: PaymentBinding = { agreementId: a.id, agreementDigest: a.acceptedTerms.digest.value, offerVersion: a.acceptedTerms.quoteVersion.version, requestVersion: a.acceptedTerms.rfqVersion.version,
         payer: { kind: 'person', id: seed.people.petr }, payee: { kind: 'person', id: seed.people.carl }, collectingHubId: hub.hubId, payerHubId: hub.hubId, payeeHubId: hub.hubId,
-        payerCountry: 'US', payeeCountry: 'US', currency: 'USD', amountMinor: '1250', connectionId: hub.connectionId, connectedAccountRef: 'synthetic-crash-account', rail: 'qr', evidenceMode: 'synthetic' };
+        payerCountry: 'US', payeeCountry: 'US', currency: 'USD', amountMinor: '1250', connectionId: hub.connectionId, connectedAccountCountry: 'US', connectedAccountRef: 'synthetic-crash-account', rail: 'qr', evidenceMode: 'synthetic' };
       await q('INSERT INTO trustwork.payment_source(agreement_id,binding) VALUES($1,$2)', [a.id, binding]);
       const order = (await q('SELECT transaction_budget_id FROM trustwork.commercial_order WHERE agreement_id=$1', [a.id]))[0]!;
       return { agreementId: a.id, budgetId: order.transaction_budget_id as string };

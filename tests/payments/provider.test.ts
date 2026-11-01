@@ -8,7 +8,7 @@ const binding: PaymentBinding = {
   agreementId: randomUUID(), agreementDigest: 'a'.repeat(64), offerVersion: 1, requestVersion: 1,
   payer: { kind: 'person', id: randomUUID() }, payee: { kind: 'person', id: randomUUID() },
   collectingHubId: hub, payerHubId: hub, payeeHubId: hub, payerCountry: 'US', payeeCountry: 'US',
-  amountMinor: '9007199254740993', currency: 'USD', connectionId: randomUUID(), connectedAccountRef: 'synthetic-payee', rail: 'qr', evidenceMode: 'synthetic',
+  amountMinor: '9007199254740993', currency: 'USD', connectionId: randomUUID(), connectedAccountCountry: 'US', connectedAccountRef: 'synthetic-payee', rail: 'qr', evidenceMode: 'synthetic',
 };
 const signal = new AbortController().signal;
 const instruction = (): PaymentInstruction => ({ operationId: randomUUID(), kind: 'create', binding, originalProviderRef: null });

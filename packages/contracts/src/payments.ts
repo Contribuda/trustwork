@@ -28,6 +28,7 @@ export const PaymentBindingSchema = z.strictObject({
   amountMinor: PaymentMinorSchema,
   connectionId: IdSchema,
   connectedAccountRef: PaymentReferenceSchema,
+  connectedAccountCountry: z.string().regex(/^[A-Z]{2}(?:-[A-Z0-9]{1,3})?$/),
   rail: z.enum(['card', 'ach', 'push_to_phone', 'qr', 'provider_escrow']),
   evidenceMode: z.enum(['synthetic', 'licensed_provider']),
 });

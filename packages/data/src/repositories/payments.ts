@@ -4,6 +4,10 @@ import type { PaymentEvidence, PaymentInstruction } from '../../../contracts/src
 import { PaymentViewSchema } from '../../../contracts/src/payments.js';
 
 export const payments = {
+  async reconcileRecorded(trx: Transaction, operationId: string): Promise<string | null> {
+    const r = await sql<{ value: string | null }>`SELECT trustwork.payments_reconcile_recorded(${operationId}::uuid) AS value`.execute(trx);
+    return r.rows[0]?.value ?? null;
+  },
   async reconcileDue(trx: Transaction): Promise<string[]> {
     return (await sql<{ id: string }>`SELECT trustwork.payments_reconcile_due() AS id`.execute(trx)).rows.map((r) => r.id);
   },
