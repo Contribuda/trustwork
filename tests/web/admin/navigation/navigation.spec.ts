@@ -1,14 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { hydrated, expectNoAxeViolations } from '../../helpers.js';
 
 const base = '/admin/hubs/us-demo';
 const at = (path = 'inbox', extra = '') => `${base}/${path}?persona=hub-owner${extra ? `&${extra}` : ''}`;
-const evidence = resolve('tests/web/admin/navigation/evidence');
-const copy = (tag: string) => JSON.parse(readFileSync(resolve(`apps/web/locales/${tag}/console-navigation.json`), 'utf8')).consoleNav as Record<string, string>;
+const evidence = fileURLToPath(new URL('./evidence/', import.meta.url));
+const copy = (tag: string) => JSON.parse(readFileSync(new URL(`../../../../apps/web/locales/${tag}/console-navigation.json`, import.meta.url), 'utf8')).consoleNav as Record<string, string>;
 const en = copy('en');
-const languageLabel = (tag: string): string => JSON.parse(readFileSync(resolve(`packages/ui/locales/${tag}.json`), 'utf8')).consoleKit.language;
+const languageLabel = (tag: string): string => JSON.parse(readFileSync(new URL(`../../../../packages/ui/locales/${tag}.json`, import.meta.url), 'utf8')).consoleKit.language;
 async function english(page: Page) { await page.context().addCookies([{ name: 'trustwork.locale', value: 'en', domain: '127.0.0.1', path: '/' }]); }
 async function ready(page: Page) { await hydrated(page.getByTestId('console-navigation-tools').getByRole('button').first()); }
 async function geometry(page: Page) {
@@ -114,7 +114,7 @@ for (const decision of ['approve', 'decline'] as const) test(`375: simulated ${d
   await page.goto(at('inbox', 'item=rq-legal-privacy-2')); await ready(page);
   const card = page.getByTestId('decision-rq-legal-privacy-2');
   await expect(card.locator('article > p').first()).toHaveText('Trustwork United States (demo) · Synthetic Compliance Officer');
-  const auditCopy = JSON.parse(readFileSync(resolve('packages/ui/locales/en.json'), 'utf8')).consoleKit.auditNote as string;
+  const auditCopy = JSON.parse(readFileSync(new URL('../../../../packages/ui/locales/en.json', import.meta.url), 'utf8')).consoleKit.auditNote as string;
   await expect(card.getByText(auditCopy, { exact: true })).toHaveCount(0);
   await expect(card.locator('article')).toContainText(en.synthetic!);
   await expect(card.getByTestId('inbox-field-diff').getByRole('listitem')).not.toHaveCount(0);
