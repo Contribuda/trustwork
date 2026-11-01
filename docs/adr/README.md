@@ -24,5 +24,6 @@ Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are 
 | [022](022-jurisdiction-policy-source-and-runtime-binding.md) | Technical architecture accepted 2026-11-01 | Reviewed executable jurisdiction facts, immutable legal text and authoritative two-party runtime binding; unknown law remains unavailable |
 
 | [023](023-screening-operational-cohorts.md) | Proposed; technical review pending | Explicit event attribution, distinct-person populations and retention for sanctions operational cohorts; no per-person refusal logs |
+| [024](024-payment-source-authority.md) | Proposed 2026-11-01 | Exact verified party/account source authority, separate bilateral payment authorization, narrow publisher and independent review; remote admission remains unavailable pending a fenced protocol |
 
 Numbers 005 and 006 recorded the core team's former private delivery coordination and development-management integration; both were retired on 2026-10-31 when development moved into this repository (ADR 010 decision 15).
