@@ -545,6 +545,23 @@ BEGIN
   RETURN trustwork.admin_authorize(p_ctx, p_permissions, NULL, p_hub);
 END $$;
 
+-- Authorize before a policy fetch and keep the source stable until its result is recorded.
+CREATE FUNCTION trustwork.sources_prepare_policy_check(p_ctx jsonb, p_hub uuid, p_source uuid) RETURNS trustwork.source
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+DECLARE
+  v_source trustwork.source%ROWTYPE;
+BEGIN
+  PERFORM trustwork.sources_staff(p_ctx, ARRAY['admin.sources.manage'], p_hub);
+  SELECT * INTO v_source FROM trustwork.source WHERE id = p_source AND hub_id = p_hub FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such source' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  IF v_source.status IN ('rejected', 'retired', 'taken_down') THEN
+    RAISE EXCEPTION 'a % source is closed', v_source.status USING ERRCODE = 'check_violation', HINT = 'sources.source_closed';
+  END IF;
+  RETURN v_source;
+END $$;
+
 CREATE FUNCTION trustwork.sources_register(p_ctx jsonb, p_hub uuid, p_input jsonb) RETURNS trustwork.source
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
@@ -973,8 +990,36 @@ BEGIN
   IF p_channel = 'peer' AND NOT trustwork.sources_use(v_uses, 'syndicateToPeers') THEN
     RAISE EXCEPTION 'the licence does not allow syndicating this item' USING ERRCODE = 'check_violation', HINT = 'sources.licence_forbids_syndication';
   END IF;
-  RETURN jsonb_build_object('itemId', v_item.id, 'url', v_item.url, 'title', v_item.title, 'summary', v_item.summary,
+  RETURN jsonb_build_object('itemId', v_item.id, 'url', v_item.url, 'title', v_item.title, 'summary', CASE WHEN trustwork.sources_use(v_uses, 'displaySummary') THEN v_item.summary END,
     'fullText', CASE WHEN trustwork.sources_use(v_uses, 'storeFullText') THEN v_item.full_text END, 'attribution', v_source.attribution_template, 'sourceName', v_source.name);
+END $$;
+
+-- Prepare model egress under the exact command authority, not the broader registry read permission.
+-- Hold source then item locks through the adapter call and recordAssist in the same transaction:
+-- terms/RSL narrowing and takedown cannot commit between the licence check and dispatch; competing
+-- assists or decisions re-read the item after waiting and fail before dispatch when stale or decided.
+CREATE FUNCTION trustwork.sources_prepare_assist(p_ctx jsonb, p_hub uuid, p_item uuid, p_expected_revision integer) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+DECLARE
+  v_item trustwork.source_item%ROWTYPE;
+  v_payload jsonb;
+BEGIN
+  PERFORM trustwork.sources_staff(p_ctx, ARRAY['admin.publications.review'], p_hub);
+  SELECT * INTO v_item FROM trustwork.source_item WHERE id = p_item AND hub_id = p_hub;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such item' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  PERFORM 1 FROM trustwork.source WHERE id = v_item.source_id FOR SHARE;
+  SELECT * INTO v_item FROM trustwork.source_item WHERE id = p_item FOR UPDATE;
+  PERFORM trustwork.sources_check_revision(v_item.revision, p_expected_revision);
+  IF v_item.status <> 'queued' THEN
+    RAISE EXCEPTION 'an item is decided once' USING ERRCODE = 'check_violation', HINT = 'sources.item_decided';
+  END IF;
+  v_payload := trustwork.sources_item_egress(p_item, 'model_provider');
+  IF NOT trustwork.sources_use(trustwork.sources_effective_uses(v_item), 'displaySummary') THEN
+    RAISE EXCEPTION 'the licence does not allow a summary' USING ERRCODE = 'check_violation', HINT = 'sources.licence_forbids_summary';
+  END IF;
+  RETURN v_payload;
 END $$;
 
 -- Stores a machine-assisted summary suggestion (labelled) for a queued item whose licence allows model use.
@@ -994,7 +1039,7 @@ BEGIN
   SELECT * INTO v_before FROM trustwork.source_item WHERE id = p_item FOR UPDATE;
   v_actor := trustwork.sources_staff(p_ctx, ARRAY['admin.publications.review'], v_before.hub_id);
   PERFORM trustwork.sources_check_revision(v_before.revision, p_expected_revision);
-  PERFORM trustwork.sources_item_egress(p_item, 'model_provider');
+  PERFORM trustwork.sources_prepare_assist(p_ctx, v_before.hub_id, p_item, p_expected_revision);
   IF v_before.status <> 'queued' THEN
     RAISE EXCEPTION 'an item is decided once' USING ERRCODE = 'check_violation', HINT = 'sources.item_decided';
   END IF;
@@ -1170,17 +1215,21 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
   JOIN trustwork.source s ON s.id = f.source_id AND s.status IN ('active', 'paused', 'retired') AND trustwork.sources_use(s.allowed_uses, 'displayHeadlineAndLink')
   JOIN trustwork.hub h ON h.id = f.hub_id AND h.lifecycle IN ('soft_launch', 'public')
   WHERE f.hub_id = p_hub AND f.record_kind = p_kind AND f.record_id = p_record AND f.active
+    AND trustwork.sources_use(b.licence_snapshot -> 'allowedUses', 'displayHeadlineAndLink')
+    AND (f.source_item_id IS NULL OR EXISTS (SELECT 1 FROM trustwork.source_item i WHERE i.id = f.source_item_id
+      AND trustwork.sources_use(trustwork.sources_effective_uses(i), 'displayHeadlineAndLink')))
 $$;
 -- The labelled sponsored slot: sponsored items a person drafted from active sources, only while the hub's policy allows
 -- sponsored content, at most its slot count. Never part of any ranked list.
 CREATE FUNCTION trustwork.sources_sponsored_slot(p_hub uuid) RETURNS jsonb
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
-  WITH policy AS (SELECT * FROM trustwork.sources_sponsored_current(p_hub) p WHERE p.id IS NOT NULL AND p.allowed)
+  WITH policy AS (SELECT * FROM trustwork.sources_sponsored_current(p_hub) p WHERE p.id IS NOT NULL AND p.allowed AND NOT p.require_verified_sponsor)
   SELECT jsonb_build_object('label', 'sponsored', 'items', coalesce((SELECT jsonb_agg(x.item ORDER BY x.observed_at DESC, x.id) FROM (
       SELECT jsonb_build_object('itemId', i.id, 'title', i.title, 'url', i.url, 'sponsorName', i.sponsor_name, 'sourceName', s.name) AS item, i.observed_at, i.id
       FROM trustwork.source_item i JOIN trustwork.source s ON s.id = i.source_id AND s.status = 'active'
       JOIN trustwork.hub h ON h.id = i.hub_id AND h.lifecycle IN ('soft_launch', 'public')
       WHERE i.hub_id = p_hub AND i.sponsored AND i.status = 'drafted' AND EXISTS (SELECT 1 FROM policy)
+        AND trustwork.sources_use(trustwork.sources_effective_uses(i), 'displayHeadlineAndLink')
       ORDER BY i.observed_at DESC, i.id LIMIT (SELECT coalesce(max(max_slots_per_page), 0) FROM policy)) x), '[]'::jsonb))
 $$;
 -- Worker input for ranking, matching and plan recommendations (REC-001): items a person drafted from active sources,
@@ -1190,17 +1239,20 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
   SELECT i.id, i.source_id, i.title, i.url, i.observed_at
   FROM trustwork.source_item i JOIN trustwork.source s ON s.id = i.source_id AND s.status = 'active'
   WHERE i.hub_id = p_hub AND i.status = 'drafted' AND NOT i.sponsored
+    AND trustwork.sources_use(trustwork.sources_effective_uses(i), 'displayHeadlineAndLink')
+    AND trustwork.sources_use(trustwork.sources_effective_uses(i), 'indexForSearch')
   ORDER BY i.observed_at DESC, i.id
   LIMIT least(greatest(coalesce(p_limit, 50), 1), 500)
 $$;
 -- Worker export for federation: items whose effective uses allow syndication (a display-only source never appears).
 CREATE FUNCTION trustwork.sources_peer_export(p_hub uuid, p_limit integer) RETURNS SETOF jsonb
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
-  SELECT jsonb_build_object('itemId', i.id, 'url', i.url, 'title', i.title, 'summary', i.summary, 'sourceName', s.name, 'attribution', s.attribution_template,
+  SELECT jsonb_build_object('itemId', i.id, 'url', i.url, 'title', i.title, 'summary', CASE WHEN trustwork.sources_use(trustwork.sources_effective_uses(i), 'displaySummary') THEN i.summary END, 'sourceName', s.name, 'attribution', s.attribution_template,
     'observedAt', to_char(i.observed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))
   FROM trustwork.source_item i JOIN trustwork.source s ON s.id = i.source_id AND s.status = 'active'
   WHERE i.hub_id = p_hub AND i.status = 'drafted' AND NOT i.sponsored
     AND trustwork.sources_use(trustwork.sources_effective_uses(i), 'syndicateToPeers')
+    AND trustwork.sources_use(trustwork.sources_effective_uses(i), 'displayHeadlineAndLink')
   ORDER BY i.observed_at DESC, i.id
   LIMIT least(greatest(coalesce(p_limit, 50), 1), 500)
 $$;
@@ -1249,6 +1301,7 @@ CREATE POLICY source_tombstone_read ON trustwork.source_tombstone FOR SELECT TO 
 GRANT SELECT ON trustwork.source, trustwork.crawl_policy, trustwork.sponsored_content_policy, trustwork.import_batch, trustwork.source_item, trustwork.sourced_record_field,
   trustwork.record_link_proposal, trustwork.source_takedown, trustwork.source_tombstone TO trustwork_app;
 GRANT EXECUTE ON FUNCTION
+  trustwork.sources_prepare_policy_check(jsonb, uuid, uuid), trustwork.sources_prepare_assist(jsonb, uuid, uuid, integer),
   trustwork.sources_register(jsonb, uuid, jsonb), trustwork.sources_set_terms(jsonb, uuid, integer, jsonb),
   trustwork.sources_record_terms(jsonb, uuid, integer, text, text, text, text), trustwork.sources_record_robots(jsonb, uuid, jsonb),
   trustwork.sources_record_rsl(jsonb, uuid, integer, text, text, jsonb, jsonb), trustwork.sources_set_status(jsonb, uuid, integer, text),

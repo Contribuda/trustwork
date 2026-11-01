@@ -35,7 +35,7 @@ const NO_OBJECT = '00000000-0000-4000-8000-000000000000';
  * idempotency record there too). Refusals of authority leave a `denied` audit row in a transaction of their own.
  *
  * Outside calls go through the adapter ports only (robots.txt and RSL fetches, the summary drafter), bounded in time;
- * this slice wires fakes. The summary drafter is called only after `sources_item_egress` confirmed that the item's
+ * this slice wires fakes. The summary drafter is called only after `sources_prepare_assist` authorized and locked the item and confirmed that its
  * licence allows sending it to a model provider, so a display-only source never reaches one.
  */
 export class SourcesService {
@@ -208,7 +208,7 @@ export class SourcesService {
   /** Fetches robots.txt through the adapter port, evaluates it for the source URL and records the check. */
   checkRobots(e: Elevated, hubId: string, sourceId: string, body: Body<typeof CheckRobotsCommandSchema>) {
     return this.staff(e, body, { hubId, permission: 'admin.sources.manage', action: 'source.robots_recorded', objectType: 'source', objectId: sourceId }, async (trx, cmd) => {
-      const source = await this.sourceOf(trx, hubId, sourceId);
+      const source = await sources.preparePolicyCheck(trx, cmd, hubId, sourceId);
       if (!source.url) throw new ApiError('validation.schema', 'a robots.txt check needs a source URL', { reason: 'url_required' });
       const url = new URL(source.url);
       const robotsUrl = `${url.origin}/robots.txt`;
@@ -229,7 +229,7 @@ export class SourcesService {
   /** Fetches the source's RSL document through the adapter port and records the reading as a suggestion (never a widening). */
   checkRsl(e: Elevated, hubId: string, sourceId: string, body: Body<typeof CheckRslCommandSchema>) {
     return this.staff(e, body, { hubId, permission: 'admin.sources.manage', action: 'source.rsl_recorded', objectType: 'source', objectId: sourceId }, async (trx, cmd) => {
-      const source = await this.sourceOf(trx, hubId, sourceId);
+      const source = await sources.preparePolicyCheck(trx, cmd, hubId, sourceId);
       const fetched = await bounded(this.options.policyFetcher.rsl(body.rslUrl), { status: 'unavailable' as const });
       if (fetched.status === 'unavailable') throw new ApiError('validation.revision_conflict', 'the site did not answer; nothing was recorded', { reason: 'source_unreachable' });
       const reading = fetched.status === 'found' ? parseRsl(fetched.body, source.url ?? body.rslUrl) : null;
@@ -312,8 +312,9 @@ export class SourcesService {
     return this.staff(e, body, { hubId, permission: 'admin.publications.review', action: 'source_item.assisted', objectType: 'source_item', objectId: itemId }, async (trx, cmd) => {
       const item = await sourceItems.get(trx, itemId);
       if (!item || item.hub_id !== hubId) throw new ApiError('access.not_found', 'access.not_found');
-      const payload = await sourceItems.egress(trx, itemId, 'model_provider');
-      const drafted = await this.options.summaryDrafter.draft({ title: payload.title, text: payload.fullText ?? payload.summary ?? payload.title, language: body.language, attribution: payload.attribution });
+      const payload = await sourceItems.prepareAssist(trx, cmd, hubId, itemId, body.expectedRevision);
+      const drafted = await bounded(this.options.summaryDrafter.draft({ title: payload.title, text: payload.fullText ?? payload.summary ?? payload.title, language: body.language, attribution: payload.attribution }), null);
+      if (!drafted) throw new ApiError('validation.revision_conflict', 'the drafter did not answer; nothing was recorded', { reason: 'source_unreachable' });
       const row = await sourceItems.recordAssist(trx, cmd, itemId, body.expectedRevision, drafted.summary.slice(0, 2000), body.language);
       return { result: await this.result(trx, cmd, 'applied', row.id, row.revision, null), item: toItem(row, await sourceItems.effectiveUses(trx, itemId) as AllowedUses) };
     });

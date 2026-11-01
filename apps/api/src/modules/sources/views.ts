@@ -50,11 +50,11 @@ export function toBatch(b: ImportBatchRow): ImportBatchView {
 
 export function toItem(i: SourceItemRow, effectiveUses: AllowedUses): SourceItemView {
   return SourceItemViewSchema.parse({
-    id: i.id, hubId: i.hub_id, sourceId: i.source_id, batchId: i.import_batch_id, externalId: i.external_id, url: i.url, title: i.title, summary: i.summary,
-    hasFullText: i.full_text !== null, sourceTime: iso(i.source_time), observedAt: req(i.observed_at), contentDigest: i.content_digest, licenceSnapshot: snapshot(i.licence_snapshot),
+    id: i.id, hubId: i.hub_id, sourceId: i.source_id, batchId: i.import_batch_id, externalId: i.external_id, url: i.url, title: i.title, summary: effectiveUses.displaySummary ? i.summary : null,
+    hasFullText: effectiveUses.storeFullText && i.full_text !== null, sourceTime: iso(i.source_time), observedAt: req(i.observed_at), contentDigest: i.content_digest, licenceSnapshot: snapshot(i.licence_snapshot),
     effectiveUses, status: i.status, decidedBy: i.decided_by, decidedAt: iso(i.decided_at), publicationId: i.publication_id,
     sponsored: i.sponsored && i.sponsor_name ? { sponsorName: i.sponsor_name, label: 'sponsored' } : null,
-    assistedSummary: i.assisted_summary && i.assisted_language && i.assisted_at
+    assistedSummary: effectiveUses.displaySummary && i.assisted_summary && i.assisted_language && i.assisted_at
       ? { text: i.assisted_summary, language: i.assisted_language, draftedAt: req(i.assisted_at), label: 'machine_assisted' } : null,
     revision: i.revision,
   });

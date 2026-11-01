@@ -57,6 +57,10 @@ export interface StagedFieldInput { recordKind: string; recordId: string; field:
 export interface StagedLinkInput { left: { kind: string; id: string }; rightLocalId: string | null; rightGlobalId: string | null; evidence: string }
 
 export const sources = {
+  /** Exact permission, elevation and source state, locked until the policy result is recorded. */
+  preparePolicyCheck(trx: Transaction, ctx: CommandContext, hubId: string, sourceId: string): Promise<SourceRow> {
+    return one(sql<SourceRow>`SELECT * FROM trustwork.sources_prepare_policy_check(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${sourceId}::uuid)`, trx, 'sources_prepare_policy_check');
+  },
   register(trx: Transaction, ctx: CommandContext, hubId: string, input: RegisterSourceInput): Promise<SourceRow> {
     return one(sql<SourceRow>`SELECT * FROM trustwork.sources_register(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${json(input)}::jsonb)`, trx, 'sources_register');
   },
@@ -121,7 +125,15 @@ export const importBatches = {
   },
 };
 
+export interface ItemEgress { itemId: string; url: string; title: string; summary: string | null; fullText: string | null; attribution: string; sourceName: string }
+
 export const sourceItems = {
+  /** Authorize and lock before model dispatch; use this payload in the same transaction as recordAssist. */
+  async prepareAssist(trx: Transaction, ctx: CommandContext, hubId: string, itemId: string, expectedRevision: number): Promise<ItemEgress> {
+    const { rows } = await sql<{ v: ItemEgress }>`
+      SELECT trustwork.sources_prepare_assist(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${itemId}::uuid, ${expectedRevision}::int) AS v`.execute(trx);
+    return rows[0]!.v;
+  },
   /** Records the person's decision; a draft names the CNT-001 editorial draft they created from the item in this transaction. */
   decide(trx: Transaction, ctx: CommandContext, itemId: string, expectedRevision: number, decision: 'draft' | 'discard', publicationId: string | null): Promise<SourceItemRow> {
     return one(sql<SourceItemRow>`SELECT * FROM trustwork.sources_decide_item(${ctxJson(ctx)}::jsonb, ${itemId}::uuid, ${expectedRevision}::int, ${decision}::text, ${publicationId}::uuid)`,

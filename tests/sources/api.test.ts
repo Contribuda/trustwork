@@ -94,6 +94,13 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
     expectRefusal(await command('outsider', `${base}/sources`, registration()), 403, 'access.forbidden', 'staff');
     expectRefusal(await c.stewardA.get(`${base}/sources`), 403, 'access.forbidden', 'elevation');
     expectRefusal(await command('stewardA', `${base}/sources`, registration()), 403, 'access.forbidden', 'elevation');
+    const policyCalls = defaultPolicyFetcher.calls.length;
+    const modelCalls = defaultSummaryDrafter.calls.length;
+    const id = randomUUID();
+    expectRefusal(await command('stewardA', `${base}/sources/${id}/robots-check`, { userAgent: 'SyntheticBot' }), 403, 'access.forbidden', 'elevation');
+    expectRefusal(await command('stewardA', `${base}/sources/${id}/rsl-check`, { rslUrl: 'https://allow.synthetic-journal.example/license-open.xml' }), 403, 'access.forbidden', 'elevation');
+    expectRefusal(await command('editorA', `${base}/source-items/${id}/assisted-summary`, { expectedRevision: 1, language: 'en' }), 403, 'access.forbidden', 'elevation');
+    assert.deepEqual([defaultPolicyFetcher.calls.length, defaultSummaryDrafter.calls.length], [policyCalls, modelCalls]);
   });
 
   await elevate(...STAFF);
@@ -144,6 +151,73 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
     expectRefusal(await command('stewardA', `${base}/sources/${feed.id}/rsl-check`, { rslUrl: 'https://down.synthetic-journal.example/license-open.xml' }), 409, 'validation.revision_conflict', 'source_unreachable');
   });
 
+  await t.test('policy adapters are never called for readers, other hubs or closed sources', async () => {
+    const feed = await register();
+    const calls = defaultPolicyFetcher.calls.length;
+    for (const key of ['editorA', 'officerA'] as const) {
+      expectRefusal(await command(key, `${base}/sources/${feed.id}/robots-check`, { userAgent: 'SyntheticBot' }), 403, 'access.forbidden', 'forbidden');
+      expectRefusal(await command(key, `${base}/sources/${feed.id}/rsl-check`, { rslUrl: 'https://allow.synthetic-journal.example/license-open.xml' }), 403, 'access.forbidden', 'forbidden');
+    }
+    expectRefusal(await command('stewardA', `/v1/admin/hubs/${w.otherHubId}/sources/${feed.id}/robots-check`, { userAgent: 'SyntheticBot' }), 403, 'access.forbidden', 'forbidden');
+    ok(await command('stewardA', `${base}/sources/${feed.id}/status`, { expectedRevision: feed.revision, to: 'retired' }));
+    expectRefusal(await command('stewardA', `${base}/sources/${feed.id}/robots-check`, { userAgent: 'SyntheticBot' }), 409, 'validation.revision_conflict', 'source_closed');
+    expectRefusal(await command('stewardA', `${base}/sources/${feed.id}/rsl-check`, { rslUrl: 'https://allow.synthetic-journal.example/license-open.xml' }), 409, 'validation.revision_conflict', 'source_closed');
+    assert.equal(defaultPolicyFetcher.calls.length, calls);
+  });
+
+  await t.test('model dispatch checks exact authority, revision, decision and summary licence first', async () => {
+    const feed = await register();
+    const [row] = await stageAndActivate(feed.id, [stagedItem('preflight')]);
+    assert.ok(row);
+    const path = `${base}/source-items/${row.id}/assisted-summary`;
+    const body = { expectedRevision: row.revision, language: 'en' };
+    const calls = defaultSummaryDrafter.calls.length;
+    for (const key of ['stewardA', 'officerA'] as const) expectRefusal(await command(key, path, body), 403, 'access.forbidden', 'forbidden');
+    expectRefusal(await command('editorA', path, { ...body, expectedRevision: row.revision + 1 }), 409, 'validation.revision_conflict', 'revision_conflict');
+    expectRefusal(await command('editorA', `/v1/admin/hubs/${w.otherHubId}/source-items/${row.id}/assisted-summary`, body), 404, 'access.not_found');
+    const decided = ok<{ item: { revision: number } }>(await command('editorA', `${base}/source-items/${row.id}/decide`, {
+      expectedRevision: row.revision, decision: 'discard', treatment: null, language: null, credit: null, eventTime: null, useAssistedSummary: false,
+    }));
+    expectRefusal(await command('editorA', path, { ...body, expectedRevision: decided.item.revision }), 409, 'validation.revision_conflict', 'item_decided');
+    const noSummary = await register({ allowedUses: { ...OPEN_USES, displaySummary: false } });
+    const [restricted] = await stageAndActivate(noSummary.id, [stagedItem('no-summary')]);
+    expectRefusal(await command('editorA', `${base}/source-items/${restricted!.id}/assisted-summary`, { expectedRevision: restricted!.revision, language: 'en' }), 422, 'validation.schema', 'licence_forbids_summary');
+    assert.equal(defaultSummaryDrafter.calls.length, calls, 'all refused requests leave adapter call counts unchanged');
+  });
+
+  await t.test('racing assists dispatch once and hold source/item locks across the fake provider', async () => {
+    const feed = await register();
+    const [row] = await stageAndActivate(feed.id, [stagedItem('assist-race', { summary: 'Synthetic summary', fullText: 'Synthetic text' })]);
+    assert.ok(row);
+    const original = defaultSummaryDrafter.draft;
+    const calls = defaultSummaryDrafter.calls.length;
+    let locked = 0;
+    defaultSummaryDrafter.draft = async (input) => {
+      // NOWAIT probes use another connection: narrowing/takedown and competing decisions cannot commit during dispatch.
+      for (const [table, id] of [['source', feed.id], ['source_item', row.id]] as const) {
+        await assert.rejects(h.db.admin.query(`SELECT id FROM trustwork.${table} WHERE id = $1 FOR UPDATE NOWAIT`, [id]), { code: '55P03' });
+        locked += 1;
+      }
+      return original.call(defaultSummaryDrafter, input);
+    };
+    try {
+      const results = await Promise.all(['editorA', 'editorB'].map((key) => command(key as Staff, `${base}/source-items/${row.id}/assisted-summary`, { expectedRevision: row.revision, language: 'en' })));
+      assert.deepEqual(results.map((r) => r.status).sort(), [200, 409]);
+      expectRefusal(results.find((r) => r.status === 409)!, 409, 'validation.revision_conflict', 'revision_conflict');
+      assert.equal(defaultSummaryDrafter.calls.length, calls + 1);
+      assert.equal(locked, 2);
+    } finally {
+      defaultSummaryDrafter.draft = original;
+    }
+    // A narrowing committed first prevents dispatch for the still-queued item and masks old summaries in staff views.
+    ok(await command('stewardA', `${base}/sources/${feed.id}/terms`, { ...registration(), expectedRevision: feed.revision, allowedUses: DISPLAY_ONLY,
+      kind: undefined, name: undefined, url: undefined, ownerPersonId: undefined }));
+    const view = SourceItemViewSchema.parse(ok<{ item: unknown }>(await c.editorA.get(`${base}/source-items/${row.id}`)).item);
+    assert.deepEqual([view.summary, view.assistedSummary, view.hasFullText], [null, null, false]);
+    expectRefusal(await command('editorA', `${base}/source-items/${row.id}/assisted-summary`, { expectedRevision: view.revision, language: 'en' }), 422, 'validation.schema', 'licence_forbids_model_use');
+    assert.equal(defaultSummaryDrafter.calls.length, calls + 1);
+  });
+
   let draftedItemId = '';
   await t.test('acceptance: the review queue; only a person turns an item into a publication draft, which is not published', async () => {
     const feed = await register({ name: 'Synthetic Queue Journal' });
@@ -187,6 +261,7 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
 
   await t.test('takedown of an item and of a source writes tombstones and names the publications to retract', async () => {
     const feed = await register({ name: 'Synthetic Takedown Journal' });
+    const pendingBatch = ok<{ batch: { id: string } }>(await command('stewardA', `${base}/sources/${feed.id}/batches`, { items: [stagedItem('pending-takedown')], fields: [], links: [] }), 201);
     const record = randomUUID();
     const [first, second] = await stageAndActivate(feed.id, [stagedItem('t1'), stagedItem('t2')], [{ recordKind: 'company', recordId: record, field: 'legalName', value: 'Synthetic Takedown LLC', itemExternalId: 'api-t1' }]);
     const provenance = PublicProvenanceSchema.parse(ok(await new Client(app).get(`/v1/hubs/${w.hubId}/sourced-records/company/${record}/provenance`)));
@@ -197,7 +272,9 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
     assert.deepEqual(one.tombstones.map((x) => `${x.channel}:${x.targetKind}`).sort(), ['federation:source_item', 'federation:sourced_record', 'retrieval:source_item', 'retrieval:sourced_record']);
     expectRefusal(await new Client(app).get(`/v1/hubs/${w.hubId}/sourced-records/company/${record}/provenance`), 404, 'access.not_found');
     const all = TakedownViewSchema.parse(ok<{ takedown: unknown }>(await command('stewardB', `${base}/sources/${feed.id}/takedown`, { reasonCategory: 'licence_ended', note: 'Synthetic licence ended' })).takedown);
-    assert.equal(all.itemsTakenDown, 1, 'the remaining item');
+    assert.equal(all.itemsTakenDown, 2, 'the remaining item and the pending batch item');
+    const pendingView = ImportBatchViewSchema.parse(ok<{ batch: unknown }>(await c.stewardA.get(`${base}/import-batches/${pendingBatch.batch.id}`)).batch);
+    assert.equal(pendingView.status, 'taken_down');
     assert.ok(all.tombstones.every((x) => x.reason === 'licence_ended'));
     assert.equal(ok<{ item: { status: string } }>(await c.stewardA.get(`${base}/source-items/${second!.id}`)).item.status, 'taken_down');
     assert.deepEqual(ok<{ takedown: unknown }>(await c.stewardA.get(`${base}/source-takedowns/${all.id}`)).takedown, all);
@@ -228,6 +305,8 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
     assert.deepEqual([slot.label, slot.items.map((x) => x.itemId)], ['sponsored', [sponsored!.id]]);
     const item = SourceItemViewSchema.parse(ok<{ item: unknown }>(await c.editorA.get(`${base}/source-items/${sponsored!.id}`)).item);
     assert.deepEqual(item.sponsored, { sponsorName: 'Synthetic Sponsor Inc.', label: 'sponsored' });
+    ok(await command('stewardA', `${base}/sources/${feed.id}/rsl-check`, { rslUrl: 'https://allow.synthetic-journal.example/license-broken.xml' }));
+    assert.deepEqual(ok<{ items: unknown[] }>(await new Client(app).get(`/v1/hubs/${w.hubId}/sponsored-slot`)).items, [], 'licence narrowing removes the old sponsored item');
     const off = ok<{ result: { outcome: string }; policy: { allowed: boolean } }>(await command('officerB', `${base}/sponsored-policy`, { allowed: false, maxSlotsPerPage: 0, requireVerifiedSponsor: true, approvalId: null }));
     assert.deepEqual([off.result.outcome, off.policy.allowed], ['applied', false]);
     assert.deepEqual(ok<{ items: unknown[] }>(await new Client(app).get(`/v1/hubs/${w.hubId}/sponsored-slot`)).items, []);
