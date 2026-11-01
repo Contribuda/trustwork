@@ -94,7 +94,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
   const id = `drill-${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')}-${randomBytes(2).toString('hex')}`.toLowerCase();
   const sourceProject = `trustwork-drill-src-${id.slice(-4)}`;
   const restore: RestoreProject = { project: `trustwork-drill-rst-${id.slice(-4)}`, volume: `trustwork-drill-rst-${id.slice(-4)}-data`, port: options.restorePort };
-  const pitr: RestoreProject = { project: `trustwork-drill-pitr-${id.slice(-4)}`, volume: `trustwork-drill-pitr-${id.slice(-4)}-data`, port: options.restorePort + 1 };
+  const pitrProject: RestoreProject = { project: `trustwork-drill-pitr-${id.slice(-4)}`, volume: `trustwork-drill-pitr-${id.slice(-4)}-data`, port: options.restorePort + 1 };
   const work = mkdtempSync(join(tmpdir(), 'trustwork-drill-'));
   for (const d of ['target', 'objects', 'ledger', 'provider']) mkdirSync(join(work, d), { recursive: true });
   const passwords = { migrator: randomBytes(12).toString('hex'), api: randomBytes(12).toString('hex'), worker: randomBytes(12).toString('hex') };
@@ -240,6 +240,18 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
       });
     };
 
+    const boundaryMarker = (side: 'before' | 'after') => owner(src, async (c) => (await c.query<{ at: Date }>("INSERT INTO trustwork.audit_event (action, object_kind, object_id) VALUES ('drill.pitr_boundary', 'drill', $1) RETURNING occurred_at AS at", [side])).rows[0]!.at);
+    const serverClockPassed = async (t: Date) => (await src.query<{ passed: boolean }>('SELECT clock_timestamp() > $1::timestamptz AS passed', [t.toISOString()])).rows[0]!.passed;
+    const pitrBoundary = async (): Promise<{ target: Date; afterStartedAt: Date }> => {
+      await boundaryMarker('before');
+      const target = (await src.query<{ t: Date }>("SELECT date_trunc('milliseconds', clock_timestamp()) + interval '1 millisecond' AS t")).rows[0]!.t;
+      while (!(await serverClockPassed(target))) await sleep(5);
+      const afterStartedAt = await boundaryMarker('after');
+      // occurred_at arrives truncated to milliseconds, so a strict comparison is a lower bound of the real start.
+      if (!(afterStartedAt.getTime() > target.getTime())) throw new Error(`PITR boundary: 'after' started at ${afterStartedAt.toISOString()}, not after the target ${target.toISOString()}`);
+      return { target, afterStartedAt };
+    };
+
     const j1 = await enqueue();
     allow = (jobId) => jobId === j1;
     await drain(sourceWorker);
@@ -253,7 +265,15 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
     await owner(src, (c) => c.query("UPDATE trustwork.job SET state = 'leased', leased_by = 'drill-lost-worker', leased_until = now() + interval '10 minutes', attempt = attempt + 1, fencing_token = fencing_token + 1 WHERE id = $1", [j7]));
     await deleteFile(a1, 'delete');
     await sleep(600);
+    // Point-in-time target. recovery_target_time is compared with commit timestamps, which the drill cannot read
+    // (track_commit_timestamp is off), and occurred_at is the transaction start (now()): on a loaded machine the commit
+    // of a marker can land well after its occurred_at, so a target derived from it may fall before that commit. The
+    // target is therefore bracketed on the server clock by two commits: 'before' is acknowledged, then the target is
+    // read (at or after that commit, rounded up to whole milliseconds because the restore takes millisecond precision);
+    // 'after' starts only once the server clock has passed the target, so it commits strictly later. Every writer
+    // marker acknowledged before 'before' started committed before the target and must be restored.
     const pitrMarker = markers.last;
+    const pitr = await pitrBoundary();
     await sleep(600);
     const e3 = await event(3);
     // Close the current segment and ship everything: this is the last point the archive covers.
@@ -385,16 +405,28 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
       const counts = (await logicalExec.psql('SELECT (SELECT count(*) FROM trustwork.person) || \'|\' || (SELECT count(*) FROM trustwork.evidence_artifact)')).split('|').map(Number);
       check('logical dump restores into a scratch database with the seed counts', counts[0] === 3 && counts[1] === 6, { persons: counts[0], artifacts: counts[1] });
     }
-    if (options.pitrCheck && pitrMarker) {
-      // Markers are 200 ms apart: half-way to the next one includes this marker's commit and excludes the next.
-      const pitrTarget = new Date(pitrMarker.at.getTime() + 100);
+    if (options.pitrCheck) {
+      const pitrTarget = pitr.target;
       const pitrPlan = await planRestore(target, ring, pitrTarget);
-      await stageRestore({ target, ring, plan: pitrPlan, volume: pitr.volume, fence: true });
-      const pitrRecovered = await startRestored(pitr, pitrTarget);
-      const pexec = restoreExec(pitr);
-      const [maxSeq, later, j1State] = (await pexec.psql(`SELECT coalesce(max(object_id::int), 0) || '|' || count(*) FILTER (WHERE occurred_at > '${pitrTarget.toISOString()}') || '|' || (SELECT state FROM trustwork.job WHERE id = '${j1}') FROM trustwork.audit_event WHERE action = 'drill.marker'`)).split('|');
-      check('point-in-time restore stops exactly at the target time', Number(maxSeq) === pitrMarker.seq && Number(later) === 0 && j1State === 'succeeded', { target: pitrTarget.toISOString(), lastMarker: Number(maxSeq), markersAfterTarget: Number(later), recoveryPoint: pitrRecovered.recoveryPoint?.toISOString() });
-      await destroyRestore(pitr);
+      await stageRestore({ target, ring, plan: pitrPlan, volume: pitrProject.volume, fence: true });
+      const pitrRecovered = await startRestored(pitrProject, pitrTarget);
+      const pexec = restoreExec(pitrProject);
+      const [maxSeq, later, boundary, j1State] = (await pexec.psql(`SELECT
+          (SELECT coalesce(max(object_id::int), 0) FROM trustwork.audit_event WHERE action = 'drill.marker')
+          || '|' || (SELECT count(*) FROM trustwork.audit_event WHERE action = 'drill.marker' AND occurred_at > '${pitrTarget.toISOString()}')
+          || '|' || (SELECT coalesce(string_agg(object_id, ',' ORDER BY object_id DESC), '') FROM trustwork.audit_event WHERE action = 'drill.pitr_boundary')
+          || '|' || (SELECT state FROM trustwork.job WHERE id = '${j1}')`)).split('|');
+      // 'before' committed at or before the target and 'after' strictly after it: recovery must stop between them.
+      // Writer markers: every one acknowledged before the boundary is there; none that started after the target is.
+      // The last replayed commit (pg_last_xact_replay_timestamp) is not after the target.
+      const recoveryPoint = pitrRecovered.recoveryPoint;
+      const ok = boundary === 'before' && (pitrMarker === null || Number(maxSeq) >= pitrMarker.seq) && Number(later) === 0 && j1State === 'succeeded'
+        && recoveryPoint !== null && recoveryPoint.getTime() <= pitrTarget.getTime();
+      check('point-in-time restore stops exactly at the target time', ok, {
+        target: pitrTarget.toISOString(), boundaryCommits: boundary, afterStartedAt: pitr.afterStartedAt.toISOString(),
+        markerAcknowledgedBefore: pitrMarker?.seq ?? null, lastMarker: Number(maxSeq), markersStartedAfterTarget: Number(later), j1: j1State, recoveryPoint: recoveryPoint?.toISOString() ?? null,
+      });
+      await destroyRestore(pitrProject);
     }
 
     // ---------------------------------------------------------------------------------------------------------- 9
@@ -439,7 +471,7 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
     await Promise.allSettled(pools.map((p) => p.end()));
     if (!options.keep) {
       await destroyRestore(restore);
-      await destroyRestore(pitr);
+      await destroyRestore(pitrProject);
       try {
         compose(['down', '-v', '--remove-orphans']);
       } catch (error) {
