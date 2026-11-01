@@ -8,6 +8,8 @@ The complete console design (installation, setup wizard, keys and models, autono
 
 The hub operator develops the platform for a country or a city. Complying with local law, they connect the territory's information sources, check counterparties against local registers and sanctions lists, publish legal documents, choose payment and signature providers, shape the taxonomy, lead the editorial team and set the rules for agents. This chapter designs the console that makes that possible without ever becoming a back door into anyone's private data.
 
+[Administrative interface guidelines](../design/admin-ui-guidelines.md) and [six offline interaction studies](../design/prototypes/README.md) provide **Proposed design** review material with preserved sources and synthetic fixtures. They do not change the implementation status or staff authority described here.
+
 ## Two levels of administration
 
 | Console | Who | What |

@@ -1,0 +1,140 @@
+<body>
+<div class="demo" data-i="demo"></div>
+<header>
+  <div class="brand"><span class="sq" aria-hidden="true"><i></i><i></i><i></i></span><span><span data-i="brandName"></span> <small data-i="hubName"></small></span></div>
+  <div id="langPicker"></div>
+</header>
+<nav class="tabs" role="tablist" data-i-label="views">
+  <button role="tab" data-v="page" aria-selected="true" data-i="tabPage"></button>
+  <button role="tab" data-v="review" aria-selected="false" data-i="tabReview"></button>
+  <button role="tab" data-v="campaign" aria-selected="false" data-i="tabCampaign"></button>
+  <button role="tab" data-v="claims" aria-selected="false" data-i="tabClaims"></button>
+  <button role="tab" data-v="object" aria-selected="false" data-i="tabObject"></button>
+</nav>
+<main id="main" tabindex="-1"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/*@@KIT_JS@@*/
+/*@@MESSAGES@@*/
+let V='page', state={sel:0,recip:0,mode:'strict',pvLang:'en',claim:0,oStep:0,oKind:'stop'};
+const t=L10N.t, tp=L10N.tp;
+const day=iso=>L10N.date(iso,{dateStyle:'medium',timeZone:'UTC'});
+const stamp=iso=>L10N.date(iso,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Los_Angeles'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200)}
+function badge(cls,txt){return `<span class="badge ${cls}">${esc(txt)}</span>`}
+function vPage(){
+ const reg=t('srcReg',{d:day('2026-10-12')}),lic=t('srcLic',{d:day('2026-10-12')}),site=t('srcSite',{d:day('2026-10-14')}),osm=t('srcOsm',{d:day('2026-10-03')});
+ const rows=[[t('fLegal'),'Example Roofing Co',[reg,lic],'b-ok',t('c2')],[t('fStatus'),t('vStatus'),[reg],'b-mut',t('c1')],[t('fLicence'),t('vLicence',{d:day('2027-06-30')}),[lic],'b-mut',t('c1')],[t('fArea'),t('vArea'),[site,osm],'b-warn',t('cDis')],[t('fServices'),t('vServices'),[site],'b-mut',t('c1')],[t('fSite'),'example-roofing.invalid',[site],'b-mut',t('c1')],[t('fContact'),t('vContact'),[site],'b-mut',t('c1')]];
+ return `<h1>${t('pageH')}</h1><p>${badge('b-src','◇ '+t('sourcedBadge'))}</p><p class="lede">${t('pageLede')}</p>
+ <div class="notice" style="background:var(--infobg);color:var(--info)">${t('notVerified')}</div>
+ <div class="grid g3"><div class="card"><table class="resp"><thead><tr><th>${t('field')}</th><th>${t('value')}</th><th>${t('sources')}</th><th>${t('confidence')}</th></tr></thead><tbody>
+ ${rows.map(r=>`<tr><td data-l="${t('field')}"><strong>${esc(r[0])}</strong></td><td data-l="${t('value')}">${esc(r[1])}</td><td data-l="${t('sources')}">${r[2].map((s,i)=>`<div class="src">[${i+1}] ${esc(s)}</div>`).join('')}</td><td data-l="${t('confidence')}">${badge(r[3],r[4])}</td></tr>`).join('')}
+ </tbody></table></div>
+ <div><div class="card"><h3>${t('howBuilt')}</h3><p class="small">${t('howBody')}</p><p class="small muted">${t('noPeople')}</p></div>
+ <div class="card"><button class="btn primary" data-a="claim">${t('claimBtn')}</button><button class="btn" data-a="corr">${t('corrBtn')}</button><button class="btn" data-a="about">${t('aboutBtn')}</button></div></div></div>`}
+/* Synthetic records; {lic:N} renders as a licence number marked synthetic, {sole:Name} as a sole proprietor. */
+const props=[{band:'high',a:['Example Roofing Co','{lic:000001}','100 Example St, San Diego','—'],b:['EXAMPLE ROOFING COMPANY','{lic:000001}','100 Example Street, San Diego','example-roofing.invalid'],ev:['idMatch','nameAddr'],c:0.98,person:false},
+{band:'med',a:['Sample Gutters LLC','—','22 Sample Ave, Chula Vista','sample-gutters.invalid'],b:['Sample Gutters','—','22 Sample Avenue, Chula Vista','sample-gutters.invalid'],ev:['domain','nameAddr'],c:0.86,person:false},
+{band:'low',a:['Placeholder Roof Pros','—','El Cajon','—'],b:['{sole:Synthetic Person B}','{lic:000777}','El Cajon','—'],ev:['nameAddr'],c:0.62,person:true}];
+const fill=s=>s.replace(/\{lic:(\d+)\}/,(m,n)=>`LIC ${n} (${t('synthetic')})`).replace(/\{sole:([^}]+)\}/,(m,n)=>t('soleProp',{name:n}));
+function vReview(){const p=props[state.sel];const lbl={high:t('high'),med:t('med'),low:t('low')};const bc={high:'b-ok',med:'b-warn',low:'b-mut'};
+ const fl=[t('fLegal'),t('fLicence'),t('fAddr')+' / '+t('fArea'),t('fSite')];
+ return `<h1>${t('reviewH')}</h1><p class="lede">${t('reviewLede')}</p><div class="notice" style="background:var(--infobg);color:var(--info)">${t('noMerge')}</div>
+ <div class="grid g3" style="grid-template-columns:1fr 2fr"><div class="list" role="list">${props.map((q,i)=>`<button class="item" data-sel="${i}" aria-current="${i===state.sel}">${badge(bc[q.band],t('band')+': '+lbl[q.band]+' · '+L10N.num(q.c,{minimumFractionDigits:2}))}<div><strong>${esc(fill(q.a[0]))}</strong> ↔ ${esc(fill(q.b[0]))}</div></button>`).join('')}
+ <div class="card small"><button class="btn" data-a="batch">${esc(tp('batchBtn',14))}</button><p class="muted">${t('batchNote')}</p></div></div>
+ <div class="card"><table class="resp"><thead><tr><th>${t('field')}</th><th>${t('recA')}</th><th>${t('recB')}</th></tr></thead><tbody>${fl.map((f,i)=>`<tr><td data-l="${t('field')}">${esc(f)}</td><td data-l="${t('recA')}">${esc(fill(p.a[i]))}</td><td data-l="${t('recB')}">${esc(fill(p.b[i]))}</td></tr>`).join('')}</tbody></table>
+ <h3>${t('evidence')}</h3><ul class="small">${p.ev.map(e=>`<li>${t(e)}</li>`).join('')}</ul>
+ ${p.person?`<div class="notice" style="background:var(--warnbg);color:var(--warn)">${t('personNote')}</div>`:''}
+ <button class="btn primary" data-a="link" ${p.person?'disabled':''}>${t('linkBtn')}</button><button class="btn" data-a="reject">${t('rejectBtn')}</button><button class="btn" data-a="distinct">${t('distinctBtn')}</button><button class="btn" data-a="split">${t('splitBtn')}</button></div></div>`}
+function gateRes(r){const strict=state.mode==='strict';const g=Array(10).fill('pass');const why={};const w=t('why');
+ if(strict){g[0]='fail';why[0]=w.mode;for(let i=1;i<10;i++)g[i]='skip';return{g,why}}
+ if(r===1){g[4]='fail';why[4]=t('why.supp',{d:day('2026-09-02')});for(let i=5;i<10;i++)g[i]='skip'}
+ else if(r===2){g[1]='fail';why[1]=w.src;for(let i=2;i<10;i++)g[i]='skip'}
+ else if(r===3){g[7]='wait';why[7]=t('why.quiet',{time:L10N.date('2026-10-30T19:40:00-07:00',{timeStyle:'short',timeZone:'America/Los_Angeles'}),next:L10N.date('2026-11-02T09:00:00-08:00',{weekday:'short',hour:'2-digit',minute:'2-digit',timeZone:'America/Los_Angeles'})});g[8]='skip';g[9]='skip'}
+ else {g[9]='wait';why[9]=w.appr}
+ return{g,why}}
+/* The message itself is content in the chosen message language (English or Spanish for this US hub), not interface text. */
+function message(lang){if(lang==='es')return `<b>Asunto:</b> La página de su empresa en Trustwork San Diego (demo) se creó a partir de fuentes públicas
+
+Hola, equipo de Example Roofing Co:
+
+<span class="lock">Trustwork San Diego es un directorio abierto del sector de la construcción en el condado de San Diego, gestionado por Example Operator LLC. Nuestro asistente automático preparó este mensaje.</span>
+
+<span class="lock">Creamos una página sobre su empresa a partir de fuentes públicas: la consulta de licencias de contratistas (12 oct 2026) y su sitio example-roofing.invalid (14 oct 2026).</span> Está marcada como «Creada a partir de una fuente abierta» y no dice que esté verificada ni respaldada.
+
+Puede reclamarla gratis para corregirla y gestionarla, o pedirnos que la corrijamos o eliminemos: [enlace]. Si no hace nada, solo le enviaremos un recordatorio en 14 días.
+
+<span class="lock">Obtuvimos esta dirección de su sitio web, donde figura para consultas comerciales. Darse de baja con un clic: [enlace], o responda «stop».</span>
+
+<span class="lock">Example Operator LLC, 100 Example Street, San Diego, CA 92101, Estados Unidos</span>`;
+ return `<b>Subject:</b> Your company's page on Trustwork San Diego (demo) was created from public sources
+
+Hello Example Roofing Co team,
+
+<span class="lock">Trustwork San Diego is an open directory and gathering point for the construction industry in San Diego County, run by Example Operator LLC. Our automated assistant prepared this message.</span>
+
+<span class="lock">We created a page about your company from public sources: the California contractor licence look-up (checked 12 October 2026) and your website example-roofing.invalid (checked 14 October 2026).</span> It is labelled "Created from an open source" and does not say you are verified or endorsed.
+
+You can claim the page for free to correct and manage it, or ask us to correct or remove it: [page link]. If you do nothing, we will not write again about this page, except one reminder in 14 days.
+
+<span class="lock">We got this address from your website, where it is listed for business enquiries. Unsubscribe in one click: [link], or reply "stop".</span>
+
+<span class="lock">Example Operator LLC, 100 Example Street, San Diego, CA 92101, United States</span>`}
+function vCampaign(){const res=gateRes(state.recip);const strict=state.mode==='strict';const us=L10N.region('US');
+ const lab={pass:['b-ok','✓ '+t('pass')],fail:['b-bad','✕ '+t('fail')],wait:['b-warn','… '+t('wait')],skip:['b-mut','—']};
+ const recips=[t('r1'),t('r2',{d:day('2026-09-02')}),t('r3'),t('r4')];
+ return `<h1>${t('campH')}</h1><p class="lede">${esc(tp('campLede',214))}</p>
+ <div class="grid g2"><div class="card"><h2>${t('policyH')}</h2><label for="mode">${t('mode')} · ${esc(us)}</label>
+ <select id="mode"><option value="strict" ${strict?'selected':''}>${t('mStrict')}</option><option value="notice" ${state.mode==='notice'?'selected':''}>${t('mNotice')}</option><option value="gov" ${state.mode==='gov'?'selected':''}>${t('mGov')}</option></select>
+ ${strict?`<div class="notice" style="background:var(--warnbg);color:var(--warn)">${t('strictOn')}</div>`:`<div class="notice" style="background:var(--badbg);color:var(--bad)">${t('counselReq')}</div>`}
+ <ul class="small">${['rUS1','rUS2','rUS3','rUS4','rUS5'].map(k=>`<li>${esc(us)} · ${t(k)}</li>`).join('')}</ul>
+ <h3>${t('floorH')}</h3><ul class="small">${t('floor').map(f=>`<li>🔒 ${esc(f)}</li>`).join('')}</ul></div>
+ <div class="card"><h2>${t('gatesH')}</h2><label for="recip">${t('recipPick')}</label><select id="recip">${recips.map((r,i)=>`<option value="${i}" ${i===state.recip?'selected':''}>${esc(r)}</option>`).join('')}</select>
+ <div role="list">${t('gNames').map((n,i)=>`<div class="gate" role="listitem"><span class="ic">${badge(lab[res.g[i]][0],lab[res.g[i]][1])}</span><span><strong class="small">${i+1}. ${esc(n)}</strong>${res.why[i]?`<div class="small muted">${esc(res.why[i])}</div>`:''}</span></div>`).join('')}</div></div></div>
+ <div class="card"><h2>${t('previewH')}</h2><label for="pvl">${t('pvLang')}</label><select id="pvl"><option value="en" lang="en" ${state.pvLang==='en'?'selected':''}>English (US)</option><option value="es" lang="es" ${state.pvLang==='es'?'selected':''}>Español (US)</option></select>
+ <p class="small muted">${t('locked')}</p><div class="msg" lang="${state.pvLang}">${message(state.pvLang)}</div>
+ <button class="btn" data-a="dry">${t('dryBtn')}</button><button class="btn primary" data-a="approve">${t('approveBtn')}</button></div>
+ <div class="card"><h2>${t('metricsH')}</h2><div class="kv"><span>${t('mSent')}</span><strong>${L10N.num(strict?0:187)}</strong><span>${t('mClaims')}</span><strong>${L10N.num(strict?0:23)}</strong><span>${t('mUnsub')}</span><strong>${L10N.num(strict?0:11)}</strong><span>${t('mCompl')}</span><strong>${strict?L10N.num(0):t('fewer')}</strong></div></div>`}
+const claimsData=[{st:['ok','ok','ok','ok','pend','pend'],disp:false},{st:['ok','ok','pend','pend','pend','pend'],disp:true},{st:['ok','ok','na','pend','pend','pend'],disp:false}];
+const auditTimes=['2026-10-14T10:02:00-07:00','2026-10-15T08:41:00-07:00','2026-10-15T08:41:00-07:00','2026-10-15T08:42:00-07:00','2026-10-16T14:10:00-07:00'];
+function vClaims(){const c=claimsData[state.claim];const lab={ok:['b-ok','✓ '+t('stOk')],pend:['b-warn','… '+t('stPend')],na:['b-mut',t('stNa')]};
+ const claimedOk=c.st[0]==='ok'&&c.st[1]==='ok'&&(c.st[2]==='ok'||c.st[3]==='ok')&&!c.disp;const verOk=c.st.every(s=>s==='ok')&&!c.disp;
+ return `<h1>${t('claimsH')}</h1><p class="lede">${t('claimsLede')}</p><div class="grid g3" style="grid-template-columns:1fr 2fr"><div class="list">${['c1t','c2t','c3t'].map((k,i)=>`<button class="item" data-claim="${i}" aria-current="${i===state.claim}">${esc(t(k))}</button>`).join('')}</div>
+ <div class="card">${c.disp?`<div class="notice" style="background:var(--badbg);color:var(--bad)">${esc(t('disputeBanner',{d:day('2026-11-08')}))}</div>`:''}
+ <ol class="steps">${t('claimSteps').map((s,i)=>`<li>${badge(lab[c.st[i]][0],lab[c.st[i]][1])}<span>${esc(s)}</span></li>`).join('')}</ol>
+ <button class="btn" data-a="claimed" ${claimedOk?'':'disabled'}>${t('levelClaimed')}</button><button class="btn primary" data-a="verified" ${verOk?'':'disabled'}>${t('levelVerified')}</button>
+ <h3>${t('handH')}</h3><p class="small">${t('claimedGets')}</p><p class="small">${t('verifiedGets')}</p><p class="small muted">${t('cooling')}</p>
+ <h3>${t('auditH')}</h3><ul class="small muted">${t('audit').map((a,i)=>`<li>${esc(stamp(auditTimes[i]))} · ${esc(a)}</li>`).join('')}</ul></div></div>`}
+function vObject(){const s=state.oStep;const kinds=[['stop','oStop'],['corr','oCorr'],['erase','oErase'],['remove','oRemove']];
+ let body='';
+ if(s===0)body=`<fieldset style="border:0;padding:0"><legend><strong>${t('oQ')}</strong></legend>${kinds.map(([v,k])=>`<label style="font-weight:400"><input type="radio" name="ok" value="${v}" ${state.oKind===v?'checked':''}> ${t(k)}</label>`).join('')}</fieldset><button class="btn primary" data-a="onext">${t('oNext')}</button>`;
+ if(s===1)body=`<label for="oem">${t('oEmail')}</label><input id="oem" type="text" value="info@example-roofing.invalid" size="32"><br><button class="btn" data-a="osend">${t('oSend')}</button><label for="ocode">${t('oCode')}</label><input id="ocode" type="text" inputmode="numeric" maxlength="6" size="8"><br><button class="btn primary" data-a="overify">${t('oVerify')}</button>`;
+ if(s>=2){const m={stop:'oResStop',corr:'oResCorr',erase:'oResErase',remove:'oResRemove'}[state.oKind];body=`<div class="notice" style="background:var(--okbg);color:var(--ok)">${t(m)}</div><button class="btn" data-a="oreset" aria-label="${esc(t('restart'))}" title="${esc(t('restart'))}">↺</button>`}
+ return `<h1>${t('objH')}</h1><p class="lede">${t('objLede')}</p><div class="flow" role="list" aria-label="${esc(t('steps'))}">${t('oStep').map((x,i)=>`<span role="listitem" class="${i===Math.min(s,3)?'on':''}">${i+1}. ${esc(x)}</span>`).join('')}</div>
+ <div class="grid g2"><div class="card">${body}</div><div class="card"><h3>${t('effectsH')}</h3><ol class="small">${t('eff').map((e,i)=>`<li style="${s>=2&&(i!==3||state.oKind==='erase')?'':'opacity:.5'}">${esc(e)}</li>`).join('')}</ol></div></div>
+ <div class="card"><h2>${t('adminH')}</h2><div class="grid g2"><div><label for="lk">${t('lookup')}</label><input id="lk" type="text" value="info@example-roofing.invalid" size="30"> <button class="btn" data-a="look">${t('lookBtn')}</button><div id="lkr" class="small" role="status"></div></div>
+ <div><h3>${t('counts')}</h3><div class="kv"><span>${t('unsub')}</span><strong>${L10N.num(11)}</strong><span>${t('objection')}</span><strong>${t('fewer')}</strong><span>${t('bounce')}</span><strong>${L10N.num(14)}</strong><span>${t('erasure')}</span><strong>${t('fewer')}</strong></div></div></div></div>`}
+function render(){document.title=t('docTitle');document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
+ document.querySelectorAll('[data-i-label]').forEach(e=>e.setAttribute('aria-label',t(e.dataset.iLabel)));
+ document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===V));
+ const m=document.getElementById('main');m.innerHTML={page:vPage,review:vReview,campaign:vCampaign,claims:vClaims,object:vObject}[V]();bind()}
+function bind(){const m=document.getElementById('main');
+ m.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{state.sel=+b.dataset.sel;render()});
+ m.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>{state.claim=+b.dataset.claim;render()});
+ const mo=m.querySelector('#mode');if(mo)mo.onchange=e=>{state.mode=e.target.value;render()};
+ const rc=m.querySelector('#recip');if(rc)rc.onchange=e=>{state.recip=+e.target.value;render()};
+ const pv=m.querySelector('#pvl');if(pv)pv.onchange=e=>{state.pvLang=e.target.value;render()};
+ m.querySelectorAll('input[name=ok]').forEach(r=>r.onchange=e=>state.oKind=e.target.value);
+ m.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
+  const map={claim:()=>{toast(t('toastClaim'))},corr:()=>toast(t('toastCorr')),about:()=>{V='object';state.oStep=0;render()},link:()=>toast(t('tLinked')),reject:()=>toast(t('tRejected')),distinct:()=>toast(t('tDistinct')),split:()=>toast(t('tSplit')),batch:()=>toast(tp('tBatch',14)),
+  dry:()=>toast(state.mode==='strict'?t('tStrictBlock'):t('tDry',{pass:L10N.num(61),stop:L10N.num(153)})),approve:()=>toast(state.mode==='strict'?t('tStrictBlock'):t('tApprove')),claimed:()=>toast(t('tClaimed')),verified:()=>toast(t('tVerified')),
+  onext:()=>{state.oStep=1;render()},osend:()=>toast(t('oSent')),overify:()=>{const v=(m.querySelector('#ocode')||{}).value||'';if(/^\d{6}$/.test(v)){state.oStep=2;render()}else toast(t('oCode'))},oreset:()=>{state.oStep=0;render()},
+  look:()=>{m.querySelector('#lkr').textContent=t('lookRes',{d:day('2026-10-31')})}};(map[a]||(()=>{}))()})}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{V=b.dataset.v;render();document.getElementById('main').focus()});
+L10N.mount(document.getElementById('langPicker'));
+L10N.onChange(render);
+render();
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@
 We would rather under-promise. The normative requirements of every module, with a status per requirement, are in the [module specifications](modules/README.md). This page says, area by area, what you can run today, what exists only as a demo on synthetic data, what is frozen as a contract, what is designed, and what this handbook proposes for the first time. It is updated whenever a work package is accepted.
 
 LLM-001 remains partial and blocked on mandatory governance integration: its fake-only gateway uses real KEYS routing, durable BILL effect holds, locked mandate accounting, cross-process dispatch ownership and an AST commit/finalization boundary. The default application model remains unavailable; AGT-003 authority is not fabricated. See the [integration boundary and bounded evidence](../../apps/api/src/modules/models/README.md); no model gateway is claimed Live.
+**Proposed design review material:** [administrative interface guidelines](../design/admin-ui-guidelines.md), [Proposed ADR 019](../adr/019-admin-ui-libraries.md) and [six localized offline prototypes](../design/prototypes/README.md). These synthetic interaction studies do not add application routes or change the live/demo/contract status below; implementation package publication awaits the owner's package-ID decision.
 
 ## Status levels
 

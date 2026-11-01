@@ -1,0 +1,11 @@
+{
+  "picker": {
+    "label": "Язык интерфейса",
+    "machine": "машинный перевод",
+    "machineTitle": "Машинный перевод, носитель языка ещё не проверял",
+    "unreviewed": "не вычитано",
+    "unreviewedTitle": "Текст ещё не вычитан редактором"
+  },
+  "format": null,
+  "relative": null
+}

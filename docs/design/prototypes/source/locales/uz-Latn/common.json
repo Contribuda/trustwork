@@ -1,0 +1,50 @@
+{
+  "picker": {
+    "label": "Interfeys tili",
+    "machine": "mashina tarjimasi",
+    "machineTitle": "Mashina tarjimasi, ona tilida soʻzlashuvchi hali tekshirmagan",
+    "unreviewed": "tekshirilmagan",
+    "unreviewedTitle": "Muharrir hali tekshirmagan"
+  },
+  "format": {
+    "group": " ",
+    "decimal": ",",
+    "currency": "{n} US$",
+    "months": [
+      "yan",
+      "fev",
+      "mar",
+      "apr",
+      "may",
+      "iyn",
+      "iyl",
+      "avg",
+      "sen",
+      "okt",
+      "noy",
+      "dek"
+    ],
+    "weekdays": [
+      "yak",
+      "dush",
+      "sesh",
+      "chor",
+      "pay",
+      "jum",
+      "shan"
+    ],
+    "date": "{d}-{M}, {y}",
+    "monthDay": "{d}-{M}",
+    "region": {
+      "US": "Amerika Qoʻshma Shtatlari"
+    }
+  },
+  "relative": {
+    "second": "soniya",
+    "minute": "daqiqa",
+    "hour": "soat",
+    "day": "kun",
+    "past": "{n} {unit} oldin",
+    "future": "{n} {unit}dan keyin"
+  }
+}

@@ -1,0 +1,72 @@
+{
+ "console": [],
+ "network": [],
+ "leaks": [],
+ "same": [
+  {
+   "tag": "es",
+   "s": "NAICS 238160 · PSC Z2AA"
+  },
+  {
+   "tag": "es",
+   "s": "hello"
+  },
+  {
+   "tag": "ru",
+   "s": "NAICS 238160 · PSC Z2AA"
+  },
+  {
+   "tag": "ru",
+   "s": "hello"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "NAICS 238160 · PSC Z2AA"
+  },
+  {
+   "tag": "uz-Latn",
+   "s": "hello"
+  },
+  {
+   "tag": "ka",
+   "s": "NAICS 238160 · PSC Z2AA"
+  },
+  {
+   "tag": "ka",
+   "s": "hello"
+  },
+  {
+   "tag": "hy",
+   "s": "NAICS 238160 · PSC Z2AA"
+  },
+  {
+   "tag": "hy",
+   "s": "hello"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "NAICS 238160 · PSC Z2AA"
+  },
+  {
+   "tag": "az-Latn",
+   "s": "hello"
+  }
+ ],
+ "overflow": [],
+ "keyboard": [
+  {
+   "opened": "en",
+   "after": [
+    "es",
+    true,
+    true
+   ],
+   "esc": [
+    true,
+    true
+   ],
+   "kept": "es",
+   "ok": true
+  }
+ ]
+}

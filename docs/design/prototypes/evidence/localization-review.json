@@ -1,0 +1,5500 @@
+{
+  "status": "lexical review only; all translations remain unreviewed drafts",
+  "reviewed": [
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Trustwork",
+      "exampleState": "users/people",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "San Diego, CA",
+      "exampleState": "users/people",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Editor",
+      "exampleState": "home/approvals",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Support C",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Support D",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Roles",
+      "exampleState": "users/staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Owner A",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Commercial B",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Moderator E",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Compliance F",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Auditor G",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Auditor",
+      "exampleState": "users/staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Synthetic Editor H",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Legal",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Writer-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Fact-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Writer-2",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Scout-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Triage-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Translate-ES",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Layout-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Ops-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Editorial",
+      "exampleState": "automation/team",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "example-large-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Example Models Inc.",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "example-small-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "sample-translate-1",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Sample AI LLC",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "fixture-open-7b",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "General",
+      "exampleState": "settings/modes",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "INC-0042",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "SEV-2",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "INC-0039",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "SEV-3",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Support C",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Support D",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Owner A",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Commercial B",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Moderator E",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Compliance F",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Auditor G",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Synthetic Editor H",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Writer-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Fact-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Writer-2",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Scout-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Triage-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Translate-ES",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Layout-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Ops-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "example-large-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Example Models Inc.",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "example-small-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "sample-translate-1",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Sample AI LLC",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "fixture-open-7b",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "INC-0042",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "SEV-2",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "INC-0039",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "SEV-3",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Trustwork",
+      "exampleState": "users/people",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Support C",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Support D",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Owner A",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Commercial B",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Moderator E",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Moderator",
+      "exampleState": "users/staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Compliance F",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Auditor G",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Auditor",
+      "exampleState": "users/staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Synthetic Editor H",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Media",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Format",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Agent",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Writer-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Fact-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Writer-2",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Scout-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Triage-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Translate-ES",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Layout-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Ops-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Model",
+      "exampleState": "automation/models",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "example-large-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Example Models Inc.",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "example-small-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "sample-translate-1",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Sample AI LLC",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "fixture-open-7b",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "INC-0042",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "SEV-2",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "INC-0039",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "SEV-3",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Trustwork",
+      "exampleState": "users/people",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Support C",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Support D",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Owner A",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Commercial B",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Moderator E",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Compliance F",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Auditor G",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Synthetic Editor H",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Writer-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Fact-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Writer-2",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Scout-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Triage-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Translate-ES",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Layout-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Ops-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "example-large-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Example Models Inc.",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "example-small-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "sample-translate-1",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Sample AI LLC",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "fixture-open-7b",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "INC-0042",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "SEV-2",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "INC-0039",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "SEV-3",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Trustwork",
+      "exampleState": "users/people",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Support C",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Support D",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Owner A",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Commercial B",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Moderator E",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Compliance F",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Auditor G",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Synthetic Editor H",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Writer-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Fact-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Writer-2",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Scout-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Triage-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Translate-ES",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Layout-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Ops-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "example-large-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Example Models Inc.",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "example-small-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "sample-translate-1",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Sample AI LLC",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "fixture-open-7b",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "INC-0042",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "SEV-2",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "INC-0039",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "SEV-3",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Trustwork",
+      "exampleState": "users/people",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Region",
+      "exampleState": "users/people",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Status",
+      "exampleState": "users/people",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Support C",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Support D",
+      "exampleState": "users/support",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Owner A",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Commercial B",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Moderator E",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Moderator",
+      "exampleState": "users/staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Compliance F",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Auditor G",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Auditor",
+      "exampleState": "users/staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Synthetic Editor H",
+      "exampleState": "users/staff",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Media",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Format",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Agent",
+      "exampleState": "content/queue",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Writer-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Fact-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Writer-2",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Scout-1",
+      "exampleState": "content/queue",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Triage-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Translate-ES",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Layout-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Ops-1",
+      "exampleState": "automation/runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Model",
+      "exampleState": "automation/models",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "example-large-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Example Models Inc.",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "example-small-2",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "sample-translate-1",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Sample AI LLC",
+      "exampleState": "automation/models",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "fixture-open-7b",
+      "exampleState": "automation/models",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "INC-0042",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "SEV-2",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "INC-0039",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "SEV-3",
+      "exampleState": "ops/incidents",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "40 min",
+      "exampleState": "desk",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Example State Building Standards Notices",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Example Trade Media Feed",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Example Manufacturer Technical Library",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Example Association Events Calendar",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Example County Procurement Portal",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Cron",
+      "exampleState": "jobs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "ASTM C31",
+      "exampleState": "translations",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Trustwork",
+      "exampleState": "translations",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "1 perm",
+      "exampleState": "corrections",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "embeddings, ocr",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "editorial_rewrite, summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "fact_check_assist",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "translation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "classification, agent_drafting",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "image_generation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "summarisation, classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "editorial_translator.pretranslate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "editorial_translator.translate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Manual",
+      "exampleState": "runs",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "429 rate_limited",
+      "exampleState": "runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Example State Building Standards Notices",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Example Trade Media Feed",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Example Manufacturer Technical Library",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Example Association Events Calendar",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Example County Procurement Portal",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Cron",
+      "exampleState": "jobs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "ASTM C31",
+      "exampleState": "translations",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "1 perm",
+      "exampleState": "corrections",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "embeddings, ocr",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "editorial_rewrite, summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "fact_check_assist",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "translation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "classification, agent_drafting",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "image_generation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "summarisation, classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "editorial_translator.pretranslate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "editorial_translator.translate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "429 rate_limited",
+      "exampleState": "runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Example State Building Standards Notices",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Example Trade Media Feed",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Example Manufacturer Technical Library",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Example Association Events Calendar",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Example County Procurement Portal",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Cron",
+      "exampleState": "jobs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "ASTM C31",
+      "exampleState": "translations",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Trustwork",
+      "exampleState": "translations",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "1 perm",
+      "exampleState": "corrections",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "embeddings, ocr",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "editorial_rewrite, summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "fact_check_assist",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "translation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "classification, agent_drafting",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "image_generation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "summarisation, classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "editorial_translator.pretranslate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "editorial_translator.translate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "429 rate_limited",
+      "exampleState": "runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Example State Building Standards Notices",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Example Trade Media Feed",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Example Manufacturer Technical Library",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Example Association Events Calendar",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Example County Procurement Portal",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Cron",
+      "exampleState": "jobs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "ASTM C31",
+      "exampleState": "translations",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Trustwork",
+      "exampleState": "translations",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "1 perm",
+      "exampleState": "corrections",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "embeddings, ocr",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "editorial_rewrite, summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "fact_check_assist",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "translation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "classification, agent_drafting",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "image_generation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "summarisation, classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "editorial_translator.pretranslate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "editorial_translator.translate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "429 rate_limited",
+      "exampleState": "runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Example State Building Standards Notices",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Example Trade Media Feed",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Example Manufacturer Technical Library",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Example Association Events Calendar",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Example County Procurement Portal",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Cron",
+      "exampleState": "jobs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "ASTM C31",
+      "exampleState": "translations",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Trustwork",
+      "exampleState": "translations",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "1 perm",
+      "exampleState": "corrections",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "embeddings, ocr",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "editorial_rewrite, summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "fact_check_assist",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "translation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "classification, agent_drafting",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "image_generation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "summarisation, classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "editorial_translator.pretranslate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "editorial_translator.translate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "429 rate_limited",
+      "exampleState": "runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Status",
+      "exampleState": "sources",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Example State Building Standards Notices",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Example Trade Media Feed",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Example Manufacturer Technical Library",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Example Association Events Calendar",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Example County Procurement Portal",
+      "exampleState": "sources",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Cron",
+      "exampleState": "jobs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "ASTM C31",
+      "exampleState": "translations",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Trustwork",
+      "exampleState": "translations",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "1 perm",
+      "exampleState": "corrections",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "embeddings, ocr",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "editorial_rewrite, summarisation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "fact_check_assist",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "translation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "classification, agent_drafting",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "image_generation",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "summarisation, classification",
+      "exampleState": "team",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "editorial_translator.pretranslate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "editorial_translator.translate",
+      "exampleState": "role",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "429 rate_limited",
+      "exampleState": "runs",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "es",
+      "text": "Trustwork",
+      "exampleState": "journey",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "es",
+      "text": "Sam Lee (sam.lee@example.org)",
+      "exampleState": "handover",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ru",
+      "text": "Sam Lee (sam.lee@example.org)",
+      "exampleState": "handover",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "uz-Latn",
+      "text": "Trustwork",
+      "exampleState": "journey",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "uz-Latn",
+      "text": "Sam Lee (sam.lee@example.org)",
+      "exampleState": "handover",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ka",
+      "text": "Trustwork",
+      "exampleState": "journey",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ka",
+      "text": "Sam Lee (sam.lee@example.org)",
+      "exampleState": "handover",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "hy",
+      "text": "Trustwork",
+      "exampleState": "journey",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "hy",
+      "text": "Sam Lee (sam.lee@example.org)",
+      "exampleState": "handover",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "az-Latn",
+      "text": "Trustwork",
+      "exampleState": "journey",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "az-Latn",
+      "text": "Sam Lee (sam.lee@example.org)",
+      "exampleState": "handover",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Trustwork",
+      "exampleState": "map",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example North Builders",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Bajío Construye",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Austin Makers",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "DE-BY:munich",
+      "exampleState": "request",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Pacific directory (directory.example.invalid)",
+      "exampleState": "listing",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "US-CA:san-diego",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "network@sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example North Builders",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Bajío Construye",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Austin Makers",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "DE-BY:munich",
+      "exampleState": "request",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Pacific directory (directory.example.invalid)",
+      "exampleState": "listing",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "US-CA:san-diego",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "network@sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Trustwork",
+      "exampleState": "map",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example North Builders",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Bajío Construye",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Austin Makers",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Operator",
+      "exampleState": "request",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "DE-BY:munich",
+      "exampleState": "request",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Pacific directory (directory.example.invalid)",
+      "exampleState": "listing",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "US-CA:san-diego",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "network@sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Trustwork",
+      "exampleState": "map",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example North Builders",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Bajío Construye",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Austin Makers",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "DE-BY:munich",
+      "exampleState": "request",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Pacific directory (directory.example.invalid)",
+      "exampleState": "listing",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "US-CA:san-diego",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "network@sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Trustwork",
+      "exampleState": "map",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example North Builders",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Bajío Construye",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Austin Makers",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "DE-BY:munich",
+      "exampleState": "request",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Pacific directory (directory.example.invalid)",
+      "exampleState": "listing",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "US-CA:san-diego",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "network@sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Trustwork",
+      "exampleState": "map",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example North Builders",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Bajío Construye",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Austin Makers",
+      "exampleState": "peers",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Operator",
+      "exampleState": "request",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "DE-BY:munich",
+      "exampleState": "request",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Status:",
+      "exampleState": "messages",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Pacific directory (directory.example.invalid)",
+      "exampleState": "listing",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "US-CA:san-diego",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "network@sandiego.example.invalid",
+      "exampleState": "listing",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "Trustwork",
+      "exampleState": "page",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "Example Roofing Co",
+      "exampleState": "page",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "example-roofing.invalid",
+      "exampleState": "page",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "EXAMPLE ROOFING COMPANY",
+      "exampleState": "review",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "Sample Gutters LLC",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "Sample Gutters",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "Placeholder Roof Pros",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "100 Example St, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "100 Example Street, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "Example Roofing Co",
+      "exampleState": "page",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "example-roofing.invalid",
+      "exampleState": "page",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "EXAMPLE ROOFING COMPANY",
+      "exampleState": "review",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "Sample Gutters LLC",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "Sample Gutters",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "Placeholder Roof Pros",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "100 Example St, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "100 Example Street, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "Trustwork",
+      "exampleState": "page",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "Example Roofing Co",
+      "exampleState": "page",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "example-roofing.invalid",
+      "exampleState": "page",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "EXAMPLE ROOFING COMPANY",
+      "exampleState": "review",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "Sample Gutters LLC",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "Sample Gutters",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "Placeholder Roof Pros",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "100 Example St, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "100 Example Street, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "Trustwork",
+      "exampleState": "page",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "Example Roofing Co",
+      "exampleState": "page",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "example-roofing.invalid",
+      "exampleState": "page",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "EXAMPLE ROOFING COMPANY",
+      "exampleState": "review",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "Sample Gutters LLC",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "Sample Gutters",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "Placeholder Roof Pros",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "100 Example St, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "100 Example Street, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "Trustwork",
+      "exampleState": "page",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "Example Roofing Co",
+      "exampleState": "page",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "example-roofing.invalid",
+      "exampleState": "page",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "EXAMPLE ROOFING COMPANY",
+      "exampleState": "review",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "Sample Gutters LLC",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "Sample Gutters",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "Placeholder Roof Pros",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "100 Example St, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "100 Example Street, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "Trustwork",
+      "exampleState": "page",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "Example Roofing Co",
+      "exampleState": "page",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "example-roofing.invalid",
+      "exampleState": "page",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "EXAMPLE ROOFING COMPANY",
+      "exampleState": "review",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "Sample Gutters LLC",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "Sample Gutters",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "Placeholder Roof Pros",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "100 Example St, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "100 Example Street, San Diego",
+      "exampleState": "review",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Trustwork",
+      "exampleState": "list",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "tender",
+      "locale": "uz-Latn",
+      "text": "Trustwork",
+      "exampleState": "list",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ka",
+      "text": "Trustwork",
+      "exampleState": "list",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "tender",
+      "locale": "hy",
+      "text": "Trustwork",
+      "exampleState": "list",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "Trustwork",
+      "exampleState": "list",
+      "reason": "Canonical international brand; Russian uses the repository overlay."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "API",
+      "exampleState": "pause-live",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "3",
+      "exampleState": "pause-live",
+      "reason": "Punctuation or numeric output, not English copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Esc",
+      "exampleState": "palette-keyboard",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Hub",
+      "exampleState": "staff",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "console",
+      "locale": "es",
+      "text": "Fixture QA",
+      "exampleState": "self-approval-blocked",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "API",
+      "exampleState": "pause-live",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "3",
+      "exampleState": "pause-live",
+      "reason": "Punctuation or numeric output, not English copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Esc",
+      "exampleState": "palette-keyboard",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ru",
+      "text": "Fixture QA",
+      "exampleState": "self-approval-blocked",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "API",
+      "exampleState": "pause-live",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "3",
+      "exampleState": "pause-live",
+      "reason": "Punctuation or numeric output, not English copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Esc",
+      "exampleState": "palette-keyboard",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "uz-Latn",
+      "text": "Fixture QA",
+      "exampleState": "self-approval-blocked",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "API",
+      "exampleState": "pause-live",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "3",
+      "exampleState": "pause-live",
+      "reason": "Punctuation or numeric output, not English copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Esc",
+      "exampleState": "palette-keyboard",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "ka",
+      "text": "Fixture QA",
+      "exampleState": "self-approval-blocked",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "API",
+      "exampleState": "pause-live",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "3",
+      "exampleState": "pause-live",
+      "reason": "Punctuation or numeric output, not English copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Esc",
+      "exampleState": "palette-keyboard",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "hy",
+      "text": "Fixture QA",
+      "exampleState": "self-approval-blocked",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "API",
+      "exampleState": "pause-live",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "3",
+      "exampleState": "pause-live",
+      "reason": "Punctuation or numeric output, not English copy."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Esc",
+      "exampleState": "palette-keyboard",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "console",
+      "locale": "az-Latn",
+      "text": "Fixture QA",
+      "exampleState": "self-approval-blocked",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "library.manufacturer-a.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "news.trade-media.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "members.association-b.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "blog.supplier-c.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "training.provider-d.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "es",
+      "text": "Synthetic Editor-in-chief B",
+      "exampleState": "second-self-blocked",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "library.manufacturer-a.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "news.trade-media.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "members.association-b.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "blog.supplier-c.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "training.provider-d.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ru",
+      "text": "Synthetic Editor-in-chief B",
+      "exampleState": "second-self-blocked",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "library.manufacturer-a.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "news.trade-media.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "members.association-b.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "blog.supplier-c.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "training.provider-d.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "uz-Latn",
+      "text": "Synthetic Editor-in-chief B",
+      "exampleState": "second-self-blocked",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "library.manufacturer-a.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "news.trade-media.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "members.association-b.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "blog.supplier-c.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "training.provider-d.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "ka",
+      "text": "Synthetic Editor-in-chief B",
+      "exampleState": "second-self-blocked",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "library.manufacturer-a.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "news.trade-media.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "members.association-b.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "blog.supplier-c.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "training.provider-d.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "hy",
+      "text": "Synthetic Editor-in-chief B",
+      "exampleState": "second-self-blocked",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "library.manufacturer-a.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "news.trade-media.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "members.association-b.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "blog.supplier-c.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "training.provider-d.example.invalid",
+      "exampleState": "dry-run-fakes",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "editorial",
+      "locale": "az-Latn",
+      "text": "Synthetic Editor-in-chief B",
+      "exampleState": "second-self-blocked",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Hub",
+      "exampleState": "map-list",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "austin.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "US-TX:austin",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "bajio.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "MX-GUA",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Bayern Bau",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "bayern.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Lisboa Obra",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "lisboa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Portugal",
+      "exampleState": "map-list",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Nairobi Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "nairobi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "north.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "CA-ON:toronto",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Osaka Kensetsu",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "osaka.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Pune Nirman",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "pune.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "India",
+      "exampleState": "map-list",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Samarkand Qurilish",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "samarkand.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "UZ-SA:samarkand",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example São Paulo Obras",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "saopaulo.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Sydney Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "sydney.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Australia",
+      "exampleState": "map-list",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "AU-NSW",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Tbilisi Mshenebloba",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "tbilisi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Georgia",
+      "exampleState": "map-list",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Caucasus directory",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Warszawa Budowa",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "warszawa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Example Yerevan Shinararutyun",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "yerevan.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Armenia",
+      "exampleState": "map-list",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "2 min",
+      "exampleState": "peer-traffic",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "7 (federation.signature_invalid 2, federation.rate_limited 5)",
+      "exampleState": "peer-traffic",
+      "reason": "Numeric count and stable federation error identifiers."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "Fixture QA",
+      "exampleState": "request-activation",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "network",
+      "locale": "es",
+      "text": "trustwork://bajio.example.invalid/publication/…",
+      "exampleState": "messages",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "austin.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "US-TX:austin",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "bajio.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "MX-GUA",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Bayern Bau",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "bayern.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Lisboa Obra",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "lisboa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Nairobi Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "nairobi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "north.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "CA-ON:toronto",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Osaka Kensetsu",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "osaka.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Pune Nirman",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "pune.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Samarkand Qurilish",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "samarkand.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "UZ-SA:samarkand",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example São Paulo Obras",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "saopaulo.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Sydney Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "sydney.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "AU-NSW",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Tbilisi Mshenebloba",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "tbilisi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Caucasus directory",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Warszawa Budowa",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "warszawa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Example Yerevan Shinararutyun",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "yerevan.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "7 (federation.signature_invalid 2, federation.rate_limited 5)",
+      "exampleState": "peer-traffic",
+      "reason": "Numeric count and stable federation error identifiers."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "Fixture QA",
+      "exampleState": "request-activation",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "network",
+      "locale": "ru",
+      "text": "trustwork://bajio.example.invalid/publication/…",
+      "exampleState": "messages",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "austin.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "US-TX:austin",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "bajio.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "MX-GUA",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Bayern Bau",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "bayern.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Lisboa Obra",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "lisboa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Nairobi Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "nairobi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "north.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "CA-ON:toronto",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Osaka Kensetsu",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "osaka.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Pune Nirman",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "pune.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Samarkand Qurilish",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "samarkand.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "UZ-SA:samarkand",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example São Paulo Obras",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "saopaulo.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Sydney Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "sydney.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "AU-NSW",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Tbilisi Mshenebloba",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "tbilisi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Caucasus directory",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Warszawa Budowa",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "warszawa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Example Yerevan Shinararutyun",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "yerevan.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "7 (federation.signature_invalid 2, federation.rate_limited 5)",
+      "exampleState": "peer-traffic",
+      "reason": "Numeric count and stable federation error identifiers."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "Fixture QA",
+      "exampleState": "request-activation",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "network",
+      "locale": "uz-Latn",
+      "text": "trustwork://bajio.example.invalid/publication/…",
+      "exampleState": "messages",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "austin.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "US-TX:austin",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "bajio.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "MX-GUA",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Bayern Bau",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "bayern.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Lisboa Obra",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "lisboa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Nairobi Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "nairobi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "north.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "CA-ON:toronto",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Osaka Kensetsu",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "osaka.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Pune Nirman",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "pune.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Samarkand Qurilish",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "samarkand.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "UZ-SA:samarkand",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example São Paulo Obras",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "saopaulo.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Sydney Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "sydney.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "AU-NSW",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Tbilisi Mshenebloba",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "tbilisi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Caucasus directory",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Warszawa Budowa",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "warszawa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Example Yerevan Shinararutyun",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "yerevan.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "7 (federation.signature_invalid 2, federation.rate_limited 5)",
+      "exampleState": "peer-traffic",
+      "reason": "Numeric count and stable federation error identifiers."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "Fixture QA",
+      "exampleState": "request-activation",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "network",
+      "locale": "ka",
+      "text": "trustwork://bajio.example.invalid/publication/…",
+      "exampleState": "messages",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "austin.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "US-TX:austin",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "bajio.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "MX-GUA",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Bayern Bau",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "bayern.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Lisboa Obra",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "lisboa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Nairobi Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "nairobi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "north.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "CA-ON:toronto",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Osaka Kensetsu",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "osaka.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Pune Nirman",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "pune.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Samarkand Qurilish",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "samarkand.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "UZ-SA:samarkand",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example São Paulo Obras",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "saopaulo.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Sydney Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "sydney.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "AU-NSW",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Tbilisi Mshenebloba",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "tbilisi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Caucasus directory",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Warszawa Budowa",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "warszawa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Example Yerevan Shinararutyun",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "yerevan.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "7 (federation.signature_invalid 2, federation.rate_limited 5)",
+      "exampleState": "peer-traffic",
+      "reason": "Numeric count and stable federation error identifiers."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "Fixture QA",
+      "exampleState": "request-activation",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "network",
+      "locale": "hy",
+      "text": "trustwork://bajio.example.invalid/publication/…",
+      "exampleState": "messages",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "austin.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "US-TX:austin",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "bajio.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "MX-GUA",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Bayern Bau",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "bayern.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Lisboa Obra",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "lisboa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Nairobi Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "nairobi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "north.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "CA-ON:toronto",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Osaka Kensetsu",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "osaka.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Pune Nirman",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "pune.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Samarkand Qurilish",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "samarkand.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "UZ-SA:samarkand",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example São Paulo Obras",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "saopaulo.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Sydney Build",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "sydney.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "AU-NSW",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Tbilisi Mshenebloba",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "tbilisi.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Caucasus directory",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Warszawa Budowa",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "warszawa.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Example Yerevan Shinararutyun",
+      "exampleState": "map-list",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "yerevan.example.invalid",
+      "exampleState": "map-list",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "7 (federation.signature_invalid 2, federation.rate_limited 5)",
+      "exampleState": "peer-traffic",
+      "reason": "Numeric count and stable federation error identifiers."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "Fixture QA",
+      "exampleState": "request-activation",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "network",
+      "locale": "az-Latn",
+      "text": "trustwork://bajio.example.invalid/publication/…",
+      "exampleState": "messages",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "es",
+      "text": "Synthetic Rosa Delgado",
+      "exampleState": "team-tree",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "es",
+      "text": "Sam Lee",
+      "exampleState": "handover-2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ru",
+      "text": "Synthetic Rosa Delgado",
+      "exampleState": "team-tree",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ru",
+      "text": "Sam Lee",
+      "exampleState": "handover-2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "uz-Latn",
+      "text": "Agent",
+      "exampleState": "journey-brief",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "uz-Latn",
+      "text": "Synthetic Rosa Delgado",
+      "exampleState": "team-tree",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "uz-Latn",
+      "text": "Sam Lee",
+      "exampleState": "handover-2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ka",
+      "text": "Synthetic Rosa Delgado",
+      "exampleState": "team-tree",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "ka",
+      "text": "Sam Lee",
+      "exampleState": "handover-2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "hy",
+      "text": "Synthetic Rosa Delgado",
+      "exampleState": "team-tree",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "hy",
+      "text": "Sam Lee",
+      "exampleState": "handover-2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "az-Latn",
+      "text": "Regional operator",
+      "exampleState": "journey-2",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "az-Latn",
+      "text": "Agent",
+      "exampleState": "journey-brief",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "az-Latn",
+      "text": "Synthetic Rosa Delgado",
+      "exampleState": "team-tree",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "operating-company",
+      "locale": "az-Latn",
+      "text": "Sam Lee",
+      "exampleState": "handover-2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "El Cajon",
+      "exampleState": "review2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "22 Sample Ave, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "22 Sample Avenue, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "es",
+      "text": "sample-gutters.invalid",
+      "exampleState": "review1-link",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "El Cajon",
+      "exampleState": "review2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "22 Sample Ave, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "22 Sample Avenue, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ru",
+      "text": "sample-gutters.invalid",
+      "exampleState": "review1-link",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "El Cajon",
+      "exampleState": "review2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "22 Sample Ave, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "22 Sample Avenue, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "uz-Latn",
+      "text": "sample-gutters.invalid",
+      "exampleState": "review1-link",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "El Cajon",
+      "exampleState": "review2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "22 Sample Ave, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "22 Sample Avenue, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "ka",
+      "text": "sample-gutters.invalid",
+      "exampleState": "review1-link",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "El Cajon",
+      "exampleState": "review2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "22 Sample Ave, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "22 Sample Avenue, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "hy",
+      "text": "sample-gutters.invalid",
+      "exampleState": "review1-link",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "El Cajon",
+      "exampleState": "review2",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "22 Sample Ave, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "22 Sample Avenue, Chula Vista",
+      "exampleState": "review1-link",
+      "reason": "Preserved invented entity/source/address name from the original fixture."
+    },
+    {
+      "prototype": "outreach",
+      "locale": "az-Latn",
+      "text": "sample-gutters.invalid",
+      "exampleState": "review1-link",
+      "reason": "Synthetic domain, address, URI or territory identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "SYN-2026-0142",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "NAICS 238160 · PSC Z2AA",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Solicitation.pdf, p. 4",
+      "exampleState": "requirements",
+      "reason": "Stable synthetic file name and Spanish page abbreviation from pageRef."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Maria R.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Solicitation.pdf, p. 9",
+      "exampleState": "requirements",
+      "reason": "Stable synthetic file name and Spanish page abbreviation from pageRef."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Alex P.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Solicitation.pdf, p. 12",
+      "exampleState": "requirements",
+      "reason": "Stable synthetic file name and Spanish page abbreviation from pageRef."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Specifications.pdf, p. 37",
+      "exampleState": "requirements",
+      "reason": "Stable synthetic file name and Spanish page abbreviation from pageRef."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Solicitation.pdf, p. 15",
+      "exampleState": "requirements",
+      "reason": "Stable synthetic file name and Spanish page abbreviation from pageRef."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Specifications.pdf, p. 41",
+      "exampleState": "requirements",
+      "reason": "Stable synthetic file name and Spanish page abbreviation from pageRef."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "Total",
+      "exampleState": "pricing",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "tender",
+      "locale": "es",
+      "text": "hello",
+      "exampleState": "assistant-reply",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ru",
+      "text": "SYN-2026-0142",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ru",
+      "text": "NAICS 238160 · PSC Z2AA",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ru",
+      "text": "Maria R.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ru",
+      "text": "Alex P.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ru",
+      "text": "hello",
+      "exampleState": "assistant-reply",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "tender",
+      "locale": "uz-Latn",
+      "text": "SYN-2026-0142",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "uz-Latn",
+      "text": "NAICS 238160 · PSC Z2AA",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "uz-Latn",
+      "text": "Maria R.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "uz-Latn",
+      "text": "Alex P.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "uz-Latn",
+      "text": "hello",
+      "exampleState": "assistant-reply",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ka",
+      "text": "SYN-2026-0142",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ka",
+      "text": "NAICS 238160 · PSC Z2AA",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ka",
+      "text": "Maria R.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ka",
+      "text": "Alex P.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "ka",
+      "text": "hello",
+      "exampleState": "assistant-reply",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "tender",
+      "locale": "hy",
+      "text": "SYN-2026-0142",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "hy",
+      "text": "NAICS 238160 · PSC Z2AA",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "hy",
+      "text": "Maria R.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "hy",
+      "text": "Alex P.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "hy",
+      "text": "hello",
+      "exampleState": "assistant-reply",
+      "reason": "Explicit test input, not interface copy."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "SYN-2026-0142",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "NAICS 238160 · PSC Z2AA",
+      "exampleState": "overview",
+      "reason": "Stable model, role, schema, incident or keyboard identifier."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "Status",
+      "exampleState": "requirements",
+      "reason": "Valid shared spelling/abbreviation in the target-language dictionary; native review still pending."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "Maria R.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "Alex P.",
+      "exampleState": "requirements",
+      "reason": "Preserved synthetic proper name or place name."
+    },
+    {
+      "prototype": "tender",
+      "locale": "az-Latn",
+      "text": "hello",
+      "exampleState": "assistant-reply",
+      "reason": "Explicit test input, not interface copy."
+    }
+  ],
+  "unresolved": [],
+  "sourceLanguageExceptions": [
+    "Editorial translation source/target segments and glossary entries declare en/es.",
+    "Editorial collection query examples declare their source language.",
+    "Tender citation drawer quotes an English synthetic source with lang=en.",
+    "Recipient-language outreach previews and user-entered fixture text declare their language."
+  ]
+}
