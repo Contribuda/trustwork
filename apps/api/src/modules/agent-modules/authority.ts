@@ -99,6 +99,9 @@ export class CapabilityAuthority {
     if (policyReason !== null) return { allowed: false, capabilityId, moduleKey, reason: policyReason, messageKey: REFUSAL_MESSAGE_KEYS[policyReason], blockedBy: null };
     const enabled = document.policy.enabledModules.find((m) => m.moduleKey === moduleKey);
     const capability = enabled ? moduleCapabilities(registry, moduleKey, enabled.moduleVersion, document.policy.activeExtensionVersionIds).find((c) => c.id === capabilityId) : undefined;
+    if (capability && action !== null && action !== capability.mandateAction) {
+      return { allowed: false, capabilityId, moduleKey, reason: 'capability.unknown', messageKey: REFUSAL_MESSAGE_KEYS['capability.unknown'], blockedBy: null };
+    }
     const blocked = await agentAuthority.dispatchRefusal(trx, {
       hubId: this.hubId, moduleKey, capabilityId, action: action ?? capability?.mandateAction ?? null, personId: actor.personId, connectionId: actor.connectionId, representativeOf: actor.representativeOf,
     });
