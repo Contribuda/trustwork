@@ -9,6 +9,17 @@ export const RenderSnapshotSchema = z.object({ revisionId: z.uuid(), issue: z.ob
     corrections: z.array(z.object({ reason: z.string() })), editions: z.array(z.object({ role: z.string(), machineAssisted: z.boolean() })) }) })) });
 export type RenderSnapshot = z.infer<typeof RenderSnapshotSchema>;
 export type PdfRenderer = (snapshot: unknown, signal: AbortSignal) => Promise<Buffer>;
+/** Narrow optional-runtime boundary: backend images do not install a browser or its development types. */
+interface LocalBrowser {
+  close(): Promise<void>;
+  newContext(options: { javaScriptEnabled: false; serviceWorkers: 'block' }): Promise<{
+    route(pattern: string, handler: (route: { abort(): Promise<void> }) => Promise<void>): Promise<void>;
+    newPage(): Promise<{
+      setContent(html: string, options: { waitUntil: 'load'; timeout: number }): Promise<void>;
+      pdf(options: { format: 'A4'; printBackground: true; tagged: true; displayHeaderFooter: true; headerTemplate: string; footerTemplate: string }): Promise<Buffer>;
+    }>;
+  }>;
+}
 const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const locales = new Set(['en', 'es', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']);
 
@@ -52,7 +63,9 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
       ${v.sourceRefs.map(s => paragraph([s.name, s.uri, s.license].filter(Boolean).join(' · '), 'source')).join('')}</article>`;
   }).join('')}</body></html>`;
   signal.throwIfAborted();
-  const { chromium } = await import('playwright');
+  // Resolve only when explicitly enabled in a local runtime with the installed browser package.
+  const localBrowserPackage: string = 'playwright';
+  const { chromium } = await import(localBrowserPackage) as { chromium: { launch(options: { headless: true }): Promise<LocalBrowser> } };
   const browser = await chromium.launch({ headless: true });
   const abort = () => { void browser.close(); };
   signal.addEventListener('abort', abort, { once: true });
