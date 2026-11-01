@@ -52,7 +52,19 @@ test('migration captures exact historical sources once; newly backdated or origi
     return {booking:b,agreement:accepted.agreements[0]!};
   };
   const oldConsultation=await prepareConsultation();
-  await h.db.migrate();
+  // This historical-data fixture intentionally hosts the current AGT service schema before the fee cutover.
+  // Execute the exact fee scripts as a transactional SQL fixture; never lie to the forward-only migration ledger.
+  // The production runner and its ordering refusal remain covered by tests/data/migrations.test.ts.
+  const cutover = await h.db.admin.connect();
+  try {
+    await cutover.query('BEGIN');
+    await cutover.query('SET LOCAL ROLE trustwork_owner');
+    await cutover.query('SET LOCAL search_path = trustwork, pg_temp');
+    await cutover.query("SELECT set_config('trustwork.maintenance', 'on', true)");
+    for (const file of loadMigrations().filter(file => file.filename.startsWith('202611111000'))) await cutover.query(file.script);
+    await cutover.query('COMMIT');
+  } catch (error) { await cutover.query('ROLLBACK'); throw error; }
+  finally { cutover.release(); }
   const captured=(await h.db.admin.query('SELECT source_kind,source_id,source_digest FROM trustwork.billing_fee_legacy_source ORDER BY source_kind')).rows;
   assert.deepEqual(captured,[{source_kind:'consultation',source_id:oldConsultation.booking.id,source_digest:oldConsultation.booking.digest.value},{source_kind:'task',source_id:oldTask.id,source_digest:oldTask.acceptedTermsDigest.value}]);
   await t.test('actual pre-migration records retain their old final acceptance',async()=>{
