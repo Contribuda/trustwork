@@ -146,7 +146,7 @@ export async function HomeView({ lang, query }: ViewProps) {
                 </NextLink>
               ))}
             </div>
-            {publicationsUnavailable ? <p className="feed-row__dek" role="status">{t('home.publicationsUnavailable')}</p> : null}
+            {publicationsUnavailable ? <p className="pub-feed__status" role="status">{t('home.publicationsUnavailable')}</p> : null}
             {feed.length || feedEvents.length ? (
               <div className="pub-rows">
                 {feed.map((card) => (
@@ -215,7 +215,7 @@ export async function HomeView({ lang, query }: ViewProps) {
                 })}
               </div>
             ) : publicationsUnavailable ? null : (
-              <p className="feed-row__dek">{t('articles.empty')}</p>
+              <p className="pub-feed__status">{t('articles.empty')}</p>
             )}
             {feedMoreHref ? (
               <div className="pub-feed__more">
