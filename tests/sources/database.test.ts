@@ -89,6 +89,20 @@ test('source registry persistence under the restricted runtime role', { skip: db
     assert.equal(await count("SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'source.registered' AND object_id = $1 AND actor_person_id = $2", [s.id, p.stewardA]), 1);
   });
 
+  await t.test('provider preparation enforces live elevation and exact hub permission in PostgreSQL', async () => {
+    const source = await activeSource();
+    const [row] = await importItems(source.id, [item('prepare')]);
+    assert.ok(row);
+    const invalid = { elevationId: uuid(), requestId: 'prepare-invalid', reasonCode: 'test', reasonText: 'Synthetic test' };
+    await refused(as(p.stewardA, (trx) => sources.preparePolicyCheck(trx, invalid, w.hubId, source.id)), '42501', 'admin.elevation_required');
+    await refused(as(p.editorA, (trx) => sourceItems.prepareAssist(trx, invalid, w.hubId, row.id, row.revision)), '42501', 'admin.elevation_required');
+    await refused(cmd(p.editorA, (trx, ctx) => sources.preparePolicyCheck(trx, ctx, w.hubId, source.id)), '42501', 'admin.forbidden');
+    await refused(cmd(p.stewardA, (trx, ctx) => sourceItems.prepareAssist(trx, ctx, w.hubId, row.id, row.revision)), '42501', 'admin.forbidden');
+    await refused(cmd(p.otherSteward, (trx, ctx) => sources.preparePolicyCheck(trx, ctx, w.hubId, source.id)), '42501', 'admin.forbidden');
+    await refused(cmd(p.editorA, (trx, ctx) => sourceItems.prepareAssist(trx, ctx, w.otherHubId, row.id, row.revision)), '42501', 'admin.forbidden');
+    await refused(cmd(p.editorA, (trx, ctx) => sourceItems.prepareAssist(trx, ctx, w.hubId, row.id, row.revision + 1)), '40001', 'sources.revision_conflict');
+  });
+
   await t.test('licence rules hold for every writer: no licence, rewriting without text, personal data without a legal basis', async () => {
     const restricted = { ...MOST_RESTRICTIVE_USES, displayHeadlineAndLink: true, displaySummary: true, indexForSearch: true };
     const ok = await cmd(p.stewardA, (trx, ctx) => sources.register(trx, ctx, w.hubId, sourceInput(p.stewardA, { licence: { kind: 'unknown', name: null, url: null, agreementRef: null }, allowedUses: restricted })));
@@ -286,6 +300,28 @@ test('source registry persistence under the restricted runtime role', { skip: db
     assert.deepEqual(await as(p.editorA, (trx) => sourceItems.effectiveUses(trx, openItem.id)), DISPLAY_ONLY);
   });
 
+  await t.test('output projections apply current and snapshot licences independently', async () => {
+    const source = await activeSource();
+    const [row] = await importItems(source.id, [item('projection', { summary: 'Synthetic summary', fullText: 'Synthetic text' })]);
+    assert.ok(row);
+    await draftFromItem(p.editorA, row);
+    const narrow = { ...OPEN_USES, displaySummary: false, storeFullText: false, rewriteWithAttribution: false };
+    let current = await cmd(p.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, source.id, source.revision, { ...sourceInput(p.stewardA), allowedUses: narrow }));
+    const payload = await as(p.editorA, (trx) => sourceItems.egress(trx, row.id, 'model_provider'));
+    assert.deepEqual([payload.summary, payload.fullText], [null, null]);
+    const exported = await withMaintenance(db.admin, (trx) => sourcesWorker.peerExport(trx, w.hubId, 500));
+    assert.equal(exported.find((x) => x.itemId === row.id)?.summary, null, 'syndication alone does not authorize a stored summary');
+    current = await cmd(p.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, source.id, current.revision, { ...sourceInput(p.stewardA), allowedUses: { ...narrow, displayHeadlineAndLink: false, indexForSearch: false } }));
+    assert.ok(!(await withMaintenance(db.admin, (trx) => sourcesWorker.peerExport(trx, w.hubId, 500))).some((x) => x.itemId === row.id));
+    assert.ok(!(await withMaintenance(db.admin, (trx) => sourcesWorker.recommendable(trx, w.hubId, 500))).some((x) => x.item_id === row.id));
+    // A later widening cannot turn facts imported without display permission into public provenance.
+    const record = uuid();
+    await importItems(source.id, [item('snapshot')], [{ recordKind: 'company', recordId: record, field: 'legalName', value: 'Synthetic Snapshot LLC', itemExternalId: null }]);
+    current = await cmd(p.stewardA, (trx, ctx) => sources.setTerms(trx, ctx, source.id, current.revision, { ...sourceInput(p.stewardA), allowedUses: OPEN_USES }));
+    await cmd(p.stewardB, (trx, ctx) => sources.setStatus(trx, ctx, source.id, current.revision, 'active'));
+    assert.deepEqual((await anon((trx) => publicSources.provenance(trx, w.hubId, 'company', record)) as { fields: unknown[] }).fields, []);
+  });
+
   await t.test('takedown: deactivate records, redact text, tombstones for retrieval and federation, the reason audited', async () => {
     const s = await activeSource({ name: 'Synthetic Takedown Journal' });
     const company = uuid();
@@ -387,10 +423,17 @@ test('source registry persistence under the restricted runtime role', { skip: db
     const slot = await anon((trx) => publicSources.sponsoredSlot(trx, w.hubId)) as { label: string; items: { itemId: string; sponsorName: string }[] };
     assert.equal(slot.label, 'sponsored');
     assert.deepEqual(slot.items.map((x) => [x.itemId, x.sponsorName]), [[sp!.id, 'Synthetic Sponsor Inc.']]);
+    // Tightening sponsor verification also removes previously admitted unverified sponsors.
+    const input3 = { ...input, version: 3, requireVerifiedSponsor: true };
+    const digest3 = computeDigest(sponsoredPolicyDigestInput(input3)).value;
+    const request3 = await cmd(p.officerA, (trx, ctx) => approvals.request(trx, ctx, { action: 'sponsored.enable', scope: { kind: 'hub', hubId: w.hubId }, actionDigest: digest3 }));
+    await cmd(p.officerB, (trx, ctx) => approvals.decide(trx, ctx, request3.id, 'approve', digest3));
+    await cmd(p.officerA, (trx, ctx) => sponsoredPolicy.set(trx, ctx, w.hubId, { allowed: true, maxSlotsPerPage: 1, requireVerifiedSponsor: true, approvalId: request3.id }));
+    assert.deepEqual((await anon((trx) => publicSources.sponsoredSlot(trx, w.hubId)) as { items: unknown[] }).items, []);
     // Switching it off needs no second person and empties the slot at once.
     await refused(cmd(p.officerA, (trx, ctx) => sponsoredPolicy.set(trx, ctx, w.hubId, { allowed: false, maxSlotsPerPage: 0, requireVerifiedSponsor: true, approvalId: request.id })), '22023', 'sources.invalid_policy');
     const off = await cmd(p.officerA, (trx, ctx) => sponsoredPolicy.set(trx, ctx, w.hubId, { allowed: false, maxSlotsPerPage: 0, requireVerifiedSponsor: true, approvalId: null }));
-    assert.deepEqual([off.version, off.allowed], [3, false]);
+    assert.deepEqual([off.version, off.allowed], [4, false]);
     assert.deepEqual((await anon((trx) => publicSources.sponsoredSlot(trx, w.hubId)) as { items: unknown[] }).items, []);
     await refused(withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.sponsored_content_policy SET allowed = true WHERE id = ${off.id}::uuid`.execute(trx)), '23000', 'audit.append_only');
     await refused(withMaintenance(db.admin, (trx) => sql`INSERT INTO trustwork.sponsored_content_policy (hub_id, version, allowed, max_slots_per_page, require_verified_sponsor, set_by)

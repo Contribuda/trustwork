@@ -220,6 +220,12 @@ function rslTree(root: XmlElement): XmlElement {
   }
   if (rootLocal !== 'rsl') throw new Error('the root element is not rsl');
   const strip = (e: XmlElement): XmlElement => {
+    // Namespace declarations are scoped in XML. Refuse rebinding instead of interpreting foreign terms as RSL.
+    for (const [key, value] of Object.entries(e.attrs)) {
+      if ((key === 'xmlns' || key.startsWith('xmlns:')) && (key !== (prefix === null ? 'xmlns' : `xmlns:${prefix}`) || value !== RSL_NAMESPACE)) {
+        throw new Error('foreign or rebound namespace');
+      }
+    }
     let local = e.name;
     if (e.name.includes(':')) {
       const [p, l] = e.name.split(':', 2) as [string, string];
@@ -416,7 +422,7 @@ export const SourceReaderKindSchema = z.enum(SOURCE_READER_KINDS);
 /** Statuses the registry uses (a subset of the console's `SourceStatusSchema`; review is the activation step itself). */
 export const REGISTRY_SOURCE_STATUSES = ['proposed', 'active', 'paused', 'rejected', 'retired', 'taken_down'] as const;
 export const SourceTransitionSchema = z.enum(['active', 'paused', 'rejected', 'retired']);
-export const ImportBatchStatusSchema = z.enum(['staged', 'activated', 'rejected']);
+export const ImportBatchStatusSchema = z.enum(['staged', 'activated', 'rejected', 'taken_down']);
 export const SourceItemStatusSchema = z.enum(['queued', 'drafted', 'discarded', 'taken_down']);
 export const SOURCED_RECORD_KINDS = ['company', 'company_identifier', 'company_registration', 'professional_credential', 'product_entry', 'learning_resource', 'event'] as const;
 export const SourcedRecordKindSchema = z.enum(SOURCED_RECORD_KINDS);
