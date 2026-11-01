@@ -29,6 +29,8 @@ function clientGraph(): Map<string, string[]> {
     const file = queue.pop()!;
     if (graph.has(file)) continue;
     const source = readFileSync(file, 'utf8');
+    // A server action module ('use server') reaches the browser only as a reference: its imports never ship.
+    if (!entries.includes(file) && /^\s*['"]use server['"]/.test(source)) { graph.set(file, []); continue; }
     const specifiers = [...source.matchAll(/^(?:import|export)\s(?!type\s)[^'"]*?from\s+['"]([^'"]+)['"]|^import\s+['"]([^'"]+)['"]/gm)].map((m) => (m[1] ?? m[2])!);
     graph.set(file, specifiers);
     for (const spec of specifiers) {
