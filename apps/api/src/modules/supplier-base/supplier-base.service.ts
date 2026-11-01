@@ -5,6 +5,7 @@ import type { Principal } from '../../deps/contracts.js';
 import { auditEvents, type Transaction } from '../../deps/data.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
+import { requireApprovedChange, statusRoute, submitStatusChange } from './approvals.js';
 import { buildSupplierCard } from './card.js';
 import { externalCounterparties, supplierAssessments, supplierRecords, type RecordFields, type SupplierRecordRow, type SupplierStatus } from './deps.js';
 import { supplierBaseRefusal } from './errors.js';
@@ -114,9 +115,14 @@ export class SupplierBaseService {
           status: body.status, categories: body.categories ?? [], regions: body.regions ?? [], internalNotes: body.internalNotes ?? null,
           defaultPaymentTerms: body.defaultPaymentTerms ?? null, onboarding: body.onboarding ?? [],
         };
-        const row = await supplierRecords.create(trx, { companyId: company, link: body.link, ...fields });
-        await this.audit(trx, p, state, 'supplier_base.record_created', 'supplier_record', row.id, { linkKind: body.link.kind, via, mandateId: body.actor.via === 'agent' ? body.actor.mandateId : null }, company);
-        return privateView({ record: recordContract(row) });
+        // A status the company's supplier-status route reviews starts as `prospect` and is submitted for approval.
+        const needsApproval = fields.status !== 'prospect' && (await statusRoute(trx, company, fields.status, fields.categories)) !== null;
+        const row = await supplierRecords.create(trx, { companyId: company, link: body.link, ...fields, status: needsApproval ? 'prospect' : fields.status });
+        const approval = needsApproval ? await submitStatusChange(trx, company, row, fields.status, this.now()) : null;
+        await this.audit(trx, p, state, 'supplier_base.record_created', 'supplier_record', row.id, {
+          linkKind: body.link.kind, approvalRequestId: approval?.id ?? null, via, mandateId: body.actor.via === 'agent' ? body.actor.mandateId : null,
+        }, company);
+        return privateView({ record: recordContract(row), approval: approval ? { request: approval, status: fields.status } : null });
       }
       let current = await this.record(trx, body.supplierRecordId);
       let expected = body.expectedRevision;
@@ -141,9 +147,27 @@ export class SupplierBaseService {
       if (body.internalNotes !== undefined) changed.push('internalNotes');
       if (body.defaultPaymentTerms !== undefined) changed.push('defaultPaymentTerms');
       if (body.onboarding !== undefined) changed.push('onboarding');
-      const row = await supplierRecords.update(trx, { id: current.id, expectedRevision: expected, ...fields });
-      await this.audit(trx, p, state, 'supplier_base.record_changed', 'supplier_record', row.id, { fields: changed, via, mandateId: body.actor.via === 'agent' ? body.actor.mandateId : null }, company);
-      return privateView({ record: recordContract(row) });
+      const statusChange = fields.status !== current.status;
+      if (statusChange && body.approvalRequestId !== undefined) {
+        // The approved change is bound to the record as it was submitted: check it before anything else changes.
+        if (current.revision !== expected) throw new ApiError('validation.revision_conflict', 'the supplier record changed meanwhile', { reason: 'revision_conflict' });
+        await requireApprovedChange(trx, body.approvalRequestId, current, fields.status);
+      }
+      const route = statusChange && body.approvalRequestId === undefined ? await statusRoute(trx, company, fields.status, fields.categories) : null;
+      let row: SupplierRecordRow;
+      if (route) {
+        // The other changes apply now; the status waits for the route, bound to the record as it is after them.
+        const others = changed.filter((f) => f !== 'status' && f !== 'link');
+        if (others.length === 0 && current.revision !== expected) throw new ApiError('validation.revision_conflict', 'the supplier record changed meanwhile', { reason: 'revision_conflict' });
+        row = others.length > 0 ? await supplierRecords.update(trx, { id: current.id, expectedRevision: expected, ...fields, status: current.status }) : current;
+      } else {
+        row = await supplierRecords.update(trx, { id: current.id, expectedRevision: expected, ...fields });
+      }
+      const approval = route ? await submitStatusChange(trx, company, row, fields.status, this.now()) : null;
+      await this.audit(trx, p, state, 'supplier_base.record_changed', 'supplier_record', row.id, {
+        fields: approval ? changed.filter((f) => f !== 'status') : changed, approvalRequestId: approval?.id ?? body.approvalRequestId ?? null, via, mandateId: body.actor.via === 'agent' ? body.actor.mandateId : null,
+      }, company);
+      return privateView({ record: recordContract(row), approval: approval ? { request: approval, status: fields.status } : null });
     });
   }
 
@@ -269,19 +293,24 @@ export class SupplierBaseService {
       const skipped = mapped.rows.filter((r) => existing.has(nameKey(r.name))).map((r) => ({ rowNumber: r.rowNumber, reason: 'already_listed' as const }));
       const toCreate = mapped.rows.filter((r) => !existing.has(nameKey(r.name)));
       if (errors.length > 0 || body.dryRun) {
-        return privateView({ outcome: errors.length > 0 ? 'rejected' as const : 'previewed' as const, rows: Math.max(0, table.length - 1), created: 0, wouldCreate: errors.length > 0 ? 0 : toCreate.length, skipped, errors, recordIds: [] as string[] });
+        return privateView({ outcome: errors.length > 0 ? 'rejected' as const : 'previewed' as const, rows: Math.max(0, table.length - 1), created: 0, wouldCreate: errors.length > 0 ? 0 : toCreate.length, skipped, errors, recordIds: [] as string[], statusPendingApproval: [] as number[] });
       }
       const recordIds: string[] = [];
+      // A status the company's supplier-status route reviews is imported as `prospect`; the person then changes it
+      // through the route (an import never floods approvers with requests).
+      const statusPendingApproval: number[] = [];
       for (const row of toCreate) {
+        const reviewed = row.status !== 'prospect' && (await statusRoute(trx, company, row.status, row.categories)) !== null;
+        if (reviewed) statusPendingApproval.push(row.rowNumber);
         const counterparty = await externalCounterparties.create(trx, { companyId: company, name: row.name, identifiers: row.identifiers, contacts: row.contacts, source: 'import' });
         const record = await supplierRecords.create(trx, {
-          companyId: company, link: { kind: 'external_counterparty', id: counterparty.id }, status: row.status, categories: row.categories, regions: row.regions,
+          companyId: company, link: { kind: 'external_counterparty', id: counterparty.id }, status: reviewed ? 'prospect' : row.status, categories: row.categories, regions: row.regions,
           internalNotes: row.internalNotes, defaultPaymentTerms: row.defaultPaymentTerms, onboarding: [],
         });
         recordIds.push(record.id);
       }
       await this.audit(trx, p, state, 'supplier_base.imported', 'company', company, { format: body.file.format, rows: Math.max(0, table.length - 1), created: recordIds.length, skipped: skipped.length, via }, company);
-      return privateView({ outcome: 'imported' as const, rows: Math.max(0, table.length - 1), created: recordIds.length, wouldCreate: recordIds.length, skipped, errors, recordIds });
+      return privateView({ outcome: 'imported' as const, rows: Math.max(0, table.length - 1), created: recordIds.length, wouldCreate: recordIds.length, skipped, errors, recordIds, statusPendingApproval });
     });
   }
 }

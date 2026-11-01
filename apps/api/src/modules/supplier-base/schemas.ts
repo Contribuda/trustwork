@@ -28,7 +28,12 @@ const details = {
  * `procurement.maintain_supplier`: `supplierRecordId: null` adds a record (its `expectedRevision` is ignored); an id
  * changes it. A different `link` on an existing record is the move to the claimed company (only `kind: company`).
  */
-export const MaintainSupplierBodySchema = MaintainSupplierCommandSchema.extend({ ...details, ...actor });
+export const MaintainSupplierBodySchema = MaintainSupplierCommandSchema.extend({
+  ...details,
+  /** Applies a status change the company's `supplier_status` approval route approved (bound to the record's revision). */
+  approvalRequestId: IdSchema.optional(),
+  ...actor,
+});
 
 const ContactSchema = ExternalCounterpartySchema.shape.contacts.element;
 export const CounterpartyFieldsSchema = z.strictObject({
