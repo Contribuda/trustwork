@@ -1,0 +1,497 @@
+{
+  "package": "HUBC-020",
+  "buildSourceCommit": "91c03721cb43110a627299eb75c2179938c83dba",
+  "browserTestSourceCommit": "fc49671322bc37de0e4da34331c5a3c22b22d8fc",
+  "buildId": "amHdTeU8dUUW483yl1vCd",
+  "runtimeGitObjects": {
+    "apps/web/app/admin": "42c2cf36d709d4bed9fea71343bba3d49237584b",
+    "apps/web/locales": "3f87681e5c2ea590ebc5e719cde016a166082d87",
+    "packages/ui/src": "c848c3b116bc40d8faadbf3dbcfbf627215a2f0b",
+    "packages/ui/locales": "63060194014a6c493ec986431395cd86a58f331b",
+    "packages/contracts/src": "e9c05435b28e40b23f21b9f8bb05c145fbb6b1cd",
+    "apps/web/next.config.ts": "eefb02ce7526d29d8314edf1a093616bffb38ae2",
+    "apps/web/tsconfig.json": "e73688eca921147efbc861f48e0f5c1c63e7486f",
+    "package-lock.json": "ebd33ad0db55107c159c0d7b03e32db43f13d0f5"
+  },
+  "browserCommand": "./node_modules/.bin/playwright test --config tests/web/admin/navigation/playwright.config.ts navigation.spec.ts",
+  "exitCode": 0,
+  "passed": 15,
+  "failed": 0,
+  "locales": [
+    "en",
+    "es",
+    "ru",
+    "uz-Latn",
+    "ka",
+    "hy",
+    "az-Latn"
+  ],
+  "widths": [
+    1280,
+    768,
+    375
+  ],
+  "reviewStatus": {
+    "nativeSpeaker": "not performed",
+    "manualAT": "not performed",
+    "ownerVisualAcceptance": "not performed"
+  },
+  "artifacts": [
+    {
+      "path": "az-Latn-1280-inbox.png",
+      "sha256": "2c4f73a96ccca0bf4888180767b6471702dbc72acc015f35cfe2bbd956dc2189",
+      "bytes": 153819,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "az-Latn-1280-palette.png",
+      "sha256": "96535c29c9706ca747a0d90061afeb1b47849bde5f94bceb6c0db719940b6b25",
+      "bytes": 130240,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "az-Latn-1280-preferences.png",
+      "sha256": "c3a1a810c1b61a442aeb1ff3e6a704003924cdef386528f10563eff558bb6f9e",
+      "bytes": 187522,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "az-Latn-375-inbox.png",
+      "sha256": "784d902e53153cb654b77882f6a81c1f77cc5322e59712033db53ec8ad8466f2",
+      "bytes": 76739,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "az-Latn-375-palette.png",
+      "sha256": "8c14ff6a5098e1a05f89dc2a234956a72e8e5ce6108ece36393944297bd6d4f8",
+      "bytes": 37585,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "az-Latn-375-preferences.png",
+      "sha256": "c68e424c618c7af9305693054965d235c84b0ad8414e0d8a6bbf3b6bf8a3afb7",
+      "bytes": 73165,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "az-Latn-768-inbox.png",
+      "sha256": "816e2aa4f8d662677617bdc5e1d03c44d0b80d2cf9a71ce1c1b5d6d719d4da24",
+      "bytes": 136022,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "az-Latn-768-palette.png",
+      "sha256": "23df8543f78d0d16a34986ac52013310f3e142ceb3e6bb7d445924b6ca6bfaff",
+      "bytes": 98079,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "az-Latn-768-preferences.png",
+      "sha256": "61f2a320d9034bbaa3bd5831f5d63ca0da4a4891c2a29b4dad8c0b47dbb2b908",
+      "bytes": 143004,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "en-1280-inbox.png",
+      "sha256": "fde06fda6af32af4fb114dffa2b22baaa2c98da0ea373c4d0faf0fe49b6ed981",
+      "bytes": 139025,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "en-1280-palette.png",
+      "sha256": "c8fbb823a7c5d8e0d8d49c71079b32a8f04b137a22aff549e43cc4fae12e8d38",
+      "bytes": 129774,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "en-1280-preferences.png",
+      "sha256": "51db727d02b41af4d7ec9b4f4082626a043a1bbd9e96284f949137800710d6e5",
+      "bytes": 180257,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "en-375-inbox.png",
+      "sha256": "2942d2938736dd3b5bb397637d9ebe6bbe1a82cfcbddaf3e67ffe8f0c6120029",
+      "bytes": 78261,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "en-375-palette.png",
+      "sha256": "24e52bffbae5a70929f2bf9fb144dcdcd46f954ca08d562d292ef69511c13383",
+      "bytes": 42935,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "en-375-preferences.png",
+      "sha256": "d9cf34ac77760e1a87ce29e2e7cd4e1bd870ec75205764f8c14fdf3e41bcfea2",
+      "bytes": 73997,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "en-768-inbox.png",
+      "sha256": "098359d72f3fa5b85504d2babf918de7bbf402e6100861e5221fe261a6bf258c",
+      "bytes": 130450,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "en-768-palette.png",
+      "sha256": "7b8f950e93ff009f6dacaf6c184d22c65683639edb81fa8f39813b6925982956",
+      "bytes": 99469,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "en-768-preferences.png",
+      "sha256": "038d9f5b4f6c8c1ba83796403824fff0a3f173de1850a131610463cde3ce22f8",
+      "bytes": 136109,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "es-1280-inbox.png",
+      "sha256": "14e01d3b45d1035bdb856afae1bf1e8fa42e785740f77b96cf7a7ba7fdcb92a1",
+      "bytes": 152176,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "es-1280-palette.png",
+      "sha256": "aeed3226a93c7b75d5181625cf3daba6101d0fef18c0820e0ec8281f684f3119",
+      "bytes": 142981,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "es-1280-preferences.png",
+      "sha256": "3844ee456c3d9f68e1c3e6980885213a3aa1fe43146fb57b24bc94d0fd3d7b7a",
+      "bytes": 199429,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "es-375-inbox.png",
+      "sha256": "21b68ec5316b517aaf668a5fe737da94da9c7e2b7743bc0b7fd0ce09b4317832",
+      "bytes": 76580,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "es-375-palette.png",
+      "sha256": "461eee23e5131d1105af6e1fe2ad7f8530e3a39a7380a64b942bf721101ae295",
+      "bytes": 46308,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "es-375-preferences.png",
+      "sha256": "a5be7dbe250436cf01efec5b24d6101fb0d49222e288f247488771eae37e5fd3",
+      "bytes": 76358,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "es-768-inbox.png",
+      "sha256": "f27d76909379e0e0f47263549c94e669f26f06a62f958d5d6de3dffd1464c9bb",
+      "bytes": 138350,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "es-768-palette.png",
+      "sha256": "5b039aa4a6044cfb3ef90a1fce9dc41eb2821f0017a7c1cae903f33df5944f8c",
+      "bytes": 106265,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "es-768-preferences.png",
+      "sha256": "a300dfcc94f45c1661a696f00e52d609f46903f015c4dd26bccdfa00022f0b04",
+      "bytes": 155630,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "geometry-1280.json",
+      "sha256": "6453a6703b978a822399eec6d7f49d7d654a90206a2fab5005b4d82a8e421b29",
+      "bytes": 2271
+    },
+    {
+      "path": "geometry-375.json",
+      "sha256": "c79afecf53ec9c8deec5110febdd959b4d99521e21c3ab4bdb449039b636b4a2",
+      "bytes": 2264
+    },
+    {
+      "path": "geometry-768.json",
+      "sha256": "300fe66206d9943d3615ef807c420bf3b3f1c32da23869958674f4cb3c99c836",
+      "bytes": 2264
+    },
+    {
+      "path": "hy-1280-inbox.png",
+      "sha256": "5fa4d0fa49223575e54273c6f281aef5327028895fddc4d75aeb827b047bfb6c",
+      "bytes": 152222,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "hy-1280-palette.png",
+      "sha256": "5569d41cf9adb02682c221c83f6d5bb7198f7500bfd6a1d07d5e70d69887bb97",
+      "bytes": 138906,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "hy-1280-preferences.png",
+      "sha256": "61147753744f8847e8e1f6ddb2c08378d165abe2f366c267bc37cf8fe5ea0d4c",
+      "bytes": 187986,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "hy-375-inbox.png",
+      "sha256": "12f5ffe08b220a22d7557b25c9a42e43be7f3c4a8de39912925fd98b4e6ab656",
+      "bytes": 65537,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "hy-375-palette.png",
+      "sha256": "dd755eba85c3a4205a8b9487bc85112e161746469a2c313418cbb9383c1a8c1d",
+      "bytes": 44004,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "hy-375-preferences.png",
+      "sha256": "1ccec70312b16568f8333d2636bb91c98a437756639e715f6f3c50dd8f21e5e8",
+      "bytes": 61899,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "hy-768-inbox.png",
+      "sha256": "1051cefbcd4db37a2a1f803fdcd25792936cebbc729bb79c018b1c74a812496f",
+      "bytes": 129984,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "hy-768-palette.png",
+      "sha256": "e409527978a0b730f11e422cd477408703c42f8c8aee13a9f6cec5246a0df7fe",
+      "bytes": 91390,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "hy-768-preferences.png",
+      "sha256": "eedbec74bd8b197663e31c148b03923ba144caa4bc87165b1bca93864fd635c2",
+      "bytes": 137727,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "ka-1280-inbox.png",
+      "sha256": "d7ff8f5a68b6d1c83eb389e3ee5e6a803e0bb19272aa30c22378204f0c2e70f0",
+      "bytes": 226533,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "ka-1280-palette.png",
+      "sha256": "b71f7d13299b296e300304f17f629b12e5cdc977e57ab4973ce5e4b98a073ded",
+      "bytes": 195885,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "ka-1280-preferences.png",
+      "sha256": "4e082c582a63a2c5c5fb0e32af9a8af4dd862ee20333b51f92866a66ae3ba3d3",
+      "bytes": 277839,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "ka-375-inbox.png",
+      "sha256": "b4ab3dd06847afdeb3b77aeeedf3abe4a3aadd9d749589eb9fee85d67a71397d",
+      "bytes": 103370,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "ka-375-palette.png",
+      "sha256": "7cce70f5ed7b41661f950baa4cffd5b599d886f52131b05c2fc21bd927907156",
+      "bytes": 56496,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "ka-375-preferences.png",
+      "sha256": "0e459c31d786e7b957b8c1e1ae828e0e3e8cfb97afab16b56bd0489dcbe13204",
+      "bytes": 101870,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "ka-768-inbox.png",
+      "sha256": "cc5c2715428047980a59e1090e8a960f5981ecf492b3ac46479b7edcb24e62e1",
+      "bytes": 195815,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "ka-768-palette.png",
+      "sha256": "ecc253835da338795aa24120abe35fefe655e8f1d2908e180b2cc48190856501",
+      "bytes": 129773,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "ka-768-preferences.png",
+      "sha256": "d5788e57dac52042b19102b39f1079d2a0946d9a1162f0fab97c3e65f66e8dc4",
+      "bytes": 203930,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "ru-1280-inbox.png",
+      "sha256": "a9d5fe5eee5485479a99778be560256f5cb46a9cc7cc576a92b548868f69f6b3",
+      "bytes": 316009,
+      "width": 1280,
+      "height": 2148
+    },
+    {
+      "path": "ru-1280-palette.png",
+      "sha256": "399343e1fe2f749b8f1a88f1b722cdfc8556b0eab8dcfc26c926b92646933b76",
+      "bytes": 136268,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "ru-1280-preferences.png",
+      "sha256": "04ee2d2612d63ddfce2a16eb45eef4c0df28d9e514bafab584011df956aecd12",
+      "bytes": 191810,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "ru-375-inbox.png",
+      "sha256": "460ffd3723903ebcc2e7bdff5b545f52cef0c5838d688aa2485e7c2a22b261a2",
+      "bytes": 260872,
+      "width": 375,
+      "height": 3248
+    },
+    {
+      "path": "ru-375-palette.png",
+      "sha256": "c6e7a58c2bb6913611a1741c42eed74b495fc192d6794b614fedf9ab82e11706",
+      "bytes": 41005,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "ru-375-preferences.png",
+      "sha256": "ef8a2a0cee37797b5484be03aed2fe9722538843d6c3505e14eb559601296f6a",
+      "bytes": 74690,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "ru-768-inbox.png",
+      "sha256": "0b3e69cfc7ef26a6115e50a71cbcad59019fa7058a2592fe818637c6d40fb8d0",
+      "bytes": 328060,
+      "width": 768,
+      "height": 2584
+    },
+    {
+      "path": "ru-768-palette.png",
+      "sha256": "948e5b156e6113d8bf7866f5954458ac53f4c396cf8fe0225e75b78448d6af60",
+      "bytes": 100714,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "ru-768-preferences.png",
+      "sha256": "c1be2f561053e9f1feb8513b9c84c921a7a124469fde192c6b20c1b45e0ea7bf",
+      "bytes": 145302,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "uz-Latn-1280-inbox.png",
+      "sha256": "d194f6285893a6ccde9892e80693e649748bc9d11fff4f50a4489e7c6a4c4763",
+      "bytes": 143826,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "uz-Latn-1280-palette.png",
+      "sha256": "a03fea6e4bcfa36e9634307da97373c18f0b6823cc0115cb7bedffde95fe0ffb",
+      "bytes": 127725,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "uz-Latn-1280-preferences.png",
+      "sha256": "47433e6b459e68989c1a7b3f20f49c0f5c2a6dc99c93def243fed72fb2880f50",
+      "bytes": 175884,
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "path": "uz-Latn-375-inbox.png",
+      "sha256": "d8539375c0ca300829d4ac562b7a29c0ae87d8d126da56e9f46e626f2613d6f7",
+      "bytes": 76728,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "uz-Latn-375-palette.png",
+      "sha256": "24900d04d22e21516c323a6e1b53bf01a1647f6eb46f4ff5653e8157f4287949",
+      "bytes": 41665,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "uz-Latn-375-preferences.png",
+      "sha256": "3e784187b80d05faac0826111e578377d4db3257f81130d40ddd7e4de5531bc8",
+      "bytes": 70768,
+      "width": 375,
+      "height": 812
+    },
+    {
+      "path": "uz-Latn-768-inbox.png",
+      "sha256": "b1894b20a17d9ccbb5302b26ae35c63dbacb368dc638de49d241b7cccea03ea8",
+      "bytes": 137505,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "uz-Latn-768-palette.png",
+      "sha256": "5b73b83384ae684875be067c6e2e7e667a233bb7749dadb8af252ee842c30290",
+      "bytes": 101794,
+      "width": 768,
+      "height": 900
+    },
+    {
+      "path": "uz-Latn-768-preferences.png",
+      "sha256": "3176fd4a342faba181d2a21a167f062456410041dc1a0aeec2841f5eef687dc5",
+      "bytes": 139114,
+      "width": 768,
+      "height": 900
+    }
+  ]
+}
