@@ -166,6 +166,7 @@ export async function requireCapability(authority: CapabilityAuthority, trx: Tra
 
 /** What the agent runtime knows about an action it is about to record (from the acting mandate). */
 export interface RuntimeActionInput {
+  hubId?: string;
   personId: string;
   mandate: { onBehalfCompanyId: string | null; granteeKind: 'own_agent' | 'colleague_agent' | 'company_representative'; granteeCompanyId: string | null };
   capabilityId: string;
@@ -181,7 +182,8 @@ export function agentRuntimeGate(authority: CapabilityAuthority): CapabilityGate
       representativeOf: input.mandate.granteeKind === 'company_representative' ? input.mandate.granteeCompanyId : null,
       connectionId: null,
     };
-    const d = await authority.check(trx, actor, input.capabilityId, input.action);
+    const scoped = input.hubId ? authority.forHub(input.hubId) : authority;
+    const d = await scoped.check(trx, actor, input.capabilityId, input.action);
     return d.allowed ? null : { reason: d.reason, messageKey: d.messageKey };
   };
 }

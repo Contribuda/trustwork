@@ -99,8 +99,8 @@ export function ok<T>(r: Response, status = 200): T {
 }
 
 /** The cohort counts the database reports for narrowed modules (owner session; the function is not granted to anyone else). */
-export async function affected(admin: DataPool, moduleKeys: string[]): Promise<PreviewCounts> {
-  return (await admin.query<{ c: PreviewCounts }>('SELECT trustwork.agent_modules_affected($1::text[]) AS c', [moduleKeys])).rows[0]!.c;
+export async function affected(admin: DataPool, hubId: string, moduleKeys: string[]): Promise<PreviewCounts> {
+  return (await admin.query<{ c: { affected: PreviewCounts } }>('SELECT trustwork.agent_modules_preview_basis($1::uuid,$2::text[]) AS c', [hubId, moduleKeys])).rows[0]!.c.affected;
 }
 
 /** The document a drafter would store now: the draft plus the preview of its effect against the current policy. */
@@ -108,9 +108,10 @@ export async function documentFor(h: Harness, hubId: string, draft: AgentPolicyD
   const current = (await h.db.admin.query<{ config_version_id: string; document: unknown }>('SELECT config_version_id, document FROM trustwork.agent_policy_current WHERE hub_id = $1', [hubId])).rows[0];
   const before = current ? AgentPolicyDocumentSchema.parse(current.document) : null;
   const diff = diffPolicies(before, draft, REGISTRY);
+  const snapshot = (await h.db.admin.query<{ basis: { affected: PreviewCounts; attributionDigest: string } }>('SELECT trustwork.agent_modules_preview_basis($1::uuid,$2::text[]) AS basis', [hubId, diff.narrowedModuleKeys])).rows[0]!.basis;
   return AgentPolicyDocumentSchema.parse({
     ...draft,
-    preview: { computedAt: new Date().toISOString(), baseVersionId: current?.config_version_id ?? null, ...diff, registeredModuleKeys: REGISTRY.manifests.map((m) => m.key).sort(), affected: await affected(h.db.admin, diff.narrowedModuleKeys) },
+    preview: { computedAt: new Date().toISOString(), baseVersionId: current?.config_version_id ?? null, ...diff, registeredModuleKeys: REGISTRY.manifests.map((m) => m.key).sort(), ...snapshot },
   });
 }
 

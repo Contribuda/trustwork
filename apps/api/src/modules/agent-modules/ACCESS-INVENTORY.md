@@ -2,7 +2,7 @@
 
 Agent: Codex CLI (OpenAI) for Parshkov
 
-This inventory describes implemented owning services and the remaining shared-gate integration. A manifest declaration is not evidence that the service calls `CapabilityAuthority`. In this continuation, no owning domain service below has been modified. Shared AST/model integration is sequenced after PR #406 merges; AGT-003 remains incomplete.
+This inventory describes implemented owning services and the remaining shared-gate integration. A manifest declaration is not evidence that the service calls `CapabilityAuthority`. The current continuation shares the AGT-001 private report projection with the leased occurrence worker. PR #406 is merged; shared authority integration continues on its preserved model recovery/accounting foundation. AGT-003 remains incomplete.
 
 ## Source ports implemented in this slice
 
@@ -134,7 +134,7 @@ Owner: `apps/api/src/modules/tasks/tasks.service.ts`, `TasksService`. Authorizer
 
 The original five manifests declare 74 capability entries. The additional core manifest registers the existing goal/subscription operations from `packages/contracts/src/agents.ts`; the deterministic report binds `prepare` to `core.generate_goal_report`. The inventory above exposes missing method bindings rather than declaring parity complete. Existing agent and MCP adapter checks do not prove actual participant-service enforcement, and adapter tests do not prove MCP transport E2E.
 
-The shared implementation still needs immutable trusted hub provenance, per-hub distinct-principal cohort counts, final-dispatch epoch/lock checks, engine-versioned supported template handlers, a leased occurrence-to-run entry point, and paired consumer/scheduler registration. The model governance port must be derived from real owning policy ports after the reviewed recovery/accounting foundation lands. Missing model, role, source, retention or residency policy stays unavailable. Original-operation model recovery must remain independent of fresh-dispatch permission.
+Occurrence request/run provenance, the versioned deterministic report handler, leased entry points and paired registration are implemented and tested. The shared implementation still needs full service-level capability enforcement and the remaining final-dispatch revoker matrix. The model governance port must be derived from real owning policy ports against the merged recovery/accounting foundation. Missing model, role, source, retention or residency policy stays unavailable. Original-operation model recovery must remain independent of fresh-dispatch permission.
 
 
 ## Occurrence execution paths
@@ -148,3 +148,9 @@ The shared implementation still needs immutable trusted hub provenance, per-hub 
 | `tests/agent-modules/execution.test.ts` | Real-role source-to-run tests, request replay, duplicate evidence, crash/restart, stale lease, policy/resource denial and staff isolation. |
 
 The worker derives the goal from confirmed explicit contexts, uses the existing mandate coverage/member authority and screening hold ports, and rechecks the active policy and stop/switch epochs. The local private report is not a money or commitment effect. Unknown model/source/residency/retention rules remain unavailable through the merged model governance port; this runtime evidence does not complete LLM work.
+
+## General assistant provenance and hub previews
+
+`20261109100400_agent_execution_provenance.sql` adds immutable run/intent provenance, owner-only reads, stored-hub dispatch and explicit lease fencing. Fresh AST model admission binds a real session to the exact registered serving origin in the same transaction. The old accepted attempt/accounting body remains an internal helper; only the new worker boundary is granted. Original-operation receipt/reconciliation functions are unchanged. The API gate rejects caller-supplied other-person identifiers.
+
+`20261109100500_agent_hub_previews.sql` records first-party mandate confirmations separately from signed JSON, resolves exact current-revision hub membership and uses stored connection audiences. Counts are scoped to the requested hub and require ten distinct principals per category. Unknown legacy attribution fails closed. Draft/activation both compare an opaque attribution digest, including changes hidden by count suppression. Tests create actual synthetic confirmation sessions, rather than copying mandate rows to manufacture authority.

@@ -28,6 +28,11 @@ export type DispatchRefusal = { kind: string; id: string | null };
 export interface PreviewCountsRow { mandates: number | null; jobSubscriptions: number | null; connections: number | null; openRuns: number | null }
 
 export const agentPolicies = {
+  /** Cohort counts and exact attribution digest from one restricted snapshot; unknown provenance refuses. */
+  async previewSnapshot(trx: Transaction, hubId: string, moduleKeys: readonly string[]): Promise<{ affected: PreviewCountsRow; attributionDigest: string }> {
+    const row = await one(sql<{ value: { affected: PreviewCountsRow; attributionDigest: string } }>`SELECT trustwork.agent_modules_preview_snapshot(${hubId}::uuid, ${[...moduleKeys]}::text[]) AS value`.execute(trx), 'agent_modules_preview_snapshot');
+    return row.value;
+  },
   /** AGT-003's validation of a drafted `agents` configuration version (same transaction as the HUB-001 draft). */
   recordDraft(trx: Transaction, ctx: CommandContext, hubId: string, configVersionId: string, document: unknown): Promise<AgentPolicyVersionRow> {
     return one(sql<AgentPolicyVersionRow>`SELECT * FROM trustwork.agent_modules_record_draft(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${configVersionId}::uuid, ${JSON.stringify(document)}::jsonb)`.execute(trx), 'agent_modules_record_draft');

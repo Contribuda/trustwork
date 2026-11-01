@@ -13,6 +13,7 @@ import { FakeRetrieval, ScriptedModel } from '../../apps/api/src/modules/assista
 import { agentRuntimeGate, CapabilityAuthority, mcpGate, type AgentActor } from '../../apps/api/src/modules/agent-modules/authority.js';
 import { runDueJobs } from '../../apps/api/src/modules/agent-modules/scheduler.js';
 import { FixedEntitlements } from '../../apps/api/src/modules/agent-modules/ports.js';
+import { US_HUB } from '../hubs/helpers.js';
 import { principalFor } from '../data/helpers/seed.js';
 import { SKIP_REASON, startHarness, type Client } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
@@ -184,12 +185,53 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
   const connectionId = await withMaintenance(h.db.admin, async (trx) => {
     const client = await trx.insertInto('oauth_client').values({ client_id: 'synthetic-client-agt3', registration: 'pre_registered', client_name: 'Synthetic desktop assistant', redirect_uris: ['https://client.example/cb'], application_type: 'web', token_endpoint_auth_method: 'none' }).returning('id').executeTakeFirstOrThrow();
     const consent = await trx.insertInto('connection_consent').values({ person_id: petrId, client_ref: client.id, client_id: 'synthetic-client-agt3', redirect_uri: 'https://client.example/cb', surface: 'participant', scopes: ['read.public', 'read.me', 'read.private', 'propose', 'act'], private_data_classes: ['private_projects', 'budgets'], toolsets: ['plans'], mandate_bindings: sql`${JSON.stringify([{ mandateId: actionMandate, revision: 1 }])}::jsonb` as never, consent_text_version: 1, step_up: true, locale: 'en', expires_at: new Date(Date.now() + 30 * 86_400_000) }).returning('id').executeTakeFirstOrThrow();
-    return (await trx.insertInto('connection').values({ person_id: petrId, surface: 'participant', client_ref: client.id, client_id: 'synthetic-client-agt3', resource: 'https://trustwork.test/mcp', redirect_uri: 'https://client.example/cb', consent_id: consent.id }).returning('id').executeTakeFirstOrThrow()).id;
+    return (await trx.insertInto('connection').values({ hub_id: hubId, person_id: petrId, surface: 'participant', client_ref: client.id, client_id: 'synthetic-client-agt3', resource: 'https://trustwork.test/mcp', redirect_uri: 'https://client.example/cb', consent_id: consent.id }).returning('id').executeTakeFirstOrThrow()).id;
   });
 
   await t.test('the runtime refuses a capability paired with another action even when the mandate grants both verbs', async () => {
     assert.deepEqual(await propose(PLANNER_COMMIT, 'record_evidence'), { state: 'denied', reason: 'capability.unknown' });
     assert.deepEqual(await propose(PLANNER_READ, 'publish'), { state: 'denied', reason: 'capability.unknown' });
+  });
+
+  await t.test('trusted run provenance isolates hub switches for the same person and mandate', async () => {
+    const otherHub = (await world.a.createHub(`synthetic-runtime-b-${randomUUID().slice(0, 8)}`, US_HUB)).hub_id;
+    await world.a.assignSensitive({ personId: world.w.people.owner, role: 'hub-owner', scope: { kind: 'hub', hubId: otherHub } });
+    await world.a.assignSensitive({ personId: world.w.people.officer, role: 'compliance-officer', scope: { kind: 'hub', hubId: otherHub } });
+    const otherWorld = { ...world, hubId: otherHub };
+    await activatePolicy(h, otherWorld, usHubPolicy(otherHub));
+    const origin = 'https://synthetic-runtime-b.example.invalid';
+    await withMaintenance(h.db.admin, (trx) => sql`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES(${origin},${otherHub}::uuid)`.execute(trx));
+    const otherModel = new ScriptedModel();
+    const otherService = new AssistantService({ ...h.created.ctx!, config: { ...h.created.config, publicOrigin: origin } }, h.services().principals,
+      assistantPolicySettings({ hubId }), DEFAULT_RUNTIME_SETTINGS, otherModel, new FakeRetrieval([]), agentRuntimeGate(authority));
+    const a = await propose(PLANNER_COMMIT);
+    assert.equal(a.state, 'queued');
+    const aId = (a as { intentId: string }).intentId;
+    const aJob = await leaseFor(aId);
+    await assert.rejects(inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, aId, aJob.id, null, String(BigInt(aJob.fencing_token) + 1n))),
+      (error: unknown) => (error as { hint?: string }).hint === 'assistant.fenced_out');
+    assert.equal((await intent(aId)).state, 'queued', 'a stale lease cannot start an otherwise authorized effect');
+    assert.equal((await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, aId, aJob.id, null, aJob.fencing_token))).status, 'dispatch');
+    otherModel.push({ text: 'Synthetic separate hub.', messageKey: null, usage: { inputTokens: 1, outputTokens: 1 }, toolCalls: [{
+      kind: 'propose_action', mandateId: actionMandate, capabilityId: PLANNER_COMMIT, moduleKey: 'project_planner', action: 'publish',
+      context: { kind: 'profile', id: petrId }, amount: null, projectId: null,
+      effect: { provider: 'fake_publications', operation: 'plan.share', payload: { item: 'synthetic-b' } },
+    }] });
+    const b = (await otherService.converse({ text: 'Synthetic hub B request' }, await stateOf(h, petr, `hub-b-${randomUUID()}`))).actions[0]!;
+    assert.equal(b.state, 'queued');
+    const bId = (b as { intentId: string }).intentId;
+    const bJob = await leaseFor(bId);
+    const stored = (await h.db.admin.query<{ hub_id: string; same_digest: boolean }>(`SELECT p.hub_id,p.mandate_digest = m.digest AS same_digest
+      FROM trustwork.agent_intent_provenance p JOIN trustwork.mandate m ON m.id = p.mandate_id WHERE p.action_intent_id = $1`, [bId])).rows[0];
+    assert.deepEqual(stored, { hub_id: otherHub, same_digest: true });
+    assert.equal((await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, bId, bJob.id, null, bJob.fencing_token))).status, 'dispatch', 'stored hub wins over process default');
+    const stopB = await engage(otherWorld, 'agent_capability', { capabilityId: PLANNER_COMMIT });
+    assert.equal((await intent(aId)).state, 'executing');
+    assert.equal((await intent(bId)).state, 'outcome_unknown');
+    const stopA = await engage(world, 'agent_capability', { capabilityId: PLANNER_COMMIT });
+    assert.equal((await intent(aId)).state, 'outcome_unknown');
+    await release(otherWorld, stopB);
+    await release(world, stopA);
   });
 
   await t.test('each kill switch blocks the next action check; releasing reactivates nothing it stopped', async () => {
@@ -206,7 +248,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       const d = await check();
       assert.deepEqual(d.allowed ? null : [d.reason, d.blockedBy?.kind, d.messageKey], ['kill_switch', kind, 'agentModules.refusal.paused'], kind);
       // The next check of the runtime itself: the dispatch recheck refuses and revokes before any call.
-      assert.deepEqual(await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId)), { status: 'refused', reason: 'kill_switch' });
+      assert.deepEqual(await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId, job.fencing_token)), { status: 'refused', reason: 'kill_switch' });
       assert.equal((await intent(intentId)).state, 'revoked');
       // A new proposal is refused by the agent runtime gate at once.
       const refused = await propose(PLANNER_COMMIT);
@@ -243,7 +285,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     const queued = await propose(PLANNER_COMMIT);
     const intentId = (queued as { intentId: string }).intentId;
     const job = await leaseFor(intentId);
-    const target = await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId));
+    const target = await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId, job.fencing_token));
     assert.equal(target.status, 'dispatch');
     assert.equal((await intent(intentId)).state, 'executing');
     const id = await engage(world, 'agent_capability', { capabilityId: PLANNER_COMMIT });
@@ -267,7 +309,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       const intentId = (queued as { intentId: string }).intentId;
       const job = await leaseFor(intentId);
       const [dispatch, engaged] = await Promise.all([
-        inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId)),
+        inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId, job.fencing_token)),
         engage(world, 'agent_capability', { capabilityId }),
       ]);
       const state = (await intent(intentId)).state;
@@ -311,7 +353,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       const intentId = (queued as { intentId: string }).intentId;
       const job = await leaseFor(intentId);
       await activatePolicy(h, world, withSwitch(usHubPolicy(hubId), { ...s, offForPrincipalKinds: [...s.offForPrincipalKinds], offForPlans: [...s.offForPlans] }));
-      assert.deepEqual(await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId)), { status: 'refused', reason: 'capability_off' }, `${label}: queued actions recheck the new policy`);
+      assert.deepEqual(await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId, job.fencing_token)), { status: 'refused', reason: 'capability_off' }, `${label}: queued actions recheck the new policy`);
       const r = await surfaces();
       assert.deepEqual(r.ui, [reason, key], `${label}: interface`);
       assert.deepEqual(r.runtime, r.ui, `${label}: agent runtime`);
@@ -334,7 +376,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     const queued = await propose(PLANNER_COMMIT);
     const intentId = (queued as { intentId: string }).intentId;
     const job = await leaseFor(intentId);
-    assert.equal((await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId))).status, 'dispatch');
+    assert.equal((await inTransaction(pool, (trx) => assistantWorker.beginAttempt(trx, intentId, job.id, hubId, job.fencing_token))).status, 'dispatch');
     h.clock.advance(1000);
     ok(await petr.post('/v1/assistant/stop'));
     assert.equal((await intent(intentId)).state, 'outcome_unknown', 'the stop fences the executing action');

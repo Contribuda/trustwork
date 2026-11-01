@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { buildAgentWorld } from '../agent-modules/helpers.js';
 import assert from 'node:assert/strict';
 import { sql } from 'kysely';
 import { withMaintenance } from '@trustwork/data';
@@ -20,6 +21,8 @@ const h = await startHarness('assistant_mandates');
 test('mandates: first-party confirmation, proposals, module wiring, stop control, isolation and concurrency', { skip: h ? false : SKIP_REASON, timeout: 240_000 }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await buildAgentWorld(h);
+  h.clock.reset();
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const { petr, carl, boris } = seed.people;

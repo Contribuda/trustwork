@@ -27,7 +27,7 @@ export const ASSISTANT_SWEEP_TASK = 'assistant.sweep';
 export interface AssistantRuntime {
   pool: DataPool;
   providers: readonly EffectProvider[];
-  /** Deployment hub for kill-switch scoping; null applies every hub-scoped switch. */
+  /** Legacy configuration retained for callers; dispatch derives its hub from immutable intent provenance. */
   hubId: string | null;
   log: Logger;
 }
@@ -46,7 +46,7 @@ export function dispatchHandler(runtime: AssistantRuntime): ExternalJobHandler<I
     mode: 'external',
     parse: parseIntent,
     async run({ job, payload, signal }) {
-      const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, payload.intentId, job.id, runtime.hubId));
+      const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, payload.intentId, job.id, null, job.fencing_token));
       if (target.status !== 'dispatch') {
         runtime.log('info', 'assistant action not dispatched', { intentId: payload.intentId, status: target.status, detail: target.status === 'refused' ? target.reason : target.state });
         return;

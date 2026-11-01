@@ -122,6 +122,9 @@ export interface AgentJobOccurrenceTable {
 }
 
 export interface AgentModulesDatabase {
+  agent_mandate_provenance: { mandate_id: string; mandate_revision: number; principal_person_id: string; hub_id: string; mandate_digest: string; serving_binding_id: string; session_id: string; created_at: GeneratedTimestamp };
+  agent_run_provenance: { run_id: string; principal_person_id: string; hub_id: string; serving_binding_id: string | null; session_id: string | null; occurrence_id: string | null; created_at: GeneratedTimestamp };
+  agent_intent_provenance: { action_intent_id: string; run_id: string; principal_person_id: string; hub_id: string; mandate_id: string; mandate_revision: number; mandate_digest: string; created_at: GeneratedTimestamp };
   agent_job_occurrence: AgentJobOccurrenceTable;
   agent_occurrence_signal: { id: GeneratedUuid; kind: 'schedule' | 'progress'; source_id: string; subscription_revision: number | null; created_at: GeneratedTimestamp };
   agent_serving_hub: { id: GeneratedUuid; origin: string; hub_id: string; active: Generated<boolean>; created_at: GeneratedTimestamp };
@@ -149,6 +152,9 @@ declare module './index.js' {
 
 const columns = columnsOf<AgentModulesDatabase>();
 export const TABLE_COLUMNS: TableColumns<AgentModulesDatabase> = {
+  agent_mandate_provenance: columns('agent_mandate_provenance', ['mandate_id', 'mandate_revision', 'principal_person_id', 'hub_id', 'mandate_digest', 'serving_binding_id', 'session_id', 'created_at']),
+  agent_run_provenance: columns('agent_run_provenance', ['run_id', 'principal_person_id', 'hub_id', 'serving_binding_id', 'session_id', 'occurrence_id', 'created_at']),
+  agent_intent_provenance: columns('agent_intent_provenance', ['action_intent_id', 'run_id', 'principal_person_id', 'hub_id', 'mandate_id', 'mandate_revision', 'mandate_digest', 'created_at']),
   agent_job_occurrence: columns('agent_job_occurrence', ['id', 'job_subscription_id', 'subscription_revision', 'job_request_id', 'principal_person_id', 'hub_id', 'source_kind', 'source_key', 'source', 'goal_id', 'goal_revision', 'template_version', 'mandate_id', 'mandate_revision', 'mandate_digest', 'state', 'reason', 'run_id', 'report_id', 'worker_job_id', 'fencing_token', 'created_at', 'finished_at']),
   agent_occurrence_signal: columns('agent_occurrence_signal', ['id', 'kind', 'source_id', 'subscription_revision', 'created_at']),
   agent_serving_hub: columns('agent_serving_hub', ['id', 'origin', 'hub_id', 'active', 'created_at']),

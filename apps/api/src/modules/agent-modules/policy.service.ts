@@ -20,6 +20,7 @@ interface Cmd { idempotencyKey: string; reason: string }
 
 /** Database refusals of this module (SQLSTATE plus hint) as contract codes; the hint travels in `details.reason`. */
 const HINTS: Readonly<Record<string, { code: ConstructorParameters<typeof ApiError>[0]; reason: string }>> = {
+  'agents.attribution_unavailable': { code: 'access.forbidden', reason: 'attribution_unavailable' },
   'agents.hub_mismatch': { code: 'access.forbidden', reason: 'hub_mismatch' },
   'agents.preview_stale': { code: 'validation.revision_conflict', reason: 'preview_stale' },
   'agents.policy_unvalidated': { code: 'validation.schema', reason: 'policy_unvalidated' },
@@ -101,11 +102,11 @@ export class AgentPolicyService {
     const current = await agentPolicies.current(trx, hubId);
     const before = current ? AgentPolicyDocumentSchema.parse(current.document) : null;
     const diff = diffPolicies(before, draft, registry);
-    const affected = await agentPolicies.previewCounts(trx, hubId, diff.narrowedModuleKeys);
+    const snapshot = await agentPolicies.previewSnapshot(trx, hubId, diff.narrowedModuleKeys);
     return {
       computedAt: this.ctx.clock.now().toISOString(), baseVersionId: current?.config_version_id ?? null, ...diff,
       registeredModuleKeys: [...new Set([...registry.manifests.map((m) => m.key), ...registry.extensions.map((e) => e.moduleKey)])].sort(),
-      affected,
+      ...snapshot,
     };
   }
 

@@ -260,8 +260,8 @@ export interface ObservedOutcome {
 }
 
 export const assistantWorker = {
-  async beginAttempt(trx: Transaction, intentId: string, jobId: string, hubId: string | null): Promise<DispatchTarget> {
-    const { rows } = await sql<{ r: DispatchTarget }>`SELECT trustwork.assistant_begin_attempt(${intentId}::uuid, ${jobId}::uuid, ${hubId}::uuid) AS r`.execute(trx);
+  async beginAttempt(trx: Transaction, intentId: string, jobId: string, hubId: string | null, fencingToken: string | number): Promise<DispatchTarget> {
+    const { rows } = await sql<{ r: DispatchTarget }>`SELECT trustwork.assistant_begin_attempt(${intentId}::uuid, ${jobId}::uuid, ${hubId}::uuid, ${fencingToken}::bigint) AS r`.execute(trx);
     return rows[0]!.r;
   },
   async recordOutcome(trx: Transaction, attemptId: string, outcome: ObservedOutcome): Promise<string> {

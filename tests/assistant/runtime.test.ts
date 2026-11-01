@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { buildAgentWorld } from '../agent-modules/helpers.js';
 import assert from 'node:assert/strict';
 import { jobs } from '@trustwork/data';
 import { HandlerRegistry, inTransaction, silentLogger, Worker, type ScheduledTask } from '@trustwork/worker';
@@ -26,6 +27,8 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     await worker.close();
     await h.close();
   });
+  await buildAgentWorld(h);
+  h.clock.reset();
   const seed = await seedPersonas(h);
   const { petr } = seed.people;
   const petrApi: Client = h.client();
@@ -111,7 +114,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     // Worker A: lease, persist the attempt, call the provider (the effect happens), then the process dies.
     const [job] = await inTransaction(runtime.pool, (trx) => jobs.lease(trx, ['assistant.dispatch'], 'crashing-worker', 1, 1));
     assert.ok(job);
-    const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job.id, null));
+    const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job.id, null, job.fencing_token));
     assert.equal(target.status, 'dispatch');
     const dispatch = target as Extract<typeof target, { status: 'dispatch' }>;
     const effectsBefore = providers.orders.effects;
@@ -193,7 +196,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     const { action } = await propose('20000');
     const id = (action as { intentId: string }).intentId;
     const [job] = await inTransaction(runtime.pool, (trx) => jobs.lease(trx, ['assistant.dispatch'], 'slow-worker', 1, 1));
-    const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job!.id, null)) as { status: 'dispatch'; attemptId: string; correlationKey: string; operationId: string; attemptNo: number; operation: string; payload: unknown; amount: null };
+    const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job!.id, null, job!.fencing_token)) as { status: 'dispatch'; attemptId: string; correlationKey: string; operationId: string; attemptNo: number; operation: string; payload: unknown; amount: null };
     await providers.orders.submit({ ...target }, new AbortController().signal);
     await waitFor(async () => (await h.db.admin.query("SELECT 1 FROM trustwork.job WHERE id = $1 AND leased_until < now()", [job!.id])).rowCount === 1, 15_000, 'lease expiry');
     await expireTask.run();
@@ -208,7 +211,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     await h.db.admin.query("INSERT INTO trustwork.job (kind, payload) VALUES ('assistant.dispatch', $1::jsonb)", [JSON.stringify({ intentId: id })]);
     const leased = await inTransaction(runtime.pool, (trx) => jobs.lease(trx, ['assistant.dispatch'], 'racer', 30, 5));
     assert.equal(leased.filter((j) => (j.payload as { intentId: string }).intentId === id).length, 2);
-    const results = await Promise.all(leased.map((j) => inTransaction(j === leased[0] ? runtime.pool : runtimeB.pool, (trx) => assistantWorker.beginAttempt(trx, id, j.id, null))));
+    const results = await Promise.all(leased.map((j) => inTransaction(j === leased[0] ? runtime.pool : runtimeB.pool, (trx) => assistantWorker.beginAttempt(trx, id, j.id, null, j.fencing_token))));
     assert.deepEqual(results.map((r) => r.status).sort(), ['dispatch', 'skip']);
     const attempts = await h.db.admin.query<{ n: number }>('SELECT count(*)::int AS n FROM trustwork.action_attempt WHERE action_intent_id = $1', [id]);
     assert.equal(attempts.rows[0]!.n, 1);
@@ -233,7 +236,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     const { action } = await propose('10000');
     const id = (action as { intentId: string }).intentId;
     const [job] = await inTransaction(runtime.pool, (trx) => jobs.lease(trx, ['assistant.dispatch'], 'inspector', 30, 1));
-    const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job!.id, null));
+    const target = await inTransaction(runtime.pool, (trx) => assistantWorker.beginAttempt(trx, id, job!.id, null, job!.fencing_token));
     assert.deepEqual(Object.keys(target).sort(), ['amount', 'attemptId', 'attemptNo', 'correlationKey', 'operation', 'operationId', 'payload', 'provider', 'status']);
     const text = JSON.stringify([target, providers.orders.submissions]);
     for (const forbidden of ['floorPrice', 'ceiling', 'budget', 'privateConstraint', 'conditions', 'approvalPolicy', budget]) assert.ok(!text.includes(forbidden), `${forbidden} never leaves the API`);
