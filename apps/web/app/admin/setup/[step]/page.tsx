@@ -13,6 +13,8 @@ import { consoleRequest, type PageSearchParams } from '../../_components/context
 import { SelectField, TextInput } from '../../_components/forms';
 import { AdminShell, KeyValues, Panel, StatusLabel } from '../../_components/shell';
 import { setupHref, STEP_SLUGS, stepFromSlug, type SetupStep } from '../steps';
+import { readSetupView } from '../_live/api';
+import { LiveSetupPage } from '../_live/LiveSetupPage';
 
 type Params = Promise<{ step: string }>;
 
@@ -227,13 +229,15 @@ function Review({ run, token }: { run: SetupRun; token: string }) {
 /**
  * The setup wizard (screens.md SW-1 … SW-9, setup-wizard.md): opened only with a valid one-time token, never after
  * setup finished, and never ahead of the first incomplete step. A minimal shell without navigation. In demo mode the
- * answers are validated by the same command evaluation and nothing is stored.
+ * answers are validated by the same command evaluation and nothing is stored; live mode is `_live/LiveSetupPage.tsx`.
  */
 export default async function SetupStepPage({ params, searchParams }: { params: Params; searchParams: PageSearchParams }) {
   await primeLocale();
   const query = await searchParams;
   const token = typeof query.token === 'string' ? query.token : '';
   const { port, demo } = await consoleRequest(searchParams);
+  // Live mode (HUB-004): the run, the answers and every save come from `/v1/setup`.
+  if (!demo) return <LiveSetupPage step={stepFromSlug((await params).step)} token={token} view={token ? await readSetupView(token) : null} />;
   const run = token ? await port.setup(token) : null;
   if (!run) notFound();
   const step = stepFromSlug((await params).step);

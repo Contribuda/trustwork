@@ -43,4 +43,4 @@ All mutations: CSRF header, `Idempotency-Key`, and a console command body (`cont
 - Scheduled activation (`effectiveFrom` in the future) is refused; activation takes effect immediately.
 - The `privacy` domain is bound to the `privacy.execute_erasure` action because the console vocabulary has no retention action yet (a contract follow-up).
 - Territory references to Wikidata and OpenStreetMap are not stored yet (the views return `null`).
-- Operator screening for the `operator_recorded_and_screened` gate rests on recorded evidence until the screening engine screens the operator (SANC-003 follow-up); the engine confirms only that the operator entity is recorded.
+- Operator screening for the `operator_recorded_and_screened` gate rests on recorded evidence; the setup wizard (HUB-004) screens the operator entity against the engine baseline when it is recorded, but the operator is not a screening subject, so a potential match does not enter the compliance review queue yet (SANC follow-up); the engine confirms only that the operator entity is recorded.

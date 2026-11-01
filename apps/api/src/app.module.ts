@@ -32,6 +32,7 @@ import { AgentsModule } from './modules/assistant-goals/agents.module.js';
 import { AttestationModule } from './modules/jurisdiction/attestation/attestation.module.js';
 import type { ConfiguredGateMode } from './modules/jurisdiction/attestation/attestation.service.js';
 import { HubsModule } from './modules/hubs/hubs.module.js';
+import { HubsSetupModule } from './modules/hubs/setup/setup.module.js';
 import { CommunicationsModule, type CommunicationsModuleOptions } from './modules/communications/communications.module.js';
 import { ConnectionsOAuthModule } from './modules/connections/oauth/oauth.module.js';
 
@@ -49,6 +50,8 @@ export class HealthController {
  * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), keys, providers and models (KEYS-001), communications (COMMS-001) and the MCP
  * the support workspace (SUP-001), content (CNT-001), the hub source registry (SRC-001), the assistant, agent goals and representation (AGT-001), the deployment-location attestation
  * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), communications (COMMS-001) and the MCP
+ * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), the setup wizard (HUB-004), keys, providers and models
+ * (KEYS-001), communications (COMMS-001) and the MCP
  * authorization server (MCP-002) only when a database is configured;
  * files (FILE-001) additionally only with a configured blob store. Every module's agent check goes to the one AST-001
  * mandate store (confirmed mandates); a caller-supplied mandate port in `files` still wins (tests).
@@ -86,6 +89,8 @@ export class AppModule {
         AgentsModule.forRoot(ctx, identity),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         HubsModule.forRoot(ctx, identity),
+        // HUB-004: the setup wizard backend (told the gate mode, the blob store for the install check and the environment).
+        HubsSetupModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode, objectStore: files.store, ...(communications.env ? { env: communications.env } : {}) }),
         FilesModule.forRoot(ctx, identity, { ...files, mandates: files.mandates ?? store.port(MODULE_KEYS.files) }),
         // COMMS-001: agent-written messages need a confirmed `communicate` mandate of the person's assistant.
         CommunicationsModule.forRoot(ctx, identity, { ...communications.options, mandates: communications.options.mandates ?? store.port(['correspondence']) }, communications.env),

@@ -9,6 +9,7 @@
     "dev": "npm run build && node dist/apps/api/src/main.js",
     "start": "node dist/apps/api/src/main.js",
     "seed:dev": "tsx src/dev/seed.ts",
+    "setup:token": "tsx src/modules/hubs/setup/issue-token.ts",
     "openapi": "tsx src/openapi/generate.ts",
     "sweep": "tsx src/dev/sweep.ts"
   },

@@ -1,0 +1,140 @@
+{
+  "setupWizard": {
+    "resume": "Cavablar bu serverdə saxlanılır, ona görə dayana və eyni keçidlə davam edə bilərsiniz.",
+    "generic": "Cavab qəbul edilmədi. Sahələri yoxlayın və yenidən cəhd edin.",
+    "items": "Rədd edildi:",
+    "saved": "Saxlanıldı.",
+    "chooseCountry": "Ölkə seçin",
+    "optional": "İstəyə bağlı",
+    "reasons": {
+      "restricted_place": "Məhdudiyyətli yer heç vaxt təklif edilmir, yerləşdirilmir və xidmət göstərilmir. Başqa ölkə, region və ya yer seçin.",
+      "step_out_of_order": "Əvvəlcə əvvəlki addımları tamamlayın.",
+      "install_check_failed": "Bloklayıcı quraşdırma yoxlaması keçmədi, ona görə qurulma davam edə bilməz.",
+      "jurisdiction_unknown": "Bu ölkə və ya region mühərrikə məlum deyil.",
+      "jurisdiction_not_selectable": "Bu ölkəni və ya regionu seçmək olmaz.",
+      "pack_unknown": "Bu ölkənin hələ ölkə paketi yoxdur. Ümumi profildən başlayın.",
+      "time_zone_unknown": "Naməlum saat qurşağı. America/Chicago kimi IANA adından istifadə edin.",
+      "modes_violation": "Bu rejimlər hab qaralamasına ziddir.",
+      "node_fixed": "Təsisçi inzibatçı təyin olunduqdan sonra qovşaq profili dəyişmir.",
+      "first_admin_only": "Bu qurulmanı yalnız təsisçi inzibatçı davam etdirə bilər. Həmin hesabla daxil olun.",
+      "admin_account_mismatch": "Bu qurulmada yaradılmış hesabla daxil olun.",
+      "first_admin_bound": "Təsisçi inzibatçı artıq təyin olunub.",
+      "second_factor_required": "Əvvəlcə autentifikator tətbiqi ilə iki addımlı təsdiqi aktiv edin; on bərpa kodu bir dəfə göstərilir.",
+      "second_factor_unavailable": "Giriş açarları hələ əlçatan deyil. Autentifikator tətbiqindən istifadə edin.",
+      "jurisdiction_gate_unconfigured": "Bitirməzdən əvvəl serverdə yurisdiksiya filtrini qurun (TRUSTWORK_JURISDICTION_GATE).",
+      "jurisdiction_gate_mismatch": "Serverdə operator addımında göstəriləndən fərqli yurisdiksiya filtri işləyir.",
+      "attestation_invalid": "Yerləşdirmə yeri barədə bəyanat etibarlı deyil.",
+      "attestation_required": "Qurulma yalnız etibarlı yerləşdirmə yeri bəyanatı ilə başa çatır.",
+      "payload_invalid": "Cavablardan biri hab konfiqurasiyasına uyğun gəlmir. Addımlara baxın.",
+      "elevation": "Parolunuz və autentifikator tətbiqindəki kodla təsdiqləyin.",
+      "access.not_found": "Bu qurulma keçidi artıq etibarlı deyil. Serverdən yenisini istəyin.",
+      "auth.session_invalid": "Əvvəlcə daxil olun.",
+      "auth.invalid_credentials": "Parol və ya kod səhvdir.",
+      "auth.throttled": "Həddindən çox cəhd. Bir az gözləyin və yenidən cəhd edin.",
+      "validation.schema": "Sahələri yoxlayın və yenidən cəhd edin.",
+      "validation.unknown_field": "Sahələri yoxlayın və yenidən cəhd edin.",
+      "network": "Serverlə əlaqə qurmaq mümkün olmadı. Yenidən cəhd edin."
+    },
+    "checkReasons": {
+      "https_required": "İctimai ünvan HTTPS istifadə etməlidir (sınaq üçün localhost da olar).",
+      "localhost_trial": "localhost ünvanı sınaq üçün yararlıdır, ictimai hab üçün yox.",
+      "runtime_role_bypasses_rls": "Verilənlər bazasının iş rolu sətir səviyyəsində qorumanı keçə bilər.",
+      "role_unknown": "Verilənlər bazasının iş rolunu müəyyən etmək mümkün olmadı.",
+      "unreachable": "Verilənlər bazasına qoşulmaq mümkün olmadı.",
+      "not_configured": "Obyekt anbarı hələ qurulmayıb; sübut fayllarını saxlamaq olmur.",
+      "probe_failed": "Sınaq obyektini yazmaq, oxumaq və ya silmək alınmadı.",
+      "no_heartbeat_source": "Fon emalçısı hələ öz işi barədə məlumat vermir, ona görə bunu təsdiqləmək olmur.",
+      "no_recent_heartbeat": "Son bir dəqiqədə fon emalçısından siqnal gəlmədi.",
+      "not_measured": "Davam etdikdə ölçülür.",
+      "clock_skew": "Server saatı brauzerinizin saatından 30 saniyədən çox fərqlənir.",
+      "development_key": "İnkişaf üçün ictimai açar istifadə olunur; ictimai açılışdan əvvəl real gizli açar təyin edin."
+    },
+    "hub": {
+      "country": "Hab ölkəsi",
+      "countryHelp": "Məcburidir: hər hab bir ölkəyə aiddir. Məhdudiyyətli yerlər təklif edilmir.",
+      "territories": "Ərazilər",
+      "territoriesHelp": "Vergüllə ayrılmış ölkə, region və yer kodları, məsələn US, US-CA, US-CA:san-diego.",
+      "slug": "Ünvanlarda qısa ad",
+      "slugHelp": "İstəyə bağlı, məsələn us-san-diego; boş qalarsa, ərazidən yaradılır.",
+      "nameHelp": "Hələlik habın bütün dilləri üçün istifadə olunur; hər dilin yazılışını konsolda verin.",
+      "languagesHelp": "Mühərrik dil teqləri, birincisi standart dildir, məsələn en, es."
+    },
+    "operator": {
+      "attestation": "Yerləşdirmə yeri",
+      "attestationHelp": "Operatorun hüquqi şəxsi və hostinq harada yerləşir və serverdə hansı yurisdiksiya filtri işləyir. Təsisçi inzibatçı bu bəyanatı bitirərkən təsdiqləyir; mühərrik serverin harada olduğunu heç vaxt müəyyən etmir.",
+      "entityCountry": "Hüquqi şəxsin ölkəsi",
+      "entityRegion": "Hüquqi şəxsin regionu",
+      "hostingCountry": "Hostinq ölkəsi",
+      "hostingRegion": "Hostinq regionu",
+      "regionHelp": "US-DE kimi ISO 3166-2 kodu; məhdudiyyətlər siyahısı regionları fərqləndirən yerlərdə məcburidir.",
+      "gateMode": "Yurisdiksiya filtri",
+      "gateModes": {
+        "ranges_file": "Bu serverdə ünvan diapazonları faylı",
+        "edge_header": "Kənar şəbəkədən gələn ölkə başlığı",
+        "upstream_gate": "Hostinq platforması tərəfindəki filtr"
+      },
+      "screening": {
+        "title": "Operatorun yoxlanması",
+        "clear": "Mühərrikin əsas siyahılarında uyğunluq yoxdur.",
+        "possible_match": "Mümkün uyğunluq: onu uyğunluq əməkdaşları nəzərdən keçirir; operator yoxlamanı özü bağlaya bilməz.",
+        "not_screened": "Yoxlanmayıb: əsas siyahı hələ yüklənməyib.",
+        "insufficient_name": "Ad yoxlama üçün çox qısadır.",
+        "fake": "İmitasiya: real yoxlama deyil."
+      }
+    },
+    "admin": {
+      "accountTitle": "1. Hesab yaradın",
+      "accountHelp": "Təsisçi inzibatçının öz hesabı. Təsdiq keçidi bu ünvana göndərilir; real poçtu olmayan qovşaqda fon emalçısı onu öz jurnalına yazır.",
+      "accountSent": "Ünvan poçt qəbul edə bilirsə, təsdiq keçidi yoldadır. Onu açın, yeni hesabla daxil olun və bu keçidə qayıdın.",
+      "accountCreated": "{email} üçün hesab yaradıldı.",
+      "signIn": "Daxil ol",
+      "factorTitle": "2. İki addımlı təsdiqi aktiv edin",
+      "factorHelp": "Təhlükəsizlik ayarlarında autentifikator tətbiqini qurun. On birdəfəlik bərpa kodu bir dəfə göstərilir; davam etməzdən əvvəl onları saxlayın.",
+      "securitySettings": "Təhlükəsizlik ayarlarını aç",
+      "confirmTitle": "3. Təsisçi inzibatçı olun",
+      "confirmHelp": "Bu qovşaq üçün qovşaq operatoru rolunu alırsınız. Əməkdaş bir nəfər olduqca, ikinci əməkdaş qoşulana qədər hab sadələşdirilmiş vəzifə bölgüsü rejimində işləyir.",
+      "signedOut": "Davam etmək üçün bu qurulmada yaradılmış hesabla daxil olun.",
+      "factorMissing": "Bu hesab üçün iki addımlı təsdiq hələ aktiv deyil.",
+      "factorOn": "İki addımlı təsdiq aktivdir.",
+      "notYou": "Bu qurulma başqa təsisçi inzibatçıya məxsusdur. Həmin hesabla daxil olun.",
+      "bound": "Siz təsisçi inzibatçısınız."
+    },
+    "residency": {
+      "personalDataCountry": "Şəxsi məlumatlar harada saxlanılır və emal olunur",
+      "note": "Qeyd üçün izah"
+    },
+    "providers": {
+      "models": "Dil modelləri",
+      "modelOptions": {
+        "undecided": "Sonra qərar vermək",
+        "openrouter": "OpenRouter vasitəsilə (istəyə bağlı marşrutlaşdırıcı)",
+        "direct": "Birbaşa bir provayderlə"
+      },
+      "directAdapter": "Birbaşa provayder",
+      "adapterNone": "Heç biri",
+      "adapters": {
+        "openai_compatible": "Öz serveri, OpenAI ilə uyğun"
+      }
+    },
+    "modes": {
+      "moderation": "Moderasiya"
+    },
+    "review": {
+      "attestation": "Yerləşdirmə yeri",
+      "states": {
+        "missing": "Hələ bəyan edilməyib: bitirərkən genişləndirilmiş hüquqlu sessiyanızla bəyan edilir.",
+        "valid": "Bəyan edilib və etibarlıdır.",
+        "renewal_due": "Bəyan edilib; tezliklə yeniləmək lazımdır.",
+        "expired": "Müddəti bitib: bitirərkən yenidən bəyan edilir.",
+        "contradicted": "Cari konfiqurasiyaya ziddir: bitirərkən yenidən bəyan edilir.",
+        "restricted": "İndi məhdudiyyətli olan bir yeri göstərir."
+      },
+      "confirmTitle": "Bunun siz olduğunuzu təsdiqləyin",
+      "confirmHelp": "Bitirmək habı qaralama kimi yaradır, onun konfiqurasiyasını qeyd edir və bu keçidi etibarsız edir. Parolunuz və autentifikator tətbiqindəki kodla təsdiqləyin.",
+      "password": "Parol",
+      "code": "Autentifikator kodu",
+      "finished": "Qurulma başa çatdı. Hab qaralamadır; konsolda davam edin.",
+      "openConsole": "Konsolu aç"
+    }
+  }
+}
