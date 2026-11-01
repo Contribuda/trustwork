@@ -4,7 +4,7 @@ import { withMaintenance, jobs } from '@trustwork/data';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
 import { seedPersonas, login } from '../backend/helpers/personas.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
-import { screenEveryoneClear } from '../screening-gates/helpers.js';
+import { screenEveryoneClear, setBaselineStale } from '../screening-gates/helpers.js';
 import { workerLogin } from '../assistant/helpers.js';
 import { agreement, paymentHub, ok } from './helpers.js';
 import type { PaymentBinding, PaymentView } from '../../packages/contracts/src/payments.js';
@@ -48,7 +48,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
       offerVersion: a.acceptedTerms.quoteVersion.version, requestVersion: a.acceptedTerms.rfqVersion.version,
       payer: { kind: 'person', id: seed.people.petr }, payee: { kind: 'person', id: seed.people.carl },
       collectingHubId: hub.hubId, payerHubId: hub.hubId, payeeHubId: hub.hubId, payerCountry: 'US', payeeCountry: 'US', currency: 'USD', amountMinor: amount,
-      connectionId: hub.connectionId, connectedAccountRef: 'synthetic-connected-payee', rail: 'qr', evidenceMode: 'synthetic', ...override };
+      connectionId: hub.connectionId, connectedAccountCountry: 'US', connectedAccountRef: 'synthetic-connected-payee', rail: 'qr', evidenceMode: 'synthetic', ...override };
     // This labelled synthetic fixture does not claim that an owning projection publisher exists in production.
     await q('INSERT INTO trustwork.payment_source(agreement_id,binding) VALUES($1,$2)', [a.id, binding]);
     const order = (await q('SELECT transaction_budget_id FROM trustwork.commercial_order WHERE agreement_id=$1', [a.id]))[0]!;
@@ -60,6 +60,8 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
   await t.test('HTTP rejects identity overrides, missing owning source and outsiders; source amount is exact', async () => {
     assert.equal((await h.client().post('/v1/payments', {})).status, 401);
     assert.equal((await buyer.post('/v1/payments', {})).status, 422);
+    assert.equal((await buyer.post('/v1/payments', { agreementId: 'opaque-unknown', budgetId: 'opaque-budget' })).status, 404);
+    assert.equal((await buyer.get('/v1/payments/opaque-unknown')).status, 404);
     const body = await fresh();
     assert.equal((await buyer.post('/v1/payments', { ...body, amountMinor: '1' })).status, 422);
     assert.equal((await outsider.post('/v1/payments', body)).status, 403);
@@ -100,6 +102,8 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     const before = fake.calls.length;
     const badPlace = await fresh('1250', { payeeCountry: 'RU' });
     assert.equal((await buyer.post('/v1/payments', badPlace)).status, 403);
+    const badAccountPlace = await fresh('1250', { connectedAccountCountry: 'RU' });
+    assert.equal((await buyer.post('/v1/payments', badAccountPlace)).status, 403);
     const remote = await fresh('1250', { payeeHubId: '00000000-0000-4000-8000-000000000001' });
     assert.equal((await buyer.post('/v1/payments', remote)).status, 403);
     const unsupported = await fresh('1250', { rail: 'ach' });
@@ -122,6 +126,7 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
     assert.equal((await operation(view.id)).state, 'succeeded');
     assert.equal(fake.calls.filter((id) => id === op.id).length, 1);
     assert.ok(fake.lookups.includes(op.id));
+    assert.equal((await q('SELECT state FROM trustwork.job WHERE id=(SELECT job_id FROM trustwork.payment_operation WHERE id=$1)', [op.id]))[0]!.state, 'succeeded');
   });
   await t.test('full refund and connected payout bind the exact successful original and cannot overlap or change destination', async () => {
     for (const kind of ['refund', 'payout'] as const) {
@@ -187,6 +192,11 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
         if (revokeFirst) {
           await writer.query('UPDATE trustwork.payment_source SET revoked_at=clock_timestamp() WHERE agreement_id=$1', [view.agreementId]);
           const refusal = assert.rejects(inTransaction(pool, async (trx) => { await payments.dispatchGuard(trx, op.id, job.id, job.fencing_token, attempt); await fake.create(instruction, AbortSignal.timeout(1000)); }), /owning payment projection unavailable/);
+          for (let i = 0; i < 100; i++) {
+            if ((await q("SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%payments_dispatch_guard%'")).length) break;
+            if (i === 99) assert.fail('dispatch did not wait for the source writer');
+            await new Promise((r) => setTimeout(r, 10));
+          }
           await writer.query('COMMIT'); await refusal;
           assert.equal(fake.calls.filter((id) => id === op.id).length, 0);
         } else {
@@ -209,6 +219,64 @@ test('payments: real API, worker, immutable receipts and BILL holds', { skip: h 
         }
       } finally { await writer.query('ROLLBACK'); writer.release(); }
     }
+  });
+
+  await t.test('either party with unavailable screening and a stale baseline refuses before any provider call', async () => {
+    for (const personId of [seed.people.petr, seed.people.carl]) {
+      const body = await fresh();
+      const previous = (await q('SELECT last_outcome FROM trustwork.screening_subject_state WHERE subject_person_id=$1', [personId]))[0]!;
+      const before = fake.calls.length;
+      try {
+        await q("UPDATE trustwork.screening_subject_state SET last_outcome='not_screened' WHERE subject_person_id=$1", [personId]);
+        assert.equal((await buyer.post('/v1/payments', body)).status, 403);
+        assert.equal(fake.calls.length, before);
+      } finally { await q('UPDATE trustwork.screening_subject_state SET last_outcome=$2 WHERE subject_person_id=$1', [personId, previous.last_outcome]); }
+    }
+    const body = await fresh();
+    try {
+      await setBaselineStale(h.db.admin, true);
+      assert.equal((await buyer.post('/v1/payments', body)).status, 403);
+    } finally { await setBaselineStale(h.db.admin, false); }
+  });
+  await t.test('receipt committed before worker acknowledgement resolves a later parked REL job without another provider call', async () => {
+    const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
+    await relay.relayOnce();
+    const [job] = await inTransaction(pool, (trx) => jobs.lease(trx, ['payments.dispatch'], 'synthetic-after-receipt-crash', 60, 1));
+    assert.ok(job);
+    const op = await operation(view.id); fake.plan(op.id, 'succeeded');
+    const instruction = await inTransaction(pool, (trx) => payments.begin(trx, op.id, job.id, job.fencing_token, `${job.id}:${job.attempt}`));
+    assert.ok(instruction);
+    const receipt = await inTransaction(pool, async (trx) => { await payments.dispatchGuard(trx, op.id, job.id, job.fencing_token, `${job.id}:${job.attempt}`); return fake.create(instruction, AbortSignal.timeout(1000)); });
+    await inTransaction(pool, (trx) => payments.receipt(trx, receipt));
+    await inTransaction(pool, (trx) => jobs.markOutcomeUnknown(trx, job.id, job.fencing_token, 'synthetic crash after receipt commit'));
+    const lookups = fake.lookups.length;
+    assert.equal(await reconcilePayment(runtime, op.id, AbortSignal.timeout(1000)), 'succeeded');
+    assert.equal((await q('SELECT state FROM trustwork.job WHERE id=$1', [job.id]))[0]!.state, 'succeeded');
+    assert.equal(fake.calls.filter((id) => id === op.id).length, 1);
+    assert.equal(fake.lookups.length, lookups);
+  });
+  await t.test('final dispatch rechecks elapsed session authority after a competing lock wait', async () => {
+    const view = ok<PaymentView>(await buyer.post('/v1/payments', await fresh()), 201);
+    await relay.relayOnce();
+    const [job] = await inTransaction(pool, (trx) => jobs.lease(trx, ['payments.dispatch'], 'synthetic-expiry', 60, 1));
+    assert.ok(job);
+    const op = await operation(view.id), attempt = `${job.id}:${job.attempt}`;
+    await inTransaction(pool, (trx) => payments.begin(trx, op.id, job.id, job.fencing_token, attempt));
+    await q("UPDATE trustwork.session SET idle_expires_at=clock_timestamp()+interval '1 second' WHERE id=$1", [op.session_id]);
+    const blocker = await h.db.admin.connect();
+    try {
+      await blocker.query('BEGIN');
+      await blocker.query('SELECT agreement_id FROM trustwork.payment_source WHERE agreement_id=$1 FOR UPDATE', [view.agreementId]);
+      const denied = assert.rejects(inTransaction(pool, (trx) => payments.dispatchGuard(trx, op.id, job.id, job.fencing_token, attempt)), /expired payment dispatch authority/);
+      for (let i = 0; i < 200; i++) {
+        if ((await q('SELECT 1 FROM trustwork.session WHERE id=$1 AND idle_expires_at<=clock_timestamp()', [op.session_id])).length) break;
+        if (i === 199) assert.fail('session did not expire');
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      await blocker.query('COMMIT'); await denied;
+      assert.equal(fake.calls.filter((id) => id === op.id).length, 0);
+      assert.equal((await reservation(view.id)).effect_pending, true);
+    } finally { await blocker.query('ROLLBACK'); blocker.release(); }
   });
 
 });

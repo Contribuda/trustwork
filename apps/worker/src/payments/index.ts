@@ -18,6 +18,8 @@ export async function receivePaymentWebhook(runtime: PaymentRuntime, connectionI
 
 /** Late outcomes remain consumable after fresh dispatch authority is revoked; lookup never creates an effect. */
 export async function reconcilePayment(runtime: PaymentRuntime, operationId: string, signal: AbortSignal): Promise<string> {
+  const recorded = await inTransaction(runtime.pool, (trx) => payments.reconcileRecorded(trx, operationId));
+  if (recorded) return recorded;
   const instruction = await inTransaction(runtime.pool, (trx) => payments.instruction(trx, operationId));
   if (!instruction) return 'not_dispatched';
   const provider = runtime.providers.get(instruction.binding.connectionId);
@@ -25,7 +27,9 @@ export async function reconcilePayment(runtime: PaymentRuntime, operationId: str
   if (!raw) return 'outcome_unknown';
   const evidence = PaymentEvidenceSchema.parse(raw);
   if (evidence.evidenceMode !== provider.evidenceMode) throw new Error('payment evidence mode mismatch');
-  return inTransaction(runtime.pool, (trx) => payments.receipt(trx, evidence));
+  const outcome = await inTransaction(runtime.pool, (trx) => payments.receipt(trx, evidence));
+  await inTransaction(runtime.pool, (trx) => payments.reconcileRecorded(trx, operationId));
+  return outcome;
 }
 
 export function registerPayments(registry: HandlerRegistry, runtime: PaymentRuntime): void {
