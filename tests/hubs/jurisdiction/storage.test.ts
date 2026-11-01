@@ -58,17 +58,16 @@ test('jurisdiction draft storage, preflight and inherited second-person guards o
     const selfApproval = await a.approve(p.owner, p.officer, 'jurisdiction.activate_settings', hubId, digestInput);
     await rejects(a.cmd(p.owner, (trx, cmd) => hubConfig.activate(trx, cmd, version.id, version.revision, selfApproval)), '42501');
   });
-  await t.test('existing repository consumes an exact approval once under concurrent activation', async () => {
-    // Deliberate direct repository call: this proves HUB-001 storage only. It is NOT HUB-005 activation acceptance;
-    // the generic writer does not yet enforce the preflight above (a documented migration dependency).
+  await t.test('unreviewed legacy policy stays unavailable even with an exact approval under concurrency', async () => {
+    // A second person cannot turn prose-only v1 groundwork into executable law.
     const approvalId = await a.approve(p.officer, p.owner, 'jurisdiction.activate_settings', hubId, digestInput);
     const outcomes = await Promise.allSettled([1, 2].map(() => a.cmd(p.officer, (trx, cmd) => hubConfig.activate(trx, cmd, version.id, version.revision, approvalId))));
-    assert.equal(outcomes.filter((r) => r.status === 'fulfilled').length, 1);
-    assert.equal(outcomes.filter((r) => r.status === 'rejected').length, 1);
+    assert.equal(outcomes.filter((r) => r.status === 'fulfilled').length, 0);
+    assert.equal(outcomes.filter((r) => r.status === 'rejected').length, 2);
     const current = await a.as(p.owner, (trx) => hubConfig.current(trx, hubId));
-    assert.equal(current.find((v) => v.domain === 'jurisdiction')?.id, version.id);
+    assert.equal(current.find((v) => v.domain === 'jurisdiction')?.id, undefined);
     const audit = await db.admin.query("SELECT count(*)::int AS n FROM trustwork.admin_audit_event WHERE object_id = $1 AND action = 'hub.config_activated'", [version.id]);
-    assert.equal(audit.rows[0].n, 1);
+    assert.equal(audit.rows[0].n, 0);
   });
   await t.test('participant runtime has no sensitive-config projection: RLS and public accessor refuse', async () => {
     assert.deepEqual(await a.as(p.outsider, (trx) => hubConfig.current(trx, hubId)), []);

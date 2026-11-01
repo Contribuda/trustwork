@@ -251,7 +251,7 @@ export function joinDeploymentConfig(identity: IdentityConfigPayload | null, cou
 }
 /* ---------- Legal documents ---------- */
 
-export const LEGAL_DOCUMENT_KINDS = ['terms', 'privacy_notice', 'sanctions_section', 'cookie_notice', 'community_rules', 'organizer_terms', 'author_terms', 'notice_at_collection', 'do_not_sell_notice'] as const;
+export const LEGAL_DOCUMENT_KINDS = ['terms', 'privacy_notice', 'sanctions_section', 'cookie_notice', 'community_rules', 'organizer_terms', 'author_terms', 'notice_at_collection', 'do_not_sell_notice', 'agent_jurisdiction'] as const;
 export const LegalDocumentKindSchema = z.enum(LEGAL_DOCUMENT_KINDS);
 export type LegalDocumentKind = z.infer<typeof LegalDocumentKindSchema>;
 /** Documents the `legal_documents_counsel_approved` gate requires in every hub language. */
