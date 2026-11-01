@@ -240,16 +240,16 @@ export async function runDrill(options: DrillOptions = DEFAULT_DRILL): Promise<D
       });
     };
 
-    const boundaryMarker = (side: 'before' | 'after') => owner(src, async (c) => (await c.query<{ at: Date }>("INSERT INTO trustwork.audit_event (action, object_kind, object_id) VALUES ('drill.pitr_boundary', 'drill', $1) RETURNING occurred_at AS at", [side])).rows[0]!.at);
+    // A boundary marker; 'later' compares its start (now()) with the given time on the server, at full precision.
+    const boundaryMarker = (side: 'before' | 'after', than: Date) => owner(src, async (c) => (await c.query<{ at: Date; later: boolean }>("INSERT INTO trustwork.audit_event (action, object_kind, object_id) VALUES ('drill.pitr_boundary', 'drill', $1) RETURNING occurred_at AS at, occurred_at > $2::timestamptz AS later", [side, than.toISOString()])).rows[0]!);
     const serverClockPassed = async (t: Date) => (await src.query<{ passed: boolean }>('SELECT clock_timestamp() > $1::timestamptz AS passed', [t.toISOString()])).rows[0]!.passed;
     const pitrBoundary = async (): Promise<{ target: Date; afterStartedAt: Date }> => {
-      await boundaryMarker('before');
+      await boundaryMarker('before', new Date(0));
       const target = (await src.query<{ t: Date }>("SELECT date_trunc('milliseconds', clock_timestamp()) + interval '1 millisecond' AS t")).rows[0]!.t;
       while (!(await serverClockPassed(target))) await sleep(5);
-      const afterStartedAt = await boundaryMarker('after');
-      // occurred_at arrives truncated to milliseconds, so a strict comparison is a lower bound of the real start.
-      if (!(afterStartedAt.getTime() > target.getTime())) throw new Error(`PITR boundary: 'after' started at ${afterStartedAt.toISOString()}, not after the target ${target.toISOString()}`);
-      return { target, afterStartedAt };
+      const after = await boundaryMarker('after', target);
+      if (!after.later) throw new Error(`PITR boundary: 'after' started at ${after.at.toISOString()}, not after the target ${target.toISOString()}`);
+      return { target, afterStartedAt: after.at };
     };
 
     const j1 = await enqueue();
