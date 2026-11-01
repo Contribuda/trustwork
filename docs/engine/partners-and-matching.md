@@ -62,7 +62,7 @@ requested → accepted | declined | expired
 
 ### External candidates
 
-Matching can show **sourced** companies that are not platform users, clearly labelled. Their presence in a public source does **not** permit bulk outreach. Contacting them goes through an explicit, lawful channel chosen by a person (or by an agent whose mandate allows that channel), within the hub's outreach rules and the country's direct-marketing law.
+Matching can show **sourced** companies that are not platform users, clearly labelled. Their presence in a public source does **not** permit bulk outreach. Contacting them goes through an explicit, lawful channel chosen by a person (or by an agent whose mandate allows that channel), within the hub's outreach rules and the country's direct-marketing law. The hub's own contact with sourced companies (a single page notice or governed outreach, per country, strict by default) is proposed in [ADR 017](../adr/017-outreach-policy.md) and designed in [Discovery, sourced pages, claims and outreach](discovery-and-outreach.md).
 
 ## Alerts
 

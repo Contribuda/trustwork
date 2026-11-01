@@ -398,6 +398,9 @@ Amendments to HC-40 … HC-49 and the new editorial screens HC-170 … HC-191 (i
 - **States**: a signal list without region for people and firms → blocked; paid signals do not exist in the picker.
 - **Locale**: `admin.data.recommendations.*`
 
+### HC-55, HC-56 and the outreach section HC-170 to HC-177
+- Designed in [Discovery, sourced pages, claims and outreach](../discovery-and-outreach.md#admin-screens) (proposed, ADR 017): entity review with link, split and mark distinct (never merge), sourced pages, outreach policies, campaigns with the gate list and exact message preview, templates, replies and hand-off, suppression by exact lookup only, deliverability and lifecycle journeys. Same conventions as this file. **Locale**: `admin.data.entities.*`, `admin.data.pages.*`, `admin.outreach.*`
+
 ## Modules
 
 ### HC-60 Projects — `/modules/projects`

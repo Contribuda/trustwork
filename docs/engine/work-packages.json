@@ -2447,18 +2447,22 @@
         "docs/engine/hubs.md",
         "docs/engine/agents.md",
         "docs/engine/agent-catalog.md",
-        "docs/engine/country-specifics.md"
+        "docs/engine/country-specifics.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Contracts for a jurisdiction settings domain of hub configuration: disclosure text keys per language, liability allocation options, consent and record-keeping rules, per-action limits and approval requirements, each with the pack default and its source.",
         "Resolve the effective setting for a participant, an action and a counterparty jurisdiction (most protective wins when two apply).",
         "Second-person activation and audit; a hub can be stricter than the pack default but never weaker than a mandatory pack rule.",
-        "Expose the resolver to the agent runtime and to participant agent settings (AGT-022) as read-only limits."
+        "Expose the resolver to the agent runtime and to participant agent settings (AGT-022) as read-only limits.",
+        "Add the outreach disclosure wording (automated assistant, operator identity, source of the data) per jurisdiction and language to the jurisdiction settings, read by OUTR-002 templates as locked blocks."
       ],
       "acceptance": [
         "Changing the disclosure text needs every hub language and a second person (tested).",
         "An action above a jurisdiction limit requires approval even under a mandate that would allow it (tested).",
-        "No engine code contains a country-specific legal rule; defaults come from packs."
+        "No engine code contains a country-specific legal rule; defaults come from packs.",
+        "An outreach template cannot be activated without the disclosure wording for every hub language (test)."
       ],
       "paths": [
         "packages/contracts/src/jurisdiction.ts",
@@ -2938,18 +2942,22 @@
         "docs/engine/hub-administration.md",
         "docs/engine/country-specifics.md",
         "packages/compliance/src/index.ts",
-        "docs/adr/014-sanctions-compliance-engine.md"
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Define check-type contracts (register match, officer match, tax status, licence, qualification, ownership, sanctions, domain, signature, call-back).",
         "Implement adapters with deterministic fakes and a manual-review mode; live mode behind second-person activation and KEYS-001 secret references.",
         "Implement recipes, result evidence records, expiry and re-check scheduling (packages/data/migrations/verification); the `sanctions_screening` check reads and triggers SANC-003 screening and stores only a reference to its result.",
-        "Implement review cases and appeals for non-sanctions checks decided by a different reviewer (sanctions matches are reviewed in SANC-003); map results to badge categories and eligibility flags."
+        "Implement review cases and appeals for non-sanctions checks decided by a different reviewer (sanctions matches are reviewed in SANC-003); map results to badge categories and eligibility flags.",
+        "Run SANC-003 screening of the claimant and the company before any hand-over level; record the claimed-level domain tie from an outreach invitation link only under the CLM-001 rule."
       ],
       "acceptance": [
         "Baseline sanctions screening cannot be disabled; recipes cannot drop the sanctions check (tested).",
         "A potential sanctions match never auto-blocks or auto-clears and blocks the claim until SANC-003 decides it.",
-        "Badges show categories, never documents; results expire and trigger re-checks per recipe."
+        "Badges show categories, never documents; results expire and trigger re-checks per recipe.",
+        "A screening possible match or an unavailable screening store blocks every hand-over level (test)."
       ],
       "paths": [
         "apps/api/src/modules/verification",
@@ -2974,19 +2982,27 @@
       "read": [
         "docs/data/model.md",
         "docs/engine/people-and-companies.md",
-        "docs/engine/hub-administration.md"
+        "docs/engine/hub-administration.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Add company_profile, company_identifier (expand from legal_identifiers, then contract), company_registration, tax_registration, company_branch, company_claim and company_verification (packages/data/migrations/claims); contractor licences are professional_credential rows of REP-001 checked through HUB-003.",
         "Derive the company claim status from the strongest active verification in the same transaction.",
         "Implement claim submission and reviewer decisions against recipe versions; decider differs from claimant.",
-        "Use the US as the worked example (EIN, Secretary of State registrations, state contractor licences) with synthetic fixtures only."
+        "Use the US as the worked example (EIN, Secretary of State registrations, state contractor licences) with synthetic fixtures only.",
+        "Hand-over levels: claimed gives limited page control (descriptive fields, suggestions, stopping outreach); verified gives the company administrator role (discovery-and-outreach section 7; owner question 4 may change the split); record handover_record rows.",
+        "Disputes and takeover protection: one open claim per page; a second claim opens a claim_dispute decided with a second person; a claim against a claimed or verified page needs verified-level evidence, notifies current administrators and waits a hub-set period (default 7 days); a cooling period (default 7 days) after hand-over blocks changes to legal name, identifiers, website domain, payout details and the representative.",
+        "Accept outreach invitation links only as the claimed-level domain tie when the address is on the domain recorded for the company and not a free mail service."
       ],
       "acceptance": [
         "An identifier value never upgrades a badge by itself (tested).",
         "Badges show categories and dates, never documents.",
         "Verification expires and re-checks per recipe; revocation updates every projection.",
-        "No real company data in fixtures."
+        "No real company data in fixtures.",
+        "No reply, message text or invitation link alone changes a claim status or grants a role (negative test).",
+        "Two concurrent claims on one page produce one dispute and no hand-over (concurrency test on PostgreSQL).",
+        "Sensitive changes during the cooling period are refused (clock test)."
       ],
       "paths": [
         "apps/api/src/modules/verification/claims",
@@ -3040,20 +3056,27 @@
       "read": [
         "docs/data/model.md",
         "docs/data/retention-and-privacy.md",
-        "docs/engine/trust-safety-privacy.md"
+        "docs/engine/trust-safety-privacy.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Add privacy_request, privacy_preference, privacy_export, erasure_ledger (outside the restorable snapshot), legal_hold and data_broker_registration (packages/data/migrations/privacy).",
         "Compose exports from module exporters through projection serializers.",
         "Execute erasure with two people: delete, redact or pseudonymize per module; emit retrieval and federation tombstones as outbox events; replay the ledger after restore.",
         "Honour opt-out of sale or sharing, limits on sensitive data and Global Privacy Control signals as data (US worked example).",
-        "Offer a full export of everything a person or company owns in open formats at any time, including after a paid plan ends."
+        "Offer a full export of everything a person or company owns in open formats at any time, including after a paid plan ends.",
+        "Accept objections, corrections and erasure requests from non-participants who appear in sourced records (form on the page, letter, e-mail) with the minimum tie needed; objections to direct marketing apply immediately and unconditionally.",
+        "Keep the minimal suppression entry through erasure and name it in the erasure ledger; add a do-not-collect entry so refreshes do not re-import erased data.",
+        "Regulator registry intake as data with a fake adapter (California DROP as the US example: poll interval and deadlines from the pack)."
       ],
       "acceptance": [
         "An export never contains a counterparty's private fields (tested).",
         "A restore drill with erased-subject fixtures serves nothing erased.",
         "Legal holds suspend deletion with an audited reason; deadlines and retention bounds come from the pack, never from code.",
-        "Export remains available after a plan ends and contains only the requester's own data and shared records they may read."
+        "Export remains available after a plan ends and contains only the requester's own data and shared records they may read.",
+        "After erasure the person receives no outreach and the next refresh does not re-import their data (test).",
+        "An objection submitted while an outreach batch is queued cancels the queued touches (concurrency test)."
       ],
       "paths": [
         "apps/api/src/modules/platform-admin/privacy",
@@ -3115,7 +3138,9 @@
       "read": [
         "docs/engine/hub-console/automation-and-scheduling.md",
         "docs/data/model.md",
-        "docs/engine/editorial-office.md"
+        "docs/engine/editorial-office.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Add pipeline, pipeline_version, pipeline_schedule and pipeline_run (packages/data/migrations/pipelines); schedules and the cron evaluator run in the hub time zone.",
@@ -3123,13 +3148,15 @@
         "Implement dry runs with no committed effects.",
         "Implement alerts and automatic pause on source, robots or terms changes.",
         "Support role-bound stages for the editorial agent team: each stage names its role, and per-role caps are checked before every paid call (editorial office section 8.3).",
-        "Extend dry runs with an editorial preview: collection decisions per host, items and drafts that would be created, and publications a standing policy would have made, without committing any of them."
+        "Extend dry runs with an editorial preview: collection decisions per host, items and drafts that would be created, and publications a standing policy would have made, without committing any of them.",
+        "Outreach steps (send, notify) are external effects: a run never retries a touch whose outcome is unknown; kill switches cancel queued touches."
       ],
       "acceptance": [
         "A dry run commits nothing (tested).",
         "Retries never repeat an external effect with an unknown outcome.",
         "A kill switch stops queued and running runs.",
-        "An exhausted per-role cap marks queued runs of that role skipped_budget while other roles keep running (test)."
+        "An exhausted per-role cap marks queued runs of that role skipped_budget while other roles keep running (test).",
+        "A retried outreach run never sends a second message for a touch whose first outcome is unknown (test)."
       ],
       "paths": [
         "apps/api/src/modules/pipelines",
@@ -3154,18 +3181,26 @@
       "read": [
         "docs/engine/hub-console/data-mining.md",
         "docs/data/model.md",
-        "docs/adr/012-integrator-decisions-2026-10-31.md"
+        "docs/adr/012-integrator-decisions-2026-10-31.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Implement datasets and their refresh pipelines with retention enforcement (packages/data/migrations/datasets).",
         "Implement entity resolution producing link proposals with evidence.",
         "Implement outputs as reviewed imports into each module's use cases.",
-        "Court and debt datasets are off by default in every hub and need an impact assessment to enable (ADR 012)."
+        "Court and debt datasets are off by default in every hub and need an impact assessment to enable (ADR 012).",
+        "Operator-supplied datasets carry a dataset_licence record (supplier, agreement evidence, purposes, permitted uses: display, enrich, contact use, syndicate; valid_until) and per-record provenance; on licence expiry the refresh pipeline deletes the dataset fields and emits tombstones (discovery-and-outreach section 1).",
+        "Add the useContactForOutreach allowed use and do-not-contact signals at source admission, off by default and set only by a person; consult the do-not-collect list before storing any record.",
+        "Allow a reviewed batch decision for link proposals whose evidence includes an identifier match from a statutory register: one recorded decision by a person who saw a sample and the counts; record the scoring method version with every proposal; support mark-distinct pairs."
       ],
       "acceptance": [
         "Court and debt records about natural persons are never displayed (tested).",
         "No dataset output reaches reputation.",
-        "People are linked only with their own confirmation; personal-data datasets cannot activate without a recorded legal basis."
+        "People are linked only with their own confirmation; personal-data datasets cannot activate without a recorded legal basis.",
+        "A dataset without per-record provenance can never feed contact points for outreach (test).",
+        "A record on the do-not-collect list is dropped before storage on every refresh (test).",
+        "Batch acceptance is refused for any proposal without statutory identifier evidence (test)."
       ],
       "paths": [
         "apps/api/src/modules/datasets",
@@ -3271,7 +3306,9 @@
         "docs/data/model.md",
         "docs/engine/hub-console/autonomous-editorial.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
-        "docs/engine/editorial-office.md"
+        "docs/engine/editorial-office.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Add product_entry and learning_resource (packages/data/migrations/manufacturers); tag items with plan-step keys and ETIM classes where licensed.",
@@ -3279,13 +3316,15 @@
         "Keep sourced labels until the company claims its page (CLM-001); let claimed manufacturers supply catalogues, guides and training under an explicit licence.",
         "Takedown requests remove the item and propagate tombstones.",
         "Offer claimed manufacturers a free structured knowledge feed and only aggregate signals (cohorts of at least ten), never who read or specified their products.",
-        "Collect only through the shared pre-collection gate (SRC-002) and record its decision per request."
+        "Collect only through the shared pre-collection gate (SRC-002) and record its decision per request.",
+        "Manufacturer and supplier pages are company page kinds of the canonical entity model (ENT-001 when it lands); crawled pages never yield contact points unless the source allows contact use."
       ],
       "acceptance": [
         "No content is collected behind a login or technical barrier (collector configuration test).",
         "A robots or terms change pauses the pipeline until reviewed.",
         "Sourced product entries cannot be quoted or ordered until the company publishes an offering.",
-        "No manufacturer view shows an individual reader or specifier (negative test)."
+        "No manufacturer view shows an individual reader or specifier (negative test).",
+        "Crawling a manufacturer site never creates an outreach contact point when the source does not allow contact use (test)."
       ],
       "paths": [
         "apps/api/src/modules/manufacturers",
@@ -3386,20 +3425,24 @@
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
         "docs/engine/hub-administration.md",
-        "docs/engine/country-specifics.md"
+        "docs/engine/country-specifics.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Define a sourced-fact contract: subject, fact kind, value, source id, licence flags, observed_at, valid_until, link.",
         "Add register-fact adapters with deterministic fakes for one US licence-board file, SAM.gov entity status, DOL OSHA inspections and GLEIF LEI; live mode off by default and behind second-person activation.",
         "Link facts to companies only through identifiers from the pack, never by name alone.",
         "Render sourced facts with a distinct treatment and a \"how this is sourced\" explanation in every locale.",
-        "Keep a register adapters catalogue per country pack (access method, licence, refresh cadence) and an expiry watch that reminds the subject before a licence or registration lapses."
+        "Keep a register adapters catalogue per country pack (access method, licence, refresh cadence) and an expiry watch that reminds the subject before a licence or registration lapses.",
+        "Expose sourced facts to canonical entities (ENT-001) by identifier with source, observed time, licence snapshot and valid_until so pages cite them field by field."
       ],
       "acceptance": [
         "Sourced facts never change a reputation snapshot (comparison test).",
         "A fact without a licence flag permitting display is not shown; expired facts are labelled stale.",
         "Wording never claims \"certified\" or \"licensed by Trustwork\".",
-        "Expiring facts trigger a reminder to the subject before the expiry date (clock test)."
+        "Expiring facts trigger a reminder to the subject before the expiry date (clock test).",
+        "A register fact never adds a natural person's name or contact data to a public page (projection test)."
       ],
       "paths": [
         "packages/contracts/src/sourced-facts.ts",
@@ -3690,13 +3733,16 @@
         "docs/engine/hub-console/data-mining.md",
         "docs/engine/hub-console/screens.md",
         "docs/engine/editorial-office.md",
-        "docs/engine/hub-console/console-design.md"
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Build the editorial sections including the review workbench with sources beside the draft.",
         "Build datasets, batches, links, knowledge and recommendations, including the sponsored-content policy (off by default).",
         "Locale namespace for every engine language; Playwright and axe.",
-        "Build the editorial office screens HC-170 to HC-191 and the amendments to HC-40 to HC-49 on fixtures: intake, story board, item detail, fact-check, legal, notices, corrections, glossary, translation memory, languages and reviewers, media, channels, licences, collection jobs with dry-run preview, team roster, role settings with the autonomy matrix, standing policies, team runs, team output review, team costs, analytics and coverage (editorial office section 11)."
+        "Build the editorial office screens HC-170 to HC-191 and the amendments to HC-40 to HC-49 on fixtures: intake, story board, item detail, fact-check, legal, notices, corrections, glossary, translation memory, languages and reviewers, media, channels, licences, collection jobs with dry-run preview, team roster, role settings with the autonomy matrix, standing policies, team runs, team output review, team costs, analytics and coverage (editorial office section 11).",
+        "Add HC-55 Entity review (link, split, mark distinct, reviewed batch accept; ClusterCompare, ProvenanceList, ConfidenceLabel) and HC-56 Sourced pages (state, freshness, change events, batch activation, unpublish), and extend HC-41 and HC-50 with contact use and operator dataset intake (discovery-and-outreach admin screens)."
       ],
       "acceptance": [
         "No publish control exists outside the review decision.",
@@ -3704,7 +3750,8 @@
         "AI labels are visible.",
         "Locked guard rails render as locked cells with their reason in the autonomy matrix; \"auto-publish allowed\" is selectable only for eligible content classes (test).",
         "No agent role appears with a human name or portrait (fixture scan).",
-        "Editorial lists, detail drawers, diffs, approval cards, the calendar and run history with dry-run preview use the shared components of the console design once DS-003 is merged."
+        "Editorial lists, detail drawers, diffs, approval cards, the calendar and run history with dry-run preview use the shared components of the console design once DS-003 is merged.",
+        "The entity review screen offers link, split and mark distinct and no merge control (scan)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/editorial",
@@ -3795,19 +3842,23 @@
         "docs/engine/hub-console/operations.md",
         "docs/engine/hub-console/README.md",
         "docs/engine/hub-console/screens.md",
-        "docs/engine/hub-console/console-design.md"
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Build federation, privacy, staff and audit, and operations sections.",
         "Build the node console (hubs, node staff, updates, backups, identity and keys, kill switches, read-only restricted places).",
-        "Locale namespace for every engine language; Playwright and axe."
+        "Locale namespace for every engine language; Playwright and axe.",
+        "Show objections and erasure requests from non-participants in HC-140 with the tie they showed, cross-linked to HC-175 suppression."
       ],
       "acceptance": [
         "Restore and production migration need two people.",
         "The locale completeness screen blocks activation of incomplete templates.",
         "The restricted-places list is read-only.",
         "Staff and access shows on fixtures the role catalogue, the permission matrix, effective access (\"what this person can do\"), the role-change diff with the separation-of-duties check, invitations, just-in-time roles, access reviews, offboarding and clients (console design, sections 4.2 to 5).",
-        "The audit explorer has saved views, request-id search and denied attempts; feature flags show their rollout stage and expiry and no flag touches access, projections, egress or ranking."
+        "The audit explorer has saved views, request-id search and denied attempts; feature flags show their rollout stage and expiry and no flag touches access, projections, egress or ranking.",
+        "Suppression data is reachable only by exact lookup, never as a browsable list (scan)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/federation",
@@ -4447,18 +4498,22 @@
       "goal": "Let agents find partners, watch opportunities and request double-opt-in introductions for every participant type within shared quotas.",
       "read": [
         "docs/engine/agent-catalog.md",
-        "docs/engine/partners-and-matching.md"
+        "docs/engine/partners-and-matching.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Implement standing selectors over needs, partner posts, invitations and imported procurement notices.",
         "Implement go or no-go notes with eligibility pass, fail and unknown.",
         "Implement engagements for individuals with availability hidden from the current employer by default.",
-        "Label every agent-sent request and draw from the principal's quota."
+        "Label every agent-sent request and draw from the principal's quota.",
+        "Agent requests involving sourced companies go through the outreach gate chain (OUTR-002) and the platform suppression list; agents never send directly to a sourced contact."
       ],
       "acceptance": [
         "Alerts are dispatched in the same batch for every plan (tested).",
         "Sourced companies never receive bulk outreach.",
-        "Applications to employment are never accepted by an agent."
+        "Applications to employment are never accepted by an agent.",
+        "A suppressed sourced company is never contacted by any agent module (test)."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/opportunity",
@@ -5517,18 +5572,22 @@
       "goal": "Let a person reach their own agent and project threads by SMS, WhatsApp or Telegram and voice notes under per-channel grants, and let crews read plans, punch lists and schedules offline on mobile web.",
       "read": [
         "docs/research/market-and-ideas-2026-10.md",
-        "docs/engine/communications.md"
+        "docs/engine/communications.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Adapters with fakes for SMS and WhatsApp; hub sender identity with registration data (10DLC) in hub configuration.",
         "Treat inbound text and transcribed voice as untrusted input; any action needs a structured confirmation.",
         "Add an offline-capable cache for reading and drafting on mobile web with conflict-safe sync of drafts.",
-        "Respect consent and quiet hours; marketing messages off by default."
+        "Respect consent and quiet hours; marketing messages off by default.",
+        "SMS, WhatsApp and other messenger adapters refuse any outreach purpose without the recipient's recorded prior consent; automated and AI-voice calls are not offered for outreach."
       ],
       "acceptance": [
         "No external effect follows from inbound message text alone (injection tests).",
         "Messages are sent only on channels the person granted.",
-        "Offline drafts never overwrite newer server versions silently."
+        "Offline drafts never overwrite newer server versions silently.",
+        "An outreach message on SMS or a messenger without recorded prior consent is refused before the adapter is called (test)."
       ],
       "paths": [
         "apps/api/src/modules/communications/channels",
@@ -5691,18 +5750,22 @@
         "docs/product/specification.md",
         "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
         "docs/engine/partners-and-matching.md",
-        "docs/data/model.md"
+        "docs/data/model.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md"
       ],
       "steps": [
         "Model capability profiles with per-field visibility, open needs, partner posts, match method versions, runs, candidates, introductions, outreach quotas and alert subscriptions (packages/data/migrations/matching).",
         "Implement hard eligibility (region, licence, sanctions) with pass, fail and unknown results.",
         "Implement versioned ranking with explanations and uncertainty over structured attributes (semantic recall arrives with RAG-301); requester-tunable weights.",
-        "Implement introductions with quotas shared by people and their agents, labelled agent requests, contact reveal on acceptance and alerts."
+        "Implement introductions with quotas shared by people and their agents, labelled agent requests, contact reveal on acceptance and alerts.",
+        "Sourced external candidates can be contacted only through the outreach gate chain of OUTR-002 under the hub policy; in strict mode the interface keeps the outreach-not-permitted note."
       ],
       "acceptance": [
         "Rankings are identical with and without paid entitlements (test).",
         "Matching never reads private quotes, budgets or floors.",
-        "Contact details appear only after an introduction is accepted; unknown eligibility is shown as unknown."
+        "Contact details appear only after an introduction is accepted; unknown eligibility is shown as unknown.",
+        "In a hub whose outreach policy is strict, no matching or introduction path sends anything to a sourced company (test)."
       ],
       "paths": [
         "apps/api/src/modules/matching",
@@ -9906,6 +9969,206 @@
         "apps/web/app/admin/hubs/[hub]/editorial/media",
         "apps/web/app/admin/hubs/[hub]/editorial/channels",
         "tests/web/admin/editorial-live"
+      ]
+    },
+    {
+      "id": "OUTR-001",
+      "title": "Outreach and collection policy as country-pack facts and hub configuration",
+      "area": "communications",
+      "status": "open",
+      "dependsOn": [
+        "HUB-001",
+        "CTRY-002",
+        "CTRY-EU"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Express every country's outreach and data-collection regime as data (ADR 017, owner confirmation of 2026-11-01): an outreachLaw pack facet with sourced facts and a versioned hub outreach configuration domain, resolved most-protective-first, with an engine floor no setting can lower and strict as the default.",
+      "read": [
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md",
+        "docs/country-packs/how-to-add-a-country.md",
+        "docs/engine/country-specifics.md",
+        "docs/engine/hub-administration.md"
+      ],
+      "steps": [
+        "Contracts in packages/contracts/src/outreach-policy.ts: recipient classes, channels, bases (prohibited, prior_consent, prior_express_written_consent, soft_opt_in, implied_consent_conspicuous_publication, legitimate_interest_assessed, opt_out, existing_relationship, single_consent_request), notice timing, identification, opt-out, volume, quiet hours, language order, registrations, retention and residency; the hub outreach domain with mode strict, notice_only or governed.",
+        "The outreachLaw facet schema in packages/country-packs/src/outreach-law.ts (registered additively in the facet list with the integrator's agreement), each fact with sources, verification level and counselReview; facts for the us, uz, ge, am and az packs and the EU layer, all counselReview pending.",
+        "Resolver: engine floor, recipient-jurisdiction pack rule, hub-jurisdiction pack rule, hub policy, source allowed uses and recipient suppression intersected; unknown jurisdiction or recipient class resolves to no contact.",
+        "Schema refinements: any mode other than strict needs a counsel approval reference and a second-person approval; consumer outreach, automated calls, AI voice, SMS or messenger outreach without prior consent, guessed addresses and missing identification cannot be expressed.",
+        "Propose outreach_policy_activation and outreach_campaign_activation as additive HUMAN_GATES entries with the integrator's agreement."
+      ],
+      "acceptance": [
+        "A hub with no outreach configuration resolves every recipient to no contact (test).",
+        "No configuration can enable consumer outreach or automated calls, AI voice, SMS or messenger outreach without prior consent (schema test).",
+        "When two jurisdictions apply, the most protective rule wins (resolver test with the worked examples).",
+        "Every outreachLaw fact cites a source and shows counselReview; no engine code branches on a country code (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/outreach-policy.ts",
+        "tests/contracts/outreach-policy.test.ts",
+        "packages/country-packs/src/outreach-law.ts",
+        "tests/country-packs/outreach-law"
+      ]
+    },
+    {
+      "id": "ENT-001",
+      "title": "Canonical entities, cited fields, sourced page assembly and change watch",
+      "area": "data",
+      "status": "open",
+      "dependsOn": [
+        "MINE-001",
+        "SRC-001",
+        "REG-001"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Turn linked records into canonical entities (companies, events, projects, products, tenders, associations, training providers) whose every field cites its source, and publish them as sourced pages that never look verified, with freshness and change watch.",
+      "read": [
+        "docs/engine/discovery-and-outreach.md",
+        "docs/engine/hub-console/data-mining.md",
+        "docs/engine/people-and-companies.md",
+        "docs/engine/hub-console/autonomous-editorial.md",
+        "docs/data/model.md"
+      ],
+      "steps": [
+        "Contracts in packages/contracts/src/sourced-pages.ts and tables canonical_entity, entity_member, entity_field, field_provenance, distinct_pair and change_event (packages/data/migrations/sourced-pages).",
+        "Field choice rules: registers for legal facts, the entity's own site for descriptive facts, claimed values over sourced ones, disagreement shown as words; confidence in words, never a score.",
+        "Model-extracted fields require an evidence span and allowed model egress for the source; no sensitive categories or private facts.",
+        "Page assembly per kind with the sourced label, a How this page was built panel and the claim, correct and remove actions; pages publish only through an activated import batch.",
+        "Change watch: register status, licence expiry, site availability, field TTL and peer tombstones; dissolved entities unpublish with tombstones."
+      ],
+      "acceptance": [
+        "No sourced page shows a natural person's name or personal contact data, a rating, an activity counter or verification wording (projection test).",
+        "A model-extracted field without an evidence span is never stored (test).",
+        "A page is never public without an activated batch decision by a person (test).",
+        "Splitting an entity re-assembles the page from the remaining records and records the reason (test)."
+      ],
+      "paths": [
+        "packages/contracts/src/sourced-pages.ts",
+        "tests/contracts/sourced-pages.test.ts",
+        "apps/api/src/modules/sourced-pages",
+        "apps/worker/src/enrichment",
+        "packages/data/migrations/sourced-pages",
+        "packages/data/src/schema/sourced-pages.ts",
+        "packages/data/src/repositories/sourced-pages.ts",
+        "tests/sourced-pages"
+      ]
+    },
+    {
+      "id": "OUTR-002",
+      "title": "Outreach orchestration: campaigns, gates, platform suppression, replies and deliverability",
+      "area": "communications",
+      "status": "open",
+      "dependsOn": [
+        "OUTR-001",
+        "ENT-001",
+        "COMMS-001",
+        "PIPE-001",
+        "PRV-001",
+        "HUB-005",
+        "SANC-003"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Contact representatives of sourced entities only where the resolved policy allows, through a gate chain that ends in the platform-wide suppression list, with honest messages, immediate opt-out, human hand-off of replies and deliverability discipline; strict mode sends nothing (ADR 017).",
+      "read": [
+        "docs/engine/discovery-and-outreach.md",
+        "docs/adr/017-outreach-policy.md",
+        "docs/engine/communications.md",
+        "docs/engine/hub-console/automation-and-scheduling.md",
+        "docs/adr/014-sanctions-compliance-engine.md"
+      ],
+      "steps": [
+        "Contracts in packages/contracts/src/outreach.ts and tables contact_point (encrypted value, provenance, basis, jurisdiction), legitimate_interest_assessment, outreach_campaign, outreach_campaign_version, outreach_touch, outreach_reply and do_not_collect_entry (packages/data/migrations/outreach); extend suppression_entry with scope and reasons with the communications owner's agreement.",
+        "Gate chain at planning and again at dispatch: policy mode, source contact use, recipient class and jurisdiction, basis, platform suppression (hub and node), restricted places and screening, caps and budgets, quiet hours, message checks, autonomy level and approvals; idempotency key per recipient and touch.",
+        "Templates with locked blocks (operator identification and postal address, automated assistant disclosure from HUB-005, data sources, page link, correct or remove, RFC 8058 one-click unsubscribe); sequences of at most three touches with fixed stop conditions.",
+        "Replies matched by reply token into an outreach_contact context thread, stored as untrusted; classification with ambiguity treated as objection; human hand-off queue; thread moves to the company context on verification.",
+        "Deliverability: separate outreach sender identity, DNS checks before start, complaint and bounce thresholds that pause campaigns, ramp caps; no open tracking; cohort metrics with counts under ten suppressed.",
+        "Agent team roles (drafter, sender, reply triager) act only under operator grants and approved campaign versions; kill switches per role, campaign, hub and node."
+      ],
+      "acceptance": [
+        "With the hub policy in strict mode no code path sends to a non-participant (test across campaigns, agents, RFQ invitation notices and journeys).",
+        "A suppressed address receives nothing through any purpose, including when suppression lands while a batch is in flight (concurrency test on PostgreSQL).",
+        "No message leaves without every locked block; one-click unsubscribe works without sign-in (test).",
+        "No reply text triggers a send, a claim decision or a role change (injection tests).",
+        "An unknown delivery outcome is reconciled and never resent (test).",
+        "No outreach data appears in public, shared-party, search, federation or participant agent projections (projection tests)."
+      ],
+      "paths": [
+        "packages/contracts/src/outreach.ts",
+        "tests/contracts/outreach.test.ts",
+        "apps/api/src/modules/outreach",
+        "apps/worker/src/outreach",
+        "packages/data/migrations/outreach",
+        "packages/data/src/schema/outreach.ts",
+        "packages/data/src/repositories/outreach.ts",
+        "tests/outreach"
+      ]
+    },
+    {
+      "id": "OUTR-003",
+      "title": "Lifecycle journeys for participants and partners inside their preferences",
+      "area": "communications",
+      "status": "open",
+      "dependsOn": [
+        "COMMS-001",
+        "OUTR-001",
+        "ANL-001"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Onboarding, claimed-company onboarding, re-engagement, partner updates and notices that respect each person's notification preferences, with caps, no dark patterns and only cohort metrics.",
+      "read": [
+        "docs/engine/discovery-and-outreach.md",
+        "docs/engine/communications.md",
+        "docs/engine/modules/analytics.md"
+      ],
+      "steps": [
+        "Tables lifecycle_journey, journey_step and journey_enrolment without per-person engagement fields (packages/data/migrations/lifecycle).",
+        "Journeys stop when their goal is met; re-engagement at most once per hub-set period; transactional notices only in the account and legal categories.",
+        "Templates through COMMS-001 in every hub language; no fake scarcity or fake activity wording (template lint)."
+      ],
+      "acceptance": [
+        "A person who turned a category off receives no journey message in it (test).",
+        "Journey metrics return cohorts only, with counts under ten suppressed (test)."
+      ],
+      "paths": [
+        "apps/api/src/modules/lifecycle",
+        "apps/worker/src/lifecycle",
+        "packages/data/migrations/lifecycle",
+        "packages/data/src/schema/lifecycle.ts",
+        "packages/data/src/repositories/lifecycle.ts",
+        "tests/lifecycle"
+      ]
+    },
+    {
+      "id": "OUTR-004",
+      "title": "Console: discovery and outreach screens on fixtures",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-002",
+        "OUTR-001"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Build the outreach section (overview, policies, campaigns, templates, replies, suppression, deliverability, lifecycle journeys: HC-170 to HC-177) on fixtures with the console components.",
+      "read": [
+        "docs/engine/discovery-and-outreach.md",
+        "docs/engine/hub-console/README.md",
+        "docs/engine/hub-console/screens.md",
+        "docs/adr/017-outreach-policy.md"
+      ],
+      "steps": [
+        "Build HC-170 to HC-177 with PolicyGateList, MessagePreview and SuppressionLookup; fixtures validated by the outreach policy contracts; synthetic data only.",
+        "Strict mode banner when outreach is off; counsel approval and second person shown before any mode change; the engine floor rendered without switches.",
+        "Locale namespace for every engine language; Playwright and axe at 1280, 768 and 375 px."
+      ],
+      "acceptance": [
+        "No control enables consumer outreach, automated calls, AI voice or messenger outreach without consent (scan).",
+        "Suppression is reachable only by exact lookup (scan).",
+        "Every campaign shows the exact message per language and jurisdiction before approval.",
+        "Cohort counts under ten are rendered as suppressed."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/outreach",
+        "tests/web/admin/outreach"
       ]
     }
   ]

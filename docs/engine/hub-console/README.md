@@ -50,6 +50,8 @@ Integrator choices recorded with the freeze (the owner may override them): break
 | [Screens](screens.md) | Screen-by-screen contract: purpose, data, actions, empty/error/denied states, mobile behaviour, locale namespace |
 | [Console design](console-design.md) | The cross-cutting design (owner request of 2026-11-01): research with sources, information architecture across platform, node and hub, command palette, approvals inbox, states, phone, dark mode and keyboard; users management (participants, staff, service accounts and AI clients); statistics management; permissions in the interface (role catalogue, permission matrix, scope picker, effective access, separation-of-duties checks, locked guard rails); platform management flows; the operator Agent team (ADR 010 decision 26); the `packages/ui` component inventory; writing rules; mapping to work packages |
 
+The discovery and outreach screens (HC-55 Entity review, HC-56 Sourced pages, the outreach section HC-170 to HC-177 and extensions to HC-41, HC-50 and HC-140) are designed with their engine in [Discovery, sourced pages, claims and outreach](../discovery-and-outreach.md#admin-screens) (proposed, ADR 017) and reuse this folder's components and conventions.
+
 ## Principles
 
 1. **Configuration, not code.** Anything that differs between countries, cities or operators is a pack fact, a versioned hub configuration record or an adapter choice. If an operator needs a code change to launch, the console has a gap.
