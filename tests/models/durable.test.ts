@@ -21,7 +21,8 @@ import type { ModelCall, ModelCallMetadata } from '../../packages/contracts/src/
 const db = await provisionTestDatabase('models_durable');
 test('durable fake-only model intent, owning BILL/AST commands and cross-process caps', { skip: db ? false : SKIP_REASON }, async (t) => {
   if (!db) return;
-  const w = await durableWorld(db);
+  // Recovery cases retain many independent unknown holds; AGT's focused suite tests restrictive protection limits.
+  const w = await durableWorld(db, { runsPerDay: 100, actionsPerDay: 200, concurrentRuns: 100 });
   t.after(async () => {
     await w.pool.end();
     await db.close();
