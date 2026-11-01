@@ -77,7 +77,7 @@ export class AppModule {
       providers: [{ provide: API_CONFIG, useValue: config }],
       imports: [
         IdentityModule.forRoot(ctx, identity), ProjectsModule.forRoot(ctx, identity), DirectoryModule.forRoot(ctx, identity),
-        PlansModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.plans) }),
+        PlansModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.plans), capabilities }),
         CatalogueModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ProcurementModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
@@ -89,10 +89,11 @@ export class AppModule {
         PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity, files, { compliance: privacyCompliance, support: (principals) => new SupportService(ctx, principals) })),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         ProvenanceModule.forRoot(identity),
+        ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles), capabilities }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),
         TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks), ...(communications.env ? {env: communications.env} : {}), ...(taskFees ? { fees: taskFees } : {}) }),
-        ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution) }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity),
+        ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution), capabilities }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity, { capabilities }),
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
@@ -100,7 +101,7 @@ export class AppModule {
         ContentModule.forRoot(ctx, identity),
         AgentModulesModule.forRoot(ctx, identity, { authority: capabilities }), // AGT-003
         AssistantModule.forRoot(ctx, identity, { capabilityGate: agentRuntimeGate(capabilities) }),
-        AgentsModule.forRoot(ctx, identity, { protectionLimits: agentProtectionLimits(capabilities) }),
+        AgentsModule.forRoot(ctx, identity, { capabilities, protectionLimits: agentProtectionLimits(capabilities) }),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FeesModule.forRoot(ctx, identity, communications.env),
         HubsModule.forRoot(ctx, identity),

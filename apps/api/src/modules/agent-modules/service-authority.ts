@@ -7,9 +7,10 @@ import { servingHub } from './serving-hub.js';
 /** Called inside the owning service transaction; its resource authorizer/projection still decides access. */
 export async function requireParticipantCapability(
   ctx: AppContext, trx: Transaction, principal: Principal, capabilityId: string, onBehalfCompanyId: string | null = null,
+  configuredAuthority: CapabilityAuthority = new CapabilityAuthority({ hubId: null }),
 ): Promise<void> {
   const binding = await servingHub(trx, ctx.config.publicOrigin);
-  const authority = new CapabilityAuthority({ hubId: binding.hubId });
+  const authority = configuredAuthority.forHub(binding.hubId);
   await requireCapability(authority, trx, {
     personId: principal.personId, onBehalfCompanyId, representativeOf: null, connectionId: null,
   }, capabilityId);

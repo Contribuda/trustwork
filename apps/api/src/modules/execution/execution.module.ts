@@ -1,3 +1,4 @@
+import type { CapabilityAuthority } from '../agent-modules/authority.js';
 import { bindServiceCapabilities } from '../agent-modules/service-bindings.js';
 import { EXECUTION_SERVICE_BINDINGS } from '../agent-modules/execution-bindings.js';
 import { Module, type DynamicModule } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { ExecutionService } from './execution.service.js';
 import { NoExecutionMandates, type ExecutionMandatePort } from './mandates.js';
 
 export interface ExecutionModuleOptions {
+  /** Shared configured entitlement/extension ports; the serving hub is resolved per invocation. */
+  capabilities?: CapabilityAuthority;
   /** Agent mandate check; defaults to "no mandate store", which refuses every agent request. */
   mandates?: ExecutionMandatePort;
   /** The hub this API serves; defaults to TRUSTWORK_HUB_ID (disputes need it). */
@@ -21,7 +24,7 @@ export class ExecutionModule {
     // Read at request time, so a hub configured after start (setup wizard, tests) is picked up.
     const hubId = options.hubId !== undefined ? options.hubId : () => staffHubFromEnv(process.env);
     const service = bindServiceCapabilities(ctx, identity.principals, EXECUTION_SERVICE_BINDINGS, principals =>
-      new ExecutionService(ctx, principals, options.mandates ?? new NoExecutionMandates(), { hubId }));
+      new ExecutionService(ctx, principals, options.mandates ?? new NoExecutionMandates(), { hubId }), options.capabilities);
     return { module: ExecutionModule, controllers: [ExecutionController], providers: [{ provide: ExecutionService, useValue: service }], exports: [ExecutionService] };
   }
 }

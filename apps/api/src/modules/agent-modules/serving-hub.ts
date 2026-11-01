@@ -25,3 +25,11 @@ export async function servingHub(trx: Transaction, serverOrigin: string): Promis
   if (!binding) throw new ApiError('access.forbidden', 'serving hub authority is unavailable', { reason: 'hub_provenance_unavailable' });
   return binding;
 }
+
+/** Public owning projections remain public; no participant, entitlement or private-data authority is manufactured. */
+export async function requirePublicServingContext(trx: Transaction, serverOrigin: string): Promise<void> {
+  const origin = new URL(serverOrigin).origin;
+  if (origin !== serverOrigin.replace(/\/$/, '')) throw new Error('serving origin must be a bare origin');
+  const result = await sql<{ allowed: boolean }>`SELECT trustwork.agent_modules_public_serving_context(${origin}) AS allowed`.execute(trx);
+  if (!result.rows[0]?.allowed) throw new ApiError('access.forbidden', 'serving hub authority is unavailable', { reason: 'hub_provenance_unavailable' });
+}

@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { withMaintenance, withPrincipal } from '@trustwork/data';
@@ -24,6 +25,7 @@ function ok<T>(r: Response, status = 200): T {
 test('directory: a public person without a live profile_public consent is never listed and never found', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const as = async (key: Parameters<typeof login>[1]): Promise<Client> => { const c = h.client(); await login(c, key); return c; };

@@ -8,6 +8,7 @@ import {
 } from './contracts.js';
 import { agentAuthority, agentPolicies, type DispatchRefusal } from './deps.js';
 import { loadRegistry, ENGINE_MANIFESTS, FreePlanEntitlements, NoExtensions, type EntitlementPort, type ExtensionCatalogPort } from './ports.js';
+import { NON_PURCHASABLE_CAPABILITIES } from './authority-boundaries.js';
 
 /** Who the agent acts for in one check. The surface (interface, agent runtime, MCP) is deliberately not an input. */
 export interface AgentActor {
@@ -102,6 +103,10 @@ export class CapabilityAuthority {
     if (this.hubId === null) return { allowed: false, capabilityId, moduleKey, reason: 'capability.unknown', messageKey: REFUSAL_MESSAGE_KEYS['capability.unknown'], blockedBy: null };
     await agentAuthority.lockCurrent(trx, this.hubId, actor.representativeOf ?? actor.onBehalfCompanyId, actor.connectionId);
     const registry = await this.registry();
+    if (NON_PURCHASABLE_CAPABILITIES.has(capabilityId)) {
+      const canonical = registry.manifests.flatMap(m => m.capabilities).find(c => c.id === capabilityId);
+      if (canonical && (action === null || action === canonical.mandateAction)) return { allowed: true, capabilityId, moduleKey };
+    }
     const { document } = await this.policy(trx, registry);
     const policyReason = capabilityRefusal(document, registry, capabilityId, await this.principalOf(trx, actor));
     if (policyReason !== null) return { allowed: false, capabilityId, moduleKey, reason: policyReason, messageKey: REFUSAL_MESSAGE_KEYS[policyReason], blockedBy: null };
@@ -194,14 +199,17 @@ export function agentRuntimeGate(authority: CapabilityAuthority): CapabilityGate
 export type McpDecision =
   | { decision: 'execute' | 'propose_only' | 'execute_under_mandate' }
   | { decision: 'deny'; reason: RefusalReason | 'connection.scope'; messageKey: string };
+/** Supplied by the authenticating transport after token/proof validation, never parsed from tool arguments. */
+export interface McpTokenAuthority { audience: string; accessTokenHash: Buffer; dpopJkt: string | null }
 /**
  * MCP surface (wired by MCP-001/MCP-003 when the transport lands): the connection's scopes first (`connectionMayInvoke`,
  * AGT-002), then the same authority check as everywhere else, as the connection's person.
  */
-export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, connection: ExternalConnection, capability: AgentCapability, onBehalfCompanyId: string | null = null, validatedAudience: string | null = null): Promise<McpDecision> {
+export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, connection: ExternalConnection, capability: AgentCapability, onBehalfCompanyId: string | null = null, token: McpTokenAuthority | null = null): Promise<McpDecision> {
   const deny = (): McpDecision => ({ decision: 'deny', reason: 'connection.scope', messageKey: 'agentModules.refusal.connectionScope' });
   // The transport supplies an already validated token audience. Payload hub/scopes/owner are never authority.
-  if (validatedAudience === null || connection.owner.kind !== 'person') return deny();
+  if (!token || !Buffer.isBuffer(token.accessTokenHash) || token.accessTokenHash.length !== 32 || connection.owner.kind !== 'person') return deny();
+  const validatedAudience = token.audience;
   let stored = await trx.selectFrom('connection').selectAll().where('id', '=', connection.id).executeTakeFirst();
   if (!stored?.hub_id || stored.person_id !== connection.owner.personId || stored.hub_id !== connection.hubId || stored.resource !== validatedAudience
     || stored.client_id !== connection.clientId || stored.protocol !== connection.protocol || stored.surface !== 'participant') return deny();
@@ -210,6 +218,10 @@ export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, 
   if (!stored?.hub_id || stored.status !== 'active' || stored.revision !== connection.revision || stored.resource !== validatedAudience) return deny();
   const locked = await sql<{ valid: boolean }>`SELECT trustwork.agent_modules_lock_connection_consent(${stored.id}::uuid) AS valid`.execute(trx);
   if (!locked.rows[0]?.valid) return deny();
+  const scope = await sql<{ scopes: string[] | null }>`SELECT trustwork.agent_modules_mcp_token_scopes(
+    ${stored.id}::uuid,${token.accessTokenHash}::bytea,${validatedAudience},${token.dpopJkt}) AS scopes`.execute(trx);
+  const tokenScopes = scope.rows[0]?.scopes;
+  if (!tokenScopes || connection.scopes.some(s => !tokenScopes.includes(s))) return deny();
   const consent = await trx.selectFrom('connection_consent').selectAll().where('id', '=', stored.consent_id)
     .where('withdrawn_at', 'is', null).where('expires_at', '>', sql<Date>`clock_timestamp()`).executeTakeFirst();
   if (!consent || consent.person_id !== stored.person_id || !consent.step_up
@@ -224,12 +236,23 @@ export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, 
   const registry = await scopedAuthority.registry();
   const { document } = await scopedAuthority.policy(trx, registry);
   const entry = document.policy.enabledModules.find(m => m.moduleKey === capability.id.split('.')[0]);
-  const canonical = entry ? moduleCapabilities(registry, entry.moduleKey, entry.moduleVersion, document.policy.activeExtensionVersionIds).find(c => c.id === capability.id) : undefined;
+  const canonical = NON_PURCHASABLE_CAPABILITIES.has(capability.id)
+    ? registry.manifests.flatMap(m => m.capabilities).find(c => c.id === capability.id)
+    : entry ? moduleCapabilities(registry, entry.moduleKey, entry.moduleVersion, document.policy.activeExtensionVersionIds).find(c => c.id === capability.id) : undefined;
   // Check the shared policy first, preserving identical refusal reasons for disabled modules/capabilities.
   const actor: AgentActor = { personId: stored.person_id, onBehalfCompanyId, representativeOf: null, connectionId: stored.id };
   const d = await scopedAuthority.check(trx, actor, capability.id, capability.mandateAction);
   if (!d.allowed) return { decision: 'deny', reason: d.reason, messageKey: d.messageKey };
   if (!canonical || canonical.version !== capability.version) return deny();
   const decision = connectionMayInvoke(canonical, connection);
+  if (decision === 'execute_under_mandate') {
+    let covered = false;
+    for (const binding of connection.mandateBindings) {
+      const mandate = await trx.selectFrom('mandate').selectAll().where('id', '=', binding.mandateId).executeTakeFirst();
+      if (mandate?.grantee_kind === 'own_agent' && mandate.on_behalf_company_id === onBehalfCompanyId
+        && mandate.module_keys.includes(canonical.id.split('.')[0]!) && canonical.mandateAction !== null && mandate.actions.includes(canonical.mandateAction)) covered = true;
+    }
+    if (!covered) return deny();
+  }
   return decision === 'deny' ? deny() : { decision };
 }
