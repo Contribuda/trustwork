@@ -342,8 +342,11 @@ International by default ([ADR 012 decision 30](../adr/012-integrator-decisions-
 | LANG-ZH | Chinese, Simplified script (zh-Hans) | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-006 |
 | LANG-HI | Hindi (hi), Devanagari script | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-006 |
 | LANG-JA | Japanese (ja) | open | CFG-001, INTL-004, INTL-007, DEMO-US, INTL-006 |
+| LANG-AF | Afrikaans (af) | open | CFG-001, INTL-004, INTL-007, DEMO-US, DEMO-ZA |
+| LANG-XH | isiXhosa (xh) | open | CFG-001, INTL-004, INTL-007, DEMO-US, DEMO-ZA |
+| LANG-ZU | isiZulu (zu) | open | CFG-001, INTL-004, INTL-007, DEMO-US, DEMO-ZA |
 
-**Country packs.** The United States pack comes first and is the model. EU members inherit a shared EU layer (CTRY-EU). Ukraine covers government-controlled territory only. Every fact cites an official source or is labelled with its lower verification level.
+**Country packs.** The United States pack comes first and is the model. EU members inherit a shared EU layer (CTRY-EU). Ukraine covers government-controlled territory only. Every fact cites an official source or is labelled with its lower verification level. South Africa (CTRY-ZA, with the Cape Town demo hub DEMO-ZA) is proposed by the [market-opportunities note](../research/market-opportunities-2026-11.md) as the candidate second reference hub; its three South African languages wait for DEMO-ZA.
 
 | ID | Title | Status | Depends on |
 |---|---|---|---|
@@ -364,6 +367,8 @@ International by default ([ADR 012 decision 30](../adr/012-integrator-decisions-
 | CTRY-AE | United Arab Emirates country pack | open | CTRY-002 |
 | CTRY-IN | India country pack | open | CTRY-002 |
 | CTRY-AU | Australia country pack | open | CTRY-002 |
+| CTRY-ZA | South Africa country pack | open | CTRY-002 |
+| DEMO-ZA | Cape Town demo hub: synthetic South African dataset | open | CTRY-ZA, DEMO-US, CFG-001 |
 
 ## Documentation
 
