@@ -1,6 +1,6 @@
 # ADR 022: Executable jurisdiction policy provenance and runtime binding
 
-Date: 2026-11-01. Status: **Proposed; not accepted**. Requires maintainer and source-module review; authorizes no legal values, activation or deployment.
+Date: 2026-11-01. Status: **Accepted technical architecture, 2026-11-01**. Source-module implementation review remains required; authorizes no legal values, activation or deployment.
 
 Agent: Codex CLI (OpenAI) for Parshkov.
 
@@ -16,7 +16,7 @@ The conductor inspected packages/contracts/src/jurisdiction.ts and apps/api/src/
 - Assistant PolicyRequest has no authoritative two-party jurisdiction binding or material policy-version digest in the effect authority.
 - Locale-key presence does not establish an immutable reviewed legal text version.
 
-## Proposed boundary
+## Accepted technical boundary
 
 1. Extend the source contract with explicitly reviewed executable rule records: jurisdiction and ancestors, effective dates, applicable action classes, mandatory/advisory distinction, typed limits/consent/retention/liability identities, exact immutable source references, and counsel verification. Explicit absence of a requirement is a sourced statement. Missing/ambiguous/unreviewed facts remain UNKNOWN and block the affected commitment. No country rule belongs in engine code.
 2. Bind text to immutable language-complete legal versions and their counsel evidence. Preserve existing legal document semantics or propose the smallest additive kind; never treat a locale key as legal approval.
@@ -29,11 +29,11 @@ The conductor inspected packages/contracts/src/jurisdiction.ts and apps/api/src/
 
 Real database/API tests must prove unauthorized/self activation refusal, changed language/source/approval races, no mandatory weakening through any writer, current effective projection isolation, actual action requiring approval above the limit despite a permissive mandate, cross-party applicability and policy-change refusal before effect, and no country-specific hardcoded legal values. Positive fixtures are explicitly synthetic normalized policies; they do not establish any country's legal readiness.
 
-## Decision requested
+## Maintainer decision
 
-Accept or revise this source/binding contract direction and coordinate the country-pack, HUB001, legal-document and AST001 owning paths before implementing the new authority boundary. The conductor can authorize ordinary isolated migrations/registration once that boundary is agreed. This is not a request to waive privacy, mandates or counsel review, and not authorization to launch a real hub.
+The delegated conductor accepted this source/binding direction in [PR #445](https://github.com/Contribuda/trustwork/pull/445#issuecomment-6552887365), merged as `17850921c556a30841d34181462fe0967b7900b2`. The conductor coordinates country-pack, HUB001, legal-document and AST001 owning paths and authorizes isolated additive migrations and registration. Acceptance of the architecture does not accept an implementation. This is not a request to waive privacy, mandates or counsel review, and not authorization to launch a real hub.
 
-Alternative: preserve PR405 as an explicitly incomplete draft and keep HUB005/AGT022/HUBC007 dependencies closed. Merging groundwork must not label the package done.
+PR405 remains an explicitly incomplete draft; HUB005/AGT022/HUBC007 dependencies stay closed until their actual acceptance criteria pass. Merging groundwork must not label the package done.
 
 ## Current verification limits
 
