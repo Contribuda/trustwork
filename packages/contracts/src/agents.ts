@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { PartySchema, type Party } from './access.js';
 import {
-  AgentCapabilitySchema, type AgentCapability, type CapabilityConfirmation, type CapabilityKind, type ContextKindV2, type PrivateDataClass, type SideEffect,
+  AgentCapabilitySchema, AgentModuleManifestSchema, type AgentCapability, type CapabilityConfirmation, type CapabilityKind, type ContextKindV2, type PrivateDataClass, type SideEffect,
   ApprovalPolicySchema, ApproverRuleSchema, ConditionSchema, EnvelopeIntentSchema, EscalationSchema, MandateActionV2Schema, MandateContextSchema, MandateLimitsV2Schema,
   MONEY_ACTIONS, HUMAN_ONLY_ACTIONS, VersionedContextRefSchema, type EnvelopeIntent, type MandateActionV2,
 } from './agent-catalog.js';
@@ -344,7 +344,7 @@ export const AGENT_CAPABILITIES: readonly AgentsCapabilityEntry[] = [
   entry({ id: 'core.confirm_goal', kind: 'govern', confirmation: 'first_party_step_up', input: 'ConfirmGoalCommandSchema', output: 'GoalConfirmationSchema', reads: OWNER, effects: ['state_change'], route: 'POST /v1/assistant/goals/:id/confirm' }),
   entry({ id: 'core.set_goal_status', kind: 'govern', input: 'GoalStatusCommandSchema', output: 'GoalConfirmationSchema', reads: OWNER, effects: ['state_change'], route: 'POST /v1/assistant/goals/:id/status' }),
   entry({ id: 'core.record_goal_evidence', kind: 'draft', input: 'GoalEvidenceCommandSchema', output: 'GoalConfirmationSchema', contexts: ['goal'], reads: OWNER, effects: ['draft_state'], route: 'POST /v1/assistant/goals/:id/progress' }),
-  entry({ id: 'core.generate_goal_report', kind: 'draft', input: 'ConfirmGoalCommandSchema', output: 'AgentReportSchema', contexts: ['goal'], reads: OWNER, effects: ['draft_state'], route: 'POST /v1/assistant/goals/:id/report' }),
+  entry({ id: 'core.generate_goal_report', kind: 'draft', action: 'prepare', input: 'ConfirmGoalCommandSchema', output: 'AgentReportSchema', contexts: ['goal'], reads: OWNER, effects: ['draft_state'], route: 'POST /v1/assistant/goals/:id/report' }),
   entry({ id: 'core.list_reports', kind: 'read', input: 'ShareReportCommandSchema', output: 'AgentReportSchema', reads: OWNER, effects: ['none'], route: 'GET /v1/assistant/reports' }),
   entry({ id: 'core.share_report', kind: 'govern', input: 'ShareReportCommandSchema', output: 'AgentReportSchema', reads: OWNER, effects: ['state_change'], route: 'POST /v1/assistant/reports/:id/share' }),
   entry({ id: 'core.list_job_subscriptions', kind: 'read', input: 'CreateJobSubscriptionCommandSchema', output: 'JobSubscriptionSchema', reads: OWNER, effects: ['none'], route: 'GET /v1/assistant/job-subscriptions' }),
@@ -371,3 +371,10 @@ export const AGENT_CAPABILITIES: readonly AgentsCapabilityEntry[] = [
   entry({ id: 'representative.reconfirm_company_mandate', kind: 'govern', confirmation: 'first_party_step_up', input: 'ReconfirmCompanyMandateCommandSchema', output: 'CompanyMandateSchema', reads: PARTY, effects: ['state_change'], route: 'POST /v1/companies/:id/agent-mandates/:mandateId/reconfirm' }),
   entry({ id: 'representative.revoke_company_mandate', kind: 'govern', input: 'RevisionCommandSchema', output: 'CompanyMandateSchema', reads: PARTY, effects: ['state_change'], route: 'POST /v1/companies/:id/agent-mandates/:mandateId/revoke' }),
 ];
+
+/** Existing goal/report operations, registered without adding a new participant agent or standing action class. */
+export const CORE_AGENT_MANIFEST = AgentModuleManifestSchema.parse({
+  key: 'core', version: '1.0.0', family: 'core', status: 'live', actions: ['prepare'],
+  capabilities: AGENT_CAPABILITIES.filter((entry) => entry.capability.id.startsWith('core.')).map((entry) => entry.capability),
+  meters: [], suits: [], freeFloor: [], safetySuite: 'tests/agent-modules',
+});

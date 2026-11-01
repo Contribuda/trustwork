@@ -1,5 +1,6 @@
 import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import type { DataPool } from '@trustwork/data';
+import { agentOccurrencesTask, registerAgentOccurrences } from './agent-modules/index.js';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { workerConfigFromEnv } from './config.js';
 import { consultationRemindersTask, registerConsultationReminders, ReminderChannelFake, type ReminderRuntime } from './consultations/reminders.js';
@@ -34,6 +35,7 @@ import { Worker } from './worker.js';
 export interface Domains { consultations?: ReminderRuntime | null; contentRenderer?: boolean; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
+  registerAgentOccurrences(registry);
   // AST-001: agent action dispatch and reconciliation; only fake effect providers exist (ASSISTANT_EFFECTS=fake).
   if (domains.assistant) registerAssistant(registry, domains.assistant);
   // CONS-001: existing consultation context reminders; only a recording channel fake is configured.
@@ -73,7 +75,7 @@ async function main(): Promise<void> {
   const registry = buildRegistry({ consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
-    tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+    tasks: (deps) => [agentOccurrencesTask(pool), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
       ...(consultations ? [consultationRemindersTask(consultations)] : []),
       ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),

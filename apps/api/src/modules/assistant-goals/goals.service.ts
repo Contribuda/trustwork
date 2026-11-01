@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { randomUUID } from 'node:crypto';
 import type { z } from 'zod';
 import { computeDigest, mandateChangeAllowed, MandateV2Schema, type MandateContext, type MandateV2 } from '../../deps/contracts.js';
@@ -157,13 +158,7 @@ export class GoalsService extends AgentsBase {
       const goal = isUuid(id) ? await goals.get(trx, id) : undefined;
       if (!goal) throw new ApiError('access.not_found', 'goal not found');
       const run = await runs.start(trx, { principal_person_id: p.personId, kind: 'goal_report', goal_id: goal.id });
-      const progress = await goalProgress.list(trx, goal.id);
-      const kinds = [...new Set(progress.map((e) => e.event_kind))].sort();
-      const sections = [{
-        moduleKey: 'core', headingKey: 'agents.report.goalProgress',
-        items: kinds.map((kind) => ({ labelKey: `agents.report.event.${kind}`, value: { kind: 'count', count: progress.filter((e) => e.event_kind === kind).length },
-          evidenceRefs: progress.filter((e) => e.event_kind === kind).flatMap((e) => (e.evidence_refs as { id: string }[]).map((r) => r.id)).slice(0, 20) })),
-      }];
+      const sections = (await sql<{ sections: unknown[] }>`SELECT trustwork.agents_own_goal_report_sections(${goal.id}::uuid) AS sections`.execute(trx)).rows[0]!.sections;
       const now = this.now();
       const from = goal.created_at.getTime() < now.getTime() ? goal.created_at : new Date(now.getTime() - 1000);
       const report = await agentReports.insert(trx, { author_person_id: p.personId, principal_company_id: null, goal_id: goal.id, run_id: run.id, period_from: from, period_to: now, sections });
