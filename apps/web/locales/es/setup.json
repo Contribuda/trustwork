@@ -1,0 +1,140 @@
+{
+  "setupWizard": {
+    "resume": "Sus respuestas se guardan en este servidor, así que puede detenerse y continuar con el mismo enlace.",
+    "generic": "La respuesta no se aceptó. Revise los campos e inténtelo de nuevo.",
+    "items": "Rechazado:",
+    "saved": "Guardado.",
+    "chooseCountry": "Elija un país",
+    "optional": "Opcional",
+    "reasons": {
+      "restricted_place": "Un lugar restringido nunca se ofrece, aloja ni atiende. Elija otro país, región o lugar.",
+      "step_out_of_order": "Complete primero los pasos anteriores.",
+      "install_check_failed": "Falló una comprobación de instalación bloqueante, así que la configuración no puede continuar.",
+      "jurisdiction_unknown": "El motor no conoce este país o región.",
+      "jurisdiction_not_selectable": "Este país o región no se puede elegir.",
+      "pack_unknown": "Este país aún no tiene paquete de país. Empiece con el perfil genérico.",
+      "time_zone_unknown": "Zona horaria desconocida. Use un nombre IANA como America/Chicago.",
+      "modes_violation": "Estos modos contradicen un hub en borrador.",
+      "node_fixed": "La identidad del nodo queda fija cuando se configura el administrador fundador.",
+      "first_admin_only": "Solo el administrador fundador puede continuar esta configuración. Inicie sesión con esa cuenta.",
+      "admin_account_mismatch": "Inicie sesión con la cuenta creada en esta configuración.",
+      "first_admin_bound": "El administrador fundador ya está configurado.",
+      "second_factor_required": "Active primero la verificación en dos pasos con una aplicación de autenticación; los diez códigos de recuperación se muestran una sola vez.",
+      "second_factor_unavailable": "Las llaves de acceso aún no están disponibles. Use una aplicación de autenticación.",
+      "jurisdiction_gate_unconfigured": "Configure el filtro de jurisdicciones en el servidor (TRUSTWORK_JURISDICTION_GATE) antes de terminar.",
+      "jurisdiction_gate_mismatch": "El servidor usa un filtro de jurisdicciones distinto del indicado en el paso del operador.",
+      "attestation_invalid": "La declaración de ubicación del despliegue no es válida.",
+      "attestation_required": "La configuración solo termina con una declaración de ubicación del despliegue válida.",
+      "payload_invalid": "Una respuesta no encaja en la configuración del hub. Revise los pasos.",
+      "elevation": "Confirme con su contraseña y el código de su aplicación de autenticación.",
+      "access.not_found": "Este enlace de configuración ya no es válido. Pida uno nuevo al servidor.",
+      "auth.session_invalid": "Inicie sesión primero.",
+      "auth.invalid_credentials": "La contraseña o el código no son correctos.",
+      "auth.throttled": "Demasiados intentos. Espere un momento e inténtelo de nuevo.",
+      "validation.schema": "Revise los campos e inténtelo de nuevo.",
+      "validation.unknown_field": "Revise los campos e inténtelo de nuevo.",
+      "network": "No se pudo contactar con el servidor. Inténtelo de nuevo."
+    },
+    "checkReasons": {
+      "https_required": "La dirección pública debe usar HTTPS (o localhost para una prueba).",
+      "localhost_trial": "Una dirección localhost sirve para una prueba, nunca para un hub público.",
+      "runtime_role_bypasses_rls": "El rol de base de datos en ejecución puede saltarse la seguridad a nivel de fila.",
+      "role_unknown": "No se pudo identificar el rol de base de datos en ejecución.",
+      "unreachable": "No se pudo conectar con la base de datos.",
+      "not_configured": "Aún no hay almacenamiento de objetos configurado; no se pueden guardar archivos de evidencia.",
+      "probe_failed": "Falló la escritura, lectura o eliminación de un objeto de prueba.",
+      "no_heartbeat_source": "El proceso en segundo plano aún no informa de su actividad, así que no se puede confirmar.",
+      "no_recent_heartbeat": "No hubo señal del proceso en segundo plano en el último minuto.",
+      "not_measured": "Se mide cuando continúe.",
+      "clock_skew": "El reloj del servidor difiere del de su navegador en más de 30 segundos.",
+      "development_key": "Se usa la clave pública de desarrollo; configure una clave secreta real antes de abrir al público."
+    },
+    "hub": {
+      "country": "País del hub",
+      "countryHelp": "Obligatorio: cada hub pertenece a un país. Los lugares restringidos nunca se ofrecen.",
+      "territories": "Territorios",
+      "territoriesHelp": "Códigos de país, región y lugar separados por comas, por ejemplo US, US-CA, US-CA:san-diego.",
+      "slug": "Nombre corto en las direcciones",
+      "slugHelp": "Opcional, por ejemplo us-san-diego; si queda vacío se deriva del territorio.",
+      "nameHelp": "Por ahora se usa para todos los idiomas del hub; dé a cada idioma su propia grafía en la consola.",
+      "languagesHelp": "Etiquetas de idioma del motor, la predeterminada primero, por ejemplo en, es."
+    },
+    "operator": {
+      "attestation": "Ubicación del despliegue",
+      "attestationHelp": "Dónde están la entidad jurídica del operador y el alojamiento, y qué filtro de jurisdicciones usa el servidor. El administrador fundador declara esto al terminar; el motor nunca detecta dónde está el servidor.",
+      "entityCountry": "País de la entidad jurídica",
+      "entityRegion": "Región de la entidad jurídica",
+      "hostingCountry": "País del alojamiento",
+      "hostingRegion": "Región del alojamiento",
+      "regionHelp": "Un código ISO 3166-2 como US-DE; obligatorio donde la lista de restricciones distingue regiones.",
+      "gateMode": "Filtro de jurisdicciones",
+      "gateModes": {
+        "ranges_file": "Archivo de rangos de direcciones en este servidor",
+        "edge_header": "Encabezado de país de la red perimetral",
+        "upstream_gate": "Filtro gestionado por la plataforma de alojamiento"
+      },
+      "screening": {
+        "title": "Control del operador",
+        "clear": "Sin coincidencias en las listas base del motor.",
+        "possible_match": "Posible coincidencia: la revisa el personal de cumplimiento; el operador no puede cerrar la revisión.",
+        "not_screened": "Sin controlar: aún no hay ninguna lista base cargada.",
+        "insufficient_name": "El nombre es demasiado corto para el control.",
+        "fake": "Simulado: no es un control real."
+      }
+    },
+    "admin": {
+      "accountTitle": "1. Cree la cuenta",
+      "accountHelp": "La cuenta propia del administrador fundador. Se envía un enlace de verificación a esta dirección; en un nodo sin correo real, el proceso en segundo plano lo escribe en su registro.",
+      "accountSent": "Si la dirección puede recibir correo, el enlace de verificación está en camino. Ábralo, inicie sesión con la nueva cuenta y vuelva a este enlace.",
+      "accountCreated": "Cuenta creada para {email}.",
+      "signIn": "Iniciar sesión",
+      "factorTitle": "2. Active la verificación en dos pasos",
+      "factorHelp": "Configure una aplicación de autenticación en sus ajustes de seguridad. Los diez códigos de recuperación de un solo uso se muestran una vez; guárdelos antes de continuar.",
+      "securitySettings": "Abrir los ajustes de seguridad",
+      "confirmTitle": "3. Conviértase en el administrador fundador",
+      "confirmHelp": "Recibe el rol de operador del nodo para este nodo. Con un solo miembro del personal, el hub funciona con separación de funciones reducida hasta que se una un segundo miembro.",
+      "signedOut": "Para continuar, inicie sesión con la cuenta creada en esta configuración.",
+      "factorMissing": "La verificación en dos pasos aún no está activada para esta cuenta.",
+      "factorOn": "La verificación en dos pasos está activada.",
+      "notYou": "Esta configuración pertenece a otro administrador fundador. Inicie sesión con esa cuenta.",
+      "bound": "Usted es el administrador fundador."
+    },
+    "residency": {
+      "personalDataCountry": "Dónde se almacenan y tratan los datos personales",
+      "note": "Nota para el registro"
+    },
+    "providers": {
+      "models": "Modelos de lenguaje",
+      "modelOptions": {
+        "undecided": "Decidir más tarde",
+        "openrouter": "A través de OpenRouter (un enrutador opcional)",
+        "direct": "Directamente con un proveedor"
+      },
+      "directAdapter": "Proveedor directo",
+      "adapterNone": "Ninguno",
+      "adapters": {
+        "openai_compatible": "Servidor propio compatible con OpenAI"
+      }
+    },
+    "modes": {
+      "moderation": "Moderación"
+    },
+    "review": {
+      "attestation": "Ubicación del despliegue",
+      "states": {
+        "missing": "Aún sin declarar: se declara con su sesión con privilegios elevados al terminar.",
+        "valid": "Declarada y válida.",
+        "renewal_due": "Declarada; pronto hay que renovarla.",
+        "expired": "Caducada: se declara de nuevo al terminar.",
+        "contradicted": "La contradice la configuración actual: se declara de nuevo al terminar.",
+        "restricted": "Nombra un lugar que ahora está restringido."
+      },
+      "confirmTitle": "Confirme que es usted",
+      "confirmHelp": "Al terminar se crea el hub como borrador, se registra su configuración y este enlace deja de valer. Confirme con su contraseña y el código de su aplicación de autenticación.",
+      "password": "Contraseña",
+      "code": "Código de autenticación",
+      "finished": "Configuración terminada. El hub es un borrador; continúe en la consola.",
+      "openConsole": "Abrir la consola"
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "setupWizard": {
+    "resume": "Your answers are stored on this server, so you can stop and resume with the same link.",
+    "generic": "The answer was not accepted. Check the fields and try again.",
+    "items": "Refused:",
+    "saved": "Saved.",
+    "chooseCountry": "Choose a country",
+    "optional": "Optional",
+    "reasons": {
+      "restricted_place": "A restricted place is never offered, hosted or served. Choose another country, region or place.",
+      "step_out_of_order": "Complete the earlier steps first.",
+      "install_check_failed": "A blocking install check failed, so setup cannot continue.",
+      "jurisdiction_unknown": "This country or region is not known to the engine.",
+      "jurisdiction_not_selectable": "This country or region cannot be chosen.",
+      "pack_unknown": "This country has no country pack yet. Start from the generic profile.",
+      "time_zone_unknown": "Unknown time zone. Use an IANA name such as America/Chicago.",
+      "modes_violation": "These modes contradict a draft hub.",
+      "node_fixed": "The node identity is fixed once the founding administrator is set up.",
+      "first_admin_only": "Only the founding administrator can continue this setup. Sign in with that account.",
+      "admin_account_mismatch": "Sign in with the account created in this setup.",
+      "first_admin_bound": "The founding administrator is already set up.",
+      "second_factor_required": "Turn on two-step verification with an authenticator app first; the ten recovery codes are shown once.",
+      "second_factor_unavailable": "Passkeys are not available yet. Use an authenticator app.",
+      "jurisdiction_gate_unconfigured": "Configure the jurisdiction gate on the server (TRUSTWORK_JURISDICTION_GATE) before finishing.",
+      "jurisdiction_gate_mismatch": "The server runs a different jurisdiction gate from the one stated in the operator step.",
+      "attestation_invalid": "The deployment-location attestation is not valid.",
+      "attestation_required": "Setup finishes only with a valid deployment-location attestation.",
+      "payload_invalid": "An answer does not fit the hub configuration. Review the steps.",
+      "elevation": "Confirm with your password and the code from your authenticator app.",
+      "access.not_found": "This setup link is no longer valid. Ask the server for a new one.",
+      "auth.session_invalid": "Sign in first.",
+      "auth.invalid_credentials": "The password or the code is not correct.",
+      "auth.throttled": "Too many attempts. Wait a moment and try again.",
+      "validation.schema": "Check the fields and try again.",
+      "validation.unknown_field": "Check the fields and try again.",
+      "network": "The server could not be reached. Try again."
+    },
+    "checkReasons": {
+      "https_required": "The public address must use HTTPS (or localhost for a trial).",
+      "localhost_trial": "A localhost address is fine for a trial, never for a public hub.",
+      "runtime_role_bypasses_rls": "The runtime database role can bypass row-level security.",
+      "role_unknown": "The runtime database role could not be identified.",
+      "unreachable": "The database could not be reached.",
+      "not_configured": "No object storage is configured yet; evidence files cannot be stored.",
+      "probe_failed": "Writing, reading or deleting a test object failed.",
+      "no_heartbeat_source": "The worker does not report a heartbeat yet, so this cannot be confirmed.",
+      "no_recent_heartbeat": "No worker heartbeat was seen in the last minute.",
+      "not_measured": "Measured when you continue.",
+      "clock_skew": "The server clock differs from your browser's by more than 30 seconds.",
+      "development_key": "The public development key is in use; set a real secret key before going public."
+    },
+    "hub": {
+      "country": "Hub country",
+      "countryHelp": "Required: every hub belongs to a country. Restricted places are never offered.",
+      "territories": "Territories",
+      "territoriesHelp": "Country, region and place codes separated by commas, for example US, US-CA, US-CA:san-diego.",
+      "slug": "Short name in addresses",
+      "slugHelp": "Optional, for example us-san-diego; derived from the territory when empty.",
+      "nameHelp": "Used for every hub language for now; give each language its own spelling in the console.",
+      "languagesHelp": "Engine language tags, the default first, for example en, es."
+    },
+    "operator": {
+      "attestation": "Deployment location",
+      "attestationHelp": "Where the operator's legal entity and the hosting are, and which jurisdiction gate the server runs. The founding administrator attests this statement when finishing; the engine never detects where the server is.",
+      "entityCountry": "Country of the legal entity",
+      "entityRegion": "Region of the legal entity",
+      "hostingCountry": "Hosting country",
+      "hostingRegion": "Hosting region",
+      "regionHelp": "An ISO 3166-2 code such as US-DE; required where the restricted list distinguishes regions.",
+      "gateMode": "Jurisdiction gate",
+      "gateModes": {
+        "ranges_file": "Address ranges file on this server",
+        "edge_header": "Country header from the edge network",
+        "upstream_gate": "Gate run by the hosting platform"
+      },
+      "screening": {
+        "title": "Operator screening",
+        "clear": "No match on the engine's baseline lists.",
+        "possible_match": "Possible match: compliance staff review it; the operator cannot close the review.",
+        "not_screened": "Not screened: no baseline list is loaded yet.",
+        "insufficient_name": "The name is too short to screen.",
+        "fake": "Fake: not a real screening."
+      }
+    },
+    "admin": {
+      "accountTitle": "1. Create the account",
+      "accountHelp": "The founding administrator's own account. A verification link goes to this address; on a node without live e-mail the worker writes it to its log.",
+      "accountSent": "If the address can receive mail, a verification link is on its way. Open it, then sign in with the new account and come back to this link.",
+      "accountCreated": "Account created for {email}.",
+      "signIn": "Sign in",
+      "factorTitle": "2. Turn on two-step verification",
+      "factorHelp": "Set up an authenticator app in your security settings. Ten single-use recovery codes are shown once; store them before continuing.",
+      "securitySettings": "Open security settings",
+      "confirmTitle": "3. Become the founding administrator",
+      "confirmHelp": "You receive the node operator role for this node. With one staff member the hub runs in reduced separation of duties until a second staff member joins.",
+      "signedOut": "Sign in with the account created in this setup to continue.",
+      "factorMissing": "Two-step verification is not on for this account yet.",
+      "factorOn": "Two-step verification is on.",
+      "notYou": "This setup belongs to another founding administrator. Sign in with that account.",
+      "bound": "You are the founding administrator."
+    },
+    "residency": {
+      "personalDataCountry": "Where personal data is stored and processed",
+      "note": "Note for the record"
+    },
+    "providers": {
+      "models": "Language models",
+      "modelOptions": {
+        "undecided": "Decide later",
+        "openrouter": "Through OpenRouter (an optional router)",
+        "direct": "Directly with one provider"
+      },
+      "directAdapter": "Direct provider",
+      "adapterNone": "None",
+      "adapters": {
+        "openai_compatible": "Self-hosted, OpenAI-compatible endpoint"
+      }
+    },
+    "modes": {
+      "moderation": "Moderation"
+    },
+    "review": {
+      "attestation": "Deployment location",
+      "states": {
+        "missing": "Not attested yet: attested with your elevated session when you finish.",
+        "valid": "Attested and valid.",
+        "renewal_due": "Attested; renewal is due soon.",
+        "expired": "Expired: attested again when you finish.",
+        "contradicted": "Contradicted by the current configuration: attested again when you finish.",
+        "restricted": "Names a place that is restricted now."
+      },
+      "confirmTitle": "Confirm it is you",
+      "confirmHelp": "Finishing creates the hub as a draft, records its configuration and invalidates this link. Confirm with your password and the code from your authenticator app.",
+      "password": "Password",
+      "code": "Authenticator code",
+      "finished": "Setup finished. The hub is a draft; continue in the console.",
+      "openConsole": "Open the console"
+    }
+  }
+}

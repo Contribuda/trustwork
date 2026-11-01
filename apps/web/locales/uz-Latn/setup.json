@@ -1,0 +1,140 @@
+{
+  "setupWizard": {
+    "resume": "Javoblar shu serverda saqlanadi, shuning uchun toʻxtab, xuddi shu havola orqali davom ettirish mumkin.",
+    "generic": "Javob qabul qilinmadi. Maydonlarni tekshirib, qayta urinib koʻring.",
+    "items": "Rad etildi:",
+    "saved": "Saqlandi.",
+    "chooseCountry": "Mamlakatni tanlang",
+    "optional": "Ixtiyoriy",
+    "reasons": {
+      "restricted_place": "Cheklangan joy hech qachon taklif qilinmaydi, joylashtirilmaydi va xizmat koʻrsatilmaydi. Boshqa mamlakat, hudud yoki joyni tanlang.",
+      "step_out_of_order": "Avval oldingi qadamlarni yakunlang.",
+      "install_check_failed": "Bloklovchi oʻrnatish tekshiruvi oʻtmadi, shuning uchun sozlashni davom ettirib boʻlmaydi.",
+      "jurisdiction_unknown": "Bu mamlakat yoki hudud dvigatelga notanish.",
+      "jurisdiction_not_selectable": "Bu mamlakat yoki hududni tanlab boʻlmaydi.",
+      "pack_unknown": "Bu mamlakat uchun hali mamlakat paketi yoʻq. Umumiy profildan boshlang.",
+      "time_zone_unknown": "Nomaʼlum vaqt mintaqasi. America/Chicago kabi IANA nomidan foydalaning.",
+      "modes_violation": "Bu rejimlar qoralama xabga zid.",
+      "node_fixed": "Asoschi administrator tayinlangach, tugun profili oʻzgarmaydi.",
+      "first_admin_only": "Bu sozlashni faqat asoschi administrator davom ettira oladi. Oʻsha hisob bilan kiring.",
+      "admin_account_mismatch": "Shu sozlashda yaratilgan hisob bilan kiring.",
+      "first_admin_bound": "Asoschi administrator allaqachon tayinlangan.",
+      "second_factor_required": "Avval autentifikator ilovasi bilan ikki bosqichli tasdiqlashni yoqing; oʻnta tiklash kodi bir marta koʻrsatiladi.",
+      "second_factor_unavailable": "Kirish kalitlari hali mavjud emas. Autentifikator ilovasidan foydalaning.",
+      "jurisdiction_gate_unconfigured": "Yakunlashdan oldin serverda yurisdiksiya filtrini sozlang (TRUSTWORK_JURISDICTION_GATE).",
+      "jurisdiction_gate_mismatch": "Serverda operator qadamida koʻrsatilganidan boshqa yurisdiksiya filtri ishlayapti.",
+      "attestation_invalid": "Joylashuv haqidagi bayonot haqiqiy emas.",
+      "attestation_required": "Sozlash faqat haqiqiy joylashuv bayonoti bilan yakunlanadi.",
+      "payload_invalid": "Javoblardan biri xab konfiguratsiyasiga mos kelmaydi. Qadamlarni koʻrib chiqing.",
+      "elevation": "Parolingiz va autentifikator ilovasidagi kod bilan tasdiqlang.",
+      "access.not_found": "Bu sozlash havolasi endi amal qilmaydi. Serverdan yangisini soʻrang.",
+      "auth.session_invalid": "Avval tizimga kiring.",
+      "auth.invalid_credentials": "Parol yoki kod notoʻgʻri.",
+      "auth.throttled": "Urinishlar juda koʻp. Biroz kutib, qayta urinib koʻring.",
+      "validation.schema": "Maydonlarni tekshirib, qayta urinib koʻring.",
+      "validation.unknown_field": "Maydonlarni tekshirib, qayta urinib koʻring.",
+      "network": "Server bilan bogʻlanib boʻlmadi. Qayta urinib koʻring."
+    },
+    "checkReasons": {
+      "https_required": "Ommaviy manzil HTTPS dan foydalanishi kerak (sinov uchun localhost ham boʻladi).",
+      "localhost_trial": "localhost manzili sinov uchun yaroqli, ommaviy xab uchun emas.",
+      "runtime_role_bypasses_rls": "Maʼlumotlar bazasining ishchi roli qator darajasidagi himoyani chetlab oʻta oladi.",
+      "role_unknown": "Maʼlumotlar bazasining ishchi rolini aniqlab boʻlmadi.",
+      "unreachable": "Maʼlumotlar bazasiga ulanib boʻlmadi.",
+      "not_configured": "Obyekt ombori hali sozlanmagan; dalil fayllarini saqlab boʻlmaydi.",
+      "probe_failed": "Sinov obyektini yozish, oʻqish yoki oʻchirish amalga oshmadi.",
+      "no_heartbeat_source": "Fon ishlovchisi hali oʻz faoliyati haqida xabar bermaydi, shuning uchun buni tasdiqlab boʻlmaydi.",
+      "no_recent_heartbeat": "Soʻnggi bir daqiqada fon ishlovchisidan signal kelmadi.",
+      "not_measured": "Davom ettirganingizda oʻlchanadi.",
+      "clock_skew": "Server soati brauzeringiz soatidan 30 soniyadan koʻproq farq qiladi.",
+      "development_key": "Ishlab chiqish uchun ommaviy kalit ishlatilmoqda; ommaviy ishga tushirishdan oldin haqiqiy maxfiy kalitni oʻrnating."
+    },
+    "hub": {
+      "country": "Xab mamlakati",
+      "countryHelp": "Majburiy: har bir xab biror mamlakatga tegishli. Cheklangan joylar taklif qilinmaydi.",
+      "territories": "Hududlar",
+      "territoriesHelp": "Vergul bilan ajratilgan mamlakat, hudud va joy kodlari, masalan US, US-CA, US-CA:san-diego.",
+      "slug": "Manzillardagi qisqa nom",
+      "slugHelp": "Ixtiyoriy, masalan us-san-diego; boʻsh qolsa, hududdan hosil qilinadi.",
+      "nameHelp": "Hozircha xabning barcha tillari uchun ishlatiladi; har bir til uchun yozilishini konsolda bering.",
+      "languagesHelp": "Dvigatel til teglari, birinchisi standart til, masalan en, es."
+    },
+    "operator": {
+      "attestation": "Joylashuv",
+      "attestationHelp": "Operatorning yuridik shaxsi va xosting qayerda ekani hamda serverda qaysi yurisdiksiya filtri ishlashi. Asoschi administrator bu bayonotni yakunlashda tasdiqlaydi; dvigatel server qayerdaligini hech qachon aniqlamaydi.",
+      "entityCountry": "Yuridik shaxs mamlakati",
+      "entityRegion": "Yuridik shaxs hududi",
+      "hostingCountry": "Xosting mamlakati",
+      "hostingRegion": "Xosting hududi",
+      "regionHelp": "US-DE kabi ISO 3166-2 kodi; cheklovlar roʻyxati hududlarni ajratadigan joylarda majburiy.",
+      "gateMode": "Yurisdiksiya filtri",
+      "gateModes": {
+        "ranges_file": "Shu serverdagi manzillar diapazoni fayli",
+        "edge_header": "Chegara tarmogʻidan keladigan mamlakat sarlavhasi",
+        "upstream_gate": "Xosting platformasi tomonidagi filtr"
+      },
+      "screening": {
+        "title": "Operator tekshiruvi",
+        "clear": "Dvigatelning asosiy roʻyxatlarida mos kelish yoʻq.",
+        "possible_match": "Ehtimoliy mos kelish: uni muvofiqlik xodimlari koʻrib chiqadi; operator tekshiruvni oʻzi yopa olmaydi.",
+        "not_screened": "Tekshirilmagan: asosiy roʻyxat hali yuklanmagan.",
+        "insufficient_name": "Nom tekshirish uchun juda qisqa.",
+        "fake": "Taqlid: haqiqiy tekshiruv emas."
+      }
+    },
+    "admin": {
+      "accountTitle": "1. Hisob yarating",
+      "accountHelp": "Asoschi administratorning shaxsiy hisobi. Tasdiqlash havolasi shu manzilga yuboriladi; haqiqiy pochtasiz tugunda fon ishlovchisi uni oʻz jurnaliga yozadi.",
+      "accountSent": "Agar manzil pochta qabul qila olsa, tasdiqlash havolasi yoʻlda. Uni oching, yangi hisob bilan kiring va shu havolaga qayting.",
+      "accountCreated": "{email} uchun hisob yaratildi.",
+      "signIn": "Kirish",
+      "factorTitle": "2. Ikki bosqichli tasdiqlashni yoqing",
+      "factorHelp": "Xavfsizlik sozlamalarida autentifikator ilovasini sozlang. Oʻnta bir martalik tiklash kodi bir marta koʻrsatiladi; davom etishdan oldin ularni saqlang.",
+      "securitySettings": "Xavfsizlik sozlamalarini ochish",
+      "confirmTitle": "3. Asoschi administrator boʻling",
+      "confirmHelp": "Siz shu tugun uchun tugun operatori rolini olasiz. Xodim bitta boʻlsa, ikkinchi xodim qoʻshilguncha xab soddalashtirilgan vazifalar taqsimoti rejimida ishlaydi.",
+      "signedOut": "Davom etish uchun shu sozlashda yaratilgan hisob bilan kiring.",
+      "factorMissing": "Bu hisob uchun ikki bosqichli tasdiqlash hali yoqilmagan.",
+      "factorOn": "Ikki bosqichli tasdiqlash yoqilgan.",
+      "notYou": "Bu sozlash boshqa asoschi administratorga tegishli. Oʻsha hisob bilan kiring.",
+      "bound": "Siz asoschi administratorsiz."
+    },
+    "residency": {
+      "personalDataCountry": "Shaxsiy maʼlumotlar qayerda saqlanadi va qayta ishlanadi",
+      "note": "Qayd uchun izoh"
+    },
+    "providers": {
+      "models": "Til modellari",
+      "modelOptions": {
+        "undecided": "Keyinroq hal qilish",
+        "openrouter": "OpenRouter orqali (ixtiyoriy yoʻnaltiruvchi)",
+        "direct": "Bitta provayderdan toʻgʻridan-toʻgʻri"
+      },
+      "directAdapter": "Toʻgʻridan-toʻgʻri provayder",
+      "adapterNone": "Yoʻq",
+      "adapters": {
+        "openai_compatible": "OpenAI bilan mos oʻz serveri"
+      }
+    },
+    "modes": {
+      "moderation": "Moderatsiya"
+    },
+    "review": {
+      "attestation": "Joylashuv",
+      "states": {
+        "missing": "Hali bayon qilinmagan: yakunlashda kengaytirilgan huquqli sessiyangiz bilan bayon qilinadi.",
+        "valid": "Bayon qilingan va haqiqiy.",
+        "renewal_due": "Bayon qilingan; tez orada yangilash kerak.",
+        "expired": "Muddati oʻtgan: yakunlashda qayta bayon qilinadi.",
+        "contradicted": "Joriy konfiguratsiyaga zid: yakunlashda qayta bayon qilinadi.",
+        "restricted": "Hozir cheklangan joyni koʻrsatadi."
+      },
+      "confirmTitle": "Bu siz ekaningizni tasdiqlang",
+      "confirmHelp": "Yakunlash xabni qoralama sifatida yaratadi, konfiguratsiyasini yozib qoʻyadi va bu havolani bekor qiladi. Parolingiz va autentifikator ilovasidagi kod bilan tasdiqlang.",
+      "password": "Parol",
+      "code": "Autentifikator kodi",
+      "finished": "Sozlash yakunlandi. Xab qoralama holatida; konsolda davom eting.",
+      "openConsole": "Konsolni ochish"
+    }
+  }
+}

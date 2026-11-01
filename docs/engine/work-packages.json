@@ -2485,7 +2485,7 @@
       "id": "HUB-004",
       "title": "Setup wizard backend and first run",
       "area": "hubs",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "HUB-001",
         "BE-004",

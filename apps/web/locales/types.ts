@@ -29,4 +29,5 @@ export type AppMessages =
   & typeof import('./en/screening.json')
   & typeof import('./en/settings.json')
   & typeof import('./en/sources.json')
+  & typeof import('./en/setup.json')
   & typeof import('./en/workspace.json');

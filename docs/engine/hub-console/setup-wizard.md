@@ -1,6 +1,6 @@
 # Setup wizard: the first run
 
-Status: **Proposed**. Contract: `SetupStateSchema`, `SETUP_STEPS`, `nextSetupStep`, `HubSchema`, `HubTerritorySchema`, `territoryRestricted`, `HubModesSchema`, `LaunchGateSchema` in [`hub.ts`](../../../packages/contracts/src/hub.ts). Screens SW-1…SW-9 in [screens](screens.md#setup-wizard). Backend: proposed HUB-004.
+Status: **Live** as an API and a wired wizard (HUB-004, [module](../../../apps/api/src/modules/hubs/setup/README.md); not deployed). Contract: `SetupStateSchema`, `SETUP_STEPS`, `nextSetupStep`, `HubSchema`, `HubTerritorySchema`, `territoryRestricted`, `HubModesSchema`, `LaunchGateSchema` in [`hub.ts`](../../../packages/contracts/src/hub.ts), the step answers, the view and the builders in [`hub-setup.ts`](../../../packages/contracts/src/hub-setup.ts). Screens SW-1…SW-9 in [screens](screens.md#setup-wizard); live mode in `apps/web/app/admin/setup/_live`. Not built yet: the node signing key of step 2 (KEYS-001), passkeys (only an authenticator app counts), a worker heartbeat for the install check, the identifier local additions and brand overlay of step 3 (console), the e-mail connection test and the invitation link of step 7 (console), and the module choice of step 8 (defaults; console).
 
 The wizard turns a fresh node into a **draft hub** that a person can keep configuring in the console. It asks only what cannot be changed casually later or what the engine needs to be safe; everything else has good defaults and lives in the console. A person can stop at any step and resume (the state is stored server-side), and the wizard never skips ahead: `nextSetupStep` returns the first incomplete step.
 
@@ -47,14 +47,14 @@ A **"Start from an example"** button prefills the US or the Samarkand example wi
 ### 4. Operator legal entity (`operator`)
 
 - Legal name, form (for example LLC, corporation, nonprofit association), registration identifier (EIN for the US example, STIR for Uzbekistan), address, contact for legal notices and for abuse and takedowns.
-- **Deployment-location attestation** ([ADR 014](../../adr/014-sanctions-compliance-engine.md) decision 4, SANC-009): the country of the operator's legal entity and the hosting country (and region where the pack has regions) and the jurisdiction-gate mode (`ranges_file`, `edge_header` or `upstream_gate`). A restricted place is refused; the attestation is audited, renewed when either location changes and at least yearly, and an expired one reopens the `sanctions_screening_configured` gate. The backend is Live (`GET` and `POST /v1/admin/jurisdiction/attestation`, [module](../../../apps/api/src/modules/jurisdiction/attestation/README.md)); this step calls it.
+- **Deployment-location attestation** ([ADR 014](../../adr/014-sanctions-compliance-engine.md) decision 4, SANC-009): the country of the operator's legal entity and the hosting country (and region where the pack has regions) and the jurisdiction-gate mode (`ranges_file`, `edge_header` or `upstream_gate`). A restricted place is refused; the attestation is audited, renewed when either location changes and at least yearly, and an expired one reopens the `sanctions_screening_configured` gate. The backend is Live (`GET` and `POST /v1/admin/jurisdiction/attestation`, [module](../../../apps/api/src/modules/jurisdiction/attestation/README.md)). SANC-009 binds an attestation to an elevated staff session, and the only staff member is created in step 5, so this step records and checks the statement and the founding administrator attests it through the same database command when finishing (step 9); setup cannot finish without a valid attestation and a configured jurisdiction gate that matches the stated mode.
 - **Ownership declaration** and **sanctions screening** of the operator through the engine baseline lists (OFAC lists through the screening engine, SANC-003). With the fake screening adapter the result is labelled "fake: not a real screening"; the `operator_recorded_and_screened` gate passes only with a real result later. A potential match never auto-blocks; it opens a review the operator cannot close themselves.
 
 ### 5. First administrator (`first_admin`)
 
 - Name, e-mail, password (policy from `PasswordPolicySchema`), e-mail verification.
 - **A second factor is mandatory**: TOTP or a passkey (WebAuthn). Ten single-use recovery codes are shown once, with a "I have stored them" confirmation.
-- The first administrator receives `hub-owner` for the new hub and `node-operator` for the node. Because a single person holds them, the hub runs in **reduced separation-of-duties mode** and the overview says, permanently, that a second staff member with a different role is needed before soft launch (`two_staff_with_second_factor` gate). Until then, two-person actions cannot be completed: the console explains this rather than letting one person approve their own request.
+- The first administrator receives `node-operator` for the node, which covers every hub of the node (DATA-002 allows one founding assignment per person, and the hub does not exist yet in this step). Because a single person holds it, the hub runs in **reduced separation-of-duties mode** and the overview says, permanently, that a second staff member with a different role is needed before soft launch (`two_staff_with_second_factor` gate). Until then, two-person actions cannot be completed: the console explains this rather than letting one person approve their own request.
 
 ### 6. Storage and data residency (`storage_residency`)
 
@@ -94,7 +94,9 @@ The node console's **Hubs → Create hub** runs steps 3, 4, 6 and 8 for a new hu
 
 The wizard uses the `Stepper` component with a visible step list, one heading per step, errors summarised at the top and linked to fields, and focus moved to the step heading on navigation. It is fully usable on a phone. The wizard's own language is chosen on its first screen from the engine locales and is independent of the hub languages chosen in step 3.
 
-## Acceptance (when implemented)
+## Acceptance
+
+Implemented by HUB-004 and tested in `tests/hubs/setup` (for the steps listed as not built yet in the status line, the acceptance waits for those packages):
 
 - Setup cannot start without a valid token and cannot run twice.
 - A restricted country, region or place is refused at every level.
