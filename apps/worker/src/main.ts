@@ -1,18 +1,19 @@
+import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import type { DataPool } from '@trustwork/data';
+import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { workerConfigFromEnv } from './config.js';
+import { consultationRemindersTask, registerConsultationReminders, ReminderChannelFake, type ReminderRuntime } from './consultations/reminders.js';
 import { assertWorkerRole, createWorkerPool } from './db.js';
+import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntime } from './files/index.js';
 import { HandlerRegistry } from './handlers.js';
 import { describeError, jsonLogger, type Logger } from './log.js';
 import { assertDictionariesComplete, createMailTransport, mailConfigFromEnv, mailSettleTask, registerMail, type MailConfig, type MailTransport } from './mail/index.js';
 import { Metrics, startMetricsServer, type MetricsServer } from './metrics.js';
-import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntime } from './files/index.js';
-import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
-import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
-import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { providersSecretSweepTask } from './providers/index.js';
-import { registerScreening, screeningConfigFromEnv, screeningSweepTask, type ScreeningRuntime } from './screening/index.js';
 import { registerRescreen, rescreenConfigFromEnv, rescreenTickTask, rescreenWeeklyTask, type RescreenRuntime } from './rescreen/index.js';
+import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
 import { rangesAgeTask, registerScreeningLists, screeningFreshnessTask, screeningListsConfigFromEnv, screeningListsDueTask, type ScreeningListsRuntime } from './screening-lists/index.js';
+import { registerScreening, screeningConfigFromEnv, screeningSweepTask, type ScreeningRuntime } from './screening/index.js';
 import { Worker } from './worker.js';
 
 /**
@@ -29,20 +30,22 @@ import { Worker } from './worker.js';
  * search projections and other consumers come later. Events of other types are marked published and counted as
  * `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export interface Domains { pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
+export interface Domains { consultations?: ReminderRuntime | null; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
-  registerMail(registry, { pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
-  // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
-  if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
   // AST-001: agent action dispatch and reconciliation; only fake effect providers exist (ASSISTANT_EFFECTS=fake).
   if (domains.assistant) registerAssistant(registry, domains.assistant);
-  // SANC-002: sanctions list ingestion. `live` lists refuse until KEYS-001 supplies the egress fetcher and activations.
-  if (domains.screeningLists) registerScreeningLists(registry, domains.screeningLists);
-  // SANC-003: screening of persons and companies; the fuzzy layer stays off unless SCREENING_FUZZY_THRESHOLD is set.
-  if (domains.screening) registerScreening(registry, domains.screening);
+  // CONS-001: existing consultation context reminders; only a recording channel fake is configured.
+  if (domains.consultations) registerConsultationReminders(registry, domains.consultations);
+  // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
+  if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
+  registerMail(registry, { pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
   // SANC-005: re-screening of every subject on each activated list version, weekly and on a compliance officer's request.
   if (domains.rescreen) registerRescreen(registry, domains.rescreen);
+  // SANC-003: screening of persons and companies; the fuzzy layer stays off unless SCREENING_FUZZY_THRESHOLD is set.
+  if (domains.screening) registerScreening(registry, domains.screening);
+  // SANC-002: sanctions list ingestion. `live` lists refuse until KEYS-001 supplies the egress fetcher and activations.
+  if (domains.screeningLists) registerScreeningLists(registry, domains.screeningLists);
   return registry;
 }
 
@@ -64,13 +67,17 @@ async function main(): Promise<void> {
   const screeningLists: ScreeningListsRuntime = { pool, metrics, log, config: screeningListsConfigFromEnv(process.env) };
   const screening: ScreeningRuntime = { pool, metrics, log, config: screeningConfigFromEnv(process.env) };
   const rescreen: RescreenRuntime = { pool, metrics, log, config: rescreenConfigFromEnv(process.env), screening: screening.config };
-  const registry = buildRegistry({ pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
+  const consultations: ReminderRuntime | null = hubId ? { pool, hubId, render: mail.render, channels: new ReminderChannelFake() } : null;
+  const registry = buildRegistry({ consultations, pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
-    tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps), mailSettleTask({ pool, metrics }), ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []), ...(assistant ? [assistantSweepTask(assistant)] : []),
-      providersSecretSweepTask({ pool, metrics }),
-      screeningListsDueTask(screeningLists), screeningFreshnessTask(screeningLists), rangesAgeTask({ env: process.env, log, metrics }), screeningSweepTask(screening),
-      rescreenTickTask(rescreen), rescreenWeeklyTask(rescreen)],
+    tasks: (deps) => [expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+      ...(assistant ? [assistantSweepTask(assistant)] : []),
+      ...(consultations ? [consultationRemindersTask(consultations)] : []),
+      ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),
+      mailSettleTask({ pool, metrics }), providersSecretSweepTask({ pool, metrics }),
+      rescreenTickTask(rescreen), rescreenWeeklyTask(rescreen), screeningSweepTask(screening),
+      screeningListsDueTask(screeningLists), screeningFreshnessTask(screeningLists), rangesAgeTask({ env: process.env, log, metrics })],
   });
   log('info', 'mail configured', { transport: mail.transport, locales: mail.render.locales.join(','), defaultLocale: mail.render.defaultLocale });
   let metricsServer: MetricsServer | null = null;

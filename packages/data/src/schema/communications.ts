@@ -159,6 +159,7 @@ export interface DeliveryTable {
   provider_event_id: string | null;
   provider_ref: string | null;
   mail_delivery_id: string | null;
+  consultation_job_id: string | null;
   created_by_person_id: string | null;
   revision: Generated<number>;
   created_at: GeneratedTimestamp;
@@ -220,6 +221,6 @@ export const TABLE_COLUMNS: TableColumns<CommunicationsDatabase> = {
   notification_preference: columns('notification_preference', ['person_id', 'category', 'channel', 'frequency', 'updated_at']),
   message_template: columns('message_template', ['id', 'hub_id', 'key', 'category', 'transactional', 'created_at']),
   template_version: columns('template_version', ['id', 'template_id', 'version', 'locale', 'subject', 'body', 'status', 'drafted_by_person_id', 'activated_by_person_id', 'activated_at', 'retired_at', 'revision', 'created_at', 'updated_at']),
-  delivery: columns('delivery', ['id', 'notification_id', 'message_id', 'recipient_person_id', 'channel', 'provider', 'channel_grant_id', 'attempt', 'state', 'reason', 'provider_event_id', 'provider_ref', 'mail_delivery_id', 'created_by_person_id', 'revision', 'created_at', 'updated_at']),
+  delivery: columns('delivery', ['id', 'notification_id', 'message_id', 'recipient_person_id', 'channel', 'provider', 'channel_grant_id', 'attempt', 'state', 'reason', 'provider_event_id', 'provider_ref', 'mail_delivery_id', 'consultation_job_id', 'created_by_person_id', 'revision', 'created_at', 'updated_at']),
   sender_identity: columns('sender_identity', ['id', 'hub_id', 'kind', 'value', 'mode', 'verification', 'status', 'created_by_person_id', 'activated_by_person_id', 'revision', 'created_at', 'updated_at']),
 };

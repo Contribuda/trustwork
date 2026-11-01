@@ -201,6 +201,7 @@ export interface ConsultationReminderTable {
   revision: Generated<number>;
   created_at: GeneratedTimestamp;
   updated_at: GeneratedTimestamp;
+  message_id: string | null;
 }
 
 export type ConsultationOfferingRow = Selectable<ConsultationOfferingTable>;
@@ -260,5 +261,5 @@ export const TABLE_COLUMNS: TableColumns<ConsultationsDatabase> = {
     'id', 'booking_id', 'agreement_id', 'kind', 'title', 'body', 'attachments', 'claim_id', 'author_person_id', 'seller_person_id', 'seller_company_id', 'client_person_id', 'delivered_at',
     'confirmation_id', 'decision', 'decided_at', 'published_at',
   ]),
-  consultation_reminder: columns('consultation_reminder', ['id', 'booking_id', 'agreement_id', 'remind_at', 'offset_minutes', 'status', 'revision', 'created_at', 'updated_at']),
+  consultation_reminder: columns('consultation_reminder', ['id', 'booking_id', 'agreement_id', 'remind_at', 'offset_minutes', 'status', 'message_id', 'revision', 'created_at', 'updated_at']),
 };

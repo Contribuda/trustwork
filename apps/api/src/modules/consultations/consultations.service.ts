@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { threads } from '../../../../../packages/data/src/repositories/communications.js';
 import type { z } from 'zod';
 import {
   computeAgreementDigest, computeDigest, DIGEST_ALGORITHM, OfferingVersionPayloadSchema, verifyDigest, type Digest, type Money, type Party, type Principal,
@@ -18,7 +19,7 @@ import {
   ConsultationBookingSchema, ConsultationBriefError, ConsultationBriefSchema, consultationCatalogue, consultationDeliverables, ConsultationDeliverableSchema, ConsultationOfferingListSchema,
   consultationOfferings, ConsultationOfferingSchema, ConsultationOfferingTermsSchema, consultationPrice, ConsultationPriceError, consultationProjects, consultationReminders,
   ConsultationReminderSchema, consultationRequestDigestInput, ConsultationRequestListSchema, consultationRequestPrivate, ConsultationRequestPrivateSchema, consultationRequests,
-  ConsultationRequestSchema, consultationSessions, ConsultationSessionSchema, ConsultationSiteSchema, CONSULTATION_EVENT_PAYLOAD_KEYS, CONSULTATION_PLAN_ITEM_KINDS, credentialStatus,
+  ConsultationRequestSchema, ConsultationRequestTermsSchema, consultationSessions, ConsultationSessionSchema, ConsultationSiteSchema, CONSULTATION_EVENT_PAYLOAD_KEYS, CONSULTATION_PLAN_ITEM_KINDS, credentialStatus,
   deriveConsultationObligations, electronicRecordsSatisfied, EMPTY_REQUEST_PRIVATE, executionAgreements, executionClaims, executionConfirmations, ExpertRequestViewSchema, isoDate, isSyncMode,
   MentoringListSchema, mentoringRelationships, MentoringRelationshipSchema, obligations, paymentBlindOrder, planItemStates, planParts, plans, priceAmount,
   pricingSummary, projectLocations, proposalMisfits, PublicConsultationOfferingListSchema, PublicDeliverableSchema, reminderTimes, RequesterRequestViewSchema, rowToItem,
@@ -845,6 +846,9 @@ export class ConsultationsService {
       })));
       const booked = await consultationBookings.setStatus(trx, booking.id, { revision: booking.revision, status: 'proposed' }, { status: 'booked', booked_at: this.now() });
       if (!booked) throw new ApiError('validation.revision_conflict');
+      // The authenticated confirmation creates only the context shell, not a participant-authored message.
+      await threads.open(trx, { kind: 'agreement', id: agreementId, counterparty: { person: null, company: null },
+        subject: ConsultationRequestTermsSchema.parse(request.terms).question.slice(0, 200), openedBy: p.personId });
       await consultationSessions.open(trx, booking.id);
       await consultationReminders.insertMany(trx, reminderTimes(terms.slot, this.now()).map((r) => ({ booking_id: booking.id, agreement_id: agreementId, remind_at: r.remindAt, offset_minutes: r.offsetMinutes })));
       await this.audit(trx, p, state, 'consultation.booked', 'consultation_booking', booking.id, { agreementId, requestId: request.id, digest: saved.accepted_terms_digest, eventId: event.id, via: actor.via, mandateId: actor.mandateId, electronicRecords: consent.disclosureKey });

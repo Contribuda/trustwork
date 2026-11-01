@@ -88,7 +88,7 @@ export default {
     await exactlyOnce({
       action: 'consultation.confirm', client: carl, url: `/v1/consultation-agreements/${agreementA.id}/confirm`,
       body: { expectedRevision: agreementA.revision, acceptedTermsDigest: agreementA.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON },
-      effects: () => n("SELECT 1 FROM trustwork.consultation_booking WHERE id = $1 AND status = 'booked'", [acceptA.booking.id]),
+      effects: () => n("SELECT 1 FROM trustwork.context_thread WHERE context_kind = 'agreement' AND context_id = $1", [agreementA.id]),
     });
     const bookingOf = async (id: string) => body<{ booking: { revision: number }; deliverables: { id: string }[] }>(await carl.get(`/v1/consultation-bookings/${id}`));
     await exactlyOnce({
