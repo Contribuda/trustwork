@@ -1,3 +1,4 @@
+import { AgentModelGovernance } from '../agent-modules/model-governance.js';
 import type { ModelCall, ModelRuntimeBinding } from '../../../../../packages/contracts/src/models.js';
 import type { DataPool } from '../../../../../packages/data/src/pool.js';
 import type { ModelInput } from '../assistant/ports.js';
@@ -56,7 +57,7 @@ export function createRuntimeAssistantModel(
         call,
         gateway: new ModelGateway(
           new KeysRouteResolver(pool),
-          new RuntimeModelAuthority(pool, execution.principal, binding, policy),
+          new RuntimeModelAuthority(pool, execution.principal, binding, new AgentModelGovernance(pool, execution.principal, policy)),
           new PostgresModelCallStore(pool, execution.principal, binding),
           adapters,
         ),

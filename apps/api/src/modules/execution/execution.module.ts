@@ -1,3 +1,5 @@
+import { bindServiceCapabilities } from '../agent-modules/service-bindings.js';
+import { EXECUTION_SERVICE_BINDINGS } from '../agent-modules/execution-bindings.js';
 import { Module, type DynamicModule } from '@nestjs/common';
 import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
@@ -18,7 +20,8 @@ export class ExecutionModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: ExecutionModuleOptions = {}): DynamicModule {
     // Read at request time, so a hub configured after start (setup wizard, tests) is picked up.
     const hubId = options.hubId !== undefined ? options.hubId : () => staffHubFromEnv(process.env);
-    const service = new ExecutionService(ctx, identity.principals, options.mandates ?? new NoExecutionMandates(), { hubId });
+    const service = bindServiceCapabilities(ctx, identity.principals, EXECUTION_SERVICE_BINDINGS, principals =>
+      new ExecutionService(ctx, principals, options.mandates ?? new NoExecutionMandates(), { hubId }));
     return { module: ExecutionModule, controllers: [ExecutionController], providers: [{ provide: ExecutionService, useValue: service }], exports: [ExecutionService] };
   }
 }

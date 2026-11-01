@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sql } from 'kysely';
@@ -21,6 +22,7 @@ interface GoalView { id: string; status: string; revision: number; mandateIds: s
 test('goals: missing mandate changes in one structured confirmation, privacy, lifecycle, reports and concurrency', { skip: h ? false : SKIP_REASON, timeout: 300_000 }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const w = await buildWorld(h);
   const { petr, carl, xenia, pure, boris } = w.clients;
   const rfq = w.rfq.rfq.id;

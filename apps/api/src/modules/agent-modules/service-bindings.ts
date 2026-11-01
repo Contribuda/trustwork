@@ -7,11 +7,15 @@ import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import { requireParticipantCapability } from './service-authority.js';
 
-export interface ServiceCapabilityBinding {
+export interface ServiceCapabilityTarget { capabilityId: string; companyId: string | null }
+export type ServiceCapabilityBinding = {
   capabilityId: string;
   /** Exact owning resource lookup; never an arbitrary caller-supplied principal. */
   company?: (trx: Transaction, principal: Principal, args: readonly unknown[]) => Promise<string | null>;
-}
+} | {
+  /** Mixed owning projections require every represented scope; an empty resolution never allows an operation. */
+  resolve: (trx: Transaction, principal: Principal, args: readonly unknown[]) => Promise<readonly ServiceCapabilityTarget[]>;
+};
 export type ServiceCapabilityBindings<T> = Partial<Record<Extract<keyof T, string>, ServiceCapabilityBinding>>;
 
 /**
@@ -33,8 +37,11 @@ export function bindServiceCapabilities<T extends object>(
         const current = invocation.getStore();
         if (!current) throw new ApiError('access.forbidden', 'service operation has no capability binding', { reason: 'capability.unknown' });
         return target.runAs(state, async (trx, principal) => {
-          const company = await current.binding.company?.(trx, principal, current.args) ?? null;
-          await requireParticipantCapability(ctx, trx, principal, current.binding.capabilityId, company);
+          const checks = 'resolve' in current.binding ? await current.binding.resolve(trx, principal, current.args) : [{
+            capabilityId: current.binding.capabilityId, companyId: await current.binding.company?.(trx, principal, current.args) ?? null,
+          }];
+          if (checks.length === 0) throw new ApiError('access.forbidden', 'service authority is unavailable', { reason: 'capability.unknown' });
+          for (const check of checks) await requireParticipantCapability(ctx, trx, principal, check.capabilityId, check.companyId);
           return execute(trx, principal);
         });
       };

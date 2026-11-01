@@ -1,3 +1,4 @@
+import { servingHub } from '../agent-modules/serving-hub.js';
 import { sql } from 'kysely';
 import { randomUUID } from 'node:crypto';
 import type { z } from 'zod';
@@ -157,7 +158,10 @@ export class GoalsService extends AgentsBase {
     return this.run(state, async (trx, p) => {
       const goal = isUuid(id) ? await goals.get(trx, id) : undefined;
       if (!goal) throw new ApiError('access.not_found', 'goal not found');
+      if (!state.session || state.session.personId !== p.personId) throw new ApiError('auth.session_invalid', 'session required');
+      const binding = await servingHub(trx, this.ctx.config.publicOrigin);
       const run = await runs.start(trx, { principal_person_id: p.personId, kind: 'goal_report', goal_id: goal.id });
+      await sql`SELECT trustwork.agent_modules_bind_run(${run.id}::uuid,${binding.id}::uuid,${state.session.id}::uuid)`.execute(trx);
       const sections = (await sql<{ sections: unknown[] }>`SELECT trustwork.agents_own_goal_report_sections(${goal.id}::uuid) AS sections`.execute(trx)).rows[0]!.sections;
       const now = this.now();
       const from = goal.created_at.getTime() < now.getTime() ? goal.created_at : new Date(now.getTime() - 1000);
