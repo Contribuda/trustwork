@@ -4,13 +4,14 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { hash } from '@node-rs/argon2';
 import { withMaintenance, withPrincipal, type Transaction } from '@trustwork/data';
 import { HUB_CONSOLE_CONTRACT_VERSION } from '@trustwork/contracts';
+import { engineDefaultPolicy } from '../../../../packages/contracts/src/agent-modules.js';
 import type { Client, Harness } from '../../helpers/app.js';
 import { codeNow } from '../../second-factor/helpers.js';
 import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';
 import { principalFor } from '../../../data/helpers/seed.js';
 import { approvals, staffAssignments, type CommandContext } from '../../../../packages/data/src/repositories/admin.js';
 import { sessionElevations } from '../../../../packages/data/src/repositories/identity.js';
-import { runtimeHubPolicy } from '../../../agent-modules/fixtures.js';
+import { REGISTRY, runtimeHubPolicy } from '../../../agent-modules/fixtures.js';
 import type { CrashCase } from '../cases.js';
 
 const count = async (h: Harness, query: string, params: unknown[] = []): Promise<number> => (await h.db.admin.query<{ n: number }>(`SELECT count(*)::int AS n FROM (${query}) q`, params)).rows[0]?.n ?? 0;
@@ -80,9 +81,14 @@ export default {
       const base = `/v1/admin/agent-modules/${ids.hubId}`;
       const body = <T>(r: { body: unknown }) => r.body as T;
 
+      const policy = runtimeHubPolicy(ids.hubId);
+      const defaults = engineDefaultPolicy(ids.hubId, REGISTRY);
+      // The later REP crash case exercises governed writes through the real factory.
+      policy.policy.enabledModules.push(...defaults.policy.enabledModules.filter(m => m.moduleKey === 'reputation_builder'));
+      policy.modules.push(...defaults.modules.filter(m => m.moduleKey === 'reputation_builder'));
       // Policy: draft (validated, preview stored), then activation without an approval asks a second person.
       const drafted = body<{ version: { versionId: string; revision: number; activation: { actionDigest: string } } }>(await exactlyOnce({
-        action: 'agent_modules.policy_draft', client: clients.drafter, url: `${base}/policy`, body: cmd('agent_modules.policy_draft', { document: runtimeHubPolicy(ids.hubId) }),
+        action: 'agent_modules.policy_draft', client: clients.drafter, url: `${base}/policy`, body: cmd('agent_modules.policy_draft', { document: policy }),
         effects: () => count(h, 'SELECT 1 FROM trustwork.agent_policy_version WHERE hub_id = $1', [ids.hubId]),
       }));
       const v = drafted.version;
