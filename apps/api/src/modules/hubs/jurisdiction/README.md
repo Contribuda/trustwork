@@ -20,7 +20,7 @@ Mandatory rules cannot be weakened: same-currency thresholds use integer compari
 
 Policy/source/applicability/legal/profile writes and authority reads share a transaction advisory lock. Volatile validators read fresh `READ COMMITTED` snapshots after waiting; other isolation modes refuse. This conservative node-wide lock favors correctness over throughput and must never enclose provider I/O. Language, source and second-person approval races are tested in both lock orders with real PostgreSQL lock observation.
 
-Executable jurisdiction configuration activation also receives the resolved request session through HUB-001's existing registered endpoint. Its narrow database wrapper locks the domain/version/approval, validates current exact session/epoch/role/elevation, invokes the original activation authority, and validates again after its waits. Other configuration domains retain their existing behavior. Tests cover both competing-connection orders for role, elevation and epoch changes; API language-completeness fixtures cover all seven configured engine languages with explicitly synthetic text.
+Executable jurisdiction configuration activation also receives the resolved request session through HUB-001's existing registered endpoint. Its narrow database wrapper locks the domain/version/approval, validates current exact session/epoch/role/elevation, invokes the original activation authority, and validates again after its waits. Other configuration domains retain their database activation rules. Tests cover both competing-connection orders for role, elevation and epoch changes; API language-completeness fixtures cover all seven configured engine languages with explicitly synthetic text.
 
 ## Runtime boundary
 
@@ -46,6 +46,8 @@ The projection returns restrictive limits, safe reason codes, configuration IDs/
 ## Typed consent continuation
 
 The registered `/v1/jurisdiction-consents/quotes/:quoteId` API returns only the authenticated affected person's current public counsel notice, with all configured languages. Granting binds the exact notice digest, purpose, action, person, quote actor, policy binding and immutable legal versions; revocation is a separate immutable fact. Generic legal acceptance, profile consent and action approval cannot substitute. Key-only policies and company consent without a separately scoped mandate remain unavailable. The current implementation supports personal buyer/seller quotes only. No real country consent scope is seeded.
+
+The consent and applicability APIs disable `PrincipalService.runAs` stale-epoch refresh. The shared hub configuration activation command does the same before its immutable version determines the domain; it never retries under a refreshed request identity. The opt-out is additive and unrelated modules retain the existing default. Registered API regressions change the epoch after authentication and prove a conflict, unchanged RequestState and no command callback execution. This request boundary supplements the post-wait database checks.
 
 The authority lock has a three-second acquisition timeout. Current session and identity epoch are checked after domain waits; row locks serialize the check against actual session and epoch updates. Transactions contain no provider I/O. Receipt storage does not define a retention duration or execute erasure/legal-hold policy; that remains an owning privacy authority integration. There is no receipt-history listing.
 
