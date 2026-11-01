@@ -307,7 +307,7 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     // PAY-001 only narrows admission to the active payments config; it grants no data access. payments_candidate_lock
     // takes SHARE locks on the configuration it reads later in the same transaction (serialization only, no read).
     // PAY-001 only narrows admission to the active payments config; it grants no data access.
-    const narrowingReaders = new Set(['jurisdiction_quote_notices', 'jurisdiction_disclosure_bundle', 'hubs_activate_config_base', 'payments_candidate_lock', 'payments_collecting_candidates', 'payments_source_places', 'payments_route_available', 'providers_residency', 'jurisdiction_config_guard', 'jurisdiction_language_guard', 'jurisdiction_resolve_quote', 'jurisdiction_preflight']);
+    const narrowingReaders = new Set(['jurisdiction_demo_authority', 'jurisdiction_quote_notices', 'jurisdiction_disclosure_bundle', 'hubs_activate_config_base', 'payments_candidate_lock', 'payments_collecting_candidates', 'payments_source_places', 'payments_route_available', 'providers_residency', 'jurisdiction_config_guard', 'jurisdiction_language_guard', 'jurisdiction_resolve_quote', 'jurisdiction_preflight']);
     // These four exact readers preserve the original HUB implementations behind the KEYS ordering wrapper.
     // No generic wrapper prefix is exempt, and runtime roles must not invoke the unfenced bodies.
     const internalHubReaders = ['callback_unfenced_hubs_activate_config', 'callback_unfenced_hubs_cancel_config', 'callback_unfenced_hubs_create', 'callback_unfenced_hubs_draft_config'];

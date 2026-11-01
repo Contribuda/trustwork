@@ -271,6 +271,7 @@ export function consoleActionNeedsSecondPerson(action: string): boolean {
 export const HUB_CONSOLE_PERMISSIONS = [
   'admin.hub.read', 'admin.hub.identity.edit', 'admin.hub.modes.edit', 'admin.hub.lifecycle.request', 'admin.hub.legal.edit', 'admin.hub.legal.activate',
   'admin.hub.residency.edit', 'admin.hub.country.edit', 'admin.hub.launch.check', 'admin.hub.jurisdiction.edit', 'admin.hub.jurisdiction.activate',
+  'admin.jurisdiction.issuers.propose', 'admin.jurisdiction.issuers.activate', 'admin.jurisdiction.sources.revoke',
   'admin.hub.payments.edit',
   'admin.providers.connection.edit', 'admin.providers.secret.write', 'admin.providers.test', 'admin.models.route.edit', 'admin.models.route.activate', 'admin.usage.read',
   'admin.pipelines.read', 'admin.pipelines.edit', 'admin.pipelines.activate', 'admin.pipelines.run', 'admin.pipelines.pause',

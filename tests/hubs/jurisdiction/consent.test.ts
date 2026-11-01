@@ -72,6 +72,10 @@ test('typed consent through registered API and competing PostgreSQL connections'
   await t.test('resolved consent grant never refreshes stale request authority', async () => {
     await staleRequest(h, () => clients.seller.post(path, { noticeDigest: notices.seller, locale: 'en' }));
     assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.jurisdiction_consent_receipt')).rowCount, 0);
+    // The stale-request fixture advances the real person epoch. V2 proof must be reissued, never refreshed implicitly.
+    assert.equal((await preview('seller')).status, 'unavailable');
+    await f.attest('person', p.moderator);
+    for (const who of ['buyer', 'seller'] as const) notices[who] = (await preview(who)).notices[0]!.noticeDigest;
   });
   const receipts = {} as Record<'buyer' | 'seller', string>;
   await t.test('every affected party consents separately; retry preserves the exact immutable receipt', async () => {
@@ -92,6 +96,7 @@ test('typed consent through registered API and competing PostgreSQL connections'
   await t.test('resolved revocation never refreshes stale request authority', async () => {
     await staleRequest(h, () => clients.buyer.post(`/v1/jurisdiction-consents/${receipts.buyer}/revoke`, {}));
     assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.jurisdiction_consent_revocation')).rowCount, 0);
+    await f.attest('person', p.outsider);
   });
   await t.test('policy change wins: a waiting old-notice grant cannot bind to the replacement', async () => {
     const next = structuredClone(f.payload); next.agentSettings.jurisdictions[0]!.policy.actionLimits[0]!.approvalAbove!.minorUnits = '50';
@@ -152,6 +157,7 @@ test('typed consent through registered API and competing PostgreSQL connections'
     await first; assert.equal((await second).status, 403);
   });
   await t.test('current actor check wins: epoch change waits for that transaction', async () => {
+    await f.attest('person', p.moderator);
     const entered = barrier(), release = barrier();
     const first = a.as(p.moderator, async trx => { const result = await jurisdictionConsent.preview(trx, world.sessions.moderator, quoteId); entered.resolve(); await release.promise; return result; });
     await entered.promise;

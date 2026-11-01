@@ -32,6 +32,9 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'jurisdiction.applicability_propose': IN_TRANSACTION,
   'jurisdiction.consent_grant': IN_TRANSACTION,
   'jurisdiction.consent_revoke': IN_TRANSACTION,
+  'jurisdiction.issuer_activate': IN_TRANSACTION,
+  'jurisdiction.issuer_propose': IN_TRANSACTION,
+  'jurisdiction.source_revoke': IN_TRANSACTION,
   // Company memberships (identity)
   'membership.invite': {
     kind: 'lease',

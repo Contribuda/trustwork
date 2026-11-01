@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { withMaintenance } from '@trustwork/data';
 import { consentFixture } from '../../../hubs/jurisdiction/consent-fixture.js';
 import { sharedAuthorityFixture } from '../../../hubs/jurisdiction/shared-fixture.js';
 import { jurisdictionEvidence } from '../../../../packages/data/src/repositories/jurisdiction-policy.js';
+import { syntheticSourceAuthority } from '../../../hubs/jurisdiction/source-fixture.js';
 import type { CrashCase } from '../cases.js';
 
 export default {
@@ -46,5 +47,16 @@ export default {
     };
     const proposal = await exactlyOnce({ action: 'jurisdiction.applicability_propose', client: clients.owner, url: `/v1/admin/jurisdiction-applicability/evidence/${evidence.id}/review`, body, effects: await atomicEffects('jurisdiction_applicability_review', 'jurisdiction.applicability_proposed') });
     await exactlyOnce({ action: 'jurisdiction.applicability_activate', client: clients.officer, url: `/v1/admin/jurisdiction-applicability/reviews/${(proposal.body as { reviewId: string }).reviewId}/activate`, body, effects: await atomicEffects('jurisdiction_applicability_activation', 'jurisdiction.applicability_activated') });
+    const source = await syntheticSourceAuthority(h.db.admin, f);
+    const issuerUrl = '/v1/admin/jurisdiction-sources/issuers';
+    const issuerProposal = await exactlyOnce({ action: 'jurisdiction.issuer_propose', client: clients.owner, url: issuerUrl,
+      body: { registration: { ...source.registration, issuerId: randomUUID() }, reason: 'Synthetic issuer crash proposal' },
+      effects: await atomicEffects('jurisdiction_issuer_version', 'jurisdiction.issuer_proposed') });
+    const issuer = issuerProposal.body as { id: string; digest: string };
+    const decision = { digest: issuer.digest, reason: 'Synthetic independent issuer crash activation' };
+    await exactlyOnce({ action: 'jurisdiction.issuer_activate', client: clients.officer, url: `${issuerUrl}/${issuer.id}/activate`, body: decision,
+      effects: await atomicEffects('jurisdiction_issuer_activation', 'jurisdiction.issuer_activated') });
+    await exactlyOnce({ action: 'jurisdiction.source_revoke', client: clients.owner, url: `/v1/admin/jurisdiction-sources/issuer/${issuer.id}/revoke`, body: decision,
+      effects: await atomicEffects('jurisdiction_issuer_revocation', 'jurisdiction.issuer_revoked') });
   },
 } satisfies CrashCase;

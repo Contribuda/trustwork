@@ -1,3 +1,4 @@
+import { syntheticSourceAuthority } from './source-fixture.js';
 import { withMaintenance, type DataPool, type Transaction } from '@trustwork/data';
 import { computeDigest, computeRfqVersionDigest } from '@trustwork/contracts';
 import { legalActivationDigestInput, configActivationDigestInput } from '../../../packages/contracts/src/hub-core.js';
@@ -50,7 +51,19 @@ export async function authorityFixture(admin: DataPool, runtime: DataPool, share
   const draft=(body: ExecutableJurisdictionPayload|Record<string,unknown> = payload)=>a.cmd(p.owner,(trx,ctx)=>hubConfig.draft(trx,ctx,hubId,'jurisdiction',body));
   const approvalFor=async(v:Awaited<ReturnType<typeof draft>>)=>a.approve(p.officer,p.owner,'jurisdiction.activate_settings',hubId,configActivationDigestInput({id:v.id,hubId,domain:'jurisdiction',version:v.version,payloadDigest:v.payload_digest}));
   const activate=async(v:Awaited<ReturnType<typeof draft>>)=>{const ap=await approvalFor(v);return a.cmd(p.officer,(trx,ctx)=>hubConfig.activate(trx,ctx,v.id,v.revision,ap));};
-  const attest=async(kind:'person'|'company'|'project',id:string,jurisdictions=['US'],hub=hubId)=>withMaintenance(admin,trx=>jurisdictionEvidence.attestApplicability(trx,{subjectKind:kind,subjectId:id,hubId:hub,jurisdictions,evidenceId:'synthetic.domainEvidence',evidenceDigest:'c'.repeat(64),effectiveFrom:'2020-01-01T00:00:00.000Z',effectiveUntil:'2099-01-01T00:00:00.000Z'}));
+  let producer: ReturnType<typeof syntheticSourceAuthority> | undefined;
+  const attest = async (kind: 'person' | 'company' | 'project', id: string, jurisdictions = ['US'], hub = hubId) => {
+    if (hub !== hubId) throw new Error('synthetic source fixture requires its registered exact hub');
+    producer ??= syntheticSourceAuthority(admin, { a, p, world, hubId });
+    const sourceAuthority = await producer;
+    const contexts = await admin.query<{ id: string }>(`SELECT q.id FROM trustwork.quote q JOIN trustwork.rfq r ON r.id=q.rfq_id
+      WHERE ($1='project' AND r.project_id=$2::uuid) OR ($1='person' AND $2::uuid IN(q.buyer_person_id,q.seller_person_id))
+        OR ($1='company' AND $2::uuid IN(q.buyer_company_id,q.seller_company_id)) ORDER BY q.id`, [kind, id]);
+    if (!contexts.rowCount) throw new Error('synthetic source fixture requires a real owning quote');
+    const results = [];
+    for (const context of contexts.rows) results.push(await sourceAuthority.issue(kind, id, context.id, jurisdictions));
+    return results[0]!;
+  };
   return {a,p,world,hubId,otherHubId,source,document,payload,docs,legal,draft,activate,approvalFor,attest};
 }
 
