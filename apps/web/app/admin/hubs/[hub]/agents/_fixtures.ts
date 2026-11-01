@@ -12,6 +12,8 @@ import { digest, preview } from '../modules/_kit/fixture-helpers.js';
 
 const usd = (minorUnits: string) => ({ minorUnits, currency: 'USD' });
 const c = suppressSmallCount;
+/** The US example hub's country pack code (the fixtures describe that hub; engine code never branches on it). */
+const US_PACK = 'US';
 
 const plannerPreview: ActivationPreview = preview('pv-agents-planner-3', 'a1', {
   changes: [
@@ -201,7 +203,7 @@ export const US_AGENT_PRODUCT: AgentProduct = AgentProductSchema.parse({
     {
       ref: extRef({
         id: 'ext-permit-lookup-1', extensionId: 'ext-permit-lookup', key: 'permit_lookup', version: 1, manifestDigest: digest('aa'),
-        capabilityIds: ['permit_lookup.check_status'], dataClassesRead: ['public'], dataClassesSent: ['public'], endpoints: [{ host: 'permits.city.example', country: 'US' }],
+        capabilityIds: ['permit_lookup.check_status'], dataClassesRead: ['public'], dataClassesSent: ['public'], endpoints: [{ host: 'permits.city.example', country: US_PACK }],
         adapterId: 'city_permits', safetySuite: { runId: 'ss-permit-1', onFakeAdapter: true, passed: true, engineVersion: '0.9.0', at: '2026-10-20T09:00:00Z' },
         status: 'active', draftedBy: 'p-hub-owner', approvedBy: 'p-compliance', approvalId: 'ap-ext-permit-1', activatedConfigVersionId: 'cv-ext-permit-1',
       }),
@@ -221,7 +223,7 @@ export const US_AGENT_PRODUCT: AgentProduct = AgentProductSchema.parse({
       ref: extRef({
         id: 'ext-catalog-sync-2', extensionId: 'ext-catalog-sync', key: 'supplier_catalog', version: 2, manifestDigest: digest('bb'),
         capabilityIds: ['supplier_catalog.import_items', 'supplier_catalog.draft_listing'], dataClassesRead: ['public', 'company_private'], dataClassesSent: ['public'],
-        endpoints: [{ host: 'api.catalog-partner.example', country: 'US' }], adapterId: 'catalog_partner',
+        endpoints: [{ host: 'api.catalog-partner.example', country: US_PACK }], adapterId: 'catalog_partner',
         safetySuite: { runId: 'ss-catalog-2', onFakeAdapter: true, passed: true, engineVersion: '0.9.0', at: '2026-10-29T14:00:00Z' },
         status: 'tested', draftedBy: 'p-hub-owner', approvedBy: null, approvalId: null, activatedConfigVersionId: null,
       }),
@@ -243,7 +245,7 @@ export const US_AGENT_PRODUCT: AgentProduct = AgentProductSchema.parse({
       ref: extRef({
         id: 'ext-weather-1', extensionId: 'ext-weather', key: 'weather_window', version: 1, manifestDigest: digest('cc'),
         capabilityIds: ['weather_window.suggest_dates'], dataClassesRead: ['public', 'project_restricted'], dataClassesSent: ['public'],
-        endpoints: [{ host: 'forecast.weather-service.example', country: 'US' }], adapterId: 'weather_service',
+        endpoints: [{ host: 'forecast.weather-service.example', country: US_PACK }], adapterId: 'weather_service',
         // The safety suite failed (a forecast text tried to change the plan), so activation is blocked.
         safetySuite: { runId: 'ss-weather-1', onFakeAdapter: true, passed: false, engineVersion: '0.9.0', at: '2026-10-30T11:00:00Z' },
         status: 'draft', draftedBy: 'p-hub-owner', approvedBy: null, approvalId: null, activatedConfigVersionId: null,

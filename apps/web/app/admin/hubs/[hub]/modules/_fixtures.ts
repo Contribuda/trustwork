@@ -10,6 +10,8 @@ import { preview } from './_kit/fixture-helpers.js';
  */
 
 const c = suppressSmallCount;
+/** The US example hub's country pack code (the fixtures describe that hub; engine code never branches on it). */
+const US_PACK = 'US';
 const en = (text: string) => ({ text, lang: 'en' });
 const name = (text: string, es?: string) => ({ en: text, ...(es ? { es } : {}) });
 const item = (key: string, kind: string, title: string, dependsOn: string[] = [], extra: Record<string, unknown> = {}) => ({
@@ -38,7 +40,7 @@ export const US_PRODUCT_MODULES: ProductModules = ProductModulesSchema.parse({
     templates: [
       {
         template: {
-          id: 'pt-us-house-2', hubId: HUB_US_ID, key: 'single_family_new_build', version: 2, countryCode: 'US', projectType: 'house_new_build',
+          id: 'pt-us-house-2', hubId: HUB_US_ID, key: 'single_family_new_build', version: 2, countryCode: US_PACK, projectType: 'house_new_build',
           title: name('Single-family house, new build', 'Vivienda unifamiliar, obra nueva'),
           phases: [
             { key: 'design', title: name('Design'), items: [item('site_survey', 'task', 'Site survey'), item('architect_review', 'consultation', 'Architect review of the drawings', ['site_survey'])] },
@@ -54,7 +56,7 @@ export const US_PRODUCT_MODULES: ProductModules = ProductModulesSchema.parse({
       },
       {
         template: {
-          id: 'pt-us-kitchen-1', hubId: HUB_US_ID, key: 'kitchen_remodel', version: 1, countryCode: 'US', projectType: 'remodel',
+          id: 'pt-us-kitchen-1', hubId: HUB_US_ID, key: 'kitchen_remodel', version: 1, countryCode: US_PACK, projectType: 'remodel',
           title: name('Kitchen remodel', 'Remodelación de cocina'),
           phases: [
             { key: 'plan', title: name('Plan'), items: [item('layout_consultation', 'consultation', 'Layout consultation'), item('quote_review', 'consultation', 'Review of contractor quotes', ['layout_consultation'])] },

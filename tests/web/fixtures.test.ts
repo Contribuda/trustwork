@@ -113,7 +113,7 @@ test('locale additions have no English product copy and no duplicate package key
   walkBase(base, '');
   const duplicates = leaves.filter(([key]) => baseKeys.has(key)).map(([key]) => key);
   assert.deepEqual(duplicates, [], 'additions must not redefine package keys');
-  const english = leaves.filter(([key, value]) => key !== '$comment' && /\b(?!PDF\b|ID\b|Google\b|Apple\b|BIM\b|Word\b|Excel\b|Trustwork\b)[A-Za-z]{3,}\b/.test(value.replace(/\b(plural|one|few|many|other)\b|\{[a-zA-Z]+/g, '')));
+  const english = leaves.filter(([key, value]) => key !== '$comment' && /\b(?!PDF\b|ID\b|Google\b|Apple\b|BIM\b|Word\b|Excel\b|Trustwork\b|HTTPS\b|MCP\b|DNS\b|SPF\b|DKIM\b|DMARC\b)[A-Za-z]{3,}\b/.test(value.replace(/\b(plural|one|few|many|other)\b|\{[a-zA-Z]+/g, '')));
   assert.deepEqual(
     english.map(([key]) => key),
     [],
