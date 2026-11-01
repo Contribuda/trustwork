@@ -511,6 +511,8 @@
     "negativeMargin": "Manfiy marja",
     "editHint": "Tahrirlash: {enter} yoki {edit}; bekor qilish: {escape}",
     "saved": "Oʻzgarish soʻraldi",
+    "changeRequested": "Oʻzgarish soʻraldi: {value}. Saqlanishi tasdiqlanmadi.",
+    "changeRejected": "Oʻzgartirish soʻrovi bajarilmadi: {value}. Qoralamani tekshirish uchun katakni qayta oching.",
     "statuses": {
       "live": "Ishlaydi",
       "demo": "Namuna",

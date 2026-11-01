@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { SortDescriptor } from "react-aria-components";
 import { getLocaleStore, setLocaleStore } from "@trustwork/i18n-runtime";
@@ -11,6 +11,7 @@ import {
   localeTag,
   UiProvider,
   Button,
+  Checkbox,
   DataTable,
   FacetPanel,
   SavedViews,
@@ -295,6 +296,132 @@ function EditingExample() {
         },
       ]}
     />
+  );
+}
+/** Deliberately local request outcomes, never a fake backend acknowledgement. */
+function GridInteractionExample() {
+  const [rows, setRows] = useState([
+    { id: 1, name: label(1), value: "10" },
+    { id: 2, name: label(2), value: "20" },
+  ]);
+  const [selectionEnabled, setSelectionEnabled] = useState(true);
+  const [actionsEnabled, setActionsEnabled] = useState(true);
+  const [visible, setVisible] = useState(["name", "value"]);
+  const [selection, setSelection] = useState<TableSelection>({
+    kind: "keys",
+    keys: new Set(),
+  });
+  const [behavior, setBehavior] = useState("local");
+  const [request, setRequest] = useState("");
+  const pending = useRef<(() => void) | undefined>(undefined);
+  function commit(
+    row: (typeof rows)[number],
+    column: "name" | "value",
+    value: string,
+  ) {
+    setRequest(`${row.id}:${column}:${value}`);
+    const apply = () =>
+      setRows((current) =>
+        current.map((r) => (r.id === row.id ? { ...r, [column]: value } : r)),
+      );
+    if (behavior === "reject")
+      return Promise.reject(new globalThis.Error("Synthetic rejection"));
+    if (behavior === "throw")
+      throw new globalThis.Error("Synthetic synchronous rejection");
+    if (behavior === "none") return;
+    if (behavior === "delay")
+      return new Promise<void>((resolve) => {
+        pending.current = () => {
+          apply();
+          resolve();
+          pending.current = undefined;
+        };
+      });
+    apply();
+  }
+  return (
+    <div className={s.stack}>
+      <Checkbox isSelected={selectionEnabled} onChange={setSelectionEnabled}>
+        {t("consoleKit.selectPage")}
+      </Checkbox>
+      <Checkbox isSelected={actionsEnabled} onChange={setActionsEnabled}>
+        {t("table.rowActions")}
+      </Checkbox>
+      <label>
+        {t("consoleKit.status")}
+        <select
+          value={behavior}
+          onChange={(event) => setBehavior(event.target.value)}
+        >
+          <option value="local">{t("consoleKit.statuses.demo")}</option>
+          <option value="delay">{t("consoleKit.pending")}</option>
+          <option value="reject">{t("consoleKit.denied")}</option>
+          <option value="none">{t("consoleKit.unknown")}</option>
+          <option value="throw">{t("table.error")}</option>
+        </select>
+      </label>
+      <Button onPress={() => pending.current?.()}>
+        {t("consoleKit.verify")}
+      </Button>
+      <DataTable<(typeof rows)[number]>
+        mode="grid"
+        caption={t("consoleKit.editHint", {
+          enter: "Enter",
+          edit: "F2",
+          escape: "Escape",
+        })}
+        rows={rows}
+        rowKey={(r) => r.id}
+        visibleColumns={visible}
+        onVisibleColumnsChange={setVisible}
+        selection={
+          selectionEnabled
+            ? {
+                value: selection,
+                onChange: setSelection,
+                rowLabel: (r) => r.name,
+              }
+            : undefined
+        }
+        columns={(
+          [
+            { id: "name", header: t("consoleKit.name") },
+            { id: "value", header: t("consoleKit.value") },
+          ] as const
+        ).map(({ id, header }) => ({
+          id,
+          header,
+          cell: (r) => r[id],
+          edit: {
+            value: (r) => r[id],
+            onCommit: (r, value) => commit(r, id, value),
+          },
+        }))}
+        rowActions={
+          actionsEnabled
+            ? (r) => (
+                <div className={s.row}>
+                  <Button isDisabled>{t("consoleKit.approve")}</Button>
+                  <Button onPress={() => setRequest(`open:${r.id}`)}>
+                    {t("consoleKit.openPage")}
+                  </Button>
+                  <Button isDisabled>{t("consoleKit.decline")}</Button>
+                  <Button onPress={() => setRequest(`share:${r.id}`)}>
+                    {t("consoleKit.share")}
+                  </Button>
+                  <a href="#grid-interaction-after">
+                    {t("consoleKit.definition")}
+                  </a>
+                </div>
+              )
+            : undefined
+        }
+      />
+      <Button id="grid-interaction-after" onPress={() => setRequest("")}>
+        {t("consoleKit.clear")}
+      </Button>
+      <output data-request="">{request}</output>
+    </div>
   );
 }
 function AccessExample() {
@@ -642,6 +769,9 @@ function NavigationExample() {
 }
 export const Records: Story = { render: () => <RecordsExample /> };
 export const EditableGrid: Story = { render: () => <EditingExample /> };
+export const GridInteractions: Story = {
+  render: () => <GridInteractionExample />,
+};
 export const Access: Story = { render: () => <AccessExample /> };
 export const Decisions: Story = { render: () => <DecisionsExample /> };
 export const Activity: Story = { render: () => <ActivityExample /> };

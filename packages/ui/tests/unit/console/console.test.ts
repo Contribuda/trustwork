@@ -1,7 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { gridDestination } from "../../../src/components/DataTable/grid";
+import {
+  gridDestination,
+  gridTabDestination,
+} from "../../../src/components/DataTable/grid";
 import {
   rowSelected,
   toggleRows,
@@ -55,6 +58,31 @@ test("APG arrows, Home/End, control bounds and page navigation never wrap", () =
     gridDestination({ row: 0, column: 0 }, "ArrowLeft", false, 12, 4),
     { row: 0, column: 0 },
   );
+});
+test("interaction Tab includes optional selection/actions, wraps rows and exits outer bounds", () => {
+  for (const selection of [0, 1])
+    for (const actions of [0, 1])
+      for (const data of [1, 2]) {
+        const columns = data + selection + actions;
+        for (let index = 0; index < 3 * columns; index++) {
+          const position = {
+            row: Math.floor(index / columns),
+            column: index % columns,
+          };
+          for (const backwards of [false, true]) {
+            const target = index + (backwards ? -1 : 1);
+            assert.deepEqual(
+              gridTabDestination(position, backwards, 3, columns),
+              target < 0 || target >= 3 * columns
+                ? undefined
+                : {
+                    row: Math.floor(target / columns),
+                    column: target % columns,
+                  },
+            );
+          }
+        }
+      }
 });
 test("page selection preserves explicit selections on other pages without mutating input", () => {
   const initial: TableSelection = { kind: "keys", keys: new Set(["earlier"]) };

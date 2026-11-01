@@ -511,6 +511,8 @@
     "negativeMargin": "Negative margin",
     "editHint": "{enter} or {edit} to edit; {escape} to cancel",
     "saved": "Change requested",
+    "changeRequested": "Change requested: {value}. Persistence is not confirmed.",
+    "changeRejected": "Change request failed: {value}. Reopen the cell to review the draft.",
     "statuses": {
       "live": "Live",
       "demo": "Demo",

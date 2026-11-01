@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type KeyboardEvent } from "react";
+import { useRef, useState, type ReactNode, type KeyboardEvent } from "react";
 import type { SortDescriptor, Key } from "react-aria-components";
 import { cx } from "../../utils/cx";
 import { t, formatNumber } from "../../i18n";
@@ -25,11 +25,11 @@ export type DataTableColumn<Row extends object> = {
   align?: "start" | "end" | undefined;
   isRowHeader?: boolean | undefined;
   width?: number | undefined;
-  /** Editing requests a change; it never mutates the supplied row. */
+  /** Editing requests a change; even callback resolution does not prove persistence. */
   edit?:
     | {
         value: (row: Row) => string;
-        onCommit: (row: Row, value: string) => void;
+        onCommit: (row: Row, value: string) => void | Promise<void>;
       }
     | undefined;
 };
@@ -115,6 +115,10 @@ export function DataTable<Row extends object>({
     value: string;
   }>();
   const [notice, setNotice] = useState("");
+  // Keep unacknowledged drafts available when the caller rejects or never responds.
+  const drafts = useRef(
+    new Map<Key, Map<string, { base: string; value: string }>>(),
+  );
   const activeSort = server ? sort : (sort ?? internalSort);
   const ordered = [...columns].sort((a, b) => {
     const index = (id: string) => {
@@ -178,11 +182,38 @@ export function DataTable<Row extends object>({
     col: number,
   ) {
     if (save && editing) {
-      c.edit?.onCommit(row, editing.value);
-      setNotice(t("consoleKit.saved"));
+      const value = editing.value;
+      const key = rowKey(row);
+      const cells = drafts.current.get(key) ?? new Map();
+      cells.set(c.id, { base: c.edit!.value(row), value });
+      drafts.current.set(key, cells);
+      try {
+        const result = c.edit?.onCommit(row, value);
+        setNotice(t("consoleKit.changeRequested", { value }));
+        // A resolved callback is still only a request. Rendered rows are controlled.
+        void Promise.resolve(result).catch(() =>
+          setNotice(t("consoleKit.changeRejected", { value })),
+        );
+      } catch {
+        setNotice(t("consoleKit.changeRejected", { value }));
+        return false;
+      }
+    } else {
+      drafts.current.get(rowKey(row))?.delete(c.id);
     }
     setEditing(undefined);
     grid.focus({ row: r, column: col });
+    return true;
+  }
+  function startEdit(row: Row, c: DataTableColumn<Row>) {
+    if (!c.edit) return;
+    const base = c.edit.value(row);
+    const draft = drafts.current.get(rowKey(row))?.get(c.id);
+    setEditing({
+      key: rowKey(row),
+      column: c.id,
+      value: draft?.base === base ? draft.value : base,
+    });
   }
   function editKey(
     event: KeyboardEvent<HTMLElement>,
@@ -195,7 +226,7 @@ export function DataTable<Row extends object>({
       ["Enter", "F2"].includes(event.key)
     ) {
       event.preventDefault();
-      setEditing({ key: rowKey(row), column: c.id, value: c.edit.value(row) });
+      startEdit(row, c);
     }
   }
   const content =
@@ -235,7 +266,7 @@ export function DataTable<Row extends object>({
       <div
         role="region"
         aria-label={t("table.regionLabel", { caption })}
-        tabIndex={0}
+        tabIndex={mode === "grid" ? undefined : 0}
         className={styles.region}
       >
         <table
@@ -350,12 +381,7 @@ export function DataTable<Row extends object>({
                         }
                       }}
                       onDoubleClick={() => {
-                        if (mode === "grid" && c.edit)
-                          setEditing({
-                            key: rowKey(row),
-                            column: c.id,
-                            value: c.edit.value(row),
-                          });
+                        if (mode === "grid" && c.edit) startEdit(row, c);
                       }}
                       style={{
                         textAlign: c.align === "end" ? "end" : "start",
@@ -374,26 +400,18 @@ export function DataTable<Row extends object>({
                             if (
                               ["Enter", "Escape", "Tab"].includes(event.key)
                             ) {
-                              event.preventDefault();
+                              if (event.key !== "Tab") event.preventDefault();
                               event.stopPropagation();
-                              finish(
+                              const finished = finish(
                                 row,
                                 c,
                                 event.key !== "Escape",
                                 r + 1,
                                 col,
                               );
-                              if (event.key === "Tab")
-                                grid.focus({
-                                  row: r + 1,
-                                  column: Math.max(
-                                    0,
-                                    Math.min(
-                                      shown.length - 1,
-                                      col + (event.shiftKey ? -1 : 1),
-                                    ),
-                                  ),
-                                });
+                              if (!finished) event.preventDefault();
+                              else if (event.key === "Tab")
+                                grid.tab(event, { row: r + 1, column: col });
                             }
                           }}
                           onBlur={() => setEditing(undefined)}
