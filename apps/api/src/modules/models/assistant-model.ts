@@ -41,6 +41,8 @@ export class GatewayAssistantModel implements ModelPort {
       call.hubId !== execution.hubId
     )
       throw new ModelRefusal('authority_mismatch');
+    // A person's conversation is private even when its text happens to discuss public material.
+    if (!call.dataClasses.includes('person_private')) throw new ModelRefusal('conversation_classification_required');
     return resolved;
   }
   async respond(input: ModelInput): Promise<ModelReply> {

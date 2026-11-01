@@ -1,3 +1,5 @@
+import { approvals } from '../../packages/data/src/repositories/admin.js';
+import { egressAllowDigestInput } from '../../packages/contracts/src/providers.js';
 import { randomUUID } from 'node:crypto';
 import { computeDigest, MandateV2Schema } from '@trustwork/contracts';
 import { createPool } from '@trustwork/data';
@@ -66,12 +68,39 @@ export async function durableWorld(db: NonNullable<Awaited<ReturnType<typeof pro
       scope: { kind: 'job' },
       primary: { connectionId: connection.id, modelId: 'synthetic-model', modelRevision: 'synthetic-rev-1' },
       fallbacks: [{ connectionId: secondary.id, modelId: 'synthetic-model', modelRevision: 'synthetic-rev-2' }],
-      allowedDataClasses: ['public'],
+      allowedDataClasses: ['public', 'person_private'],
       limits: { maxInputTokens: 1000, maxOutputTokens: 100, maxFileBytes: null, timeoutMs: 500 },
       budgetId: null,
     }),
   );
-  await a.cmd(personId, (trx, ctx) => modelRoutes.activate(trx, ctx, route.id, route.revision, null));
+  const routeDigest = (await db.admin.query<{ d: string }>('SELECT trustwork.providers_route_digest($1) AS d', [route.id])).rows[0]!.d;
+  const approval = await a.cmd(world.people.officer, (trx, ctx) =>
+    approvals.request(trx, ctx, { action: 'models.activate_private_route', scope: { kind: 'hub', hubId }, actionDigest: routeDigest }),
+  );
+  await a.cmd(personId, (trx, ctx) => approvals.decide(trx, ctx, approval.id, 'approve', routeDigest));
+  await a.cmd(world.people.officer, (trx, ctx) => modelRoutes.activate(trx, ctx, route.id, route.revision, approval.id));
+  const allowPrivate = async () => {
+    for (const connectionId of [connection.id, secondary.id]) {
+      const version = await a.as(personId, (trx) => egressRules.nextVersion(trx, connectionId, 'person_private'));
+      const digest = computeDigest(
+        egressAllowDigestInput({ hubId, connectionId, dataClass: 'person_private', requireInResidency: true, requireZeroRetention: true, version }),
+      ).value;
+      const approval = await a.cmd(personId, (trx, ctx) =>
+        approvals.request(trx, ctx, { action: 'egress.allow_private_class', scope: { kind: 'hub', hubId }, actionDigest: digest }),
+      );
+      await a.cmd(world.people.officer, (trx, ctx) => approvals.decide(trx, ctx, approval.id, 'approve', digest));
+      await a.cmd(personId, (trx, ctx) =>
+        egressRules.set(trx, ctx, {
+          connectionId,
+          dataClass: 'person_private',
+          decision: 'allow',
+          requireInResidency: true,
+          requireZeroRetention: true,
+          approvalId: approval.id,
+        }),
+      );
+    }
+  };
   const egress = (decision: 'allow' | 'deny') =>
     a.cmd(personId, (trx, ctx) =>
       egressRules.set(trx, ctx, {
@@ -160,5 +189,5 @@ export async function durableWorld(db: NonNullable<Awaited<ReturnType<typeof pro
       estimatedCost: { minorUnits: amount, currency: 'USD' },
     };
   };
-  return { pool, world, a, personId, principal, binding, budget, mandate, call, connection, secondary, hubId, egress };
+  return { pool, world, a, personId, principal, binding, budget, mandate, call, connection, secondary, hubId, egress, allowPrivate };
 }

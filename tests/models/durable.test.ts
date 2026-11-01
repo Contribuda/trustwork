@@ -241,6 +241,7 @@ test('durable fake-only model intent, owning BILL/AST commands and cross-process
     const b = await w.budget();
     const m = await w.mandate(b);
     const call = await w.call(m.id);
+    call.dataClasses = ['person_private'];
     const model = createRuntimeAssistantModel(w.pool, registry, {
       ...syntheticGovernance,
       async select() {
@@ -261,6 +262,19 @@ test('durable fake-only model intent, owning BILL/AST commands and cross-process
       },
     };
     const before = adapter.calls.length;
+    const denied = await model.respond(input);
+    assert.equal(denied.messageKey, 'assistant.overlay.stateUnavailable');
+    assert.equal(adapter.calls.length, before);
+    assert.equal(await as((trx) => modelCalls.get(trx, call.operationId)), undefined);
+    await w.allowPrivate();
+    const publicMisclassification = createRuntimeAssistantModel(w.pool, registry, {
+      ...syntheticGovernance,
+      async select() {
+        return { call: { ...call, dataClasses: ['public'] }, action: w.binding.action, context: w.binding.context };
+      },
+    });
+    assert.equal((await publicMisclassification.respond(input)).messageKey, 'assistant.overlay.stateUnavailable');
+    assert.equal(adapter.calls.length, before);
     const response = await model.respond(input);
     assert.equal(response.text, 'Synthetic model response.');
     assert.equal(adapter.calls.length, before + 1);
