@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
-import { OUTREACH_ENGINE_FLOOR, type ConsolePermission } from '@trustwork/contracts/client';
+import type { ConsolePermission } from '@trustwork/contracts/client';
+import { OUTREACH_ENGINE_FLOOR } from './policy';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import type { HubContext } from '../../../../_components/context';
 import { TextInput } from '../../../../_components/forms';

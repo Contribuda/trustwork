@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { floorViolations, OUTREACH_CHANNELS, OUTREACH_ENGINE_FLOOR, OutreachJurisdictionPolicySchema, OutreachModeSchema, RECIPIENT_CLASSES } from '@trustwork/contracts/client';
+import { floorViolations, OUTREACH_CHANNELS, OUTREACH_ENGINE_FLOOR, OutreachJurisdictionPolicySchema, OutreachModeSchema, RECIPIENT_CLASSES } from './policy.js';
 
 /**
  * The outreach section's view of one hub (OUTR-004, HC-170 to HC-177; docs/engine/discovery-and-outreach.md). Synthetic

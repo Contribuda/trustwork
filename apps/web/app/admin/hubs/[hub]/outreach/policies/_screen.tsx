@@ -1,4 +1,4 @@
-import { OUTREACH_CHANNELS, OUTREACH_MODES, RECIPIENT_CLASSES, resolveOutreach, type OutreachPolicy, type RecipientClass, type OutreachChannel } from '@trustwork/contracts/client';
+import { OUTREACH_CHANNELS, OUTREACH_MODES, RECIPIENT_CLASSES, resolveOutreach, type OutreachPolicy, type RecipientClass, type OutreachChannel } from '../_kit/policy';
 import { getPack, outreachPackRules } from '@trustwork/country-packs';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import type { HubContext } from '../../../../_components/context';
