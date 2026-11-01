@@ -133,17 +133,62 @@ BEGIN
  VALUES(c.person_id,'billing.fees_confirmed','fee_confirmation',c.id::text,d.digest);
  RETURN c;
 END $$;
--- Internal module command only: the booking's own transaction passes its actual id and immutable terms digest.
+-- The app-role entry point resolves its destination through the owning immutable source.
+-- Lock domain rows before confirmations and fee locks, as the actual acceptance commands do.
 CREATE FUNCTION trustwork.billing_fee_bind(p_hub uuid,p_confirmation uuid,p_booking uuid,p_source_digest text) RETURNS trustwork.billing_fee_binding
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
 DECLARE c trustwork.billing_fee_confirmation%ROWTYPE; d trustwork.billing_fee_disclosure%ROWTYPE; b trustwork.billing_fee_binding%ROWTYPE;
+ s trustwork.billing_fee_scope%ROWTYPE; booking trustwork.consultation_booking%ROWTYPE;
+ a trustwork.agreement%ROWTYPE; o trustwork.task_offer%ROWTYPE; r trustwork.task_request%ROWTYPE;
+ buyer_hub uuid; seller_hub uuid; actual_digest text;
 BEGIN
- SELECT * INTO c FROM trustwork.billing_fee_confirmation WHERE id=p_confirmation AND person_id=trustwork.current_person_id() FOR UPDATE;
+ SELECT * INTO c FROM trustwork.billing_fee_confirmation WHERE id=p_confirmation AND person_id=trustwork.current_person_id();
  IF NOT FOUND THEN RAISE EXCEPTION 'confirmation unavailable' USING ERRCODE='P0002',HINT='admin.not_found'; END IF;
  SELECT * INTO d FROM trustwork.billing_fee_disclosure WHERE id=c.disclosure_id;
- d:=trustwork.billing_fee_check_disclosure(p_hub,d.id,d.digest);
- IF p_source_digest IS DISTINCT FROM d.snapshot->>'sourceDigest' THEN
+ SELECT * INTO s FROM trustwork.billing_fee_scope WHERE id=d.scope_id;
+ IF d.source_hub_id IS DISTINCT FROM p_hub OR trustwork.billing_fee_side(s,p_hub) IS DISTINCT FROM d.side THEN
+  RAISE EXCEPTION 'confirmation unavailable' USING ERRCODE='P0002',HINT='admin.not_found'; END IF;
+ IF p_source_digest IS DISTINCT FROM s.source_digest THEN
   RAISE EXCEPTION 'booking terms differ from the disclosure' USING ERRCODE='23514',HINT='billing.source_outdated'; END IF;
+ IF s.source_kind='consultation' THEN
+  SELECT * INTO booking FROM trustwork.consultation_booking WHERE id=p_booking AND id=s.source_id FOR UPDATE;
+  SELECT hub_id INTO buyer_hub FROM trustwork.billing_consultation_origin WHERE source_kind='request' AND source_id=booking.request_id;
+  SELECT hub_id INTO seller_hub FROM trustwork.billing_consultation_origin WHERE source_kind='offering' AND source_id=booking.offering_id;
+  IF booking.id IS NULL OR booking.status<>'proposed' OR booking.valid_until<=clock_timestamp()
+   OR s.fee_kind<>'consultation' OR s.category_key IS DISTINCT FROM booking.kind OR s.source_digest IS DISTINCT FROM booking.terms_digest
+   OR ROW(s.buyer_person_id,s.buyer_company_id,s.seller_person_id,s.seller_company_id)
+      IS DISTINCT FROM ROW(booking.client_person_id,NULL::uuid,booking.seller_person_id,booking.seller_company_id)
+   OR ROW(s.buyer_hub_id,s.seller_hub_id) IS DISTINCT FROM ROW(buyer_hub,seller_hub)
+   OR booking.terms#>>'{pricing,commission,status}' IS DISTINCT FROM 'versioned_fees'
+   OR d.snapshot->'buyerFee' IS DISTINCT FROM booking.terms#>'{pricing,commission,buyerFee}'
+   OR d.snapshot->'sellerFee' IS DISTINCT FROM booking.terms#>'{pricing,commission,sellerFee}' THEN
+   RAISE EXCEPTION 'destination differs from consultation source' USING ERRCODE='23514',HINT='billing.source_outdated'; END IF;
+ ELSIF s.source_kind='task' THEN
+  SELECT * INTO a FROM trustwork.agreement WHERE id=p_booking AND terms_kind='task' AND offer_ref_id=s.source_id FOR UPDATE;
+  SELECT * INTO o FROM trustwork.task_offer WHERE id=s.source_id;
+  SELECT * INTO r FROM trustwork.task_request WHERE id=o.task_request_id FOR UPDATE;
+  SELECT * INTO o FROM trustwork.task_offer WHERE id=s.source_id FOR SHARE;
+  SELECT hub_id INTO buyer_hub FROM trustwork.billing_task_origin WHERE source_kind='request' AND source_id=r.id;
+  SELECT hub_id INTO seller_hub FROM trustwork.billing_task_origin WHERE source_kind='offer' AND source_id=o.id;
+  actual_digest:=trustwork.admin_digest(jsonb_build_object('termsKind','task',
+    'quoteVersion',jsonb_build_object('id',o.id,'version',o.version,'digest',jsonb_build_object('algorithm','trustwork-digest-1','value',o.digest)),
+    'rfqVersion',jsonb_build_object('id',o.request_version_id,'version',o.request_version,'digest',jsonb_build_object('algorithm','trustwork-digest-1','value',o.request_version_digest))));
+  IF a.id IS NULL OR o.id IS NULL OR r.id IS NULL OR a.status<>'accepted_by_buyer' OR o.status<>'sent' OR r.status<>'published'
+   OR o.valid_until<=clock_timestamp() OR o.stale_reason IS NOT NULL OR r.current_version_id IS DISTINCT FROM o.request_version_id
+   OR s.fee_kind<>'task' OR s.category_key IS NOT NULL OR a.offer_ref_id IS DISTINCT FROM o.id OR a.request_ref_id IS DISTINCT FROM o.request_version_id
+   OR ROW(a.offer_version,a.offer_digest,a.request_version,a.request_digest) IS DISTINCT FROM ROW(o.version,o.digest,o.request_version,o.request_version_digest)
+   OR a.accepted_terms_digest IS DISTINCT FROM actual_digest OR s.source_digest IS DISTINCT FROM actual_digest
+   OR ROW(s.buyer_person_id,s.buyer_company_id,s.seller_person_id,s.seller_company_id)
+      IS DISTINCT FROM ROW(r.owner_person_id,NULL::uuid,o.offeror_person_id,o.offeror_company_id)
+   OR ROW(a.buyer_person_id,a.buyer_company_id,a.seller_person_id,a.seller_company_id)
+      IS DISTINCT FROM ROW(s.buyer_person_id,s.buyer_company_id,s.seller_person_id,s.seller_company_id)
+   OR ROW(s.buyer_hub_id,s.seller_hub_id) IS DISTINCT FROM ROW(buyer_hub,seller_hub) THEN
+   RAISE EXCEPTION 'destination differs from task source' USING ERRCODE='23514',HINT='billing.source_outdated'; END IF;
+ ELSE
+  RAISE EXCEPTION 'unsupported booking source' USING ERRCODE='23514',HINT='billing.source_outdated';
+ END IF;
+ SELECT * INTO c FROM trustwork.billing_fee_confirmation WHERE id=p_confirmation FOR UPDATE;
+ d:=trustwork.billing_fee_check_disclosure(p_hub,d.id,d.digest);
  INSERT INTO trustwork.billing_fee_binding(confirmation_id,booking_id,source_digest,person_id,source_hub_id,local_fee_id,counterparty_fee_id)
  VALUES(c.id,p_booking,p_source_digest,c.person_id,p_hub,CASE WHEN d.side='buyer' THEN d.buyer_fee_id ELSE d.seller_fee_id END,
  CASE WHEN d.side='buyer' THEN d.seller_fee_id ELSE d.buyer_fee_id END) RETURNING * INTO b;

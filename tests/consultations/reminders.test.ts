@@ -1,3 +1,4 @@
+import { historicalConsultationFees } from '../billing/fees/historical.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -10,7 +11,7 @@ import { ConsultationsModule } from '../../apps/api/src/modules/consultations/co
 import { reminderProcess, type SentEffects } from './process-helper.js';
 import { ConsultationsService } from '../../apps/api/src/modules/consultations/consultations.service.js';
 import { NoConsultationMandates } from '../../apps/api/src/modules/consultations/mandates.js';
-import { NoPublishedCommission, ScreeningCommitmentGate } from '../../apps/api/src/modules/consultations/ports.js';
+import { ScreeningCommitmentGate } from '../../apps/api/src/modules/consultations/ports.js';
 import { ConfiguredElectronicRecords } from '../../apps/api/src/modules/transactions/electronic-records.js';
 import type { BookingView, ExpertRequestView, RequesterRequestView } from '../../packages/contracts/src/consultations.js';
 import { ENGINE_TEMPLATE_LANGUAGES, ThreadSchema, ThreadViewSchema } from '../../packages/contracts/src/communications.js';
@@ -79,7 +80,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   // Only the injected service clock moves: SQL, the principal, the booked slot and reminder identity stay real.
   // This simulates a reminder becoming due without sleeps or disabling any production trigger.
   const service = new ConsultationsService({ ...h.created.ctx!, clock: { now: () => new Date(Date.now() - 48 * HOUR) } }, h.services().principals,
-    new NoConsultationMandates(), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate(), hubId);
+    new NoConsultationMandates(), new ConfiguredElectronicRecords(), historicalConsultationFees(h.db.admin), new ScreeningCommitmentGate(), hubId);
   const prepare = async (seller: Client = expert, selectedOffering = offeringId, selectedWindow = window.id) => {
     const req = ok<RequesterRequestView>(await client.post('/v1/consultation-requests', { source: { kind: 'direct' }, offeringId: selectedOffering, actor: PERSON, mentoringRelationshipId: null,
       privateConstraint: { budgetCeiling: { minorUnits: '987654321', currency: 'USD' }, requesterNotes: 'PRIVATE-reminder' }, terms: { kind: 'session', question: 'PRIVATE shared question', fields: [], preferredModes: ['video'], preferredTimes: [], sharedMaterials: [], licenceRequired: false, languages: ['en'] } }));
@@ -337,7 +338,7 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
     ok(await reviewer.post(`/v1/hubs/${otherHub}/message-templates/thread.message/versions/1/activate`, { reason: 'Synthetic second hub review' }));
     // Exercise the owning module's actual environment wiring, not a caller-supplied public field.
     const moduleService = (sourceHub: string | null) => {
-      const mod = ConsultationsModule.forRoot({ ...h.created.ctx!, clock: { now: () => new Date(Date.now() - 48 * HOUR) } }, h.services(), {}, sourceHub ? { TRUSTWORK_HUB_ID: sourceHub } : {});
+      const mod = ConsultationsModule.forRoot({ ...h.created.ctx!, clock: { now: () => new Date(Date.now() - 48 * HOUR) } }, h.services(), { commission: historicalConsultationFees(h.db.admin) }, sourceHub ? { TRUSTWORK_HUB_ID: sourceHub } : {});
       return (mod.providers![0] as { useValue: ConsultationsService }).useValue;
     };
     const a = await book(expert, offeringId, window.id, moduleService(hubId));

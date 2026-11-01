@@ -42,6 +42,9 @@
       "capabilities": "Հնարավորություն",
       "credit_packs": "Կրեդիտների փաթեթ"
     },
-    "planVersion": "Պլանի տարբերակ {version}"
+    "planVersion": "Պլանի տարբերակ {version}",
+    "categoryUnavailable": "Կատեգորիան հասանելի չէ․ հանրային անվանումը գրանցված չէ։",
+    "details": "Տարբերակի մանրամասները",
+    "digest": "Պայմանների հեշը՝ {digest}"
   }
 }

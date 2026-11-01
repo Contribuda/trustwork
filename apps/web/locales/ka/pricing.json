@@ -42,6 +42,9 @@
       "capabilities": "შესაძლებლობა",
       "credit_packs": "კრედიტების პაკეტი"
     },
-    "planVersion": "გეგმის ვერსია {version}"
+    "planVersion": "გეგმის ვერსია {version}",
+    "categoryUnavailable": "კატეგორია მიუწვდომელია: საჯარო დასახელება რეგისტრირებული არ არის.",
+    "details": "ვერსიის დეტალები",
+    "digest": "პირობების ჰეში: {digest}"
   }
 }

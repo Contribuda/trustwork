@@ -42,6 +42,9 @@
       "capabilities": "İmkan",
       "credit_packs": "Kredit paketi"
     },
-    "planVersion": "Plan versiyası {version}"
+    "planVersion": "Plan versiyası {version}",
+    "categoryUnavailable": "Kateqoriya əlçatan deyil: ictimai ad qeydiyyata alınmayıb.",
+    "details": "Versiya təfərrüatları",
+    "digest": "Şərtlərin heşi: {digest}"
   }
 }

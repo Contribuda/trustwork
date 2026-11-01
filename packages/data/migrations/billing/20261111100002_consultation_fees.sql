@@ -1,3 +1,22 @@
+-- Only rows present at this migration boundary retain historical unbound acceptance.
+-- Exact IDs and digests, not caller timestamps, commission labels or editable hub payloads, establish origin.
+-- Runtime roles have no write privilege or command that can add an exemption.
+CREATE TABLE trustwork.billing_fee_legacy_source (
+ source_kind text NOT NULL CHECK(source_kind IN ('consultation','task')),
+ source_id uuid NOT NULL,
+ source_digest text NOT NULL,
+ captured_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ PRIMARY KEY(source_kind,source_id)
+);
+INSERT INTO trustwork.billing_fee_legacy_source(source_kind,source_id,source_digest)
+ SELECT 'consultation',id,terms_digest FROM trustwork.consultation_booking
+ UNION ALL SELECT 'task',id,accepted_terms_digest FROM trustwork.agreement WHERE terms_kind='task';
+CREATE TRIGGER billing_fee_legacy_source_frozen BEFORE UPDATE OR DELETE ON trustwork.billing_fee_legacy_source
+ FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
+ALTER TABLE trustwork.billing_fee_legacy_source ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trustwork.billing_fee_legacy_source FORCE ROW LEVEL SECURITY;
+CREATE POLICY maintenance_read ON trustwork.billing_fee_legacy_source FOR SELECT TO trustwork_owner USING(trustwork.maintenance_on());
+
 -- BILL-003 after CONS-001: immutable local source provenance, never a caller-supplied participant home hub.
 CREATE TABLE trustwork.billing_consultation_origin (
  source_kind text NOT NULL CHECK(source_kind IN ('offering','request')),
@@ -94,26 +113,55 @@ REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION trustwork.billing_consultation_origin(uuid,text,uuid),trustwork.billing_consultation_quote(uuid,uuid),
  trustwork.billing_consultation_proposed(uuid,uuid),trustwork.billing_consultation_confirm(uuid,uuid,text) TO trustwork_app;
 
--- Protect the stored commitment too: bypassing the service cannot book a fee-bound proposal without both bindings.
-CREATE FUNCTION trustwork.billing_consultation_booking_guard() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
-DECLARE s trustwork.billing_fee_scope%ROWTYPE; buyer_fee uuid; seller_fee uuid;
+-- Both final stored transitions use the same gate, including direct app-role SQL.
+CREATE FUNCTION trustwork.billing_consultation_require_bindings(p_booking uuid) RETURNS void
+LANGUAGE plpgsql SET search_path=trustwork,pg_temp AS $$
+DECLARE b trustwork.consultation_booking%ROWTYPE; s trustwork.billing_fee_scope%ROWTYPE; buyer_fee uuid; seller_fee uuid; k text;
 BEGIN
- IF NEW.status='booked' AND OLD.status='proposed' AND NEW.terms#>>'{pricing,commission,status}'='versioned_fees' THEN
-  SELECT * INTO s FROM trustwork.billing_fee_scope WHERE source_kind='consultation' AND source_id=NEW.id AND source_digest=NEW.terms_digest;
-  buyer_fee:=(NEW.terms#>>'{pricing,commission,buyerFee,id}')::uuid;
-  seller_fee:=(NEW.terms#>>'{pricing,commission,sellerFee,id}')::uuid;
-  IF s.id IS NULL OR NOT EXISTS(SELECT 1 FROM trustwork.billing_fee_binding x JOIN trustwork.billing_fee_confirmation c ON c.id=x.confirmation_id
-   JOIN trustwork.billing_fee_disclosure d ON d.id=c.disclosure_id WHERE x.booking_id=NEW.id AND x.source_digest=NEW.terms_digest
+ SELECT * INTO b FROM trustwork.consultation_booking WHERE id=p_booking;
+ IF b.id IS NULL THEN RAISE EXCEPTION 'booking unavailable' USING ERRCODE='23514',HINT='billing.unavailable'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM trustwork.billing_fee_legacy_source
+  WHERE source_kind='consultation' AND source_id=b.id AND source_digest=b.terms_digest) THEN
+  SELECT * INTO s FROM trustwork.billing_fee_scope WHERE source_kind='consultation' AND source_id=b.id AND source_digest=b.terms_digest;
+  IF s.id IS NULL OR b.terms#>>'{pricing,commission,status}' IS DISTINCT FROM 'versioned_fees' THEN
+   RAISE EXCEPTION 'both fee confirmations are required' USING ERRCODE='23514',HINT='billing.unavailable'; END IF;
+  FOR k IN SELECT unnest(ARRAY[s.buyer_hub_id::text||':consultation:buyer',s.seller_hub_id::text||':consultation:seller']) ORDER BY 1 LOOP
+   PERFORM pg_advisory_xact_lock(hashtext('trustwork.billing.fee'),hashtext(k));
+  END LOOP;
+  buyer_fee:=(b.terms#>>'{pricing,commission,buyerFee,id}')::uuid;
+  seller_fee:=(b.terms#>>'{pricing,commission,sellerFee,id}')::uuid;
+  IF (SELECT count(*) FROM trustwork.marketplace_fee_version WHERE id IN(buyer_fee,seller_fee)
+   AND status='active' AND effective_from<=clock_timestamp() AND (effective_to IS NULL OR effective_to>clock_timestamp()))<>2
+   OR EXISTS(SELECT 1 FROM trustwork.hub WHERE id IN(s.buyer_hub_id,s.seller_hub_id) AND lifecycle='closed')
+   OR NOT EXISTS(SELECT 1 FROM trustwork.billing_fee_binding x JOIN trustwork.billing_fee_confirmation c ON c.id=x.confirmation_id
+   JOIN trustwork.billing_fee_disclosure d ON d.id=c.disclosure_id WHERE x.booking_id=b.id AND x.source_digest=b.terms_digest
    AND d.scope_id=s.id AND d.side='buyer' AND x.source_hub_id=s.buyer_hub_id AND x.local_fee_id=buyer_fee AND x.counterparty_fee_id=seller_fee)
    OR NOT EXISTS(SELECT 1 FROM trustwork.billing_fee_binding x JOIN trustwork.billing_fee_confirmation c ON c.id=x.confirmation_id
-   JOIN trustwork.billing_fee_disclosure d ON d.id=c.disclosure_id WHERE x.booking_id=NEW.id AND x.source_digest=NEW.terms_digest
+   JOIN trustwork.billing_fee_disclosure d ON d.id=c.disclosure_id WHERE x.booking_id=b.id AND x.source_digest=b.terms_digest
    AND d.scope_id=s.id AND d.side='seller' AND x.source_hub_id=s.seller_hub_id AND x.local_fee_id=seller_fee AND x.counterparty_fee_id=buyer_fee) THEN
    RAISE EXCEPTION 'both fee confirmations are required' USING ERRCODE='23514',HINT='billing.unavailable';
   END IF;
+ END IF;
+ RETURN;
+END $$;
+CREATE FUNCTION trustwork.billing_consultation_booking_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
+BEGIN
+ IF NEW.status='booked' AND OLD.status='proposed' THEN
+  PERFORM trustwork.billing_consultation_require_bindings(NEW.id);
  END IF;
  RETURN NEW;
 END $$;
 CREATE TRIGGER billing_consultation_booking_guard BEFORE UPDATE OF status ON trustwork.consultation_booking
  FOR EACH ROW EXECUTE FUNCTION trustwork.billing_consultation_booking_guard();
-REVOKE ALL ON FUNCTION trustwork.billing_consultation_booking_guard() FROM PUBLIC;
+CREATE FUNCTION trustwork.billing_consultation_agreement_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
+BEGIN
+ IF NEW.terms_kind='consultation' AND NEW.status='accepted_by_both' AND OLD.status='accepted_by_buyer' THEN
+  PERFORM trustwork.billing_consultation_require_bindings(NEW.offer_ref_id);
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER billing_consultation_agreement_guard BEFORE UPDATE OF status ON trustwork.agreement
+ FOR EACH ROW EXECUTE FUNCTION trustwork.billing_consultation_agreement_guard();
+REVOKE ALL ON FUNCTION trustwork.billing_consultation_require_bindings(uuid),trustwork.billing_consultation_booking_guard(),trustwork.billing_consultation_agreement_guard() FROM PUBLIC;

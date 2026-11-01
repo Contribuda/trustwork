@@ -28,10 +28,17 @@ const control = createServer((req, res) => {
     if (req.method === 'GET' && req.url === '/') { res.writeHead(200); return res.end('ready'); }
     if (req.method !== 'POST' || req.url !== '/publish') { res.writeHead(404); return res.end(); }
     if (!published) {
-      const fee = await w.draft(syntheticTerms({ effectiveFrom: new Date(Date.now()+60000).toISOString(), fixedMinor: '125', effectiveTo: null }));
-      await w.activate(fee, await w.approve(fee));
+      const fees = [];
+      for (const terms of [
+        {kind:'consultation',categoryKey:'drawing_review'},
+        {kind:'consultation',categoryKey:'synthetic_review'},
+        {kind:'task',categoryKey:'work.envelope.roofing'},
+      ]) {
+        const fee = await w.draft(syntheticTerms({ ...terms, effectiveFrom: new Date(Date.now()+60000).toISOString(), fixedMinor: '125', effectiveTo: null }));
+        await w.activate(fee, await w.approve(fee)); fees.push(fee);
+      }
       const positive = await data.getPublicPricing();
-      assert.deepEqual(positive.fees, [fee]);
+      assert.deepEqual([...positive.fees].sort((a,b)=>a.id.localeCompare(b.id)), fees.sort((a,b)=>a.id.localeCompare(b.id)));
       assert.ok(!JSON.stringify(positive).includes(w.p.owner));
       published = true;
     }

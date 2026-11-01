@@ -1,6 +1,10 @@
+import { BookingTermsSchema, bookingTermsDigestInput, pricingSummary } from '../../../packages/contracts/src/consultations.js';
+import { sql } from 'kysely';
+import { computeDigest, computeAgreementDigest } from '@trustwork/contracts';
+import { rawBindingChecks, mustRefuseFinal, recordAcceptance } from './raw-binding.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createApp } from '../../../apps/api/src/app.js';
 import { Client, startHarness, SKIP_REASON, type Response } from '../../backend/helpers/app.js';
@@ -50,7 +54,7 @@ test('BILL-003 actual cross-hub consultation acceptance binds both exact fees wi
   await t.test('absence of actual published fees is unavailable, never a zero-price fallback',async()=>{
     const denied=await propose(r);assert.equal(denied.status,409,JSON.stringify(denied.body));assert.equal((denied.body as {details:{reason:string}}).details.reason,'billing.unavailable');
   });
-  const starts=new Date(Date.now()+1500); const ends=new Date(starts.getTime()+15000);
+  const starts=new Date(Date.now()+1500); const ends=new Date(starts.getTime()+30000);
   const feeBuyer=await w.draft(syntheticTerms({categoryKey:'drawing_review',basisPoints:100,effectiveFrom:starts.toISOString(),effectiveTo:ends.toISOString()}));
   const feeSeller=await w.draft(syntheticTerms({categoryKey:'drawing_review',payer:'seller',basisPoints:200,effectiveFrom:starts.toISOString(),effectiveTo:null}),w.hubB,w.p.otherOwner);
   await w.activate(feeBuyer,await w.approve(feeBuyer));
@@ -68,6 +72,30 @@ test('BILL-003 actual cross-hub consultation acceptance binds both exact fees wi
     assert.ok(!JSON.stringify(offered).includes('PRIVATE buyer notes'));
     const own=ok<RequesterRequestView>(await buyer.get(`/v1/consultation-requests/${r.request.id}`));
     assert.deepEqual(own.bookings[0]?.digest,booking.digest);
+  });
+  const otherRequest=await request();
+  const otherBooking=ok<ExpertRequestView>(await propose(otherRequest),201).bookings[0]!;
+  const scope=(await h.db.admin.query("SELECT id FROM trustwork.billing_fee_scope WHERE source_kind='consultation' AND source_id=$1",[otherBooking.id])).rows[0].id as string;
+  await rawBindingChecks(t,h.db.admin,w,scope,otherBooking.id,booking.id,otherBooking.digest.value);
+  await t.test('new legacy-labelled proposal without origin cannot take the raw final booking path',async()=>{
+    const req=await request();
+    const original=(await h.db.admin.query('SELECT * FROM trustwork.consultation_booking WHERE id=$1',[booking.id])).rows[0];
+    const terms=BookingTermsSchema.parse({...original.terms,request:{id:req.request.id,version:1,digest:req.request.digest},pricing:pricingSummary(original.terms.pricing.price,{status:'none_published'})});
+    const id=randomUUID(), termsDigest=computeDigest(bookingTermsDigestInput({bookingId:id,terms})).value;
+    await w.a.as(sellerId,trx=>trx.insertInto('consultation_booking').values({...original,id,created_at:new Date('2020-01-01T00:00:00Z'),request_id:req.request.id,terms:JSON.stringify(terms),terms_digest:termsDigest}).execute());
+    const agreement=await w.a.as(buyerId,async trx=>{
+      const a=await trx.insertInto('agreement').values({terms_kind:'consultation',buyer_person_id:buyerId,seller_person_id:sellerId,
+        offer_ref_id:id,request_ref_id:req.request.id,offer_version:1,offer_digest:termsDigest,request_version:1,request_digest:req.request.digest.value,
+        accepted_terms_digest:computeAgreementDigest({id,version:1,digest:{algorithm:'trustwork-digest-1',value:termsDigest}},{id:req.request.id,version:1,digest:req.request.digest},'consultation').value,
+        status:'accepted_by_buyer',created_by_person_id:buyerId}).returningAll().executeTakeFirstOrThrow();
+      await recordAcceptance(trx,a.id,'buyer');
+      await trx.updateTable('consultation_booking').set({agreement_id:a.id}).where('id','=',id).execute();return a;
+    });
+    await mustRefuseFinal(fn=>w.a.as(sellerId,fn),async trx=>{
+      await recordAcceptance(trx,agreement.id,'seller');
+      await sql`UPDATE trustwork.agreement SET status='accepted_by_both' WHERE id=${agreement.id}::uuid`.execute(trx);
+      await sql`UPDATE trustwork.consultation_booking SET status='booked',booked_at=now() WHERE id=${id}::uuid`.execute(trx);
+    });
   });
   const fresh=ok<RequesterRequestView>(await buyer.get(`/v1/consultation-requests/${r.request.id}`));
   const accept={booking:{id:booking.id,version:1,digest:booking.digest},request:{id:r.request.id,version:1,digest:r.request.digest},

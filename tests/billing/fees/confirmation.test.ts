@@ -57,20 +57,19 @@ test('BILL-003 internal adapter binds exact disclosures; missing source integrat
   await t.test('changed source terms cannot consume a confirmation', async () => {
     await rejects(a.as(p.outsider, (trx) => bookingFees.bind(trx, hubA, confirmation.id, bookingId, 'f'.repeat(64))), '23514', 'billing.source_outdated');
   });
-  await t.test('concurrent consumes have one winner and each hub binds only its own party fee', async () => {
-    const results = await Promise.allSettled([1, 2].map(() => a.as(p.outsider, (trx) => bookingFees.bind(trx, hubA, confirmation.id, bookingId, sourceDigest))));
-    assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
-    const winner = results.find((r) => r.status === 'fulfilled') as PromiseFulfilledResult<{ local_fee_id: string; counterparty_fee_id: string }>;
-    assert.equal(winner.value.local_fee_id, buyer.id); assert.equal(winner.value.counterparty_fee_id, seller.id);
-    const other = await a.as(p.operator, (trx) => bookingFees.bind(trx, hubB, sellerConfirmation.id, bookingId, sourceDigest));
-    assert.equal(other.local_fee_id, seller.id); assert.equal(other.counterparty_fee_id, buyer.id);
-    assert.equal((await a.as(p.outsider, (trx) => trx.selectFrom('billing_fee_binding').selectAll().execute())).length, 1);
+  await t.test('synthetic scopes without an owning destination cannot forge binding or audit', async () => {
+    for (const [person,hub,c] of [[p.outsider,hubA,confirmation],[p.operator,hubB,sellerConfirmation]] as const) {
+      await rejects(a.as(person,trx=>bookingFees.bind(trx,hub,c.id,bookingId,sourceDigest)), '23514','billing.source_outdated');
+      assert.equal((await db.admin.query('SELECT id FROM trustwork.billing_fee_binding WHERE confirmation_id=$1',[c.id])).rowCount,0);
+    }
   });
-  await t.test('a failed booking transaction rolls back the fee binding', async () => {
-    const d = await disclose(); const c = await a.as(p.outsider, (trx) => bookingFees.confirm(trx, hubA, d.id, d.digest));
-    const id = randomUUID();
-    await assert.rejects(a.as(p.outsider, async (trx) => { await bookingFees.bind(trx, hubA, c.id, id, sourceDigest); throw new Error('Synthetic booking refusal'); }));
-    assert.equal((await db.admin.query('SELECT id FROM trustwork.billing_fee_binding WHERE booking_id=$1', [id])).rowCount, 0);
+  await t.test('unsupported source kinds cannot consume confirmations',async()=>{
+    for(const kind of ['marketplace','ticket','course'] as const) {
+      const unsupported=await withMaintenance(db.admin,trx=>trx.insertInto('billing_fee_scope').values({...scope,id:randomUUID(),source_kind:kind,source_id:randomUUID()}).returningAll().executeTakeFirstOrThrow());
+      const d=await disclose(p.outsider,hubA,unsupported.id);
+      const c=await a.as(p.outsider,trx=>bookingFees.confirm(trx,hubA,d.id,d.digest));
+      await rejects(a.as(p.outsider,trx=>bookingFees.bind(trx,hubA,c.id,unsupported.source_id,sourceDigest)),'23514','billing.source_outdated');
+    }
   });
   await t.test('disclosure, confirmation and binding are immutable', async () => {
     await rejects(withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.billing_fee_disclosure SET digest=${'f'.repeat(64)} WHERE id=${shown.id}::uuid`.execute(trx)), '23000');
@@ -90,7 +89,7 @@ test('BILL-003 internal adapter binds exact disclosures; missing source integrat
     const unconfirmed = await disclose(p.outsider, hubA, newScope.id);
     await delay(Math.max(0, ends.getTime()-Date.now()+10));
     await rejects(a.as(p.outsider, (trx) => bookingFees.confirm(trx, hubA, unconfirmed.id, unconfirmed.digest)), '23514', 'billing.fee_outdated');
-    await rejects(a.as(p.outsider, (trx) => bookingFees.bind(trx, hubA, c.id, randomUUID(), sourceDigest)), '23514', 'billing.fee_outdated');
+    await rejects(a.as(p.outsider, (trx) => bookingFees.bind(trx, hubA, c.id, randomUUID(), sourceDigest)), '23514', 'billing.source_outdated');
     assert.equal((await disclose(p.outsider, hubA, newScope.id)).snapshot.buyerFee.id, next.id);
   });
 });

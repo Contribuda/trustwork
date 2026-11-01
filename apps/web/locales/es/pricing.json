@@ -42,6 +42,9 @@
       "capabilities": "Capacidad",
       "credit_packs": "Paquete de créditos"
     },
-    "planVersion": "Versión del plan {version}"
+    "planVersion": "Versión del plan {version}",
+    "categoryUnavailable": "Categoría no disponible: no hay un nombre público registrado.",
+    "details": "Detalles de la versión",
+    "digest": "Huella de las condiciones: {digest}"
   }
 }

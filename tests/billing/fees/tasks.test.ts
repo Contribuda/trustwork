@@ -1,3 +1,5 @@
+import { rawBindingChecks, mustRefuseFinal, recordAcceptance } from './raw-binding.js';
+import { taskAgreements } from '../../../packages/data/src/repositories/tasks.js';
 import { sql } from 'kysely';
 import { bookingFees } from '../../../packages/data/src/repositories/billing-fees.js';
 import { rejects } from '../../hubs/helpers.js';
@@ -6,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startHarness, SKIP_REASON } from '../../backend/helpers/app.js';
-import { addLogins } from '../../admin/helpers.js';
+import { addLogins, signIn } from '../../admin/helpers.js';
 import { feeWorld, syntheticTerms } from './helpers.js';
 import { taskFixture, taskOk, taskConsent, taskPerson } from './task-fixture.js';
 import { computeAgreementDigest } from '../../../packages/contracts/src/server/commercial.js';
@@ -26,7 +28,7 @@ test('BILL-003 actual task confirmations pin both hubs fees separately from immu
     assert.equal((await f.buyer.post(task.url,task.accept)).status,409);
     assert.equal((await h.db.admin.query('SELECT id FROM trustwork.agreement WHERE offer_ref_id=$1',[task.offer.id])).rowCount,0);
   });
-  const start=new Date(Date.now()+1500),end=new Date(start.getTime()+16000);
+  const start=new Date(Date.now()+1500),end=new Date(start.getTime()+30000);
   const b=await w.draft(syntheticTerms({kind:'task',categoryKey:null,effectiveFrom:start.toISOString(),effectiveTo:end.toISOString()}));
   const s=await w.draft(syntheticTerms({kind:'task',categoryKey:null,payer:'seller',effectiveFrom:start.toISOString(),effectiveTo:null}),w.hubB,w.p.otherOwner);
   await w.activate(b,await w.approve(b));await w.activate(s,await w.approve(s,s.digest,w.p.moderator,w.p.otherOwner),w.p.moderator);
@@ -55,6 +57,32 @@ test('BILL-003 actual task confirmations pin both hubs fees separately from immu
   await t.test('wrong owner or exact digest is refused without committing acceptance',async()=>{
     assert.equal((await f.buyer.post(task.url,{...task.accept,feeConfirmation:confirmation(sd)})).status,404);
     assert.equal((await f.buyer.post(task.url,{...task.accept,feeConfirmation:{...confirmation(bd),digest:'f'.repeat(64)}})).status,403);
+  });
+  const rawTasks=await Promise.all([f.prepare(),f.prepare()]);
+  const rawAgreements=[];
+  for(const source of rawTasks){
+    rawAgreements.push(await w.a.as(w.p.outsider,async trx=>{const a=await taskAgreements.insert(trx,{
+      buyer_person_id:w.p.outsider,seller_person_id:w.p.operator,seller_company_id:null,offer_ref_id:source.offer.id,request_ref_id:source.accept.requestVersion.id,
+      offer_version:source.offer.version,offer_digest:source.accept.offer.digest.value,request_version:source.accept.requestVersion.version,request_digest:source.accept.requestVersion.digest.value,
+      accepted_terms_digest:computeAgreementDigest(source.accept.offer,source.accept.requestVersion,'task').value,created_by_person_id:w.p.outsider,
+    });await recordAcceptance(trx,a.id,'buyer');return a;}));
+  }
+  const rawD=taskOk<FeeDisclosure>(await f.buyer.post(rawTasks[0]!.disclose,{}),201);
+  await rawBindingChecks(t,h.db.admin,w,rawD.snapshot.scopeId,rawAgreements[0]!.id,rawAgreements[1]!.id,rawAgreements[0]!.accepted_terms_digest);
+  await t.test('new task agreement with omitted provenance cannot take the raw final transition',async()=>{
+    // The historical harness still issues real participant commands; it deliberately omits the new origin hook.
+    const legacyBuyer=h.client(),legacySeller=h.client();
+    await signIn(legacyBuyer,buyerEmail);await signIn(legacySeller,sellerEmail);
+    const legacy=await taskFixture(h,{buyerId:w.p.outsider,sellerId:w.p.operator,buyerEmail,sellerEmail,hubA:w.hubA,hubB:w.hubB,buyerClient:legacyBuyer,sellerClient:legacySeller});
+    try{
+      const source=await legacy.prepare();
+      const a=await w.a.as(w.p.outsider,async trx=>{const a=await taskAgreements.insert(trx,{
+        buyer_person_id:w.p.outsider,seller_person_id:w.p.operator,seller_company_id:null,offer_ref_id:source.offer.id,request_ref_id:source.accept.requestVersion.id,
+        offer_version:source.offer.version,offer_digest:source.accept.offer.digest.value,request_version:source.accept.requestVersion.version,request_digest:source.accept.requestVersion.digest.value,
+        accepted_terms_digest:computeAgreementDigest(source.accept.offer,source.accept.requestVersion,'task').value,created_by_person_id:w.p.outsider,
+      });await recordAcceptance(trx,a.id,'buyer');return a;});
+      await mustRefuseFinal(fn=>w.a.as(w.p.operator,fn),async trx=>{await recordAcceptance(trx,a.id,'seller');await sql`UPDATE trustwork.agreement SET status='accepted_by_both' WHERE id=${a.id}::uuid`.execute(trx);});
+    }finally{await legacy.close();}
   });
   const accepted=taskOk<OwnerTaskRequestView>(await f.buyer.post(task.url,{...task.accept,feeConfirmation:confirmation(bd)}),201);
   const a=accepted.agreements[0]!;

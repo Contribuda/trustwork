@@ -1,3 +1,4 @@
+import { historicalConsultationFees } from '../billing/fees/historical.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -425,7 +426,7 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
     const pending = ok<BookingView>(await anna.get(`/v1/consultation-bookings/${b.id}`));
     assert.equal(pending.site, null, 'still nothing while only the client accepted');
     const agreement = accepted.agreements[0]!;
-    const service = new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate());
+    const service = new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), historicalConsultationFees(h.db.admin), new ScreeningCommitmentGate());
     const asAnna = await stateOf(anna, 'held-company-actor');
     await holdPerson(h.db.admin, P.anna);
     try {
@@ -538,7 +539,7 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
       assert.equal((refused.body as { details?: unknown }).details, undefined);
     } finally { await clearHold(h.db.admin, P.carl, P.petr); }
     // Use the service too: the HTTP jurisdiction middleware otherwise stops an own-side hold before the gate.
-    const service = new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate());
+    const service = new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), historicalConsultationFees(h.db.admin), new ScreeningCommitmentGate());
     const state = await stateOf(xenia, 'own-hold');
     await holdPerson(h.db.admin, P.xenia);
     try {
@@ -559,7 +560,7 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
   await t.test('real gate concurrency: acceptance holds off a jurisdiction writer; an uncommitted hold fails closed before any agreement', { timeout: 15_000 }, async () => {
     const asPetr = await stateOf(petr, 'gate-race');
     const asCarl = await stateOf(carl, 'gate-race-expert');
-    const serviceWith = (screening: ConsultationScreeningGate) => new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), new NoPublishedCommission(), screening);
+    const serviceWith = (screening: ConsultationScreeningGate) => new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), historicalConsultationFees(h.db.admin), screening);
     const real = new ScreeningCommitmentGate();
     const service = serviceWith(real);
     const prepare = async () => {
@@ -621,7 +622,7 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
       { personId: P.carl, mandateId: 'mandate-demo-expert', action: 'send_quote' },
     ]);
     const commission = new FixedRateCommission({ id: 'price-setting-demo-consultations', version: 2, rateBps: 1000, fixedFee: null, payer: 'client' });
-    const service = new ConsultationsService(ctx, h.services().principals, mandates, new ConfiguredElectronicRecords(), commission, new ScreeningCommitmentGate());
+    const service = new ConsultationsService(ctx, h.services().principals, mandates, new ConfiguredElectronicRecords(), historicalConsultationFees(h.db.admin, commission), new ScreeningCommitmentGate());
     const asPetr = await stateOf(petr, 'req-cons-agent-1');
     const asCarl = await stateOf(carl, 'req-cons-agent-2');
     const req = await service.createRequest({ source: { kind: 'direct' }, offeringId: carlSessionId, terms: requestTerms({ fields: [], sharedMaterials: [] }), mentoringRelationshipId: null, privateConstraint: { budgetCeiling: usd('16000'), requesterNotes: null }, actor: PERSON }, asPetr);

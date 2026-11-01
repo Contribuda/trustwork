@@ -42,6 +42,9 @@
       "capabilities": "Capability",
       "credit_packs": "Credit pack"
     },
-    "planVersion": "Plan version {version}"
+    "planVersion": "Plan version {version}",
+    "categoryUnavailable": "Category unavailable: no public category label is registered.",
+    "details": "Version details",
+    "digest": "Terms digest: {digest}"
   }
 }
