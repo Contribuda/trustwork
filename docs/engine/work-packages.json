@@ -5596,10 +5596,10 @@
       "id": "AGT-020",
       "title": "Validate participant jobs and KPIs with practitioners",
       "area": "product-research",
-      "status": "blocked",
+      "status": "open",
       "dependsOn": [],
       "handbook": "docs/engine/agent-catalog.md",
-      "goal": "Test the catalogue jobs, mandates and KPIs with real practitioners of each participant type in the reference hub before prioritising implementation. Blocked until the owner approves the interview programme (consent, recruiting, no incentives that bias answers).",
+      "goal": "Test the catalogue jobs, mandates and KPIs with real practitioners of each participant type in the reference hub before prioritising implementation. The interview programme is approved on the terms of ADR 025 decision 43; a person recruits and interviews, agents only prepare guides and analyse consented transcripts.",
       "read": [
         "docs/engine/agent-catalog.md",
         "docs/research/README.md"
@@ -10374,12 +10374,12 @@
       "id": "XCH-002",
       "title": "Protocol trustwork-mesh/2: contracts and conformance vectors",
       "area": "federation",
-      "status": "blocked",
+      "status": "open",
       "dependsOn": [
         "XCH-001"
       ],
       "handbook": "docs/engine/hub-exchange-architecture.md",
-      "goal": "Freeze the trustwork-mesh/2 superset proposed in ADR 016 (envelope schema, language, policy and context members; new shared and public kinds; capability statement; opt-in search; new error codes) with conformance vectors. Blocked until ADR 016 is accepted.",
+      "goal": "Freeze the trustwork-mesh/2 superset proposed in ADR 016 (envelope schema, language, policy and context members; new shared and public kinds; capability statement; opt-in search; new error codes) with conformance vectors. ADR 016 is accepted (ADR 025 decision 1).",
       "read": [
         "docs/engine/hub-exchange-architecture.md",
         "docs/engine/federation-protocol.md",
