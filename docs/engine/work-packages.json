@@ -4220,7 +4220,7 @@
       "id": "AGT-003",
       "title": "Agent module registry, hub agent policy, job subscriptions and kill switches",
       "area": "assistant",
-      "status": "in_progress",
+      "status": "done",
       "dependsOn": [
         "AGT-001",
         "HUB-001"
