@@ -307,7 +307,7 @@ export const JurisdictionIssuerSchema = z.strictObject({
   verifier: z.literal('synthetic-ed25519-v1'), implementationDigest: ProofDigest, contractDigest: ProofDigest,
   keyId: Key, publicKey: z.string().min(32).max(1024), evidenceMode: z.literal('synthetic'),
   subjectKinds: z.array(z.enum(['person', 'company', 'project'])).min(1).max(3).refine(unique),
-  actions: z.array(z.literal('send_quote')).length(1), contextKinds: z.array(z.literal('quote')).length(1),
+  actions: z.array(z.enum(['send_quote', 'negotiate', 'place_order', 'accept_order'])).min(1).max(4).refine(unique), contextKinds: z.array(z.enum(['quote', 'agreement'])).min(1).max(2).refine(unique),
   jurisdictions: z.array(JurisdictionCodeSchema).min(1).max(20).refine(unique),
   competenceDigest: ProofDigest, independence: z.enum(['not_required', 'required']),
   effectiveFrom: z.iso.datetime(), effectiveUntil: z.iso.datetime(),
@@ -317,20 +317,22 @@ export const JurisdictionOwningSubjectSchema = z.strictObject({
   kind: z.enum(['person', 'company', 'project']), id: z.uuid(), revision: z.int().positive(),
   epoch: z.int().nonnegative().nullable(), digest: ProofDigest,
 });
-export const JurisdictionOwningContextSchema = z.strictObject({
-  kind: z.literal('quote'), id: z.uuid(), revision: z.int().positive(), digest: ProofDigest,
-});
+export const JurisdictionOwningContextSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('quote'), id: z.uuid(), revision: z.int().positive(), digest: ProofDigest }),
+  z.strictObject({ kind: z.literal('agreement'), operation: z.enum(['place_order', 'seller_accept']), id: z.uuid(), revision: z.int().positive(), digest: ProofDigest }),
+]);
 export const JurisdictionProofPayloadSchema = z.strictObject({
   schemaVersion: z.literal(2), issuerVersionId: z.uuid(), issuerDigest: ProofDigest, keyId: Key,
   audienceHubId: z.uuid(), originHubId: z.uuid(), evidenceMode: z.literal('synthetic'),
   demoAuthority: z.strictObject({ versionId: z.uuid(), version: z.int().positive(), digest: ProofDigest }),
-  recordId: Key, recordRevision: z.int().positive(), action: z.literal('send_quote'),
+  recordId: Key, recordRevision: z.int().positive(), action: z.enum(['send_quote', 'negotiate', 'place_order', 'accept_order']),
   subject: JurisdictionOwningSubjectSchema, context: JurisdictionOwningContextSchema,
   linkage: z.strictObject({ kind: z.literal('verified_engine_subject'), evidenceDigest: ProofDigest }),
   coverage: z.strictObject({ status: z.literal('complete'), jurisdictions: z.array(JurisdictionCodeSchema).min(1).max(20).refine(unique),
     basisDigest: ProofDigest, competenceDigest: ProofDigest, independenceEvidenceDigest: ProofDigest.nullable() }),
   issuedAt: z.iso.datetime(), effectiveFrom: z.iso.datetime(), effectiveUntil: z.iso.datetime(),
-}).refine(v => v.effectiveUntil > v.effectiveFrom && v.audienceHubId === v.originHubId, 'invalid proof scope or interval');
+}).refine(v => v.effectiveUntil > v.effectiveFrom && v.audienceHubId === v.originHubId
+  && (v.context.kind === 'quote' ? v.action !== 'accept_order' : v.action === (v.context.operation === 'place_order' ? 'place_order' : 'accept_order')), 'invalid proof scope or interval');
 export type JurisdictionProofPayload = z.infer<typeof JurisdictionProofPayloadSchema>;
 export const JurisdictionProofEnvelopeSchema = z.strictObject({ payload: JurisdictionProofPayloadSchema, signature: z.string().regex(/^[A-Za-z0-9+/]{86}==$/) });
 export const JurisdictionIssuerProposeSchema = z.strictObject({ registration: JurisdictionIssuerSchema, reason: z.string().min(1).max(500) });

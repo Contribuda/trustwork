@@ -36,6 +36,10 @@ export const jurisdictionAuthority = {
     const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_limits(${quoteId}::uuid,${action}) AS result`.execute(trx);
     return JurisdictionLimitsSchema.parse(rows[0]?.result);
   },
+  async agreementLimits(trx: Transaction, agreementId: string, operation: 'place_order' | 'seller_accept') {
+    const { rows } = await sql<{ result: unknown }>`SELECT trustwork.jurisdiction_agreement_limits(${agreementId}::uuid,${operation}) AS result`.execute(trx);
+    return JurisdictionLimitsSchema.parse(rows[0]?.result);
+  },
   async bind(trx: Transaction, intentId: string, bindingDigest: string): Promise<void> {
     await sql`SELECT trustwork.jurisdiction_bind_intent(${intentId}::uuid,${bindingDigest})`.execute(trx);
   },
