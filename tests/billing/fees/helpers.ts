@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { sql } from 'kysely';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import { adminDigests, approvals, staffAssignments, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
@@ -6,7 +7,8 @@ import type { FeeTerms, PublicFee } from '../../../packages/contracts/src/billin
 import { billingFees } from '../../../packages/data/src/repositories/billing-fees.js';
 
 /** Synthetic people, hubs and rates only; real database roles, elevations and approvals. */
-export async function feeWorld(admin: DataPool, runtime: DataPool) {
+export async function feeWorld(admin: DataPool, runtime: DataPool, historical?: 'before-fee11') {
+  if (historical) assert.equal((await admin.query("SELECT to_regclass('trustwork.agent_serving_hub') AS relation")).rows[0].relation,null);
   await syncKernel(admin);
   const w = await buildHubWorld(admin);
   const a = actors(admin, runtime, w);
@@ -14,12 +16,7 @@ export async function feeWorld(admin: DataPool, runtime: DataPool) {
   await a.assignSensitive({ personId: p.operator, role: 'node-operator', scope: { kind: 'node', nodeId: w.nodeId } });
   const hubA = (await a.createHub('synthetic-fee-a')).hub_id;
   const hubB = (await a.createHub('synthetic-fee-b')).hub_id;
-  // Explicit test installations: distinct public origins retain exact hub attribution across both fee parties.
-  await withMaintenance(admin, async trx => {
-    for (const [origin, hub] of [['https://trustwork.test', hubA], [`https://${hubA}.test`, hubA], [`https://${hubB}.test`, hubB]] as const) {
-      await sql`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES(${origin},${hub}::uuid) ON CONFLICT (origin) DO NOTHING`.execute(trx);
-    }
-  });
+  if (!historical) await registerFeeServingHubs(admin,hubA,hubB);
   await withMaintenance(admin, (trx) => staffRoleDefinitions.release(trx, {
     version: 2, role: 'hub-owner', scopes: ['hub'], permissions: ['admin.billing.fees.draft', 'admin.billing.fees.activate', 'admin.audit.read'],
     caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null,
@@ -45,3 +42,12 @@ export const syntheticTerms = (overrides: Partial<FeeTerms> = {}): FeeTerms => (
   effectiveFrom: new Date(Date.now() + 60000).toISOString(), effectiveTo: new Date(Date.now() + 3600000).toISOString(),
   acceptanceTextVersion: 'synthetic-fees-1', ...overrides,
 });
+
+/** Exact serving registrations for current-schema tests, including normal historical upgrades. */
+export async function registerFeeServingHubs(admin: DataPool, hubA: string, hubB: string): Promise<void> {
+  await withMaintenance(admin, async trx => {
+    for (const [origin,hub] of [['https://trustwork.test',hubA],[`https://${hubA}.test`,hubA],[`https://${hubB}.test`,hubB]] as const) {
+      await sql`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES(${origin},${hub}::uuid) ON CONFLICT (origin) DO NOTHING`.execute(trx);
+    }
+  });
+}

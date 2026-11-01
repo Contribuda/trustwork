@@ -1,4 +1,4 @@
-import type { Money } from '../../../../../../packages/contracts/src/common/money.js';
+import { NonNegativeMoneySchema, type Money } from '../../../../../../packages/contracts/src/common/money.js';
 import { sql } from 'kysely';
 import type { z } from 'zod';
 import type { Transaction } from '../../../deps/data.js';
@@ -6,7 +6,7 @@ import { ApiError } from '../../../common/errors.js';
 import { FeeDisclosureSchema, type FeeConfirmationSchema } from './deps.js';
 
 export interface TaskFeePort {
-  amount(trx: Transaction, side: 'buyer' | 'seller', price: Money, confirmation: z.infer<typeof FeeConfirmationSchema> | undefined): Promise<Money>;
+  amount(trx: Transaction, side: 'buyer' | 'seller', price: Money, confirmation: z.infer<typeof FeeConfirmationSchema> | undefined, agreementId?: string): Promise<Money>;
   origin(trx: Transaction, kind: 'request' | 'offer', id: string): Promise<void>;
   confirm(trx: Transaction, agreementId: string, side: 'buyer' | 'seller', confirmation: z.infer<typeof FeeConfirmationSchema> | undefined): Promise<void>;
 }
@@ -25,7 +25,20 @@ export class VersionedTaskFees implements TaskFeePort {
       throw error;
     }
   }
-  async amount(trx: Transaction, side: 'buyer' | 'seller', price: Money, confirmation: z.infer<typeof FeeConfirmationSchema> | undefined): Promise<Money> {
+  private async legacyProceeds(trx: Transaction, agreementId: string): Promise<Money | null> {
+    // Only an exact stored agreement and the owning immutable migration capture can qualify.
+    const agreement = await trx.selectFrom('agreement').select('accepted_terms_digest').where('id','=',agreementId).executeTakeFirst();
+    if (!agreement) throw new ApiError('access.not_found');
+    return this.run(async () => {
+      const result = await sql<{ value: unknown }>`SELECT trustwork.billing_task_legacy_proceeds(${agreementId}::uuid,${agreement.accepted_terms_digest}) AS value`.execute(trx);
+      return result.rows[0]?.value == null ? null : NonNegativeMoneySchema.parse(result.rows[0].value);
+    });
+  }
+  async amount(trx: Transaction, side: 'buyer' | 'seller', price: Money, confirmation: z.infer<typeof FeeConfirmationSchema> | undefined, agreementId?: string): Promise<Money> {
+    if (!confirmation && side === 'seller' && agreementId) {
+      const original = await this.legacyProceeds(trx, agreementId);
+      if (original) return original;
+    }
     if (!confirmation) throw new ApiError('validation.revision_conflict', 'explicit fee confirmation required', { reason: 'billing.confirmation_required' });
     // The row is protected by person-only RLS; final consumption rechecks authority, validity and source under locks.
     const row = await trx.selectFrom('billing_fee_disclosure').select(['id','digest','snapshot']).where('id','=',confirmation.disclosureId).executeTakeFirst();
@@ -50,6 +63,7 @@ export class VersionedTaskFees implements TaskFeePort {
     });
   }
   async confirm(trx: Transaction, agreementId: string, side: 'buyer' | 'seller', confirmation: z.infer<typeof FeeConfirmationSchema> | undefined): Promise<void> {
+    if (!confirmation && side === 'seller' && await this.legacyProceeds(trx, agreementId)) return;
     if (!confirmation) throw new ApiError('validation.revision_conflict', 'explicit fee confirmation required', { reason: 'billing.confirmation_required' });
     await this.run(() => sql`SELECT trustwork.billing_task_confirm(${this.hub()}::uuid,${agreementId}::uuid,${confirmation.disclosureId}::uuid,${confirmation.digest},${side})`.execute(trx));
   }

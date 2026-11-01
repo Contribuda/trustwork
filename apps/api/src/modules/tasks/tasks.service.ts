@@ -772,7 +772,7 @@ export class TasksService {
       const seller = partyOf(agreement.seller_person_id, agreement.seller_company_id);
       if (!this.actsFor(p, seller)) throw new ApiError('access.not_found');
       const payload = TaskOfferPayloadSchema.parse(offer.payload);
-      const feeProceeds = await this.fees.amount(trx, 'seller', payload.price, input.feeConfirmation);
+      const feeProceeds = await this.fees.amount(trx, 'seller', payload.price, input.feeConfirmation, agreement.id);
       const actor = await this.actor(p, input.actor, 'accept_order', { kind: 'agreement', id: agreementId }, payload.price);
       if (agreement.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
       if (agreement.status !== 'accepted_by_buyer') throw new ApiError('validation.schema', `a ${agreement.status} agreement is not confirmed`, { reason: 'invalid_transition' });
