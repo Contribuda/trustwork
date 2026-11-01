@@ -18,7 +18,8 @@ import type { ExpertRequestView, RequesterRequestView, BookingView } from '../..
 import type { OwnerTaskRequestView, TaskAssignmentView } from '../../../packages/contracts/src/tasks.js';
 
 const directory=mkdtempSync(join(tmpdir(),'bill003-before-cutoff-'));
-for(const f of loadMigrations().filter(f=>!f.filename.startsWith('202611111000'))) writeFileSync(join(directory,f.filename),f.script);
+// The historical database must be a prefix: later migrations cannot precede the withheld fee migrations.
+for(const f of loadMigrations().filter(f=>f.filename < '20261111100000_fee_authority.sql')) writeFileSync(join(directory,f.filename),f.script);
 // Deliberately historical code running before the fee migrations; never a production adapter.
 const h=await startHarness('fee_legacy_cutoff',{
   consultationCommission:new NoPublishedCommission(),
