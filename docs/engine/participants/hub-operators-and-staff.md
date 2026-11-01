@@ -26,6 +26,8 @@ To launch and run a lawful, useful hub without code; to fill it with sourced con
 
 ## Journey
 
+The full operator journey, from eligibility through a preset agent team to a growing company with people in every function, is in [The hub operating company](../hub-operating-company.md) (proposed).
+
 ```mermaid
 flowchart LR
   In[Install] --> Wz[Setup wizard] --> Cf[Configure: country, languages, legal, staff, sources, verification, payments, agents]
