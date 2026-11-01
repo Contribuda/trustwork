@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from 'node:crypto';
-import { withMaintenance } from '@trustwork/data';
+import { withMaintenance, type Transaction } from '@trustwork/data';
+import { sql } from 'kysely';
 import { ProvenanceService } from '../../apps/api/src/modules/content/provenance/provenance.service.js';
 import { ProvenanceDeclarationSchema } from '../../packages/contracts/src/provenance.js';
 import type { RequestState } from '../../apps/api/src/common/request.js';
@@ -243,6 +244,24 @@ test(
         );
       },
     );
+    await t.test('snapshot transactions preserve immutable admission and the default refresh contract', async () => {
+      const principals = world.app.services!.principals;
+      const token = c.writer.sessionCookie!;
+      const resolved = (await principals.resolve(token))!;
+      assert.ok(resolved);
+      const state: RequestState = { ...resolved, requestId: 'synthetic-principal-options', sessionTokenHash: createHash('sha256').update(token).digest('hex'), client: { ip: '127.0.0.1', ipPrefix: '127.0.0', userAgentFamily: 'test' } };
+      const isolation = async (trx: Transaction) => (await sql<{ isolation: string }>`SELECT current_setting('transaction_isolation') AS isolation`.execute(trx)).rows[0]!.isolation;
+      assert.equal(await principals.runAs(state, isolation, { snapshot: true, refreshStale: false }), 'repeatable read');
+      const original = state.principal;
+      await withMaintenance(h.db.admin, trx => trx.updateTable('person').set({ authz_epoch: resolved.principal.authzEpoch + 1 }).where('id', '=', w.people.writer).execute());
+      let calls = 0;
+      await assert.rejects(principals.runAs(state, async trx => { calls++; return isolation(trx); }, { snapshot: true, refreshStale: false }), { code: 'access.stale_epoch' });
+      assert.equal(calls, 0, 'an admitted stale command must not enter its effect callback');
+      assert.equal(state.principal, original, 'opt-out preserves the original request identity');
+      assert.equal(await principals.runAs(state, isolation, { snapshot: true }), 'repeatable read', 'default refresh retains snapshot isolation');
+      assert.equal(state.principal!.authzEpoch, resolved.principal.authzEpoch + 1, 'unrelated callers retain the existing default refresh');
+      assert.equal(await principals.runAs(state, isolation), 'read committed', 'unrelated callers retain the default transaction isolation');
+    });
     await t.test('an admitted request epoch is never silently refreshed for a provenance decision', async () => {
       const services = world.app.services!;
       const token = c.writer.sessionCookie!;
