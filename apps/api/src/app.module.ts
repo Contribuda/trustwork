@@ -16,12 +16,12 @@ import { SourcesModule } from './modules/sources/sources.module.js';
 import { SupplierBaseModule } from './modules/supplier-base/supplier-base.module.js';
 import { SupportModule } from './modules/support/support.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
+import { privacyExportPort } from './privacy-exporters.js';
+import { PrivacyModule } from './modules/platform-admin/privacy/privacy.module.js';
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
 import { ProvidersModule } from './modules/providers/providers.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
 import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module.js';
-import { privacyExportPort } from './privacy-exporters.js';
-import { PrivacyModule } from './modules/platform-admin/privacy/privacy.module.js';
 import { RecordingModerationTargets } from './modules/platform-admin/ports.js';
 import { ConsultationsModule } from './modules/consultations/consultations.module.js';
 import { ContentModule } from './modules/content/content.module.js';
@@ -76,6 +76,7 @@ export class AppModule {
         SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         SupportModule.forRoot(ctx, identity),
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
+        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity)),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).
         ProvidersModule.forRoot(ctx, identity, { env: communications.env }),
@@ -85,7 +86,6 @@ export class AppModule {
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
         ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']) }, communications.env),
-        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity)),
         ContentModule.forRoot(ctx, identity),
         AssistantModule.forRoot(ctx, identity),
         AgentsModule.forRoot(ctx, identity),

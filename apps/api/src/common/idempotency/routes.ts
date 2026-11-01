@@ -18,12 +18,6 @@ export type CompletionMode = { kind: 'in_transaction' } | { kind: 'lease'; reaso
 const IN_TRANSACTION: CompletionMode = { kind: 'in_transaction' };
 
 export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
-  // PRV-001: commands and their replay response commit in the same principal transaction.
-  'privacy.export_create': IN_TRANSACTION,
-  'privacy.hold_place': IN_TRANSACTION,
-  'privacy.hold_release': IN_TRANSACTION,
-  'privacy.preference_set': IN_TRANSACTION,
-  'privacy.request_create': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,
   'person.set_handle': IN_TRANSACTION,
@@ -66,6 +60,12 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'project.location_set': IN_TRANSACTION,
   'project.permit_record': IN_TRANSACTION,
   'project.diary_add': IN_TRANSACTION,
+  // PRV-001: commands and their replay response commit in the same principal transaction.
+  'privacy.export_create': IN_TRANSACTION,
+  'privacy.hold_place': IN_TRANSACTION,
+  'privacy.hold_release': IN_TRANSACTION,
+  'privacy.preference_set': IN_TRANSACTION,
+  'privacy.request_create': IN_TRANSACTION,
   // Profiles, consent, portraits, experience and private records (PPL-001): every route runs in one
   // PrincipalService.runAs transaction (consent withdrawal, unpublication and tombstones included) and returns its
   // result unchanged.
