@@ -33,8 +33,8 @@ export interface SourcesWorld {
   cmd<T>(personId: string, fn: (trx: Transaction, ctx: CommandContext) => Promise<T>): Promise<T>;
 }
 
-export async function buildSourcesWorld(adminPool: DataPool, runtime: DataPool): Promise<SourcesWorld> {
-  const content = await buildContentWorld(adminPool, runtime);
+export async function buildSourcesWorld(adminPool: DataPool, runtime: DataPool, existingContent?: ContentWorld): Promise<SourcesWorld> {
+  const content = existingContent ?? await buildContentWorld(adminPool, runtime);
   const names: Record<SourcesKey, string> = {
     stewardA: 'Synthetic Data Steward A', stewardB: 'Synthetic Data Steward B', officerA: 'Synthetic Compliance Officer A', officerB: 'Synthetic Compliance Officer B',
     otherSteward: 'Synthetic Other Hub Steward',

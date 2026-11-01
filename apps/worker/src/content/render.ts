@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 
-const Version = z.object({ title: z.string(), body: z.string(), language: z.string(), version: z.number(), publishedAt: z.string(), assistantAssisted: z.boolean(), correctionNote: z.string().nullable(),
+const Version = z.object({ title: z.string(), body: z.string().nullable(), language: z.string(), version: z.number(), publishedAt: z.string(), assistantAssisted: z.boolean(), correctionNote: z.string().nullable(),
   sourceRefs: z.array(z.object({ name: z.string(), uri: z.string(), license: z.string().nullable().optional() })) });
 export const RenderSnapshotSchema = z.object({ revisionId: z.uuid(), issue: z.object({ number: z.number(), edition: z.number(), date: z.string(), theme: z.string().nullable(),
   digest: z.string(), corrections: z.array(z.object({ reason: z.string() })) }), items: z.array(z.object({ position: z.number(), section: z.string(), version: Version,
@@ -45,11 +45,10 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
     h1 { font: bold 28pt/1.18 serif; margin: 12mm 0 8mm; } h2 { font: bold 22pt/1.25 serif; margin: 5mm 0; break-after: avoid; }
     .masthead { border-top: 4pt solid #17654e; padding-top: 5mm; font-size: 10pt; } .note { border-left: 2pt solid #bd7e2a; padding-left: 4mm; }
     p { white-space: pre-wrap; margin: 0 0 4mm; orphans: 3; widows: 3; } .credit, .source { font-size: 9pt; }
-    article { break-before: page; } .toc { margin: 8mm 0; } .identity { font: 8pt/1.5 monospace; }
+    article { break-before: page; } .toc { margin: 8mm 0; }
   </style></head><body><div class="masthead">${escape(edition)}</div><h1>${escape(snapshot.issue.theme ?? edition)}</h1>
   ${snapshot.issue.corrections.map(c => paragraph(label('pdfCorrection', { note: c.reason }), 'note')).join('')}
   <div class="toc">${snapshot.items.map(i => paragraph(`${number(i.position)}. ${i.version.title}`)).join('')}</div>
-  ${paragraph(snapshot.revisionId, 'identity')}${paragraph(snapshot.issue.digest, 'identity')}
   ${snapshot.items.map(i => {
     const v = i.version;
     const credits = i.publication.authorship.filter(a => (a.kind === 'editorial' || a.id !== null) && !/^(ai|artificial intelligence|chatgpt|claude|codex|\u0438\u0438)$/iu.test(a.credit.trim())).map(a => a.credit).join(' · ');
@@ -58,7 +57,7 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
       ${[...new Set([v.correctionNote, i.publication.current.correctionNote].filter((note): note is string => !!note))].map(note => paragraph(label('pdfCorrection', { note }), 'note')).join('')}
       ${v.assistantAssisted || i.publication.authorship.some(a => a.assistantAssisted) ? paragraph(label('pdfAssisted'), 'note') : ''}
       ${i.publication.editions.some(e => e.role === 'original' && e.machineAssisted) ? paragraph(label('machineTranslation'), 'note') : ''}
-      ${v.body.split(/\n\s*\n/).map(p => paragraph(p)).join('')}
+      ${(v.body ?? '').split(/\n\s*\n/).map(p => paragraph(p)).join('')}
       ${v.sourceRefs.length ? `<h3>${escape(label('sources'))}</h3>` : ''}
       ${v.sourceRefs.map(s => paragraph([s.name, s.uri, s.license].filter(Boolean).join(' · '), 'source')).join('')}</article>`;
   }).join('')}</body></html>`;

@@ -114,8 +114,11 @@ test('content API: publications, corrections, moderation and curated issues', { 
     }
     const good = ok<ManagePublicationView>(await news({ sourceRefs: [source()] }), 201);
     const published = ok<ManagePublicationView>(await c.writer.post(`/v1/publications/${good.publication.id}/publish`, { expectedRevision: good.publication.revision, scheduledFor: null }));
-    const shown = ok<PublicPublication>(await anonymous.get(`/v1/publications/${published.publication.id}`));
-    assert.deepEqual(shown.current.sourceRefs.map((s) => [s.name, s.kind]), [['Synthetic Standards Bulletin', 'official_register']]);
+    expectRefusal(await anonymous.get(`/v1/publications/${published.publication.id}`), 404, 'access.not_found');
+    const own = ok<ManagePublicationView>(await news({ treatment: 'original_reporting', sourceRefs: [source({ kind: 'own_reporting' })] }), 201);
+    await c.writer.post(`/v1/publications/${own.publication.id}/publish`, { expectedRevision: own.publication.revision, scheduledFor: null });
+    const shown = ok<PublicPublication>(await anonymous.get(`/v1/publications/${own.publication.id}`));
+    assert.deepEqual(shown.current.sourceRefs.map((s) => [s.name, s.kind]), [['Synthetic Standards Bulletin', 'own_reporting']]);
     assert.equal(shown.current.eventTime, '2026-10-28T08:00:00.000Z');
     assert.ok(shown.current.publishedAt > shown.current.eventTime!);
   });
