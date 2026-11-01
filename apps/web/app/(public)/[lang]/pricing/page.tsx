@@ -5,6 +5,7 @@ import { currentLocale, formatMoney, formatNumber, t } from '@/app/_lib/i18n';
 import { primePublicLocale } from '@/app/_lib/locale';
 import { languageAlternates } from '@/app/_lib/site';
 import './pricing.css';
+import { publicFeeCategory } from './categories';
 
 type Props = { params: Promise<{ lang: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -29,14 +30,16 @@ export default async function PricingPage({ params }: Props) {
         {pricing.fees.length === 0 ? <p>{t('pricing.empty')}</p> : <ul className="fee-pricing-list">{pricing.fees.map((fee) => <li key={fee.id}>
           <h3>{t(`pricing.kind.${fee.terms.kind}`)} · {t(`pricing.payer.${fee.terms.payer}`)}</h3>
           <p>{t('pricing.version', { version: formatNumber(fee.version) })}</p>
-          {fee.terms.categoryKey ? <p>{t('pricing.category', { category: fee.terms.categoryKey })}</p> : <p>{t('pricing.allCategories')}</p>}
+          <p>{publicFeeCategory(fee.terms.kind, fee.terms.categoryKey, currentLocale(), t) === null
+            ? t('pricing.categoryUnavailable')
+            : t('pricing.category', { category: publicFeeCategory(fee.terms.kind, fee.terms.categoryKey, currentLocale(), t)! })}</p>
           <p className="fee-pricing-amount">
             {fee.terms.basisPoints !== null ? new Intl.NumberFormat(currentLocale(), { style: 'percent', maximumFractionDigits: 2 }).format(fee.terms.basisPoints / 10000) : null}
             {fee.terms.basisPoints !== null && fee.terms.fixedMinor !== null ? ' + ' : null}
             {fee.terms.fixedMinor !== null ? formatMoney(fee.terms.fixedMinor, fee.terms.currency) : null}
           </p>
           <Validity from={fee.terms.effectiveFrom} to={fee.terms.effectiveTo} />
-          <p className="fee-pricing-reference">{t('pricing.reference', { reference: fee.id })}</p>
+          <details className="fee-pricing-reference"><summary>{t('pricing.details')}</summary><p>{t('pricing.reference', { reference: fee.id })}</p><p>{t('pricing.digest', { digest: fee.digest })}</p></details>
         </li>)}</ul>}
       </section>
       <section aria-labelledby="price-heading"><h2 id="price-heading">{t('pricing.prices')}</h2>

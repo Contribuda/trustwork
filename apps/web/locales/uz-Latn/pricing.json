@@ -42,6 +42,9 @@
       "capabilities": "Imkoniyat",
       "credit_packs": "Kredit to‘plami"
     },
-    "planVersion": "Reja versiyasi {version}"
+    "planVersion": "Reja versiyasi {version}",
+    "categoryUnavailable": "Toifa mavjud emas: ommaviy nom ro‘yxatdan o‘tkazilmagan.",
+    "details": "Versiya tafsilotlari",
+    "digest": "Shartlar xeshi: {digest}"
   }
 }

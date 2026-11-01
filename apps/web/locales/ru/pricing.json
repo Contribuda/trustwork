@@ -42,6 +42,9 @@
       "capabilities": "Возможность",
       "credit_packs": "Пакет кредитов"
     },
-    "planVersion": "Версия плана {version}"
+    "planVersion": "Версия плана {version}",
+    "categoryUnavailable": "Категория недоступна: публичное название не зарегистрировано.",
+    "details": "Сведения о версии",
+    "digest": "Отпечаток условий: {digest}"
   }
 }

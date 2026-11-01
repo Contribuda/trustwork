@@ -84,7 +84,7 @@ CREATE FUNCTION trustwork.billing_task_agreement_guard() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=trustwork,pg_temp SET trustwork.maintenance='on' AS $$
 BEGIN
  IF NEW.terms_kind='task' AND NEW.status='accepted_by_both' AND OLD.status='accepted_by_buyer'
- AND EXISTS(SELECT 1 FROM trustwork.billing_task_origin WHERE source_kind='offer' AND source_id=NEW.offer_ref_id)
+ AND NOT EXISTS(SELECT 1 FROM trustwork.billing_fee_legacy_source WHERE source_kind='task' AND source_id=NEW.id AND source_digest=NEW.accepted_terms_digest)
  AND NOT EXISTS(
    SELECT 1 FROM trustwork.billing_fee_binding buyer
    JOIN trustwork.billing_fee_confirmation bc ON bc.id=buyer.confirmation_id

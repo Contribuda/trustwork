@@ -1,5 +1,4 @@
-import { HistoricalTaskFees } from '../../../apps/api/src/modules/billing/fees/task-adapter.js';
-import { NoPublishedCommission } from '../../../apps/api/src/modules/consultations/ports.js';
+import { HistoricalTaskFees, historicalConsultationFees } from '../../billing/fees/historical.js';
 import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import { createApp, type CreateAppOptions, type CreatedApp } from '../../../apps/api/src/app.js';
@@ -94,10 +93,10 @@ export class Client {
   }
 }
 
-export async function startHarness(label: string, options: Partial<CreateAppOptions> = {}): Promise<Harness | null> {
+export async function startHarness(label: string, options: Partial<CreateAppOptions> = {}, migrationDirectory?: string): Promise<Harness | null> {
   const db = await provisionTestDatabase(label);
   if (!db) return null;
-  await db.migrate();
+  await db.migrate(migrationDirectory);
   await db.createAppLogin();
   const pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
   const mailKeyHex = randomBytes(32).toString('hex');
@@ -108,8 +107,8 @@ export async function startHarness(label: string, options: Partial<CreateAppOpti
   const clock = new TestClock();
   const staff = new Map<string, string[]>();
   const created = await createApp({
-    consultationCommission: new NoPublishedCommission(),
-    taskFees: new HistoricalTaskFees(),
+    consultationCommission: historicalConsultationFees(db.admin),
+    taskFees: new HistoricalTaskFees(db.admin),
     env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_PROVIDER_MODE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '1000', AUTH_LOCKOUT_THRESHOLD: '5', MAIL_SECRET_KEY: mailKeyHex },
     pool, clock, mandates, providers: { google, apple }, staffRoles: async (personId) => staff.get(personId) ?? [],
     // Structured API log lines: only failures are printed, so a failing test still shows the server-side stack.

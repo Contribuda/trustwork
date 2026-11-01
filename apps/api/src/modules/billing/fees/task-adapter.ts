@@ -10,12 +10,6 @@ export interface TaskFeePort {
   origin(trx: Transaction, kind: 'request' | 'offer', id: string): Promise<void>;
   confirm(trx: Transaction, agreementId: string, side: 'buyer' | 'seller', confirmation: z.infer<typeof FeeConfirmationSchema> | undefined): Promise<void>;
 }
-/** Explicit historical test adapter; never selected by production configuration. */
-export class HistoricalTaskFees implements TaskFeePort {
-  async amount(_trx: Transaction, _side: 'buyer' | 'seller', price: Money): Promise<Money> { return price; }
-  async origin(): Promise<void> {}
-  async confirm(): Promise<void> {}
-}
 export class VersionedTaskFees implements TaskFeePort {
   constructor(private readonly hubId: string | null) {}
   private hub(): string {

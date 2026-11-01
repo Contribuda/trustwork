@@ -13,13 +13,19 @@ test('real API/DataPort: Russian empty, published synthetic prices, phone, langu
   expect(publish.status()).toBe(200);
   expect(await publish.json()).toMatchObject({ dataPort: 'passed', synthetic: true });
   await page.reload();
-  await expect(page.locator('.fee-pricing-list li')).toHaveCount(1);
-  await expect(page.locator('.fee-pricing')).toContainText('synthetic_review');
-  await expect(page.locator('.fee-pricing-amount')).toContainText('1');
+  await expect(page.locator('.fee-pricing-list li')).toHaveCount(3);
+  await expect(page.locator('.fee-pricing')).toContainText('Проверка чертежей');
+  await expect(page.locator('.fee-pricing')).not.toContainText('drawing_review');
+  await expect(page.locator('.fee-pricing')).not.toContainText('synthetic_review');
+  await expect(page.locator('.fee-pricing')).toContainText('Категория недоступна: публичное название не зарегистрировано.');
+  await expect(page.locator('.fee-pricing-amount').first()).toContainText('1');
+  await expect(page.locator('.fee-pricing')).not.toContainText('work.envelope.roofing');
+  await page.locator('.fee-pricing-reference summary').first().click();
+  await expect(page.locator('.fee-pricing-reference').first()).toContainText('Отпечаток условий:');
   await page.screenshot({ path: resolve(evidence, 'pricing-ru-positive-desktop.png'), fullPage: true });
   await page.setViewportSize({ width: 375, height: 812 });
   await page.reload();
-  await expect(page.locator('.fee-pricing-list li')).toHaveCount(1);
+  await expect(page.locator('.fee-pricing-list li')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: resolve(evidence, 'pricing-ru-positive-375.png'), fullPage: true });
   await page.locator('button.lsw').click();
@@ -28,7 +34,7 @@ test('real API/DataPort: Russian empty, published synthetic prices, phone, langu
   // Every offered language resolves the same actual public catalogue, without a session.
   for (const lang of ['en', 'es', 'ru', 'uz-Latn', 'ka', 'hy', 'az-Latn']) {
     await page.goto(lang === 'en' ? '/pricing' : `/${lang}/pricing`);
-    await expect(page.locator('.fee-pricing-list li')).toHaveCount(1);
+    await expect(page.locator('.fee-pricing-list li')).toHaveCount(3);
     await expect(page.locator('html')).toHaveAttribute('lang', lang);
   }
   const denied = await page.evaluate(async () => {
