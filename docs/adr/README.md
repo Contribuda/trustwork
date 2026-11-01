@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are dated 2026-10-27; 009 is dated 2026-10-29; 010 and 011 are dated 2026-10-30; 012, 013 and 014 are dated 2026-10-31; 017 is dated 2026-11-01. “Selected for foundation” is an engineering decision in this bootstrap, pending coordinator review, not an assertion of production/human product acceptance. Any change requires evidence and consequences, with supersession rather than silent rewrite.
+Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are dated 2026-10-27; 009 is dated 2026-10-29; 010 and 011 are dated 2026-10-30; 012, 013 and 014 are dated 2026-10-31; 016 and 017 are dated 2026-11-01. “Selected for foundation” is an engineering decision in this bootstrap, pending coordinator review, not an assertion of production/human product acceptance. Any change requires evidence and consequences, with supersession rather than silent rewrite.
 
 | ADR | Status | Decision |
 |---|---|---|
