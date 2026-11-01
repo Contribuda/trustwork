@@ -44,3 +44,13 @@ The fake is not a C2PA encoder, signed manifest, cryptographic authenticity proo
 3. Freeze additive public wire schemas and connect detail, pinned versions, issues, walls, feeds, safe JSON-LD and PDF captures. Revocation, correction, removal and retraction must invalidate previous captures at delivery.
 4. Wire the seven-language namespace, credit-consent interaction and labels. Verify actual desktop/375px non-English surfaces, negative authorization and race orders; inspect each rendered PDF page.
 5. Report exact-head focused checks and CI separately. Native-language and manual screen-reader review remain human acceptance, not automated evidence.
+
+## Integration checkpoint after CNT-003
+
+The continuation is authorized by the conductor for PROV-001 #97, CNT-001 #5 and CNT-003 #69 and their minimal web, locale and PDF seams. Ordinary engineering does not require a new owner policy decision. E3 and operational signing remain unavailable.
+
+All new publications require an exact declaration through the common CNT blocker, including scheduling and the scheduled worker. Corrections first prepare a draft, then obtain a new declaration and separate translation review where applicable, then release the exact prepared draft. Old immutable versions and digests are never rewritten. Released issue/digest bundles also validate the pinned records. Legacy edition review flags cannot replace the exact provenance review.
+
+Public version metadata carries declared functional roles, honest human-declaration evidence, exact original bindings and stale status, plus only the credits consented for the delivery channel. Feed reads request feed-scoped credits; PDF snapshots bind PDF-scoped credits. Current source restrictions and presentation version 2 remain. Stored PDFs become unavailable when the captured projection changes; downloaded copies cannot be recalled.
+
+The first-party workspace is `/app/publications/:id/edit`. Its controls call the authenticated owner commands; UI visibility never grants authority. All seven locale dictionaries are wired, with new translations awaiting native review. Browser/PDF acceptance, regression expansion and full CI remain pending at this checkpoint.

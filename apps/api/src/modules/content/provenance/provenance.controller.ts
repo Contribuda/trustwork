@@ -1,4 +1,6 @@
-import { Controller, HttpCode, Inject, Post } from "@nestjs/common";
+import { IdSchema } from '../../../../../../packages/contracts/src/common/ids.js';
+import { DraftSchema } from '../schemas.js';
+import { Controller, Get, Header, HttpCode, Inject, Post } from "@nestjs/common";
 import { z } from "zod";
 import {
   Authenticated,
@@ -6,7 +8,7 @@ import {
   ReqState,
   type RequestState,
 } from "../../../common/request.js";
-import { Body } from "../../../common/zod.js";
+import { Body, Params } from "../../../common/zod.js";
 import {
   ProvenanceDeclarationSchema,
   ProvenanceReviewSchema,
@@ -23,12 +25,23 @@ const Review = z.strictObject({
   review: ProvenanceReviewSchema,
   staff: Staff.optional(),
 });
+const Id = z.strictObject({ id: IdSchema });
+const Correction = z.strictObject({ expectedRevision: z.int().positive(), draft: DraftSchema, note: z.string().trim().min(1).max(500), staff: Staff.optional() });
 @Controller("v1/provenance")
 @Authenticated()
 export class ProvenanceController {
   constructor(
     @Inject(ProvenanceService) private readonly service: ProvenanceService,
   ) {}
+  @Get('publications/:id')
+  @Header('Cache-Control', 'private, no-store')
+  workspace(@ReqState() s: RequestState, @Params(Id) p: z.infer<typeof Id>) { return this.service.workspace(s,p.id); }
+  @Post('publications/:id/correction-draft')
+  @HttpCode(200)
+  @Idempotent('provenance.prepare_correction', 'id')
+  prepareCorrection(@ReqState() s: RequestState, @Params(Id) p: z.infer<typeof Id>, @Body(Correction) b: z.infer<typeof Correction>) {
+    return this.service.prepareCorrection(s,p.id,b.expectedRevision,b.draft,b.note,b.staff);
+  }
   @Post("declarations")
   @HttpCode(201)
   @Idempotent('provenance.declare')

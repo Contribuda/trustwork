@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PublicProvenanceSchema } from './provenance.js';
 import { PartySchema } from './access.js';
 import { DigestSchema } from './common/digest-schema.js';
 import { IdSchema, TimestampSchema } from './common/ids.js';
@@ -20,7 +21,7 @@ export const ContentSourceViewSchema = z.strictObject({
 export const PublicVersionSchema = z.strictObject({
   version: z.int().min(1), title: z.string(), body: z.string().nullable(), language: Language, sourceRefs: z.array(ContentSourceViewSchema), treatment: TreatmentSchema,
   eventTime: Iso.nullable(), publishedAt: Iso, correctionOf: z.int().min(1).nullable(), correctionNote: z.string().nullable(), contentDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  assistantAssisted: z.boolean(),
+  assistantAssisted: z.boolean(), provenance: PublicProvenanceSchema.optional(),
 });
 /** The public projection of a publication: identical for every caller; no counts of readers, no prices, no paywall. */
 export const PublicPublicationSchema = z.strictObject({
@@ -48,14 +49,14 @@ export const FeedSchema = z.strictObject({
   items: z.array(z.strictObject({
     id: IdSchema, format: PublicationFormatSchema, articleFormat: ArticleFormatSchema.nullable(), status: z.enum(['published', 'corrected', 'retracted']), firstPublishedAt: Iso, title: z.string(),
     eventTime: Iso.nullable(), currentVersion: z.int().min(1), corrected: z.boolean(), retracted: z.boolean(),
-    sources: z.array(z.strictObject({ name: z.string(), kind: SourceKindSchema, uri: z.string() })), topics: z.array(z.string()), credits: z.array(z.string()),
+    provenance: PublicProvenanceSchema.optional(), sources: z.array(z.strictObject({ name: z.string(), kind: SourceKindSchema, uri: z.string() })), topics: z.array(z.string()), credits: z.array(z.string()),
   })),
   next: z.strictObject({ before: Iso, beforeId: IdSchema }).nullable(),
 });
 const PublicIssueItemSchema = z.union([
   z.strictObject({
     position: z.int(), section: z.string(), publicationId: IdSchema, publicationVersion: z.int(), withheld: z.literal(false), title: z.string(), format: PublicationFormatSchema,
-    articleFormat: ArticleFormatSchema.nullable(), currentVersion: z.int(), corrected: z.boolean(), retracted: z.boolean(),
+    provenance: PublicProvenanceSchema.optional(), articleFormat: ArticleFormatSchema.nullable(), currentVersion: z.int(), corrected: z.boolean(), retracted: z.boolean(),
   }),
   z.strictObject({ position: z.int(), section: z.string(), publicationId: IdSchema, publicationVersion: z.int(), withheld: z.literal(true) }),
 ]);
@@ -81,7 +82,7 @@ export const WallSchema = z.strictObject({
   owner: PartySchema,
   items: z.array(z.strictObject({
     id: IdSchema, publicationId: IdSchema, pinned: z.boolean(), position: z.int(), version: z.int(), followsCurrent: z.boolean(), title: z.string(), format: PublicationFormatSchema,
-    currentVersion: z.int(), corrected: z.boolean(), retracted: z.boolean(), correctionNote: z.string().nullable(),
+    provenance: PublicProvenanceSchema.optional(), currentVersion: z.int(), corrected: z.boolean(), retracted: z.boolean(), correctionNote: z.string().nullable(),
   })),
 });
 export const CommentsSchema = z.strictObject({
@@ -92,7 +93,7 @@ export const PublicDigestSchema = z.strictObject({
   id: IdSchema, title: z.string(), period: z.string(), releasedAt: Iso,
   items: z.array(z.union([
     z.strictObject({ position: z.int(), homeNode: z.string(), globalId: z.string(), version: z.int(), licence: LicenceSchema, display: z.enum(['full', 'headline_link']), title: z.string(),
-      body: z.string().nullable(), withheld: z.literal(false) }),
+      provenance: PublicProvenanceSchema.optional(), body: z.string().nullable(), withheld: z.literal(false) }),
     z.strictObject({ position: z.int(), homeNode: z.string(), globalId: z.string(), version: z.int(), withheld: z.literal(true) }),
   ])),
 });

@@ -13,7 +13,7 @@ test("all seven locales carry disclosure, exact consent notice and functional ro
         ),
         "utf8",
       ),
-    ) as Record<string, unknown> & { roles: Record<string, string> };
+    ).provenance as Record<string, unknown> & { roles: Record<string, string> };
   const reference = read("en");
   for (const language of languages) {
     const dictionary = read(language);

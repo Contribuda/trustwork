@@ -58,7 +58,7 @@ export interface PublicDataPort {
   getEvent(slug: string, now?: number): Promise<EventDetail | null>;
   listNews(topic?: TopicKey): Promise<PublicationCard[]>;
   listArticles(format?: string): Promise<PublicationCard[]>;
-  getPublication(slug: string, format: 'news' | 'article'): Promise<PublicationDetail | null>;
+  getPublication(slug: string, format: 'news' | 'article', channel?: 'web' | 'feed', version?: number): Promise<PublicationDetail | null>;
   listCompanies(): Promise<CompanyCard[]>;
   getCompany(handle: Handle): Promise<CompanyDetail | null>;
   listPeople(): Promise<PersonCard[]>;
@@ -68,7 +68,7 @@ export interface PublicDataPort {
   listCourses(): Promise<Course[]>;
   /** Public certificate check by certificate id: the holder's public card and the course, or `null`. */
   getPlatformCertificate(id: string): Promise<CertificateCheck | null>;
-  getMagazine(): Promise<MagazineView>;
+  getMagazine(channel?: 'web' | 'feed'): Promise<MagazineView>;
   listRubrics(): Promise<RubricSummary[]>;
   listRubricEntries(key: RubricKey): Promise<RubricEntry[]>;
   listMagazineAuthors(): Promise<MagazineAuthor[]>;

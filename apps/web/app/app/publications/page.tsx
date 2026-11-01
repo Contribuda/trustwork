@@ -64,7 +64,7 @@ export default async function PublicationsPage({ searchParams }: { searchParams:
           ) : (
             <ul className="ws-list" aria-label={t('publications.list')}>
               {rows.map((row) => (
-                <PublicationListRow key={row.id} row={row} />
+                <li key={row.id}><ul><PublicationListRow row={row} /></ul><NextLink href={`/app/publications/${row.id}/edit`}>{t('provenance.openEditor')}</NextLink></li>
               ))}
             </ul>
           )}

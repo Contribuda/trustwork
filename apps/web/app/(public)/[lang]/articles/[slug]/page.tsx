@@ -6,20 +6,20 @@ import { t } from '@/app/_lib/i18n';
 import { primePublicLocale } from '@/app/_lib/locale';
 import { languageAlternates } from '@/app/_lib/site';
 
-type Params = { params: Promise<{ lang: string; slug: string }> };
+type Params = { searchParams: Promise<{ version?: string }>; params: Promise<{ lang: string; slug: string }> };
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   await primePublicLocale((await params).lang);
   const { lang, slug } = await params;
-  const item = await data.getPublication(slug, 'article');
+  const item = await data.getPublication(slug, 'article', 'web', (await searchParams).version ? Number((await searchParams).version) : undefined);
   return { alternates: languageAlternates(`/articles/${slug}`, lang), title: item ? item.title : t('error.notFoundTitle'), description: item?.lede };
 }
 
 /** Article: the shared material page with the author card (for people), «Ещё статьи» and the articles call to action. */
-export default async function ArticleDetailPage({ params }: Params) {
+export default async function ArticleDetailPage({ params, searchParams }: Params) {
   await primePublicLocale((await params).lang);
   const { slug } = await params;
-  const item = await data.getPublication(slug, 'article');
+  const item = await data.getPublication(slug, 'article', 'web', (await searchParams).version ? Number((await searchParams).version) : undefined);
   if (!item) notFound();
   const authorHandle = item.authorKind === 'person' && item.authorHref ? item.authorHref.split('/').pop() : null;
   const author = authorHandle ? await data.getPerson(authorHandle) : null;

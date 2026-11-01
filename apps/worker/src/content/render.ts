@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
+import { PublicProvenanceSchema } from '../../../../packages/contracts/src/provenance.js';
 
-const Version = z.object({ title: z.string(), body: z.string().nullable(), language: z.string(), version: z.number(), publishedAt: z.string(), assistantAssisted: z.boolean(), correctionNote: z.string().nullable(),
+const Version = z.object({ provenance: PublicProvenanceSchema.optional(), title: z.string(), body: z.string().nullable(), language: z.string(), version: z.number(), publishedAt: z.string(), assistantAssisted: z.boolean(), correctionNote: z.string().nullable(),
   sourceRefs: z.array(z.object({ name: z.string(), uri: z.string(), license: z.string().nullable().optional() })) });
 export const RenderSnapshotSchema = z.object({ revisionId: z.uuid(), issue: z.object({ number: z.number(), edition: z.number(), date: z.string(), theme: z.string().nullable(),
   digest: z.string(), corrections: z.array(z.object({ reason: z.string() })) }), items: z.array(z.object({ position: z.number(), section: z.string(), version: Version,
@@ -35,6 +36,8 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
     if (!value) throw new Error(`Missing content PDF locale key: ${key}`);
     return value.replace(/\{(\w+)\}/g, (_, name: string) => args[name] ?? `{${name}}`);
   };
+  const provenanceDictionary = JSON.parse(await readFile(new URL(`../../../web/locales/${locale}/provenance.json`, import.meta.url), 'utf8')) as { provenance: Record<string,string | Record<string,string>> };
+  const provLabel = (key: string) => { const value = provenanceDictionary.provenance[key]; if (typeof value !== 'string') throw new Error(`Missing provenance label: ${key}`); return value; };
   const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(snapshot.issue.date));
   const edition = label('pdfEdition', { number: number(snapshot.issue.number), edition: number(snapshot.issue.edition), date });
@@ -51,12 +54,25 @@ export const renderLocalPdf: PdfRenderer = async (input, signal) => {
   <div class="toc">${snapshot.items.map(i => paragraph(`${number(i.position)}. ${i.version.title}`)).join('')}</div>
   ${snapshot.items.map(i => {
     const v = i.version;
+    const prov = v.provenance;
+    const recorded = prov?.availability === 'recorded' ? prov : null;
+    const provenanceLines = [
+      ...(prov?.availability === 'unavailable' ? [provLabel('unavailable')] : []),
+      ...(recorded ? [provLabel('declarationEvidence')] : []),
+      ...(recorded && recorded.kind !== 'none' ? [provLabel(recorded.kind === 'machine_translation' ? 'machineReviewed' : recorded.kind === 'generated' ? 'generated' : 'aiAssisted')] : []),
+      ...(recorded?.credits.responsible_editor ? [`${provLabel('responsibleEditor')}: ${recorded.credits.responsible_editor}`] : recorded ? [provLabel('revoked')] : []),
+      ...(recorded?.credits.translation_reviewer ? [`${provLabel('reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
+      ...(recorded?.roles.length ? [`${provLabel('declaredRoles')}: ${recorded.roles.map(role => (provenanceDictionary.provenance.roles as Record<string,string>)[role]).join(' · ')}`] : []),
+      ...(recorded?.translation ? [`${provLabel('originalLink')}: ${recorded.translation.originalLanguage} · ${number(recorded.translation.originalVersion)}`] : []),
+      ...(recorded?.translation?.stale ? [provLabel('stale')] : []),
+    ];
     const credits = i.publication.authorship.filter(a => (a.kind === 'editorial' || a.id !== null) && !/^(ai|artificial intelligence|chatgpt|claude|codex|\u0438\u0438)$/iu.test(a.credit.trim())).map(a => a.credit).join(' · ');
     return `<article lang="${escape(v.language)}"><div class="masthead">${escape(edition)}</div><h2>${escape(v.title)}</h2>${paragraph(credits, 'credit')}
       ${paragraph(label('pdfVersion', { version: number(v.version), language: v.language }), 'credit')}
       ${[...new Set([v.correctionNote, i.publication.current.correctionNote].filter((note): note is string => !!note))].map(note => paragraph(label('pdfCorrection', { note }), 'note')).join('')}
       ${v.assistantAssisted || i.publication.authorship.some(a => a.assistantAssisted) ? paragraph(label('pdfAssisted'), 'note') : ''}
       ${i.publication.editions.some(e => e.role === 'original' && e.machineAssisted) ? paragraph(label('machineTranslation'), 'note') : ''}
+      ${provenanceLines.map(line => paragraph(line,'note')).join('')}
       ${(v.body ?? '').split(/\n\s*\n/).map(p => paragraph(p)).join('')}
       ${v.sourceRefs.length ? `<h3>${escape(label('sources'))}</h3>` : ''}
       ${v.sourceRefs.map(s => paragraph([s.name, s.uri, s.license].filter(Boolean).join(' · '), 'source')).join('')}</article>`;

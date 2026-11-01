@@ -17,7 +17,18 @@ export function authorCredit(p: Pick<PublicPublication, 'authorship'>): string {
 }
 export function publicationView(p: PublicPublication, v: PublicPublication['current'] = p.current): PublicationDetail {
   const translation = p.editions.find(e => e.role === 'original');
+  const provenance = v.provenance;
+  const recorded = provenance?.availability === 'recorded' ? provenance : null;
   const notices = [
+    ...(provenance?.availability === 'unavailable' ? [t('provenance.unavailable')] : []),
+    ...(recorded?.kind === 'ai_assisted' ? [t('provenance.aiAssisted')] : []),
+    ...(recorded?.kind === 'generated' ? [t('provenance.generated')] : []),
+    ...(recorded?.kind === 'machine_translation' ? [t('provenance.machineReviewed')] : []),
+    ...(recorded ? [t('provenance.declarationEvidence')] : []),
+    ...(recorded?.credits.responsible_editor ? [`${t('provenance.responsibleEditor')}: ${recorded.credits.responsible_editor}`] : recorded ? [t('provenance.revoked')] : []),
+    ...(recorded?.credits.translation_reviewer ? [`${t('provenance.reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
+    ...(recorded?.roles.length ? [`${t('provenance.declaredRoles')}: ${recorded.roles.map(role => t(`provenance.roles.${role}`)).join(' · ')}`] : []),
+    ...(recorded?.translation?.stale ? [t('provenance.stale')] : []),
     ...(v.language !== currentLocale() ? [t('content.original', { language: v.language })] : []),
     ...(v.assistantAssisted || p.authorship.some(a => a.assistantAssisted) ? [t('articles.assistantAssisted')] : []),
     ...(translation?.machineAssisted ? [t('content.machineTranslation')] : []),
@@ -34,16 +45,16 @@ export function publicationView(p: PublicPublication, v: PublicPublication['curr
     body: v.body ?? '', version: v.version,
     correction: v.correctionNote && v.correctionOf ? { note: v.correctionNote, date: v.publishedAt, fromVersion: v.correctionOf } : null,
     history: p.versions.map(x => ({ version: x.version, publishedAt: x.publishedAt, note: x.correctionNote })), mentions: [], related: [],
-    content: { language: v.language, notices, sources: v.sourceRefs.map(s => ({ name: s.name, url: publicSourceUrl(s.uri), licence: s.license })), modifiedAt: p.retraction?.retractedAt ?? v.publishedAt, retracted: p.status === 'retracted' },
+    content: { provenance, language: v.language, notices, sources: v.sourceRefs.map(s => ({ name: s.name, url: publicSourceUrl(s.uri), licence: s.license })), modifiedAt: p.retraction?.retractedAt ?? v.publishedAt, retracted: p.status === 'retracted' },
   };
 }
 
 /** Existing public projections only; workspace reads retain the request's session. No demo fallback. */
 export function contentData(transport: Transport, pdfAvailable?: (path: string) => Promise<boolean>) {
   const read = (path: `/v1/${string}`) => transport.get(path, { anonymous: true });
-  async function publication(id: string): Promise<PublicPublication | null> {
+  async function publication(id: string, channel: 'web' | 'feed' = 'web'): Promise<PublicPublication | null> {
     if (!UUID.test(id)) return null;
-    const body = await read(`/v1/publications/${id}`);
+    const body = await read(`/v1/publications/${id}?channel=${channel}`);
     return body === null ? null : PublicPublicationSchema.parse(body);
   }
   async function list(format: 'news' | 'article', topic?: TopicKey) {
@@ -57,15 +68,15 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
     }
     return result;
   }
-  async function getIssueView(number: number, edition?: number): Promise<IssueView | null> {
+  async function getIssueView(number: number, edition?: number, channel: 'web' | 'feed' = 'web'): Promise<IssueView | null> {
     if (!Number.isSafeInteger(number) || number < 1) return null;
     const body = await read(`/v1/magazine/issues/${number}${edition ? `?edition=${edition}` : ''}`);
     if (body === null) return null;
     const view = PublicIssueSchema.parse(body), issue = view.issue;
     const items: IssueItem[] = [];
     for (const i of view.items) {
-      const p = i.withheld ? null : await publication(i.publicationId);
-      const raw = p ? await read(`/v1/publications/${i.publicationId}/versions/${i.publicationVersion}`) : null;
+      const p = i.withheld ? null : await publication(i.publicationId,channel);
+      const raw = p ? await read(`/v1/publications/${i.publicationId}/versions/${i.publicationVersion}?channel=${channel}`) : null;
       const pinned = raw === null ? null : PublicVersionViewSchema.parse(raw);
       const card = p ? publicationView(p) : null;
       const notices = p && pinned ? publicationView(p, pinned).content?.notices ?? [] : [];
@@ -86,11 +97,11 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
       rubrics: [...new Set(items.map(i => i.rubric))], items, pdf: available ? { state: 'available', href: pdfHref } : { state: 'pending' }, poll: null, glossary: [], live: true,
       corrections: view.corrections.map(c => ({ id: `${issue.id}-${c.toEdition}`, itemTitle: '', summary: c.reason, date: c.correctedAt, fromEdition: c.fromEdition, toEdition: c.toEdition })) };
   }
-  async function getMagazine() {
+  async function getMagazine(channel: 'web' | 'feed' = 'web') {
     const body = await read('/v1/magazine/issues');
     const archive: IssueView[] = [];
     if (body !== null) for (const i of ArchiveSchema.parse(body).issues) {
-      const issue = await getIssueView(i.number, i.currentEdition);
+      const issue = await getIssueView(i.number, i.currentEdition,channel);
       if (issue) archive.push(issue);
     }
     return { current: archive[0] ?? null, archive };
@@ -117,7 +128,11 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
   return {
     listNews: (topic?: TopicKey) => list('news', topic),
     listArticles: async (format?: string) => (await list('article')).filter(p => !format || p.articleFormat === format),
-    getPublication: async (id: string, format: 'news' | 'article') => { const p = await publication(id); return p && (p.format === format || format === 'article' && p.format === 'magazine_piece') ? publicationView(p) : null; },
+    getPublication: async (id: string, format: 'news' | 'article', channel: 'web' | 'feed' = 'web', version?: number) => { const p = await publication(id,channel); if (!p || !(p.format === format || format === 'article' && p.format === 'magazine_piece')) return null;
+      if (version === undefined) return publicationView(p);
+      if (!Number.isSafeInteger(version) || version < 1) return null;
+      const raw = await read(`/v1/publications/${id}/versions/${version}?channel=${channel}`);
+      return raw === null ? null : publicationView(p,PublicVersionViewSchema.parse(raw)); },
     getMagazine, listMyPublications,
     getIssue: async (number: number) => { const { archive } = await getMagazine(); const index = archive.findIndex(i => i.number === number); return index < 0 ? null : { issue: archive[index]!, previous: archive[index + 1] ?? null, next: archive[index - 1] ?? null }; },
     listRubrics: async () => { const { archive } = await getMagazine(); return [...rubrics].map(key => ({ key: key as RubricKey, count: archive.flatMap(i => i.items).filter(i => i.rubric === key).length, latestIssue: archive.find(i => i.rubrics.includes(key as RubricKey))?.number ?? null })); },

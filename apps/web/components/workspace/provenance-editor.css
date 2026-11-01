@@ -1,0 +1,9 @@
+.prov-editor { display: grid; gap: 1rem; max-width: 60rem; min-width: 0; }
+.prov-editor label { display: grid; gap: .4rem; min-width: 0; }
+.prov-editor input:not([type=checkbox]), .prov-editor textarea, .prov-editor select { width: 100%; min-width: 0; box-sizing: border-box; padding: .65rem; font: inherit; }
+.prov-editor fieldset { display: grid; gap: .7rem; min-width: 0; padding: 1rem; }
+.prov-editor label:has(input[type=checkbox]) { display: flex; align-items: start; gap: .5rem; }
+.prov-editor button { font: inherit; padding: .65rem 1rem; cursor: pointer; white-space: normal; }
+.prov-editor button:disabled { cursor: default; opacity: .6; }
+.prov-actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.prov-roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: .5rem; }

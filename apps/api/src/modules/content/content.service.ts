@@ -1,3 +1,4 @@
+import { provenance } from '../../../../../packages/data/src/repositories/provenance.js';
 import { sql } from 'kysely';
 import type { z } from 'zod';
 import { DIGEST_ALGORITHM, type Principal } from '../../deps/contracts.js';
@@ -302,20 +303,22 @@ export class ContentService {
     return this.read((trx) => this.wallOf(trx, kind, owner));
   }
 
-  publication(id: string): Promise<PublicPublication> {
+  publication(id: string, channel: 'web' | 'feed' | 'pdf' = 'web'): Promise<PublicPublication> {
     const hubId = this.hub();
     return this.read(async (trx) => {
       const json = await publicContent.publication(trx, hubId, id) as Record<string, unknown> | null;
       if (!json) throw new ApiError('access.not_found', 'not found');
       const current = json.current as Record<string, unknown>;
+      current.provenance = await provenance.deliveryMetadata(trx,hubId,id,Number(current.version),channel);
       return PublicPublicationSchema.parse({ projection: 'public', ...json, current: { ...current, sourceRefs: sourcesOf(current.sourceRefs) } });
     });
   }
-  version(id: string, version: number) {
+  version(id: string, version: number, channel: 'web' | 'feed' | 'pdf' = 'web') {
     const hubId = this.hub();
     return this.read(async (trx) => {
       const json = await publicContent.version(trx, hubId, id, version) as Record<string, unknown> | null;
       if (!json) throw new ApiError('access.not_found', 'not found');
+      json.provenance = await provenance.deliveryMetadata(trx,hubId,id,version,channel);
       return PublicVersionViewSchema.parse({ projection: 'public', publicationId: id, ...json, sourceRefs: sourcesOf(json.sourceRefs) });
     });
   }

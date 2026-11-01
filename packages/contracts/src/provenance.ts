@@ -129,3 +129,29 @@ export const FakeImageAttachmentSchema = z.strictObject({
   attachmentSha256: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type FakeImageAttachment = z.infer<typeof FakeImageAttachmentSchema>;
+
+/** Public delivery is channel-scoped; private actor IDs, session IDs and reasons never leave the owner. */
+export const PublicProvenanceSchema = z.discriminatedUnion('availability', [
+  z.strictObject({ availability: z.literal('unavailable'), machineAssisted: z.boolean() }),
+  z.strictObject({
+    availability: z.literal('recorded'), binding: ProvenanceBindingSchema,
+    revision: z.int().positive(), kind: ProvenanceKindSchema,
+    roles: z.array(ProvenanceRoleSchema), evidence: z.literal('human_declaration'), machineAssisted: z.boolean(),
+    credits: z.strictObject({ responsible_editor: z.string().optional(), translation_reviewer: z.string().optional() }),
+    translation: z.strictObject({ reviewed: z.literal(true), originalPublicationId: IdSchema,
+      originalVersion: z.int().positive(), originalDigest: z.string().regex(/^[a-f0-9]{64}$/),
+      originalLanguage: z.string(), originalFormat: z.enum(['news','article','magazine_piece','company_post','personal_post']),
+      currentOriginalVersion: z.int().positive(), stale: z.boolean() }).optional(),
+  }),
+]);
+export type PublicProvenance = z.infer<typeof PublicProvenanceSchema>;
+export const ProvenanceDeliveryQuerySchema = z.strictObject({ channel: ProvenanceChannelSchema.default('web') });
+
+export const ProvenanceWorkspaceSchema = z.strictObject({
+  publicationId: IdSchema, publicationRevision: z.int().positive(), ownerKind: z.enum(['person','company','editorial']), status: z.string(), credit: z.string(),
+  binding: ProvenanceBindingSchema, versionStatus: z.enum(['draft','published']), correctionNote: z.string().nullable(),
+  draft: z.strictObject({ title: z.string(), body: z.string(), language: z.string(), sourceRefs: z.array(z.unknown()), treatment: z.string(), eventTime: TimestampSchema.nullable(), assistantAssisted: z.boolean() }),
+  record: z.strictObject({ id: IdSchema, revision: z.int().positive(), kind: ProvenanceKindSchema, roles: z.array(ProvenanceRoleSchema), exact: z.boolean(), original: ProvenanceBindingSchema.nullable(), canConsentEditor: z.boolean(), canConsentReviewer: z.boolean(), reviewed: z.boolean() }).nullable(),
+  consents: z.array(z.strictObject({ id: IdSchema, provenanceId: IdSchema, role: ProvenanceCreditRoleSchema, credit: z.string(), channels: z.array(ProvenanceChannelSchema), revoked: z.boolean() })),
+});
+export type ProvenanceWorkspace = z.infer<typeof ProvenanceWorkspaceSchema>;
