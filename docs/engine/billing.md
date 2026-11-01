@@ -71,7 +71,7 @@ Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-
 
 ## Commissions and fees are hub settings
 
-Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing and exact consultation/task bindings are implemented; [remaining acceptance boundaries](../../apps/api/src/modules/billing/fees/README.md) include BIZ-001 design acceptance, missing price readers, marketplace fee mapping and referral authority. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
+Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing and exact consultation/task bindings are implemented; [remaining acceptance boundaries](../../apps/api/src/modules/billing/fees/README.md) include missing price readers, marketplace fee mapping and referral authority. The BIZ-001 pricing design is accepted; that does not establish full runtime coverage. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
 
 | Rule | How it holds |
 |---|---|
