@@ -25,6 +25,7 @@ export interface ScreeningListTable {
   name: string;
   authority: string;
   source_url: string;
+  source_id: Generated<string | null>;
   adapter: string;
   mode: ScreeningListModeColumn;
   cadence: IntervalColumn;
@@ -75,7 +76,22 @@ export interface ScreeningListEntryTable {
 }
 export type ScreeningListEntryRow = Selectable<ScreeningListEntryTable>;
 
+export interface ScreeningListSourceTable {
+  id: Generated<string>; pack_code: string; pack_version: string; fact_id: string; code: string;
+  name: string; authority: string; source_url: string; adapter: string; source_digest: string;
+  snapshot: Json<unknown>; current: Generated<boolean>; created_at: Generated<Date>;
+}
+export interface ScreeningListProposalTable {
+  id: Generated<string>; hub_id: string; source_id: string; requested_by: string;
+  cadence_seconds: number; warn_after_seconds: number; stale_after_seconds: number;
+  reason: string; evidence: string; before_digest: string; action_digest: string;
+  state: Generated<'pending' | 'approved' | 'rejected'>; created_at: Generated<Date>; expires_at: Generated<Date>;
+  decided_by: string | null; decided_at: Date | null; decision_reason: string | null;
+}
+
 export interface ScreeningListsDatabase {
+  screening_list_source: ScreeningListSourceTable;
+  screening_list_proposal: ScreeningListProposalTable;
   screening_list: ScreeningListTable;
   screening_list_version: ScreeningListVersionTable;
   screening_list_entry: ScreeningListEntryTable;
@@ -88,7 +104,9 @@ declare module './index.js' {
 
 const columns = columnsOf<ScreeningListsDatabase>();
 export const TABLE_COLUMNS: TableColumns<ScreeningListsDatabase> = {
-  screening_list: columns('screening_list', ['id', 'hub_id', 'code', 'name', 'authority', 'source_url', 'adapter', 'mode', 'cadence', 'warn_after', 'stale_after', 'max_drop_share',
+  screening_list_source: columns('screening_list_source', ['id','pack_code','pack_version','fact_id','code','name','authority','source_url','adapter','source_digest','snapshot','current','created_at']),
+  screening_list_proposal: columns('screening_list_proposal', ['id','hub_id','source_id','requested_by','cadence_seconds','warn_after_seconds','stale_after_seconds','reason','evidence','before_digest','action_digest','state','created_at','expires_at','decided_by','decided_at','decision_reason']),
+  screening_list: columns('screening_list', ['id', 'hub_id', 'code', 'name', 'authority', 'source_url', 'source_id', 'adapter', 'mode', 'cadence', 'warn_after', 'stale_after', 'max_drop_share',
     'min_entries', 'baseline', 'status', 'last_checked_at', 'last_attempt_at', 'last_outcome', 'last_error', 'created_at']),
   screening_list_version: columns('screening_list_version', ['id', 'list_id', 'version', 'published_on', 'fetched_at', 'mode', 'source_digest', 'entry_count', 'digest', 'state',
     'sanity', 'staged_at', 'activated_at', 'activated_by', 'activation_reason', 'decided_at', 'rejected_reason']),

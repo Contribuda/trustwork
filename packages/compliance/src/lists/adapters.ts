@@ -13,12 +13,14 @@ export interface ListAdapter {
   readonly id: string;
   /** File name extension in `file` mode: `<lists dir>/<code>.<extension>`. */
   readonly extension: string;
+  readonly officialOrigins: readonly string[];
   readonly description: string;
   parse(text: string): ParsedList;
 }
 
 export const OFAC_SLS_XML_ADAPTER: ListAdapter = {
   id: 'ofac-sls-xml',
+  officialOrigins: ['https://ofac.treasury.gov', 'https://sanctionslistservice.ofac.treas.gov'],
   extension: 'xml',
   description: 'OFAC Sanctions List Service export in the classic XML schema (SDN.XML, CONSOLIDATED.XML)',
   parse: parseOfacSlsXml,

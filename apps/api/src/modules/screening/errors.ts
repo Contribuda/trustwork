@@ -6,6 +6,8 @@ interface PgError { code?: string; hint?: string }
 export function screeningRefusal(error: unknown): never {
   const hint = (error as PgError)?.hint;
   switch (hint) {
+    case 'screening.list_not_found':
+    case 'screening.version_not_found':
     case 'screening.match_not_found':
     case 'screening.subject_not_found':
     case 'access.not_found':
@@ -15,6 +17,7 @@ export function screeningRefusal(error: unknown): never {
     case 'screening.same_reviewer':
     case 'screening.not_subject':
     case 'admin.conflict_of_interest':
+    case 'screening.baseline_list':
     case 'admin.forbidden':
     case 'admin.elevation_required':
       throw new ApiError('access.forbidden', 'only a compliance officer of this node who is not the subject, not a member of the subject company and not conflicted decides', { reason: hint });
@@ -22,6 +25,8 @@ export function screeningRefusal(error: unknown): never {
       throw new ApiError('access.second_approver_required', 'a second person other than the proposer decides', { reason: hint });
     case 'access.approval_digest_mismatch':
       throw new ApiError('access.approval_digest_mismatch', 'the reviewed digest differs from the proposal');
+    case 'screening.configuration_changed':
+    case 'screening.confirmation_not_needed':
     case 'screening.match_state':
     case 'screening.routing_conflict':
     case 'screening.nothing_to_appeal':
@@ -30,6 +35,7 @@ export function screeningRefusal(error: unknown): never {
       throw new ApiError('validation.revision_conflict', 'the match is no longer in a state this decision applies to', { reason: hint });
     case 'screening.reason_required':
     case 'screening.evidence_required':
+    case 'screening.invalid_configuration':
     case 'screening.invalid_decision':
       throw new ApiError('validation.schema', 'a reason and an evidence category are required', { reason: hint });
     default:

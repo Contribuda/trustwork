@@ -200,6 +200,28 @@
         "lateMatches": "Kechikkan tekshiruvlar",
         "notSamePersonShare": "Boshqa shaxs qarorlari ulushi",
         "gateRefusals": "Tur bo‘yicha rad etishlar"
+      },
+      "listControls": {
+        "title": "Qo‘shimcha ro‘yxat sozlamalari",
+        "boundary": "Asosiy ro‘yxatlar doim faol. Fayl importi mamlakat paketidagi ro‘yxatdan o‘tgan manbalar va mavjud adapterlardan foydalanadi. Aniq sozlamani boshqa muvofiqlik xodimi tasdiqlaydi. Jonli yuklash provayderning alohida ruxsatini talab qiladi va bu yerda mavjud emas.",
+        "propose": "Fayl ro‘yxati sozlamasini taklif qilish",
+        "source": "Ro‘yxatdan o‘tgan manba",
+        "cadence": "Yangilash oralig‘i (soniya)",
+        "warning": "Ogohlantirish muddati (soniya)",
+        "stale": "Eskirish muddati (soniya)",
+        "exportEvidence": "Rasmiy eksport tekshirildi",
+        "reviewEvidence": "Manba fakti tekshirildi",
+        "noSources": "Mos eksport manbasi ro‘yxatdan o‘tmagan. So‘rov adapterlari va tekshirilmagan faktlar ro‘yxat importi uchun yaroqsiz.",
+        "history": "Sozlamalar tarixi",
+        "approve": "Sozlamani tasdiqlash",
+        "pause": "Qo‘shimcha ro‘yxatni to‘xtatish",
+        "resume": "Qo‘shimcha ro‘yxatni davom ettirish",
+        "confirmVersion": "Qisqartirilgan versiyani tasdiqlash",
+        "proposalStates": {
+          "pending": "Kutilmoqda",
+          "approved": "Tasdiqlangan",
+          "rejected": "Rad etilgan"
+        }
       }
     }
   }

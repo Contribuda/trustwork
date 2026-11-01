@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
-import { ScreeningListsOverviewSchema, ScreeningVersionsSchema, ScreeningGeolocationSchema, ScreeningMetricsSchema, type ScreeningSubjectRef } from '@trustwork/contracts/client';
+import { ScreeningListAuthoritySchema, ScreeningListsOverviewSchema, ScreeningVersionsSchema, ScreeningGeolocationSchema, ScreeningMetricsSchema, type ScreeningSubjectRef } from '@trustwork/contracts/client';
 import { primeLocale } from '@/app/_lib/locale';
 import { tDynamic } from '@/app/_lib/i18n';
 import { withBase } from '@/app/_lib/base-path';
@@ -23,6 +23,7 @@ export async function readScreening(hubSlug: string, query: Query, transport = c
   const hubs = HubsSchema.parse(await transport.get('/v1/admin/hubs'));
   const hub = hubs.items.find((item) => item.hub.slug === hubSlug)?.hub;
   if (!hub || hub.nodeId !== node.nodeId) return null;
+  const listAuthority = ScreeningListAuthoritySchema.parse(await transport.get(`/v1/admin/screening/list-authority?hubId=${hub.id}`));
   const lists = ScreeningListsOverviewSchema.parse(await transport.get('/v1/admin/screening/lists'));
   const versions = new Map<string, z.infer<typeof ScreeningVersionsSchema>['items']>();
   for (const list of lists.items) versions.set(list.id, ScreeningVersionsSchema.parse(await transport.get(`/v1/admin/screening/lists/${list.id}/versions`)).items);
@@ -40,7 +41,7 @@ export async function readScreening(hubSlug: string, query: Query, transport = c
   const subject = subjectBody ? SubjectSchema.parse(subjectBody) : null;
   const details: MatchDetail[] = [];
   if (subject) for (const match of subject.matches) details.push(MatchDetailSchema.parse(await transport.get(`/v1/admin/screening/matches/${match.id}`)));
-  return { node, access, hub, lists, versions, geo, metrics, queue, holds: holds.items, runs: runs.items, subject, details };
+  return { node, access, hub, listAuthority, lists, versions, geo, metrics, queue, holds: holds.items, runs: runs.items, subject, details };
 }
 
 export function localizedCopy(): Copy {
@@ -86,7 +87,7 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
     {!participantPage ? <>
     {!data.lists.available ? <p className="screening-warning" role="status">{c.stale}</p> : null}
     <section aria-labelledby="baseline-heading"><h2 id="baseline-heading">{c.lists}</h2>
-      <p>{c.listReadOnly}</p>
+      <p>{c.listControls.boundary}</p>
       {data.lists.items.map((list) => <article className="screening-card" key={list.id}>
         <h3><code>{list.code}</code></h3><p>{list.baseline ? c.baseline : c.additional}</p>
         <dl><dt>{c.mode}</dt><dd>{c.modes[list.mode]}</dd><dt>{c.freshness}</dt><dd>{c.freshnessStates[list.freshness.state]}</dd>
@@ -96,10 +97,29 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
           <dt>{c.entryCount}</dt><dd>{list.activeVersion ? number(list.activeVersion.entryCount) : c.unknown}</dd>
           <dt>{c.publishedOn}</dt><dd>{list.activeVersion?.publishedOn ? new Intl.DateTimeFormat(active.locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(list.activeVersion.publishedOn)) : c.unknown}</dd>
         </dl>
+        {!list.baseline ? <ActionForm path={`/v1/admin/screening/lists/${list.id}/status`} label={list.status === 'active' ? c.listControls.pause : c.listControls.resume} fixed={{ status: list.status === 'active' ? 'paused' : 'active' }} copy={c} disabled={!mayAct} /> : null}
         <details><summary>{c.versionHistory}</summary><p>{c.historyLimit}</p><ul>{data.versions.get(list.id)?.map((version) => <li key={version.id}>
           {number(version.version)} · {c.versionStates[version.state]} · {c.modes[version.mode]} · {fmtDate(version.fetchedAt)}
           <p>{c.entryCount}: {number(version.entryCount)}</p><p>{c.digest}: <code>{version.digest}</code></p>
+          {version.state === 'staged' ? <ActionForm path={`/v1/admin/screening/list-versions/${version.id}/confirm`} label={c.listControls.confirmVersion} copy={c} disabled={!mayAct} /> : null}
         </li>)}</ul></details>
+      </article>)}
+    </section>
+    <section aria-labelledby="list-authority-heading"><h2 id="list-authority-heading">{c.listControls.title}</h2>
+      <p>{c.listControls.boundary}</p>
+      {data.listAuthority.sources.length ? <ActionForm path="/v1/admin/screening/list-proposals" label={c.listControls.propose} copy={c} fixed={{hubId:data.hub.id}}
+        choices={{sourceId:{label:c.listControls.source,options:Object.fromEntries(data.listAuthority.sources.map((source)=>[source.id,`${source.packCode} / ${source.factId} / ${source.adapter}`]))}}}
+        numbers={{cadenceSeconds:{label:c.listControls.cadence,value:86400,min:60,max:604800},warnAfterSeconds:{label:c.listControls.warning,value:259200,min:120,max:1209599},staleAfterSeconds:{label:c.listControls.stale,value:604800,min:180,max:1209600}}}
+        evidence={{official_export:c.listControls.exportEvidence,source_review:c.listControls.reviewEvidence}} disabled={!mayAct} /> : <p>{c.listControls.noSources}</p>}
+      <h3>{c.listControls.history}</h3><p>{c.historyLimit}</p>
+      {data.listAuthority.proposals.map((proposal)=><article className="screening-card" key={proposal.id}>
+        <h4>{c.listControls.proposalStates[proposal.state]}</h4><p>{proposal.reason}</p><p>{fmtDate(proposal.createdAt)}</p>
+        <dl><dt>{c.listControls.cadence}</dt><dd>{number(proposal.cadenceSeconds)}</dd><dt>{c.listControls.warning}</dt><dd>{number(proposal.warnAfterSeconds)}</dd><dt>{c.listControls.stale}</dt><dd>{number(proposal.staleAfterSeconds)}</dd></dl>
+        <p>{c.digest}: <code>{proposal.actionDigest}</code></p>
+        {proposal.state === 'pending' ? <><p>{c.secondRequired}</p>
+          <ActionForm path={`/v1/admin/screening/list-proposals/${proposal.id}/decision`} label={c.listControls.approve} fixed={{decision:'approve',actionDigest:proposal.actionDigest}} copy={c} disabled={!mayAct || proposal.requestedBy === access.personId || new Date(proposal.expiresAt) <= new Date()} />
+          <ActionForm path={`/v1/admin/screening/list-proposals/${proposal.id}/decision`} label={c.reject} fixed={{decision:'reject',actionDigest:proposal.actionDigest}} copy={c} disabled={!mayAct || proposal.requestedBy === access.personId} />
+        </> : null}
       </article>)}
     </section>
     <section aria-labelledby="geo-heading"><h2 id="geo-heading">{c.geolocation}</h2>
