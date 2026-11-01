@@ -3,11 +3,11 @@ import { cookies, headers } from 'next/headers';
 import { getLocaleStore, runWithLocaleScope, setLocaleStore } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
 import { uiLayers } from '@trustwork/ui/i18n/dictionaries';
-import { BUILT_IN_PACKS, getCountryPack, getPack, type CountryPack } from '@trustwork/country-packs';
+import { BUILT_IN_PACKS, getCountryPack, toClientPack, type ClientPack } from '@trustwork/country-packs';
 import { appLayers, brandLayers, brandWordmark } from './locale-data';
 import { currentDeployment } from '@trustwork/config/server';
 import { defaultCountryCode, localesFor, negotiate, offeredCountryPack, offeredLanguages } from './locale-negotiation';
-import { neutralPack, setDefaultCountryReader } from './country';
+import { neutralPack, setCountryPackResolver, setDefaultCountryReader } from './country';
 import CLIENT_NAMESPACES from '@/locales/client-namespaces.json';
 
 import { COUNTRY_COOKIE, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeCookiePath } from './locale-names';
@@ -17,11 +17,12 @@ import { setDefaultLanguage } from './localize';
 export { COUNTRY_COOKIE, LOCALE_COOKIE };
 
 setDefaultCountryReader(() => defaultCountryCode());
+setCountryPackResolver(getCountryPack);
 setDefaultLanguage(() => currentDeployment().languages.default);
 export { localesFor };
 
 /** `country` is empty when the visitor has not chosen one and the deployment configures none (ADR 012 decision 11). */
-export type ActiveLocale = { country: string; locale: string; chosen: boolean; pack: CountryPack };
+export type ActiveLocale = { country: string; locale: string; chosen: boolean; pack: ClientPack };
 
 /**
  * The visitor's country and language: the cookies when they name a country and a language this deployment offers;
@@ -79,18 +80,20 @@ export function clientLayers(tag: string, group: RouteGroup): { namespaces: stri
 }
 
 /**
- * The active country's pack when it came from the deployment's data directory (CFG-001): built-in packs ship in the
- * browser bundle, a data-directory pack reaches the browser this way, and only for visitors in that country.
+ * The active country's pack when the browser bundle does not carry it: a pack from the deployment's data directory
+ * (CFG-001) or the generic profile of a country without a contributed pack. The bundle carries the client subset of the
+ * built-in packs (`@trustwork/country-packs/client`); this one reaches the browser as the same subset, only for visitors
+ * in that country, and never with its facets, sources or verification notes.
  */
-function deploymentPackForBrowser(): CountryPack | null {
+function packForBrowser(): ClientPack | null {
   const country = getLocaleStore().country;
-  const pack = country ? getPack(country) : null;
-  return pack && !BUILT_IN_PACKS.includes(pack) ? pack : null;
+  const pack = country ? getCountryPack(country) : null;
+  return pack && !BUILT_IN_PACKS.includes(pack) ? toClientPack(pack) : null;
 }
 
-/** The document's client locale (`components/RootDocument.tsx`): brand overlay (messages and this language's wordmark), a data-directory pack, the root namespaces and the design system's dictionary. */
-export function rootClientLocale(tag: string): { brand: Messages[]; wordmark: ReturnType<typeof brandWordmark>; pack: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
-  return { brand: brandLayers(tag), wordmark: brandWordmark(tag), pack: deploymentPackForBrowser(), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
+/** The document's client locale (`components/RootDocument.tsx`): brand overlay (messages and this language's wordmark), the visitor's pack when the bundle lacks it, the root namespaces and the design system's dictionary. */
+export function rootClientLocale(tag: string): { brand: Messages[]; wordmark: ReturnType<typeof brandWordmark>; pack: ClientPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
+  return { brand: brandLayers(tag), wordmark: brandWordmark(tag), pack: packForBrowser(), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
 }
 
 /**

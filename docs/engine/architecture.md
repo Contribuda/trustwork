@@ -37,7 +37,7 @@ Solid arrows exist today; dotted arrows are designed. The API writes outbox rows
 | `packages/data` | Reviewed SQL migrations, migration runner with checksum ledger, Kysely repositories, admission control |
 | `packages/ui` | Design system: tokens, React Aria components, brand mark and wordmarks, media registry, locale dictionaries, Storybook |
 | `packages/i18n-runtime` | Request-scoped message store shared by server and client |
-| `packages/country-packs` | Country packs, restricted places, ISO country dataset, formatting helpers |
+| `packages/country-packs` | Country packs, restricted places, ISO country dataset, formatting helpers. Two entries: server (`@trustwork/country-packs`, every pack with its facets, the validator and the dataset) and browser (`@trustwork/country-packs/client`, the v1 subset of the built-in packs; facets never reach a client chunk) |
 | `packages/config` | Deployment configuration: the `trustwork.config.json` schema, environment overrides and the data-directory loader ([Deployment configuration](../country-packs/configuration.md)) |
 | `packages/compliance` | Ownership declaration and sanctions screening adapter |
 | `infra` | Local PostgreSQL compose file and the web Dockerfile |

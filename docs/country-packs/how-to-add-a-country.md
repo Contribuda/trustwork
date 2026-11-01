@@ -17,7 +17,7 @@ A deployment adds a country without changing or rebuilding the engine ([Deployme
 3. Optionally make it the starting country (`"countries": { "default": "<CODE>" }` in `trustwork.config.json`, or `TRUSTWORK_DEFAULT_COUNTRY`) and feature it (`countries.featured`).
 4. Restart the server. It validates every file with the schemas below and refuses to start on any problem (a restricted place, a fact without sources, a malformed file), listing them all in one log line.
 
-Sharing the pack with everyone (section 6) is the same file in `packages/country-packs/packs` plus one import line in `packages/country-packs/src/registry.ts`, because the repository's packs ship inside the browser bundle.
+Sharing the pack with everyone (section 6) is the same file in `packages/country-packs/packs` plus one import line in `packages/country-packs/src/registry.ts` and the regenerated browser summaries (`npm run generate:client -w @trustwork/country-packs`), because the browser bundle carries the client subset of the repository's packs (never their facets or sources).
 
 ## 1. Check eligibility
 
@@ -135,4 +135,4 @@ The validator (`packProblems` in `packages/country-packs/src/validate.ts`, also 
 
 ## 6. Open a pull request
 
-To share a pack with every deployment, add it to `packages/country-packs/packs/<code>.json` and its import to `BUILT_IN_PACKS` in `packages/country-packs/src/registry.ts`. Use the "Add or update a country pack" issue template first, then a PR with the pack, dictionaries, tests and screenshots of the home page and a company page in the pack's default language (desktop 1440 px and phone 390 px). Country-pack maintainers (GOVERNANCE.md) review facts; the integrator reviews the engine changes.
+To share a pack with every deployment, add it to `packages/country-packs/packs/<code>.json` and its import to `BUILT_IN_PACKS` in `packages/country-packs/src/registry.ts`, then run `npm run generate:client -w @trustwork/country-packs` (tests/country-packs/client-entry.test.ts fails while the browser summaries and the pack files disagree). Use the "Add or update a country pack" issue template first, then a PR with the pack, dictionaries, tests and screenshots of the home page and a company page in the pack's default language (desktop 1440 px and phone 390 px). Country-pack maintainers (GOVERNANCE.md) review facts; the integrator reviews the engine changes.

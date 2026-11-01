@@ -1,4 +1,4 @@
-import { currencyMeta, packs } from '@trustwork/country-packs';
+import { clientPacks, currencyMeta } from '@trustwork/country-packs/client';
 
 /**
  * Exact conversions between what a person types and contract values (WEB-002), shared by the server pages and the
@@ -7,7 +7,7 @@ import { currencyMeta, packs } from '@trustwork/country-packs';
 
 /** Minor-unit digits of a currency: the country pack's statement first (as `formatMoney` does), else `Intl`. */
 export function minorDigits(currency: string): number {
-  return packs().find((p) => p.currency.code === currency)?.currency.minorUnitDigits ?? currencyMeta(currency).minorUnitDigits;
+  return clientPacks().find((p) => p.currency.code === currency)?.currency.minorUnitDigits ?? currencyMeta(currency).minorUnitDigits;
 }
 
 /** `12.5` in USD -> `1250`; null when the text is not a non-negative decimal with at most the currency's digits. */

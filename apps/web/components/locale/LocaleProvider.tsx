@@ -4,7 +4,7 @@ import { createContext, use, useEffect, useMemo, type ReactNode } from 'react';
 import { LocaleScope } from '@trustwork/i18n-runtime';
 import type { Messages } from '@trustwork/i18n-runtime/types';
 import { brandOverlay, registerBrandOverlay, type BrandOverlay } from '@trustwork/ui/brand';
-import { installPacks, type CountryPack } from '@trustwork/country-packs';
+import { installClientPacks, type ClientPack } from '@trustwork/country-packs/client';
 import { setDefaultLanguage } from '@/app/_lib/localize';
 
 type WordmarkLines = BrandOverlay['wordmarks'][string];
@@ -74,17 +74,19 @@ function Scope({ received, children }: { received: Received; children: ReactNode
  * languages never mix; `<html lang>` follows on the client.
  */
 /**
- * Country packs from the deployment's data directory, for region labels and currency in client components. They are
- * only ever added (the deployment's packs do not change while it runs), so concurrent renders never remove one.
+ * The visitor's country pack when the browser bundle does not carry it (a pack from the deployment's data directory, or
+ * the generic profile of a country without a contributed pack), as its client subset: region labels, currency and the
+ * identifier label in client components. Only ever added (a deployment's packs do not change while it runs), so
+ * concurrent renders never remove one.
  */
-const deploymentPacks = new Map<string, CountryPack>();
-function registerPack(pack: CountryPack | null | undefined): void {
-  if (!pack || deploymentPacks.has(pack.code)) return;
-  deploymentPacks.set(pack.code, pack);
-  installPacks([...deploymentPacks.values()]);
+const receivedPacks = new Map<string, ClientPack>();
+function registerPack(pack: ClientPack | null | undefined): void {
+  if (!pack || receivedPacks.has(pack.code)) return;
+  receivedPacks.set(pack.code, pack);
+  installClientPacks([...receivedPacks.values()]);
 }
 
-export function LocaleProvider({ locale, country, defaultLanguage, brand, wordmark, pack, namespaces, layers, ui, children }: { locale: string; country: string; defaultLanguage: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: CountryPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
+export function LocaleProvider({ locale, country, defaultLanguage, brand, wordmark, pack, namespaces, layers, ui, children }: { locale: string; country: string; defaultLanguage: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: ClientPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
   // The unprefixed language of public URLs (decision 27): one value per deployment, so concurrent renders agree.
   setDefaultLanguage(defaultLanguage);
   registerWordmark(locale, wordmark);

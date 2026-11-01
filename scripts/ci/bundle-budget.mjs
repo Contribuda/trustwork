@@ -2,7 +2,9 @@
 // Client bundle-size budget for the Next.js web app (webpack build). Measures gzip bytes of the JavaScript a
 // browser downloads: the shared root chunks, the heaviest route (shared chunks plus every client chunk the
 // route's client-reference manifest lists) and all client chunks together, and compares them with
-// scripts/ci/bundle-budget.json. Usage: node scripts/ci/bundle-budget.mjs [distDir] [budget.json]
+// scripts/ci/bundle-budget.json. It also fails when a client chunk contains a server-only marker listed there
+// (`serverOnlyMarkers`: text that only server-side data or code carries, such as country-pack facets).
+// Usage: node scripts/ci/bundle-budget.mjs [distDir] [budget.json]
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -82,6 +84,17 @@ export function compare(measured, budget) {
   return over;
 }
 
+/** Every client chunk containing one of the markers, as `{ marker, chunk }` (empty: no server-only text reached the browser). */
+export function serverOnlyHits(distDir, markers) {
+  const dist = resolve(distDir);
+  const hits = [];
+  for (const file of walk(join(dist, 'static', 'chunks'), (path) => path.endsWith('.js'))) {
+    const source = readFileSync(file, 'utf8');
+    for (const { marker } of markers) if (source.includes(marker)) hits.push({ marker, chunk: relative(dist, file) });
+  }
+  return hits;
+}
+
 const kib = (bytes) => `${(bytes / 1024).toFixed(1)} KiB`;
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -100,4 +113,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error('Reduce client JavaScript, or raise scripts/ci/bundle-budget.json in a reviewed change that explains why.');
     process.exitCode = 1;
   }
+  const markers = budget.serverOnlyMarkers ?? [];
+  const hits = serverOnlyHits(distDir, markers);
+  console.log(`  server-only markers ${String(markers.length).padStart(10)}  found in client chunks: ${hits.length}`);
+  for (const { marker, chunk } of hits) {
+    const { reason } = markers.find((m) => m.marker === marker);
+    console.error(`::error::server-only text "${marker}" in client chunk ${chunk}: ${reason}`);
+  }
+  if (hits.length) process.exitCode = 1;
 }
