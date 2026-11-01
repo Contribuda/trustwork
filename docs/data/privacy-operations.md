@@ -1,6 +1,6 @@
 # Privacy implementation coverage
 
-PRV-001 / issue #93. Status: **partial, pending conductor review and integration**. The work package is not complete. The operational contracts in `packages/contracts/src/privacy.ts` cover only the implemented intake and local journal shapes. New cross-module erasure rules and a production ledger writer remain proposals for the owning modules and maintainers; this document does not authorize them.
+PRV-001 / issue #93. Status: **partial, pending conductor review and integration**. The work package is not complete. The operational contracts in `packages/contracts/src/privacy.ts` cover only the implemented intake and local journal shapes. Two-person erasure execution, module-owned suppression consumers, remaining exports and production journal integration remain implementation work. They are not owner-only permission blockers; this session is bounded to the journal/restore repair.
 
 ## Implemented runtime paths
 
@@ -47,9 +47,31 @@ The `data_broker_registration` table is schema only. Fake DROP polling/intake, c
 
 Legal holds are platform-scoped, elevated and audited with category reasons. They share a subject advisory lock with erasure readiness and replay. Readiness returns `legal_hold`, `country_policy_UNKNOWN` or `module_erasure_adapters_unavailable`; there is no successful erasure response. A tombstone schema rejects identical executor/approver ids, but this is not a runtime second-person approval protocol. The existing administration approval mechanism still needs a complete erasure plan/digest integration.
 
-The independent local journal rejects changed decisions and corrupted content. Restore authorization reads the external journal every time, requires an applied fence, replays in the restore transaction and lifts the fence only after commit. The narrow synthetic drill restores old privacy correction rows and removes the database receipt; replay redacts them again and runtime RLS serves no erased privacy records. Missing or unsupported journal records prevent authorization. Existing restore reconciliation tests use an explicit separate empty fixture journal.
+### Retained journal foundation (local proof only)
 
-Whole-subject erasure, retrieval/federation tombstone dispatch, no-outreach/no-reimport acceptance, real two-person execution, cross-process journal writer freezing, production immutable storage and a full backup restore drill remain unmet. No production or provider action was performed.
+The old content-addressed bucket accepted an absent prefix as an empty journal. That implementation is replaced by an explicitly provisioned local journal and an **independently retained authority directory**. Neither is created by reading, recording or restoring. Provisioning refuses existing directories, including empty ones. There is no temporary-directory default and no environment-driven erasure enablement.
+
+The installation binding pins the authority directory and journal UUID independently of both the restored database and the operator-selected journal path. `authorizeLocalPrivacyRestore` requires this retained-authority binding separately from the ledger object; a fully provisioned new ledger does not satisfy the old binding. The authority checkpoint records the UUID, monotonic sequence, hash-chain head and permanent restore seal. Journal identity, every sequence number, predecessor hash, content schema, unique request id, count and final hash must agree. Missing prefixes, wrong identities, missing authority, truncated journals and old copies fail closed, even against a database with no replay receipts.
+
+Files and parent directories are fsynced. Records are created exclusively, then the checkpoint is replaced by fsynced temporary-file/rename/directory-sync. A crash between the two does not silently acknowledge a decision. Atomic `mkdir` of `operation.lock` in the retained authority serializes writers and restore across processes; moving the journal path does not move that lock. The lock spans verification, snapshot, replay, database commit and the actual fence lift. Authorization audit includes the exact UUID, sequence and chain head.
+
+Restore writes a durable seal before replay. A writer that wins first must finish its checkpoint before restore can acquire the lock. A restore that wins first refuses all competing writers, and the seal rejects later appends after handover. **This is a finite, sealed local restore proof, not a live erasure executor.** Allowing later erasures requires the future executor to apply module changes under a complete serving-fence protocol; no reopen, reset, TTL or bypass option exists here.
+
+A thrown operation or process death leaves the authority lock in place. There is no PID check, expiry or automatic stale-lock takeover: a process may have committed the database without lifting the fence. Tests kill real child processes after entry fsync, after checkpoint fsync, after snapshot/seal and after DB commit but before lift; new processes cannot authorize, and the real runtime login remains denied. Manual lock deletion is not a supported recovery procedure. A reconciled retained-authority recovery tool is unfinished; preserve the lock, checkpoint, journal and fence for investigation.
+
+Local filesystem durability is a fake with explicit trust assumptions: the authority is retained independently, its provisioning binding is trusted, and it is never rolled back with the journal or database. This does not provide WORM storage, protection against an administrator replacing the authority itself, host-loss durability or multi-host storage consensus. If those assumptions cannot be established, this capability cannot be used. Production provisioning and restore integration remain unavailable, not implied by these local tests.
+
+### Compatibility and irreversible retention boundary
+
+The existing OPS-003 CLI and physical drill are preserved for installations that have **never enabled PRV-001 subject erasure**. This release has no runtime subject-erasure executor or activation path. The CLI no longer constructs a mandatory filesystem privacy ledger (which formerly rejected every production configuration). Its existing FILE-001 tombstone workflow is unchanged. A real PostgreSQL test runs the existing CLI with a production environment and no privacy storage, reconciles and lifts only that test's runtime fence.
+
+The local replay entry point is separate from the CLI. No flag selects a legacy fallback after privacy enablement. The default CLI is **not recovery for an erasure-enabled installation**; a database with no receipts cannot establish that an external journal never existed. Enabling production erasure remains blocked until an independently retained installation registry binds every normal start, writer and restore to the same authoritative journal. Out-of-tree or previously enabled erasure installations are unsupported and must stay fenced; this patch does not establish their compatibility.
+
+Once a local journal has decisions, its authority, checkpoint, identity, records and seal must survive every database/object restore for as long as any backup or peer could resurrect data. Selecting a fresh directory, supplying a fresh ledger object, removing receipts or choosing a new UUID cannot satisfy the original binding. Missing or uncertain retained authority means no local restore authorization. Full production activation must make this lifetime obligation irreversible before any real erasure decision commits.
+
+Only the `privacy` replay adapter exists: correction redaction, restrictive restored reads and suppression/do-not-collect replay. Unsupported modules, conflicting receipts and retained legal holds abort replay. The synthetic drill restores old privacy rows; it does not prove whole-subject erasure, no-outreach/no-reimport acceptance or a physical backup recovery. Existing export, legal-hold and UNKNOWN lawful-retention authority checks remain intact.
+
+Whole-subject erasure, digest-bound two-person authorization/execution, suppression consumers, remaining module exports, retrieval/federation dispatch, production immutable storage and production restore integration are incomplete. PRV-001 stays `in_progress`; dependent work remains locked until full acceptance. No production or provider action was performed.
 
 ## Coordination seams
 

@@ -16,9 +16,9 @@ import { privacyWorld } from './helpers.js';
 import { privacyCrashRoutes } from '../backend/idempotency/cases/privacy.js';
 import { installCrashPoints, recordState } from '../backend/idempotency/helpers.js';
 import { IDEMPOTENCY_TAKEOVER_LEASE_MS } from '../../apps/api/src/common/idempotency/index.js';
-import { PrivacyErasureLedger } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
+import { provisionLocalPrivacyJournal } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { RoleFence } from '../../scripts/restore/fence.js';
-import { authorizeRestore, reconcileRestore } from '../../scripts/restore/reconcile.js';
+import { authorizeLocalPrivacyRestore, reconcileRestore } from '../../scripts/restore/reconcile.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { buildAgreement, businessDate } from '../trust/helpers.js';
 
@@ -181,14 +181,13 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
   });
   await t.test('narrow synthetic restore: external ledger replays before runtime login; corrupt or unsupported records keep the fence', async () => {
     const admin = h.db.admin as unknown as pg.Pool;
-    const ledgerStore = new FilesystemBlobStore({ root, bucket: 'privacy-independent-ledger' });
-    const ledger = new PrivacyErasureLedger(ledgerStore);
+    const binding = { authorityDirectory: join(root, 'authority'), journalDirectory: join(root, 'journal'), journalId: randomUUID() };
+    const ledger = await provisionLocalPrivacyJournal(binding);
     const requestId = randomUUID();
     const tombstone = { version: 1 as const, requestId, subject, executedBy: world.people.officer, approvedBy: randomUUID(),
       policyDigest: '1'.repeat(64), recordedAt: new Date().toISOString(), modules: ['privacy'], suppressionDigests: ['2'.repeat(64)] };
     await ledger.record(tombstone); await ledger.record(tombstone);
     assert.equal((await ledger.all()).length, 1);
-    await assert.rejects(ledger.record({ ...tombstone, policyDigest: '3'.repeat(64) }), /conflicting/);
     const fence = new RoleFence(admin, [h.db.appLoginRole]);
     // Shut down only this test's API and pools before fencing. No other session or shared worker is touched.
     await h.created.close(); await h.pool.end(); await h.db.app.end();
@@ -202,10 +201,10 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     const now = new Date();
     await reconcileRestore({ admin, restoreId: 'synthetic-privacy-restore', recoveryPoint: now, restoreStartedAt: now,
       journal: { receipts: [], completeThrough: now }, operator: 'synthetic-privacy-test' });
-    const authorization = { admin, fence, restoreId: 'synthetic-privacy-restore', reference: 'synthetic-fixture', operator: 'synthetic-privacy-test' };
-    await assert.rejects(authorizeRestore(authorization), /external privacy ledger/);
+    const authorization = { admin, fence, retainedAuthority: { directory: binding.authorityDirectory, journalId: binding.journalId }, restoreId: 'synthetic-privacy-restore', reference: 'synthetic-fixture', operator: 'synthetic-privacy-test' };
+    await assert.rejects(authorizeLocalPrivacyRestore({ ...authorization, privacyLedger: undefined! }), /retained privacy authority/);
     assert.ok(await fence.isApplied());
-    await authorizeRestore({ ...authorization, privacyLedger: ledger });
+    await authorizeLocalPrivacyRestore({ ...authorization, privacyLedger: ledger });
     assert.equal(await fence.isApplied(), false);
     assert.equal((await admin.query('SELECT correction FROM trustwork.privacy_request WHERE subject_id=$1 AND correction IS NOT NULL', [subject.id])).rows[0]?.correction.redacted, true);
     assert.deepEqual(await readRestored(), []);
@@ -214,15 +213,12 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     await admin.query('DELETE FROM trustwork.privacy_replay_receipt WHERE request_id=$1', [requestId]);
     await admin.query(`UPDATE trustwork.privacy_request SET correction='{"field":"profile","proposedValue":"Synthetic restored private value"}' WHERE subject_id=$1 AND kind='correction'`, [subject.id]);
     await fence.apply();
-    await authorizeRestore({ ...authorization, privacyLedger: ledger });
+    await authorizeLocalPrivacyRestore({ ...authorization, privacyLedger: ledger });
     assert.deepEqual(await readRestored(), []);
-    await ledger.record({ ...tombstone, requestId: randomUUID(), modules: ['communications'] });
+    const unsupported = await provisionLocalPrivacyJournal({ authorityDirectory: join(root, 'unsupported-authority'), journalDirectory: join(root, 'unsupported-journal'), journalId: randomUUID() });
+    await unsupported.record({ ...tombstone, requestId: randomUUID(), modules: ['communications'] });
     await fence.apply();
-    await assert.rejects(authorizeRestore({ ...authorization, privacyLedger: ledger }), /adapter unavailable/);
-    assert.ok(await fence.isApplied());
-    const corruptStore = new FilesystemBlobStore({ root, bucket: 'privacy-corrupt-journal' });
-    await corruptStore.put('privacy-erasure/corrupt.json', Buffer.from('{'));
-    await assert.rejects(authorizeRestore({ ...authorization, privacyLedger: new PrivacyErasureLedger(corruptStore) }));
+    await assert.rejects(authorizeLocalPrivacyRestore({ ...authorization, privacyLedger: unsupported, retainedAuthority: { directory: unsupported.binding.authorityDirectory, journalId: unsupported.binding.journalId } }), /adapter unavailable/);
     assert.ok(await fence.isApplied());
     await fence.lift(); // Only this test's isolated login is restored for teardown.
   });

@@ -1,50 +1,158 @@
-import { createHash } from 'node:crypto';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, open, readFile, readdir, rename, rmdir, realpath } from 'node:fs/promises';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { z } from 'zod';
 import type pg from 'pg';
-import type { BlobStore } from '../../../../../../packages/data/src/files/blob-store.js';
-import { FilesystemBlobStore } from '../../../../../../packages/data/src/files/filesystem.js';
 import { PrivacyTombstoneSchema, type PrivacyTombstone } from '../../../../../../packages/contracts/src/privacy.js';
 
-const PREFIX = 'privacy-erasure/';
-const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+const hash = (text: string) => createHash('sha256').update(text).digest('hex');
+const EMPTY = '0'.repeat(64);
+const Digest = z.string().regex(/^[a-f0-9]{64}$/);
+const Checkpoint = z.strictObject({ version: z.literal(1), journalId: z.uuid(), sequence: z.int().nonnegative(),
+  head: Digest, sealed: z.boolean() });
+const Entry = z.strictObject({ version: z.literal(1), journalId: z.uuid(), sequence: z.int().positive(),
+  previous: Digest, record: PrivacyTombstoneSchema });
+export type PrivacyJournalCheckpoint = z.infer<typeof Checkpoint>;
+export interface PrivacyLedgerEntry { record: PrivacyTombstone; digest: string }
+export type LocalJournalStep = 'entry_synced' | 'checkpoint_synced' | 'restore_sealed';
+export interface RetainedPrivacyAuthority {
+  directory: string;
+  journalId: string;
+}
+export interface LocalJournalBinding {
+  /** Independently provisioned retained authority; never selected by the restore operator. */
+  authorityDirectory: string;
+  /** Pinned by installation provisioning, independently of the database and journal path. */
+  journalId: string;
+  journalDirectory: string;
+}
 
-/** External append-only, content-addressed decisions. No delete/overwrite capability is exposed by this class. */
+async function syncDirectory(path: string): Promise<void> {
+  const handle = await open(path, 'r');
+  try { await handle.sync(); } finally { await handle.close(); }
+}
+async function writeDurable(path: string, text: string): Promise<void> {
+  const handle = await open(path, 'wx', 0o600);
+  try { await handle.writeFile(text); await handle.sync(); } finally { await handle.close(); }
+  await syncDirectory(dirname(path));
+}
+async function replaceDurable(path: string, text: string): Promise<void> {
+  const temporary = `${path}.${randomUUID()}.pending`;
+  await writeDurable(temporary, text);
+  await rename(temporary, path);
+  await syncDirectory(dirname(path));
+}
+
+/**
+ * Local fixture foundation only. No API, worker or production configuration can enable subject erasure.
+ * The independently retained checkpoint is the authority, not the journal listing or restored DB receipts.
+ * Exclusive mkdir on that authority serializes all processes. No TTL/PID-based lock stealing is safe here:
+ * a failed operation or process death leaves the lock for forensic recovery, never an automatic fence lift.
+ */
 export class PrivacyErasureLedger {
-  constructor(private readonly store: BlobStore) {
-    if (store.kind !== 'filesystem') throw new Error('privacy ledger currently supports the local storage fake only');
+  readonly binding: Readonly<LocalJournalBinding>;
+  constructor(binding: LocalJournalBinding, private readonly onDurableStep?: (step: LocalJournalStep) => Promise<void>) {
+    if (process.env.NODE_ENV === 'production') throw new Error('local privacy journal is unavailable in production');
+    this.binding = Object.freeze({ ...binding });
+    z.uuid().parse(binding.journalId);
+    if (![binding.authorityDirectory, binding.journalDirectory].every(isAbsolute)) throw new Error('explicit absolute journal and authority paths required');
+  }
+  assertAuthority(expected: RetainedPrivacyAuthority): void {
+    if (!expected || expected.journalId !== this.binding.journalId || resolve(expected.directory) !== resolve(this.binding.authorityDirectory)) {
+      throw new Error('journal does not match the independently pinned retained authority');
+    }
+  }
+  private get checkpointPath() { return join(this.binding.authorityDirectory, 'checkpoint.json'); }
+  private get lockPath() { return join(this.binding.authorityDirectory, 'operation.lock'); }
+
+  private async verify(): Promise<{ checkpoint: z.infer<typeof Checkpoint>; entries: PrivacyLedgerEntry[] }> {
+    const authority = await realpath(this.binding.authorityDirectory);
+    const journal = await realpath(this.binding.journalDirectory);
+    const nested = (a: string, b: string) => { const r = relative(a, b); return !r || (!r.startsWith('..') && !isAbsolute(r)); };
+    if (nested(authority, journal) || nested(journal, authority)) throw new Error('authority and journal must be independently retained directories');
+    const checkpoint = Checkpoint.parse(JSON.parse(await readFile(this.checkpointPath, 'utf8')));
+    const identity = JSON.parse(await readFile(join(journal, 'identity.json'), 'utf8')) as { journalId?: string };
+    if (checkpoint.journalId !== this.binding.journalId || identity.journalId !== this.binding.journalId) throw new Error('wrong retained privacy journal identity');
+    const files = (await readdir(journal)).filter((f) => f !== 'identity.json').sort();
+    if (files.length !== checkpoint.sequence) throw new Error('privacy journal missing, rolled back or uncheckpointed');
+    let head = EMPTY;
+    const entries: PrivacyLedgerEntry[] = [];
+    const ids = new Set<string>();
+    for (let i = 0; i < files.length; i++) {
+      if (files[i] !== `${String(i + 1).padStart(12, '0')}.json`) throw new Error('privacy journal sequence gap');
+      const body = await readFile(join(journal, files[i]!), 'utf8');
+      const entry = Entry.parse(JSON.parse(body));
+      if (entry.journalId !== checkpoint.journalId || entry.sequence !== i + 1 || entry.previous !== head || ids.has(entry.record.requestId)) throw new Error('privacy journal integrity failure');
+      ids.add(entry.record.requestId);
+      entries.push({ record: entry.record, digest: hash(JSON.stringify(entry.record)) });
+      head = hash(body);
+    }
+    if (head !== checkpoint.head) throw new Error('privacy journal checkpoint mismatch');
+    return { checkpoint, entries };
+  }
+  private async exclusive<T>(operation: () => Promise<T>): Promise<T> {
+    // The parent must already exist; creating a fresh authority here would erase history.
+    await mkdir(this.lockPath, { mode: 0o700 }).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === 'EEXIST') throw new Error('privacy journal locked; incomplete operation requires retained-authority recovery');
+      throw error;
+    });
+    await syncDirectory(this.binding.authorityDirectory);
+    const result = await operation();
+    // Deliberately no finally: an uncertain write, DB commit or fence lift retains the lock.
+    await rmdir(this.lockPath);
+    await syncDirectory(this.binding.authorityDirectory);
+    return result;
+  }
+  async all(): Promise<PrivacyLedgerEntry[]> {
+    return this.exclusive(async () => (await this.verify()).entries);
   }
   async record(input: PrivacyTombstone): Promise<void> {
     const record = PrivacyTombstoneSchema.parse(input);
-    const body = Buffer.from(JSON.stringify(record));
-    const key = `${PREFIX}${record.requestId}/${digest(body)}.json`;
-    const prior = (await this.all()).find((r) => r.record.requestId === record.requestId);
-    if (prior && prior.digest !== digest(body)) throw new Error('conflicting irreversible privacy decision');
-    if (!prior) await this.store.put(key, body, 'application/json');
-    // Concurrent contradictory decisions create separate immutable keys and fail closed on every subsequent read.
-    const verified = (await this.all()).find((r) => r.record.requestId === record.requestId);
-    if (verified?.digest !== digest(body)) throw new Error('privacy ledger durability verification failed');
+    return this.exclusive(async () => {
+      const { checkpoint, entries } = await this.verify();
+      if (checkpoint.sealed) throw new Error('privacy journal sealed for restore; live erasure executor unavailable');
+      const prior = entries.find((e) => e.record.requestId === record.requestId);
+      if (prior) {
+        if (prior.digest !== hash(JSON.stringify(record))) throw new Error('conflicting irreversible privacy decision');
+        return;
+      }
+      const sequence = checkpoint.sequence + 1;
+      const body = JSON.stringify({ version: 1, journalId: checkpoint.journalId, sequence, previous: checkpoint.head, record });
+      await writeDurable(join(this.binding.journalDirectory, `${String(sequence).padStart(12, '0')}.json`), body);
+      await this.onDurableStep?.('entry_synced');
+      await replaceDurable(this.checkpointPath, JSON.stringify({ ...checkpoint, sequence, head: hash(body) }));
+      await this.onDurableStep?.('checkpoint_synced');
+      await this.verify();
+    });
   }
-  async all(): Promise<Array<{ record: PrivacyTombstone; digest: string }>> {
-    const records = new Map<string, { record: PrivacyTombstone; digest: string }>();
-    for (const key of await this.store.list(PREFIX)) {
-      const body = await this.store.read(key, 64 * 1024);
-      if (!body) throw new Error('privacy ledger object disappeared');
-      const record = PrivacyTombstoneSchema.parse(JSON.parse(Buffer.from(body).toString('utf8')));
-      const hash = digest(body);
-      if (key !== `${PREFIX}${record.requestId}/${hash}.json`) throw new Error('privacy ledger integrity failure');
-      const prior = records.get(record.requestId);
-      if (prior && prior.digest !== hash) throw new Error('conflicting irreversible privacy decision');
-      records.set(record.requestId, { record, digest: hash });
-    }
-    return [...records.values()];
+  /** The freeze spans snapshot, DB replay/commit and fence lift. Seal prevents later unfenced decisions. */
+  async withRestore<T>(operation: (entries: readonly PrivacyLedgerEntry[], checkpoint: PrivacyJournalCheckpoint) => Promise<T>): Promise<T> {
+    return this.exclusive(async () => {
+      const { checkpoint, entries } = await this.verify();
+      await replaceDurable(this.checkpointPath, JSON.stringify({ ...checkpoint, sealed: true }));
+      await this.onDurableStep?.('restore_sealed');
+      return operation(entries, { ...checkpoint, sealed: true });
+    });
   }
 }
 
-/** Configuration, never a request body. This bucket is separate from backed-up files and database snapshots. */
-export function privacyLedgerFromEnv(env: NodeJS.ProcessEnv): PrivacyErasureLedger {
-  if (env.FILES_STORAGE !== 'filesystem' || env.NODE_ENV === 'production') throw new Error('a separately retained local privacy ledger is required; provider adapters are unavailable');
-  return new PrivacyErasureLedger(new FilesystemBlobStore({ root: env.FILES_FS_ROOT ?? join(tmpdir(), 'trustwork-files'), bucket: 'trustwork-privacy-ledger' }));
+/** No temporary-root fallback and no runtime rollout adapter. This must not be used by the existing CLI. */
+export function privacyLedgerFromEnv(env: NodeJS.ProcessEnv): never {
+  void env; // Configuration cannot opt into the isolated local proof.
+  throw new Error('privacy erasure rollout unavailable; independently provisioned retained authority required');
+}
+
+/** One-time local fixture provisioning only; refuses every existing directory, even an empty one. */
+export async function provisionLocalPrivacyJournal(binding: LocalJournalBinding): Promise<PrivacyErasureLedger> {
+  const ledger = new PrivacyErasureLedger(binding);
+  await mkdir(binding.authorityDirectory, { mode: 0o700 });
+  await syncDirectory(dirname(binding.authorityDirectory));
+  await mkdir(binding.journalDirectory, { mode: 0o700 });
+  await syncDirectory(dirname(binding.journalDirectory));
+  await writeDurable(join(binding.journalDirectory, 'identity.json'), JSON.stringify({ journalId: binding.journalId }));
+  await writeDurable(join(binding.authorityDirectory, 'checkpoint.json'), JSON.stringify({ version: 1, journalId: binding.journalId, sequence: 0, head: EMPTY, sealed: false }));
+  await ledger.all();
+  return ledger;
 }
 
 /**
@@ -52,8 +160,7 @@ export function privacyLedgerFromEnv(env: NodeJS.ProcessEnv): PrivacyErasureLedg
  * Every ledger module must have a real replay adapter. An unsupported decision keeps the entire restore fenced.
  * This slice implements only privacy-owned data; it does not pretend to erase other modules.
  */
-export async function replayPrivacyLedger(client: pg.PoolClient, ledger: PrivacyErasureLedger): Promise<number> {
-  const entries = await ledger.all();
+export async function replayPrivacyLedger(client: pg.PoolClient, entries: readonly PrivacyLedgerEntry[]): Promise<number> {
   for (const { record } of entries) {
     if (record.modules.some((m) => m !== 'privacy')) throw new Error('privacy replay adapter unavailable; restore must remain fenced');
   }

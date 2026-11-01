@@ -3063,7 +3063,7 @@
       "id": "PRV-001",
       "title": "Privacy operations: requests, exports, erasure ledger, legal holds, retention and state privacy rights",
       "area": "privacy",
-      "status": "in_review",
+      "status": "in_progress",
       "dependsOn": [
         "ADM-001",
         "HUB-001"

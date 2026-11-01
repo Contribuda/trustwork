@@ -1,4 +1,4 @@
-import { replayPrivacyLedger, type PrivacyErasureLedger } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
+import { replayPrivacyLedger, type PrivacyErasureLedger, type RetainedPrivacyAuthority, type PrivacyJournalCheckpoint } from '../../apps/api/src/modules/platform-admin/privacy/ledger.js';
 import { readFile } from 'node:fs/promises';
 import type pg from 'pg';
 import { inOwnerTransaction } from '../../infra/backup/src/retention.js';
@@ -260,7 +260,22 @@ export class AuthorizationRefused extends Error {
  * event is still ambiguous (orphan receipts or an incomplete journal, and no operator decision). Parked jobs do not
  * block: a parked job is never leased, and the worker's reconcile CLI resolves it with evidence afterwards.
  */
-export async function authorizeRestore(input: { admin: pg.Pool; fence: RestoreFence; restoreId: string; reference: string; operator: string; privacyLedger?: PrivacyErasureLedger }): Promise<{ authorizedAt: string }> {
+export interface RestoreAuthorizationInput { admin: pg.Pool; fence: RestoreFence; restoreId: string; reference: string; operator: string }
+
+/** Existing OPS-003 path: subject erasure cannot be enabled by this release. */
+export async function authorizeRestore(input: RestoreAuthorizationInput): Promise<{ authorizedAt: string }> {
+  return authorize(input);
+}
+
+/** Isolated local proof; never selected by the restore CLI or an environment flag. */
+export async function authorizeLocalPrivacyRestore(input: RestoreAuthorizationInput & { privacyLedger: PrivacyErasureLedger; retainedAuthority: RetainedPrivacyAuthority }): Promise<{ authorizedAt: string }> {
+  if (!input.privacyLedger) throw new AuthorizationRefused(['independent retained privacy authority required']);
+  input.privacyLedger.assertAuthority(input.retainedAuthority);
+  if (!await input.fence.isApplied()) throw new AuthorizationRefused(['restore fence must remain applied during privacy replay']);
+  return input.privacyLedger.withRestore((entries, checkpoint) => authorize(input, { run: (client) => replayPrivacyLedger(client, entries), checkpoint }));
+}
+
+async function authorize(input: RestoreAuthorizationInput, replay?: { run: (client: pg.PoolClient) => Promise<number>; checkpoint: PrivacyJournalCheckpoint }): Promise<{ authorizedAt: string }> {
   checkText('restoreId', input.restoreId);
   checkText('reference', input.reference);
   checkText('operator', input.operator);
@@ -280,12 +295,12 @@ export async function authorizeRestore(input: { admin: pg.Pool; fence: RestoreFe
         if (open.length) reasons.push(`${open.length} pending outbox events need a decision (delivered or relay): ${open.slice(0, 20).join(', ')}`);
       }
       if (reasons.length) throw new AuthorizationRefused(reasons);
-      // Never trust a restorable receipt as proof that the external erasure journal is current.
-      if (!input.privacyLedger) throw new AuthorizationRefused(['external privacy ledger is required before the restore fence can lift']);
-      if (!await input.fence.isApplied()) throw new AuthorizationRefused(['restore fence must remain applied during privacy replay']);
-      await replayPrivacyLedger(client, input.privacyLedger);
+      if (replay) {
+        if (!await input.fence.isApplied()) throw new AuthorizationRefused(['restore fence must remain applied during privacy replay']);
+        await replay.run(client);
+      }
       const { rows: now } = await client.query<{ now: Date }>('SELECT now() AS now');
-      await audit(client, 'restore.authorized', input.restoreId, `restore authorized by ${input.operator}`, { reference: input.reference, operator: input.operator, fence: input.fence.describe() });
+      await audit(client, 'restore.authorized', input.restoreId, `restore authorized by ${input.operator}`, { reference: input.reference, operator: input.operator, fence: input.fence.describe(), ...(replay ? { privacyCheckpoint: replay.checkpoint } : {}) });
       return (now[0] as { now: Date }).now.toISOString();
     });
     // The fence is lifted only after the authorization row committed; a failure here leaves it in place (fail closed).
