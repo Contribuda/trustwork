@@ -508,8 +508,15 @@ function DecisionsExample() {
           id: kind,
           kind: kind as "changed" | "added" | "removed" | "unchanged",
           label: label(i + 1),
-          before: t("consoleKit.pending"),
-          after: t("consoleKit.allowed"),
+          before: kind === "added" ? null : t("consoleKit.pending"),
+          after:
+            kind === "removed"
+              ? null
+              : t(
+                  kind === "unchanged"
+                    ? "consoleKit.pending"
+                    : "consoleKit.allowed",
+                ),
           effect: t("consoleKit.explanation"),
         }))}
       />
