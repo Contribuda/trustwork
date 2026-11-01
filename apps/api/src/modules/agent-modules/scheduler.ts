@@ -11,7 +11,8 @@ export interface DueJobsReport { claimed: number; outcomes: Record<string, numbe
  * rechecks the subscription, its mandate, the hub's template and every kill switch at fire time; only `due` emits
  * `agents.job_due`. A schedule whose rule has no further occurrence stops (next due NULL). Idempotent per due time.
  *
- * The periodic worker registration is a follow-up (like AGT-001's sweeps): this function is what it will call.
+ * Registration is blocked on a durable agents.job_due consumer that starts an authorized run (see README). A due
+ * event is readiness only; it must not be reported as executed work.
  */
 export async function runDueJobs(trx: Transaction, limit = 100): Promise<DueJobsReport> {
   const due = await agentJobWorker.due(trx, limit);

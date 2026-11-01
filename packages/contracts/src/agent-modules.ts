@@ -239,6 +239,9 @@ export function policyDocumentViolations(doc: AgentPolicyDraft, registry: Module
   const out: string[] = [];
   out.push(...hubPolicyViolations(doc.policy, registry.manifests));
   const enabled = new Map(doc.policy.enabledModules.map((m) => [m.moduleKey, m]));
+  for (const id of doc.policy.activeExtensionVersionIds) {
+    if (!registry.extensions.some((e) => e.extensionVersionId === id)) out.push(`extension ${id} is not an activated registry version`);
+  }
   for (const action of ENGINE_FORBIDDEN_PRE_AUTHORIZATION) if (!doc.policy.forbiddenPreAuthorization.includes(action)) out.push(`guard rail: ${action} is never pre-authorized`);
   for (const key of guardRailKeys(doc.policy.enabledModules.map((m) => m.settings))) out.push(`guard rail: settings key ${key}`);
   for (const control of doc.modules) {
@@ -285,7 +288,13 @@ export function policyDocumentViolations(doc: AgentPolicyDraft, registry: Module
       if (isHumanOnlyAction(a) || (COMMITMENT_MANDATE_KINDS as readonly string[]).includes(a) || BUDGET_KIND_BY_ACTION[a] !== null) out.push(`job ${t.moduleKey}/${t.templateKey}: ${a} is never a standing job`);
     }
     if (t.minIntervalMinutes < ps.scheduleMinIntervalMinutes) out.push(`job ${t.moduleKey}/${t.templateKey}: interval below the hub minimum`);
-    if (t.defaultTrigger.kind === 'schedule' && scheduleIntervalMinutes(t.defaultTrigger.rrule) < t.minIntervalMinutes) out.push(`job ${t.moduleKey}/${t.templateKey}: default schedule below its minimum interval`);
+    if (t.defaultTrigger.kind === 'schedule') {
+      try {
+        if (scheduleIntervalMinutes(t.defaultTrigger.rrule) < t.minIntervalMinutes) out.push(`job ${t.moduleKey}/${t.templateKey}: default schedule below its minimum interval`);
+      } catch {
+        out.push(`job ${t.moduleKey}/${t.templateKey}: invalid default schedule`);
+      }
+    }
   }
   return out;
 }

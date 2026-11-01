@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { sql } from 'kysely';
-import { withPrincipal } from '@trustwork/data';
+import { withMaintenance, withPrincipal } from '@trustwork/data';
+import { randomUUID } from 'node:crypto';
 import { ConsoleCommandResultSchema } from '@trustwork/contracts';
 import { AgentPolicyDocumentSchema, type AgentPolicyDocument, type PolicyPreview } from '../../packages/contracts/src/agent-modules.js';
 import { agentPolicies } from '../../packages/data/src/repositories/agent-modules.js';
@@ -119,7 +120,7 @@ test('agent product administration: policy versions with previews, second person
     ok(await activate(a));
     expectRefusal(await activate(b), 409, 'validation.revision_conflict', 'preview_stale');
     assert.equal((await h.db.admin.query<{ status: string }>('SELECT status FROM trustwork.hub_config_version WHERE id = $1', [b.versionId])).rows[0]!.status, 'draft', 'nothing changed');
-    // Disabling the profile keeper with no affected mandates, then 10 people's agents gain profile mandates: the counts the
+    // Disabling the profile keeper with no affected mandates, then ten distinct principals gain mandates: the counts the
     // approver saw ("fewer than 10") no longer hold.
     const disable = usHubPolicy(hubId);
     const c = (await draft({ ...disable, policy: { ...disable.policy, enabledModules: disable.policy.enabledModules.filter((e) => e.moduleKey !== PROFILE.key) }, modules: [disable.modules[0]!] })).version;
@@ -135,10 +136,25 @@ test('agent product administration: policy versions with previews, second person
         escalation: { kind: 'ask_principal' }, validUntil: new Date(Date.now() + 30 * 86_400_000).toISOString(),
       } }), 201);
     }
+    const small = ok<{ preview: PolicyPreview }>(await staff.owner.post(`${base}/policy/preview`, { document: disable }));
+    assert.equal(small.preview.affected.mandates, null);
+    const ownCounts = await world.a.cmd(w.people.owner, (trx) => agentPolicies.previewCounts(trx, hubId, [PROFILE.key]));
+    assert.equal(ownCounts.mandates, null, 'ten mandates of one person never form a publishable cohort');
+    await withMaintenance(h.db.admin, async (trx) => {
+      const source = await trx.selectFrom('mandate').selectAll().where('principal_person_id', '=', seed.people.petr).executeTakeFirstOrThrow();
+      for (let i = 0; i < 9; i++) {
+        const person = await trx.insertInto('person').values({ display_name: `Synthetic cohort ${i}` }).returning('id').executeTakeFirstOrThrow();
+        const id = randomUUID();
+        const snapshot = source.snapshot as Record<string, unknown>;
+        await trx.insertInto('mandate').values({ ...source, id, principal_person_id: person.id, confirmed_by_person_id: person.id,
+          snapshot: JSON.stringify({ ...snapshot, id, principal: { personId: person.id, onBehalfOf: null }, confirmation: { ...(snapshot.confirmation as Record<string, unknown>), personId: person.id } }),
+        }).execute();
+      }
+    });
     expectRefusal(await activate(c), 409, 'validation.revision_conflict', 'preview_stale');
     // Drafted again, the preview shows the cohort and activates.
     const again = (await draft({ ...disable, policy: { ...disable.policy, enabledModules: disable.policy.enabledModules.filter((e) => e.moduleKey !== PROFILE.key) }, modules: [disable.modules[0]!] })).version;
-    assert.equal(again.preview.affected.mandates, 10);
+    assert.equal(again.preview.affected.mandates, 19);
     ok(await activate(again));
     // Back to the reference policy for the rest of the suite.
     ok(await activate((await draft()).version));

@@ -243,8 +243,8 @@ RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, 
 $$;
 
 -- capabilityRefusal (agent-modules.ts) over the hub's active policy; NULL when allowed or when the hub has no active
--- policy (the engine default switches nothing off). A NULL plan skips the plan switches (the entitlement port lives in the
--- API; AGT-004 stores plans).
+-- policy (the engine default switches nothing off). Dispatch uses the same free plan as FreePlanEntitlements until
+-- AGT-004 supplies persisted entitlements; a queued action never skips the active plan switches.
 CREATE FUNCTION trustwork.agent_modules_policy_refusal(p_hub uuid, p_capability_id text, p_kind text, p_company_verified boolean, p_plan text) RETURNS text
 LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
 DECLARE
@@ -433,7 +433,7 @@ BEGIN
   ELSIF trustwork.agent_modules_dispatch_refusal(p_hub_id, v_intent.module_key, v_intent.capability_id, v_intent.action, v_intent.principal_person_id, v_connection, v_representative) IS NOT NULL THEN
     v_refusal := 'kill_switch';
   ELSIF trustwork.agent_modules_policy_refusal(p_hub_id, v_intent.capability_id, trustwork.agent_modules_mandate_kind(v_mandate.grantee_kind, v_mandate.on_behalf_company_id),
-      EXISTS (SELECT 1 FROM trustwork.company co WHERE co.id = v_mandate.on_behalf_company_id AND co.claim_status = 'verified'), NULL) IS NOT NULL THEN
+      EXISTS (SELECT 1 FROM trustwork.company co WHERE co.id = v_mandate.on_behalf_company_id AND co.claim_status = 'verified'), 'free') IS NOT NULL THEN
     v_refusal := 'capability_off';
   ELSIF cardinality(v_intent.ask_reasons) > 0 AND NOT EXISTS (
       SELECT 1 FROM trustwork.approval WHERE action_intent_id = v_intent.id AND action_digest = v_intent.action_digest AND mandate_revision = v_intent.mandate_revision AND revoked_at IS NULL) THEN
@@ -456,16 +456,17 @@ END $$;
 
 -- 7. Drafting, previews and activation ------------------------------------------------------------------------------------
 -- Cohort counts of what a policy change would stop: active mandates, job subscriptions, connections of their principals
--- and open runs in the narrowed modules. Never a list, never a count below 10.
+-- and open runs in the narrowed modules. Each count requires at least ten distinct principals, not ten objects
+-- owned by one principal. Never a list or a per-person activity count.
 CREATE FUNCTION trustwork.agent_modules_affected(p_module_keys text[]) RETURNS jsonb
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT jsonb_build_object(
-    'mandates', trustwork.agent_modules_cohort((SELECT count(*) FROM trustwork.mandate m WHERE m.status = 'active' AND m.module_keys && p_module_keys)),
-    'jobSubscriptions', trustwork.agent_modules_cohort((SELECT count(*) FROM trustwork.job_subscription j WHERE j.status = 'active' AND j.module_key = ANY (p_module_keys))),
-    'connections', trustwork.agent_modules_cohort((SELECT count(DISTINCT c.id) FROM trustwork.connection c
-      WHERE c.status = 'active' AND EXISTS (SELECT 1 FROM trustwork.mandate m WHERE m.principal_person_id = c.person_id AND m.status = 'active' AND m.module_keys && p_module_keys))),
-    'openRuns', trustwork.agent_modules_cohort((SELECT count(DISTINCT i.run_id) FROM trustwork.action_intent i
-      WHERE i.run_id IS NOT NULL AND i.module_key = ANY (p_module_keys) AND i.state IN ('proposed', 'authorized', 'reserved', 'queued', 'executing', 'pending', 'outcome_unknown', 'reconciling'))))
+    'mandates', (SELECT CASE WHEN count(DISTINCT m.principal_person_id) >= 10 THEN count(*)::integer END FROM trustwork.mandate m WHERE m.status = 'active' AND m.module_keys && p_module_keys),
+    'jobSubscriptions', (SELECT CASE WHEN count(DISTINCT j.principal_person_id) >= 10 THEN count(*)::integer END FROM trustwork.job_subscription j WHERE j.status = 'active' AND j.module_key = ANY (p_module_keys)),
+    'connections', (SELECT CASE WHEN count(DISTINCT c.person_id) >= 10 THEN count(DISTINCT c.id)::integer END FROM trustwork.connection c
+      WHERE c.status = 'active' AND EXISTS (SELECT 1 FROM trustwork.mandate m WHERE m.principal_person_id = c.person_id AND m.status = 'active' AND m.module_keys && p_module_keys)),
+    'openRuns', (SELECT CASE WHEN count(DISTINCT i.principal_person_id) FILTER (WHERE i.run_id IS NOT NULL) >= 10 THEN count(DISTINCT i.run_id)::integer END FROM trustwork.action_intent i
+      WHERE i.run_id IS NOT NULL AND i.module_key = ANY (p_module_keys) AND i.state IN ('proposed', 'authorized', 'reserved', 'queued', 'executing', 'pending', 'outcome_unknown', 'reconciling')))
 $$;
 
 -- For the console preview: staff readers of the hub only.
@@ -637,7 +638,9 @@ CREATE FUNCTION trustwork.agent_modules_template_offered(p_hub uuid, p_module te
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT EXISTS (
     SELECT 1 FROM trustwork.agent_policy_current c, jsonb_array_elements(c.document -> 'jobTemplates') t, jsonb_array_elements(c.document -> 'modules') m
-    WHERE c.hub_id = p_hub AND t ->> 'moduleKey' = p_module AND t ->> 'templateKey' = p_template
+    WHERE c.hub_id = p_hub
+      AND EXISTS (SELECT 1 FROM jsonb_array_elements(c.document -> 'policy' -> 'enabledModules') e WHERE e ->> 'moduleKey' = p_module)
+      AND t ->> 'moduleKey' = p_module AND t ->> 'templateKey' = p_template
       AND m ->> 'moduleKey' = p_module AND m ->> 'status' IN ('beta', 'active'))
 $$;
 

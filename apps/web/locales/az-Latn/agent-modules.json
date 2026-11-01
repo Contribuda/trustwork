@@ -73,7 +73,7 @@
         "module_not_enabled": "Hab agentinizin bu hissəsini söndürdü."
       },
       "fire": {
-        "due": "İşə salındı",
+        "due": "Başlamağa hazırdır",
         "blocked": "Hab tərəfindən dayandırıldı",
         "mandate_inactive": "Ötürüldü: mandat artıq aktiv deyil",
         "subscription_inactive": "Ötürüldü: tapşırıq söndürülüb",

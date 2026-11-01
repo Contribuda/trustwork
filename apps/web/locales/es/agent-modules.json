@@ -73,7 +73,7 @@
         "module_not_enabled": "El hub desactivó esta parte de su agente."
       },
       "fire": {
-        "due": "Iniciada",
+        "due": "Lista para ejecutarse",
         "blocked": "Pausada por el hub",
         "mandate_inactive": "Omitida: el mandato ya no está activo",
         "subscription_inactive": "Omitida: la tarea está desactivada",
