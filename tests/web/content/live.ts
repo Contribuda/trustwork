@@ -201,6 +201,7 @@ try {
     const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze();
     await writeFile(`${evidence}/ru-editor-${width}-axe.json`,JSON.stringify(axe.violations,null,2));
     assert.deepEqual(axe.violations,[]);
+    await page.evaluate(()=>window.scrollTo(0,0));
     await page.screenshot({path:`${evidence}/ru-editor-${width}.png`,fullPage:true});
   }
   await command(labels.revokeConsent,'/v1/provenance/revocations');
@@ -239,8 +240,10 @@ try {
   await trCommand(labels.declare,'/v1/provenance/declarations');
   await usePerson('coauthor');await editor();
   await trCommand(labels.review,'/v1/provenance/reviews');
+  assert.equal(await trPage.getByLabel(labels.kind,{exact:true}).locator('option:checked').textContent(),labels.machineReviewed);
   await trPage.getByLabel(labels.pdf,{exact:true}).check();await trPage.getByLabel(labels.feed,{exact:true}).check();await trPage.getByLabel(labels.affirmConsent,{exact:true}).check();
   await trCommand(labels.grantConsent,'/v1/provenance/consents');
+  await trPage.evaluate(()=>window.scrollTo(0,0));
   await trPage.screenshot({path:`${evidence}/ru-translation-reviewer-375.png`,fullPage:true});
   await usePerson('writer');await editor();await trCommand(labels.publish,`/v1/publications/${translated.id}/publish`);
   const trVersion=(await w.act.as(p.writer,trx=>publications.versions(trx,translated.id)))[0]!;
