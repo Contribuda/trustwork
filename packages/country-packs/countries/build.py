@@ -8,7 +8,7 @@ import json
 import sys
 
 RESTRICTED = {'RU', 'CU', 'IR', 'KP'}
-PACKS = {'UZ', 'GE', 'AM', 'AZ', 'US', 'GB'}
+PACKS = {'UZ', 'GE', 'AM', 'AZ', 'US', 'GB', 'CA', 'MX'}
 src = json.load(open(sys.argv[1], encoding='utf-8'))
 out = []
 for c in src:

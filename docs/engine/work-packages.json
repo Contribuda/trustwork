@@ -7115,7 +7115,7 @@
       "id": "CTRY-MX",
       "title": "Mexico country pack",
       "area": "country-packs",
-      "status": "open",
+      "status": "done",
       "dependsOn": [
         "CTRY-002"
       ],

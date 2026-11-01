@@ -9,6 +9,7 @@ import az from '../packs/az.json' with { type: 'json' };
 import us from '../packs/us.json' with { type: 'json' };
 import gb from '../packs/gb.json' with { type: 'json' };
 import ca from '../packs/ca.json' with { type: 'json' };
+import mx from '../packs/mx.json' with { type: 'json' };
 
 /**
  * The pack registry (CFG-001). The packs in `packages/country-packs/packs` ship with the engine as data (built in, so
@@ -18,7 +19,7 @@ import ca from '../packs/ca.json' with { type: 'json' };
  * file goes through the same validator as the built-in ones, so an invalid or restricted pack never becomes active.
  * The registry holds no default country: which country a visitor starts in is deployment configuration.
  */
-export const BUILT_IN_PACKS: readonly CountryPack[] = [uz, ge, am, az, us, gb, ca].map((raw) => validatePack(raw));
+export const BUILT_IN_PACKS: readonly CountryPack[] = [uz, ge, am, az, us, gb, ca, mx].map((raw) => validatePack(raw));
 
 let active: readonly CountryPack[] = BUILT_IN_PACKS;
 let byCode = new Map(active.map((p) => [p.code, p]));

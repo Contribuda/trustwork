@@ -2777,7 +2777,7 @@
    "unMember": true,
    "callingCode": "+52",
    "timeZones": [],
-   "pack": false
+   "pack": true
   },
   {
    "code": "MY",

@@ -1,0 +1,1146 @@
+{
+  "schemaVersion": 2,
+  "code": "MX",
+  "name": {
+    "en": "Mexico",
+    "es": "México"
+  },
+  "enabled": true,
+  "status": "partial",
+  "locales": [
+    "es",
+    "en"
+  ],
+  "defaultLocale": "es",
+  "currency": {
+    "code": "MXN",
+    "minorUnitDigits": 2,
+    "displayFractionDigits": 2,
+    "symbol": "$"
+  },
+  "secondaryCurrencies": [],
+  "formats": {
+    "timeZone": "America/Mexico_City",
+    "phone": {
+      "callingCode": "+52",
+      "nationalLength": 10,
+      "example": "+52 00 0000 0000"
+    },
+    "postalCode": {
+      "pattern": "^[0-9]{5}$",
+      "example": "01000"
+    }
+  },
+  "timeZones": [
+    "America/Mexico_City",
+    "America/Cancun",
+    "America/Merida",
+    "America/Monterrey",
+    "America/Matamoros",
+    "America/Chihuahua",
+    "America/Ciudad_Juarez",
+    "America/Ojinaga",
+    "America/Mazatlan",
+    "America/Bahia_Banderas",
+    "America/Hermosillo",
+    "America/Tijuana"
+  ],
+  "verificationLevel": "pending",
+  "registrationIdentifier": {
+    "kind": "MX-RFC",
+    "label": {
+      "en": "RFC (legal entity)",
+      "es": "RFC (persona moral)"
+    },
+    "pattern": "^[A-Z&Ñ]{3}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$",
+    "example": "XXX010101AA0",
+    "issuer": {
+      "name": {
+        "en": "Tax Administration Service (SAT)",
+        "es": "Servicio de Administración Tributaria (SAT)"
+      },
+      "url": "https://www.sat.gob.mx/"
+    },
+    "verification": "SAT lexical format only: 12 characters for legal entities. The example is synthetic, not a registered taxpayer. No check-digit, existence or authority verification; natural-person RFC is a distinct kind.",
+    "verificationLevel": "official",
+    "sources": [
+      {
+        "url": "https://www.sat.gob.mx/sitio_internet/cfd/tipoDatos/tdCFDI/tdCFDI.xsd",
+        "what": "SAT XML types t_RFC_PM and t_RFC_PF: lexical RFC patterns. Read directly; pattern matching does not verify registration or authority.",
+        "accessed": "2026-11-01"
+      }
+    ]
+  },
+  "legalEntityTypes": [
+    {
+      "code": "sa-cv",
+      "name": {
+        "en": "Variable-capital stock company (S.A. de C.V.)",
+        "es": "Sociedad anónima de capital variable (S.A. de C.V.)"
+      }
+    },
+    {
+      "code": "srl-cv",
+      "name": {
+        "en": "Variable-capital limited liability company (S. de R.L. de C.V.)",
+        "es": "Sociedad de responsabilidad limitada de capital variable (S. de R.L. de C.V.)"
+      }
+    },
+    {
+      "code": "sas",
+      "name": {
+        "en": "Simplified stock company (S.A.S.)",
+        "es": "Sociedad por acciones simplificada (S.A.S.)"
+      }
+    },
+    {
+      "code": "sole-proprietor",
+      "name": {
+        "en": "Individual conducting business (not a separate legal person)",
+        "es": "Persona física con actividad empresarial"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "code": "MX-AGU",
+      "name": {
+        "en": "Aguascalientes",
+        "es": "Aguascalientes"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-BCN",
+      "name": {
+        "en": "Baja California",
+        "es": "Baja California"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-BCS",
+      "name": {
+        "en": "Baja California Sur",
+        "es": "Baja California Sur"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-CAM",
+      "name": {
+        "en": "Campeche",
+        "es": "Campeche"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-CHP",
+      "name": {
+        "en": "Chiapas",
+        "es": "Chiapas"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-CHH",
+      "name": {
+        "en": "Chihuahua",
+        "es": "Chihuahua"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-CMX",
+      "name": {
+        "en": "Mexico City",
+        "es": "Ciudad de México"
+      },
+      "kind": "district",
+      "facets": {
+        "licensing": [
+          {
+            "id": "cmx-dro-corresponsables",
+            "type": "profession",
+            "name": {
+              "en": "Responsible works directors and co-responsible experts (DRO)",
+              "es": "Directores Responsables de Obra y Corresponsables"
+            },
+            "body": {
+              "name": {
+                "en": "Mexico City Institute for Construction Safety",
+                "es": "Instituto para la Seguridad de las Construcciones de la Ciudad de México"
+              },
+              "url": "https://www.isc.cdmx.gob.mx/"
+            },
+            "sources": [
+              {
+                "url": "https://www.isc.cdmx.gob.mx/directores-responsables-de-obra-y-corresponsables",
+                "what": "Mexico City Institute for Construction Safety page on responsible works directors and co-responsible experts.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed description only; live page timed out; current requirements and registers require confirmation."
+              },
+              {
+                "url": "https://data.consejeria.cdmx.gob.mx/index.php/leyes/reglamentos/35-",
+                "what": "Mexico City legal portal lists the Construction Regulation for the Federal District, last reform shown as 4 October 2024.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed entry only; live retrieval returned HTTP 502; current consolidated regulation and technical standards not reviewed."
+              }
+            ],
+            "verification": "candidate",
+            "verificationNote": "Mexico City only. Official indexed guidance names DROs and co-responsible experts; current registration requirements and issuing roles need review. No national contractor-licence rule is inferred."
+          }
+        ],
+        "standards": [
+          {
+            "id": "cmx-construction-code",
+            "system": {
+              "en": "Mexico City Construction Regulation and complementary technical standards",
+              "es": "Reglamento de Construcciones y Normas Técnicas Complementarias de la Ciudad de México"
+            },
+            "body": {
+              "name": {
+                "en": "Mexico City Government",
+                "es": "Gobierno de la Ciudad de México"
+              },
+              "url": "https://www.cdmx.gob.mx/"
+            },
+            "publications": "https://data.consejeria.cdmx.gob.mx/index.php/leyes/reglamentos/35-",
+            "textLicence": "Link only; no right to ingest or redistribute technical standard text is asserted.",
+            "sources": [
+              {
+                "url": "https://data.consejeria.cdmx.gob.mx/index.php/leyes/reglamentos/35-",
+                "what": "Mexico City legal portal lists the Construction Regulation for the Federal District, last reform shown as 4 October 2024.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed entry only; live retrieval returned HTTP 502; current consolidated regulation and technical standards not reviewed."
+              },
+              {
+                "url": "https://www.isc.cdmx.gob.mx/directores-responsables-de-obra-y-corresponsables",
+                "what": "Mexico City Institute for Construction Safety page on responsible works directors and co-responsible experts.",
+                "accessed": "2026-11-01",
+                "verification": "Official indexed description only; live page timed out; current requirements and registers require confirmation."
+              }
+            ],
+            "verification": "candidate",
+            "verificationNote": "Local regulation and complementary technical standards are leads from official indexed pages; consolidated editions, amendments and project applicability remain to be checked. Other states and municipalities require their own sources."
+          }
+        ]
+      }
+    },
+    {
+      "code": "MX-COA",
+      "name": {
+        "en": "Coahuila de Zaragoza",
+        "es": "Coahuila de Zaragoza"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-COL",
+      "name": {
+        "en": "Colima",
+        "es": "Colima"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-DUR",
+      "name": {
+        "en": "Durango",
+        "es": "Durango"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-GUA",
+      "name": {
+        "en": "Guanajuato",
+        "es": "Guanajuato"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-GRO",
+      "name": {
+        "en": "Guerrero",
+        "es": "Guerrero"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-HID",
+      "name": {
+        "en": "Hidalgo",
+        "es": "Hidalgo"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-JAL",
+      "name": {
+        "en": "Jalisco",
+        "es": "Jalisco"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-MEX",
+      "name": {
+        "en": "Mexico",
+        "es": "México"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-MIC",
+      "name": {
+        "en": "Michoacán de Ocampo",
+        "es": "Michoacán de Ocampo"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-MOR",
+      "name": {
+        "en": "Morelos",
+        "es": "Morelos"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-NAY",
+      "name": {
+        "en": "Nayarit",
+        "es": "Nayarit"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-NLE",
+      "name": {
+        "en": "Nuevo León",
+        "es": "Nuevo León"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-OAX",
+      "name": {
+        "en": "Oaxaca",
+        "es": "Oaxaca"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-PUE",
+      "name": {
+        "en": "Puebla",
+        "es": "Puebla"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-QUE",
+      "name": {
+        "en": "Querétaro",
+        "es": "Querétaro"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-ROO",
+      "name": {
+        "en": "Quintana Roo",
+        "es": "Quintana Roo"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-SLP",
+      "name": {
+        "en": "San Luis Potosí",
+        "es": "San Luis Potosí"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-SIN",
+      "name": {
+        "en": "Sinaloa",
+        "es": "Sinaloa"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-SON",
+      "name": {
+        "en": "Sonora",
+        "es": "Sonora"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-TAB",
+      "name": {
+        "en": "Tabasco",
+        "es": "Tabasco"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-TAM",
+      "name": {
+        "en": "Tamaulipas",
+        "es": "Tamaulipas"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-TLA",
+      "name": {
+        "en": "Tlaxcala",
+        "es": "Tlaxcala"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-VER",
+      "name": {
+        "en": "Veracruz de Ignacio de la Llave",
+        "es": "Veracruz de Ignacio de la Llave"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-YUC",
+      "name": {
+        "en": "Yucatán",
+        "es": "Yucatán"
+      },
+      "kind": "state"
+    },
+    {
+      "code": "MX-ZAC",
+      "name": {
+        "en": "Zacatecas",
+        "es": "Zacatecas"
+      },
+      "kind": "state"
+    }
+  ],
+  "address": {
+    "lines": [
+      "street",
+      "street2",
+      "postalCode",
+      "city",
+      "region"
+    ],
+    "cityFirst": false
+  },
+  "legalTemplates": {
+    "terms": "terms",
+    "privacy": "privacy",
+    "sanctions": "sanctions-and-export-controls"
+  },
+  "dataResidency": {
+    "required": false,
+    "note": {
+      "en": "No general localization requirement is asserted. The false flag is an unverified pack default, not permission for foreign hosting or transfers. Counsel must review sector-specific duties and LFPDPPP articles 35-36 before hub activation.",
+      "es": "No se afirma una obligación general de localización. El valor false es un valor pendiente de revisión, no una autorización de alojamiento o transferencia al extranjero. Se requiere revisión jurídica sectorial y de los artículos 35-36 de la LFPDPPP."
+    },
+    "verificationLevel": "pending",
+    "sources": [
+      {
+        "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf",
+        "what": "Private-sector personal data law enacted 20 March 2025, consolidated through 14 November 2025: articles 1, 2(XV), 35-36 and 38-39; authority and transfers.",
+        "accessed": "2026-11-01"
+      }
+    ]
+  },
+  "facets": {
+    "identifiers": [
+      {
+        "id": "rfc-sole-proprietor",
+        "kind": "MX-RFCPF",
+        "role": "tax",
+        "label": {
+          "en": "RFC (sole proprietor)",
+          "es": "RFC (persona física con actividad empresarial)"
+        },
+        "pattern": "^[A-Z&Ñ]{4}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$",
+        "example": "XXXX010101AA0",
+        "issuer": {
+          "name": {
+            "en": "Tax Administration Service (SAT)",
+            "es": "Servicio de Administración Tributaria (SAT)"
+          },
+          "url": "https://www.sat.gob.mx/"
+        },
+        "appliesTo": [
+          "sole-proprietor"
+        ],
+        "sources": [
+          {
+            "url": "https://www.sat.gob.mx/sitio_internet/cfd/tipoDatos/tdCFDI/tdCFDI.xsd",
+            "what": "SAT XML types t_RFC_PM and t_RFC_PF: lexical RFC patterns. Read directly; pattern matching does not verify registration or authority.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Synthetic example; lexical format only, not registration or identity verification. No personal data is supplied. This is not a CURP and must not substitute for one."
+      }
+    ],
+    "registers": [
+      {
+        "id": "repse",
+        "name": {
+          "en": "REPSE specialized services and works register",
+          "es": "REPSE: servicios u obras especializadas"
+        },
+        "url": "https://repse.stps.gob.mx/",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "STPS REPSE status lookup (candidate; no access or reuse terms reviewed)"
+        ],
+        "sources": [
+          {
+            "url": "https://repse.stps.gob.mx/",
+            "what": "STPS REPSE portal and FAQ: public register for specialized services or works involving own workers placed at the customer disposal; Labour Law articles 13 and 15.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Public register existence confirmed; no record queried, API access or bulk reuse assumed."
+      },
+      {
+        "id": "professional-register",
+        "name": {
+          "en": "National Register of Professionals (SEP)",
+          "es": "Registro Nacional de Profesionistas (SEP)"
+        },
+        "url": "https://www.cedulaprofesional.sep.gob.mx/",
+        "query": "manual",
+        "covers": [],
+        "candidateAdapters": [
+          "SEP professional credential lookup (candidate; private verification only after legal review)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gob.mx/sep/es/acciones-y-programas/correccion-de-datos-direccion-general-de-profesiones",
+            "what": "SEP names the National Register of Professionals for checking professional credentials.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed excerpt only; live retrieval returned HTTP 403; current lookup terms not reviewed."
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "Official indexed SEP guidance identifies the register; live retrieval was blocked and current coverage, consent and reuse terms remain unreviewed."
+      }
+    ],
+    "licensing": [
+      {
+        "id": "specialized-subcontracting",
+        "type": "activity",
+        "name": {
+          "en": "REPSE registration for specialized services or works with own workers placed at the customer disposal",
+          "es": "Registro REPSE para servicios u obras especializados con trabajadores propios a disposición del contratante"
+        },
+        "authority": {
+          "name": {
+            "en": "Secretariat of Labour and Social Welfare (STPS)",
+            "es": "Secretaría del Trabajo y Previsión Social (STPS)"
+          },
+          "url": "https://repse.stps.gob.mx/"
+        },
+        "required": true,
+        "register": "repse",
+        "sources": [
+          {
+            "url": "https://repse.stps.gob.mx/",
+            "what": "STPS REPSE portal and FAQ: public register for specialized services or works involving own workers placed at the customer disposal; Labour Law articles 13 and 15.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Scope is specialized subcontracting under articles 13-15, not a blanket licence for every construction company."
+      },
+      {
+        "id": "professional-credential",
+        "type": "profession",
+        "name": {
+          "en": "Professional credential (cedula profesional)",
+          "es": "Cédula profesional"
+        },
+        "body": {
+          "name": {
+            "en": "Secretariat of Public Education (SEP)",
+            "es": "Secretaría de Educación Pública (SEP)"
+          },
+          "url": "https://www.gob.mx/sep"
+        },
+        "register": "professional-register",
+        "sources": [
+          {
+            "url": "https://www.gob.mx/sep/es/acciones-y-programas/correccion-de-datos-direccion-general-de-profesiones",
+            "what": "SEP names the National Register of Professionals for checking professional credentials.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed excerpt only; live retrieval returned HTTP 403; current lookup terms not reviewed."
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "The credential and register are leads from SEP guidance; trade-specific and state licensing requirements must be checked before any qualification decision."
+      }
+    ],
+    "standards": [
+      {
+        "id": "nom-nmx-catalogue",
+        "system": {
+          "en": "NOM and NMX standards catalogue",
+          "es": "Catálogo de normas NOM y NMX"
+        },
+        "body": {
+          "name": {
+            "en": "Secretariat of Economy",
+            "es": "Secretaría de Economía"
+          },
+          "url": "https://www.gob.mx/se"
+        },
+        "publications": "https://platiica.economia.gob.mx/normalizacion/catalogo-mexicano-de-normaswd_asp-id29/",
+        "textLicence": "Link only; no permission to redistribute or index standard texts has been established.",
+        "sources": [
+          {
+            "url": "https://platiica.economia.gob.mx/normalizacion/catalogo-mexicano-de-normaswd_asp-id29/",
+            "what": "Secretariat of Economy official catalogue lists NOM and NMX with publication dates and status; specific construction clauses are not assessed.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Catalogue existence confirmed; adoption, mandatory status and applicable editions must be checked for each project and locality."
+      }
+    ],
+    "procurement": [
+      {
+        "id": "compras-mx",
+        "type": "portal",
+        "name": {
+          "en": "Compras MX federal procurement platform (transition from CompraNet)",
+          "es": "Compras MX (transición de CompraNet)"
+        },
+        "url": "https://comprasmx.buengobierno.gob.mx/",
+        "level": "federal",
+        "openData": false,
+        "candidateAdapters": [
+          "Compras MX notice discovery (candidate; access and licensing review required)"
+        ],
+        "sources": [
+          {
+            "url": "https://comprasmx.buengobierno.gob.mx/mejoras",
+            "what": "Official portal describes CompraNet transition to Compras MX and the 30-month implementation period under the 16 April 2025 reforms.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed description checked; live page yielded no readable text. API and reuse terms not reviewed."
+          },
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LOPSRM.pdf",
+            "what": "Federal public works and related services law, consolidated through 14 November 2025; 16 April 2025 reform and digital procurement platform.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "candidate",
+        "verificationNote": "Federal law reviewed; current portal branding and transition are supported by its official indexed description only. openData false means reuse not verified, not that no public data exists. No bid submission adapter."
+      }
+    ],
+    "tax": [
+      {
+        "id": "iva",
+        "type": "rate",
+        "taxKind": "vat",
+        "name": {
+          "en": "Value added tax (IVA)",
+          "es": "Impuesto al valor agregado (IVA)"
+        },
+        "standardRate": "16",
+        "reducedRates": [],
+        "localRates": "none",
+        "registrationThreshold": null,
+        "calculation": "adapter",
+        "candidateAdapters": [
+          "Mexican tax calculation (candidate; determine exemptions and territorial eligibility)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LIVA.pdf",
+            "what": "Value Added Tax Law article 1: standard IVA rate 16 percent; zero-rated and exempt supplies require separate classification.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Article 1 standard rate only. Null threshold means unrecorded; exemptions, zero rating, withholding and border credits are not resolved by this pack."
+      },
+      {
+        "id": "border-iva-incentive",
+        "type": "rate",
+        "taxKind": "vat",
+        "name": {
+          "en": "Conditional northern and southern border IVA incentive (unverified applicability)",
+          "es": "Estímulo condicionado de IVA fronterizo norte y sur (aplicabilidad pendiente)"
+        },
+        "standardRate": "16",
+        "reducedRates": [
+          {
+            "rate": "8",
+            "appliesTo": {
+              "en": "Only eligible operations under the applicable border decree after current eligibility and validity review",
+              "es": "Solo operaciones elegibles conforme al decreto fronterizo aplicable, previa revisión de requisitos y vigencia"
+            }
+          }
+        ],
+        "calculation": "adapter",
+        "candidateAdapters": [
+          "Border IVA eligibility review (candidate; blocked pending tax review)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.gob.mx/sat/prensa/beneficios-fiscales-para-las-fronteras-norte-y-sur009-2021",
+            "what": "SAT describes the 50 percent credit producing an effective 8 percent IVA rate for eligible northern and southern border operations.",
+            "accessed": "2026-11-01",
+            "verification": "Official indexed description only; 2026 eligibility, exclusions and continuing validity of both decrees still require review."
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "Historical SAT description of a 50 percent credit, not a generally available 8 percent tax rate. Current validity, eligible municipalities, establishments, delivery locations, notices and exclusions need confirmation for both borders. Never apply by country or state alone. The standard rate stays 16; the reducedRates entry describes the effective result of the credit, not a separate statutory rate."
+      },
+      {
+        "id": "cfdi-4",
+        "type": "e-invoicing",
+        "system": {
+          "en": "CFDI 4.0 digital tax invoice",
+          "es": "Comprobante Fiscal Digital por Internet (CFDI) 4.0"
+        },
+        "mandatory": true,
+        "scope": [
+          "B2B",
+          "B2G",
+          "B2C"
+        ],
+        "signatureRequired": true,
+        "candidateAdapters": [
+          "SAT-authorized CFDI certification provider (PAC; candidate, no provider selected)"
+        ],
+        "sources": [
+          {
+            "url": "https://wwwmatnp.sat.gob.mx/aplicacion/75169/servicio-de-facturacion-cfdi-version-4.0-(vigente-a-partir-del-1-de-enero-de-2022)",
+            "what": "SAT CFDI service: version 4.0 is the only valid general invoice version from 1 April 2023; SAT offers a free issuance service.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf",
+            "what": "Federal Fiscal Code, consolidated through 9 April 2026: article 17-D (advanced electronic signatures), articles 29 and 29-A (digital tax receipts and seals).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Applies where tax law requires a receipt, including consumer/global receipts; not every transaction without exception. SAT provides a free issuance option; a paid PAC is not universally required. Digital seals are not interchangeable with handing an agent the taxpayer private e.firma key."
+      }
+    ],
+    "eSignature": [
+      {
+        "id": "e-firma",
+        "kind": "signature-and-identity",
+        "name": {
+          "en": "SAT e.firma (advanced electronic signature)",
+          "es": "e.firma del SAT (firma electrónica avanzada)"
+        },
+        "strength": "advanced",
+        "legalBasis": {
+          "en": "Federal Fiscal Code article 17-D: a valid certificate-backed advanced signature replaces a handwritten signature for the digital documents within its scope.",
+          "es": "Artículo 17-D del Código Fiscal: una firma electrónica avanzada con certificado vigente sustituye a la autógrafa en los documentos digitales dentro de su ámbito."
+        },
+        "candidateAdapters": [
+          "SAT certificate validation and signing integration (candidate; never collect private keys in chat)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf",
+            "what": "Federal Fiscal Code, consolidated through 9 April 2026: article 17-D (advanced electronic signatures), articles 29 and 29-A (digital tax receipts and seals).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Tax-law scope confirmed; no blanket conclusion about every private construction contract or cross-border signature recognition."
+      }
+    ],
+    "payments": [
+      {
+        "id": "spei",
+        "type": "scheme",
+        "name": {
+          "en": "SPEI interbank electronic payments",
+          "es": "Sistema de Pagos Electrónicos Interbancarios (SPEI)"
+        },
+        "rails": [
+          "instant-credit-transfer"
+        ],
+        "candidateAdapters": [
+          "Licensed SPEI participant or payment provider configured by the hub (candidate)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.condusef.gob.mx/index.php/conoce-la-condusef?p=cuentas-dep",
+            "what": "CONDUSEF explains debit and credit card payments and SPEI, developed and operated by Banco de Mexico for transfers in seconds.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "cards",
+        "type": "scheme",
+        "name": {
+          "en": "Credit and debit card payments",
+          "es": "Pagos con tarjetas de crédito y débito"
+        },
+        "rails": [
+          "card"
+        ],
+        "candidateAdapters": [
+          "Licensed card acquirer configured by the hub (candidate)"
+        ],
+        "sources": [
+          {
+            "url": "https://www.condusef.gob.mx/index.php/conoce-la-condusef?p=cuentas-dep",
+            "what": "CONDUSEF explains debit and credit card payments and SPEI, developed and operated by Banco de Mexico for transfers in seconds.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "calendar": [
+      {
+        "id": "new-year",
+        "type": "holiday",
+        "name": {
+          "en": "New Year",
+          "es": "Año Nuevo"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "constitution-day",
+        "type": "holiday",
+        "name": {
+          "en": "Constitution Day statutory rest",
+          "es": "Descanso por el Día de la Constitución"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "nth-weekday",
+          "month": 2,
+          "weekday": "mon",
+          "nth": 1
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "benito-juarez",
+        "type": "holiday",
+        "name": {
+          "en": "Benito Juarez commemoration statutory rest",
+          "es": "Descanso por la conmemoración de Benito Juárez"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "nth-weekday",
+          "month": 3,
+          "weekday": "mon",
+          "nth": 3
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "labour-day",
+        "type": "holiday",
+        "name": {
+          "en": "Labour Day",
+          "es": "Día del Trabajo"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 1
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "independence-day",
+        "type": "holiday",
+        "name": {
+          "en": "Independence Day",
+          "es": "Día de la Independencia"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 9,
+          "day": 16
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "revolution-day",
+        "type": "holiday",
+        "name": {
+          "en": "Revolution Day statutory rest",
+          "es": "Descanso por el Día de la Revolución"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "nth-weekday",
+          "month": 11,
+          "weekday": "mon",
+          "nth": 3
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      },
+      {
+        "id": "christmas",
+        "type": "holiday",
+        "name": {
+          "en": "Christmas",
+          "es": "Navidad"
+        },
+        "holiday": "federal",
+        "nonWorking": true,
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": "none",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf",
+            "what": "Federal Labour Law, consolidated through 14 May 2026: articles 13-15 (specialized subcontracting) and 74 (mandatory rest days).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official"
+      }
+    ],
+    "units": [
+      {
+        "id": "metric-units",
+        "type": "system",
+        "system": "metric",
+        "common": [
+          "m",
+          "m2",
+          "m3",
+          "kg",
+          "t"
+        ],
+        "sources": [
+          {
+            "url": "https://www.cenam.gob.mx/siu.aspx",
+            "what": "CENAM identifies NOM-008-SE-2021 as the mandatory measurement-unit standard, replacing NOM-008-SCFI-2002.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://sidof.segob.gob.mx/notas/docFuente/5713228",
+            "what": "NOM-008-SE-2021: SI base and derived units, including metre, square/cubic metre, kilogram; tonne accepted with SI.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Metric catalogue selection for construction; the standard establishes legal units, not measured market usage."
+      }
+    ],
+    "privacy": [
+      {
+        "id": "private-data-law",
+        "type": "law",
+        "name": {
+          "en": "Federal private-sector personal data law (LFPDPPP, 2025)",
+          "es": "Ley Federal de Protección de Datos Personales en Posesión de los Particulares (2025)"
+        },
+        "summary": {
+          "en": "The 2025 law regulates private-party personal data processing. The named authority is the Secretariat for Anti-Corruption and Good Governance; international transfers remain subject to the law.",
+          "es": "La ley de 2025 regula el tratamiento de datos personales por particulares. La autoridad es la Secretaría Anticorrupción y Buen Gobierno; las transferencias internacionales están sujetas a la ley."
+        },
+        "appliesWhen": {
+          "en": "Private natural or legal persons processing personal data, subject to article 1 exceptions.",
+          "es": "Personas físicas o morales privadas que tratan datos personales, con las excepciones del artículo 1."
+        },
+        "authority": {
+          "name": {
+            "en": "Secretariat for Anti-Corruption and Good Governance",
+            "es": "Secretaría Anticorrupción y Buen Gobierno"
+          },
+          "url": "https://www.gob.mx/buengobierno"
+        },
+        "effectiveFrom": "2025-03-21",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf",
+            "what": "Private-sector personal data law enacted 20 March 2025, consolidated through 14 November 2025: articles 1, 2(XV), 35-36 and 38-39; authority and transfers.",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "official",
+        "verificationNote": "Authority verified in article 2(XV) and chapter VII. No automatic retention, breach timer or request-deadline setting is inferred."
+      }
+    ],
+    "agentLaw": [
+      {
+        "id": "agent-consent-review",
+        "topic": "consent",
+        "summary": {
+          "en": "Before enabling representative agents, counsel must approve disclosure, consent, liability, retention and per-action limits for the hub and relevant state. Chat never grants authority.",
+          "es": "Antes de habilitar agentes representantes, se requiere revisión jurídica de divulgación, consentimiento, responsabilidad, conservación y límites de acción para el hub y el estado. El chat no otorga autoridad."
+        },
+        "counselReview": "pending",
+        "sources": [
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf",
+            "what": "Private-sector personal data law enacted 20 March 2025, consolidated through 14 November 2025: articles 1, 2(XV), 35-36 and 38-39; authority and transfers.",
+            "accessed": "2026-11-01"
+          },
+          {
+            "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf",
+            "what": "Federal Fiscal Code, consolidated through 9 April 2026: article 17-D (advanced electronic signatures), articles 29 and 29-A (digital tax receipts and seals).",
+            "accessed": "2026-11-01"
+          }
+        ],
+        "verification": "pending",
+        "verificationNote": "HUB-005 counsel review required. These laws are research inputs, not approval of any autonomous agent action or liability allocation."
+      }
+    ]
+  },
+  "notes": [
+    "Pack-wide verification is pending: currency, phone, postcode and IANA zone list were checked against their primary sources; the 32 entity ISO code mapping still needs confirmation in the ISO browser. Names use English and Spanish with engine fallback for other languages; Spanish dictionaries retain their own review status.",
+    "The phone example is an intentionally non-dialable placeholder; the RFC example is synthetic and does not assert registration. A format match never verifies a taxpayer, legal representative or licence.",
+    "CURP is treated as a sensitive personal identifier by project policy: never display it, index it, export it or send it to counterparties, agents or other hubs. No CURP kind, pattern, example, value or lookup adapter is published. A future private workflow needs a separate reviewed contract and legal basis.",
+    "The primary RFC pattern is for legal entities. Sole proprietors use the distinct 13-character tax identifier; personal tax identifiers require privacy review before collection or publication.",
+    "The annual holiday list is not a complete election calendar: Labour Law article 74 also covers ordinary election days and the six-year presidential transfer on 1 October. No annual recurrence is invented for those conditional dates. No generic weekend substitution or national working-week schedule is asserted.",
+    "Time zones are listed nationally; state-to-zone mappings and border daylight-saving exceptions require location-specific review. Mexico City construction facts apply only to MX-CMX, not all states. Other local construction rules remain unrecorded.",
+    "Facets are reference data, not configured services or legal advice. Every adapter is a candidate; no live call, personal lookup, account, payment or provider activation is made. Legal templates are generic and need Mexican counsel review.",
+    "MX-CMX is the federal entity Ciudad de Mexico. The v2 schema has no federal-entity kind; district is the available non-state grouping, not a claim that the former Federal District designation remains current."
+  ],
+  "sources": [
+    {
+      "url": "https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml",
+      "what": "ISO 4217 maintenance agency current list: Mexico, Mexican Peso, MXN, numeric 484, minor unit 2. XML retrieved directly.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.ift.org.mx/conocenos/pleno/entrevistas/otros-funcionarios/entrevista-rafael-eslava-titular-de-la-unidad-de-concesiones-y-servicios-del-ift-en-bitacora-de",
+      "what": "IFT 7 August 2019 explanation: ten national digits, +52 internationally, no extra mobile prefix 1.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.upu.int/UPU/media/upu/PostalEntitiesFiles/addressingUnit/mexEn.pdf",
+      "what": "UPU Mexico addressing guide: five-digit postcode before locality and state; colonia on a separate line.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://data.iana.org/time-zones/tzdb/zone.tab",
+      "what": "IANA tzdb MX rows: twelve geographic zones, including Ciudad_Juarez and Ojinaga. No fixed UTC offset or national DST rule is inferred.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.inegi.org.mx/app/areasgeograficas/",
+      "what": "INEGI Mexico in figures: 32 federal entities. Entity count checked in the official indexed description; ISO mapping requires separate confirmation.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.iso.org/obp/ui/#iso:code:3166:MX",
+      "what": "ISO 3166-2:MX subdivision reference.",
+      "accessed": "2026-11-01",
+      "verification": "Pending: the interactive ISO browser requires acceptance of Terms of Use before anonymous access; no terms were accepted and the individual codes were not read from it."
+    },
+    {
+      "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGSM.pdf",
+      "what": "General Law of Commercial Companies, article 1: limited liability, stock and simplified stock companies; variable-capital option.",
+      "accessed": "2026-11-01"
+    },
+    {
+      "url": "https://www.secihti.mx/servicios-en-linea/registro-de-personas-morales-y-personas-fisicas-con-actividad-empresarial/",
+      "what": "Government registration service distinguishes legal entities and individuals with business activity.",
+      "accessed": "2026-11-01",
+      "verification": "Official indexed description checked; entity classification is not a tax-regime determination."
+    },
+    {
+      "url": "https://www.gob.mx/segob/prensa/curp-derecho-para-acceder-a-otros-derechos?idiom=es-MX",
+      "what": "RENAPO describes CURP as an individual identity identifier.",
+      "accessed": "2026-11-01",
+      "verification": "Official indexed description checked; no personal record queried. The prohibition on display is project policy, not a claim that every CURP is legally sensitive data."
+    }
+  ]
+}
