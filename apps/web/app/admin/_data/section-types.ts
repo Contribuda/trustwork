@@ -18,6 +18,8 @@ export type SectionDef = {
   read: 'staff' | readonly ConsolePermission[];
   status: SectionStatus;
   screen: string;
+  /** Optional feature-owned locale key for additive navigation entries. */
+  labelKey?: `consoleNav.${string}`;
 };
 export const GROUP_IDS = [
   'home', 'hub', 'participants', 'support', 'editorial', 'data', 'modules', 'trust', 'agents', 'billing', 'integrations', 'automation',
