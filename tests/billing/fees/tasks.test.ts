@@ -1,3 +1,6 @@
+import { sql } from 'kysely';
+import { bookingFees } from '../../../packages/data/src/repositories/billing-fees.js';
+import { rejects } from '../../hubs/helpers.js';
 import { VersionedTaskFees } from '../../../apps/api/src/modules/billing/fees/task-adapter.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -55,6 +58,10 @@ test('BILL-003 actual task confirmations pin both hubs fees separately from immu
   });
   const accepted=taskOk<OwnerTaskRequestView>(await f.buyer.post(task.url,{...task.accept,feeConfirmation:confirmation(bd)}),201);
   const a=accepted.agreements[0]!;
+  await t.test('database refuses a direct final transition with only one fee binding',async()=>{
+    await rejects(w.a.as(w.p.operator,trx=>sql`UPDATE trustwork.agreement SET status='accepted_by_both' WHERE id=${a.id}::uuid`.execute(trx)),'23514','billing.unavailable');
+  });
+
   await t.test('concurrent real assignments have one winner and both local fee bindings',async()=>{
     const body={expectedRevision:a.revision,acceptedTermsDigest:a.acceptedTermsDigest,electronicRecords:taskConsent,actor:taskPerson,feeConfirmation:confirmation(sd)};
     const results=await Promise.all([f.seller.post(`/v1/task-agreements/${a.id}/confirm`,body),f.seller.post(`/v1/task-agreements/${a.id}/confirm`,body)]);
@@ -65,10 +72,27 @@ test('BILL-003 actual task confirmations pin both hubs fees separately from immu
     assert.deepEqual(rows.find(r=>r.person_id===w.p.operator),{person_id:w.p.operator,source_hub_id:w.hubB,local_fee_id:s.id,counterparty_fee_id:b.id});
   });
   const stale=await f.prepare();const old=taskOk<FeeDisclosure>(await f.buyer.post(stale.disclose,{}),201);
+  const pending=await f.prepare();const pendingDisclosure=taskOk<FeeDisclosure>(await f.buyer.post(pending.disclose,{}),201);
+  const pendingAccepted=taskOk<OwnerTaskRequestView>(await f.buyer.post(pending.url,{...pending.accept,feeConfirmation:confirmation(pendingDisclosure)}),201);
+  const pendingAgreement=pendingAccepted.agreements[0]!;
+
   await delay(Math.max(0,end.getTime()-Date.now()+10));
   await t.test('expired shown version refuses acceptance even with an active successor',async()=>{
     const result=await f.buyer.post(stale.url,{...stale.accept,feeConfirmation:confirmation(old)});assert.equal(result.status,409,JSON.stringify(result.body));
     assert.equal((result.body as {details:{reason:string}}).details.reason,'billing.fee_outdated');
     assert.equal((await h.db.admin.query('SELECT id FROM trustwork.agreement WHERE offer_ref_id=$1',[stale.offer.id])).rowCount,0);
+    const fresh=taskOk<FeeDisclosure>(await f.seller.post(pending.disclose,{}),201);
+    assert.equal(fresh.snapshot.buyerFee.id,next.id);
+    const denied=await f.seller.post(`/v1/task-agreements/${pendingAgreement.id}/confirm`,{expectedRevision:pendingAgreement.revision,
+      acceptedTermsDigest:pendingAgreement.acceptedTermsDigest,electronicRecords:taskConsent,actor:taskPerson,feeConfirmation:confirmation(fresh)});
+    assert.equal(denied.status,409,JSON.stringify(denied.body));assert.equal((denied.body as {details:{reason:string}}).details.reason,'billing.fee_outdated');
+    // Even a lower-level adapter cannot use a different fee pair to bypass the final database guard.
+    await rejects(w.a.as(w.p.operator,async trx=>{
+      const c=await bookingFees.confirm(trx,w.hubB,fresh.id,fresh.digest);
+      await bookingFees.bind(trx,w.hubB,c.id,pendingAgreement.id,pendingAgreement.acceptedTermsDigest.value);
+      await sql`UPDATE trustwork.agreement SET status='accepted_by_both' WHERE id=${pendingAgreement.id}::uuid`.execute(trx);
+    }),'23514','billing.unavailable');
+    assert.equal((await h.db.admin.query('SELECT id FROM trustwork.billing_fee_binding WHERE booking_id=$1 AND person_id=$2',[pendingAgreement.id,w.p.operator])).rowCount,0);
+
   });
 });
