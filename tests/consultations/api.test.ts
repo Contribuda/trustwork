@@ -470,6 +470,36 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
     const first = await prepare();
     const second = await prepare();
     const agreement = ok<RequesterRequestView>(await second.accept(), 201).agreements[0]!;
+    // The pinned licence read serializes with real FK-backed supersession in both orders.
+    const reader = await h.db.admin.connect();
+    const writer = await h.db.admin.connect();
+    const replacement = `INSERT INTO trustwork.professional_credential
+      (holder_person_id, kind, jurisdiction, credential_type, issuer, number, valid_until, supersedes_id, recorded_by_person_id)
+      SELECT holder_person_id, kind, jurisdiction, credential_type, issuer, 'PE-DEMO-RACE', valid_until, id, recorded_by_person_id
+      FROM trustwork.professional_credential WHERE id = $1`;
+    try {
+      for (const connection of [reader, writer]) {
+        await connection.query('BEGIN');
+        await connection.query('SET LOCAL ROLE trustwork_owner');
+        await connection.query("SET LOCAL trustwork.maintenance = 'on'");
+        await connection.query("SET LOCAL lock_timeout = '150ms'");
+      }
+      assert.equal((await reader.query('SELECT trustwork.consultation_licence_usable($1, $2) AS usable', [credential.id, P.carl])).rows[0]?.usable, true);
+      await assert.rejects(writer.query(replacement, [credential.id]), (e: unknown) => (e as { code?: string }).code === '55P03');
+      await reader.query('ROLLBACK');
+      await writer.query('ROLLBACK');
+      for (const connection of [writer, reader]) {
+        await connection.query('BEGIN');
+        await connection.query('SET LOCAL ROLE trustwork_owner');
+        await connection.query("SET LOCAL trustwork.maintenance = 'on'");
+        await connection.query("SET LOCAL lock_timeout = '150ms'");
+      }
+      await writer.query(replacement, [credential.id]);
+      await assert.rejects(reader.query('SELECT trustwork.consultation_licence_usable($1, $2)', [credential.id, P.carl]), (e: unknown) => (e as { code?: string }).code === '55P03');
+    } finally {
+      await reader.query('ROLLBACK'); reader.release();
+      await writer.query('ROLLBACK'); writer.release();
+    }
     ok(await carl.post('/v1/reputation-builder/credentials', { ...credentialBody, number: 'PE-DEMO-003', supersedesId: credential.id }), 201);
     const refusedAcceptance = await first.accept();
     expectError(refusedAcceptance, 422, 'validation.schema');
