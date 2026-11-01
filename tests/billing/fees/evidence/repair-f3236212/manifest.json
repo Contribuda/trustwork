@@ -1,0 +1,22 @@
+{
+  "sourceCommit": "f3236212ac9686a25e61d72890e570be9a903ee2",
+  "kind": "Synthetic local API and DataPort browser evidence; no operational tariffs",
+  "images": [
+    {
+      "file": "pricing-ru-empty-375.png",
+      "sha256": "cf12990daad41f26110f9cf25c3bfcbba1048a793f445bd95fdd6a3fdb53c415"
+    },
+    {
+      "file": "pricing-ru-empty-desktop.png",
+      "sha256": "a2877e2e6aad7e386582085a3af47b152698ad5e8b07920a29c3dc881f9f3d70"
+    },
+    {
+      "file": "pricing-ru-positive-375.png",
+      "sha256": "2a2801b4338a5bf7c6c49267ac478cb86f7f4d555ae34723fa86c1e3d5973f3c"
+    },
+    {
+      "file": "pricing-ru-positive-desktop.png",
+      "sha256": "64206a0a51056cd468a6e7492adebc594821524182c02f7ddd8bf5143126b70e"
+    }
+  ]
+}
