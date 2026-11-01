@@ -306,8 +306,12 @@ $$;
 -- suspended by the register, not expired by its stated or the register's date (mirrors credentialStatus in
 -- packages/contracts/src/reputation-builder.ts). Checked or self-declared both pass; the label says which.
 CREATE FUNCTION trustwork.consultation_licence_usable(p_credential_id uuid, p_expert uuid) RETURNS boolean
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
-  SELECT coalesce((
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+BEGIN
+  -- Checks and superseding credentials hold an FK KEY SHARE lock on this row. FOR UPDATE serializes a
+  -- commitment with either append, including an insert that is not committed yet; read the facts after it.
+  PERFORM 1 FROM trustwork.professional_credential WHERE id = p_credential_id FOR UPDATE;
+  RETURN coalesce((
     SELECT c.kind = 'licence' AND c.holder_person_id = p_expert
        AND NOT EXISTS (SELECT 1 FROM trustwork.professional_credential s WHERE s.supersedes_id = c.id)
        AND (c.valid_until IS NULL OR c.valid_until >= current_date)
@@ -315,8 +319,8 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
        AND NOT (last.outcome = 'match' AND last.register_valid_until IS NOT NULL AND last.register_valid_until < current_date)
     FROM trustwork.professional_credential c
     LEFT JOIN LATERAL (SELECT k.outcome, k.register_valid_until FROM trustwork.credential_check k WHERE k.credential_id = c.id ORDER BY k.checked_at DESC, k.id DESC LIMIT 1) last ON true
-    WHERE c.id = p_credential_id), false)
-$$;
+    WHERE c.id = p_credential_id), false);
+END $$;
 
 -- The facts behind a licence label (never the number): shown publicly with an active offering (anonymous callers
 -- too), and to signed-in people for offerings and proposals of that expert.
@@ -823,6 +827,10 @@ BEGIN
     IF NOT v_seller OR a.status IS DISTINCT FROM 'accepted_by_both' OR NEW.booked_at IS NULL THEN
       RAISE EXCEPTION 'the expert books terms accepted by both' USING ERRCODE = 'check_violation', HINT = 'commerce.invalid_transition';
     END IF;
+    IF OLD.terms #>> '{credential,credentialId}' IS NOT NULL
+       AND NOT trustwork.consultation_licence_usable((OLD.terms #>> '{credential,credentialId}')::uuid, OLD.expert_person_id) THEN
+      RAISE EXCEPTION 'the pinned licence is no longer usable' USING ERRCODE = 'check_violation', HINT = 'consultations.licence_required';
+    END IF;
     v_reason := trustwork.consultation_reserve_capacity(OLD.id);
     IF v_reason IS NOT NULL THEN
       RAISE EXCEPTION 'the slot cannot be booked: %', v_reason USING ERRCODE = 'check_violation', HINT = 'consultations.' || v_reason;
@@ -1030,6 +1038,10 @@ BEGIN
          OR EXISTS (SELECT 1 FROM trustwork.agreement x JOIN trustwork.consultation_booking b ON b.id = x.offer_ref_id
                     WHERE x.terms_kind = 'consultation' AND b.request_id = v_request.id AND x.status = 'accepted_by_buyer') THEN
         RAISE EXCEPTION 'a request has one live booking' USING ERRCODE = 'check_violation', HINT = 'transactions.agreement_live';
+      END IF;
+      IF v_booking.terms #>> '{credential,credentialId}' IS NOT NULL
+         AND NOT trustwork.consultation_licence_usable((v_booking.terms #>> '{credential,credentialId}')::uuid, v_booking.expert_person_id) THEN
+        RAISE EXCEPTION 'the pinned licence is no longer usable' USING ERRCODE = 'check_violation', HINT = 'consultations.licence_required';
       END IF;
       RETURN NEW;
     END IF;

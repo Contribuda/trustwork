@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { sql } from 'kysely';
 import { withMaintenance, withPrincipal } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import type { PlanContent, PlanItem, PlanVersion, OwnerPlanView } from '../../packages/contracts/src/plans.js';
@@ -10,15 +11,16 @@ import {
 } from '../../packages/contracts/src/consultations.js';
 import { ConsultationsService } from '../../apps/api/src/modules/consultations/consultations.service.js';
 import { AllowListConsultationMandates } from '../../apps/api/src/modules/consultations/mandates.js';
-import { FixedRateCommission, ListScreeningGate, NoPublishedCommission, ScreeningStateGate } from '../../apps/api/src/modules/consultations/ports.js';
+import { FixedRateCommission, NoPublishedCommission, ScreeningCommitmentGate, type ConsultationScreeningGate } from '../../apps/api/src/modules/consultations/ports.js';
 import { ConfiguredElectronicRecords } from '../../apps/api/src/modules/transactions/electronic-records.js';
 import type { RequestState } from '../../apps/api/src/common/request.js';
-import { ApiError } from '../../apps/api/src/common/errors.js';
+import { ApiError, LocalApiError } from '../../apps/api/src/common/errors.js';
 import type { AppContext } from '../../apps/api/src/modules/identity/context.js';
 import { expectError, SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
 import { principalFor } from '../data/helpers/seed.js';
 import { screenClear } from './helpers.js';
+import { clearHold, holdPerson, setBaselineStale } from '../screening-gates/helpers.js';
 
 /**
  * CONS-001 through the HTTP API (real database, runtime role, CSRF, idempotency, the real screening gate): a
@@ -423,6 +425,18 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
     const pending = ok<BookingView>(await anna.get(`/v1/consultation-bookings/${b.id}`));
     assert.equal(pending.site, null, 'still nothing while only the client accepted');
     const agreement = accepted.agreements[0]!;
+    const service = new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate());
+    const asAnna = await stateOf(anna, 'held-company-actor');
+    await holdPerson(h.db.admin, P.anna);
+    try {
+      await assert.rejects(service.confirmBooking(agreement.id, { expectedRevision: agreement.revision, acceptedTermsDigest: agreement.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON }, 'held-company-actor', asAnna),
+        (e: unknown) => e instanceof LocalApiError && e.code === 'jurisdiction.restricted' && e.details?.purpose === 'order_accept');
+      const stillPending = ok<BookingView>(await petr.get(`/v1/consultation-bookings/${b.id}`));
+      assert.equal(stillPending.agreement?.status, 'accepted_by_buyer');
+      assert.equal(stillPending.booking.status, 'proposed');
+      assert.equal(stillPending.site, null);
+      assert.deepEqual(stillPending.agreement?.obligations, []);
+    } finally { await clearHold(h.db.admin, P.anna, P.petr); }
     const booked = ok<BookingView>(await anna.post(`/v1/consultation-agreements/${agreement.id}/confirm`, { expectedRevision: agreement.revision, acceptedTermsDigest: agreement.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON }), 201);
     assert.equal(booked.booking.status, 'booked');
     assert.equal((booked.site?.address as { lines: string[] } | null)?.lines[0], '100 Demo Street', 'the booked expert receives the site');
@@ -432,36 +446,152 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
     expectError(await boris.get(`/v1/consultation-bookings/${b.id}`), 404, 'access.not_found');
   });
 
-  await t.test('the screening gate fails closed: an unscreened person cannot book; the other side learns only that it cannot transact now', async () => {
+  await t.test('a superseded licence cannot bind new acceptance or confirmation of already proposed advice', async () => {
+    const credentialBody = {
+      holder: { kind: 'person', id: P.carl }, kind: 'licence', jurisdiction: 'US-CA', credentialType: 'US-CA-PE-CIVIL', issuer: 'Synthetic Engineering Board', number: 'PE-DEMO-002',
+      classification: null, coverage: null, validFrom: null, validUntil: '2030-12-31', visibility: 'private', supersedesId: null,
+    };
+    const credential = ok<{ credentials: { id: string }[] }>(await carl.post('/v1/reputation-builder/credentials', credentialBody), 201).credentials[0]!;
+    const offeringId = await catalogue(carl, { kind: 'person', id: P.carl }, 'Licensed drawing review', usd('15000'), 'ls');
+    ok(await carl.post('/v1/consultation-offerings', { offeringId, terms: offeringTerms({ kind: 'drawing_review', modes: ['async'], pricing: 'fixed', recordingOffered: false, licence: { required: true, credentialId: credential.id } }), actor: PERSON }), 201);
+    const prepare = async () => {
+      const req = ok<RequesterRequestView>(await petr.post('/v1/consultation-requests', {
+        source: { kind: 'direct' }, offeringId, terms: requestTerms({ kind: 'drawing_review', preferredModes: ['async'], fields: [], licenceRequired: true }), mentoringRelationshipId: null, privateConstraint: null, actor: PERSON,
+      }), 201);
+      const proposed = ok<ExpertRequestView>(await carl.post(`/v1/consultation-requests/${req.request.id}/proposals`, {
+        expectedRevision: req.request.revision, mode: 'async', slot: null, deliverableDue: at(3 * DAY).slice(0, 10), validUntil: at(DAY), note: null, actor: PERSON,
+      }), 201);
+      const b = proposed.bookings[0]!;
+      return { req, b, accept: () => petr.post(`/v1/consultation-requests/${req.request.id}/acceptances`, {
+        booking: { id: b.id, version: 1, digest: b.digest }, request: { id: req.request.id, version: 1, digest: req.request.digest }, expectedRevision: proposed.request.revision,
+        recordingConsent: false, electronicRecords: CONSENT, actor: PERSON,
+      }) };
+    };
+    const first = await prepare();
+    const second = await prepare();
+    const agreement = ok<RequesterRequestView>(await second.accept(), 201).agreements[0]!;
+    ok(await carl.post('/v1/reputation-builder/credentials', { ...credentialBody, number: 'PE-DEMO-003', supersedesId: credential.id }), 201);
+    const refusedAcceptance = await first.accept();
+    expectError(refusedAcceptance, 422, 'validation.schema');
+    assert.equal(reasonOf(refusedAcceptance), 'licence_required');
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.agreement WHERE offer_ref_id = $1', [first.b.id])).rowCount, 0);
+    const refusedConfirmation = await carl.post(`/v1/consultation-agreements/${agreement.id}/confirm`, { expectedRevision: agreement.revision, acceptedTermsDigest: agreement.acceptedTermsDigest, electronicRecords: CONSENT, actor: PERSON });
+    expectError(refusedConfirmation, 422, 'validation.schema');
+    assert.equal(reasonOf(refusedConfirmation), 'licence_required');
+    const pending = ok<BookingView>(await petr.get(`/v1/consultation-bookings/${second.b.id}`));
+    assert.equal(pending.booking.status, 'proposed');
+    assert.equal(pending.agreement?.status, 'accepted_by_buyer');
+    assert.deepEqual(pending.agreement?.obligations, []);
+    assert.equal(pending.session, null);
+  });
+
+  await t.test('real screening: proposals refuse unscreened counterparties; holds and stale lists prevent acceptance without leaking counterparty details', async () => {
     const req = ok<RequesterRequestView>(await xenia.post('/v1/consultation-requests', {
       source: { kind: 'direct' }, offeringId: carlSessionId, terms: requestTerms({ fields: [], sharedMaterials: [] }), mentoringRelationshipId: null, privateConstraint: null, actor: PERSON,
     }), 201);
-    const proposedView = ok<ExpertRequestView>(await carl.post(`/v1/consultation-requests/${req.request.id}/proposals`, {
-      expectedRevision: req.request.revision, mode: 'video', slot: { windowId: soon.id, start: at(2 * HOUR) }, deliverableDue: null, validUntil: at(DAY), note: null, actor: PERSON,
-    }), 201);
-    const b = proposedView.bookings[0]!;
+    const proposal = { expectedRevision: req.request.revision, mode: 'video', slot: { windowId: soon.id, start: at(2 * HOUR) }, deliverableDue: null, validUntil: at(DAY), note: null, actor: PERSON };
+    const blocked = await carl.post(`/v1/consultation-requests/${req.request.id}/proposals`, proposal);
+    expectError(blocked, 409, 'commercial.counterparty_unavailable');
+    assert.equal((blocked.body as { details?: unknown }).details, undefined);
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.consultation_booking WHERE request_id = $1', [req.request.id])).rowCount, 0);
+    await screenClear(h, [{ kind: 'person', id: P.xenia }]);
+    const b = ok<ExpertRequestView>(await carl.post(`/v1/consultation-requests/${req.request.id}/proposals`, proposal), 201).bookings[0]!;
     const fresh = ok<RequesterRequestView>(await xenia.get(`/v1/consultation-requests/${req.request.id}`));
-    const refused = await xenia.post(`/v1/consultation-requests/${req.request.id}/acceptances`, {
+    const accept = () => xenia.post(`/v1/consultation-requests/${req.request.id}/acceptances`, {
       booking: { id: b.id, version: 1, digest: b.digest }, request: { id: req.request.id, version: 1, digest: req.request.digest }, expectedRevision: fresh.request.revision,
       recordingConsent: false, electronicRecords: CONSENT, actor: PERSON,
     });
-    expectError(refused, 403, 'access.forbidden');
-    assert.equal(reasonOf(refused), 'screening_review_pending');
-    assert.equal(await h.db.admin.query("SELECT 1 FROM trustwork.agreement WHERE offer_ref_id = $1", [b.id]).then((r) => r.rowCount), 0, 'nothing binds');
-    // The requester may decline the open proposal and withdraw its request.
+    await holdPerson(h.db.admin, P.carl);
+    try {
+      const refused = await accept();
+      expectError(refused, 409, 'commercial.counterparty_unavailable');
+      assert.equal((refused.body as { details?: unknown }).details, undefined);
+    } finally { await clearHold(h.db.admin, P.carl, P.petr); }
+    // Use the service too: the HTTP jurisdiction middleware otherwise stops an own-side hold before the gate.
+    const service = new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), new NoPublishedCommission(), new ScreeningCommitmentGate());
+    const state = await stateOf(xenia, 'own-hold');
+    await holdPerson(h.db.admin, P.xenia);
+    try {
+      await assert.rejects(service.acceptProposal(req.request.id, {
+        booking: { id: b.id, version: 1, digest: b.digest }, request: { id: req.request.id, version: 1, digest: req.request.digest }, expectedRevision: fresh.request.revision,
+        recordingConsent: false, electronicRecords: CONSENT, actor: PERSON,
+      }, 'own-hold', state), (e: unknown) => e instanceof LocalApiError && e.code === 'jurisdiction.restricted' && e.details?.purpose === 'terms_accept');
+    } finally { await clearHold(h.db.admin, P.xenia, P.petr); }
+    await setBaselineStale(h.db.admin, true);
+    try { expectError(await accept(), 409, 'screening.unavailable'); }
+    finally { await setBaselineStale(h.db.admin, false); }
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.agreement WHERE offer_ref_id = $1', [b.id])).rowCount, 0, 'no rejected acceptance binds');
     const withdrawn = ok<RequesterRequestView>(await xenia.post(`/v1/consultation-requests/${req.request.id}/withdraw`, { expectedRevision: fresh.request.revision, reason: 'Not now', actor: PERSON }));
     assert.equal(withdrawn.request.status, 'withdrawn');
     assert.equal(withdrawn.bookings[0]?.status, 'declined');
   });
 
-  await t.test('agents, private ceilings, the hub commission and the counterparty gate (service level with fakes)', async () => {
+  await t.test('real gate concurrency: acceptance holds off a jurisdiction writer; an uncommitted hold fails closed before any agreement', { timeout: 15_000 }, async () => {
+    const asPetr = await stateOf(petr, 'gate-race');
+    const asCarl = await stateOf(carl, 'gate-race-expert');
+    const serviceWith = (screening: ConsultationScreeningGate) => new ConsultationsService(h.created.ctx as AppContext, h.services().principals, new AllowListConsultationMandates([]), new ConfiguredElectronicRecords(), new NoPublishedCommission(), screening);
+    const real = new ScreeningCommitmentGate();
+    const service = serviceWith(real);
+    const prepare = async () => {
+      const req = await service.createRequest({ source: { kind: 'direct' }, offeringId: carlSessionId, terms: requestTerms({ fields: [], sharedMaterials: [] }), mentoringRelationshipId: null, privateConstraint: null, actor: PERSON }, asPetr);
+      const offered = await service.propose(req.request.id, { expectedRevision: req.request.revision, mode: 'video', slot: { windowId: soon.id, start: at(2 * HOUR) }, deliverableDue: null, validUntil: at(DAY), note: null, actor: PERSON }, asCarl);
+      const b = offered.bookings[0]!;
+      const fresh = await service.getRequest(req.request.id, asPetr) as RequesterRequestView;
+      return { id: req.request.id, bookingId: b.id, body: {
+        booking: { id: b.id, version: 1, digest: b.digest }, request: { id: req.request.id, version: 1, digest: req.request.digest }, expectedRevision: fresh.request.revision,
+        recordingConsent: false, electronicRecords: CONSENT, actor: PERSON,
+      } };
+    };
+    const first = await prepare();
+    const second = await prepare();
+    const barrier = () => {
+      let resolve!: () => void;
+      const promise = new Promise<void>((done) => { resolve = done; });
+      return { promise, resolve };
+    };
+    const checked = barrier();
+    const release = barrier();
+    // This wrapper only pauses after the production gate; it never supplies a verdict.
+    const paused = serviceWith({ async requireTransactable(...args) { await real.requireTransactable(...args); checked.resolve(); await release.promise; } });
+    const accepting = paused.acceptProposal(first.id, first.body, 'gate-first', asPetr);
+    const writer = await h.db.admin.connect();
+    try {
+      await Promise.race([checked.promise, accepting.then(() => assert.fail('acceptance escaped its barrier'))]);
+      await writer.query('BEGIN');
+      await writer.query('SET LOCAL ROLE trustwork_owner');
+      await writer.query("SET LOCAL trustwork.maintenance = 'on'");
+      await writer.query("SET LOCAL lock_timeout = '150ms'");
+      await assert.rejects(writer.query("INSERT INTO trustwork.jurisdiction_hold (person_id, place, source, dataset) VALUES ($1, 'CU', 'staff_report', 'fixture')", [P.carl]),
+        (e: unknown) => (e as { code?: string }).code === '55P03', 'the real commitment transaction retains the hold lock');
+      await writer.query('ROLLBACK');
+    } finally { release.resolve(); await writer.query('ROLLBACK'); writer.release(); }
+    assert.equal((await accepting).agreements[0]?.status, 'accepted_by_buyer');
+
+    // The opposite order: the hold is written but uncommitted. A bounded gate read must refuse, never use old clear state.
+    const holder = await h.db.admin.connect();
+    try {
+      await holder.query('BEGIN');
+      await holder.query('SET LOCAL ROLE trustwork_owner');
+      await holder.query("SET LOCAL trustwork.maintenance = 'on'");
+      await holder.query("INSERT INTO trustwork.jurisdiction_hold (person_id, place, source, dataset) VALUES ($1, 'CU', 'staff_report', 'fixture')", [P.carl]);
+      const bounded = serviceWith({ async requireTransactable(...args) { await sql`SET LOCAL lock_timeout = '150ms'`.execute(args[0]); await real.requireTransactable(...args); } });
+      await assert.rejects(bounded.acceptProposal(second.id, second.body, 'hold-first', asPetr),
+        (e: unknown) => e instanceof LocalApiError && e.code === 'screening.unavailable');
+      assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.agreement WHERE offer_ref_id = $1', [second.bookingId])).rowCount, 0);
+      await holder.query('COMMIT');
+      await assert.rejects(service.acceptProposal(second.id, second.body, 'hold-committed', asPetr),
+        (e: unknown) => e instanceof LocalApiError && e.code === 'commercial.counterparty_unavailable' && e.details === undefined);
+    } finally { await holder.query('ROLLBACK'); holder.release(); await clearHold(h.db.admin, P.carl, P.petr); }
+  });
+
+  await t.test('agents and private ceilings with a fake commission and mandate port, using the real screening gate', async () => {
     const ctx = h.created.ctx as AppContext;
     const mandates = new AllowListConsultationMandates([
       { personId: P.petr, mandateId: 'mandate-demo-consult', action: 'place_order', ceiling: usd('10000000') },
       { personId: P.carl, mandateId: 'mandate-demo-expert', action: 'send_quote' },
     ]);
     const commission = new FixedRateCommission({ id: 'price-setting-demo-consultations', version: 2, rateBps: 1000, fixedFee: null, payer: 'client' });
-    const service = new ConsultationsService(ctx, h.services().principals, mandates, new ConfiguredElectronicRecords(), commission, new ScreeningStateGate());
+    const service = new ConsultationsService(ctx, h.services().principals, mandates, new ConfiguredElectronicRecords(), commission, new ScreeningCommitmentGate());
     const asPetr = await stateOf(petr, 'req-cons-agent-1');
     const asCarl = await stateOf(carl, 'req-cons-agent-2');
     const req = await service.createRequest({ source: { kind: 'direct' }, offeringId: carlSessionId, terms: requestTerms({ fields: [], sharedMaterials: [] }), mentoringRelationshipId: null, privateConstraint: { budgetCeiling: usd('16000'), requesterNotes: null }, actor: PERSON }, asPetr);
@@ -474,17 +604,12 @@ test('consultations API: plan item to booked consultation, deliverables, capacit
     const fresh = await service.getRequest(req.request.id, asPetr) as RequesterRequestView;
     const acceptBody = { booking: { id: b.id, version: 1, digest: b.digest }, request: { id: req.request.id, version: 1, digest: req.request.digest }, expectedRevision: fresh.request.revision, recordingConsent: false, electronicRecords: CONSENT, actor: { via: 'agent' as const, mandateId: 'mandate-demo-consult' } };
     await assert.rejects(service.acceptProposal(req.request.id, acceptBody, 'idem-cons-agent-1', asPetr), (e: unknown) => e instanceof ApiError && e.code === 'access.mandate_scope' && e.details?.reason === 'outside_private_constraints');
-    const raised = await service.setRequestPrivate(req.request.id, { budgetCeiling: usd('20000'), requesterNotes: null, expectedRevision: fresh.privateConstraint.revision }, asPetr);
-    // The counterparty gate words: the client learns only that the expert cannot transact now.
-    const gated = new ConsultationsService(ctx, h.services().principals, mandates, new ConfiguredElectronicRecords(), commission, new ListScreeningGate(new Set([P.carl])));
-    await assert.rejects(gated.acceptProposal(req.request.id, { ...acceptBody, expectedRevision: raised.request.revision }, 'idem-cons-agent-2', asPetr), (e: unknown) => {
-      assert.ok(e instanceof ApiError && e.code === 'access.forbidden');
-      assert.equal(e.details?.reason, 'party_cannot_transact_now');
-      assert.ok(!/match|sanction|list|held/i.test(JSON.stringify({ message: e.message, details: e.details })), 'no screening detail reaches the counterparty');
-      return true;
-    });
-    await assert.rejects(new ConsultationsService(ctx, h.services().principals, mandates, new ConfiguredElectronicRecords(), commission, new ListScreeningGate(new Set(), true))
-      .acceptProposal(req.request.id, { ...acceptBody, expectedRevision: raised.request.revision }, 'idem-cons-agent-3', asPetr), (e: unknown) => e instanceof ApiError && e.details?.reason === 'screening_unavailable');
+    const foreign = await service.setRequestPrivate(req.request.id, { budgetCeiling: { minorUnits: '999999999', currency: 'EUR' }, requesterNotes: null, expectedRevision: fresh.privateConstraint.revision }, asPetr);
+    await assert.rejects(service.acceptProposal(req.request.id, { ...acceptBody, expectedRevision: foreign.request.revision }, 'idem-cons-agent-fx', asPetr),
+      (e: unknown) => e instanceof ApiError && e.code === 'access.mandate_scope' && e.details?.reason === 'outside_private_constraints');
+    assert.equal((await h.db.admin.query('SELECT 1 FROM trustwork.agreement WHERE offer_ref_id = $1', [b.id])).rowCount, 0, 'different currencies never bypass the private ceiling');
+    assert.equal((await h.db.admin.query('SELECT agreement_id FROM trustwork.consultation_booking WHERE id = $1', [b.id])).rows[0]?.agreement_id, null);
+    const raised = await service.setRequestPrivate(req.request.id, { budgetCeiling: usd('20000'), requesterNotes: null, expectedRevision: foreign.privateConstraint.revision }, asPetr);
     const accepted = await service.acceptProposal(req.request.id, { ...acceptBody, expectedRevision: raised.request.revision }, 'idem-cons-agent-4', asPetr);
     assert.equal(accepted.agreements[0]?.status, 'accepted_by_buyer', 'within the ceiling and the mandate the agent books');
     assert.equal(new NoPublishedCommission() instanceof NoPublishedCommission, true);
