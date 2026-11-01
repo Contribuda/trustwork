@@ -143,7 +143,7 @@ test('scope and proposal authority provenance cannot be rewritten, and elapsed e
   await installSyntheticListSources(w.h.db.admin);const p=await proposal(w);
   const reviewer=await context(w,w.seed.people.boris);
   await assert.rejects(w.h.db.admin.query("UPDATE trustwork.staff_role_assignment SET scope_kind='hub',node_id=NULL,hub_id=$1 WHERE person_id=$2 AND role='compliance-officer'",[w.hubId,w.seed.people.anna]),/immutable|only changes by revocation/);
-  await assert.rejects(w.h.db.admin.query('UPDATE trustwork.hub_profile SET node_id=gen_random_uuid() WHERE hub_id=$1',[w.hubId]),/immutable/);
+  await assert.rejects(w.h.db.admin.query('UPDATE trustwork.hub_profile SET node_id=gen_random_uuid() WHERE hub_id=$1',[w.hubId]),/a hub keeps its node and creator/);
   for(const column of ['requested_elevation_id','authority_node_id','requested_authz_epoch']) await assert.rejects(w.h.db.admin.query(`UPDATE trustwork.screening_list_proposal SET ${column}=NULL WHERE id=$1`,[p.id]),/immutable/);
   const short=(await w.h.db.admin.query<{id:string}>("INSERT INTO trustwork.session_elevation(person_id,session_id,factor_kind,created_at,expires_at) VALUES($1,$2,'totp',clock_timestamp(),clock_timestamp()+interval '500 milliseconds') RETURNING id",[w.seed.people.boris,reviewer.sessionId])).rows[0]!;
   const barrier=await w.h.db.admin.connect(),actor=await beginActor(w);
