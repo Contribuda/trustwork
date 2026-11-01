@@ -88,7 +88,7 @@ test('file list registration is current-authority, digest-bound, independently a
 
 test('all list command crash boundaries roll back and replay the exact response once', {timeout:240000},async(t)=>{
  const w=await screeningWorld('sanc006_list_crashes');t.after(()=>w.close());
- const crash=await installCrashPoints(w.h.db.admin);t.after(()=>crash.clear());
+ const crash=await installCrashPoints(w.h.db.admin);
  await listCrashCases(w.h,w.first,w.second,w.worker,async(route)=>{
   const key=`sanc006-crash-${route.action}`;
   const send=()=>route.client.post(route.url,route.body,{idempotencyKey:key});
