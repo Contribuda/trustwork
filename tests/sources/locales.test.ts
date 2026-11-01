@@ -41,7 +41,7 @@ test('every registry vocabulary value and every person-facing refusal has a stri
   expect('batch', ImportBatchStatusSchema.options);
   expect('takedownReason', TAKEDOWN_REASONS);
   expect('label', ['sourced', 'sponsored', 'machineAssisted']);
-  const sqlText = readFileSync('packages/data/migrations/sources/20261103040000_sources.sql', 'utf8');
+  const sqlText = readFileSync('packages/data/migrations/sources/20261103101000_sources.sql', 'utf8');
   const hints = [...new Set([...sqlText.matchAll(/HINT = 'sources\.([a-z_]+)'/g)].map((m) => m[1] as string))];
   const dynamic = ['licence_restricts_use', 'rewrite_needs_full_text', 'rsl_forbids_use'];
   const service = readFileSync('apps/api/src/modules/sources/sources.service.ts', 'utf8');
