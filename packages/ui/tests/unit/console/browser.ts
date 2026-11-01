@@ -129,11 +129,9 @@ for (const language of languages)
               .fill("123");
             await page.keyboard.press("Tab");
             await expect(
-              page
-                .getByRole("status")
-                .filter({
-                  hasText: k.changeRequested.replace("{value}", "123"),
-                }),
+              page.getByRole("status").filter({
+                hasText: k.changeRequested.replace("{value}", "123"),
+              }),
             ).toBeVisible();
             await expect(
               page.locator('[data-grid-row="1"][data-grid-column="2"]'),
@@ -164,6 +162,15 @@ for (const language of languages)
               k.after,
             ]);
             await expect(table.getByRole("row")).toHaveCount(4);
+            await expect(
+              table.getByRole("row").nth(1).getByRole("cell"),
+            ).toHaveText([k.pending, k.allowed]);
+            await expect(
+              table.getByRole("row").nth(2).getByRole("cell"),
+            ).toHaveText(["", k.allowed]);
+            await expect(
+              table.getByRole("row").nth(3).getByRole("cell"),
+            ).toHaveText([k.pending, ""]);
             if (width === 375) {
               await diff.focus();
               for (let key = 0; key < 20; key++)
@@ -204,6 +211,9 @@ for (const language of languages)
             await expect(page.getByRole("table").getByRole("row")).toHaveCount(
               5,
             );
+            await expect(
+              table.getByRole("row").nth(4).getByRole("cell"),
+            ).toHaveText([k.pending, k.pending]);
             await page
               .getByRole("textbox", { name: k.reason })
               .first()
@@ -774,7 +784,9 @@ for (const width of widths) {
     try {
       for (const behavior of ["delay", "reject", "none", "throw"]) {
         await open(page, "grid-interactions");
-        await page.getByLabel("Status", { exact: true }).selectOption(behavior);
+        await page
+          .getByRole("combobox", { name: "Status", exact: true })
+          .selectOption(behavior);
         const grid = page.getByRole("grid");
         const cell = grid.locator('[data-grid-row="1"][data-grid-column="1"]');
         await cell.focus();
@@ -784,14 +796,12 @@ for (const width of widths) {
         await expect(page.locator("[data-request]")).toHaveText(
           `1:name:Draft ${behavior}`,
         );
-        const status = page
-          .getByRole("status")
-          .filter({
-            hasText:
-              behavior === "reject" || behavior === "throw"
-                ? `Change request failed: Draft ${behavior}`
-                : `Change requested: Draft ${behavior}`,
-          });
+        const status = page.getByRole("status").filter({
+          hasText:
+            behavior === "reject" || behavior === "throw"
+              ? `Change request failed: Draft ${behavior}`
+              : `Change requested: Draft ${behavior}`,
+        });
         await expect(status).toBeVisible();
         await expect(
           page.getByRole("status").filter({ hasText: /\bSaved\b/ }),
