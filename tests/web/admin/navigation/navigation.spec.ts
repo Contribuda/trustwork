@@ -8,6 +8,7 @@ const at = (path = 'inbox', extra = '') => `${base}/${path}?persona=hub-owner${e
 const evidence = resolve('tests/web/admin/navigation/evidence');
 const copy = (tag: string) => JSON.parse(readFileSync(resolve(`apps/web/locales/${tag}/console-navigation.json`), 'utf8')).consoleNav as Record<string, string>;
 const en = copy('en');
+const languageLabel = (tag: string): string => JSON.parse(readFileSync(resolve(`packages/ui/locales/${tag}.json`), 'utf8')).consoleKit.language;
 async function english(page: Page) { await page.context().addCookies([{ name: 'trustwork.locale', value: 'en', domain: '127.0.0.1', path: '/' }]); }
 async function ready(page: Page) { await hydrated(page.getByTestId('console-navigation-tools').getByRole('button').first()); }
 async function geometry(page: Page) {
@@ -58,9 +59,9 @@ test('commands open owning forms, permission filtering and original approvals re
   await page.goto(`${base}/inbox?persona=auditor`); await ready(page);
   await page.keyboard.press('Control+k');
   await page.getByRole('dialog').getByRole('combobox').fill('>');
-  await expect(page.getByRole('option')).toHaveCount(0);
+  await expect(page.getByRole('dialog').getByRole('option')).toHaveCount(0);
   await page.getByRole('dialog').getByRole('combobox').fill('private@example.invalid');
-  await expect(page.getByRole('option')).toHaveCount(0);
+  await expect(page.getByRole('dialog').getByRole('option')).toHaveCount(0);
 });
 
 test('shortcuts opt out, remap, ignore editing and IME, and never stack overlays', async ({ page }) => {
@@ -72,18 +73,35 @@ test('shortcuts opt out, remap, ignore editing and IME, and never stack overlays
   await reason.blur();
   await page.evaluate(() => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true, isComposing: true })));
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await page.getByRole('button', { name: en.preferences!, exact: true }).click();
-  const dialog = page.getByRole('dialog');
-  await dialog.getByRole('checkbox', { name: en.singleKeys! }).uncheck();
-  await page.keyboard.press('Control+k'); await expect(page.getByRole('dialog')).toHaveCount(1);
-  await page.keyboard.press('Escape'); await page.keyboard.press('?');
+  const intercepted = await page.evaluate(() => {
+    const results: boolean[] = [];
+    for (const attributes of [{ tag: 'input' }, { tag: 'textarea' }, { tag: 'div', contenteditable: 'true' }, { tag: 'div', role: 'combobox' }]) {
+      const element = document.createElement(attributes.tag);
+      if (attributes.contenteditable) element.setAttribute('contenteditable', attributes.contenteditable);
+      if (attributes.role) element.setAttribute('role', attributes.role);
+      document.body.append(element);
+      const event = new KeyboardEvent('keydown', { key: '?', bubbles: true, cancelable: true });
+      element.dispatchEvent(event); results.push(event.defaultPrevented); element.remove();
+    }
+    return results;
+  });
+  expect(intercepted).toEqual([false, false, false, false]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: en.preferences!, exact: true }).click();
-  await dialog.getByRole('checkbox', { name: en.singleKeys! }).check();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('checkbox', { name: en.singleKeys! }).focus();
+  await page.keyboard.press('Space');
+  await expect(dialog.getByRole('checkbox', { name: en.singleKeys! })).not.toBeChecked();
+  await page.keyboard.press('Control+k'); await expect(page.getByRole('dialog')).toHaveCount(1);
+  await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0); await page.keyboard.press('?');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: en.preferences!, exact: true }).click();
+  await dialog.getByText(en.singleKeys!, { exact: true }).click();
+  await expect(dialog.getByRole('checkbox', { name: en.singleKeys! })).toBeChecked();
   await dialog.getByLabel(en.shortcutSet!).selectOption('alternative');
-  await page.keyboard.press('Escape'); await page.keyboard.press('h');
+  await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0); await page.keyboard.press('h');
   await expect(page.getByRole('dialog')).toHaveCount(1);
-  await page.keyboard.press('Escape'); await page.keyboard.press('Control+k');
+  await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0); await page.keyboard.press('Control+k');
   await expect(page.getByRole('dialog').getByRole('combobox')).toBeFocused();
   await page.getByRole('dialog').getByRole('combobox').fill('> Edit hub identity');
   await page.getByRole('dialog').getByRole('combobox').dispatchEvent('keydown', { key: 'Enter', code: 'Enter', isComposing: true });
@@ -129,6 +147,23 @@ test('lost response remains unknown across refresh, then reconciles the same ope
   await expect(card.getByTestId('simulated-decision')).toHaveText(en.simulatedApproved!);
   expect(mutations).toHaveLength(2);
   expect(mutations.filter((body) => body.includes('operationId'))).toHaveLength(1);
+});
+
+test('missing receipt stays unknown after read-only reconciliation and never unlocks a retry', async ({ page }) => {
+  await english(page); await page.goto(at('inbox', 'item=rq-legal-privacy-2')); await ready(page);
+  const card = page.getByTestId('decision-rq-legal-privacy-2');
+  await card.getByRole('textbox').fill('Synthetic transport failure');
+  await page.route('**/admin/hubs/us-demo/inbox?*', async (route) => {
+    if (route.request().method() === 'POST') await route.abort('failed');
+    else await route.continue();
+  });
+  await card.getByRole('button', { name: 'Approve', exact: true }).click();
+  await expect(card.getByRole('button', { name: en.checkResult! })).toBeVisible();
+  await page.unroute('**/admin/hubs/us-demo/inbox?*');
+  await card.getByRole('button', { name: en.checkResult! }).click();
+  await expect(card.getByRole('button', { name: 'Approve', exact: true })).toBeDisabled();
+  await expect(card.getByRole('button', { name: en.checkResult! })).toBeVisible();
+  await expect(card.getByTestId('simulated-decision')).toHaveCount(0);
 });
 
 test('self approval, stale digest, unauthorized deep links and wrong scope fail closed', async ({ page }) => {
@@ -191,6 +226,15 @@ test('live mode refuses fixture identity and every new route', async ({ request 
   }
 });
 
+test('the actual locale picker switches the whole navigation copy', async ({ page }) => {
+  await english(page); await page.goto(at()); await ready(page);
+  await page.getByRole('button', { name: en.preferences!, exact: true }).click();
+  await page.getByRole('dialog').getByRole('combobox', { name: languageLabel('en'), exact: true }).selectOption('es');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+  await expect(page.locator('h1')).toHaveText(copy('es').inbox!);
+  await expect(page.getByRole('dialog')).toContainText(copy('es').notificationsNote!);
+});
+
 for (const width of [1280, 768, 375]) test(`seven locales, axe, geometry, touch targets and screenshots at ${width}`, async ({ page }) => {
   test.setTimeout(240_000);
   mkdirSync(evidence, { recursive: true });
@@ -206,7 +250,7 @@ for (const width of [1280, 768, 375]) test(`seven locales, axe, geometry, touch 
     await page.screenshot({ path: `${evidence}/${tag}-${width}-inbox.png`, fullPage: tag === 'ru' });
     await page.getByRole('button', { name: strings.preferences!, exact: true }).click();
     const dialog = page.getByRole('dialog');
-    const language = dialog.locator('select').first();
+    const language = dialog.getByRole('combobox', { name: languageLabel(tag), exact: true });
     await expect(language.locator('option')).toHaveCount(7);
     await geometry(page); await expectNoAxeViolations(page);
     await page.screenshot({ path: `${evidence}/${tag}-${width}-preferences.png` });

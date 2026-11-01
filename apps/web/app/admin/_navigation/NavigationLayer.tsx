@@ -100,7 +100,7 @@ export function NavigationLayer({ scope, copy, destinations, support, current, l
     <label className={s.language} htmlFor={`${id}-language`}>
       <span>{t('consoleKit.language')}</span>
       <select id={`${id}-language`} value={locale} onChange={(event) => { writeLocaleCookies(countryCode(), event.target.value); router.refresh(); }}>
-        {ADMIN_SHELL_LOCALES.map((tag) => <option key={tag} value={tag} lang={tag}>{t(`adminShell.languages.${tag}`)}</option>)}
+        {ADMIN_SHELL_LOCALES.map((tag) => <option key={tag} value={tag}>{t(`adminShell.languages.${tag}`)}</option>)}
       </select>
     </label>
         <p>{copy.deviceNote}</p>
