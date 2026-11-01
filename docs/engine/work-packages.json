@@ -2789,7 +2789,8 @@
         "docs/adr/014-sanctions-compliance-engine.md",
         "docs/engine/modules/sanctions-compliance.md",
         "docs/engine/hub-console/screens.md",
-        "docs/engine/hub-console/README.md"
+        "docs/engine/hub-console/README.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "HC-74 Screening on the API: baseline lists shown always on, additional lists, freshness, geolocation dataset and age, re-screen runs, cohort metrics.",
@@ -2800,7 +2801,8 @@
       "acceptance": [
         "No control can disable a baseline list, loosen matching below the engine rule or clear without a reason (scan and test).",
         "A not-same-person decision cannot complete without a second person against the API (end-to-end test).",
-        "The subject's own account never sees the console paths (negative test)."
+        "The subject's own account never sees the console paths (negative test).",
+        "Screening status and holds on the participant card are visible only to roles holding the screening permission; other staff see neither the status nor its absence, except the restricted-servicing notice the hub's legal settings allow (negative test)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/trust/screening",
@@ -3649,7 +3651,8 @@
         "docs/engine/hub-console/providers-and-models.md",
         "docs/engine/hub-console/automation-and-scheduling.md",
         "docs/engine/hub-console/screens.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Build the integrations section with the write-only SecretField, ConnectionTestPanel, RoutingTable, EgressMatrix and KillSwitchControl.",
@@ -3662,7 +3665,9 @@
         "The egress matrix is operable by keyboard and screen reader.",
         "Kill-switch release shows the two-person requirement.",
         "Enabling a model without a passing evaluation is blocked on fixtures, and rollback is one action that names the pin it restores.",
-        "Dashboards render cohort counts under ten as suppressed and show no per-person rows."
+        "Dashboards render cohort counts under ten as suppressed and show no per-person rows.",
+        "The models and prices overview shows the non-switchable guard rails as locked rows with explanations and no control for them (console design, section 5.6).",
+        "Lists, drawers, diffs and approvals use the shared packages/ui components of DS-003 once merged; no console-local copies are created."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/integrations",
@@ -3684,7 +3689,8 @@
         "docs/engine/hub-console/autonomous-editorial.md",
         "docs/engine/hub-console/data-mining.md",
         "docs/engine/hub-console/screens.md",
-        "docs/engine/editorial-office.md"
+        "docs/engine/editorial-office.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Build the editorial sections including the review workbench with sources beside the draft.",
@@ -3697,7 +3703,8 @@
         "No merge control exists anywhere; link proposals offer only accept or reject.",
         "AI labels are visible.",
         "Locked guard rails render as locked cells with their reason in the autonomy matrix; \"auto-publish allowed\" is selectable only for eligible content classes (test).",
-        "No agent role appears with a human name or portrait (fixture scan)."
+        "No agent role appears with a human name or portrait (fixture scan).",
+        "Editorial lists, detail drawers, diffs, approval cards, the calendar and run history with dry-run preview use the shared components of the console design once DS-003 is merged."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/editorial",
@@ -3787,7 +3794,8 @@
       "read": [
         "docs/engine/hub-console/operations.md",
         "docs/engine/hub-console/README.md",
-        "docs/engine/hub-console/screens.md"
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Build federation, privacy, staff and audit, and operations sections.",
@@ -3797,7 +3805,9 @@
       "acceptance": [
         "Restore and production migration need two people.",
         "The locale completeness screen blocks activation of incomplete templates.",
-        "The restricted-places list is read-only."
+        "The restricted-places list is read-only.",
+        "Staff and access shows on fixtures the role catalogue, the permission matrix, effective access (\"what this person can do\"), the role-change diff with the separation-of-duties check, invitations, just-in-time roles, access reviews, offboarding and clients (console design, sections 4.2 to 5).",
+        "The audit explorer has saved views, request-id search and denied attempts; feature flags show their rollout stage and expiry and no flag touches access, projections, egress or ranking."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/federation",
@@ -3896,7 +3906,9 @@
         "AGT-023",
         "SANC-006",
         "AGT-004",
-        "BILL-003"
+        "BILL-003",
+        "HUBC-021",
+        "AGT-030"
       ],
       "handbook": "docs/engine/hub-console/support.md",
       "goal": "Wire the M4 and M5 sections to the API.",
@@ -3904,7 +3916,8 @@
         "docs/engine/hub-console/support.md",
         "docs/engine/hub-console/user-agents-admin.md",
         "docs/engine/hub-console/modules.md",
-        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md"
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Implement the API adapter methods for participants, claims, support, trust, modules, agent product, extensions and billing.",
@@ -3915,7 +3928,8 @@
         "No impersonation path exists against the API (scan and test).",
         "Extension activation needs a passing safety suite and a second person against the API.",
         "A capability turned off in the console is refused through the interface, the agent and MCP against the API.",
-        "No staff API path reads or changes one participant's agent, mandates, settings, goals or connections (scan and negative tests)."
+        "No staff API path reads or changes one participant's agent, mandates, settings, goals or connections (scan and negative tests).",
+        "The Agent team area is wired to the API: enabling an operator agent without a passing evaluation, or widening a grant with a new data class or commit capability without a second person, is refused; human-only decisions are unreachable for operator agents (negative tests)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/participants",
@@ -3938,13 +3952,15 @@
         "HUBC-007",
         "PRV-001",
         "OPS-004",
-        "FED-001"
+        "FED-001",
+        "ADM-004"
       ],
       "handbook": "docs/engine/hub-console/operations.md",
       "goal": "Wire the M6 sections and the node console to the API.",
       "read": [
         "docs/engine/hub-console/operations.md",
-        "docs/engine/federation.md"
+        "docs/engine/federation.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Implement the API adapter methods for federation peers, privacy requests, staff, audit, operations and node console.",
@@ -3952,7 +3968,8 @@
       ],
       "acceptance": [
         "Erasure execution and restore need two people against the API (tested).",
-        "Raising a peering level above syndicate needs a second approver."
+        "Raising a peering level above syndicate needs a second approver.",
+        "Invitations, just-in-time roles, access reviews and offboarding are wired to ADM-004; a revoked role ends elevation, eligible roles, pending approvals and admin clients at once (tested against the API)."
       ],
       "paths": [
         "apps/web/app/admin/hubs/[hub]/federation",
@@ -3972,14 +3989,18 @@
       "dependsOn": [
         "HUBC-008",
         "HUBC-009",
-        "HUBC-010"
+        "HUBC-010",
+        "HUBC-020",
+        "HUBC-021",
+        "HUBC-022"
       ],
       "handbook": "docs/engine/hub-administration.md",
       "goal": "Umbrella for the console packages (HUBC-000, ADM-002, HUBC-002 to HUBC-010): the console is complete when every section described in the handbook works against the API with the guard rails proven end to end.",
       "read": [
         "docs/engine/hub-console/README.md",
         "docs/engine/hub-administration.md",
-        "docs/design/screen-contracts/workspace/administration.md"
+        "docs/design/screen-contracts/workspace/administration.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Run the full console browser plan against the API at three widths in every hub language of the US demo hub (en, es) and one other example hub.",
@@ -3989,7 +4010,8 @@
       "acceptance": [
         "Every private object returns not found to staff without a case grant, through every console path.",
         "Activating a legal document without counsel approval fails.",
-        "No console control sets a score, position or badge directly."
+        "No console control sets a score, position or badge directly.",
+        "The six flows of the console design (staff invite with approval, just-in-time elevation, case access grant, role change with the separation-of-duties check, configuration change with diff and second person, incident with kill switch and step-up) pass end to end against the API, including phone journeys at 375 px for the approvals inbox and the incident. The Users and Statistics areas pass their journeys against the API."
       ],
       "paths": [
         "tests/web/admin/acceptance",
@@ -4632,13 +4654,15 @@
       "area": "platform-admin-backend",
       "status": "open",
       "dependsOn": [
-        "AGT-003"
+        "AGT-003",
+        "AGT-030"
       ],
       "handbook": "docs/engine/agent-catalog.md",
       "goal": "Help hub staff with drafted summaries that never decide, and give the company representative its triage, routing, continuity and weekly report.",
       "read": [
         "docs/engine/agent-catalog.md",
-        "docs/engine/hub-administration.md"
+        "docs/engine/hub-administration.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Implement staff-principal runs on queues with no access outside case grants.",
@@ -4647,7 +4671,8 @@
       ],
       "acceptance": [
         "Claims, sanctions, appeals, method releases and price activation are human-only (negative tests).",
-        "No per-person staff analytics exist."
+        "No per-person staff analytics exist.",
+        "The hub operations assistant's jobs run as operator agent roles of the agent team (AGT-030) under operator grants with an accountable staff member; they never run under a participant's mandate."
       ],
       "paths": [
         "apps/api/src/modules/agent-modules/operations",
@@ -5175,7 +5200,8 @@
         "docs/engine/mcp-server.md",
         "docs/adr/013-mcp-server.md",
         "docs/engine/hub-administration.md",
-        "docs/engine/hub-console/README.md"
+        "docs/engine/hub-console/README.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Implement the admin tools of the chapter with their staff permissions.",
@@ -5185,7 +5211,8 @@
       "acceptance": [
         "A participant token is refused on /mcp/admin and a staff token on /mcp (tested).",
         "No admin tool approves, decides, activates or releases anything (tested).",
-        "Private case data without an active case grant answers not found (tested)."
+        "Private case data without an active case grant answers not found (tested).",
+        "A staff member sees and revokes their own admin clients; revoking a staff member's last role revokes their admin clients in the same transaction (tested)."
       ],
       "paths": [
         "apps/api/src/modules/connections/mcp/admin",
@@ -8743,6 +8770,332 @@
       ]
     },
     {
+      "id": "DS-003",
+      "title": "Console component kit in packages/ui",
+      "area": "design-system",
+      "status": "open",
+      "dependsOn": [
+        "DS-001",
+        "ADM-002"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Give every console section one accessible set of shared components: data grid mode of DataTable (server-side sorting, filtering and pagination, selection, column visibility, saved views slot), filter bar with active-filter chips, facet panel, saved views, bulk-action bar, non-modal detail drawer, audit trail, diff viewer, approval card, permission matrix, scope picker, effective access, locked rule, typed confirmation, step-up prompt, reason field, command palette, inbox list, inline help, keyboard shortcuts, run history, calendar agenda, a metric chart with its data table and the network map (component level).",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/design/system/components.md",
+        "docs/design/system/accessibility-evidence.md",
+        "docs/engine/hub-console/README.md"
+      ],
+      "steps": [
+        "Extend DataTable backward-compatibly with a controlled server-side mode and selection; add the new components with stories and unit tests.",
+        "Promote the console compositions that are reused (StatusLabel, ReasonField, AuditNote, ApprovalCard, KillSwitchControl, CohortCount, money cells, run history) from apps/web/app/admin/_components without breaking ADM-002 screens.",
+        "Strings in packages/ui/locales for every engine language; axe and keyboard tests for every component at 1280, 768 and 375 px."
+      ],
+      "acceptance": [
+        "The permission matrix and editable grids follow the APG grid keyboard model; read-only lists stay tables (tested).",
+        "The step-up prompt and typed confirmation accept paste and password managers (WCAG 3.3.8); no component relies on colour alone or on dragging (tests).",
+        "Selection, filter and result counts are announced in polite live regions; the detail drawer returns focus to the row it was opened from.",
+        "The metric chart and the network map are always paired with an equivalent table or list; the network map loads no third-party tiles and never shows a restricted place as selectable (tests)."
+      ],
+      "paths": [
+        "packages/ui/src/components/DataTable",
+        "packages/ui/src/components/FilterBar",
+        "packages/ui/src/components/FacetPanel",
+        "packages/ui/src/components/SavedViews",
+        "packages/ui/src/components/BulkActionBar",
+        "packages/ui/src/components/DetailDrawer",
+        "packages/ui/src/components/AuditTrail",
+        "packages/ui/src/components/DiffViewer",
+        "packages/ui/src/components/ApprovalCard",
+        "packages/ui/src/components/PermissionMatrix",
+        "packages/ui/src/components/ScopePicker",
+        "packages/ui/src/components/EffectiveAccess",
+        "packages/ui/src/components/LockedRule",
+        "packages/ui/src/components/StepUpPrompt",
+        "packages/ui/src/components/CommandPalette",
+        "packages/ui/src/components/InboxList",
+        "packages/ui/src/components/InlineHelp",
+        "packages/ui/src/components/KeyboardShortcuts",
+        "packages/ui/src/components/RunHistory",
+        "packages/ui/src/components/CalendarAgenda",
+        "packages/ui/src/components/MetricChart",
+        "packages/ui/src/components/NetworkMap",
+        "packages/ui/stories/console",
+        "packages/ui/tests/unit/console"
+      ]
+    },
+    {
+      "id": "DS-004",
+      "title": "Dark theme tokens",
+      "area": "design-system",
+      "status": "open",
+      "dependsOn": [
+        "DS-003",
+        "INTL-006"
+      ],
+      "handbook": "docs/design/system/tokens.md",
+      "goal": "Add a dark token set with the same custom-property names under [data-theme=\"dark\"], a system, light or dark preference, and contrast evidence for both themes, starting with the console.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/design/system/tokens.md",
+        "docs/design/system/accessibility-evidence.md"
+      ],
+      "steps": [
+        "Define dark values for every colour role, status family, focus ring, overlay and scrim; components keep referencing roles only.",
+        "Extend the token contrast unit tests to the dark set; add the preference (system default) to the console shell and the design-system showcase.",
+        "Screenshots of every console component in both themes at 1280 and 375 px."
+      ],
+      "acceptance": [
+        "Every text and status token meets 4.5:1 (3:1 for large text, control boundaries and the focus ring) in both themes (unit test).",
+        "Status is never shown by colour alone in either theme; the console header band stays distinct from page content in both themes."
+      ],
+      "paths": [
+        "packages/ui/tokens.css",
+        "packages/ui/tokens",
+        "packages/ui/tests/unit/dark-theme",
+        "docs/design/system/tokens.md"
+      ]
+    },
+    {
+      "id": "ADM-004",
+      "title": "Staff lifecycle and access governance backend",
+      "area": "platform-admin-backend",
+      "status": "open",
+      "dependsOn": [
+        "ADM-001",
+        "HUB-001"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Complete staff management without weakening ADM-001: invitations with expiry and second-person approval for sensitive roles, assignments with end dates, eligible roles activated just in time with a fresh second factor and approval, access-review campaigns, guided offboarding, an effective-access query and a role-change preview with the separation-of-duties check.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/hub-console/operations.md",
+        "apps/api/src/modules/platform-admin/README.md",
+        "packages/contracts/src/hub.ts",
+        "packages/contracts/src/admin.ts"
+      ],
+      "steps": [
+        "Add a staff-lifecycle contract (invitation, eligible assignment, activation request, access review campaign and item, offboarding record, effective access, role-change preview) in its own file; request any change to hub.ts or admin.ts from the integrator.",
+        "Implement invitations, eligible roles and activation through DATA-002-style SECURITY DEFINER commands that reuse the existing approval, conflict and audit rules; activation length bounded per role and never above BREAKGLASS_MAX_HOURS.",
+        "Implement access-review campaigns (reviewer differs from holder, unanswered items escalate to the hub owner, never silent removal) and offboarding that revokes roles, eligible roles, pending approvals and admin clients in one transaction and lists open work for reassignment.",
+        "Implement the effective-access query and the role-change preview that the API recomputes at apply time."
+      ],
+      "acceptance": [
+        "Nobody invites, assigns, activates or reviews themselves; an invitation or activation for a sensitive role cannot take effect without a second person (negative tests on real PostgreSQL under the runtime role).",
+        "An activation ends at its window end without a job having to run (checked at every request); a revoked role ends elevations, eligible roles, pending approvals and grants at once (tested).",
+        "A role change whose preview is stale is refused; in full separation-of-duties mode a conflicting role is refused (tested).",
+        "No endpoint returns activity, productivity or behaviour metrics about a staff member (schema walk)."
+      ],
+      "paths": [
+        "apps/api/src/modules/platform-admin/staff-lifecycle",
+        "packages/contracts/src/staff-lifecycle.ts",
+        "packages/data/migrations/staff-lifecycle",
+        "packages/data/src/schema/staff-lifecycle.ts",
+        "packages/data/src/repositories/staff-lifecycle.ts",
+        "tests/admin/staff-lifecycle"
+      ]
+    },
+    {
+      "id": "ADM-005",
+      "title": "Console search, saved views, approvals inbox and flag rollout backend",
+      "area": "platform-admin-backend",
+      "status": "open",
+      "dependsOn": [
+        "ADM-001",
+        "HUB-001"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Serve the console navigation layer: a permission-aware search over console objects (sections, approvals, configuration versions, incidents, cases by id, runs, audit events, flags, staff) that never searches participant data, saved views per person and per team, one read model of work assigned to a staff member, notification preferences, and rollout stages for feature flags.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "apps/api/src/modules/platform-admin/README.md",
+        "docs/engine/hub-console/operations.md"
+      ],
+      "steps": [
+        "Add a console-services contract (search query and hits, saved view, work item, notification preference, flag rollout stage) in its own file.",
+        "Implement search that resolves each hit through the owning read permission and answers identical \"nothing found\" for missing and unreadable objects.",
+        "Implement the work-item read model from approvals, case grants, recovery escalations, access reviews, cases, appeals, incidents, alerts and Agent team review items, each with the reason it is the viewer's.",
+        "Extend flags with stages (off, staff only, a deterministic share of sessions, on) without changing the rule that flags never touch access, projections, egress or ranking."
+      ],
+      "acceptance": [
+        "No search request or response contains participant personal data; participant lookup stays in the support workspace with a case and an access-log entry (schema walk and negative tests).",
+        "A staff member never receives a work item or search hit for an object they may not read (negative tests per role and scope).",
+        "Turning a flag off is immediate; a flag stage cannot target individual people (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/platform-admin/console-services",
+        "packages/contracts/src/console-services.ts",
+        "packages/data/migrations/console-services",
+        "packages/data/src/schema/console-services.ts",
+        "packages/data/src/repositories/console-services.ts",
+        "tests/admin/console-services"
+      ]
+    },
+    {
+      "id": "HUBC-020",
+      "title": "Console navigation layer on fixtures: command palette, approvals inbox, saved views, shortcuts and the Users area home",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-002",
+        "DS-003"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Build the cross-cutting navigation of the console on fixtures: the command palette (Ctrl or Cmd+K) that navigates and opens command forms but never searches participants, the approvals inbox (/inbox), saved views, keyboard shortcuts that can be turned off, notification preferences, and the Users area home with tabs for people, companies, staff and clients.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/hub-console/README.md",
+        "docs/engine/localization.md"
+      ],
+      "steps": [
+        "Build the palette, the inbox, saved views, shortcuts and the Users area home in their own folders with fixtures validated by the contracts.",
+        "Add the console-navigation namespace in every engine language.",
+        "Playwright and axe at 1280, 768 and 375 px; wire to ADM-005 when it is done."
+      ],
+      "acceptance": [
+        "Typing an e-mail or a name in the palette offers only \"Look up a participant in Support\" and never shows participant data (test).",
+        "The inbox approves and declines at 375 px with the diff as a list of changed fields; own requests cannot be approved (test).",
+        "Single-character shortcuts can be turned off and never fire inside text fields (WCAG 2.1.4, test).",
+        "The Users area home opens participants only through their public projection or the support lookup with a case, staff through their staff page and clients through their client page (test)."
+      ],
+      "paths": [
+        "apps/web/app/admin/_navigation",
+        "apps/web/app/admin/hubs/[hub]/inbox",
+        "apps/web/app/admin/hubs/[hub]/users",
+        "apps/web/locales/en/console-navigation.json",
+        "apps/web/locales/ru/console-navigation.json",
+        "apps/web/locales/uz-Latn/console-navigation.json",
+        "apps/web/locales/ka/console-navigation.json",
+        "apps/web/locales/hy/console-navigation.json",
+        "apps/web/locales/az-Latn/console-navigation.json",
+        "apps/web/locales/es/console-navigation.json",
+        "tests/web/admin/navigation"
+      ]
+    },
+    {
+      "id": "HUBC-021",
+      "title": "Console Agent team area on fixtures",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-002",
+        "DS-003"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Build the Agent team area of ADR 010 decision 26 on fixtures: roster, roles with capabilities from the registry, operator grants, autonomy levels on the same scale as the editorial agent team, runs, the review queue, budgets and evaluations, kill switches per agent and per role, and the human-only decisions shown as locked rows.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/hub-console/user-agents-admin.md",
+        "docs/engine/editorial-office.md"
+      ],
+      "steps": [
+        "Build HC-200 to HC-206 with fixtures for the platform-wide roles; list the editorial roles of EDIT-002 read-only with links to Editorial → Team (HC-184 … HC-189); every agent output labelled as agent work.",
+        "Add the agent-team namespace in every engine language.",
+        "Playwright and axe at 1280, 768 and 375 px."
+      ],
+      "acceptance": [
+        "Enable stays blocked without a passing evaluation; widening a grant with a data class or commit capability shows the second-person requirement (fixtures).",
+        "No control lets an operator agent decide a human-only decision; those appear as locked rows with explanations (scan).",
+        "Every agent shows its accountable person; an agent without one shows as suspended."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/agent-team",
+        "apps/web/locales/en/agent-team.json",
+        "apps/web/locales/ru/agent-team.json",
+        "apps/web/locales/uz-Latn/agent-team.json",
+        "apps/web/locales/ka/agent-team.json",
+        "apps/web/locales/hy/agent-team.json",
+        "apps/web/locales/az-Latn/agent-team.json",
+        "apps/web/locales/es/agent-team.json",
+        "tests/web/admin/agent-team"
+      ]
+    },
+    {
+      "id": "HUBC-022",
+      "title": "Console Statistics area on fixtures",
+      "area": "hubs-web",
+      "status": "open",
+      "dependsOn": [
+        "ADM-002",
+        "DS-003"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Build the mandatory Statistics area (HC-210 to HC-215) on fixtures and wire it to ANL-001 when it is done: dashboards per domain, the metric catalogue with definitions, segments and funnels, reports and scheduled exports, access and retention settings, and metric detail, all as cohort aggregates.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/engine/modules/analytics.md",
+        "docs/engine/hub-console/screens.md",
+        "docs/engine/hub-console/user-agents-admin.md"
+      ],
+      "steps": [
+        "Build the screens with synthetic, labelled fixtures validated by the contracts; every chart with its data table.",
+        "Add the console-statistics namespace in every engine language.",
+        "Playwright and axe at 1280, 768 and 375 px in both themes; wire to ANL-001 when it is done."
+      ],
+      "acceptance": [
+        "No screen, filter, drill-down or export leads to one participant or one staff member (scan and test).",
+        "Counts under ten after segmentation render as \"fewer than 10\" and secondary suppression hides revealing cells (test).",
+        "Money flows are labelled as recorded instructions to the licensed payment provider; a metric whose source is not live shows its status label, not a number (test).",
+        "Each dashboard is visible only to the roles its catalogue entry names (negative test per persona)."
+      ],
+      "paths": [
+        "apps/web/app/admin/hubs/[hub]/statistics",
+        "apps/web/locales/en/console-statistics.json",
+        "apps/web/locales/ru/console-statistics.json",
+        "apps/web/locales/uz-Latn/console-statistics.json",
+        "apps/web/locales/ka/console-statistics.json",
+        "apps/web/locales/hy/console-statistics.json",
+        "apps/web/locales/az-Latn/console-statistics.json",
+        "apps/web/locales/es/console-statistics.json",
+        "tests/web/admin/statistics"
+      ]
+    },
+    {
+      "id": "AGT-030",
+      "title": "Operator agent team: roles, operator grants, autonomy levels, budgets, evaluation gate and kill switches",
+      "area": "assistant",
+      "status": "open",
+      "dependsOn": [
+        "AGT-003",
+        "AGT-004",
+        "KEYS-001"
+      ],
+      "handbook": "docs/engine/hub-console/console-design.md",
+      "goal": "Give the hub operator an internal team of agents (ADR 010 decision 26): hub-owned agent principals, role definitions over the one capability registry, structured and revocable operator grants, an autonomy level per role, an accountable staff member per role, schedules, budgets with hard stops, model routes, an evaluation gate before enabling, kill switches per agent and per role, run history and a review queue, all audited.",
+      "read": [
+        "docs/engine/hub-console/console-design.md",
+        "docs/adr/010-gathering-point-hubs-agents-and-mesh.md",
+        "docs/engine/agent-catalog.md",
+        "docs/engine/hub-console/user-agents-admin.md",
+        "docs/engine/trust-safety-privacy.md",
+        "docs/engine/editorial-office.md"
+      ],
+      "steps": [
+        "Add an operator-agents contract (role definition, operator grant, autonomy level, agent, run, review item) in its own file; request the additive hub.ts change for kill-switch scopes per operator agent and per role from the integrator.",
+        "Implement operator principals that act only under operator grants, never under a participant mandate, and suspend when the role has no accountable staff member.",
+        "Run the EVAL-001 safety suite and role checks before enabling and after any model, grant or role change; enforce budgets and kill switches before every capability call.",
+        "Feed review items to the console work list (ADM-005) and write every action to the audit with the agent, grant and accountable person.",
+        "Share one operator principal kind, one grant model, one autonomy scale and one set of kill-switch scopes with the editorial agent team (EDIT-002), coordinating the contract with it instead of defining a second model."
+      ],
+      "acceptance": [
+        "Sanctions and screening decisions, account suspensions and sanctions, money and commitments, appeals, legal holds, claim and link decisions, price activation and every HUMAN_GATES decision are unreachable for operator agents at every autonomy level (negative tests).",
+        "An operator agent never reads or changes a participant's agent, mandates, settings or conversations, and never acts as a participant or a staff member (negative tests).",
+        "An exhausted budget or an engaged kill switch stops queued and running work; release needs a second person and an incident note (tested).",
+        "Every output is labelled as agent work; no output, run or statistic carries per-person behaviour analytics."
+      ],
+      "paths": [
+        "apps/api/src/modules/agent-team",
+        "packages/contracts/src/operator-agents.ts",
+        "packages/data/migrations/agent-team",
+        "packages/data/src/schema/agent-team.ts",
+        "packages/data/src/repositories/agent-team.ts",
+        "tests/agent-team"
+      ]
+    },
+    {
       "id": "AGT-024",
       "title": "Supply agent modules: requisition desk, sourcing desk, intake, receiving clerk, payables desk, supply watch, surplus exchange",
       "area": "assistant",
@@ -9200,7 +9553,8 @@
       "goal": "Give participants their own metrics and hubs cohort analytics without surveillance: first-party aggregate events with short raw retention, cohorts of at least ten, no third-party trackers, honoured opt-outs and Global Privacy Control.",
       "read": [
         "docs/engine/vision.md",
-        "docs/engine/hub-console/user-agents-admin.md"
+        "docs/engine/hub-console/user-agents-admin.md",
+        "docs/engine/hub-console/console-design.md"
       ],
       "steps": [
         "Define event and cohort contracts with suppression below the minimum cohort.",
@@ -9210,7 +9564,10 @@
       "acceptance": [
         "No per-person behaviour view exists for staff (negative test).",
         "Every count under ten is suppressed (test).",
-        "No third-party tracker or advertising identifier is loaded by any page (browser test)."
+        "No third-party tracker or advertising identifier is loaded by any page (browser test).",
+        "A versioned metric catalogue (definition, formula, source projection, freshness, allowed segments, visibility roles, owner, status) backs every statistic the console shows (console design, section 7).",
+        "Suppression is applied after segmentation, with secondary suppression so that no total, period difference or sibling segment reveals a suppressed cell (tested with differencing probes).",
+        "Funnels are counted by entry cohort and show a conversion only when both steps have at least ten; exports and scheduled reports are signed, suppressed, audited and sent only to staff who hold the permission when the report is sent (tests)."
       ],
       "paths": [
         "apps/api/src/modules/analytics",
