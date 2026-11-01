@@ -27,7 +27,8 @@ import type { RecoveryWorkerConfig } from './recovery-worker.js';
 const db = await provisionTestDatabase('models_recovery');
 test('real PostgreSQL conversation crash, cancellation and receipt recovery fences', { skip: db ? false : SKIP_REASON }, async (t) => {
   if (!db) return;
-  const w = await durableWorld(db);
+  // Recovery cases retain many independent unknown holds; AGT's focused suite tests restrictive protection limits.
+  const w = await durableWorld(db, { runsPerDay: 100, actionsPerDay: 200, concurrentRuns: 100 });
   const app = await createApp({
     pool: w.pool,
     env: {
