@@ -1,5 +1,11 @@
 -- BILL-003: fee-only governance. No prices are seeded or activated.
 -- Terms are immutable even while drafted. A correction is a new version, never a silent edit.
+-- Preserve existing keys and accept the existing work taxonomy's dotted identifiers.
+-- This format does not establish a commercial category or authorize a source-to-fee mapping.
+ALTER TABLE trustwork.marketplace_fee_version DROP CONSTRAINT marketplace_fee_version_category_key_check;
+ALTER TABLE trustwork.marketplace_fee_version ADD CONSTRAINT marketplace_fee_version_category_key_check
+ CHECK (category_key IS NULL OR (char_length(category_key) BETWEEN 2 AND 61 AND category_key ~ '^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$'));
+
 CREATE FUNCTION trustwork.billing_fee_terms(p trustwork.marketplace_fee_version) RETURNS jsonb
 LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
  SELECT jsonb_build_object('kind', p.kind, 'categoryKey', p.category_key, 'currency', p.currency,

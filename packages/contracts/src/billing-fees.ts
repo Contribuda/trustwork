@@ -8,7 +8,7 @@ const Minor = z.string().regex(/^(0|[1-9][0-9]{0,18})$/).refine((v) => BigInt(v)
 /** Strict fee terms cannot carry participant-specific rates or discovery controls. */
 export const FeeTermsSchema = z.strictObject({
   kind: MarketplaceFeeKindSchema,
-  categoryKey: z.string().regex(/^[a-z][a-z0-9_]{1,60}$/).nullable(),
+  categoryKey: z.string().min(2).max(61).regex(/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$/).nullable(),
   currency: z.string().regex(/^[A-Z]{3}$/),
   basisPoints: z.int().min(0).max(10000).nullable(),
   fixedMinor: Minor.nullable(),
