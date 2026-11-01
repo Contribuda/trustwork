@@ -1,3 +1,4 @@
+import { unavailableScreeningHubMetrics } from './metrics-source.js';
 import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 import { sql } from 'kysely';
@@ -58,10 +59,7 @@ export class ScreeningConsoleController {
       // Refusal counters have no principal dimension; gate-refusal counters are not persisted.
       // Do not invent a cohort, divide events by accounts or return suppressed raw rows.
       return ScreeningMetricsSchema.parse({ checkedAt: new Date().toISOString(), hubId: query.hubId, minimumDistinctPrincipals: 10,
-        metrics: ['refusals', 'openHolds', 'clearedHolds', 'medianClearSeconds', 'openedMatches', 'decidedMatches', 'lateMatches', 'notSamePersonShare', 'gateRefusals'].map((key) => ({
-          key, state: 'unknown', value: null,
-          reason: key === 'refusals' ? 'distinct_principals_missing' : key === 'gateRefusals' ? 'gate_counter_missing' : 'hub_attribution_missing',
-        })), rescreenScope: 'node', rescreenDurations: await screeningRunDurations(trx) });
+        metrics: unavailableScreeningHubMetrics(), rescreenScope: 'node', rescreenDurations: await screeningRunDurations(trx) });
     });
   }
 }

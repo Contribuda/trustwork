@@ -121,17 +121,37 @@ for(const who of ['requester','reviewer'] as const) for(const kind of ['role','s
   const reviewer=await context(w,w.seed.people.boris),requester=await context(w,w.seed.people.anna);
   const person=who==='requester'?w.seed.people.anna:w.seed.people.boris;
   const actorContext=who==='requester'?requester:reviewer;
-  const actor=await beginActor(w),revoker=await w.h.db.admin.connect(),waiter=await beginActor(w);
+  const actor=await beginActor(w),revoker=await w.h.db.admin.connect(),waiter=await beginActor(w),barrier=await w.h.db.admin.connect();
   try {
    await decide(actor,reviewer,first);
-   await revoker.query('BEGIN');
+   await barrier.query('BEGIN');await barrier.query('SELECT id FROM trustwork.screening_list_proposal WHERE id=$1 FOR UPDATE',[next.id]);
+   await revoker.query('BEGIN');await revoker.query('SET LOCAL ROLE trustwork_owner');await revoker.query("SET LOCAL trustwork.maintenance='on'");
    const revoke=kind==='role'?revoker.query("UPDATE trustwork.staff_role_assignment SET revoked_at=now(),revoked_by=$1,revoke_reason='Synthetic race' WHERE person_id=$2 AND role='compliance-officer' AND revoked_at IS NULL",[w.seed.people.boris,person]):kind==='session'?revoker.query("UPDATE trustwork.session SET revoked_at=now(),revoked_reason='admin' WHERE id=$1",[actorContext.sessionId]):kind==='elevation'?revoker.query("UPDATE trustwork.session_elevation SET revoked_at=now(),revoked_reason='ended' WHERE id=$1",[actorContext.elevationId]):revoker.query('UPDATE trustwork.person SET authz_epoch=authz_epoch+1 WHERE id=$1',[person]);
    await blocked(w,revoker);
    // The second decision starts with a valid principal before the competing revocation commits.
    const pending=assert.rejects(decide(waiter,reviewer,next),(e:unknown)=>(e as {hint:string}).hint==='admin.forbidden');await blocked(w,waiter);
-   await actor.query('COMMIT');await revoke;await revoker.query('COMMIT');await pending;
+   await actor.query('COMMIT');await revoke;await revoker.query('COMMIT');await blocked(w,waiter);await barrier.query('COMMIT');await pending;
    assert.equal((await w.h.db.admin.query('SELECT state FROM trustwork.screening_list_proposal WHERE id=$1',[first.id])).rows[0].state,'approved');
    assert.equal((await w.h.db.admin.query('SELECT state FROM trustwork.screening_list_proposal WHERE id=$1',[next.id])).rows[0].state,'pending');
-  } finally {for(const c of [actor,revoker,waiter]){await c.query('ROLLBACK');c.release();}}
+  } finally {for(const c of [actor,revoker,waiter,barrier]){await c.query('ROLLBACK');c.release();}}
+ } finally {await w.close();}
+});
+
+test('scope and proposal authority provenance cannot be rewritten, and elapsed elevation cannot authorize a waiting decision',{timeout:120000},async()=>{
+ const w=await screeningWorld('sanc006_scope_expiry');
+ try {
+  await installSyntheticListSources(w.h.db.admin);const p=await proposal(w);
+  const reviewer=await context(w,w.seed.people.boris);
+  await assert.rejects(w.h.db.admin.query("UPDATE trustwork.staff_role_assignment SET scope_kind='hub',node_id=NULL,hub_id=$1 WHERE person_id=$2 AND role='compliance-officer'",[w.hubId,w.seed.people.anna]),/immutable|only changes by revocation/);
+  await assert.rejects(w.h.db.admin.query('UPDATE trustwork.hub_profile SET node_id=gen_random_uuid() WHERE hub_id=$1',[w.hubId]),/immutable/);
+  for(const column of ['requested_elevation_id','authority_node_id','requested_authz_epoch']) await assert.rejects(w.h.db.admin.query(`UPDATE trustwork.screening_list_proposal SET ${column}=NULL WHERE id=$1`,[p.id]),/immutable/);
+  const short=(await w.h.db.admin.query<{id:string}>("INSERT INTO trustwork.session_elevation(person_id,session_id,factor_kind,created_at,expires_at) VALUES($1,$2,'totp',clock_timestamp(),clock_timestamp()+interval '500 milliseconds') RETURNING id",[w.seed.people.boris,reviewer.sessionId])).rows[0]!;
+  const barrier=await w.h.db.admin.connect(),actor=await beginActor(w);
+  try {
+   await barrier.query('BEGIN');await barrier.query('SELECT id FROM trustwork.screening_list_proposal WHERE id=$1 FOR UPDATE',[p.id]);
+   const pending=assert.rejects(decide(actor,{...reviewer,elevationId:short.id},p),(e:unknown)=>(e as {hint:string}).hint==='admin.forbidden');
+   await blocked(w,actor);await barrier.query('SELECT pg_sleep(0.55)');await barrier.query('COMMIT');await pending;
+   assert.equal((await w.h.db.admin.query('SELECT state FROM trustwork.screening_list_proposal WHERE id=$1',[p.id])).rows[0].state,'pending');
+  } finally {await actor.query('ROLLBACK');await barrier.query('ROLLBACK');actor.release();barrier.release();}
  } finally {await w.close();}
 });

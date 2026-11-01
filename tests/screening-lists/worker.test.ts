@@ -1,3 +1,4 @@
+import { installSyntheticListSources, syntheticListSources } from '../web/admin/screening/list-fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
@@ -206,8 +207,11 @@ test('SANC-002 worker: ingestion modes, sanity bounds, activation and freshness'
   });
 
   await t.test('fake mode ingests the synthetic list outside production and refuses it in production; unknown adapters and paused lists refuse', async () => {
+    await installSyntheticListSources(admin);
+    const source=(await admin.query<{id:string}>('SELECT id FROM trustwork.screening_list_source WHERE current')).rows[0]!;
+    const fact=syntheticListSources()[0]!;
     const hubList = (await owner((trx) => trx.insertInto('screening_list').values({
-      hub_id: w.hubId, code: 'synthetic-demo', name: 'Synthetic demo list', authority: 'Synthetic authority', source_url: 'https://example.invalid/demo.xml', adapter: 'ofac-sls-xml',
+      hub_id: w.hubId, source_id:source.id, code: fact.code, name: 'Synthetic demo list', authority: 'Synthetic authority', source_url: fact.sourceUrl, adapter: fact.adapter,
       mode: 'fake', cadence: '1 day', warn_after: '3 days', stale_after: '20 days', max_drop_share: '0.2',
     }).returning('id').executeTakeFirstOrThrow())).id;
     await ingest(hubList);
@@ -219,7 +223,7 @@ test('SANC-002 worker: ingestion modes, sanity bounds, activation and freshness'
     assert.match(report.error ?? '', /fake_in_production/);
     await owner((trx) => trx.updateTable('screening_list').set({ adapter: 'unknown-format' }).where('id', '=', hubList).execute());
     await ingest(hubList);
-    assert.match((await list(hubList)).last_error ?? '', /unknown_adapter:unknown-format/);
+    assert.match((await list(hubList)).last_error ?? '', /source_authority_retired/);
     await owner((trx) => trx.updateTable('screening_list').set({ status: 'paused', adapter: 'ofac-sls-xml' }).where('id', '=', hubList).execute());
     await ingest(hubList);
     assert.equal((await list(hubList)).last_error, 'list_paused');
