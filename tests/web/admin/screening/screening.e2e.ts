@@ -132,7 +132,7 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     await reviewer.goto(appealPath);
     const reverse = reviewer.locator('form').filter({has:reviewer.getByRole('button',{name:c.reverse,exact:true})});
     await reverse.getByLabel(c.reason,{exact:true}).fill('Synthetic different reviewer proposes reversal'); await reverse.getByRole('button').click();
-    await expect(reviewer.getByRole('heading',{name:c.states.pending_reversal,exact:true})).toBeVisible();
+    await expect(reviewer.getByRole('heading',{name:c.states.pending_reversal,exact:true,level:3})).toBeVisible();
     await page.reload();
     const reverseApproval = page.locator('form').filter({has:page.getByRole('button',{name:c.approve,exact:true})});
     await reverseApproval.getByLabel(c.reason,{exact:true}).fill('Synthetic independent reversal approval'); await reverseApproval.getByRole('button').click();
