@@ -8,7 +8,7 @@ import type { GeneratedTimestamp, Timestamp } from './foundation.js';
  * receipts. The recipient address and the sealed one-time secret are cleared when a delivery reaches a final state.
  * `notification` (COMMS-001) carries a subject and body already rendered from the hub's active template version.
  */
-export const MAIL_TEMPLATES = ['verify_email', 'already_registered', 'recovery', 'email_change', 'membership_invitation', 'security_notice', 'notification'] as const;
+export const MAIL_TEMPLATES = ['verify_email', 'already_registered', 'recovery', 'email_change', 'membership_invitation', 'security_notice', 'notification', 'screening_notice'] as const;
 export type MailTemplateName = (typeof MAIL_TEMPLATES)[number];
 export const MAIL_DELIVERY_STATES = ['pending', 'sending', 'sent', 'suppressed', 'rate_limited', 'expired', 'failed'] as const;
 export type MailDeliveryState = (typeof MAIL_DELIVERY_STATES)[number];

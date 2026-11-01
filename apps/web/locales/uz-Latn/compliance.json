@@ -1,0 +1,20 @@
+{
+  "compliance": {
+    "title": "Talablarga muvofiqlik",
+    "generic": "Hisobingiz haqida maʼlumot olish uchun foydalanish shartlaridagi aloqa maʼlumotlari orqali operatorga murojaat qiling.",
+    "terms": "Foydalanish shartlari",
+    "privacy": "Maxfiylik bildirishnomasi",
+    "appealTitle": "Qaror ustidan shikoyat",
+    "appealHelp": "Nega qayta koʻrib chiqishni soʻrayotganingizni tushuntiring. Tegishli dalillarni kiriting; parollar yoki aloqasiz shaxsiy maʼlumotlarni kiritmang.",
+    "reason": "Sabab va dalillar",
+    "submit": "Shikoyatni yuborish",
+    "submitted": "Shikoyatingiz qayd etildi. Bu tekshiruvchi tayinlanganini yoki qaror oʻzgarganini anglatmaydi.",
+    "unavailable": "Hisob maʼlumotlarini yuklab boʻlmadi. Qayta urinib koʻring.",
+    "retry": "Qayta urinish",
+    "reviewNotice": "Tarjima va huquqiy matn ona tili sohibi yoki yurist tomonidan tekshirilmagan.",
+    "back": "Sozlamalarga qaytish",
+    "mailSubject": "Hisob haqida maʼlumot",
+    "mailAction": "Hisobning talablarga muvofiqligini ochish",
+    "pending": "Yuborilmoqda…"
+  }
+}

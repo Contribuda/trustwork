@@ -53,7 +53,7 @@ function integer(env: MailEnv, key: string, fallback: number, min: number, max: 
   return value;
 }
 
-const LINK_ENV: Record<LinkKind, string> = { verifyEmail: 'MAIL_LINK_VERIFY_EMAIL', emailChange: 'MAIL_LINK_EMAIL_CHANGE', recovery: 'MAIL_LINK_RECOVERY', invitation: 'MAIL_LINK_INVITATION', signIn: 'MAIL_LINK_SIGN_IN', recover: 'MAIL_LINK_RECOVER' };
+const LINK_ENV: Record<LinkKind, string> = { compliance: 'MAIL_LINK_COMPLIANCE', verifyEmail: 'MAIL_LINK_VERIFY_EMAIL', emailChange: 'MAIL_LINK_EMAIL_CHANGE', recovery: 'MAIL_LINK_RECOVERY', invitation: 'MAIL_LINK_INVITATION', signIn: 'MAIL_LINK_SIGN_IN', recover: 'MAIL_LINK_RECOVER' };
 const SIMPLE_ADDRESS = /^[^\s@<>()",;:\\[\]]+@[^\s@<>()",;:\\[\]]+\.[^\s@<>()",;:\\[\]]+$/;
 
 export function mailConfigFromEnv(env: MailEnv): MailConfig {

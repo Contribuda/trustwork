@@ -1,3 +1,4 @@
+import { appealAssignment } from './appeal-assignment.js';
 import { Controller, Get, HttpCode, Inject, Post, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 import { ApiError } from '../../common/errors.js';
@@ -113,6 +114,14 @@ export class ScreeningStaffController {
       if (!view) throw new ApiError('access.not_found');
       const decisions = await screeningStaff.decisions(trx, params.id);
       return { match: view, decisions: decisions.map((d) => ({ id: d.id, kind: d.kind, decidedBy: d.decided_by, reason: d.reason, evidence: d.evidence_category, decidedAt: d.decided_at.toISOString() })) };
+    });
+  }
+
+  @Get('matches/:id/appeal-assignment')
+  assignment(@Params(UuidParams) params: z.infer<typeof UuidParams>, @ReqState() state: RequestState) {
+    return this.principals.runAs(state, async (trx) => {
+      if (!await screeningStaff.match(trx, params.id)) throw new ApiError('access.not_found');
+      return { assignment: await appealAssignment(trx, params.id) };
     });
   }
 

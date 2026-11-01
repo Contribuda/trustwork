@@ -1,3 +1,4 @@
+import { screeningNoticeDictionaries, validateScreeningNotice } from './templates/screening/index.js';
 import type { MailTemplateName } from '@trustwork/data';
 import { escapeHtml, formatMessage, type MessageParams } from './format.js';
 import en from './locales/en/mail.json' with { type: 'json' };
@@ -19,7 +20,7 @@ export type MailDictionary = { readonly [key: string]: string | MailDictionary }
 
 export const REFERENCE_LOCALE = 'en';
 /** Every language with a mail dictionary; tests compare it with the engine languages and the directory listing. */
-export const MAIL_DICTIONARIES: Readonly<Record<string, MailDictionary>> = { en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn, es };
+export const MAIL_DICTIONARIES: Readonly<Record<string, MailDictionary>> = Object.fromEntries(Object.entries({ en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn, es }).map(([locale, dictionary]) => [locale, { ...dictionary, screeningNotice: screeningNoticeDictionaries[locale as keyof typeof screeningNoticeDictionaries] }]));
 export const MAIL_LOCALES: readonly string[] = Object.keys(MAIL_DICTIONARIES);
 
 /** Brand overlays (docs/oss/BRAND.md): per-locale names that replace the hub brand in those locales only. */
@@ -40,7 +41,7 @@ export class TemplateParameterError extends Error {
   }
 }
 
-export type LinkKind = 'verifyEmail' | 'emailChange' | 'recovery' | 'invitation' | 'signIn' | 'recover';
+export type LinkKind = 'verifyEmail' | 'emailChange' | 'recovery' | 'invitation' | 'signIn' | 'recover' | 'compliance';
 export const SECURITY_EVENTS = [
   'login_throttled', 'password_reset', 'password_changed', 'email_change_requested', 'provider_linked', 'provider_unlinked',
   // BE-004: second factor, recovery codes and support resets (SECOND_FACTOR_NOTICE_EVENTS in the contracts).
@@ -88,6 +89,8 @@ export const TEMPLATE_SPECS: Readonly<Record<MailTemplateName, TemplateSpec>> = 
     blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'emailChange' }, p('expiry'), p('ignore')] },
   membership_invitation: { template: 'membership_invitation', namespace: 'membershipInvitation', required: ['company', 'membershipId', 'days'], numeric: ['days'], secret: true,
     blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'invitation' }, p('expiry'), p('ignore')] },
+  screening_notice: { template: 'screening_notice', namespace: 'screeningNotice', required: ['kind'], numeric: [], secret: false,
+    blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'compliance' }] },
   security_notice: { template: 'security_notice', namespace: 'securityNotice', required: ['event'], numeric: [], secret: false,
     blocks: (params) => [p(`events.${params.event}`), p('notYou'), { kind: 'action', key: 'action', link: 'recover' }] },
   // COMMS-001: a notification rendered from the hub's active template version in the recipient's language.
@@ -101,9 +104,10 @@ export interface LinkConfig {
   /** Public origin of the web application, for example `https://hub.example`. */
   origin: string;
   /** Path templates with `{token}` and `{membershipId}` placeholders. */
-  paths: Readonly<Record<LinkKind, string>>;
+  paths: Readonly<Record<Exclude<LinkKind, 'compliance'>, string> & { compliance?: string }>;
 }
 export const DEFAULT_LINK_PATHS: Readonly<Record<LinkKind, string>> = {
+  compliance: '/app/settings/account/compliance',
   verifyEmail: '/verify-email/{token}',
   emailChange: '/verify-email/{token}',
   recovery: '/recover/{token}',
@@ -166,7 +170,7 @@ export function brandFor(config: Pick<RenderConfig, 'brandName' | 'brandOverlay'
 }
 
 export function buildLink(config: RenderConfig, kind: LinkKind, locale: string, values: Readonly<Record<string, string>>): string {
-  const path = config.links.paths[kind].replace(/\{(\w+)\}/g, (_, name: string) => {
+  const path = (config.links.paths[kind] ?? DEFAULT_LINK_PATHS[kind]).replace(/\{(\w+)\}/g, (_, name: string) => {
     const value = values[name];
     if (value === undefined || value === '') throw new TemplateParameterError(`link ${kind} needs {${name}}`);
     return encodeURIComponent(value);
@@ -177,6 +181,7 @@ export function buildLink(config: RenderConfig, kind: LinkKind, locale: string, 
 }
 
 function validate(spec: TemplateSpec, input: RenderInput): MessageParams {
+  if (spec.template === 'screening_notice') validateScreeningNotice(input.params);
   const values: Record<string, string | number> = {};
   for (const name of spec.required) {
     const raw = input.params[name];

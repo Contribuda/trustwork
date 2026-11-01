@@ -67,6 +67,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
                 <dd>{t('settings.account.languageValue')}</dd>
               </div>
             </dl>
+            <NextLink href="/app/settings/account/compliance">{t('compliance.title')}</NextLink>
             <div className="ws-actions">
               <Button variant="secondary" isDisabled>
                 {t('settings.account.changeEmail')}

@@ -1,0 +1,20 @@
+{
+  "compliance": {
+    "title": "Compliance",
+    "generic": "For information about your account, contact the operator using the contact details in the terms of service.",
+    "terms": "Terms of service",
+    "privacy": "Privacy notice",
+    "appealTitle": "Appeal a decision",
+    "appealHelp": "Explain why you are asking for a review. Include relevant evidence in your explanation; do not include passwords or unrelated personal information.",
+    "reason": "Reason and evidence",
+    "submit": "Submit appeal",
+    "submitted": "Your appeal was recorded. This does not mean a reviewer has been assigned or a decision has been changed.",
+    "unavailable": "Your account information could not be loaded. Try again.",
+    "retry": "Try again",
+    "reviewNotice": "Translation and legal wording have not been reviewed by a native speaker or counsel.",
+    "back": "Back to settings",
+    "mailSubject": "Account information",
+    "mailAction": "Open account compliance",
+    "pending": "Submitting…"
+  }
+}
