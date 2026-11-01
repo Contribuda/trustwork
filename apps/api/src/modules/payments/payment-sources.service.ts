@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import type { z } from 'zod';
 import { paymentSources } from '../../../../../packages/data/src/repositories/payment-sources.js';
-import type { PaymentAuthorizationDraftCommandSchema, PaymentSourceChallengeCommand } from '../../../../../packages/contracts/src/payment-sources.js';
+import type { PaymentOutsideDraftSchema, PaymentResponsibleBindingsSchema, PaymentAuthorizationDraftCommandSchema, PaymentSourceChallengeCommand } from '../../../../../packages/contracts/src/payment-sources.js';
 import { ApiError } from '../../common/errors.js';
 import type { RequestState } from '../../common/request.js';
 import type { PrincipalService } from '../identity/principal.service.js';
@@ -13,6 +13,16 @@ export class PaymentSourcesService {
   challenge(input: PaymentSourceChallengeCommand, state: RequestState) {
     const nonce = randomBytes(32).toString('hex');
     return this.principals.runAs(state, (trx) => paymentSources.challenge(trx, this.session(state), input, nonce), { refreshStale: false });
+  }
+  options(agreementId: string, bindings: z.infer<typeof PaymentResponsibleBindingsSchema>, state: RequestState) {
+    return this.principals.runAs(state, (trx) => paymentSources.settlementOptions(trx, this.session(state), { agreementId, ...bindings }));
+  }
+  settlement(agreementId: string, state: RequestState) { return this.principals.runAs(state, (trx) => paymentSources.settlement(trx, agreementId)); }
+  draftOutside(input: z.infer<typeof PaymentOutsideDraftSchema>, state: RequestState) {
+    return this.principals.runAs(state, (trx) => paymentSources.draftOutside(trx, this.session(state), input), { refreshStale: false });
+  }
+  acceptOutside(id: string, digest: string, state: RequestState) {
+    return this.principals.runAs(state, (trx) => paymentSources.acceptOutside(trx, this.session(state), id, digest), { refreshStale: false });
   }
   ownBindings(state: RequestState) { return this.principals.runAs(state, (trx) => paymentSources.ownBindings(trx)); }
   draft(input: z.infer<typeof PaymentAuthorizationDraftCommandSchema>, state: RequestState) {

@@ -1,12 +1,28 @@
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type { CommandContext } from './admin.js';
-import { PaymentAdapterRegistrationSchema, PaymentAuthorizationViewSchema, PaymentSourceChallengeViewSchema, PaymentSourceOwnBindingsSchema,
+import { PaymentSettlementOptionsSchema, PaymentOutsideViewSchema, PaymentAgreementSettlementSchema, type PaymentDecisionPublisherRegistration, PaymentAdapterRegistrationSchema, PaymentAuthorizationViewSchema, PaymentSourceChallengeViewSchema, PaymentSourceOwnBindingsSchema,
   PaymentSourceReviewMaterialSchema, type PaymentAdapterRegistration, type PaymentSourceAssertion, type PaymentSourceChallengeCommand } from '../../../contracts/src/payment-sources.js';
 
 async function bounded(trx: Transaction) { await sql`SET LOCAL statement_timeout='5s'`.execute(trx); }
 export const paymentSources = {
-  async proposeAdapter(trx: Transaction, ctx: CommandContext, input: PaymentAdapterRegistration) {
+  async settlementOptions(trx: Transaction, sessionId: string, input: unknown) {
+    await bounded(trx);
+    return PaymentSettlementOptionsSchema.parse((await sql<{ value: unknown }>`SELECT trustwork.payments_settlement_options(${sessionId}::uuid,${JSON.stringify(input)}::jsonb) AS value`.execute(trx)).rows[0]!.value);
+  },
+  async draftOutside(trx: Transaction, sessionId: string, input: unknown) {
+    await bounded(trx);
+    return PaymentOutsideViewSchema.parse((await sql<{ value: unknown }>`SELECT trustwork.payments_draft_outside(${sessionId}::uuid,${JSON.stringify(input)}::jsonb) AS value`.execute(trx)).rows[0]!.value);
+  },
+  async acceptOutside(trx: Transaction, sessionId: string, id: string, digest: string) {
+    await bounded(trx);
+    return PaymentOutsideViewSchema.parse((await sql<{ value: unknown }>`SELECT trustwork.payments_accept_outside(${sessionId}::uuid,${id}::uuid,${digest}) AS value`.execute(trx)).rows[0]!.value);
+  },
+  async settlement(trx: Transaction, agreementId: string) {
+    await bounded(trx);
+    return PaymentAgreementSettlementSchema.parse((await sql<{ value: unknown }>`SELECT trustwork.payments_agreement_settlement(${agreementId}::uuid) AS value`.execute(trx)).rows[0]!.value);
+  },
+  async proposeAdapter(trx: Transaction, ctx: CommandContext, input: PaymentAdapterRegistration | PaymentDecisionPublisherRegistration) {
     await bounded(trx);
     return (await sql<{ value: { id: string; digest: string } }>`SELECT trustwork.payments_propose_source_adapter(${JSON.stringify(ctx)}::jsonb,${JSON.stringify(input)}::jsonb) AS value`.execute(trx)).rows[0]!.value;
   },

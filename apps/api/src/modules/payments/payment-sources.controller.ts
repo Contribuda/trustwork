@@ -1,9 +1,9 @@
 import { Controller, Get, HttpCode, Inject, Post, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
-import { PaymentAuthorizationAcceptCommandSchema, PaymentAuthorizationDraftCommandSchema, PaymentSourceActivateCommandSchema,
+import { PaymentResponsibleBindingsSchema, PaymentOutsideDraftSchema, PaymentAuthorizationAcceptCommandSchema, PaymentAuthorizationDraftCommandSchema, PaymentSourceActivateCommandSchema,
   PaymentSourceChallengeCommandSchema, PaymentSourceReviewCommandSchema, PaymentSourceRevokeCommandSchema, PaymentSourceStaffRevokeCommandSchema } from '../../../../../packages/contracts/src/payment-sources.js';
 import { Authenticated, Idempotent, ReqState, type RequestState } from '../../common/request.js';
-import { Body, Params } from '../../common/zod.js';
+import { Body, Params, Query } from '../../common/zod.js';
 import { Elevation, ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../identity/second-factor/deps.js';
 import { PaymentSourcesService } from './payment-sources.service.js';
@@ -15,6 +15,14 @@ export class PaymentSourcesController {
   constructor(@Inject(PaymentSourcesService) private readonly sources: PaymentSourcesService) {}
   @Post('challenges') @HttpCode(201) @Authenticated('step_up') @Idempotent('payments.source_challenge')
   challenge(@Body(PaymentSourceChallengeCommandSchema) body: Input<typeof PaymentSourceChallengeCommandSchema>, @ReqState() state: RequestState) { return this.sources.challenge(body, state); }
+  @Get('agreements/:id/options')
+  options(@Params(IdParams) p: Input<typeof IdParams>, @Query(PaymentResponsibleBindingsSchema) query: Input<typeof PaymentResponsibleBindingsSchema>, @ReqState() state: RequestState) { return this.sources.options(p.id, query, state); }
+  @Get('agreements/:id/settlement')
+  settlement(@Params(IdParams) p: Input<typeof IdParams>, @ReqState() state: RequestState) { return this.sources.settlement(p.id, state); }
+  @Post('outside-platform') @HttpCode(201) @Authenticated('step_up') @Idempotent('payments.outside_draft')
+  draftOutside(@Body(PaymentOutsideDraftSchema) body: Input<typeof PaymentOutsideDraftSchema>, @ReqState() state: RequestState) { return this.sources.draftOutside(body, state); }
+  @Post('outside-platform/:id/accept') @HttpCode(200) @Authenticated('step_up') @Idempotent('payments.outside_accept', 'id')
+  acceptOutside(@Params(IdParams) p: Input<typeof IdParams>, @Body(PaymentAuthorizationAcceptCommandSchema) body: Input<typeof PaymentAuthorizationAcceptCommandSchema>, @ReqState() state: RequestState) { return this.sources.acceptOutside(p.id, body.digest, state); }
   @Get('bindings')
   bindings(@ReqState() state: RequestState) { return this.sources.ownBindings(state); }
   @Post('authorizations') @HttpCode(201) @Authenticated('step_up') @Idempotent('payments.authorization_draft')

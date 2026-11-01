@@ -21,11 +21,11 @@ const date = { date: '2027-03-20', timeZone: 'America/Los_Angeles' };
 const ref = (v: { id: string; version: number; digest: unknown }) => ({ id: v.id, version: v.version, digest: v.digest });
 
 /** Real immutable RFQ/quote/acceptance path, with labelled synthetic parties and an integer total. */
-export async function agreement(h: Harness, buyer: Client, seller: Client, buyerId: string, sellerId: string, amount = '1250', buyerCompanyId?: string): Promise<BuyerAgreementView> {
+export async function agreement(h: Harness, buyer: Client, seller: Client, buyerId: string, sellerId: string, amount = '1250', buyerCompanyId?: string, deliveryPlace = 'US-CA'): Promise<BuyerAgreementView> {
   let rfq = ok<OwnerRfqView>(await buyer.post('/v1/rfqs', {
     owner: buyerCompanyId ? { kind: 'company', id: buyerCompanyId } : { kind: 'person', id: buyerId }, projectId: null, category: 'landscaping', publicProjection: { enabled: false, fields: [] }, privateConstraint: null, source: null, actor,
     payload: { title: 'Synthetic payment fixture', currency: 'USD', responseDeadline: '2027-02-15T17:00:00.000Z', attachments: [], paymentTermsRequested: 'Net 30', acceptanceCriteria: 'Synthetic acceptance',
-      deliveryTerms: { location: { region: 'US-CA' }, window: { from: date, to: date } },
+      deliveryTerms: { location: { region: deliveryPlace }, window: { from: date, to: date } },
       lines: [{ lineId: 'goods', kind: 'goods', description: 'Synthetic goods', specification: { thickness: '60 mm' }, quantity: { value: '1', unit: 'm2' }, alternativesAllowed: false }] },
   }), 201);
   rfq = ok(await buyer.post(`/v1/rfqs/${rfq.rfq.id}/publish`, { rfqId: rfq.rfq.id, version: 1, expectedRevision: rfq.rfq.revision, amendmentReason: null, actor }));
@@ -46,12 +46,12 @@ export async function agreement(h: Harness, buyer: Client, seller: Client, buyer
 }
 
 /** Synthetic staff definitions, real two-person hub configuration, and real fake-connection enable path. */
-export async function paymentHub(h: Harness) {
+export async function paymentHub(h: Harness, slug = 'synthetic-payments') {
   const w = await withMaintenance(h.db.admin, async (trx): Promise<HubWorld> => {
     for (const def of PROVIDER_DEFINITIONS) {
       const permissions = [...def.permissions];
       if (def.role === 'hub-owner' || def.role === 'compliance-officer') permissions.push('admin.hub.payments.edit');
-      await staffRoleDefinitions.release(trx, { version: 20, role: def.role, scopes: def.scopes, permissions, caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+      if (!await trx.selectFrom('staff_role_definition_version').select('role').where('role', '=', def.role).where('version', '=', 20).executeTakeFirst()) await staffRoleDefinitions.release(trx, { version: 20, role: def.role, scopes: def.scopes, permissions, caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     }
     const existingNode = await adminSetup.node(trx);
     const { id: nodeId } = existingNode ?? await adminSetup.createNode(trx, 'Synthetic payments node');
@@ -78,7 +78,7 @@ export async function paymentHub(h: Harness) {
       return base.as(w.people.founder, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, definitionVersion: 20, approvalId: request.id }));
     },
   };
-  const { hubA } = await setUpHubs(a, w, 'synthetic-payments');
+  const { hubA } = await setUpHubs(a, w, slug);
   await activateResidency(a, w.people.owner, w.people.officer, hubA, ['US']);
   let c = await a.cmd(w.people.owner, (trx, ctx) => providerConnections.create(trx, ctx, hubA, { adapterId: 'fake', mode: 'fake', label: 'Synthetic payment provider', capabilities: ['payments', 'payouts'], endpoint: null, hosting: SELF_US, storageCountry: null, region: null, credentialRefId: null }));
   const material = await a.cmd(w.people.owner, (trx, ctx) => providerConnections.testMaterial(trx, ctx, c.id));

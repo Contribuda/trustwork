@@ -24,7 +24,7 @@ test('PAY-001 original HTTP request authority cannot silently refresh before its
   await screenEveryoneClear(h.db.admin);
   const buyer = h.client(), seller = h.client(), staff = await w.staffClient('officer');
   await login(buyer, 'petr'); await login(seller, 'carl');
-  const actions = ['create', 'confirm', 'refund', 'payout', 'connected_account', 'source_challenge', 'authorization_draft', 'authorization_accept', 'source_revoke', 'source_review_material', 'source_review_activate', 'source_staff_revoke'] as const;
+  const actions = ['create', 'confirm', 'refund', 'payout', 'connected_account', 'source_challenge', 'authorization_draft', 'authorization_accept', 'source_revoke', 'source_review_material', 'source_review_activate', 'source_staff_revoke', 'outside_draft', 'outside_accept'] as const;
   type Action = typeof actions[number];
   const prepare = async (action: Action): Promise<{ client: Client; url: string; body: unknown; status: number }> => {
     if (action === 'source_challenge') return { client: buyer, url: '/v1/payments/sources/challenges', body: { hubId: w.hubId, connectionId: w.connectionId,
@@ -37,7 +37,16 @@ test('PAY-001 original HTTP request authority cannot silently refresh before its
       }
       return { client: staff, url: `/v1/admin/payments/source-bindings/${b.participant}/${action === 'source_review_material' ? 'review' : 'activate'}`, body, status: 200 };
     }
+    await w.providerEnabled(true);
     const f = await w.fresh(buyer, seller, seed.people.petr, seed.people.carl);
+    if (action === 'outside_draft' || action === 'outside_accept') {
+      const publisher = await w.registerDecisionPublisher(); await w.providerEnabled(false);
+      const body = { agreementId: f.payment.agreementId, payerBindingId: f.payer.participant, payeeBindingId: f.payee.participant, publisherRegistrationId: publisher.id };
+      if (action === 'outside_draft') return { client: buyer, url: '/v1/payments/sources/outside-platform', body, status: 201 };
+      const decision = ok<{ id: string; digest: string }>(await buyer.post('/v1/payments/sources/outside-platform', body), 201);
+      ok(await buyer.post(`/v1/payments/sources/outside-platform/${decision.id}/accept`, { digest: decision.digest }));
+      return { client: seller, url: `/v1/payments/sources/outside-platform/${decision.id}/accept`, body: { digest: decision.digest }, status: 200 };
+    }
     if (action === 'authorization_draft') return { client: buyer, url: '/v1/payments/sources/authorizations', body: f.body, status: 201 };
     if (action === 'authorization_accept') return { client: seller, url: `/v1/payments/sources/authorizations/${f.authorization.id}/accept`, body: { digest: f.authorization.digest }, status: 200 };
     if (action === 'source_revoke') return { client: buyer, url: `/v1/payments/sources/${f.payer.participant}/revoke`, body: { kind: 'participant' }, status: 200 };
@@ -53,6 +62,8 @@ test('PAY-001 original HTTP request authority cannot silently refresh before its
     return { client: buyer, url: `/v1/payments/${payment.id}/${action === 'connected_account' ? 'connected-account' : action}`, body: {}, status: 200 };
   };
   const counts = () => w.q(`SELECT
+    (SELECT count(*) FROM trustwork.payment_outside_platform_version) AS outside_decisions,
+    (SELECT count(*) FROM trustwork.payment_outside_platform_acceptance) AS outside_acceptances,
     (SELECT count(*) FROM trustwork.payment_intent) AS intents,
     (SELECT count(*) FROM trustwork.payment_operation) AS operations,
     (SELECT count(*) FROM trustwork.payment_source_challenge) AS challenges,

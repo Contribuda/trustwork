@@ -73,6 +73,27 @@ export const PaymentSourceReviewMaterialSchema = z.strictObject({ id: IdSchema, 
   action: z.enum(['payments.accept_participant_binding', 'payments.activate_account_binding']), digest: Digest, evidenceMode: z.literal('synthetic') });
 export const PaymentSourceReviewCommandSchema = z.strictObject({ reason: z.string().min(1).max(500) });
 export const PaymentSourceActivateCommandSchema = PaymentSourceReviewCommandSchema.extend({ approvalId: IdSchema });
-export const PaymentSourceRevokeCommandSchema = z.strictObject({ kind: z.enum(['identity', 'participant', 'account', 'authorization']) });
+export const PaymentSourceRevokeCommandSchema = z.strictObject({ kind: z.enum(['identity', 'participant', 'account', 'authorization', 'outside']) });
 
 export const PaymentSourceStaffRevokeCommandSchema = PaymentSourceReviewCommandSchema.extend({ kind: z.enum(['registration', 'review', 'source']) });
+
+/** Explicitly reviewed fixed publisher for no-route decisions; no fabricated connection or signing key. */
+export const PaymentDecisionPublisherRegistrationSchema = z.strictObject({
+  schemaVersion: z.literal(2), hubId: IdSchema, fact: z.literal('outside_platform_publisher'),
+  implementationDigest: Digest, evidenceMode: z.literal('synthetic'), expiresAt: TimestampSchema,
+});
+export type PaymentDecisionPublisherRegistration = z.infer<typeof PaymentDecisionPublisherRegistrationSchema>;
+export const PaymentResponsibleBindingsSchema = z.strictObject({ payerBindingId: IdSchema, payeeBindingId: IdSchema });
+export const PaymentOutsideDraftSchema = PaymentResponsibleBindingsSchema.extend({ agreementId: IdSchema, publisherRegistrationId: IdSchema });
+export const PaymentSettlementOptionsSchema = z.strictObject({
+  agreementId: IdSchema, collectingHubId: IdSchema, payerHubId: IdSchema, payeeHubId: IdSchema, amountMinor: PaymentMinorSchema, currency: CurrencySchema,
+  candidates: z.array(z.strictObject({ connectionId: IdSchema, rail: PaymentBindingSchema.shape.rail,
+    capabilities: z.array(z.enum(['create', 'confirm', 'refund', 'payout', 'connected_account'])) })), authorityDigest: Digest,
+});
+export const PaymentOutsideViewSchema = z.strictObject({
+  id: IdSchema, agreementId: IdSchema, digest: Digest, outcome: z.literal('outside_platform'), reason: z.literal('no_eligible_provider'),
+  amountMinor: PaymentMinorSchema, currency: CurrencySchema, collectingHubId: IdSchema, expiresAt: TimestampSchema, revoked: z.boolean(),
+  payerAccepted: z.boolean(), payeeAccepted: z.boolean(),
+});
+export type PaymentOutsideView = z.infer<typeof PaymentOutsideViewSchema>;
+export const PaymentAgreementSettlementSchema = z.strictObject({ agreementId: IdSchema, outsidePlatform: PaymentOutsideViewSchema.nullable() });

@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import type { CrashContext } from '../backend/idempotency/cases.js';
 import type { sourceWorld } from './source-helpers.js';
 import { agreement, ok } from './helpers.js';
-import type { PaymentAuthorizationView } from '../../packages/contracts/src/payment-sources.js';
+import type { PaymentAuthorizationView, PaymentOutsideView } from '../../packages/contracts/src/payment-sources.js';
 
-/** Seven real source mutations use the owning BE-005 rollback/replay harness, including automatic publication. */
+/** Nine real source mutations use the owning BE-005 rollback/replay harness, including automatic publication. */
 export async function sourceCrashCases({ h, seed, as, exactlyOnce }: CrashContext, w: Awaited<ReturnType<typeof sourceWorld>>) {
   const buyer = await as('petr'), seller = await as('carl');
   await w.challenge(buyer, false, (input) => exactlyOnce({ action: 'payments.source_challenge', client: buyer, url: '/v1/payments/sources/challenges', body: input,
@@ -30,4 +30,17 @@ export async function sourceCrashCases({ h, seed, as, exactlyOnce }: CrashContex
   const source = (await w.q('SELECT id FROM trustwork.payment_source_version WHERE authorization_id=$1', [authorization.id]))[0]!;
   await exactlyOnce({ action: 'payments.source_staff_revoke', client: staff, url: `/v1/admin/payments/source-bindings/${source.id}/revoke`, body: { kind: 'source', reason: 'Synthetic crash withdrawal' },
     effects: async () => (await w.q('SELECT id FROM trustwork.payment_source_version WHERE id=$1 AND revoked_at IS NOT NULL', [source.id])).length });
+  const outsidePayer = await w.bind(buyer), outsidePayee = await w.bind(seller);
+  const outsideAgreement = (await agreement(h, buyer, seller, seed.people.petr, seed.people.carl)).agreement;
+  const publisher = await w.registerDecisionPublisher();
+  await w.providerEnabled(false);
+  try {
+    const decision = ok<PaymentOutsideView>(await exactlyOnce({ action: 'payments.outside_draft', client: buyer, url: '/v1/payments/sources/outside-platform',
+      body: { agreementId: outsideAgreement.id, payerBindingId: outsidePayer.participant, payeeBindingId: outsidePayee.participant, publisherRegistrationId: publisher.id },
+      effects: async () => (await w.q('SELECT id FROM trustwork.payment_outside_platform_version WHERE agreement_id=$1', [outsideAgreement.id])).length }), 201);
+    ok(await buyer.post(`/v1/payments/sources/outside-platform/${decision.id}/accept`, { digest: decision.digest }));
+    await exactlyOnce({ action: 'payments.outside_accept', client: seller, url: `/v1/payments/sources/outside-platform/${decision.id}/accept`, body: { digest: decision.digest },
+      effects: async () => (await w.q('SELECT * FROM trustwork.payment_outside_platform_acceptance WHERE decision_id=$1 AND person_id=$2', [decision.id, seed.people.carl])).length });
+    assert.equal((await w.q('SELECT * FROM trustwork.payment_intent WHERE agreement_id=$1', [outsideAgreement.id])).length, 0);
+  } finally { await w.providerEnabled(true); }
 }
