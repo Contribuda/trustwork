@@ -11090,7 +11090,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/pe.md"
       ],
       "steps": [
         "Regions and formats: the regions and Lima Metropolitana (ISO 3166-2:PE); America/Lima; PEN; phone +51.",
@@ -11126,7 +11127,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/ph.md"
       ],
       "steps": [
         "Regions and formats: regions and provinces (ISO 3166-2:PH, National Capital Region PH-00); Asia/Manila; PHP; phone +63.",
@@ -11162,7 +11164,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/ke.md"
       ],
       "steps": [
         "Regions and formats: the 47 counties (ISO 3166-2:KE); Africa/Nairobi; KES; phone +254.",
@@ -11198,7 +11201,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/gh.md"
       ],
       "steps": [
         "Regions and formats: the 16 regions (ISO 3166-2:GH); Africa/Accra; GHS; phone +233.",
@@ -11234,7 +11238,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/co.md"
       ],
       "steps": [
         "Regions and formats: departments and the Capital District (ISO 3166-2:CO); America/Bogota; COP; phone +57.",
@@ -11270,7 +11275,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/do.md"
       ],
       "steps": [
         "Regions and formats: provinces and the National District (ISO 3166-2:DO); America/Santo_Domingo; DOP; phone +1 809, 829, 849.",
@@ -11306,7 +11312,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/ng.md"
       ],
       "steps": [
         "Regions and formats: the 36 states and the Federal Capital Territory (ISO 3166-2:NG); Africa/Lagos; NGN; phone +234.",
@@ -11342,7 +11349,8 @@
         "docs/engine/country-specifics.md",
         "docs/country-packs/how-to-add-a-country.md",
         "docs/launch/README.md",
-        "docs/research/top-10-launch-countries-2026-11.md"
+        "docs/research/top-10-launch-countries-2026-11.md",
+        "docs/launch/countries/rw.md"
       ],
       "steps": [
         "Regions and formats: the City of Kigali and provinces (ISO 3166-2:RW); Africa/Kigali; RWF; phone +250.",
@@ -11379,7 +11387,8 @@
       "goal": "Swahili across the interface and demo content through configuration only, for hubs in Kenya, Tanzania, Uganda and Rwanda and for fundis who read Swahili more easily than English. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
       "read": [
         "docs/engine/localization.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/launch/countries/ke.md"
       ],
       "steps": [
         "Add sw files for every namespace in apps/web/locales/sw and the design-system dictionary packages/ui/locales/sw.json with full key coverage; Swahili uses the CLDR one and other plural categories.",
@@ -11416,7 +11425,8 @@
       "goal": "Filipino across the interface and demo content through configuration only, for hubs in the Philippines, next to English. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
       "read": [
         "docs/engine/localization.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/launch/countries/ph.md"
       ],
       "steps": [
         "Add fil files for every namespace in apps/web/locales/fil and the design-system dictionary packages/ui/locales/fil.json with full key coverage; keep ICU plural forms as Intl.PluralRules reports for fil.",
@@ -11453,7 +11463,8 @@
       "goal": "Hausa across the interface and demo content through configuration only, for Nigerian hubs in the north and for Hausa speakers across West Africa. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
       "read": [
         "docs/engine/localization.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/launch/countries/ng.md"
       ],
       "steps": [
         "Add ha files for every namespace in apps/web/locales/ha and the design-system dictionary packages/ui/locales/ha.json with full key coverage; keep ICU plural forms as Intl.PluralRules reports for ha; Latin script (Boko) with hooked letters supported by the fonts.",
@@ -11490,7 +11501,8 @@
       "goal": "Yoruba across the interface and demo content through configuration only, for Nigerian hubs in the south-west. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
       "read": [
         "docs/engine/localization.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/launch/countries/ng.md"
       ],
       "steps": [
         "Add yo files for every namespace in apps/web/locales/yo and the design-system dictionary packages/ui/locales/yo.json with full key coverage; keep ICU plural forms; tone marks and dotted letters rendered correctly by the fonts.",
@@ -11527,7 +11539,8 @@
       "goal": "Igbo across the interface and demo content through configuration only, for Nigerian hubs in the south-east. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
       "read": [
         "docs/engine/localization.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/launch/countries/ng.md"
       ],
       "steps": [
         "Add ig files for every namespace in apps/web/locales/ig and the design-system dictionary packages/ui/locales/ig.json with full key coverage; keep ICU plural forms; dotted vowels rendered correctly by the fonts.",
@@ -11564,7 +11577,8 @@
       "goal": "Kinyarwanda across the interface and demo content through configuration only, for hubs in Rwanda next to English. Translated from English, the reference; a machine draft until a named native reviewer signs off.",
       "read": [
         "docs/engine/localization.md",
-        "docs/launch/README.md"
+        "docs/launch/README.md",
+        "docs/launch/countries/rw.md"
       ],
       "steps": [
         "Add rw files for every namespace in apps/web/locales/rw and the design-system dictionary packages/ui/locales/rw.json with full key coverage; keep ICU plural forms as Intl.PluralRules reports for rw.",

@@ -104,9 +104,9 @@ Every fact in a pack cites a source and states how far it is verified ([Country 
 | `KE` | Kenya | Planned | CTRY-KE | Launch country 3 ([playbook](../launch/countries/ke.md)); English and Swahili |
 | `GH` | Ghana | Planned | CTRY-GH | Launch country 4 ([playbook](../launch/countries/gh.md)) |
 | `CO` | Colombia | Planned | CTRY-CO | Launch country 5 ([playbook](../launch/countries/co.md)) |
-| `DO` | Dominican Republic | Planned | CTRY-DO | Launch country 6 ([launch playbooks](../launch/README.md#country-playbooks)) |
-| `NG` | Nigeria | Planned | CTRY-NG | Launch country 8; English, Hausa, Yoruba, Igbo |
-| `RW` | Rwanda | Planned | CTRY-RW | Launch country 10; personal data stored in Rwanda unless authorised |
+| `DO` | Dominican Republic | Planned | CTRY-DO | Launch country 6 ([playbook](../launch/countries/do.md)) |
+| `NG` | Nigeria | Planned | CTRY-NG | Launch country 8 ([playbook](../launch/countries/ng.md)); English, Hausa, Yoruba, Igbo |
+| `RW` | Rwanda | Planned | CTRY-RW | Launch country 10 ([playbook](../launch/countries/rw.md)); personal data stored in Rwanda unless authorised |
 | — | Any other country | Generic profile | — | Contribute a pack: [How to add a country](../country-packs/how-to-add-a-country.md) |
 
 Russia is not a market and is never offered; Russian remains available as a language.
