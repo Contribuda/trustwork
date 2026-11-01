@@ -300,7 +300,10 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
       assert.doesNotMatch(`${policy.qual ?? ''} ${policy.with_check ?? ''}`, configTables, `${policy.tablename}.${policy.policyname}`);
     }
     const functions = (await db.admin.query<{ proname: string; prosrc: string }>("SELECT p.proname, p.prosrc FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'trustwork'")).rows;
-    for (const fn of functions) if (!fn.proname.startsWith('hubs_')) assert.doesNotMatch(fn.prosrc, configTables, fn.proname);
+    // KEYS-001 reads the residency domain only to narrow egress (private data stays in the hub's residency countries);
+    // it grants nothing and is no access function.
+    const narrowingReaders = new Set(['providers_residency']);
+    for (const fn of functions) if (!fn.proname.startsWith('hubs_') && !narrowingReaders.has(fn.proname)) assert.doesNotMatch(fn.prosrc, configTables, fn.proname);
 
     // Private rows visible to hub staff and to a participant are the same before and after configuring every domain.
     const seed = await seedFixtures(db.admin);
