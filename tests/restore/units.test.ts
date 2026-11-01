@@ -259,6 +259,8 @@ test('OPS-003 tool configuration and command lines are validated before anything
   assert.equal(await runBackupCli(['retention', '--policy', '/nonexistent.json'], { BACKUP_TARGET: 'filesystem' }, c.io), 1);
   const d = io();
   assert.equal(await runRestoreCli(['destroy', '--project', 'trustwork-local', '--volume', 'v'], {}, d.io), 2, 'the live stack project is refused');
+  const d2 = io();
+  assert.equal(await runRestoreCli(['destroy', '--project', 'trustwork-stack', '--volume', 'v'], {}, d2.io), 2, 'the documented full-stack project is refused too');
   const e = io();
   assert.equal(await runRestoreCli(['reconcile'], {}, e.io), 1);
   assert.deepEqual(parseDrillArgs(['--no-pitr', '--evidence', 'x.json']), { ...DEFAULT_DRILL, pitrCheck: false, evidencePath: 'x.json' });

@@ -1,12 +1,16 @@
 # Trustwork local services (OPS-002). Two ways to use this file:
-#   npm run infra:up            PostgreSQL only (development and tests; unchanged)
-#   docker compose -f infra/compose.yaml --profile stack up --build --wait
+#   npm run infra:up            PostgreSQL only (development and tests; unchanged), project `trustwork-local`
+#   docker compose -p trustwork-stack -f infra/compose.yaml --profile stack up --build --wait
 #                               the full stack that mirrors the production topology on one origin:
 #                               http://localhost:8080 (TRUSTWORK_STACK_PORT), /v1/* -> API, everything else -> web
+# Project name: `-p <name>` wins, then COMPOSE_PROJECT_NAME, then TRUSTWORK_COMPOSE_PROJECT, then `trustwork-local`
+# (the shared development database). Always start the full stack under its own project (`-p trustwork-stack` or any
+# name other than the development one): `down -v` removes every volume of the project it runs in, so the full-stack
+# command run in `trustwork-local` would also delete the development database volume.
 # Order: postgres -> db-roles (operations step, local superuser) -> migrate (one-shot, migrator role) -> api, worker
 # -> web -> proxy. Every credential below is a local-only default; nothing here is a production value and no image
 # contains configuration. Images and runtime variables: docs/operations/images.md.
-name: trustwork-local
+name: ${TRUSTWORK_COMPOSE_PROJECT:-trustwork-local}
 
 x-hardening: &hardening
   read_only: true

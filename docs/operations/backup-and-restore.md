@@ -28,7 +28,7 @@ Every object is compressed and encrypted before it leaves the host (AES-256-GCM,
 | `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET`, `BACKUP_S3_REGION`, `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY`, `BACKUP_S3_VIRTUAL_HOSTED` | The off-host bucket: another provider, account or region than the database; a write-only key for the shipper is recommended |
 | `BACKUP_FS_ROOT` | Directory of the filesystem target |
 | `BACKUP_ENCRYPTION_KEY`, `BACKUP_KEY_ID`, `BACKUP_ENCRYPTION_KEY_<ID>` | Keys (above) |
-| `BACKUP_PG_EXEC` | How to reach the database tools: a JSON argv array such as `["docker","compose","-p","trustwork-local","-f","infra/compose.yaml","-f","infra/backup/compose.backup.yaml","exec","-T","postgres"]`; empty when the tools run locally |
+| `BACKUP_PG_EXEC` | How to reach the database tools: a JSON argv array such as `["docker","compose","-p","trustwork-stack","-f","infra/compose.yaml","-f","infra/backup/compose.backup.yaml","exec","-T","postgres"]` (the project the stack runs in, see [images](images.md#the-local-stack)); empty when the tools run locally |
 | `BACKUP_PG_USER`, `BACKUP_PG_DATABASE` | Role for `pg_basebackup` and `pg_dump` over the local socket (superuser or a role with `REPLICATION`), default `trustwork_dev`; database, default `trustwork_stack` |
 | `BACKUP_NODE_ID` | Node identifier recorded in backup records |
 | `TRUSTWORK_BACKUP_ARCHIVE_TIMEOUT` | Seconds after which a quiet database closes and archives a partly filled segment (default 60); with the shipper interval it bounds the data-loss window |
@@ -38,7 +38,7 @@ Every object is compressed and encrypted before it leaves the host (AES-256-GCM,
 The compose override `infra/backup/compose.backup.yaml` turns on WAL archiving for the `postgres` service:
 
 ```sh
-docker compose -f infra/compose.yaml -f infra/backup/compose.backup.yaml --profile stack up -d --wait
+docker compose -p trustwork-stack -f infra/compose.yaml -f infra/backup/compose.backup.yaml --profile stack up -d --wait
 ```
 
 ## Routine operation

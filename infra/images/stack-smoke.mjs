@@ -1,8 +1,9 @@
 // Full-stack smoke (OPS-002): proves the compose stack works on one origin.
-//   docker compose -f infra/compose.yaml --profile stack up --build --wait
+//   docker compose -p trustwork-stack -f infra/compose.yaml --profile stack up --build --wait
 //   node infra/images/stack-smoke.mjs
 // Environment: TRUSTWORK_STACK_ORIGIN (default http://localhost:8080) and TRUSTWORK_STACK_COMPOSE, the compose command
-// prefix used to read the API log and run negative checks (default "docker compose -f infra/compose.yaml --profile stack").
+// prefix used to read the API log and run negative checks (default STACK_COMPOSE below: its own project, never the
+// shared development project `trustwork-local`).
 // Checks: the proxy routes / to the web app and /v1/* to the API; CSRF rejects cross-site and header-less mutations;
 // sign-up, e-mail verification (token from the fake mailbox in the API log), login, /v1/me and logout all work through
 // the proxy; every long-running service is healthy and runs as uid 1000; the migrate job refuses a runtime role; the
@@ -12,7 +13,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 
 const origin = (process.env.TRUSTWORK_STACK_ORIGIN ?? 'http://localhost:8080').replace(/\/$/, '');
-const compose = (process.env.TRUSTWORK_STACK_COMPOSE ?? 'docker compose -f infra/compose.yaml --profile stack').split(/\s+/).filter(Boolean);
+const STACK_COMPOSE = 'docker compose -p trustwork-stack -f infra/compose.yaml --profile stack';
+const compose = (process.env.TRUSTWORK_STACK_COMPOSE ?? STACK_COMPOSE).split(/\s+/).filter(Boolean);
 const [composeBin, ...composeArgs] = compose;
 const run = (args, options = {}) => spawnSync(composeBin, [...composeArgs, ...args], { encoding: 'utf8', ...options });
 const results = [];

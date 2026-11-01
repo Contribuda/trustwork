@@ -463,8 +463,11 @@ export function checkPullRequest({ body, author = '', changedFiles = [], package
   const byId = new Map(packages.packages.map((p) => [p.id, p]));
   for (const id of mentioned) if (!byId.has(id) && /^[A-Z]+-\d{3}$/.test(id)) warnings.push(`${id} is not a work package id`);
   const unreferenced = new Map();
+  // A done package still owns its paths: a later change to them names it (or a broader open package), so a package
+  // that sets itself to done in its own pull request is not shadowed by an open package with broader paths. Only
+  // rejected packages own nothing.
   for (const file of changedFiles) {
-    const owners = packages.packages.filter((p) => !['done', 'rejected'].includes(p.status) && p.paths.some((path) => within(file, path))).map((p) => p.id);
+    const owners = packages.packages.filter((p) => p.status !== 'rejected' && p.paths.some((path) => within(file, path))).map((p) => p.id);
     if (owners.length && !owners.some((id) => mentioned.has(id))) unreferenced.set(owners.join(' or '), [...(unreferenced.get(owners.join(' or ')) ?? []), file]);
   }
   // Work outside any package (for example a new country pack) may touch a package's paths when the description says

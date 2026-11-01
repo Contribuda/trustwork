@@ -51,7 +51,8 @@ function project(argv: string[]): RestoreProject {
   const name = required(argv, '--project');
   const volume = required(argv, '--volume');
   if (!/^[a-z0-9][a-z0-9_-]{1,62}$/.test(name)) throw new UsageError('invalid --project');
-  if (/^trustwork-local$/.test(name)) throw new UsageError('refusing to use the live stack project');
+  // The development database (`trustwork-local`) and the documented full-stack project (`trustwork-stack`) are live.
+  if (/^trustwork-(local|stack)$/.test(name)) throw new UsageError('refusing to use the live stack project');
   return { project: name, volume, port: Number(option(argv, '--port') ?? 54349) };
 }
 
