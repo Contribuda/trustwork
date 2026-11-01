@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -54,6 +55,7 @@ function noLeak(value: unknown, allow: readonly string[] = []): void {
 test('plans API: plan to people with versions, changes, shares and negative authorization', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   const reference = await kernelReference.fromRepository();
   await withMaintenance(h.db.admin, (trx) => kernelSync.apply(trx, reference));

@@ -1,4 +1,5 @@
 import { historicalConsultationFees } from '../billing/fees/historical.js';
+import { installSyntheticServingHub } from '../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -97,6 +98,7 @@ async function fails(promise: Promise<unknown>, expected: string): Promise<void>
 test('consultations API: plan item to booked consultation, deliverables, capacity, site visits, licences, mentoring, with negative authorization and concurrency', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   // Anna (mixed company) runs its design office: she may edit the catalogue and manage deals.

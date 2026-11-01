@@ -1,3 +1,4 @@
+import { installSyntheticHandler } from '../assistant/manifest-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -43,6 +44,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     await h.close();
   });
   const world: AgentWorld = await buildAgentWorld(h);
+  for (const cap of ['share_item', 'revoke_share', 'record_change', 'add_diary_entry']) await installSyntheticHandler(h, `project_planner.${cap}`, 'fake_publications', 'plan.share');
   const { hubId } = world;
   const seed = await seedPersonas(h);
   const petrId = seed.people.petr;
@@ -163,10 +165,10 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     'project_planner.share_item': 'publish', 'project_planner.revoke_share': 'publish', 'project_planner.record_change': 'record_evidence', 'project_planner.add_diary_entry': 'record_evidence',
   };
   let turns = 0;
-  const propose = async (capabilityId: string, action = ACTION_OF[capabilityId] ?? 'publish') => {
+  const propose = async (capabilityId: string, action = ACTION_OF[capabilityId] ?? 'publish', effectOverride: { provider: string; operation: string } | null = null) => {
     model.push({ text: 'Proposed.', messageKey: null, usage: { inputTokens: 1, outputTokens: 1 }, toolCalls: [{
       kind: 'propose_action', mandateId: actionMandate, capabilityId, moduleKey: 'project_planner', action, context: { kind: 'profile', id: petrId }, amount: null, projectId: null,
-      effect: { provider: 'fake_publications', operation: 'plan.share', payload: { item: 'synthetic' } },
+      effect: { provider: 'fake_publications', operation: 'plan.share', ...effectOverride, payload: { item: 'synthetic' } },
     }] });
     return (await service.converse({ text: 'Share the plan item' }, await stateOf(h, petr, `req-agt3-${++turns}`))).actions[0]!;
   };
@@ -179,7 +181,7 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
   const intent = async (id: string) => (await h.db.admin.query<{ state: string; state_reason: string | null }>('SELECT state, state_reason FROM trustwork.action_intent WHERE id = $1', [id])).rows[0]!;
   const actor: AgentActor = { personId: petrId, onBehalfCompanyId: null, representativeOf: null, connectionId: null };
   const check = async (a: Partial<AgentActor> = {}, capabilityId = PLANNER_COMMIT, action: string | null = 'publish') =>
-    withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => authority.check(trx, { ...actor, ...a }, capabilityId, action));
+    withPrincipal(h.pool, await principalFor(h.db.admin, a.personId ?? petrId), (trx) => authority.check(trx, { ...actor, ...a }, capabilityId, action));
 
   // A real MCP connection of petr's (MCP-002 tables), for the external-agent and connection levels.
   const connectionId = await withMaintenance(h.db.admin, async (trx) => {
@@ -191,6 +193,11 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
   await t.test('the runtime refuses a capability paired with another action even when the mandate grants both verbs', async () => {
     assert.deepEqual(await propose(PLANNER_COMMIT, 'record_evidence'), { state: 'denied', reason: 'capability.unknown' });
     assert.deepEqual(await propose(PLANNER_READ, 'publish'), { state: 'denied', reason: 'capability.unknown' });
+  });
+
+  await t.test('a model cannot pair a permitted capability with another provider or operation', async () => {
+    assert.deepEqual(await propose(PLANNER_COMMIT, 'publish', { provider: 'fake_payments', operation: 'payment.release' }), { state: 'denied', reason: 'handler_unavailable' });
+    assert.deepEqual(await propose(PLANNER_COMMIT, 'publish', { provider: 'fake_publications', operation: 'arbitrary.publish' }), { state: 'denied', reason: 'handler_unavailable' });
   });
 
   await t.test('trusted run provenance isolates hub switches for the same person and mandate', async () => {
@@ -273,11 +280,12 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
     assert.equal((await check({ connectionId })).allowed, true);
     // The company representative: missing or suspended stops it; active lets it act.
     const supplier = seed.companies.supplier;
-    assert.deepEqual(await check({ representativeOf: supplier, onBehalfCompanyId: null }, PLANNER_READ, null).then((d) => (d.allowed ? null : d.blockedBy?.kind)), 'company_representative');
+    await assert.rejects(check({ representativeOf: supplier }, PLANNER_READ, null), (error: unknown) => (error as { hint?: string }).hint === 'access.not_found');
+    assert.deepEqual(await check({ personId: seed.people.boris, representativeOf: supplier, onBehalfCompanyId: null }, PLANNER_READ, null).then((d) => (d.allowed ? null : d.blockedBy?.kind)), 'company_representative');
     await withMaintenance(h.db.admin, (trx) => trx.insertInto('company_representative').values({ company_id: supplier, accountable_person_id: seed.people.boris, status: 'active', enabled_by_person_id: seed.people.boris, accepted_at: new Date() }).execute());
-    assert.equal((await check({ representativeOf: supplier }, PLANNER_READ, null)).allowed, true);
+    assert.equal((await check({ personId: seed.people.boris, representativeOf: supplier }, PLANNER_READ, null)).allowed, true);
     await withMaintenance(h.db.admin, (trx) => trx.updateTable('company_representative').set({ status: 'suspended', suspension_reason: 'admin_suspended' }).where('company_id', '=', supplier).execute());
-    assert.deepEqual(await check({ representativeOf: supplier }, PLANNER_READ, null).then((d) => (d.allowed ? null : d.blockedBy?.kind)), 'company_representative');
+    assert.deepEqual(await check({ personId: seed.people.boris, representativeOf: supplier }, PLANNER_READ, null).then((d) => (d.allowed ? null : d.blockedBy?.kind)), 'company_representative');
     assert.ok(Number((await h.db.admin.query("SELECT epoch FROM trustwork.agent_authz_epoch WHERE scope_kind = 'company' AND scope_id = $1", [supplier])).rows[0].epoch) >= 2, 'the suspension bumped the epoch');
   });
 
@@ -328,15 +336,25 @@ test('jobs, kill switches, reconciliation and parity', { skip: h ? false : SKIP_
       rateLimitProfile: 'standard', consent: { via: 'first_party_form', personId: petrId, at: new Date().toISOString(), stepUp: true }, status: 'active', createdAt: new Date().toISOString(), lastUsedAt: null, revokedAt: null, revision: 1,
     };
     const capability = PLANNER.capabilities.find((c) => c.id === PLANNER_COMMIT)!;
+    for (const forged of [
+      { ...connection, hubId: randomUUID() },
+      { ...connection, owner: { kind: 'person' as const, personId: seed.people.carl } },
+      { ...connection, revision: connection.revision + 1 },
+    ]) {
+      const d: Awaited<ReturnType<typeof mcpGate>> = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx => mcpGate(authority, trx, forged, capability, null, 'https://trustwork.test/mcp'));
+      assert.equal(d.decision, 'deny', 'a forged connection field cannot choose authority');
+    }
+    assert.equal((await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), trx =>
+      mcpGate(authority, trx, connection, capability, null, 'https://forged.example.invalid/mcp'))).decision, 'deny');
     const surfaces = async () => {
       const ui = await petr.get(`/v1/assistant/capabilities/${PLANNER_COMMIT}`);
       const uiReason = ui.status === 200 ? null : [(ui.body as { details: { reason: string; messageKey: string } }).details.reason, (ui.body as { details: { messageKey: string } }).details.messageKey];
       const action = await propose(PLANNER_COMMIT);
       const gate = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => agentRuntimeGate(authority)(trx, {
-        personId: petrId, mandate: { onBehalfCompanyId: null, granteeKind: 'own_agent', granteeCompanyId: null }, capabilityId: PLANNER_COMMIT, action: 'publish',
+        hubId, personId: petrId, mandate: { onBehalfCompanyId: null, granteeKind: 'own_agent', granteeCompanyId: null }, capabilityId: PLANNER_COMMIT, action: 'publish',
       }));
       const runtimeReason = action.state === 'denied' ? [action.reason, gate?.messageKey] : null;
-      const mcp = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => mcpGate(authority, trx, connection, capability));
+      const mcp = await withPrincipal(h.pool, await principalFor(h.db.admin, petrId), (trx) => mcpGate(authority, trx, connection, capability, null, 'https://trustwork.test/mcp'));
       const mcpReason = mcp.decision === 'deny' ? [mcp.reason, mcp.messageKey] : null;
       return { ui: uiReason, runtime: runtimeReason, mcp: mcpReason, mcpDecision: mcp.decision };
     };

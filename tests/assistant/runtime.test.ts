@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { installSyntheticOrderManifest } from './manifest-fixture.js';
 import { buildAgentWorld } from '../agent-modules/helpers.js';
 import assert from 'node:assert/strict';
 import { jobs } from '@trustwork/data';
@@ -28,6 +29,7 @@ test('agent action workflow: dispatch, crash recovery, receipts, reconciliation,
     await h.close();
   });
   await buildAgentWorld(h);
+  await installSyntheticOrderManifest(h);
   h.clock.reset();
   const seed = await seedPersonas(h);
   const { petr } = seed.people;

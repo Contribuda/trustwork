@@ -12,6 +12,7 @@ import type { AssistantModelTurnRow } from '../../../../../packages/data/src/sch
 import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
+import { agentRuntimeGate, CapabilityAuthority } from '../agent-modules/authority.js';
 import { findServingHub, servingHub } from '../agent-modules/serving-hub.js';
 import { mapDatabaseError } from '../procurement/common.js';
 import {
@@ -525,12 +526,21 @@ export class AssistantService {
     const context: ContextRef = call.context;
     const { outcome, row } = await decide(trx, { personId: p.personId, mandateId: call.mandateId, moduleKeys: [call.moduleKey], action: call.action, context, amount: call.amount, projectId: call.projectId, at: this.now() }, { ...this.settings, hubId: provenance.hub_id });
     if (outcome.effect === 'deny' || !row) return deny(outcome.effect === 'deny' ? outcome.reason : 'not_found');
-    if (this.capabilityGate) {
-      const refused = await this.capabilityGate(trx, {
+    {
+      const gate = this.capabilityGate ?? agentRuntimeGate(new CapabilityAuthority({ hubId: provenance.hub_id }));
+      const refused = await gate(trx, {
         hubId: provenance.hub_id, personId: p.personId, mandate: { onBehalfCompanyId: row.on_behalf_company_id, granteeKind: row.grantee_kind, granteeCompanyId: row.grantee_company_id }, capabilityId: call.capabilityId, action: call.action,
       });
       if (refused) return deny(refused.reason);
     }
+    const capability = await sql<{ document: { kind: string; confirmation: string } | null }>`SELECT
+      trustwork.agent_modules_capability_binding(${provenance.hub_id}::uuid,${call.capabilityId}) AS document`.execute(trx);
+    const bound = capability.rows[0]?.document;
+    if (!bound) return deny('capability.unknown');
+    if (bound.kind === 'govern' || ['first_party_form', 'first_party_step_up', 'person_each', 'person_each_step_up'].includes(bound.confirmation)) return deny('first_party_required');
+    const handler = await sql<{ allowed: boolean }>`SELECT trustwork.agent_modules_effect_binding(
+      ${provenance.hub_id}::uuid,${call.capabilityId},${call.effect.provider},${call.effect.operation}) AS allowed`.execute(trx);
+    if (!handler.rows[0]?.allowed) return deny('handler_unavailable');
     const recorded = await actionIntents.record(trx, {
       runId, mandateId: row.id, mandateRevision: row.revision, capabilityId: call.capabilityId, moduleKey: outcome.moduleKey, action: call.action, context: outcome.context,
       resolvedFromSelector: outcome.resolvedFromSelector, amount: call.amount,

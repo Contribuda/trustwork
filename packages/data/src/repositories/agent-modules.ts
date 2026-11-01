@@ -58,6 +58,9 @@ export const agentPolicies = {
 };
 
 export const agentAuthority = {
+  async lockCurrent(trx: Transaction, hubId: string, companyId: string | null, connectionId: string | null): Promise<void> {
+    await sql`SELECT trustwork.agent_modules_lock_current_authority(${hubId}::uuid,${companyId}::uuid,${connectionId}::uuid)`.execute(trx);
+  },
   /** First engaged switch or stop that blocks this dispatch (`null` when none). Fail-closed for a null hub. */
   async dispatchRefusal(trx: Transaction, target: { hubId: string | null; moduleKey: string; capabilityId: string | null; action: string | null; personId: string; connectionId: string | null; representativeOf: string | null }): Promise<DispatchRefusal | null> {
     const row = await one(sql<{ r: DispatchRefusal | null }>`SELECT trustwork.agent_modules_dispatch_refusal(${target.hubId}::uuid, ${target.moduleKey}::text, ${target.capabilityId}::text, ${target.action}::text,

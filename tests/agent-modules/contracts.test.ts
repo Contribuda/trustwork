@@ -36,8 +36,8 @@ test('engine manifests load, and the engine default policy is a valid document t
   assert.equal(m.capabilityRefusal(def, REGISTRY, 'task_marketplace.accept_offer', { kind: 'company_member', planKey: 'free', companyVerified: false }), 'module.verified_company_required');
   assert.equal(m.capabilityRefusal(def, REGISTRY, 'task_marketplace.accept_offer', { kind: 'company_member', planKey: 'free', companyVerified: true }), null);
   assert.ok(task.actions.includes('place_order'));
-  // A module without a manifest is not governed (yet); kill switches still apply to it.
-  assert.equal(m.capabilityRefusal(def, REGISTRY, 'deal_desk.place_order', person), null);
+  // A module without a shipped manifest is unavailable; syntactic capability names confer no authority.
+  assert.equal(m.capabilityRefusal(def, REGISTRY, 'deal_desk.place_order', person), 'capability.unknown');
 });
 
 test('a hub never widens a module beyond its manifest: actions, capabilities (tools) and data classes', () => {

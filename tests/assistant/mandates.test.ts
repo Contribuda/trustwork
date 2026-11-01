@@ -215,8 +215,11 @@ test('mandates: first-party confirmation, proposals, module wiring, stop control
     assert.equal(stop.engaged, true);
     assert.ok(stop.suspendedMandates >= 2);
     assert.equal(ok<{ mandates: MandateView[] }>(await petrApi.get('/v1/assistant/mandates')).mandates.filter((m) => m.status === 'active').length, 0);
-    expectError(await petrApi.post(`/v1/projects/${project.id}/plan`, planBody(planner.id)), 403, 'access.mandate_scope');
+    const stopped = await petrApi.post(`/v1/projects/${project.id}/plan`, planBody(planner.id));
+    expectError(stopped, 403, 'access.forbidden');
+    assert.equal((stopped.body as { details: { reason: string } }).details.reason, 'kill_switch');
     ok(await petrApi.post('/v1/assistant/stop/release'));
+    expectError(await petrApi.post(`/v1/projects/${project.id}/plan`, planBody(planner.id)), 403, 'access.mandate_scope');
     assert.equal(ok<MandateView>(await petrApi.get(`/v1/assistant/mandates/${planner.id}`)).status, 'suspended', 'releasing the stop does not reactivate anything');
     const current = ok<MandateView>(await petrApi.get(`/v1/assistant/mandates/${planner.id}`));
     const back = ok<MandateView>(await petrApi.post(`/v1/assistant/mandates/${planner.id}/confirm`, { expectedRevision: current.revision, draft: plannerDraft }));

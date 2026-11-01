@@ -1,3 +1,4 @@
+import { installSyntheticServingHub } from '../../agent-modules/serving-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { expectError, SKIP_REASON, startHarness, type Client, type Response } from '../helpers/app.js';
@@ -40,6 +41,7 @@ const h = await startHarness('idem_crash', { files: { store: new FilesystemBlobS
 test('exactly-once completion: crash before and after the handler commit, for every in-transaction route', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   t.after(() => h.close());
+  await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
   const crash = await installCrashPoints(h.db.admin);
   const as = async (key: PersonaKey): Promise<Client> => {

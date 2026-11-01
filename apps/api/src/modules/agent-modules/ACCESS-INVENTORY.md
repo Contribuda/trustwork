@@ -43,7 +43,7 @@ Owner: `apps/api/src/modules/plans/plans.service.ts`, `PlansService`. Authorizer
 | add_diary_entry | addDiaryEntry |
 | set_location | setLocation |
 
-Additional implemented reads `listItemStates`, `listChanges`, `listShares`, `getLocation`, `listPermits`, `listDiary` need an explicit binding, not silent omission. Version approval, return and change decisions retain their first-party handoff. Location does not establish execution hub attribution. Plan timeline/item schedules are potential project deadline resources, but no worker projection port has been implemented here.
+Implemented read variants `listItemStates`, `listChanges`, `listShares`, `getLocation`, `listPermits`, `listDiary` bind explicitly to `project_planner.get_plan`. All 26 exported plan operations now enter the shared gate inside the owning transaction through `plans.module.ts` and `plan-bindings.ts`. Version approval, return and change decisions retain their first-party handoff. Location does not establish execution hub attribution. Plan timeline/item schedules are potential project deadline resources, but no worker projection port has been implemented here.
 
 ### Profile keeper
 
@@ -154,3 +154,25 @@ The worker derives the goal from confirmed explicit contexts, uses the existing 
 `20261109100400_agent_execution_provenance.sql` adds immutable run/intent provenance, owner-only reads, stored-hub dispatch and explicit lease fencing. Fresh AST model admission binds a real session to the exact registered serving origin in the same transaction. The old accepted attempt/accounting body remains an internal helper; only the new worker boundary is granted. Original-operation receipt/reconciliation functions are unchanged. The API gate rejects caller-supplied other-person identifiers.
 
 `20261109100500_agent_hub_previews.sql` records first-party mandate confirmations separately from signed JSON, resolves exact current-revision hub membership and uses stored connection audiences. Counts are scoped to the requested hub and require ten distinct principals per category. Unknown legacy attribution fails closed. Draft/activation both compare an opaque attribution digest, including changes hidden by count suppression. Tests create actual synthetic confirmation sessions, rather than copying mandate rows to manufacture authority.
+
+## Service / adapter continuation
+
+- `apps/api/src/modules/plans/plans.module.ts`: wraps the existing owning service with explicit capability bindings; no replacement plan authorizer or projection.
+- `service-bindings.ts`, `service-authority.ts`, `plan-bindings.ts`: per-invocation transaction boundary, exact trusted serving context, current-company derivation and default denial of unmapped methods.
+- `20261109100600_agent_capability_bindings.sql`: immutable shipped registry, exact version/action checks at final dispatch, no unknown/extension fallback, current-principal epoch lock function.
+- `authority.ts` MCP adapter: stored connection/consent, current mandate bindings and validated audience; company-representative connection invocation unavailable without its owning proof.
+- `tests/agent-modules/service-gate.test.ts`: real HTTP/service read and mutation refusals, unchanged resource privacy, immutable SQL manifest parity and unknown/audience denial.
+- Owning plan, task, consultation and procurement API fixtures and backend crash suite install an explicit synthetic serving origin. This does not register a real installation or modify the task/consultation services.
+
+Remaining: other participant service factories, public-read boundaries, the full revoker/race matrix and generic assistant/model quota integration. A manifest/action match alone must not authorize a model-selected provider/operation. Engine-owned local occurrence handlers remain the only implemented automated job handlers.
+
+
+## Effect and protection-quota bindings
+
+`agent_effect_handler` contains only code-installed exact module-version/capability/provider/operation tuples. The production migration installs no generic external effects. API proposals and final worker dispatch both check the tuple; prompt output cannot select a different handler. First-party-only capabilities return `first_party_required` before any generic intent, approval or hold. Synthetic order/channel handlers exist only in test maintenance fixtures. Original receipt reconciliation remains independent of fresh permission.
+
+`20261109100700_agent_runtime_limits.sql` records immutable per-operation run/action usage for the deterministic occurrence handler. A single quota lock serializes all subscriptions for the same principal/module/hub. The current hub calendar defines the day, retries consume each measure once, and concurrent run limits count outstanding runs. These free protection limits do not grant billable capacity. Generic assistant/model accounting and quota integration remain separate.
+
+The MCP lock port `agent_modules_lock_connection_consent` derives the current person, locks only that person's stored consent and its bound mandates, returns no private data and cannot be used by worker roles. The read role receives no UPDATE grants merely to obtain row locks.
+
+The OPS-owned restore registry requires entries for `agents.start_occurrence` and `agents.execute_occurrence`, both transactional. The conductor report records the exact seam; restore source files were not modified.

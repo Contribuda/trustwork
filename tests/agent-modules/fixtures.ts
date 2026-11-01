@@ -1,3 +1,4 @@
+import { CORE_AGENT_MANIFEST } from '../../packages/contracts/src/agents.js';
 import { ENGINE_MANIFESTS } from '../../apps/api/src/modules/agent-modules/ports.js';
 import type { AgentPolicyDraft, ModuleRegistry } from '../../packages/contracts/src/agent-modules.js';
 
@@ -59,4 +60,16 @@ export function usHubPolicy(hubId: string, over: Partial<AgentPolicyDraft> = {})
 /** The same policy with one capability switched off for the hub, a participant type or a plan. */
 export function withSwitch(doc: AgentPolicyDraft, s: AgentPolicyDraft['capabilities'][number]): AgentPolicyDraft {
   return { ...doc, capabilities: [...doc.capabilities.filter((c) => c.capabilityId !== s.capabilityId), s] };
+}
+
+/** Supported deterministic local handler, with all five already-contracted trigger kinds. */
+export function runtimeHubPolicy(hubId: string): AgentPolicyDraft {
+  const policy = usHubPolicy(hubId);
+  const core = CORE_AGENT_MANIFEST;
+  policy.policy.enabledModules.push({ moduleKey: core.key, moduleVersion: core.version, freeQuota: [], settings: {} });
+  policy.modules.push({ ...policy.modules[0]!, moduleKey: core.key, actions: ['prepare'], capabilityIds: core.capabilities.map(c => c.id), dataClasses: ['budgets'] });
+  policy.participantSettings.approval.defaultMode = 'pre_authorized';
+  policy.jobTemplates.push({ moduleKey: 'core', templateKey: 'goal_progress_report', labelKey: 'agents.report.goalProgress', actions: ['prepare'],
+    triggerKinds: ['request', 'schedule', 'goal', 'event', 'deadline'], defaultTrigger: { kind: 'request' }, minIntervalMinutes: 60, onClosedDay: 'run' });
+  return policy;
 }

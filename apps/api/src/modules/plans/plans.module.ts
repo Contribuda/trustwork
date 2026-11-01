@@ -1,3 +1,5 @@
+import { bindServiceCapabilities } from '../agent-modules/service-bindings.js';
+import { PLAN_SERVICE_BINDINGS } from '../agent-modules/plan-bindings.js';
 import { Module, type DynamicModule } from '@nestjs/common';
 import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
@@ -16,7 +18,8 @@ export interface PlansModuleOptions {
 @Module({})
 export class PlansModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, options: PlansModuleOptions = {}): DynamicModule {
-    const service = new PlansService(ctx, identity.principals, identity.participations, options.mandates ?? new NoPlanMandates(), options.facets ?? new FileLicensingFacets());
+    const service = bindServiceCapabilities(ctx, identity.principals, PLAN_SERVICE_BINDINGS, principals =>
+      new PlansService(ctx, principals, identity.participations, options.mandates ?? new NoPlanMandates(), options.facets ?? new FileLicensingFacets()));
     return { module: PlansModule, controllers: [PlansController, ProjectRecordsController], providers: [{ provide: PlansService, useValue: service }], exports: [PlansService] };
   }
 }

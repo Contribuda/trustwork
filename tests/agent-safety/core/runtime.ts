@@ -1,4 +1,8 @@
 import assert from 'node:assert/strict';
+import { installSyntheticServingHub } from '../../agent-modules/serving-fixture.js';
+import { installSyntheticOrderManifest, SYNTHETIC_ORDER_MANIFEST, installSyntheticHumanManifest, SYNTHETIC_HUMAN_MANIFEST } from '../../assistant/manifest-fixture.js';
+import { CapabilityAuthority, agentRuntimeGate } from '../../../apps/api/src/modules/agent-modules/authority.js';
+import { ENGINE_MANIFESTS } from '../../../apps/api/src/modules/agent-modules/ports.js';
 import type { AuthorizedEvidence } from '@trustwork/contracts';
 import { HandlerRegistry, silentLogger, Worker } from '@trustwork/worker';
 import { fakeEffectProviders, registerAssistant, type AssistantRuntime, type FakeEffectProvider } from '../../../apps/worker/src/assistant/index.js';
@@ -29,6 +33,9 @@ export interface StartedRuntime extends RuntimeProvider {
 export async function startRuntime(label = 'agent_safety'): Promise<StartedRuntime | null> {
   const h = await startHarness(label);
   if (!h) return null;
+  await installSyntheticServingHub(h);
+  await installSyntheticOrderManifest(h);
+  await installSyntheticHumanManifest(h);
   const worker = await workerLogin(h);
   const seed = await seedPersonas(h);
   const providers = fakeEffectProviders();
@@ -116,7 +123,7 @@ export async function startRuntime(label = 'agent_safety'): Promise<StartedRunti
       const model = new ScriptedModel();
       let retrieval: RetrievalPort = new FakeRetrieval([]);
       let activeModel: ModelPort = model;
-      const service = () => new AssistantService(h!.created.ctx!, h!.services().principals, assistantPolicySettings({ hubId: null }), DEFAULT_RUNTIME_SETTINGS, activeModel, retrieval);
+      const service = () => new AssistantService(h!.created.ctx!, h!.services().principals, assistantPolicySettings({ hubId: null }), DEFAULT_RUNTIME_SETTINGS, activeModel, retrieval, agentRuntimeGate(new CapabilityAuthority({ hubId: null, manifests: [...ENGINE_MANIFESTS, SYNTHETIC_ORDER_MANIFEST, SYNTHETIC_HUMAN_MANIFEST] })));
       const intentColumns = 'id, state, ask_reasons, mandate_id, mandate_revision, action_digest, reservation_id, effect_correlation_key';
       return {
         ...self,

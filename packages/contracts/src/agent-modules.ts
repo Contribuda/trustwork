@@ -369,7 +369,7 @@ export interface CapabilityPrincipal { kind: AgentPrincipalKind; planKey: string
 export function capabilityRefusal(doc: AgentPolicyDraft, registry: ModuleRegistry, capabilityId: string, principal: CapabilityPrincipal): CapabilityRefusalReason | null {
   const moduleKey = capabilityId.split('.')[0] ?? '';
   const module = moduleRefusal(doc, registry, moduleKey, principal);
-  if (module !== null) return module === 'module.unregistered' ? null : module;
+  if (module !== null) return module === 'module.unregistered' ? 'capability.unknown' : module;
   const entry = doc.policy.enabledModules.find((m) => m.moduleKey === moduleKey) as HubAgentPolicy['enabledModules'][number];
   const control = doc.modules.find((m) => m.moduleKey === moduleKey) as ModuleControl;
   if (!control.capabilityIds.includes(capabilityId)) {
@@ -383,7 +383,7 @@ export function capabilityRefusal(doc: AgentPolicyDraft, registry: ModuleRegistr
   return null;
 }
 
-/** Whether a module is registered in the engine (a manifest or an activated extension); unregistered modules are not governed yet. */
+/** Whether a module is registered in the engine (a manifest or an activated extension); unregistered modules are unavailable. */
 export function isRegisteredModule(registry: ModuleRegistry, moduleKey: string): boolean {
   return registry.manifests.some((m) => m.key === moduleKey) || registry.extensions.some((e) => e.moduleKey === moduleKey);
 }
