@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const port = Number(process.env.HUBC020_PORT ?? 43471);
+// Tells the live-mode test that this config started the second (live) server; the main web suite does not.
+process.env.HUBC020_LIVE_SERVER = String(port + 1);
 const livePort = port + 1;
 export default defineConfig({
   testDir: '..',
