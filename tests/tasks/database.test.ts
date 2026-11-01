@@ -58,6 +58,7 @@ test('tasks database: frozen offers, isolation, private halves, staleness, agree
   t.after(() => h.close());
   await installSyntheticServingHub(h);
   const seed = await seedPersonas(h);
+  await withMaintenance(h.db.admin, trx => trx.updateTable('company').set({ claim_status: 'verified' }).where('id', 'in', Object.values(seed.companies)).execute());
   await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const { petr, carl, boris, xenia } = seed.people;
   const as = async <T>(personId: string, fn: (trx: Transaction) => Promise<T>): Promise<T> => withPrincipal(h.pool, await principalFor(h.db.admin, personId), fn);

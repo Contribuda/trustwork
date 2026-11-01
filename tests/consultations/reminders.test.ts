@@ -1,4 +1,5 @@
 import { historicalConsultationFees } from '../billing/fees/historical.js';
+import { sql } from 'kysely';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -47,8 +48,10 @@ test('CONS-001 reminder producer and final fake dispatch under real restricted r
   const seed = await seedPersonas(h);
   const P = seed.people;
   await withMaintenance(h.db.admin, async (trx) => {
+    await trx.updateTable('company').set({ claim_status: 'verified' }).where('id', '=', seed.companies.mixed).execute();
     await kernelSync.apply(trx, await kernelReference.fromRepository());
     await trx.insertInto('hub').values({ id: hubId, slug: 'synthetic-reminders', lifecycle: 'public' }).execute();
+    await sql`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES(${h.created.config.publicOrigin},${hubId}::uuid)`.execute(trx);
     await staffRoleDefinitions.release(trx, { version: 1, role: 'editor', scopes: ['hub', 'platform'], permissions: ['admin.notifications.template.edit'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     await staffRoleDefinitions.release(trx, { version: 1, role: 'ops-engineer', scopes: ['hub', 'platform'], permissions: ['admin.notifications.template.edit', 'admin.config.edit'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     for (const [personId, role] of [[P.boris, 'editor'], [P.xenia, 'ops-engineer']] as const) await adminSetup.bootstrapFirstAdmin(trx, { personId, role, scope: { kind: 'platform' }, definitionVersion: 1, reason: 'Synthetic template review' });

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { installSyntheticServingHub } from '../../../agent-modules/serving-fixture.js';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { withMaintenance } from '@trustwork/data';
@@ -29,6 +30,7 @@ let foreignPerson: string;
 test('SANC-006 authorized reads, repository freshness, exact subject lookup and cohort suppression', { timeout: 240_000 }, async (t) => {
   const w = await screeningWorld('sanc006_reads', 'https://trustwork.test', { gate: rangeGate('2026-01') });
   t.after(() => w.close());
+  await installSyntheticServingHub(w.h);
   foreignSession = new Map(w.first.jar); foreignPerson = w.seed.people.petr;
   const ids = await baselineIds(w.h.db.admin);
   const metricsUrl = `/v1/admin/screening/metrics?hubId=${w.hubId}`;
