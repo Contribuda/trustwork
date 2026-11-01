@@ -109,7 +109,7 @@ export const PRODUCT_COMMAND_PERMISSIONS: Record<ProductCommandId, readonly Cons
 
 export const PRODUCT_REJECT_CODES = [
   'guard_rail_locked', 'per_person_forbidden', 'author_cannot_publish', 'template_blocked', 'consent_missing', 'safety_suite_failed', 'commitment_requires_verified',
-  'above_maximum', 'above_cap', 'back_dated', 'overlap', 'weaker_than_pack', 'lawful_basis_missing', 'source_required', 'licence_requires_verified', 'not_draft',
+  'activation_unavailable', 'preview_missing', 'above_maximum', 'above_cap', 'back_dated', 'overlap', 'weaker_than_pack', 'lawful_basis_missing', 'source_required', 'licence_requires_verified', 'not_draft',
 ] as const;
 export type ProductRejectCode = (typeof PRODUCT_REJECT_CODES)[number];
 
@@ -298,7 +298,8 @@ export function evaluateProductCommand(command: ProductCommandId, f: Readonly<Re
       const commits = module.actions.some((a) => (COMMITMENT_MANDATE_KINDS as readonly string[]).includes(a));
       if (commits && !module.verifiedCompanyRequired) return reject('commitment_requires_verified', 'moduleKey');
       if (!sameDigest(f, module.draft.preview.digest.value)) return reject('digest_mismatch');
-      return ok(commits ? 'agents.enable_commitment_module' : null);
+      // The agents configuration domain always needs a second person. No general action exists yet.
+      return commits ? ok('agents.enable_commitment_module') : reject('activation_unavailable');
     }
     case 'agents.kill': {
       if (f.scope === 'agent_module') return agents.modules.some((m) => m.key === f.target) ? ok() : NOT_FOUND;
@@ -320,7 +321,7 @@ export function evaluateProductCommand(command: ProductCommandId, f: Readonly<Re
       if (!sameDigest(f, draft.preview.digest.value)) return reject('digest_mismatch');
       const missing = ctx.hub.hub.locales.filter((l) => !agents.policy.disclosure.some((d) => d.lang === l));
       if (missing.length) return reject('language_missing', null, missing);
-      return ok();
+      return reject('activation_unavailable');
     }
     case 'jurisdiction.draft': {
       const code = (f.jurisdiction ?? '').trim().toUpperCase();
@@ -336,6 +337,8 @@ export function evaluateProductCommand(command: ProductCommandId, f: Readonly<Re
       const found = agents.policy.jurisdictions.find((j) => j.ref.configVersionId === f.configVersionId);
       if (!found) return NOT_FOUND;
       if (found.ref.status !== 'draft') return reject('not_draft', 'configVersionId');
+      if (!found.preview) return reject('preview_missing');
+      if (!sameDigest(f, found.preview.digest.value)) return reject('digest_mismatch');
       const missing = disclosureLocalesMissing(found.ref, ctx.hub.hub);
       if (missing.length) return reject('language_missing', 'configVersionId', missing);
       return ok('jurisdiction.activate_settings');

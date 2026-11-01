@@ -302,7 +302,9 @@
       "lawful_basis_missing": "No hay una base legal registrada: los anuncios llegan solo a quienes dieron su consentimiento.",
       "source_required": "Hace falta una dirección de fuente que empiece por HTTPS.",
       "licence_requires_verified": "Las categorías con licencia solo aceptan proveedores verificados, y los agentes solo aceptan con contrapartes verificadas.",
-      "not_draft": "Solo un borrador de versión se puede activar o cancelar."
+      "not_draft": "Solo un borrador de versión se puede activar o cancelar.",
+      "activation_unavailable": "La activación no está disponible hasta que se defina una acción de aprobación por otra persona. Una sola persona no puede activar este cambio.",
+      "preview_missing": "La activación requiere una vista previa guardada. Créela y revísela primero."
     },
     "details": {
       "demo_data_only_before_soft_launch": "los datos de demostración solo se permiten antes del lanzamiento preliminar",
@@ -2108,7 +2110,8 @@
         "requestsPerWeek": "Solicitudes por semana",
         "salePrice": "Precio por unidad (centavos)",
         "threshold": "Umbral",
-        "validity": "Validez (días)"
+        "validity": "Validez (días)",
+        "recordKeepingYears": "Conservación de registros (años)"
       },
       "values": {
         "capability": {

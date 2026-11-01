@@ -158,7 +158,7 @@ export const JurisdictionRowSchema = z.strictObject({
   hubValue: z.strictObject({ text: ShortTextSchema, lang: LocaleTagSchema }),
   comparison: z.enum(['same', 'stricter']),
 });
-export const JurisdictionSettingsViewSchema = z.strictObject({ ref: JurisdictionSettingsRefSchema, rows: z.array(JurisdictionRowSchema).min(1) });
+export const JurisdictionSettingsViewSchema = z.strictObject({ ref: JurisdictionSettingsRefSchema, rows: z.array(JurisdictionRowSchema).min(1), preview: ActivationPreviewSchema.nullable() });
 export type JurisdictionSettingsView = z.infer<typeof JurisdictionSettingsViewSchema>;
 
 export const AgentPolicyViewSchema = z.strictObject({

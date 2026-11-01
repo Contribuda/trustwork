@@ -202,7 +202,7 @@ test('price, plan, credit-pack, commission, extension, commitment-module and jur
     assert.ok((CONSOLE_SECOND_PERSON_ACTIONS as readonly string[]).includes(action));
   }
   // Texas is a draft, but its Spanish disclosure is missing.
-  const texas = evaluateCommand(input('jurisdiction.request_activation', { configVersionId: 'cv-jur-us-tx-1' }), ctx('hub-owner'));
+  const texas = evaluateCommand(input('jurisdiction.request_activation', { configVersionId: 'cv-jur-us-tx-1', previewDigest: usProduct.agents.policy.jurisdictions[1]!.preview!.digest.value }), ctx('hub-owner'));
   assert.deepEqual(texas, { status: 'rejected', code: 'language_missing', field: 'configVersionId', detail: ['es'] });
   // There is no command that activates any of these directly.
   assert.deepEqual(PRODUCT_COMMANDS.filter((c) => /(^|\.)activate$/.test(c) && !c.startsWith('comms.')), []);
@@ -267,7 +267,55 @@ test('an activation request is bound to the stored preview: another digest, a ba
   const desk = usProduct.agents.modules.find((m) => m.key === 'order_desk')!;
   assert.equal(code(evaluateCommand(input('agents.module.request_activation', { moduleKey: 'order_desk', previewDigest: desk.draft!.preview.digest.value }), ctx('hub-owner', { product: unverified }))), 'commitment_requires_verified');
   const planner3 = usProduct.agents.modules.find((m) => m.key === 'project_planner')!;
-  assert.equal(secondPerson(evaluateCommand(input('agents.module.request_activation', { moduleKey: 'project_planner', previewDigest: planner3.draft!.preview.digest.value }), ctx('hub-owner'))), null, 'a module without commitment actions activates with one person');
+  assert.equal(code(evaluateCommand(input('agents.module.request_activation', { moduleKey: 'project_planner', previewDigest: planner3.draft!.preview.digest.value }), ctx('hub-owner'))), 'activation_unavailable', 'the sensitive agents domain never falls back to one-person activation');
+});
+
+test('general agent policy activation fails closed even with complete disclosure and the current preview', () => {
+  const draft = usProduct.agents.policy.draft!;
+  const fields = { policyVersion: String(draft.version), previewDigest: draft.preview.digest.value };
+  assert.equal(code(evaluateCommand(input('agents.policy.request_activation', fields), ctx('hub-owner'))), 'activation_unavailable');
+  assert.equal(code(evaluateCommand(input('agents.policy.request_activation', { ...fields, previewDigest: '00'.repeat(32) }), ctx('hub-owner'))), 'digest_mismatch');
+  // A permission to edit never substitutes for the missing second-person action.
+  const admin = ctx('hub-owner');
+  admin.access.permissions.push('admin.agents.modules.activate');
+  assert.equal(code(evaluateCommand(input('agents.policy.request_activation', fields), admin)), 'activation_unavailable');
+});
+
+test('jurisdiction activation needs a stored preview and binds its digest after disclosure is complete', () => {
+  const ready = withProduct((p) => { p.agents.policy.jurisdictions[1]!.ref.disclosureLocales = [...us.hub.locales]; });
+  const jurisdiction = ready.agents.policy.jurisdictions[1]!;
+  const fields = { configVersionId: jurisdiction.ref.configVersionId, previewDigest: jurisdiction.preview!.digest.value };
+  assert.equal(secondPerson(evaluateCommand(input('jurisdiction.request_activation', fields), ctx('hub-owner', { product: ready }))), 'jurisdiction.activate_settings');
+  for (const digest of [undefined, '', '00'.repeat(32), ready.agents.policy.draft!.preview.digest.value]) {
+    const requestFields = digest === undefined ? { configVersionId: fields.configVersionId } : { ...fields, previewDigest: digest };
+    assert.equal(code(evaluateCommand(input('jurisdiction.request_activation', requestFields), ctx('hub-owner', { product: ready }))), 'digest_mismatch');
+  }
+  const missing = structuredClone(ready);
+  missing.agents.policy.jurisdictions[1]!.preview = null;
+  assert.equal(code(evaluateCommand(input('jurisdiction.request_activation', fields), ctx('hub-owner', { product: missing }))), 'preview_missing');
+  const replaced = structuredClone(ready);
+  replaced.agents.policy.jurisdictions[1]!.preview!.digest.value = 'aa'.repeat(32);
+  assert.equal(code(evaluateCommand(input('jurisdiction.request_activation', fields), ctx('hub-owner', { product: replaced }))), 'digest_mismatch', 'a concurrent preview replacement invalidates the earlier page');
+});
+
+test('every priced or governed activation rejects a missing or replaced preview digest', () => {
+  const plan = usProduct.billing.plans.find((p) => p.plan.status === 'draft')!;
+  const pack = usProduct.billing.credits.packs.find((p) => p.status === 'draft')!;
+  const fee = usProduct.modules.marketplace.fees.find((p) => p.fee.status === 'draft')!;
+  const extension = usProduct.agents.extensions.find((p) => p.ref.status === 'tested')!;
+  const cases: Array<[CommandInput['command'], Record<string, string>, keyof typeof STAFF_PERSONAS]> = [
+    ['billing.price.request_activation', { priceVersionId: 'pr-planner-2' }, 'commercial'],
+    ['billing.plan.request_activation', { planId: plan.plan.id }, 'commercial'],
+    ['billing.pack.request_activation', { packId: pack.id }, 'commercial'],
+    ['marketplace.fee.request_activation', { feeId: fee.fee.id }, 'commercial'],
+    ['extensions.request_activation', { extensionVersionId: extension.ref.id }, 'hub-owner'],
+    ['agents.module.request_activation', { moduleKey: 'order_desk' }, 'hub-owner'],
+  ];
+  for (const [command, fields, persona] of cases) {
+    for (const invalid of [fields, { ...fields, previewDigest: '00'.repeat(32) }]) {
+      assert.equal(code(evaluateCommand(input(command, invalid), ctx(persona))), 'digest_mismatch', command);
+    }
+  }
 });
 
 /* ---------- Acceptance: no per-participant agent management; locked guard rails ---------- */

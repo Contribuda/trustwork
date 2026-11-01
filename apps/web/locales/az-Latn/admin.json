@@ -302,7 +302,9 @@
       "lawful_basis_missing": "Qeyd olunmuş hüquqi əsas yoxdur: elanlar yalnız razılıq verənlərə gedir.",
       "source_required": "HTTPS ilə başlayan mənbə ünvanı tələb olunur.",
       "licence_requires_verified": "Lisenziyalı kateqoriyalar yalnız yoxlanılmış icraçıları qəbul edir, agentlər isə yalnız yoxlanılmış kontragentlərlə qəbul edir.",
-      "not_draft": "Yalnız versiya qaralaması aktivləşdirilə və ya ləğv edilə bilər."
+      "not_draft": "Yalnız versiya qaralaması aktivləşdirilə və ya ləğv edilə bilər.",
+      "activation_unavailable": "İkinci əməkdaşın təsdiqi üçün əməliyyat müəyyən edilənədək aktivləşdirmə mümkün deyil. Bir əməkdaş bu dəyişikliyi aktivləşdirə bilməz.",
+      "preview_missing": "Aktivləşdirmə üçün saxlanmış önbaxış tələb olunur. Əvvəlcə onu yaradın və yoxlayın."
     },
     "details": {
       "demo_data_only_before_soft_launch": "nümayiş məlumatlarına yalnız yumşaq başlanğıca qədər icazə verilir",
@@ -2108,7 +2110,8 @@
         "requestsPerWeek": "Həftəlik sorğular",
         "salePrice": "Vahidin satış qiyməti (sent)",
         "threshold": "Hədd",
-        "validity": "Etibarlılıq (gün)"
+        "validity": "Etibarlılıq (gün)",
+        "recordKeepingYears": "Qeydlərin saxlanması (il)"
       },
       "values": {
         "capability": {

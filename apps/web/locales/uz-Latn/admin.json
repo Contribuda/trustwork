@@ -302,7 +302,9 @@
       "lawful_basis_missing": "Qayd etilgan qonuniy asos yoʻq: eʼlonlar faqat rozilik berganlarga boradi.",
       "source_required": "HTTPS bilan boshlanadigan manba manzili kerak.",
       "licence_requires_verified": "Litsenziyalanadigan toifalar faqat tekshirilgan ijrochilarni qabul qiladi, agentlar esa faqat tekshirilgan kontragentlar bilan qabul qiladi.",
-      "not_draft": "Faqat versiya qoralamasini faollashtirish yoki bekor qilish mumkin."
+      "not_draft": "Faqat versiya qoralamasini faollashtirish yoki bekor qilish mumkin.",
+      "activation_unavailable": "Ikkinchi xodim tasdiqlashi uchun amal belgilanmaguncha faollashtirish mavjud emas. Bir xodim bu o‘zgarishni faollashtira olmaydi.",
+      "preview_missing": "Faollashtirish uchun saqlangan oldindan ko‘rish kerak. Avval uni yarating va tekshiring."
     },
     "details": {
       "demo_data_only_before_soft_launch": "namunaviy maʼlumotlarga faqat yumshoq ishga tushirishgacha ruxsat beriladi",
@@ -2108,7 +2110,8 @@
         "requestsPerWeek": "Haftalik soʻrovlar",
         "salePrice": "Birlik sotuv narxi (sent)",
         "threshold": "Chegara",
-        "validity": "Amal qilish muddati (kun)"
+        "validity": "Amal qilish muddati (kun)",
+        "recordKeepingYears": "Yozuvlarni saqlash (yil)"
       },
       "values": {
         "capability": {
