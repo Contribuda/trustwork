@@ -183,9 +183,10 @@ test.describe('public resource', () => {
     await expect(page.getByText('Закрыто')).toHaveCount(0);
   });
 
-  test('unknown routes and /admin are 404', async ({ page }) => {
+  test('unknown routes are 404; demo /admin offers the demo staff roles', async ({ page }) => {
     expect((await page.goto('/this-route-does-not-exist'))?.status()).toBe(404);
-    expect((await page.goto('/admin'))?.status()).toBe(404);
+    expect((await page.goto('/admin'))?.status()).toBe(200);
+    await expect(page.getByTestId('admin-demo-chooser')).toBeVisible();
   });
 
   test('authenticated visitor sees one circular avatar instead of the sign-in link', async ({ page }) => {

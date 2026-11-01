@@ -325,7 +325,10 @@
       "yourRoles": "Sus roles aquí",
       "open": "Abrir la consola",
       "nodeConsole": "Consola del nodo",
-      "nodeConsoleStatus": "Los hubs, el personal del nodo, las actualizaciones, las copias de seguridad, las claves y los interruptores de emergencia de todo el nodo tendrán su propia consola en un paquete posterior."
+      "nodeConsoleStatus": "Los hubs, el personal del nodo, las actualizaciones, las copias de seguridad, las claves y los interruptores de emergencia de todo el nodo tendrán su propia consola en un paquete posterior.",
+      "demoChooserTitle": "Consola de hub de demostración",
+      "demoChooserLede": "Elija un rol de personal para abrir la consola. Cada rol ve solo las secciones que permiten sus permisos.",
+      "demoChooserNote": "Demostración: datos sintéticos; los comandos se comprueban pero no se guarda nada. En modo real, la consola solo se abre para el personal que ha iniciado sesión."
     },
     "capabilities": {
       "llm": "Modelos de lenguaje",

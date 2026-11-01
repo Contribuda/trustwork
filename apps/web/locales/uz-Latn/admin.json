@@ -325,7 +325,10 @@
       "yourRoles": "Bu yerdagi rollaringiz",
       "open": "Konsolni ochish",
       "nodeConsole": "Tugun konsoli",
-      "nodeConsoleStatus": "Xablar, tugun xodimlari, yangilanishlar, zaxira nusxalar, kalitlar va tugun favqulodda oʻchirgichlari keyingi paketlardan birida alohida konsolga ega boʻladi."
+      "nodeConsoleStatus": "Xablar, tugun xodimlari, yangilanishlar, zaxira nusxalar, kalitlar va tugun favqulodda oʻchirgichlari keyingi paketlardan birida alohida konsolga ega boʻladi.",
+      "demoChooserTitle": "Hubning demo konsoli",
+      "demoChooserLede": "Konsolni ochish uchun xodim rolini tanlang. Har bir rol faqat oʻz huquqlari ruxsat bergan boʻlimlarni koʻradi.",
+      "demoChooserNote": "Demo: sintetik maʼlumotlar; buyruqlar tekshiriladi, lekin hech narsa saqlanmaydi. Ish rejimida konsol faqat tizimga kirgan xodimlar uchun ochiladi."
     },
     "capabilities": {
       "llm": "Til modellari",
