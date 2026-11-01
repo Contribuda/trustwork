@@ -8,6 +8,8 @@ import { JurisdictionApplicabilityController } from './jurisdiction/applicabilit
 import { JurisdictionApplicabilityService } from './jurisdiction/applicability.service.js';
 import { JurisdictionConsentController } from './jurisdiction/consent.controller.js';
 import { JurisdictionConsentService } from './jurisdiction/consent.service.js';
+import { JurisdictionIssuerController } from './jurisdiction/issuer.controller.js';
+import { JurisdictionIssuerService } from './jurisdiction/issuer.service.js';
 import { HubsService } from './hubs.service.js';
 
 /** Hubs, territories, versioned hub configuration, launch gates and the lifecycle (HUB-001). `HubsService` is exported for the setup wizard and the runtime loader. */
@@ -17,8 +19,8 @@ export class HubsModule {
     const service = new HubsService(ctx, identity.principals);
     return {
       module: HubsModule,
-      controllers: [AdminHubsController, HubsParticipantController, JurisdictionApplicabilityController, JurisdictionConsentController, PublicLegalController],
-      providers: [{ provide: JurisdictionApplicabilityService, useValue: new JurisdictionApplicabilityService(identity.principals) }, { provide: JurisdictionConsentService, useValue: new JurisdictionConsentService(identity.principals) }, { provide: HubsService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
+      controllers: [AdminHubsController, HubsParticipantController, JurisdictionApplicabilityController, JurisdictionConsentController, JurisdictionIssuerController, PublicLegalController],
+      providers: [{ provide: JurisdictionIssuerService, useValue: new JurisdictionIssuerService(identity.principals) }, { provide: JurisdictionApplicabilityService, useValue: new JurisdictionApplicabilityService(identity.principals) }, { provide: JurisdictionConsentService, useValue: new JurisdictionConsentService(identity.principals) }, { provide: HubsService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
       exports: [HubsService],
     };
   }
