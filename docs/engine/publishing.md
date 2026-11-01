@@ -2,7 +2,7 @@
 
 Normative requirements: [News, articles, magazine and the editorial office](modules/publishing-and-editorial.md), [Knowledge sharing](modules/knowledge-sharing.md). Participants: [who uses what](participants/README.md).
 
-Requirements R15, R16. Status: reading experience, rubrics, topics and RSS feeds are **Demo**; the publication model, lifecycle, corrections, author and editor rights, review, walls and moderation holds are **Live** as an API (CNT-001; the reading pages still use demo data); the editorial board in the console is **Designed**; hub source registry, manufacturer and supplier sources, multilingual editions, shared knowledge formats and comments are **Proposed** (SRC-001, EDIT-001, MAT-001, KNOW-001).
+Requirements R15, R16. Status: reading experience, rubrics, topics and RSS feeds are **Demo**; the publication model, lifecycle, corrections, author and editor rights, review, walls and moderation holds are **Live** as an API (CNT-001; the reading pages still use demo data); the hub source registry (licence flags, legal basis, robots, terms and RSL checks, the import review queue, takedown with tombstones and the sponsored content policy) is **Live** as an API (SRC-001, [module](../../apps/api/src/modules/sources/README.md); no console screen or crawler yet); the editorial board in the console is **Designed**; manufacturer and supplier sources, multilingual editions, shared knowledge formats and comments are **Proposed** (EDIT-001, MAT-001, KNOW-001).
 
 Content is what brings people back every day. The engine treats it with the discipline of a good newsroom: sources are named, dates are honest, corrections are visible, and authorship is never confused with editing rights.
 

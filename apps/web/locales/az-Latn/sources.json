@@ -1,0 +1,120 @@
+{
+  "sources": {
+    "label": {
+      "sourced": "Mənbələrdən",
+      "sourcedHint": "Açıq mənbədən toplanıb. Şirkət hələ təsdiqləməyib.",
+      "sponsored": "Sponsorlu",
+      "sponsoredHint": "Ödənişli yerləşdirmə, ayrıca göstərilir. Axtarışa, uyğunlaşdırmaya, tövsiyələrə və reputasiyaya heç vaxt təsir etmir.",
+      "machineAssisted": "Süni intellektin köməyi ilə hazırlanmış qaralama",
+      "fromSource": "Mənbə"
+    },
+    "status": {
+      "proposed": "Aktivləşdirmə gözlənilir",
+      "active": "Aktiv",
+      "paused": "Dayandırılıb",
+      "rejected": "Rədd edilib",
+      "retired": "İstifadədən çıxarılıb",
+      "taken_down": "Tələblə silinib"
+    },
+    "pauseReason": {
+      "robots_changed": "robots.txt dəyişib",
+      "terms_changed": "İstifadə şərtləri dəyişib",
+      "licence_ended": "Lisenziya bitib",
+      "error_streak": "Təkrarlanan xətalar",
+      "budget": "Büdcəyə çatılıb",
+      "manual": "Əməkdaş tərəfindən dayandırılıb",
+      "takedown": "Tələblə silinib"
+    },
+    "use": {
+      "displayHeadlineAndLink": "Başlığı və keçidi göstərmək",
+      "displaySummary": "Qısa xülasəni göstərmək",
+      "storeFullText": "Tam mətni saxlamaq",
+      "indexForSearch": "Axtarış üçün indeksləmək",
+      "sendToModelProviders": "Model provayderinə göndərmək",
+      "translate": "Tərcümə etmək",
+      "rewriteWithAttribution": "Mənbəni göstərərək yenidən yazmaq",
+      "reuseImages": "Şəkillərdən yenidən istifadə etmək",
+      "syndicateToPeers": "Digər hablarla paylaşmaq"
+    },
+    "licence": {
+      "open_licence": "Açıq lisenziya",
+      "public_domain": "İctimai mülkiyyət",
+      "statutory_public": "Qanunla açıq",
+      "publisher_agreement": "Naşirlə razılaşma",
+      "press_release": "Press-reliz",
+      "all_rights_reserved": "Bütün hüquqlar qorunur",
+      "unknown": "Lisenziya məlum deyil"
+    },
+    "legalBasis": {
+      "statutory_public_register": "Qanunla açıq reyestr",
+      "open_licence": "Açıq lisenziya",
+      "contract": "Müqavilə",
+      "consent": "Razılıq",
+      "legitimate_interest_assessed": "Qanuni maraq (qiymətləndirilib)",
+      "public_professional_data": "Açıq peşəkar məlumatlar"
+    },
+    "rsl": {
+      "absent": "RSL şərtləri dərc olunmayıb",
+      "parsed": "RSL şərtləri oxunub",
+      "failed": "RSL şərtləri oxunmadı: ən sərt parametrlər tətbiq olunur",
+      "no_matching_content": "RSL şərtləri bu ünvanı əhatə etmir: ən sərt parametrlər tətbiq olunur"
+    },
+    "crawl": {
+      "allowed": "robots.txt icazə verir",
+      "restricted": "robots.txt qismən icazə verir",
+      "forbidden": "robots.txt icazə vermir"
+    },
+    "item": {
+      "queued": "Baxış gözlənilir",
+      "drafted": "Qaralamaya çevrilib",
+      "discarded": "Rədd edilib",
+      "taken_down": "Tələblə silinib"
+    },
+    "batch": {
+      "staged": "İkinci əməkdaş gözlənilir",
+      "activated": "Aktivləşdirilib",
+      "rejected": "Rədd edilib",
+      "taken_down": "Tələblə silinib"
+    },
+    "takedownReason": {
+      "legal_demand": "Hüquqi tələb",
+      "licence_ended": "Lisenziya bitib",
+      "rights_holder_request": "Hüquq sahibinin müraciəti",
+      "court_order": "Məhkəmə qərarı",
+      "privacy_request": "Şəxsi məlumatlarla bağlı müraciət"
+    },
+    "refusal": {
+      "self_activation": "Hazırladığınızı başqa əməkdaş aktivləşdirməlidir.",
+      "self_review": "İdxal etdiyiniz və ya təklif etdiyiniz barədə qərarı başqa əməkdaş verir.",
+      "robots_not_allowed": "robots.txt bu saytdan məlumat toplamağa icazə vermir.",
+      "terms_not_permitted": "İnsan tərəfindən yoxlanılmış istifadə şərtləri avtomatlaşdırılmış girişə icazə verməlidir.",
+      "licence_restricts_use": "Lisenziyasız yalnız başlıq, keçid, qısa xülasə və axtarış üçün indeksləmə mümkündür.",
+      "rewrite_needs_full_text": "Yenidən yazmaq üçün müqayisə ediləcək saxlanmış tam mətn lazımdır.",
+      "rsl_forbids_use": "Naşirin RSL şərtləri bu istifadəyə icazə vermir.",
+      "legal_basis_required": "Şəxsi məlumatlı mənbə üçün qeydə alınmış hüquqi əsas lazımdır.",
+      "licence_forbids_summary": "Lisenziya qısa xülasəni saxlamağa icazə vermir.",
+      "licence_forbids_full_text": "Lisenziya tam mətni saxlamağa icazə vermir.",
+      "licence_forbids_model_use": "Lisenziya bu materialı model provayderinə göndərməyə icazə vermir.",
+      "licence_forbids_syndication": "Lisenziya bu materialı digər hablarla paylaşmağa icazə vermir.",
+      "sponsored_off": "Bu habda sponsorlu materiallar söndürülüb.",
+      "sponsor_unverified": "Bu hab yalnız təsdiqlənmiş sponsorları qəbul edir.",
+      "batch_not_activated": "Əvvəlcə idxalı ikinci əməkdaş aktivləşdirməlidir.",
+      "fresh_check_required": "Davam etdirməzdən əvvəl yoxlamanı yenidən aparın.",
+      "source_not_active": "Mənbə aktiv deyil.",
+      "taken_down": "Bu, tələblə silinib.",
+      "source_unreachable": "Sayt cavab vermədi. Heç nə qeydə alınmadı, sonra yenidən cəhd edin.",
+      "publication_mismatch": "Qaralama bu materiala istinad edən öz redaksiya qaralamanız olmalıdır.",
+      "source_ref_exceeds_licence": "Göstərilən lisenziya qaralamada deyiləndən daha azına icazə verir.",
+      "person_confirmation_required": "İnsan yalnız öz təsdiqi ilə əlaqələndirilir.",
+      "batch_decided": "Bu idxal barədə artıq qərar verilib.",
+      "item_decided": "Bu material barədə artıq qərar verilib.",
+      "link_decided": "Bu əlaqə təklifi barədə artıq qərar verilib.",
+      "source_closed": "Bu mənbə bağlıdır.",
+      "invalid_transition": "Mənbə bu vəziyyətə keçə bilməz.",
+      "robots_domain": "robots.txt yoxlaması mənbədən fərqli domenə aiddir.",
+      "takedown_reason_required": "Silmə tələbində səbəb göstərilməlidir.",
+      "url_required": "Bu yoxlama üçün mənbənin ünvanı lazımdır.",
+      "summary_missing": "Qısa xülasəli qaralama üçün saxlanmış və ya süni intellektin hazırladığı xülasə lazımdır."
+    }
+  }
+}
