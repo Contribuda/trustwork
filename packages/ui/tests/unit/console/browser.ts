@@ -27,7 +27,7 @@ async function axe(page: Page) {
   expect(
     (
       await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
         .analyze()
     ).violations,
   ).toEqual([]);
