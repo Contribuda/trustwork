@@ -132,7 +132,7 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
       {data.geo.gate.attribution ? <p>{data.geo.gate.attribution}</p> : null}
     </section>
     <section aria-labelledby="metrics-heading"><h2 id="metrics-heading">{c.metrics}</h2><p>{c.cohortRule}</p>
-      <dl>{data.metrics.metrics.map((metric) => <div key={metric.key}><dt>{c.metricNames[metric.key]}</dt><dd>{c.unknown} · {c.metricReasons[metric.reason]}</dd></div>)}</dl>
+      <dl>{data.metrics.metrics.map((metric) => <div key={metric.key}><dt>{c.metricNames[metric.key]}</dt><dd>{c.metricReasons[metric.reason]}</dd></div>)}</dl>
       <h3>{c.runDuration}</h3><p>{c.nodeScope}</p>
       {data.metrics.rescreenDurations.length ? <ul>{data.metrics.rescreenDurations.map((run) => <li key={run.runId}><code>{run.runId}</code> · {number(run.seconds)}</li>)}</ul> : <p>{c.noEligibleDurations}</p>}
     </section>

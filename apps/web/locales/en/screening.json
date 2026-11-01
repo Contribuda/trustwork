@@ -28,7 +28,7 @@
       "nodeScope": "These records and decisions cover the whole node, including every hub.",
       "api": "Service data",
       "incomplete": "Some cohort metrics are unavailable",
-      "unavailable": "Unknown metrics need recorded hub cohorts.",
+      "unavailable": "Verified figures for this hub are not yet available.",
       "saved": "Saved. The current record has been refreshed.",
       "refused": "The action was refused. Refresh and check your access. Request:",
       "unknownOutcome": "The outcome is unknown. Retry the same submission to retrieve its result; do not submit a changed decision.",
@@ -133,7 +133,7 @@
         "propose_reversal": "Propose reversal"
       },
       "participantTitle": "Participant compliance",
-      "participantScope": "This page shows only the authorized compliance panel. Other participant information is not connected.",
+      "participantScope": "This page shows the compliance information you are permitted to view.",
       "listReadOnly": "Lists and versions are read-only. No baseline or matching controls.",
       "additional": "Additional list",
       "mode": "Mode",
@@ -186,9 +186,9 @@
         "not_screened": "Not screened"
       },
       "metricReasons": {
-        "hub_attribution_missing": "Hub attribution is not recorded",
-        "distinct_principals_missing": "Distinct principals are not recorded",
-        "gate_counter_missing": "No persisted gate-refusal counter"
+        "hub_attribution_missing": "Verified figures are unavailable.",
+        "distinct_principals_missing": "Verified figures are unavailable.",
+        "gate_counter_missing": "Verified figures are unavailable."
       },
       "metricNames": {
         "refusals": "Refusals by place and day",

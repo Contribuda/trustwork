@@ -28,7 +28,7 @@
       "nodeScope": "Bu qeydlər və qərarlar bütün qovşağa və bütün mərkəzlərə aiddir.",
       "api": "Xidmət məlumatları",
       "incomplete": "Bəzi qrup göstəriciləri mövcud deyil",
-      "unavailable": "Naməlum göstəricilər üçün hab qruplarının qeydləri lazımdır.",
+      "unavailable": "Bu hab üçün təsdiqlənmiş göstəricilər hələ mövcud deyil.",
       "saved": "Yadda saxlanıldı. Cari qeyd yeniləndi.",
       "refused": "Əməliyyat rədd edildi. Səhifəni yeniləyin və girişinizi yoxlayın. Sorğu:",
       "unknownOutcome": "Nəticə məlum deyil. Nəticəni almaq üçün eyni sorğunu təkrarlayın; dəyişdirilmiş qərar göndərməyin.",
@@ -133,7 +133,7 @@
         "propose_reversal": "Ləğv etməyi təklif etmək"
       },
       "participantTitle": "İştirakçı uyğunluğu",
-      "participantScope": "Bu səhifə yalnız icazəli uyğunluq panelini göstərir. Digər məlumatlar qoşulmayıb.",
+      "participantScope": "Bu səhifədə baxmaq icazəniz olan uyğunluq məlumatları göstərilir.",
       "listReadOnly": "Siyahılar və versiyalar yalnız oxunur. Əsas siyahı və uyğunlaşdırma idarəetməsi yoxdur.",
       "additional": "Əlavə siyahı",
       "mode": "Rejim",
@@ -186,9 +186,9 @@
         "not_screened": "Yoxlanmayıb"
       },
       "metricReasons": {
-        "hub_attribution_missing": "Haba aidlik qeydə alınmayıb",
-        "distinct_principals_missing": "Fərqli iştirakçılar qeydə alınmayıb",
-        "gate_counter_missing": "İmtina sayğacı saxlanılmır"
+        "hub_attribution_missing": "Təsdiqlənmiş göstəricilər mövcud deyil.",
+        "distinct_principals_missing": "Təsdiqlənmiş göstəricilər mövcud deyil.",
+        "gate_counter_missing": "Təsdiqlənmiş göstəricilər mövcud deyil."
       },
       "metricNames": {
         "refusals": "Yer və gün üzrə imtinalar",

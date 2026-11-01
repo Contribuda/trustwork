@@ -28,7 +28,7 @@
       "nodeScope": "Estos registros y decisiones abarcan todo el nodo, incluidos todos sus centros.",
       "api": "Datos del servicio",
       "incomplete": "Algunas métricas de cohorte no están disponibles",
-      "unavailable": "Las métricas desconocidas necesitan cohortes registradas por centro.",
+      "unavailable": "Las cifras verificadas de este centro aún no están disponibles.",
       "saved": "Guardado. Se ha actualizado el registro.",
       "refused": "Se rechazó la acción. Actualice y compruebe su acceso. Solicitud:",
       "unknownOutcome": "El resultado es desconocido. Reintente el mismo envío para recuperar el resultado; no envíe una decisión modificada.",
@@ -133,7 +133,7 @@
         "propose_reversal": "Proponer revocación"
       },
       "participantTitle": "Cumplimiento del participante",
-      "participantScope": "Esta página muestra solo el panel de cumplimiento autorizado. El resto de la información no está conectado.",
+      "participantScope": "Esta página muestra la información de cumplimiento que tiene permiso para consultar.",
       "listReadOnly": "Las listas y versiones son de solo lectura. Sin controles de listas básicas ni de coincidencias.",
       "additional": "Lista adicional",
       "mode": "Modo",
@@ -186,9 +186,9 @@
         "not_screened": "Sin revisar"
       },
       "metricReasons": {
-        "hub_attribution_missing": "No se registra la atribución al centro",
-        "distinct_principals_missing": "No se registran participantes distintos",
-        "gate_counter_missing": "No hay contador persistente de rechazos"
+        "hub_attribution_missing": "Las cifras verificadas no están disponibles.",
+        "distinct_principals_missing": "Las cifras verificadas no están disponibles.",
+        "gate_counter_missing": "Las cifras verificadas no están disponibles."
       },
       "metricNames": {
         "refusals": "Rechazos por lugar y día",
