@@ -12,6 +12,7 @@ import { ProcurementModule } from './modules/procurement/procurement.module.js';
 import { ApprovalRoutesModule } from './modules/approval-routes/approval-routes.module.js';
 import { FilesModule, type FilesModuleOptions } from './modules/files/files.module.js';
 import { SalesModule } from './modules/sales/sales.module.js';
+import { SupplierBaseModule } from './modules/supplier-base/supplier-base.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { ProfilesModule } from './modules/profiles/profiles.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
@@ -40,7 +41,7 @@ export class HealthController {
 
 /**
  * Composition root: health always; identity, projects, directory, plans, catalogue, procurement, approval routes (PRC-001),
- * sales, transactions, profiles, tasks, execution and trust, the reputation builder (REP-001), platform administration,
+ * sales, the supplier base (PRC-003), transactions, profiles, tasks, execution and trust, the reputation builder (REP-001), platform administration,
  * content (CNT-001), the assistant, agent goals and representation (AGT-001), the deployment-location attestation
  * (SANC-009, told the configured jurisdiction gate mode), hubs (HUB-001), communications (COMMS-001) and the MCP
  * authorization server (MCP-002) only when a database is configured;
@@ -64,6 +65,7 @@ export class AppModule {
         ProcurementModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
         SalesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
+        SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles) }),
         TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks) }),
