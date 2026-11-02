@@ -57,7 +57,12 @@ Console routes under `/v1/admin/hubs/:hubId/registers` need a staff role at the 
 
 The public company page (`apps/web/app/(public)/[lang]/companies/[handle]/page.tsx`) shows the public projection as "From public registers" ([`RegisterFacts.tsx`](../../../../web/components/public/RegisterFacts.tsx); copy under `companyPage.registerFacts` in `apps/web/locales/<lang>/companies.json` for every maintained language). Each entry names the kind and the register's status, classes, grade or inspection details, the date the register was seen and its validity, a stale note past `validUntil` and a link to the register record (new tab, no referrer, nofollow); a "How this is sourced" explanation follows. Without facts the panel is absent.
 
-## Next
+## Notices and canonical entities
 
-- Reminder notices through COMMS-001 (a template there), so administrators hear about an expiring licence without opening the reminders route.
-- Exposure to canonical entities (ENT-001) by identifier.
+- Every expiry reminder also reaches the company's active administrators in the notification centre (COMMS-001 template `registers.licence_expiring`, category account): the fact kind, the register's last valid day and the days left; no identifier, record or link. E-mail follows once the hub activates its template versions of this key.
+- Canonical entities (ENT-001) read the current facts for an identifier (`registers_identifier_facts`, repository `registers.identifierFacts`) with source, observed time, licence snapshot and `valid_until`, so a page cites them field by field.
+
+## Later
+
+- Live adapters per register, each after an operator confirms the register's terms, with a credential reference and a second person.
+- E-mail of reminder notices through the hub's COMMS-001 template versions.

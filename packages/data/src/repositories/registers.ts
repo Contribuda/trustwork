@@ -103,6 +103,11 @@ export const registers = {
     const { rows } = await sql<RegisterFactRow>`SELECT * FROM trustwork.registers_company_facts(${hubId}::uuid, ${companyId}::uuid)`.execute(trx);
     return rows;
   },
+  /** Staff: current facts for an identifier kind and value (ENT-001 cites them field by field), before display rules. */
+  async identifierFacts(trx: Transaction, hubId: string, identifierKind: string, identifierValue: string): Promise<RegisterFactRow[]> {
+    const { rows } = await sql<RegisterFactRow>`SELECT * FROM trustwork.registers_identifier_facts(${hubId}::uuid, ${identifierKind}::text, ${identifierValue}::text)`.execute(trx);
+    return rows;
+  },
   /** Anyone: what a public page may show about the company (PublicSourcedFactSchema). */
   async publicFacts(trx: Transaction, hubId: string, companyId: string): Promise<PublicRegisterFactRow[]> {
     const { rows } = await sql<PublicRegisterFactRow>`SELECT * FROM trustwork.registers_public_facts(${hubId}::uuid, ${companyId}::uuid)`.execute(trx);

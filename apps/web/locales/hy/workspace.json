@@ -33,7 +33,8 @@
     "template": {
       "threadOpened": "{authorName}-ը սկսեց նամակագրություն՝ {threadSubject}",
       "threadMessage": "{authorName}-ը գրեց «{threadSubject}»-ում",
-      "securityNotice": "Անվտանգության ծանուցում ձեր հաշվի համար"
+      "securityNotice": "Անվտանգության ծանուցում ձեր հաշվի համար",
+      "registerExpiring": "Ձեր ընկերության մասին պետական ռեգիստրի գրառումն ավարտվում է {date}"
     },
     "markAllRead": "Նշել բոլորը որպես կարդացված",
     "markFailed": "Կարդացված լինելու նշումը չպահպանվեց։ Փորձեք կրկին։"

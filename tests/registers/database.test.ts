@@ -234,6 +234,24 @@ test('REG-001 register facts on PostgreSQL', { skip: env ? false : SKIP_REASON }
     assert.ok(own.every((r) => calendarDate(r.valid_until) === isoDay(TODAY + 75 * DAY) && r.link.startsWith('https://synthetic-register.invalid/')));
     await rejects(as(p.outsider, (trx) => registers.ownReminders(trx, claimed)), 'P0002', 'access.not_found');
     await rejects(as(p.agent, (trx) => registers.ownReminders(trx, claimed)), 'P0002', 'access.not_found');
+
+    // Each reminder reaches the company's administrators in the notification centre once, with three plain values only.
+    const notices = await as(p.employee, (trx) => trx.selectFrom('notification').selectAll().where('template_key', '=', 'registers.licence_expiring').execute());
+    assert.deepEqual(notices.map((n) => (n.params as { daysBefore: string }).daysBefore).sort((x, y) => Number(x) - Number(y)), ['6', '30', '60']);
+    for (const n of notices) {
+      assert.deepEqual(Object.keys(n.params as object).sort(), ['daysBefore', 'factKind', 'validUntil']);
+      assert.deepEqual([n.category, n.transactional, n.link_kind, (n.params as { validUntil: string }).validUntil], ['account', true, null, isoDay(TODAY + 75 * DAY)]);
+      assert.ok(!JSON.stringify(n.params).includes('3000001'), 'no identifier in a notice');
+    }
+    assert.equal((await as(p.outsider, (trx) => trx.selectFrom('notification').select('id').where('template_key', '=', 'registers.licence_expiring').execute())).length, 0);
+  });
+
+  await t.test('canonical entities read the current facts by identifier (staff of the hub only)', async () => {
+    const facts = await as(p.agent, (trx) => registers.identifierFacts(trx, w.hubId, 'US-CA-CSLB', '3 000 001'));
+    assert.deepEqual(facts.map((f) => [f.kind, f.identifier_norm, f.superseded_at]), [['licence_status', '3000001', null]]);
+    assert.ok(facts.every((f) => f.licence_snapshot && f.source_id && f.observed_at));
+    await rejects(as(p.outsider, (trx) => registers.identifierFacts(trx, w.hubId, 'US-CA-CSLB', '3000001')), 'P0002', 'admin.not_found');
+    await rejects(as(p.otherAgent, (trx) => registers.identifierFacts(trx, w.hubId, 'US-CA-CSLB', '3000001')), 'P0002', 'admin.not_found');
   });
 
   await t.test('the worker refreshes due adapters; the runtime role cannot call worker functions', async () => {

@@ -33,7 +33,8 @@
     "template": {
       "threadOpened": "{authorName} started a conversation: {threadSubject}",
       "threadMessage": "{authorName} wrote in “{threadSubject}”",
-      "securityNotice": "Security notice for your account"
+      "securityNotice": "Security notice for your account",
+      "registerExpiring": "A public register entry about your company ends on {date}"
     },
     "markAllRead": "Mark all as read",
     "markFailed": "The read mark was not saved. Try again."

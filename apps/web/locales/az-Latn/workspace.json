@@ -33,7 +33,8 @@
     "template": {
       "threadOpened": "{authorName} yazışmaya başladı: {threadSubject}",
       "threadMessage": "{authorName} “{threadSubject}” mövzusunda yazdı",
-      "securityNotice": "Hesabınızın təhlükəsizliyi barədə bildiriş"
+      "securityNotice": "Hesabınızın təhlükəsizliyi barədə bildiriş",
+      "registerExpiring": "Şirkətiniz haqqında dövlət reyestri qeydi {date} tarixində bitir"
     },
     "markAllRead": "Hamısını oxunmuş kimi qeyd et",
     "markFailed": "Oxunma qeydi saxlanmadı. Yenidən cəhd edin."

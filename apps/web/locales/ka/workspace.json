@@ -33,7 +33,8 @@
     "template": {
       "threadOpened": "{authorName}-მა დაიწყო მიმოწერა: {threadSubject}",
       "threadMessage": "{authorName}-მა დაწერა „{threadSubject}“-ში",
-      "securityNotice": "უსაფრთხოების შეტყობინება თქვენი ანგარიშისთვის"
+      "securityNotice": "უსაფრთხოების შეტყობინება თქვენი ანგარიშისთვის",
+      "registerExpiring": "თქვენი კომპანიის შესახებ საჯარო რეესტრის ჩანაწერი {date}-ს იწურება"
     },
     "markAllRead": "ყველას წაკითხულად მონიშვნა",
     "markFailed": "წაკითხვის ნიშნული ვერ შეინახა. სცადეთ ხელახლა."
