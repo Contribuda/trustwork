@@ -29,11 +29,11 @@ interface Elevated { state: RequestState; elevationId: string; idempotencyKey: s
 interface Attempt { target: StaffTarget; permission: ConsolePermission; action: string; objectType: string; objectId: string }
 
 const SEVENTY_TWO_HOURS = 72 * 3600;
-const toFacts = (rows: StaffRoleAssignmentRow[]): AssignmentFact[] => rows.map((r) => ({
+export const toFacts = (rows: StaffRoleAssignmentRow[]): AssignmentFact[] => rows.map((r) => ({
   personId: r.person_id, role: r.role as HubStaffRole, scope: scopeOf(r), definitionVersion: r.definition_version, breakglass: r.breakglass,
   validFrom: new Date(r.valid_from), validUntil: r.valid_until ? new Date(r.valid_until) : null, revokedAt: r.revoked_at ? new Date(r.revoked_at) : null,
 }));
-const toDefs = (rows: StaffRoleDefinitionRow[]): DefinitionFact[] => rows.map((r) => ({
+export const toDefs = (rows: StaffRoleDefinitionRow[]): DefinitionFact[] => rows.map((r) => ({
   role: r.role as HubStaffRole, version: r.version, scopes: r.scopes, permissions: r.permissions as ConsolePermission[], sodMode: r.sod_mode, sodConflicts: r.sod_conflicts as HubStaffRole[],
   grantMaxHours: r.grant_max_hours,
 }));
