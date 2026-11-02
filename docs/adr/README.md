@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are dated 2026-10-27; 009 is dated 2026-10-29; 010 and 011 are dated 2026-10-30; 012, 013 and 014 are dated 2026-10-31; 016 to 025 are dated 2026-11-01. “Selected for foundation” is an engineering decision in this bootstrap, pending coordinator review, not an assertion of production/human product acceptance. Any change requires evidence and consequences, with supersession rather than silent rewrite.
+Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are dated 2026-10-27; 009 is dated 2026-10-29; 010 and 011 are dated 2026-10-30; 012, 013 and 014 are dated 2026-10-31; 016 to 026 are dated 2026-11-01. “Selected for foundation” is an engineering decision in this bootstrap, pending coordinator review, not an assertion of production/human product acceptance. Any change requires evidence and consequences, with supersession rather than silent rewrite.
 
 | ADR | Status | Decision |
 |---|---|---|
@@ -26,5 +26,6 @@ Decisions 001–007 are dated 2026-10-26; 008 and the amendments to 002/003 are 
 | [023](023-screening-operational-cohorts.md) | Proposed; technical review pending | Explicit event attribution, distinct-person populations and retention for sanctions operational cohorts; no per-person refusal logs |
 | [024](024-payment-source-authority.md) | Proposed 2026-11-01 | Exact verified party/account source authority, separate bilateral payment authorization, narrow publisher and independent review; remote admission remains unavailable pending a fenced protocol |
 | [025](025-owner-delegated-product-decisions-2026-11-01.md) | Accepted 2026-11-01 (owner delegation) | Product defaults delegated by the owner: ADR 016, 017 and 018 accepted with their answers; console design, markets and launch order, bid desk and the agent-job interview programme decided; counsel questions, spending, providers, launch and outside contact excluded |
+| [026](026-discovery-to-claim-engine-and-professional-pages.md) | Accepted 2026-11-01 (owner goal, conductor rules) | One discovery-to-claim engine for every country: lawful sources, cited pages, invitations by the channels each country allows, hand-over by claim; professional pages for people from statutory registers only where pack facts, counsel and a second person allow; amends ADR 025 decisions 11 and 12 |
 
 Numbers 005 and 006 recorded the core team's former private delivery coordination and development-management integration; both were retired on 2026-10-31 when development moved into this repository (ADR 010 decision 15).
