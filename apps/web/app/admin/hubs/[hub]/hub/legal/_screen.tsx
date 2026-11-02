@@ -4,7 +4,7 @@ import { LEGAL_DOCUMENT_KINDS } from '../../../../_data/schemas';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
 import type { HubContext } from '../../../../_components/context';
 import type { Screen } from '../../../../_components/screen';
-import { formLabels, readOnlyReason, SelectField } from '../../../../_components/forms';
+import { formLabels, readOnlyReason, SelectField, TextAreaInput } from '../../../../_components/forms';
 import { languageName, list, longDate } from '../../../../_components/format';
 import { ConsoleHeader, KeyValues, Panel } from '../../../../_components/shell';
 
@@ -103,6 +103,8 @@ async function Legal(ctx: HubContext) {
         <Panel id="draft" title={t('admin.hub.legal.draft')}>
           <ConsoleForm action={submitConsoleCommand} hidden={ctx.hidden('legal.draft')} labels={formLabels({ submit: t('admin.hub.legal.draft') })} disabledReason={readOnlyReason(ctx.can('admin.hub.legal.edit'), ctx.offline)}>
             <SelectField name="kind" label={t('admin.hub.legal.kind')} options={LEGAL_DOCUMENT_KINDS.map((k) => ({ value: k, label: tDynamic(`admin.hub.legal.kinds.${k}`, k) }))} />
+            <SelectField name="locale" label={t('admin.hub.legal.draftLanguage')} options={locales.map((l) => ({ value: l, label: languageName(l) }))} />
+            <TextAreaInput name="body" label={t('admin.hub.legal.draftText')} description={t('admin.hub.legal.draftTextHelp')} isRequired />
             <p className="admin-note">{t('admin.hub.legal.templatesNote')}</p>
           </ConsoleForm>
         </Panel>

@@ -138,7 +138,7 @@ test('approvals: pending requests and approvals of this hub only, bound to their
 
 test('live mode refuses every command and serves no fixture data for unwired sections', async () => {
   const { port: p } = port(staffRoutes());
-  assert.deepEqual(await p.command(live, { command: 'identity.save', reason: 'x', expectedRevision: 1, fields: {} } as never), { status: 'not_found' });
+  assert.deepEqual(await p.command(live, { command: 'taxonomy.add_term', reason: 'x', expectedRevision: 1, fields: {} } as never), { status: 'not_found' });
   assert.equal(await p.overview(HUB_ID), null);
   assert.equal(await p.product(HUB_ID), null);
   assert.equal(await p.setup('token'), null);
@@ -194,7 +194,7 @@ test('refused before any call: another digest, one\'s own request, no reason, no
   assert.deepEqual(await demo.port.command({ demo: true, persona: 'hub-owner', scenario: 'default' }, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST })), { status: 'not_found' });
   cases.push([null, demo]);
   const unwired = commandPort({ status: 200, code: null });
-  assert.deepEqual(await unwired.port.command(live, { command: 'identity.save', hubSlug: 'san-diego', setupToken: null, reason: 'x', expectedRevision: 1, fields: {} }), { status: 'not_found' });
+  assert.deepEqual(await unwired.port.command(live, { command: 'taxonomy.add_term', hubSlug: 'san-diego', setupToken: null, reason: 'x', expectedRevision: 1, fields: { kind: 'x' } }), { status: 'not_found' });
   cases.push([null, unwired]);
   for (const [, c] of cases) assert.deepEqual(c.sent, [], 'nothing was sent');
 });
@@ -209,6 +209,115 @@ test('API refusals become console refusals: forbidden, a second approver require
   assert.equal(await code(404, 'access.not_found'), 'not_found');
   assert.equal(await code(409, 'validation.idempotency_conflict'), 'request_void');
   assert.equal(await code(503, null), 'invalid');
+});
+
+/* ---------- Live commands: hub settings through the API (HUBC-007 part 2) ---------- */
+
+function settingsPort(answers: Array<{ status: number; code: string | null; body?: unknown }>, permissions: string[]) {
+  const api = fakeApi(staffRoutes({ [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions, breakglassOnly: [] } }));
+  const sent: Sent[] = [];
+  let i = 0;
+  let k = 0;
+  const withPost: ConsoleApi = { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return answers[i++] ?? { status: 500, code: null }; } };
+  return { sent, port: createApiConsolePort({ api: withPost, siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => `key-${++k}` }) };
+}
+const settings = (command: string, fields: Record<string, string>, expectedRevision: number | null = hub.revision) =>
+  ({ command, hubSlug: 'san-diego', setupToken: null, reason: 'Synthetic settings change', expectedRevision, fields }) as never;
+const applied = (objectId: string, outcome = 'applied') => ({ result: { contractVersion: '1.0.0', outcome, objectId, revision: 2, approvalRequestId: outcome === 'pending_second_person' ? REQUEST : null, auditEventId: objectId } });
+const VERSION = '66666666-6666-4666-8666-666666666666';
+
+test('modes: a new modes version is drafted with the requested modes, then activated with its revision; each call has its own key', async () => {
+  const { sent, port: p } = settingsPort([{ status: 201, code: null, body: { ...applied(VERSION), version: { id: VERSION, revision: 1 } } }, { status: 200, code: null, body: applied(VERSION) }],
+    ['admin.hub.modes.edit']);
+  const outcome = await p.command(live, settings('modes.save', { moderation: 'pre_moderate_all' }));
+  assert.deepEqual(outcome, { status: 'applied' });
+  assert.equal(sent.length, 2);
+  assert.equal(sent[0]!.path, `/v1/admin/hubs/${HUB_ID}/config`);
+  assert.equal(sent[0]!.body.domain, 'modes');
+  assert.equal((sent[0]!.body.payload as { moderation: string }).moderation, 'pre_moderate_all');
+  assert.deepEqual([sent[1]!.path, sent[1]!.body.expectedRevision, sent[1]!.body.approvalId], [`/v1/admin/hubs/${HUB_ID}/config/${VERSION}/activate`, 1, null]);
+  assert.deepEqual(sent.map((c) => [c.key, c.body.idempotencyKey]), [['key-1', 'key-1'], ['key-2', 'key-2']]);
+});
+
+test('an activation the API sends to a second person is reported as such, never as applied', async () => {
+  const { port: p } = settingsPort([{ status: 201, code: null, body: { ...applied(VERSION), version: { id: VERSION, revision: 1 } } }, { status: 200, code: null, body: applied(VERSION, 'pending_second_person') }],
+    ['admin.hub.modes.edit']);
+  assert.deepEqual(await p.command(live, settings('modes.save', { moderation: 'pre_moderate_all' })), { status: 'pending_second_person', secondPerson: null });
+});
+
+test('lifecycle and launch: the transition carries the hub revision; a gate check needs an evidence record id', async () => {
+  const lifecycle = settingsPort([{ status: 200, code: null, body: applied(HUB_ID) }], ['admin.hub.lifecycle.request']);
+  await lifecycle.port.command(live, settings('lifecycle.request', { to: 'pilot' }));
+  if (lifecycle.sent.length) assert.deepEqual([lifecycle.sent[0]!.path, lifecycle.sent[0]!.body.to, lifecycle.sent[0]!.body.expectedRevision], [`/v1/admin/hubs/${HUB_ID}/lifecycle`, 'pilot', hub.revision]);
+  const gate = fixture.gates.find((g) => g.state !== 'passed')?.gate;
+  const launch = settingsPort([{ status: 200, code: null, body: applied(HUB_ID) }], ['admin.hub.launch.check']);
+  if (gate) {
+    const freeText = await launch.port.command(live, settings('launch.mark_passed', { gate, evidence: 'contract-SD-1' }, null));
+    assert.ok(freeText.status === 'rejected', 'a free-text reference is not an evidence record');
+  }
+  assert.ok(launch.sent.every((c) => c.path.endsWith('/launch/check')));
+});
+
+test('identity: a new default language goes through the profile with the hub revision; a new territory through its own route', async () => {
+  const other = hub.locales.find((l) => l !== hub.defaultLocale);
+  const { sent, port: p } = settingsPort([{ status: 200, code: null, body: applied(HUB_ID) }, { status: 201, code: null, body: applied(HUB_ID) }], ['admin.hub.identity.edit']);
+  const fields: Record<string, string> = { addTerritory: 'US-CA:san-diego' };
+  if (other) fields.defaultLocale = other;
+  assert.deepEqual(await p.command(live, settings('identity.save', fields)), { status: 'applied' });
+  const paths = sent.map((c) => c.path);
+  if (other) {
+    assert.equal(paths[0], `/v1/admin/hubs/${HUB_ID}/profile`);
+    assert.deepEqual([sent[0]!.body.defaultLocale, sent[0]!.body.expectedRevision, sent[0]!.body.locales], [other, hub.revision, hub.locales]);
+  }
+  assert.equal(paths.at(-1), `/v1/admin/hubs/${HUB_ID}/territories`);
+  assert.deepEqual(sent.at(-1)!.body.territory, { level: 'place', code: 'US-CA:san-diego' });
+  const nothing = settingsPort([], ['admin.hub.identity.edit']);
+  assert.equal((await nothing.port.command(live, settings('identity.save', {}))).status, 'rejected', 'nothing to change is not a save');
+  assert.deepEqual(nothing.sent, []);
+});
+
+test('residency: a residency version for the named country, sent to a second person; a restricted place never leaves the console', async () => {
+  const { sent, port: p } = settingsPort([{ status: 201, code: null, body: { ...applied(VERSION), version: { id: VERSION, revision: 1 } } }, { status: 200, code: null, body: applied(VERSION, 'pending_second_person') }],
+    ['admin.hub.residency.edit']);
+  assert.deepEqual(await p.command(live, settings('residency.request_change', { country: 'us' }, null)), { status: 'pending_second_person', secondPerson: 'hub.change_residency' });
+  assert.deepEqual([sent[0]!.body.domain, sent[0]!.body.payload], ['residency', { hostingCountry: 'US', hostingRegion: null, personalDataCountries: ['US'] }]);
+  const restricted = settingsPort([], ['admin.hub.residency.edit']);
+  assert.equal(((await restricted.port.command(live, settings('residency.request_change', { country: 'IR' }, null))) as { code: string }).code, 'territory_restricted');
+  assert.deepEqual(restricted.sent, []);
+});
+
+test('legal: stored versions become console documents (counsel-approved drafts shown as such); a draft names its language and text', async () => {
+  const COUNSEL = '77777777-7777-4777-8777-777777777777';
+  const doc = (id: string, overrides: Record<string, unknown>) => ({ id, hubId: HUB_ID, kind: 'terms', locale: hub.defaultLocale, version: 1, body: 'Synthetic terms', bodyDigest: 'c'.repeat(64),
+    status: 'draft', counselApprovalId: null, draftedBy: STAFF, draftedAt: '2026-11-01T09:00:00.000Z', activatedBy: null, activatedAt: null, approvalId: null, revision: 1, requiredForLaunch: true,
+    activation: null, ...overrides });
+  const { port: p } = port(staffRoutes({ [`/v1/admin/hubs/${HUB_ID}/legal`]: {
+    documents: [doc('88888888-8888-4888-8888-888888888881', {}), doc('88888888-8888-4888-8888-888888888882', { counselApprovalId: COUNSEL, version: 2 })],
+    counselApprovals: [{ id: COUNSEL, hubId: HUB_ID, documentVersionIds: ['88888888-8888-4888-8888-888888888882'], counselName: 'Synthetic Counsel', firm: 'Synthetic Law LLP',
+      approvedOn: '2026-10-30', scopeNote: 'Synthetic review of the terms', recordedBy: STAFF, recordedAt: '2026-10-30T10:00:00.000Z' }],
+  } }));
+  const { operator, documents } = await p.legal(HUB_ID);
+  assert.equal(operator, null, 'no operator read exists, so none is invented');
+  assert.deepEqual(documents.map((d) => [d.version, d.status, d.locales, d.counselApproval?.firm ?? null]), [[1, 'draft', [hub.defaultLocale], null], [2, 'counsel_approved', [hub.defaultLocale], 'Synthetic Law LLP']]);
+
+  const { sent, port: draft } = settingsPort([{ status: 201, code: null, body: applied(HUB_ID) }], ['admin.hub.legal.edit']);
+  assert.deepEqual(await draft.command(live, settings('legal.draft', { kind: 'terms', locale: hub.defaultLocale, body: 'Synthetic terms of use, version 2.' }, null)), { status: 'applied' });
+  assert.deepEqual([sent[0]!.path, sent[0]!.body.kind, sent[0]!.body.locale, sent[0]!.body.body], [`/v1/admin/hubs/${HUB_ID}/legal`, 'terms', hub.defaultLocale, 'Synthetic terms of use, version 2.']);
+  const wrong = settingsPort([], ['admin.hub.legal.edit']);
+  assert.equal(((await wrong.port.command(live, settings('legal.draft', { kind: 'terms', locale: 'xx', body: 'Text' }, null))) as { field: string }).field, 'locale');
+  assert.equal(((await wrong.port.command(live, settings('legal.draft', { kind: 'terms', locale: hub.defaultLocale, body: '   ' }, null))) as { field: string }).field, 'body');
+  assert.deepEqual(wrong.sent, []);
+});
+
+test('settings refusals: no permission or a stale revision sends nothing; an API refusal stays a refusal', async () => {
+  const denied = settingsPort([], ['admin.notifications.read']);
+  assert.equal(((await denied.port.command(live, settings('modes.save', { moderation: 'pre_moderate_all' }))) as { code: string }).code, 'denied');
+  const stale = settingsPort([], ['admin.hub.modes.edit']);
+  assert.equal(((await stale.port.command(live, settings('modes.save', { moderation: 'pre_moderate_all' }, hub.revision + 5))) as { code: string }).code, 'stale');
+  assert.deepEqual([...denied.sent, ...stale.sent], []);
+  const refused = settingsPort([{ status: 403, code: 'access.forbidden' }], ['admin.hub.modes.edit']);
+  assert.deepEqual(await refused.port.command(live, settings('modes.save', { moderation: 'pre_moderate_all' })), { status: 'rejected', code: 'denied', field: null, detail: [] });
+  assert.equal(refused.sent.length, 1, 'nothing is activated after a refused draft');
 });
 
 test('scan: the live adapter imports no fixture module', () => {

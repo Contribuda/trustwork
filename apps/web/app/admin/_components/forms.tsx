@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { TextField } from '@/components/ui';
+import { TextArea, TextField } from '@/components/ui';
 import { t } from '@/app/_lib/i18n';
 import type { ConsoleFormLabels } from './ConsoleForm';
 
@@ -40,6 +40,11 @@ export function SelectField({ name, label, options, defaultValue, description }:
 
 export function TextInput({ name, label, description, isRequired = false, defaultValue }: { name: string; label: string; description?: string | undefined; isRequired?: boolean; defaultValue?: string | undefined }) {
   return <TextField name={`f.${name}`} label={label} description={description} isRequired={isRequired} {...(defaultValue !== undefined ? { defaultValue } : {})} />;
+}
+
+/** A multi-line text with a visible label; the name starts with `f.` so the value reaches the command. */
+export function TextAreaInput({ name, label, description, isRequired = false, rows = 8 }: { name: string; label: string; description?: string | undefined; isRequired?: boolean; rows?: number }) {
+  return <TextArea name={`f.${name}`} label={label} description={description} isRequired={isRequired} rows={rows} />;
 }
 
 /** The read-only explanation for a viewer who may read a section but not change it. */

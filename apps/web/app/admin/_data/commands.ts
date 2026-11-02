@@ -120,6 +120,8 @@ export type CommandOutcome =
   | { status: 'demo_not_saved'; secondPerson: ConsoleSecondPersonAction | null }
   /** Live mode: the API applied the command (HUBC-007). */
   | { status: 'applied' }
+  /** Live mode: the API saved the change and asked a second person for this action (HUBC-007). */
+  | { status: 'pending_second_person'; secondPerson: ConsoleSecondPersonAction | null }
   | { status: 'rejected'; code: RejectCode; field: string | null; detail: string[] }
   | { status: 'not_found' };
 
@@ -193,6 +195,34 @@ function setupCommand(input: CommandInput, ctx: CommandContext): CommandOutcome 
   }
   if (step === 'review' && SETUP_STEPS.slice(0, -1).some((s) => !run.state.completed.includes(s))) return reject('setup_blocked', 'step');
   return accepted();
+}
+
+/**
+ * The hub modes a valid `modes.save` or `modules.toggle` asks for (the live adapter sends exactly these to the API);
+ * null for anything else. Call after `evaluateCommand` accepted the input.
+ */
+export function requestedModes(input: CommandInput, hub: HubRecord): HubModes | null {
+  const f = input.fields;
+  if (input.command === 'modes.save') {
+    const automation = { ...hub.modes.automation };
+    for (const domain of AUTOMATION_DOMAINS) {
+      const value = f[`automation.${domain}`];
+      if (value === 'manual' || value === 'assisted' || value === 'supervised_autonomous') automation[domain] = value;
+    }
+    return {
+      ...hub.modes,
+      registration: (f.registration ?? hub.modes.registration) as HubModes['registration'],
+      moderation: (f.moderation ?? hub.modes.moderation) as HubModes['moderation'],
+      searchEngineIndexing: f.searchEngineIndexing === undefined ? hub.modes.searchEngineIndexing : f.searchEngineIndexing === 'on',
+      automation,
+    };
+  }
+  if (input.command === 'modules.toggle') {
+    const current = new Set(hub.modes.modules);
+    if (f.enable === 'true') current.add(f.module as HubModule); else current.delete(f.module as HubModule);
+    return { ...hub.modes, modules: HUB_MODULES.filter((m) => current.has(m)) };
+  }
+  return null;
 }
 
 /** Evaluates one console command for a viewer on a hub. Pure: no clock, no I/O, no randomness beyond the context. */
@@ -278,8 +308,12 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
       if (violations.length) return reject('modes_violation', 'module', violations);
       return accepted();
     }
-    case 'legal.draft':
-      return (LEGAL_DOCUMENT_KINDS as readonly string[]).includes(f.kind ?? '') ? accepted() : reject('invalid', 'kind');
+    case 'legal.draft': {
+      if (!(LEGAL_DOCUMENT_KINDS as readonly string[]).includes(f.kind ?? '')) return reject('invalid', 'kind');
+      if (f.locale !== undefined && !hub.hub.locales.includes(f.locale)) return reject('invalid', 'locale');
+      if (f.body !== undefined && ((f.body ?? '').trim().length === 0 || (f.body ?? '').length > 200_000)) return reject('invalid', 'body');
+      return accepted();
+    }
     case 'legal.request_activation': {
       const doc = ctx.documents.find((d) => d.id === f.documentId && d.hubId === hub.hub.id);
       if (!doc) return NOT_FOUND;
