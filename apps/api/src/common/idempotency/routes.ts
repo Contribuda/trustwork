@@ -493,6 +493,13 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'verification.screening_record': IN_TRANSACTION,
   'verification.appeal_file': IN_TRANSACTION,
   'verification.appeal_decide': IN_TRANSACTION,
+  // Register facts (REG-001): staff commands complete in the principal transaction.
+  'registers.adapter_bind': IN_TRANSACTION,
+  'registers.adapter_live': IN_TRANSACTION,
+  'registers.adapter_retire': IN_TRANSACTION,
+  'registers.fake_run': IN_TRANSACTION,
+  'registers.link_record': IN_TRANSACTION,
+  'registers.link_end': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
