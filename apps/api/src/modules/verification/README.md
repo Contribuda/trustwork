@@ -11,6 +11,7 @@ Storage: [`packages/data/migrations/verification`](../../../../../packages/data/
 - **Results.** Check results are append-only evidence references, never documents, with an expiry from the recipe's re-check period. A person records only fake or manual results; live results come from the adapter.
 - **The sanctions check** keeps no lists and decides no match. It records a reference to the SANC-003 subject state and passes only when screening is available and the subject is neither held nor suspended. It is never `fail`.
 - **Standing** (`GET .../standing`) re-reads screening. An unscreened subject, a possible match, a hold or an unavailable screening store blocks every hand-over, whatever the other checks say. Badges show categories only.
+- **Appeals.** Only a non-sanctions result that is not a pass is appealable here; sanctions matches are decided and appealed in SANC-003. One open appeal per result. A trust reviewer decides, but never the person who recorded the result and never the filer. Overturning records a new passing result with an evidence reference, and the original stays. A decision is final and audited.
 - **Authority.** Every route needs a staff role and a live elevation. Mutations carry the CSRF header, an `Idempotency-Key` restated in the body (in-transaction completion, BE-005) and a staff reason, and are authorized again by the database at the hub: `admin.claims.policy.edit` for providers and recipes, `admin.claims.decide` for results. Staff of the hub with a claims permission read; anyone else finds nothing.
 
 ## Routes (`/v1/admin/hubs/:hubId/verification`)
@@ -25,11 +26,18 @@ Storage: [`packages/data/migrations/verification`](../../../../../packages/data/
 | `POST /providers/:id/live` | Live mode with a credential reference and the approval |
 | `POST /recipes`, `POST /recipes/:id/activate` | Draft and activate a recipe version |
 | `POST /checks`, `POST /checks/screening` | Record a result; record the sanctions check from SANC-003 |
+| `GET /appeals`, `POST /appeals/:id/decide` | Appeals of the hub; uphold or overturn (overturning records a new passing result with its evidence) |
+
+The subject's own path (`/v1/verification`, a signed-in session):
+
+| Method and path | Use |
+|---|---|
+| `POST /checks/:checkId/appeals` | A person appeals an adverse result about themselves, or an active company administrator appeals one about the company; anyone else finds nothing |
+| `GET /appeals` | The caller's own appeals |
 
 ## Not yet (HUB-003 continues)
 
 - Deterministic fake adapters run by the worker.
 - Live adapters.
-- Review cases and appeals decided by a different reviewer.
 - Re-check scheduling in the worker (the list is `verification_due_rechecks`).
 - Console screens on these routes (HUBC-004 shows fixtures).

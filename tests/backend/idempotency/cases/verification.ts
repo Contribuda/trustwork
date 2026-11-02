@@ -28,11 +28,12 @@ export default {
         .onConflict((oc) => oc.doNothing()).execute();
       const founder = await trx.selectFrom('staff_role_assignment').select('person_id').where('setup_bootstrap', '=', true).where('role', '=', 'platform-owner').executeTakeFirstOrThrow();
       const person = async (name: string) => (await trx.insertInto('person').values({ display_name: name }).returning('id').executeTakeFirstOrThrow()).id;
-      const out = { a: await person('Synthetic Crash Verification Steward A'), b: await person('Synthetic Crash Verification Steward B') };
+      const out = { a: await person('Synthetic Crash Verification Steward A'), b: await person('Synthetic Crash Verification Steward B'), owner: await person('Synthetic Crash Company Administrator') };
       for (const id of [out.a, out.b]) {
         await trx.insertInto('staff_role_assignment').values({ person_id: id, role: 'trust-reviewer', scope_kind: 'hub', hub_id: hubId, definition_version: VERSION, granted_by: founder.person_id, reason: 'Synthetic crash test' }).execute();
       }
       const companyId = (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Verification Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id;
+      await trx.insertInto('membership').values({ person_id: out.owner, company_id: companyId, role: 'administrator', permissions: ['company.members.manage'], status: 'active', valid_from: new Date('2026-10-01T09:00:00Z') }).execute();
       const credentialId = (await trx.insertInto('provider_credential_ref').values({ hub_id: hubId, provider: 'synthetic_register', adapter: 'synthetic_register_api', mode: 'live', secret_store: 'env',
         secret_ref: 'env:SYNTHETIC_CRASH_REGISTER', registered_by: out.a }).returning('id').executeTakeFirstOrThrow()).id;
       return { people: out, companyId, credentialId };
@@ -53,6 +54,8 @@ export default {
       h.clock.reset();
     }
     const { a, b } = clients;
+    const owner = h.client();
+    await signIn(owner, email('owner'));
     const body = <T>(r: Response): T => { assert.ok(r.status >= 200 && r.status < 300, JSON.stringify(r.body)); return r.body as T; };
     const cmd = (action: string, rest: Record<string, unknown>) => ({ contractVersion: HUB_CONSOLE_CONTRACT_VERSION, idempotencyKey: `crash-${action}`, reason: 'Synthetic crash test', ...rest });
     const run = (action: string, client: Client, url: string, rest: Record<string, unknown>, effects: () => Promise<number>) => exactlyOnce({ action, client, url, body: cmd(action, rest), effects });
@@ -81,5 +84,19 @@ export default {
       actionDigest: digest }, { idempotencyKey: 'crash-verification-approve' }));
     await run('verification.provider_live', a, `${base}/providers/${registered.provider.id}/live`, { expectedRevision: registered.provider.revision, credentialRefId: credentialId, approvalId: requested.approval.id },
       audits('verification.provider_live', registered.provider.id));
+
+    // An adverse result recorded by A; the company's administrator appeals; B (not the recorder) decides.
+    const manual = body<{ provider: { id: string } }>(await a.post(`${base}/providers`, cmd('verification.provider_register_tax', { checkType: 'tax_status', adapter: 'synthetic_crash_tax',
+      mode: 'manual', retentionDays: 365, legalBasis: 'statutory_public_register', costMinor: null }), { idempotencyKey: 'crash-verification.provider_register_tax' }));
+    const taxRecipe = body<{ recipe: { id: string; revision: number } }>(await a.post(`${base}/recipes`, cmd('verification.recipe_draft_tax', { key: 'crash-tax', subjectKind: 'company',
+      trigger: 'seller_onboarding', recheckMonths: 12, badgeCategories: ['tax_status_current'], steps: [{ check: 'tax_status', required: true }, { check: 'sanctions_screening', required: true }] }),
+      { idempotencyKey: 'crash-verification.recipe_draft_tax' }));
+    body(await a.post(`${base}/recipes/${taxRecipe.recipe.id}/activate`, cmd('verification.recipe_activate_tax', { expectedRevision: taxRecipe.recipe.revision }), { idempotencyKey: 'crash-verification.recipe_activate_tax' }));
+    const adverse = body<{ check: { id: string } }>(await a.post(`${base}/checks`, cmd('verification.check_record_tax', { subject: { kind: 'company', id: companyId }, recipeId: taxRecipe.recipe.id,
+      providerId: manual.provider.id, result: 'fail', evidenceRef: 'tax:SYN-CRASH-9' }), { idempotencyKey: 'crash-verification.check_record_tax' }));
+    const appeal = body<{ appeal: { id: string; revision: number } }>(await exactlyOnce({ action: 'verification.appeal_file', client: owner, url: `/v1/verification/checks/${adverse.check.id}/appeals`,
+      body: { reason: 'The tax registration was renewed last week.' }, effects: () => count(admin, 'SELECT 1 FROM trustwork.verification_appeal WHERE check_id = $1', [adverse.check.id]) }));
+    await run('verification.appeal_decide', b, `${base}/appeals/${appeal.appeal.id}/decide`, { expectedRevision: appeal.appeal.revision, decision: 'overturned', note: 'Renewal confirmed.',
+      evidenceRef: 'tax:SYN-CRASH-10' }, audits('verification.appeal_overturned', appeal.appeal.id));
   },
 } satisfies CrashCase;

@@ -1,4 +1,4 @@
-import type { VerificationCheckRow, VerificationProviderRow, VerificationRecipeRow } from './deps.js';
+import type { VerificationAppealRow, VerificationCheckRow, VerificationProviderRow, VerificationRecipeRow } from './deps.js';
 
 /**
  * Response projections of the verification routes: camelCase, timestamps as ISO strings. A check names its evidence
@@ -17,4 +17,8 @@ export const toCheck = (r: VerificationCheckRow) => ({
   id: r.id, hubId: r.hub_id, subject: r.subject_person_id ? { kind: 'person' as const, id: r.subject_person_id } : { kind: 'company' as const, id: r.subject_company_id as string },
   recipeId: r.recipe_id, checkType: r.check_type, providerId: r.provider_id, mode: r.mode, result: r.result, evidenceRef: r.evidence_ref, screeningStateId: r.screening_state_id,
   recordedBy: r.recorded_by, recordedAt: iso(r.recorded_at), expiresAt: iso(r.expires_at),
+});
+export const toAppeal = (r: VerificationAppealRow) => ({
+  id: r.id, hubId: r.hub_id, checkId: r.check_id, filedBy: r.filed_by, reason: r.reason, status: r.status, decidedBy: r.decided_by, decidedAt: iso(r.decided_at), decisionNote: r.decision_note,
+  newCheckId: r.new_check_id, revision: r.revision, createdAt: iso(r.created_at),
 });

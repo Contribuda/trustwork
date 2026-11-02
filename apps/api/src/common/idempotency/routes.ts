@@ -491,6 +491,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'verification.recipe_activate': IN_TRANSACTION,
   'verification.check_record': IN_TRANSACTION,
   'verification.screening_record': IN_TRANSACTION,
+  'verification.appeal_file': IN_TRANSACTION,
+  'verification.appeal_decide': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */

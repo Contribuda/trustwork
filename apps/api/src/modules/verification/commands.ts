@@ -49,3 +49,12 @@ export const RecordCheckCommandSchema = consoleCommand({
 });
 export const RecordScreeningCommandSchema = consoleCommand({ subject: Subject, recipeId: Id });
 export const StandingQuerySchema = z.strictObject({ subjectKind: z.enum(['company', 'person']), subjectId: Id, recipeId: Id });
+
+/** The subject's appeal of an adverse result (no staff base: a participant's own command). */
+export const FileAppealCommandSchema = z.strictObject({ reason: z.string().trim().min(1).max(2000) });
+export const DecideAppealCommandSchema = consoleCommand({
+  expectedRevision: z.int().min(1),
+  decision: z.enum(['upheld', 'overturned']),
+  note: z.string().trim().min(1).max(2000),
+  evidenceRef: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:/#-]{0,199}$/).nullable(),
+}).refine((c) => c.decision !== 'overturned' || c.evidenceRef !== null, { message: 'overturning names its evidence', path: ['evidenceRef'] });

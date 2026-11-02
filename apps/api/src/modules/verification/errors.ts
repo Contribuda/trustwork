@@ -5,8 +5,8 @@ import { ApiError } from '../../common/errors.js';
  * Refusals of the HUB-003 commands (SQLSTATE plus a hint) as contract error codes. The hint travels in
  * `details.reason`; existence never leaks (`admin.not_found` is `access.not_found`).
  */
-const FORBIDDEN = new Set(['admin.forbidden', 'admin.elevation_required', 'access.no_principal']);
-const CONFLICT = new Set(['verification.revision_conflict', 'verification.invalid_transition']);
+const FORBIDDEN = new Set(['admin.forbidden', 'admin.elevation_required', 'access.no_principal', 'verification.original_reviewer', 'verification.own_appeal']);
+const CONFLICT = new Set(['verification.revision_conflict', 'verification.invalid_transition', 'verification.appeal_open']);
 const APPROVAL: Readonly<Record<string, ErrorCode>> = {
   'admin.approval_required': 'access.second_approver_required', 'admin.self_approval': 'access.second_approver_required', 'admin.not_requester': 'access.second_approver_required',
   'admin.approval_mismatch': 'access.approval_digest_mismatch', 'admin.approval_consumed': 'access.second_approver_required', 'admin.approval_not_approved': 'access.second_approver_required',
