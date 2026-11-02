@@ -1,6 +1,6 @@
 import { sql, type RawBuilder } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { DatasetLicenceRow, DatasetRecordRow, DatasetRow, DatasetTombstoneRow } from '../schema/datasets.js';
+import type { DatasetLicenceRow, DatasetRecordRow, DatasetRow, DatasetTombstoneRow, EntityDistinctPairRow, EntityLinkBatchRow, EntityLinkProposalRow, LinkEvidence } from '../schema/datasets.js';
 import type { CommandContext } from './admin.js';
 import '../schema/datasets.js';
 
@@ -126,7 +126,47 @@ export const datasets = {
   },
 };
 
+/**
+ * Entity resolution (MINE-001 part 2): link proposals with evidence, confidence and scoring method; a person decides;
+ * pairs marked distinct are never proposed again; batch decisions only for statutory identifier evidence.
+ */
+export type LinkTargetKind = 'company' | 'person' | 'dataset_record';
+export const links = {
+  async resolve(trx: Transaction, ctx: CommandContext, datasetId: string): Promise<number> {
+    const row = await one(sql<{ v: number }>`SELECT trustwork.datasets_resolve(${ctxJson(ctx)}::jsonb, ${datasetId}::uuid) AS v`, trx, 'datasets_resolve');
+    return row.v;
+  },
+  propose(trx: Transaction, ctx: CommandContext, recordId: string, targetKind: LinkTargetKind, targetId: string, evidence: LinkEvidence[], confidence: string): Promise<EntityLinkProposalRow> {
+    return one(sql<EntityLinkProposalRow>`SELECT * FROM trustwork.datasets_propose_link(${ctxJson(ctx)}::jsonb, ${recordId}::uuid, ${targetKind}::text, ${targetId}::uuid, ${json(evidence)}::jsonb,
+      ${confidence}::numeric)`, trx, 'datasets_propose_link');
+  },
+  decide(trx: Transaction, ctx: CommandContext, proposalId: string, expectedRevision: number, decision: 'accepted' | 'rejected' | 'withdrawn'): Promise<EntityLinkProposalRow> {
+    return one(sql<EntityLinkProposalRow>`SELECT * FROM trustwork.datasets_decide_link(${ctxJson(ctx)}::jsonb, ${proposalId}::uuid, ${expectedRevision}::int, ${decision}::text)`, trx,
+      'datasets_decide_link');
+  },
+  markDistinct(trx: Transaction, ctx: CommandContext, recordId: string, targetKind: LinkTargetKind, targetId: string, reason: string): Promise<EntityDistinctPairRow> {
+    return one(sql<EntityDistinctPairRow>`SELECT * FROM trustwork.datasets_mark_distinct(${ctxJson(ctx)}::jsonb, ${recordId}::uuid, ${targetKind}::text, ${targetId}::uuid, ${reason}::text)`, trx,
+      'datasets_mark_distinct');
+  },
+  batchDecide(trx: Transaction, ctx: CommandContext, hubId: string, proposalIds: readonly string[], sampleIds: readonly string[], decision: 'accepted' | 'rejected'): Promise<EntityLinkBatchRow> {
+    return one(sql<EntityLinkBatchRow>`SELECT * FROM trustwork.datasets_batch_decide(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${[...proposalIds]}::uuid[], ${[...sampleIds]}::uuid[],
+      ${decision}::text)`, trx, 'datasets_batch_decide');
+  },
+  proposals(trx: Transaction, hubId: string, state?: string): Promise<EntityLinkProposalRow[]> {
+    let q = trx.selectFrom('entity_link_proposal').selectAll().where('hub_id', '=', hubId);
+    if (state) q = q.where('state', '=', state as never);
+    return q.orderBy('created_at').orderBy('id').execute();
+  },
+  proposal(trx: Transaction, proposalId: string): Promise<EntityLinkProposalRow | undefined> {
+    return trx.selectFrom('entity_link_proposal').selectAll().where('id', '=', proposalId).executeTakeFirst();
+  },
+};
+
 export const datasetsWorker = {
+  async resolve(trx: Transaction, datasetId: string): Promise<number> {
+    const row = await one(sql<{ v: number }>`SELECT trustwork.datasets_worker_resolve(${datasetId}::uuid) AS v`, trx, 'datasets_worker_resolve');
+    return row.v;
+  },
   async ingest(trx: Transaction, datasetId: string, records: readonly DatasetRecordInput[], now: Date): Promise<IngestCounts> {
     const row = await one(sql<{ v: IngestCounts }>`SELECT trustwork.datasets_worker_ingest(${datasetId}::uuid, ${json(records)}::jsonb, ${now}::timestamptz) AS v`, trx,
       'datasets_worker_ingest');
