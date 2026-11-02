@@ -119,6 +119,22 @@ export type CompanyDetail = CompanyCard & {
   /** Published materials that mention the company without being authored by it. */
   mentions: PublicationCard[];
   profile: CompanyProfile;
+  /**
+   * What official registers showed about the company (REG-001 public projection: organisations only, display allowed,
+   * stale past `validUntil`). Absent in fixtures and when the API serves no hub.
+   */
+  registerFacts?: RegisterFactView[];
+};
+
+/** One public register fact (PublicSourcedFactSchema): the register's words with its date and link, never the hub's. */
+export type RegisterFactView = {
+  kind: 'licence_status' | 'entity_status' | 'sam_registration' | 'sam_exclusion' | 'safety_inspection' | 'lei_record' | 'official_rating';
+  identifierKind: string | null;
+  value: Record<string, unknown>;
+  link: string;
+  observedAt: string;
+  validUntil: string | null;
+  stale: boolean;
 };
 
 export type PersonField = 'management' | 'engineering' | 'design' | 'procurement' | 'sales' | 'production' | 'construction' | 'logistics' | 'control' | 'client';

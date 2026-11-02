@@ -53,7 +53,11 @@ Console routes under `/v1/admin/hubs/:hubId/registers` need a staff role at the 
 - **refresh**: due fake adapters re-observe the records they already hold (fake dates are anchored, so an unchanged record adds nothing); a due live adapter is reported once per cadence, never guessed;
 - **expiry watch**: one reminder per step for claimed and verified companies.
 
+## Company page
+
+The public company page (`apps/web/app/(public)/[lang]/companies/[handle]/page.tsx`) shows the public projection as "From public registers" ([`RegisterFacts.tsx`](../../../../web/components/public/RegisterFacts.tsx); copy under `companyPage.registerFacts` in `apps/web/locales/<lang>/companies.json` for every maintained language). Each entry names the kind and the register's status, classes, grade or inspection details, the date the register was seen and its validity, a stale note past `validUntil` and a link to the register record (new tab, no referrer, nofollow); a "How this is sourced" explanation follows. Without facts the panel is absent.
+
 ## Next
 
-- "How this is sourced" explanation and labels in every maintained language on the company page; reminder notices through COMMS-001.
+- Reminder notices through COMMS-001 (a template there), so administrators hear about an expiring licence without opening the reminders route.
 - Exposure to canonical entities (ENT-001) by identifier.

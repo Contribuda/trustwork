@@ -120,6 +120,20 @@ test('public reads are anonymous even for a signed-in visitor, and use handles o
   assert.equal(await data.getCompany('missing-handle'), null);
 });
 
+test('REG-001: the company page carries the public register facts, without the source id; none when the hub serves none', async () => {
+  const fact = { kind: 'licence_status', identifierKind: 'US-CA-CSLB', value: { status: 'active', classifications: ['B'], issuedOn: null }, sourceId: COMPANY,
+    link: 'https://synthetic-register.invalid/us_ca_cslb_licence_file/1000123', observedAt: NOW, validUntil: '2027-03-31', stale: false };
+  const { data, calls } = port({
+    '/v1/companies/by-handle/acme-build': { status: 200, body: { item: { id: COMPANY, handle: 'acme-build', name: 'Acme Build', origin: 'registered', claimStatus: 'unclaimed', legalIdentifiers: [], publicDescription: null }, redirect: false } },
+    [`/v1/companies/${COMPANY}/sourced-facts`]: { status: 200, body: { hubConfigured: true, items: [fact] } },
+  });
+  const company = (await data.getCompany('acme-build'))!;
+  assert.deepEqual(company.registerFacts, [{ kind: fact.kind, identifierKind: fact.identifierKind, value: fact.value, link: fact.link, observedAt: NOW, validUntil: '2027-03-31', stale: false }]);
+  assert.ok(calls.every((c) => c.headers.cookie === undefined), 'public reads send no cookie');
+  const none = port({ '/v1/companies/by-handle/acme-build': { status: 200, body: { item: { id: COMPANY, handle: 'acme-build', name: 'Acme Build', origin: 'registered', claimStatus: 'unclaimed', legalIdentifiers: [], publicDescription: null }, redirect: false } } });
+  assert.deepEqual((await none.data.getCompany('acme-build'))!.registerFacts, []);
+});
+
 test('company status keeps sourced, registered, claimed and verified apart', () => {
   assert.equal(companyStatus('sourced', 'unclaimed'), 'sourced');
   assert.equal(companyStatus('registered', 'unclaimed'), 'registered');

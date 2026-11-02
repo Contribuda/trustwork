@@ -343,6 +343,49 @@
       "vacancies": "vacante|empleo|trabajo|contratación|contratacion|salario|sueldo|carrera|puesto|trabajar para",
       "updates": "noticia|novedad|actualiza|publicación|publicacion|artículo|articulo|reciente|evento|qué hay de nuevo|que hay de nuevo|último|ultimo",
       "about": "a qué se dedica|a que se dedica|qué hacen|que hacen|sobre la empresa|cuénteme|cuenteme|quiénes son|quienes son|enfoque|especiali|región|region|zona|dónde trabajan|donde trabajan|hola|buenos días|buenas"
+    },
+    "registerFacts": {
+      "title": "De registros públicos",
+      "lede": "Lo que los registros oficiales mostraban sobre esta empresa en las fechas indicadas, con un enlace a cada registro. No es una valoración propia del hub y nunca afecta a calificaciones, clasificaciones ni emparejamientos.",
+      "how": "Cómo se obtiene esta información",
+      "howBody": "El hub lee los registros oficiales según sus condiciones publicadas, vincula un registro solo mediante un identificador que tiene la empresa y muestra lo que dice el registro. Solo organizaciones: aquí no aparece nada sobre personas particulares. Si una entrada parece errónea, decide el propio registro; pida al registro que la corrija o denuncie la entrada más abajo.",
+      "observed": "Visto en el registro el {date}",
+      "validUntil": "Válido hasta el {date}",
+      "stale": "Desactualizado: la fecha del registro ya pasó",
+      "open": "Abrir el registro",
+      "classes": "Clases: {list}",
+      "grade": "{scheme}: grado {grade}",
+      "opened": "Abierta el {date}",
+      "citations": "Infracciones citadas: {count}",
+      "kind": {
+        "licence_status": "Licencia de contratista",
+        "entity_status": "Registro mercantil",
+        "sam_registration": "Registro de contratación federal",
+        "sam_exclusion": "Exclusión de contratación federal",
+        "safety_inspection": "Inspección de seguridad laboral",
+        "lei_record": "Identificador de entidad jurídica (LEI)",
+        "official_rating": "Grado oficial"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "suspended": "Suspendido",
+        "revoked": "Revocado",
+        "expired": "Vencido",
+        "dissolved": "Disuelta",
+        "excluded": "Excluida",
+        "not_excluded": "Sin exclusión",
+        "issued": "Emitido",
+        "lapsed": "Caducado",
+        "retired": "Retirado",
+        "annulled": "Anulado",
+        "pending_transfer": "Transferencia pendiente",
+        "pending_archival": "Archivo pendiente",
+        "merged": "Fusionado",
+        "duplicate": "Duplicado",
+        "open": "Abierta",
+        "closed": "Cerrada"
+      }
     }
   }
 }

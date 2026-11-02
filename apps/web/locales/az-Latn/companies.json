@@ -343,6 +343,49 @@
       "vacancies": "vakansiya|iş|işə qəbul|maaş|karyera|vəzifə",
       "updates": "xəbər|yenilən|nəşr|məqalə|bu yaxınlarda|tədbir|nə yenilik",
       "about": "nə ilə məşğul|şirkət haqqında|danış|kimsiniz|istiqamət|ixtisas|region|coğraf|harada işləyirsiniz|salam"
+    },
+    "registerFacts": {
+      "title": "Dövlət reyestrlərindən",
+      "lede": "Rəsmi reyestrlərin göstərilən tarixlərdə bu şirkət haqqında nə göstərdiyi, hər qeydə keçidlə. Bu, hubun öz qiymətləndirməsi deyil və heç vaxt reytinqlərə, sıralamaya və ya tərəfdaş seçiminə təsir etmir.",
+      "how": "Bu məlumat necə əldə edilir",
+      "howBody": "Hub rəsmi reyestrləri onların dərc olunmuş şərtləri ilə oxuyur, qeydi yalnız şirkətə məxsus identifikator vasitəsilə əlaqələndirir və reyestrin dediyini göstərir. Yalnız təşkilatlar: burada fiziki şəxslər haqqında heç nə görünmür. Qeyd səhv görünürsə, reyestrin öz qeydi həlledicidir; reyestrdən düzəliş istəyin və ya aşağıda qeyd barədə məlumat verin.",
+      "observed": "Reyestrdə {date} tarixində görülüb",
+      "validUntil": "{date}-dək etibarlıdır",
+      "stale": "Köhnəlib: reyestrdəki tarix keçib",
+      "open": "Reyestr qeydini açmaq",
+      "classes": "Siniflər: {list}",
+      "grade": "{scheme}: {grade} dərəcə",
+      "opened": "{date} tarixində açılıb",
+      "citations": "Qeydə alınmış pozuntular: {count}",
+      "kind": {
+        "licence_status": "Podratçı lisenziyası",
+        "entity_status": "Biznes qeydiyyatı",
+        "sam_registration": "Federal satınalma qeydiyyatı",
+        "sam_exclusion": "Federal satınalmadan kənarlaşdırma",
+        "safety_inspection": "Əməyin təhlükəsizliyi yoxlaması",
+        "lei_record": "Hüquqi şəxs identifikatoru (LEI)",
+        "official_rating": "Rəsmi dərəcə"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Qeyri-aktiv",
+        "suspended": "Dayandırılıb",
+        "revoked": "Ləğv edilib",
+        "expired": "Müddəti bitib",
+        "dissolved": "Ləğv olunub",
+        "excluded": "Kənarlaşdırılıb",
+        "not_excluded": "Kənarlaşdırma yoxdur",
+        "issued": "Verilib",
+        "lapsed": "Müddəti keçib",
+        "retired": "Dövriyyədən çıxarılıb",
+        "annulled": "Etibarsız sayılıb",
+        "pending_transfer": "Köçürmə gözlənilir",
+        "pending_archival": "Arxivləşdirmə gözlənilir",
+        "merged": "Birləşdirilib",
+        "duplicate": "Dublikat",
+        "open": "Açıq",
+        "closed": "Bağlı"
+      }
     }
   }
 }
