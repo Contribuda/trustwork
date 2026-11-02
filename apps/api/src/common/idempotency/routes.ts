@@ -484,6 +484,13 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'pipelines.run_cancel': IN_TRANSACTION,
   'pipelines.alert_decide': IN_TRANSACTION,
   'pipelines.role_cap_set': IN_TRANSACTION,
+  // Counterparty verification (HUB-003): staff commands complete in the principal transaction.
+  'verification.provider_register': IN_TRANSACTION,
+  'verification.provider_live': IN_TRANSACTION,
+  'verification.recipe_draft': IN_TRANSACTION,
+  'verification.recipe_activate': IN_TRANSACTION,
+  'verification.check_record': IN_TRANSACTION,
+  'verification.screening_record': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
