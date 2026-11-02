@@ -350,14 +350,15 @@ LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp 
 DECLARE
   v_actor trustwork.admin_actor := trustwork.verification_staff(p_ctx, ARRAY['admin.claims.decide'], p_hub);
   v_recipe trustwork.verification_recipe%ROWTYPE;
-  v_state trustwork.screening_subject_state%ROWTYPE;
+  v_state record;
   v_gate record;
   v_result text;
   v_row trustwork.verification_check%ROWTYPE;
 BEGIN
   PERFORM trustwork.verification_require_subject(p_subject_kind, p_subject);
   v_recipe := trustwork.verification_recipe_for(p_hub, p_recipe, p_subject_kind);
-  v_state := trustwork.screening_state_row(CASE WHEN p_subject_kind = 'person' THEN p_subject END, CASE WHEN p_subject_kind = 'company' THEN p_subject END);
+  SELECT s.id, s.revision, s.last_outcome INTO v_state
+    FROM trustwork.screening_state_row(CASE WHEN p_subject_kind = 'person' THEN p_subject END, CASE WHEN p_subject_kind = 'company' THEN p_subject END) s;
   IF NOT trustwork.screening_available() THEN
     v_result := 'unavailable';
   ELSE
@@ -386,7 +387,7 @@ DECLARE
   v_missing text[] := ARRAY[]::text[];
   v_failed text[] := ARRAY[]::text[];
   v_step jsonb;
-  v_state trustwork.screening_subject_state%ROWTYPE;
+  v_state record;
   v_blocked boolean;
   v_expires timestamptz;
 BEGIN
@@ -412,7 +413,8 @@ BEGIN
       v_missing := v_missing || ARRAY(SELECT jsonb_array_elements_text(v_step -> 'anyOf'));
     END IF;
   END LOOP;
-  v_state := trustwork.screening_state_row(CASE WHEN p_subject_kind = 'person' THEN p_subject END, CASE WHEN p_subject_kind = 'company' THEN p_subject END);
+  SELECT s.id, s.last_outcome, s.money_held, s.suspended INTO v_state
+    FROM trustwork.screening_state_row(CASE WHEN p_subject_kind = 'person' THEN p_subject END, CASE WHEN p_subject_kind = 'company' THEN p_subject END) s;
   v_blocked := NOT trustwork.screening_available() OR v_state.id IS NULL OR v_state.last_outcome IS DISTINCT FROM 'clear' OR v_state.money_held OR v_state.suspended
     OR coalesce(v_latest ->> 'sanctions_screening', '') <> 'pass';
   RETURN jsonb_build_object(
