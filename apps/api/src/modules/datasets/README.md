@@ -2,7 +2,7 @@
 
 Local data mining: datasets with recorded legal flags, records with per-record provenance, links instead of merges, and people deciding what goes live. Design: [local data mining](../../../../../docs/engine/hub-console/data-mining.md), [discovery and outreach](../../../../../docs/engine/discovery-and-outreach.md) section 1, ADR 012 decision 4, [ADR 026](../../../../../docs/adr/026-discovery-to-claim-engine-and-professional-pages.md). Contract: `DatasetSchema` in [`hub.ts`](../../../../../packages/contracts/src/hub.ts). Database: [`migrations/datasets`](../../../../../packages/data/migrations/datasets), repository [`datasets.ts`](../../../../../packages/data/src/repositories/datasets.ts).
 
-Status: datasets and entity resolution are **Live** in the database (parts 1 and 2). Routes and the worker refresh follow.
+Status: datasets and entity resolution are **Live** as an API (parts 1 to 3): console routes, the hourly retention and licence sweep in the worker, and BE-005 crash cases. Collection from sources into datasets on the pipeline engine and the outputs into receiving modules follow.
 
 | Rule | Where it holds |
 |---|---|
@@ -28,7 +28,25 @@ Status: datasets and entity resolution are **Live** in the database (parts 1 and
 | A batch decision covers only open proposals with statutory identifier evidence proposed by someone else; the person names the sample they saw (at least five, or all) and the counts and scoring method are kept | `datasets_batch_decide`, `entity_link_batch` |
 | A buried record withdraws its open proposals | `datasets_bury` |
 
+## Routes
+
+Console routes under `/v1/admin/hubs/:hubId/datasets` need a staff role at the hub and a live elevation; every command carries the console base (contract version, `Idempotency-Key` restated in the body, staff reason) and completes in the request transaction (BE-005).
+
+| Route | What it does |
+|---|---|
+| `GET /`, `GET /:datasetId`, `GET /:datasetId/records`, `GET /:datasetId/contact-points` | Datasets, a dataset with its licences, its records and tombstones, its contact points |
+| `GET /:datasetId/activation-digest` | The approval action and digest a second person approves |
+| `POST /`, `POST /:datasetId/activate`, `POST /:datasetId/status` | Propose, activate (another person; second person where required), pause or retire |
+| `POST /:datasetId/licences`, `POST /:datasetId/contact-use`, `POST /records/:recordId/contact` | Operator licence, contact use, a record's contact mark |
+| `POST /:datasetId/records` | An operator file or a staff run of records (provenance and licence come from the source) |
+| `POST /do-not-collect` | Add an identifier, domain or e-mail (hashed; the answer names only how many records were buried) |
+| `GET /links`, `POST /:datasetId/resolve`, `POST /links`, `POST /links/:proposalId/decide`, `POST /links/distinct`, `POST /links/batch` | Entity resolution |
+
+## Worker
+
+[`apps/worker/src/datasets/sweep.ts`](../../../../worker/src/datasets/sweep.ts) runs every hour: records past retention and every record of a contract dataset without a licence in force are deleted with tombstones.
+
 ## Next
 
-- Console routes, the worker refresh and resolution on the pipeline engine, crash cases.
-- Outputs as reviewed imports into the receiving modules (directory sourced records, verification evidence, eligibility facts, opportunities, events, knowledge, news desk).
+- Collection from registered sources into datasets on the pipeline engine (a `dataset_refresh` step through the SRC-002 gate), then the resolver.
+- Outputs as reviewed imports into the receiving modules (directory sourced records, verification evidence, eligibility facts, opportunities, events, knowledge, news desk); canonical entities (ENT-001).

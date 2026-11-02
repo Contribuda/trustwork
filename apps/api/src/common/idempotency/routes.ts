@@ -500,6 +500,20 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'registers.fake_run': IN_TRANSACTION,
   'registers.link_record': IN_TRANSACTION,
   'registers.link_end': IN_TRANSACTION,
+  // Local data mining (MINE-001): staff commands complete in the principal transaction.
+  'datasets.propose': IN_TRANSACTION,
+  'datasets.activate': IN_TRANSACTION,
+  'datasets.status': IN_TRANSACTION,
+  'datasets.licence': IN_TRANSACTION,
+  'datasets.contact_use': IN_TRANSACTION,
+  'datasets.mark_contact': IN_TRANSACTION,
+  'datasets.do_not_collect': IN_TRANSACTION,
+  'datasets.ingest': IN_TRANSACTION,
+  'datasets.resolve': IN_TRANSACTION,
+  'datasets.link_propose': IN_TRANSACTION,
+  'datasets.link_decide': IN_TRANSACTION,
+  'datasets.mark_distinct': IN_TRANSACTION,
+  'datasets.link_batch': IN_TRANSACTION,
 };
 
 /** Completion mode of an action; an unlisted action is a programming error (the route must be classified first). */
