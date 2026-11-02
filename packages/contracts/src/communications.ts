@@ -171,6 +171,8 @@ export const NOTIFICATION_TEMPLATES = {
   'thread.opened': { category: 'messages', transactional: false, params: ['contextKind', 'threadSubject', 'authorName'] },
   'thread.message': { category: 'messages', transactional: false, params: ['contextKind', 'threadSubject', 'authorName'] },
   'account.security_notice': { category: 'account', transactional: true, params: ['event'] },
+  // REG-001: a register entry about the reader's company expires soon (fact kind, the register's last valid day, days left).
+  'registers.licence_expiring': { category: 'account', transactional: true, params: ['factKind', 'validUntil', 'daysBefore'] },
 } as const satisfies Record<string, { category: NotificationCategory; transactional: boolean; params: readonly string[] }>;
 export type NotificationTemplateKey = keyof typeof NOTIFICATION_TEMPLATES;
 export const NOTIFICATION_TEMPLATE_KEYS = Object.keys(NOTIFICATION_TEMPLATES) as NotificationTemplateKey[];

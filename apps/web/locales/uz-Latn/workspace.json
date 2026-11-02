@@ -33,7 +33,8 @@
     "template": {
       "threadOpened": "{authorName} yozishmani boshladi: {threadSubject}",
       "threadMessage": "{authorName} “{threadSubject}” mavzusida yozdi",
-      "securityNotice": "Hisobingiz xavfsizligi haqida bildirishnoma"
+      "securityNotice": "Hisobingiz xavfsizligi haqida bildirishnoma",
+      "registerExpiring": "Kompaniyangiz haqidagi davlat reyestri yozuvi {date} sanasida tugaydi"
     },
     "markAllRead": "Barchasini o‘qilgan deb belgilash",
     "markFailed": "O‘qilganlik belgisi saqlanmadi. Qayta urinib ko‘ring."

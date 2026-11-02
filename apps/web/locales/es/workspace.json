@@ -33,7 +33,8 @@
     "template": {
       "threadOpened": "{authorName} inició una conversación: {threadSubject}",
       "threadMessage": "{authorName} escribió en «{threadSubject}»",
-      "securityNotice": "Aviso de seguridad de su cuenta"
+      "securityNotice": "Aviso de seguridad de su cuenta",
+      "registerExpiring": "Un registro público sobre su empresa vence el {date}"
     },
     "markAllRead": "Marcar todo como leído",
     "markFailed": "No se guardó la marca de lectura. Inténtelo de nuevo."

@@ -3434,7 +3434,7 @@
       "id": "REG-001",
       "title": "Public-register and licence-board facts as sourced records",
       "area": "verification",
-      "status": "in_progress",
+      "status": "in_review",
       "dependsOn": [
         "HUB-003",
         "PIPE-001"
