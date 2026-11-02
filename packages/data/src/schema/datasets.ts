@@ -106,12 +106,63 @@ export interface DatasetTombstoneTable {
 }
 export type DatasetTombstoneRow = Selectable<DatasetTombstoneTable>;
 
+/** Similarity is a decimal string in [0, 1] (UnitIntervalSchema). */
+export interface LinkEvidence { kind: string; detail: string; similarity: string | null }
+export interface EntityLinkProposalTable {
+  id: Generated<string>;
+  hub_id: string;
+  record_id: string;
+  dataset_id: string;
+  target_kind: 'company' | 'person' | 'dataset_record';
+  target_id: string;
+  evidence: LinkEvidence[];
+  confidence: string;
+  scoring_method: string;
+  statutory_identifier: boolean;
+  proposed_by_kind: 'resolver' | 'person';
+  proposed_by: string | null;
+  state: Generated<'proposed' | 'accepted' | 'rejected' | 'withdrawn'>;
+  decided_by: string | null;
+  decided_at: Date | null;
+  batch_id: string | null;
+  effect: Generated<'link'>;
+  revision: Generated<number>;
+  created_at: Generated<Date>;
+}
+export type EntityLinkProposalRow = Selectable<EntityLinkProposalTable>;
+
+export interface EntityLinkBatchTable {
+  id: Generated<string>;
+  hub_id: string;
+  decision: 'accepted' | 'rejected';
+  proposal_count: number;
+  sample_ids: string[];
+  scoring_method: string;
+  decided_by: string;
+  created_at: Generated<Date>;
+}
+export type EntityLinkBatchRow = Selectable<EntityLinkBatchTable>;
+
+export interface EntityDistinctPairTable {
+  hub_id: string;
+  record_id: string;
+  target_kind: 'company' | 'person' | 'dataset_record';
+  target_id: string;
+  reason: string;
+  marked_by: string;
+  created_at: Generated<Date>;
+}
+export type EntityDistinctPairRow = Selectable<EntityDistinctPairTable>;
+
 export interface DatasetsDatabase {
   dataset: DatasetTable;
   dataset_licence: DatasetLicenceTable;
   dataset_do_not_collect: DatasetDoNotCollectTable;
   dataset_record: DatasetRecordTable;
   dataset_tombstone: DatasetTombstoneTable;
+  entity_link_proposal: EntityLinkProposalTable;
+  entity_link_batch: EntityLinkBatchTable;
+  entity_distinct_pair: EntityDistinctPairTable;
 }
 
 declare module './index.js' {
@@ -135,4 +186,10 @@ export const TABLE_COLUMNS: TableColumns<DatasetsDatabase> = {
     'content_digest', 'contact_use', 'contact_use_by', 'observed_at', 'expires_at', 'created_at', 'updated_at',
   ]),
   dataset_tombstone: columns('dataset_tombstone', ['id', 'hub_id', 'dataset_id', 'record_id', 'key_digest', 'reason', 'created_at']),
+  entity_link_proposal: columns('entity_link_proposal', [
+    'id', 'hub_id', 'record_id', 'dataset_id', 'target_kind', 'target_id', 'evidence', 'confidence', 'scoring_method', 'statutory_identifier', 'proposed_by_kind', 'proposed_by',
+    'state', 'decided_by', 'decided_at', 'batch_id', 'effect', 'revision', 'created_at',
+  ]),
+  entity_link_batch: columns('entity_link_batch', ['id', 'hub_id', 'decision', 'proposal_count', 'sample_ids', 'scoring_method', 'decided_by', 'created_at']),
+  entity_distinct_pair: columns('entity_distinct_pair', ['hub_id', 'record_id', 'target_kind', 'target_id', 'reason', 'marked_by', 'created_at']),
 };
