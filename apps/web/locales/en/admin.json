@@ -326,7 +326,10 @@
       "licence_requires_verified": "Licensed categories accept only verified providers, and agents accept only with verified counterparties.",
       "not_draft": "Only a draft version can be activated or cancelled.",
       "activation_unavailable": "Activation is unavailable until a second-person approval action is defined. One person cannot activate this change.",
-      "preview_missing": "Activation requires a stored preview. Create and review the preview first."
+      "preview_missing": "Activation requires a stored preview. Create and review the preview first.",
+      "self_grant": "Nobody grants a staff role to themselves; another staff administrator does.",
+      "sensitive_role": "This role is sensitive: it is granted through an invitation that a second person approves.",
+      "role_held": "This person already holds this role at this hub."
     },
     "details": {
       "demo_data_only_before_soft_launch": "demo data is allowed only before soft launch",
@@ -2304,6 +2307,41 @@
         "edit": "Edit",
         "afterFinish": "After finishing, the hub is a draft: registration closed, every provider fake, indexing off."
       }
+    },
+    "staff": {
+      "title": "Staff",
+      "lede": "Who covers this hub, with which roles and whether they use a second factor. Choose a person to see what they may do.",
+      "people": "Staff of this hub",
+      "name": "Name",
+      "roles": "Roles",
+      "secondFactor": "Second factor",
+      "enrolled": "Enrolled",
+      "notEnrolled": "Not enrolled: this person cannot open an elevated session",
+      "rolesHidden": "Visible with the right to read staff",
+      "until": "until {date}",
+      "breakglass": "break-glass",
+      "revoke": "Revoke this role",
+      "revokeSubmit": "Revoke",
+      "managedAtNode": "managed in the node console",
+      "scope": {
+        "thisHub": "this hub",
+        "otherHub": "another hub",
+        "node": "whole node",
+        "platform": "whole platform"
+      },
+      "accessFor": "What {name} may do here",
+      "permissionCount": "Permissions",
+      "permissions": "Show the permissions",
+      "accessUnavailable": "What this person may do is shown to staff who may read the staff list.",
+      "empty": "Nobody holds a staff role at this hub yet.",
+      "noActivity": "The console never shows what a staff member did: no sign-ins, activity or counts.",
+      "addRole": "Add a role",
+      "addRoleHelp": "Give someone already on this hub's staff another hub role. Nobody grants a role to themselves.",
+      "person": "Person",
+      "role": "Role",
+      "addRoleSubmit": "Add the role",
+      "nothingToAdd": "There is nobody else on this hub's staff to give a role to yet.",
+      "sensitiveNote": "Sensitive roles ({roles}) are granted through an invitation that a second person approves."
     }
   }
 }

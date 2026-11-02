@@ -326,7 +326,10 @@
       "licence_requires_verified": "Las categorías con licencia solo aceptan proveedores verificados, y los agentes solo aceptan con contrapartes verificadas.",
       "not_draft": "Solo un borrador de versión se puede activar o cancelar.",
       "activation_unavailable": "La activación no está disponible hasta que se defina una acción de aprobación por otra persona. Una sola persona no puede activar este cambio.",
-      "preview_missing": "La activación requiere una vista previa guardada. Créela y revísela primero."
+      "preview_missing": "La activación requiere una vista previa guardada. Créela y revísela primero.",
+      "self_grant": "Nadie se asigna un rol de personal a sí mismo; lo hace otro administrador del personal.",
+      "sensitive_role": "Este rol es sensible: se concede mediante una invitación que aprueba una segunda persona.",
+      "role_held": "Esta persona ya tiene este rol en este hub."
     },
     "details": {
       "demo_data_only_before_soft_launch": "los datos de demostración solo se permiten antes del lanzamiento preliminar",
@@ -2304,6 +2307,41 @@
         "edit": "Editar",
         "afterFinish": "Al terminar, el hub queda como borrador: registro cerrado, todos los proveedores simulados e indexación desactivada."
       }
+    },
+    "staff": {
+      "title": "Personal",
+      "lede": "Quién atiende este hub, con qué roles y si usa un segundo factor. Elija una persona para ver qué puede hacer.",
+      "people": "Personal de este hub",
+      "name": "Nombre",
+      "roles": "Roles asignados",
+      "secondFactor": "Segundo factor",
+      "enrolled": "Configurado",
+      "notEnrolled": "Sin configurar: esta persona no puede abrir una sesión elevada",
+      "rolesHidden": "Visibles con el derecho a leer el personal",
+      "until": "hasta {date}",
+      "breakglass": "acceso de emergencia",
+      "revoke": "Retirar este rol",
+      "revokeSubmit": "Retirar",
+      "managedAtNode": "se gestiona en la consola del nodo",
+      "scope": {
+        "thisHub": "este hub",
+        "otherHub": "otro hub",
+        "node": "todo el nodo",
+        "platform": "toda la plataforma"
+      },
+      "accessFor": "Qué puede hacer {name} aquí",
+      "permissionCount": "Permisos",
+      "permissions": "Mostrar los permisos",
+      "accessUnavailable": "Lo que puede hacer esta persona se muestra al personal que puede leer la lista del personal.",
+      "empty": "Todavía nadie tiene un rol de personal en este hub.",
+      "noActivity": "La consola nunca muestra lo que hizo un miembro del personal: ni accesos, ni actividad, ni recuentos.",
+      "addRole": "Añadir un rol",
+      "addRoleHelp": "Dé otro rol del hub a alguien que ya forma parte del personal de este hub. Nadie se asigna un rol a sí mismo.",
+      "person": "Persona",
+      "role": "Rol",
+      "addRoleSubmit": "Añadir el rol",
+      "nothingToAdd": "Todavía no hay nadie más en el personal de este hub a quien dar un rol.",
+      "sensitiveNote": "Los roles sensibles ({roles}) se conceden mediante una invitación que aprueba una segunda persona."
     }
   }
 }

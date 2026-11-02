@@ -326,7 +326,10 @@
       "licence_requires_verified": "Litsenziyalanadigan toifalar faqat tekshirilgan ijrochilarni qabul qiladi, agentlar esa faqat tekshirilgan kontragentlar bilan qabul qiladi.",
       "not_draft": "Faqat versiya qoralamasini faollashtirish yoki bekor qilish mumkin.",
       "activation_unavailable": "Ikkinchi xodim tasdiqlashi uchun amal belgilanmaguncha faollashtirish mavjud emas. Bir xodim bu o‘zgarishni faollashtira olmaydi.",
-      "preview_missing": "Faollashtirish uchun saqlangan oldindan ko‘rish kerak. Avval uni yarating va tekshiring."
+      "preview_missing": "Faollashtirish uchun saqlangan oldindan ko‘rish kerak. Avval uni yarating va tekshiring.",
+      "self_grant": "Hech kim oʻziga xodim rolini bermaydi; buni boshqa xodimlar administratori qiladi.",
+      "sensitive_role": "Bu rol nozik: u ikkinchi xodim tasdiqlaydigan taklif orqali beriladi.",
+      "role_held": "Bu shaxsda ushbu xabda bu rol allaqachon bor."
     },
     "details": {
       "demo_data_only_before_soft_launch": "namunaviy maʼlumotlarga faqat yumshoq ishga tushirishgacha ruxsat beriladi",
@@ -2304,6 +2307,41 @@
         "edit": "Oʻzgartirish",
         "afterFinish": "Yakunlangandan keyin xab qoralama boʻlib qoladi: roʻyxatdan oʻtish yopiq, barcha provayderlar taqlid, indeksatsiya oʻchirilgan."
       }
+    },
+    "staff": {
+      "title": "Xodimlar",
+      "lede": "Bu xabga kim xizmat qiladi, qaysi rollar bilan va ikkinchi omildan foydalanadimi. Nima qila olishini koʻrish uchun shaxsni tanlang.",
+      "people": "Bu xab xodimlari",
+      "name": "Ism",
+      "roles": "Rollar",
+      "secondFactor": "Ikkinchi omil",
+      "enrolled": "Sozlangan",
+      "notEnrolled": "Sozlanmagan: bu shaxs kengaytirilgan seansni ocha olmaydi",
+      "rolesHidden": "Xodimlarni koʻrish huquqi bilan koʻrinadi",
+      "until": "{date} gacha",
+      "breakglass": "favqulodda kirish",
+      "revoke": "Bu rolni olib qoʻyish",
+      "revokeSubmit": "Olib qoʻyish",
+      "managedAtNode": "tugun konsolida boshqariladi",
+      "scope": {
+        "thisHub": "bu xab",
+        "otherHub": "boshqa xab",
+        "node": "butun tugun",
+        "platform": "butun platforma"
+      },
+      "accessFor": "{name} bu yerda nima qila oladi",
+      "permissionCount": "Ruxsatlar",
+      "permissions": "Ruxsatlarni koʻrsatish",
+      "accessUnavailable": "Bu shaxs nima qila olishi xodimlar roʻyxatini koʻra oladigan xodimlarga koʻrsatiladi.",
+      "empty": "Bu xabda hali hech kimda xodim roli yoʻq.",
+      "noActivity": "Konsol xodim nima qilganini hech qachon koʻrsatmaydi: kirishlar, faollik yoki hisoblar yoʻq.",
+      "addRole": "Rol qoʻshish",
+      "addRoleHelp": "Bu xab xodimlari qatoridagi kishiga yana bir xab rolini bering. Hech kim oʻziga rol bermaydi.",
+      "person": "Shaxs",
+      "role": "Rol",
+      "addRoleSubmit": "Rolni qoʻshish",
+      "nothingToAdd": "Bu xab xodimlari orasida rol beriladigan boshqa kishi hali yoʻq.",
+      "sensitiveNote": "Nozik rollar ({roles}) ikkinchi xodim tasdiqlaydigan taklif orqali beriladi."
     }
   }
 }

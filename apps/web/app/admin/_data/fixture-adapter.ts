@@ -1,5 +1,5 @@
 import { isRestricted } from '@trustwork/country-packs';
-import { permissionsFor, rolesFor, rolesGranting } from './access.js';
+import { coveringAssignments, permissionsFor, rolesFor, rolesGranting } from './access.js';
 import { evaluateCommand, type CommandInput, type CommandOutcome } from './commands.js';
 import { elevationState } from './elevation.js';
 import type { ConsoleRequest } from './personas.js';
@@ -67,6 +67,35 @@ export const fixtureConsolePort: ConsoleDataPort = {
   async people(ids) {
     return STAFF.people.filter((p) => ids.includes(p.id));
   },
+  // HC-150 on fixtures: the synthetic staff whose active assignments cover the hub. Every demo staff member has an
+  // authenticator enrolled except the Support Agent, so the "no second factor" state is visible.
+  async staff(hubId, detail) {
+    const record = HUBS.find((h) => h.hub.id === hubId);
+    if (!record) return null;
+    const target = { nodeId: record.hub.nodeId, hubId };
+    const entries = STAFF.people.flatMap((p) => {
+      const covering = coveringAssignments(STAFF, p.id, target, now());
+      if (!covering.length) return [];
+      return [{
+        personId: p.id, displayName: p.displayName,
+        roles: detail ? covering.map((a) => ({ assignmentId: a.id, role: a.role, scope: a.scope, validUntil: a.validUntil, breakglass: a.breakglass })) : null,
+        secondFactor: detail ? (p.id === 'p-support-agent' ? 'none' as const : 'enrolled' as const) : null,
+      }];
+    });
+    return { hubId, detail, entries };
+  },
+  async effectiveAccess(hubId, personId) {
+    const record = HUBS.find((h) => h.hub.id === hubId);
+    if (!record) return null;
+    const target = { nodeId: record.hub.nodeId, hubId };
+    const roles = rolesFor(STAFF, personId, target, now());
+    return roles.length ? { roles, permissions: [...permissionsFor(STAFF, personId, target, now())].sort() } : null;
+  },
+  async roleCatalogue() {
+    const latest = new Map<string, (typeof STAFF.definitions)[number]>();
+    for (const d of STAFF.definitions) if ((latest.get(d.role)?.version ?? 0) < d.version) latest.set(d.role, d);
+    return [...latest.values()].map((d) => ({ role: d.role, version: d.version, scopes: d.scopes }));
+  },
   async overview(hubId) {
     return OVERVIEWS.find((o) => o.hubId === hubId) ?? null;
   },
@@ -113,6 +142,8 @@ export const fixtureConsolePort: ConsoleDataPort = {
       setup: input.setupToken ? await this.setup(input.setupToken) : null,
       isRestricted,
       product: hub ? productFor(hub.hub.id) : null,
+      staff: hub && input.command.startsWith('staff.') ? await this.staff(hub.hub.id, true) : null,
+      catalogue: input.command === 'staff.assign' ? await this.roleCatalogue() : [],
     });
   },
 };

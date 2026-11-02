@@ -326,7 +326,10 @@
       "licence_requires_verified": "Lisenziyalı kateqoriyalar yalnız yoxlanılmış icraçıları qəbul edir, agentlər isə yalnız yoxlanılmış kontragentlərlə qəbul edir.",
       "not_draft": "Yalnız versiya qaralaması aktivləşdirilə və ya ləğv edilə bilər.",
       "activation_unavailable": "İkinci əməkdaşın təsdiqi üçün əməliyyat müəyyən edilənədək aktivləşdirmə mümkün deyil. Bir əməkdaş bu dəyişikliyi aktivləşdirə bilməz.",
-      "preview_missing": "Aktivləşdirmə üçün saxlanmış önbaxış tələb olunur. Əvvəlcə onu yaradın və yoxlayın."
+      "preview_missing": "Aktivləşdirmə üçün saxlanmış önbaxış tələb olunur. Əvvəlcə onu yaradın və yoxlayın.",
+      "self_grant": "Heç kim özünə əməkdaş rolu vermir; bunu başqa heyət administratoru edir.",
+      "sensitive_role": "Bu rol həssasdır: o, ikinci şəxsin təsdiqlədiyi dəvətlə verilir.",
+      "role_held": "Bu şəxsin bu habda artıq bu rolu var."
     },
     "details": {
       "demo_data_only_before_soft_launch": "nümayiş məlumatlarına yalnız yumşaq başlanğıca qədər icazə verilir",
@@ -2304,6 +2307,41 @@
         "edit": "Dəyiş",
         "afterFinish": "Bitirdikdən sonra hab qaralama qalır: qeydiyyat bağlıdır, bütün provayderlər imitasiyadır, indeksləşdirmə bağlıdır."
       }
+    },
+    "staff": {
+      "title": "Heyət",
+      "lede": "Bu haba kim xidmət edir, hansı rollarla və ikinci amildən istifadə edirmi. Nə edə biləcəyini görmək üçün şəxsi seçin.",
+      "people": "Bu habın heyəti",
+      "name": "Ad",
+      "roles": "Rollar",
+      "secondFactor": "İkinci amil",
+      "enrolled": "Qurulub",
+      "notEnrolled": "Qurulmayıb: bu şəxs genişləndirilmiş sessiya aça bilməz",
+      "rolesHidden": "Heyəti görmək hüququ ilə görünür",
+      "until": "{date} tarixinədək",
+      "breakglass": "təcili giriş",
+      "revoke": "Bu rolu ləğv et",
+      "revokeSubmit": "Ləğv et",
+      "managedAtNode": "node konsolunda idarə olunur",
+      "scope": {
+        "thisHub": "bu hab",
+        "otherHub": "başqa hab",
+        "node": "bütün node",
+        "platform": "bütün platforma"
+      },
+      "accessFor": "{name} burada nə edə bilər",
+      "permissionCount": "İcazələr",
+      "permissions": "İcazələri göstər",
+      "accessUnavailable": "Bu şəxsin nə edə biləcəyi heyət siyahısını görə bilən əməkdaşlara göstərilir.",
+      "empty": "Bu habda hələ heç kimin heyət rolu yoxdur.",
+      "noActivity": "Konsol əməkdaşın nə etdiyini heç vaxt göstərmir: nə girişlər, nə fəaliyyət, nə də saylar.",
+      "addRole": "Rol əlavə et",
+      "addRoleHelp": "Artıq bu habın heyətində olan birinə başqa hab rolu verin. Heç kim özünə rol vermir.",
+      "person": "Şəxs",
+      "role": "Rol",
+      "addRoleSubmit": "Rolu əlavə et",
+      "nothingToAdd": "Bu habın heyətində rol veriləcək başqa kimsə hələ yoxdur.",
+      "sensitiveNote": "Həssas rollar ({roles}) ikinci şəxsin təsdiqlədiyi dəvətlə verilir."
     }
   }
 }

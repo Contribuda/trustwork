@@ -5,12 +5,14 @@ import {
   HubConfigVersionSchema,
   HubModesSchema,
   HubSchema,
+  HubStaffRoleSchema,
   LaunchGateSchema,
   SodModeSchema,
   type ConsolePermission,
   type HubStaffRole,
 } from '@trustwork/contracts/client';
 import { isRestricted } from '@trustwork/country-packs';
+import { EffectiveAccessSchema, StaffDirectorySchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import { evaluateCommand, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
@@ -60,7 +62,10 @@ const ConfigItemsSchema = z.object({ items: z.array(z.record(z.string(), z.unkno
 const ChecklistSchema = z.object({ gates: z.array(z.record(z.string(), z.unknown())) });
 const SodViewSchema = z.object({ mode: SodModeSchema });
 const AccessViewSchema = z.object({ roles: z.array(z.string()), permissions: z.array(z.string()) });
-const DefinitionsViewSchema = z.object({ items: z.array(z.object({ role: z.string(), permissions: z.array(z.string()) })) });
+/** `GET /v1/admin/staff/definitions`: every released definition version (`{ definitions }`, ADM-001 `toDefinition`). */
+const DefinitionsViewSchema = z.object({ definitions: z.array(z.object({ role: z.string(), permissions: z.array(z.string()) }).passthrough()) });
+/** `GET /v1/admin/staff/definitions` with versions and scopes (the role catalogue of HC-150). */
+const CatalogueViewSchema = z.object({ definitions: z.array(z.object({ role: HubStaffRoleSchema, version: z.number().int(), scopes: z.array(z.enum(['platform', 'node', 'hub'])) }).passthrough()) });
 const ApprovalViewSchema = z.object({
   id: z.string(),
   action: z.string(),
@@ -215,7 +220,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     const view = DefinitionsViewSchema.safeParse(await orNothing(api.get('/v1/admin/staff/definitions')));
     if (!view.success) return [];
     const read = section.read;
-    return view.data.items.filter((d) => read === 'staff' || read.some((p) => d.permissions.includes(p))).map((d) => d.role as HubStaffRole);
+    return [...new Set(view.data.definitions.filter((d) => read === 'staff' || read.some((p) => d.permissions.includes(p))).map((d) => d.role as HubStaffRole))];
   }
 
   /**
@@ -294,7 +299,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
-    'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
+    'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
     'legal.draft',
   ]);
 
@@ -315,8 +320,11 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     if (!v || !hub) return { status: 'not_found' };
     const acc = await access(v, { nodeId: hub.hub.nodeId, hubId: hub.hub.id });
     const { requests, ready, waiting } = await approvals(hub.hub.id, v.person.id);
+    const staffCommand = input.command === 'staff.assign' || input.command === 'staff.revoke';
+    const staffView = staffCommand ? await port.staff(hub.hub.id, true) : null;
+    const catalogue = input.command === 'staff.assign' ? await port.roleCatalogue() : [];
     // The same checks as everywhere in the console first (role, elevation, reason, own request, digest); the API repeats them as the authority.
-    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted, ready, waiting });
+    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted, ready, waiting, staff: staffView, catalogue });
     if (checked.status !== 'demo_not_saved') return checked;
     const f = input.fields;
     const newKey = options.newKey ?? (() => crypto.randomUUID());
@@ -343,6 +351,14 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       }
       return settled(await send(`${hubPath}/config/${encodeURIComponent(version.id)}/activate`, { expectedRevision: version.revision, approvalId: null }));
     };
+    if (input.command === 'staff.assign') {
+      // A hub role from the latest released definition; the API checks the grantor, conflicts and sensitivity again.
+      const definition = catalogue.find((d) => d.role === f.role)!;
+      return settled(await send('/v1/admin/staff/assignments', { personId: f.personId, role: definition.role, scope: { kind: 'hub', hubId: hub.hub.id }, definitionVersion: definition.version }));
+    }
+    if (input.command === 'staff.revoke') {
+      return settled(await send(`/v1/admin/staff/assignments/${encodeURIComponent(f.assignmentId ?? '')}/revoke`, {}));
+    }
     if (input.command === 'approvals.request_activation') {
       // Activation without an approval by someone other than the drafter: the API opens the second-person request.
       const item = waiting.find((w) => w.target.id === f.targetId)!;
@@ -406,7 +422,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     return answer.status >= 200 && answer.status < 300 ? { status: 'applied' } : refusal(answer.status, answer.code);
   }
 
-  return {
+  const port: ConsoleDataPort = {
     source: 'api',
     now,
     viewer,
@@ -418,7 +434,33 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     access,
     rolesGranting,
     // No staff directory read for display names yet; screens fall back to the person id.
-    people: async () => [],
+    // Names come only from the ADM-004 staff directories of the hubs the viewer covers: staff are named to staff, and
+    // nobody else is named at all.
+    async people(ids) {
+      if (ids.length === 0) return [];
+      const list = HubsViewSchema.safeParse(await orNothing(api.get('/v1/admin/hubs')));
+      const found = new Map<string, { id: string; displayName: string; nameLang: string; synthetic: false }>();
+      for (const item of list.success ? list.data.items : []) {
+        const view = StaffDirectorySchema.safeParse(await orNothing(api.get(`/v1/admin/staff/directory?hubId=${encodeURIComponent(item.hub.id)}`)));
+        for (const e of view.success ? view.data.entries : []) if (ids.includes(e.personId)) found.set(e.personId, { id: e.personId, displayName: e.displayName, nameLang: 'und', synthetic: false });
+      }
+      return [...found.values()];
+    },
+    async staff(hubId) {
+      const view = StaffDirectorySchema.safeParse(await orNothing(api.get(`/v1/admin/staff/directory?hubId=${encodeURIComponent(hubId)}`)));
+      return view.success ? view.data : null;
+    },
+    async effectiveAccess(hubId, personId) {
+      const view = EffectiveAccessSchema.safeParse(await orNothing(api.get(`/v1/admin/staff/effective-access?hubId=${encodeURIComponent(hubId)}&personId=${encodeURIComponent(personId)}`)));
+      return view.success ? { roles: view.data.roles, permissions: view.data.permissions } : null;
+    },
+    async roleCatalogue() {
+      const view = CatalogueViewSchema.safeParse(await orNothing(api.get('/v1/admin/staff/definitions')));
+      if (!view.success) return [];
+      const latest = new Map<string, { role: HubStaffRole; version: number; scopes: Array<'platform' | 'node' | 'hub'> }>();
+      for (const d of view.data.definitions) if ((latest.get(d.role)?.version ?? 0) < d.version) latest.set(d.role, { role: d.role, version: d.version, scopes: d.scopes });
+      return [...latest.values()];
+    },
     overview: async () => null,
     approvals,
     // One console document per stored version (the API keeps a version per kind and language); the operator record has no
@@ -449,4 +491,5 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     // Commands are wired one by one with their backend routes (LIVE_COMMANDS); the others are not found in live mode.
     command,
   };
+  return port;
 }

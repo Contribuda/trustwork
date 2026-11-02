@@ -63,6 +63,7 @@ import { screen as outreachReplies } from '../hubs/[hub]/outreach/replies/_scree
 import { screen as outreachSuppression } from '../hubs/[hub]/outreach/suppression/_screen';
 import { screen as outreachDeliverability } from '../hubs/[hub]/outreach/deliverability/_screen';
 import { screen as outreachLifecycle } from '../hubs/[hub]/outreach/lifecycle/_screen';
+import { screen as staff } from '../hubs/[hub]/staff/_screen';
 
 /** Every built hub console screen; sections with status `demo` in their group file must have one here (tested). */
 export const SCREENS: readonly Screen[] = [
@@ -74,6 +75,8 @@ export const SCREENS: readonly Screen[] = [
   modulesProjects, modulesPlanner, modulesMarketplace, modulesKnowledgeSharing, modulesEvents, modulesLearning, modulesMatching, modulesCommerce, agentsModules, agentsPolicy, agentsExtensions, agentsExternal, agentsUsage, agentsAbuse, billingOffers, billingPrices, billingInvoices, billingPayouts, billingCredits, billingTax, communicationsSenders, communicationsTemplates, communicationsDeliverability, communicationsAnnouncements,
   // OUTR-004
   outreachOverview, outreachPolicies, outreachCampaigns, outreachTemplates, outreachReplies, outreachSuppression, outreachDeliverability, outreachLifecycle,
+  // HC-150 (HUBC-006 staff scope, live through HUBC-007 and ADM-004)
+  staff,
 ];
 
 export function screenFor(groupId: string, sectionId: string): Screen | null {
