@@ -57,7 +57,10 @@ async function uiText(page: Page): Promise<string> {
 
 const LATIN_OK = /\b(Trustwork|OpenRouter|HTTPS|localhost|Tab|Escape|ISO|US|UZ|en|es)\b/g;
 async function expectNoEnglish(page: Page) {
-  const text = (await uiText(page)).replace(/\S+@\S+/g, ' ').replace(/\b[a-z0-9]+(?:[.-][a-z0-9]+)+\b/g, ' ').replace(/\b[A-Z]{2}(?:-[A-Z0-9]{1,3})?(?::[a-z0-9-]+)?\b/g, ' ').replace(LATIN_OK, ' ');
+  const text = (await uiText(page)).replace(/\S+@\S+/g, ' ').replace(/\b[a-z0-9]+(?:[.-][a-z0-9]+)+\b/g, ' ').replace(/\b[A-Z]{2}(?:-[A-Z0-9]{1,3})?(?::[a-z0-9-]+)?\b/g, ' ')
+    // IANA time zone names (Asia/Samarkand) and ISO 4217 currency codes (UZS) are codes, not copy.
+    .replace(/\b[A-Z][a-z]+(?:\/[A-Za-z_-]+)+/g, ' ').replace(/\b[A-Z]{3}\b/g, ' ')
+    .replace(LATIN_OK, ' ');
   const latin = text.match(/\b[A-Za-z]{3,}\b/g) ?? [];
   expect(latin, `${page.url()}: English copy found: ${[...new Set(latin)].join(', ')}`).toEqual([]);
   expect(text).toMatch(/[\u10A0-\u10FF]{3,}/); // Georgian script: the page really is localized

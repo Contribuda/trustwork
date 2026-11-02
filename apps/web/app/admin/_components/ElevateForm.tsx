@@ -23,13 +23,8 @@ export type ElevateLabels = {
 type Outcome = { tone: 'idle' | 'error'; message: string };
 
 async function post(path: string, body: unknown): Promise<boolean> {
-  const response = await fetch(withBase(path), {
-    method: 'POST',
-    headers: { accept: 'application/json', 'content-type': 'application/json', 'X-Trustwork-Request': '1' },
-    credentials: 'same-origin',
-    cache: 'no-store',
-    body: JSON.stringify(body),
-  });
+  // Same-origin credentials and no caching are fetch's defaults for a POST.
+  const response = await fetch(withBase(path), { method: 'POST', headers: { 'content-type': 'application/json', 'X-Trustwork-Request': '1' }, body: JSON.stringify(body) });
   return response.ok;
 }
 
