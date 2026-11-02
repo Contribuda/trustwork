@@ -129,6 +129,13 @@ test('envelopes: structured intents only, untrusted notes, no spoofing, privacy,
     expectError(await carl.get(`/v1/assistant/negotiations/${sessionId}`), 404, 'access.not_found');
   });
 
+  /**
+   * Whether serialized rows carry a secret. A numeric secret counts only as a value of its own: an amount such as 2100
+   * must not match the same digits inside a random UUID or digest (that made this check fail by chance).
+   */
+  const carries = (text: string, secret: string): boolean =>
+    /^\d+$/.test(secret) ? new RegExp(`(?<![0-9A-Za-z])${secret}(?![0-9A-Za-z])`).test(text) : text.includes(secret);
+
   await t.test('nothing a counterparty can read carries a private constraint, a mandate or the other side\'s decision', async () => {
     const readAll = async (personId: string) => as(h, personId, async (trx) => {
       const out: Record<string, unknown[]> = {};
@@ -139,12 +146,12 @@ test('envelopes: structured intents only, untrusted notes, no spoofing, privacy,
     });
     const petrSees = await readAll(w.seed.people.petr);
     const petrText = JSON.stringify(petrSees);
-    for (const secret of ['2800', '2100', 'PRIVATE-seller', 'floor', 'terms_digest', repCm.mandateId]) assert.ok(!petrText.includes(secret), `the buyer never reads ${secret}`);
+    for (const secret of ['2800', '2100', 'PRIVATE-seller', 'floor', 'terms_digest', repCm.mandateId]) assert.ok(!carries(petrText, secret), `the buyer never reads ${secret}`);
     assert.equal(petrSees.agent_envelope_sender!.length, 5, 'only the sender rows of Petr\'s own envelopes');
     assert.ok(petrSees.agent_envelope_receipt!.every((r) => (r as { receiver_id: string }).receiver_id === w.seed.people.petr));
     assert.deepEqual(petrSees.company_mandate, []);
     const borisText = JSON.stringify(await readAll(w.seed.people.boris));
-    for (const secret of ['9000000', 'PRIVATE-buyer', petrMandate]) assert.ok(!borisText.includes(secret), `the seller never reads ${secret}`);
+    for (const secret of ['9000000', 'PRIVATE-buyer', petrMandate]) assert.ok(!carries(borisText, secret), `the seller never reads ${secret}`);
     const outbox = await h.db.admin.query("SELECT payload FROM trustwork.outbox_event WHERE type LIKE 'agents.%'");
     for (const row of outbox.rows) assert.ok(!/2800|2100|9000000|3175|61300/.test(JSON.stringify(row.payload)), 'no amount in any agents event');
   });
