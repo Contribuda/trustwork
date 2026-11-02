@@ -2988,7 +2988,7 @@
       "id": "CLM-001",
       "title": "Company identifiers, registrations, licences, claims and per-hub verification badges",
       "area": "verification",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "HUB-003",
         "BE-003",
