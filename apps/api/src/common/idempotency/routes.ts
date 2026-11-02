@@ -220,6 +220,11 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   // transaction after the refusal, which completes the record as an error result.
   'admin.staff.assign': IN_TRANSACTION,
   'admin.staff.revoke': IN_TRANSACTION,
+  // ADM-004 staff invitations: each command and its receipt commit together.
+  'admin.staff.invite': IN_TRANSACTION,
+  'admin.staff.invitation_apply': IN_TRANSACTION,
+  'admin.staff.invitation_withdraw': IN_TRANSACTION,
+  'admin.staff.invitation_respond': IN_TRANSACTION,
   'admin.staff.breakglass': IN_TRANSACTION,
   'admin.staff.conflict_declare': IN_TRANSACTION,
   'admin.staff.conflict_end': IN_TRANSACTION,

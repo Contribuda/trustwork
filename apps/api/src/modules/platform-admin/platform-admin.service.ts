@@ -25,8 +25,8 @@ import {
 } from './views.js';
 
 type Cmd = z.infer<typeof PlainCommandSchema>;
-interface Elevated { state: RequestState; elevationId: string; idempotencyKey: string | undefined }
-interface Attempt { target: StaffTarget; permission: ConsolePermission; action: string; objectType: string; objectId: string }
+export interface Elevated { state: RequestState; elevationId: string; idempotencyKey: string | undefined }
+export interface Attempt { target: StaffTarget; permission: ConsolePermission; action: string; objectType: string; objectId: string }
 
 const SEVENTY_TWO_HOURS = 72 * 3600;
 export const toFacts = (rows: StaffRoleAssignmentRow[]): AssignmentFact[] => rows.map((r) => ({
@@ -85,6 +85,14 @@ export class PlatformAdminService {
       if (refusal && attempt && isAuthorityRefusal(refusal)) await this.recordDenied(e, cmd, attempt, refusal).catch((failure: unknown) => this.ctx.log('admin.denied_audit_failed', failure));
       throw refusal ?? error;
     }
+  }
+
+  /**
+   * The same staff command plumbing for ADM-004's staff-lifecycle slice: request transaction as the staff member,
+   * contract errors, and a `denied` audit row for a refusal of authority.
+   */
+  staffCommand<T>(e: Elevated, body: Cmd, attempt: Attempt | null, fn: (trx: Transaction, p: Principal, cmd: CommandContext) => Promise<T>): Promise<T> {
+    return this.staff(e, body, attempt, fn);
   }
 
   /** Reads as the staff member (row-level security decides what is visible). */
