@@ -63,7 +63,8 @@ export interface VerificationCheckTable {
   evidence_ref: string | null;
   screening_state_id: string | null;
   screening_state_revision: number | null;
-  recorded_by: string;
+  /** Null only for an adapter's result (fake or live mode). */
+  recorded_by: string | null;
   recorded_at: Generated<Date>;
   expires_at: Date;
 }

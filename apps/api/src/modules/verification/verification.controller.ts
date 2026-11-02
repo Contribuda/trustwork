@@ -17,6 +17,7 @@ const SubjectParams = z.strictObject({ hubId: Uuid, subjectKind: z.enum(['compan
 const DigestQuery = z.strictObject({ credentialRefId: Uuid });
 const AppealParams = z.strictObject({ hubId: Uuid, appealId: Uuid });
 const CheckParams = z.strictObject({ checkId: Uuid });
+const RecheckQuery = z.strictObject({ days: z.coerce.number().int().min(0).max(366).default(30) });
 type P<S extends z.ZodType> = z.infer<S>;
 
 function elevated(state: RequestState, elevation: SessionElevationRow, request: TrustworkRequest): Elevated {
@@ -84,6 +85,11 @@ export class AdminVerificationController {
   @Post('checks/screening') @HttpCode(201) @Idempotent('verification.screening_record')
   recordScreening(@Params(HubParams) p: P<typeof HubParams>, @Body(RecordScreeningCommandSchema) body: P<typeof RecordScreeningCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.service.recordScreening(elevated(state, e, r), p.hubId, body);
+  }
+
+  @Get('rechecks')
+  rechecks(@Params(HubParams) p: P<typeof HubParams>, @Query(RecheckQuery) q: P<typeof RecheckQuery>, @ReqState() state: RequestState) {
+    return this.service.rechecks(state, p.hubId, q.days);
   }
 
   @Get('appeals')

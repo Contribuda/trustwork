@@ -26,6 +26,7 @@ Storage: [`packages/data/migrations/verification`](../../../../../packages/data/
 | `POST /providers/:id/live` | Live mode with a credential reference and the approval |
 | `POST /recipes`, `POST /recipes/:id/activate` | Draft and activate a recipe version |
 | `POST /checks`, `POST /checks/screening` | Record a result; record the sanctions check from SANC-003 |
+| `GET /rechecks?days` | Results that expire soon: manual ones wait for a reviewer, fake ones the worker re-checks |
 | `GET /appeals`, `POST /appeals/:id/decide` | Appeals of the hub; uphold or overturn (overturning records a new passing result with its evidence) |
 
 The subject's own path (`/v1/verification`, a signed-in session):
@@ -35,9 +36,18 @@ The subject's own path (`/v1/verification`, a signed-in session):
 | `POST /checks/:checkId/appeals` | A person appeals an adverse result about themselves, or an active company administrator appeals one about the company; anyone else finds nothing |
 | `GET /appeals` | The caller's own appeals |
 
-## Not yet (HUB-003 continues)
+## Re-checks (worker)
 
-- Deterministic fake adapters run by the worker.
-- Live adapters.
-- Re-check scheduling in the worker (the list is `verification_due_rechecks`).
+`apps/worker/src/verification/recheck.ts` runs every hour and takes the results that expire within a week:
+- a **fake** provider repeats its deterministic answer, recorded with no person as author;
+- a **manual** result waits for a reviewer (`GET /rechecks`);
+- a **live** provider without an adapter is reported, never guessed;
+- the **sanctions** check is re-screened by SANC-003.
+
+A result replaced in the meantime is skipped.
+
+## Later
+
+- Live register and licence adapters per country, with the country packs (the reference recipes name the candidate registers).
 - Console screens on these routes (HUBC-004 shows fixtures).
+- Notices to the subject when an appeal is decided (COMMS-001).
