@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import 'reflect-metadata';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { z } from 'zod';
 import { GUARDS_METADATA, PATH_METADATA } from '@nestjs/common/constants.js';
 import { FORBIDDEN_CONTROL_WORDS } from '@trustwork/contracts';
@@ -43,7 +43,24 @@ test('no module imports platform-admin; only the composition root mounts it', ()
   assert.deepEqual(importing, ['apps/api/src/app.module.ts']);
   // The module itself reaches other modules only through identity (sessions, elevation) and its own ports.
   // PRV-001 is a separate module nested here by its package scope; its own boundary test enforces ports.
-  const own = sources(join(ROOT, 'apps/api/src/modules/platform-admin')).filter((file) => !relative(ROOT, file).startsWith('apps/api/src/modules/platform-admin/privacy/'));
+  // ADM-004's staff-lifecycle slice lives inside the module: it may use the module's own files, identity, common and
+  // deps, and its own data and contract files; nothing else.
+  const lifecycle = 'apps/api/src/modules/platform-admin/staff-lifecycle/';
+  const LIFECYCLE_TARGETS = [
+    /^apps\/api\/src\/modules\/platform-admin\/[^/]+\.js$/, /^apps\/api\/src\/modules\/platform-admin\/staff-lifecycle\/[^/]+\.js$/,
+    /^apps\/api\/src\/modules\/identity\//, /^apps\/api\/src\/(common|deps)\//,
+    /^packages\/data\/src\/(repositories|schema)\/(admin|staff-lifecycle)\.js$/, /^packages\/contracts\/src\/staff-lifecycle\.js$/,
+  ];
+  for (const file of sources(join(ROOT, lifecycle))) {
+    for (const match of readFileSync(file, 'utf8').matchAll(/from\s+['"](\.\.?\/[^'"]+)['"]/g)) {
+      const target = relative(ROOT, join(dirname(file), match[1] as string));
+      assert.ok(LIFECYCLE_TARGETS.some((re) => re.test(target)), `${relative(ROOT, file)} imports ${target}`);
+    }
+  }
+  const own = sources(join(ROOT, 'apps/api/src/modules/platform-admin')).filter((file) => {
+    const rel = relative(ROOT, file);
+    return !rel.startsWith('apps/api/src/modules/platform-admin/privacy/') && !rel.startsWith(lifecycle);
+  });
   for (const file of own) {
     for (const match of readFileSync(file, 'utf8').matchAll(/from\s+['"](\.\.\/[^'"]+)['"]/g)) {
       const target = match[1] as string;
