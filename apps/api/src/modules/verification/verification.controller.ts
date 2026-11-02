@@ -5,7 +5,7 @@ import { Body, Params, Query } from '../../common/zod.js';
 import { Elevation, ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../identity/second-factor/deps.js';
 import {
-  ActivateRecipeCommandSchema, DraftRecipeCommandSchema, GoLiveCommandSchema, RecordCheckCommandSchema, RecordScreeningCommandSchema, RegisterProviderCommandSchema, StandingQuerySchema,
+  ActivateRecipeCommandSchema, DecideAppealCommandSchema, DraftRecipeCommandSchema, FileAppealCommandSchema, GoLiveCommandSchema, RecordCheckCommandSchema, RecordScreeningCommandSchema, RegisterProviderCommandSchema, StandingQuerySchema,
 } from './commands.js';
 import { VerificationService, type Elevated } from './verification.service.js';
 
@@ -15,6 +15,8 @@ const ProviderParams = z.strictObject({ hubId: Uuid, providerId: Uuid });
 const RecipeParams = z.strictObject({ hubId: Uuid, recipeId: Uuid });
 const SubjectParams = z.strictObject({ hubId: Uuid, subjectKind: z.enum(['company', 'person']), subjectId: Uuid });
 const DigestQuery = z.strictObject({ credentialRefId: Uuid });
+const AppealParams = z.strictObject({ hubId: Uuid, appealId: Uuid });
+const CheckParams = z.strictObject({ checkId: Uuid });
 type P<S extends z.ZodType> = z.infer<S>;
 
 function elevated(state: RequestState, elevation: SessionElevationRow, request: TrustworkRequest): Elevated {
@@ -82,5 +84,34 @@ export class AdminVerificationController {
   @Post('checks/screening') @HttpCode(201) @Idempotent('verification.screening_record')
   recordScreening(@Params(HubParams) p: P<typeof HubParams>, @Body(RecordScreeningCommandSchema) body: P<typeof RecordScreeningCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.service.recordScreening(elevated(state, e, r), p.hubId, body);
+  }
+
+  @Get('appeals')
+  appeals(@Params(HubParams) p: P<typeof HubParams>, @ReqState() state: RequestState) {
+    return this.service.appeals(state, p.hubId);
+  }
+
+  @Post('appeals/:appealId/decide') @HttpCode(200) @Idempotent('verification.appeal_decide', 'appealId')
+  decideAppeal(@Params(AppealParams) p: P<typeof AppealParams>, @Body(DecideAppealCommandSchema) body: P<typeof DecideAppealCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.service.decideAppeal(elevated(state, e, r), p.hubId, p.appealId, body);
+  }
+}
+
+/**
+ * The subject's own path (HUB-003): a person, or an active administrator of the company, appeals an adverse result
+ * about them and reads their own appeals. A signed-in session is enough; anyone else finds nothing.
+ */
+@Controller('v1/verification')
+export class OwnVerificationController {
+  constructor(@Inject(VerificationService) private readonly service: VerificationService) {}
+
+  @Post('checks/:checkId/appeals') @HttpCode(201) @Authenticated() @Idempotent('verification.appeal_file', 'checkId')
+  fileAppeal(@Params(CheckParams) p: P<typeof CheckParams>, @Body(FileAppealCommandSchema) body: P<typeof FileAppealCommandSchema>, @ReqState() state: RequestState) {
+    return this.service.fileAppeal(state, p.checkId, body);
+  }
+
+  @Get('appeals') @Authenticated()
+  ownAppeals(@ReqState() state: RequestState) {
+    return this.service.ownAppeals(state);
   }
 }

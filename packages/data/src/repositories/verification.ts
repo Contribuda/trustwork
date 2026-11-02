@@ -1,6 +1,6 @@
 import { sql, type RawBuilder } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { VerificationCheckResult, VerificationCheckRow, VerificationProviderRow, VerificationRecipeRow, VerificationStepJson } from '../schema/verification.js';
+import type { VerificationAppealRow, VerificationCheckResult, VerificationCheckRow, VerificationProviderRow, VerificationRecipeRow, VerificationStepJson } from '../schema/verification.js';
 import type { CommandContext } from './admin.js';
 import '../schema/verification.js';
 
@@ -85,6 +85,24 @@ export const verification = {
     const row = await one(sql<{ v: string }>`SELECT trustwork.verification_provider_digest(${providerId}::uuid, ${revision}::int, ${credentialRefId}::uuid) AS v`, trx,
       'verification_provider_digest');
     return row.v;
+  },
+
+  /** The subject (a person about themselves, an active company administrator about the company) appeals an adverse result. */
+  fileAppeal(trx: Transaction, checkId: string, reason: string): Promise<VerificationAppealRow> {
+    return one(sql<VerificationAppealRow>`SELECT * FROM trustwork.verification_file_appeal(${checkId}::uuid, ${reason}::text)`, trx, 'verification_file_appeal');
+  },
+  decideAppeal(trx: Transaction, ctx: CommandContext, appealId: string, expectedRevision: number, decision: 'upheld' | 'overturned', note: string, evidenceRef: string | null): Promise<VerificationAppealRow> {
+    return one(sql<VerificationAppealRow>`SELECT * FROM trustwork.verification_decide_appeal(${ctxJson(ctx)}::jsonb, ${appealId}::uuid, ${expectedRevision}::int, ${decision}::text, ${note}::text,
+      ${evidenceRef}::text)`, trx, 'verification_decide_appeal');
+  },
+  appeals(trx: Transaction, hubId: string): Promise<VerificationAppealRow[]> {
+    return trx.selectFrom('verification_appeal').selectAll().where('hub_id', '=', hubId).orderBy('created_at').execute();
+  },
+  appeal(trx: Transaction, appealId: string): Promise<VerificationAppealRow | undefined> {
+    return trx.selectFrom('verification_appeal').selectAll().where('id', '=', appealId).executeTakeFirst();
+  },
+  ownAppeals(trx: Transaction, personId: string): Promise<VerificationAppealRow[]> {
+    return trx.selectFrom('verification_appeal').selectAll().where('filed_by', '=', personId).orderBy('created_at').execute();
   },
 
   providers(trx: Transaction, hubId: string): Promise<VerificationProviderRow[]> {

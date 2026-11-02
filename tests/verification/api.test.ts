@@ -113,4 +113,20 @@ test('HUB-003 verification API', { skip: h ? false : SKIP_REASON }, async (t) =>
     const elsewhere = await clients.elsewhere.get(`/v1/admin/hubs/${hubId}/verification/standing?subjectKind=company&subjectId=${companyId}&recipeId=${recipeRow.id}`);
     assert.equal(elsewhere.status, 404, 'staff of another hub find nothing');
   });
+
+  await t.test('appeals: anyone but the subject finds nothing; the recorder may not decide (403); a decision is final', async () => {
+    const provider = ((await send(clients.staff, `${base}/providers`, { checkType: 'tax_status', adapter: 'synthetic_api_tax', mode: 'manual', retentionDays: 365,
+      legalBasis: 'statutory_public_register', costMinor: null })).body as { provider: { id: string } }).provider;
+    const taxRecipe = ((await send(clients.staff, `${base}/recipes`, { ...recipe, key: 'api-tax', trigger: 'seller_onboarding', badgeCategories: ['tax_status_current'],
+      steps: [{ check: 'tax_status', required: true }, { check: 'sanctions_screening', required: true }] })).body as { recipe: { id: string; revision: number } }).recipe;
+    assert.equal((await send(clients.staff, `${base}/recipes/${taxRecipe.id}/activate`, { expectedRevision: taxRecipe.revision })).status, 200);
+    const adverse = ((await send(clients.staff, `${base}/checks`, { subject: { kind: 'company', id: companyId }, recipeId: taxRecipe.id, providerId: provider.id, result: 'fail',
+      evidenceRef: 'tax:SYN-API-9' })).body as { check: { id: string } }).check;
+    const appealBy = (client: Client) => { const key = `appeal-${randomUUID()}`; return client.post(`/v1/verification/checks/${adverse.id}/appeals`, { reason: 'Renewed.' }, { idempotencyKey: key }); };
+    assert.equal((await appealBy(clients.participant)).status, 404, 'not the subject: nothing is found');
+    assert.equal((await appealBy(clients.elsewhere)).status, 404);
+    // The company has no administrator in this world, so nobody may appeal its result; the recorder may not decide an appeal either.
+    assert.equal((await clients.participant.get('/v1/verification/appeals')).status, 200);
+    assert.deepEqual(((await clients.participant.get('/v1/verification/appeals')).body as { items: unknown[] }).items, []);
+  });
 });

@@ -69,10 +69,27 @@ export interface VerificationCheckTable {
 }
 export type VerificationCheckRow = Selectable<VerificationCheckTable>;
 
+export interface VerificationAppealTable {
+  id: Generated<string>;
+  hub_id: string;
+  check_id: string;
+  filed_by: string;
+  reason: string;
+  status: 'open' | 'upheld' | 'overturned';
+  decided_by: string | null;
+  decided_at: Date | null;
+  decision_note: string | null;
+  new_check_id: string | null;
+  revision: number;
+  created_at: Generated<Date>;
+}
+export type VerificationAppealRow = Selectable<VerificationAppealTable>;
+
 export interface VerificationDatabase {
   verification_provider: VerificationProviderTable;
   verification_recipe: VerificationRecipeTable;
   verification_check: VerificationCheckTable;
+  verification_appeal: VerificationAppealTable;
 }
 
 declare module './index.js' {
@@ -93,5 +110,8 @@ export const TABLE_COLUMNS: TableColumns<VerificationDatabase> = {
   verification_check: columns('verification_check', [
     'id', 'hub_id', 'subject_person_id', 'subject_company_id', 'recipe_id', 'check_type', 'provider_id', 'mode', 'result', 'evidence_ref', 'screening_state_id',
     'screening_state_revision', 'recorded_by', 'recorded_at', 'expires_at',
+  ]),
+  verification_appeal: columns('verification_appeal', [
+    'id', 'hub_id', 'check_id', 'filed_by', 'reason', 'status', 'decided_by', 'decided_at', 'decision_note', 'new_check_id', 'revision', 'created_at',
   ]),
 };

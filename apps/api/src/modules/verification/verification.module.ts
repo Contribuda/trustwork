@@ -3,7 +3,7 @@ import type { AppContext } from '../identity/context.js';
 import type { IdentityServices } from '../identity/identity.module.js';
 import { ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import { SecondFactorService } from '../identity/second-factor/second-factor.service.js';
-import { AdminVerificationController } from './verification.controller.js';
+import { AdminVerificationController, OwnVerificationController } from './verification.controller.js';
 import { VerificationService } from './verification.service.js';
 
 /** Counterparty verification for the hub console: providers, recipes, check results and standing (HUB-003). */
@@ -13,7 +13,7 @@ export class VerificationModule {
     const service = new VerificationService(ctx, identity.principals);
     return {
       module: VerificationModule,
-      controllers: [AdminVerificationController],
+      controllers: [AdminVerificationController, OwnVerificationController],
       providers: [{ provide: VerificationService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
       exports: [VerificationService],
     };

@@ -6,11 +6,11 @@ import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import type {
-  ActivateRecipeCommandSchema, DraftRecipeCommandSchema, GoLiveCommandSchema, RecordCheckCommandSchema, RecordScreeningCommandSchema, RegisterProviderCommandSchema,
+  ActivateRecipeCommandSchema, DecideAppealCommandSchema, DraftRecipeCommandSchema, FileAppealCommandSchema, GoLiveCommandSchema, RecordCheckCommandSchema, RecordScreeningCommandSchema, RegisterProviderCommandSchema,
 } from './commands.js';
 import { adminAudit, verification, type CommandContext, type StaffRole } from './deps.js';
 import { isAuthorityRefusal, verificationRefusal } from './errors.js';
-import { toCheck, toProvider, toRecipe } from './views.js';
+import { toAppeal, toCheck, toProvider, toRecipe } from './views.js';
 
 type Body<S extends z.ZodType> = z.infer<S>;
 type Cmd = { idempotencyKey: string; reason: string };
@@ -96,6 +96,21 @@ export class VerificationService {
     });
   }
 
+  appeals(state: RequestState, hubId: string) {
+    return this.read(state, async (trx) => ({ items: (await verification.appeals(trx, hubId)).map(toAppeal) }));
+  }
+
+  ownAppeals(state: RequestState) {
+    return this.read(state, async (trx, p) => ({ items: (await verification.ownAppeals(trx, p.personId)).map(toAppeal) }));
+  }
+
+  /* ---------- The subject's own path ---------- */
+
+  /** The subject appeals an adverse result; anyone else finds nothing. */
+  fileAppeal(state: RequestState, checkId: string, body: Body<typeof FileAppealCommandSchema>) {
+    return this.read(state, async (trx) => ({ appeal: toAppeal(await verification.fileAppeal(trx, checkId, body.reason)) }));
+  }
+
   /* ---------- Commands ---------- */
 
   registerProvider(e: Elevated, hubId: string, body: Body<typeof RegisterProviderCommandSchema>) {
@@ -136,5 +151,13 @@ export class VerificationService {
   recordScreening(e: Elevated, hubId: string, body: Body<typeof RecordScreeningCommandSchema>) {
     return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'verification.screening_recorded', objectType: 'verification_check', objectId: NO_OBJECT },
       async (trx, cmd) => ({ check: toCheck(await verification.recordScreening(trx, cmd, hubId, body.subject, body.recipeId)) }));
+  }
+
+  decideAppeal(e: Elevated, hubId: string, appealId: string, body: Body<typeof DecideAppealCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: `verification.appeal_${body.decision}`, objectType: 'verification_appeal', objectId: appealId },
+      async (trx, cmd) => {
+        VerificationService.ofHub(await verification.appeal(trx, appealId), hubId);
+        return { appeal: toAppeal(await verification.decideAppeal(trx, cmd, appealId, body.expectedRevision, body.decision, body.note, body.evidenceRef)) };
+      });
   }
 }

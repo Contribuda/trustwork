@@ -5,10 +5,10 @@ import type { AccessInventory } from '../inventory.js';
  */
 export default {
   package: 'HUB-003',
-  forcedTables: ['verification_check', 'verification_provider', 'verification_recipe'],
+  forcedTables: ['verification_appeal', 'verification_check', 'verification_provider', 'verification_recipe'],
   apiDefiners: [
     'verification_register_provider', 'verification_go_live', 'verification_draft_recipe', 'verification_activate_recipe', 'verification_record_check',
-    'verification_record_screening', 'verification_evaluate', 'verification_staff_reader',
+    'verification_record_screening', 'verification_evaluate', 'verification_staff_reader', 'verification_file_appeal', 'verification_decide_appeal',
   ],
   workerDefiners: ['verification_due_rechecks'],
 } satisfies AccessInventory;
