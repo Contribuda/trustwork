@@ -40,7 +40,8 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   for (const key of keys) {
     const client = h.client();
     await signIn(client, `crash-admin-${String(key).toLowerCase()}@example.invalid`);
-    if (staff[key]) secrets[key] = await enrolNow(h, client);
+    // ADM-004: the employee accepts a staff invitation below, which needs a second factor.
+    if (staff[key] || key === 'employee') secrets[key] = await enrolNow(h, client);
     clients[key] = client;
   }
   h.clock.advance(30_000);
@@ -70,6 +71,15 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
     () => count(admin, 'SELECT 1 FROM trustwork.staff_conflict_declaration'))).body as { conflict: { id: string } };
   await run('admin.staff.conflict_end', c.owner, `/v1/admin/staff/conflicts/${conflict.conflict.id}/end`, {},
     () => count(admin, 'SELECT 1 FROM trustwork.staff_conflict_declaration WHERE ended_at IS NOT NULL'));
+
+  // ADM-004 staff invitations: invite, the invitee accepts, the inviter applies; another one is withdrawn.
+  const invitations = (status: string) => () => count(admin, 'SELECT 1 FROM trustwork.staff_invitation WHERE status = $1', [status]);
+  const invited = (await run('admin.staff.invite', c.owner, '/v1/admin/staff/invitations',
+    { email: 'crash-admin-employee@example.invalid', role: 'moderator', scope: hub, definitionVersion: 1, validForSeconds: null }, invitations('pending'))).body as { invitation: { id: string } };
+  await run('admin.staff.invitation_respond', c.employee, `/v1/me/staff-invitations/${invited.invitation.id}/respond`, { accept: true }, invitations('accepted'), true);
+  await run('admin.staff.invitation_apply', c.owner, `/v1/admin/staff/invitations/${invited.invitation.id}/apply`, {}, invitations('applied'));
+  const toCancel = (await plain(c.owner, '/v1/admin/staff/invitations', { email: 'crash-admin-outsider@example.invalid', role: 'moderator', scope: hub, definitionVersion: 1, validForSeconds: null })).invitation as { id: string };
+  await run('admin.staff.invitation_withdraw', c.admin, `/v1/admin/staff/invitations/${toCancel.id}/withdraw`, {}, invitations('withdrawn'));
 
   // Approvals: request, approve, decline, withdraw; break-glass consumes one.
   const subject = { action: 'staff.grant_breakglass', personId: p.lead2, role: 'moderator', scope: hub, definitionVersion: 1, incidentId: incident.incident.id, validForSeconds: 3600 };
