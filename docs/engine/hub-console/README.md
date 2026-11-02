@@ -83,6 +83,10 @@ A node with one hub (the common case) opens straight into that hub's console; th
 
 The console lives at `/admin` on the hub's origin, entered from the avatar menu ("Administration", `shell.menu.admin`) only by people who hold a staff role, after step-up and a second factor (an **elevated session**, `admin.session.elevate`). It has its own shell with a distinct header band so staff never confuse it with the workspace, a grouped left navigation, and a return link to the workspace.
 
+In live mode (HUBC-007) a staff member whose session is not elevated sees the elevation form on `/admin` and in every section: the password again (`POST /v1/auth/step-up`), then a code from the authenticator app or a recovery code (`POST /v1/admin/session/elevate`); the page then renders with the elevated session. Anyone without a staff role gets the console's "not found" in their own language, worded like any other, so the console's existence is never disclosed.
+
+A sensitive change (data residency, a legal document version, any domain with a second-person action) never takes effect through one person. Its drafter saves a draft ("Saved as a draft", `admin.common.draftSaved`); the approvals screen lists it under "Waiting for activation" (`admin.approvals.waiting`), where a staff member other than the drafter requests the activation and the API opens the request; a person other than that requester approves it; and the requester applies it from "Ready to apply" (`admin.approvals.ready`). Each step names the exact version by its activation digest, so a changed draft voids the approval.
+
 ```text
 /admin                                   landing: the single hub's overview, or the node console
 /admin/setup/[step]                      setup wizard (only before setup finishes; setup token)

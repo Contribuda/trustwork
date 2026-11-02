@@ -47,6 +47,19 @@ export function TextAreaInput({ name, label, description, isRequired = false, ro
   return <TextArea name={`f.${name}`} label={label} description={description} isRequired={isRequired} rows={rows} />;
 }
 
+/** A native checkbox with its label; checked sends `on` under `f.<name>`. */
+export function CheckboxField({ name, label, defaultChecked = false, lang }: { name: string; label: string; defaultChecked?: boolean; lang?: string | undefined }) {
+  const id = `field-${name.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  return (
+    <div className="admin-field admin-field--checkbox">
+      <input id={id} type="checkbox" name={`f.${name}`} defaultChecked={defaultChecked} />
+      <label htmlFor={id} className="admin-field__label" {...(lang ? { lang } : {})}>
+        {label}
+      </label>
+    </div>
+  );
+}
+
 /** The read-only explanation for a viewer who may read a section but not change it. */
 export function readOnlyReason(canEdit: boolean, offline: boolean): string | null {
   if (offline) return t('admin.common.offlineDisabled');

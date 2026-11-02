@@ -6,7 +6,7 @@ import { submitConsoleCommand } from '../../../../_data/actions';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
 import type { HubContext } from '../../../../_components/context';
 import type { Screen } from '../../../../_components/screen';
-import { formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
+import { CheckboxField, FieldGroup, formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
 import { country, languageName } from '../../../../_components/format';
 import { ConsoleHeader, KeyValues, Panel } from '../../../../_components/shell';
 
@@ -140,13 +140,26 @@ async function Identity(ctx: HubContext) {
 
       <Panel id="change" title={t('admin.hub.identity.change')}>
         <ConsoleForm action={submitConsoleCommand} hidden={ctx.hidden('identity.save')} labels={formLabels({ submit: t('admin.common.saveVersion') })} disabledReason={readOnlyReason(canEdit, ctx.offline)}>
-          <TextInput name="addTerritory" label={t('admin.hub.identity.addTerritory')} description={t('admin.hub.identity.addTerritoryHelp')} />
+          <FieldGroup legend={t('admin.hub.identity.hubLanguages')}>
+            {[...new Set([...hub.locales, ...engine])].map((tag) => (
+              <CheckboxField key={tag} name={`locale.${tag}`} label={languageName(tag)} defaultChecked={hub.locales.includes(tag)} />
+            ))}
+            <p className="admin-meta">{t('admin.hub.identity.hubLanguagesHelp')}</p>
+          </FieldGroup>
           <SelectField
             name="defaultLocale"
             label={t('admin.hub.identity.defaultLanguage')}
             defaultValue={hub.defaultLocale}
             options={hub.locales.map((tag) => ({ value: tag, label: languageName(tag) }))}
           />
+          <FieldGroup legend={t('admin.hub.identity.names')}>
+            {[...new Set([...hub.locales, ...engine])].map((tag) => (
+              <TextInput key={tag} name={`name.${tag}`} label={t('admin.hub.identity.nameIn', { language: languageName(tag) })} defaultValue={hub.name[tag] ?? ''} />
+            ))}
+          </FieldGroup>
+          <TextInput name="timeZone" label={t('admin.hub.identity.timeZone')} description={t('admin.hub.identity.timeZoneHelp', { example: hub.timeZone })} defaultValue={hub.timeZone} />
+          <TextInput name="currency" label={t('admin.hub.identity.currency')} description={t('admin.hub.identity.currencyHelp', { example: hub.currency })} defaultValue={hub.currency} />
+          <TextInput name="addTerritory" label={t('admin.hub.identity.addTerritory')} description={t('admin.hub.identity.addTerritoryHelp')} />
         </ConsoleForm>
       </Panel>
       <p className="admin-meta">{t('admin.hub.identity.versionsNote')}</p>

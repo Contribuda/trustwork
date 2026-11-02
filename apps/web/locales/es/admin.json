@@ -258,7 +258,9 @@
       "unknownPerson": "Alguien ajeno a este hub",
       "opensNewTab": "(se abre en una pestaña nueva)",
       "sentToSecondPerson": "Guardado y enviado a una segunda persona para “{action}”; surte efecto cuando lo apruebe.",
-      "draftSaved": "Guardado como borrador de “{action}”. Otro miembro del personal solicita su activación y una segunda persona la aprueba."
+      "draftSaved": "Guardado como borrador de “{action}”. Otro miembro del personal solicita su activación y una segunda persona la aprueba.",
+      "you": "Usted",
+      "staffMember": "Un miembro del personal"
     },
     "denied": {
       "title": "No tiene acceso a esta sección",
@@ -271,7 +273,13 @@
       "title": "Confirme que es usted",
       "body": "La consola se abre después de que confirme su segundo factor (un código de la aplicación de autenticación o un código de recuperación). La sesión elevada termina 15 minutos después o cuando cierre sesión; confirme de nuevo para continuar.",
       "action": "Confirmar y continuar",
-      "demoNote": "Demostración: la confirmación es simulada."
+      "demoNote": "Demostración: la confirmación es simulada.",
+      "password": "Contraseña",
+      "code": "Código",
+      "codeHelp": "Seis dígitos de su aplicación de autenticación o uno de sus códigos de recuperación.",
+      "wrongPassword": "La contraseña no fue aceptada.",
+      "wrongCode": "El código no fue aceptado. Espere un código nuevo e inténtelo de nuevo.",
+      "failed": "La confirmación no se completó. Inténtelo de nuevo."
     },
     "designed": {
       "title": "Diseñado, aún no construido",
@@ -505,7 +513,8 @@
         "providerMode": "Modo del proveedor",
         "automationLevel": "Nivel de automatización",
         "feeVersion": "Versión de las comisiones",
-        "role": "Rol"
+        "role": "Rol",
+        "action": "Acción"
       },
       "actions": {
         "staff": {
@@ -583,7 +592,16 @@
         "kill_switch": {
           "release": "Liberar un interruptor de emergencia"
         }
-      }
+      },
+      "ready": "Listo para aplicar",
+      "readyHelp": "Una segunda persona aprobó estos cambios suyos. Al aplicarlos entran en vigor ahora.",
+      "apply": "Aplicar ahora",
+      "waiting": "En espera de activación",
+      "waitingHelp": "Estos borradores sensibles necesitan una segunda persona. Alguien distinto de quien los redactó solicita la activación y una persona distinta de quien la solicitó la aprueba.",
+      "draftedBy": "Redactado por",
+      "draftedAt": "Redactado",
+      "requestActivation": "Solicitar activación",
+      "ownDraft": "Usted redactó este cambio, así que otro miembro del personal solicita su activación."
     },
     "values": {
       "languages": {
@@ -740,7 +758,12 @@
         "addTerritory": "Agregar un territorio",
         "addTerritoryHelp": "Un país (US), una región (US-TX) o una localidad (US-TX:austin).",
         "defaultLanguage": "Idioma predeterminado",
-        "versionsNote": "Al guardar se crea una nueva versión de la configuración; la activa se mantiene hasta que se active la nueva versión."
+        "versionsNote": "Al guardar se crea una nueva versión de la configuración; la activa se mantiene hasta que se active la nueva versión.",
+        "hubLanguages": "Idiomas del hub",
+        "hubLanguagesHelp": "Elija hasta doce. Un idioma nuevo necesita el nombre del hub en ese idioma.",
+        "nameIn": "Nombre en {language}",
+        "timeZoneHelp": "Un nombre de zona horaria, por ejemplo {example}.",
+        "currencyHelp": "Un código ISO 4217, por ejemplo {example}."
       },
       "modes": {
         "title": "Modos del sistema",

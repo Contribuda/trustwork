@@ -6,7 +6,7 @@ import { primeLocale } from '@/app/_lib/locale';
 import { consoleHref, type StaffPersonaId } from './_data/personas';
 import { consoleRequest, type PageSearchParams } from './_components/context';
 import { country, localized } from './_components/format';
-import { AdminShell, DeniedState, KeyValues, Panel, roleList, StatusLabel } from './_components/shell';
+import { AdminShell, DeniedState, KeyValues, LiveElevation, Panel, roleList, StatusLabel } from './_components/shell';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
@@ -16,7 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * `/admin` (docs/engine/hub-console/README.md): a viewer whose roles cover one hub goes straight to its overview;
  * a viewer covering several (node or platform roles) gets the node's hub list, never a switcher; a signed-in person
- * without a staff role sees the denied state; anyone else gets "not found". In demo mode only, `/admin` without a
+ * without a staff role sees the denied state; staff whose session is not elevated (the node read needs it) confirm
+ * their second factor first; anyone else gets "not found". In demo mode only, `/admin` without a
  * staff persona lists the demo staff roles to open the console with (synthetic data; live mode stays "not found").
  */
 const DEMO_PERSONA_ROLES: ReadonlyArray<readonly [StaffPersonaId, string]> = [
@@ -52,6 +53,13 @@ export default async function AdminLanding({ searchParams }: { searchParams: Pag
   const viewer = await port.viewer(request);
   if (!viewer) notFound();
   const node = await port.node();
+  if (!node && !request.demo && viewer.elevation.state !== 'elevated') {
+    return (
+      <AdminShell request={request} hub={null} viewer={viewer} roles={[]} nav={null} current={null} navHref={(p) => p} helpHref={null} selfPath="/admin">
+        <LiveElevation />
+      </AdminShell>
+    );
+  }
   if (!node) notFound();
   const hubs = await port.hubs(request);
   const covered = (
@@ -73,7 +81,7 @@ export default async function AdminLanding({ searchParams }: { searchParams: Pag
               <h1 tabIndex={-1} className="admin-h1">
                 {t('admin.landing.title')}
               </h1>
-              <StatusLabel status="demo" />
+              <StatusLabel status={request.demo ? 'demo' : 'live'} />
             </div>
             <p className="admin-lede">{t('admin.landing.lede')}</p>
           </header>

@@ -9,6 +9,7 @@ import { sectionById, type GroupDef, type SectionRef, type SectionStatus } from 
 import { resolveHub, type HubContext, type HubParams, type PageSearchParams } from './context';
 import { list } from './format';
 import { NavSheet } from './NavSheet';
+import { ElevateForm } from './ElevateForm';
 import { NavigationTools } from '../_navigation/server';
 
 /* ---------- Small server parts ---------- */
@@ -18,8 +19,11 @@ export function StatusLabel({ status }: { status: SectionStatus | 'live' | 'cont
   return <SharedStatusLabel status={status} label={tDynamic(`admin.status.${status}`, status)} />;
 }
 
-/** Every page header names the one hub it acts on (no hub switcher anywhere). */
-export function ConsoleHeader({ ctx, title, lede, status = 'demo', actions }: { ctx: HubContext; title: string; lede?: string | undefined; status?: SectionStatus; actions?: ReactNode }) {
+/**
+ * Every page header names the one hub it acts on (no hub switcher anywhere). Without an explicit status, a demo
+ * request is labelled Demo and a live one Live: the live console reads the API and never shows fixtures.
+ */
+export function ConsoleHeader({ ctx, title, lede, status, actions }: { ctx: HubContext; title: string; lede?: string | undefined; status?: SectionStatus; actions?: ReactNode }) {
   return (
     <header className="admin-head">
       <p className="admin-head__kicker" data-testid="acts-on">
@@ -30,7 +34,7 @@ export function ConsoleHeader({ ctx, title, lede, status = 'demo', actions }: { 
         <h1 tabIndex={-1} className="admin-h1">
           {title}
         </h1>
-        <StatusLabel status={status} />
+        <StatusLabel status={status ?? (ctx.request.demo ? 'demo' : 'live')} />
       </div>
       {lede ? <p className="admin-lede">{lede}</p> : null}
       {actions ? <div className="admin-head__actions">{actions}</div> : null}
@@ -263,16 +267,44 @@ export function DeniedState({ title, body, roles }: { title: string; body?: stri
   );
 }
 
+/**
+ * The elevation state of a live console page: the password and a second-factor code open an elevated session
+ * (BE-004), and the page renders again. Used by every hub section and by `/admin` itself.
+ */
+export function LiveElevation() {
+  return (
+    <div className="admin-state" data-testid="admin-elevation">
+      <EmptyState title={t('admin.elevation.title')} headingLevel={2}>
+        <p>{t('admin.elevation.body')}</p>
+        <div style={{ textAlign: 'start' }}>
+          <ElevateForm
+            labels={{
+              password: t('admin.elevation.password'),
+              code: t('admin.elevation.code'),
+              codeHelp: t('admin.elevation.codeHelp'),
+              submit: t('admin.elevation.action'),
+              wrongPassword: t('admin.elevation.wrongPassword'),
+              wrongCode: t('admin.elevation.wrongCode'),
+              generic: t('admin.elevation.failed'),
+            }}
+          />
+        </div>
+      </EmptyState>
+    </div>
+  );
+}
+
 function ElevationGate({ ctx }: { ctx: HubContext }) {
+  if (!ctx.request.demo) return <LiveElevation />;
   return (
     <div className="admin-state" data-testid="admin-elevation">
       <EmptyState
         title={t('admin.elevation.title')}
         headingLevel={2}
-        actions={<ButtonLink href={consoleHref(ctx.href(ctx.current.section.path).split('?')[0] ?? '', ctx.request.demo ? { ...ctx.request, scenario: 'default' } : ctx.request)}>{t('admin.elevation.action')}</ButtonLink>}
+        actions={<ButtonLink href={consoleHref(ctx.href(ctx.current.section.path).split('?')[0] ?? '', { ...ctx.request, scenario: 'default' })}>{t('admin.elevation.action')}</ButtonLink>}
       >
         <p>{t('admin.elevation.body')}</p>
-        {ctx.request.demo ? <p>{t('admin.elevation.demoNote')}</p> : null}
+        <p>{t('admin.elevation.demoNote')}</p>
       </EmptyState>
     </div>
   );

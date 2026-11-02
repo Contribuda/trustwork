@@ -1,5 +1,5 @@
 import type { ConsolePermission, HubStaffRole } from '@trustwork/contracts/client';
-import type { CommandInput, CommandOutcome } from './commands.js';
+import type { CommandInput, CommandOutcome, ReadyApproval, WaitingActivation } from './commands.js';
 import type { ConsoleRequest } from './personas.js';
 import type {
   ApprovalDecision,
@@ -51,7 +51,11 @@ export interface ConsoleDataPort {
   rolesGranting(section: SectionDef): Promise<HubStaffRole[]>;
   people(ids: readonly string[]): Promise<ConsolePerson[]>;
   overview(hubId: string): Promise<Overview | null>;
-  approvals(hubId: string): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[] }>;
+  /**
+   * Requests and decisions; the live adapter also lists the viewer's approved changes that wait to be applied (`ready`)
+   * and the sensitive drafts that wait for someone to request their activation (`waiting`).
+   */
+  approvals(hubId: string): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[]; ready?: ReadyApproval[]; waiting?: WaitingActivation[] }>;
   legal(hubId: string): Promise<{ operator: Operator | null; documents: LegalDocument[] }>;
   residency(hubId: string): Promise<Residency | null>;
   localAdditions(hubId: string): Promise<LocalAddition[]>;
