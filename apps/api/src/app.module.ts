@@ -9,6 +9,7 @@ import { ProjectsModule } from './modules/projects/projects.module.js';
 import { DirectoryModule } from './modules/directory/directory.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { PipelinesModule } from './modules/pipelines/pipelines.module.js';
+import { VerificationModule } from './modules/verification/verification.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
 import { FeesModule } from './modules/billing/fees/fees.module.js';
 import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
@@ -82,6 +83,7 @@ export class AppModule {
         PlansModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.plans), capabilities }),
         PaymentsModule.forRoot(identity),
         PipelinesModule.forRoot(ctx, identity),
+        VerificationModule.forRoot(ctx, identity),
         CatalogueModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ProcurementModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
