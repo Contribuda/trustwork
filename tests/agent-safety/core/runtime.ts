@@ -190,6 +190,10 @@ export async function startRuntime(label = 'agent_safety'): Promise<StartedRunti
           const r = await me.client.post(`/v1/assistant/decisions/${intentId}/approve`, { digest });
           return { status: r.status, code: (r.body as { code?: string } | null)?.code ?? null };
         },
+        async unfinishedJobs() {
+          return (await h!.db.admin.query<{ kind: string; state: string; attempt: number; last_error: string | null }>(
+            "SELECT kind, state, attempt, last_error FROM trustwork.job WHERE state <> 'succeeded' ORDER BY created_at")).rows;
+        },
         async engageStop() {
           const r = await me.client.post('/v1/assistant/stop');
           assert.equal(r.status, 200, JSON.stringify(r.body));
