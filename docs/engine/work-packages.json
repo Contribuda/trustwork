@@ -9057,7 +9057,7 @@
       "id": "ADM-004",
       "title": "Staff lifecycle and access governance backend",
       "area": "platform-admin-backend",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "ADM-001",
         "HUB-001"

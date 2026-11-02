@@ -5,6 +5,8 @@ import { ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import { SecondFactorService } from '../identity/second-factor/second-factor.service.js';
 import { AdminStaffController, ModerationParticipantController } from './platform-admin.controller.js';
 import { PlatformAdminService } from './platform-admin.service.js';
+import { StaffLifecycleController } from './staff-lifecycle/staff-lifecycle.controller.js';
+import { StaffLifecycleService } from './staff-lifecycle/staff-lifecycle.service.js';
 import {
   MODERATION_TARGETS, RecordingModerationTargets, RecordingSanctionEnforcement, SANCTION_ENFORCEMENT, type ModerationTargetPort, type SanctionEnforcementPort,
 } from './ports.js';
@@ -28,9 +30,11 @@ export class PlatformAdminModule {
     const service = new PlatformAdminService(ctx, identity.principals, moderationTargets, sanctions);
     return {
       module: PlatformAdminModule,
-      controllers: [AdminStaffController, ModerationParticipantController],
+      controllers: [AdminStaffController, ModerationParticipantController, StaffLifecycleController],
       providers: [
         { provide: PlatformAdminService, useValue: service },
+        // ADM-004 staff reads (staff-lifecycle/).
+        { provide: StaffLifecycleService, useValue: new StaffLifecycleService(ctx, identity.principals) },
         { provide: SecondFactorService, useValue: identity.secondFactors },
         { provide: MODERATION_TARGETS, useValue: moderationTargets },
         { provide: SANCTION_ENFORCEMENT, useValue: sanctions },
