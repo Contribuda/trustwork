@@ -15,6 +15,9 @@ import { paymentReconcileTask, registerPayments, type PaymentRuntime } from './p
 import { startPaymentIngress } from './payments/ingress.js';
 import { PaymentProviders } from './payments/provider.js';
 import { PipelineStepRegistry, pipelineMaintenanceTask, pipelineRunTask, pipelineScheduleTask } from './pipelines/index.js';
+import { Collector } from './collect/collector.js';
+import { collectionPort, registerFetchStep } from './collect/fetch-step.js';
+import { botUserAgent } from '../../../packages/contracts/src/collection-policy.js';
 import { providersSecretSweepTask } from './providers/index.js';
 import { registerRescreen, rescreenConfigFromEnv, rescreenTickTask, rescreenWeeklyTask, type RescreenRuntime } from './rescreen/index.js';
 import { expireLeasesTask, partitionsTask, sweepTask } from './scheduler.js';
@@ -81,6 +84,12 @@ async function main(): Promise<void> {
   const paymentIngress = process.env.PAYMENTS_WEBHOOK_PORT ? await startPaymentIngress(payments, Number(process.env.PAYMENTS_WEBHOOK_PORT)) : null;
   // Step implementations arrive with the packages that own them (source collection, drafting, outreach).
   const pipelineSteps = new PipelineStepRegistry();
+  // SRC-002: source collection runs only when the operator names the bot's contact page (the user agent carries it).
+  // Without it the `fetch` step is not registered and a collection pipeline fails honestly (`pipelines.step_unavailable`).
+  const collectContact = process.env.COLLECT_CONTACT_URL?.trim();
+  if (collectContact) {
+    registerFetchStep(pipelineSteps, { collector: new Collector({ fetch: (url, init) => fetch(url, init), userAgent: botUserAgent(new URL(collectContact).toString()) }), port: collectionPort(pool) });
+  }
   const registry = buildRegistry({ payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
