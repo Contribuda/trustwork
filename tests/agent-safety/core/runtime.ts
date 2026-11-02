@@ -62,7 +62,10 @@ export async function startRuntime(label = 'agent_safety'): Promise<StartedRunti
   }
 
   // Idle means two consecutive passes in which the runner leased nothing and the relay published nothing: an effect
-  // enqueued through the outbox after one empty pass (a loaded CI runner) is still drained.
+  // enqueued through the outbox after one empty pass (a loaded CI runner) is still drained. A job that failed with a
+  // retryable error (for example a serialization conflict between two dispatches on a loaded runner) waits for its
+  // backoff of 5 seconds or more; the scenarios judge outcomes, not timing (the backoff itself is covered by the worker
+  // tests), so the harness makes such retries due now instead of declaring the worker idle with work still queued.
   async function drain(): Promise<void> {
     let quiet = 0;
     for (let i = 0; i < 100; i++) {
@@ -70,7 +73,12 @@ export async function startRuntime(label = 'agent_safety'): Promise<StartedRunti
       await w.idle();
       const relayed = await w.relay.relayOnce();
       quiet = leased === 0 && relayed === 0 ? quiet + 1 : 0;
-      if (quiet === 2) return;
+      if (quiet === 2) {
+        const due = await h!.db.admin.query("UPDATE trustwork.job SET next_at = now() WHERE state = 'queued' AND next_at > now()");
+        if (!due.rowCount) return;
+        quiet = 0;
+        continue;
+      }
       if (quiet === 1) await new Promise((resolve) => setTimeout(resolve, 50));
     }
     throw new Error('the worker did not become idle');
