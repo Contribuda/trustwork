@@ -257,7 +257,8 @@
       "version": "Versiya {version}",
       "unknownPerson": "Bu habdan kənar şəxs",
       "opensNewTab": "(yeni tabda açılır)",
-      "sentToSecondPerson": "Saxlanıldı və «{action}» üçün ikinci əməkdaşa göndərildi; o təsdiqlədikdən sonra qüvvəyə minir."
+      "sentToSecondPerson": "Saxlanıldı və «{action}» üçün ikinci əməkdaşa göndərildi; o təsdiqlədikdən sonra qüvvəyə minir.",
+      "draftSaved": "«{action}» layihə kimi saxlanıldı. Onun aktivləşdirilməsini başqa əməkdaş istəyir, ikinci şəxs isə təsdiqləyir."
     },
     "denied": {
       "title": "Bu bölməyə girişiniz yoxdur",

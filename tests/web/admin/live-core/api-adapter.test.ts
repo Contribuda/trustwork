@@ -276,10 +276,11 @@ test('identity: a new default language goes through the profile with the hub rev
   assert.deepEqual(nothing.sent, []);
 });
 
-test('residency: a residency version for the named country, sent to a second person; a restricted place never leaves the console', async () => {
-  const { sent, port: p } = settingsPort([{ status: 201, code: null, body: { ...applied(VERSION), version: { id: VERSION, revision: 1 } } }, { status: 200, code: null, body: applied(VERSION, 'pending_second_person') }],
+test('residency: a residency draft for the named country, never activated by its drafter; a restricted place never leaves the console', async () => {
+  const { sent, port: p } = settingsPort([{ status: 201, code: null, body: { ...applied(VERSION), version: { id: VERSION, revision: 1, activation: { secondPersonAction: 'hub.change_residency', actionDigest: 'e'.repeat(64) } } } }],
     ['admin.hub.residency.edit']);
-  assert.deepEqual(await p.command(live, settings('residency.request_change', { country: 'us' }, null)), { status: 'pending_second_person', secondPerson: 'hub.change_residency' });
+  assert.deepEqual(await p.command(live, settings('residency.request_change', { country: 'us' }, null)), { status: 'draft_saved', secondPerson: 'hub.change_residency' });
+  assert.equal(sent.length, 1, 'the drafter never activates a sensitive version');
   assert.deepEqual([sent[0]!.body.domain, sent[0]!.body.payload], ['residency', { hostingCountry: 'US', hostingRegion: null, personalDataCountries: ['US'] }]);
   const restricted = settingsPort([], ['admin.hub.residency.edit']);
   assert.equal(((await restricted.port.command(live, settings('residency.request_change', { country: 'IR' }, null))) as { code: string }).code, 'territory_restricted');
@@ -307,6 +308,11 @@ test('legal: stored versions become console documents (counsel-approved drafts s
   assert.equal(((await wrong.port.command(live, settings('legal.draft', { kind: 'terms', locale: 'xx', body: 'Text' }, null))) as { field: string }).field, 'locale');
   assert.equal(((await wrong.port.command(live, settings('legal.draft', { kind: 'terms', locale: hub.defaultLocale, body: '   ' }, null))) as { field: string }).field, 'body');
   assert.deepEqual(wrong.sent, []);
+});
+
+test('an unelevated staff session may not read the node: the node is absent, never an error', async () => {
+  const { port: p } = port(staffRoutes({ '/v1/admin/node': () => { throw new Failure(403); } }));
+  assert.equal(await p.node(), null);
 });
 
 test('settings refusals: no permission or a stale revision sends nothing; an API refusal stays a refusal', async () => {

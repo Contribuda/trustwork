@@ -257,7 +257,8 @@
       "version": "Version {version}",
       "unknownPerson": "Someone outside this hub",
       "opensNewTab": "(opens in a new tab)",
-      "sentToSecondPerson": "Saved and sent to a second person for “{action}”; it takes effect once they approve."
+      "sentToSecondPerson": "Saved and sent to a second person for “{action}”; it takes effect once they approve.",
+      "draftSaved": "Saved as a draft of “{action}”. Another staff member requests its activation, and a second person approves it."
     },
     "denied": {
       "title": "You do not have access to this section",
