@@ -3190,7 +3190,7 @@
       "id": "MINE-001",
       "title": "Local data mining: datasets and entity resolution",
       "area": "data",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "PIPE-001",
         "HUB-003"
