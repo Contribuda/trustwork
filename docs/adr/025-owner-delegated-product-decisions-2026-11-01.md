@@ -28,8 +28,8 @@ Date: 2026-11-01. Status: **Accepted**. The repository owner Dmitry Parshkov han
 
 9. ADR 017 is **accepted** as the policy design: option A (strict) is the default in every hub, and option B (a single page notice) is the recommended first step. Each hub's move to B or C still needs a counsel approval record and a second person, as the ADR says.
 10. The reference hub stays in **A** until counsel answers the US questions in the design (commercial message, data-broker status, article 14). This ADR does not move it.
-11. Outreach goes to organisation and role addresses only. Named business contacts are not allowed in option C in the first release.
-12. Sourced pages for sole proprietors are off by default. A notice about a quote invitation sent to a listed supplier is off by default.
+11. Outreach goes to organisation and role addresses only. Named business contacts are not allowed in option C in the first release. *Amended by [ADR 026](026-discovery-to-claim-engine-and-professional-pages.md) decision 4: governed per jurisdiction instead.*
+12. Sourced pages for sole proprietors are off by default. A notice about a quote invitation sent to a listed supplier is off by default. *The sole-proprietor part is amended by [ADR 026](026-discovery-to-claim-engine-and-professional-pages.md): professional pages per jurisdiction under its decision 2.*
 13. Hand-over follows the design split: limited control at `claimed`, full control at `verified`.
 14. An outreach coordinator staff role is added. It is narrow and holds no privacy-officer reads. OUTR-002 proposes its permissions together with `PROPOSED_OUTREACH_HUMAN_GATES`.
 

@@ -10193,7 +10193,8 @@
         "docs/engine/hub-console/data-mining.md",
         "docs/engine/people-and-companies.md",
         "docs/engine/hub-console/autonomous-editorial.md",
-        "docs/data/model.md"
+        "docs/data/model.md",
+        "docs/adr/026-discovery-to-claim-engine-and-professional-pages.md"
       ],
       "steps": [
         "Contracts in packages/contracts/src/sourced-pages.ts and tables canonical_entity, entity_member, entity_field, field_provenance, distinct_pair and change_event (packages/data/migrations/sourced-pages).",
@@ -10220,6 +10221,74 @@
       ]
     },
     {
+      "id": "PPL-002",
+      "title": "Sourced professional pages for people from statutory registers",
+      "area": "people",
+      "status": "open",
+      "dependsOn": [
+        "ENT-001",
+        "REG-001",
+        "OUTR-001"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Assemble a page for a natural person in their professional capacity (licensed trade or profession, sole proprietorship) from statutory register facts only, where the country pack, counsel and a second person enable it for the jurisdiction (ADR 026 decision 2), with notice and one-click objection.",
+      "read": [
+        "docs/adr/026-discovery-to-claim-engine-and-professional-pages.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/engine/hub-console/data-mining.md",
+        "docs/adr/017-outreach-policy.md"
+      ],
+      "steps": [
+        "Propose the contract change: a professional page kind in sourced pages and the DatasetSchema refinement that admits register-backed professional records only (ADR-backed minor version).",
+        "Add the hub configuration field discovery.professionalPages per jurisdiction, activated only with a counsel approval record and a second person.",
+        "Assemble pages from register facts only (name as registered, trade, licence number and status with date and source, city-level locality); label them and attach the article 14 style notice.",
+        "One-click objection removes the page and suppresses re-creation on every hub of the node; record the suppression in the platform suppression list."
+      ],
+      "acceptance": [
+        "No page is created for a jurisdiction whose configuration does not enable professional pages (tested for a generic country profile and for a strict hub).",
+        "A page never contains a home address, a personal channel, a photograph, an age or an inferred field (contract test and scan).",
+        "An objection removes the page and blocks its re-creation from any source (tested).",
+        "Consumers, employees in non-public roles, officers from company registers, sensitive categories and court or debt records never become pages (negative tests)."
+      ],
+      "paths": [
+        "apps/api/src/modules/sourced-pages/professional",
+        "apps/worker/src/enrichment/professional",
+        "tests/sourced-pages/professional"
+      ]
+    },
+    {
+      "id": "CLM-002",
+      "title": "People claim their own professional page",
+      "area": "verification",
+      "status": "open",
+      "dependsOn": [
+        "PPL-002",
+        "CLM-001"
+      ],
+      "handbook": "docs/engine/discovery-and-outreach.md",
+      "goal": "Let a person with a verified login claim their professional page with an identity tie (licence board lookup match, code to the register-listed business channel, or a reviewer's document check), then edit, hide or delete it (ADR 026 decision 6).",
+      "read": [
+        "docs/adr/026-discovery-to-claim-engine-and-professional-pages.md",
+        "docs/engine/discovery-and-outreach.md",
+        "docs/engine/hub-administration.md"
+      ],
+      "steps": [
+        "Claim request against a professional page with one open claim per page and the dispute path of company claims.",
+        "Identity ties: licence-board lookup match, a code to the business channel the register lists, or a reviewer's document check; an invitation link proves only access to its channel.",
+        "After the claim: edit descriptive fields, hide or delete the page; deletion suppresses re-creation.",
+        "Audit every step; badges show categories and dates, never documents."
+      ],
+      "acceptance": [
+        "Nobody gains control of a page without an identity tie (negative authorization and concurrency tests).",
+        "A deleted page is never re-created from any source (tested).",
+        "Disputes need a second person and notify the current holder (tested)."
+      ],
+      "paths": [
+        "apps/api/src/modules/verification/claims/people",
+        "tests/claims/people"
+      ]
+    },
+    {
       "id": "OUTR-002",
       "title": "Outreach orchestration: campaigns, gates, platform suppression, replies and deliverability",
       "area": "communications",
@@ -10240,7 +10309,8 @@
         "docs/adr/017-outreach-policy.md",
         "docs/engine/communications.md",
         "docs/engine/hub-console/automation-and-scheduling.md",
-        "docs/adr/014-sanctions-compliance-engine.md"
+        "docs/adr/014-sanctions-compliance-engine.md",
+        "docs/adr/026-discovery-to-claim-engine-and-professional-pages.md"
       ],
       "steps": [
         "Contracts in packages/contracts/src/outreach.ts and tables contact_point (encrypted value, provenance, basis, jurisdiction), legitimate_interest_assessment, outreach_campaign, outreach_campaign_version, outreach_touch, outreach_reply and do_not_collect_entry (packages/data/migrations/outreach); extend suppression_entry with scope and reasons with the communications owner's agreement.",
