@@ -105,6 +105,11 @@ export const verification = {
     return trx.selectFrom('verification_appeal').selectAll().where('filed_by', '=', personId).orderBy('created_at').execute();
   },
 
+  /** The hub's results that expire within `days` (staff with a claims permission). */
+  hubDue(trx: Transaction, hubId: string, days: number): Promise<HubDueCheck[]> {
+    return sql<HubDueCheck>`SELECT * FROM trustwork.verification_hub_due(${hubId}::uuid, ${days}::int)`.execute(trx).then((r) => r.rows);
+  },
+
   providers(trx: Transaction, hubId: string): Promise<VerificationProviderRow[]> {
     return trx.selectFrom('verification_provider').selectAll().where('hub_id', '=', hubId).orderBy('created_at').execute();
   },
@@ -120,7 +125,18 @@ export const verification = {
   },
 };
 
+export interface DueCheck { check_id: string; hub_id: string; check_type: string; provider_mode: string; result: string; expires_at: Date }
+export interface HubDueCheck { check_id: string; check_type: string; provider_mode: string; result: string; expires_at: Date; subject_kind: VerificationSubjectKind; subject_id: string }
+
 export const verificationWorker = {
+  /** Results expiring within `days` across hubs (latest per recipe, subject and check type), oldest first. */
+  dueAll(trx: Transaction, days: number, limit: number): Promise<DueCheck[]> {
+    return sql<DueCheck>`SELECT * FROM trustwork.verification_due_rechecks_all(${days}::int, ${limit}::int)`.execute(trx).then((r) => r.rows);
+  },
+  /** An adapter's answer to the re-check of an existing result (fake providers today). */
+  recordAdapterResult(trx: Transaction, checkId: string, result: VerificationCheckResult, evidenceRef: string | null): Promise<VerificationCheckRow> {
+    return one(sql<VerificationCheckRow>`SELECT * FROM trustwork.verification_record_adapter_result(${checkId}::uuid, ${result}::text, ${evidenceRef}::text)`, trx, 'verification_record_adapter_result');
+  },
   /** Results that expire within `days` (the latest per recipe, subject and check type). */
   dueRechecks(trx: Transaction, hubId: string, days: number): Promise<Array<{ check_id: string; subject_kind: VerificationSubjectKind; subject_id: string; recipe_id: string; check_type: string; expires_at: Date }>> {
     return sql<{ check_id: string; subject_kind: VerificationSubjectKind; subject_id: string; recipe_id: string; check_type: string; expires_at: Date }>`

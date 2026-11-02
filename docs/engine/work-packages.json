@@ -2945,7 +2945,7 @@
       "id": "HUB-003",
       "title": "Counterparty verification adapters and recipes (sanctions screening through the SANC engine)",
       "area": "verification",
-      "status": "in_progress",
+      "status": "done",
       "dependsOn": [
         "HUB-001",
         "KEYS-001",

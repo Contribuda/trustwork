@@ -96,6 +96,15 @@ export class VerificationService {
     });
   }
 
+  /** Results that expire within `days`: manual ones wait for a reviewer; fake ones the worker re-checks. */
+  rechecks(state: RequestState, hubId: string, days: number) {
+    return this.read(state, async (trx) => ({
+      items: (await verification.hubDue(trx, hubId, days)).map((r) => ({
+        checkId: r.check_id, checkType: r.check_type, providerMode: r.provider_mode, result: r.result, expiresAt: r.expires_at.toISOString(), subject: { kind: r.subject_kind, id: r.subject_id },
+      })),
+    }));
+  }
+
   appeals(state: RequestState, hubId: string) {
     return this.read(state, async (trx) => ({ items: (await verification.appeals(trx, hubId)).map(toAppeal) }));
   }
