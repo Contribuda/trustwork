@@ -258,7 +258,9 @@
       "unknownPerson": "Bu habdan kənar şəxs",
       "opensNewTab": "(yeni tabda açılır)",
       "sentToSecondPerson": "Saxlanıldı və «{action}» üçün ikinci əməkdaşa göndərildi; o təsdiqlədikdən sonra qüvvəyə minir.",
-      "draftSaved": "«{action}» layihə kimi saxlanıldı. Onun aktivləşdirilməsini başqa əməkdaş istəyir, ikinci şəxs isə təsdiqləyir."
+      "draftSaved": "«{action}» layihə kimi saxlanıldı. Onun aktivləşdirilməsini başqa əməkdaş istəyir, ikinci şəxs isə təsdiqləyir.",
+      "you": "Siz",
+      "staffMember": "Əməkdaş"
     },
     "denied": {
       "title": "Bu bölməyə girişiniz yoxdur",
@@ -271,7 +273,13 @@
       "title": "Bunun siz olduğunuzu təsdiqləyin",
       "body": "Konsol ikinci faktor təsdiqləndikdən sonra açılır (autentifikator tətbiqindəki kod və ya bərpa kodu). Genişləndirilmiş sessiya 15 dəqiqə sonra və ya çıxış etdikdə bitir; davam etmək üçün yenidən təsdiqləyin.",
       "action": "Təsdiqlə və davam et",
-      "demoNote": "Nümayiş: təsdiq imitasiya olunur."
+      "demoNote": "Nümayiş: təsdiq imitasiya olunur.",
+      "password": "Parol",
+      "code": "Kod",
+      "codeHelp": "Autentifikator tətbiqindən altı rəqəm və ya bərpa kodlarınızdan biri.",
+      "wrongPassword": "Parol qəbul edilmədi.",
+      "wrongCode": "Kod qəbul edilmədi. Yeni kodu gözləyin və yenidən cəhd edin.",
+      "failed": "Təsdiqləmə alınmadı. Yenidən cəhd edin."
     },
     "designed": {
       "title": "Layihələndirilib, hələ qurulmayıb",
@@ -505,7 +513,8 @@
         "providerMode": "Provayder rejimi",
         "automationLevel": "Avtomatlaşdırma səviyyəsi",
         "feeVersion": "Komissiya versiyası",
-        "role": "Rol"
+        "role": "Rol",
+        "action": "Əməliyyat"
       },
       "actions": {
         "staff": {
@@ -583,7 +592,16 @@
         "kill_switch": {
           "release": "Qəza açarını götür"
         }
-      }
+      },
+      "ready": "Tətbiqə hazırdır",
+      "readyHelp": "İkinci əməkdaş bu dəyişikliklərinizi təsdiqlədi. Tətbiq etsəniz, onlar indi qüvvəyə minəcək.",
+      "apply": "İndi tətbiq et",
+      "waiting": "Aktivləşdirmə gözlənilir",
+      "waitingHelp": "Bu həssas layihələrə ikinci şəxs lazımdır. Aktivləşdirməni layihənin müəllifi deyil, başqa əməkdaş istəyir; onu istəyən şəxsdən fərqli şəxs təsdiqləyir.",
+      "draftedBy": "Layihənin müəllifi",
+      "draftedAt": "Hazırlanıb",
+      "requestActivation": "Aktivləşdirməni istə",
+      "ownDraft": "Bu dəyişikliyi siz hazırlamısınız, ona görə onun aktivləşdirilməsini başqa əməkdaş istəyir."
     },
     "values": {
       "languages": {
@@ -740,7 +758,12 @@
         "addTerritory": "Ərazi əlavə et",
         "addTerritoryHelp": "Ölkə (US), region (US-TX) və ya yaşayış məntəqəsi (US-TX:austin).",
         "defaultLanguage": "Əsas dil",
-        "versionsNote": "Saxlama konfiqurasiyanın yeni versiyasını yaradır; yenisi aktivləşdirilənə qədər mövcud versiya qalır."
+        "versionsNote": "Saxlama konfiqurasiyanın yeni versiyasını yaradır; yenisi aktivləşdirilənə qədər mövcud versiya qalır.",
+        "hubLanguages": "Hubun dilləri",
+        "hubLanguagesHelp": "On ikiyədək seçin. Yeni seçilmiş dil üçün hubun adı həmin dildə olmalıdır.",
+        "nameIn": "{language} dilində ad",
+        "timeZoneHelp": "Saat qurşağının adı, məsələn {example}.",
+        "currencyHelp": "ISO 4217 kodu, məsələn {example}."
       },
       "modes": {
         "title": "Sistem rejimləri",

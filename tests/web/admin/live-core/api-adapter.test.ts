@@ -315,6 +315,76 @@ test('an unelevated staff session may not read the node: the node is absent, nev
   assert.equal(await p.node(), null);
 });
 
+test('identity: names, languages, time zone and currency travel together in one profile; each is checked before any call', async () => {
+  const added = ['en', 'es', 'ka'].find((l) => !hub.locales.includes(l))!;
+  const { sent, port: p } = settingsPort([{ status: 200, code: null, body: applied(HUB_ID) }], ['admin.hub.identity.edit']);
+  const fields: Record<string, string> = Object.fromEntries([...hub.locales, added].map((l) => [`locale.${l}`, 'on']));
+  fields[`name.${added}`] = 'Synthetic Hub Name';
+  fields.timeZone = 'America/Los_Angeles';
+  fields.currency = 'usd';
+  assert.deepEqual(await p.command(live, settings('identity.save', fields)), { status: 'applied' });
+  const body = sent[0]!.body as { locales: string[]; name: Record<string, string>; timeZone: string; currency: string; expectedRevision: number };
+  assert.deepEqual([body.locales, body.name[added], body.timeZone, body.currency, body.expectedRevision], [[...hub.locales, added], 'Synthetic Hub Name', 'America/Los_Angeles', 'USD', hub.revision]);
+  const check = async (extra: Record<string, string>) => {
+    const r = settingsPort([], ['admin.hub.identity.edit']);
+    const outcome = await r.port.command(live, settings('identity.save', extra));
+    assert.deepEqual(r.sent, []);
+    return outcome.status === 'rejected' ? outcome.field : outcome.status;
+  };
+  assert.equal(await check({ ...Object.fromEntries([...hub.locales, added].map((l) => [`locale.${l}`, 'on'])) }), `name.${added}`, 'a new language needs the hub name in it');
+  assert.equal(await check({ timeZone: 'Mars/Olympus' }), 'timeZone');
+  assert.equal(await check({ currency: 'dollars' }), 'currency');
+  assert.equal(await check({ defaultLocale: 'xx' }), 'defaultLocale');
+});
+
+test('apply after approval: one\'s own approved request whose draft still matches its digest is offered and applied with the approval', async () => {
+  const APPROVED = '99999999-9999-4999-8999-999999999991';
+  const STALE = '99999999-9999-4999-8999-999999999992';
+  const FOREIGN = '99999999-9999-4999-8999-999999999993';
+  const RESIDENCY = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+  const mineApproved = (id: string, digest: string, over: Record<string, unknown> = {}) => approval({ id, action: 'hub.change_residency', actionDigest: digest, requestedBy: STAFF,
+    status: 'approved', approvedBy: OTHER, approvedAt: '2026-11-01T11:00:00.000Z', expiresAt: '2026-11-01T13:00:00.000Z', ...over });
+  const api = fakeApi(staffRoutes({
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { forMe: [], mine: [], decided: [mineApproved(APPROVED, 'e'.repeat(64)), mineApproved(STALE, 'f'.repeat(64)), mineApproved(FOREIGN, 'e'.repeat(64), { requestedBy: OTHER })] },
+    [`/v1/admin/hubs/${HUB_ID}/config`]: { items: [{ id: RESIDENCY, hubId: HUB_ID, domain: 'residency', version: 2, status: 'draft', revision: 3,
+      activation: { secondPersonAction: 'hub.change_residency', actionDigest: 'e'.repeat(64) } }] },
+  }));
+  const sent: Sent[] = [];
+  const p = createApiConsolePort({ api: { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return { status: 200, code: null, body: applied(RESIDENCY) }; } },
+    siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => 'key-apply' });
+  const { ready } = await p.approvals(HUB_ID);
+  assert.deepEqual(ready?.map((r) => [r.requestId, r.target.kind, r.target.id, r.target.revision]), [[APPROVED, 'config', RESIDENCY, 3]], 'only the matching approval; a changed draft (another digest) never matches');
+  assert.deepEqual(await p.command(live, settings('approvals.apply', { requestId: APPROVED }, null)), { status: 'applied' });
+  assert.deepEqual([sent[0]!.path, sent[0]!.body.expectedRevision, sent[0]!.body.approvalId], [`/v1/admin/hubs/${HUB_ID}/config/${RESIDENCY}/activate`, 3, APPROVED]);
+  assert.deepEqual(await p.command(live, settings('approvals.apply', { requestId: FOREIGN }, null)), { status: 'not_found' }, 'someone else\'s approval is not offered');
+  assert.equal(sent.length, 1);
+});
+
+test('waiting for activation: another staff member\'s sensitive draft is offered once; requesting it activates without an approval, which opens the request', async () => {
+  const OTHERS = 'dddddddd-dddd-4ddd-8ddd-ddddddddddd1';
+  const OWN = 'dddddddd-dddd-4ddd-8ddd-ddddddddddd2';
+  const ASKED = 'dddddddd-dddd-4ddd-8ddd-ddddddddddd3';
+  const PLAIN = 'dddddddd-dddd-4ddd-8ddd-ddddddddddd4';
+  const draft = (id: string, by: string, digest: string | null) => ({ id, hubId: HUB_ID, domain: digest ? 'residency' : 'modes', version: 2, status: 'draft', revision: 4, draftedBy: by,
+    draftedAt: '2026-11-01T10:00:00.000Z', activation: digest ? { secondPersonAction: 'hub.change_residency', actionDigest: digest } : null });
+  const api = fakeApi(staffRoutes({
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { forMe: [], mine: [approval({ id: REQUEST, action: 'hub.change_residency', actionDigest: 'c'.repeat(64), requestedBy: OTHER, status: 'pending' })], decided: [] },
+    [`/v1/admin/hubs/${HUB_ID}/config`]: { items: [draft(OTHERS, OTHER, 'a'.repeat(64)), draft(OWN, STAFF, 'b'.repeat(64)), draft(ASKED, OTHER, 'c'.repeat(64)), draft(PLAIN, OTHER, null)] },
+  }));
+  const sent: Sent[] = [];
+  const p = createApiConsolePort({ api: { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return { status: 200, code: null, body: applied(OTHERS, 'pending_second_person') }; } },
+    siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => 'key-request' });
+  const { waiting } = await p.approvals(HUB_ID);
+  assert.deepEqual(waiting?.map((w) => [w.target.id, w.draftedBy, w.action]), [[OTHERS, OTHER, 'hub.change_residency'], [OWN, STAFF, 'hub.change_residency']],
+    'a draft with an open request and a draft that needs no second person are not waiting');
+  assert.deepEqual(await p.command(live, settings('approvals.request_activation', { targetId: OTHERS }, null)), { status: 'pending_second_person', secondPerson: 'hub.change_residency' });
+  assert.deepEqual([sent[0]!.path, sent[0]!.body.expectedRevision, sent[0]!.body.approvalId], [`/v1/admin/hubs/${HUB_ID}/config/${OTHERS}/activate`, 4, null]);
+  assert.deepEqual(await p.command(live, settings('approvals.request_activation', { targetId: OWN }, null)), { status: 'rejected', code: 'own_request', field: null, detail: [] },
+    'the drafter never starts the activation of their own sensitive draft');
+  assert.deepEqual(await p.command(live, settings('approvals.request_activation', { targetId: ASKED }, null)), { status: 'not_found' }, 'an open request is not asked twice');
+  assert.equal(sent.length, 1);
+});
+
 test('settings refusals: no permission or a stale revision sends nothing; an API refusal stays a refusal', async () => {
   const denied = settingsPort([], ['admin.notifications.read']);
   assert.equal(((await denied.port.command(live, settings('modes.save', { moderation: 'pre_moderate_all' }))) as { code: string }).code, 'denied');

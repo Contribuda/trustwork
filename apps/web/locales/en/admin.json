@@ -258,7 +258,9 @@
       "unknownPerson": "Someone outside this hub",
       "opensNewTab": "(opens in a new tab)",
       "sentToSecondPerson": "Saved and sent to a second person for “{action}”; it takes effect once they approve.",
-      "draftSaved": "Saved as a draft of “{action}”. Another staff member requests its activation, and a second person approves it."
+      "draftSaved": "Saved as a draft of “{action}”. Another staff member requests its activation, and a second person approves it.",
+      "you": "You",
+      "staffMember": "A staff member"
     },
     "denied": {
       "title": "You do not have access to this section",
@@ -271,7 +273,13 @@
       "title": "Confirm it is you",
       "body": "The console opens after you confirm your second factor (an authenticator code or a recovery code). The elevated session ends 15 minutes later or when you sign out; confirm again to continue.",
       "action": "Confirm and continue",
-      "demoNote": "Demo: the confirmation is simulated."
+      "demoNote": "Demo: the confirmation is simulated.",
+      "password": "Password",
+      "code": "Code",
+      "codeHelp": "Six digits from your authenticator app, or one of your recovery codes.",
+      "wrongPassword": "The password was not accepted.",
+      "wrongCode": "The code was not accepted. Wait for a new code and try again.",
+      "failed": "The confirmation did not go through. Try again."
     },
     "designed": {
       "title": "Designed, not built yet",
@@ -505,7 +513,8 @@
         "providerMode": "Provider mode",
         "automationLevel": "Automation level",
         "feeVersion": "Fee version",
-        "role": "Role"
+        "role": "Role",
+        "action": "Action"
       },
       "actions": {
         "staff": {
@@ -583,7 +592,16 @@
         "kill_switch": {
           "release": "Release a kill switch"
         }
-      }
+      },
+      "ready": "Ready to apply",
+      "readyHelp": "A second person approved these changes of yours. Applying makes them take effect now.",
+      "apply": "Apply now",
+      "waiting": "Waiting for activation",
+      "waitingHelp": "These sensitive drafts need a second person. Someone other than the drafter requests the activation; a person other than that requester approves it.",
+      "draftedBy": "Drafted by",
+      "draftedAt": "Drafted",
+      "requestActivation": "Request activation",
+      "ownDraft": "You drafted this change, so another staff member requests its activation."
     },
     "values": {
       "languages": {
@@ -740,7 +758,12 @@
         "addTerritory": "Add a territory",
         "addTerritoryHelp": "A country (US), region (US-TX) or place (US-TX:austin).",
         "defaultLanguage": "Default language",
-        "versionsNote": "Saving creates a new configuration version; the active one stays until the new version is activated."
+        "versionsNote": "Saving creates a new configuration version; the active one stays until the new version is activated.",
+        "hubLanguages": "Languages of the hub",
+        "hubLanguagesHelp": "Choose up to twelve. A newly chosen language needs the hub name in it.",
+        "nameIn": "Name in {language}",
+        "timeZoneHelp": "A time zone name, for example {example}.",
+        "currencyHelp": "An ISO 4217 code, for example {example}."
       },
       "modes": {
         "title": "System modes",

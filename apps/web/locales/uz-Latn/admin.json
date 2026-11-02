@@ -258,7 +258,9 @@
       "unknownPerson": "Bu xabdan tashqaridagi odam",
       "opensNewTab": "(yangi varaqda ochiladi)",
       "sentToSecondPerson": "Saqlandi va «{action}» uchun ikkinchi xodimga yuborildi; u tasdiqlagach kuchga kiradi.",
-      "draftSaved": "«{action}» qoralama sifatida saqlandi. Uni faollashtirishni boshqa xodim soʻraydi, ikkinchi xodim esa tasdiqlaydi."
+      "draftSaved": "«{action}» qoralama sifatida saqlandi. Uni faollashtirishni boshqa xodim soʻraydi, ikkinchi xodim esa tasdiqlaydi.",
+      "you": "Siz",
+      "staffMember": "Xodim"
     },
     "denied": {
       "title": "Bu boʻlimga kirish huquqingiz yoʻq",
@@ -271,7 +273,13 @@
       "title": "Bu siz ekaningizni tasdiqlang",
       "body": "Konsol ikkinchi omil tasdiqlangandan keyin ochiladi (autentifikator ilovasidagi kod yoki tiklash kodi). Kengaytirilgan seans 15 daqiqadan keyin yoki tizimdan chiqqaningizda tugaydi; davom etish uchun qayta tasdiqlang.",
       "action": "Tasdiqlash va davom etish",
-      "demoNote": "Namuna: tasdiqlash taqlid qilinadi."
+      "demoNote": "Namuna: tasdiqlash taqlid qilinadi.",
+      "password": "Parol",
+      "code": "Kod",
+      "codeHelp": "Autentifikator ilovasidagi olti raqam yoki tiklash kodlaringizdan biri.",
+      "wrongPassword": "Parol qabul qilinmadi.",
+      "wrongCode": "Kod qabul qilinmadi. Yangi kodni kuting va qayta urinib koʻring.",
+      "failed": "Tasdiqlash amalga oshmadi. Qayta urinib koʻring."
     },
     "designed": {
       "title": "Loyihalangan, hali qurilmagan",
@@ -505,7 +513,8 @@
         "providerMode": "Provayder rejimi",
         "automationLevel": "Avtomatlashtirish darajasi",
         "feeVersion": "Komissiya versiyasi",
-        "role": "Rol"
+        "role": "Rol",
+        "action": "Amal"
       },
       "actions": {
         "staff": {
@@ -583,7 +592,16 @@
         "kill_switch": {
           "release": "Favqulodda oʻchirgichni olib tashlash"
         }
-      }
+      },
+      "ready": "Qoʻllashga tayyor",
+      "readyHelp": "Ikkinchi xodim sizning ushbu oʻzgarishlaringizni tasdiqladi. Qoʻllasangiz, ular hozir kuchga kiradi.",
+      "apply": "Hozir qoʻllash",
+      "waiting": "Faollashtirish kutilmoqda",
+      "waitingHelp": "Bu nozik qoralamalar ikkinchi xodimni talab qiladi. Faollashtirishni qoralama muallifi emas, boshqa xodim soʻraydi; uni soʻragan xodimdan boshqa xodim tasdiqlaydi.",
+      "draftedBy": "Qoralama muallifi",
+      "draftedAt": "Qoralama sanasi",
+      "requestActivation": "Faollashtirishni soʻrash",
+      "ownDraft": "Bu oʻzgarishni siz tayyorlagansiz, shuning uchun uni faollashtirishni boshqa xodim soʻraydi."
     },
     "values": {
       "languages": {
@@ -740,7 +758,12 @@
         "addTerritory": "Hudud qoʻshish",
         "addTerritoryHelp": "Mamlakat (US), viloyat (US-TX) yoki aholi punkti (US-TX:austin).",
         "defaultLanguage": "Asosiy til",
-        "versionsNote": "Saqlash konfiguratsiyaning yangi versiyasini yaratadi; yangisi faollashtirilguncha amaldagi versiya qoladi."
+        "versionsNote": "Saqlash konfiguratsiyaning yangi versiyasini yaratadi; yangisi faollashtirilguncha amaldagi versiya qoladi.",
+        "hubLanguages": "Hub tillari",
+        "hubLanguagesHelp": "Oʻn ikkitagacha tanlang. Yangi tanlangan til uchun hub nomi shu tilda boʻlishi kerak.",
+        "nameIn": "{language} tilidagi nomi",
+        "timeZoneHelp": "Vaqt mintaqasi nomi, masalan {example}.",
+        "currencyHelp": "ISO 4217 kodi, masalan {example}."
       },
       "modes": {
         "title": "Tizim rejimlari",

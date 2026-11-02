@@ -6,6 +6,7 @@ import type { Clock } from '../../../apps/api/src/modules/identity/ports.js';
 import { createPool, withMaintenance, withPrincipal } from '@trustwork/data';
 import { kernelReference, kernelSync } from '../../../packages/data/src/repositories/kernel.js';
 import { budgets } from '../../../packages/data/src/repositories/billing.js';
+import { adminSetup, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
 import { principalFor } from '../../data/helpers/seed.js';
 import { screenEveryoneClear } from '../../screening-gates/helpers.js';
 import { endPool, provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
@@ -48,6 +49,7 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 
 const control = createServer((req, res) => {
   void (async () => {
+    try {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     if (req.method === 'GET' && url.pathname === '/mail') {
       const to = url.searchParams.get('to') ?? '';
@@ -68,6 +70,40 @@ const control = createServer((req, res) => {
       const id = await withPrincipal(pool, principal, (trx) => budgets.grant(trx, { kind: 'transaction', owner: 'person', projectId: null, employeePersonId: null, periodFrom: '2026-01-01T00:00:00Z', periodTo: '2030-01-01T00:00:00Z', limitMinor: body.limitMinor as string, currency: body.currency as string }));
       return send(res, 200, { id });
     }
+    if (req.method === 'POST' && url.pathname === '/staff') {
+      // HUBC-007: the console journeys need staff of a node and of a hub. The setup wizard's founding administrators and
+      // the console's own assignment flow are covered elsewhere; here a synthetic test definition (a fresh version of the
+      // named role with exactly the listed permissions) is assigned through the maintenance path, as a setup run would.
+      const body = await readJson(req);
+      const scope = body.scope as { kind?: unknown; nodeId?: unknown; hubId?: unknown } | undefined;
+      if (!db || typeof body.personId !== 'string' || typeof body.role !== 'string' || !Array.isArray(body.permissions) || !scope || (scope.kind !== 'node' && scope.kind !== 'hub')) {
+        return send(res, 400, { error: 'bad request' });
+      }
+      const result = await withMaintenance(db.admin, async (trx) => {
+        const node = (await trx.selectFrom('admin_node').select('id').executeTakeFirst()) ?? (await trx.insertInto('admin_node').values({ label: 'Synthetic live node' }).returning('id').executeTakeFirstOrThrow());
+        // A founding platform owner (as the setup wizard records one) grants every test role; created once.
+        let founder = (await trx.selectFrom('staff_role_assignment').select('person_id').where('setup_bootstrap', '=', true).executeTakeFirst())?.person_id;
+        if (!founder) {
+          await staffRoleDefinitions.release(trx, { version: 1, role: 'platform-owner', scopes: ['platform'], permissions: ['admin.staff.assign', 'admin.staff.read'],
+            caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+          founder = (await trx.insertInto('person').values({ display_name: 'Synthetic Live Founder' }).returning('id').executeTakeFirstOrThrow()).id;
+          await adminSetup.bootstrapFirstAdmin(trx, { personId: founder, role: 'platform-owner', scope: { kind: 'platform' }, definitionVersion: 1, reason: 'Synthetic live setup' });
+        }
+        const latest = await trx.selectFrom('staff_role_definition_version').select((eb) => eb.fn.max('version').as('v')).where('role', '=', body.role as never).executeTakeFirst();
+        const version = Math.max(900, Number(latest?.v ?? 0) + 1);
+        await trx.insertInto('staff_role_definition_version').values({ role: body.role as never, version, scopes: [scope.kind as 'node' | 'hub'], permissions: body.permissions as never,
+          grant_max_hours: 72, sod_mode: 'reduced' } as never).execute();
+        await trx.insertInto('staff_role_assignment').values({
+          person_id: body.personId as string, role: body.role as never, scope_kind: scope.kind as 'node' | 'hub',
+          node_id: scope.kind === 'node' ? (typeof scope.nodeId === 'string' ? scope.nodeId : node.id) : null,
+          hub_id: scope.kind === 'hub' ? (scope.hubId as string) : null, definition_version: version, granted_by: founder, reason: 'Synthetic live console journey',
+        } as never).execute();
+        // The API keeps a resolved principal until the person's authority epoch moves (as every authority change does).
+        await trx.updateTable('person').set((eb) => ({ authz_epoch: eb('authz_epoch', '+', 1) })).where('id', '=', body.personId as string).execute();
+        return { nodeId: node.id, version };
+      });
+      return send(res, 200, result);
+    }
     if (req.method === 'POST' && url.pathname === '/screen') {
       // SANC-004: the money and commitment gates refuse unscreened parties; the worker is not part of this stack, so the
       // control server activates synthetic baseline lists and screens every person and company through the worker's code.
@@ -75,6 +111,11 @@ const control = createServer((req, res) => {
       return send(res, 200, await screenEveryoneClear(db.admin));
     }
     return send(res, 404, { error: 'not found' });
+    } catch (error) {
+      // A failing control call answers 500 and never takes the stack down with it.
+      console.error('[live-api] control', error);
+      return send(res, 500, { error: error instanceof Error ? error.message : 'error' });
+    }
   })();
 });
 // Bind the loopback ports before a database exists, so a taken port fails fast and leaves nothing behind.

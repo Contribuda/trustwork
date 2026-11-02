@@ -36,7 +36,7 @@ import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalRequest, type HubRec
 
 export const COMMANDS = [
   'identity.save', 'modes.save', 'lifecycle.request', 'modules.toggle', 'legal.draft', 'legal.request_activation', 'residency.request_change',
-  'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'killswitch.engage', 'setup.save',
+  'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'killswitch.engage', 'setup.save',
   ...PRODUCT_COMMANDS,
 ] as const;
 export type CommandId = (typeof COMMANDS)[number];
@@ -58,6 +58,10 @@ export const COMMAND_PERMISSIONS: Record<Exclude<CommandId, 'setup.save'>, 'staf
   'launch.mark_passed': ['admin.hub.launch.check'],
   'approvals.decide': 'staff',
   'approvals.withdraw': 'staff',
+  // Applying one's own approved change: the API checks the domain permission, the approval and its digest again.
+  'approvals.apply': 'staff',
+  // Requesting a second person for another staff member's sensitive draft: the API checks the domain permission again.
+  'approvals.request_activation': 'staff',
   'killswitch.engage': ['admin.providers.kill', 'admin.agents.kill'],
   ...PRODUCT_COMMAND_PERMISSIONS,
 };
@@ -142,7 +146,23 @@ export type CommandContext = {
   isRestricted: RestrictedPredicate;
   /** The hub's agent product, modules, billing and communications (HUBC-005); absent where a caller has none. */
   product?: HubProduct | null;
+  /** The viewer's approved requests whose change waits to be applied (live mode, HUBC-007). */
+  ready?: readonly ReadyApproval[];
+  /** Sensitive drafts that wait for a staff member to request their activation (live mode, HUBC-007). */
+  waiting?: readonly WaitingActivation[];
 };
+
+/** An approved request of the viewer and the change it unlocks: a configuration version or a legal document version. */
+export type ReadyApproval = { requestId: string; action: ConsoleSecondPersonAction; target: ActivationTarget };
+
+/** A stored draft whose activation needs a second person: a configuration version or a legal document version. */
+export type ActivationTarget = { kind: 'config' | 'legal'; id: string; revision: number; label: string };
+
+/**
+ * A sensitive draft with no open request yet. Its drafter never activates it: another staff member requests the
+ * activation (the API opens the approval request), a person other than that requester approves, and the requester applies.
+ */
+export type WaitingActivation = { action: ConsoleSecondPersonAction; target: ActivationTarget; draftedBy: string; draftedAt: string };
 
 const reject = (code: RejectCode, field: string | null = null, detail: string[] = []): CommandOutcome => ({ status: 'rejected', code, field, detail });
 const accepted = (secondPerson: ConsoleSecondPersonAction | null = null): CommandOutcome => ({ status: 'demo_not_saved', secondPerson });
@@ -230,6 +250,46 @@ export function requestedModes(input: CommandInput, hub: HubRecord): HubModes | 
   return null;
 }
 
+export type HubProfileRequest = { name: Record<string, string>; locales: string[]; defaultLocale: string; timeZone: string; currency: string; changed: boolean };
+
+const LOCALE_TAG = /^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$/;
+function knownTimeZone(zone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: zone });
+    return /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$/.test(zone);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The hub profile an `identity.save` asks for, or the first invalid field. Fields the form does not send keep the hub's
+ * values: `locale.<tag>` (`on`) selects the hub languages, `name.<tag>` names the hub in each, `defaultLocale` is one
+ * of them, `timeZone` is an IANA zone and `currency` an ISO 4217 code.
+ */
+export function requestedProfile(input: CommandInput, hub: HubRecord): HubProfileRequest | { field: string } {
+  const f = input.fields;
+  const h = hub.hub;
+  const chosen = Object.keys(f).filter((k) => k.startsWith('locale.') && f[k] === 'on').map((k) => k.slice('locale.'.length));
+  const locales = chosen.length ? chosen : [...h.locales];
+  if (locales.length > 12 || locales.some((l) => !LOCALE_TAG.test(l))) return { field: 'locales' };
+  const defaultLocale = (f.defaultLocale ?? h.defaultLocale).trim();
+  if (!locales.includes(defaultLocale)) return { field: 'defaultLocale' };
+  const name: Record<string, string> = {};
+  for (const tag of locales) {
+    const value = (f[`name.${tag}`] ?? h.name[tag] ?? '').trim();
+    if (value.length === 0 || value.length > 200) return { field: `name.${tag}` };
+    name[tag] = value;
+  }
+  const timeZone = (f.timeZone ?? h.timeZone).trim();
+  if (!knownTimeZone(timeZone)) return { field: 'timeZone' };
+  const currency = (f.currency ?? h.currency).trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(currency)) return { field: 'currency' };
+  const sameNames = Object.keys(name).length === Object.keys(h.name).length && Object.entries(name).every(([k, v]) => h.name[k] === v);
+  const changed = !sameNames || locales.join() !== h.locales.join() || defaultLocale !== h.defaultLocale || timeZone !== h.timeZone || currency !== h.currency;
+  return { name, locales, defaultLocale, timeZone, currency, changed };
+}
+
 /** Evaluates one console command for a viewer on a hub. Pure: no clock, no I/O, no randomness beyond the context. */
 export function evaluateCommand(input: CommandInput, ctx: CommandContext): CommandOutcome {
   if (input.command === 'setup.save') return setupCommand(input, ctx);
@@ -255,8 +315,8 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
         if (!territory) return reject('invalid', 'addTerritory');
         if (territoryRestricted(territory, ctx.isRestricted)) return reject('territory_restricted', 'addTerritory');
       }
-      const defaultLocale = f.defaultLocale;
-      if (defaultLocale && !hub.hub.locales.includes(defaultLocale)) return reject('invalid', 'defaultLocale');
+      const profile = requestedProfile(input, hub);
+      if ('field' in profile) return reject('invalid', profile.field);
       return accepted();
     }
     case 'modes.save': {
@@ -361,6 +421,19 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
       if (blocker) return reject(blocker);
       if (f.digest !== request.actionDigest.value) return reject('digest_mismatch');
       return accepted();
+    }
+    case 'approvals.apply': {
+      // Only an approved request of the viewer that still waits for its change (the live adapter lists them).
+      const ready = ctx.ready ?? [];
+      const item = ready.find((r) => r.requestId === f.requestId);
+      return item ? accepted() : NOT_FOUND;
+    }
+    case 'approvals.request_activation': {
+      const item = (ctx.waiting ?? []).find((w) => w.target.id === f.targetId);
+      if (!item) return NOT_FOUND;
+      // The drafter of a sensitive version never starts its activation (HUB-001); the API refuses it as well.
+      if (item.draftedBy === viewer.person.id) return reject('own_request');
+      return accepted(item.action);
     }
     case 'approvals.withdraw': {
       const request = ctx.requests.find((r) => r.id === f.requestId && r.hubId === hub.hub.id);

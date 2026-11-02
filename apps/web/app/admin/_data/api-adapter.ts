@@ -11,7 +11,7 @@ import {
   type HubStaffRole,
 } from '@trustwork/contracts/client';
 import { isRestricted } from '@trustwork/country-packs';
-import { evaluateCommand, parseTerritory, requestedModes, type CommandInput, type CommandOutcome, type RejectCode } from './commands.js';
+import { evaluateCommand, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
 import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord, type LegalDocument } from './schemas.js';
@@ -91,6 +91,13 @@ const LegalViewSchema = z.object({
   }).passthrough()),
   counselApprovals: z.array(z.object({ id: z.string(), counselName: z.string(), firm: z.string(), approvedOn: z.string(), scopeNote: z.string() }).passthrough()),
 });
+/** A stored version and the second-person action and digest that activate it (HUB-001 views). */
+const ActivatableSchema = z.object({
+  id: z.string(), status: z.string(), revision: z.number().int(), draftedBy: z.string().nullable().optional(), draftedAt: z.string().nullable().optional(),
+  activation: z.object({ secondPersonAction: z.string(), actionDigest: z.string() }).nullable().optional(),
+}).passthrough();
+const ActivatableListSchema = z.object({ items: z.array(ActivatableSchema) });
+const ActivatableDocsSchema = z.object({ documents: z.array(ActivatableSchema) });
 /** `GET /v1/admin/approvals`: requests waiting for the viewer, the viewer's own requests, and decided ones. */
 const ApprovalsViewSchema = z.object({ forMe: z.array(z.unknown()).default([]), mine: z.array(z.unknown()).default([]), decided: z.array(z.unknown()).default([]) });
 
@@ -211,7 +218,42 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     return view.data.items.filter((d) => read === 'staff' || read.some((p) => d.permissions.includes(p))).map((d) => d.role as HubStaffRole);
   }
 
-  async function approvals(hubId: string): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[] }> {
+  /**
+   * The changes around second-person approvals, matched by activation digest (the API binds an approval to it, so a
+   * changed draft never matches):
+   * - `ready`: the viewer's approved, unconsumed requests whose draft still waits to be applied;
+   * - `waiting`: sensitive drafts with no open or approved request yet, which a staff member other than the drafter
+   *   asks a second person to activate.
+   */
+  async function pendingChanges(hubId: string, rows: readonly unknown[], viewerId: string): Promise<{ ready: ReadyApproval[]; waiting: WaitingActivation[] }> {
+    const listed = rows.map((r) => ApprovalViewSchema.safeParse(r)).flatMap((r) => (r.success ? [r.data] : []))
+      .filter((a) => a.scope.kind === 'hub' && a.scope.hubId === hubId);
+    const live = (a: (typeof listed)[number]) => a.revokedAt === null && (a.expiresAt === null || Date.parse(a.expiresAt) > now().getTime());
+    const approved = listed.filter((a) => a.status === 'approved' && live(a) && a.requestedBy === viewerId);
+    // A draft with an open request, or with an approval that someone still applies, is not waiting.
+    const claimed = new Set(listed.filter((a) => a.status === 'pending' || (a.status === 'approved' && live(a))).map((a) => `${a.action}:${a.actionDigest}`));
+    const [versions, legal] = await Promise.all([orNothing(api.get(`/v1/admin/hubs/${hubId}/config`)), orNothing(api.get(`/v1/admin/hubs/${hubId}/legal`))]);
+    const targets = [
+      ...(ActivatableListSchema.safeParse(versions).data?.items ?? []).map((v) => ({ kind: 'config' as const, v, label: String((v as { domain?: unknown }).domain ?? '') })),
+      ...(ActivatableDocsSchema.safeParse(legal).data?.documents ?? []).map((v) => ({ kind: 'legal' as const, v, label: `${String((v as { kind?: unknown }).kind ?? '')} ${String((v as { locale?: unknown }).locale ?? '')}`.trim() })),
+    ].filter((t) => t.v.status === 'draft' && t.v.activation);
+    const target = (t: (typeof targets)[number]): ActivationTarget => ({ kind: t.kind, id: t.v.id, revision: t.v.revision, label: t.label });
+    const ready: ReadyApproval[] = [];
+    for (const a of approved) {
+      const action = ConsoleSecondPersonActionSchema.safeParse(a.action);
+      const match = targets.find((t) => t.v.activation!.actionDigest === a.actionDigest && t.v.activation!.secondPersonAction === a.action);
+      if (action.success && match) ready.push({ requestId: a.id, action: action.data, target: target(match) });
+    }
+    const waiting: WaitingActivation[] = [];
+    for (const t of targets) {
+      const action = ConsoleSecondPersonActionSchema.safeParse(t.v.activation!.secondPersonAction);
+      if (!action.success || claimed.has(`${action.data}:${t.v.activation!.actionDigest}`) || !t.v.draftedBy || !t.v.draftedAt) continue;
+      waiting.push({ action: action.data, target: target(t), draftedBy: t.v.draftedBy, draftedAt: t.v.draftedAt });
+    }
+    return { ready, waiting };
+  }
+
+  async function approvals(hubId: string, viewerId: string | null = null): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[]; ready: ReadyApproval[]; waiting: WaitingActivation[] }> {
     const list = ApprovalsViewSchema.safeParse(await orNothing(api.get(`/v1/admin/approvals?hubId=${hubId}`)));
     const requests: ApprovalRequest[] = [];
     const decisions: ApprovalDecision[] = [];
@@ -230,7 +272,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
           id: a.data.id, hubId, action: action.data, scope, actionDigest: digest,
           // The API voids a request whose action changed; what it still lists is current.
           currentDigest: digest, requestedBy: a.data.requestedBy, reason: { value: a.data.reason, lang: 'und' }, requestedAt: a.data.requestedAt,
-          expiresAt: a.data.requestExpiresAt, changes: [{ field: 'action', before: { kind: 'none' }, after: { kind: 'key', key: action.data } }],
+          expiresAt: a.data.requestExpiresAt, changes: [{ field: 'action', before: { kind: 'none' }, after: { kind: 'key', key: `approvals.actions.${action.data}` } }],
           state: a.data.status, synthetic: false,
         });
         if (parsed.success) requests.push(parsed.data);
@@ -244,12 +286,15 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       }
       // A decline is not listed yet: the approval view has no decision time, and the console never shows an invented one.
     }
-    return { requests, decisions };
+    // Only the viewer's own approvals can be applied by the viewer: without an explicit viewer, the session's person.
+    const me = viewerId ?? (MeSchema.safeParse(await orNothing(api.get('/v1/me'))).data?.person.id ?? null);
+    const { ready, waiting } = list.success && me ? await pendingChanges(hubId, rows, me) : { ready: [], waiting: [] };
+    return { requests, decisions, ready, waiting };
   }
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
-    'approvals.decide', 'approvals.withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
+    'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
     'legal.draft',
   ]);
 
@@ -269,9 +314,9 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     const hub = v && input.hubSlug ? (await hubs(request)).find((h) => h.hub.slug === input.hubSlug) ?? null : null;
     if (!v || !hub) return { status: 'not_found' };
     const acc = await access(v, { nodeId: hub.hub.nodeId, hubId: hub.hub.id });
-    const { requests } = await approvals(hub.hub.id);
+    const { requests, ready, waiting } = await approvals(hub.hub.id, v.person.id);
     // The same checks as everywhere in the console first (role, elevation, reason, own request, digest); the API repeats them as the authority.
-    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted });
+    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted, ready, waiting });
     if (checked.status !== 'demo_not_saved') return checked;
     const f = input.fields;
     const newKey = options.newKey ?? (() => crypto.randomUUID());
@@ -298,6 +343,18 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       }
       return settled(await send(`${hubPath}/config/${encodeURIComponent(version.id)}/activate`, { expectedRevision: version.revision, approvalId: null }));
     };
+    if (input.command === 'approvals.request_activation') {
+      // Activation without an approval by someone other than the drafter: the API opens the second-person request.
+      const item = waiting.find((w) => w.target.id === f.targetId)!;
+      const route = item.target.kind === 'config' ? `${hubPath}/config/${encodeURIComponent(item.target.id)}/activate` : `${hubPath}/legal/${encodeURIComponent(item.target.id)}/activate`;
+      return settled(await send(route as `/v1/${string}`, { expectedRevision: item.target.revision, approvalId: null }));
+    }
+    if (input.command === 'approvals.apply') {
+      // The approved change itself, with the approval: the version's own activation route and its current revision.
+      const item = ready.find((r) => r.requestId === f.requestId)!;
+      const route = item.target.kind === 'config' ? `${hubPath}/config/${encodeURIComponent(item.target.id)}/activate` : `${hubPath}/legal/${encodeURIComponent(item.target.id)}/activate`;
+      return settled(await send(route as `/v1/${string}`, { expectedRevision: item.target.revision, approvalId: item.requestId }));
+    }
     if (input.command === 'legal.draft') {
       // A new draft version of one document in one hub language; activation needs counsel approval and a second person.
       return settled(await send(`${hubPath}/legal`, { kind: f.kind, locale: f.locale, body: f.body ?? '' }));
@@ -314,15 +371,15 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       return draftAndActivate('modes', modes);
     }
     if (input.command === 'identity.save') {
-      // The default language through the hub profile (with the hub revision), a new territory through its own route.
-      const defaultLocale = (f.defaultLocale ?? '').trim();
+      // The profile (names, languages, default language, time zone, currency) with the hub revision, then a new territory
+      // through its own route; nothing is sent when nothing changes.
+      const profile = requestedProfile(input, hub);
+      if ('field' in profile) return { status: 'rejected', code: 'invalid', field: profile.field, detail: [] };
       const territory = (f.addTerritory ?? '').trim() ? parseTerritory(f.addTerritory ?? '') : null;
-      const profileChange = defaultLocale !== '' && defaultLocale !== hub.hub.defaultLocale;
-      if (!profileChange && !territory) return { status: 'rejected', code: 'invalid', field: null, detail: [] };
-      if (profileChange) {
-        const h = hub.hub;
-        const answer = await send(`${hubPath}/profile`, { name: h.name, defaultLocale, locales: h.locales, timeZone: h.timeZone, currency: h.currency, brandOverlay: h.brandOverlay,
-          expectedRevision: h.revision });
+      if (!profile.changed && !territory) return { status: 'rejected', code: 'invalid', field: null, detail: [] };
+      if (profile.changed) {
+        const answer = await send(`${hubPath}/profile`, { name: profile.name, defaultLocale: profile.defaultLocale, locales: profile.locales, timeZone: profile.timeZone,
+          currency: profile.currency, brandOverlay: hub.hub.brandOverlay, expectedRevision: hub.hub.revision });
         if (answer.status < 200 || answer.status >= 300 || !territory) return settled(answer);
       }
       return settled(await send(`${hubPath}/territories`, { territory: { level: territory!.level, code: territory!.code } }));

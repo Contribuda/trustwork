@@ -5,7 +5,7 @@ import type { ApprovalRequest, ChangeValue, ConsolePerson } from '../../../_data
 import { ConsoleForm } from '../../../_components/ConsoleForm';
 import type { HubContext } from '../../../_components/context';
 import type { Screen } from '../../../_components/screen';
-import { formLabels, SelectField } from '../../../_components/forms';
+import { formLabels, readOnlyReason, SelectField } from '../../../_components/forms';
 import { dateTime } from '../../../_components/format';
 import { ConsoleHeader, KeyValues, Panel, StatusLabel } from '../../../_components/shell';
 
@@ -15,9 +15,11 @@ function Value({ value }: { value: ChangeValue }) {
   return <span>{tDynamic(`admin.${value.key}`, value.key)}</span>;
 }
 
-function Person({ people, id }: { people: ConsolePerson[]; id: string }) {
+/** Everyone on this screen is staff: the viewer reads "you"; a colleague whose name the console cannot read yet reads "a staff member". */
+function Person({ people, id, me }: { people: ConsolePerson[]; id: string; me: string }) {
+  if (id === me) return <span>{t('admin.common.you')}</span>;
   const person = people.find((p) => p.id === id);
-  return person ? <span lang={person.nameLang}>{person.displayName}</span> : <span>{t('admin.common.unknownPerson')}</span>;
+  return person ? <span lang={person.nameLang}>{person.displayName}</span> : <span>{t('admin.common.staffMember')}</span>;
 }
 
 function RequestCard({ ctx, request, people, mine }: { ctx: HubContext; request: ApprovalRequest; people: ConsolePerson[]; mine: boolean }) {
@@ -32,7 +34,7 @@ function RequestCard({ ctx, request, people, mine }: { ctx: HubContext; request:
       </div>
       <KeyValues
         rows={[
-          { label: t('admin.approvals.requestedBy'), value: <Person people={people} id={request.requestedBy} /> },
+          { label: t('admin.approvals.requestedBy'), value: <Person people={people} id={request.requestedBy} me={ctx.viewer.person.id} /> },
           { label: t('admin.approvals.reason'), value: request.reason.value, lang: request.reason.lang },
           { label: t('admin.approvals.requestedAt'), value: dateTime(request.requestedAt, zone) },
           { label: t('admin.approvals.expiresAt'), value: dateTime(request.expiresAt, zone) },
@@ -98,8 +100,8 @@ function RequestCard({ ctx, request, people, mine }: { ctx: HubContext; request:
 }
 
 async function Approvals(ctx: HubContext) {
-  const { requests, decisions } = await ctx.port.approvals(ctx.record.hub.id);
-  const people = await ctx.port.people([...new Set([...requests.map((r) => r.requestedBy), ...decisions.flatMap((d) => [d.requestedBy, d.decidedBy])])]);
+  const { requests, decisions, ready = [], waiting = [] } = await ctx.port.approvals(ctx.record.hub.id);
+  const people = await ctx.port.people([...new Set([...requests.map((r) => r.requestedBy), ...decisions.flatMap((d) => [d.requestedBy, d.decidedBy]), ...waiting.map((w) => w.draftedBy)])]);
   const me = ctx.viewer.person.id;
   const forMe = requests.filter((r) => r.requestedBy !== me && holdsAny(ctx.access, APPROVER_PERMISSIONS[r.action]));
   const mine = requests.filter((r) => r.requestedBy === me);
@@ -108,6 +110,59 @@ async function Approvals(ctx: HubContext) {
     <>
       <ConsoleHeader ctx={ctx} title={t('admin.approvals.title')} lede={t('admin.approvals.lede')} />
       {ctx.record.sodMode === 'reduced' ? <p className="admin-callout admin-callout--warning" role="note">{t('admin.approvals.reducedSod')}</p> : null}
+      {ready.length ? (
+        <Panel id="ready" title={t('admin.approvals.ready')}>
+          <p className="admin-meta">{t('admin.approvals.readyHelp')}</p>
+          <ul className="admin-approvals">
+            {ready.map((r) => (
+              <li key={r.requestId} className="admin-approval">
+                <p>
+                  <strong>{tDynamic(`admin.approvals.actions.${r.action}`, r.action)}</strong> · <code className="admin-code">{r.target.label}</code>
+                </p>
+                <ConsoleForm
+                  action={submitConsoleCommand}
+                  hidden={ctx.hidden('approvals.apply', { 'f.requestId': r.requestId })}
+                  labels={formLabels({ submit: t('admin.approvals.apply') })}
+                  disabledReason={readOnlyReason(true, ctx.offline)}
+                />
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+      {waiting.length ? (
+        <Panel id="waiting" title={t('admin.approvals.waiting')}>
+          <p className="admin-meta">{t('admin.approvals.waitingHelp')}</p>
+          <ul className="admin-approvals">
+            {waiting.map((w) => {
+              const own = w.draftedBy === me;
+              return (
+                <li key={w.target.id} className="admin-approval" data-testid={`waiting-${w.target.kind}-${w.target.label}`}>
+                  <p>
+                    <strong>{tDynamic(`admin.approvals.actions.${w.action}`, w.action)}</strong> · <code className="admin-code">{w.target.label}</code>
+                  </p>
+                  <KeyValues
+                    rows={[
+                      { label: t('admin.approvals.draftedBy'), value: <Person people={people} id={w.draftedBy} me={ctx.viewer.person.id} /> },
+                      { label: t('admin.approvals.draftedAt'), value: dateTime(w.draftedAt, zone) },
+                    ]}
+                  />
+                  {own ? (
+                    <p className="admin-callout" role="note">{t('admin.approvals.ownDraft')}</p>
+                  ) : (
+                    <ConsoleForm
+                      action={submitConsoleCommand}
+                      hidden={ctx.hidden('approvals.request_activation', { 'f.targetId': w.target.id })}
+                      labels={formLabels({ submit: t('admin.approvals.requestActivation') })}
+                      disabledReason={readOnlyReason(true, ctx.offline)}
+                    />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      ) : null}
       <Panel id="for-me" title={t('admin.approvals.forMe')}>
         {forMe.length ? (
           <ul className="admin-approvals">
@@ -148,10 +203,10 @@ async function Approvals(ctx: HubContext) {
                   <td data-label={t('admin.approvals.action')}>{tDynamic(`admin.approvals.actions.${d.action}`, d.action)}</td>
                   <td data-label={t('admin.approvals.decision')}>{t(d.decision === 'approve' ? 'admin.approvals.approved' : 'admin.approvals.declined')}</td>
                   <td data-label={t('admin.approvals.requestedBy')}>
-                    <Person people={people} id={d.requestedBy} />
+                    <Person people={people} id={d.requestedBy} me={ctx.viewer.person.id} />
                   </td>
                   <td data-label={t('admin.approvals.decidedBy')}>
-                    <Person people={people} id={d.decidedBy} />
+                    <Person people={people} id={d.decidedBy} me={ctx.viewer.person.id} />
                   </td>
                   <td data-label={t('admin.approvals.decidedAt')}>{dateTime(d.decidedAt, zone)}</td>
                 </tr>
