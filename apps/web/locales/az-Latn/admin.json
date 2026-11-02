@@ -256,7 +256,8 @@
       "off": "Bağlıdır",
       "version": "Versiya {version}",
       "unknownPerson": "Bu habdan kənar şəxs",
-      "opensNewTab": "(yeni tabda açılır)"
+      "opensNewTab": "(yeni tabda açılır)",
+      "sentToSecondPerson": "Saxlanıldı və «{action}» üçün ikinci əməkdaşa göndərildi; o təsdiqlədikdən sonra qüvvəyə minir."
     },
     "denied": {
       "title": "Bu bölməyə girişiniz yoxdur",
@@ -890,7 +891,10 @@
         "document": "Sənəd versiyası",
         "nothingToActivate": "Hüquqşünasın təsdiqlədiyi və aktivləşdirməni gözləyən versiya yoxdur.",
         "draft": "Yeni versiya hazırla",
-        "templatesNote": "Yeni versiya mühərrikin şablonlarından başlayır; aktivləşdirmədən əvvəl onu hüquqşünas yoxlayır."
+        "templatesNote": "Yeni versiya mühərrikin şablonlarından başlayır; aktivləşdirmədən əvvəl onu hüquqşünas yoxlayır.",
+        "draftLanguage": "Bu versiyanın dili",
+        "draftText": "Mətn",
+        "draftTextHelp": "Bu dildə tam mətn. Layihə yalnız hüquqşünasın təsdiqi və ikinci əməkdaşın razılığından sonra qüvvəyə minir."
       },
       "residency": {
         "title": "Məlumatların yerləşməsi və subpodratçılar",

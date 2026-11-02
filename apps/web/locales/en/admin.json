@@ -256,7 +256,8 @@
       "off": "Off",
       "version": "Version {version}",
       "unknownPerson": "Someone outside this hub",
-      "opensNewTab": "(opens in a new tab)"
+      "opensNewTab": "(opens in a new tab)",
+      "sentToSecondPerson": "Saved and sent to a second person for “{action}”; it takes effect once they approve."
     },
     "denied": {
       "title": "You do not have access to this section",
@@ -890,7 +891,10 @@
         "document": "Document version",
         "nothingToActivate": "No version is approved by counsel and waiting for activation.",
         "draft": "Draft a new version",
-        "templatesNote": "A new version starts from the engine's templates; counsel reviews it before activation."
+        "templatesNote": "A new version starts from the engine's templates; counsel reviews it before activation.",
+        "draftLanguage": "Language of this version",
+        "draftText": "Text",
+        "draftTextHelp": "The full text in this language. A draft takes effect only after counsel approval and a second person."
       },
       "residency": {
         "title": "Residency and sub-processors",

@@ -256,7 +256,8 @@
       "off": "Oʻchirilgan",
       "version": "{version}-versiya",
       "unknownPerson": "Bu xabdan tashqaridagi odam",
-      "opensNewTab": "(yangi varaqda ochiladi)"
+      "opensNewTab": "(yangi varaqda ochiladi)",
+      "sentToSecondPerson": "Saqlandi va «{action}» uchun ikkinchi xodimga yuborildi; u tasdiqlagach kuchga kiradi."
     },
     "denied": {
       "title": "Bu boʻlimga kirish huquqingiz yoʻq",
@@ -890,7 +891,10 @@
         "document": "Hujjat versiyasi",
         "nothingToActivate": "Yurist tasdiqlagan va faollashtirishni kutayotgan versiya yoʻq.",
         "draft": "Yangi versiya tayyorlash",
-        "templatesNote": "Yangi versiya dvigatel shablonlaridan boshlanadi; faollashtirishdan oldin uni yurist tekshiradi."
+        "templatesNote": "Yangi versiya dvigatel shablonlaridan boshlanadi; faollashtirishdan oldin uni yurist tekshiradi.",
+        "draftLanguage": "Ushbu versiya tili",
+        "draftText": "Matn",
+        "draftTextHelp": "Ushbu tildagi toʻliq matn. Qoralama faqat yurist tasdigʻi va ikkinchi xodim tasdigʻidan keyin kuchga kiradi."
       },
       "residency": {
         "title": "Maʼlumotlar joylashuvi va subpudratchilar",

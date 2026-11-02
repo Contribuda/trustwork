@@ -256,7 +256,8 @@
       "off": "Desactivado",
       "version": "Versión {version}",
       "unknownPerson": "Alguien ajeno a este hub",
-      "opensNewTab": "(se abre en una pestaña nueva)"
+      "opensNewTab": "(se abre en una pestaña nueva)",
+      "sentToSecondPerson": "Guardado y enviado a una segunda persona para “{action}”; surte efecto cuando lo apruebe."
     },
     "denied": {
       "title": "No tiene acceso a esta sección",
@@ -890,7 +891,10 @@
         "document": "Versión del documento",
         "nothingToActivate": "Ninguna versión aprobada por el asesor legal está en espera de activación.",
         "draft": "Redactar una nueva versión",
-        "templatesNote": "Una nueva versión parte de las plantillas del motor; el asesor legal la revisa antes de la activación."
+        "templatesNote": "Una nueva versión parte de las plantillas del motor; el asesor legal la revisa antes de la activación.",
+        "draftLanguage": "Idioma de esta versión",
+        "draftText": "Texto",
+        "draftTextHelp": "El texto completo en este idioma. Un borrador entra en vigor solo tras la aprobación de un abogado y de una segunda persona."
       },
       "residency": {
         "title": "Residencia y subencargados",

@@ -16,7 +16,7 @@ let live: ConsoleDataPort | null = null;
  * (the API's CSRF guard compares it with its public origin; a server action is same-origin by construction) and the
  * idempotency key. Network failures and timeouts answer 503, which the console shows as an error.
  */
-async function post(path: `/v1/${string}`, body: Record<string, unknown>, idempotencyKey: string): Promise<{ status: number; code: string | null }> {
+async function post(path: `/v1/${string}`, body: Record<string, unknown>, idempotencyKey: string): Promise<{ status: number; code: string | null; body: unknown }> {
   const { cookies, headers } = await import('next/headers');
   const session = (await cookies()).getAll().filter((c) => (SESSION_COOKIE_NAMES as readonly string[]).includes(c.name) && c.value);
   const origin = (await headers()).get('origin');
@@ -26,9 +26,9 @@ async function post(path: `/v1/${string}`, body: Record<string, unknown>, idempo
   try {
     const response = await fetch(`${apiOrigin()}${path}`, { method: 'POST', headers: send, body: JSON.stringify(body), cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(10_000) });
     const envelope = (await response.json().catch(() => null)) as { code?: unknown } | null;
-    return { status: response.status, code: typeof envelope?.code === 'string' ? envelope.code : null };
+    return { status: response.status, code: typeof envelope?.code === 'string' ? envelope.code : null, body: envelope };
   } catch {
-    return { status: 503, code: null };
+    return { status: 503, code: null, body: null };
   }
 }
 

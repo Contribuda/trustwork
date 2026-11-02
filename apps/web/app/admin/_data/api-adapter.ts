@@ -11,10 +11,10 @@ import {
   type HubStaffRole,
 } from '@trustwork/contracts/client';
 import { isRestricted } from '@trustwork/country-packs';
-import { evaluateCommand, type CommandInput, type CommandOutcome, type RejectCode } from './commands.js';
+import { evaluateCommand, parseTerritory, requestedModes, type CommandInput, type CommandOutcome, type RejectCode } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
-import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord } from './schemas.js';
+import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord, type LegalDocument } from './schemas.js';
 import type { SectionDef } from './section-types.js';
 
 /**
@@ -36,7 +36,7 @@ export interface ConsoleApi {
    * key travels in the body as the console contract asks). Never rejects for an HTTP answer: it reports the status and
    * the error code of the envelope.
    */
-  post?(path: `/v1/${string}`, body: Record<string, unknown>, idempotencyKey: string): Promise<{ status: number; code: string | null }>;
+  post?(path: `/v1/${string}`, body: Record<string, unknown>, idempotencyKey: string): Promise<{ status: number; code: string | null; body?: unknown }>;
 }
 export interface ApiPortOptions {
   api: ConsoleApi;
@@ -76,6 +76,20 @@ const ApprovalViewSchema = z.object({
   expiresAt: z.iso.datetime().nullable(),
   declinedBy: z.string().nullable(),
   revokedAt: z.iso.datetime().nullable(),
+});
+/** A hub command answer (`ConsoleCommandResult`, plus the drafted version for configuration drafts). */
+const CommandAnswerSchema = z.object({
+  result: z.object({ outcome: z.enum(['applied', 'pending_second_person', 'queued']), objectId: z.string(), revision: z.number().int() }),
+  version: z.object({ id: z.string(), revision: z.number().int() }).optional(),
+});
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** `GET /v1/admin/hubs/:hubId/legal`: one version per document kind and language, with the counsel approvals. */
+const LegalViewSchema = z.object({
+  documents: z.array(z.object({
+    id: z.string(), hubId: z.string(), kind: z.string(), locale: z.string(), version: z.number().int(), status: z.string(), counselApprovalId: z.string().nullable(),
+    activatedAt: z.string().nullable(),
+  }).passthrough()),
+  counselApprovals: z.array(z.object({ id: z.string(), counselName: z.string(), firm: z.string(), approvedOn: z.string(), scopeNote: z.string() }).passthrough()),
 });
 /** `GET /v1/admin/approvals`: requests waiting for the viewer, the viewer's own requests, and decided ones. */
 const ApprovalsViewSchema = z.object({ forMe: z.array(z.unknown()).default([]), mine: z.array(z.unknown()).default([]), decided: z.array(z.unknown()).default([]) });
@@ -233,7 +247,10 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
   }
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
-  const LIVE_COMMANDS = new Set<CommandInput['command']>(['approvals.decide', 'approvals.withdraw']);
+  const LIVE_COMMANDS = new Set<CommandInput['command']>([
+    'approvals.decide', 'approvals.withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
+    'legal.draft',
+  ]);
 
   /** An API refusal as a console reject code (the API decides; the console only words it). */
   function refusal(status: number, code: string | null): CommandOutcome {
@@ -256,7 +273,64 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted });
     if (checked.status !== 'demo_not_saved') return checked;
     const f = input.fields;
-    const key = (options.newKey ?? (() => crypto.randomUUID()))();
+    const newKey = options.newKey ?? (() => crypto.randomUUID());
+    const send = (path: `/v1/${string}`, rest: Record<string, unknown>) => {
+      const k = newKey();
+      return api.post!(path, { contractVersion: '1.0.0', idempotencyKey: k, reason: input.reason.trim(), ...rest }, k);
+    };
+    const settled = (answer: { status: number; code: string | null; body?: unknown }): CommandOutcome => {
+      if (answer.status < 200 || answer.status >= 300) return refusal(answer.status, answer.code);
+      const parsed = CommandAnswerSchema.safeParse(answer.body);
+      return parsed.success && parsed.data.result.outcome === 'pending_second_person' ? { status: 'pending_second_person', secondPerson: checked.secondPerson } : { status: 'applied' };
+    };
+    const hubPath = `/v1/admin/hubs/${encodeURIComponent(hub.hub.id)}` as const;
+    // A configuration version drafted, then activated with its revision (a sensitive domain answers pending_second_person).
+    const draftAndActivate = async (domain: string, payload: Record<string, unknown>): Promise<CommandOutcome> => {
+      const drafted = await send(`${hubPath}/config`, { domain, payload });
+      if (drafted.status < 200 || drafted.status >= 300) return refusal(drafted.status, drafted.code);
+      const version = CommandAnswerSchema.safeParse(drafted.body).data?.version;
+      if (!version) return { status: 'rejected', code: 'invalid', field: null, detail: [] };
+      return settled(await send(`${hubPath}/config/${encodeURIComponent(version.id)}/activate`, { expectedRevision: version.revision, approvalId: null }));
+    };
+    if (input.command === 'legal.draft') {
+      // A new draft version of one document in one hub language; activation needs counsel approval and a second person.
+      return settled(await send(`${hubPath}/legal`, { kind: f.kind, locale: f.locale, body: f.body ?? '' }));
+    }
+    if (input.command === 'residency.request_change') {
+      // Hosting and personal data in the named country; the API asks a second person (`hub.change_residency`).
+      const country = (f.country ?? '').trim().toUpperCase();
+      return draftAndActivate('residency', { hostingCountry: country, hostingRegion: null, personalDataCountries: [country] });
+    }
+    if (input.command === 'modes.save' || input.command === 'modules.toggle') {
+      // A new `modes` configuration version, then its activation (a raise to supervised autonomy asks a second person).
+      const modes = requestedModes(input, hub);
+      if (!modes) return { status: 'rejected', code: 'invalid', field: null, detail: [] };
+      return draftAndActivate('modes', modes);
+    }
+    if (input.command === 'identity.save') {
+      // The default language through the hub profile (with the hub revision), a new territory through its own route.
+      const defaultLocale = (f.defaultLocale ?? '').trim();
+      const territory = (f.addTerritory ?? '').trim() ? parseTerritory(f.addTerritory ?? '') : null;
+      const profileChange = defaultLocale !== '' && defaultLocale !== hub.hub.defaultLocale;
+      if (!profileChange && !territory) return { status: 'rejected', code: 'invalid', field: null, detail: [] };
+      if (profileChange) {
+        const h = hub.hub;
+        const answer = await send(`${hubPath}/profile`, { name: h.name, defaultLocale, locales: h.locales, timeZone: h.timeZone, currency: h.currency, brandOverlay: h.brandOverlay,
+          expectedRevision: h.revision });
+        if (answer.status < 200 || answer.status >= 300 || !territory) return settled(answer);
+      }
+      return settled(await send(`${hubPath}/territories`, { territory: { level: territory!.level, code: territory!.code } }));
+    }
+    if (input.command === 'lifecycle.request') {
+      return settled(await send(`${hubPath}/lifecycle`, { to: f.to, expectedRevision: hub.hub.revision, approvalId: null }));
+    }
+    if (input.command === 'launch.mark_passed') {
+      // The API records a gate check against an evidence record (its id); a free-text reference is not evidence.
+      const evidence = (f.evidence ?? '').trim();
+      if (!UUID.test(evidence)) return { status: 'rejected', code: 'invalid', field: 'evidence', detail: [] };
+      return settled(await send(`${hubPath}/launch/check`, { gate: f.gate, evidenceRef: evidence }));
+    }
+    const key = newKey();
     const base = { contractVersion: '1.0.0', idempotencyKey: key, reason: input.reason.trim() };
     const id = encodeURIComponent(f.requestId ?? '');
     const call =
@@ -284,7 +358,24 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     people: async () => [],
     overview: async () => null,
     approvals,
-    legal: async () => ({ operator: null, documents: [] }),
+    // One console document per stored version (the API keeps a version per kind and language); the operator record has no
+    // read yet, so it stays empty rather than invented.
+    async legal(hubId) {
+      const view = LegalViewSchema.safeParse(await orNothing(api.get(`/v1/admin/hubs/${hubId}/legal`)));
+      if (!view.success) return { operator: null, documents: [] };
+      const documents: LegalDocument[] = [];
+      for (const d of view.data.documents) {
+        const counsel = view.data.counselApprovals.find((c) => c.id === d.counselApprovalId) ?? null;
+        const status = d.status === 'draft' ? (counsel ? 'counsel_approved' : 'draft') : d.status;
+        const parsed = LegalDocumentSchema.safeParse({
+          id: d.id, hubId: d.hubId, kind: d.kind, version: d.version, status, locales: [d.locale],
+          counselApproval: counsel ? { by: counsel.counselName, firm: counsel.firm, at: `${counsel.approvedOn.slice(0, 10)}T00:00:00.000Z`, scope: counsel.scopeNote.slice(0, 280) } : null,
+          effectiveFrom: d.status === 'active' || d.status === 'superseded' ? d.activatedAt : null, synthetic: false,
+        });
+        if (parsed.success) documents.push(parsed.data);
+      }
+      return { operator: null, documents };
+    },
     residency: async () => null,
     localAdditions: async () => [],
     taxonomy: async () => [],
