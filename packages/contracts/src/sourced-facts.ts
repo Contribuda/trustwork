@@ -125,9 +125,6 @@ export type SourcedFact = z.infer<typeof SourcedFactSchema>;
 
 export type RegisterAdapter = {
   readonly id: string;
-  /** ISO 3166-1 alpha-2 or `XX` for global registers; `region` narrows to a pack region. */
-  readonly country: string;
-  readonly region: string | null;
   readonly kinds: readonly SourcedFactKind[];
   /** The identifier the register answers for; null when it has none (facts need a reviewed link). */
   readonly identifierKind: string | null;
@@ -146,16 +143,16 @@ export type RegisterAdapter = {
 /**
  * Register adapters that exist in engine code. Each runs as a deterministic fake until a hub activates live mode with
  * a credential reference and a second person's approval. Licences are stated as what an operator must confirm, not as
- * a conclusion.
+ * a conclusion. Where a register applies comes from the country pack that lists it (`packRegister`), never from here.
  */
 export const REGISTER_ADAPTERS: readonly RegisterAdapter[] = [
-  { id: 'us_ca_cslb_licence_file', country: 'US', region: 'US-CA', kinds: ['licence_status'], identifierKind: 'US-CA-CSLB', packRegister: 'ca-cslb-public-data',
+  { id: 'us_ca_cslb_licence_file', kinds: ['licence_status'], identifierKind: 'US-CA-CSLB', packRegister: 'ca-cslb-public-data',
     access: 'file', method: 'structured_feed', dataLicence: 'state public record; confirm the CSLB data portal terms', refreshDays: 7, withoutCredentials: 'fake' },
-  { id: 'us_sam_entity', country: 'US', region: null, kinds: ['sam_registration', 'sam_exclusion'], identifierKind: 'US-UEI', packRegister: 'sam-entity-registrations',
+  { id: 'us_sam_entity', kinds: ['sam_registration', 'sam_exclusion'], identifierKind: 'US-UEI', packRegister: 'sam-entity-registrations',
     access: 'api', method: 'register_api', dataLicence: 'US federal public data; SAM.gov API terms and key', refreshDays: 30, withoutCredentials: 'fake' },
-  { id: 'us_osha_inspections', country: 'US', region: null, kinds: ['safety_inspection'], identifierKind: null, packRegister: null,
+  { id: 'us_osha_inspections', kinds: ['safety_inspection'], identifierKind: null, packRegister: null,
     access: 'file', method: 'structured_feed', dataLicence: 'US federal public data; DOL enforcement data terms', refreshDays: 30, withoutCredentials: 'fake' },
-  { id: 'gleif_lei', country: 'XX', region: null, kinds: ['lei_record'], identifierKind: LEI_IDENTIFIER_KIND, packRegister: null,
+  { id: 'gleif_lei', kinds: ['lei_record'], identifierKind: LEI_IDENTIFIER_KIND, packRegister: null,
     access: 'api', method: 'register_api', dataLicence: 'GLEIF data under CC0 1.0; confirm current GLEIF terms', refreshDays: 30, withoutCredentials: 'fake' },
 ];
 
