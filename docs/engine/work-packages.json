@@ -9870,7 +9870,7 @@
       "id": "SRC-002",
       "title": "Pre-collection gate: AI-usage signals, TDM reservations, host policy and polite crawling",
       "area": "content-sources",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "SRC-001",
         "PIPE-001"
