@@ -11,6 +11,7 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 import { PipelinesModule } from './modules/pipelines/pipelines.module.js';
 import { VerificationModule } from './modules/verification/verification.module.js';
 import { RegistersModule } from './modules/registers/registers.module.js';
+import { DatasetsModule } from './modules/datasets/datasets.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
 import { FeesModule } from './modules/billing/fees/fees.module.js';
 import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
@@ -86,6 +87,7 @@ export class AppModule {
         PipelinesModule.forRoot(ctx, identity),
         VerificationModule.forRoot(ctx, identity),
         RegistersModule.forRoot(ctx, identity),
+        DatasetsModule.forRoot(ctx, identity),
         CatalogueModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ProcurementModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
