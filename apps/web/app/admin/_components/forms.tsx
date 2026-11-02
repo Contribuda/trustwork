@@ -15,7 +15,7 @@ export function formLabels({ submit, secondPerson = false }: { submit: string; s
 }
 
 /** A native select with a visible label; the name starts with `f.` so the value reaches the command. */
-export function SelectField({ name, label, options, defaultValue, description }: { name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; defaultValue?: string | undefined; description?: string | undefined }) {
+export function SelectField({ name, label, options, defaultValue, description }: { name: string; label: string; options: ReadonlyArray<{ value: string; label: string; lang?: string | undefined }>; defaultValue?: string | undefined; description?: string | undefined }) {
   const id = `field-${name.replace(/[^a-zA-Z0-9]/g, '-')}`;
   return (
     <div className="admin-field">
@@ -24,7 +24,7 @@ export function SelectField({ name, label, options, defaultValue, description }:
       </label>
       <select id={id} name={`f.${name}`} className="admin-select" defaultValue={defaultValue} {...(description ? { 'aria-describedby': `${id}-help` } : {})}>
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} {...(o.lang ? { lang: o.lang } : {})}>
             {o.label}
           </option>
         ))}

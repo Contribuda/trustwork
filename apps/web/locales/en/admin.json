@@ -2329,7 +2329,7 @@
         "node": "whole node",
         "platform": "whole platform"
       },
-      "accessFor": "What {name} may do here",
+      "accessFor": "What this person may do here",
       "permissionCount": "Permissions",
       "permissions": "Show the permissions",
       "accessUnavailable": "What this person may do is shown to staff who may read the staff list.",
