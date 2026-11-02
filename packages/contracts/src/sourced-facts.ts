@@ -230,3 +230,90 @@ export function expiryReminderDue(validUntil: string | null, now: Date): (typeof
   for (const step of EXPIRY_REMINDER_DAYS) if (days <= step) due = step;
   return due;
 }
+
+/* ---------- Deterministic fake adapters ---------- */
+
+/**
+ * Deterministic fake register adapters. They never call out: every answer is derived from a hash of the adapter and the
+ * identifier (or record reference), so tests and demos see the same facts every time. Links point to the reserved
+ * `.invalid` domain, which never resolves, so a synthetic fact can never pass for a real register record. Live adapters
+ * replace these only after a hub's second person activates live mode with a credential reference.
+ */
+export type FakeRegisterSubject = { identifierValue: string | null; recordRef?: string };
+
+const DAY_MS = 86_400_000;
+/**
+ * Fake dates are anchored to a fixed day, not to the clock: the same identifier always gets the same answer, so a
+ * refresh adds nothing, and fake licences lapse as real time passes them (the expiry watch has something to remind).
+ */
+const FAKE_ANCHOR_MS = Date.parse('2026-11-01T00:00:00Z');
+const isoDay = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
+const pick = <T>(items: readonly T[], n: number): T => items[n % items.length] as T;
+
+/** FNV-1a over the adapter and key: deterministic, and pure (no node: import), so the API and the worker share it. */
+function seed(adapter: string, key: string): number {
+  let hash = 0x811c9dc5;
+  for (const char of `trustwork-fake-register:${adapter}:${key}`) {
+    hash ^= char.codePointAt(0) as number;
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash;
+}
+
+function link(adapter: string, ref: string): string {
+  return `https://synthetic-register.invalid/${adapter}/${encodeURIComponent(ref)}`;
+}
+
+export function fakeRegisterObservations(adapterId: string, subjects: readonly FakeRegisterSubject[], now: Date): SourcedObservation[] {
+  const adapter = REGISTER_ADAPTERS.find((a) => a.id === adapterId);
+  if (!adapter || adapter.withoutCredentials !== 'fake') throw new Error(`no fake for register adapter ${adapterId}`);
+  const today = FAKE_ANCHOR_MS;
+  const observedAt = now.toISOString();
+  const out: SourcedObservation[] = [];
+  for (const subject of subjects) {
+    const value = subject.identifierValue;
+    const key = value === null ? (subject.recordRef ?? '') : normaliseIdentifier(value);
+    if (key === '') throw new Error('a fake subject needs an identifier or a record reference');
+    const n = seed(adapterId, key);
+    const ref = subject.recordRef ?? key.slice(0, 32);
+    const identified = { identifierKind: adapter.identifierKind, identifierValue: adapter.identifierKind === null ? null : value };
+    switch (adapterId) {
+      case 'us_ca_cslb_licence_file': {
+        const validUntil = isoDay(today + ((n % 760) - 30) * DAY_MS);
+        out.push({ kind: 'licence_status', recordRef: ref, link: link(adapterId, ref), observedAt, validUntil,
+          subject: { ...identified, holderKind: n % 5 === 0 ? 'natural_person' : 'organisation' },
+          value: { status: validUntil < isoDay(today) ? 'expired' : pick(['active', 'active', 'active', 'suspended', 'inactive'] as const, n >>> 3),
+            classifications: [pick(['A', 'B', 'C-10', 'C-36', 'C-20'], n >>> 5)], issuedOn: isoDay(today - (400 + (n % 4000)) * DAY_MS) } });
+        break;
+      }
+      case 'us_sam_entity': {
+        const validUntil = isoDay(today + ((n % 395) - 30) * DAY_MS);
+        const expired = validUntil < isoDay(today);
+        out.push({ kind: 'sam_registration', recordRef: ref, link: link(adapterId, ref), observedAt, validUntil,
+          subject: { ...identified, holderKind: 'organisation' }, value: { status: expired ? 'expired' : 'active', purpose: pick(['all_awards', 'financial_assistance_only'] as const, n >>> 4) } });
+        const excluded = n % 11 === 0;
+        out.push({ kind: 'sam_exclusion', recordRef: ref, link: link(adapterId, ref), observedAt, validUntil: null,
+          subject: { ...identified, holderKind: 'organisation' },
+          value: { status: excluded ? 'excluded' : 'not_excluded', exclusionType: excluded ? 'ineligible_proceedings_pending' : null } });
+        break;
+      }
+      case 'us_osha_inspections': {
+        out.push({ kind: 'safety_inspection', recordRef: ref, link: link(adapterId, ref), observedAt, validUntil: null,
+          subject: { identifierKind: null, identifierValue: null, holderKind: 'organisation' },
+          value: { inspectionRef: ref, openedOn: isoDay(today - (30 + (n % 900)) * DAY_MS), inspectionType: pick(['planned', 'complaint', 'accident', 'referral', 'follow_up'] as const, n >>> 2),
+            status: n % 3 === 0 ? 'open' : 'closed', citations: n % 4 } });
+        break;
+      }
+      case 'gleif_lei': {
+        const validUntil = isoDay(today + ((n % 395) - 30) * DAY_MS);
+        out.push({ kind: 'lei_record', recordRef: ref, link: link(adapterId, ref), observedAt, validUntil,
+          subject: { ...identified, holderKind: 'organisation' },
+          value: { registrationStatus: validUntil < isoDay(today) ? 'lapsed' : 'issued', entityStatus: 'active' } });
+        break;
+      }
+      default:
+        throw new Error(`no fake for register adapter ${adapterId}`);
+    }
+  }
+  return out.map((o) => SourcedObservationSchema.parse(o) as SourcedObservation);
+}

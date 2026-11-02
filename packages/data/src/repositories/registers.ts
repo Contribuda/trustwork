@@ -125,6 +125,15 @@ export const registersWorker = {
       'registers_record_adapter_run');
     return row.v;
   },
+  /** What a due adapter re-observes: the identifiers (or record references) of its current facts. */
+  async adapterSubjects(trx: Transaction, adapterId: string, limit: number): Promise<Array<{ identifier_value: string | null; record_ref: string | null }>> {
+    const { rows } = await sql<{ identifier_value: string | null; record_ref: string | null }>`SELECT * FROM trustwork.registers_adapter_subjects(${adapterId}::uuid, ${limit}::int)`.execute(trx);
+    return rows;
+  },
+  /** A due live adapter visited without observations (no adapter code yet): reported once per cadence. */
+  async markVisited(trx: Transaction, adapterId: string, now: Date): Promise<void> {
+    await sql`SELECT trustwork.registers_mark_visited(${adapterId}::uuid, ${now}::timestamptz)`.execute(trx);
+  },
   async runExpiryWatch(trx: Transaction, now: Date): Promise<RegisterReminderRow[]> {
     const { rows } = await sql<RegisterReminderRow>`SELECT * FROM trustwork.registers_run_expiry_watch(${now}::timestamptz)`.execute(trx);
     return rows;

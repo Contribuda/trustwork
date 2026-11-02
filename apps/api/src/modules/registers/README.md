@@ -28,8 +28,32 @@ A fact says what an official register showed about an identifier at a moment. It
 
 Live adapters are not written yet: the licence of each register is stated as what an operator must confirm, and no adapter calls out without a credential reference and a second person.
 
+## Routes
+
+Console routes under `/v1/admin/hubs/:hubId/registers` need a staff role at the hub and a live elevation; every command carries the console base (contract version, `Idempotency-Key` restated in the body, staff reason) and completes in the request transaction (BE-005).
+
+| Route | What it does |
+|---|---|
+| `GET /` | The engine catalogue, the hub's adapters and reviewed links |
+| `POST /adapters` | Bind a catalogue adapter to an active official-register source (fake mode) |
+| `GET /adapters/:id/live-digest?credentialRefId` | The digest a second person approves (`providers.enable_non_fake`) |
+| `POST /adapters/:id/live`, `POST /adapters/:id/retire` | Live mode with a credential and the approval; retire |
+| `POST /adapters/:id/fake-runs` | Run the fake for named subjects (identifier values, or record references); a person never types a fact |
+| `GET /adapters/:id/facts`, `GET /companies/:companyId/facts` | Current facts of an adapter, or about a company (before display rules) |
+| `POST /links`, `POST /links/:id/end` | Reviewed links for registers without identifiers |
+
+| Public and company route | What it does |
+|---|---|
+| `GET /v1/companies/:companyId/sourced-facts` | No session: what the served hub (`TRUSTWORK_HUB_ID`) may show, as `PublicSourcedFactSchema` rows |
+| `GET /v1/companies/:companyId/register-reminders` | An active administrator of the company: its expiry reminders |
+
+## Worker
+
+[`apps/worker/src/registers/refresh.ts`](../../../../worker/src/registers/refresh.ts) runs every hour:
+- **refresh**: due fake adapters re-observe the records they already hold (fake dates are anchored, so an unchanged record adds nothing); a due live adapter is reported once per cadence, never guessed;
+- **expiry watch**: one reminder per step for claimed and verified companies.
+
 ## Next
 
-- Staff and public routes, the fake run from the console, worker refresh and expiry jobs (REG-001 part 2).
-- "How this is sourced" explanation and labels in every maintained language; notices for reminders through COMMS-001.
+- "How this is sourced" explanation and labels in every maintained language on the company page; reminder notices through COMMS-001.
 - Exposure to canonical entities (ENT-001) by identifier.
