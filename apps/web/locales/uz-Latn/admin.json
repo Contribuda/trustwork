@@ -257,7 +257,8 @@
       "version": "{version}-versiya",
       "unknownPerson": "Bu xabdan tashqaridagi odam",
       "opensNewTab": "(yangi varaqda ochiladi)",
-      "sentToSecondPerson": "Saqlandi va «{action}» uchun ikkinchi xodimga yuborildi; u tasdiqlagach kuchga kiradi."
+      "sentToSecondPerson": "Saqlandi va «{action}» uchun ikkinchi xodimga yuborildi; u tasdiqlagach kuchga kiradi.",
+      "draftSaved": "«{action}» qoralama sifatida saqlandi. Uni faollashtirishni boshqa xodim soʻraydi, ikkinchi xodim esa tasdiqlaydi."
     },
     "denied": {
       "title": "Bu boʻlimga kirish huquqingiz yoʻq",

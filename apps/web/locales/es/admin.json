@@ -257,7 +257,8 @@
       "version": "Versión {version}",
       "unknownPerson": "Alguien ajeno a este hub",
       "opensNewTab": "(se abre en una pestaña nueva)",
-      "sentToSecondPerson": "Guardado y enviado a una segunda persona para “{action}”; surte efecto cuando lo apruebe."
+      "sentToSecondPerson": "Guardado y enviado a una segunda persona para “{action}”; surte efecto cuando lo apruebe.",
+      "draftSaved": "Guardado como borrador de “{action}”. Otro miembro del personal solicita su activación y una segunda persona la aprueba."
     },
     "denied": {
       "title": "No tiene acceso a esta sección",

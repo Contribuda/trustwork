@@ -122,6 +122,11 @@ export type CommandOutcome =
   | { status: 'applied' }
   /** Live mode: the API saved the change and asked a second person for this action (HUBC-007). */
   | { status: 'pending_second_person'; secondPerson: ConsoleSecondPersonAction | null }
+  /**
+   * Live mode: a sensitive change was saved as a draft. Its drafter never activates it: another staff member requests the
+   * activation, and a second person other than that requester approves it (HUB-001).
+   */
+  | { status: 'draft_saved'; secondPerson: ConsoleSecondPersonAction | null }
   | { status: 'rejected'; code: RejectCode; field: string | null; detail: string[] }
   | { status: 'not_found' };
 

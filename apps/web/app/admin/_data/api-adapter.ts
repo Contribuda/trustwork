@@ -80,7 +80,7 @@ const ApprovalViewSchema = z.object({
 /** A hub command answer (`ConsoleCommandResult`, plus the drafted version for configuration drafts). */
 const CommandAnswerSchema = z.object({
   result: z.object({ outcome: z.enum(['applied', 'pending_second_person', 'queued']), objectId: z.string(), revision: z.number().int() }),
-  version: z.object({ id: z.string(), revision: z.number().int() }).optional(),
+  version: z.object({ id: z.string(), revision: z.number().int(), activation: z.object({ secondPersonAction: z.string() }).nullable().optional() }).optional(),
 });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** `GET /v1/admin/hubs/:hubId/legal`: one version per document kind and language, with the counsel approvals. */
@@ -142,7 +142,8 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
   }
 
   async function node(): Promise<ConsoleNode | null> {
-    const view = NodeViewSchema.safeParse(await api.get('/v1/admin/node'));
+    // An unelevated staff session may not read the node (403): the console then shows the elevation gate, never an error.
+    const view = NodeViewSchema.safeParse(await orNothing(api.get('/v1/admin/node')));
     if (!view.success) return null;
     return ConsoleNodeSchema.parse({ id: view.data.nodeId, name: view.data.label, domain: await options.siteHost(), engineVersion: options.engineVersion, synthetic: false });
   }
@@ -290,6 +291,11 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       if (drafted.status < 200 || drafted.status >= 300) return refusal(drafted.status, drafted.code);
       const version = CommandAnswerSchema.safeParse(drafted.body).data?.version;
       if (!version) return { status: 'rejected', code: 'invalid', field: null, detail: [] };
+      // A sensitive domain: the drafter never activates their own version; it waits for another staff member.
+      if (version.activation) {
+        const action = ConsoleSecondPersonActionSchema.safeParse(version.activation.secondPersonAction);
+        return { status: 'draft_saved', secondPerson: action.success ? action.data : null };
+      }
       return settled(await send(`${hubPath}/config/${encodeURIComponent(version.id)}/activate`, { expectedRevision: version.revision, approvalId: null }));
     };
     if (input.command === 'legal.draft') {

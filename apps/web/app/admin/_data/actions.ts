@@ -27,6 +27,9 @@ function message(outcome: CommandOutcome): CommandState {
       : { status: 'done', tone: 'info', at, message: t('admin.common.demoNotSaved') };
   }
   if (outcome.status === 'applied') return { status: 'done', tone: 'info', at, message: t('admin.common.applied') };
+  if (outcome.status === 'draft_saved') {
+    return { status: 'done', tone: 'info', at, message: t('admin.common.draftSaved', { action: outcome.secondPerson ? tDynamic(`admin.approvals.actions.${outcome.secondPerson}`, outcome.secondPerson) : '' }) };
+  }
   if (outcome.status === 'pending_second_person') {
     return { status: 'done', tone: 'info', at, message: t('admin.common.sentToSecondPerson', { action: outcome.secondPerson ? tDynamic(`admin.approvals.actions.${outcome.secondPerson}`, outcome.secondPerson) : '' }) };
   }
