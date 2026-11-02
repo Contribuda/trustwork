@@ -39,7 +39,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "lucide-react": "1.63.0",
+    "lucide-react": "1.65.0",
     "react-aria-components": "1.22.1",
     "@trustwork/i18n-runtime": "0.1.0"
   },
