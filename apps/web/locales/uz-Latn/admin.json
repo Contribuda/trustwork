@@ -2329,7 +2329,7 @@
         "node": "butun tugun",
         "platform": "butun platforma"
       },
-      "accessFor": "{name} bu yerda nima qila oladi",
+      "accessFor": "Bu shaxs bu yerda nima qila oladi",
       "permissionCount": "Ruxsatlar",
       "permissions": "Ruxsatlarni koʻrsatish",
       "accessUnavailable": "Bu shaxs nima qila olishi xodimlar roʻyxatini koʻra oladigan xodimlarga koʻrsatiladi.",

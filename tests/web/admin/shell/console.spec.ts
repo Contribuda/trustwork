@@ -269,6 +269,8 @@ test.describe('hub console in Georgian', () => {
       at('/admin', 'node-operator'),
       ...['', 'approvals', 'help', 'hub/identity', 'hub/modes', 'hub/modules', 'hub/legal', 'hub/residency', 'hub/country', 'hub/taxonomy', 'hub/launch', 'ops/health'].map((p) => at(sectionPath(SAM, p), 'node-operator')),
       at(`${US}/approvals`, 'hub-owner'),
+      at(`${US}/staff`, 'hub-owner'),
+      at(`${US}/staff`, 'hub-owner', 'person=p-trust'),
       at(US, 'hub-owner', 'scenario=elevation-required'),
       at(`${US}/privacy/requests`, 'hub-owner'),
       `/admin/setup/check?token=${DEMO_FRESH_SETUP_TOKEN}`,
@@ -289,7 +291,7 @@ test.describe('hub console layout and accessibility', () => {
   for (const viewport of VIEWPORTS) {
     test(`axe and layout at ${viewport.width} px`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      for (const path of [at(US, 'hub-owner'), at(`${US}/approvals`, 'hub-owner'), at(`${US}/hub/identity`, 'hub-owner'), at(`${US}/hub/launch`, 'hub-owner'), at(`${SAM}/hub/residency`, 'node-operator'), at(`${US}/hub/modes`, 'staff-none'), at('/admin', 'node-operator'), `/admin/setup/hub?token=${DEMO_SETUP_TOKEN}`]) {
+      for (const path of [at(US, 'hub-owner'), at(`${US}/approvals`, 'hub-owner'), at(`${US}/hub/identity`, 'hub-owner'), at(`${US}/hub/launch`, 'hub-owner'), at(`${US}/staff`, 'hub-owner'), at(`${SAM}/hub/residency`, 'node-operator'), at(`${US}/hub/modes`, 'staff-none'), at('/admin', 'node-operator'), `/admin/setup/hub?token=${DEMO_SETUP_TOKEN}`]) {
         await page.goto(path);
         await expect(page.locator('.admin'), path).toBeVisible();
         await axe(page);

@@ -44,11 +44,16 @@ function RoleRow({ ctx, role }: { ctx: HubContext; role: StaffDirectoryRole }) {
   );
 }
 
+/** A person's name is data in their own language, which the directory does not record ("undetermined" on the live API). */
+const nameLang = (ctx: HubContext) => (ctx.request.demo ? 'en' : 'und');
+
 function PersonRow({ ctx, entry, selected }: { ctx: HubContext; entry: StaffDirectoryEntry; selected: boolean }) {
   return (
     <tr data-testid={`staff-${entry.personId}`} aria-current={selected || undefined}>
       <th scope="row" data-label={t('admin.staff.name')}>
-        <NextLink href={ctx.href('staff', { person: entry.personId })}>{entry.displayName}</NextLink>
+        <NextLink href={ctx.href('staff', { person: entry.personId })}>
+          <span lang={nameLang(ctx)}>{entry.displayName}</span>
+        </NextLink>
         {entry.personId === ctx.viewer.person.id ? <span className="admin-meta"> · {t('admin.common.you')}</span> : null}
       </th>
       <td data-label={t('admin.staff.roles')}>
@@ -72,11 +77,12 @@ function PersonRow({ ctx, entry, selected }: { ctx: HubContext; entry: StaffDire
 async function Access({ ctx, entry }: { ctx: HubContext; entry: StaffDirectoryEntry }) {
   const access = await ctx.port.effectiveAccess(ctx.record.hub.id, entry.personId);
   return (
-    <Panel id="access" title={t('admin.staff.accessFor', { name: entry.displayName })}>
+    <Panel id="access" title={t('admin.staff.accessFor')}>
       {access ? (
         <>
           <KeyValues
             rows={[
+              { label: t('admin.staff.name'), value: entry.displayName, lang: nameLang(ctx) },
               { label: t('admin.staff.roles'), value: roleList(access.roles) },
               { label: t('admin.staff.permissionCount'), value: String(access.permissions.length) },
             ]}
@@ -140,7 +146,7 @@ async function Staff(ctx: HubContext, route: ScreenRoute) {
             labels={formLabels({ submit: t('admin.staff.addRoleSubmit') })}
             disabledReason={readOnlyReason(ctx.can('admin.staff.assign'), ctx.offline)}
           >
-            <SelectField name="personId" label={t('admin.staff.person')} options={others.map((e) => ({ value: e.personId, label: e.displayName }))} />
+            <SelectField name="personId" label={t('admin.staff.person')} options={others.map((e) => ({ value: e.personId, label: e.displayName, lang: nameLang(ctx) }))} />
             <SelectField name="role" label={t('admin.staff.role')} options={assignable.map((d) => ({ value: d.role, label: tDynamic(`admin.roles.${d.role}`, d.role) }))} />
           </ConsoleForm>
         ) : (

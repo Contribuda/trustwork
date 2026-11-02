@@ -2329,7 +2329,7 @@
         "node": "bütün node",
         "platform": "bütün platforma"
       },
-      "accessFor": "{name} burada nə edə bilər",
+      "accessFor": "Bu şəxs burada nə edə bilər",
       "permissionCount": "İcazələr",
       "permissions": "İcazələri göstər",
       "accessUnavailable": "Bu şəxsin nə edə biləcəyi heyət siyahısını görə bilən əməkdaşlara göstərilir.",

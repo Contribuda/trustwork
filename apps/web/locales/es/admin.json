@@ -2329,7 +2329,7 @@
         "node": "todo el nodo",
         "platform": "toda la plataforma"
       },
-      "accessFor": "Qué puede hacer {name} aquí",
+      "accessFor": "Qué puede hacer aquí esta persona",
       "permissionCount": "Permisos",
       "permissions": "Mostrar los permisos",
       "accessUnavailable": "Lo que puede hacer esta persona se muestra al personal que puede leer la lista del personal.",

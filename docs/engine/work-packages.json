@@ -3858,7 +3858,7 @@
       "id": "HUBC-006",
       "title": "Console M6: federation, privacy, staff, audit, operations and node console on fixtures",
       "area": "hubs-web",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "ADM-002"
       ],
