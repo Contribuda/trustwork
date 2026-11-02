@@ -180,6 +180,8 @@ export interface RuntimeContext extends RuntimeParty {
   drain(): Promise<void>;
   /** External effects submitted to the fake providers since this scenario started. */
   newEffects(): readonly EffectRecord[];
+  /** Jobs that did not succeed (kind, state, attempt, last error): printed when a scenario's effect count is off. */
+  unfinishedJobs(): Promise<Array<{ kind: string; state: string; attempt: number; last_error: string | null }>>;
   /** Session token of the principal (to prove it never reaches the model). */
   sessionToken(): string;
   /** No effect at any provider without an authorized intent under a confirmed mandate (and an approval where asked). */

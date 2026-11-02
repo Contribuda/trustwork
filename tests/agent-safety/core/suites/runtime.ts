@@ -237,7 +237,9 @@ const scenarios: RuntimeScenario[] = [
       for (const s of result.slice(2)) assert.match(s, /^denied:.*budget/, s);
       await rt.drain();
       const effects = rt.newEffects();
-      assert.equal(effects.length, 2);
+      // Flaky on loaded CI runners (one effect instead of two); the message carries the evidence to find out why.
+      const evidence = effects.length === 2 ? '' : JSON.stringify({ intents: await rt.intentsOfRun(turn.runId), jobs: await rt.unfinishedJobs() });
+      assert.equal(effects.length, 2, evidence);
       const total = effects.reduce((sum, e) => sum + BigInt((e.amount as { minorUnits: string }).minorUnits), 0n);
       assert.ok(total <= 50000n, 'never above the budget');
     },
