@@ -11,6 +11,7 @@ import { SRLogo, SRMark } from '@/components/public/SRMark';
 import { PersonAvatar } from '@/components/public/PersonAvatar';
 import { SectionNav } from '@/components/public/SectionNav';
 import { ShareRow } from '@/components/public/ShareRow';
+import { RegisterFacts } from '@/components/public/RegisterFacts';
 import { CompanyStatusChip, EvidenceChip, ProjectStatusChip, formatLabel, regionLabel, topicLabel } from '@/components/public/parts';
 import { data } from '@/app/_lib/data';
 import type { CompanyUpdate } from '@/app/_lib/data/types';
@@ -590,6 +591,8 @@ export default async function CompanyPage({ params }: Params) {
                 </div>
               )}
             </section>
+
+            <RegisterFacts facts={company.registerFacts ?? []} />
 
             <section className="cp-section" id="documents" aria-labelledby="documents-title">
               <div className="cp-section__head">

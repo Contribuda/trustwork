@@ -343,6 +343,49 @@
       "vacancies": "vakansiya|ish|yollash|maosh|karyera|lavozim",
       "updates": "yangilik|yangilan|nashr|maqola|yaqinda|tadbir|nima yangilik",
       "about": "nima bilan shugʻullan|kompaniya haqida|aytib ber|kimsiz|yoʻnalish|ixtisos|mintaqa|geograf|qayerda ishla|salom|assalomu"
+    },
+    "registerFacts": {
+      "title": "Davlat reyestrlaridan",
+      "lede": "Rasmiy reyestrlar ko‘rsatilgan sanalarda ushbu kompaniya haqida nimani ko‘rsatgani, har bir yozuvga havola bilan. Bu hubning o‘z bahosi emas va reyting, saralash yoki hamkor tanlashga hech qachon ta’sir qilmaydi.",
+      "how": "Bu ma’lumot qanday olinadi",
+      "howBody": "Hub rasmiy reyestrlarni ularning e’lon qilingan shartlari asosida o‘qiydi, yozuvni faqat kompaniyaga tegishli identifikator orqali bog‘laydi va reyestr nima deyotganini ko‘rsatadi. Faqat tashkilotlar: bu yerda xususiy shaxslar haqida hech narsa ko‘rsatilmaydi. Agar yozuv noto‘g‘ri ko‘rinsa, reyestrning o‘z yozuvi hal qiladi; reyestrdan tuzatishni so‘rang yoki quyida yozuv haqida xabar bering.",
+      "observed": "Reyestrda {date} sanasida ko‘rilgan",
+      "validUntil": "{date} gacha amal qiladi",
+      "stale": "Eskirgan: reyestrdagi muddat o‘tib ketgan",
+      "open": "Reyestr yozuvini ochish",
+      "classes": "Toifalar: {list}",
+      "grade": "{scheme}: {grade} daraja",
+      "opened": "{date} sanasida ochilgan",
+      "citations": "Qayd etilgan qoidabuzarliklar: {count}",
+      "kind": {
+        "licence_status": "Pudratchi litsenziyasi",
+        "entity_status": "Biznes ro‘yxatdan o‘tishi",
+        "sam_registration": "Federal xaridlar ro‘yxati",
+        "sam_exclusion": "Federal xaridlardan chetlatish",
+        "safety_inspection": "Mehnat xavfsizligi tekshiruvi",
+        "lei_record": "Yuridik shaxs identifikatori (LEI)",
+        "official_rating": "Rasmiy daraja"
+      },
+      "status": {
+        "active": "Faol",
+        "inactive": "Nofaol",
+        "suspended": "To‘xtatilgan",
+        "revoked": "Bekor qilingan",
+        "expired": "Muddati o‘tgan",
+        "dissolved": "Tugatilgan",
+        "excluded": "Chetlatilgan",
+        "not_excluded": "Chetlatish yo‘q",
+        "issued": "Berilgan",
+        "lapsed": "Muddati tugagan",
+        "retired": "Iste’moldan chiqarilgan",
+        "annulled": "Bekor qilingan",
+        "pending_transfer": "O‘tkazish kutilmoqda",
+        "pending_archival": "Arxivlash kutilmoqda",
+        "merged": "Birlashtirilgan",
+        "duplicate": "Takroriy",
+        "open": "Ochiq",
+        "closed": "Yopilgan"
+      }
     }
   }
 }

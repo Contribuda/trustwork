@@ -343,6 +343,49 @@
       "vacancies": "vacanc|job|hiring|salary|career|position|work for",
       "updates": "news|update|publication|article|recent|event|what is new|latest",
       "about": "what do you do|about the company|tell me|who are you|focus|specialis|region|geograph|where do you work|hello|hi"
+    },
+    "registerFacts": {
+      "title": "From public registers",
+      "lede": "What official registers showed about this company on the dates given, with a link to each record. This is not the hub's own assessment, and it never affects ratings, rankings or matching.",
+      "how": "How this is sourced",
+      "howBody": "The hub reads official registers under their published terms, matches a record only through an identifier the company holds, and shows what the register says. Organisations only: nothing about private persons appears here. If an entry looks wrong, the register's own record decides; ask the register to correct it, or report the entry below.",
+      "observed": "Seen in the register on {date}",
+      "validUntil": "Valid until {date}",
+      "stale": "Out of date: the register date has passed",
+      "open": "Open the register record",
+      "classes": "Classes: {list}",
+      "grade": "{scheme}: grade {grade}",
+      "opened": "Opened {date}",
+      "citations": "Citations: {count}",
+      "kind": {
+        "licence_status": "Contractor licence",
+        "entity_status": "Business registration",
+        "sam_registration": "Federal procurement registration",
+        "sam_exclusion": "Federal procurement exclusion",
+        "safety_inspection": "Workplace safety inspection",
+        "lei_record": "Legal Entity Identifier (LEI)",
+        "official_rating": "Official grade"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "suspended": "Suspended",
+        "revoked": "Revoked",
+        "expired": "Expired",
+        "dissolved": "Dissolved",
+        "excluded": "Excluded",
+        "not_excluded": "No exclusion",
+        "issued": "Issued",
+        "lapsed": "Lapsed",
+        "retired": "Retired",
+        "annulled": "Annulled",
+        "pending_transfer": "Transfer pending",
+        "pending_archival": "Archival pending",
+        "merged": "Merged",
+        "duplicate": "Duplicate",
+        "open": "Open",
+        "closed": "Closed"
+      }
     }
   }
 }

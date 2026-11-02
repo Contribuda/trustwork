@@ -28,8 +28,23 @@ import {
 import { notificationView } from '@/app/app/notifications/_lib/view';
 import { z } from 'zod';
 import type { DataPort, Handle } from '../port';
-import type { AuthenticatedPrincipal, CompanyDetail, CompanyWorkspaceView, HomeView, MeView, OverviewView, Principal, ProjectCard, SettingsView, TopicKey, WorkspaceProjectDetail, WorkspaceProjectRow } from '../types';
+import type { AuthenticatedPrincipal, CompanyDetail, CompanyWorkspaceView, RegisterFactView, HomeView, MeView, OverviewView, Principal, ProjectCard, SettingsView, TopicKey, WorkspaceProjectDetail, WorkspaceProjectRow } from '../types';
 import { createTransport, type Transport } from './transport';
+
+/** The public register facts answer (PublicSourcedFactSchema in packages/contracts/src/sourced-facts.ts, REG-001). */
+const PublicSourcedFactsSchema = z.object({
+  hubConfigured: z.boolean(),
+  items: z.array(z.strictObject({
+    kind: z.enum(['licence_status', 'entity_status', 'sam_registration', 'sam_exclusion', 'safety_inspection', 'lei_record', 'official_rating']),
+    identifierKind: z.string().nullable(),
+    value: z.record(z.string(), z.unknown()),
+    sourceId: z.uuid(),
+    link: z.url(),
+    observedAt: z.string(),
+    validUntil: z.string().nullable(),
+    stale: z.boolean(),
+  })),
+});
 import {
   fromDirectoryCompany,
   fromPublicCompany,
@@ -170,9 +185,15 @@ export function createHttpDataPort(transport: Transport, pdfAvailable?: (path: s
     return body === null ? [] : ProjectDirectoryPageSchema.parse(body).items.map((entry) => toProjectCard(entry));
   }
 
+  /** What official registers showed about the company (`GET /v1/companies/:id/sourced-facts`, REG-001); none without a served hub. */
+  async function companyRegisterFacts(id: string): Promise<RegisterFactView[]> {
+    const body = await publicGet(`/v1/companies/${segment(id)}/sourced-facts`);
+    return body === null ? [] : PublicSourcedFactsSchema.parse(body).items.map((fact) => ({ kind: fact.kind, identifierKind: fact.identifierKind, value: fact.value, link: fact.link, observedAt: fact.observedAt, validUntil: fact.validUntil, stale: fact.stale }));
+  }
+
   async function withProjects(detail: CompanyDetail): Promise<CompanyDetail> {
-    const projects = await companyProjects(detail.id);
-    return { ...detail, projects, projectsCount: projects.length };
+    const [projects, registerFacts] = await Promise.all([companyProjects(detail.id), companyRegisterFacts(detail.id)]);
+    return { ...detail, projects, projectsCount: projects.length, registerFacts };
   }
 
   async function getCompany(handle: Handle) {
