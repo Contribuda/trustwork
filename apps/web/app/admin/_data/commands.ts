@@ -11,14 +11,18 @@ import {
   SETUP_STEPS,
   territoryRestricted,
   HubTerritorySchema,
+  SENSITIVE_HUB_STAFF_ROLES,
   type ConsolePermission,
   type ConsoleSecondPersonAction,
   type HubLifecycle,
   type HubModes,
   type HubModule,
+  type HubStaffRole,
   type HubTerritory,
   type RestrictedPredicate,
+  type StaffScopeKind,
 } from '@trustwork/contracts/client';
+import type { StaffDirectory } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import type { ConsoleAccess, StaffViewer } from './port.js';
 // HUBC-005: commands of the agent product, product modules, billing and communications live with their screens.
 import { evaluateProductCommand, isProductCommand, PRODUCT_COMMAND_PERMISSIONS, PRODUCT_COMMANDS, PRODUCT_REJECT_CODES } from '../hubs/[hub]/modules/_kit/commands.js';
@@ -36,7 +40,7 @@ import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalRequest, type HubRec
 
 export const COMMANDS = [
   'identity.save', 'modes.save', 'lifecycle.request', 'modules.toggle', 'legal.draft', 'legal.request_activation', 'residency.request_change',
-  'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'killswitch.engage', 'setup.save',
+  'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'killswitch.engage', 'setup.save',
   ...PRODUCT_COMMANDS,
 ] as const;
 export type CommandId = (typeof COMMANDS)[number];
@@ -62,6 +66,8 @@ export const COMMAND_PERMISSIONS: Record<Exclude<CommandId, 'setup.save'>, 'staf
   'approvals.apply': 'staff',
   // Requesting a second person for another staff member's sensitive draft: the API checks the domain permission again.
   'approvals.request_activation': 'staff',
+  'staff.assign': ['admin.staff.assign'],
+  'staff.revoke': ['admin.staff.revoke'],
   'killswitch.engage': ['admin.providers.kill', 'admin.agents.kill'],
   ...PRODUCT_COMMAND_PERMISSIONS,
 };
@@ -106,7 +112,7 @@ export const APPROVER_PERMISSIONS: Record<ConsoleSecondPersonAction, readonly Co
 export const REJECT_CODES = [
   'denied', 'elevation_required', 'offline', 'reason_required', 'stale', 'invalid', 'territory_restricted', 'transition_not_allowed', 'gates_open',
   'modes_violation', 'module_requires', 'module_required_by', 'counsel_missing', 'language_missing', 'own_request', 'not_own_request', 'request_void',
-  'request_expired', 'digest_mismatch', 'setup_blocked', 'second_factor_required',
+  'request_expired', 'digest_mismatch', 'setup_blocked', 'second_factor_required', 'self_grant', 'sensitive_role', 'role_held',
   ...PRODUCT_REJECT_CODES,
 ] as const;
 export type RejectCode = (typeof REJECT_CODES)[number];
@@ -150,6 +156,9 @@ export type CommandContext = {
   ready?: readonly ReadyApproval[];
   /** Sensitive drafts that wait for a staff member to request their activation (live mode, HUBC-007). */
   waiting?: readonly WaitingActivation[];
+  /** HC-150: the staff covering the hub (with roles) and the released role catalogue; absent where a caller has none. */
+  staff?: StaffDirectory | null;
+  catalogue?: ReadonlyArray<{ role: HubStaffRole; version: number; scopes: readonly StaffScopeKind[] }>;
 };
 
 /** An approved request of the viewer and the change it unlocks: a configuration version or a legal document version. */
@@ -434,6 +443,24 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
       // The drafter of a sensitive version never starts its activation (HUB-001); the API refuses it as well.
       if (item.draftedBy === viewer.person.id) return reject('own_request');
       return accepted(item.action);
+    }
+    case 'staff.assign': {
+      // A hub-scoped role for someone already on the hub's staff; a sensitive role needs a second person, which an
+      // invitation carries (ADM-004 part 2), so the console does not grant one directly.
+      const person = ctx.staff?.entries.find((e) => e.personId === f.personId);
+      if (!person) return reject('invalid', 'personId');
+      if (person.personId === viewer.person.id) return reject('self_grant', 'personId');
+      const definition = (ctx.catalogue ?? []).find((d) => d.role === f.role);
+      if (!definition || !definition.scopes.includes('hub')) return reject('invalid', 'role');
+      if (SENSITIVE_HUB_STAFF_ROLES.includes(definition.role)) return reject('sensitive_role', 'role');
+      if (person.roles?.some((r) => r.role === definition.role && r.scope.kind === 'hub' && r.scope.hubId === hub.hub.id)) return reject('role_held', 'role');
+      return accepted();
+    }
+    case 'staff.revoke': {
+      // Only a role held at this hub; node and platform roles are managed in the node console.
+      const held = ctx.staff?.entries.flatMap((e) => (e.roles ?? []).map((r) => ({ ...r, personId: e.personId }))).find((r) => r.assignmentId === f.assignmentId);
+      if (!held || held.scope.kind !== 'hub' || held.scope.hubId !== hub.hub.id) return NOT_FOUND;
+      return accepted();
     }
     case 'approvals.withdraw': {
       const request = ctx.requests.find((r) => r.id === f.requestId && r.hubId === hub.hub.id);

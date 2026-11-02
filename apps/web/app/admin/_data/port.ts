@@ -1,4 +1,5 @@
-import type { ConsolePermission, HubStaffRole } from '@trustwork/contracts/client';
+import type { ConsolePermission, HubStaffRole, StaffScopeKind } from '@trustwork/contracts/client';
+import type { StaffDirectory } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import type { CommandInput, CommandOutcome, ReadyApproval, WaitingActivation } from './commands.js';
 import type { ConsoleRequest } from './personas.js';
 import type {
@@ -50,6 +51,16 @@ export interface ConsoleDataPort {
   access(viewer: StaffViewer, target: { nodeId: string; hubId: string | null }): Promise<ConsoleAccess>;
   rolesGranting(section: SectionDef): Promise<HubStaffRole[]>;
   people(ids: readonly string[]): Promise<ConsolePerson[]>;
+  /**
+   * The staff covering the hub (HC-150, ADM-004 directory): names for every staff viewer; roles and second-factor state
+   * only when the viewer holds `admin.staff.read` (`detail`). The live API decides that itself; the fixture adapter
+   * follows `detail`. Null when the hub is not readable.
+   */
+  staff(hubId: string, detail: boolean): Promise<StaffDirectory | null>;
+  /** What one staff member may do at the hub now (roles and permissions); null when not readable. */
+  effectiveAccess(hubId: string, personId: string): Promise<{ roles: HubStaffRole[]; permissions: ConsolePermission[] } | null>;
+  /** The released role definitions a staff admin may assign: the latest version of each role with its scopes. */
+  roleCatalogue(): Promise<Array<{ role: HubStaffRole; version: number; scopes: StaffScopeKind[] }>>;
   overview(hubId: string): Promise<Overview | null>;
   /**
    * Requests and decisions; the live adapter also lists the viewer's approved changes that wait to be applied (`ready`)

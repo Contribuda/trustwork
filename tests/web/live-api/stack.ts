@@ -104,6 +104,19 @@ const control = createServer((req, res) => {
       });
       return send(res, 200, result);
     }
+    if (req.method === 'POST' && url.pathname === '/definition') {
+      // HC-150: a released role definition the console's role catalogue offers (the next version of the named role).
+      const body = await readJson(req);
+      if (!db || typeof body.role !== 'string' || !Array.isArray(body.scopes) || !Array.isArray(body.permissions)) return send(res, 400, { error: 'bad request' });
+      const version = await withMaintenance(db.admin, async (trx) => {
+        const latest = await trx.selectFrom('staff_role_definition_version').select((eb) => eb.fn.max('version').as('v')).where('role', '=', body.role as never).executeTakeFirst();
+        const next = Number(latest?.v ?? 0) + 1;
+        await staffRoleDefinitions.release(trx, { version: next, role: body.role as never, scopes: body.scopes as never, permissions: body.permissions as never,
+          caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+        return next;
+      });
+      return send(res, 200, { version });
+    }
     if (req.method === 'POST' && url.pathname === '/screen') {
       // SANC-004: the money and commitment gates refuse unscreened parties; the worker is not part of this stack, so the
       // control server activates synthetic baseline lists and screens every person and company through the worker's code.

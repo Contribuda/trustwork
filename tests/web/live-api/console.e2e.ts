@@ -187,7 +187,47 @@ test('the console configures a live hub: modes applied, a residency draft activa
   await pageA.setViewportSize({ width: 1280, height: 900 });
   await expectAccessible(pageA);
 
-  for (const ctx of [operatorCtx, aCtx, bCtx]) await ctx.close();
+  // Staff (HC-150): a staff administrator sees the hub's staff by name, gives steward A a hub role, reads what A may do
+  // and revokes the role again; a sensitive role is not offered, and nobody gives a role to themselves.
+  await control('/definition', { role: 'editor', scopes: ['hub'], permissions: ['admin.hub.read', 'admin.notifications.read'] });
+  const cCtx = await browser.newContext();
+  const c = await enrolled(cCtx, 'Synthetic Staff Admin');
+  // A synthetic test definition with the staff permissions (staff-admin itself is sensitive and needs a second person).
+  await control('/staff', { personId: c.personId, role: 'ops-engineer', permissions: ['admin.hub.read', 'admin.staff.read', 'admin.staff.assign', 'admin.staff.revoke'], scope: { kind: 'node' } });
+  await c.elevate();
+  await inGeorgian(cCtx);
+  const pageC = await cCtx.newPage();
+  await pageC.goto(`/admin/hubs/${SLUG}/staff`);
+  const people = pageC.locator('#people');
+  for (const name of ['Synthetic Hub Steward A', 'Synthetic Hub Steward B', 'Synthetic Staff Admin']) await expect(people.getByRole('rowheader', { name: new RegExp(name) })).toBeVisible();
+  await expect(people).toContainText(msg('admin.staff.enrolled', LANG));
+  const add = pageC.locator('#add-role form');
+  await expect(add.locator('select[name="f.role"] option')).toHaveText([msg('admin.roles.editor', LANG)]);
+  await expect(add.locator('select[name="f.personId"] option', { hasText: 'Synthetic Staff Admin' })).toHaveCount(0);
+  await add.locator('select[name="f.personId"]').selectOption({ label: 'Synthetic Hub Steward A' });
+  await add.getByLabel(msg('admin.common.reason', LANG)).fill('Steward A also edits the hub news');
+  await add.getByRole('button', { name: msg('admin.staff.addRoleSubmit', LANG) }).click();
+  await expect(add.locator('.admin-form__result')).toHaveText(msg('admin.common.applied', LANG));
+  await pageC.goto(`/admin/hubs/${SLUG}/staff?person=${a.personId}`);
+  const rowA = pageC.getByTestId(`staff-${a.personId}`);
+  await expect(rowA).toContainText(msg('admin.roles.editor', LANG));
+  await expect(pageC.locator('#access')).toContainText(msg('admin.roles.editor', LANG));
+  await expectAccessible(pageC);
+  await shot(pageC, 'console-09-staff-ka');
+  const revoke = rowA.locator('details', { hasText: msg('admin.staff.revoke', LANG) }).first();
+  await revoke.locator('summary').click();
+  await revoke.getByLabel(msg('admin.common.reason', LANG)).fill('Steward A no longer edits the news');
+  await revoke.getByRole('button', { name: msg('admin.staff.revokeSubmit', LANG) }).click();
+  await expect(revoke.locator('.admin-form__result')).toHaveText(msg('admin.common.applied', LANG));
+  await pageC.goto(`/admin/hubs/${SLUG}/staff`);
+  await expect(pageC.getByTestId(`staff-${a.personId}`)).not.toContainText(msg('admin.roles.editor', LANG));
+  for (const width of [768, 375]) {
+    await pageC.setViewportSize({ width, height: 900 });
+    await expectNoHorizontalOverflow(pageC);
+    await shot(pageC, `console-10-staff-${width}-ka`);
+  }
+
+  for (const ctx of [operatorCtx, aCtx, bCtx, cCtx]) await ctx.close();
 });
 
 test('negative authorization: a participant finds nothing; an unelevated staff session confirms its second factor first', async ({ browser }) => {

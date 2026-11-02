@@ -57,7 +57,7 @@ const staffRoutes = (extra: Routes = {}): Routes => ({
   [`/v1/admin/hubs/${HUB_ID}/launch`]: { hubId: HUB_ID, lifecycle: hub.lifecycle, gates: [], blockers: { soft_launch: [], public: [] } },
   [`/v1/admin/staff/sod?hubId=${HUB_ID}`]: { target: { hubId: HUB_ID }, mode: 'full', staffCount: 4, minimumForFull: 3 },
   [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions: ['admin.hub.identity.edit', 'admin.notifications.read'], breakglassOnly: [] },
-  '/v1/admin/staff/definitions': { items: [{ role: 'hub-owner', permissions: ['admin.hub.read', 'admin.hub.identity.edit'] }, { role: 'editor', permissions: ['admin.notifications.read'] }] },
+  '/v1/admin/staff/definitions': { definitions: [{ role: 'hub-owner', permissions: ['admin.hub.read', 'admin.hub.identity.edit'] }, { role: 'editor', permissions: ['admin.notifications.read'] }] },
   ...extra,
 });
 const port = (routes: Routes) => {
@@ -400,4 +400,76 @@ test('scan: the live adapter imports no fixture module', () => {
   const source = readFileSync(resolve('apps/web/app/admin/_data/api-adapter.ts'), 'utf8');
   const imports = [...source.matchAll(/from '([^']+)'/g)].map((m) => m[1]!);
   assert.deepEqual(imports.filter((i) => /fixture|_fixtures/.test(i)), []);
+});
+
+/* ---------- HC-150 staff (ADM-004 directory) ---------- */
+
+const ASSIGNMENT = '77777777-7777-4777-8777-777777777771';
+const NODE_ASSIGNMENT = '77777777-7777-4777-8777-777777777772';
+const directory = {
+  hubId: HUB_ID, detail: true,
+  entries: [
+    { personId: STAFF, displayName: 'Synthetic Hub Owner', roles: [{ assignmentId: '77777777-7777-4777-8777-777777777770', role: 'hub-owner', scope: { kind: 'hub', hubId: HUB_ID }, validUntil: null, breakglass: false }], secondFactor: 'enrolled' },
+    { personId: OTHER, displayName: 'Synthetic Editor', roles: [
+      { assignmentId: ASSIGNMENT, role: 'editor', scope: { kind: 'hub', hubId: HUB_ID }, validUntil: null, breakglass: false },
+      { assignmentId: NODE_ASSIGNMENT, role: 'ops-engineer', scope: { kind: 'node', nodeId: NODE }, validUntil: null, breakglass: false },
+    ], secondFactor: 'none' },
+  ],
+};
+function staffPort(permissions: string[]) {
+  const api = fakeApi(staffRoutes({
+    [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions, breakglassOnly: [] },
+    [`/v1/admin/staff/directory?hubId=${HUB_ID}`]: directory,
+    '/v1/admin/staff/definitions': { definitions: [
+      { role: 'editor', version: 1, scopes: ['hub'], permissions: ['admin.notifications.read'] }, { role: 'editor', version: 3, scopes: ['hub'], permissions: ['admin.notifications.read'] },
+      { role: 'moderator', version: 2, scopes: ['hub'], permissions: ['admin.moderation.read'] }, { role: 'compliance-officer', version: 1, scopes: ['hub'], permissions: ['admin.audit.read'] },
+    ] },
+    [`/v1/admin/staff/effective-access?hubId=${HUB_ID}&personId=${OTHER}`]: { personId: OTHER, hubId: HUB_ID, roles: ['editor', 'ops-engineer'], permissions: ['admin.notifications.read'], breakglassOnly: [] },
+  }));
+  const sent: Sent[] = [];
+  let k = 0;
+  const p = createApiConsolePort({ api: { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return { status: 201, code: null, body: applied(ASSIGNMENT) }; } },
+    siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => `key-${++k}` });
+  return { sent, port: p, api };
+}
+
+test('staff: the directory, effective access, the role catalogue (latest version per role) and names come from the API only', async () => {
+  const { port: p } = staffPort(['admin.staff.read']);
+  assert.deepEqual((await p.staff(HUB_ID, true))?.entries.map((e) => e.displayName), ['Synthetic Hub Owner', 'Synthetic Editor']);
+  assert.deepEqual(await p.effectiveAccess(HUB_ID, OTHER), { roles: ['editor', 'ops-engineer'], permissions: ['admin.notifications.read'] });
+  assert.equal(await p.effectiveAccess(HUB_ID, STAFF), null, 'a refused or missing read is absent, never invented');
+  assert.deepEqual((await p.roleCatalogue()).map((d) => [d.role, d.version]), [['editor', 3], ['moderator', 2], ['compliance-officer', 1]]);
+  assert.deepEqual(await p.people([OTHER, 'not-staff']), [{ id: OTHER, displayName: 'Synthetic Editor', nameLang: 'und', synthetic: false }], 'only staff are named');
+  const unreadable = port(staffRoutes());
+  assert.equal(await unreadable.port.staff(HUB_ID, true), null);
+  assert.deepEqual(await unreadable.port.people([OTHER]), []);
+});
+
+test('staff.assign: a hub role from the latest definition for someone already on staff; self, sensitive and held roles never leave the console', async () => {
+  const { sent, port: p } = staffPort(['admin.staff.assign', 'admin.staff.read']);
+  assert.deepEqual(await p.command(live, settings('staff.assign', { personId: OTHER, role: 'moderator' }, null)), { status: 'applied' });
+  assert.deepEqual([sent[0]!.path, sent[0]!.body.personId, sent[0]!.body.role, sent[0]!.body.scope, sent[0]!.body.definitionVersion],
+    ['/v1/admin/staff/assignments', OTHER, 'moderator', { kind: 'hub', hubId: HUB_ID }, 2]);
+  const code = async (fields: Record<string, string>, permissions = ['admin.staff.assign']) => {
+    const r = staffPort(permissions);
+    const outcome = await r.port.command(live, settings('staff.assign', fields, null));
+    assert.deepEqual(r.sent, [], JSON.stringify(fields));
+    return outcome.status === 'rejected' ? outcome.code : outcome.status;
+  };
+  assert.equal(await code({ personId: STAFF, role: 'moderator' }), 'self_grant');
+  assert.equal(await code({ personId: OTHER, role: 'compliance-officer' }), 'sensitive_role', 'a sensitive role needs an invitation with a second person');
+  assert.equal(await code({ personId: OTHER, role: 'editor' }), 'role_held');
+  assert.equal(await code({ personId: 'someone-else', role: 'moderator' }), 'invalid', 'only people already on this hub\'s staff');
+  assert.equal(await code({ personId: OTHER, role: 'moderator' }, ['admin.staff.read']), 'denied');
+});
+
+test('staff.revoke: only a role held at this hub, through its own route; node roles are not revoked here', async () => {
+  const { sent, port: p } = staffPort(['admin.staff.revoke', 'admin.staff.read']);
+  assert.deepEqual(await p.command(live, settings('staff.revoke', { assignmentId: ASSIGNMENT }, null)), { status: 'applied' });
+  assert.equal(sent[0]!.path, `/v1/admin/staff/assignments/${ASSIGNMENT}/revoke`);
+  assert.deepEqual(await p.command(live, settings('staff.revoke', { assignmentId: NODE_ASSIGNMENT }, null)), { status: 'not_found' });
+  assert.deepEqual(await p.command(live, settings('staff.revoke', { assignmentId: 'unknown' }, null)), { status: 'not_found' });
+  assert.equal(sent.length, 1);
+  const denied = staffPort(['admin.staff.read']);
+  assert.equal(((await denied.port.command(live, settings('staff.revoke', { assignmentId: ASSIGNMENT }, null))) as { code: string }).code, 'denied');
 });
