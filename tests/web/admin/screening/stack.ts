@@ -19,8 +19,8 @@ await withMaintenance(w.h.db.admin, (trx) => trx.updateTable('person').set({disp
 await screen(w.worker,{kind:'person',id:w.seed.people.pure});
 // The console shell shows a hub once it has active modes. `modes` is not a sensitive domain: one person activates it.
 await withMaintenance(w.h.db.admin, async (trx) => {
-  const payload = JSON.stringify({ ...HUBS[0]!.modes, dataMode: 'live' });
-  const version = await trx.insertInto('hub_config_version').values({ hub_id: w.hubId, domain: 'modes', version: 1, payload, payload_digest: createHash('sha256').update(payload).digest('hex'), reason: 'Synthetic modes', drafted_by: w.seed.people.anna }).returning('id').executeTakeFirstOrThrow();
+  const payload = { ...HUBS[0]!.modes, dataMode: 'live' };
+  const version = await trx.insertInto('hub_config_version').values({ hub_id: w.hubId, domain: 'modes', version: 1, payload, payload_digest: createHash('sha256').update(JSON.stringify(payload)).digest('hex'), reason: 'Synthetic modes', drafted_by: w.seed.people.anna }).returning('id').executeTakeFirstOrThrow();
   await trx.updateTable('hub_config_version').set({ status: 'active', activated_by: w.seed.people.anna }).where('id', '=', version.id).execute();
   await trx.insertInto('hub_config_current').values({ hub_id: w.hubId, domain: 'modes', version_id: version.id, version: 1 }).execute();
 });
