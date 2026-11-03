@@ -110,6 +110,17 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   await run('admin.staff.role_change_apply', c.hubOwner, '/v1/admin/staff/role-changes/apply', { ...roleChange, previewDigest: (previewed.body as { preview: { previewDigest: string } }).preview.previewDigest, approvals: [] },
     () => count(admin, "SELECT 1 FROM trustwork.staff_role_assignment WHERE person_id = $1 AND role = 'auditor'", [p.agent]));
 
+  // ADM-004 access reviews: a campaign over the hub's standing roles, one item kept, another campaign withdrawn.
+  const review = (await run('admin.staff.access_review_open', c.admin, '/v1/admin/staff/access-reviews', { scope: hub, title: 'Synthetic crash review', roles: null, dueInSeconds: 30 * 86_400 },
+    () => count(admin, 'SELECT 1 FROM trustwork.staff_access_review_campaign'))).body as { campaign: { id: string }; items: Array<{ id: string; holderPersonId: string }> };
+  const reviewed = review.items.find((i) => i.holderPersonId === p.moderator);
+  assert.ok(reviewed, 'the moderator holds a hub role under review');
+  await run('admin.staff.access_review_decide', c.admin, `/v1/admin/staff/access-reviews/items/${reviewed.id}/decide`, { verdict: 'keep' },
+    () => count(admin, "SELECT 1 FROM trustwork.staff_access_review_item WHERE verdict = 'keep'"));
+  const mistaken = (await plain(c.admin, '/v1/admin/staff/access-reviews', { scope: hub, title: 'Synthetic mistaken review', roles: null, dueInSeconds: 30 * 86_400 })).campaign as { id: string };
+  await run('admin.staff.access_review_withdraw', c.admin, `/v1/admin/staff/access-reviews/${mistaken.id}/withdraw`, {},
+    () => count(admin, "SELECT 1 FROM trustwork.staff_access_review_campaign WHERE status = 'withdrawn'"));
+
   // Approvals: request, approve, decline, withdraw; break-glass consumes one.
   const subject = { action: 'staff.grant_breakglass', personId: p.lead2, role: 'moderator', scope: hub, definitionVersion: 1, incidentId: incident.incident.id, validForSeconds: 3600 };
   const approvals = () => count(admin, 'SELECT 1 FROM trustwork.second_person_approval');

@@ -118,10 +118,55 @@ export interface StaffActivationJoinedRow extends StaffActivationRow {
   approved_by: string | null;
 }
 
+/* ---------- Part 4: access reviews ---------- */
+
+export type AccessReviewCampaignStatus = 'open' | 'closed' | 'withdrawn';
+
+export interface StaffAccessReviewCampaignTable {
+  id: Generated<string>;
+  scope_kind: 'platform' | 'node' | 'hub';
+  node_id: string | null;
+  hub_id: string | null;
+  title: string;
+  roles: string[] | null;
+  due_at: Date;
+  opened_by: string;
+  reason: string;
+  status: Generated<AccessReviewCampaignStatus>;
+  closed_at: Date | null;
+  closed_by: string | null;
+  revision: Generated<number>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+export type StaffAccessReviewCampaignRow = Selectable<StaffAccessReviewCampaignTable>;
+
+export interface StaffAccessReviewItemTable {
+  id: Generated<string>;
+  campaign_id: string;
+  assignment_id: string;
+  holder_person_id: string;
+  role: string;
+  scope_kind: 'platform' | 'node' | 'hub';
+  node_id: string | null;
+  hub_id: string | null;
+  verdict: 'keep' | 'remove' | null;
+  effect: 'kept' | 'revoked' | 'already_ended' | null;
+  decided_by: string | null;
+  decided_at: Date | null;
+  decision_reason: string | null;
+  revision: Generated<number>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+export type StaffAccessReviewItemRow = Selectable<StaffAccessReviewItemTable>;
+
 export interface StaffLifecycleDatabase {
   staff_invitation: StaffInvitationTable;
   staff_eligible_role: StaffEligibleRoleTable;
   staff_activation: StaffActivationTable;
+  staff_access_review_campaign: StaffAccessReviewCampaignTable;
+  staff_access_review_item: StaffAccessReviewItemTable;
 }
 
 declare module './index.js' {
@@ -142,5 +187,12 @@ export const TABLE_COLUMNS: TableColumns<StaffLifecycleDatabase> = {
   staff_activation: columns('staff_activation', [
     'id', 'eligible_role_id', 'person_id', 'role', 'scope_kind', 'node_id', 'hub_id', 'window_seconds', 'sensitive', 'reason', 'requested_elevation_id', 'status', 'approval_id',
     'decided_by', 'assignment_id', 'active_from', 'active_until', 'withdrawn_by', 'revision', 'created_at', 'updated_at',
+  ]),
+  staff_access_review_campaign: columns('staff_access_review_campaign', [
+    'id', 'scope_kind', 'node_id', 'hub_id', 'title', 'roles', 'due_at', 'opened_by', 'reason', 'status', 'closed_at', 'closed_by', 'revision', 'created_at', 'updated_at',
+  ]),
+  staff_access_review_item: columns('staff_access_review_item', [
+    'id', 'campaign_id', 'assignment_id', 'holder_person_id', 'role', 'scope_kind', 'node_id', 'hub_id', 'verdict', 'effect', 'decided_by', 'decided_at', 'decision_reason', 'revision',
+    'created_at', 'updated_at',
   ]),
 };

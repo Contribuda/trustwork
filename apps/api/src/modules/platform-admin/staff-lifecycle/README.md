@@ -1,6 +1,6 @@
 # Staff lifecycle and access governance (ADM-004)
 
-Status: live in the API: the staff directory and effective access (part 1), staff invitations (part 2), eligible roles with just-in-time activation and the role-change preview (part 3). Access reviews and offboarding follow. Design: [console design, section 4.2](../../../../../../docs/engine/hub-console/console-design.md). Contract: `packages/contracts/src/staff-lifecycle.ts`. Migration: `packages/data/migrations/staff-lifecycle`.
+Status: live in the API: the staff directory and effective access (part 1), staff invitations (part 2), eligible roles with just-in-time activation and the role-change preview (part 3), access-review campaigns (part 4). Offboarding follows. Design: [console design, section 4.2](../../../../../../docs/engine/hub-console/console-design.md). Contract: `packages/contracts/src/staff-lifecycle.ts`. Migration: `packages/data/migrations/staff-lifecycle`.
 
 ## Routes
 
@@ -39,6 +39,16 @@ In the console the staff screen (HC-150) offers the invitation, its list, apply 
 
 The design sketch in the console design (section 4.2) asked for the approval before acceptance. The approval binds the exact assignment digest, which names the person, and an invitation names only an address until it is accepted; so the approval is asked after acceptance, and nothing takes effect before it.
 
+| `GET /v1/admin/staff/access-reviews?hubId=` | `admin.staff.read` at the scope (row-level security) | Campaigns covering the hub with their tallies (total, kept, removed, pending, escalated). |
+| `GET /v1/admin/staff/access-reviews/:id` | `admin.staff.read` at the scope | One campaign with its items and each item's state (`pending`, `escalated`, `decided`). |
+| `POST /v1/admin/staff/access-reviews` | `admin.staff.revoke` at the scope | Opens a campaign over the standing assignments held exactly at the scope (all roles or the listed ones), due in one to ninety days. |
+| `POST /v1/admin/staff/access-reviews/items/:id/decide` | `admin.staff.revoke` at the scope; never the holder; after the deadline only the scope's owner role | `keep` or `remove` with a reason; `remove` revokes the role in the same transaction. The campaign closes with its last decision. |
+| `POST /v1/admin/staff/access-reviews/:id/withdraw` | `admin.staff.revoke` at the scope | Withdraws a campaign opened by mistake; its items stay undecided and no role changes. |
+
+## Access reviews
+
+A campaign (console design, "Access reviews") snapshots the standing assignments held exactly at its scope when it opens (break-glass and just-in-time activations are excluded: they end by themselves and are reviewed by their own rules), with a deadline between one and ninety days. A reviewer with `admin.staff.revoke` at the scope who is not the holder marks each item `keep` or `remove` with a reason; `remove` revokes the assignment through the ADM-001 guard in the same transaction, and a role that ended before the review reached it is recorded as `already_ended`. Nothing is removed silently: an item unanswered at the deadline is **escalated**, a state computed from the deadline at every read (no job), after which only a holder of the scope's owner role (`hub-owner`, `node-operator`, `platform-owner`) may still decide it. The campaign closes by itself with the last decision and its audit row carries the kept and removed tallies; a campaign opened by mistake is withdrawn with a reason, never deleted. The design's question whether to show a role's last use in a review stays with the owner; no item carries any activity of the holder.
+
 ## Eligible roles and just-in-time activation
 
 A role may be held as *eligible* instead of active (console design, "Time-boxed roles and just-in-time elevation"). The pieces and how they fit ADM-001 without weakening it:
@@ -67,5 +77,7 @@ A role may be held as *eligible* instead of active (console design, "Time-boxed 
 
 
 `tests/admin/staff-lifecycle/eligible-roles.test.ts` on PostgreSQL under the runtime role: only `admin.staff.assign` grants eligibility, never to oneself, within the role cap and twelve hours, never a full-mode conflict; activation needs a second factor used within five minutes, one's own eligibility and a window within the ceiling; a non-sensitive role is active at once and ends with its window without a job (time travel on the assignment); early ends by the holder and by `admin.staff.revoke`; a sensitive role asks a second person in the grantor's name bound to the exact digest, the holder and the grantor never decide, approval consumes and assigns, decline grants nothing, an inbox approval is honoured; revoking the eligibility and revoking the last standing role cascade; reads under row-level security; immutability. `tests/admin/staff-lifecycle/eligible-roles-api.test.ts` walks the HTTP path in full separation-of-duties mode (ten staff), including the same-role refusal, the role-change preview, a stale preview, a blocking conflict, a sensitive addition with its approval, two concurrent applies and the schema walk; `tests/admin/crash-routes.ts` runs the six commands through the BE-005 crash sequence.
+
+`tests/admin/staff-lifecycle/access-reviews.test.ts` on PostgreSQL under the runtime role: only `admin.staff.revoke` opens and decides, never the holder; keep, remove (revokes in the transaction) and already ended; escalation after the deadline to the owner role (time travel on the campaign); auto-close with the last decision; withdrawal; reads under row-level security; immutability. `tests/admin/staff-lifecycle/access-reviews-api.test.ts` walks the HTTP path and the schema walk; `tests/admin/crash-routes.ts` runs the three commands through the BE-005 crash sequence.
 
 `tests/admin/staff-lifecycle/directory.test.ts` on real PostgreSQL through the HTTP API: anonymous, participants, other-hub staff and unelevated sessions are refused; names only without `admin.staff.read`; roles and second-factor state with it; the database refuses a participant, other-hub staff and an unknown hub; effective access needs `admin.staff.read` and never confirms who is not staff; the schema walk.
