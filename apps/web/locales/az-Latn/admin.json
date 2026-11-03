@@ -594,6 +594,9 @@
         },
         "kill_switch": {
           "release": "Qəza açarını götür"
+        },
+        "growth": {
+          "activate_referral_terms": "Tövsiyə proqramının şərtlərini aktivləşdir"
         }
       },
       "ready": "Tətbiqə hazırdır",

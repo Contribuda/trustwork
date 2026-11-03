@@ -658,7 +658,7 @@ Every key exists in all seven engine languages before a screen ships; machine dr
 | `QualityCohortReportSchema`, `StandardsGuideRefSchema`, `RecognitionProgrammeSchema` | `packages/contracts/src/quality-programme.ts` | QUAL-001 | Cohort counts only |
 | `CampaignSchema`, `AdsPolicyResultSchema`, `ReferralProgrammeVersionSchema` | `packages/contracts/src/growth.ts` | GROW-001 | Referral terms versioned like fee versions |
 | `ChampionProgrammeSchema`, `ChapterSchema`, `MemberJourneySchema` | `packages/contracts/src/community-programmes.ts` | CMTY-001 | Volunteers are participants, never staff |
-| Staff roles `finance-officer`, `growth-lead`, `people-officer`, `quality-lead`; permission domains `admin.team.*`, `admin.finance.*`, `admin.growth.*`, `admin.people.*`, `admin.quality.*`; second-person actions `team.move_sensitive_accountability`, `growth.activate_referral_terms` | `packages/contracts/src/hub.ts`, `admin.ts` | Integrator-reviewed minor version requested by TEAM-001 | Until accepted, the interim role mapping in [5.0](#50-the-function-catalogue-at-a-glance) applies |
+| Staff roles `finance-officer`, `growth-lead`, `people-officer`, `quality-lead`; permission domains `admin.team.*`, `admin.finance.*`, `admin.growth.*`, `admin.people.*`, `admin.quality.*`; second-person action `team.move_sensitive_accountability` (BILL-003 added `growth.activate_referral_terms` and `admin.growth.referrals.draft` and `.activate` additively) | `packages/contracts/src/hub.ts`, `admin.ts` | Integrator-reviewed minor version requested by TEAM-001 | Until accepted, the interim role mapping in [5.0](#50-the-function-catalogue-at-a-glance) applies |
 
 ## 10. Mapping to work packages
 

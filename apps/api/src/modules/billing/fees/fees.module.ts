@@ -8,7 +8,7 @@ import { Elevation, ElevationGuard } from '../../identity/second-factor/elevatio
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import { SecondFactorService } from '../../identity/second-factor/second-factor.service.js';
 import { staffHubFromEnv } from '../../identity/staff-roles.js';
-import { ActivateFeeSchema, DraftFeeSchema } from './deps.js';
+import { ActivateFeeSchema, ActivateReferralSchema, DraftFeeSchema, DraftReferralSchema, WithdrawReferralSchema } from './deps.js';
 import { FeesService } from './fees.service.js';
 
 @Controller('v1/pricing')
@@ -40,10 +40,33 @@ export class FeeCommandsController {
     return this.fees.activate(state, e.id, p.id, body);
   }
 }
+const IdParams = z.strictObject({ id: z.uuid() });
+@Controller('v1/admin/billing/referrals')
+@Authenticated()
+@UseGuards(ElevationGuard)
+export class ReferralCommandsController {
+  constructor(@Inject(FeesService) private readonly fees: FeesService) {}
+  @Get()
+  list(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow) {
+    return this.fees.staffReferrals(state, e.id);
+  }
+  @Post() @HttpCode(201) @Idempotent('billing.referral_draft')
+  draft(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Body(DraftReferralSchema) body: z.infer<typeof DraftReferralSchema>) {
+    return this.fees.draftReferral(state, e.id, body);
+  }
+  @Post(':id/activate') @HttpCode(200) @Idempotent('billing.referral_activate')
+  activate(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Params(IdParams) p: { id: string }, @Body(ActivateReferralSchema) body: z.infer<typeof ActivateReferralSchema>) {
+    return this.fees.activateReferral(state, e.id, p.id, body);
+  }
+  @Post(':id/withdraw') @HttpCode(200) @Idempotent('billing.referral_withdraw')
+  withdraw(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Params(IdParams) p: { id: string }, @Body(WithdrawReferralSchema) body: z.infer<typeof WithdrawReferralSchema>) {
+    return this.fees.withdrawReferral(state, e.id, p.id, body);
+  }
+}
 @Module({})
 export class FeesModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, env: NodeJS.ProcessEnv = process.env): DynamicModule {
-    return { module: FeesModule, controllers: [PublicPricingController, FeeCommandsController, TaskFeeDisclosureController], providers: [
+    return { module: FeesModule, controllers: [PublicPricingController, FeeCommandsController, ReferralCommandsController, TaskFeeDisclosureController], providers: [
       { provide: FeesService, useValue: new FeesService(ctx, identity.principals, staffHubFromEnv(env)) },
       { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard,
     ] };
