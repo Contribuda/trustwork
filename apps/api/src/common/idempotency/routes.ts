@@ -514,6 +514,7 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'claims.dispute_confirm': IN_TRANSACTION,
   'claims.handover_revoke': IN_TRANSACTION,
   'claims.settings_set': IN_TRANSACTION,
+  'claims.verification_recheck': IN_TRANSACTION,
   // Register facts (REG-001): staff commands complete in the principal transaction.
   'registers.adapter_bind': IN_TRANSACTION,
   'registers.adapter_live': IN_TRANSACTION,

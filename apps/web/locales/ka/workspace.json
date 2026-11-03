@@ -41,7 +41,8 @@
       "claimBackInReview": "თქვენი მოთხოვნა {company}-ზე ისევ განხილვაშია",
       "claimApproved": "თქვენი მოთხოვნა {company}-ზე დამტკიცდა",
       "claimRejected": "თქვენი მოთხოვნა {company}-ზე არ დამტკიცდა",
-      "claimRevoked": "{company}-ს მართვა თქვენ ჩამოგერთვათ"
+      "claimRevoked": "{company}-ს მართვა თქვენ ჩამოგერთვათ",
+      "claimExpired": "{company}-ს დადასტურების ვადა ამოიწურა და ახალი შემოწმებაა საჭირო"
     },
     "markAllRead": "ყველას წაკითხულად მონიშვნა",
     "markFailed": "წაკითხვის ნიშნული ვერ შეინახა. სცადეთ ხელახლა."
