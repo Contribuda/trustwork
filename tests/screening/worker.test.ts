@@ -23,10 +23,13 @@ test('worker settings: the fuzzy layer is off by default and bounded; malformed 
 });
 
 test('trigger events name their subject by the aggregate; anything else is a permanent failure', () => {
-  assert.deepEqual(Object.keys(SCREENING_TRIGGER_EVENTS).sort(), ['company.created', 'company.ownership_declaration_changed', 'company.renamed', 'identity.name_changed', 'identity.person_registered', 'identity.session_started']);
+  assert.deepEqual(Object.keys(SCREENING_TRIGGER_EVENTS).sort(), ['company.claim_submitted', 'company.created', 'company.ownership_declaration_changed', 'company.renamed', 'identity.company_claim_submitted', 'identity.name_changed', 'identity.person_registered', 'identity.session_started']);
   const id = '11111111-1111-4111-8111-111111111111';
   assert.deepEqual(subjectOfEvent({ type: 'identity.person_registered', aggregateKind: 'person', aggregateId: id }), { kind: 'person', id });
   assert.deepEqual(subjectOfEvent({ type: 'company.renamed', aggregateKind: 'company', aggregateId: id }), { kind: 'company', id });
+  // CLM-001: a claim screens both sides, each through its own aggregate.
+  assert.deepEqual(subjectOfEvent({ type: 'identity.company_claim_submitted', aggregateKind: 'person', aggregateId: id }), { kind: 'person', id });
+  assert.deepEqual(subjectOfEvent({ type: 'company.claim_submitted', aggregateKind: 'company', aggregateId: id }), { kind: 'company', id });
   assert.throws(() => subjectOfEvent({ type: 'identity.person_registered', aggregateKind: 'company', aggregateId: id }), PermanentJobError);
   assert.throws(() => subjectOfEvent({ type: 'company.created', aggregateKind: 'company', aggregateId: 'not-a-uuid' }), PermanentJobError);
 });

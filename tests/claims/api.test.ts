@@ -156,6 +156,20 @@ test('CLM-001 claim routes', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.deepEqual([await statusOf(companyId), await roleOf(first.id, companyId)], ['verified', 'administrator']);
   });
 
+  await t.test('a reviewer who is a party to a dispute neither proposes nor confirms its outcome', async () => {
+    const companyId = await page('Synthetic Conflicted Builders');
+    const rival = await claimant('Synthetic Conflicted Rival', 'rival@conflicted.synthetic.invalid');
+    const own = ok<{ claim: Claim }>(await submit(second, companyId, 'verified')).claim;
+    ok(await submit(rival.client, companyId, 'verified'));
+    const dispute = ok<{ disputes: Array<{ id: string; companyId: string; revision: number }> }>(await reviewer.get(`${base}/claims`)).disputes.find((d) => d.companyId === companyId)!;
+    const url = `${base}/claims/disputes/${dispute.id}`;
+    expectRefusal(await command(second, `${url}/propose`, { expectedRevision: dispute.revision, winnerClaimId: own.id, note: 'Synthetic self-serving proposal.' }), 403, 'access.forbidden', 'own_claim');
+    const proposed = ok<{ dispute: { revision: number } }>(await command(reviewer, `${url}/propose`, { expectedRevision: dispute.revision, winnerClaimId: own.id, note: 'Synthetic proposal for the reviewer.' })).dispute;
+    expectRefusal(await command(second, `${url}/confirm`, { expectedRevision: proposed.revision }), 403, 'access.forbidden', 'own_claim');
+    assert.deepEqual([await statusOf(companyId), await count("SELECT 1 FROM trustwork.claim_dispute WHERE id = $1 AND state = 'open'", [dispute.id])], ['unclaimed', 1]);
+    ok(await second.post(`/v1/claims/${own.id}/withdraw`, {}));
+  });
+
   await t.test('a managed page waits and its people are told; they hear no name; a verified hand-over then gives the role', async () => {
     const companyId = await page('Synthetic Managed Builders', 'managed.synthetic.invalid');
     const holder = await claimant('Synthetic Holder', 'holder@managed.synthetic.invalid');
