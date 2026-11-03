@@ -1,4 +1,5 @@
 import { screeningNoticeDictionaries, validateScreeningNotice } from './templates/screening/index.js';
+import { screeningStaffNoticeDictionaries, validateScreeningStaffNotice } from './templates/screening-staff/index.js';
 import type { MailTemplateName } from '@trustwork/data';
 import { escapeHtml, formatMessage, type MessageParams } from './format.js';
 import en from './locales/en/mail.json' with { type: 'json' };
@@ -20,7 +21,7 @@ export type MailDictionary = { readonly [key: string]: string | MailDictionary }
 
 export const REFERENCE_LOCALE = 'en';
 /** Every language with a mail dictionary; tests compare it with the engine languages and the directory listing. */
-export const MAIL_DICTIONARIES: Readonly<Record<string, MailDictionary>> = Object.fromEntries(Object.entries({ en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn, es }).map(([locale, dictionary]) => [locale, { ...dictionary, screeningNotice: screeningNoticeDictionaries[locale as keyof typeof screeningNoticeDictionaries] }]));
+export const MAIL_DICTIONARIES: Readonly<Record<string, MailDictionary>> = Object.fromEntries(Object.entries({ en, ru, 'uz-Latn': uzLatn, ka, hy, 'az-Latn': azLatn, es }).map(([locale, dictionary]) => [locale, { ...dictionary, screeningNotice: screeningNoticeDictionaries[locale as keyof typeof screeningNoticeDictionaries], screeningStaffNotice: screeningStaffNoticeDictionaries[locale as keyof typeof screeningStaffNoticeDictionaries] }]));
 export const MAIL_LOCALES: readonly string[] = Object.keys(MAIL_DICTIONARIES);
 
 /** Brand overlays (docs/oss/BRAND.md): per-locale names that replace the hub brand in those locales only. */
@@ -41,7 +42,7 @@ export class TemplateParameterError extends Error {
   }
 }
 
-export type LinkKind = 'verifyEmail' | 'emailChange' | 'recovery' | 'invitation' | 'signIn' | 'recover' | 'compliance';
+export type LinkKind = 'verifyEmail' | 'emailChange' | 'recovery' | 'invitation' | 'signIn' | 'recover' | 'compliance' | 'console';
 export const SECURITY_EVENTS = [
   'login_throttled', 'password_reset', 'password_changed', 'email_change_requested', 'provider_linked', 'provider_unlinked',
   // BE-004: second factor, recovery codes and support resets (SECOND_FACTOR_NOTICE_EVENTS in the contracts).
@@ -91,6 +92,8 @@ export const TEMPLATE_SPECS: Readonly<Record<MailTemplateName, TemplateSpec>> = 
     blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'invitation' }, p('expiry'), p('ignore')] },
   screening_notice: { template: 'screening_notice', namespace: 'screeningNotice', required: ['kind'], numeric: [], secret: false,
     blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'compliance' }] },
+  screening_staff_notice: { template: 'screening_staff_notice', namespace: 'screeningStaffNotice', required: [], numeric: [], secret: false,
+    blocks: () => [p('intro'), { kind: 'action', key: 'action', link: 'console' }] },
   security_notice: { template: 'security_notice', namespace: 'securityNotice', required: ['event'], numeric: [], secret: false,
     blocks: (params) => [p(`events.${params.event}`), p('notYou'), { kind: 'action', key: 'action', link: 'recover' }] },
   // COMMS-001: a notification rendered from the hub's active template version in the recipient's language.
@@ -104,10 +107,11 @@ export interface LinkConfig {
   /** Public origin of the web application, for example `https://hub.example`. */
   origin: string;
   /** Path templates with `{token}` and `{membershipId}` placeholders. */
-  paths: Readonly<Record<Exclude<LinkKind, 'compliance'>, string> & { compliance?: string }>;
+  paths: Readonly<Record<Exclude<LinkKind, 'compliance' | 'console'>, string> & { compliance?: string; console?: string }>;
 }
 export const DEFAULT_LINK_PATHS: Readonly<Record<LinkKind, string>> = {
   compliance: '/app/settings/account/compliance',
+  console: '/admin',
   verifyEmail: '/verify-email/{token}',
   emailChange: '/verify-email/{token}',
   recovery: '/recover/{token}',
@@ -182,6 +186,7 @@ export function buildLink(config: RenderConfig, kind: LinkKind, locale: string, 
 
 function validate(spec: TemplateSpec, input: RenderInput): MessageParams {
   if (spec.template === 'screening_notice') validateScreeningNotice(input.params);
+  if (spec.template === 'screening_staff_notice') validateScreeningStaffNotice(input.params);
   const values: Record<string, string | number> = {};
   for (const name of spec.required) {
     const raw = input.params[name];

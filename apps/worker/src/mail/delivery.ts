@@ -248,9 +248,10 @@ export function registerMail(registry: HandlerRegistry, runtime: MailRuntime): v
             await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'consultation access revoked');
             return false;
           }
-          // A screening notice belongs to the event-time person and binding, never to a later address holder.
-          // Retain the binding's FOR SHARE lock through the transport effect and receipt commit.
-          if (delivery.template === 'screening_notice' && !await screeningNoticeAllowed(trx, delivery.id)) {
+          // A screening notice belongs to the event-time person and binding, never to a later address holder; a staff
+          // notice also to a current independent officer. Retain the binding's FOR SHARE lock through the transport
+          // effect and receipt commit.
+          if ((delivery.template === 'screening_notice' || delivery.template === 'screening_staff_notice') && !await screeningNoticeAllowed(trx, delivery.id)) {
             await mailDeliveries.markFinal(trx, delivery.id, 'suppressed', 'screening notice authority unavailable');
             return false;
           }

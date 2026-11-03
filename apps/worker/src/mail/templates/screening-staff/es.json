@@ -1,0 +1,7 @@
+{
+  "$comment": "SANC-006: machine draft; nativeReview=false. Names nobody: no subject, list, entry or count.",
+  "subject": "Hay trabajo de cumplimiento pendiente",
+  "heading": "Hay trabajo de cumplimiento pendiente",
+  "intro": "Hay nuevo trabajo de cumplimiento a la espera de un revisor. Abra la consola para verlo.",
+  "action": "Abrir la consola"
+}

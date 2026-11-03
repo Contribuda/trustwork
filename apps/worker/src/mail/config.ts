@@ -14,7 +14,7 @@ import { DEFAULT_SMTP_TIMEOUTS, isLoopbackHost, type SmtpConfig } from './smtp.j
  * | `MAIL_FROM_ADDRESS` | `no-reply@<origin host>` | Envelope and header sender; required for `smtp` |
  * | `MAIL_REPLY_TO` | none | Optional Reply-To address |
  * | `MAIL_PUBLIC_ORIGIN` | `PUBLIC_ORIGIN`, else `http://localhost:3000` | Origin of links in messages; required for `smtp` |
- * | `MAIL_LINK_<KIND>` | see DEFAULT_LINK_PATHS | Path templates (`VERIFY_EMAIL`, `EMAIL_CHANGE`, `RECOVERY`, `INVITATION`, `SIGN_IN`, `RECOVER`) |
+ * | `MAIL_LINK_<KIND>` | see DEFAULT_LINK_PATHS | Path templates (`VERIFY_EMAIL`, `EMAIL_CHANGE`, `RECOVERY`, `INVITATION`, `SIGN_IN`, `RECOVER`, `COMPLIANCE`, `CONSOLE`) |
  * | `MAIL_DEFAULT_LOCALE` | `en` | Hub default language (no `lang` parameter in its links) |
  * | `MAIL_LOCALES` | every mail language | Comma-separated languages the hub serves |
  * | `MAIL_BRAND_NAME` | dictionary `brand.name` | Hub brand in every language |
@@ -53,7 +53,7 @@ function integer(env: MailEnv, key: string, fallback: number, min: number, max: 
   return value;
 }
 
-const LINK_ENV: Record<LinkKind, string> = { compliance: 'MAIL_LINK_COMPLIANCE', verifyEmail: 'MAIL_LINK_VERIFY_EMAIL', emailChange: 'MAIL_LINK_EMAIL_CHANGE', recovery: 'MAIL_LINK_RECOVERY', invitation: 'MAIL_LINK_INVITATION', signIn: 'MAIL_LINK_SIGN_IN', recover: 'MAIL_LINK_RECOVER' };
+const LINK_ENV: Record<LinkKind, string> = { compliance: 'MAIL_LINK_COMPLIANCE', console: 'MAIL_LINK_CONSOLE', verifyEmail: 'MAIL_LINK_VERIFY_EMAIL', emailChange: 'MAIL_LINK_EMAIL_CHANGE', recovery: 'MAIL_LINK_RECOVERY', invitation: 'MAIL_LINK_INVITATION', signIn: 'MAIL_LINK_SIGN_IN', recover: 'MAIL_LINK_RECOVER' };
 const SIMPLE_ADDRESS = /^[^\s@<>()",;:\\[\]]+@[^\s@<>()",;:\\[\]]+\.[^\s@<>()",;:\\[\]]+$/;
 
 export function mailConfigFromEnv(env: MailEnv): MailConfig {
