@@ -225,8 +225,13 @@ export class StaffLifecycleService {
     const attempt = { target: body.scope, permission: 'admin.staff.assign' as const, action: 'staff.role_change', objectType: 'staff_role_assignment', objectId: body.personId };
     return this.admin.staffCommand(e, body, attempt, async (trx, _p, cmd) => {
       await sql`SELECT pg_advisory_xact_lock(hashtext(${`staff_role_change:${body.personId}`}))`.execute(trx);
-      const preview = await this.roleChangePreview(trx, body);
-      if (preview.previewDigest !== body.previewDigest) throw new ApiError('validation.revision_conflict', 'the roles changed since the preview; review the new difference', { reason: 'preview_stale' });
+      const stale = () => new ApiError('validation.revision_conflict', 'the roles changed since the preview; review the new difference', { reason: 'preview_stale' });
+      const preview = await this.roleChangePreview(trx, body).catch((error: unknown) => {
+        // A removal the preview knew that is no longer active: the roles changed since the preview.
+        if (error instanceof ApiError && error.details?.reason === 'unknown_assignment') throw stale();
+        throw error;
+      });
+      if (preview.previewDigest !== body.previewDigest) throw stale();
       const blocking = preview.sod.conflicts.filter((c) => c.blocking);
       if (blocking.length) throw new ApiError('validation.schema', `${blocking[0]!.role} conflicts with ${blocking[0]!.conflictsWith}`, { reason: 'sod_conflict', conflicts: blocking });
       for (const needed of preview.approvals) {
