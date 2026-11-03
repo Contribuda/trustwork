@@ -9,7 +9,7 @@ import { outbox, withMaintenance, type Transaction } from '@trustwork/data';
 import { HandlerRegistry, Worker } from '@trustwork/worker';
 import { createApp } from '../../apps/api/src/app.js';
 import { registerContent, CONTENT_RENDER_KIND } from '../../apps/worker/src/content/index.js';
-import { renderLocalPdf } from '../../apps/worker/src/content/render.js';
+import { renderIssueHtml, renderLocalPdf, RenderSnapshotSchema } from '../../apps/worker/src/content/render.js';
 import { publications, issues, contentModeration, type PublicationRow } from '../../packages/data/src/repositories/content.js';
 import { moderation } from '../../packages/data/src/repositories/admin.js';
 import { provisionWorkerDatabase, tx } from '../worker/helpers/worker-db.js';
@@ -122,6 +122,24 @@ test('CNT-003 durable local PDF, restricted delivery and publication races', { s
       assert.equal(await finish(trx, r.id, snap), false);
     });
     assert.equal(await pdf(issue.number), undefined);
+  });
+  await t.test('the next render of a corrected publication prints its note, in a new issue and in a new edition of the old one', async () => {
+    const note = 'Synthetic note for the next render';
+    const pub = await publish();
+    const old = await issueFor(pub);
+    await act(p.writer, t2 => withProvenanceFixtures(w).correct(t2, null, pub.id, pub.revision, draft({ language: 'ru', body: 'Synthetic body after correction.' }), note, 'correction'));
+    const corrected = (await act(p.writer, t2 => publications.get(t2, pub.id)))!;
+    const printed = async (issueId: string, edition = 1) => {
+      const render = await request(issueId, edition);
+      const snapshot = await tx(pool, trx => prepare(trx, render.id));
+      assert.ok(snapshot, 'the render has a current projection');
+      return renderIssueHtml(RenderSnapshotSchema.parse(snapshot));
+    };
+    assert.ok((await printed((await issueFor(corrected)).id)).includes(note));
+    const draftEdition = await act(p.editorA, t2 => issues.correct(t2, ctxA, old.id, old.revision, 'Synthetic issue correction'));
+    const released = await act(p.chief, t2 => issues.release(t2, ctxC, old.id, draftEdition.revision));
+    assert.equal(released.current_edition, 2);
+    assert.ok((await printed(old.id, 2)).includes(note));
   });
   await t.test('a moderation removal between preparation and completion releases no bytes', async () => {
     const pub = await publish(), i = await issueFor(pub), r = await request(i.id);
