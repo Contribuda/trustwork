@@ -34,7 +34,14 @@
       "threadOpened": "{authorName} started a conversation: {threadSubject}",
       "threadMessage": "{authorName} wrote in “{threadSubject}”",
       "securityNotice": "Security notice for your account",
-      "registerExpiring": "A public register entry about your company ends on {date}"
+      "registerExpiring": "A public register entry about your company ends on {date}",
+      "claimPageOpened": "A claim was made on {company}; a reviewer may decide from {date}",
+      "claimPageHandedOver": "Management of {company} was handed over after a review",
+      "claimInDispute": "Your claim on {company} is in dispute; a reviewer will decide",
+      "claimBackInReview": "Your claim on {company} is back in review",
+      "claimApproved": "Your claim on {company} was approved",
+      "claimRejected": "Your claim on {company} was not approved",
+      "claimRevoked": "Your management of {company} was withdrawn"
     },
     "markAllRead": "Mark all as read",
     "markFailed": "The read mark was not saved. Try again."

@@ -173,6 +173,10 @@ export const NOTIFICATION_TEMPLATES = {
   'account.security_notice': { category: 'account', transactional: true, params: ['event'] },
   // REG-001: a register entry about the reader's company expires soon (fact kind, the register's last valid day, days left).
   'registers.licence_expiring': { category: 'account', transactional: true, params: ['factKind', 'validUntil', 'daysBefore'] },
+  // CLM-001: to the people who run a page: a claim arrived (stage claim_opened, decidable from waitingUntil) or the page was handed over.
+  'claims.page_notice': { category: 'account', transactional: true, params: ['companyName', 'stage', 'waitingUntil'] },
+  // CLM-001: to a claimant or a holder: what happened to their claim or hand-over (one word; never a note, never evidence).
+  'claims.claim_update': { category: 'account', transactional: true, params: ['companyName', 'outcome'] },
 } as const satisfies Record<string, { category: NotificationCategory; transactional: boolean; params: readonly string[] }>;
 export type NotificationTemplateKey = keyof typeof NOTIFICATION_TEMPLATES;
 export const NOTIFICATION_TEMPLATE_KEYS = Object.keys(NOTIFICATION_TEMPLATES) as NotificationTemplateKey[];

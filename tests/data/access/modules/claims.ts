@@ -8,7 +8,7 @@ export default {
   forcedTables: ['claim_dispute', 'claims_settings', 'company_claim', 'company_handover'],
   apiDefiners: [
     'claims_submit', 'claims_withdraw', 'claims_decide', 'claims_propose_dispute', 'claims_confirm_dispute', 'claims_revoke', 'claims_set_settings', 'claims_staff_reader',
-    'claims_cooling',
+    'claims_cooling', 'claims_planned_deliveries', 'claims_active_recipes',
   ],
   workerDefiners: [],
 } satisfies AccessInventory;

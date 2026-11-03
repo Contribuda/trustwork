@@ -10,6 +10,7 @@ import { DirectoryModule } from './modules/directory/directory.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { PipelinesModule } from './modules/pipelines/pipelines.module.js';
 import { VerificationModule } from './modules/verification/verification.module.js';
+import { ClaimsModule } from './modules/verification/claims/claims.module.js';
 import { RegistersModule } from './modules/registers/registers.module.js';
 import { DatasetsModule } from './modules/datasets/datasets.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
@@ -86,6 +87,7 @@ export class AppModule {
         PaymentsModule.forRoot(identity),
         PipelinesModule.forRoot(ctx, identity),
         VerificationModule.forRoot(ctx, identity),
+        ClaimsModule.forRoot(ctx, identity, communications.env), // CLM-001
         RegistersModule.forRoot(ctx, identity),
         DatasetsModule.forRoot(ctx, identity),
         CatalogueModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.commerce) }),

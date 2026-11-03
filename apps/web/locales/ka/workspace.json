@@ -34,7 +34,14 @@
       "threadOpened": "{authorName}-მა დაიწყო მიმოწერა: {threadSubject}",
       "threadMessage": "{authorName}-მა დაწერა „{threadSubject}“-ში",
       "securityNotice": "უსაფრთხოების შეტყობინება თქვენი ანგარიშისთვის",
-      "registerExpiring": "თქვენი კომპანიის შესახებ საჯარო რეესტრის ჩანაწერი {date}-ს იწურება"
+      "registerExpiring": "თქვენი კომპანიის შესახებ საჯარო რეესტრის ჩანაწერი {date}-ს იწურება",
+      "claimPageOpened": "{company}-ზე მოთხოვნა შევიდა; განმხილველს გადაწყვეტილების მიღება {date}-დან შეუძლია",
+      "claimPageHandedOver": "{company}-ს მართვა შემოწმების შემდეგ გადაეცა",
+      "claimInDispute": "თქვენი მოთხოვნა {company}-ზე სადავოა; გადაწყვეტილებას განმხილველი მიიღებს",
+      "claimBackInReview": "თქვენი მოთხოვნა {company}-ზე ისევ განხილვაშია",
+      "claimApproved": "თქვენი მოთხოვნა {company}-ზე დამტკიცდა",
+      "claimRejected": "თქვენი მოთხოვნა {company}-ზე არ დამტკიცდა",
+      "claimRevoked": "{company}-ს მართვა თქვენ ჩამოგერთვათ"
     },
     "markAllRead": "ყველას წაკითხულად მონიშვნა",
     "markFailed": "წაკითხვის ნიშნული ვერ შეინახა. სცადეთ ხელახლა."

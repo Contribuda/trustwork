@@ -34,7 +34,14 @@
       "threadOpened": "{authorName} inició una conversación: {threadSubject}",
       "threadMessage": "{authorName} escribió en «{threadSubject}»",
       "securityNotice": "Aviso de seguridad de su cuenta",
-      "registerExpiring": "Un registro público sobre su empresa vence el {date}"
+      "registerExpiring": "Un registro público sobre su empresa vence el {date}",
+      "claimPageOpened": "Se ha presentado una reclamación sobre {company}; un revisor podrá decidir a partir del {date}",
+      "claimPageHandedOver": "La gestión de {company} se entregó tras una revisión",
+      "claimInDispute": "Su reclamación sobre {company} está en disputa; un revisor decidirá",
+      "claimBackInReview": "Su reclamación sobre {company} vuelve a revisión",
+      "claimApproved": "Su reclamación sobre {company} fue aprobada",
+      "claimRejected": "Su reclamación sobre {company} no fue aprobada",
+      "claimRevoked": "Se retiró su gestión de {company}"
     },
     "markAllRead": "Marcar todo como leído",
     "markFailed": "No se guardó la marca de lectura. Inténtelo de nuevo."

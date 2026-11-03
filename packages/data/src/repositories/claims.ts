@@ -1,14 +1,15 @@
 import { sql, type RawBuilder } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { ClaimDisputeRow, ClaimLevel, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow } from '../schema/claims.js';
+import type { ClaimDisputeRow, ClaimLevel, ClaimState, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow } from '../schema/claims.js';
 import type { CommandContext } from './admin.js';
+import type { PlannedDelivery } from './communications.js';
 import '../schema/claims.js';
 
 /**
  * Company claims and hand-over (CLM-001, migration packages/data/migrations/claims).
  *
- * - **Claimant** under `withPrincipal`: submit a claim (with an optional invitation link address as the domain tie) and
- *   withdraw it; read their own claims and hand-overs.
+ * - **Claimant** under `withPrincipal`: read the recipes a hub offers, submit a claim (with an optional domain tie: an
+ *   address of the claimant's own verified logins) and withdraw it; read their own claims and hand-overs.
  * - **Staff** with a `CommandContext`: decide a claim against its recipe (`admin.claims.decide`), propose and confirm
  *   a dispute outcome (two different reviewers), revoke a hand-over (`admin.claims.revoke`), set the waiting and
  *   cooling periods (`admin.claims.policy.edit`). Each command writes the admin audit row in the same transaction.
@@ -22,7 +23,8 @@ async function one<T>(query: RawBuilder<T>, trx: Transaction, what: string): Pro
   return row;
 }
 
-export type ClaimTie = { kind: 'invitation_link'; email: string } | null;
+export type ClaimTie = { kind: 'invitation_link' | 'own_domain_mailbox'; email: string } | null;
+export interface ClaimRecipe { id: string; level: ClaimLevel; key: string; version: number; steps: unknown; badge_categories: string[]; recheck_months: number }
 
 export const claims = {
   submit(trx: Transaction, hubId: string, companyId: string, level: ClaimLevel, recipeId: string, tie: ClaimTie): Promise<CompanyClaimRow> {
@@ -51,8 +53,19 @@ export const claims = {
       'claims_set_settings');
   },
 
-  list(trx: Transaction, hubId: string): Promise<CompanyClaimRow[]> {
-    return trx.selectFrom('company_claim').selectAll().where('hub_id', '=', hubId).orderBy('created_at').orderBy('id').execute();
+  /** The recipes a hub offers a claimant, per level. */
+  async activeRecipes(trx: Transaction, hubId: string): Promise<ClaimRecipe[]> {
+    return (await sql<ClaimRecipe>`SELECT * FROM trustwork.claims_active_recipes(${hubId}::uuid)`.execute(trx)).rows;
+  },
+  /** E-mail deliveries of claim notices the caller planned in this transaction; the API renders them before COMMIT. */
+  async plannedDeliveries(trx: Transaction): Promise<PlannedDelivery[]> {
+    return (await sql<PlannedDelivery>`SELECT * FROM trustwork.claims_planned_deliveries()`.execute(trx)).rows;
+  },
+
+  list(trx: Transaction, hubId: string, state: ClaimState | null = null): Promise<CompanyClaimRow[]> {
+    let query = trx.selectFrom('company_claim').selectAll().where('hub_id', '=', hubId);
+    if (state) query = query.where('state', '=', state);
+    return query.orderBy('created_at').orderBy('id').execute();
   },
   get(trx: Transaction, claimId: string): Promise<CompanyClaimRow | undefined> {
     return trx.selectFrom('company_claim').selectAll().where('id', '=', claimId).executeTakeFirst();
@@ -63,7 +76,22 @@ export const claims = {
   disputes(trx: Transaction, hubId: string): Promise<ClaimDisputeRow[]> {
     return trx.selectFrom('claim_dispute').selectAll().where('hub_id', '=', hubId).orderBy('created_at').orderBy('id').execute();
   },
+  dispute(trx: Transaction, disputeId: string): Promise<ClaimDisputeRow | undefined> {
+    return trx.selectFrom('claim_dispute').selectAll().where('id', '=', disputeId).executeTakeFirst();
+  },
   handovers(trx: Transaction, companyId: string): Promise<CompanyHandoverRow[]> {
     return trx.selectFrom('company_handover').selectAll().where('company_id', '=', companyId).orderBy('created_at').orderBy('id').execute();
+  },
+  hubHandovers(trx: Transaction, hubId: string): Promise<CompanyHandoverRow[]> {
+    return trx.selectFrom('company_handover').selectAll().where('hub_id', '=', hubId).orderBy('created_at').orderBy('id').execute();
+  },
+  handover(trx: Transaction, handoverId: string): Promise<CompanyHandoverRow | undefined> {
+    return trx.selectFrom('company_handover').selectAll().where('id', '=', handoverId).executeTakeFirst();
+  },
+  ownHandovers(trx: Transaction, personId: string): Promise<CompanyHandoverRow[]> {
+    return trx.selectFrom('company_handover').selectAll().where('person_id', '=', personId).orderBy('created_at').orderBy('id').execute();
+  },
+  settings(trx: Transaction, hubId: string): Promise<ClaimsSettingsRow | undefined> {
+    return trx.selectFrom('claims_settings').selectAll().where('hub_id', '=', hubId).executeTakeFirst();
   },
 };
