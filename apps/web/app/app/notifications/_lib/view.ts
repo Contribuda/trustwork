@@ -1,6 +1,6 @@
 import { contextPath, type Notification } from '@trustwork/contracts/client';
 import type { NotificationView } from '@/app/_lib/data/types';
-import { shortDate, t } from '@/app/_lib/i18n';
+import { shortDate, t, type LocaleKey } from '@/app/_lib/i18n';
 
 /**
  * Maps a notification of `GET /v1/notifications` (COMMS-001) to the view the bell and the notifications page render.
@@ -13,7 +13,7 @@ function registerDate(value: string | undefined): string {
 }
 
 /** A claim notice in the reader's language (CLM-001): the outcome word of the template picks the sentence. */
-const CLAIM_OUTCOMES: Record<string, string> = {
+const CLAIM_OUTCOMES: Record<string, LocaleKey> = {
   in_dispute: 'notifications.template.claimInDispute', back_in_review: 'notifications.template.claimBackInReview', approved: 'notifications.template.claimApproved',
   rejected: 'notifications.template.claimRejected', revoked: 'notifications.template.claimRevoked',
 };
