@@ -4341,7 +4341,7 @@
       "id": "AGT-023",
       "title": "Governed extension registry for agent capabilities",
       "area": "assistant",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "AGT-003",
         "KEYS-001",
