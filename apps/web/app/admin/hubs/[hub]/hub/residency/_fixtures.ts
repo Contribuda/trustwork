@@ -1,4 +1,4 @@
-import { ResidencySchema, type Residency } from '../../../../_data/schemas.js';
+import { ResidencySchema, type Residency } from '../../../../_data/read-models.js';
 import { HUB_SAMARKAND_ID, HUB_US_ID } from '../../../../_fixtures/ids.js';
 import { HUBS } from '../../../../_fixtures/hubs.js';
 

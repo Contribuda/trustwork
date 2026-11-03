@@ -3,7 +3,7 @@ import { blockingGates, LAUNCH_GATES, providerBudgetState, SOFT_LAUNCH_GATES, ty
 import { formatMoney, t, tDynamic } from '@/app/_lib/i18n';
 import { approvalBlocker } from '../../_data/commands';
 import { submitConsoleCommand } from '../../_data/actions';
-import type { QueueId } from '../../_data/schemas';
+import type { QueueId } from '../../_data/read-models';
 import { ConsoleForm } from '../../_components/ConsoleForm';
 import type { HubContext } from '../../_components/context';
 import type { Screen } from '../../_components/screen';
