@@ -1,4 +1,4 @@
-export { billingFees, billingReferrals, feePricingReaders } from '../../../../../../packages/data/src/repositories/billing-fees.js';
+export { billingFees, billingReferrals, billingSalePrices, feePricingReaders } from '../../../../../../packages/data/src/repositories/billing-fees.js';
 export { catalogue } from '../../../../../../packages/data/src/repositories/billing.js';
 export type { CommandContext } from '../../../../../../packages/data/src/repositories/admin.js';
 export * from '../../../../../../packages/contracts/src/billing-fees.js';

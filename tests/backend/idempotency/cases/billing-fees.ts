@@ -34,7 +34,7 @@ export default {
       await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: founder.node, name: { en: 'Synthetic fee crash hub' }, default_locale: 'en', locales: ['en'], time_zone: 'UTC', currency: 'USD', created_by: founder.person_id }).execute();
       const people: string[] = [];
       for (const role of ['data-steward', 'editor-in-chief'] as const) {
-        await staffRoleDefinitions.release(trx, { role, version: 903, scopes: ['hub'], permissions: ['admin.billing.fees.draft','admin.billing.fees.activate','admin.growth.referrals.draft','admin.growth.referrals.activate'],
+        await staffRoleDefinitions.release(trx, { role, version: 903, scopes: ['hub'], permissions: ['admin.billing.fees.draft','admin.billing.fees.activate','admin.growth.referrals.draft','admin.growth.referrals.activate','admin.commerce.price.draft','admin.commerce.price.activate'],
           caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
         people.push((await trx.insertInto('person').values({ display_name: 'Synthetic fee crash '+role }).returning('id').executeTakeFirstOrThrow()).id);
       }
@@ -64,6 +64,12 @@ export default {
       await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,referralApproval.id,'approve',r.digest));
       await exactlyOnce({action:'billing.referral_activate',client:activator,url:`/v1/admin/billing/referrals/${r.id}/activate`,body:{reason:'Synthetic crash test',digest:r.digest,approvalId:referralApproval.id},effects:()=>count('billing.referral_activated')});
       await exactlyOnce({action:'billing.referral_withdraw',client:activator,url:`/v1/admin/billing/referrals/${r.id}/withdraw`,body:{reason:'Synthetic crash test',digest:r.digest},effects:()=>count('billing.referral_withdrawn')});
+      const packTerms = {kind:'credit_pack',code:'synthetic_crash_pack',name:'Synthetic crash pack',currency:'USD',amountMinor:'100',effectiveFrom:new Date(Date.now()+3600000).toISOString(),effectiveTo:null,
+        acceptanceTextVersion:'synthetic-sale-1',creditMinor:'100',validityDays:null,expiryNoticeDays:null,refundPolicyVersion:'synthetic-refund-1'};
+      const pack = (await exactlyOnce({action:'billing.sale_price_draft',client:drafter,url:'/v1/admin/billing/sale-prices',body:{reason:'Synthetic crash test',terms:packTerms},effects:()=>count('billing.sale_price_drafted')})).body as {id:string;digest:string};
+      const packApproval = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'commerce.activate_price_version',scope:{kind:'hub',hubId:setup.hubId},actionDigest:pack.digest}));
+      await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,packApproval.id,'approve',pack.digest));
+      await exactlyOnce({action:'billing.sale_price_activate',client:activator,url:`/v1/admin/billing/sale-prices/${pack.id}/activate`,body:{reason:'Synthetic crash test',digest:pack.digest,approvalId:packApproval.id},effects:()=>count('billing.sale_price_activated')});
       const starts = new Date(Date.now()+2500);
       for (const payer of ['buyer','seller'] as const) {
         const fee = await as(h,setup.drafter,(trx,ctx)=>billingFees.draft(trx,ctx,setup.hubId,syntheticTerms({kind:'task',categoryKey:null,payer,effectiveFrom:starts.toISOString(),effectiveTo:null})));

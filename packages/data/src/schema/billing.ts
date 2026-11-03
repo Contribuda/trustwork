@@ -12,7 +12,7 @@ import { columnsOf, type GeneratedTimestamp, type GeneratedUuid, type TableColum
 export type MinorUnits = ColumnType<string, string | bigint, string | bigint>;
 export type BudgetKindColumn = 'transaction' | 'platform';
 export type VersionStatus = 'draft' | 'active' | 'superseded' | 'cancelled';
-export type OfferKind = 'plan' | 'deliverable' | 'credit_pack' | 'marketplace_fee' | 'verification_fee' | 'agent_module';
+export type OfferKind = 'plan' | 'deliverable' | 'credit_pack' | 'marketplace_fee' | 'verification_fee' | 'agent_module' | 'model' | 'capability';
 export type MeterCode = 'model_tokens' | 'agent_actions' | 'checks' | 'document_pages' | 'deliverables' | 'translation_characters' | 'retrieval_queries' | 'external_calls';
 export type ProviderClass = 'local' | 'in_country' | 'hosted_external';
 export type ReservationStateColumn = 'reserved' | 'settled' | 'released' | 'expired';

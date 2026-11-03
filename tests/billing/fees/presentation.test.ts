@@ -122,3 +122,22 @@ test('public projection refuses referrals of another hub, from an unavailable re
     { ...catalogue(), referrals: [{ ...current, legalReviewRef: 'private' }] },
   ]) assert.throws(() => publicPricingProjection(invalid));
 });
+
+test('public projection refuses a sale price without its unit and a credit pack without its validity', () => {
+  const disclosure = { offerId: randomUUID(), name: 'Synthetic', acceptanceTextVersion: 'synthetic-1', plan: null };
+  const sale = { modelId: 'synthetic-model', capabilityId: null, meter: 'model_tokens' as const, perUnits: '1000' };
+  const creditPack = { creditMinor: '1000', validityDays: 90, expiryNoticeDays: 14, refundPolicyVersion: 'synthetic-refund-1' };
+  const model = { ...price(), kind: 'model' as const, disclosure: { ...disclosure, sale, creditPack: null } };
+  const pack = { ...price(), kind: 'credit_pack' as const, validity: 'P90D', disclosure: { ...disclosure, sale: null, creditPack } };
+  assert.equal(publicPricingProjection({ ...catalogue(), prices: [model, pack] }).prices.length, 2);
+  for (const invalid of [
+    { ...model, disclosure: { ...disclosure, sale: null } },
+    { ...model, disclosure: undefined },
+    { ...pack, disclosure: { ...disclosure, creditPack: null } },
+    { ...pack, validity: null },
+    { ...model, disclosure: { ...model.disclosure, sale: { ...sale, providerCost: '1' } } },
+  ]) assert.throws(() => publicPricingProjection({ ...catalogue(), prices: [invalid] }));
+  const view = pricingView({ ...catalogue(), prices: [model, pack] }, at);
+  assert.equal(view.sections.find(s => s.key === 'models')?.current[0]?.value.id, model.id);
+  assert.equal(view.sections.find(s => s.key === 'credit_packs')?.current[0]?.value.id, pack.id);
+});

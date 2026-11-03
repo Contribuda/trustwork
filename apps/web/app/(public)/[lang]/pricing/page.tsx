@@ -77,14 +77,16 @@ function PriceEntry({ row }: { row: PriceRow }) {
       </> : exactPrice(price!.amountMinor, price!.currency, currentLocale())}</p>
       <p>{t('pricing.catalogue.currency', { currency: terms.currency })}</p>
       {zero ? <p className="fee-pricing-state">{t('pricing.catalogue.zero')}</p> : null}
-      <p>{t(fee ? 'pricing.catalogue.feeUnit' : 'pricing.catalogue.unitUnknown')}</p>
+      {price?.disclosure?.sale ? <p>{t('pricing.catalogue.perUnits', { units: new Intl.NumberFormat(currentLocale()).format(BigInt(price.disclosure.sale.perUnits)), meter: t(`pricing.catalogue.meter.${price.disclosure.sale.meter}`) })}</p>
+        : price?.disclosure?.creditPack ? <p>{t('pricing.catalogue.creditValue', { amount: exactPrice(price.disclosure.creditPack.creditMinor, price.currency, currentLocale()) })}</p>
+        : <p>{t(fee ? 'pricing.catalogue.feeUnit' : 'pricing.catalogue.unitUnknown')}</p>}
     </td>
     <td role="cell">
       <span className="fee-pricing-mobile-label">{t('pricing.catalogue.conditions')}</span>
       <p>{t('pricing.version', { version: formatNumber(row.value.version) })}</p>
       <Validity from={terms.effectiveFrom} to={terms.effectiveTo} />
       {price?.planVersion ? <><p>{t('pricing.planVersion', { version: formatNumber(price.planVersion.version) })}</p>{price.disclosure?.plan ? <PlanDetails plan={price.disclosure.plan} /> : <p>{t('pricing.catalogue.capacityUnknown')}</p>}</> : null}
-      {price?.validity ? <p>{t('pricing.packValidity', { validity: price.validity })}</p> : null}
+      {price?.disclosure?.creditPack ? <CreditPackDetails pack={price.disclosure.creditPack} /> : null}
       <details className="fee-pricing-reference">
         <summary>{t('pricing.details')}</summary>
         <p>{t('pricing.reference', { reference: row.value.id })}</p>
@@ -92,11 +94,20 @@ function PriceEntry({ row }: { row: PriceRow }) {
           {fee.terms.categoryKey ? <p>{t('pricing.catalogue.scope', { scope: fee.terms.categoryKey })}</p> : null}</> : <>
           <p>{t('pricing.catalogue.scope', { scope: price!.code })}</p>
           {price?.disclosure ? <><p>{t('pricing.reference', { reference: price.disclosure.offerId })}</p><p>{t('pricing.catalogue.acceptance', { version: price.disclosure.acceptanceTextVersion })}</p></> : null}
+          {price?.disclosure?.digest ? <p>{t('pricing.digest', { digest: price.disclosure.digest })}</p> : null}
+          {price?.disclosure?.sale ? <p>{t('pricing.catalogue.scope', { scope: price.disclosure.sale.modelId ?? price.disclosure.sale.capabilityId ?? '' })}</p> : null}
           {price?.planVersion ? <p>{t('pricing.reference', { reference: price.planVersion.id })}</p> : null}
         </>}
       </details>
     </td>
   </tr>;
+}
+function CreditPackDetails({ pack }: { pack: NonNullable<NonNullable<PublicPricing['prices'][number]['disclosure']>['creditPack']> }) {
+  return <div className="fee-pricing-plan">
+    <p>{pack.validityDays === null ? t('pricing.catalogue.creditNoExpiry') : t('pricing.catalogue.creditValidDays', { count: formatNumber(pack.validityDays) })}</p>
+    {pack.expiryNoticeDays === null ? null : <p>{t('pricing.catalogue.creditExpiryNotice', { count: formatNumber(pack.expiryNoticeDays) })}</p>}
+    <p>{t('pricing.catalogue.creditRefund', { version: pack.refundPolicyVersion })}</p>
+  </div>;
 }
 function PlanDetails({ plan }: { plan: NonNullable<NonNullable<PublicPricing['prices'][number]['disclosure']>['plan']> }) {
   return <div className="fee-pricing-plan">

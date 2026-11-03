@@ -26,7 +26,14 @@ export interface ReferralTermsVersionTable {
   status: 'draft' | 'active' | 'withdrawn'; drafted_by: string; activated_by: string | null; activated_at: Date | null; approval_id: string | null;
   withdrawn_by: string | null; withdrawn_at: Date | null; revision: number; created_at: GeneratedTimestamp; updated_at: GeneratedTimestamp;
 }
+export interface PriceSaleTermsTable {
+  price_version_id: string; sale_kind: 'model' | 'capability' | 'credit_pack'; model_id: string | null; capability_id: string | null; meter: string | null; per_units: string | null;
+  credit_minor: string | null; validity_days: number | null; expiry_notice_days: number | null; refund_policy_version: string | null; created_at: GeneratedTimestamp;
+}
+export interface PriceSaleActivationTable { price_version_id: string; approval_id: string; activated_by: string; created_at: GeneratedTimestamp }
 export interface BillingFeesDatabase {
+  price_sale_terms: PriceSaleTermsTable;
+  price_sale_activation: PriceSaleActivationTable;
   referral_terms_version: ReferralTermsVersionTable;
   billing_fee_legacy_source: LegacyFeeSourceTable;
   billing_task_origin: TaskOriginTable;
@@ -43,6 +50,8 @@ declare module './index.js' {
 export type FeeScopeRow = Selectable<FeeScopeTable>;
 const columns = columnsOf<BillingFeesDatabase>();
 export const TABLE_COLUMNS: TableColumns<BillingFeesDatabase> = {
+  price_sale_terms: columns('price_sale_terms', ['price_version_id', 'sale_kind', 'model_id', 'capability_id', 'meter', 'per_units', 'credit_minor', 'validity_days', 'expiry_notice_days', 'refund_policy_version', 'created_at']),
+  price_sale_activation: columns('price_sale_activation', ['price_version_id', 'approval_id', 'activated_by', 'created_at']),
   referral_terms_version: columns('referral_terms_version', ['id', 'hub_id', 'programme_key', 'version', 'eligible_parties', 'reward_kind', 'currency', 'referrer_reward_minor', 'referee_reward_minor',
     'max_rewards_per_referrer', 'effective_from', 'effective_to', 'acceptance_text_version', 'public_terms', 'legal_review_ref', 'status', 'drafted_by', 'activated_by', 'activated_at', 'approval_id',
     'withdrawn_by', 'withdrawn_at', 'revision', 'created_at', 'updated_at']),
