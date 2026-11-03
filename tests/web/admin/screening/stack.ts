@@ -7,6 +7,8 @@ import { ingestList } from '../../../../apps/worker/src/screening-lists/ingest.j
 import { fakeListSource, fileListSource, liveListSource } from '../../../../apps/worker/src/screening-lists/sources.js';
 import { renderOfacSlsXml } from '../../../../packages/compliance/src/lists/index.js';
 import { tx } from '../../../worker/helpers/worker-db.js';
+import { createHash } from 'node:crypto';
+import { HUBS } from '../../../../apps/web/app/admin/_fixtures/hubs.js';
 
 const webPort = Number(process.env.SANC006_WEB_PORT ?? 3580);
 const apiPort = Number(process.env.SANC006_API_PORT ?? 3581);
@@ -15,6 +17,13 @@ const w = await screeningWorld('sanc006_browser', `http://127.0.0.1:${webPort}`)
 await installSyntheticListSources(w.h.db.admin);
 await withMaintenance(w.h.db.admin, (trx) => trx.updateTable('person').set({display_name:'Orla Testworthy'}).where('id','=',w.seed.people.pure).execute());
 await screen(w.worker,{kind:'person',id:w.seed.people.pure});
+// The console shell shows a hub once it has active modes. `modes` is not a sensitive domain: one person activates it.
+await withMaintenance(w.h.db.admin, async (trx) => {
+  const payload = JSON.stringify({ ...HUBS[0]!.modes, dataMode: 'live' });
+  const version = await trx.insertInto('hub_config_version').values({ hub_id: w.hubId, domain: 'modes', version: 1, payload, payload_digest: createHash('sha256').update(payload).digest('hex'), reason: 'Synthetic modes', drafted_by: w.seed.people.anna }).returning('id').executeTakeFirstOrThrow();
+  await trx.updateTable('hub_config_version').set({ status: 'active', activated_by: w.seed.people.anna }).where('id', '=', version.id).execute();
+  await trx.insertInto('hub_config_current').values({ hub_id: w.hubId, domain: 'modes', version_id: version.id, version: 1 }).execute();
+});
 let closing = false;
 const control = createServer(async (req, res) => {
   // A fixed local fixture operation only; no caller-selected source, URL, path or list.

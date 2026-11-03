@@ -153,11 +153,11 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     await expect(page.getByRole('button',{name:c.routing.submit,exact:true})).toBeDisabled();
     await reviewer.goto(appealPath);
     const route = reviewer.getByTestId('appeal-routing');
-    await route.getByLabel(c.routing.reviewer,{exact:true}).selectOption({label:c.routing.leaveUnassigned});
+    await route.getByRole('combobox',{name:c.routing.reviewer,exact:true}).selectOption({label:c.routing.leaveUnassigned});
     await route.getByLabel(c.reason,{exact:true}).fill('Synthetic routing back to the open pool');
     await route.getByRole('button',{name:c.routing.submit,exact:true}).click();
     await expect(reviewer.getByTestId('appeal-routing').getByText(c.routing.states.unassigned,{exact:true})).toBeVisible();
-    await reviewer.getByTestId('appeal-routing').getByLabel(c.routing.reviewer,{exact:true}).selectOption({label:c.routing.assignToMe});
+    await reviewer.getByTestId('appeal-routing').getByRole('combobox',{name:c.routing.reviewer,exact:true}).selectOption({label:c.routing.assignToMe});
     await reviewer.getByTestId('appeal-routing').getByLabel(c.reason,{exact:true}).fill('Synthetic routing to an independent officer');
     await reviewer.getByTestId('appeal-routing').getByRole('button',{name:c.routing.submit,exact:true}).click();
     await expect(reviewer.getByTestId('appeal-routing').getByText(c.routing.states.assigned,{exact:true})).toBeVisible();
