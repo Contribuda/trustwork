@@ -40,7 +40,7 @@ const iso = (v: Date | string | null): string | null => (v === null ? null : new
 
 export function killSwitchView(row: KillSwitchRow) {
   return {
-    id: row.id, scopeKind: row.scope_kind, hubId: row.hub_id, nodeId: row.node_id, moduleKey: row.module_key, capabilityId: row.capability_id, action: row.action, state: row.state,
+    id: row.id, scopeKind: row.scope_kind, hubId: row.hub_id, nodeId: row.node_id, moduleKey: row.module_key, capabilityId: row.capability_id, extensionId: row.extension_id, action: row.action, state: row.state,
     engagedAt: iso(row.engaged_at), reason: row.reason, releasedAt: iso(row.released_at), revision: row.revision,
   };
 }
@@ -81,11 +81,11 @@ export class AgentPolicyService {
   registryView(state: RequestState, hubId: string) {
     return this.run(state, async (trx) => {
       await this.requireReader(trx, hubId);
-      return this.registryOf();
+      return this.registryOf(trx, hubId);
     });
   }
-  private async registryOf() {
-    const registry = await this.authority.registry();
+  private async registryOf(trx: Transaction, hubId: string) {
+    const registry = await this.authority.forHub(hubId).registry(trx);
     return {
       modules: registry.manifests.map((m) => ({
         key: m.key, version: m.version, family: m.family, status: m.status, actions: m.actions, meters: m.meters, suits: m.suits, freeFloor: m.freeFloor,
@@ -122,13 +122,13 @@ export class AgentPolicyService {
   current(state: RequestState, hubId: string) {
     return this.run(state, async (trx) => {
       await this.requireReader(trx, hubId);
-      const registry = await this.authority.registry();
+      const registry = await this.authority.forHub(hubId).registry(trx);
       const row = await agentPolicies.current(trx, hubId);
       const versions = await agentPolicies.versions(trx, hubId);
       const config = new Map((await hubConfig.list(trx, hubId, 'agents')).map((v) => [v.id, v]));
       return {
         current: row ? { versionId: row.config_version_id, activatedAt: iso(row.activated_at), document: row.document } : null,
-        engineDefault: row ? null : (await this.authority.policy(trx, registry)).document,
+        engineDefault: row ? null : (await this.authority.forHub(hubId).policy(trx, registry)).document,
         versions: versions.map((v) => this.versionView(v, config.get(v.config_version_id) ?? null)),
       };
     });
@@ -161,7 +161,7 @@ export class AgentPolicyService {
   preview(state: RequestState, hubId: string, draft: AgentPolicyDraft) {
     return this.run(state, async (trx) => {
       await this.requireReader(trx, hubId);
-      const registry = await this.authority.registry();
+      const registry = await this.authority.forHub(hubId).registry(trx);
       this.validate(hubId, draft, registry);
       return { preview: await this.computePreview(trx, hubId, draft, registry) };
     });
@@ -173,10 +173,10 @@ export class AgentPolicyService {
    * AGT-003's validation in the same transaction (recomputing the counts).
    */
   async draft(e: Elevated, hubId: string, body: DraftAgentPolicyCommand) {
-    const registry = await this.authority.registry();
-    this.validate(hubId, body.document, registry);
     const cmd = this.commandContext(e, body);
     return this.run(e.state, async (trx) => {
+      const registry = await this.authority.forHub(hubId).registry(trx);
+      this.validate(hubId, body.document, registry);
       const preview = await this.computePreview(trx, hubId, body.document, registry);
       const document: AgentPolicyDocument = AgentPolicyDocumentSchema.parse({ ...body.document, preview });
       const v = await hubConfig.draft(trx, cmd, hubId, 'agents', document as unknown as Record<string, unknown>);

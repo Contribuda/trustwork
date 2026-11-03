@@ -103,7 +103,7 @@ export class AgentJobsService {
     return this.run(state, async (trx, p) => {
       const actor = this.actor(p, actingFor);
       const authority = this.authority.forHub((await servingHub(trx, this.ctx.config.publicOrigin)).hubId);
-      const registry = await authority.registry();
+      const registry = await authority.registry(trx);
       const { document } = await authority.policy(trx, registry);
       const out = [];
       for (const t of document.jobTemplates) {
@@ -117,7 +117,7 @@ export class AgentJobsService {
 
   /** Why this person cannot turn the template on: the module, or a verb with no available capability. */
   private async templateRefusal(trx: Transaction, actor: AgentActor, t: JobTemplate, authority = this.authority) {
-    const registry = await authority.registry();
+    const registry = await authority.registry(trx);
     const { document } = await authority.policy(trx, registry);
     const principal = await authority.principalOf(trx, actor);
     const module = moduleRefusal(document, registry, t.moduleKey, principal);
@@ -154,7 +154,7 @@ export class AgentJobsService {
       if (!operationId || !state.session) throw new ApiError('access.forbidden', 'a committed first-party operation is required', { reason: 'operation_identity_missing' });
       const actor = this.actor(p, body.actingFor);
       const now = this.ctx.clock.now();
-      const registry = await authority.registry();
+      const registry = await authority.registry(trx);
       const { document } = await authority.policy(trx, registry);
       const template = document.jobTemplates.find((t) => t.moduleKey === body.moduleKey && t.templateKey === body.templateKey);
       if (!template) throw new ApiError('access.not_found', 'the hub offers no such job', { reason: 'template_not_offered' });

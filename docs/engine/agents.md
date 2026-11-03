@@ -166,7 +166,9 @@ Contract additions: a principal kind `company_representative` acting for the com
 - Who is liable for an agent's commitment in each country, and what makes an electronically formed agreement binding (O12). The engine makes both configurable per jurisdiction (HUB-005, [above](#jurisdiction-settings-disclosure-and-liability-per-hub-proposed)); the values need counsel.
 - How agent disclosure must be worded under each country's consumer and advertising law (the same settings; wording by counsel).
 
-## Extensions: capabilities added by the hub (Proposed)
+## Extensions: capabilities added by the hub (API and worker)
+
+The registry and its runtime are implemented for fake connections ([module](../../apps/api/src/modules/agent-extensions/README.md)); no live adapter ships and the console is wired by HUBC-009.
 
 Owner decision 2026-10-31 (ADR 010 decision 22; [ADR 012](../adr/012-integrator-decisions-2026-10-31.md) decision 24; AGT-023). Modules ship with the engine. A hub administrator can **add** functions, tools, integrations and other capabilities through a **governed extension registry**. Each extension declares its actions (each mapped to a mandate kind), inputs, data classes, side effects, external endpoints, costs and required mandate kinds; ships with a safety test suite that passes on its fake adapter (EVAL-001 harness); runs only through an adapter with a fake; and is activated by a second person as a hub configuration version (`draft → tested → active → suspended → retired`). Extensions **can add actions but never bypass** mandates, budgets, approvals, kill switches, privacy rules, the restricted-places list or the rule that untrusted text never issues commands, and an extension never becomes a separate agent: participants see it as one more ability of their one agent. This supersedes the earlier catalogue rule that hubs cannot create new actions. Console design: [extensions](hub-console/user-agents-admin.md#extensions-adding-capabilities-to-agents).
 

@@ -42,6 +42,7 @@ import { ExecutionModule } from './modules/execution/execution.module.js';
 import { TrustModule } from './modules/trust/trust.module.js';
 import { ReputationModule } from './modules/reputation/reputation.module.js';
 import { AgentExtensionsModule } from './modules/agent-extensions/agent-extensions.module.js';
+import { DatabaseExtensions } from './modules/agent-extensions/catalog.js';
 import { AgentModulesModule, agentModulesAuthority } from './modules/agent-modules/agent-modules.module.js';
 import { agentProtectionLimits, agentRuntimeGate } from './modules/agent-modules/authority.js';
 import { AssistantModule, assistantMandateStore } from './modules/assistant/assistant.module.js';
@@ -79,7 +80,7 @@ export class AppModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     // AGT-003: one shared authority check for the interface, the agent runtime and (when it lands) MCP.
-    const capabilities = agentModulesAuthority();
+    const capabilities = agentModulesAuthority({ extensions: new DatabaseExtensions() });
     return {
       module: AppModule,
       controllers: [HealthController],

@@ -129,6 +129,39 @@
           "external_agent_api": "Asistentes conectados"
         }
       }
+    },
+    "extensions": {
+      "capabilityLabel": "Extensión del hub",
+      "reasons": {
+        "manifest_invalid": "El manifiesto está incompleto o es incoherente.",
+        "guard_rail": "El manifiesto tiene una clave no permitida. Ninguna extensión puede desactivar una salvaguarda.",
+        "action_without_mandate_kind": "Cada acción debe indicar un tipo de mandato.",
+        "action_kind_refused": "Una acción de extensión es un borrador o un compromiso; leer y gobernar no lo son.",
+        "confirmation_below_built_in": "La confirmación es más débil que la de la acción integrada del mismo tipo de mandato.",
+        "capability_invalid": "Una acción incumple una regla válida para todas las capacidades del agente.",
+        "restricted_endpoint": "Un punto de acceso está en un lugar restringido.",
+        "endpoint_undeclared": "Una acción usa un punto de acceso que el manifiesto no declara.",
+        "key_reserved": "Esta clave pertenece a un módulo integrado.",
+        "charge_without_budget": "Una acción de pago necesita un tipo de mandato que use un presupuesto.",
+        "invalid_transition": "Esta versión no puede pasar a ese estado.",
+        "revision_conflict": "La versión ha cambiado. Vuelve a cargarla e inténtalo de nuevo.",
+        "suite_required": "La activación necesita una batería de seguridad superada con el adaptador simulado.",
+        "suite_stale": "La batería de seguridad se superó en otra versión del motor. Ejecútala de nuevo.",
+        "suite_pending": "Ya hay una batería de seguridad de esta versión en espera.",
+        "version_not_ready": "Solo se puede activar una versión probada.",
+        "route_missing": "La extensión no tiene una ruta de modelo activa propia.",
+        "egress_denied": "La ruta enviaría una clase de datos que las reglas de salida no permiten.",
+        "price_version_unavailable": "Una acción de pago aún no se puede activar: facturación no puede confirmar su versión de precio.",
+        "drafter_cannot_approve": "Quien redactó el manifiesto no puede ser la segunda persona.",
+        "one_version_per_extension": "Una extensión tiene una sola versión activa a la vez.",
+        "extension_inactive": "Esta extensión no está disponible ahora en este hub.",
+        "extension_killed": "El hub ha pausado esta extensión.",
+        "version_changed": "La extensión cambió después de que aprobaras esta acción. No se envió nada.",
+        "input_invalid": "La llamada no coincide con las entradas que declara esta acción.",
+        "amount_below_cost": "El importe no cubre el coste de esta acción.",
+        "output_refused": "La respuesta de la extensión no cumplía su contrato y se descartó.",
+        "adapter_unavailable": "El adaptador de esta extensión no está instalado para esta conexión."
+      }
     }
   }
 }

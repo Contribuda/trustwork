@@ -216,11 +216,15 @@ export type AgentPolicyDocument = AgentPolicyDraft & { preview: PolicyPreview };
 export interface ModuleRegistry {
   manifests: readonly AgentModuleManifest[];
   /** Capabilities of activated extension versions (AGT-023), keyed by extension version id. */
-  extensions: readonly { extensionVersionId: string; moduleKey: string; capabilities: readonly AgentCapability[] }[];
+  extensions: readonly { extensionVersionId: string; moduleKey: string; capabilities: readonly AgentCapability[]; manifest?: AgentModuleManifest }[];
 }
 
+/** Engine manifests plus the module entries of activated extensions. `manifests` alone stays what the engine default offers. */
+function enablableManifests(registry: ModuleRegistry): AgentModuleManifest[] {
+  return [...registry.manifests, ...registry.extensions.flatMap((e) => (e.manifest ? [e.manifest] : []))];
+}
 export function manifestOf(registry: ModuleRegistry, moduleKey: string, version?: string): AgentModuleManifest | undefined {
-  return registry.manifests.find((m) => m.key === moduleKey && (version === undefined || m.version === version));
+  return enablableManifests(registry).find((m) => m.key === moduleKey && (version === undefined || m.version === version));
 }
 
 /** Every capability a module offers in a hub: manifest capabilities plus those of activated extension versions. */
@@ -239,7 +243,7 @@ const OUTREACH_ACTIONS: readonly MandateActionV2[] = ['communicate', 'introduce'
  */
 export function policyDocumentViolations(doc: AgentPolicyDraft, registry: ModuleRegistry): string[] {
   const out: string[] = [];
-  out.push(...hubPolicyViolations(doc.policy, registry.manifests));
+  out.push(...hubPolicyViolations(doc.policy, enablableManifests(registry)));
   const enabled = new Map(doc.policy.enabledModules.map((m) => [m.moduleKey, m]));
   for (const id of doc.policy.activeExtensionVersionIds) {
     if (!registry.extensions.some((e) => e.extensionVersionId === id)) out.push(`extension ${id} is not an activated registry version`);

@@ -224,7 +224,7 @@ test('commands are strict and the reason vocabulary has no duplicates', () => {
   assert.ok(DraftExtensionVersionCommandSchema.safeParse({ ...base, manifest }).success);
   assert.ok(!DraftExtensionVersionCommandSchema.safeParse({ ...base, manifest, approved: true }).success);
   assert.equal(new Set(AGENT_EXTENSION_REASONS).size, AGENT_EXTENSION_REASONS.length);
-  assert.equal(extensionActionCapability(manifest, research, { extensionId: EXTENSION_ID, version: 1 }).labelKey, 'agentExtensions.capabilityLabel');
+  assert.equal(extensionActionCapability(manifest, research, { extensionId: EXTENSION_ID, version: 1 }).labelKey, 'agentModules.extensions.capabilityLabel');
 });
 
 test('the contract stays out of the client bundle: client.ts re-exports runtime values from hub-core.ts', () => {

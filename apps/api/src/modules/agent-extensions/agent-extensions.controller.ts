@@ -7,13 +7,14 @@ import { Elevation, ElevationGuard } from '../identity/second-factor/elevation.g
 import type { SessionElevationRow } from '../identity/second-factor/deps.js';
 import { AgentExtensionsService } from './agent-extensions.service.js';
 import {
-  ActivateExtensionsCommandSchema, DraftExtensionActivationCommandSchema, DraftExtensionVersionCommandSchema, RequestSafetyRunCommandSchema, RetireExtensionVersionCommandSchema, SuspendExtensionVersionCommandSchema,
+  ActivateExtensionsCommandSchema, DraftExtensionActivationCommandSchema, DraftExtensionVersionCommandSchema, EngageExtensionKillSwitchCommandSchema, RequestSafetyRunCommandSchema, RetireExtensionVersionCommandSchema, SuspendExtensionVersionCommandSchema,
 } from './contracts.js';
 
 const Uuid = z.uuid();
 const HubParams = z.strictObject({ hubId: Uuid });
 const VersionParams = z.strictObject({ hubId: Uuid, versionId: Uuid });
 const ActivationParams = z.strictObject({ hubId: Uuid, configVersionId: Uuid });
+const ExtensionParams = z.strictObject({ hubId: Uuid, extensionId: Uuid });
 type P<S extends z.ZodType> = z.infer<S>;
 
 function elevated(state: RequestState, elevation: SessionElevationRow, request: TrustworkRequest): Elevated {
@@ -35,6 +36,11 @@ export class AdminAgentExtensionsController {
   @Get()
   list(@Params(HubParams) p: P<typeof HubParams>, @ReqState() state: RequestState) {
     return this.extensions.list(state, p.hubId);
+  }
+
+  @Get('calls')
+  calls(@Params(HubParams) p: P<typeof HubParams>, @ReqState() state: RequestState) {
+    return this.extensions.calls(state, p.hubId);
   }
 
   @Get('versions/:versionId')
@@ -60,6 +66,11 @@ export class AdminAgentExtensionsController {
   @Post('versions/:versionId/retire') @HttpCode(200) @Idempotent('agent_extensions.version_retire')
   retire(@Params(VersionParams) p: P<typeof VersionParams>, @Body(RetireExtensionVersionCommandSchema) body: P<typeof RetireExtensionVersionCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.extensions.retire(elevated(state, e, r), p.hubId, p.versionId, body);
+  }
+
+  @Post(':extensionId/kill-switch') @HttpCode(201) @Idempotent('agent_extensions.kill_switch_engage')
+  engageKillSwitch(@Params(ExtensionParams) p: P<typeof ExtensionParams>, @Body(EngageExtensionKillSwitchCommandSchema) body: P<typeof EngageExtensionKillSwitchCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.extensions.engageKillSwitch(elevated(state, e, r), p.hubId, p.extensionId, body);
   }
 
   @Post('activations') @HttpCode(201) @Idempotent('agent_extensions.activation_draft')

@@ -2,7 +2,7 @@ import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type { CommandContext } from './admin.js';
 import type { HubConfigVersionRow } from '../schema/hubs.js';
-import type { AgentExtensionRow, AgentExtensionSafetyRunRow, AgentExtensionTransitionRow, AgentExtensionVersionRow } from '../schema/agent-extensions.js';
+import type { AgentExtensionCallRow, AgentExtensionRow, AgentExtensionSafetyRunRow, AgentExtensionTransitionRow, AgentExtensionVersionRow } from '../schema/agent-extensions.js';
 import '../schema/agent-extensions.js';
 
 /**
@@ -23,7 +23,26 @@ async function one<T>(query: Promise<{ rows: T[] }>, name: string): Promise<T> {
   return rows[0];
 }
 
+/** One action of a version this hub activated and enabled: what the runtime checks a proposed call against. */
+export interface ExtensionActionBinding<A = never> {
+  extensionId: string;
+  versionId: string;
+  version: number;
+  manifestDigest: string;
+  key: string;
+  action: A;
+}
+
 export const agentExtensions = {
+  /** Null unless the version is active and the hub's agent policy lists it. */
+  async action<A>(trx: Transaction, hubId: string, capabilityId: string): Promise<ExtensionActionBinding<A> | null> {
+    const { rows } = await sql<{ e: ExtensionActionBinding<A> | null }>`SELECT trustwork.agent_extensions_action(${hubId}::uuid, ${capabilityId}) AS e`.execute(trx);
+    return rows[0]?.e ?? null;
+  },
+  /** The audit of calls, newest first, by digest; `action_intent` stays out of reach (row-level security) and out of the view. */
+  calls(trx: Transaction, hubId: string, limit: number): Promise<AgentExtensionCallRow[]> {
+    return trx.selectFrom('agent_extension_call').selectAll().where('hub_id', '=', hubId).orderBy('started_at', 'desc').limit(limit).execute();
+  },
   async staffReader(trx: Transaction, hubId: string): Promise<boolean> {
     return (await one(sql<{ ok: boolean }>`SELECT trustwork.agent_extensions_staff_reader(${hubId}::uuid) AS ok`.execute(trx), 'agent_extensions_staff_reader')).ok;
   },
@@ -83,7 +102,23 @@ export interface ExtensionRunTarget {
   builtIn: { mandateAction: string; confirmation: string }[];
 }
 
+export type ExtensionCallStart = { callId: string; refusal: string | null; connectionMode: 'fake' | 'live' | null };
+
 export const agentExtensionWorker = {
+  /** Before `enterEffect`: the gate's lock comes before the authorization epochs, as in every writer of a kill switch. */
+  async lockGate(trx: Transaction): Promise<void> {
+    await sql`SELECT trustwork.agent_extensions_lock_gate()`.execute(trx);
+  },
+  async beginCall(trx: Transaction, attemptId: string, jobId: string, fencingToken: string | number, inputDigest: string): Promise<ExtensionCallStart> {
+    const { rows } = await sql<{ r: ExtensionCallStart }>`SELECT trustwork.agent_extensions_begin_call(${attemptId}::uuid, ${jobId}::uuid, ${fencingToken}::bigint, ${inputDigest}::text) AS r`.execute(trx);
+    return rows[0]!.r;
+  },
+  async finishCall(trx: Transaction, callId: string, outcome: 'succeeded' | 'failed' | 'refused' | 'unknown', outputDigest: string | null, refusal: string | null = null): Promise<void> {
+    await sql`SELECT trustwork.agent_extensions_finish_call(${callId}::uuid, ${outcome}::text, ${outputDigest}::text, ${refusal}::text)`.execute(trx);
+  },
+  async recordReconciled(trx: Transaction, attemptId: string, outcome: 'succeeded' | 'failed', outputDigest: string | null): Promise<void> {
+    await sql`SELECT trustwork.agent_extensions_record_reconciled(${attemptId}::uuid, ${outcome}::text, ${outputDigest}::text)`.execute(trx);
+  },
   async loadRun(trx: Transaction, runId: string, jobId: string, fencingToken: string | number): Promise<ExtensionRunTarget> {
     const { rows } = await sql<{ r: ExtensionRunTarget }>`SELECT trustwork.agent_extensions_load_run(${runId}::uuid, ${jobId}::uuid, ${fencingToken}::bigint) AS r`.execute(trx);
     return rows[0]!.r;

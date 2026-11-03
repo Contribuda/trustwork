@@ -66,7 +66,27 @@ export interface AgentExtensionTransitionTable {
   at: Generated<Date>;
 }
 
+export interface AgentExtensionCallTable {
+  id: Generated<string>;
+  hub_id: string;
+  extension_id: string;
+  version_id: string;
+  capability_id: string;
+  attempt_id: string;
+  input_digest: string;
+  output_digest: string | null;
+  outcome: Generated<'started' | 'succeeded' | 'failed' | 'refused' | 'unknown'>;
+  refusal: string | null;
+  provider_decision_id: string | null;
+  connection_id: string | null;
+  model_id: string | null;
+  connection_mode: string | null;
+  started_at: Generated<Date>;
+  finished_at: Date | null;
+}
+
 export type AgentExtensionRow = Selectable<AgentExtensionTable>;
+export type AgentExtensionCallRow = Selectable<AgentExtensionCallTable>;
 export type AgentExtensionVersionRow = Selectable<AgentExtensionVersionTable>;
 export type AgentExtensionSafetyRunRow = Selectable<AgentExtensionSafetyRunTable>;
 export type AgentExtensionTransitionRow = Selectable<AgentExtensionTransitionTable>;
@@ -77,6 +97,7 @@ export interface AgentExtensionsDatabase {
   agent_extension_version: AgentExtensionVersionTable;
   agent_extension_safety_run: AgentExtensionSafetyRunTable;
   agent_extension_transition: AgentExtensionTransitionTable;
+  agent_extension_call: AgentExtensionCallTable;
 }
 
 declare module './index.js' {
@@ -96,4 +117,8 @@ export const TABLE_COLUMNS: TableColumns<AgentExtensionsDatabase> = {
     'id', 'hub_id', 'version_id', 'manifest_digest', 'trigger', 'requested_by', 'state', 'engine_version', 'report', 'report_digest', 'scenario_count', 'failed_count', 'requested_at', 'completed_at',
   ]),
   agent_extension_transition: columns('agent_extension_transition', ['id', 'hub_id', 'version_id', 'from_status', 'to_status', 'reason', 'actor_person_id', 'at']),
+  agent_extension_call: columns('agent_extension_call', [
+    'id', 'hub_id', 'extension_id', 'version_id', 'capability_id', 'attempt_id', 'input_digest', 'output_digest', 'outcome', 'refusal', 'provider_decision_id', 'connection_id', 'model_id', 'connection_mode',
+    'started_at', 'finished_at',
+  ]),
 };

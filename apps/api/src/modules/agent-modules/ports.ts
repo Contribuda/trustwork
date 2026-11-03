@@ -20,8 +20,10 @@ export const ENGINE_MANIFESTS: readonly AgentModuleManifest[] = [
  * bypass mandates, budgets, kill switches or privacy rules (capabilityViolations applies to it like to a built-in one).
  */
 export interface ExtensionCatalogPort {
-  activatedExtensions(): Promise<ModuleRegistry['extensions']>;
+  /** Extensions belong to one hub: without a scope there is nothing to offer. */
+  activatedExtensions(scope?: ExtensionScope): Promise<ModuleRegistry['extensions']>;
 }
+export interface ExtensionScope { trx: Transaction; hubId: string }
 /** Default until AGT-023: no extension is activated anywhere. */
 export class NoExtensions implements ExtensionCatalogPort {
   async activatedExtensions(): Promise<ModuleRegistry['extensions']> {
@@ -57,8 +59,8 @@ export class FixedEntitlements implements EntitlementPort {
   }
 }
 
-export async function loadRegistry(extensions: ExtensionCatalogPort, manifests: readonly AgentModuleManifest[] = ENGINE_MANIFESTS): Promise<ModuleRegistry> {
-  const items = await extensions.activatedExtensions();
+export async function loadRegistry(extensions: ExtensionCatalogPort, manifests: readonly AgentModuleManifest[] = ENGINE_MANIFESTS, scope?: ExtensionScope): Promise<ModuleRegistry> {
+  const items = await extensions.activatedExtensions(scope);
   for (const e of items) for (const c of e.capabilities) if (c.source.kind !== 'extension') throw new Error(`extension capability ${c.id} carries a module source`);
   return { manifests, extensions: items };
 }

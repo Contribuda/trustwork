@@ -75,7 +75,7 @@ export const agentAuthority = {
 
 export const agentKillSwitches = {
   /** Engages an agent switch at the hub (admin.agents.kill): immediate, one person, audited. */
-  engage(trx: Transaction, ctx: CommandContext, hubId: string, scopeKind: string, target: { moduleKey?: string; capabilityId?: string; action?: string }): Promise<KillSwitchRow> {
+  engage(trx: Transaction, ctx: CommandContext, hubId: string, scopeKind: string, target: { moduleKey?: string; capabilityId?: string; action?: string; extensionId?: string }): Promise<KillSwitchRow> {
     return one(sql<KillSwitchRow>`SELECT * FROM trustwork.admin_engage_kill_switch(${ctxJson(ctx)}::jsonb, ${scopeKind}, NULL::uuid, ${hubId}::uuid, ${JSON.stringify(target)}::jsonb, NULL::uuid)`.execute(trx), 'admin_engage_kill_switch');
   },
   /** Needs a consumed approval of `kill_switch.release` for exactly this release, requested by the releaser. */
@@ -88,7 +88,7 @@ export const agentKillSwitches = {
   /** Agent switches in force for a hub (and the node-wide ones). */
   engaged(trx: Transaction, hubId: string): Promise<KillSwitchRow[]> {
     return trx.selectFrom('kill_switch').selectAll().where('state', '=', 'engaged')
-      .where((eb) => eb.or([eb('scope_kind', '=', 'node'), eb.and([eb('hub_id', '=', hubId), eb('scope_kind', 'in', ['hub_agent_dispatch', 'agent_module', 'agent_capability', 'agent_action', 'external_agent_api', 'outbound_messages'])])]))
+      .where((eb) => eb.or([eb('scope_kind', '=', 'node'), eb.and([eb('hub_id', '=', hubId), eb('scope_kind', 'in', ['hub_agent_dispatch', 'agent_module', 'agent_capability', 'agent_action', 'agent_extension', 'external_agent_api', 'outbound_messages'])])]))
       .orderBy('engaged_at').execute();
   },
 };

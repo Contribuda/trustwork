@@ -19,7 +19,9 @@ import {
   actionIntents, conversationTurns, mandateProposals, mandates, runs, runSteps, serviceBacklog, stops,
   type ActionIntentRow, type ConversationTurnRow, type MandateProposalRow, type MandateRow, type RunRow, type RunStepRow, type ServiceBacklogItemRow,
 } from './deps.js';
-import { actionDigest, assertShareable, decide, isUuid, mandateDigest, mandateOf, PrivateFieldError, type PolicySettings } from './policy.js';
+import { actionDigest, assertShareable, decide, isUuid, mandateDigest, mandateOf, PrivateFieldError, type ActionDescription, type PolicySettings } from './policy.js';
+import { extensionCallRefusal, type ExtensionAction } from '../../../../../packages/contracts/src/agent-extensions.js';
+import { agentExtensions } from '../../../../../packages/data/src/repositories/agent-extensions.js';
 import { UnavailableModel } from './ports.js';
 import type { ModelInput, ModelPort, ModelToolCall, RetrievalPort } from './ports.js';
 import type {
@@ -544,11 +546,20 @@ export class AssistantService {
     const handler = await sql<{ allowed: boolean }>`SELECT trustwork.agent_modules_effect_binding(
       ${provenance.hub_id}::uuid,${call.capabilityId},${call.effect.provider},${call.effect.operation}) AS allowed`.execute(trx);
     if (!handler.rows[0]?.allowed) return deny('handler_unavailable');
+    // AGT-023: declared inputs and cost, and the exact version in the digest the person approves.
+    let effect: ActionDescription['effect'] & { extensionVersion?: { id: string; manifestDigest: string } } = call.effect;
+    if ((bound as { source?: { kind?: string } }).source?.kind === 'extension') {
+      const extension = await agentExtensions.action<ExtensionAction>(trx, provenance.hub_id, call.capabilityId);
+      if (!extension) return deny('capability.unknown');
+      const refused = extensionCallRefusal(extension.action, { amount: call.amount, payload: call.effect.payload });
+      if (refused) return deny(refused);
+      effect = { ...call.effect, extensionVersion: { id: extension.versionId, manifestDigest: extension.manifestDigest } };
+    }
     const recorded = await actionIntents.record(trx, {
       runId, mandateId: row.id, mandateRevision: row.revision, capabilityId: call.capabilityId, moduleKey: outcome.moduleKey, action: call.action, context: outcome.context,
       resolvedFromSelector: outcome.resolvedFromSelector, amount: call.amount,
-      digest: actionDigest({ mandate: { id: row.id, revision: row.revision }, capabilityId: call.capabilityId, action: call.action, context: outcome.context, amount: call.amount, effect: call.effect }),
-      effect: call.effect, decision: outcome.effect, askReasons: outcome.effect === 'ask' ? outcome.reasons : [],
+      digest: actionDigest({ mandate: { id: row.id, revision: row.revision }, capabilityId: call.capabilityId, action: call.action, context: outcome.context, amount: call.amount, effect }),
+      effect, decision: outcome.effect, askReasons: outcome.effect === 'ask' ? outcome.reasons : [],
     });
     const intentId = recorded.intentId!;
     if (recorded.state === 'authorized') {

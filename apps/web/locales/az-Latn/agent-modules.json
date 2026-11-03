@@ -129,6 +129,39 @@
           "external_agent_api": "Qoşulmuş köməkçilər"
         }
       }
+    },
+    "extensions": {
+      "capabilityLabel": "Hab genişləndirməsi",
+      "reasons": {
+        "manifest_invalid": "Manifest natamam və ya ziddiyyətlidir.",
+        "guard_rail": "Manifestdə icazəsiz açar var. Heç bir genişləndirmə qoruyucu qaydanı söndürə bilməz.",
+        "action_without_mandate_kind": "Hər əməliyyat mandat növünü göstərməlidir.",
+        "action_kind_refused": "Genişləndirmə əməliyyatı qaralama və ya öhdəlikdir; oxuma və idarəetmə belə deyil.",
+        "confirmation_below_built_in": "Təsdiq eyni mandat növünün daxili əməliyyatından zəifdir.",
+        "capability_invalid": "Əməliyyat agentin bütün imkanlarına aid qaydanı pozur.",
+        "restricted_endpoint": "Ünvanlardan biri məhdud yerdə yerləşir.",
+        "endpoint_undeclared": "Əməliyyat manifestdə göstərilməyən ünvandan istifadə edir.",
+        "key_reserved": "Bu açar daxili modula aiddir.",
+        "charge_without_budget": "Ödənişli əməliyyata büdcə xərcləyən mandat növü lazımdır.",
+        "invalid_transition": "Bu versiya həmin vəziyyətə keçə bilməz.",
+        "revision_conflict": "Versiya dəyişib. Yeniləyib yenidən cəhd edin.",
+        "suite_required": "Aktivləşdirmə üçün saxta adapterdə keçmiş təhlükəsizlik dəsti lazımdır.",
+        "suite_stale": "Təhlükəsizlik dəsti mühərrikin başqa versiyasında keçib. Onu yenidən işə salın.",
+        "suite_pending": "Bu versiyanın təhlükəsizlik dəsti artıq növbədədir.",
+        "version_not_ready": "Yalnız sınaqdan keçmiş versiya aktivləşdirilə bilər.",
+        "route_missing": "Genişləndirmənin öz aktiv model marşrutu yoxdur.",
+        "egress_denied": "Marşrut çıxış qaydalarının icazə vermədiyi məlumat sinfini göndərərdi.",
+        "price_version_unavailable": "Ödənişli əməliyyatı hələ aktivləşdirmək olmur: hesablaşma onun qiymət versiyasını təsdiqləyə bilmir.",
+        "drafter_cannot_approve": "Manifesti yazan şəxs ikinci şəxs ola bilməz.",
+        "one_version_per_extension": "Genişləndirmənin eyni anda bir aktiv versiyası olur.",
+        "extension_inactive": "Bu genişləndirmə hazırda bu habda əlçatan deyil.",
+        "extension_killed": "Hab bu genişləndirməni dayandırıb.",
+        "version_changed": "Bu əməliyyatı təsdiqlədikdən sonra genişləndirmə dəyişib. Heç nə göndərilməyib.",
+        "input_invalid": "Çağırış bu əməliyyatın bildirdiyi girişlərə uyğun deyil.",
+        "amount_below_cost": "Məbləğ bu əməliyyatın dəyərini ödəmir.",
+        "output_refused": "Genişləndirmənin cavabı müqaviləsinə uyğun gəlmədi və ləğv edildi.",
+        "adapter_unavailable": "Bu genişləndirmənin adapteri bu bağlantı üçün quraşdırılmayıb."
+      }
     }
   }
 }
