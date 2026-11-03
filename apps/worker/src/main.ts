@@ -1,5 +1,6 @@
 import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import type { DataPool } from '@trustwork/data';
+import { extensionEngineTickTask, extensionRuntime, registerExtensionSafetyRuns, type ExtensionRuntime } from './agent-extensions/index.js';
 import { agentOccurrencesTask, registerAgentOccurrences } from './agent-modules/index.js';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { workerConfigFromEnv } from './config.js';
@@ -44,10 +45,12 @@ import { Worker } from './worker.js';
  * search projections and other consumers come later. Events of other types are marked published and counted as
  * `unhandled`; the rows stay in the outbox for consumers added later.
  */
-export interface Domains { payments?: PaymentRuntime; consultations?: ReminderRuntime | null; contentRenderer?: boolean; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
+export interface Domains { extensions?: ExtensionRuntime; payments?: PaymentRuntime; consultations?: ReminderRuntime | null; contentRenderer?: boolean; pool: DataPool; metrics: Metrics; log: Logger; mail: MailConfig; mailTransport: MailTransport; files?: Pick<FilesRuntime, 'store' | 'tombstones' | 'scanner'> | null; assistant?: AssistantRuntime | null; screeningLists?: ScreeningListsRuntime | null; screening?: ScreeningRuntime | null; rescreen?: RescreenRuntime | null }
 export function buildRegistry(domains: Domains): HandlerRegistry {
   const registry = new HandlerRegistry();
   registerAgentOccurrences(registry);
+  // AGT-023: safety suites of extensions on their fake adapters; only this role records a result.
+  if (domains.extensions) registerExtensionSafetyRuns(registry, domains.extensions);
   // AST-001: agent action dispatch and reconciliation; only fake effect providers exist (ASSISTANT_EFFECTS=fake).
   if (domains.assistant) registerAssistant(registry, domains.assistant);
   // CONS-001: existing consultation context reminders; only a recording channel fake is configured.
@@ -97,10 +100,11 @@ async function main(): Promise<void> {
   if (collectContact) {
     registerFetchStep(pipelineSteps, { collector: new Collector({ fetch: (url, init) => fetch(url, init), userAgent: botUserAgent(new URL(collectContact).toString()) }), port: collectionPort(pool) });
   }
-  const registry = buildRegistry({ payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
+  const extensions = extensionRuntime(pool, log);
+  const registry = buildRegistry({ extensions, payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
-    tasks: (deps) => [agentOccurrencesTask(pool), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+    tasks: (deps) => [agentOccurrencesTask(pool), extensionEngineTickTask(extensions), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       pipelineScheduleTask({ pool, log }), pipelineRunTask({ pool, log, steps: pipelineSteps, workerId: config.workerId }), pipelineMaintenanceTask({ pool, log }),
       contentPublishDueTask({ pool }), verificationRecheckTask({ pool, log }), claimsExpiryTask({ pool, log }), registersRefreshTask({ pool, log }), registersExpiryTask({ pool, log }), datasetsSweepTask({ pool, log }),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
