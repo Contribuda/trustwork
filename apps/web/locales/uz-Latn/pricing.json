@@ -186,7 +186,18 @@
       "representativeNo": "Vakil kiritilmagan",
       "modules": "Kiritilgan modul identifikatorlari: {modules}",
       "quota": "{module} / {meter}: {units} birlik; manba davri: {window}",
-      "noQuota": "Ushbu reja versiyasida kiritilgan kvota qayd etilmagan."
+      "noQuota": "Ushbu reja versiyasida kiritilgan kvota qayd etilmagan.",
+      "meteredUnit": "{count} × {unit} narxi",
+      "units": {
+        "thousand_tokens": "ming token",
+        "action": "amal",
+        "deliverable": "tayyor natija",
+        "api_call": "API chaqiruvi"
+      },
+      "direction": {
+        "input": "Kirish tokenlari",
+        "output": "Chiqish tokenlari"
+      }
     },
     "sections": {
       "plans": "Hajm tariflari",

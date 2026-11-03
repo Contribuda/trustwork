@@ -14,6 +14,7 @@ import { RegistersModule } from './modules/registers/registers.module.js';
 import { DatasetsModule } from './modules/datasets/datasets.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
 import { FeesModule } from './modules/billing/fees/fees.module.js';
+import { AgentMeteringModule } from './modules/billing/agent-metering/metering.module.js';
 import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
 import { ProcurementModule } from './modules/procurement/procurement.module.js';
 import { ApprovalRoutesModule } from './modules/approval-routes/approval-routes.module.js';
@@ -113,6 +114,7 @@ export class AppModule {
         AgentsModule.forRoot(ctx, identity, { capabilities, protectionLimits: agentProtectionLimits(capabilities) }),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FeesModule.forRoot(ctx, identity, communications.env),
+        AgentMeteringModule.forRoot(ctx, identity, communications.env), // AGT-004
         HubsModule.forRoot(ctx, identity),
         // HUB-004: the setup wizard backend (told the gate mode, the blob store for the install check and the environment).
         HubsSetupModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode, objectStore: files.store, ...(communications.env ? { env: communications.env } : {}) }),

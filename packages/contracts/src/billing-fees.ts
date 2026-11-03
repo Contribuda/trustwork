@@ -38,6 +38,12 @@ export const PublicPriceSchema = z.strictObject({
       includedQuota: z.array(z.strictObject({ moduleKey: z.string(), meter: z.string(), units: Minor, window: z.string() })),
       connections: z.int().nonnegative(), channels: z.int().nonnegative(), representativeIncluded: z.boolean(),
     }).nullable(),
+    /** Agent usage price (AGT-004): `amountMinor` is the price of `perUnits` units; no cost field exists here. */
+    metered: z.strictObject({
+      key: z.string().min(1), direction: z.enum(['input', 'output']).nullable(), meter: z.string().min(1),
+      unit: z.enum(['thousand_tokens', 'action', 'deliverable', 'api_call']), perUnits: z.int().positive(),
+      salePerUnitMinor: z.string().regex(/^(0|[1-9][0-9]*)(\.[0-9]{1,6})?$/),
+    }).optional(),
   }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;

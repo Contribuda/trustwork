@@ -186,7 +186,18 @@
       "representativeNo": "Nümayəndə daxil deyil",
       "modules": "Daxil edilmiş modul identifikatorları: {modules}",
       "quota": "{module} / {meter}: {units} vahid; mənbə dövrü: {window}",
-      "noQuota": "Bu plan versiyasında daxil edilmiş kvota qeydə alınmayıb."
+      "noQuota": "Bu plan versiyasında daxil edilmiş kvota qeydə alınmayıb.",
+      "meteredUnit": "{count} × {unit} üçün qiymət",
+      "units": {
+        "thousand_tokens": "min token",
+        "action": "əməliyyat",
+        "deliverable": "hazır nəticə",
+        "api_call": "API çağırışı"
+      },
+      "direction": {
+        "input": "Giriş tokenləri",
+        "output": "Çıxış tokenləri"
+      }
     },
     "sections": {
       "plans": "Həcm tarifləri",

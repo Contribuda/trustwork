@@ -186,7 +186,18 @@
       "representativeNo": "Representative not included",
       "modules": "Included module identifiers: {modules}",
       "quota": "{module} / {meter}: {units} units; source window: {window}",
-      "noQuota": "No included quota is recorded in this plan version."
+      "noQuota": "No included quota is recorded in this plan version.",
+      "meteredUnit": "Price for {count} × {unit}",
+      "units": {
+        "thousand_tokens": "thousand tokens",
+        "action": "action",
+        "deliverable": "deliverable",
+        "api_call": "API call"
+      },
+      "direction": {
+        "input": "Input tokens",
+        "output": "Output tokens"
+      }
     },
     "sections": {
       "plans": "Capacity plans",

@@ -29,6 +29,7 @@ export * from './content.js';
 export * from './content-reader.js';
 export * from './billing.js';
 export * from './billing-fees.js';
+export * from './agent-metering.js';
 export * from './assistant.js';
 export * from './agent-catalog.js';
 export * from './admin.js';

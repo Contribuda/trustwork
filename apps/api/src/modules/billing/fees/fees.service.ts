@@ -6,6 +6,7 @@ import type { RequestState } from '../../../common/request.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { hubsRefusal } from '../../hubs/errors.js';
+import { publicMeteredPrices } from '../agent-metering/prices.service.js';
 import { billingFees, feePricingReaders, SubscriptionPlanVersionSchema, PublicPriceSchema, PublicPricingSchema, type ActivateFeeSchema, type CommandContext, type DraftFeeSchema, type PublicPricing } from './deps.js';
 
 /** Governed public prices only. Missing modules are unavailable; they are never quoted as free. */
@@ -92,6 +93,12 @@ export class FeesService {
         prices.push(...projected); sections[section] = 'available';
       } catch { sections[section] = 'error'; }
     }
+    // AGT-004: agent usage prices. Module and meter rates are services, so they appear only with that section.
+    try {
+      const metered = await publicMeteredPrices(this.ctx.pool, hubId, at);
+      prices.push(...metered.filter(row => row.kind !== 'agent_module' || sections.services === 'available'));
+      sections.models = 'available'; sections.capabilities = 'available';
+    } catch { sections.models = 'error'; sections.capabilities = 'error'; }
     // A hub closed during the reads must not leave a published sibling section behind.
     if (!await available()) return empty();
     return PublicPricingSchema.parse({ hubId, fees, prices, unavailable: unavailable(), coverage: { generatedAt: at.toISOString(), sections } });

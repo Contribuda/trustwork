@@ -22,6 +22,11 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'billing.fee_activate': IN_TRANSACTION,
   'billing.fee_draft': IN_TRANSACTION,
   'billing.task_fee_disclose': IN_TRANSACTION,
+  // Agent usage prices (AGT-004): one principal transaction per command.
+  'billing.metered_cost_record': IN_TRANSACTION,
+  'billing.metered_price_activate': IN_TRANSACTION,
+  'billing.metered_price_cancel': IN_TRANSACTION,
+  'billing.metered_price_draft': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,
   'person.set_handle': IN_TRANSACTION,

@@ -42,7 +42,10 @@ function PriceEntry({ row }: { row: PriceRow }) {
       </> : exactPrice(price!.amountMinor, price!.currency, currentLocale())}</p>
       <p>{t('pricing.catalogue.currency', { currency: terms.currency })}</p>
       {zero ? <p className="fee-pricing-state">{t('pricing.catalogue.zero')}</p> : null}
-      <p>{t(fee ? 'pricing.catalogue.feeUnit' : 'pricing.catalogue.unitUnknown')}</p>
+      {price?.disclosure?.metered ? <>
+        <p>{t('pricing.catalogue.meteredUnit', { count: formatNumber(price.disclosure.metered.perUnits), unit: t(`pricing.catalogue.units.${price.disclosure.metered.unit}`) })}</p>
+        {price.disclosure.metered.direction ? <p>{t(`pricing.catalogue.direction.${price.disclosure.metered.direction}`)}</p> : null}
+      </> : <p>{t(fee ? 'pricing.catalogue.feeUnit' : 'pricing.catalogue.unitUnknown')}</p>}
     </td>
     <td role="cell">
       <span className="fee-pricing-mobile-label">{t('pricing.catalogue.conditions')}</span>

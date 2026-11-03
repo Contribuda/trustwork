@@ -186,7 +186,18 @@
       "representativeNo": "Representante no incluido",
       "modules": "Identificadores de módulos incluidos: {modules}",
       "quota": "{module} / {meter}: {units} unidades; período de origen: {window}",
-      "noQuota": "Esta versión del plan no registra cuota incluida."
+      "noQuota": "Esta versión del plan no registra cuota incluida.",
+      "meteredUnit": "Precio por {count} × {unit}",
+      "units": {
+        "thousand_tokens": "mil tokens",
+        "action": "acción",
+        "deliverable": "entregable",
+        "api_call": "llamada a la API"
+      },
+      "direction": {
+        "input": "Tokens de entrada",
+        "output": "Tokens de salida"
+      }
     },
     "sections": {
       "plans": "Planes de capacidad",
