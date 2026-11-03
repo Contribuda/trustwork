@@ -7,8 +7,8 @@ import { buildHttpWorld, command, emailOf, expectRefusal, type AdminWorldHttp } 
 
 const h = await startHarness('staff_offboarding_api');
 
-/** Field names that would describe what a staff member does rather than who they are and what they may do. */
-const ACTIVITY = /(activ(e|ity)At|last|seen|signIn|login|elevat|count|decision|response|productiv|behavio|duration|minutes|hours|score|rank)/i;
+/** Field names that would describe what a staff member does rather than who they are and what they may do ("accountability" is not a count). */
+const ACTIVITY = /(activ(e|ity)At|[lL]ast|[sS]een|[sS]ignIn|[lL]ogin|[eE]levat|^count|Count|[dD]ecision|[rR]esponse|[pP]roductiv|[bB]ehavio|[dD]uration|[mM]inutes|[hH]ours|[sS]core|[rR]ank)/;
 function fieldNames(schema: z.ZodType, out: string[] = []): string[] {
   const def = (schema as unknown as { def: { type: string; shape?: Record<string, z.ZodType>; element?: z.ZodType; innerType?: z.ZodType; options?: z.ZodType[] } }).def;
   if (def.type === 'object' && def.shape) for (const [k, v] of Object.entries(def.shape)) { out.push(k); fieldNames(v, out); }
@@ -95,6 +95,7 @@ test('function accountability and offboarding through the API (ADM-004 part 5)',
   await t.test('offboarding is blocked by an open accountability, offers it to the fallback, and completes in one transaction after the hand-over', async () => {
     // The lead gets the support-lead role back and the support function; then the hub owner offboards the lead.
     assert.equal((await command(c.owner, '/v1/admin/staff/assignments', { personId: p.lead, role: 'support-lead', scope: hub, definitionVersion: 1 })).status, 201);
+    await w.elevateAll(); // the revocation ended the lead's elevation (ADM-001); a fresh one is needed to accept
     const back = await command(c.hubOwner, `/v1/admin/staff/accountability/${supportOwner.id}/offer`, { toPersonId: p.lead });
     assert.equal(back.status, 201, JSON.stringify(back.body));
     const offerId = (back.body as { offer: { id: string } }).offer.id;

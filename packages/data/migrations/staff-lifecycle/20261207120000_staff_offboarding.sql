@@ -103,6 +103,11 @@ BEGIN
               AND coalesce(i.node_id, i.hub_id) IS NOT DISTINCT FROM coalesce(v_target.node, v_target.hub) AND i.status IN ('pending', 'accepted') AND i.expires_at > now()) THEN
     RAISE EXCEPTION 'an open invitation to this role exists' USING ERRCODE = 'unique_violation', HINT = 'admin.invitation_open';
   END IF;
+  -- An expired open invitation no longer blocks a new one; it is closed as withdrawn and the approval it asked for is revoked.
+  UPDATE trustwork.second_person_approval a SET status = 'revoked', revoked_by = v_actor.person_id
+   WHERE a.status IN ('pending', 'approved') AND a.id IN (
+     SELECT i.approval_id FROM trustwork.staff_invitation i WHERE i.email_normalized = v_email AND i.role = p_role AND i.scope_kind = p_scope_kind
+       AND coalesce(i.node_id, i.hub_id) IS NOT DISTINCT FROM coalesce(v_target.node, v_target.hub) AND i.status IN ('pending', 'accepted') AND i.expires_at <= now() AND i.approval_id IS NOT NULL);
   UPDATE trustwork.staff_invitation i SET status = 'withdrawn', withdrawn_by = v_actor.person_id
    WHERE i.email_normalized = v_email AND i.role = p_role AND i.scope_kind = p_scope_kind
      AND coalesce(i.node_id, i.hub_id) IS NOT DISTINCT FROM coalesce(v_target.node, v_target.hub) AND i.status IN ('pending', 'accepted') AND i.expires_at <= now();
