@@ -10,7 +10,7 @@ import { ContentService, type Elevated } from './content.service.js';
 import {
   AddWallCommandSchema, ArchiveQuerySchema, BoardQuerySchema, CommentCommandSchema, CorrectCommandSchema, CorrectIssueCommandSchema, CreateDigestCommandSchema, CreateIssueCommandSchema,
   CreatePublicationCommandSchema, CurateIssueCommandSchema, DigestReleaseCommandSchema, EditorParams, EmptyCommandSchema, FeedQuerySchema, GrantEditorCommandSchema, IdParams,
-  IssueNumberParams, IssueQuerySchema, IssueRevisionCommandSchema, IssueStatusCommandSchema, LinkEditionCommandSchema, PublishCommandSchema, RecordRenderCommandSchema,
+  ImageParams, IssueNumberParams, IssueQuerySchema, IssueRevisionCommandSchema, IssueStatusCommandSchema, LinkEditionCommandSchema, PublishCommandSchema, RecordRenderCommandSchema,
   RequestRenderCommandSchema, RetractCommandSchema, ReviewEditionCommandSchema, RevisionCommandSchema, SaveDraftCommandSchema, SetLinksCommandSchema, VersionParams, WallParams,
 } from './schemas.js';
 
@@ -149,6 +149,14 @@ export class PublicContentController {
   @Get('magazine/issues')
   archive(@Query(ArchiveQuerySchema) query: P<typeof ArchiveQuerySchema>) {
     return this.content.archive(query.year);
+  }
+
+  @Get('publications/:id/images/:imageId')
+  async image(@Params(ImageParams) params: P<typeof ImageParams>, @Res() reply: FastifyReply) {
+    const image = await this.content.image(params.id, params.imageId);
+    return reply.header('Cache-Control', 'private, no-store').header('X-Content-Type-Options', 'nosniff')
+      .header('Content-Security-Policy', "default-src 'none'; sandbox")
+      .type(image.mediaType).send(Buffer.from(image.bytes));
   }
 
   @Header('Cache-Control', 'private, no-store')

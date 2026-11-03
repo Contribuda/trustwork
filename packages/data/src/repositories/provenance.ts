@@ -4,6 +4,7 @@ import type {
   ProvenanceRecordTable,
   ProvenanceReviewTable,
   ProvenanceCreditConsentTable,
+  ProvenanceImageTable,
 } from "../schema/provenance.js";
 import "../schema/provenance.js";
 import {
@@ -14,6 +15,10 @@ import {
   type ProvenanceReview,
   type ProvenanceConsent,
 } from "../../../contracts/src/provenance.js";
+import {
+  ImageProvenanceRequestSchema,
+  type ImageProvenanceRequest,
+} from "../../../contracts/src/provenance-image.js";
 import { publications, type ContentStaffContext } from "./content.js";
 export interface ProvenanceContext {
   sessionId: string;
@@ -84,6 +89,27 @@ export const provenance = {
       .orderBy("revision")
       .execute();
   },
+  requestImage(trx: Transaction, ctx: ProvenanceContext, input: ImageProvenanceRequest) {
+    return command<Selectable<ProvenanceImageTable>>(
+      trx,
+      "provenance_image_request",
+      ctx,
+      ImageProvenanceRequestSchema.parse(input),
+    );
+  },
+  /** The caller's view of a publication's images: the table policy decides what they may see. */
+  async images(trx: Transaction, publicationId: string) {
+    const result = await sql<ImageRow>`SELECT i.id,i.provenance_id,i.digital_source_type,i.alt_text,i.status,i.failure,
+      i.status='carried' AND a.scan_state='clean' AS ready
+      FROM trustwork.provenance_image i LEFT JOIN trustwork.evidence_artifact a ON a.id=i.derived_asset_id
+      WHERE i.publication_id=${publicationId}::uuid ORDER BY i.requested_at,i.id`.execute(trx);
+    return result.rows;
+  },
+  /** A public image's bytes location, only while the reader is shown that exact version. */
+  async imageDelivery(trx: Transaction, hubId: string, publicationId: string, imageId: string) {
+    const result = await sql<ImageDelivery>`SELECT * FROM trustwork.provenance_image_delivery(${hubId}::uuid,${publicationId}::uuid,${imageId}::uuid)`.execute(trx);
+    return result.rows[0];
+  },
   /** Internal seam only; shared CNT schemas and renderers are integrated after CNT-003 merges. */
   async deliveryMetadata(
     trx: Transaction,
@@ -136,5 +162,25 @@ export const provenance = {
       expectedPublicationRevision,
       null,
     );
+  },
+};
+
+interface ImageRow { id: string; provenance_id: string; digital_source_type: string; alt_text: string; status: 'pending' | 'carried' | 'failed'; failure: string | null; ready: boolean | null }
+interface ImageDelivery { storage_key: string; sha256: string; bytes: string; media_type: string }
+export interface ImageTarget {
+  status: string; storage_key: string | null; bytes: string | null; source_sha256: string; media_type: string; digital_source_type: string;
+  provenance_id: string; asset_id: string | null; publication_id: string; version: number; version_digest: string;
+}
+/** Worker entry points (trustwork_worker). */
+export const provenanceWorker = {
+  async imageTarget(trx: Transaction, id: string): Promise<ImageTarget | undefined> {
+    const result = await sql<ImageTarget>`SELECT * FROM trustwork.provenance_image_target(${id}::uuid)`.execute(trx);
+    return result.rows[0];
+  },
+  async imageComplete(trx: Transaction, id: string, carried: { key: string; sha256: string; bytes: number; credentials: unknown }): Promise<void> {
+    await sql`SELECT trustwork.provenance_image_complete(${id}::uuid,${carried.key},${carried.sha256},${carried.bytes}::bigint,${carried.credentials === null ? null : JSON.stringify(carried.credentials)}::jsonb)`.execute(trx);
+  },
+  async imageFail(trx: Transaction, id: string, failure: string): Promise<void> {
+    await sql`SELECT trustwork.provenance_image_fail(${id}::uuid,${failure})`.execute(trx);
   },
 };

@@ -3,10 +3,12 @@ import assert from "node:assert/strict";
 import {
   ProvenanceDeclarationSchema,
   ProvenanceConsentSchema,
-  ImageProvenanceInputSchema,
-  FakeImageAttachmentSchema,
   PROVENANCE_AUTOMATIC_PUBLICATION,
 } from "../../packages/contracts/src/provenance.js";
+import {
+  ImageProvenanceInputSchema,
+  FakeImageAttachmentSchema,
+} from "../../packages/contracts/src/provenance-image.js";
 const id = "11111111-1111-4111-8111-111111111111";
 const binding = {
   publicationId: id,

@@ -107,7 +107,7 @@ export class AppModule {
         PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
         ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), capabilities, ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
-        ContentModule.forRoot(ctx, identity),
+        ContentModule.forRoot(ctx, identity, { imageStore: files.store }),
         AgentModulesModule.forRoot(ctx, identity, { authority: capabilities }), // AGT-003
         AssistantModule.forRoot(ctx, identity, { capabilityGate: agentRuntimeGate(capabilities) }),
         AgentsModule.forRoot(ctx, identity, { capabilities, protectionLimits: agentProtectionLimits(capabilities) }),

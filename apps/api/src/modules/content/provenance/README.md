@@ -6,7 +6,7 @@ Status: integrated with CNT-001 and CNT-003; nothing is deployed. The acceptance
 
 A declaration binds one publication version, its CNT-computed content digest and draft revision. The responsible person is the authenticated first-party caller accepting responsibility, never an arbitrary input identity, editing credit or agent. Functional assisting roles carry `human_declaration`; this is not verified runtime execution evidence. Editorial commands require current elevation and the existing hub permission; person/company commands require publication rights, not merely an edit grant. Delegated API principals are refused.
 
-Declarations, reviews, consents, revocations and test image attachments are append-only, including under maintenance. Commands enter a bounded owning transaction gate before publication, version or bundle locks, check expected revisions, and commit audits and identifier-only outbox events transactionally. Published content digests and original versions are never rewritten. A later disclosure cannot remove a translation's original or rebind an already published translation to another original. A corrected translation requires a new exact declaration and distinct authorized review.
+Declarations, reviews, consents and revocations are append-only; an image record's request never changes and its outcome is written once, including under maintenance. Commands enter a bounded owning transaction gate before publication, version or bundle locks, check expected revisions, and commit audits and identifier-only outbox events transactionally. Published content digests and original versions are never rewritten. A later disclosure cannot remove a translation's original or rebind an already published translation to another original. A corrected translation requires a new exact declaration and distinct authorized review.
 
 ## Command ordering and admission
 
@@ -27,6 +27,8 @@ Deterministic PostgreSQL tests hold real domain rows and inspect `pg_blocking_pi
 | `POST /v1/provenance/consents` | Exact role, credit, selected channels and affirmative notice | Consent ID |
 | `POST /v1/provenance/revocations` | Consent ID and reason | Revocation acknowledgement |
 | `POST /v1/provenance/publications/:id/correction-draft` | Expected publication revision, draft and correction note | Prepared correction |
+| `POST /v1/provenance/images` | Exact record and binding, private file, IPTC type, alt text and attestations | Image ID, status `pending` (202) |
+| `GET /v1/provenance/publications/:id/images` | Publication ID | Label status of the images the caller may see |
 
 The editor saves actual drafts, declares responsibility, requests a separate review, grants or withdraws narrowly scoped credit, and invokes the owning CNT submit/publish/correct commands. All seven content-language choices and locale dictionaries are available. Native translation and manual assistive-technology review remain separate human acceptance.
 
@@ -52,11 +54,22 @@ Consent binds one provenance record, one role (`responsible_editor` or `translat
 
 Public JSON accepts only web/feed projection choices and refuses a PDF channel override, including when valid PDF-only consent exists. PDF snapshots include exact PDF-scoped provenance while retaining presentation version 2 and optional runtime browser import. Current projection changes, including consent withdrawal, invalidate captured server delivery and in-flight completion; stored bytes remain immutable. Previously downloaded external copies cannot be recalled. Generated PDF evidence must be rendered and every page inspected before visual acceptance is claimed.
 
-## Unsigned image boundary
+## Generated and AI-edited images
 
-`C2paIptcAdapter` defaults to unavailable. Its explicitly injected fake preserves original image bytes and creates a deterministic unsigned test sidecar. It binds asset ID, byte digest, publication version/digest, provenance record and the IPTC type `trainedAlgorithmicMedia` or `compositeWithTrainedAlgorithmicMedia`. Database validation requires an existing clean image artifact linked to that publication. Substituted bytes, sidecars, source types and bindings are rejected.
+A person states what an image is; the worker writes it into the file; readers get only that labelled file.
 
-The fake always has `c2paValid=false` and `test_only_unsigned`; its checksums do not prove authorship or authenticity. Actual C2PA encoding/signing and delivery of signed generated-image assets remain incomplete. The minimal proposed dependency is `@contentauth/c2pa-node`, maintained in [contentauth/c2pa-js](https://github.com/contentauth/c2pa-js/tree/main/packages/c2pa-node), behind the existing adapter. Its current source package declares version 0.9.11 and supports signed manifest writing and validation. Pinning a released version requires runtime/native-binary compatibility review and approved root lockfile work; the upstream repository currently requires a newer patched Node 24 than this workspace. Separately configured signing authority is still required. Neither dependency nor credentials are installed here. No provider setup blocks the independent text/translation/consent delivery work. Generated illustrations must not be presented as documentary imagery or identifiable real people.
+1. The source goes up as a private publication file (`POST /v1/files/uploads`, parent `publication`, classification `owner_private`). A holder of a publication right, or staff who publish or review in the hub, may attach. A public source is refused (`image_source_public`), because its unlabelled bytes would already be readable.
+2. `POST /v1/provenance/images` binds the file to the exact current record of a draft with kind `generated` or `ai_assisted`, the IPTC type (`trainedAlgorithmicMedia` or `compositeWithTrainedAlgorithmicMedia`) and alt text. The attestations `depictsRealPerson: false` and `documentary: false` are literals, so no valid request exists for such an image. News and company posts are refused (`image_documentary`): a generated image never stands where a reader expects documentation (editorial office section 8.5).
+3. The worker job `provenance.image_carry` reads the source, checks its digest and writes the property `Iptc4xmpExt:DigitalSourceType` into a copy ([`apps/worker/src/provenance/xmp.ts`](../../../../../worker/src/provenance/xmp.ts)). This is a container edit for JPEG, PNG and WebP with no dependency and no key: the pixels are copied byte for byte. Earlier XMP is replaced, because a person's declaration outranks what a tool wrote. A file holding a C2PA manifest is refused rather than silently broken (`existing_credentials`). An unreachable store is a retry; a file that cannot be labelled is a recorded failure.
+4. The copy becomes a new public file of the same owner and publication and goes through the ordinary scan, so location metadata in a source stops it there.
+5. Release refuses a `generated` record with no image, and any record with an image that is not carried and clean (`provenance_image_required`). A failed image needs a new declaration.
+6. Public projections list the images of the exact record. `GET /v1/publications/:id/images/:imageId` streams the labelled bytes only while that version is shown, with `private, no-store`, so a retraction, hold or deletion applies at once. The reader shows the image with its alt text and the caption from `publicationProvenance.generated`; JSON-LD carries the IPTC URI as `digitalSourceType`.
+
+The record survives erasure of either file: the links clear, the digests stay, and the reader loses the image while keeping the disclosure.
+
+**C2PA is not signed.** `C2paIptcAdapter` defaults to unavailable, and the job then records no credentials. The IPTC property is a label that travels with the file, not a signature: anyone can strip or rewrite it. The fake adapter, injected only in tests, signs nothing: it has `c2paValid=false`, `test_only_unsigned` and a checksum that proves neither authorship nor authenticity. A real adapter needs a dependency (the proposed one is `@contentauth/c2pa-node` from [contentauth/c2pa-js](https://github.com/contentauth/c2pa-js/tree/main/packages/c2pa-node), which requires root lockfile work) and a separately configured signing authority. Neither exists here. The hub design allows this order: file metadata always, content credentials "where the toolchain supports them" (`docs/engine/hub-console/autonomous-editorial.md`).
+
+The printed PDF stays text only: it carries the label, not the image. The first-party editor has no image control, because the web app has no file upload yet; these are API commands.
 
 ## Verification and acceptance
 
@@ -66,6 +79,7 @@ Focused PG/API tests cover absent, withdrawn, stale, cross-person, cross-hub and
 | --- | --- |
 | No AI-assisted content renders without a label (tested) | Holds on every reader; see `tests/web/content/labels.test.ts` and `tests/provenance/integration.test.ts` |
 | A machine translation stays a draft until a named reviewer approves it | Holds: `provenance_version_blocker`, on publish, schedule, the worker, corrections and bundles; the reviewer is a distinct person with current authority |
+| Generated images carry `trainedAlgorithmicMedia` or `compositeWithTrainedAlgorithmicMedia` | Holds in the file itself; an independent decoder reads it in `tests/provenance/xmp.test.ts`, and `tests/provenance/image-pipeline.test.ts` runs the whole path. C2PA manifests stay behind the adapter with its fake |
 | Machine translations under a standing policy carry "Machine translation, not reviewed" | The policy does not exist: E3 is off (ADR 025 decision 24) and `PublicProvenanceSchema` admits only `reviewed: true`. The string `machineUnreviewed` is ready in every maintained language for EDIT-002 |
 
 ## Integration order

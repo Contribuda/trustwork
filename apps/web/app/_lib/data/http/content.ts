@@ -25,6 +25,7 @@ export function publicationView(p: PublicPublication, v: PublicPublication['curr
   const notices = [
     ...(provenance?.availability === 'unavailable' ? [t('publicationProvenance.unavailable')] : []),
     ...(disclosed ? [t(`publicationProvenance.${PROVENANCE_LABEL_KEYS[recorded.kind as keyof typeof PROVENANCE_LABEL_KEYS]}`), t('publicationProvenance.declarationEvidence')] : []),
+    ...(recorded?.kind !== 'generated' && recorded?.images?.length ? [t('publicationProvenance.generated')] : []),
     ...(recorded?.credits.responsible_editor ? [`${t('publicationProvenance.responsibleEditor')}: ${recorded.credits.responsible_editor}`] : disclosed ? [t('publicationProvenance.revoked')] : []),
     ...(recorded?.credits.translation_reviewer ? [`${t('publicationProvenance.reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
     ...(recorded?.roles.length ? [`${t('publicationProvenance.declaredRoles')}: ${recorded.roles.map(role => t(`publicationProvenance.roles.${role}`)).join(' · ')}`] : []),

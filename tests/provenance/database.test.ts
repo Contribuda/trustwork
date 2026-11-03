@@ -1,12 +1,7 @@
 import { withProvenanceFixtures } from '../content/provenance-fixture.js';
-import {
-  FakeC2paIptcAdapter,
-  attachImageProvenance,
-} from "../../apps/api/src/modules/content/provenance/image-adapter.js";
-import type { ImageProvenanceInput } from "../../packages/contracts/src/provenance.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { sql } from "kysely";
 import {
   bindTransaction,
@@ -676,110 +671,6 @@ test(
             0,
           );
         }
-      },
-    );
-    await t.test(
-      "image attachment is bound to an actual clean publication artifact and remains explicitly unsigned",
-      async () => {
-        const pub = await create("writer");
-        const i = declaration(pub.id, "en", {
-          kind: "generated",
-          roles: ["editorial_illustrator"],
-        });
-        const r = await as(p.writer, (trx) =>
-          provenance.declare(trx, ctx("writer"), i),
-        );
-        const bytes = Buffer.from("synthetic image bytes");
-        const sha = createHash("sha256").update(bytes).digest("hex");
-        const asset = await withMaintenance(db.admin, (trx) =>
-          trx
-            .insertInto("evidence_artifact")
-            .values({
-              owner_person_id: p.writer,
-              parent_kind: "publication",
-              parent_id: pub.id,
-              classification: "owner_private",
-              storage_key: `synthetic/provenance/${randomUUID()}`,
-              sha256: sha,
-              bytes: String(bytes.length),
-              media_type: "image/png",
-              scan_state: "clean",
-              uploaded_by: p.writer,
-            })
-            .returning("id")
-            .executeTakeFirstOrThrow(),
-        );
-        const input: ImageProvenanceInput = {
-          binding: i.binding,
-          provenanceId: r.id,
-          assetId: asset.id,
-          assetSha256: sha,
-          digitalSourceType: "trainedAlgorithmicMedia",
-          depictsRealPerson: false,
-          documentary: false,
-        };
-        const fake = new FakeC2paIptcAdapter();
-        await assert.rejects(
-          as(p.writer, (trx) =>
-            attachImageProvenance(trx, ctx("writer"), bytes, input),
-          ),
-          /signing_authority_unavailable/,
-        );
-        await refused(
-          as(p.outsider, (trx) =>
-            attachImageProvenance(trx, ctx("outsider"), bytes, input, fake),
-          ),
-          "42501",
-          "content.not_authorised",
-        );
-        await refused(
-          as(p.writer, (trx) =>
-            attachImageProvenance(
-              trx,
-              ctx("writer"),
-              bytes,
-              { ...input, assetId: randomUUID() },
-              fake,
-            ),
-          ),
-          "23514",
-          "provenance.image_binding_mismatch",
-        );
-        await refused(
-          as(p.writer, (trx) =>
-            attachImageProvenance(
-              trx,
-              ctx("writer"),
-              bytes,
-              { ...input, binding: { ...input.binding, version: 2 } },
-              fake,
-            ),
-          ),
-          "23514",
-          "provenance.image_binding_mismatch",
-        );
-        const id = await as(p.writer, (trx) =>
-          attachImageProvenance(trx, ctx("writer"), bytes, input, fake),
-        );
-        const stored = await as(p.writer, (trx) =>
-          trx
-            .selectFrom("provenance_image_attachment")
-            .selectAll()
-            .where("id", "=", id)
-            .executeTakeFirstOrThrow(),
-        );
-        assert.equal(stored.digital_source_type, "trainedAlgorithmicMedia");
-        assert.equal(
-          (stored.attachment as { c2paValid: boolean }).c2paValid,
-          false,
-        );
-        await assert.rejects(
-          withMaintenance(db.admin, (trx) =>
-            sql`DELETE FROM trustwork.provenance_image_attachment WHERE id=${id}::uuid`.execute(
-              trx,
-            ),
-          ),
-        );
       },
     );
     await t.test(

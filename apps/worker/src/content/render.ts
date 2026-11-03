@@ -88,6 +88,7 @@ export async function renderIssueHtml(snapshot: RenderSnapshot): Promise<string>
     const provenanceLines = [
       ...(prov?.availability === 'unavailable' ? [provLabel('unavailable')] : []),
       ...(recorded && recorded.kind !== 'none' ? [provLabel(PROVENANCE_LABEL_KEYS[recorded.kind]), provLabel('declarationEvidence')] : []),
+      ...(recorded?.kind !== 'generated' && recorded?.images?.length ? [provLabel('generated')] : []),
       ...(recorded?.credits.responsible_editor ? [`${provLabel('responsibleEditor')}: ${recorded.credits.responsible_editor}`] : disclosed ? [provLabel('revoked')] : []),
       ...(recorded?.credits.translation_reviewer ? [`${provLabel('reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
       ...(recorded?.roles.length ? [`${provLabel('declaredRoles')}: ${recorded.roles.map(role => (provenanceDictionary.roles as Record<string,string>)[role]).join(' · ')}`] : []),
