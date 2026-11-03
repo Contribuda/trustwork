@@ -6,8 +6,9 @@ import { Elevation, ElevationGuard } from '../../identity/second-factor/elevatio
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import { PlainCommandSchema } from '../schemas.js';
 import {
-  DecideAccessReviewItemCommandSchema, DecideActivationCommandSchema, EffectiveAccessQuerySchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, OpenAccessReviewCommandSchema,
-  RequestActivationCommandSchema, RespondStaffInvitationSchema, RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema,
+  AssignAccountabilityCommandSchema, DecideAccessReviewItemCommandSchema, DecideActivationCommandSchema, EffectiveAccessQuerySchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema,
+  OfferAccountabilityCommandSchema, OpenAccessReviewCommandSchema, RequestActivationCommandSchema, RespondAccountabilityOfferCommandSchema, RespondStaffInvitationSchema,
+  RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema, StartOffboardingCommandSchema,
 } from './deps.js';
 import { StaffLifecycleService } from './staff-lifecycle.service.js';
 
@@ -132,6 +133,72 @@ export class StaffLifecycleController {
   @Post('access-reviews/items/:id/decide') @HttpCode(200) @Idempotent('admin.staff.access_review_decide', 'id')
   decideAccessReviewItem(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(DecideAccessReviewItemCommandSchema) body: z.infer<typeof DecideAccessReviewItemCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.staff.decideAccessReviewItem(elevated(state, e, r), p.id, body);
+  }
+
+  /* ---------- Part 5: accountability and offboarding ---------- */
+
+  /** Who answers for each function and agent role of the hub (one's own rows; all with `admin.staff.read`). */
+  @Get('accountability')
+  accountabilities(@Query(HubQuery) q: z.infer<typeof HubQuery>, @ReqState() state: RequestState) {
+    return this.staff.accountabilities(state, q.hubId);
+  }
+
+  @Post('accountability') @HttpCode(201) @Idempotent('admin.staff.accountability_assign')
+  assignAccountability(@Body(AssignAccountabilityCommandSchema) body: z.infer<typeof AssignAccountabilityCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.assignAccountability(elevated(state, e, r), body);
+  }
+
+  @Post('accountability/:id/end') @HttpCode(200) @Idempotent('admin.staff.accountability_end', 'id')
+  endAccountability(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.endAccountability(elevated(state, e, r), p.id, body);
+  }
+
+  @Post('accountability/:id/resume') @HttpCode(200) @Idempotent('admin.staff.accountability_resume', 'id')
+  resumeAccountability(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.resumeAccountability(elevated(state, e, r), p.id, body);
+  }
+
+  /** Offer the hand-over to a named person (the holder, or `admin.staff.assign` at the hub); they must accept. */
+  @Post('accountability/:id/offer') @HttpCode(201) @Idempotent('admin.staff.accountability_offer', 'id')
+  offerAccountability(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(OfferAccountabilityCommandSchema) body: z.infer<typeof OfferAccountabilityCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.offerAccountability(elevated(state, e, r), p.id, body);
+  }
+
+  /** The offers waiting for the signed-in staff member. */
+  @Get('accountability/offers')
+  myAccountabilityOffers(@ReqState() state: RequestState) {
+    return this.staff.myAccountabilityOffers(state);
+  }
+
+  @Post('accountability/offers/:id/respond') @HttpCode(200) @Idempotent('admin.staff.accountability_respond', 'id')
+  respondAccountabilityOffer(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(RespondAccountabilityOfferCommandSchema) body: z.infer<typeof RespondAccountabilityOfferCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.respondAccountabilityOffer(elevated(state, e, r), p.id, body);
+  }
+
+  @Get('offboardings')
+  offboardings(@Query(HubQuery) q: z.infer<typeof HubQuery>, @ReqState() state: RequestState) {
+    return this.staff.offboardings(state, q.hubId);
+  }
+
+  /** The offboarding with its checklist (`admin.staff.read` at its scope). */
+  @Get('offboardings/:id')
+  offboarding(@Params(IdParams) p: z.infer<typeof IdParams>, @ReqState() state: RequestState) {
+    return this.staff.offboarding(state, p.id);
+  }
+
+  @Post('offboardings') @HttpCode(201) @Idempotent('admin.staff.offboarding_start')
+  startOffboarding(@Body(StartOffboardingCommandSchema) body: z.infer<typeof StartOffboardingCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.startOffboarding(elevated(state, e, r), body);
+  }
+
+  @Post('offboardings/:id/complete') @HttpCode(200) @Idempotent('admin.staff.offboarding_complete', 'id')
+  completeOffboarding(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.completeOffboarding(elevated(state, e, r), p.id, body);
+  }
+
+  @Post('offboardings/:id/cancel') @HttpCode(200) @Idempotent('admin.staff.offboarding_cancel', 'id')
+  cancelOffboarding(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.cancelOffboarding(elevated(state, e, r), p.id, body);
   }
 
   /* ---------- Part 3: role change with preview ---------- */

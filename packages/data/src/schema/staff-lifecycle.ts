@@ -38,6 +38,8 @@ export interface StaffInvitationTable {
   approval_id: string | null;
   assignment_id: string | null;
   withdrawn_by: string | null;
+  function_key: string | null;
+  function_title: string | null;
   revision: Generated<number>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
@@ -56,6 +58,8 @@ export interface MyStaffInvitationRow {
   inviter_name: string;
   expires_at: Date;
   status: StaffInvitationStatus;
+  function_key: string | null;
+  function_title: string | null;
 }
 
 /* ---------- Part 3: eligible roles and activations ---------- */
@@ -161,12 +165,83 @@ export interface StaffAccessReviewItemTable {
 }
 export type StaffAccessReviewItemRow = Selectable<StaffAccessReviewItemTable>;
 
+/* ---------- Part 5: accountability and offboarding ---------- */
+
+export type AccountabilityKind = 'function_owner' | 'agent_role';
+export type AccountabilityStatus = 'active' | 'suspended' | 'ended';
+
+export interface StaffAccountabilityTable {
+  id: Generated<string>;
+  hub_id: string;
+  function_key: string;
+  kind: AccountabilityKind;
+  agent_role_key: string | null;
+  person_id: string;
+  required_role: string | null;
+  status: Generated<AccountabilityStatus>;
+  suspended_reason: 'holder_lost_role' | 'offboarding' | null;
+  assigned_by: string;
+  reason: string;
+  predecessor_id: string | null;
+  ended_at: Date | null;
+  ended_by: string | null;
+  end_reason: 'ended' | 'handed_over' | null;
+  revision: Generated<number>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+export type StaffAccountabilityRow = Selectable<StaffAccountabilityTable>;
+
+export interface StaffAccountabilityOfferTable {
+  id: Generated<string>;
+  accountability_id: string;
+  to_person_id: string;
+  offered_by: string;
+  offboarding_id: string | null;
+  reason: string;
+  status: Generated<'pending' | 'accepted' | 'declined' | 'withdrawn'>;
+  decided_at: Date | null;
+  successor_id: string | null;
+  revision: Generated<number>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+export type StaffAccountabilityOfferRow = Selectable<StaffAccountabilityOfferTable>;
+
+export interface StaffOffboardingTable {
+  id: Generated<string>;
+  person_id: string;
+  scope_kind: 'platform' | 'node' | 'hub';
+  node_id: string | null;
+  hub_id: string | null;
+  reason: string;
+  started_by: string;
+  status: Generated<'open' | 'completed' | 'cancelled'>;
+  completed_at: Date | null;
+  completed_by: string | null;
+  cancelled_by: string | null;
+  revision: Generated<number>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+export type StaffOffboardingRow = Selectable<StaffOffboardingTable>;
+
+/** One row of `trustwork.staff_accountabilities(hub)`: the row, whether its holder holds the needed role now, and their name. */
+export interface StaffAccountabilityReadRow {
+  accountability: StaffAccountabilityRow;
+  holder_ok: boolean;
+  holder_name: string;
+}
+
 export interface StaffLifecycleDatabase {
   staff_invitation: StaffInvitationTable;
   staff_eligible_role: StaffEligibleRoleTable;
   staff_activation: StaffActivationTable;
   staff_access_review_campaign: StaffAccessReviewCampaignTable;
   staff_access_review_item: StaffAccessReviewItemTable;
+  staff_accountability: StaffAccountabilityTable;
+  staff_accountability_offer: StaffAccountabilityOfferTable;
+  staff_offboarding: StaffOffboardingTable;
 }
 
 declare module './index.js' {
@@ -178,7 +253,7 @@ const columns = columnsOf<StaffLifecycleDatabase>();
 export const TABLE_COLUMNS: TableColumns<StaffLifecycleDatabase> = {
   staff_invitation: columns('staff_invitation', [
     'id', 'scope_kind', 'node_id', 'hub_id', 'role', 'definition_version', 'email_normalized', 'person_id', 'valid_for_seconds', 'sensitive', 'invited_by', 'reason', 'status',
-    'expires_at', 'responded_at', 'approval_id', 'assignment_id', 'withdrawn_by', 'revision', 'created_at', 'updated_at',
+    'expires_at', 'responded_at', 'approval_id', 'assignment_id', 'withdrawn_by', 'revision', 'created_at', 'updated_at', 'function_key', 'function_title',
   ]),
   staff_eligible_role: columns('staff_eligible_role', [
     'id', 'person_id', 'role', 'scope_kind', 'node_id', 'hub_id', 'definition_version', 'max_activation_seconds', 'granted_by', 'reason', 'valid_from', 'valid_until',
@@ -194,5 +269,15 @@ export const TABLE_COLUMNS: TableColumns<StaffLifecycleDatabase> = {
   staff_access_review_item: columns('staff_access_review_item', [
     'id', 'campaign_id', 'assignment_id', 'holder_person_id', 'role', 'scope_kind', 'node_id', 'hub_id', 'verdict', 'effect', 'decided_by', 'decided_at', 'decision_reason', 'revision',
     'created_at', 'updated_at',
+  ]),
+  staff_accountability: columns('staff_accountability', [
+    'id', 'hub_id', 'function_key', 'kind', 'agent_role_key', 'person_id', 'required_role', 'status', 'suspended_reason', 'assigned_by', 'reason', 'predecessor_id', 'ended_at', 'ended_by',
+    'end_reason', 'revision', 'created_at', 'updated_at',
+  ]),
+  staff_accountability_offer: columns('staff_accountability_offer', [
+    'id', 'accountability_id', 'to_person_id', 'offered_by', 'offboarding_id', 'reason', 'status', 'decided_at', 'successor_id', 'revision', 'created_at', 'updated_at',
+  ]),
+  staff_offboarding: columns('staff_offboarding', [
+    'id', 'person_id', 'scope_kind', 'node_id', 'hub_id', 'reason', 'started_by', 'status', 'completed_at', 'completed_by', 'cancelled_by', 'revision', 'created_at', 'updated_at',
   ]),
 };

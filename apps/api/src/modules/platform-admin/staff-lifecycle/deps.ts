@@ -4,10 +4,11 @@
  */
 export { staffLifecycle } from '../../../../../../packages/data/src/repositories/staff-lifecycle.js';
 export type {
-  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffActivationJoinedRow, StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow,
+  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffAccountabilityOfferRow, StaffAccountabilityReadRow, StaffAccountabilityRow, StaffActivationJoinedRow,
+  StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow, StaffOffboardingRow,
 } from '../../../../../../packages/data/src/schema/staff-lifecycle.js';
 export {
-  DecideAccessReviewItemCommandSchema, DecideActivationCommandSchema, EffectiveAccessQuerySchema, EffectiveAccessSchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, OpenAccessReviewCommandSchema, RequestActivationCommandSchema,
-  RespondStaffInvitationSchema, RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema, StaffDirectorySchema,
-  type AccessReviewCampaign, type AccessReviewItem, type EffectiveAccess, type MyStaffInvitation, type RoleChangePreview, type StaffActivationView, type StaffDirectory, type StaffEligibleRoleView, type StaffInvitationView,
+  AssignAccountabilityCommandSchema, DecideAccessReviewItemCommandSchema, DecideActivationCommandSchema, EffectiveAccessQuerySchema, EffectiveAccessSchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, OfferAccountabilityCommandSchema, OffboardingChecklistSchema, OpenAccessReviewCommandSchema, RequestActivationCommandSchema, RespondAccountabilityOfferCommandSchema,
+  RespondStaffInvitationSchema, RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema, StaffDirectorySchema, StartOffboardingCommandSchema,
+  type AccessReviewCampaign, type AccessReviewItem, type Accountability, type AccountabilityOffer, type EffectiveAccess, type Offboarding, type OffboardingChecklist, type MyStaffInvitation, type RoleChangePreview, type StaffActivationView, type StaffDirectory, type StaffEligibleRoleView, type StaffInvitationView,
 } from '../../../../../../packages/contracts/src/staff-lifecycle.js';
