@@ -112,7 +112,6 @@ test('eligible roles and just-in-time activation (ADM-004 part 3)', { skip: db ?
     await owner(async (trx) => {
       await sql`ALTER TABLE trustwork.staff_role_assignment DISABLE TRIGGER staff_role_assignment_guard`.execute(trx);
       await sql`UPDATE trustwork.staff_role_assignment SET valid_from = now() - interval '3 hours', valid_until = now() - interval '1 hour' WHERE id = ${view.assignment_id}::uuid`.execute(trx);
-      await sql`UPDATE trustwork.staff_activation SET active_from = now() - interval '3 hours', active_until = now() - interval '1 hour' WHERE id = ${view.id}::uuid`.execute(trx);
       await sql`ALTER TABLE trustwork.staff_role_assignment ENABLE TRIGGER staff_role_assignment_guard`.execute(trx);
     });
     assert.equal(await isStaffOfHub(p.employee), false, 'the role ended with the window');
