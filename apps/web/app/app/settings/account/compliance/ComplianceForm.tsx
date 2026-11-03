@@ -1,72 +1,46 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Form, FormAlert, TextArea } from '@trustwork/ui';
-import { OwnComplianceStatusSchema, ComplianceAppealReceiptSchema, AppealComplianceDecisionCommandSchema, type OwnComplianceStatus } from '@trustwork/contracts/client';
+import { AppealComplianceDecisionCommandSchema } from '@trustwork/contracts/client';
 import { t } from '@/app/_lib/i18n';
-import { withBase } from '@/app/_lib/base-path';
 import { useStepUp } from '@/components/auth/StepUp';
 import { useAuthForm } from '@/components/auth/useAuthForm';
 
 /**
- * First-party self service only. Never accept a subject id from the URL or fetch a staff projection. `company` comes
- * from the session's own administrator membership; the API checks that membership again on every read and appeal.
+ * First-party self service only. The page decides whether an appeal is open; the API decides again on submission.
+ * `companyId` comes from the session's own administrator membership, never from the URL.
  */
-export function ComplianceForm({ live, company }: { live: boolean; company?: { id: string; title: string } }) {
-  const [own, setOwn] = useState<OwnComplianceStatus | null>(null);
-  const [failed, setFailed] = useState(false);
+export function ComplianceForm({ title, companyId = null }: { title: string; companyId?: string | null }) {
   const [reason, setReason] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
-  const [reload, setReload] = useState(0);
   const form = useAuthForm();
   const stepUp = useStepUp();
-  const scope = company ? 'company' : 'own';
+  const scope = companyId ? 'company' : 'own';
 
-  useEffect(() => {
-    if (!live) return;
-    const controller = new AbortController();
-    setFailed(false);
-    void fetch(withBase(`/v1/screening/me${company ? `?companyId=${company.id}` : ''}`), { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error('status unavailable');
-        const parsed = OwnComplianceStatusSchema.parse(await response.json());
-        if (!controller.signal.aborted) setOwn(parsed);
-      }).catch(() => { if (!controller.signal.aborted) setFailed(true); });
-    return () => controller.abort();
-  }, [live, reload, company?.id]);
-
-  // The engine has no authoritative activated notice-disclosure policy. The generic notice above remains the only
+  // The engine has no authoritative activated notice-disclosure policy. The generic notice on the page remains the only
   // status copy: do not infer a legal permission, a cleared hold, an assigned reviewer or a review deadline.
   return <>
-    {failed || !live ? <FormAlert tone="warning">{t('compliance.unavailable')}</FormAlert> : null}
-    {failed && live ? <Button variant="secondary" onPress={() => setReload((n) => n + 1)}>{t('compliance.retry')}</Button> : null}
-    {submitted ? <FormAlert tone="success" autoFocus>{t('compliance.submitted')}</FormAlert> : null}
-    {own?.canAppeal && !submitted ? <section className="ws-card" aria-labelledby={`compliance-appeal-${scope}`}>
-      <h2 id={`compliance-appeal-${scope}`} className="ws-h2">{company?.title ?? t('compliance.appealTitle')}</h2>
+    {submitted ? <FormAlert tone="success" autoFocus>{t('compliance.submitted')}</FormAlert> : <section className="ws-card" aria-labelledby={`compliance-appeal-${scope}`}>
+      <h2 id={`compliance-appeal-${scope}`} className="ws-h2">{title}</h2>
       {form.alert ? <FormAlert tone={form.alert.tone}>{form.alert.text}</FormAlert> : null}
       <Form onSubmit={async (event) => {
         event.preventDefault();
         if (pending) return;
         setPending(true);
         // Freeze this submission across the real password step-up and an idempotent retry.
-        const payload = { companyId: company?.id ?? null, reason: reason.trim() };
+        const payload = { companyId, reason: reason.trim() };
         try {
           const response = await stepUp.guard(() => form.submit({ path: '/v1/screening/me/appeal', payload, schema: AppealComplianceDecisionCommandSchema, idempotent: true }));
-          if (response.kind === 'ok') {
-            // The appeal answers with a generic receipt; the current status is read again.
-            if (!ComplianceAppealReceiptSchema.safeParse(response.body).success) { setFailed(true); return; }
-            setReason('');
-            setSubmitted(true);
-            setReload((n) => n + 1);
-          }
+          if (response.kind === 'ok') setSubmitted(true);
         } finally { setPending(false); }
       }}>
         <TextArea id={`compliance-reason-${scope}`} label={t('compliance.reason')} description={t('compliance.appealHelp')}
           value={reason} onChange={setReason} maxLength={2000} isRequired isDisabled={pending} />
         <Button type="submit" isDisabled={!form.hydrated || pending || !reason.trim()} isLoading={form.busy} pendingLabel={t('compliance.pending')}>{t('compliance.submit')}</Button>
       </Form>
-    </section> : null}
+    </section>}
     {stepUp.dialog}
   </>;
 }
