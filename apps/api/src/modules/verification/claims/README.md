@@ -2,7 +2,7 @@
 
 Management access to a company page passes only through the hub's verification recipe. Design: [discovery and outreach](../../../../../../docs/engine/discovery-and-outreach.md) section 7, [ADR 026](../../../../../../docs/adr/026-discovery-to-claim-engine-and-professional-pages.md), reference recipes in [hub administration](../../../../../../docs/engine/hub-administration.md). Database: [`migrations/claims`](../../../../../../packages/data/migrations/claims), repository [`claims.ts`](../../../../../../packages/data/src/repositories/claims.ts).
 
-Status: claims, disputes, hand-overs, the cooling period, per-hub badges with expiry and re-checks, their routes and notices are **Live in the API**, without screens yet (HUBC-009 wires the console). Company identifiers, registrations and branches follow.
+Status: claims, disputes, hand-overs, the cooling period, per-hub badges with expiry and re-checks, company records, their routes and notices are **Live in the API**, without screens yet (HUBC-009 wires the console).
 
 | Rule | Where it holds |
 |---|---|
@@ -23,7 +23,10 @@ Status: claims, disputes, hand-overs, the cooling period, per-hub badges with ex
 | A re-check needs a reviewer who is not the holder, a passing standing and the holder screened clear, and writes a new row; a refusal changes nothing and the old date runs out | `claims_recheck` |
 | A `verified` page without an active administrator falls back to `claimed` and loses its verified badge; a new verified claim restores it; companies that never went through a claim are not touched. This is a safety net: `end_membership` and the role change refuse to remove the last administrator and revocation takes the verification with the role, so today only a maintenance write reaches it | `claims_membership_ended`, `claims_derive`, `claims_public_badges` |
 | A public badge shows the level, categories and dates. A category naming sanctions or screening is left out (ADR 014 decision 16) | `claims_public_badges` |
-| For a hub-set cooling period (default seven days) the legal name, identifiers, verified domains and the representative cannot change | `claims_company_cooling_guard`, `claims_representative_cooling_guard` |
+| For a hub-set cooling period (default seven days) the legal name, identifiers, verified domains, the website and the representative cannot change, for any caller. A reviewer's label on an identifier is not a change of its value | `claims_company_cooling_guard`, `claims_identifier_cooling_guard`, `claims_profile_cooling_guard`, `claims_representative_cooling_guard` |
+| A value proves nothing: no record command writes a verification, a hand-over or the claim status; `verified` on an identifier needs a passing, current check of that company at the hub, and holds for one company only | `claims_verify_identifier`, `company_identifier_verified_uq` |
+| A company administrator states records (status `claimed`); staff record what a source says (`sourced`, with its reference); neither sets a status in a payload. A claimed-level holder edits descriptive fields only | `claims_record_add`, `claims_staff_record_add`, `claims_set_profile` |
+| Tax registrations are private: the company's administrators read them; the public, other members and hub staff do not. Private branches stay with the company and hub staff | `claims_company_records`, `claims_staff_records`, `claims_public_records` |
 | Every state change raises its notice in the same transaction, whichever command made it | `claims_claim_notice`, `claims_handover_notice` |
 
 ## Routes
@@ -53,7 +56,28 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 
-`GET /v1/companies/:companyId/badges` needs no session and answers for the hub this API serves.
+| `GET /companies/:companyId/records` | any claims permission | The company's records, without tax registrations |
+| `POST /companies/:companyId/records` | `admin.claims.decide` | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
+| `POST /identifiers/:identifierId/verify` | `admin.claims.decide` | `{ expectedRevision, checkId }`: ties the identifier to a passing check; moves no badge |
+
+The company's page, `/v1/companies/:companyId`:
+
+| Method and path | Who | Use |
+|---|---|---|
+| `GET /badges` | anyone | Badges at the hub this API serves: level, categories and dates |
+| `GET /public-records` | anyone | Identifiers, registrations, public branches and the profile fields the company chose to show |
+| `GET /records` | members and hand-over holders | Everything above; tax registrations for administrators |
+| `POST /records` | an administrator | One of `identifier`, `registration`, `tax_registration`, `branch` (`kind` picks the shape). An identifier value is checked against the country pack; a country without a pack uses `other` |
+| `POST /records/:recordKind/:recordId/retire` | an administrator | The row stays on record |
+| `POST /page-profile` | an administrator, or a holder for the descriptive fields | Legal form, website, region, categories, public fields and description |
+
+## Records and the United States example
+
+Country facts are data: `US-EIN` and the state kinds and their patterns come from `packages/country-packs/packs/us.json` (`identifier-kinds.ts` reads them). `tests/claims/records.test.ts` works the example through on synthetic values: an EIN and a Secretary of State number, a Delaware formation with a California foreign qualification, a Texas sales permit as a private tax registration, a branch, and a contractor licence.
+
+A contractor licence is a `professional_credential` row of REP-001, checked through a HUB-003 recipe with a `licence` step; the badge names the category, never the licence.
+
+`company_identifier` is the expand step for `company.legal_identifiers`. Existing values were backfilled (`source_ref` `legacy`), a write to the old column reaches the table, and the commands mirror the table back, so its readers keep working. Dropping the column is the contract step: a later reviewed migration once the readers moved, with the backup and restore evidence `docs/data/migration-plan.md` asks for.
 
 Evidence stays in the verification checks of HUB-003 (`/v1/admin/hubs/:hubId/verification`): a reviewer records them there after the claim arrives, then binds them to it. Refusals carry `details.reason` (`waiting_period`, `company_tie_required`, `evidence_required`, `evidence_mismatch`, `standing_not_passed`, `claimant_not_clear`, `own_claim`, and so on).
 
@@ -70,4 +94,6 @@ The triggers write the bell notice and plan the e-mail (`expired` comes from the
 
 ## Next
 
-- Company identifiers, registrations, tax registrations and branches as their own records with the US worked example; payout details under the cooling lock.
+- Payout details under the cooling lock: payment bindings are per person, so no company-level record exists to lock. `claims_cooling` is granted for the payment module to call.
+- The contract step of `company_identifier`; logos on `company_profile` (they need a media licence).
+- Stopping outreach and accepting sourced suggestions as a claimed-level holder arrive with OUTR-002 and the source suggestions.

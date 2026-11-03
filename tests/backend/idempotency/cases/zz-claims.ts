@@ -129,6 +129,25 @@ export default {
       return (await trx.selectFrom('company_verification').select('id').where('company_id', '=', renewed).executeTakeFirstOrThrow()).id;
     });
     await withMaintenance(admin, (trx) => trx.updateTable('company_verification').set({ state: 'expired' }).where('id', '=', verificationId).execute());
+    // The company's records: an administrator states them, staff source and verify them.
+    const records = await withMaintenance(admin, async (trx) => {
+      const id = (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Records Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id;
+      await trx.insertInto('membership').values({ person_id: people.c1, company_id: id, role: 'administrator', permissions: ['company.members.manage'], status: 'active', valid_from: new Date('2026-10-01T09:00:00Z') }).execute();
+      return id;
+    });
+    const identifierRows = () => count(admin, 'SELECT 1 FROM trustwork.company_identifier WHERE company_id = $1', [records]);
+    const stated = body<{ record: { id: string } }>(await exactlyOnce({ action: 'claims.record_add', client: c1, url: `/v1/companies/${records}/records`,
+      body: { kind: 'identifier', identifierKind: 'US-EIN', jurisdiction: 'US', value: '12-3456789' }, effects: identifierRows }));
+    await exactlyOnce({ action: 'claims.record_retire', client: c1, url: `/v1/companies/${records}/records/identifier/${stated.record.id}/retire`, body: {},
+      effects: () => count(admin, 'SELECT 1 FROM trustwork.company_identifier WHERE id = $1 AND retired_at IS NOT NULL', [stated.record.id]) });
+    await exactlyOnce({ action: 'claims.profile_set', client: c1, url: `/v1/companies/${records}/page-profile`,
+      body: { legalForm: 'US-LLC', websiteUrl: null, regionCode: 'US-CA', categories: [], publicFields: ['legal_form'] }, effects: () => count(admin, 'SELECT 1 FROM trustwork.company_profile WHERE company_id = $1', [records]) });
+    const sourced = body<{ record: { id: string } }>(await run('claims.record_source', a, `${base}/claims/companies/${records}/records`,
+      { record: { kind: 'identifier', identifierKind: 'US-CA-SOS', jurisdiction: 'US-CA', value: 'C1234567' }, sourceRef: 'register:SYN-CRASH-SOS' }, identifierRows));
+    const check = body<{ check: { id: string } }>(await a.post(`${base}/verification/checks`, cmd('claims.check_records', { subject: { kind: 'company', id: records }, recipeId: claimedRecipe, providerId: provider.provider.id, result: 'pass',
+      evidenceRef: 'register:SYN-CRASH-SOS' }), { idempotencyKey: 'crash-claims.check_records' }));
+    await run('claims.identifier_verify', a, `${base}/claims/identifiers/${sourced.record.id}/verify`, { expectedRevision: 1, checkId: check.check.id }, audits('claims.identifier_verified', sourced.record.id));
+
     await run('claims.verification_recheck', a, `${base}/claims/verifications/${verificationId}/recheck`, { recipeId: claimedRecipe }, () => count(admin, 'SELECT 1 FROM trustwork.company_verification WHERE company_id = $1', [renewed]));
   },
 } satisfies CrashCase;
