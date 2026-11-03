@@ -2,7 +2,7 @@
 
 Management access to a company page passes only through the hub's verification recipe. Design: [discovery and outreach](../../../../../../docs/engine/discovery-and-outreach.md) section 7, [ADR 026](../../../../../../docs/adr/026-discovery-to-claim-engine-and-professional-pages.md), reference recipes in [hub administration](../../../../../../docs/engine/hub-administration.md). Database: [`migrations/claims`](../../../../../../packages/data/migrations/claims), repository [`claims.ts`](../../../../../../packages/data/src/repositories/claims.ts).
 
-Status: claims, disputes, hand-overs, the cooling period, their routes and notices are **Live in the API**, without screens yet (HUBC-009 wires the console). Company identifiers, registrations, branches and per-hub badges follow.
+Status: claims, disputes, hand-overs, the cooling period, per-hub badges with expiry and re-checks, their routes and notices are **Live in the API**, without screens yet (HUBC-009 wires the console). Company identifiers, registrations and branches follow.
 
 | Rule | Where it holds |
 |---|---|
@@ -17,7 +17,12 @@ Status: claims, disputes, hand-overs, the cooling period, their routes and notic
 | A mailbox tie counts only when the address is the claimant's own verified login, on a domain recorded for the company (verified domains, the website of its sourced records) and not a free mail service; a typed address proves nothing | `claims_submit`, `claims_company_domains`, `claims_free_mail_domains` |
 | An invitation link is the same tie under its own name, and until OUTR-002 issues single-use tokens it needs the same proof; a link, a reply or a message alone never changes a claim or grants a role | `claims_submit` |
 | The verified level gives the company administrator role (refused while the claimant works for another company) | `claims_decide` |
-| The company's claim status is derived from the strongest active hand-over in the same transaction; revocation ends the role and derives again | `claims_derive`, `claims_revoke` |
+| A hand-over writes a `company_verification` row: what the hub stands behind, its badge categories and until when (the earliest expiry of the recipe's latest results). It is a record: only its state moves | `claims_handover_verification`, `claims_verification_guard` |
+| The company's claim status is derived from the strongest active verification in the same transaction; revocation ends the role, revokes the verification and derives again; every change appends `company.verification_changed` | `claims_derive`, `claims_revoke` |
+| A verification past its date lapses on the worker; the badge goes, the page stays `claimed` while someone holds it, the role stays and the holder is told | `claims_run_expiry`, `apps/worker/src/verification/claims-expiry.ts` |
+| A re-check needs a reviewer and a passing standing and writes a new row; a failing standing changes nothing and the old date runs out | `claims_recheck` |
+| A `verified` page without an active administrator falls back to `claimed`; a new verified claim restores it; companies that never went through a claim are not touched | `claims_membership_ended`, `claims_derive` |
+| A public badge shows the level, categories and dates. A category naming sanctions or screening is left out (ADR 014 decision 16) | `claims_public_badges` |
 | For a hub-set cooling period (default seven days) the legal name, identifiers, verified domains and the representative cannot change | `claims_company_cooling_guard`, `claims_representative_cooling_guard` |
 | Every state change raises its notice in the same transaction, whichever command made it | `claims_claim_notice`, `claims_handover_notice` |
 
@@ -44,7 +49,11 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /disputes/:disputeId/propose` | `admin.claims.decide` | `{ expectedRevision, winnerClaimId \| null, note }` |
 | `POST /disputes/:disputeId/confirm` | `admin.claims.decide` | A second person confirms; `403 access.second_approver_required` for the proposer |
 | `POST /handovers/:handoverId/revoke` | `admin.claims.revoke` | `{ revocationReason }` |
+| `GET /verifications?companyId=&dueDays=` | any claims permission | Verifications of the hub, one company, or those lapsing within `dueDays` |
+| `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
+
+`GET /v1/companies/:companyId/badges` needs no session and answers for the hub this API serves.
 
 Evidence stays in the verification checks of HUB-003 (`/v1/admin/hubs/:hubId/verification`): a reviewer records them there after the claim arrives, then binds them to it. Refusals carry `details.reason` (`waiting_period`, `company_tie_required`, `evidence_required`, `evidence_mismatch`, `standing_not_passed`, `claimant_not_clear`, `own_claim`, and so on).
 
@@ -55,11 +64,10 @@ Two account templates, so e-mail is never held back by preferences and an unsubs
 | Template | Goes to | Parameters |
 |---|---|---|
 | `claims.page_notice` | The page's active administrators and hand-over holders, not the claimant | `stage` (`claim_opened`, `handed_over`), `companyName`, `waitingUntil` |
-| `claims.claim_update` | The claimant or holder | `outcome` (`in_dispute`, `back_in_review`, `approved`, `rejected`, `revoked`), `companyName` |
+| `claims.claim_update` | The claimant or holder | `outcome` (`in_dispute`, `back_in_review`, `approved`, `rejected`, `revoked`, `expired`), `companyName` |
 
-The triggers write the bell notice and plan the e-mail. The API renders the hub's active text in the same transaction (`CommunicationsService.deliverPlanned`), so a crash loses neither. Without a text in a language the hub serves the delivery settles as `skipped`, as for every template. The design also asks for a notice in the page's context thread; `company` is not a context kind yet (COMMS-001), so the bell and e-mail carry it for now.
+The triggers write the bell notice and plan the e-mail (`expired` comes from the worker, where no person acts, so it stays in the bell). The API renders the hub's active text in the same transaction (`CommunicationsService.deliverPlanned`), so a crash loses neither. Without a text in a language the hub serves the delivery settles as `skipped`, as for every template. The design also asks for a notice in the page's context thread; `company` is not a context kind yet (COMMS-001), so the bell and e-mail carry it for now.
 
 ## Next
 
-- Company identifiers, registrations, tax registrations and branches as their own records with the US worked example; per-hub badges with expiry and re-checks; payout details under the cooling lock.
-- Recovery when the last administrator leaves.
+- Company identifiers, registrations, tax registrations and branches as their own records with the US worked example; payout details under the cooling lock.
