@@ -93,6 +93,10 @@ Replay also writes typed retrieval/federation propagation intents in the same da
 
 Whole-subject erasure, complete module exports, retrieval/federation runtime dispatch, production immutable storage and production restore integration are incomplete. PRV-001 stays `in_progress`; dependent work remains locked until full acceptance. No production or provider action was performed.
 
+### Objection during a queued outreach batch
+
+The only outreach the engine sends today is marketing mail through MAIL; OUTR-002 will add campaigns on top of the same barrier. `tests/privacy/outreach-batch.test.ts` proves the acceptance item with a real worker and fake transport: a batch of several queued touches to one address and touches to other recipients; an objection that lands while another recipient is in transport leaves every queued touch to the objector `suppressed` with zero transport effects and the other touches sent; an objection that arrives while one touch to the objector is itself in transport waits for that touch's commit (`pg_blocking_pids`), the in-flight touch completes exactly once and the remaining queued touches are cancelled; a batch queued after the objection never reaches the objector while a transactional notice still does. Cancellation happens at the final dispatch gate, never by privacy writing MAIL's rows. OUTR-002's `outreach_touch` must consult `privacy_marketing_allowed` in its own final dispatch transaction the same way.
+
 ## Coordination seams
 
 - After PR485 actually merged, the rebased final MAIL handler now checks the retained marketing barrier after the mail-row lock and before COMMS suppression locks. The lock spans transport, receipt and commit. Immutable SANC recipient/binding authority is unchanged. Both lock orders, late receipts and process death after the fake effect are tested; unknown outcomes remain parked without resend.
