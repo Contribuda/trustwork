@@ -83,8 +83,9 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
 
   // ADM-004 eligible roles: granted, activated with a fresh second factor (a non-sensitive role at once, a sensitive one
   // after a second person decides), ended early, revoked; and a previewed role change applied.
+  let freshened = 0;
   const freshen = async (key: 'lead' | 'moderator') => {
-    h.clock.advance(30_000);
+    h.clock.advance(90_000 * ++freshened); // exactlyOnce resets the clock; move past every step an earlier elevation used
     assert.equal((await c[key].post('/v1/auth/step-up', { password: PASSWORD }, { idempotencyKey: null })).status, 200);
     const r = await c[key].post('/v1/admin/session/elevate', { proof: { method: 'totp', code: codeNow(h, secrets[key] as Buffer) } }, { idempotencyKey: null });
     assert.equal(r.status, 200, `re-elevate ${key}: ${JSON.stringify(r.body)}`);
