@@ -1,7 +1,114 @@
+import { createHash } from 'node:crypto';
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { LegalHoldRow, PrivacyExportRow, PrivacyPreferenceRow, PrivacyRequestRow } from '../schema/privacy.js';
+import type { LegalHoldRow, PrivacyCountryPolicyTable, PrivacyExportRow, PrivacyPreferenceRow, PrivacyRequestRow } from '../schema/privacy.js';
 import type { CommandContext } from './admin.js';
+
+/**
+ * Structural shape of a validated country pack's privacy facets (`packages/country-packs/src/facets.ts`,
+ * `PrivacyFactSchema`). The data package keeps no build-time dependency on the packs package, like the kernel sync.
+ */
+interface PrivacyPackFactBase { id: string; verification: string; sources: readonly { url: string }[]; effectiveFrom?: string; effectiveTo?: string }
+export type PrivacyPackFact =
+  | (PrivacyPackFactBase & { type: 'law'; subjectRequestDays?: number })
+  | (PrivacyPackFactBase & { type: 'retention'; years: number })
+  | (PrivacyPackFactBase & { type: string });
+export interface PrivacyPackLike { code: string; enabled: boolean; facets?: { privacy?: readonly PrivacyPackFact[] } | null }
+
+/** One country's policy as derived from its pack, with the reasons it stays `UNKNOWN` and the gaps the pack schema has. */
+export interface PrivacyPolicyDerivation {
+  country: string; version: string; review: 'UNKNOWN' | 'verified'; sources: string[];
+  deadlineDays: number | null; retentionDays: number | null; registryPollHours: null; registryDeadlineDays: null;
+  facts: { deadline: string | null; retention: string | null };
+  /** Why the policy is not `verified`; empty when it is. Every reason names the fact it concerns where one exists. */
+  reasons: string[];
+  /** Facts the pack schema cannot express yet; they never make a policy `UNKNOWN` by themselves. */
+  gaps: string[];
+}
+export interface PrivacyPolicySyncReport {
+  applied: { country: string; review: 'UNKNOWN' | 'verified'; version: string; changed: boolean }[];
+  /** Rows a maintainer wrote by hand (version without the `pack:` prefix); the sync never overwrites them. */
+  manual: string[];
+}
+const PACK_VERSION_PREFIX = 'pack:';
+const DAYS_PER_YEAR = 365.25;
+
+function effective(fact: PrivacyPackFactBase, now: Date): boolean {
+  const from = fact.effectiveFrom ? Date.parse(`${fact.effectiveFrom}T00:00:00Z`) : null;
+  const to = fact.effectiveTo ? Date.parse(`${fact.effectiveTo}T00:00:00Z`) : null;
+  return (from === null || from <= now.getTime()) && (to === null || to > now.getTime());
+}
+
+/**
+ * Country-pack facts are the only source of request deadlines and retention bounds (PRV-001 acceptance). The engine
+ * never invents a number: without an `official` law fact carrying `subjectRequestDays` and an `official` retention fact
+ * the country stays `UNKNOWN`, with null deadline and retention. Where several facts apply the strictest deadline and
+ * the longest retention win, so that no request is answered late and no record is deleted before its longest bound.
+ * Facts are read at country level only: a request carries a country code, not a subdivision.
+ */
+export function privacyPolicyFromPack(pack: PrivacyPackLike, now: Date = new Date()): PrivacyPolicyDerivation {
+  const facts = (pack.facets?.privacy ?? []).filter((f) => effective(f, now));
+  const deadlines = facts.filter((f): f is PrivacyPackFactBase & { type: 'law'; subjectRequestDays: number } => f.type === 'law' && typeof (f as { subjectRequestDays?: number }).subjectRequestDays === 'number')
+    .sort((a, b) => a.subjectRequestDays - b.subjectRequestDays || a.id.localeCompare(b.id));
+  const retentions = facts.filter((f): f is PrivacyPackFactBase & { type: 'retention'; years: number } => f.type === 'retention')
+    .sort((a, b) => b.years - a.years || a.id.localeCompare(b.id));
+  const deadline = deadlines[0] ?? null;
+  const retention = retentions[0] ?? null;
+  const reasons: string[] = [];
+  if (!pack.enabled) reasons.push('pack_disabled');
+  if (!deadline) reasons.push('no_subject_request_deadline_fact');
+  else if (deadline.verification !== 'official') reasons.push(`deadline_fact_unverified:${deadline.id}:${deadline.verification}`);
+  if (!retention) reasons.push('no_retention_fact');
+  else if (retention.verification !== 'official') reasons.push(`retention_fact_unverified:${retention.id}:${retention.verification}`);
+  const verified = reasons.length === 0;
+  const contributing = [deadline, retention].filter((f): f is NonNullable<typeof f> => f !== null);
+  const digest = createHash('sha256').update(JSON.stringify(contributing.map((f) => ({ ...f, sources: [...f.sources].map((s) => s.url).sort() })))).digest('hex');
+  return {
+    country: pack.code.toUpperCase(), version: `${PACK_VERSION_PREFIX}${pack.code.toUpperCase()}:${digest.slice(0, 32)}`, review: verified ? 'verified' : 'UNKNOWN',
+    sources: [...new Set(contributing.flatMap((f) => f.sources.map((s) => s.url)))].sort(),
+    deadlineDays: verified ? deadline!.subjectRequestDays : null,
+    retentionDays: verified ? Math.ceil(retention!.years * DAYS_PER_YEAR) : null,
+    registryPollHours: null, registryDeadlineDays: null,
+    facts: { deadline: deadline?.id ?? null, retention: retention?.id ?? null },
+    reasons,
+    // No pack fact type carries a regulator registry's polling cadence or deadline; the DROP intake stays UNKNOWN.
+    gaps: ['registry_cadence_not_in_pack_schema', 'retention_per_record_class_not_in_policy'],
+  };
+}
+
+export const privacyPolicies = {
+  fromPacks(packs: readonly PrivacyPackLike[], now: Date = new Date()): PrivacyPolicyDerivation[] {
+    return packs.map((p) => privacyPolicyFromPack(p, now)).sort((a, b) => a.country.localeCompare(b.country));
+  },
+  /** Built-in packs through the packs package, imported by URL like the kernel sync (no build-time dependency). */
+  async fromRepository(now: Date = new Date()): Promise<PrivacyPolicyDerivation[]> {
+    const packsModule = (await import(new URL('../../../country-packs/src/index.ts', import.meta.url).href)) as { PACKS: readonly PrivacyPackLike[] };
+    return privacyPolicies.fromPacks(packsModule.PACKS, now);
+  },
+  /**
+   * Writes the derived policies. Must run inside `withMaintenance`. Serialized against itself by an advisory lock; the
+   * row updates serialize with plan snapshots (`FOR SHARE`), so a changed version invalidates approved plans at
+   * execution. Rows written by hand are reported and left alone. Idempotent.
+   */
+  async apply(trx: Transaction, derivations: readonly PrivacyPolicyDerivation[]): Promise<PrivacyPolicySyncReport> {
+    await sql`SELECT pg_advisory_xact_lock(hashtext('trustwork.privacy_country_policy'))`.execute(trx);
+    const report: PrivacyPolicySyncReport = { applied: [], manual: [] };
+    for (const d of derivations) {
+      const existing = await trx.selectFrom('privacy_country_policy').selectAll().where('country', '=', d.country).forUpdate().executeTakeFirst();
+      if (existing && !existing.version.startsWith(PACK_VERSION_PREFIX)) { report.manual.push(d.country); continue; }
+      const row: Omit<PrivacyCountryPolicyTable, 'sources'> & { sources: string } = {
+        country: d.country, version: d.version, review: d.review, sources: JSON.stringify(d.sources),
+        deadline_days: d.deadlineDays, retention_days: d.retentionDays, registry_poll_hours: d.registryPollHours, registry_deadline_days: d.registryDeadlineDays,
+      };
+      const changed = !existing || existing.version !== d.version || existing.review !== d.review
+        || existing.deadline_days !== d.deadlineDays || existing.retention_days !== d.retentionDays;
+      if (!existing) await trx.insertInto('privacy_country_policy').values(row).execute();
+      else if (changed) await trx.updateTable('privacy_country_policy').set(row).where('country', '=', d.country).execute();
+      report.applied.push({ country: d.country, review: d.review, version: d.version, changed });
+    }
+    return report;
+  },
+};
 
 export const privacy = {
   async proposeSourcePlan(trx: Transaction, ctx: CommandContext, requestId: string, grantId: string): Promise<{ id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> }> {
