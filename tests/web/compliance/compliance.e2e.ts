@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { PASSWORDS } from '../../backend/helpers/personas.js';
+import { EMAILS, PASSWORDS } from '../../backend/helpers/personas.js';
 const copy = JSON.parse(readFileSync(resolve('apps/web/locales/ru/compliance.json'), 'utf8')).compliance;
 const settings = JSON.parse(readFileSync(resolve('apps/web/locales/ru/settings.json'), 'utf8')).settings;
 const path = '/app/settings/account/compliance';
@@ -50,6 +50,30 @@ test('real own-account appeal: anonymous isolation, safe notice, Russian desktop
   await expect(page.locator('[role="status"][tabindex="-1"]')).toBeFocused();
   expect((await (await page.request.get('/v1/screening/me')).json()).status).toBe('appeal_pending');
   await page.screenshot({ path: resolve(shots, 'ru-375-submitted.png'), fullPage: true });
+});
+
+test('a company administrator appeals for the company from the session, never from the URL', async ({ page }) => {
+  const es = JSON.parse(readFileSync(resolve('apps/web/locales/es/compliance.json'), 'utf8')).compliance;
+  await page.context().addCookies([
+    { name: 'trustwork.locale', value: 'es', domain: '127.0.0.1', path: '/' },
+    { name: 'trustwork.country', value: 'US', domain: '127.0.0.1', path: '/' },
+  ]);
+  const login = await page.request.post('/v1/auth/login', { headers, data: { email: EMAILS.carl, password: PASSWORDS.carl } });
+  expect(login.status(), await login.text()).toBe(200);
+  await page.goto(`${path}?companyId=11111111-1111-4111-8111-111111111111`);
+  const title = es.companyAppealTitle.replace('{company}', 'Northwind Synthetic Supply LLC');
+  const form = page.getByRole('region', { name: title, exact: true });
+  await expect(form).toBeVisible();
+  await expect(page.getByRole('heading', { name: es.appealTitle, exact: true })).toHaveCount(0);
+  await expect(page.locator('main')).not.toContainText(/OFAC|SDN|920003|SYNTHETIC-C|reviewerId/);
+  const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(axe.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) }))).toEqual([]);
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await form.getByRole('textbox', { name: es.reason }).fill('Synthetic company appeal evidence.');
+  await form.getByRole('button', { name: es.submit, exact: true }).click();
+  await expect(page.getByText(es.submitted, { exact: true })).toBeVisible();
+  await page.screenshot({ path: resolve(shots, 'es-375-company.png'), fullPage: true });
 });
 
 test('restricted places cannot use the compliance page or appeal API', async ({ page }) => {

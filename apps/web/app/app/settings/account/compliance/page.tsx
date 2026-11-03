@@ -14,11 +14,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CompliancePage({ searchParams }: { searchParams: PageSearchParams }) {
   await primeLocale();
-  await requirePrincipal(searchParams, '/app/settings/account/compliance');
+  const principal = await requirePrincipal(searchParams, '/app/settings/account/compliance');
+  const live = !demoModeEnabled();
+  const company = live && principal.company?.role === 'administrator' ? principal.company : null;
   return <>
     <PageHeader title={t('compliance.title')} lede={t('compliance.generic')} />
     <div className="ws-section" style={{ maxWidth: '44rem', gap: 20 }}>
-      <ComplianceForm live={!demoModeEnabled()} />
+      <ComplianceForm live={live} />
+      {company ? <ComplianceForm live={live} company={{ id: company.id, title: t('compliance.companyAppealTitle', { company: company.name }) }} /> : null}
       <p className="ws-note">{t('compliance.reviewNotice')}</p>
       <nav aria-label={t('compliance.title')} style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
         <Link href="/legal/terms">{t('compliance.terms')}</Link>

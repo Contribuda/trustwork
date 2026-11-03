@@ -24,19 +24,24 @@ await withMaintenance(h.db.admin, async (trx) => {
   for (const key of ['anna', 'boris'] as const) await adminSetup.bootstrapFirstAdmin(trx, { personId: seed.people[key], role: 'compliance-officer', scope: { kind: 'node', nodeId: node.id }, definitionVersion: 1, reason: 'Synthetic fixture setup' });
   await trx.updateTable('screening_list').set({ min_entries: 1, max_drop_share: '0.99' }).where('baseline', '=', true).execute();
   await trx.updateTable('person').set({ display_name: 'Milo Fictivsky' }).where('id', '=', seed.people.petr).execute();
+  await trx.updateTable('company').set({ display_name: 'Northwind Synthetic Supply LLC' }).where('id', '=', seed.companies.unrelated).execute();
 });
 const lists = await baselineIds(h.db.admin);
 await activateList(worker, lists.sdn, SDN_ENTRIES);
 await activateList(worker, lists.cons, CONS_ENTRIES);
 await screen(worker, { kind: 'person', id: seed.people.petr });
+await screen(worker, { kind: 'company', id: seed.companies.unrelated });
 h.staff.set(seed.people.anna, ['trust-reviewer']);
 const reviewer = h.client();
 await login(reviewer, 'anna');
 const enrolled = await enrol(h, reviewer);
 await elevate(h, reviewer, enrolled.secret);
-const match = (await h.db.admin.query('SELECT id FROM trustwork.screening_match WHERE subject_person_id = $1', [seed.people.petr])).rows[0];
-const confirmed = await reviewer.post(`/v1/admin/screening/matches/${match.id}/confirm`, { reason: 'Synthetic browser fixture decision', evidence: 'identity_document' });
-if (confirmed.status !== 200) throw new Error(JSON.stringify(confirmed.body));
+const matches = await h.db.admin.query('SELECT id FROM trustwork.screening_match WHERE subject_person_id = $1 OR subject_company_id = $2', [seed.people.petr, seed.companies.unrelated]);
+if (matches.rows.length !== 2) throw new Error('SANC-007 fixture needs a person match and a company match');
+for (const match of matches.rows) {
+  const confirmed = await reviewer.post(`/v1/admin/screening/matches/${match.id}/confirm`, { reason: 'Synthetic browser fixture decision', evidence: 'identity_document' });
+  if (confirmed.status !== 200) throw new Error(JSON.stringify(confirmed.body));
+}
 const control = createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/stale') { h.clock.advance(11 * 60_000); res.writeHead(200).end('{}'); }
   else if (req.url === '/ready') { res.writeHead(200).end('{}'); }

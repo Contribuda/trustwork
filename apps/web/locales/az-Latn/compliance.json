@@ -15,6 +15,7 @@
     "back": "Parametrlərə qayıt",
     "mailSubject": "Hesab məlumatları",
     "mailAction": "Hesabın uyğunluq bölməsini aç",
-    "pending": "Göndərilir…"
+    "pending": "Göndərilir…",
+    "companyAppealTitle": "{company} üzrə qərardan şikayət etmək"
   }
 }

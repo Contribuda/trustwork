@@ -15,6 +15,7 @@
     "back": "Back to settings",
     "mailSubject": "Account information",
     "mailAction": "Open account compliance",
-    "pending": "Submitting…"
+    "pending": "Submitting…",
+    "companyAppealTitle": "Appeal a decision about {company}"
   }
 }
