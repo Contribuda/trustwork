@@ -127,7 +127,7 @@ test('governed extension registry: registration, lifecycle, safety suites and se
     expectRefusal(await command(staff.officer, `${base}/activations`, { versionIds: [commanding.ref.id] }), 422, 'validation.schema', 'version_not_ready');
   });
 
-  await t.test('activation refuses a missing route, a route the egress matrix denies and an inactive price', async () => {
+  await t.test('activation refuses a missing route, a route the egress matrix denies and, until billing can confirm a price, any charge', async () => {
     const noRoute = await testedVersion(x, manifestOf(uniqueKey('noroute')));
     expectRefusal(await command(staff.officer, `${base}/activations`, { versionIds: [noRoute.ref.id] }), 422, 'validation.schema', 'route_missing');
 
