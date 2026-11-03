@@ -2842,7 +2842,7 @@
       "id": "SANC-007",
       "title": "Refusal and notice copy in every language, legal sections and the participant's compliance page",
       "area": "compliance",
-      "status": "in_progress",
+      "status": "in_review",
       "dependsOn": [
         "SANC-003",
         "LANG-ES",

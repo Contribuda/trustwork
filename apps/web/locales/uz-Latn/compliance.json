@@ -15,6 +15,7 @@
     "back": "Sozlamalarga qaytish",
     "mailSubject": "Hisob haqida maʼlumot",
     "mailAction": "Hisobning talablarga muvofiqligini ochish",
-    "pending": "Yuborilmoqda…"
+    "pending": "Yuborilmoqda…",
+    "companyAppealTitle": "{company} bo‘yicha qarorga shikoyat qilish"
   }
 }

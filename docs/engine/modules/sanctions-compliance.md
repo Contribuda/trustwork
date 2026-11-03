@@ -76,7 +76,7 @@ A confirmed match suspends the subject: a person's sessions end and every mandat
 |---|---|---|
 | Refusal page | `/restricted` (rendered in place by the proxy) | Live (SANC-001) |
 | Sign-in refusal for a held account | the sign-in page, error `auth.jurisdiction_hold` | Live (SANC-001) |
-| Own compliance status and appeal | `/app/settings/account/compliance` | Proposed (SANC-007) |
+| Own compliance status and appeal | `/app/settings/account/compliance` | Implemented with generic text, for the person and for a company administrator, in review (SANC-007); status words wait for counsel |
 | Refusal notices on payouts, sales and commitments | inline on the affected forms (`error.screening.review_pending`, `error.screening.unavailable`, `error.commercial.counterparty_unavailable`) | Live on the commerce forms (SANC-004); payouts and sales with PAY-001, BILL-002 and EVT-001 |
 | Console: Trust → Screening (lists, matches queue, holds, re-screen runs, geolocation table, metrics) | `/admin/hubs/[hub]/trust/screening` (HC-74) | Partial API implementation (SANC-006; see validation notes above) |
 | Console: compliance panel on person and company pages | `/admin/hubs/[hub]/participants/people/[id]`, `/companies/[id]` | Partial API implementation (SANC-006; see validation notes above) |

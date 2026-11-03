@@ -15,6 +15,7 @@
     "back": "Volver a configuración",
     "mailSubject": "Información de la cuenta",
     "mailAction": "Abrir cumplimiento de la cuenta",
-    "pending": "Enviando…"
+    "pending": "Enviando…",
+    "companyAppealTitle": "Apelar una decisión sobre {company}"
   }
 }

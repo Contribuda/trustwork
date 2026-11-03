@@ -50,9 +50,20 @@ ESLint runs on the changed TypeScript/TSX files. The full local `npm run check` 
 
 Russian evidence, captured using a real local API and PostgreSQL with synthetic test identities, and visually inspected: [desktop](evidence/ru-desktop.png), [375 px form](evidence/ru-375.png), [375 px submission result](evidence/ru-375-submitted.png). No clipped text or horizontal overflow was observed. These are not public synthetic accounts or badges.
 
+## State on 2026-11-03 (in review)
+
+Every acceptance item has a test: key parity in the maintained languages (`copy.test.ts`; Russian is not maintained and gains no key), no list, entry or other person in any notice (`copy.test.ts`, every kind in every language), and the fresh step-up and independent reviewer (`api.test.ts`, `appeal-routing.test.ts`). A company administrator now appeals for the company from the same page: the company comes from the session's own administrator membership, never from the URL, and the API checks the membership again.
+
+Left out on purpose, because each needs counsel or the owner:
+
+- **Status words on the page.** The page shows the generic text only. ADR 014 decision 15 describes what a subject may be told, as far as the hub's law allows, and the tipping-off facts it relies on do not exist in any country pack. `GET /v1/screening/me` still returns the status words of SANC-003 to the subject, and the gates use them in refusals; the page simply does not show them.
+- **Different wording per mail kind.** All six kinds render the same generic notice.
+- **Company notices by mail.** No recipient is defined, so no company mail is sent.
+- **The disclosure governance of the 2026-11-01 allocation** (sources, applicability, activation, appointments). `packages/contracts/src/screening-disclosure.ts` holds its schemas and nothing uses them except the appeal receipt. Building it needs a rule for which law applies to a subject, which is a legal question.
+
 ## Remaining engineering seams and review limits
 
-SANC-007 remains `in_progress`. The safe generic fallback is implemented and tested; richer status/notice wording still needs an authoritative activated disclosure-policy projection with law-dependent permitted fields. This is a concrete missing engine seam, not an assumed approval or an owner-only blocker. Routing with no eligible reviewer remains unassigned. The implemented staff reassignment command rechecks current authority/conflicts, keeps append-only history and audits each version; the current projection invalidates revoked/conflicted assignments. Company notices require an authoritative recipient policy before delivery can be extended to companies. None of these gaps is filled with guessed law, borrowed staff data or relaxed permissions.
+This section is the earlier state, kept as history. The safe generic fallback is implemented and tested; richer status/notice wording still needs an authoritative activated disclosure-policy projection with law-dependent permitted fields. This is a concrete missing engine seam, not an assumed approval or an owner-only blocker. Routing with no eligible reviewer remains unassigned. The implemented staff reassignment command rechecks current authority/conflicts, keeps append-only history and audits each version; the current projection invalidates revoked/conflicted assignments. Company notices require an authoritative recipient policy before delivery can be extended to companies. None of these gaps is filled with guessed law, borrowed staff data or relaxed permissions.
 
 Native-language review, manual screen-reader review, counsel approval and maintainer acceptance remain unverified. No deployment, account/provider setup, spending, external data acquisition, outreach, subagents, extra worktrees, merge or approval was performed.
 

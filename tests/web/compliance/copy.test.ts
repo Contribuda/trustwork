@@ -11,13 +11,15 @@ const locales = readdirSync(root, { withFileTypes: true }).filter((x) => x.isDir
 const keys = (value: Record<string, unknown>, prefix = ''): string[] => Object.entries(value).flatMap(([key, v]) =>
   key.startsWith('$') ? [] : typeof v === 'string' ? [`${prefix}${key}`] : keys(v as Record<string, unknown>, `${prefix}${key}.`));
 
-test('SANC-007: every jurisdiction, screening and participant key exists in all seven locales, with explicit unreviewed flags', () => {
+test('SANC-007: every jurisdiction, screening and participant key exists in every maintained language, with explicit unreviewed flags', () => {
   assert.deepEqual(locales, ['az-Latn', 'en', 'es', 'hy', 'ka', 'ru', 'uz-Latn']);
   for (const namespace of ['jurisdiction', 'screening', 'compliance']) {
     const reference = keys(JSON.parse(readFileSync(`${root}/en/${namespace}.json`, 'utf8'))).sort();
     for (const locale of locales) {
       const dictionary = JSON.parse(readFileSync(`${root}/${locale}/${namespace}.json`, 'utf8'));
-      assert.deepEqual(keys(dictionary).sort(), reference, `${locale}/${namespace}`);
+      // Russian is not maintained (ADR 009 decision 11): it gains no key, a missing one falls back to English.
+      if (locale === 'ru') assert.deepEqual(keys(dictionary).filter((key) => !reference.includes(key)), [], `${locale}/${namespace}`);
+      else assert.deepEqual(keys(dictionary).sort(), reference, `${locale}/${namespace}`);
       assert.ok(!/""|TODO|TBD/.test(JSON.stringify(dictionary)));
       assert.equal(screeningTranslationReview[locale]?.nativeReviewed, false);
       assert.equal(screeningTranslationReview[locale]?.counselReviewed, false);
