@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { capabilityViolations, type AgentCapability } from '../../packages/contracts/src/agent-catalog.js';
 import {
   AGENT_EXTENSION_REASONS, AgentExtensionManifestSchema, AgentExtensionsConfigPayloadSchema, confirmationFloor, DraftExtensionVersionCommandSchema, EXTENSION_MANIFEST_KEYS, extensionActionCapability,
@@ -206,4 +207,10 @@ test('commands are strict and the reason vocabulary has no duplicates', () => {
   assert.ok(!DraftExtensionVersionCommandSchema.safeParse({ ...base, manifest, approved: true }).success);
   assert.equal(new Set(AGENT_EXTENSION_REASONS).size, AGENT_EXTENSION_REASONS.length);
   assert.equal(extensionActionCapability(manifest, research, { extensionId: EXTENSION_ID, version: 1 }).labelKey, 'agentExtensions.capabilityLabel');
+});
+
+test('the contract stays out of the client bundle: client.ts re-exports runtime values from hub-core.ts', () => {
+  for (const file of ['client.ts', 'hub-core.ts', 'hub.ts']) {
+    assert.doesNotMatch(readFileSync(new URL(`../../packages/contracts/src/${file}`, import.meta.url), 'utf8'), /from '\.\/agent-extensions\.js'/, file);
+  }
 });

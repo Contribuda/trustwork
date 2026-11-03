@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { AgentExtensionsConfigPayloadSchema } from './agent-extensions.js';
 import { AgentPolicyDocumentSchema } from './agent-modules.js';
 import { IdSchema, IanaTimeZoneSchema, NameSchema, RevisionSchema, ShortTextSchema, TimestampSchema } from './common/ids.js';
 import { CurrencySchema } from './common/money.js';
@@ -210,8 +209,6 @@ export const CONFIG_PAYLOAD_SCHEMAS: Readonly<Partial<Record<HubConfigDomain, z.
   jurisdiction: JurisdictionConfigPayloadSchema, privacy: PrivacyConfigPayloadSchema, modes: HubModesSchema, payments: HubPaymentSettingsSchema,
   // AGT-003: the AGT-002 HubAgentPolicy wrapped with module controls, capability switches, defaults, job templates and the stored preview.
   agents: AgentPolicyDocumentSchema,
-  // AGT-023: the complete list of active extension versions; the activation hook checks each one.
-  agent_extensions: AgentExtensionsConfigPayloadSchema,
 };
 const GenericPayloadSchema = z.record(z.string().min(1).max(100), z.unknown());
 const MAX_PAYLOAD_BYTES = 65_536;
