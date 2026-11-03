@@ -68,6 +68,8 @@
     "currentOriginal": "Cari orijinal",
     "refresh": "Yenilə",
     "submit": "Redaksiya yoxlamasına göndər",
-    "unsavedDraft": "Bu versiyanı bəyan etməzdən, yoxlamazdan və ya dərc etməzdən əvvəl qaralamanı saxlayın."
+    "unsavedDraft": "Bu versiyanı bəyan etməzdən, yoxlamazdan və ya dərc etməzdən əvvəl qaralamanı saxlayın.",
+    "machineUnreviewed": "Maşın tərcüməsi, yoxlanılmayıb",
+    "creditRequired": "Süni intellektin köməyi ilə hazırlanmış iş adı göstərilən məsul şəxslə dərc olunur. Dərc etməzdən əvvəl adınızın veb səhifələrdə göstərilməsinə razılıq verin."
   }
 }

@@ -1,4 +1,4 @@
-import { ArchiveSchema, FeedSchema, PublicIssueSchema, PublicPublicationSchema, PublicVersionViewSchema, PublicationSchema, type PublicPublication } from '@trustwork/contracts/client';
+import { ArchiveSchema, FeedSchema, PROVENANCE_LABEL_KEYS, PublicIssueSchema, PublicPublicationSchema, PublicVersionViewSchema, PublicationSchema, isMachineCredit, type PublicPublication } from '@trustwork/contracts/client';
 import { z } from 'zod';
 import { currentLocale, t } from '../../i18n';
 import type { Transport } from './transport';
@@ -13,25 +13,25 @@ export function publicSourceUrl(value: string): string | null {
 }
 /** Freeform credit is not proof of an agent being a person. Never turn AI into an author. */
 export function authorCredit(p: Pick<PublicPublication, 'authorship'>): string {
-  return p.authorship.filter(a => a.kind === 'editorial' || a.id !== null).map(a => a.credit.trim()).filter(c => c && !/^(ai|artificial intelligence|chatgpt|claude|codex|\u0438\u0438)$/iu.test(c)).join(' · ');
+  return p.authorship.filter(a => a.kind === 'editorial' || a.id !== null).map(a => a.credit.trim()).filter(c => c && !isMachineCredit(c)).join(' · ');
 }
 export function publicationView(p: PublicPublication, v: PublicPublication['current'] = p.current): PublicationDetail {
   const translation = p.editions.find(e => e.role === 'original');
   const provenance = v.provenance;
   const recorded = provenance?.availability === 'recorded' ? provenance : null;
+  // A recorded kind speaks for itself; the older flags label only what has no such record, so nothing shows twice.
+  const disclosed = recorded !== null && recorded.kind !== 'none';
+  const assisted = v.assistantAssisted || p.authorship.some(a => a.assistantAssisted) || provenance?.machineAssisted === true || translation?.machineAssisted === true;
   const notices = [
     ...(provenance?.availability === 'unavailable' ? [t('publicationProvenance.unavailable')] : []),
-    ...(recorded?.kind === 'ai_assisted' ? [t('publicationProvenance.aiAssisted')] : []),
-    ...(recorded?.kind === 'generated' ? [t('publicationProvenance.generated')] : []),
-    ...(recorded?.kind === 'machine_translation' ? [t('publicationProvenance.machineReviewed')] : []),
-    ...(recorded ? [t('publicationProvenance.declarationEvidence')] : []),
-    ...(recorded?.credits.responsible_editor ? [`${t('publicationProvenance.responsibleEditor')}: ${recorded.credits.responsible_editor}`] : recorded ? [t('publicationProvenance.revoked')] : []),
+    ...(disclosed ? [t(`publicationProvenance.${PROVENANCE_LABEL_KEYS[recorded.kind as keyof typeof PROVENANCE_LABEL_KEYS]}`), t('publicationProvenance.declarationEvidence')] : []),
+    ...(recorded?.credits.responsible_editor ? [`${t('publicationProvenance.responsibleEditor')}: ${recorded.credits.responsible_editor}`] : disclosed ? [t('publicationProvenance.revoked')] : []),
     ...(recorded?.credits.translation_reviewer ? [`${t('publicationProvenance.reviewer')}: ${recorded.credits.translation_reviewer}`] : []),
     ...(recorded?.roles.length ? [`${t('publicationProvenance.declaredRoles')}: ${recorded.roles.map(role => t(`publicationProvenance.roles.${role}`)).join(' · ')}`] : []),
     ...(recorded?.translation?.stale ? [t('publicationProvenance.stale')] : []),
     ...(recorded?.translation || v.language !== currentLocale() ? [t('content.original', { language: recorded?.translation?.originalLanguage ?? v.language })] : []),
-    ...(v.assistantAssisted || p.authorship.some(a => a.assistantAssisted) ? [t('articles.assistantAssisted')] : []),
-    ...(translation?.machineAssisted ? [t('content.machineTranslation')] : []),
+    ...(assisted && !disclosed ? [t('articles.assistantAssisted')] : []),
+    ...(translation?.machineAssisted && recorded?.kind !== 'machine_translation' ? [t('content.machineTranslation')] : []),
     ...(p.retraction ? [t('content.retracted', { note: p.retraction.note })] : []),
   ];
   return {
@@ -39,7 +39,7 @@ export function publicationView(p: PublicPublication, v: PublicPublication['curr
     articleFormat: p.articleFormat === 'project_story' ? 'projectStory' : p.articleFormat,
     title: v.title, shortTitle: null, lede: '', topics: p.topics.filter((x): x is TopicKey => topics.has(x)),
     authorKind: p.authorship[0]?.kind ?? 'editorial', authorLabel: authorCredit(p), authorHref: null,
-    assistantAssisted: v.assistantAssisted || p.authorship.some(a => a.assistantAssisted),
+    assistantAssisted: assisted,
     publishedAt: p.firstPublishedAt, eventTime: v.eventTime, isCorrected: p.corrections.length > 0,
     correctedAt: p.corrections.at(-1)?.correctedAt ?? null, readMinutes: null, region: null, source: null,
     body: v.body ?? '', version: v.version,
@@ -121,7 +121,7 @@ export function contentData(transport: Transport, pdfAvailable?: (path: string) 
       const v = z.object({ projection: z.literal('working'), draft: z.object({ title: z.string(), updatedAt: z.string() }).nullable(), versions: z.array(z.object({ contract: z.object({ title: z.string(), publishedAt: z.string().nullable() }) })) }).parse(raw);
       const latest = v.versions.at(-1)?.contract;
       out.push({ shownInKnown: false, id: p.id, title: v.draft?.title ?? latest?.title ?? '', format: p.format,
-        authorLabel: p.authorship.map(a => a.credit).filter(c => !/^(ai|chatgpt|claude|codex|\u0438\u0438)$/iu.test(c.trim())).join(' · '), status: p.status,
+        authorLabel: p.authorship.map(a => a.credit).filter(c => !isMachineCredit(c)).join(' · '), status: p.status,
         updatedAt: v.draft?.updatedAt ?? latest?.publishedAt ?? p.createdAt, shownIn: [],
         href: p.currentVersion && ['news', 'article', 'magazine_piece'].includes(p.format) ? `/${p.format === 'news' ? 'news' : 'articles'}/${p.id}` : null });
     }

@@ -1,3 +1,5 @@
+import type { PublicationDetail } from '@/app/_lib/data';
+import { t } from '@/app/_lib/i18n';
 export type FeedEntry = { id: string; url: string; title: string; text: string; published: string; modified: string; language: string; authors?: string[] };
 export type ReaderFeed = { title: string; url: string; feedUrl: string; language: string; entries: FeedEntry[] };
 export function xmlEscape(value: string): string {
@@ -10,4 +12,12 @@ export function serializeFeed(feed: ReaderFeed, format: 'rss' | 'atom' | 'json')
   const x = xmlEscape;
   if (format === 'atom') return { type: 'application/atom+xml', body: `<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="${x(feed.language)}"><id>${x(feed.url)}</id><title>${x(feed.title)}</title><link href="${x(feed.url)}"/><link rel="self" href="${x(feed.feedUrl)}"/><updated>${x(feed.entries.map(e => e.modified).sort().at(-1) ?? '1970-01-01T00:00:00.000Z')}</updated>${feed.entries.filter(e => e.authors?.length).map(e => `<entry><id>${x(e.id)}</id><title>${x(e.title)}</title>${(e.authors ?? []).map(a => `<author><name>${x(a)}</name></author>`).join('')}<link href="${x(e.url)}"/><published>${x(e.published)}</published><updated>${x(e.modified)}</updated><content type="text">${x(e.text)}</content></entry>`).join('')}</feed>` };
   return { type: 'application/rss+xml', body: `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>${x(feed.title)}</title><link>${x(feed.url)}</link><description>${x(feed.title)}</description><language>${x(feed.language)}</language>${feed.entries.map(e => `<item><title>${x(e.title)}</title><link>${x(e.url)}</link><guid isPermaLink="false">${x(e.id)}</guid><pubDate>${new Date(e.modified).toUTCString()}</pubDate><description>${x(e.text)}</description></item>`).join('')}</channel></rss>` };
+}
+
+/** An entry's plain text: original link, correction, every disclosure notice, body and sources. */
+export function publicationFeedText(item: PublicationDetail, link: (path: string) => string): string {
+  const original = item.content?.provenance?.availability === 'recorded' ? item.content.provenance.translation : undefined;
+  return [original ? `${t('publicationProvenance.originalLink')}: ${link(`/${original.originalFormat === 'news' ? 'news' : 'articles'}/${original.originalPublicationId}?version=${original.originalVersion}`)}` : '',
+    item.correction ? `${t('common.corrected')}: ${item.correction.note}` : '', ...(item.content?.notices ?? []), item.body,
+    ...(item.content?.sources.map(s => `${s.name}${s.url ? ` (${s.url})` : ''}${s.licence ? ` · ${s.licence}` : ''}`) ?? [])].filter(Boolean).join('\n\n');
 }

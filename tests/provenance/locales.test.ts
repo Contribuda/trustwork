@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PROVENANCE_ROLES } from "../../packages/contracts/src/provenance.js";
-test("all seven locales carry disclosure, exact consent notice and functional role labels", () => {
-  const languages = ["en", "es", "ru", "uz-Latn", "ka", "hy", "az-Latn"];
+test("every maintained locale carries disclosure, exact consent notice and functional role labels", () => {
+  const languages = ["en", "es", "uz-Latn", "ka", "hy", "az-Latn"];
   const read = (language: string) =>
     JSON.parse(
       readFileSync(

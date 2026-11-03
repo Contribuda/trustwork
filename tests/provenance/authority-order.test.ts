@@ -33,6 +33,7 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
     return { binding: v.binding, original, expectedRevision: v.record?.revision ?? 0, kind: original ? 'machine_translation' : 'ai_assisted',
       roles: [original ? 'editorial_translator' : 'editorial_writer'], evidence: 'human_declaration', reason: 'Synthetic exact authority test' };
   }
+  const credited = (provenanceId: string) => as(p.writer, trx => provenance.consent(trx, ctx('writer'), { provenanceId, role: 'responsible_editor', credit: 'Synthetic Writer', channels: ['web'], noticeVersion: 'provenance.credit.v1', informedConsent: true }));
   async function pair(reviewed = true) {
     let original = await create();
     original = await as(p.writer, trx => withProvenanceFixtures(w).publish(trx, null, original.id, original.revision, null));
@@ -42,7 +43,10 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
     const record = await as(p.writer, trx => provenance.declare(trx, ctx('writer'), input));
     await as(p.writer, trx => publications.grantEditor(trx, translation.id, p.coauthor, 'publish'));
     const review = { provenanceId: record.id, binding: input.binding, original: input.original!, reason: 'Synthetic independent review' };
-    if (reviewed) await as(p.coauthor, trx => provenance.review(trx, ctx('coauthor'), review));
+    if (reviewed) {
+      await as(p.coauthor, trx => provenance.review(trx, ctx('coauthor'), review));
+      await credited(record.id);
+    }
     return { original, translation: (await as(p.writer, trx => publications.get(trx, translation.id)))!, input, record, review };
   }
   const pid = async (trx: Transaction) => (await sql<{ id: number }>`SELECT pg_backend_pid() id`.execute(trx)).rows[0]!.id;
@@ -123,6 +127,7 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
             const input = await declaration(pub.id, f.input.original);
             const r = await as(p.writer, trx => provenance.declare(trx, ctx('writer'), input));
             await as(p.coauthor, trx => provenance.review(trx, ctx('coauthor'), { provenanceId: r.id, binding: input.binding, original: input.original!, reason: 'Synthetic correction review' }));
+            await credited(r.id);
             pub = (await as(p.writer, trx => publications.get(trx, pub.id)))!;
             release = trx => publications.correct(trx, ctx('writer'), pub.id, pub.revision, draft({ language: 'es', body: 'Synthetic correction', assistantAssisted: true }), 'Synthetic correction', 'Synthetic correction');
           } else if (path === 'issue') {
@@ -146,6 +151,7 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
             const r = first === 'provenance'
               ? await as(p.writer, trx => provenance.declare(trx, ctx('writer'), input))
               : (await as(p.writer, trx => provenance.history(trx, pub.id))).at(-1)!;
+            if (first === 'provenance') await credited(r.id);
             provCommand = trx => provenance.review(trx, ctx('coauthor'), { provenanceId: r.id, binding: input.binding, original: input.original!, reason: 'Synthetic racing review' });
           }
           const releasePerson = path === 'issue' || path === 'digest' ? p.chief : p.writer;
@@ -155,7 +161,13 @@ test('PROV actual owning lock order and post-wait command admission', { skip: db
           const error = first === 'release'
             ? await ordered(releasePerson, release, provPerson, provCommand, { table: 'publication', id: f.original.id })
             : await ordered(provPerson, provCommand, releasePerson, release, { table: 'publication', id: pub.id });
-          if (competing === 'declaration' && first === 'provenance') assert.equal((error as { hint: string })?.hint, 'content.provenance_review_required');
+          // The worker records a refusal and goes on to the next piece; every other path returns it to the caller.
+          if (competing === 'declaration' && first === 'provenance' && path === 'scheduled-worker') {
+            assert.equal(error, null);
+            assert.equal((await as(p.writer, trx => publications.get(trx, pub.id)))?.status, 'scheduled');
+            const refusals = await withMaintenance(db.admin, trx => trx.selectFrom('audit_event').select('reason').where('object_id', '=', pub.id).where('action', '=', 'publication.schedule_blocked').execute());
+            assert.deepEqual(refusals.map(r => r.reason), ['content.provenance_review_required']);
+          } else if (competing === 'declaration' && first === 'provenance') assert.equal((error as { hint: string })?.hint, 'content.provenance_review_required');
           else if (competing === 'review' && first === 'release') assert.equal((error as { code: string })?.code, '23505');
           else assert.equal(error, null);
           const original = (await as(p.writer, trx => publications.versions(trx, f.original.id)))[0]!;

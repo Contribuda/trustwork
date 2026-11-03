@@ -68,6 +68,8 @@
     "currentOriginal": "Original actual",
     "refresh": "Actualizar",
     "submit": "Enviar a revisión editorial",
-    "unsavedDraft": "Guarde el borrador antes de declarar, revisar o publicar esta versión."
+    "unsavedDraft": "Guarde el borrador antes de declarar, revisar o publicar esta versión.",
+    "machineUnreviewed": "Traducción automática, sin revisar",
+    "creditRequired": "El trabajo asistido por IA se publica con una persona responsable identificada. Autorice su crédito en las páginas web antes de publicar."
   }
 }

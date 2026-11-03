@@ -16,6 +16,12 @@ export function withProvenanceFixtures(w: ContentWorld) {
     const key=Object.keys(w.people).find(key=>w.people[key as keyof typeof w.people]===person)!;
     return {sessionId:w.admin.sessions[key]!,requestId:`synthetic-prov-${randomUUID()}`,...staff};
   }
+  /** A disclosed piece is released under its responsible person's named credit. */
+  async function credit(trx: Transaction, staff: ContentStaffContext | import('../../packages/data/src/repositories/content.js').ContentCorrectionContext | null,id:string,versionId:string) {
+    const record=(await provenance.history(trx,id)).filter(r=>r.version_id===versionId).at(-1)!;
+    const name=(await sql<{name:string}>`SELECT display_name AS name FROM trustwork.person WHERE id=trustwork.current_person_id()`.execute(trx)).rows[0]!.name;
+    await provenance.consent(trx,await context(trx,staff),{provenanceId:record.id,role:'responsible_editor',credit:name,channels:['web'],noticeVersion:'provenance.credit.v1',informedConsent:true});
+  }
   async function declare(trx: Transaction, staff: ContentStaffContext | import('../../packages/data/src/repositories/content.js').ContentCorrectionContext | null,id:string) {
     const v=(await publications.versions(trx,id)).at(-1);if(!v)return;
     const previous=(await provenance.history(trx,id)).filter(r=>r.version_id===v.id).at(-1);
@@ -24,6 +30,7 @@ export function withProvenanceFixtures(w: ContentWorld) {
     if(previous?.version_digest===digest.value && (v.status==='published'||previous.version_revision===v.revision))return;
     const assisted=v.assistant_assisted || (await publications.authorship(trx,id)).some(a=>a.assistant_assisted);
     await provenance.declare(trx,await context(trx,staff),{binding:{publicationId:id,version:v.version,digest},expectedRevision:previous?.revision??0,kind:assisted?'ai_assisted':'none',roles:assisted?['editorial_writer']:[],evidence:'human_declaration',original:null,reason:'Synthetic legacy fixture declaration'});
+    if(assisted)await credit(trx,staff,id,v.id);
   }
   return {
     declare,
@@ -45,5 +52,9 @@ export async function declareHttpFixture(client: import('../backend/helpers/app.
   const { ok } = await import('./http.js');
   const view=ProvenanceWorkspaceSchema.parse(ok(await client.get(`/v1/provenance/publications/${id}`)));
   ok(await client.post('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:view.record?.revision??0,kind:view.draft.assistantAssisted?'ai_assisted':'none',roles:view.draft.assistantAssisted?['editorial_writer']:[],evidence:'human_declaration',original:null,reason:'Synthetic API fixture declaration'},...(staff?{staff}:{})}),201);
+  if(view.draft.assistantAssisted){
+    const record=ProvenanceWorkspaceSchema.parse(ok(await client.get(`/v1/provenance/publications/${id}`))).record!;
+    ok(await client.post('/v1/provenance/consents',{provenanceId:record.id,role:'responsible_editor',credit:view.credit,channels:['web'],noticeVersion:'provenance.credit.v1',informedConsent:true}),201);
+  }
   return view;
 }

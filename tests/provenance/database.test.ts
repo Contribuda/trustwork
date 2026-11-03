@@ -224,21 +224,35 @@ test(
         );
       },
     );
+    let consentId: string;
     await t.test(
       "draft has no delivery metadata; publication composes the real CNT command",
       async () => {
         assert.equal(await metadata(pub.id), null);
+        await refused(
+          as(p.writer, (trx) =>
+            provenance.publish(trx, ctx("writer"), record.id, pub.revision),
+          ),
+          "23514",
+          "content.provenance_credit_required",
+        );
+        consentId = (
+          await as(p.writer, (trx) =>
+            provenance.consent(trx, ctx("writer"), consent),
+          )
+        ).id;
         const result = await as(p.writer, (trx) =>
           provenance.publish(trx, ctx("writer"), record.id, pub.revision),
         );
         assert.equal(result.status, "published");
         const out = await metadata(pub.id);
         assert.equal(out?.machineAssisted, true);
-        assert.deepEqual(out?.credits, {});
+        assert.deepEqual(out?.credits, {
+          responsible_editor: "Synthetic Writer",
+        });
         assert.ok(!JSON.stringify(out).includes(p.writer));
       },
     );
-    let consentId: string;
     await t.test(
       "own explicit scope only; no generic consent or other person may name the editor",
       async () => {
@@ -259,10 +273,13 @@ test(
           "23514",
           "provenance.consent_required",
         );
-        const row = await as(p.writer, (trx) =>
-          provenance.consent(trx, ctx("writer"), consent),
+        await refused(
+          as(p.writer, (trx) =>
+            provenance.consent(trx, ctx("writer"), consent),
+          ),
+          "23514",
+          "provenance.consent_overlap",
         );
-        consentId = row.id;
         assert.deepEqual((await metadata(pub.id))?.credits, {
           responsible_editor: "Synthetic Writer",
         });
@@ -423,6 +440,24 @@ test(
           ),
         );
         assert.equal(results.filter((x) => x.status === "fulfilled").length, 1);
+        await refused(
+          as(p.writer, (trx) =>
+            provenance.publish(
+              trx,
+              ctx("writer"),
+              trRecord.id,
+              translation.revision,
+            ),
+          ),
+          "23514",
+          "content.provenance_credit_required",
+        );
+        await as(p.writer, (trx) =>
+          provenance.consent(trx, ctx("writer"), {
+            ...consent,
+            provenanceId: trRecord.id,
+          }),
+        );
         await as(p.writer, (trx) =>
           provenance.publish(
             trx,
@@ -435,7 +470,9 @@ test(
           (await metadata(translation.id))?.translation?.stale,
           false,
         );
-        assert.deepEqual((await metadata(translation.id))?.credits, {});
+        assert.deepEqual((await metadata(translation.id))?.credits, {
+          responsible_editor: "Synthetic Writer",
+        });
       },
     );
     await t.test(

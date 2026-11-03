@@ -1,10 +1,19 @@
 import { sql } from 'kysely';
 import { z } from 'zod';
+import type { DataPool } from '@trustwork/data';
+import { contentWorker } from '../../../../packages/data/src/repositories/content.js';
+import { inTransaction } from '../db.js';
 import type { HandlerRegistry } from '../handlers.js';
+import type { ScheduledTask } from '../scheduler.js';
 import { renderLocalPdf, type PdfRenderer } from './render.js';
 
 export const CONTENT_RENDER_KIND = 'content.render_pdf';
 const Payload = z.strictObject({ renderId: z.uuid() });
+/** Releases what a person scheduled once its time comes. Every publication rule is rechecked in the database. */
+export function contentPublishDueTask(deps: { pool: DataPool }): ScheduledTask {
+  return { name: 'content.publish_due', intervalSeconds: 60, run: () => inTransaction(deps.pool, async trx => ({ published: await contentWorker.publishDue(trx) })) };
+}
+
 /** Local computation only; bytes, completion and worker fencing commit together in the job transaction. */
 export function registerContent(registry: HandlerRegistry, render: PdfRenderer = renderLocalPdf): void {
   registry.onOutbox({ name: CONTENT_RENDER_KIND, type: 'issue.render_requested', async handle(event, context) {

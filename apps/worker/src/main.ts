@@ -4,7 +4,7 @@ import { agentOccurrencesTask, registerAgentOccurrences } from './agent-modules/
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { workerConfigFromEnv } from './config.js';
 import { consultationRemindersTask, registerConsultationReminders, ReminderChannelFake, type ReminderRuntime } from './consultations/reminders.js';
-import { registerContent } from './content/index.js';
+import { contentPublishDueTask, registerContent } from './content/index.js';
 import { assertWorkerRole, createWorkerPool } from './db.js';
 import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntime } from './files/index.js';
 import { HandlerRegistry } from './handlers.js';
@@ -98,7 +98,7 @@ async function main(): Promise<void> {
     pool, registry, config, log, metrics,
     tasks: (deps) => [agentOccurrencesTask(pool), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       pipelineScheduleTask({ pool, log }), pipelineRunTask({ pool, log, steps: pipelineSteps, workerId: config.workerId }), pipelineMaintenanceTask({ pool, log }),
-      verificationRecheckTask({ pool, log }), registersRefreshTask({ pool, log }), registersExpiryTask({ pool, log }), datasetsSweepTask({ pool, log }),
+      contentPublishDueTask({ pool }), verificationRecheckTask({ pool, log }), registersRefreshTask({ pool, log }), registersExpiryTask({ pool, log }), datasetsSweepTask({ pool, log }),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
       ...(consultations ? [consultationRemindersTask(consultations)] : []),
       ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),
