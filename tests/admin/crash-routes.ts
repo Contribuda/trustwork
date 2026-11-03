@@ -121,6 +121,33 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   await run('admin.staff.access_review_withdraw', c.admin, `/v1/admin/staff/access-reviews/${mistaken.id}/withdraw`, {},
     () => count(admin, "SELECT 1 FROM trustwork.staff_access_review_campaign WHERE status = 'withdrawn'"));
 
+  // ADM-004 accountability and offboarding: the hub owner answers for a function, hands an agent role to the lead who
+  // accepts, ends one; the agent is offboarded (the lead's role is handed back first) and another offboarding is cancelled.
+  const accountabilityRows = (where: string) => () => count(admin, `SELECT 1 FROM trustwork.staff_accountability WHERE ${where}`);
+  await run('admin.staff.accountability_assign', c.hubOwner, '/v1/admin/staff/accountability', { hubId: world.hubId, functionKey: 'leadership', kind: 'function_owner', agentRoleKey: null, personId: p.hubOwner, requiredRole: 'hub-owner' },
+    accountabilityRows("function_key = 'leadership'"));
+  const supportDesk = (await plain(c.hubOwner, '/v1/admin/staff/accountability', { hubId: world.hubId, functionKey: 'support', kind: 'agent_role', agentRoleKey: 'support_triage', personId: p.hubOwner, requiredRole: null })).accountability as { id: string };
+  const offered = (await run('admin.staff.accountability_offer', c.hubOwner, `/v1/admin/staff/accountability/${supportDesk.id}/offer`, { toPersonId: p.lead },
+    () => count(admin, 'SELECT 1 FROM trustwork.staff_accountability_offer'))).body as { offer: { id: string } };
+  await run('admin.staff.accountability_respond', c.lead, `/v1/admin/staff/accountability/offers/${offered.offer.id}/respond`, { accept: true },
+    accountabilityRows("end_reason = 'handed_over'"));
+  const handed = (await admin.query<{ id: string }>("SELECT id FROM trustwork.staff_accountability WHERE agent_role_key = 'support_triage' AND status = 'active'")).rows[0];
+  assert.ok(handed, 'the lead now answers for the support triage agent role');
+  const leadRole = (await admin.query<{ id: string }>("SELECT id FROM trustwork.staff_role_assignment WHERE person_id = $1 AND role = 'support-lead' AND revoked_at IS NULL", [p.lead])).rows[0];
+  assert.ok(leadRole);
+  // Revoking the lead's role suspends the accountability (the hub owner is offered it); the lead gets the role back and the row resumes.
+  await plain(c.admin, `/v1/admin/staff/assignments/${leadRole.id}/revoke`, {});
+  await plain(c.owner, '/v1/admin/staff/assignments', { personId: p.lead, role: 'support-lead', scope: hub, definitionVersion: 1 });
+  await run('admin.staff.accountability_resume', c.hubOwner, `/v1/admin/staff/accountability/${handed.id}/resume`, {}, accountabilityRows("id = '" + handed.id + "' AND status = 'active'"));
+  await run('admin.staff.accountability_end', c.hubOwner, `/v1/admin/staff/accountability/${handed.id}/end`, {}, accountabilityRows("end_reason = 'ended'"));
+  const offboarding = (await run('admin.staff.offboarding_start', c.hubOwner, '/v1/admin/staff/offboardings', { personId: p.agent, scope: hub },
+    () => count(admin, 'SELECT 1 FROM trustwork.staff_offboarding'))).body as { offboarding: { id: string } };
+  await run('admin.staff.offboarding_complete', c.hubOwner, `/v1/admin/staff/offboardings/${offboarding.offboarding.id}/complete`, {},
+    () => count(admin, "SELECT 1 FROM trustwork.staff_offboarding WHERE status = 'completed'"));
+  const toCancelOffboarding = (await plain(c.hubOwner, '/v1/admin/staff/offboardings', { personId: p.moderator, scope: hub })).offboarding as { id: string };
+  await run('admin.staff.offboarding_cancel', c.hubOwner, `/v1/admin/staff/offboardings/${toCancelOffboarding.id}/cancel`, {},
+    () => count(admin, "SELECT 1 FROM trustwork.staff_offboarding WHERE status = 'cancelled'"));
+
   // Approvals: request, approve, decline, withdraw; break-glass consumes one.
   const subject = { action: 'staff.grant_breakglass', personId: p.lead2, role: 'moderator', scope: hub, definitionVersion: 1, incidentId: incident.incident.id, validForSeconds: 3600 };
   const approvals = () => count(admin, 'SELECT 1 FROM trustwork.second_person_approval');

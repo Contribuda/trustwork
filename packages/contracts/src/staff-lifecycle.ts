@@ -6,7 +6,8 @@ import { BREAKGLASS_MAX_HOURS, consoleCommand, ConsolePermissionSchema, HubStaff
 /**
  * ADM-004 staff lifecycle and access governance (docs/engine/hub-console/console-design.md, section 4.2). This file
  * grows with the package: part 1 holds the staff directory and the effective-access query, part 2 invitations, part 3
- * eligible roles with just-in-time activation and the role-change preview.
+ * eligible roles with just-in-time activation and the role-change preview, part 4 access reviews, part 5 function
+ * accountability and offboarding.
  *
  * Nothing here describes what a staff member does: no activity, sign-in times, counts of decisions, response times or
  * any other behaviour or productivity measure (a schema walk in tests/admin/staff-lifecycle checks the field names).
@@ -82,6 +83,9 @@ export const InviteStaffCommandSchema = consoleCommand({
   scope: InvitationScopeSchema,
   definitionVersion: z.int().min(1),
   validForSeconds: z.int().min(3600).max(31_622_400).nullable(),
+  /** The function position the person is invited into (hub scope only); TEAM-001 hands the position over once the role is held. */
+  functionKey: z.string().regex(/^[a-z][a-z0-9_]{1,63}$/).nullable().optional(),
+  functionTitle: z.string().trim().min(1).max(100).nullable().optional(),
 });
 /** `POST /v1/me/staff-invitations/:id/respond`: the invitee accepts (with a second factor) or declines. */
 export const RespondStaffInvitationSchema = z.strictObject({ accept: z.boolean() });
@@ -105,6 +109,8 @@ export const StaffInvitationViewSchema = z.strictObject({
   respondedAt: TimestampSchema.nullable(),
   approvalId: IdSchema.nullable(),
   assignmentId: IdSchema.nullable(),
+  functionKey: z.string().nullable(),
+  functionTitle: z.string().nullable(),
   revision: z.int().min(1),
 });
 export type StaffInvitationView = z.infer<typeof StaffInvitationViewSchema>;
@@ -118,6 +124,8 @@ export const MyStaffInvitationSchema = z.strictObject({
   reason: z.string(),
   inviterName: z.string(),
   expiresAt: TimestampSchema,
+  functionKey: z.string().nullable(),
+  functionTitle: z.string().nullable(),
 });
 export type MyStaffInvitation = z.infer<typeof MyStaffInvitationSchema>;
 
@@ -309,3 +317,122 @@ export const AccessReviewCampaignSchema = z.strictObject({
   revision: z.int().min(1),
 });
 export type AccessReviewCampaign = z.infer<typeof AccessReviewCampaignSchema>;
+
+/* ---------- Part 5: function accountability and offboarding ---------- */
+
+/** The 23 functions of the hub operating company (docs/engine/hub-operating-company.md, section 5.0); TEAM-001 publishes the catalogue. */
+export const HUB_FUNCTION_KEYS = [
+  'leadership', 'strategy', 'editorial', 'marketing', 'outreach_partnerships', 'community', 'sales', 'support', 'trust_safety', 'compliance', 'finance', 'legal',
+  'people', 'quality', 'culture_ethics', 'research', 'events_learning', 'localisation', 'data_stewardship', 'it_operations', 'procurement', 'analytics', 'federation',
+] as const;
+export const HubFunctionKeySchema = z.enum(HUB_FUNCTION_KEYS);
+export type HubFunctionKey = z.infer<typeof HubFunctionKeySchema>;
+const AgentRoleKey = z.string().regex(/^[a-z][a-z0-9_]{1,63}$/);
+
+export const AccountabilityKindSchema = z.enum(['function_owner', 'agent_role']);
+export const AccountabilityStatusSchema = z.enum(['active', 'suspended', 'ended']);
+
+/** `POST /v1/admin/staff/accountability`: name who answers for a function of the hub or for one of its agent roles. */
+export const AssignAccountabilityCommandSchema = consoleCommand({
+  reasonCode: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).optional(),
+  hubId: Uuid,
+  functionKey: HubFunctionKeySchema,
+  kind: AccountabilityKindSchema,
+  agentRoleKey: AgentRoleKey.nullable(),
+  personId: Uuid,
+  requiredRole: HubStaffRoleSchema.nullable(),
+}).refine((c) => (c.kind === 'agent_role') === (c.agentRoleKey !== null), { message: 'an agent role names its key; a function owner names none' });
+/** `POST /v1/admin/staff/accountability/:id/offer`: offer the hand-over to a named person, who must accept. */
+export const OfferAccountabilityCommandSchema = consoleCommand({
+  reasonCode: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).optional(),
+  toPersonId: Uuid,
+});
+/** `POST /v1/admin/staff/accountability/offers/:id/respond`: the person named accepts or declines. */
+export const RespondAccountabilityOfferCommandSchema = consoleCommand({
+  reasonCode: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).optional(),
+  accept: z.boolean(),
+});
+
+export const AccountabilityOfferSchema = z.strictObject({
+  id: IdSchema,
+  accountabilityId: IdSchema,
+  toPersonId: IdSchema,
+  offeredBy: IdSchema,
+  offboardingId: IdSchema.nullable(),
+  reason: z.string(),
+  status: z.enum(['pending', 'accepted', 'declined', 'withdrawn']),
+  decidedAt: TimestampSchema.nullable(),
+  successorId: IdSchema.nullable(),
+  revision: z.int().min(1),
+});
+export type AccountabilityOffer = z.infer<typeof AccountabilityOfferSchema>;
+/**
+ * Who answers for a function or an agent role. `effective` is computed at every read: `suspended` when the row is
+ * suspended or the holder no longer holds the role the function needs (a role that ended by the clock), else the status.
+ */
+export const AccountabilitySchema = z.strictObject({
+  id: IdSchema,
+  hubId: IdSchema,
+  functionKey: HubFunctionKeySchema,
+  kind: AccountabilityKindSchema,
+  agentRoleKey: AgentRoleKey.nullable(),
+  personId: IdSchema,
+  holderName: z.string(),
+  requiredRole: HubStaffRoleSchema.nullable(),
+  status: AccountabilityStatusSchema,
+  effective: AccountabilityStatusSchema,
+  suspendedReason: z.enum(['holder_lost_role', 'offboarding']).nullable(),
+  assignedBy: IdSchema,
+  reason: z.string(),
+  predecessorId: IdSchema.nullable(),
+  endedAt: TimestampSchema.nullable(),
+  endReason: z.enum(['ended', 'handed_over']).nullable(),
+  pendingOffers: z.array(AccountabilityOfferSchema),
+  revision: z.int().min(1),
+});
+export type Accountability = z.infer<typeof AccountabilitySchema>;
+
+/** `POST /v1/admin/staff/offboardings`: start the guided offboarding of a person at a scope (`admin.staff.revoke` there). */
+export const StartOffboardingCommandSchema = consoleCommand({
+  reasonCode: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).optional(),
+  personId: Uuid,
+  scope: InvitationScopeSchema,
+});
+const Suggested = z.array(z.strictObject({ personId: IdSchema, displayName: z.string() }));
+/**
+ * What completing the offboarding revokes, what blocks it, and the open work to hand to someone else, each with people
+ * suggested by role (never by workload). Admin clients are listed for completeness: no admin-client table exists yet.
+ */
+export const OffboardingChecklistSchema = z.strictObject({
+  roles: z.array(z.strictObject({ assignmentId: IdSchema, role: HubStaffRoleSchema, scope: StaffScopeSchema, breakglass: z.boolean() })),
+  eligibleRoles: z.array(z.strictObject({ eligibleRoleId: IdSchema, role: HubStaffRoleSchema, scope: StaffScopeSchema })),
+  activations: z.array(z.strictObject({ activationId: IdSchema, role: HubStaffRoleSchema, status: z.enum(['pending', 'active']) })),
+  approvalRequests: z.array(z.strictObject({ approvalId: IdSchema, action: z.string(), status: z.enum(['pending', 'approved']) })),
+  adminClients: z.array(z.never()),
+  accountabilities: z.array(z.strictObject({
+    accountabilityId: IdSchema, hubId: IdSchema, functionKey: HubFunctionKeySchema, kind: AccountabilityKindSchema, agentRoleKey: AgentRoleKey.nullable(),
+    status: AccountabilityStatusSchema, requiredRole: HubStaffRoleSchema.nullable(),
+    offers: z.array(z.strictObject({ offerId: IdSchema, toPersonId: IdSchema, toPersonName: z.string(), status: z.literal('pending') })),
+    suggested: Suggested,
+  })),
+  supportCases: z.array(z.strictObject({ caseId: IdSchema, hubId: IdSchema, number: z.string(), status: z.string(), suggested: Suggested })),
+  incidents: z.array(z.strictObject({ incidentId: IdSchema, scope: StaffScopeSchema, title: z.string(), status: z.string(), suggested: Suggested })),
+  reviewItems: z.array(z.strictObject({ itemId: IdSchema, campaignId: IdSchema, role: HubStaffRoleSchema })),
+});
+export type OffboardingChecklist = z.infer<typeof OffboardingChecklistSchema>;
+export const OffboardingSchema = z.strictObject({
+  id: IdSchema,
+  personId: IdSchema,
+  scope: StaffScopeSchema,
+  reason: z.string(),
+  startedBy: IdSchema,
+  status: z.enum(['open', 'completed', 'cancelled']),
+  completedAt: TimestampSchema.nullable(),
+  completedBy: IdSchema.nullable(),
+  cancelledBy: IdSchema.nullable(),
+  /** True while an accountability of the person at a covered hub is still open: completion is refused. */
+  blocked: z.boolean(),
+  checklist: OffboardingChecklistSchema,
+  revision: z.int().min(1),
+});
+export type Offboarding = z.infer<typeof OffboardingSchema>;

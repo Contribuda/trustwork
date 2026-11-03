@@ -3,7 +3,8 @@ import type { Transaction } from '../pool.js';
 import type { CommandContext, StaffTarget } from './admin.js';
 import type { StaffRoleAssignmentRow } from '../schema/admin.js';
 import type {
-  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffActivationJoinedRow, StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow,
+  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffAccountabilityOfferRow, StaffAccountabilityReadRow, StaffAccountabilityRow, StaffActivationJoinedRow,
+  StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow, StaffOffboardingRow,
 } from '../schema/staff-lifecycle.js';
 import '../schema/staff-lifecycle.js';
 
@@ -37,10 +38,10 @@ export const staffLifecycle = {
     return rows;
   },
 
-  async invite(trx: Transaction, ctx: CommandContext, input: { email: string; role: string; scope: StaffTarget; definitionVersion: number; validForSeconds: number | null }): Promise<StaffInvitationRow> {
+  async invite(trx: Transaction, ctx: CommandContext, input: { email: string; role: string; scope: StaffTarget; definitionVersion: number; validForSeconds: number | null; functionKey?: string | null; functionTitle?: string | null }): Promise<StaffInvitationRow> {
     const s = scopeArgs(input.scope);
     const { rows } = await sql<StaffInvitationRow>`SELECT * FROM trustwork.staff_invite(${ctxJson(ctx)}::jsonb, ${input.email}::text, ${input.role}::text, ${s.kind}::text,
-      ${s.node}::uuid, ${s.hub}::uuid, ${input.definitionVersion}::integer, ${input.validForSeconds}::bigint)`.execute(trx);
+      ${s.node}::uuid, ${s.hub}::uuid, ${input.definitionVersion}::integer, ${input.validForSeconds}::bigint, ${input.functionKey ?? null}::text, ${input.functionTitle ?? null}::text)`.execute(trx);
     return rows[0] as StaffInvitationRow;
   },
   async respond(trx: Transaction, invitationId: string, accept: boolean): Promise<StaffInvitationRow> {
@@ -140,6 +141,70 @@ export const staffLifecycle = {
   },
   async accessReviewItem(trx: Transaction, itemId: string): Promise<StaffAccessReviewItemRow | undefined> {
     return trx.selectFrom('staff_access_review_item').selectAll().where('id', '=', itemId).executeTakeFirst();
+  },
+
+  /* ---------- Part 5: accountability and offboarding ---------- */
+
+  async assignAccountability(trx: Transaction, ctx: CommandContext, input: { hubId: string; functionKey: string; kind: 'function_owner' | 'agent_role'; agentRoleKey: string | null; personId: string; requiredRole: string | null }): Promise<StaffAccountabilityRow> {
+    const { rows } = await sql<StaffAccountabilityRow>`SELECT * FROM trustwork.staff_accountability_assign(${ctxJson(ctx)}::jsonb, ${input.hubId}::uuid, ${input.functionKey}::text, ${input.kind}::text,
+      ${input.agentRoleKey}::text, ${input.personId}::uuid, ${input.requiredRole}::text)`.execute(trx);
+    return rows[0] as StaffAccountabilityRow;
+  },
+  async endAccountability(trx: Transaction, ctx: CommandContext, id: string): Promise<StaffAccountabilityRow> {
+    const { rows } = await sql<StaffAccountabilityRow>`SELECT * FROM trustwork.staff_accountability_end(${ctxJson(ctx)}::jsonb, ${id}::uuid)`.execute(trx);
+    return rows[0] as StaffAccountabilityRow;
+  },
+  async resumeAccountability(trx: Transaction, ctx: CommandContext, id: string): Promise<StaffAccountabilityRow> {
+    const { rows } = await sql<StaffAccountabilityRow>`SELECT * FROM trustwork.staff_accountability_resume(${ctxJson(ctx)}::jsonb, ${id}::uuid)`.execute(trx);
+    return rows[0] as StaffAccountabilityRow;
+  },
+  async offerAccountability(trx: Transaction, ctx: CommandContext, id: string, toPersonId: string): Promise<StaffAccountabilityOfferRow> {
+    const { rows } = await sql<StaffAccountabilityOfferRow>`SELECT * FROM trustwork.staff_accountability_offer(${ctxJson(ctx)}::jsonb, ${id}::uuid, ${toPersonId}::uuid)`.execute(trx);
+    return rows[0] as StaffAccountabilityOfferRow;
+  },
+  async respondAccountabilityOffer(trx: Transaction, ctx: CommandContext, offerId: string, accept: boolean): Promise<{ offer: StaffAccountabilityOfferRow; accountability: StaffAccountabilityRow }> {
+    const { rows } = await sql<{ offer: StaffAccountabilityOfferRow; accountability: StaffAccountabilityRow }>`SELECT to_jsonb(r.offer) AS offer, to_jsonb(r.accountability) AS accountability
+      FROM trustwork.staff_accountability_respond(${ctxJson(ctx)}::jsonb, ${offerId}::uuid, ${accept}::boolean) r`.execute(trx);
+    return rows[0]!;
+  },
+  /** The hub's accountability rows the caller may see, with whether each holder holds the needed role now. */
+  async accountabilities(trx: Transaction, hubId: string): Promise<StaffAccountabilityReadRow[]> {
+    const { rows } = await sql<{ accountability: StaffAccountabilityRow; holder_ok: boolean; holder_name: string }>`SELECT to_jsonb(r.accountability) AS accountability, r.holder_ok, r.holder_name
+      FROM trustwork.staff_accountabilities(${hubId}::uuid) r`.execute(trx);
+    return rows;
+  },
+  async pendingOffers(trx: Transaction, accountabilityIds: string[]): Promise<StaffAccountabilityOfferRow[]> {
+    if (!accountabilityIds.length) return [];
+    return trx.selectFrom('staff_accountability_offer').selectAll().where('accountability_id', 'in', accountabilityIds).where('status', '=', 'pending').orderBy('created_at').execute();
+  },
+  /** Offers to the signed-in person (row-level security shows them their own). */
+  async myOffers(trx: Transaction, personId: string): Promise<StaffAccountabilityOfferRow[]> {
+    return trx.selectFrom('staff_accountability_offer').selectAll().where('to_person_id', '=', personId).where('status', '=', 'pending').orderBy('created_at').execute();
+  },
+  async startOffboarding(trx: Transaction, ctx: CommandContext, personId: string, scope: StaffTarget): Promise<StaffOffboardingRow> {
+    const s = scopeArgs(scope);
+    const { rows } = await sql<StaffOffboardingRow>`SELECT * FROM trustwork.staff_offboarding_start(${ctxJson(ctx)}::jsonb, ${personId}::uuid, ${s.kind}::text, ${s.node}::uuid, ${s.hub}::uuid)`.execute(trx);
+    return rows[0] as StaffOffboardingRow;
+  },
+  async completeOffboarding(trx: Transaction, ctx: CommandContext, id: string): Promise<StaffOffboardingRow> {
+    const { rows } = await sql<StaffOffboardingRow>`SELECT * FROM trustwork.staff_offboarding_complete(${ctxJson(ctx)}::jsonb, ${id}::uuid)`.execute(trx);
+    return rows[0] as StaffOffboardingRow;
+  },
+  async cancelOffboarding(trx: Transaction, ctx: CommandContext, id: string): Promise<StaffOffboardingRow> {
+    const { rows } = await sql<StaffOffboardingRow>`SELECT * FROM trustwork.staff_offboarding_cancel(${ctxJson(ctx)}::jsonb, ${id}::uuid)`.execute(trx);
+    return rows[0] as StaffOffboardingRow;
+  },
+  /** The checklist as JSON from the database (`admin.staff.read` at the offboarding's scope, else "not found"). */
+  async offboardingChecklist(trx: Transaction, id: string): Promise<unknown> {
+    const { rows } = await sql<{ checklist: unknown }>`SELECT trustwork.staff_offboarding_checklist(${id}::uuid) AS checklist`.execute(trx);
+    return rows[0]?.checklist;
+  },
+  async offboarding(trx: Transaction, id: string): Promise<StaffOffboardingRow | undefined> {
+    return trx.selectFrom('staff_offboarding').selectAll().where('id', '=', id).executeTakeFirst();
+  },
+  async offboardings(trx: Transaction, hubId: string): Promise<StaffOffboardingRow[]> {
+    return trx.selectFrom('staff_offboarding').selectAll().where((eb) => eb.or([eb('hub_id', '=', hubId), eb('scope_kind', 'in', ['node', 'platform'])]))
+      .orderBy('created_at', 'desc').limit(200).execute();
   },
 
   async activation(trx: Transaction, activationId: string): Promise<StaffActivationJoinedRow | undefined> {
