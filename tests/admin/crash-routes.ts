@@ -122,7 +122,7 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
     () => count(admin, "SELECT 1 FROM trustwork.staff_access_review_campaign WHERE status = 'withdrawn'"));
 
   // ADM-004 accountability and offboarding: the hub owner answers for a function, hands an agent role to the lead who
-  // accepts, ends one; the agent is offboarded (the lead's role is handed back first) and another offboarding is cancelled.
+  // accepts, resumes it after a revocation and ends it; the employee is offboarded and another offboarding is cancelled.
   const accountabilityRows = (where: string) => () => count(admin, `SELECT 1 FROM trustwork.staff_accountability WHERE ${where}`);
   await run('admin.staff.accountability_assign', c.hubOwner, '/v1/admin/staff/accountability', { hubId: world.hubId, functionKey: 'leadership', kind: 'function_owner', agentRoleKey: null, personId: p.hubOwner, requiredRole: 'hub-owner' },
     accountabilityRows("function_key = 'leadership'"));
@@ -138,9 +138,11 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   // Revoking the lead's role suspends the accountability (the hub owner is offered it); the lead gets the role back and the row resumes.
   await plain(c.admin, `/v1/admin/staff/assignments/${leadRole.id}/revoke`, {});
   await plain(c.owner, '/v1/admin/staff/assignments', { personId: p.lead, role: 'support-lead', scope: hub, definitionVersion: 1 });
+  await freshen('lead'); // the revocation ended the lead's elevation; later routes act as the lead again
   await run('admin.staff.accountability_resume', c.hubOwner, `/v1/admin/staff/accountability/${handed.id}/resume`, {}, accountabilityRows("id = '" + handed.id + "' AND status = 'active'"));
   await run('admin.staff.accountability_end', c.hubOwner, `/v1/admin/staff/accountability/${handed.id}/end`, {}, accountabilityRows("end_reason = 'ended'"));
-  const offboarding = (await run('admin.staff.offboarding_start', c.hubOwner, '/v1/admin/staff/offboardings', { personId: p.agent, scope: hub },
+  // The employee (moderator through the applied invitation) leaves; the agent and the lead act in later routes.
+  const offboarding = (await run('admin.staff.offboarding_start', c.hubOwner, '/v1/admin/staff/offboardings', { personId: p.employee, scope: hub },
     () => count(admin, 'SELECT 1 FROM trustwork.staff_offboarding'))).body as { offboarding: { id: string } };
   await run('admin.staff.offboarding_complete', c.hubOwner, `/v1/admin/staff/offboardings/${offboarding.offboarding.id}/complete`, {},
     () => count(admin, "SELECT 1 FROM trustwork.staff_offboarding WHERE status = 'completed'"));
