@@ -1,6 +1,5 @@
 import { withMaintenance } from '@trustwork/data';
 import { contentWorker } from '../../packages/data/src/repositories/content.js';
-import { refused } from '../content/helpers.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
