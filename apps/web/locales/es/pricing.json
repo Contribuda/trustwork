@@ -29,7 +29,8 @@
       "credit_pack": "Paquete de créditos",
       "deliverable": "Entregable",
       "verification_fee": "Servicio de verificación",
-      "agent_module": "Módulo de agente"
+      "agent_module": "Módulo de agente",
+      "referral": "Programa de referidos"
     },
     "payer": {
       "buyer": "Paga el comprador",
@@ -186,7 +187,21 @@
       "representativeNo": "Representante no incluido",
       "modules": "Identificadores de módulos incluidos: {modules}",
       "quota": "{module} / {meter}: {units} unidades; período de origen: {window}",
-      "noQuota": "Esta versión del plan no registra cuota incluida."
+      "noQuota": "Esta versión del plan no registra cuota incluida.",
+      "referral": {
+        "referrerReward": "Crédito para quien recomienda: {amount}",
+        "refereeReward": "Crédito para la persona recomendada: {amount}",
+        "creditOnly": "Las recompensas son créditos de la plataforma, nunca dinero. Nunca cambian la clasificación, las coincidencias, las recomendaciones ni la reputación.",
+        "eligible": {
+          "person": "Abierto a personas",
+          "company": "Abierto a empresas",
+          "person_or_company": "Abierto a personas y empresas"
+        },
+        "limit": "Hasta {count} recompensas por cada persona que recomienda",
+        "noLimit": "Sin límite de recompensas para quien recomienda",
+        "termsLanguage": "Estas condiciones no están publicadas en este idioma. Se muestran en un idioma publicado por el hub.",
+        "none": "Este hub no tiene ningún programa de referidos."
+      }
     },
     "sections": {
       "plans": "Planes de capacidad",
@@ -196,7 +211,8 @@
       "credit_packs": "Paquetes de créditos",
       "fees": "Cargos de consultas y tareas",
       "events": "Cargos de eventos y cursos",
-      "verification": "Verificación al coste"
+      "verification": "Verificación al coste",
+      "referrals": "Programas de referidos"
     }
   }
 }

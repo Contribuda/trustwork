@@ -21,7 +21,42 @@ const dateTime = (value: string) => new Intl.DateTimeFormat(currentLocale(), { d
 function Validity({ from, to }: { from: string; to: string | null }) {
   return <p>{t('pricing.validity', { from: dateTime(from), to: to ? dateTime(to) : t('pricing.noEnd') })}</p>;
 }
+function ReferralEntry({ row }: { row: Extract<PriceRow, { type: 'referral' }> }) {
+  const { terms, version, id, digest } = row.value;
+  const locale = currentLocale();
+  // The operator's own text per hub language; a visitor in another language sees a published one, labelled as such.
+  const shown = terms.publicTerms[locale] === undefined ? Object.keys(terms.publicTerms).sort()[0]! : locale;
+  return <tr className="fee-pricing-row" role="row">
+    <th scope="row" role="rowheader">
+      <h4>{t('pricing.kind.referral')}</h4>
+      <p>{t(`pricing.catalogue.referral.eligible.${terms.eligibleParties}`)}</p>
+    </th>
+    <td role="cell">
+      <span className="fee-pricing-mobile-label">{t('pricing.catalogue.amount')}</span>
+      <p className="fee-pricing-amount">{exactPrice(terms.referrerRewardMinor, terms.currency, locale)}</p>
+      <p>{t('pricing.catalogue.referral.referrerReward', { amount: exactPrice(terms.referrerRewardMinor, terms.currency, locale) })}</p>
+      <p>{t('pricing.catalogue.referral.refereeReward', { amount: exactPrice(terms.refereeRewardMinor, terms.currency, locale) })}</p>
+      <p>{terms.maxRewardsPerReferrer === null ? t('pricing.catalogue.referral.noLimit') : t('pricing.catalogue.referral.limit', { count: formatNumber(terms.maxRewardsPerReferrer) })}</p>
+    </td>
+    <td role="cell">
+      <span className="fee-pricing-mobile-label">{t('pricing.catalogue.conditions')}</span>
+      <p>{t('pricing.version', { version: formatNumber(version) })}</p>
+      <Validity from={terms.effectiveFrom} to={terms.effectiveTo} />
+      <p>{t('pricing.catalogue.referral.creditOnly')}</p>
+      {shown === locale ? null : <p>{t('pricing.catalogue.referral.termsLanguage')}</p>}
+      <p lang={shown}>{terms.publicTerms[shown]}</p>
+      <details className="fee-pricing-reference">
+        <summary>{t('pricing.details')}</summary>
+        <p>{t('pricing.reference', { reference: id })}</p>
+        <p>{t('pricing.digest', { digest })}</p>
+        <p>{t('pricing.catalogue.acceptance', { version: terms.acceptanceTextVersion })}</p>
+        <p>{t('pricing.catalogue.scope', { scope: terms.programmeKey })}</p>
+      </details>
+    </td>
+  </tr>;
+}
 function PriceEntry({ row }: { row: PriceRow }) {
+  if (row.type === 'referral') return <ReferralEntry row={row} />;
   const fee = row.type === 'fee' ? row.value : null;
   const price = row.type === 'price' ? row.value : null;
   const terms = fee?.terms ?? price!;
@@ -113,7 +148,7 @@ async function Catalogue() {
     </section>
     {view.sections.map(section => <section key={section.key} aria-labelledby={`pricing-${section.key}`} data-section={section.key} data-coverage={section.state}>
       <h2 id={`pricing-${section.key}`} tabIndex={-1}>{t(`pricing.sections.${section.key}`)}</h2>
-      {section.state !== 'available' ? <p>{t(section.state === 'empty' ? 'pricing.catalogue.empty' : section.state === 'error' ? 'pricing.catalogue.failed' : 'pricing.catalogue.unavailable')}</p> : null}
+      {section.state !== 'available' ? <p>{t(section.state === 'empty' ? (section.key === 'referrals' ? 'pricing.catalogue.referral.none' : 'pricing.catalogue.empty') : section.state === 'error' ? 'pricing.catalogue.failed' : 'pricing.catalogue.unavailable')}</p> : null}
       <PriceTable rows={section.current} section={section.key} future={false} />
       <PriceTable rows={section.future} section={section.key} future />
     </section>)}

@@ -71,7 +71,7 @@ Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-
 
 ## Commissions and fees are hub settings
 
-Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing and exact consultation/task bindings are implemented; [remaining acceptance boundaries](../../apps/api/src/modules/billing/fees/README.md) include missing price readers, marketplace fee mapping and referral authority. The BIZ-001 pricing design is accepted; that does not establish full runtime coverage. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
+Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing, exact consultation/task bindings and versioned referral terms are implemented; [remaining acceptance boundaries](../../apps/api/src/modules/billing/fees/README.md) include missing price readers and marketplace fee mapping. The BIZ-001 pricing design is accepted; that does not establish full runtime coverage. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
 
 | Rule | How it holds |
 |---|---|
@@ -81,6 +81,7 @@ Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementatio
 | No hidden fees | The engine supplies no hidden or per-lead fees; introduction quotas are never purchasable (ADR 012 decision 23); there are no outcome-based fees for agent work |
 | Same for everyone | A commission is the same for every participant in a category; zero is allowed |
 | Never an incentive | Payment, commissions and fees never change ranking, matching, recommendations or reputation; the owner's agent ranks candidates identically whether or not a booking would earn the hub a fee (tested in BILL-003) |
+| Referral terms | Versioned, activated by a second person and disclosed like a fee version, in every hub language; rewards are platform credits, never cash, and the terms name their counsel review (ADR 025 decision 21). The engine ships no programme and issues no reward (GROW-001) |
 
 The commission levels of the reference hub are an open owner question ([ADR 012](../adr/012-integrator-decisions-2026-10-31.md#questions-that-remain-for-the-owner-or-counsel), row 7). Where commissions appear in the flows: [plan to people pricing](agent-catalog.md#pricing-and-commissions); in the console: [consultation and task marketplace](hub-console/modules.md#consultation-and-task-marketplace) and [cost and sale prices of agent modules](hub-console/user-agents-admin.md#cost-price-and-sale-price).
 

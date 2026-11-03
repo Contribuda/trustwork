@@ -4,7 +4,7 @@ import { computeDigest } from '../../../../../../packages/contracts/src/common/d
 /** Validate only the owning public projection; never fall back to billing tables or demo rates. */
 export function publicPricingProjection(input: unknown): PublicPricing {
   const result = PublicPricingSchema.parse(input);
-  if (!result.hubId && (result.fees.length || result.prices.length)) throw new Error('Pricing has no serving hub');
+  if (!result.hubId && (result.fees.length || result.prices.length || result.referrals?.length)) throw new Error('Pricing has no serving hub');
   if (!result.hubId && result.coverage && Object.values(result.coverage.sections).some(s => s !== 'unavailable')) throw new Error('Unconfigured pricing coverage');
   const seen = new Set<string>();
   for (const fee of result.fees) {
@@ -24,6 +24,12 @@ export function publicPricingProjection(input: unknown): PublicPricing {
     const section = price.kind === 'plan' ? 'plans' : price.kind === 'model' ? 'models' : price.kind === 'capability' ? 'capabilities' : price.kind === 'credit_pack' ? 'credit_packs' : 'services';
     if (result.coverage && result.coverage.sections[section] !== 'available') throw new Error('Unavailable price reader published rows');
     if (price.kind === 'credit_pack' && !price.validity?.trim()) throw new Error('Credit validity is unavailable');
+  }
+  for (const referral of result.referrals ?? []) {
+    if (referral.hubId !== result.hubId) throw new Error('Pricing referral has another serving hub');
+    if (result.coverage && result.coverage.sections.referrals !== 'available') throw new Error('Unavailable referral reader published rows');
+    if (seen.has(referral.id)) throw new Error('Duplicate pricing version');
+    seen.add(referral.id);
   }
   return result;
 }

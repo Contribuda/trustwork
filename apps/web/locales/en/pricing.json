@@ -29,7 +29,8 @@
       "credit_pack": "Credit pack",
       "deliverable": "Deliverable",
       "verification_fee": "Verification service",
-      "agent_module": "Agent module"
+      "agent_module": "Agent module",
+      "referral": "Referral programme"
     },
     "payer": {
       "buyer": "Buyer pays",
@@ -186,7 +187,21 @@
       "representativeNo": "Representative not included",
       "modules": "Included module identifiers: {modules}",
       "quota": "{module} / {meter}: {units} units; source window: {window}",
-      "noQuota": "No included quota is recorded in this plan version."
+      "noQuota": "No included quota is recorded in this plan version.",
+      "referral": {
+        "referrerReward": "Credit for the person who refers: {amount}",
+        "refereeReward": "Credit for the person referred: {amount}",
+        "creditOnly": "Rewards are platform credits, never cash. They never change ranking, matching, recommendations or reputation.",
+        "eligible": {
+          "person": "Open to people",
+          "company": "Open to companies",
+          "person_or_company": "Open to people and companies"
+        },
+        "limit": "Up to {count} rewards for each person who refers",
+        "noLimit": "No limit on rewards for a person who refers",
+        "termsLanguage": "These terms are not published in this language. They are shown in a language the hub published.",
+        "none": "This hub runs no referral programme."
+      }
     },
     "sections": {
       "plans": "Capacity plans",
@@ -196,7 +211,8 @@
       "credit_packs": "Credit packs",
       "fees": "Consultation and task fees",
       "events": "Event and course fees",
-      "verification": "Verification at cost"
+      "verification": "Verification at cost",
+      "referrals": "Referral programmes"
     }
   }
 }

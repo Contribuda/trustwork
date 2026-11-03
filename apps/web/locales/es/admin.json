@@ -600,6 +600,9 @@
         },
         "kill_switch": {
           "release": "Liberar un interruptor de emergencia"
+        },
+        "growth": {
+          "activate_referral_terms": "Activar las condiciones del programa de referidos"
         }
       },
       "ready": "Listo para aplicar",

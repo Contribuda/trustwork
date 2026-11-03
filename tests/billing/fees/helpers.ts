@@ -18,7 +18,7 @@ export async function feeWorld(admin: DataPool, runtime: DataPool, historical?: 
   const hubB = (await a.createHub('synthetic-fee-b')).hub_id;
   if (!historical) await registerFeeServingHubs(admin,hubA,hubB);
   await withMaintenance(admin, (trx) => staffRoleDefinitions.release(trx, {
-    version: 2, role: 'hub-owner', scopes: ['hub'], permissions: ['admin.billing.fees.draft', 'admin.billing.fees.activate', 'admin.audit.read'],
+    version: 2, role: 'hub-owner', scopes: ['hub'], permissions: ['admin.billing.fees.draft', 'admin.billing.fees.activate', 'admin.growth.referrals.draft', 'admin.growth.referrals.activate', 'admin.audit.read'],
     caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null,
   }));
   for (const [personId, hubId] of [[p.owner, hubA], [p.officer, hubA], [p.otherOwner, hubB], [p.moderator, hubB]] as const) {

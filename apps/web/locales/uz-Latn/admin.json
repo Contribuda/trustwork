@@ -600,6 +600,9 @@
         },
         "kill_switch": {
           "release": "Favqulodda oʻchirgichni olib tashlash"
+        },
+        "growth": {
+          "activate_referral_terms": "Tavsiya dasturi shartlarini faollashtirish"
         }
       },
       "ready": "Qoʻllashga tayyor",
