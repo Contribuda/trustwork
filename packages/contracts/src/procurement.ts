@@ -36,6 +36,12 @@ export const RfqVersionPayloadSchema = z.strictObject({
   currency: CurrencySchema,
   responseDeadline: TimestampSchema,
   attachments: z.array(AttachmentRefSchema),
+  /**
+   * Sealed until the deadline (PRC-004, ADR 027): the buyer reads no sent quote version before the response deadline,
+   * which protects suppliers from bid shopping. Part of the published version, so suppliers see it and its digest
+   * binds it. Optional and additive: a payload without the key digests exactly as it always did.
+   */
+  sealedUntilDeadline: z.boolean().optional(),
 });
 export type RfqVersionPayload = z.infer<typeof RfqVersionPayloadSchema>;
 
