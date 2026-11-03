@@ -1,6 +1,6 @@
 import { sql, type RawBuilder } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { ClaimDisputeRow, ClaimLevel, ClaimState, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow } from '../schema/claims.js';
+import type { ClaimDisputeRow, ClaimLevel, ClaimState, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow, CompanyVerificationRow } from '../schema/claims.js';
 import type { CommandContext } from './admin.js';
 import type { PlannedDelivery } from './communications.js';
 import '../schema/claims.js';
@@ -24,6 +24,8 @@ async function one<T>(query: RawBuilder<T>, trx: Transaction, what: string): Pro
 }
 
 export type ClaimTie = { kind: 'invitation_link' | 'own_domain_mailbox'; email: string } | null;
+/** What a hub shows about a company: categories and dates, never a document. */
+export interface PublicBadge { level: ClaimLevel; categories: string[]; decided_at: Date; valid_until: Date }
 export interface ClaimRecipe { id: string; level: ClaimLevel; key: string; version: number; steps: unknown; badge_categories: string[]; recheck_months: number }
 
 export const claims = {
@@ -60,6 +62,25 @@ export const claims = {
   async evidence(trx: Transaction, claimId: string): Promise<string[]> {
     return (await trx.selectFrom('company_claim_evidence').select('check_id').where('claim_id', '=', claimId).orderBy('bound_at').orderBy('check_id').execute()).map((r) => r.check_id);
   },
+  /** A re-check under an active recipe of the level: a new row with a new date, or a refusal that changes nothing. */
+  recheck(trx: Transaction, ctx: CommandContext, verificationId: string, recipeId: string): Promise<CompanyVerificationRow> {
+    return one(sql<CompanyVerificationRow>`SELECT * FROM trustwork.claims_recheck(${ctxJson(ctx)}::jsonb, ${verificationId}::uuid, ${recipeId}::uuid)`, trx, 'claims_recheck');
+  },
+  /** Needs no principal: what the hub may show about a company. */
+  async publicBadges(trx: Transaction, hubId: string, companyId: string): Promise<PublicBadge[]> {
+    return (await sql<PublicBadge>`SELECT * FROM trustwork.claims_public_badges(${hubId}::uuid, ${companyId}::uuid)`.execute(trx)).rows;
+  },
+  /** Staff of the hub: verifications, optionally of one company, or those that lapse within `dueDays`. */
+  verifications(trx: Transaction, hubId: string, filter: { companyId?: string; dueDays?: number } = {}): Promise<CompanyVerificationRow[]> {
+    let query = trx.selectFrom('company_verification').selectAll().where('hub_id', '=', hubId);
+    if (filter.companyId) query = query.where('company_id', '=', filter.companyId);
+    if (filter.dueDays !== undefined) query = query.where('state', '=', 'active').where('valid_until', '<=', new Date(Date.now() + filter.dueDays * 86_400_000));
+    return query.orderBy('decided_at').orderBy('id').execute();
+  },
+  verification(trx: Transaction, verificationId: string): Promise<CompanyVerificationRow | undefined> {
+    return trx.selectFrom('company_verification').selectAll().where('id', '=', verificationId).executeTakeFirst();
+  },
+
   /** The recipes a hub offers a claimant, per level. */
   async activeRecipes(trx: Transaction, hubId: string): Promise<ClaimRecipe[]> {
     return (await sql<ClaimRecipe>`SELECT * FROM trustwork.claims_active_recipes(${hubId}::uuid)`.execute(trx)).rows;
@@ -100,5 +121,13 @@ export const claims = {
   },
   settings(trx: Transaction, hubId: string): Promise<ClaimsSettingsRow | undefined> {
     return trx.selectFrom('claims_settings').selectAll().where('hub_id', '=', hubId).executeTakeFirst();
+  },
+};
+
+/** The worker's side (no principal): verifications past their date lapse and the status follows. */
+export const claimsWorker = {
+  async runExpiry(trx: Transaction, now: Date, limit: number): Promise<number> {
+    const { rows } = await sql<{ expired: number }>`SELECT trustwork.claims_run_expiry(${now}::timestamptz, ${limit}::int) AS expired`.execute(trx);
+    return rows[0]?.expired ?? 0;
   },
 };

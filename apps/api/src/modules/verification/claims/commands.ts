@@ -30,6 +30,9 @@ export const RevokeHandoverCommandSchema = consoleCommand({ revocationReason: z.
 export const BindEvidenceCommandSchema = consoleCommand({ checkIds: z.array(Id).min(1).max(12) });
 export const ClaimSettingsCommandSchema = consoleCommand({ waitingDays: z.int().min(1).max(30), coolingDays: z.int().min(1).max(30) });
 
+export const RecheckVerificationCommandSchema = consoleCommand({ recipeId: Id });
+
 export const ClaimListQuerySchema = z.strictObject({ state: z.enum(CLAIM_STATES).optional() });
 export const HandoverListQuerySchema = z.strictObject({ companyId: Id.optional() });
+export const VerificationListQuerySchema = z.strictObject({ companyId: Id.optional(), dueDays: z.coerce.number().int().min(0).max(366).optional() });
 export const RecipeListQuerySchema = z.strictObject({ hubId: Id });

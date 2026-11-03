@@ -18,6 +18,7 @@ import { PaymentProviders } from './payments/provider.js';
 import { PipelineStepRegistry, pipelineMaintenanceTask, pipelineRunTask, pipelineScheduleTask } from './pipelines/index.js';
 import { Collector } from './collect/collector.js';
 import { verificationRecheckTask } from './verification/recheck.js';
+import { claimsExpiryTask } from './verification/claims-expiry.js';
 import { registersExpiryTask, registersRefreshTask } from './registers/refresh.js';
 import { datasetsSweepTask } from './datasets/sweep.js';
 import { collectionPort, registerFetchStep } from './collect/fetch-step.js';
@@ -101,7 +102,7 @@ async function main(): Promise<void> {
     pool, registry, config, log, metrics,
     tasks: (deps) => [agentOccurrencesTask(pool), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       pipelineScheduleTask({ pool, log }), pipelineRunTask({ pool, log, steps: pipelineSteps, workerId: config.workerId }), pipelineMaintenanceTask({ pool, log }),
-      contentPublishDueTask({ pool }), verificationRecheckTask({ pool, log }), registersRefreshTask({ pool, log }), registersExpiryTask({ pool, log }), datasetsSweepTask({ pool, log }),
+      contentPublishDueTask({ pool }), verificationRecheckTask({ pool, log }), claimsExpiryTask({ pool, log }), registersRefreshTask({ pool, log }), registersExpiryTask({ pool, log }), datasetsSweepTask({ pool, log }),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
       ...(consultations ? [consultationRemindersTask(consultations)] : []),
       ...(files ? [filesExpireUploadsTask({ pool, store: files.store, metrics })] : []),

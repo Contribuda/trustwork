@@ -7,7 +7,7 @@ import type { AppContext } from '../../identity/context.js';
 import type { IdentityServices } from '../../identity/identity.module.js';
 import { ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import { SecondFactorService } from '../../identity/second-factor/second-factor.service.js';
-import { AdminClaimsController, OwnClaimsController } from './claims.controller.js';
+import { AdminClaimsController, CompanyBadgesController, OwnClaimsController } from './claims.controller.js';
 import { ClaimsService } from './claims.service.js';
 
 /**
@@ -18,10 +18,10 @@ import { ClaimsService } from './claims.service.js';
 export class ClaimsModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, env: NodeJS.ProcessEnv = process.env): DynamicModule {
     const notices = new CommunicationsService(ctx, identity.principals, new NoCommsMandates(), new FakeChannelAdapter(), communicationsSettingsFromEnv(env));
-    const service = new ClaimsService(ctx, identity.principals, notices);
+    const service = new ClaimsService(ctx, identity.principals, notices, env);
     return {
       module: ClaimsModule,
-      controllers: [AdminClaimsController, OwnClaimsController],
+      controllers: [AdminClaimsController, OwnClaimsController, CompanyBadgesController],
       providers: [{ provide: ClaimsService, useValue: service }, { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard],
       exports: [ClaimsService],
     };

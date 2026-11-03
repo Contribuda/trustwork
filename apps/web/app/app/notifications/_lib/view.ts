@@ -15,7 +15,7 @@ function registerDate(value: string | undefined): string {
 /** A claim notice in the reader's language (CLM-001): the outcome word of the template picks the sentence. */
 const CLAIM_OUTCOMES: Record<string, LocaleKey> = {
   in_dispute: 'notifications.template.claimInDispute', back_in_review: 'notifications.template.claimBackInReview', approved: 'notifications.template.claimApproved',
-  rejected: 'notifications.template.claimRejected', revoked: 'notifications.template.claimRevoked',
+  rejected: 'notifications.template.claimRejected', revoked: 'notifications.template.claimRevoked', expired: 'notifications.template.claimExpired',
 };
 function claimTitle(n: Notification): string {
   const company = n.params.companyName ?? '';

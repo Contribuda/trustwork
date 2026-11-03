@@ -1,4 +1,4 @@
-import type { ClaimDisputeRow, ClaimRecipe, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow } from './deps.js';
+import type { ClaimDisputeRow, ClaimRecipe, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow, CompanyVerificationRow, PublicBadge } from './deps.js';
 
 /**
  * Response projections of the claim routes: camelCase, timestamps as ISO strings. A claimant sees their own claim and
@@ -26,6 +26,12 @@ export const toDispute = (r: ClaimDisputeRow) => ({
 export const toHandover = (r: CompanyHandoverRow) => ({
   ...toOwnHandover(r), claimId: r.claim_id, personId: r.person_id, membershipId: r.membership_id, decidedBy: r.decided_by, revokedBy: r.revoked_by, revokeReason: r.revoke_reason,
 });
+export const toVerification = (r: CompanyVerificationRow) => ({
+  id: r.id, hubId: r.hub_id, companyId: r.company_id, handoverId: r.handover_id, level: r.level, recipeId: r.recipe_id, categories: r.categories, state: r.state, decidedBy: r.decided_by, decidedAt: iso(r.decided_at),
+  validUntil: iso(r.valid_until), renewedFrom: r.renewed_from, revokedAt: iso(r.revoked_at), revocationReasonCode: r.revocation_reason_code,
+});
+/** The whole public projection of a badge: level, categories and dates. */
+export const toBadge = (r: PublicBadge) => ({ level: r.level, categories: r.categories, decidedAt: iso(r.decided_at), validUntil: iso(r.valid_until) });
 export const toSettings = (hubId: string, r: ClaimsSettingsRow | undefined) => ({
   hubId, waitingDays: r?.waiting_days ?? 7, coolingDays: r?.cooling_days ?? 7, revision: r?.revision ?? 0, updatedAt: iso(r?.updated_at ?? null),
 });

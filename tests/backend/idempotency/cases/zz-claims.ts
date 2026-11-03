@@ -7,6 +7,7 @@ import type { Client, Response } from '../../helpers/app.js';
 import { count } from '../../hardening/helpers.js';
 import { codeNow } from '../../second-factor/helpers.js';
 import { addLogins, enrolNow, PASSWORD, signIn } from '../../../admin/helpers.js';
+import { activateBaseline, screen } from '../../../screening-gates/helpers.js';
 
 /** Test role definition over the console vocabulary (version 28, unused elsewhere), held at this case's own hub. */
 const VERSION = 28;
@@ -15,7 +16,9 @@ const PERMISSIONS = ['admin.claims.read', 'admin.claims.decide', 'admin.claims.p
 /**
  * CLM-001: every claim route classified in_transaction, through the BE-005 crash sequence. Two claimants submit and
  * withdraw; reviewer A decides and proposes, reviewer B confirms; a hand-over is revoked and the hub's periods are set.
- * The notices and their deliveries share the same transaction. Every person, hub and company is synthetic.
+ * The notices and their deliveries share the same transaction. A re-check needs a passing standing, so this case
+ * activates the screening lists, which changes what the gates of other cases see: the file name sorts it last.
+ * Every person, hub and company is synthetic.
  */
 export default {
   name: 'CLM-001: company claims, disputes, hand-overs and settings',
@@ -68,6 +71,11 @@ export default {
     const recipeId = drafted.recipe.id;
     body(await a.post(`${base}/verification/recipes/${recipeId}/activate`, cmd('claims.recipe_activate', { expectedRevision: drafted.recipe.revision }), { idempotencyKey: 'crash-claims.recipe_activate' }));
     const submission = (companyId: string) => ({ hubId, companyId, level: 'verified', recipeId, tie: null });
+    // The re-check below is of a claimed-level hand-over, so it names an active recipe of that level.
+    const draftedClaimed = body<{ recipe: { id: string; revision: number } }>(await a.post(`${base}/verification/recipes`, cmd('claims.recipe_claimed', { key: 'crash-claims-claimed', subjectKind: 'company', trigger: 'claim_claimed', recheckMonths: 12,
+      badgeCategories: ['register_record_matches'], steps: [{ check: 'register_match', required: true }, { check: 'sanctions_screening', required: true }] }), { idempotencyKey: 'crash-claims.recipe_claimed' }));
+    const claimedRecipe = draftedClaimed.recipe.id;
+    body(await a.post(`${base}/verification/recipes/${claimedRecipe}/activate`, cmd('claims.recipe_claimed_activate', { expectedRevision: draftedClaimed.recipe.revision }), { idempotencyKey: 'crash-claims.recipe_claimed_activate' }));
 
     const submitted = body<{ claim: { id: string } }>(await exactlyOnce({ action: 'claims.submit', client: c1, url: '/v1/claims', body: submission(single), effects: claimsOf(single, 'open') }));
     await exactlyOnce({ action: 'claims.withdraw', client: c1, url: `/v1/claims/${submitted.claim.id}/withdraw`, body: {}, effects: claimsOf(single, 'withdrawn') });
@@ -102,5 +110,24 @@ export default {
     });
     await run('claims.handover_revoke', b, `${base}/claims/handovers/${handoverId}/revoke`, { revocationReason: 'Synthetic crash test revocation' }, audits('claims.revoked', handoverId));
     await run('claims.settings_set', a, `${base}/claims/settings`, { waitingDays: 5, coolingDays: 6 }, audits('claims.settings_set', hubId));
+
+    // A re-check: a page that passes the recipe, with the verification a hand-over leaves.
+    await activateBaseline(admin);
+    const renewed = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Renewed Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id);
+    await screen(admin, { kind: 'company', id: renewed });
+    const provider = body<{ provider: { id: string } }>(await a.post(`${base}/verification/providers`, cmd('claims.provider', { checkType: 'register_match', adapter: 'synthetic_crash_claims_register', mode: 'fake',
+      retentionDays: 365, legalBasis: 'statutory_public_register', costMinor: null }), { idempotencyKey: 'crash-claims.provider' }));
+    body(await a.post(`${base}/verification/checks`, cmd('claims.check', { subject: { kind: 'company', id: renewed }, recipeId: claimedRecipe, providerId: provider.provider.id, result: 'pass', evidenceRef: 'register:SYN-CRASH-CLAIM' }),
+      { idempotencyKey: 'crash-claims.check' }));
+    body(await a.post(`${base}/verification/checks/screening`, cmd('claims.screening', { subject: { kind: 'company', id: renewed }, recipeId: claimedRecipe }), { idempotencyKey: 'crash-claims.screening' }));
+    const verificationId = await withMaintenance(admin, async (trx) => {
+      const claim = await trx.insertInto('company_claim').values({ hub_id: hubId, company_id: renewed, claimant_id: people.c2, level: 'claimed', recipe_id: claimedRecipe, state: 'approved', domain_tie: 'register_officer_match', decided_by: people.a, decided_at: new Date() } as never)
+        .returning('id').executeTakeFirstOrThrow();
+      await trx.insertInto('company_handover').values({ hub_id: hubId, company_id: renewed, claim_id: claim.id, person_id: people.c2, level: 'claimed', membership_id: null, decided_by: people.a,
+        cooling_until: new Date(Date.now() + 7 * 86_400_000) } as never).execute();
+      return (await trx.selectFrom('company_verification').select('id').where('company_id', '=', renewed).executeTakeFirstOrThrow()).id;
+    });
+    await withMaintenance(admin, (trx) => trx.updateTable('company_verification').set({ state: 'expired' }).where('id', '=', verificationId).execute());
+    await run('claims.verification_recheck', a, `${base}/claims/verifications/${verificationId}/recheck`, { recipeId: claimedRecipe }, () => count(admin, 'SELECT 1 FROM trustwork.company_verification WHERE company_id = $1', [renewed]));
   },
 } satisfies CrashCase;
