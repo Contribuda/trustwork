@@ -1,5 +1,6 @@
 import { HUB_LIFECYCLE, LAUNCH_GATES, type LaunchGateId } from '@trustwork/contracts/client';
-import { ConsoleNodeSchema, HubRecordSchema, OverviewSchema, type ConsoleNode, type HubRecord, type Overview } from '../_data/schemas.js';
+import { OverviewSchema, type Overview } from '../_data/read-models.js';
+import { ConsoleNodeSchema, HubRecordSchema, type ConsoleNode, type HubRecord } from '../_data/schemas.js';
 import { HUB_SAMARKAND_ID, HUB_US_ID, NODE_ID } from './ids.js';
 
 /**

@@ -11,11 +11,10 @@ import type {
   LegalDocument,
   LocalAddition,
   Operator,
-  Overview,
-  Residency,
   SetupRun,
   TaxonomyTree,
 } from './schemas.js';
+import type { Overview, Residency } from './read-models.js';
 import type { SectionDef } from './section-types.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
 

@@ -18,10 +18,8 @@ import { EffectiveAccessSchema, StaffDirectorySchema } from '../../../../../pack
 import { evaluateCommand, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
-import {
-  ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, OverviewSchema, QUEUE_IDS, ResidencySchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord,
-  type LegalDocument, type Overview, type QueueId, type Residency,
-} from './schemas.js';
+import { OverviewSchema, QUEUE_IDS, ResidencySchema, type Overview, type QueueId, type Residency } from './read-models.js';
+import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord, type LegalDocument } from './schemas.js';
 import type { SectionDef } from './section-types.js';
 
 /**
