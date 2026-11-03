@@ -320,6 +320,14 @@ export class CommunicationsService {
   }
 
   /**
+   * Producer for modules whose definers raise notices themselves (CLM-001): renders and enqueues the e-mail deliveries
+   * the caller planned in this transaction. They carry no link, so nothing is left to dispatch after COMMIT.
+   */
+  async deliverPlanned(trx: Transaction, planned: PlannedDelivery[]): Promise<void> {
+    await this.deliver(trx, planned);
+  }
+
+  /**
    * Sends messenger and SMS deliveries after the request committed and records each outcome as the same person. A
    * crash in between leaves them `queued` (never sent twice); an unknown outcome is recorded and never retried here.
    */

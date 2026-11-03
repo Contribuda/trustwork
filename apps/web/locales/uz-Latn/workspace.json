@@ -34,7 +34,14 @@
       "threadOpened": "{authorName} yozishmani boshladi: {threadSubject}",
       "threadMessage": "{authorName} “{threadSubject}” mavzusida yozdi",
       "securityNotice": "Hisobingiz xavfsizligi haqida bildirishnoma",
-      "registerExpiring": "Kompaniyangiz haqidagi davlat reyestri yozuvi {date} sanasida tugaydi"
+      "registerExpiring": "Kompaniyangiz haqidagi davlat reyestri yozuvi {date} sanasida tugaydi",
+      "claimPageOpened": "{company} sahifasiga da'vo bildirildi; tekshiruvchi {date} sanasidan qaror qabul qilishi mumkin",
+      "claimPageHandedOver": "{company} boshqaruvi tekshiruvdan so'ng topshirildi",
+      "claimInDispute": "{company} bo'yicha da'vongiz bahsli holatda; tekshiruvchi qaror qabul qiladi",
+      "claimBackInReview": "{company} bo'yicha da'vongiz yana ko'rib chiqilmoqda",
+      "claimApproved": "{company} bo'yicha da'vongiz tasdiqlandi",
+      "claimRejected": "{company} bo'yicha da'vongiz tasdiqlanmadi",
+      "claimRevoked": "{company} boshqaruvi sizdan olib qo'yildi"
     },
     "markAllRead": "Barchasini o‘qilgan deb belgilash",
     "markFailed": "O‘qilganlik belgisi saqlanmadi. Qayta urinib ko‘ring."

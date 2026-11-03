@@ -34,7 +34,14 @@
       "threadOpened": "{authorName}-ը սկսեց նամակագրություն՝ {threadSubject}",
       "threadMessage": "{authorName}-ը գրեց «{threadSubject}»-ում",
       "securityNotice": "Անվտանգության ծանուցում ձեր հաշվի համար",
-      "registerExpiring": "Ձեր ընկերության մասին պետական ռեգիստրի գրառումն ավարտվում է {date}"
+      "registerExpiring": "Ձեր ընկերության մասին պետական ռեգիստրի գրառումն ավարտվում է {date}",
+      "claimPageOpened": "{company} էջի նկատմամբ հայտ է ներկայացվել․ ստուգողը կարող է որոշում կայացնել {date}-ից",
+      "claimPageHandedOver": "{company} էջի կառավարումը հանձնվել է ստուգումից հետո",
+      "claimInDispute": "{company} էջի նկատմամբ ձեր հայտը վիճարկվում է․ որոշումը կկայացնի ստուգողը",
+      "claimBackInReview": "{company} էջի նկատմամբ ձեր հայտը կրկին քննարկվում է",
+      "claimApproved": "{company} էջի նկատմամբ ձեր հայտը հաստատվել է",
+      "claimRejected": "{company} էջի նկատմամբ ձեր հայտը չի հաստատվել",
+      "claimRevoked": "{company} էջի կառավարումը ձեզնից հետ է վերցվել"
     },
     "markAllRead": "Նշել բոլորը որպես կարդացված",
     "markFailed": "Կարդացված լինելու նշումը չպահպանվեց։ Փորձեք կրկին։"

@@ -1009,6 +1009,9 @@ export const SCREENING_TRIGGER_EVENTS = {
   'company.created': 'company_change',
   'company.renamed': 'company_change',
   'company.ownership_declaration_changed': 'company_change',
+  // CLM-001: a company claim screens the claimant (a person aggregate) and the company.
+  'identity.company_claim_submitted': 'claim',
+  'company.claim_submitted': 'claim',
 } as const satisfies Record<string, ScreeningTrigger>;
 export type ScreeningTriggerEvent = keyof typeof SCREENING_TRIGGER_EVENTS;
 

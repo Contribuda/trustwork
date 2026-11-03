@@ -12,6 +12,20 @@ function registerDate(value: string | undefined): string {
   return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? shortDate(value) : '';
 }
 
+/** A claim notice in the reader's language (CLM-001): the outcome word of the template picks the sentence. */
+const CLAIM_OUTCOMES: Record<string, string> = {
+  in_dispute: 'notifications.template.claimInDispute', back_in_review: 'notifications.template.claimBackInReview', approved: 'notifications.template.claimApproved',
+  rejected: 'notifications.template.claimRejected', revoked: 'notifications.template.claimRevoked',
+};
+function claimTitle(n: Notification): string {
+  const company = n.params.companyName ?? '';
+  if (n.templateKey === 'claims.page_notice') {
+    return n.params.stage === 'handed_over' ? t('notifications.template.claimPageHandedOver', { company })
+      : t('notifications.template.claimPageOpened', { company, date: registerDate(n.params.waitingUntil) });
+  }
+  return t(CLAIM_OUTCOMES[n.params.outcome ?? ''] ?? 'notifications.template.claimBackInReview', { company });
+}
+
 export function notificationView(n: Notification): NotificationView {
   const kind: NotificationView['kind'] = n.category === 'account' || n.category === 'legal' ? 'account'
     : n.link?.kind === 'rfq' || n.link?.kind === 'quote' ? 'quote'
@@ -20,6 +34,7 @@ export function notificationView(n: Notification): NotificationView {
   const title = n.templateKey === 'thread.opened' ? t('notifications.template.threadOpened', params)
     : n.templateKey === 'thread.message' ? t('notifications.template.threadMessage', params)
       : n.templateKey === 'registers.licence_expiring' ? t('notifications.template.registerExpiring', { date: registerDate(n.params.validUntil) })
-        : t('notifications.template.securityNotice');
+        : n.templateKey === 'claims.page_notice' || n.templateKey === 'claims.claim_update' ? claimTitle(n)
+          : t('notifications.template.securityNotice');
   return { id: n.id, kind, title, at: n.createdAt, href: n.link ? contextPath(n.link.kind, n.link.id) : '/app/notifications', unread: n.readAt === null, live: true };
 }

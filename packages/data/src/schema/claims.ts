@@ -43,7 +43,7 @@ export interface CompanyClaimTable {
   claimant_id: string;
   level: ClaimLevel;
   recipe_id: string;
-  domain_tie: 'invitation_link' | 'register_officer_match' | null;
+  domain_tie: 'invitation_link' | 'own_domain_mailbox' | 'register_officer_match' | null;
   domain_tie_domain: string | null;
   state: ClaimState;
   waiting_until: Date | null;

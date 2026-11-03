@@ -503,6 +503,14 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'verification.screening_record': IN_TRANSACTION,
   'verification.appeal_file': IN_TRANSACTION,
   'verification.appeal_decide': IN_TRANSACTION,
+  // Company claims (CLM-001): the claimant's and staff commands, their notices and rendered mail share the principal transaction.
+  'claims.submit': IN_TRANSACTION,
+  'claims.withdraw': IN_TRANSACTION,
+  'claims.decide': IN_TRANSACTION,
+  'claims.dispute_propose': IN_TRANSACTION,
+  'claims.dispute_confirm': IN_TRANSACTION,
+  'claims.handover_revoke': IN_TRANSACTION,
+  'claims.settings_set': IN_TRANSACTION,
   // Register facts (REG-001): staff commands complete in the principal transaction.
   'registers.adapter_bind': IN_TRANSACTION,
   'registers.adapter_live': IN_TRANSACTION,

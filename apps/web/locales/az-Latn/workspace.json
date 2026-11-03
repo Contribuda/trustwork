@@ -34,7 +34,14 @@
       "threadOpened": "{authorName} yazışmaya başladı: {threadSubject}",
       "threadMessage": "{authorName} “{threadSubject}” mövzusunda yazdı",
       "securityNotice": "Hesabınızın təhlükəsizliyi barədə bildiriş",
-      "registerExpiring": "Şirkətiniz haqqında dövlət reyestri qeydi {date} tarixində bitir"
+      "registerExpiring": "Şirkətiniz haqqında dövlət reyestri qeydi {date} tarixində bitir",
+      "claimPageOpened": "{company} səhifəsinə iddia bildirilib; yoxlayıcı {date} tarixindən qərar verə bilər",
+      "claimPageHandedOver": "{company} idarəetməsi yoxlamadan sonra təhvil verildi",
+      "claimInDispute": "{company} üzrə iddianız mübahisəlidir; yoxlayıcı qərar verəcək",
+      "claimBackInReview": "{company} üzrə iddianıza yenidən baxılır",
+      "claimApproved": "{company} üzrə iddianız təsdiqləndi",
+      "claimRejected": "{company} üzrə iddianız təsdiqlənmədi",
+      "claimRevoked": "{company} idarəetməsi sizdən geri alındı"
     },
     "markAllRead": "Hamısını oxunmuş kimi qeyd et",
     "markFailed": "Oxunma qeydi saxlanmadı. Yenidən cəhd edin."

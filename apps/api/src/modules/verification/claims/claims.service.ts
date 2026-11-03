@@ -1,0 +1,166 @@
+import type { z } from 'zod';
+import { withPrincipal, type Transaction } from '../../../deps/data.js';
+import type { ConsolePermission, Principal } from '../../../deps/contracts.js';
+import { ApiError } from '../../../common/errors.js';
+import type { RequestState } from '../../../common/request.js';
+import type { CommunicationsService } from '../../communications/communications.service.js';
+import type { AppContext } from '../../identity/context.js';
+import type { PrincipalService } from '../../identity/principal.service.js';
+import type { ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
+import { adminAudit, claims, type ClaimState, type CommandContext, type StaffRole } from './deps.js';
+import { claimsRefusal, isAuthorityRefusal } from './errors.js';
+import { toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toRecipe, toSettings } from './views.js';
+
+type Body<S extends z.ZodType> = z.infer<S>;
+type Cmd = { idempotencyKey: string; reason: string };
+export interface Elevated { state: RequestState; elevationId: string; idempotencyKey: string | undefined }
+interface Attempt { hubId: string; permission: ConsolePermission; action: string; objectType: string; objectId: string }
+
+/**
+ * Company claims (CLM-001). Every rule lives in the database: the claimant's commands check the principal, staff
+ * commands check the permission at the hub and the elevation and write the audit row, and two reviewers for a dispute,
+ * the waiting period and the cooling period hold there whatever calls them. This service adds the transaction, the
+ * check that a row belongs to the hub in the path (a row of another hub answers "not found"), the projections, and the
+ * e-mail of the notices the commands raised: rendered and enqueued before COMMIT, so a crash loses neither.
+ * Refusals of authority leave a `denied` audit row in a transaction of their own.
+ */
+export class ClaimsService {
+  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly notices: Pick<CommunicationsService, 'deliverPlanned'>) {}
+
+  private commandContext(e: Elevated, body: Cmd): CommandContext {
+    if (e.idempotencyKey !== undefined && body.idempotencyKey !== e.idempotencyKey) throw new ApiError('validation.schema', 'idempotencyKey must equal the Idempotency-Key header', { reason: 'idempotency_key_mismatch' });
+    return { elevationId: e.elevationId, requestId: e.state.requestId, reasonCode: 'console_action', reasonText: body.reason };
+  }
+
+  private async sendNotices(trx: Transaction): Promise<void> {
+    await this.notices.deliverPlanned(trx, await claims.plannedDeliveries(trx));
+  }
+
+  private async staff<T>(e: Elevated, body: Cmd, attempt: Attempt, fn: (trx: Transaction, cmd: CommandContext) => Promise<T>): Promise<T> {
+    const cmd = this.commandContext(e, body);
+    try {
+      return await this.principals.runAs(e.state, async (trx) => {
+        const result = await fn(trx, cmd);
+        await this.sendNotices(trx);
+        return result;
+      });
+    } catch (error) {
+      const refusal = claimsRefusal(error);
+      if (refusal && isAuthorityRefusal(refusal)) await this.recordDenied(e, cmd, attempt, refusal).catch((failure: unknown) => this.ctx.log('claims.denied_audit_failed', failure));
+      throw refusal ?? error;
+    }
+  }
+
+  private read<T>(state: RequestState, fn: (trx: Transaction, p: Principal) => Promise<T>): Promise<T> {
+    return this.principals.runAs(state, fn).catch((error: unknown) => {
+      throw claimsRefusal(error) ?? error;
+    });
+  }
+
+  private async recordDenied(e: Elevated, cmd: CommandContext, attempt: Attempt, refusal: ApiError): Promise<void> {
+    const p = e.state.principal as Principal;
+    await withPrincipal(this.ctx.pool, { personId: p.personId, authzEpoch: p.authzEpoch }, async (trx) => {
+      const role = await trx.selectFrom('staff_role_assignment').select('role').where('person_id', '=', p.personId).where('revoked_at', 'is', null)
+        .where((eb) => eb.or([eb('scope_kind', 'in', ['platform', 'node']), eb('hub_id', '=', attempt.hubId)]))
+        .where((eb) => eb.or([eb('valid_until', 'is', null), eb('valid_until', '>', new Date())])).orderBy('breakglass').limit(1).executeTakeFirst();
+      if (!role) return;
+      const reason = typeof refusal.details?.reason === 'string' ? refusal.details.reason : refusal.code.replace(/\W/g, '_');
+      await adminAudit.append(trx, {
+        actorPersonId: p.personId, actorRole: role.role as StaffRole, scope: { kind: 'hub', hubId: attempt.hubId }, permission: attempt.permission, elevationId: cmd.elevationId,
+        action: attempt.action, objectType: attempt.objectType, objectId: attempt.objectId, reasonCode: `denied_${reason}`.slice(0, 64).replace(/[^a-z0-9_]/g, '_'), reasonText: cmd.reasonText,
+        outcome: 'denied', requestId: cmd.requestId,
+      });
+    });
+  }
+
+  private static ofHub<T extends { hub_id: string }>(row: T | undefined, hubId: string): T {
+    if (!row || row.hub_id !== hubId) throw new ApiError('access.not_found', 'access.not_found');
+    return row;
+  }
+
+  /* ---------- The claimant ---------- */
+
+  recipes(state: RequestState, hubId: string) {
+    return this.read(state, async (trx) => ({ items: (await claims.activeRecipes(trx, hubId)).map(toRecipe) }));
+  }
+
+  own(state: RequestState) {
+    return this.read(state, async (trx, p) => ({
+      claims: (await claims.own(trx, p.personId)).map(toOwnClaim),
+      handovers: (await claims.ownHandovers(trx, p.personId)).map(toOwnHandover),
+    }));
+  }
+
+  /** Submission changes nothing on the page: no status, no role. It enters the claim, the screening and the notices. */
+  submit(state: RequestState, body: Body<typeof SubmitClaimCommandSchema>) {
+    return this.read(state, async (trx) => {
+      const row = await claims.submit(trx, body.hubId, body.companyId, body.level, body.recipeId, body.tie);
+      await this.sendNotices(trx);
+      return { claim: toOwnClaim(row) };
+    });
+  }
+
+  withdraw(state: RequestState, claimId: string) {
+    return this.read(state, async (trx) => {
+      const row = await claims.withdraw(trx, claimId);
+      await this.sendNotices(trx);
+      return { claim: toOwnClaim(row) };
+    });
+  }
+
+  /* ---------- Staff reads ---------- */
+
+  overview(state: RequestState, hubId: string, claimState: ClaimState | null) {
+    return this.read(state, async (trx) => ({
+      claims: (await claims.list(trx, hubId, claimState)).map(toClaim),
+      disputes: (await claims.disputes(trx, hubId)).map(toDispute),
+      settings: toSettings(hubId, await claims.settings(trx, hubId)),
+    }));
+  }
+
+  claim(state: RequestState, hubId: string, claimId: string) {
+    return this.read(state, async (trx) => ({ claim: toClaim(ClaimsService.ofHub(await claims.get(trx, claimId), hubId)) }));
+  }
+
+  handovers(state: RequestState, hubId: string, companyId: string | null) {
+    return this.read(state, async (trx) => {
+      const rows = companyId ? (await claims.handovers(trx, companyId)).filter((h) => h.hub_id === hubId) : await claims.hubHandovers(trx, hubId);
+      return { items: rows.map(toHandover) };
+    });
+  }
+
+  /* ---------- Staff commands ---------- */
+
+  decide(e: Elevated, hubId: string, claimId: string, body: Body<typeof DecideClaimCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: `claims.${body.decision}`, objectType: 'company_claim', objectId: claimId }, async (trx, cmd) => {
+      ClaimsService.ofHub(await claims.get(trx, claimId), hubId);
+      return { claim: toClaim(await claims.decide(trx, cmd, claimId, body.expectedRevision, body.decision, body.officerMatch, body.note)) };
+    });
+  }
+
+  proposeDispute(e: Elevated, hubId: string, disputeId: string, body: Body<typeof ProposeDisputeCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.dispute_proposed', objectType: 'claim_dispute', objectId: disputeId }, async (trx, cmd) => {
+      ClaimsService.ofHub(await claims.dispute(trx, disputeId), hubId);
+      return { dispute: toDispute(await claims.proposeDispute(trx, cmd, disputeId, body.expectedRevision, body.winnerClaimId, body.note)) };
+    });
+  }
+
+  confirmDispute(e: Elevated, hubId: string, disputeId: string, body: Body<typeof ConfirmDisputeCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.dispute_decided', objectType: 'claim_dispute', objectId: disputeId }, async (trx, cmd) => {
+      ClaimsService.ofHub(await claims.dispute(trx, disputeId), hubId);
+      return { dispute: toDispute(await claims.confirmDispute(trx, cmd, disputeId, body.expectedRevision)) };
+    });
+  }
+
+  revoke(e: Elevated, hubId: string, handoverId: string, body: Body<typeof RevokeHandoverCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.revoke', action: 'claims.revoked', objectType: 'company_handover', objectId: handoverId }, async (trx, cmd) => {
+      ClaimsService.ofHub(await claims.handover(trx, handoverId), hubId);
+      return { handover: toHandover(await claims.revoke(trx, cmd, handoverId, body.revocationReason)) };
+    });
+  }
+
+  setSettings(e: Elevated, hubId: string, body: Body<typeof ClaimSettingsCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.policy.edit', action: 'claims.settings_set', objectType: 'claims_settings', objectId: hubId },
+      async (trx, cmd) => ({ settings: toSettings(hubId, await claims.setSettings(trx, cmd, hubId, body.waitingDays, body.coolingDays)) }));
+  }
+}
