@@ -69,6 +69,12 @@ LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
        'expiryNoticeDays', s.expiry_notice_days, 'refundPolicyVersion', s.refund_policy_version) END))
 $$;
 
+-- Audit digests refuse integers above 2^53-1, and a price may be any bigint, so the amount enters the audit image as text.
+CREATE FUNCTION trustwork.billing_sale_audit(p trustwork.price_version) RETURNS jsonb
+LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
+ SELECT to_jsonb(p) || jsonb_build_object('amount_minor', p.amount_minor::text)
+$$;
+
 -- No path activates these kinds without disclosed terms and the exact consumed approval, the owner-run catalogue included.
 CREATE FUNCTION trustwork.billing_sale_price_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
@@ -128,7 +134,7 @@ BEGIN
  INSERT INTO trustwork.price_sale_terms(price_version_id, sale_kind, model_id, capability_id, meter, per_units, credit_minor, validity_days, expiry_notice_days, refund_policy_version)
  VALUES (p.id, k, p_terms->>'modelId', p_terms->>'capabilityId', p_terms->>'meter', (p_terms->>'perUnits')::bigint, (p_terms->>'creditMinor')::bigint,
    (p_terms->>'validityDays')::integer, (p_terms->>'expiryNoticeDays')::integer, p_terms->>'refundPolicyVersion') RETURNING * INTO s;
- PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.sale_price_drafted','price_version',p.id,NULL,to_jsonb(p));
+ PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.sale_price_drafted','price_version',p.id,NULL,trustwork.billing_sale_audit(p));
  RETURN trustwork.billing_sale_version(p, o, s);
 END $$;
 
@@ -153,10 +159,10 @@ BEGIN
   UPDATE trustwork.price_version SET effective_to = p.effective_from WHERE offer_id = p.offer_id AND status = 'active' AND id <> p.id
     AND effective_from < p.effective_from AND (effective_to IS NULL OR effective_to > p.effective_from);
  END IF;
- before_p := to_jsonb(p);
+ before_p := trustwork.billing_sale_audit(p);
  UPDATE trustwork.price_version SET status='active', activated_by=a.person_id WHERE id=p.id RETURNING * INTO p;
  IF o.status = 'draft' THEN UPDATE trustwork.offer SET status='active' WHERE id=o.id RETURNING * INTO o; END IF;
- PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.sale_price_activated','price_version',p.id,before_p,to_jsonb(p),NULL,p_approval);
+ PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.sale_price_activated','price_version',p.id,before_p,trustwork.billing_sale_audit(p),NULL,p_approval);
  RETURN trustwork.billing_sale_version(p, o, s);
 END $$;
 
