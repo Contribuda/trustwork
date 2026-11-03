@@ -83,6 +83,27 @@ export interface CompanyClaimEvidenceTable {
 
 export interface ClaimsDatabase {
   company_claim_evidence: CompanyClaimEvidenceTable;
+export interface CompanyVerificationTable {
+  id: Generated<string>;
+  hub_id: string;
+  company_id: string;
+  handover_id: string;
+  level: ClaimLevel;
+  recipe_id: string;
+  categories: string[];
+  state: Generated<'active' | 'expired' | 'revoked' | 'superseded'>;
+  decided_by: string;
+  decided_at: Generated<Date>;
+  valid_until: Date;
+  renewed_from: string | null;
+  revoked_at: Date | null;
+  revoked_by: string | null;
+  revocation_reason_code: string | null;
+}
+export type CompanyVerificationRow = Selectable<CompanyVerificationTable>;
+
+export interface ClaimsDatabase {
+  company_verification: CompanyVerificationTable;
   claims_settings: ClaimsSettingsTable;
   claim_dispute: ClaimDisputeTable;
   company_claim: CompanyClaimTable;
@@ -97,6 +118,9 @@ declare module './index.js' {
 const columns = columnsOf<ClaimsDatabase>();
 export const TABLE_COLUMNS: TableColumns<ClaimsDatabase> = {
   company_claim_evidence: columns('company_claim_evidence', ['claim_id', 'check_id', 'bound_by', 'bound_at']),
+  company_verification: columns('company_verification', [
+    'id', 'hub_id', 'company_id', 'handover_id', 'level', 'recipe_id', 'categories', 'state', 'decided_by', 'decided_at', 'valid_until', 'renewed_from', 'revoked_at', 'revoked_by', 'revocation_reason_code',
+  ]),
   claims_settings: columns('claims_settings', ['hub_id', 'waiting_days', 'cooling_days', 'updated_by', 'revision', 'updated_at']),
   claim_dispute: columns('claim_dispute', [
     'id', 'hub_id', 'company_id', 'state', 'proposed_claim_id', 'proposed_none', 'proposed_by', 'proposed_note', 'confirmed_by', 'decided_at', 'revision', 'created_at',

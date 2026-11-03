@@ -41,7 +41,8 @@
       "claimBackInReview": "{company} üzrə iddianıza yenidən baxılır",
       "claimApproved": "{company} üzrə iddianız təsdiqləndi",
       "claimRejected": "{company} üzrə iddianız təsdiqlənmədi",
-      "claimRevoked": "{company} idarəetməsi sizdən geri alındı"
+      "claimRevoked": "{company} idarəetməsi sizdən geri alındı",
+      "claimExpired": "{company} təsdiqinin müddəti bitib, yeni yoxlama lazımdır"
     },
     "markAllRead": "Hamısını oxunmuş kimi qeyd et",
     "markFailed": "Oxunma qeydi saxlanmadı. Yenidən cəhd edin."

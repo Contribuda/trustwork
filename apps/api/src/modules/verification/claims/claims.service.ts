@@ -1,15 +1,17 @@
 import type { z } from 'zod';
 import { withPrincipal, type Transaction } from '../../../deps/data.js';
+import { withoutPrincipal } from '../../../common/db.js';
 import type { ConsolePermission, Principal } from '../../../deps/contracts.js';
 import { ApiError } from '../../../common/errors.js';
 import type { RequestState } from '../../../common/request.js';
 import type { CommunicationsService } from '../../communications/communications.service.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
-import type { BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
+import { staffHubFromEnv } from '../../identity/staff-roles.js';
+import type { BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
 import { adminAudit, claims, type ClaimState, type CommandContext, type StaffRole } from './deps.js';
 import { claimsRefusal, isAuthorityRefusal } from './errors.js';
-import { toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toRecipe, toSettings } from './views.js';
+import { toBadge, toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toRecipe, toSettings, toVerification } from './views.js';
 
 type Body<S extends z.ZodType> = z.infer<S>;
 type Cmd = { idempotencyKey: string; reason: string };
@@ -25,7 +27,7 @@ interface Attempt { hubId: string; permission: ConsolePermission; action: string
  * Refusals of authority leave a `denied` audit row in a transaction of their own.
  */
 export class ClaimsService {
-  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly notices: Pick<CommunicationsService, 'deliverPlanned'>) {}
+  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly notices: Pick<CommunicationsService, 'deliverPlanned'>, private readonly env: NodeJS.ProcessEnv = process.env) {}
 
   private commandContext(e: Elevated, body: Cmd): CommandContext {
     if (e.idempotencyKey !== undefined && body.idempotencyKey !== e.idempotencyKey) throw new ApiError('validation.schema', 'idempotencyKey must equal the Idempotency-Key header', { reason: 'idempotency_key_mismatch' });
@@ -76,6 +78,14 @@ export class ClaimsService {
   private static ofHub<T extends { hub_id: string }>(row: T | undefined, hubId: string): T {
     if (!row || row.hub_id !== hubId) throw new ApiError('access.not_found', 'access.not_found');
     return row;
+  }
+
+  /* ---------- Public ---------- */
+
+  /** The badges of the hub this API serves: categories and dates. Nobody needs a session; no hub, no badges. */
+  async badges(companyId: string, hubId: string | null = staffHubFromEnv(this.env)) {
+    if (!hubId) return { items: [] };
+    return { items: (await withoutPrincipal(this.ctx.pool, (trx) => claims.publicBadges(trx, hubId, companyId))).map(toBadge) };
   }
 
   /* ---------- The claimant ---------- */
@@ -142,6 +152,10 @@ export class ClaimsService {
     });
   }
 
+  verifications(state: RequestState, hubId: string, filter: { companyId?: string; dueDays?: number }) {
+    return this.read(state, async (trx) => ({ items: (await claims.verifications(trx, hubId, filter)).map(toVerification) }));
+  }
+
   /* ---------- Staff commands ---------- */
 
   decide(e: Elevated, hubId: string, claimId: string, body: Body<typeof DecideClaimCommandSchema>) {
@@ -177,6 +191,13 @@ export class ClaimsService {
     return this.staff(e, body, { hubId, permission: 'admin.claims.revoke', action: 'claims.revoked', objectType: 'company_handover', objectId: handoverId }, async (trx, cmd) => {
       ClaimsService.ofHub(await claims.handover(trx, handoverId), hubId);
       return { handover: toHandover(await claims.revoke(trx, cmd, handoverId, body.revocationReason)) };
+    });
+  }
+
+  recheck(e: Elevated, hubId: string, verificationId: string, body: Body<typeof RecheckVerificationCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.rechecked', objectType: 'company_verification', objectId: verificationId }, async (trx, cmd) => {
+      ClaimsService.ofHub(await claims.verification(trx, verificationId), hubId);
+      return { verification: toVerification(await claims.recheck(trx, cmd, verificationId, body.recipeId)) };
     });
   }
 

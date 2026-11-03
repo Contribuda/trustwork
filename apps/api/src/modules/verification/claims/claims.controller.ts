@@ -5,8 +5,8 @@ import { Body, Params, Query } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
-  BindEvidenceCommandSchema, ClaimListQuerySchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, HandoverListQuerySchema, ProposeDisputeCommandSchema, RecipeListQuerySchema,
-  RevokeHandoverCommandSchema, SubmitClaimCommandSchema, WithdrawClaimCommandSchema,
+  BindEvidenceCommandSchema, ClaimListQuerySchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, HandoverListQuerySchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RecipeListQuerySchema,
+  RevokeHandoverCommandSchema, SubmitClaimCommandSchema, VerificationListQuerySchema, WithdrawClaimCommandSchema,
 } from './commands.js';
 import { ClaimsService, type Elevated } from './claims.service.js';
 
@@ -16,6 +16,8 @@ const ClaimParams = z.strictObject({ hubId: Uuid, claimId: Uuid });
 const DisputeParams = z.strictObject({ hubId: Uuid, disputeId: Uuid });
 const HandoverParams = z.strictObject({ hubId: Uuid, handoverId: Uuid });
 const OwnClaimParams = z.strictObject({ claimId: Uuid });
+const VerificationParams = z.strictObject({ hubId: Uuid, verificationId: Uuid });
+const CompanyParams = z.strictObject({ companyId: Uuid });
 type P<S extends z.ZodType> = z.infer<S>;
 
 function elevated(state: RequestState, elevation: SessionElevationRow, request: TrustworkRequest): Elevated {
@@ -48,6 +50,16 @@ export class AdminClaimsController {
   @Get('handovers')
   handovers(@Params(HubParams) p: P<typeof HubParams>, @Query(HandoverListQuerySchema) q: P<typeof HandoverListQuerySchema>, @ReqState() state: RequestState) {
     return this.service.handovers(state, p.hubId, q.companyId ?? null);
+  }
+
+  @Get('verifications')
+  verifications(@Params(HubParams) p: P<typeof HubParams>, @Query(VerificationListQuerySchema) q: P<typeof VerificationListQuerySchema>, @ReqState() state: RequestState) {
+    return this.service.verifications(state, p.hubId, { ...(q.companyId ? { companyId: q.companyId } : {}), ...(q.dueDays !== undefined ? { dueDays: q.dueDays } : {}) });
+  }
+
+  @Post('verifications/:verificationId/recheck') @HttpCode(201) @Idempotent('claims.verification_recheck', 'verificationId')
+  recheck(@Params(VerificationParams) p: P<typeof VerificationParams>, @Body(RecheckVerificationCommandSchema) body: P<typeof RecheckVerificationCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.service.recheck(elevated(state, e, r), p.hubId, p.verificationId, body);
   }
 
   @Post('requests/:claimId/decide') @HttpCode(200) @Idempotent('claims.decide', 'claimId')
@@ -107,5 +119,16 @@ export class OwnClaimsController {
   @Post(':claimId/withdraw') @HttpCode(200) @Authenticated() @Idempotent('claims.withdraw', 'claimId')
   withdraw(@Params(OwnClaimParams) p: P<typeof OwnClaimParams>, @Body(WithdrawClaimCommandSchema) _body: P<typeof WithdrawClaimCommandSchema>, @ReqState() state: RequestState) {
     return this.service.withdraw(state, p.claimId);
+  }
+}
+
+/** A company's badges at the hub this API serves (CLM-001): no session; categories and dates, never documents. */
+@Controller('v1/companies')
+export class CompanyBadgesController {
+  constructor(@Inject(ClaimsService) private readonly service: ClaimsService) {}
+
+  @Get(':companyId/badges')
+  badges(@Params(CompanyParams) p: P<typeof CompanyParams>) {
+    return this.service.badges(p.companyId);
   }
 }

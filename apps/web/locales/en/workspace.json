@@ -41,7 +41,8 @@
       "claimBackInReview": "Your claim on {company} is back in review",
       "claimApproved": "Your claim on {company} was approved",
       "claimRejected": "Your claim on {company} was not approved",
-      "claimRevoked": "Your management of {company} was withdrawn"
+      "claimRevoked": "Your management of {company} was withdrawn",
+      "claimExpired": "The verification of {company} has run out and needs a new check"
     },
     "markAllRead": "Mark all as read",
     "markFailed": "The read mark was not saved. Try again."

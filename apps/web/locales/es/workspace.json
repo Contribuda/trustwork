@@ -41,7 +41,8 @@
       "claimBackInReview": "Su reclamación sobre {company} vuelve a revisión",
       "claimApproved": "Su reclamación sobre {company} fue aprobada",
       "claimRejected": "Su reclamación sobre {company} no fue aprobada",
-      "claimRevoked": "Se retiró su gestión de {company}"
+      "claimRevoked": "Se retiró su gestión de {company}",
+      "claimExpired": "La verificación de {company} ha caducado y necesita una nueva comprobación"
     },
     "markAllRead": "Marcar todo como leído",
     "markFailed": "No se guardó la marca de lectura. Inténtelo de nuevo."

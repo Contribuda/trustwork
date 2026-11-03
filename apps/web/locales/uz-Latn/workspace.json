@@ -41,7 +41,8 @@
       "claimBackInReview": "{company} bo'yicha da'vongiz yana ko'rib chiqilmoqda",
       "claimApproved": "{company} bo'yicha da'vongiz tasdiqlandi",
       "claimRejected": "{company} bo'yicha da'vongiz tasdiqlanmadi",
-      "claimRevoked": "{company} boshqaruvi sizdan olib qo'yildi"
+      "claimRevoked": "{company} boshqaruvi sizdan olib qo'yildi",
+      "claimExpired": "{company} tasdig'ining muddati tugadi, yangi tekshiruv kerak"
     },
     "markAllRead": "Barchasini o‘qilgan deb belgilash",
     "markFailed": "O‘qilganlik belgisi saqlanmadi. Qayta urinib ko‘ring."
