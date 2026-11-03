@@ -6,13 +6,23 @@ import { tDynamic } from '@/app/_lib/i18n';
 import { withBase } from '@/app/_lib/base-path';
 import { ApiFailure, createTransport } from '@/app/_lib/data/http/transport';
 import { HeaderLocaleSwitcher } from '@/components/locale/LocaleControls';
+import { sectionById } from '../../../../_data/sections';
 import reference from '@/locales/en/screening.json';
 import { CompliancePanel } from '../../participants/compliance/CompliancePanel';
 import { ActionForm } from './ActionForm';
-import { AccessSchema, HoldsSchema, HubsSchema, MatchDetailSchema, NodeSchema, QueueSchema, RunsSchema, SubjectSchema, type Copy, type MatchDetail } from './model';
+import { AccessSchema, AssignmentSchema, HoldsSchema, HubsSchema, MatchDetailSchema, NodeSchema, QueueSchema, ReportDraftsSchema, RunsSchema, SubjectSchema, type Copy, type MatchDetail } from './model';
 import './screening.css';
 
 type Query = { subject?: string | undefined; view?: string | undefined; participant?: ScreeningSubjectRef | undefined };
+
+/**
+ * The live pages run inside the console shell (navigation and the elevation gate) for any staff member; who may see
+ * screening data is decided below and by the API, never by the section's fixture permission.
+ */
+export function liveSection(group: string, id: string) {
+  const ref = sectionById(group, id)!;
+  return { ...ref, section: { ...ref.section, read: 'staff' as const } };
+}
 
 /** Only this screen uses these live endpoints; the general console adapter remains HUBC-007. */
 export async function readScreening(hubSlug: string, query: Query, transport = createTransport()) {
@@ -32,6 +42,7 @@ export async function readScreening(hubSlug: string, query: Query, transport = c
   const queue = QueueSchema.parse(await transport.get('/v1/admin/screening/queue'));
   const holds = HoldsSchema.parse(await transport.get('/v1/admin/jurisdiction/holds'));
   const runs = RunsSchema.parse(await transport.get('/v1/admin/screening/rescreen-runs'));
+  const reports = ReportDraftsSchema.parse(await transport.get('/v1/admin/screening/report-drafts'));
   const stateId = query.subject ? z.uuid().safeParse(query.subject) : null;
   if (stateId && !stateId.success) return null;
   const participant = query.participant;
@@ -40,8 +51,12 @@ export async function readScreening(hubSlug: string, query: Query, transport = c
   if ((stateId?.success || participant) && subjectBody === null) return null;
   const subject = subjectBody ? SubjectSchema.parse(subjectBody) : null;
   const details: MatchDetail[] = [];
-  if (subject) for (const match of subject.matches) details.push(MatchDetailSchema.parse(await transport.get(`/v1/admin/screening/matches/${match.id}`)));
-  return { node, access, hub, listAuthority, lists, versions, geo, metrics, queue, holds: holds.items, runs: runs.items, subject, details };
+  if (subject) for (const match of subject.matches) {
+    const detail = MatchDetailSchema.parse(await transport.get(`/v1/admin/screening/matches/${match.id}`));
+    const routed = match.state === 'appeal' ? AssignmentSchema.parse(await transport.get(`/v1/admin/screening/matches/${match.id}/appeal-assignment`)) : null;
+    details.push({ ...detail, assignment: routed?.assignment ?? null });
+  }
+  return { node, access, hub, listAuthority, lists, versions, geo, metrics, queue, holds: holds.items, runs: runs.items, reports: reports.items, subject, details };
 }
 
 export function localizedCopy(): Copy {
@@ -72,14 +87,15 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
   const approvalView = query.view === 'approvals';
   const queue = data.queue.items.filter((item) => !approvalView || item.states.some((state) => state === 'pending_second' || state === 'pending_reversal'));
   const visibleHolds = data.holds.filter((hold) => !subject || subject.subject.kind === 'person' && hold.personId === subject.subject.id);
-  return <main className="screening-console" id="screening-main">
+  const visibleReports = data.reports.filter((report) => !subject || report.subject.id === subject.subject.id);
+  return <div className="screening-console">
     <header>
       <HeaderLocaleSwitcher active={active} />
       <h1 tabIndex={-1}>{participantPage ? c.participantTitle : c.title}</h1>
       <p>{data.hub.name[active.locale] ?? data.hub.name[data.hub.defaultLocale]}</p>
       <p>{c.api} · {c.nodeScope}</p>
       <nav aria-label={c.title}>
-        <a href={base}>{c.queue}</a><a href={`${base}?view=approvals`}>{c.approvals}</a><a href={`${base}#holds`}>{c.holds}</a><a href={`${base}#runs`}>{c.runs}</a>
+        <a href={base}>{c.queue}</a><a href={`${base}?view=approvals`}>{c.approvals}</a><a href={`${base}#holds`}>{c.holds}</a><a href={`${base}#reports`}>{c.reports.title}</a><a href={`${base}#runs`}>{c.runs}</a>
       </nav>
     </header>
     {participantPage ? <p>{c.participantScope}</p> : <aside className="screening-warning"><strong>{c.incomplete}</strong><p>{c.unavailable}</p></aside>}
@@ -157,6 +173,13 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
         {hold.clearedAt ? <><h4>{c.history}</h4><p>{fmtDate(hold.clearedAt)} · {hold.clearEvidence ? c.holdEvidence[hold.clearEvidence] : c.unknown}</p><p>{hold.clearReason}</p></> : <ActionForm path={`/v1/admin/jurisdiction/holds/${hold.id}/clear`} label={c.clearHold} copy={c} evidence={c.holdEvidence} disabled={!mayAct || hold.personId === access.personId} />}
       </article>)}
     </section>
+    <section id="reports" aria-labelledby="reports-heading"><h2 id="reports-heading">{c.reports.title}</h2><p>{c.reports.help}</p>
+      {!visibleReports.length ? <p>{c.reports.none}</p> : visibleReports.map((report) => <article className="screening-card" key={report.id} data-testid="report-draft">
+        <h3>{c.subjectKinds[report.subject.kind]} · <code>{report.subject.id}</code></h3>
+        <dl><dt>{c.listEntry}</dt><dd><code>{report.listCode} / {report.entryUid}</code></dd><dt>{c.reports.programs}</dt><dd>{report.programs.join(', ')}</dd>
+          <dt>{c.reports.prepared}</dt><dd>{fmtDate(report.preparedAt)}</dd><dt>{c.reports.due}</dt><dd>{new Intl.DateTimeFormat(active.locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(report.dueOn))}</dd></dl>
+      </article>)}
+    </section>
     {!participantPage ? <section id="runs" aria-labelledby="runs-heading"><h2 id="runs-heading">{c.runs}</h2>
       {!data.runs.length ? <p>{c.noRuns}</p> : data.runs.map((run) => <article className="screening-card" key={run.id}>
         <h3>{c.runStates[run.state]}</h3><p>{fmtDate(run.queuedAt)}</p><p>{c.progress}: {run.progress ? `${number(run.progress.subjectsDone)} / ${number(run.progress.subjectsTotal)}` : c.unknown}</p>
@@ -164,5 +187,5 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
       </article>)}
       <ActionForm path="/v1/admin/screening/rescreen-runs" label={c.requestRun} copy={c} disabled={!mayAct} />
     </section> : null}
-  </main>;
+  </div>;
 }

@@ -1,6 +1,6 @@
 # SANC-006 screening console: implementation and evidence
 
-Status: **Partial; work package remains in progress.** No deployment or production acceptance is claimed.
+Status: **In review.** Every acceptance item of SANC-006 has a test here; hub cohort metrics stay unavailable (see below). No deployment or production acceptance is claimed.
 
 ## Implemented boundary
 
@@ -12,16 +12,26 @@ Holds show place, source, dataset, time and retained clearing evidence. Every wr
 
 `/admin/hubs/:hub/participants/compliance/:stateId` retains its subject-state route. `/participants/people/:id` and `/participants/companies/:id` now embed the shared `CompliancePanel` after an exact, authorized subject lookup. These targeted pages show only screening data; they explicitly say the rest of the participant card is not connected. They never attach a fixture card or read private participant data. The existing node-compliance/auditor RLS audience applies; broader private data still needs its existing case grant. No case-grant bypass was added. Seven `screening.console` dictionaries supply the visible copy. The explicit demo branch retains the existing labelled synthetic console.
 
+## In the console shell
+
+The live pages run inside the console shell, so staff keep the navigation and an unelevated session gets the elevation form instead of a 404. The shell only decides that the visitor is staff of this hub: `liveSection` keeps the fixture permission of the section out of it, and `LiveScreening` is called, not rendered, so its refusal still fails the page with a 404. A staff member without screening authority, and a subject, get the same 404 as before.
+
+The screen also shows report drafts (read-only: filing stays with the operator) and, on an appeal, its routing with the command to assign it to oneself or leave it unassigned. The original decider cannot route it; the API decides.
+
+## Who sees the participant card
+
+The compliance panel on a participant page is the compliance officer's alone, as in section 4.1 of the console design. `GET /v1/admin/screening/subjects/lookup/:kind/:id` answers everyone else with the same 404 whether the subject has a state, has none or does not exist, and a node auditor is one of them: an auditor reads the cases by their state id, not a named person's card. The support account card has no compliance field and does not change when a hold opens (`card-visibility.test.ts`). The restricted-servicing notice for support is left out: it depends on a hub legal setting that does not exist, so nobody sees it.
+
 ## Read APIs and privacy
 
 - `GET /v1/admin/screening/lists`: actual lists, active versions and freshness, with no entries, source URLs, arbitrary sanity JSON or credential metadata.
 - `GET /v1/admin/screening/lists/:id/versions`: latest 50 immutable version summaries.
 - `GET /v1/admin/jurisdiction/geolocation`: description of the exact adapter installed in the API request hook at startup; dataset age is derived only from its recorded month. Upstream, edge and fake modes without a month remain unknown. A historical hold is never current metadata.
-- `GET /v1/admin/screening/subjects/lookup/:kind/:id`: exact lookup in the forced-RLS screening state table for `person` or `company`; the same screening projection as the state-id route, without a participant/profile join.
+- `GET /v1/admin/screening/subjects/lookup/:kind/:id`: compliance officers only; exact lookup in the forced-RLS screening state table for `person` or `company`; the same screening projection as the state-id route, without a participant/profile join.
 - `GET /v1/admin/screening/metrics?hubId=...`: explicit unknowns for unavailable hub cohorts, plus separately labelled node-wide operational durations of completed re-screen runs. A run appears only when its actual recorded items prove at least ten distinct person principals. Companies and event counts do not stand in for people. Suppressed rows never leave the repository.
 - Re-screen GET and POST responses use `ScreeningConsoleRunSchema`: only operational state/time and nullable progress. Both suppress participant counters until the recorded run cohort proves ten distinct people; raw outcomes and counters are never included. The underlying SANC-005 command, transactional idempotency and authority are unchanged.
 
-Every new read requires authentication, elevation and the existing database `jurisdiction_staff_reader()` authority (node compliance officer or auditor); lookup failures remain not found. The list freshness function is SECURITY DEFINER, so the explicit staff check runs before it. Tables retain forced RLS. The preserved #407 read surface introduced no permission, migration, provider or list-writing command; the continuation adds only the list authority migration and commands described below.
+Every new read requires authentication, elevation and the existing database `jurisdiction_staff_reader()` authority (node compliance officer or auditor, except the card lookup above); lookup failures remain not found. The list freshness function is SECURITY DEFINER, so the explicit staff check runs before it. Tables retain forced RLS. The preserved #407 read surface introduced no permission, migration, provider or list-writing command; the continuation adds only the list authority migration and commands described below.
 
 ## Compliance staff notice
 

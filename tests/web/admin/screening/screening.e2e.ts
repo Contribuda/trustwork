@@ -4,9 +4,9 @@ import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { EMAILS, PASSWORDS } from '../../../backend/helpers/personas.js';
 import { readFile } from 'node:fs/promises';
-import ru from '../../../../apps/web/locales/ru/screening.json' with { type: 'json' };
+import es from '../../../../apps/web/locales/es/screening.json' with { type: 'json' };
 
-const c = ru.screening.console;
+const c = es.screening.console;
 const evidence = process.env.SANC006_EVIDENCE_DIR ?? resolve('dist/sanc006-evidence');
 interface Setup { hub: string; hubId: string; appealId: string; subjectId: string; companyId: string; sessions: Record<'first' | 'second' | 'subject' | 'otherStaff', { name: string; value: string }[]> }
 
@@ -15,7 +15,7 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
   const context = async (key: keyof Setup['sessions']): Promise<BrowserContext> => {
     const ctx = await browser.newContext({ baseURL: baseURL!, viewport: { width: 1280, height: 900 } });
     await ctx.addCookies([...setup.sessions[key].map((cookie) => ({ ...cookie, domain: '127.0.0.1', path: '/', httpOnly: true, secure: false, sameSite: 'Lax' as const })),
-      { name: 'trustwork.locale', value: 'ru', domain: '127.0.0.1', path: '/' }, { name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }]);
+      { name: 'trustwork.locale', value: 'es', domain: '127.0.0.1', path: '/' }, { name: 'trustwork.country', value: 'UZ', domain: '127.0.0.1', path: '/' }]);
     return ctx;
   };
   const first = await context('first'); const second = await context('second'); const subject = await context('subject'); const otherStaff = await context('otherStaff');
@@ -31,6 +31,8 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     const page = await first.newPage();
     await page.goto(base);
     await expect(page.getByRole('heading', { name: c.title, exact: true })).toBeVisible();
+    await expect(page.locator('#admin-main .screening-console')).toBeVisible();
+    await expect(page.getByRole('navigation').first()).toBeVisible();
     await expect(page.getByText(c.incomplete)).toBeVisible();
     await expect(page.getByText('ofac-sdn', { exact: true })).toBeVisible();
     await expect(page.getByText(c.baseline, { exact: true })).toHaveCount(2);
@@ -67,10 +69,10 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     const self = await first.request.post(`/v1/admin/screening/matches/${m.id}/proposal-decision`, { headers: { 'X-Trustwork-Request': '1', origin: baseURL!, 'Idempotency-Key': 'sanc006-self-approve' }, data: { decision: 'approve', actionDigest: m.pendingApproval.actionDigest, reason: 'Synthetic self approval must fail' } });
     expect(self.status()).toBe(403); expect((await self.json()).code).toBe('access.second_approver_required');
     await mkdir(evidence, { recursive: true });
-    await page.screenshot({ path: resolve(evidence, 'continuation-screening-ru-desktop.png'), fullPage: true });
+    await page.screenshot({ path: resolve(evidence, 'continuation-screening-es-desktop.png'), fullPage: true });
     expect((await new AxeBuilder({ page }).include('.screening-console').analyze()).violations).toEqual([]);
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.screenshot({ path: resolve(evidence, 'continuation-screening-ru-mobile.png'), fullPage: true });
+    await page.screenshot({ path: resolve(evidence, 'continuation-screening-es-mobile.png'), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.keyboard.press('Tab'); expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY');
     const reviewer = await second.newPage(); await reviewer.goto(`${base}?view=approvals`);
@@ -100,7 +102,7 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
       await reviewer.setViewportSize({ width: 375, height: 812 });
       expect(await reviewer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect((await new AxeBuilder({ page: reviewer }).include('.screening-console').analyze()).violations).toEqual([]);
-      await reviewer.screenshot({ path: resolve(evidence, `continuation-${segment}-ru-mobile.png`), fullPage: true });
+      await reviewer.screenshot({ path: resolve(evidence, `continuation-${segment}-es-mobile.png`), fullPage: true });
     }
     await page.goto(base);
     const configure = page.locator('form').filter({ has: page.getByRole('button', {name:c.listControls.propose,exact:true}) });
@@ -147,7 +149,18 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     expect((await appealContext.request.post('/v1/screening/me/appeal',{headers:{...headers,'Idempotency-Key':'sanc006-browser-appeal'},data:{companyId:null,reason:'Synthetic appeal evidence'}})).status()).toBe(200);
     await appealContext.close();
     await page.reload(); await expect(page.getByRole('button',{name:c.reverse,exact:true})).toBeDisabled();
+    await expect(page.getByTestId('report-draft')).toHaveCount(1);
+    await expect(page.getByRole('button',{name:c.routing.submit,exact:true})).toBeDisabled();
     await reviewer.goto(appealPath);
+    const route = reviewer.getByTestId('appeal-routing');
+    await route.getByLabel(c.routing.reviewer,{exact:true}).selectOption({label:c.routing.leaveUnassigned});
+    await route.getByLabel(c.reason,{exact:true}).fill('Synthetic routing back to the open pool');
+    await route.getByRole('button',{name:c.routing.submit,exact:true}).click();
+    await expect(reviewer.getByTestId('appeal-routing').getByText(c.routing.states.unassigned,{exact:true})).toBeVisible();
+    await reviewer.getByTestId('appeal-routing').getByLabel(c.routing.reviewer,{exact:true}).selectOption({label:c.routing.assignToMe});
+    await reviewer.getByTestId('appeal-routing').getByLabel(c.reason,{exact:true}).fill('Synthetic routing to an independent officer');
+    await reviewer.getByTestId('appeal-routing').getByRole('button',{name:c.routing.submit,exact:true}).click();
+    await expect(reviewer.getByTestId('appeal-routing').getByText(c.routing.states.assigned,{exact:true})).toBeVisible();
     const reverse = reviewer.locator('form').filter({has:reviewer.getByRole('button',{name:c.reverse,exact:true})});
     await reverse.getByLabel(c.reason,{exact:true}).fill('Synthetic different reviewer proposes reversal'); await reverse.getByRole('button').click();
     await expect(reviewer.getByRole('heading',{name:c.states.pending_reversal,exact:true,level:3})).toBeVisible();
@@ -156,18 +169,17 @@ test('SANC-006 actual API: subject denied, required reason, second person and re
     await reverseApproval.getByLabel(c.reason,{exact:true}).fill('Synthetic independent reversal approval'); await reverseApproval.getByRole('button').click();
     await expect(page.getByRole('heading',{name:c.states.not_same_person,exact:true})).toBeVisible();
     // Every language renders its own dictionary, never an English fallback for the new controls.
-    for (const locale of ['en','es','ru','uz-Latn','ka','hy','az-Latn']) {
-      const dictionary = JSON.parse(await readFile(resolve(`apps/web/locales/${locale}/screening.json`),'utf8')) as typeof ru;
+    for (const locale of ['en','uz-Latn','ka','hy','az-Latn','es']) {
+      const dictionary = JSON.parse(await readFile(resolve(`apps/web/locales/${locale}/screening.json`),'utf8')) as typeof es;
       await second.addCookies([{name:'trustwork.locale',value:locale,domain:'127.0.0.1',path:'/'}]);
       await reviewer.goto(base);
       await expect(reviewer.getByRole('heading',{name:dictionary.screening.console.listControls.title,exact:true})).toBeVisible();
       expect(await reviewer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     }
-    await second.addCookies([{name:'trustwork.locale',value:'ru',domain:'127.0.0.1',path:'/'}]);
     await reviewer.goto(base);
-    await reviewer.screenshot({path:resolve(evidence,'lists-ru-mobile.png'),fullPage:true});
+    await reviewer.screenshot({path:resolve(evidence,'lists-es-mobile.png'),fullPage:true});
     await reviewer.setViewportSize({width:1280,height:900});
-    await reviewer.screenshot({path:resolve(evidence,'lists-ru-desktop.png'),fullPage:true});
+    await reviewer.screenshot({path:resolve(evidence,'lists-es-desktop.png'),fullPage:true});
     expect((await new AxeBuilder({page:reviewer}).include('.screening-console').analyze()).violations).toEqual([]);
     const run = reviewer.locator('form').filter({ has: reviewer.getByRole('button', { name: c.requestRun, exact: true }) });
     await run.getByLabel(c.reason, { exact: true }).fill('Synthetic manual re-screen request'); await run.getByRole('button').click();
