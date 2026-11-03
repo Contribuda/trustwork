@@ -182,6 +182,7 @@ export function agentContext(data, id) {
       `until: ${until}`,
       'plan:',
       '- <three to five steps>',
+      'restricted: no',
     ].join('\n'),
     checkClaim: 'npm run claims -- lint claim.txt',
     verify: ['npm ci', 'npm run check', ...(touchesWeb ? ['cd apps/web && NEXT_DIST_DIR=.next-e2e npx next build --webpack && NEXT_DIST_DIR=.next-e2e TRUSTWORK_E2E_PORT=3459 npx playwright test'] : [])],
