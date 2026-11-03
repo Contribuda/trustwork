@@ -33,7 +33,12 @@ test('PAY-001 payout account and payout ask the SANC-004 gate; restricted places
   const registry = new HandlerRegistry(); registerPayments(registry, runtime);
   const deps = { pool, registry, config: defaultWorkerConfig({ concurrency: 1, relayBatchSize: 1000 }), metrics: new Metrics(), log: () => {} };
   const relay = new OutboxRelay(deps), runner = new JobRunner(deps);
-  const tick = async () => { await relay.relayOnce(); await runner.tick(); await runner.idle(); };
+  const pendingJobs = async () => (await h.db.admin.query("SELECT 1 FROM trustwork.job WHERE kind LIKE 'payments.%' AND state='queued' AND next_at<=clock_timestamp()")).rows.length;
+  /** Relays once, then runs every runnable payment job (one worker, so several queued jobs need several rounds). */
+  const tick = async () => {
+    await relay.relayOnce();
+    for (let round = 0; round < 5; round++) { await runner.tick(); await runner.idle(); if (!await pendingJobs()) break; }
+  };
   const q = async (query: string, args: unknown[] = []) => (await h.db.admin.query(query, args)).rows;
   const payee = { kind: 'person' as const, id: seed.people.carl };
   const payeeName = (await q('SELECT display_name FROM trustwork.person WHERE id=$1', [payee.id]))[0]!.display_name as string;
@@ -118,7 +123,9 @@ test('PAY-001 payout account and payout ask the SANC-004 gate; restricted places
   await t.test('the worker asks the gate again at dispatch: a hold decided after HTTP admission stops the payout before the provider', async () => {
     const view = await charged();
     ok<{ operationId: string }>(await buyer.post(`/v1/payments/${view.id}/payout`, {}));
-    await holdPayee();
+    // Money held because the payee is no longer screened (the listed-name review above can be opened once per subject).
+    await q("UPDATE trustwork.screening_subject_state SET last_outcome='not_screened' WHERE subject_person_id=$1", [payee.id]);
+    assert.equal((await gateState()).money_held, true);
     const before = fake.calls.length;
     try {
       await tick();
@@ -129,7 +136,8 @@ test('PAY-001 payout account and payout ask the SANC-004 gate; restricted places
       assert.deepEqual(await reservation(view.id), { state: 'settled', effect_pending: true, refunded_minor: '0' });
       const job = (await q('SELECT state FROM trustwork.job WHERE id=$1', [op.job_id]))[0]!;
       assert.ok(['outcome_unknown', 'dead', 'failed'].includes(job.state as string), job.state as string);
-    } finally { await clearPayee(); }
+    } finally { await screenEveryoneClear(h.db.admin); }
+    assert.deepEqual(await gateState(), { money_held: false, reasons: [] });
   });
 
   await t.test('a restricted payee or connected-account place refuses at creation, before the provider and before any hold', async () => {
@@ -145,7 +153,8 @@ test('PAY-001 payout account and payout ask the SANC-004 gate; restricted places
 
   await t.test('rails cannot serve a restricted place or contradict their connection, even when the owner writes them', async () => {
     const insert = (columns: Record<string, unknown>) => {
-      const row: Record<string, unknown> = { connection_id: hub.connectionId, currencies: ['USD'], countries: ['US'], rails: ['qr'], capabilities: ['create', 'confirm', 'refund', 'payout', 'connected_account'], custody: 'provider_connected_accounts', evidence_mode: 'synthetic', approval_ref: 'synthetic-guard-case', ...columns };
+      // The guard connection below has no payouts capability, so the default rail claims none.
+      const row: Record<string, unknown> = { connection_id: hub.connectionId, currencies: ['USD'], countries: ['US'], rails: ['qr'], capabilities: ['create', 'confirm', 'refund', 'connected_account'], custody: 'provider_connected_accounts', evidence_mode: 'synthetic', approval_ref: 'synthetic-guard-case', ...columns };
       const keys = Object.keys(row);
       return h.db.admin.query(`INSERT INTO trustwork.payment_rail(${keys.join(',')}) VALUES(${keys.map((_, i) => `$${i + 1}`).join(',')})`, keys.map((k) => row[k]));
     };
