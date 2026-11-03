@@ -23,6 +23,10 @@ Holds show place, source, dataset, time and retained clearing evidence. Every wr
 
 Every new read requires authentication, elevation and the existing database `jurisdiction_staff_reader()` authority (node compliance officer or auditor); lookup failures remain not found. The list freshness function is SECURITY DEFINER, so the explicit staff check runs before it. Tables retain forced RLS. The preserved #407 read surface introduced no permission, migration, provider or list-writing command; the continuation adds only the list authority migration and commands described below.
 
+## Compliance staff notice
+
+The `screening.review_requested` event had no consumer, so staff heard nothing. A new queue item or hold now records a parameterless mail to each independent compliance officer of the node in the transaction of the event; see the [notice README](../../../../apps/worker/src/mail/templates/screening-staff/README.md). `staff-notice.test.ts` covers the recipients (no auditor, subject, company member or conflicted officer), the rendered bytes, the burst rule, the absence of a mute, a revocation before dispatch and the restricted roles.
+
 ## Remaining dependencies and concrete data proposal
 
 The nine hub cohort metrics remain unknown, with a machine-readable reason per metric:
