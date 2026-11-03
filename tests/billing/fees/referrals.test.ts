@@ -130,6 +130,13 @@ test('BILL-003 referral terms on real PostgreSQL under the runtime role', { skip
     const rows = (await db.admin.query("SELECT action,actor_person_id FROM trustwork.admin_audit_event WHERE object_id=$1 ORDER BY sequence", [live.id])).rows;
     assert.deepEqual(rows.map((x) => x.action), ['billing.referral_drafted', 'billing.referral_activated', 'billing.referral_withdrawn']);
   });
+  await t.test('the largest reward the contract allows drafts, activates and withdraws: audit digests take amounts as text', async () => {
+    const max = '9223372036854775807';
+    const big = await draft(terms({ programmeKey: 'synthetic_max', referrerRewardMinor: max, refereeRewardMinor: max }));
+    await activate(big, await approve(big));
+    assert.equal((await billingReferrals.publicList(runtime, hubA)).find((x) => x.id === big.id)?.terms.referrerRewardMinor, max);
+    await a.cmd(p.officer, (trx, ctx) => billingReferrals.withdraw(trx, ctx, hubA, big.id, big.digest));
+  });
   await t.test('activation is audited with the second person', async () => {
     const rows = (await db.admin.query("SELECT actor_person_id,hub_id,second_approver_person_id FROM trustwork.admin_audit_event WHERE action='billing.referral_activated' AND object_id=$1", [r.id])).rows;
     assert.deepEqual(rows, [{ actor_person_id: p.officer, hub_id: hubA, second_approver_person_id: p.owner }]);

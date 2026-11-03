@@ -113,6 +113,12 @@ LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
    'activatedAt', to_char(p.activated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'withdrawnAt', to_char(p.withdrawn_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))
 $$;
 
+-- Audit digests refuse integers above 2^53-1, and a reward may be any bigint, so amounts enter the audit image as text.
+CREATE FUNCTION trustwork.billing_referral_audit(p trustwork.referral_terms_version) RETURNS jsonb
+LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
+ SELECT to_jsonb(p) || jsonb_build_object('referrer_reward_minor', p.referrer_reward_minor::text, 'referee_reward_minor', p.referee_reward_minor::text)
+$$;
+
 CREATE FUNCTION trustwork.billing_referral_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
 DECLARE a trustwork.second_person_approval%ROWTYPE;
@@ -190,7 +196,7 @@ BEGIN
    (p_terms->>'maxRewardsPerReferrer')::integer, (p_terms->>'effectiveFrom')::timestamptz, (p_terms->>'effectiveTo')::timestamptz,
    p_terms->>'acceptanceTextVersion', p_terms->'publicTerms', p_legal_review_ref, a.person_id)
  RETURNING * INTO r;
- PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.referral_drafted','referral_terms_version',r.id,NULL,to_jsonb(r));
+ PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.referral_drafted','referral_terms_version',r.id,NULL,trustwork.billing_referral_audit(r));
  RETURN trustwork.billing_referral_public(r);
 END $$;
 
@@ -211,9 +217,9 @@ BEGIN
  IF EXISTS (SELECT 1 FROM trustwork.hub_profile h, unnest(h.locales) l WHERE h.hub_id = p_hub AND NOT r.public_terms ? l) THEN
   RAISE EXCEPTION 'public terms are missing a hub language' USING ERRCODE = '23514', HINT = 'billing.language_missing'; END IF;
  PERFORM trustwork.admin_consume_approval(p_approval,'growth.activate_referral_terms','hub',NULL,p_hub,p_digest,r.id);
- before_r := to_jsonb(r);
+ before_r := trustwork.billing_referral_audit(r);
  UPDATE trustwork.referral_terms_version SET status='active', activated_by=a.person_id, activated_at=clock_timestamp(), approval_id=p_approval WHERE id=r.id RETURNING * INTO r;
- PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.referral_activated','referral_terms_version',r.id,before_r,to_jsonb(r),NULL,p_approval);
+ PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.referral_activated','referral_terms_version',r.id,before_r,trustwork.billing_referral_audit(r),NULL,p_approval);
  RETURN trustwork.billing_referral_public(r);
 END $$;
 
@@ -230,9 +236,9 @@ BEGIN
  SELECT * INTO r FROM trustwork.referral_terms_version WHERE id = p_id FOR UPDATE;
  IF p_digest IS DISTINCT FROM trustwork.billing_referral_digest(r) THEN RAISE EXCEPTION 'changed digest' USING ERRCODE = '42501', HINT = 'admin.approval_mismatch'; END IF;
  IF r.status <> 'active' THEN RAISE EXCEPTION 'referral terms unavailable' USING ERRCODE = '23514', HINT = 'billing.unavailable'; END IF;
- before_r := to_jsonb(r);
+ before_r := trustwork.billing_referral_audit(r);
  UPDATE trustwork.referral_terms_version SET status='withdrawn', withdrawn_by=a.person_id, withdrawn_at=clock_timestamp() WHERE id=r.id RETURNING * INTO r;
- PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.referral_withdrawn','referral_terms_version',r.id,before_r,to_jsonb(r));
+ PERFORM trustwork.admin_record(a,p_ctx,NULL,p_hub,'billing.referral_withdrawn','referral_terms_version',r.id,before_r,trustwork.billing_referral_audit(r));
  RETURN trustwork.billing_referral_public(r);
 END $$;
 
