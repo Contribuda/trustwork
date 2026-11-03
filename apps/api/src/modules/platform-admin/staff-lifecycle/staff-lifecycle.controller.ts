@@ -5,11 +5,15 @@ import { Body, Params, Query } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import { PlainCommandSchema } from '../schemas.js';
-import { EffectiveAccessQuerySchema, InviteStaffCommandSchema, RespondStaffInvitationSchema, StaffDirectoryQuerySchema } from './deps.js';
+import {
+  DecideActivationCommandSchema, EffectiveAccessQuerySchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, RequestActivationCommandSchema, RespondStaffInvitationSchema,
+  RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema,
+} from './deps.js';
 import { StaffLifecycleService } from './staff-lifecycle.service.js';
 
 const IdParams = z.strictObject({ id: z.uuid() });
 const HubQuery = z.strictObject({ hubId: z.uuid() });
+const HubPersonQuery = z.strictObject({ hubId: z.uuid(), personId: z.uuid().optional() });
 
 function elevated(state: RequestState, elevation: SessionElevationRow, request: TrustworkRequest) {
   const header = request.headers['idempotency-key'];
@@ -58,6 +62,59 @@ export class StaffLifecycleController {
   @Post('invitations/:id/withdraw') @HttpCode(200) @Idempotent('admin.staff.invitation_withdraw', 'id')
   withdraw(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.staff.withdraw(elevated(state, e, r), p.id, body);
+  }
+
+  /* ---------- Part 3: eligible roles and just-in-time activation ---------- */
+
+  /** Eligible roles covering the hub: one's own, and everyone's with `admin.staff.read` at the scope. */
+  @Get('eligible-roles')
+  eligibleRoles(@Query(HubPersonQuery) q: z.infer<typeof HubPersonQuery>, @ReqState() state: RequestState) {
+    return this.staff.eligibleRoles(state, q.hubId, q.personId);
+  }
+
+  @Post('eligible-roles') @HttpCode(201) @Idempotent('admin.staff.eligible_grant')
+  grantEligible(@Body(GrantEligibleRoleCommandSchema) body: z.infer<typeof GrantEligibleRoleCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.grantEligible(elevated(state, e, r), body);
+  }
+
+  @Post('eligible-roles/:id/revoke') @HttpCode(200) @Idempotent('admin.staff.eligible_revoke', 'id')
+  revokeEligible(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.revokeEligible(elevated(state, e, r), p.id, body);
+  }
+
+  /** Activations covering the hub, with their state now; pending ones are the second person's queue. */
+  @Get('activations')
+  activations(@Query(HubPersonQuery) q: z.infer<typeof HubPersonQuery>, @ReqState() state: RequestState) {
+    return this.staff.activations(state, q.hubId, q.personId);
+  }
+
+  /** The eligible person activates a role for a window; the second factor must be fresh. */
+  @Post('activations') @HttpCode(201) @Idempotent('admin.staff.activation_request')
+  requestActivation(@Body(RequestActivationCommandSchema) body: z.infer<typeof RequestActivationCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.requestActivation(elevated(state, e, r), body);
+  }
+
+  @Post('activations/:id/decide') @HttpCode(200) @Idempotent('admin.staff.activation_decide', 'id')
+  decideActivation(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(DecideActivationCommandSchema) body: z.infer<typeof DecideActivationCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.decideActivation(elevated(state, e, r), p.id, body);
+  }
+
+  @Post('activations/:id/end') @HttpCode(200) @Idempotent('admin.staff.activation_end', 'id')
+  endActivation(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.endActivation(elevated(state, e, r), p.id, body);
+  }
+
+  /* ---------- Part 3: role change with preview ---------- */
+
+  /** A read with a body: the difference a role change would make, computed from the rows as they are now and never stored. */
+  @Post('role-changes/preview') @HttpCode(200)
+  previewRoleChange(@Body(RoleChangePreviewRequestSchema) body: z.infer<typeof RoleChangePreviewRequestSchema>, @ReqState() state: RequestState) {
+    return this.staff.previewRoleChange(state, body);
+  }
+
+  @Post('role-changes/apply') @HttpCode(200) @Idempotent('admin.staff.role_change_apply')
+  applyRoleChange(@Body(RoleChangeApplyCommandSchema) body: z.infer<typeof RoleChangeApplyCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.applyRoleChange(elevated(state, e, r), body);
   }
 }
 
