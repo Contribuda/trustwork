@@ -2,7 +2,7 @@ import '../schema/billing-fees.js';
 import { sql } from 'kysely';
 import type { DataPool, Transaction } from '../pool.js';
 import type { CommandContext } from './admin.js';
-import { FeeDisclosureSchema, type FeeDisclosure, PublicFeeSchema, type FeeTerms, type PublicFee } from '../../../contracts/src/billing-fees.js';
+import { FeeDisclosureSchema, type FeeDisclosure, PublicFeeSchema, PublicReferralSchema, StaffReferralSchema, type FeeTerms, type PublicFee, type PublicReferral, type ReferralTerms, type StaffReferral } from '../../../contracts/src/billing-fees.js';
 
 export const billingFees = {
   async draft(trx: Transaction, ctx: CommandContext, hubId: string, terms: FeeTerms): Promise<PublicFee> {
@@ -16,6 +16,30 @@ export const billingFees = {
   async publicList(pool: DataPool, hubId: string): Promise<PublicFee[]> {
     const r = await pool.query<{ value: unknown }>('SELECT trustwork.billing_fee_list($1::uuid) AS value', [hubId]);
     return PublicFeeSchema.array().parse(r.rows[0]?.value);
+  },
+};
+
+/** Referral programme terms: every command re-checks authority in the database; nothing here issues a reward. */
+export const billingReferrals = {
+  async draft(trx: Transaction, ctx: CommandContext, hubId: string, terms: ReferralTerms, legalReviewRef: string): Promise<PublicReferral> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_referral_draft(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${JSON.stringify(terms)}::jsonb, ${legalReviewRef}) AS value`.execute(trx);
+    return PublicReferralSchema.parse(r.rows[0]?.value);
+  },
+  async activate(trx: Transaction, ctx: CommandContext, hubId: string, id: string, digest: string, approvalId: string): Promise<PublicReferral> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_referral_activate(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${id}::uuid, ${digest}, ${approvalId}::uuid) AS value`.execute(trx);
+    return PublicReferralSchema.parse(r.rows[0]?.value);
+  },
+  async withdraw(trx: Transaction, ctx: CommandContext, hubId: string, id: string, digest: string): Promise<PublicReferral> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_referral_withdraw(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${id}::uuid, ${digest}) AS value`.execute(trx);
+    return PublicReferralSchema.parse(r.rows[0]?.value);
+  },
+  async publicList(pool: DataPool, hubId: string): Promise<PublicReferral[]> {
+    const r = await pool.query<{ value: unknown }>('SELECT trustwork.billing_referral_list($1::uuid) AS value', [hubId]);
+    return PublicReferralSchema.array().parse(r.rows[0]?.value);
+  },
+  async staffList(trx: Transaction, ctx: CommandContext, hubId: string): Promise<StaffReferral[]> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_referral_staff_list(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid) AS value`.execute(trx);
+    return StaffReferralSchema.array().parse(r.rows[0]?.value);
   },
 };
 

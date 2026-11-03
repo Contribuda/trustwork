@@ -19,7 +19,15 @@ export interface FeeBindingTable {
 export interface ConsultationOriginTable { source_kind: 'offering' | 'request'; source_id: string; hub_id: string; created_at: GeneratedTimestamp }
 export interface TaskOriginTable { source_kind: 'request' | 'offer'; source_id: string; hub_id: string; created_at: GeneratedTimestamp }
 export interface LegacyFeeSourceTable { source_kind: 'consultation' | 'task'; source_id: string; source_digest: string; captured_at: GeneratedTimestamp }
+export interface ReferralTermsVersionTable {
+  id: GeneratedUuid; hub_id: string; programme_key: string; version: number; eligible_parties: 'person' | 'company' | 'person_or_company'; reward_kind: 'platform_credit';
+  currency: string; referrer_reward_minor: string; referee_reward_minor: string; max_rewards_per_referrer: number | null;
+  effective_from: Date; effective_to: Date | null; acceptance_text_version: string; public_terms: ColumnType<unknown, string, never>; legal_review_ref: string;
+  status: 'draft' | 'active' | 'withdrawn'; drafted_by: string; activated_by: string | null; activated_at: Date | null; approval_id: string | null;
+  withdrawn_by: string | null; withdrawn_at: Date | null; revision: number; created_at: GeneratedTimestamp; updated_at: GeneratedTimestamp;
+}
 export interface BillingFeesDatabase {
+  referral_terms_version: ReferralTermsVersionTable;
   billing_fee_legacy_source: LegacyFeeSourceTable;
   billing_task_origin: TaskOriginTable;
   billing_consultation_origin: ConsultationOriginTable;
@@ -35,6 +43,9 @@ declare module './index.js' {
 export type FeeScopeRow = Selectable<FeeScopeTable>;
 const columns = columnsOf<BillingFeesDatabase>();
 export const TABLE_COLUMNS: TableColumns<BillingFeesDatabase> = {
+  referral_terms_version: columns('referral_terms_version', ['id', 'hub_id', 'programme_key', 'version', 'eligible_parties', 'reward_kind', 'currency', 'referrer_reward_minor', 'referee_reward_minor',
+    'max_rewards_per_referrer', 'effective_from', 'effective_to', 'acceptance_text_version', 'public_terms', 'legal_review_ref', 'status', 'drafted_by', 'activated_by', 'activated_at', 'approval_id',
+    'withdrawn_by', 'withdrawn_at', 'revision', 'created_at', 'updated_at']),
   billing_fee_legacy_source: columns('billing_fee_legacy_source', ['source_kind','source_id','source_digest','captured_at']),
   billing_task_origin: columns('billing_task_origin', ['source_kind','source_id','hub_id','created_at']),
   billing_consultation_origin: columns('billing_consultation_origin', ['source_kind','source_id','hub_id','created_at']),

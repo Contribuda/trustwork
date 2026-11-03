@@ -29,7 +29,8 @@
       "credit_pack": "Kredit paketi",
       "deliverable": "İş nəticəsi",
       "verification_fee": "Yoxlama xidməti",
-      "agent_module": "Agent modulu"
+      "agent_module": "Agent modulu",
+      "referral": "Tövsiyə proqramı"
     },
     "payer": {
       "buyer": "Alıcı ödəyir",
@@ -186,7 +187,21 @@
       "representativeNo": "Nümayəndə daxil deyil",
       "modules": "Daxil edilmiş modul identifikatorları: {modules}",
       "quota": "{module} / {meter}: {units} vahid; mənbə dövrü: {window}",
-      "noQuota": "Bu plan versiyasında daxil edilmiş kvota qeydə alınmayıb."
+      "noQuota": "Bu plan versiyasında daxil edilmiş kvota qeydə alınmayıb.",
+      "referral": {
+        "referrerReward": "Tövsiyə edən üçün kredit: {amount}",
+        "refereeReward": "Tövsiyə olunan üçün kredit: {amount}",
+        "creditOnly": "Mükafatlar platforma kreditləridir, heç vaxt nağd pul deyil. Onlar reytinqi, uyğunlaşdırmanı, tövsiyələri və ya reputasiyanı heç vaxt dəyişmir.",
+        "eligible": {
+          "person": "Şəxslər üçün açıqdır",
+          "company": "Şirkətlər üçün açıqdır",
+          "person_or_company": "Şəxslər və şirkətlər üçün açıqdır"
+        },
+        "limit": "Tövsiyə edən hər kəs üçün {count} mükafata qədər",
+        "noLimit": "Tövsiyə edən üçün mükafat sayı məhdud deyil",
+        "termsLanguage": "Bu şərtlər bu dildə dərc edilməyib. Hub tərəfindən dərc edilmiş dildə göstərilir.",
+        "none": "Bu hubda tövsiyə proqramı yoxdur."
+      }
     },
     "sections": {
       "plans": "Həcm tarifləri",
@@ -196,7 +211,8 @@
       "credit_packs": "Kredit paketləri",
       "fees": "Məsləhət və tapşırıq haqları",
       "events": "Tədbir və kurs haqları",
-      "verification": "Maya dəyəri ilə yoxlama"
+      "verification": "Maya dəyəri ilə yoxlama",
+      "referrals": "Tövsiyə proqramları"
     }
   }
 }

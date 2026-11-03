@@ -256,7 +256,7 @@ export const HUB_SECOND_PERSON_ACTIONS = [
   'automation.raise_to_supervised_autonomous', 'agents.enable_commitment_module', 'agents.activate_extension', 'jurisdiction.activate_settings',
   'billing.activate_fee_version', 'billing.release_payout_batch', 'payments.change_settings', 'sponsored.enable', 'staff.grant_breakglass',
   'support.reset_second_factor', 'support.rebind_recovery_email', 'ops.execute_restore', 'ops.apply_production_migration', 'ops.rotate_node_key',
-  'kill_switch.release',
+  'kill_switch.release', 'growth.activate_referral_terms',
 ] as const;
 export const HubSecondPersonActionSchema = z.enum(HUB_SECOND_PERSON_ACTIONS);
 /** The merged second-person vocabulary: the frozen A+2 actions plus the console actions. */
@@ -284,6 +284,7 @@ export const HUB_CONSOLE_PERMISSIONS = [
   'admin.agents.read', 'admin.agents.modules.edit', 'admin.agents.modules.activate', 'admin.agents.policy.edit', 'admin.agents.clients.manage', 'admin.agents.kill',
   'admin.agents.extensions.edit', 'admin.agents.extensions.activate', 'admin.agents.extensions.suspend',
   'admin.billing.invoices.read', 'admin.billing.payouts.read', 'admin.billing.payouts.release', 'admin.billing.fees.draft', 'admin.billing.fees.activate',
+  'admin.growth.referrals.draft', 'admin.growth.referrals.activate',
   'admin.federation.read', 'admin.federation.peer.edit', 'admin.federation.defederate',
   'admin.support.account.read', 'admin.support.sessions.revoke', 'admin.support.second_factor.reset', 'admin.support.recovery.rebind', 'admin.support.explain',
   'admin.ops.backups.read', 'admin.ops.restore.drill', 'admin.ops.restore.execute', 'admin.ops.updates.apply', 'admin.ops.locales.read',

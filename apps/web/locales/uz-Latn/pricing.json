@@ -29,7 +29,8 @@
       "credit_pack": "Kredit to‘plami",
       "deliverable": "Ish natijasi",
       "verification_fee": "Tekshirish xizmati",
-      "agent_module": "Agent moduli"
+      "agent_module": "Agent moduli",
+      "referral": "Tavsiya dasturi"
     },
     "payer": {
       "buyer": "Xaridor to‘laydi",
@@ -186,7 +187,21 @@
       "representativeNo": "Vakil kiritilmagan",
       "modules": "Kiritilgan modul identifikatorlari: {modules}",
       "quota": "{module} / {meter}: {units} birlik; manba davri: {window}",
-      "noQuota": "Ushbu reja versiyasida kiritilgan kvota qayd etilmagan."
+      "noQuota": "Ushbu reja versiyasida kiritilgan kvota qayd etilmagan.",
+      "referral": {
+        "referrerReward": "Tavsiya qilgan kishi uchun kredit: {amount}",
+        "refereeReward": "Tavsiya qilingan kishi uchun kredit: {amount}",
+        "creditOnly": "Mukofotlar platforma kreditlaridir, hech qachon naqd pul emas. Ular reyting, moslashtirish, tavsiyalar yoki obro‘ni hech qachon o‘zgartirmaydi.",
+        "eligible": {
+          "person": "Shaxslar uchun ochiq",
+          "company": "Kompaniyalar uchun ochiq",
+          "person_or_company": "Shaxslar va kompaniyalar uchun ochiq"
+        },
+        "limit": "Tavsiya qilgan har bir kishiga {count} tagacha mukofot",
+        "noLimit": "Tavsiya qilgan kishiga mukofotlar soni cheklanmagan",
+        "termsLanguage": "Bu shartlar ushbu tilda e’lon qilinmagan. Ular xab e’lon qilgan tilda ko‘rsatilgan.",
+        "none": "Bu xabda tavsiya dasturi yo‘q."
+      }
     },
     "sections": {
       "plans": "Hajm tariflari",
@@ -196,7 +211,8 @@
       "credit_packs": "Kredit to‘plamlari",
       "fees": "Maslahat va vazifa yig‘imlari",
       "events": "Tadbir va kurs yig‘imlari",
-      "verification": "Tannarx bo‘yicha tekshirish"
+      "verification": "Tannarx bo‘yicha tekshirish",
+      "referrals": "Tavsiya dasturlari"
     }
   }
 }

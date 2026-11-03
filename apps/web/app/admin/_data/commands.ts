@@ -107,6 +107,7 @@ export const APPROVER_PERMISSIONS: Record<ConsoleSecondPersonAction, readonly Co
   'ops.apply_production_migration': ['admin.ops.updates.apply'],
   'ops.rotate_node_key': ['admin.node.keys.rotate'],
   'kill_switch.release': ['admin.providers.kill', 'admin.agents.kill'],
+  'growth.activate_referral_terms': ['admin.growth.referrals.activate'],
 };
 
 export const REJECT_CODES = [

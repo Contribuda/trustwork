@@ -6,7 +6,7 @@ import type { RequestState } from '../../../common/request.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { hubsRefusal } from '../../hubs/errors.js';
-import { billingFees, feePricingReaders, SubscriptionPlanVersionSchema, PublicPriceSchema, PublicPricingSchema, type ActivateFeeSchema, type CommandContext, type DraftFeeSchema, type PublicPricing } from './deps.js';
+import { billingFees, billingReferrals, feePricingReaders, SubscriptionPlanVersionSchema, PublicPriceSchema, PublicPricingSchema, type ActivateFeeSchema, type ActivateReferralSchema, type CommandContext, type DraftFeeSchema, type DraftReferralSchema, type PublicPricing, type WithdrawReferralSchema } from './deps.js';
 
 /** Governed public prices only. Missing modules are unavailable; they are never quoted as free. */
 export class FeesService {
@@ -33,6 +33,22 @@ export class FeesService {
     const hub = this.hub();
     return this.principals.runAs(state, (trx) => billingFees.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId)).catch((e: unknown) => this.refusal(e));
   }
+  draftReferral(state: RequestState, elevationId: string, body: z.infer<typeof DraftReferralSchema>) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingReferrals.draft(trx, this.command(state, elevationId, body.reason), hub, body.terms, body.legalReviewRef)).catch((e: unknown) => this.refusal(e));
+  }
+  activateReferral(state: RequestState, elevationId: string, id: string, body: z.infer<typeof ActivateReferralSchema>) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingReferrals.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId)).catch((e: unknown) => this.refusal(e));
+  }
+  withdrawReferral(state: RequestState, elevationId: string, id: string, body: z.infer<typeof WithdrawReferralSchema>) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingReferrals.withdraw(trx, this.command(state, elevationId, body.reason), hub, id, body.digest)).catch((e: unknown) => this.refusal(e));
+  }
+  staffReferrals(state: RequestState, elevationId: string) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingReferrals.staffList(trx, this.command(state, elevationId, 'Read referral versions'), hub)).catch((e: unknown) => this.refusal(e));
+  }
   taskDisclosure(state: RequestState, offerId: string) {
     return this.principals.runAs(state, trx => new VersionedTaskFees(this.hubId).disclose(trx, offerId));
   }
@@ -40,11 +56,11 @@ export class FeesService {
     const at = this.ctx.clock.now();
     const sections: NonNullable<PublicPricing['coverage']>['sections'] = {
       fees: 'unavailable', plans: 'unavailable', services: 'unavailable',
-      models: 'unavailable', capabilities: 'unavailable', credit_packs: 'unavailable',
+      models: 'unavailable', capabilities: 'unavailable', credit_packs: 'unavailable', referrals: 'unavailable',
     };
-    const unavailable = () => (['fees', 'plans', 'models', 'capabilities', 'credit_packs'] as const).filter(key => sections[key] !== 'available');
-    const empty = (): PublicPricing => ({ hubId: null, fees: [], prices: [], unavailable: ['fees', 'plans', 'models', 'capabilities', 'credit_packs'],
-      coverage: { generatedAt: at.toISOString(), sections: { fees: 'unavailable', plans: 'unavailable', services: 'unavailable', models: 'unavailable', capabilities: 'unavailable', credit_packs: 'unavailable' } } });
+    const unavailable = () => (['fees', 'plans', 'models', 'capabilities', 'credit_packs', 'referrals'] as const).filter(key => sections[key] !== 'available');
+    const empty = (): PublicPricing => ({ hubId: null, fees: [], prices: [], referrals: [], unavailable: ['fees', 'plans', 'models', 'capabilities', 'credit_packs', 'referrals'],
+      coverage: { generatedAt: at.toISOString(), sections: { fees: 'unavailable', plans: 'unavailable', services: 'unavailable', models: 'unavailable', capabilities: 'unavailable', credit_packs: 'unavailable', referrals: 'unavailable' } } });
     if (!this.hubId) return empty();
     const hubId = this.hubId;
     // Hub lookup failures fail the whole request; they cannot authorize an empty catalogue.
@@ -57,6 +73,12 @@ export class FeesService {
       if (fees.some(f => f.hubId !== hubId)) throw new Error('Invalid public fee hub');
       sections.fees = 'available';
     } catch { fees = []; sections.fees = 'error'; }
+    let referrals: NonNullable<PublicPricing['referrals']> = [];
+    try {
+      referrals = (await billingReferrals.publicList(this.ctx.pool, hubId)).filter(r => r.terms.effectiveTo === null || Date.parse(r.terms.effectiveTo) > at.getTime());
+      if (referrals.some(r => r.hubId !== hubId)) throw new Error('Invalid public referral hub');
+      sections.referrals = 'available';
+    } catch { referrals = []; sections.referrals = 'error'; }
     // Each reader owns a transaction. A PostgreSQL failure rolls it back before any sibling read.
     for (const plans of [true, false]) {
       const section = plans ? 'plans' : 'services';
@@ -94,6 +116,6 @@ export class FeesService {
     }
     // A hub closed during the reads must not leave a published sibling section behind.
     if (!await available()) return empty();
-    return PublicPricingSchema.parse({ hubId, fees, prices, unavailable: unavailable(), coverage: { generatedAt: at.toISOString(), sections } });
+    return PublicPricingSchema.parse({ hubId, fees, prices, referrals, unavailable: unavailable(), coverage: { generatedAt: at.toISOString(), sections } });
   }
 }

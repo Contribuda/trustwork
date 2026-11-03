@@ -41,15 +41,48 @@ export const PublicPriceSchema = z.strictObject({
   }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;
+const Locale = z.string().regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/);
+/**
+ * Referral programme terms (ADR 018, ADR 025 decision 21). The strict object is the payment-neutrality boundary: it has no
+ * key that could reach ranking, matching, recommendations or reputation, and no participant-specific reward. A reward is a
+ * platform credit, never cash. `publicTerms` holds the operator's own text per hub language; activation needs all of them.
+ */
+export const ReferralTermsSchema = z.strictObject({
+  programmeKey: z.string().regex(/^[a-z][a-z0-9_]{1,60}$/),
+  eligibleParties: z.enum(['person', 'company', 'person_or_company']),
+  rewardKind: z.literal('platform_credit'),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  referrerRewardMinor: Minor, refereeRewardMinor: Minor,
+  maxRewardsPerReferrer: z.int().min(1).max(1000).nullable(),
+  effectiveFrom: Timestamp, effectiveTo: Timestamp.nullable(),
+  acceptanceTextVersion: z.string().min(1).max(40),
+  publicTerms: z.record(Locale, z.string().trim().min(1).max(4000)).refine((v) => Object.keys(v).length > 0, 'public terms are required'),
+}).refine((v) => v.effectiveTo === null || Date.parse(v.effectiveTo) > Date.parse(v.effectiveFrom), 'the interval must be positive');
+export type ReferralTerms = z.infer<typeof ReferralTermsSchema>;
+/** `legalReviewRef` names the counsel review of these terms; it is approved with them and is never public. */
+export const DraftReferralSchema = z.strictObject({ reason: z.string().min(1).max(500), terms: ReferralTermsSchema, legalReviewRef: z.string().trim().min(1).max(200) });
+export const ActivateReferralSchema = ActivateFeeSchema;
+export const WithdrawReferralSchema = z.strictObject({ reason: z.string().min(1).max(500), digest: Digest });
+export const PublicReferralSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: ReferralTermsSchema });
+export type PublicReferral = z.infer<typeof PublicReferralSchema>;
+/** Staff projection for the console. It names staff, so it is served only under `admin.growth.referrals.*`. */
+export const StaffReferralSchema = z.strictObject({
+  id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: ReferralTermsSchema, status: z.enum(['draft', 'active', 'withdrawn']),
+  legalReviewRef: z.string().min(1), draftedBy: Id, activatedBy: Id.nullable(), activatedAt: Timestamp.nullable(), withdrawnAt: Timestamp.nullable(),
+});
+export type StaffReferral = z.infer<typeof StaffReferralSchema>;
 export const PublicPricingSchema = z.strictObject({
   hubId: Id.nullable(), fees: z.array(PublicFeeSchema), prices: z.array(PublicPriceSchema),
-  unavailable: z.array(z.enum(['fees', 'plans', 'models', 'capabilities', 'credit_packs'])),
+  /** Absent in older responses. An empty array with `coverage.sections.referrals: available` means the hub runs no programme. */
+  referrals: z.array(PublicReferralSchema).optional(),
+  unavailable: z.array(z.enum(['fees', 'plans', 'models', 'capabilities', 'credit_packs', 'referrals'])),
   coverage: z.strictObject({
     generatedAt: Timestamp,
     sections: z.strictObject({
       fees: z.enum(['available', 'unavailable', 'error']), plans: z.enum(['available', 'unavailable', 'error']),
       services: z.enum(['available', 'unavailable', 'error']), models: z.enum(['available', 'unavailable', 'error']),
       capabilities: z.enum(['available', 'unavailable', 'error']), credit_packs: z.enum(['available', 'unavailable', 'error']),
+      referrals: z.enum(['available', 'unavailable', 'error']).optional(),
     }),
   }).optional(),
 });

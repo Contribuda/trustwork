@@ -21,7 +21,8 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.equal(r.status, 200);
     const p = PublicPricingSchema.parse(r.body);
     assert.deepEqual(p.fees, []); assert.deepEqual(p.prices, []);
-    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'unavailable',capabilities:'unavailable',credit_packs:'unavailable'});
+    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'unavailable',capabilities:'unavailable',credit_packs:'unavailable',referrals:'available'});
+    assert.deepEqual(p.referrals, []);
     assert.deepEqual(new Set(p.unavailable), new Set(['models', 'capabilities', 'credit_packs']));
   });
   await t.test('anonymous and un-elevated staff cannot draft', async () => {

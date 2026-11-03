@@ -34,7 +34,7 @@ export default {
       await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: founder.node, name: { en: 'Synthetic fee crash hub' }, default_locale: 'en', locales: ['en'], time_zone: 'UTC', currency: 'USD', created_by: founder.person_id }).execute();
       const people: string[] = [];
       for (const role of ['data-steward', 'editor-in-chief'] as const) {
-        await staffRoleDefinitions.release(trx, { role, version: 903, scopes: ['hub'], permissions: ['admin.billing.fees.draft','admin.billing.fees.activate'],
+        await staffRoleDefinitions.release(trx, { role, version: 903, scopes: ['hub'], permissions: ['admin.billing.fees.draft','admin.billing.fees.activate','admin.growth.referrals.draft','admin.growth.referrals.activate'],
           caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
         people.push((await trx.insertInto('person').values({ display_name: 'Synthetic fee crash '+role }).returning('id').executeTakeFirstOrThrow()).id);
       }
@@ -57,6 +57,13 @@ export default {
       const approval = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'billing.activate_fee_version',scope:{kind:'hub',hubId:setup.hubId},actionDigest:f.digest}));
       await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,approval.id,'approve',f.digest));
       await exactlyOnce({action:'billing.fee_activate',client:activator,url:`/v1/admin/billing/fees/${f.id}/activate`,body:{reason:'Synthetic crash test',digest:f.digest,approvalId:approval.id},effects:()=>count('billing.fee_activated')});
+      const referralTerms = {programmeKey:'synthetic_crash',eligibleParties:'person',rewardKind:'platform_credit',currency:'USD',referrerRewardMinor:'100',refereeRewardMinor:'0',maxRewardsPerReferrer:null,
+        effectiveFrom:new Date(Date.now()+3600000).toISOString(),effectiveTo:null,acceptanceTextVersion:'synthetic-referral-1',publicTerms:{en:'Synthetic crash referral'}};
+      const r = (await exactlyOnce({action:'billing.referral_draft',client:drafter,url:'/v1/admin/billing/referrals',body:{reason:'Synthetic crash test',terms:referralTerms,legalReviewRef:'synthetic-review'},effects:()=>count('billing.referral_drafted')})).body as {id:string;digest:string};
+      const referralApproval = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'growth.activate_referral_terms',scope:{kind:'hub',hubId:setup.hubId},actionDigest:r.digest}));
+      await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,referralApproval.id,'approve',r.digest));
+      await exactlyOnce({action:'billing.referral_activate',client:activator,url:`/v1/admin/billing/referrals/${r.id}/activate`,body:{reason:'Synthetic crash test',digest:r.digest,approvalId:referralApproval.id},effects:()=>count('billing.referral_activated')});
+      await exactlyOnce({action:'billing.referral_withdraw',client:activator,url:`/v1/admin/billing/referrals/${r.id}/withdraw`,body:{reason:'Synthetic crash test',digest:r.digest},effects:()=>count('billing.referral_withdrawn')});
       const starts = new Date(Date.now()+2500);
       for (const payer of ['buyer','seller'] as const) {
         const fee = await as(h,setup.drafter,(trx,ctx)=>billingFees.draft(trx,ctx,setup.hubId,syntheticTerms({kind:'task',categoryKey:null,payer,effectiveFrom:starts.toISOString(),effectiveTo:null})));

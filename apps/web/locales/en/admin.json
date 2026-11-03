@@ -594,6 +594,9 @@
         },
         "kill_switch": {
           "release": "Release a kill switch"
+        },
+        "growth": {
+          "activate_referral_terms": "Activate referral programme terms"
         }
       },
       "ready": "Ready to apply",

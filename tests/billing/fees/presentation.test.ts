@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import type { PublicFee, PublicPrice, PublicPricing } from '../../../packages/contracts/src/billing-fees.js';
+import type { PublicFee, PublicPrice, PublicPricing, PublicReferral } from '../../../packages/contracts/src/billing-fees.js';
 import { computeDigest } from '../../../packages/contracts/src/common/digest.js';
 import { publicPricingProjection } from '../../../apps/web/app/_lib/data/http/pricing.js';
 import { exactPrice } from '../../../apps/web/app/(public)/[lang]/pricing/money.js';
@@ -73,7 +73,7 @@ test('legacy missing coverage, explicit zero, unconfigured and failed reads stay
 });
 
 test('owning snapshot separates complete, confirmed-empty, missing and failed readers', () => {
-  const coverage: NonNullable<PublicPricing['coverage']> = { generatedAt: at, sections: { fees:'available',plans:'available',services:'available',models:'available',capabilities:'available',credit_packs:'available' } };
+  const coverage: NonNullable<PublicPricing['coverage']> = { generatedAt: at, sections: { fees:'available',plans:'available',services:'available',models:'available',capabilities:'available',credit_packs:'available',referrals:'available' } };
   const complete = pricingView({...catalogue(),coverage}, '2099-01-01T00:00:00Z');
   assert.equal(complete.state,'complete');
   assert.equal(complete.at,at);
@@ -88,4 +88,37 @@ test('owning snapshot separates complete, confirmed-empty, missing and failed re
   assert.throws(()=>publicPricingProjection({...catalogue(),hubId:null,coverage}));
   coverage.sections.fees='error';
   assert.throws(()=>publicPricingProjection({...catalogue([fee()]),coverage}));
+});
+
+function referral(overrides: Partial<PublicReferral['terms']> = {}): PublicReferral {
+  return { id: randomUUID(), hubId, version: 1, digest: 'a'.repeat(64), terms: { programmeKey: 'synthetic_invite', eligibleParties: 'person', rewardKind: 'platform_credit', currency: 'USD',
+    referrerRewardMinor: '100', refereeRewardMinor: '0', maxRewardsPerReferrer: null, effectiveFrom: at, effectiveTo: null, acceptanceTextVersion: 'synthetic-1', publicTerms: { en: 'Synthetic' }, ...overrides } };
+}
+test('referral terms have their own section and states: none, published, unavailable, failed', () => {
+  const coverage = (referrals: 'available' | 'unavailable' | 'error') => ({ generatedAt: at, sections: { fees: 'available', plans: 'available', services: 'available', models: 'available', capabilities: 'available', credit_packs: 'available', referrals } }) as NonNullable<PublicPricing['coverage']>;
+  const section = (pricing: PublicPricing) => pricingView(pricing, at).sections.find(s => s.key === 'referrals')!;
+  assert.equal(section({ ...catalogue(), referrals: [], coverage: coverage('available') }).state, 'empty');
+  assert.equal(section({ ...catalogue(), referrals: [], coverage: coverage('error') }).state, 'error');
+  assert.equal(section({ ...catalogue(), referrals: [], coverage: coverage('unavailable') }).state, 'unavailable');
+  assert.equal(section(catalogue()).state, 'unavailable', 'an older response without the section claims nothing');
+  const current = referral(); const future = referral({ effectiveFrom: '2026-11-02T00:00:00.000Z' }); const expired = referral({ effectiveFrom: '2026-10-01T00:00:00.000Z', effectiveTo: at });
+  const published = section({ ...catalogue(), referrals: [future, expired, current], coverage: coverage('available') });
+  assert.equal(published.state, 'available');
+  assert.deepEqual(published.current.map(r => r.value.id), [current.id]);
+  assert.deepEqual(published.future.map(r => r.value.id), [future.id]);
+  const { referrals: _none, ...older } = coverage('available').sections; void _none;
+  assert.equal(pricingView({ ...catalogue(), coverage: { generatedAt: at, sections: older } }, at).state, 'partial', 'without the referral reader the catalogue is not complete');
+});
+test('public projection refuses referrals of another hub, from an unavailable reader, without a hub, or duplicated', () => {
+  const current = referral();
+  const sections = { fees: 'available', plans: 'available', services: 'available', models: 'unavailable', capabilities: 'unavailable', credit_packs: 'unavailable', referrals: 'available' } as const;
+  assert.deepEqual(publicPricingProjection({ ...catalogue(), referrals: [current] }).referrals, [current]);
+  for (const invalid of [
+    { ...catalogue(), referrals: [{ ...current, hubId: randomUUID() }] },
+    { ...catalogue(), hubId: null, referrals: [current] },
+    { ...catalogue(), referrals: [current, current] },
+    { ...catalogue(), referrals: [current], coverage: { generatedAt: at, sections: { ...sections, referrals: 'error' } } },
+    { ...catalogue(), referrals: [{ ...current, terms: { ...current.terms, rewardKind: 'cash' } }] },
+    { ...catalogue(), referrals: [{ ...current, legalReviewRef: 'private' }] },
+  ]) assert.throws(() => publicPricingProjection(invalid));
 });
