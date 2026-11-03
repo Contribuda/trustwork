@@ -95,3 +95,23 @@ export type PrivacySourceTombstone = z.infer<typeof PrivacySourceTombstoneSchema
 export type PrivacyRetainedDecision = z.infer<typeof PrivacyRetainedDecisionSchema>;
 
 export const PrivacyFileParamsSchema = z.object({ id: z.uuid(), fileId: z.uuid() }).strict();
+
+/**
+ * A privacy response package at Draft (ADR 010 decision 26): a person or an operator assistant acting for one may
+ * prepare it; it names what people must decide and never a decision. It carries ids and codes only, no subject payload.
+ */
+export const PrivacyResponseDraftPackageSchema = z.object({
+  version: z.literal(1), state: z.literal('Draft'),
+  request: z.object({
+    id: z.uuid(), kind: PrivacyRequestKindSchema, state: z.enum(['open', 'erasure_blocked', 'completed']), subject: PrivacySubjectSchema,
+    country: z.string().regex(/^[A-Z]{2}$/), policyStatus: z.enum(['UNKNOWN', 'verified']), policyVersion: z.string().nullable(),
+    createdAt: z.iso.datetime(), deadlineAt: z.iso.datetime().nullable(), retentionDays: z.number().int().nullable(), hasCorrection: z.boolean(),
+  }).strict(),
+  holds: z.object({ active: z.number().int().nonnegative() }).strict(),
+  erasure: z.object({ ready: z.literal(false), reason: z.enum(['legal_hold', 'country_policy_UNKNOWN', 'owning_module_capabilities_unavailable']) }).strict().nullable(),
+  exportCoverage: z.array(z.object({ module: z.string(), status: z.enum(['supported', 'partial', 'unsupported']), includes: z.string() }).strict()),
+  inventory: z.array(z.string()),
+  unresolved: z.array(z.object({ module: z.string(), capability: z.literal('erase'), reason: z.string() }).strict()),
+  humanDecisionsRequired: z.array(z.string()),
+}).strict();
+export type PrivacyResponseDraftPackage = z.infer<typeof PrivacyResponseDraftPackageSchema>;

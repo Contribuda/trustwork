@@ -27,7 +27,12 @@ export interface PrivacyReplayReceiptTable extends Subject { request_id: string;
 export interface DataBrokerRegistrationTable {
   id: Generated<string>; country: string; registry: 'fake_drop'; registration_ref: string; last_polled_at: Date | null; next_poll_at: Date | null;
 }
+export interface PrivacyResponseDraftTable {
+  id: Generated<string>; request_id: string; prepared_by: string; prepared_via: 'person' | 'delegated_agent';
+  mandate_id: string | null; mandate_revision: number | null; state: Generated<'Draft'>; package: unknown; digest: string; created_at: Generated<Date>;
+}
 export interface PrivacyDatabase {
+  privacy_response_draft: PrivacyResponseDraftTable;
   source_field_resolution: {
     id: string; request_id: string; source_field_id: string; replacement_field_id: string | null; action: 'correction' | 'erasure';
     source_digest: string; decision_digest: string; retained_digest: string | null; executed_by: string; approved_by: string; created_at: Generated<Date>;
@@ -78,8 +83,10 @@ export type PrivacyRequestRow = Selectable<PrivacyRequestTable>;
 export type PrivacyPreferenceRow = Selectable<PrivacyPreferenceTable>;
 export type PrivacyExportRow = Selectable<PrivacyExportTable>;
 export type LegalHoldRow = Selectable<LegalHoldTable>;
+export type PrivacyResponseDraftRow = Selectable<PrivacyResponseDraftTable>;
 const c = columnsOf<PrivacyDatabase>();
 export const TABLE_COLUMNS: TableColumns<PrivacyDatabase> = {
+  privacy_response_draft: c('privacy_response_draft', ['id', 'request_id', 'prepared_by', 'prepared_via', 'mandate_id', 'mandate_revision', 'state', 'package', 'digest', 'created_at']),
   source_field_resolution: c('source_field_resolution', ['id', 'request_id', 'source_field_id', 'replacement_field_id', 'action', 'source_digest', 'decision_digest', 'retained_digest', 'executed_by', 'approved_by', 'created_at']),
   source_privacy_replay_receipt: c('source_privacy_replay_receipt', ['request_id', 'source_field_id', 'retained_digest', 'created_at']),
   privacy_source_hold: c('privacy_source_hold', ['id', 'source_field_id', 'placed_by', 'reason_code', 'evidence_ref', 'created_at']),

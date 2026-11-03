@@ -81,6 +81,7 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'privacy.plan_propose': IN_TRANSACTION,
   'privacy.preference_set': IN_TRANSACTION,
   'privacy.request_create': IN_TRANSACTION,
+  'privacy.response_draft_prepare': IN_TRANSACTION,
   'privacy.external_source_case': IN_TRANSACTION,
   'privacy.source_plan_propose': IN_TRANSACTION,
   'privacy.source_plan_approve': IN_TRANSACTION,
