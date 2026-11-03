@@ -71,7 +71,7 @@ Owner decision 2026-10-31 ([ADR 010](../adr/010-gathering-point-hubs-agents-and-
 
 ## Commissions and fees are hub settings
 
-Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing, exact consultation/task bindings, versioned referral terms and model, capability and credit-pack sale versions are implemented; the [remaining acceptance boundary](../../apps/api/src/modules/billing/fees/README.md) is RFQ acceptance. The BIZ-001 pricing design is accepted; that does not establish full runtime coverage. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
+Owner decision 2026-10-31 (ADR 010 decision 21). Status: **Partial implementation** (BILL-003 remains in progress): scoped fee authority, public pricing, exact consultation/task bindings, versioned referral terms and model, capability and credit-pack sale versions are implemented; the [remaining acceptance boundary](../../apps/api/src/modules/billing/fees/README.md) is ticket and course bookings, which do not exist yet. RFQ and quote orders carry no commission (conductor ruling, 2026-11-03). The BIZ-001 pricing design is accepted; that does not establish full runtime coverage. The hub administrator sets commissions and fees, for consultations, tasks, marketplace categories, events, courses and agent capacity, as **versioned price records**:
 
 | Rule | How it holds |
 |---|---|

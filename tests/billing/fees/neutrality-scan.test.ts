@@ -4,6 +4,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import * as contracts from '../../../packages/contracts/src/billing-fees.js';
+import { MARKETPLACE_FEE_KINDS } from '../../../packages/contracts/src/hub.js';
 
 /**
  * Payment neutrality as a schema and a source property (ADR 010 decision 21). Every setting a hub can write into a fee,
@@ -66,4 +67,16 @@ test('no ranking, comparison, directory or reputation source reads a fee, price,
 test('fee sources import no ranking, directory or reputation code, so a fee cannot write to them', () => {
   const files = [...sources('apps/api/src/modules/billing/fees'), 'packages/data/src/repositories/billing-fees.ts', 'packages/contracts/src/billing-fees.ts'];
   assert.deepEqual(files.filter((file) => /from '[^']*(directory|reputation|modules\/trust|supplier-base)[^']*'/.test(readFileSync(join(ROOT, file), 'utf8'))), []);
+});
+
+/** Conductor ruling, 2026-11-03: no commission on RFQ and quote orders for now; the frozen contract stands. */
+test('RFQ and quote orders carry no commission: no fee kind names them and the order path reads no fee record', () => {
+  assert.deepEqual([...MARKETPLACE_FEE_KINDS], ['consultation', 'task', 'ticket', 'course']);
+  const terms = { categoryKey: null, currency: 'USD', basisPoints: 100, fixedMinor: null, payer: 'buyer', effectiveFrom: '2029-01-01T00:00:00.000Z', effectiveTo: null, acceptanceTextVersion: 'synthetic-1' };
+  assert.equal(contracts.FeeTermsSchema.safeParse({ ...terms, kind: 'task' }).success, true);
+  for (const kind of ['rfq', 'rfq_quote', 'quote', 'order', 'marketplace']) assert.equal(contracts.FeeTermsSchema.safeParse({ ...terms, kind }).success, false, kind);
+  const orderPath = [...sources('apps/api/src/modules/transactions'), ...sources('apps/api/src/modules/procurement'), ...sources('apps/api/src/modules/sales')];
+  assert.ok(orderPath.length >= 10, `the scan covers real sources (${orderPath.length})`);
+  assert.deepEqual(orderPath.filter((file) => /marketplace_fee_version|billing_fee_|billingFees|bookingFees|feeConfirmation|billing\/fees/.test(readFileSync(join(ROOT, file), 'utf8'))), []);
+  assert.match(readFileSync(join(ROOT, 'apps/api/src/modules/transactions/transactions.service.ts'), 'utf8'), /no_platform_charge/);
 });
