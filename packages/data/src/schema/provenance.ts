@@ -41,15 +41,23 @@ export interface ProvenanceCreditRevocationTable {
   reason: string;
   revoked_at: Generated<Date>;
 }
-export interface ProvenanceImageAttachmentTable {
+export interface ProvenanceImageTable {
   id: Generated<string>;
   provenance_id: string;
-  asset_id: string;
-  asset_sha256: string;
+  publication_id: string;
+  source_asset_id: string | null;
+  source_sha256: string;
+  media_type: string;
   digital_source_type: string;
-  attachment: ColumnType<unknown, string, string>;
-  recorded_by: string;
-  recorded_at: Generated<Date>;
+  alt_text: string;
+  status: Generated<"pending" | "carried" | "failed">;
+  failure: string | null;
+  derived_asset_id: string | null;
+  derived_sha256: string | null;
+  credentials: ColumnType<unknown, string | null, string | null>;
+  requested_by: string;
+  requested_at: Generated<Date>;
+  completed_at: Date | null;
 }
 declare module "./index.js" {
   interface Database {
@@ -57,7 +65,7 @@ declare module "./index.js" {
     provenance_review: ProvenanceReviewTable;
     provenance_credit_consent: ProvenanceCreditConsentTable;
     provenance_credit_revocation: ProvenanceCreditRevocationTable;
-    provenance_image_attachment: ProvenanceImageAttachmentTable;
+    provenance_image: ProvenanceImageTable;
   }
 }
 const columns =
@@ -68,7 +76,7 @@ const columns =
       | "provenance_review"
       | "provenance_credit_consent"
       | "provenance_credit_revocation"
-      | "provenance_image_attachment"
+      | "provenance_image"
     >
   >();
 export const TABLE_COLUMNS = {
@@ -113,15 +121,23 @@ export const TABLE_COLUMNS = {
     "reason",
     "revoked_at",
   ]),
-  provenance_image_attachment: columns("provenance_image_attachment", [
+  provenance_image: columns("provenance_image", [
     "id",
     "provenance_id",
-    "asset_id",
-    "asset_sha256",
+    "publication_id",
+    "source_asset_id",
+    "source_sha256",
+    "media_type",
     "digital_source_type",
-    "attachment",
-    "recorded_by",
-    "recorded_at",
+    "alt_text",
+    "status",
+    "failure",
+    "derived_asset_id",
+    "derived_sha256",
+    "credentials",
+    "requested_by",
+    "requested_at",
+    "completed_at",
   ]),
 } satisfies TableColumns<
   Pick<
@@ -130,6 +146,6 @@ export const TABLE_COLUMNS = {
     | "provenance_review"
     | "provenance_credit_consent"
     | "provenance_credit_revocation"
-    | "provenance_image_attachment"
+    | "provenance_image"
   >
 >;

@@ -41,6 +41,7 @@ export const KNOWN_JOB_MODES: Readonly<Record<string, JobMode>> = {
   'mail.feedback': 'transactional',
   'files.scan': 'external',
   'files.delete': 'external',
+  'provenance.image_carry': 'external',
 };
 
 export function jobMode(kind: string, overrides: Readonly<Record<string, JobMode>> = {}): JobMode {

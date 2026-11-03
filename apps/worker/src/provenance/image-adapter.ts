@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
-import { canonicalize } from "../../../../../../packages/contracts/src/common/canonical.js";
+import { canonicalize } from "../../../../packages/contracts/src/common/canonical.js";
 import {
   FakeImageAttachmentSchema,
   ImageProvenanceInputSchema,
   type FakeImageAttachment,
   type ImageProvenanceInput,
-} from "../../../../../../packages/contracts/src/provenance.js";
+} from "../../../../packages/contracts/src/provenance-image.js";
+import { carryDigitalSourceType } from "./xmp.js";
 
 const sha256 = (bytes: Uint8Array | string) =>
   createHash("sha256").update(bytes).digest("hex");
@@ -76,22 +77,21 @@ export class FakeC2paIptcAdapter implements C2paIptcAdapter {
   }
 }
 
-/** Attach only verified adapter output to an existing clean file bound to this publication. */
-export async function attachImageProvenance(
-  trx: import("../../../../../../packages/data/src/pool.js").Transaction,
-  ctx: import("../../../../../../packages/data/src/repositories/provenance.js").ProvenanceContext,
-  image: Uint8Array,
+/**
+ * The IPTC type goes into the file itself, always; C2PA signing follows only where an adapter is configured. A failed
+ * verification stops the job, so an unverified attachment is never recorded.
+ */
+export async function carryImage(
+  source: Uint8Array,
+  mediaType: string,
   input: ImageProvenanceInput,
-  adapter: C2paIptcAdapter = new UnavailableC2paIptcAdapter(),
-): Promise<string> {
-  const attachment = await adapter.attach(image, input);
-  if (!(await adapter.verify(attachment, input)))
+  adapter: C2paIptcAdapter,
+): Promise<{ image: Uint8Array; credentials: FakeImageAttachment | null }> {
+  const image = carryDigitalSourceType(source, mediaType, input.digitalSourceType);
+  if (adapter.mode === "unavailable") return { image, credentials: null };
+  const expected = { ...input, assetSha256: sha256(image) };
+  const attachment = await adapter.attach(image, expected);
+  if (!(await adapter.verify(attachment, expected)))
     throw new Error("provenance.image_binding_mismatch");
-  const { sql } = await import("kysely");
-  const result = await sql<{
-    id: string;
-  }>`SELECT trustwork.provenance_attach_test_image(${JSON.stringify(ctx)}::jsonb,${JSON.stringify(FakeImageAttachmentSchema.parse(attachment.manifest))}::jsonb) AS id`.execute(
-    trx,
-  );
-  return result.rows[0]!.id;
+  return { image: attachment.image, credentials: attachment.manifest };
 }

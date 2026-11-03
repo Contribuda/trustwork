@@ -64,6 +64,25 @@ test('the card meta row prints the label from the same field', () => {
   assert.match(source, /if \(card\.assistantAssisted\) items\.push\(t\('articles\.assistantAssisted'\)\);/);
 });
 
+test('an image gets its label, alt text and IPTC URI; a piece that only edited an image says so too', async () => {
+  for (const locale of LOCALES) await scoped(locale, async () => {
+    const provenance = recorded('ai_assisted');
+    if (provenance.availability === 'recorded') provenance.images = [{ id: original, digitalSourceType: 'compositeWithTrainedAlgorithmicMedia', altText: 'Synthetic alt text' }];
+    const p = publication(provenance, locale);
+    const item = publicationView(p);
+    assert.ok(item.content?.notices.includes(t('publicationProvenance.generated')));
+    assert.ok(item.content?.notices.includes(t('publicationProvenance.aiAssisted')));
+    const [image] = (publicationJsonLd(item, 'https://example.invalid/a') as unknown as { image: { url: string; caption: string; digitalSourceType: string }[] }).image;
+    assert.equal(image!.digitalSourceType, 'http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia');
+    assert.equal(image!.caption, 'Synthetic alt text');
+    assert.ok(image!.url.endsWith(`/v1/publications/${id}/images/${original}`));
+    assert.ok(unescaped(await printed(p)).includes(t('publicationProvenance.generated')));
+  });
+  const reader = readFileSync(new URL('../../../apps/web/components/public/magazine/PublicationProvenance.tsx', import.meta.url), 'utf8');
+  assert.match(reader, /alt=\{image\.altText\}/);
+  assert.match(reader, /<figcaption>\{t\('publicationProvenance\.generated'\)\}<\/figcaption>/);
+});
+
 test('a withdrawn credit keeps the label and says the name is unavailable, on the page and in the PDF', async () => {
   for (const locale of LOCALES) await scoped(locale, async () => {
     const provenance = recorded('ai_assisted');

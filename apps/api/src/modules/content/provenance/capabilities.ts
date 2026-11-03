@@ -28,4 +28,11 @@ export const PROVENANCE_OPERATIONS = [
     input: "ProvenanceRevokeSchema",
     sideEffect: "revoke_exact_credit_consent",
   },
+  {
+    action: "provenance.image_request",
+    route: "POST /v1/provenance/images",
+    actor: "first_party_person",
+    input: "ImageProvenanceRequestSchema",
+    sideEffect: "queue_exact_image_label",
+  },
 ] as const;

@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { BlobStoreUnavailableError, type BlobStore } from '../../../../../packages/data/src/files/index.js';
 import { provenance } from '../../../../../packages/data/src/repositories/provenance.js';
 import { sql } from 'kysely';
 import type { z } from 'zod';
@@ -29,6 +31,8 @@ export interface Elevated { state: RequestState; elevationId: string; idempotenc
 type ConsoleBody = { idempotencyKey: string; reason: string; reasonCode?: string | undefined };
 
 export interface ContentServiceOptions {
+  /** Where labelled images are read from; absent when the file module is off. */
+  imageStore?: BlobStore | null;
   /** The hub this API serves (`TRUSTWORK_HUB_ID`), read per request. */
   hubId: () => string | null;
   /** Formats the hub reviews before personal or company publications appear (hub policy; default none). */
@@ -302,6 +306,19 @@ export class ContentService {
   }
   wall(kind: 'person' | 'company', owner: string) {
     return this.read((trx) => this.wallOf(trx, kind, owner));
+  }
+
+  /** A labelled image of a version readers are shown now. No cache: withdrawal, retraction and holds apply at once. */
+  async image(id: string, imageId: string): Promise<{ bytes: Uint8Array; mediaType: string }> {
+    const hubId = this.hub(), store = this.options.imageStore;
+    const target = store ? await this.read((trx) => provenance.imageDelivery(trx, hubId, id, imageId)) : undefined;
+    if (!store || !target) throw new ApiError('access.not_found', 'not found');
+    const bytes = await store.read(target.storage_key, Number(target.bytes)).catch((error: unknown) => {
+      if (error instanceof BlobStoreUnavailableError) throw new ApiError('access.not_found', 'not found');
+      throw error;
+    });
+    if (!bytes || createHash('sha256').update(bytes).digest('hex') !== target.sha256) throw new ApiError('access.not_found', 'not found');
+    return { bytes, mediaType: target.media_type };
   }
 
   publication(id: string, channel: 'web' | 'feed' | 'pdf' = 'web'): Promise<PublicPublication> {

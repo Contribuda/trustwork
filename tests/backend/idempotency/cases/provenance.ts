@@ -151,6 +151,55 @@ export default {
             consent.consentId,
           ),
       });
+      const illustrated = await create("en");
+      const illustration = {
+        binding: binding(illustrated.id, "en"),
+        expectedRevision: 0,
+        kind: "generated",
+        roles: ["editorial_illustrator"],
+        evidence: "human_declaration",
+        original: null,
+        reason: "Synthetic crash illustration",
+      };
+      const illustrationRecord = ok<{ id: string }>(
+        await writer.post("/v1/provenance/declarations", { declaration: illustration }),
+        201,
+      );
+      const asset = await withMaintenance(h.db.admin, (trx) =>
+        trx
+          .insertInto("evidence_artifact")
+          .values({
+            owner_person_id: seed.people.petr,
+            parent_kind: "publication",
+            parent_id: illustrated.id,
+            classification: "owner_private",
+            storage_key: `synthetic/provenance/${illustrated.id}`,
+            sha256: "a".repeat(64),
+            bytes: "1",
+            media_type: "image/png",
+            scan_state: "clean",
+            uploaded_by: seed.people.petr,
+          })
+          .returning("id")
+          .executeTakeFirstOrThrow(),
+      );
+      await exactlyOnce({
+        action: "provenance.image_request",
+        client: writer,
+        url: "/v1/provenance/images",
+        body: {
+          image: {
+            provenanceId: illustrationRecord.id,
+            binding: illustration.binding,
+            assetId: asset.id,
+            digitalSourceType: "trainedAlgorithmicMedia",
+            altText: "Synthetic abstract illustration",
+            depictsRealPerson: false,
+            documentary: false,
+          },
+        },
+        effects: () => count("provenance_image", "provenance_id", illustrationRecord.id),
+      });
       const current = ok<{publication:{revision:number}}>(await writer.get(`/v1/publications/${original.id}/manage`)).publication;
       await exactlyOnce({
         action: "provenance.prepare_correction", client: writer,

@@ -15,6 +15,7 @@ import {
   ProvenanceConsentSchema,
   ProvenanceRevokeSchema,
 } from "../../../../../../packages/contracts/src/provenance.js";
+import { ImageProvenanceRequestSchema } from "../../../../../../packages/contracts/src/provenance-image.js";
 import { ProvenanceService } from "./provenance.service.js";
 const Staff = z.strictObject({ reason: z.string().trim().min(1).max(500) });
 const Declare = z.strictObject({
@@ -23,6 +24,10 @@ const Declare = z.strictObject({
 });
 const Review = z.strictObject({
   review: ProvenanceReviewSchema,
+  staff: Staff.optional(),
+});
+const ImageRequest = z.strictObject({
+  image: ImageProvenanceRequestSchema,
   staff: Staff.optional(),
 });
 const Id = z.strictObject({ id: IdSchema });
@@ -36,6 +41,15 @@ export class ProvenanceController {
   @Get('publications/:id')
   @Header('Cache-Control', 'private, no-store')
   workspace(@ReqState() s: RequestState, @Params(Id) p: z.infer<typeof Id>) { return this.service.workspace(s,p.id); }
+  @Get('publications/:id/images')
+  @Header('Cache-Control', 'private, no-store')
+  images(@ReqState() s: RequestState, @Params(Id) p: z.infer<typeof Id>) { return this.service.images(s,p.id); }
+  @Post('images')
+  @HttpCode(202)
+  @Idempotent('provenance.image_request')
+  requestImage(@ReqState() s: RequestState, @Body(ImageRequest) b: z.infer<typeof ImageRequest>) {
+    return this.service.requestImage(s,b.image,b.staff);
+  }
   @Post('publications/:id/correction-draft')
   @HttpCode(200)
   @Idempotent('provenance.prepare_correction', 'id')

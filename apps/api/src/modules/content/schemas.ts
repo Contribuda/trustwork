@@ -109,6 +109,7 @@ export const DigestReleaseCommandSchema = command({ expectedRevision: Revision }
 /* ---------- Queries and params ---------- */
 export const IdParams = z.strictObject({ id: Uuid });
 export const EditorParams = z.strictObject({ id: Uuid, personId: Uuid });
+export const ImageParams = z.strictObject({ id: Uuid, imageId: Uuid });
 export const VersionParams = z.strictObject({ id: Uuid, version: z.coerce.number().int().min(1) });
 export const IssueNumberParams = z.strictObject({ number: z.coerce.number().int().min(1) });
 export const WallParams = z.strictObject({ kind: z.enum(['person', 'company']), id: Uuid });

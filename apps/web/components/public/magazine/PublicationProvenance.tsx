@@ -1,4 +1,6 @@
+import { digitalSourceTypeUri } from '@trustwork/contracts/client';
 import type { PublicationDetail } from '@/app/_lib/data';
+import { withBase } from '@/app/_lib/base-path';
 import { t } from '@/app/_lib/i18n';
 import { absoluteUrl } from '@/app/_lib/site';
 import { localPath } from '@/app/_lib/localize';
@@ -9,7 +11,9 @@ export function publicationJsonLd(item: PublicationDetail, url: string) {
   const recorded = provenance?.availability === 'recorded' ? provenance : undefined;
   const editor = recorded?.credits.responsible_editor;
   const original = recorded?.translation;
+  const images = recorded?.images ?? [];
   return {
+    ...(images.length ? { image: images.map(image => ({ '@type': 'ImageObject', url: absoluteUrl(`/v1/publications/${item.id}/images/${image.id}`), caption: image.altText, digitalSourceType: digitalSourceTypeUri(image.digitalSourceType) })) } : {}),
     ...(recorded ? { identifier: recorded.binding.digest.value, version: recorded.binding.version } : {}),
     ...(original ? { translationOfWork: { '@type': 'CreativeWork', url: absoluteUrl(localPath(`/${original.originalFormat === 'news' ? 'news' : 'articles'}/${original.originalPublicationId}?version=${original.originalVersion}`)), inLanguage: original.originalLanguage, identifier: original.originalDigest } } : {}),
     ...(editor ? { editor: { '@type': 'Person', name: editor } } : {}),
@@ -28,6 +32,10 @@ export function PublicationProvenance({ item }: { item: PublicationDetail }) {
   const originalPath = original ? `/${original.originalFormat === 'news' ? 'news' : 'articles'}/${original.originalPublicationId}` : '';
   return <>
     <script type="application/ld+json">{JSON.stringify(publicationJsonLd(item, absoluteUrl(localPath(item.href)))).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')}</script>
+    {provenance?.availability === 'recorded' ? provenance.images?.map(image => <figure className="art-figure" key={image.id}>
+      <img src={withBase(`/v1/publications/${item.id}/images/${image.id}`)} alt={image.altText} loading="lazy" />
+      <figcaption>{t('publicationProvenance.generated')}</figcaption>
+    </figure>) : null}
     {original ? <p className="art-note"><a href={localPath(`${originalPath}?version=${original.originalVersion}`)}>{t('publicationProvenance.originalLink')} · {new Intl.NumberFormat(original.originalLanguage).format(original.originalVersion)}</a>{original.stale ? <> · <a href={localPath(originalPath)}>{t('publicationProvenance.currentOriginal')}</a></> : null}</p> : null}
     {item.content.notices.map(note => <p className="art-note" key={note}>{note}</p>)}
     {item.content.sources.length ? <section className="art-block" aria-label={t('content.sources')}>

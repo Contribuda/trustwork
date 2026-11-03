@@ -7,6 +7,7 @@ import { consultationRemindersTask, registerConsultationReminders, ReminderChann
 import { contentPublishDueTask, registerContent } from './content/index.js';
 import { assertWorkerRole, createWorkerPool } from './db.js';
 import { filesExpireUploadsTask, registerFiles, scannerFromEnv, type FilesRuntime } from './files/index.js';
+import { registerProvenanceImages } from './provenance/handlers.js';
 import { HandlerRegistry } from './handlers.js';
 import { describeError, jsonLogger, type Logger } from './log.js';
 import { assertDictionariesComplete, createMailTransport, mailConfigFromEnv, mailSettleTask, registerMail, type MailConfig, type MailTransport } from './mail/index.js';
@@ -53,6 +54,8 @@ export function buildRegistry(domains: Domains): HandlerRegistry {
   if (domains.contentRenderer) registerContent(registry);
   // FILE-001: only with configured storage (FILES_STORAGE); scans only with a configured scanner (FILES_SCANNER).
   if (domains.files) registerFiles(registry, { pool: domains.pool, log: domains.log, metrics: domains.metrics, ...domains.files });
+  // PROV-001: generated and AI-edited images get their IPTC digital source type; C2PA signing stays unavailable.
+  if (domains.files) registerProvenanceImages(registry, { pool: domains.pool, store: domains.files.store });
   registerMail(registry, { consultationHubId: domains.consultations?.hubId ?? null, pool: domains.pool, config: domains.mail, transport: domains.mailTransport, log: domains.log, metrics: domains.metrics });
   registerPayments(registry, domains.payments ?? { pool: domains.pool, providers: new PaymentProviders() });
   // SANC-005: re-screening of every subject on each activated list version, weekly and on a compliance officer's request.

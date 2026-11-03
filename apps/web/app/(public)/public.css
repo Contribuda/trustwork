@@ -2475,6 +2475,14 @@
   color: var(--color-text-muted);
 }
 
+.art-figure {
+  margin: 0 0 var(--space-4);
+}
+.art-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
 .art-note {
   margin-top: var(--space-5);
   font-size: var(--text-caption-size);

@@ -14,6 +14,10 @@ import type {
   ProvenanceReview,
   ProvenanceConsent,
 } from "../../../../../../packages/contracts/src/provenance.js";
+import {
+  ProvenanceImageViewSchema,
+  type ImageProvenanceRequest,
+} from "../../../../../../packages/contracts/src/provenance-image.js";
 import type { Transaction } from "../../../../../../packages/data/src/pool.js";
 export class ProvenanceService {
   constructor(
@@ -103,6 +107,20 @@ export class ProvenanceService {
       const r = await provenance.consent(trx, c, input);
       return { consentId: r.id };
     });
+  }
+  requestImage(state: RequestState, input: ImageProvenanceRequest, staff?: { reason: string }) {
+    return this.run(state, staff, async (trx, c) => {
+      const r = await provenance.requestImage(trx, c, input);
+      return { imageId: r.id, status: r.status };
+    });
+  }
+  images(state: RequestState, id: string) {
+    return this.run(state, undefined, async (trx) => ({
+      items: (await provenance.images(trx, id)).map((i) => ProvenanceImageViewSchema.parse({
+        id: i.id, provenanceId: i.provenance_id, digitalSourceType: i.digital_source_type, altText: i.alt_text,
+        status: i.status, failure: i.failure, ready: i.ready === true,
+      })),
+    }));
   }
   revoke(state: RequestState, id: string, reason: string) {
     return this.run(state, undefined, (trx, c) =>

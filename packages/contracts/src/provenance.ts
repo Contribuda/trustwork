@@ -126,25 +126,10 @@ export const DigitalSourceTypeSchema = z.enum([
   "trainedAlgorithmicMedia",
   "compositeWithTrainedAlgorithmicMedia",
 ]);
-export const ImageProvenanceInputSchema = z.strictObject({
-  binding: ProvenanceBindingSchema,
-  provenanceId: IdSchema,
-  assetId: IdSchema,
-  assetSha256: z.string().regex(/^[a-f0-9]{64}$/),
-  digitalSourceType: DigitalSourceTypeSchema,
-  depictsRealPerson: z.literal(false),
-  documentary: z.literal(false),
-});
-export type ImageProvenanceInput = z.infer<typeof ImageProvenanceInputSchema>;
-/** This attachment is explicitly a test artifact, not a C2PA claim, signature or trust assertion. */
-export const FakeImageAttachmentSchema = z.strictObject({
-  format: z.literal("trustwork-provenance-test-attachment-1"),
-  assurance: z.literal("test_only_unsigned"),
-  c2paValid: z.literal(false),
-  input: ImageProvenanceInputSchema,
-  attachmentSha256: z.string().regex(/^[a-f0-9]{64}$/),
-});
-export type FakeImageAttachment = z.infer<typeof FakeImageAttachmentSchema>;
+export type DigitalSourceType = z.infer<typeof DigitalSourceTypeSchema>;
+/** The IPTC NewsCodes URI of a digital source type, as written into files and structured data. */
+export const digitalSourceTypeUri = (type: DigitalSourceType) =>
+  `http://cv.iptc.org/newscodes/digitalsourcetype/${type}`;
 
 /** Public delivery is channel-scoped; private actor IDs, session IDs and reasons never leave the owner. */
 export const PublicProvenanceSchema = z.discriminatedUnion('availability', [
@@ -154,6 +139,7 @@ export const PublicProvenanceSchema = z.discriminatedUnion('availability', [
     revision: z.int().positive(), kind: ProvenanceKindSchema,
     roles: z.array(ProvenanceRoleSchema), evidence: z.literal('human_declaration'), machineAssisted: z.boolean(),
     credits: z.strictObject({ responsible_editor: z.string().optional(), translation_reviewer: z.string().optional() }),
+    images: z.array(z.strictObject({ id: IdSchema, digitalSourceType: DigitalSourceTypeSchema, altText: z.string() })).optional(),
     translation: z.strictObject({ reviewed: z.literal(true), originalPublicationId: IdSchema,
       originalVersion: z.int().positive(), originalDigest: z.string().regex(/^[a-f0-9]{64}$/),
       originalLanguage: z.string(), originalFormat: z.enum(['news','article','magazine_piece','company_post','personal_post']),
