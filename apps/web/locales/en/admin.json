@@ -470,7 +470,8 @@
         "firstSource": "Register the first information source with its legal checks.",
         "verificationRecipe": "Choose a verification recipe for companies.",
         "backupDrill": "Schedule a backup and run a restore drill."
-      }
+      },
+      "uncounted": "Not counted here yet: {queues}."
     },
     "approvals": {
       "title": "Approvals",
@@ -958,7 +959,12 @@
         "change": "Change residency",
         "requestChange": "Request the change",
         "newCountry": "New residency country",
-        "newCountryHelp": "Two-letter country code, for example US."
+        "newCountryHelp": "Two-letter country code, for example US.",
+        "hostingRegion": "Hosting region",
+        "personalData": "Countries that hold personal data",
+        "note": "Note",
+        "servicesNone": "Which region serves each service is not recorded yet.",
+        "subProcessorsNone": "No sub-processors are recorded here yet."
       },
       "country": {
         "title": "Country base",

@@ -470,7 +470,8 @@
         "firstSource": "Birinchi axborot manbasini huquqiy tekshiruvlari bilan roʻyxatdan oʻtkazing.",
         "verificationRecipe": "Kompaniyalarni tekshirish ssenariysini tanlang.",
         "backupDrill": "Zaxira nusxalashni sozlang va oʻquv tiklashni oʻtkazing."
-      }
+      },
+      "uncounted": "Bu yerda hali hisoblanmaydi: {queues}."
     },
     "approvals": {
       "title": "Tasdiqlashlar",
@@ -958,7 +959,12 @@
         "change": "Maʼlumotlar joylashuvini oʻzgartirish",
         "requestChange": "Oʻzgartirishni soʻrash",
         "newCountry": "Yangi joylashuv mamlakati",
-        "newCountryHelp": "Ikki harfli mamlakat kodi, masalan US."
+        "newCountryHelp": "Ikki harfli mamlakat kodi, masalan US.",
+        "hostingRegion": "Xosting mintaqasi",
+        "personalData": "Shaxsiy maʼlumotlar saqlanadigan mamlakatlar",
+        "note": "Izoh",
+        "servicesNone": "Har bir xizmatga qaysi mintaqa xizmat koʻrsatishi hali qayd etilmagan.",
+        "subProcessorsNone": "Bu yerda subpudratchilar hali qayd etilmagan."
       },
       "country": {
         "title": "Mamlakat bazasi",

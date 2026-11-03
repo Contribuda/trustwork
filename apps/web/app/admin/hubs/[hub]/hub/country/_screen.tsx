@@ -45,7 +45,7 @@ async function Country(ctx: HubContext) {
           ) : null}
         </Panel>
 
-        <Panel id="additions" title={t('admin.hub.country.additions')} aside={<StatusLabel status="demo" />}>
+        <Panel id="additions" title={t('admin.hub.country.additions')} aside={ctx.request.demo ? <StatusLabel status="demo" /> : undefined}>
           {additions.length ? (
             <table className="plain-table">
               <thead>

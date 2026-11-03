@@ -10,7 +10,7 @@ import { expectAccessible, expectNoHorizontalOverflow, msg, PASSWORD, SAME_ORIGI
  * draft by A, whose activation B requests, A approves and B applies, since the drafter never activates a sensitive
  * version and nobody approves their own request); a participant finds nothing, and an unelevated staff session
  * confirms its second factor in the console before it sees anything; key screens pass axe and fit 1280, 768 and
- * 375 px. Every person and hub is synthetic.
+ * 375 px; residency and the overview read back from the API. Every person and hub is synthetic.
  */
 
 const LANG = 'ka' as const;
@@ -175,6 +175,43 @@ test('the console configures a live hub: modes applied, a residency draft activa
   const after = await (await bCtx.request.get(`/v1/admin/hubs/${hubId}/config/current`)).json() as { items: Array<{ domain: string; payload: { hostingCountry?: string } }> };
   expect(after.items.find((i) => i.domain === 'residency')?.payload.hostingCountry).toBe('GE');
   await shot(pageB, 'console-05-applied-ka');
+
+  // Residency reads back from the active version; what nothing records says so, and no demo wording is left.
+  await pageB.goto(`/admin/hubs/${SLUG}/hub/residency`);
+  const decision = pageB.locator('#decision');
+  await expect(decision).toContainText(msg('admin.hub.residency.personalData', LANG));
+  await expect(decision).toContainText(msg('admin.hub.residency.regimes.not_recorded', LANG));
+  await expect(pageB.getByTestId('residency-services-none')).toHaveText(msg('admin.hub.residency.servicesNone', LANG));
+  await expect(pageB.getByTestId('residency-processors-none')).toHaveText(msg('admin.hub.residency.subProcessorsNone', LANG));
+  await expect(pageB.locator('#subprocessors')).not.toContainText(msg('admin.hub.residency.subProcessorsNote', LANG));
+  await expectAccessible(pageB);
+  await shot(pageB, 'console-05b-residency-ka');
+
+  // The overview counts what the API lists: a real moderation case shows; a queue with no read is named, never empty.
+  const readerCtx = await browser.newContext();
+  const reader = await enrolled(readerCtx, 'Synthetic Queue Reader');
+  await control('/staff', { personId: reader.personId, role: 'ops-engineer', scope: { kind: 'node' }, permissions: [
+    'admin.hub.read', 'admin.moderation.read', 'admin.moderation.decide', 'admin.moderation.case.open', 'admin.support.case.close', 'admin.support.grant.approve', 'admin.links.decide', 'admin.pipelines.run',
+    'admin.providers.read', 'admin.claims.decide',
+  ] });
+  await reader.elevate();
+  await staffPost(readerCtx.request, '/v1/admin/moderation/cases', { hubId, targetKind: 'publication', targetId: randomUUID(), clauseCodes: ['synthetic.clause'] });
+  await inGeorgian(readerCtx);
+  const overview = await readerCtx.newPage();
+  await overview.goto(`/admin/hubs/${SLUG}`);
+  const queue = (id: string) => msg(`admin.overview.queue.${id}`, LANG);
+  await expect(overview.locator('#queues li', { hasText: queue('reports') })).toContainText('1');
+  const uncounted = overview.getByTestId('queues-uncounted');
+  await expect(uncounted).toContainText(queue('claims'));
+  for (const id of ['reports', 'support_cases', 'grant_requests', 'link_proposals', 'alerts']) await expect(uncounted).not.toContainText(queue(id));
+  await expect(overview.getByTestId('nothing-waiting')).toHaveCount(0);
+  await expect(overview.locator('#health')).toHaveCount(0);
+  const compliance = overview.locator('#compliance');
+  await expect(compliance).toContainText(msg('admin.common.notRecorded', LANG));
+  await expect(compliance).toContainText(msg('admin.common.none', LANG));
+  await expectAccessible(overview);
+  await shot(overview, 'console-05c-overview-ka');
+  await readerCtx.close();
 
   // Narrow and medium screens: nothing scrolls sideways.
   for (const width of [768, 375]) {

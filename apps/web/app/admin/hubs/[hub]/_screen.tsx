@@ -32,6 +32,8 @@ async function Overview(ctx: HubContext) {
   const [overview, approvals] = await Promise.all([port.overview(hubId), port.approvals(hubId)]);
   const zone = record.hub.timeZone;
   const queues = (overview?.queues ?? []).filter((q) => q.count > 0 && QUEUES[q.id].act.some((p) => ctx.can(p)));
+  // Live: a queue with no read yet is not an empty queue, so the console never says nothing is waiting there.
+  const uncounted = (overview?.uncounted ?? []).filter((id) => QUEUES[id].act.some((p) => ctx.can(p)));
   const forMe = approvals.requests.filter((r) => approvalBlocker(r, viewer.person.id, access, ctx.now) === null);
   const canHub = ctx.can('admin.hub.read');
   const passed = record.gates.filter((g) => g.state === 'passed').length;
@@ -49,7 +51,7 @@ async function Overview(ctx: HubContext) {
       ) : null}
       <div className="admin-grid">
         <Panel id="queues" title={t('admin.overview.queues')}>
-          {queues.length === 0 && forMe.length === 0 ? (
+          {queues.length === 0 && forMe.length === 0 && uncounted.length === 0 ? (
             <p className="admin-empty" data-testid="nothing-waiting">
               {t('admin.overview.nothingWaiting')}
             </p>
@@ -66,6 +68,11 @@ async function Overview(ctx: HubContext) {
               ))}
             </ul>
           )}
+          {uncounted.length ? (
+            <p className="admin-meta" data-testid="queues-uncounted">
+              {t('admin.overview.uncounted', { queues: uncounted.map((id) => tDynamic(`admin.overview.queue.${id}`, id)).join(', ') })}
+            </p>
+          ) : null}
         </Panel>
 
         <Panel id="approvals-waiting" title={t('admin.overview.approvals')}>
@@ -95,22 +102,22 @@ async function Overview(ctx: HubContext) {
           <Panel id="compliance" title={t('admin.overview.compliance')}>
             <KeyValues
               rows={[
-                { label: t('admin.overview.legalDue'), value: number(overview.compliance.legalDocumentsDue) },
+                { label: t('admin.overview.legalDue'), value: overview.compliance.legalDocumentsDue === null ? t('admin.common.notRecorded') : number(overview.compliance.legalDocumentsDue) },
                 {
                   label: t('admin.overview.screeningAge'),
                   value: overview.compliance.screeningListAgeDays === null ? t('admin.common.notRecorded') : t('admin.overview.days', { count: overview.compliance.screeningListAgeDays }),
                 },
-                { label: t('admin.overview.licencesExpiring'), value: number(overview.compliance.expiringSourceLicences) },
+                { label: t('admin.overview.licencesExpiring'), value: overview.compliance.expiringSourceLicences === null ? t('admin.common.notRecorded') : number(overview.compliance.expiringSourceLicences) },
                 {
                   label: t('admin.overview.fakeProviders'),
-                  value: overview.compliance.fakeProviders.length ? overview.compliance.fakeProviders.map((c) => tDynamic(`admin.capabilities.${c}`, c)).join(', ') : t('admin.common.none'),
+                  value: overview.compliance.fakeProviders === null ? t('admin.common.notRecorded') : overview.compliance.fakeProviders.length ? overview.compliance.fakeProviders.map((c) => tDynamic(`admin.capabilities.${c}`, c)).join(', ') : t('admin.common.none'),
                 },
               ]}
             />
           </Panel>
         ) : null}
 
-        {overview ? (
+        {overview?.health.length ? (
           <Panel id="health" title={t('admin.overview.health')}>
             <ul className="admin-tiles">
               {overview.health.map((h) => (

@@ -119,6 +119,7 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Data**: launch checklist progress (gates open/passed); queues the viewer can act on with counts (claims, review items, link proposals, reports, support cases, grant requests, privacy requests with nearest deadline, unknown outcomes, alerts); approvals waiting for the viewer; compliance status (legal documents due, screening list age, expiring source licences, fake providers in use); health tiles; spend against caps; "next five things" while draft or preparing.
 - **Actions**: open any queue; engage a kill switch from the health panel (with reason).
 - **States**: nothing waiting → "Nothing needs your decision today"; reduced SoD mode → permanent note asking for a second staff member.
+- **Live** (HUBC-007): counts come from the lists that exist, for what this viewer may read: moderation cases (open, in review, appealed), support cases (open, triaged, in progress), grant requests, proposed links and open alerts. Claims, review items, privacy requests and unknown outcomes have no hub read yet: they are named as not counted, so "Nothing needs your decision today" appears only when every queue the viewer acts on was counted. Legal documents due and expiring licences show "Not recorded", and the health panel with its kill-switch form stays hidden until health has a read.
 - **Mobile**: queues first, then approvals, then health; checklist collapsed.
 - **Locale**: `admin.overview.*`
 
