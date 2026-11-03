@@ -470,7 +470,8 @@
         "firstSource": "Registre la primera fuente de información con sus verificaciones legales.",
         "verificationRecipe": "Elija una receta de verificación para las empresas.",
         "backupDrill": "Programe una copia de seguridad y haga un simulacro de restauración."
-      }
+      },
+      "uncounted": "Aún sin contar aquí: {queues}."
     },
     "approvals": {
       "title": "Aprobaciones",
@@ -958,7 +959,12 @@
         "change": "Cambiar la residencia",
         "requestChange": "Solicitar el cambio",
         "newCountry": "Nuevo país de residencia",
-        "newCountryHelp": "Código de país de dos letras, por ejemplo US."
+        "newCountryHelp": "Código de país de dos letras, por ejemplo US.",
+        "hostingRegion": "Región de alojamiento",
+        "personalData": "Países que guardan datos personales",
+        "note": "Nota",
+        "servicesNone": "Aún no consta qué región atiende cada servicio.",
+        "subProcessorsNone": "Aquí aún no consta ningún subencargado."
       },
       "country": {
         "title": "Base del país",

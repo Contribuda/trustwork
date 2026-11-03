@@ -24,9 +24,8 @@ import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
  * this port. Adapters:
  * - `fixture-adapter.ts`: synthetic, labelled fixtures in demo mode; commands are validated and authorized exactly like
  *   the real ones but change nothing ("Demo: changes are not saved");
- * - `unavailable-adapter.ts`: live mode until the backends land (ADM-001 staff authority, HUB-001 hubs, HUB-004
- *   setup, HUBC-007 wiring): there is no viewer, so every console route is "not found";
- * - a later `api-adapter.ts` (HUBC-007) calls `/v1/admin/*` with the same types.
+ * - `unavailable-adapter.ts`: a deployment with no API origin: there is no viewer, so every console route is "not found";
+ * - `api-adapter.ts` (HUBC-007) calls `/v1/admin/*` with the same types.
  * Every method is asynchronous; failures arrive as rejections.
  */
 

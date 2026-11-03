@@ -139,7 +139,8 @@ test('approvals: pending requests and approvals of this hub only, bound to their
 test('live mode refuses every command and serves no fixture data for unwired sections', async () => {
   const { port: p } = port(staffRoutes());
   assert.deepEqual(await p.command(live, { command: 'taxonomy.add_term', reason: 'x', expectedRevision: 1, fields: {} } as never), { status: 'not_found' });
-  assert.equal(await p.overview(HUB_ID), null);
+  const overview = await p.overview(HUB_ID);
+  assert.deepEqual([overview?.queues, overview?.health, overview?.compliance], [[], [], { legalDocumentsDue: null, screeningListAgeDays: null, expiringSourceLicences: null, fakeProviders: null }], 'nothing readable: no number, no fixture');
   assert.equal(await p.product(HUB_ID), null);
   assert.equal(await p.setup('token'), null);
   assert.deepEqual(await p.legal(HUB_ID), { operator: null, documents: [] });
@@ -400,6 +401,75 @@ test('scan: the live adapter imports no fixture module', () => {
   const source = readFileSync(resolve('apps/web/app/admin/_data/api-adapter.ts'), 'utf8');
   const imports = [...source.matchAll(/from '([^']+)'/g)].map((m) => m[1]!);
   assert.deepEqual(imports.filter((i) => /fixture|_fixtures/.test(i)), []);
+});
+
+/* ---------- Residency and the overview from the API ---------- */
+
+const residencyRow = (payload: Record<string, unknown>) => ({ id: 'c2', hubId: HUB_ID, domain: 'residency', version: 4, payload, status: 'active' });
+const withResidency = (payload: Record<string, unknown>) => ({ [`/v1/admin/hubs/${HUB_ID}/config/current`]: { items: [{ id: 'c1', hubId: HUB_ID, domain: 'modes', version: 1, payload: { ...fixture.modes, dataMode: 'live' }, status: 'active' }, residencyRow(payload)], retention: [] } });
+
+test('residency: read from the active configuration version; what nothing records stays empty, never a fixture', async () => {
+  const { port: p } = port(staffRoutes(withResidency({ hostingCountry: 'GE', hostingRegion: 'GE-TB', personalDataCountries: ['GE', 'DE'], note: 'Synthetic note' })));
+  assert.deepEqual(await p.residency(HUB_ID), {
+    hubId: HUB_ID, country: 'GE', regime: 'not_recorded', version: 4, hostingRegion: 'GE-TB', personalDataCountries: ['GE', 'DE'], note: 'Synthetic note', services: [], subProcessors: [], synthetic: false,
+  });
+});
+
+test('residency: none configured, a payload that breaks the contract or a refused read is no residency at all', async () => {
+  assert.equal(await port(staffRoutes()).port.residency(HUB_ID), null, 'no residency version yet');
+  assert.equal(await port(staffRoutes(withResidency({ hostingCountry: 'GE' }))).port.residency(HUB_ID), null, 'an incomplete payload');
+  assert.equal(await port(staffRoutes(withResidency({ hostingCountry: 'GE', hostingRegion: null, personalDataCountries: ['DE'] }))).port.residency(HUB_ID), null, 'personal data held where the hosting is not');
+  assert.equal(await port(staffRoutes({ [`/v1/admin/hubs/${HUB_ID}/config/current`]: () => { throw new Failure(403); } })).port.residency(HUB_ID), null);
+  await assert.rejects(port(staffRoutes({ [`/v1/admin/hubs/${HUB_ID}/config/current`]: () => { throw new Failure(500); } })).port.residency(HUB_ID), /API 500/);
+});
+
+const overviewRoutes = (): Routes => ({
+  [`/v1/admin/moderation/cases?hubId=${HUB_ID}`]: { cases: [{ status: 'open' }, { status: 'in_review' }, { status: 'appealed' }, { status: 'decided' }, { status: 'closed' }] },
+  '/v1/admin/support/cases': { cases: [
+    { hubId: HUB_ID, status: 'open' }, { hubId: HUB_ID, status: 'triaged' }, { hubId: HUB_ID, status: 'waiting_on_requester' }, { hubId: HUB_ID, status: 'grant_requested' }, { hubId: HUB_ID, status: 'resolved' },
+    { hubId: OTHER, status: 'open' }, { hubId: OTHER, status: 'grant_requested' }, { hubId: null, status: 'open' },
+  ] },
+  [`/v1/admin/hubs/${HUB_ID}/record-links?state=proposed`]: { items: [{ state: 'proposed' }, { state: 'proposed' }] },
+  [`/v1/admin/hubs/${HUB_ID}/pipeline-alerts`]: { items: [{ state: 'open' }, { state: 'acknowledged' }, { state: 'resolved' }] },
+  [`/v1/admin/hubs/${HUB_ID}/providers/connections`]: { items: [
+    { mode: 'fake', status: 'enabled', capabilities: ['email', 'web_search'] }, { mode: 'fake', status: 'enabled', capabilities: ['email'] }, { mode: 'fake', status: 'draft', capabilities: ['object_storage'] },
+    { mode: 'live', status: 'enabled', capabilities: ['maps_geocoding'] }, { mode: 'fake', status: 'enabled', capabilities: ['not_a_capability'] },
+  ] },
+  '/v1/admin/screening/lists': { checkedAt: '2026-11-01T12:00:00.000Z', available: true, items: [
+    { hubId: null, status: 'active', freshness: { ageSeconds: 3 * 86_400 + 5 } }, { hubId: HUB_ID, status: 'active', freshness: { ageSeconds: 86_400 } },
+    { hubId: OTHER, status: 'active', freshness: { ageSeconds: 90 * 86_400 } }, { hubId: null, status: 'paused', freshness: { ageSeconds: 60 * 86_400 } }, { hubId: null, status: 'active', freshness: { ageSeconds: null } },
+  ] },
+});
+
+test('overview: counts what waits for staff at this hub, the oldest list that applies and what a fake provider still serves', async () => {
+  const view = (await port(staffRoutes(overviewRoutes())).port.overview(HUB_ID))!;
+  assert.deepEqual(Object.fromEntries(view.queues.map((q) => [q.id, q.count])), { reports: 3, support_cases: 2, grant_requests: 1, link_proposals: 2, alerts: 1 });
+  assert.ok(view.queues.every((q) => q.nearestDeadline === null), 'no read gives a deadline, so none is shown');
+  assert.deepEqual(view.uncounted, ['claims', 'review_items', 'privacy_requests', 'unknown_outcomes']);
+  assert.deepEqual(view.compliance, { legalDocumentsDue: null, screeningListAgeDays: 3, expiringSourceLicences: null, fakeProviders: ['email', 'web_search'] });
+  assert.deepEqual(view.health, [], 'nothing measures the health checks through this API yet');
+  assert.equal(view.synthetic, false);
+});
+
+test('overview: a read the viewer may not make, or an answer of another shape, leaves its queue uncounted, never zero', async () => {
+  const refused = port(staffRoutes({ ...overviewRoutes(),
+    [`/v1/admin/moderation/cases?hubId=${HUB_ID}`]: () => { throw new Failure(403); }, '/v1/admin/support/cases': () => { throw new Failure(401); },
+    [`/v1/admin/hubs/${HUB_ID}/record-links?state=proposed`]: { unexpected: true }, [`/v1/admin/hubs/${HUB_ID}/providers/connections`]: () => { throw new Failure(403); }, '/v1/admin/screening/lists': () => { throw new Failure(403); },
+  }));
+  const view = (await refused.port.overview(HUB_ID))!;
+  assert.deepEqual(view.queues.map((q) => q.id), ['alerts']);
+  assert.deepEqual(view.uncounted, ['claims', 'review_items', 'link_proposals', 'reports', 'support_cases', 'grant_requests', 'privacy_requests', 'unknown_outcomes']);
+  assert.equal(view.compliance.fakeProviders, null, 'unread is not the same as none');
+  assert.equal(view.compliance.screeningListAgeDays, null);
+  const nothing = (await port(staffRoutes()).port.overview(HUB_ID))!;
+  assert.deepEqual([nothing.queues, nothing.uncounted?.length], [[], 9], 'a hub hidden from the viewer counts nothing');
+  await assert.rejects(port(staffRoutes({ ...overviewRoutes(), [`/v1/admin/hubs/${HUB_ID}/pipeline-alerts`]: () => { throw new Failure(500); } })).port.overview(HUB_ID), /API 500/, 'an outage is an outage, not an empty queue');
+});
+
+test('the reads with no API stay empty in live mode: local additions, taxonomy, brand checks and the agent product', async () => {
+  const { api, port: p } = port(staffRoutes());
+  assert.deepEqual([await p.localAdditions(HUB_ID), await p.taxonomy(HUB_ID), await p.brandChecks(HUB_ID), await p.product(HUB_ID)], [[], [], [], null]);
+  assert.deepEqual(api.calls, [], 'none of them calls anything');
 });
 
 /* ---------- HC-150 staff (ADM-004 directory) ---------- */

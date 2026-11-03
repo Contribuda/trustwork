@@ -7,23 +7,30 @@ import {
   HubSchema,
   HubStaffRoleSchema,
   LaunchGateSchema,
+  ProviderCapabilitySchema,
   SodModeSchema,
   type ConsolePermission,
   type HubStaffRole,
 } from '@trustwork/contracts/client';
 import { isRestricted } from '@trustwork/country-packs';
+import { ResidencyConfigPayloadSchema } from '../../../../../packages/contracts/src/hub-core.js';
 import { EffectiveAccessSchema, StaffDirectorySchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import { evaluateCommand, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
-import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord, type LegalDocument } from './schemas.js';
+import {
+  ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, OverviewSchema, QUEUE_IDS, ResidencySchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord,
+  type LegalDocument, type Overview, type QueueId, type Residency,
+} from './schemas.js';
 import type { SectionDef } from './section-types.js';
 
 /**
  * The console's live adapter (HUBC-007): the same port as the fixtures, read from the API with the visitor's session
- * cookie. First slice: the viewer, the node, hubs, access, roles and approvals. Everything else answers like the
- * unavailable adapter (empty or `null`, commands `not_found`) until its backend route exists, so a live console never
- * shows a fixture or an invented value.
+ * cookie: the viewer, the node, hubs, access, roles, approvals, staff, legal documents, residency and the overview.
+ * Everything else answers like the unavailable adapter (empty or `null`, commands `not_found`) until its backend route
+ * exists, so a live console never shows a fixture or an invented value. Today that is local additions (the `country`
+ * configuration holds no additions), the taxonomy (no console read), brand contrast checks (nothing measures them) and
+ * the agent product (HUBC-009).
  *
  * Authority stays with the API: every route here is a staff route behind an elevated session (`ElevationGuard`), and
  * row-level security returns only what the viewer may see. A viewer without a staff role is no viewer (every console
@@ -105,6 +112,16 @@ const ActivatableListSchema = z.object({ items: z.array(ActivatableSchema) });
 const ActivatableDocsSchema = z.object({ documents: z.array(ActivatableSchema) });
 /** `GET /v1/admin/approvals`: requests waiting for the viewer, the viewer's own requests, and decided ones. */
 const ApprovalsViewSchema = z.object({ forMe: z.array(z.unknown()).default([]), mine: z.array(z.unknown()).default([]), decided: z.array(z.unknown()).default([]) });
+
+/* The lists the overview counts: each answers for the viewer, under row-level security, up to the route's own limit. */
+const ModerationCasesSchema = z.object({ cases: z.array(z.object({ status: z.string() }).passthrough()) });
+const SupportCasesSchema = z.object({ cases: z.array(z.object({ hubId: z.string().nullable(), status: z.string() }).passthrough()) });
+const ListItemsSchema = z.object({ items: z.array(z.object({ state: z.string() }).passthrough()) });
+const ConnectionsSchema = z.object({ items: z.array(z.object({ mode: z.string(), status: z.string(), capabilities: z.array(z.string()) }).passthrough()) });
+const ScreeningListsSchema = z.object({ items: z.array(z.object({ hubId: z.string().nullable(), status: z.string(), freshness: z.object({ ageSeconds: z.number().nullable() }).passthrough() }).passthrough()) });
+/** Staff decide these moderation cases and support cases; a case waiting for its requester is not waiting for staff. */
+const OPEN_MODERATION = new Set(['open', 'in_review', 'appealed']);
+const OPEN_SUPPORT = new Set(['open', 'triaged', 'in_progress']);
 
 /** The keys a strict contract schema allows, so an API view with extra fields (activation hints, digests) still parses. */
 function pick(row: Record<string, unknown>, schema: { shape: Record<string, unknown> }): Record<string, unknown> {
@@ -297,6 +314,66 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     return { requests, decisions, ready, waiting };
   }
 
+  /**
+   * The hub's data residency from its active `residency` configuration version. Which region serves each service and who
+   * the sub-processors are is recorded nowhere yet, so both stay empty and the screen says so; the legal regime likewise.
+   */
+  async function residency(hubId: string): Promise<Residency | null> {
+    const current = ConfigItemsSchema.safeParse(await orNothing(api.get(`/v1/admin/hubs/${hubId}/config/current`)));
+    const row = current.success ? current.data.items.find((i) => i.domain === 'residency') : undefined;
+    const payload = ResidencyConfigPayloadSchema.safeParse(row?.payload);
+    const version = z.int().min(1).safeParse(row?.version);
+    if (!payload.success || !version.success) return null;
+    return ResidencySchema.parse({
+      hubId, country: payload.data.hostingCountry, regime: 'not_recorded', version: version.data, hostingRegion: payload.data.hostingRegion, personalDataCountries: payload.data.personalDataCountries,
+      note: payload.data.note ?? null, services: [], subProcessors: [], synthetic: false,
+    });
+  }
+
+  /**
+   * The overview from the lists that exist: counts of what waits for staff (each list answers for this viewer, up to its
+   * route's limit), the oldest screening list and the capabilities still served by a fake provider. A queue with no read
+   * or a read the viewer may not make is `uncounted`, never zero. Legal documents due, expiring licences and the health
+   * checks have no read yet: `null`, and no health tiles.
+   */
+  async function overview(hubId: string): Promise<Overview | null> {
+    const hub = encodeURIComponent(hubId);
+    const [moderation, support, links, alerts, connections, lists] = await Promise.all([
+      orNothing(api.get(`/v1/admin/moderation/cases?hubId=${hub}`)),
+      orNothing(api.get('/v1/admin/support/cases')),
+      orNothing(api.get(`/v1/admin/hubs/${hub}/record-links?state=proposed`)),
+      orNothing(api.get(`/v1/admin/hubs/${hub}/pipeline-alerts`)),
+      orNothing(api.get(`/v1/admin/hubs/${hub}/providers/connections`)),
+      orNothing(api.get('/v1/admin/screening/lists')),
+    ]);
+    const counts = new Map<QueueId, number>();
+    const moderationCases = ModerationCasesSchema.safeParse(moderation);
+    if (moderationCases.success) counts.set('reports', moderationCases.data.cases.filter((c) => OPEN_MODERATION.has(c.status)).length);
+    const supportCases = SupportCasesSchema.safeParse(support);
+    if (supportCases.success) {
+      const here = supportCases.data.cases.filter((c) => c.hubId === hubId);
+      counts.set('support_cases', here.filter((c) => OPEN_SUPPORT.has(c.status)).length);
+      counts.set('grant_requests', here.filter((c) => c.status === 'grant_requested').length);
+    }
+    const proposals = ListItemsSchema.safeParse(links);
+    if (proposals.success) counts.set('link_proposals', proposals.data.items.filter((l) => l.state === 'proposed').length);
+    const open = ListItemsSchema.safeParse(alerts);
+    if (open.success) counts.set('alerts', open.data.items.filter((a) => a.state === 'open').length);
+    const served = ConnectionsSchema.safeParse(connections);
+    const fakeProviders = served.success
+      ? [...new Set(served.data.items.filter((c) => c.mode === 'fake' && c.status === 'enabled').flatMap((c) => c.capabilities))].flatMap((c) => {
+          const capability = ProviderCapabilitySchema.safeParse(c);
+          return capability.success ? [capability.data] : [];
+        })
+      : null;
+    const ages = (ScreeningListsSchema.safeParse(lists).data?.items ?? []).filter((l) => l.status === 'active' && (l.hubId === null || l.hubId === hubId)).flatMap((l) => (l.freshness.ageSeconds === null ? [] : [l.freshness.ageSeconds]));
+    return OverviewSchema.parse({
+      hubId, queues: [...counts].map(([id, count]) => ({ id, count, nearestDeadline: null })), uncounted: QUEUE_IDS.filter((q) => !counts.has(q)),
+      compliance: { legalDocumentsDue: null, screeningListAgeDays: ages.length ? Math.floor(Math.max(...ages) / 86_400) : null, expiringSourceLicences: null, fakeProviders },
+      health: [], updatedAt: now().toISOString(), synthetic: false,
+    });
+  }
+
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
     'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
@@ -461,7 +538,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       for (const d of view.data.definitions) if ((latest.get(d.role)?.version ?? 0) < d.version) latest.set(d.role, { role: d.role, version: d.version, scopes: d.scopes });
       return [...latest.values()];
     },
-    overview: async () => null,
+    overview,
     approvals,
     // One console document per stored version (the API keeps a version per kind and language); the operator record has no
     // read yet, so it stays empty rather than invented.
@@ -481,7 +558,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       }
       return { operator: null, documents };
     },
-    residency: async () => null,
+    residency,
     localAdditions: async () => [],
     taxonomy: async () => [],
     brandChecks: async () => [],

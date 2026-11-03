@@ -33,12 +33,16 @@ async function Residency(ctx: HubContext) {
               <KeyValues
                 rows={[
                   { label: t('admin.hub.residency.country'), value: country(residency.country) },
+                  ...(residency.hostingRegion ? [{ label: t('admin.hub.residency.hostingRegion'), value: <code className="admin-code">{residency.hostingRegion}</code> }] : []),
+                  ...(residency.personalDataCountries ? [{ label: t('admin.hub.residency.personalData'), value: residency.personalDataCountries.map((c) => country(c)).join(', ') }] : []),
                   { label: t('admin.hub.residency.regime'), value: tDynamic(`admin.hub.residency.regimes.${residency.regime}`, residency.regime) },
                   { label: t('admin.hub.residency.version'), value: t('admin.common.version', { version: residency.version }) },
+                  ...(residency.note ? [{ label: t('admin.hub.residency.note'), value: residency.note, lang: 'und' }] : []),
                 ]}
               />
             </Panel>
             <Panel id="services" title={t('admin.hub.residency.servicesTitle')}>
+              {residency.services.length ? (
               <table className="plain-table">
                 <thead>
                   <tr>
@@ -62,10 +66,14 @@ async function Residency(ctx: HubContext) {
                   ))}
                 </tbody>
               </table>
+              ) : (
+                <p className="admin-empty" data-testid="residency-services-none">{t('admin.hub.residency.servicesNone')}</p>
+              )}
             </Panel>
           </div>
           <Panel id="subprocessors" title={t('admin.hub.residency.subProcessors')}>
-            <p className="admin-meta">{t('admin.hub.residency.subProcessorsNote')}</p>
+            {ctx.request.demo ? <p className="admin-meta">{t('admin.hub.residency.subProcessorsNote')}</p> : null}
+            {residency.subProcessors.length ? (
             <table className="plain-table">
               <thead>
                 <tr>
@@ -90,6 +98,9 @@ async function Residency(ctx: HubContext) {
                 ))}
               </tbody>
             </table>
+            ) : (
+              <p className="admin-empty" data-testid="residency-processors-none">{t('admin.hub.residency.subProcessorsNone')}</p>
+            )}
           </Panel>
         </>
       )}

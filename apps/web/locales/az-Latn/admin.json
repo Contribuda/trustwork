@@ -470,7 +470,8 @@
         "firstSource": "İlk məlumat mənbəyini hüquqi yoxlamaları ilə qeydiyyatdan keçirin.",
         "verificationRecipe": "Şirkətlərin yoxlanması ssenarisini seçin.",
         "backupDrill": "Ehtiyat nüsxələməni qurun və təlim bərpası keçirin."
-      }
+      },
+      "uncounted": "Burada hələ sayılmır: {queues}."
     },
     "approvals": {
       "title": "Təsdiqlər",
@@ -958,7 +959,12 @@
         "change": "Məlumatların yerləşməsini dəyiş",
         "requestChange": "Dəyişikliyi sorğu et",
         "newCountry": "Yeni yerləşmə ölkəsi",
-        "newCountryHelp": "İkihərfli ölkə kodu, məsələn US."
+        "newCountryHelp": "İkihərfli ölkə kodu, məsələn US.",
+        "hostingRegion": "Hostinq regionu",
+        "personalData": "Şəxsi məlumatların saxlandığı ölkələr",
+        "note": "Qeyd",
+        "servicesNone": "Hər xidmətə hansı regionun xidmət etdiyi hələ qeyd olunmayıb.",
+        "subProcessorsNone": "Burada subpodratçılar hələ qeyd olunmayıb."
       },
       "country": {
         "title": "Ölkə bazası",
