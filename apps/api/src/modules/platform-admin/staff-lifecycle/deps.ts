@@ -4,10 +4,10 @@
  */
 export { staffLifecycle } from '../../../../../../packages/data/src/repositories/staff-lifecycle.js';
 export type {
-  MyStaffInvitationRow, StaffActivationJoinedRow, StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow,
+  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffActivationJoinedRow, StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow,
 } from '../../../../../../packages/data/src/schema/staff-lifecycle.js';
 export {
-  DecideActivationCommandSchema, EffectiveAccessQuerySchema, EffectiveAccessSchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, RequestActivationCommandSchema,
+  DecideAccessReviewItemCommandSchema, DecideActivationCommandSchema, EffectiveAccessQuerySchema, EffectiveAccessSchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, OpenAccessReviewCommandSchema, RequestActivationCommandSchema,
   RespondStaffInvitationSchema, RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema, StaffDirectorySchema,
-  type EffectiveAccess, type MyStaffInvitation, type RoleChangePreview, type StaffActivationView, type StaffDirectory, type StaffEligibleRoleView, type StaffInvitationView,
+  type AccessReviewCampaign, type AccessReviewItem, type EffectiveAccess, type MyStaffInvitation, type RoleChangePreview, type StaffActivationView, type StaffDirectory, type StaffEligibleRoleView, type StaffInvitationView,
 } from '../../../../../../packages/contracts/src/staff-lifecycle.js';

@@ -6,8 +6,8 @@ import { Elevation, ElevationGuard } from '../../identity/second-factor/elevatio
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import { PlainCommandSchema } from '../schemas.js';
 import {
-  DecideActivationCommandSchema, EffectiveAccessQuerySchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, RequestActivationCommandSchema, RespondStaffInvitationSchema,
-  RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema,
+  DecideAccessReviewItemCommandSchema, DecideActivationCommandSchema, EffectiveAccessQuerySchema, GrantEligibleRoleCommandSchema, InviteStaffCommandSchema, OpenAccessReviewCommandSchema,
+  RequestActivationCommandSchema, RespondStaffInvitationSchema, RoleChangeApplyCommandSchema, RoleChangePreviewRequestSchema, StaffDirectoryQuerySchema,
 } from './deps.js';
 import { StaffLifecycleService } from './staff-lifecycle.service.js';
 
@@ -102,6 +102,36 @@ export class StaffLifecycleController {
   @Post('activations/:id/end') @HttpCode(200) @Idempotent('admin.staff.activation_end', 'id')
   endActivation(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.staff.endActivation(elevated(state, e, r), p.id, body);
+  }
+
+  /* ---------- Part 4: access reviews ---------- */
+
+  /** Campaigns covering the hub with their tallies (`admin.staff.read` at the scope). */
+  @Get('access-reviews')
+  accessReviews(@Query(HubQuery) q: z.infer<typeof HubQuery>, @ReqState() state: RequestState) {
+    return this.staff.accessReviews(state, q.hubId);
+  }
+
+  @Get('access-reviews/:id')
+  accessReview(@Params(IdParams) p: z.infer<typeof IdParams>, @ReqState() state: RequestState) {
+    return this.staff.accessReview(state, p.id);
+  }
+
+  /** Opens a campaign over the standing assignments held at the scope; needs `admin.staff.revoke` there. */
+  @Post('access-reviews') @HttpCode(201) @Idempotent('admin.staff.access_review_open')
+  openAccessReview(@Body(OpenAccessReviewCommandSchema) body: z.infer<typeof OpenAccessReviewCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.openAccessReview(elevated(state, e, r), body);
+  }
+
+  @Post('access-reviews/:id/withdraw') @HttpCode(200) @Idempotent('admin.staff.access_review_withdraw', 'id')
+  withdrawAccessReview(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(PlainCommandSchema) body: z.infer<typeof PlainCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.withdrawAccessReview(elevated(state, e, r), p.id, body);
+  }
+
+  /** Keep or remove one assignment, by a reviewer who is not its holder; after the deadline only the scope's owner role. */
+  @Post('access-reviews/items/:id/decide') @HttpCode(200) @Idempotent('admin.staff.access_review_decide', 'id')
+  decideAccessReviewItem(@Params(IdParams) p: z.infer<typeof IdParams>, @Body(DecideAccessReviewItemCommandSchema) body: z.infer<typeof DecideAccessReviewItemCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.staff.decideAccessReviewItem(elevated(state, e, r), p.id, body);
   }
 
   /* ---------- Part 3: role change with preview ---------- */
