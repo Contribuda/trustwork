@@ -75,13 +75,15 @@ export class CapabilityAuthority {
     return new CapabilityAuthority({ hubId, extensions: this.extensions, entitlements: this.entitlements, manifests: this.manifests });
   }
 
-  registry(): Promise<ModuleRegistry> {
-    return loadRegistry(this.extensions, this.manifests);
+  /** With a transaction and a bound hub the registry includes that hub's activated extensions. */
+  registry(trx?: Transaction): Promise<ModuleRegistry> {
+    const hubId = this.hubId;
+    return loadRegistry(this.extensions, this.manifests, trx && hubId !== null ? { trx, hubId } : undefined);
   }
 
   /** The hub's active policy document, or the engine default (nothing switched off) when none is active. */
   async policy(trx: Transaction, registry?: ModuleRegistry): Promise<{ document: AgentPolicyDraft; versionId: string | null }> {
-    const reg = registry ?? await this.registry();
+    const reg = registry ?? await this.registry(trx);
     const hubId = this.hubId;
     if (hubId === null) return { document: engineDefaultPolicy('engine-default', reg), versionId: null };
     const row = await agentPolicies.current(trx, hubId);
@@ -102,7 +104,7 @@ export class CapabilityAuthority {
     const moduleKey = capabilityId.split('.')[0] ?? '';
     if (this.hubId === null) return { allowed: false, capabilityId, moduleKey, reason: 'capability.unknown', messageKey: REFUSAL_MESSAGE_KEYS['capability.unknown'], blockedBy: null };
     await agentAuthority.lockCurrent(trx, this.hubId, actor.representativeOf ?? actor.onBehalfCompanyId, actor.connectionId);
-    const registry = await this.registry();
+    const registry = await this.registry(trx);
     if (NON_PURCHASABLE_CAPABILITIES.has(capabilityId)) {
       const canonical = registry.manifests.flatMap(m => m.capabilities).find(c => c.id === capabilityId);
       if (canonical && (action === null || action === canonical.mandateAction)) return { allowed: true, capabilityId, moduleKey };
@@ -124,7 +126,7 @@ export class CapabilityAuthority {
 
   /** Every governed capability with its availability for this person (the interface hides what is unavailable). */
   async availability(trx: Transaction, actor: AgentActor): Promise<CapabilityAvailability[]> {
-    const registry = await this.registry();
+    const registry = await this.registry(trx);
     const { document } = await this.policy(trx, registry);
     const out: CapabilityAvailability[] = [];
     const capabilities: AgentCapability[] = [
@@ -132,6 +134,7 @@ export class CapabilityAuthority {
         const enabled = document.policy.enabledModules.find((e) => e.moduleKey === m.key);
         return enabled ? moduleCapabilities(registry, m.key, enabled.moduleVersion, document.policy.activeExtensionVersionIds) : m.capabilities;
       }),
+      ...registry.extensions.flatMap((e) => e.capabilities),
     ];
     const seen = new Set<string>();
     for (const c of capabilities) {
@@ -233,7 +236,7 @@ export async function mcpGate(authority: CapabilityAuthority, trx: Transaction, 
     if (!mandate) return deny();
   }
   const scopedAuthority = authority.forHub(stored.hub_id);
-  const registry = await scopedAuthority.registry();
+  const registry = await scopedAuthority.registry(trx);
   const { document } = await scopedAuthority.policy(trx, registry);
   const entry = document.policy.enabledModules.find(m => m.moduleKey === capability.id.split('.')[0]);
   const canonical = NON_PURCHASABLE_CAPABILITIES.has(capability.id)

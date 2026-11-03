@@ -89,7 +89,7 @@ flowchart LR
 ## Hubs, extensions and jurisdictions
 
 - **Hub registry.** A hub's registry is the engine registry after the hub's agent policy and activated extensions (`hubId` set). Disabling an agent module removes its agent tools and leaves the interface paths in place; parity is engine-wide, and hubs enable modules, not doors.
-- **Extensions** (AGT-023) add `read`, `draft` or `commit` entries with the same invariants, a safety suite and an adapter with a fake, activated by a second person; they can never add governance and must declare an interface surface too (a generated form is acceptable).
+- **Extensions** (AGT-023) add `draft` or `commit` entries with the same invariants, a safety suite and an adapter with a fake, activated by a second person. Every extension action names a mandate kind, so an extension adds no `read` entry (a read has none) and can never add governance. Each declares an interface surface too (a generated form is acceptable).
 - **Jurisdiction settings and consumer mode** (HUB-005, AGT-008) may raise confirmations at run time, for example to `person_each` for consumer purchases; nothing lowers them.
 
 ## Status today

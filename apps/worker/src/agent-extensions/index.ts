@@ -12,6 +12,7 @@ import { ENGINE_EXTENSION_ADAPTERS, type InstalledExtensionAdapter } from './ada
 import { runExtensionSuite } from './safety.js';
 
 export * from './adapters.js';
+export { extensionEffects, type ExtensionEffects } from './effects.js';
 export { extensionSafetyScenarios, runExtensionSuite, type ExtensionScenario } from './safety.js';
 
 export const EXTENSION_SAFETY_RUN = 'agents.extension_safety_run';

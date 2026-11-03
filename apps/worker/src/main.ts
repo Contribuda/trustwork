@@ -1,6 +1,6 @@
 import { blobStoreFromEnv } from '../../../packages/data/src/files/index.js';
 import type { DataPool } from '@trustwork/data';
-import { extensionEngineTickTask, extensionRuntime, registerExtensionSafetyRuns, type ExtensionRuntime } from './agent-extensions/index.js';
+import { ENGINE_EXTENSION_ADAPTERS, extensionEffects, extensionEngineTickTask, extensionRuntime, registerExtensionSafetyRuns, type ExtensionRuntime } from './agent-extensions/index.js';
 import { agentOccurrencesTask, registerAgentOccurrences } from './agent-modules/index.js';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
 import { workerConfigFromEnv } from './config.js';
@@ -85,7 +85,7 @@ async function main(): Promise<void> {
   if (files && !files.scanner) log('warn', 'files storage configured without a scanner: uploads stay pending until FILES_SCANNER is set');
   const hubValue = process.env.TRUSTWORK_HUB_ID?.trim() ?? '';
   const hubId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(hubValue) ? hubValue.toLowerCase() : null;
-  const assistant: AssistantRuntime | null = process.env.ASSISTANT_EFFECTS === 'fake' ? { pool, providers: fakeEffectProviders().all, hubId, log } : null;
+  const assistant: AssistantRuntime | null = process.env.ASSISTANT_EFFECTS === 'fake' ? { pool, providers: fakeEffectProviders().all, hubId, log, extensions: extensionEffects(ENGINE_EXTENSION_ADAPTERS) } : null;
   const screeningLists: ScreeningListsRuntime = { pool, metrics, log, config: screeningListsConfigFromEnv(process.env) };
   const screening: ScreeningRuntime = { pool, metrics, log, config: screeningConfigFromEnv(process.env) };
   const rescreen: RescreenRuntime = { pool, metrics, log, config: rescreenConfigFromEnv(process.env), screening: screening.config };

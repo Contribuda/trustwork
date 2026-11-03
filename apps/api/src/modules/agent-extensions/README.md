@@ -2,7 +2,7 @@
 
 How a hub administrator adds functions, tools, integrations and capabilities to the participant's one agent ([ADR 010](../../../../../docs/adr/010-gathering-point-hubs-agents-and-mesh.md) decisions 22 and 25; [agent product administration](../../../../../docs/engine/hub-console/user-agents-admin.md#extensions-adding-capabilities-to-agents)). Contract: [`agent-extensions.ts`](../../../../../packages/contracts/src/agent-extensions.ts). Storage and every rule: [`packages/data/migrations/agent-extensions`](../../../../../packages/data/migrations/agent-extensions). Suites: [`apps/worker/src/agent-extensions`](../../../../worker/src/agent-extensions).
 
-Status: **registry implemented, runtime pending.** Staff can draft, test, activate, suspend and retire versions. An active version is not yet callable: the capability binding has no extension branch, so an extension action is refused as `capability.unknown` until the runtime pull request of this package lands.
+Status: **implemented for fake connections, API and worker.** No live adapter ships, so an extension runs only where its route resolves to a fake connection. The console is wired by HUBC-009. Adapter output is dropped after its digest is taken: nothing delivers it to the conversation yet.
 
 ## Rules
 
@@ -29,6 +29,27 @@ Lifecycle `draft -> tested -> active -> suspended -> retired`. Suspending needs 
 
 The two-person flow: the drafter writes the manifest, a reviewer proposes the activation, the drafter asks and applies, the reviewer approves. A third person may ask and apply instead.
 
+## Runtime
+
+There is no second path. `20261210100100_agent_extensions_runtime.sql` adds an extension branch to the bindings the agent runtime already asks, so `AssistantService.proposeAction` and the dispatch recheck treat an extension action as a built-in one:
+
+| Check | Where it comes from |
+|---|---|
+| Mandate: status, expiry, grantee, module, verb, context, ceilings, window | `evaluateMandateV2`, unchanged. The module is the extension's own key |
+| Hub policy and capability switches | `agent_modules_policy_refusal`; an extension has no engine default, so the hub policy must list the active version and enable its module |
+| Approval bound to a digest | `action_intent`, unchanged. The effect pins `extensionVersion` (id and manifest digest), and the digest covers it: an approval never carries over to another version (`version_changed`) |
+| Budget | The mandate kind's reservation, unchanged. A proposed amount below a declared cost is refused (`amount_below_cost`, for when charged actions can activate) |
+| Kill switches and stops | `agent_modules_dispatch_refusal_internal` gains the `agent_extension` scope; engaging fences executing actions like any agent switch |
+| Declared inputs | `extensionCallRefusal` at proposal, again in the worker |
+| Egress, caps, routes | `providers_authorize_call` for every call, inside `agent_extensions_begin_call`, with the rule of that moment |
+| Restricted places | Again at every call, in case a place became restricted after activation |
+
+A call that reaches the gate leaves one `agent_extension_call` row of digests, refused or not. A crash can roll that row back with its transaction; reconciliation writes it, so no call that may have reached an adapter stays out of the audit.
+
+Adapter output is untrusted. It is parsed against `ExtensionCallOutputSchema`, digested and dropped. An output that fails the contract is recorded as `output_refused`, yet the action counts as succeeded: the adapter did its work and the money stays committed.
+
+Lock order matters: every writer of a kill switch takes the provider callback lock and then an authorization epoch, so a dispatch takes `agent_extensions_lock_gate` before `agent_modules_enter_effect`. The other order deadlocks with a kill switch engaged during a dispatch (regression test: `tests/agent-extensions/runtime.test.ts`). The lock is held through the adapter call, which is harmless for a fake; a live adapter must move the gate out of that transaction first.
+
 ## Routes
 
 Staff routes (`/v1/admin/agent-extensions/:hubId/...`): session, staff role covering the hub, live elevation; mutations carry CSRF metadata, an `Idempotency-Key` restated in the console command and a reason, and complete in the request transaction (crash-tested in `tests/backend/idempotency/cases/agent-extensions.ts`).
@@ -41,6 +62,8 @@ Staff routes (`/v1/admin/agent-extensions/:hubId/...`): session, staff role cove
 | `POST activations` | Proposes the next list of active versions as a configuration version, with the digest a second person approves |
 | `POST activations/:configVersionId/activate` | `pending_second_person`, then applied with `approvalId` |
 | `POST versions/:versionId/suspend`, `POST versions/:versionId/retire` | Immediate; executing actions go to reconciliation |
+| `POST :extensionId/kill-switch` | Engages `agent_extension` (`admin.agents.kill`); `POST /v1/admin/agent-modules/:hubId/kill-switches/:id/release` releases it with a second person |
+| `GET calls` | The newest 200 calls by digest: no person, payload or output |
 
 ## Adapters
 
@@ -48,7 +71,10 @@ An adapter is code installed with the engine; a manifest names one and its fake 
 
 ## Changes outside the package paths (minimal, justified)
 
-- `apps/worker/src/agent-extensions` and `apps/worker/src/main.ts`: the suite job and the engine tick. Only the worker role may record a result, so the suite has to run there.
+- `apps/worker/src/agent-extensions` and `apps/worker/src/main.ts`: the suite job, the engine tick and the effects. Only the worker role may record a result, so the suite has to run there.
+- `apps/worker/src/assistant/handlers.ts`: dispatch and reconciliation fall back to the extension effects.
+- `apps/api/src/modules/assistant/assistant.service.ts`: one block in `proposeAction` for the declared inputs and cost and the version pin.
+- `apps/api/src/modules/agent-modules` and `packages/contracts/src/agent-modules.ts`: the registry is read per hub; extension entries can be enabled by a policy but never join the engine default.
 - `apps/api/src/modules/hubs`: refusal hints of the activation hook, and an optional `onlyDomain` on `activate`, so this module's route activates only its own domain inside HUB-001's single transaction.
 - `apps/api/src/app.module.ts` and the idempotency route map: one entry each.
 - `tests/agent-modules/helpers.ts`: `buildAgentWorld` takes extra permissions for the hub roles.
@@ -57,4 +83,4 @@ The contract is deliberately not reachable from `packages/contracts/src/client.t
 
 ## Tests
 
-`tests/contracts/agent-extensions.test.ts` (pure), `tests/agent-extensions/safety.test.ts` (the suite on the EVAL-001 harness and every misbehaving fake), `tests/agent-extensions/registry.test.ts` (HTTP and database under the runtime and worker roles).
+`tests/contracts/agent-extensions.test.ts` (pure), `tests/agent-extensions/safety.test.ts` (the suite on the EVAL-001 harness and every misbehaving fake), `tests/agent-extensions/registry.test.ts` (HTTP and database under the runtime and worker roles), `tests/agent-extensions/runtime.test.ts` (the AST-001 service with a hijacked model and a real worker: every refusal counts what reached the adapter).

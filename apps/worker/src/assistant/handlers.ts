@@ -5,6 +5,7 @@ import { inTransaction } from '../db.js';
 import { RetryableJobError, type ExternalJobHandler, type HandlerRegistry, type TransactionalJobHandler } from '../handlers.js';
 import type { Logger } from '../log.js';
 import type { ScheduledTask } from '../scheduler.js';
+import type { ExtensionEffects } from '../agent-extensions/effects.js';
 import { ProviderRejectedError, type EffectProvider, type LookupResult } from './providers.js';
 
 /**
@@ -30,6 +31,8 @@ export interface AssistantRuntime {
   /** Legacy provider inventory never authorizes an executable effect. */
   providers: readonly EffectProvider[];
   implementations?: readonly EffectImplementation[];
+  /** AGT-023: effects of activated extensions, built per dispatch from the stored declaration. */
+  extensions?: ExtensionEffects;
   /** Legacy configuration retained for callers; dispatch derives its hub from immutable intent provenance. */
   hubId: string | null;
   log: Logger;
@@ -55,12 +58,13 @@ export function dispatchHandler(runtime: AssistantRuntime): ExternalJobHandler<I
         return;
       }
       const result = await inTransaction(runtime.pool, async trx => {
+        await runtime.extensions?.beforeEffect(trx, target.implementation);
         if (!await assistantWorker.enterEffect(trx, target.attemptId, job.id, job.fencing_token)) {
           // No callback after authority withdrawal. Preserve the committed attempt/hold for original receipt lookup.
           await assistantWorker.recordOutcome(trx, target.attemptId, { kind: 'unknown', reason: 'lease_expired' });
           return null;
         }
-        const provider = implementationFor(target.implementation);
+        const provider = implementationFor(target.implementation) ?? runtime.extensions?.forDispatch(trx, target.implementation, { attemptId: target.attemptId, jobId: job.id, fencingToken: job.fencing_token }) ?? null;
         let outcome: ObservedOutcome;
         if (!provider) {
           // Persisted attempt, but no call was made: a definitive pre-effect failure.
@@ -109,7 +113,7 @@ export function reconcileHandler(runtime: AssistantRuntime): TransactionalJobHan
     async run({ trx, payload }) {
       const target = await assistantWorker.beginReconciliation(trx, payload.intentId);
       if (target.status !== 'reconcile') return;
-      const provider = implementationFor(target.implementation);
+      const provider = implementationFor(target.implementation) ?? runtime.extensions?.forReconciliation(trx, target.implementation, target.attemptId) ?? null;
       if (!provider) throw new RetryableJobError(`no adapter for provider ${target.provider}`);
       let found: LookupResult;
       try {

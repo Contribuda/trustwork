@@ -10,10 +10,10 @@ import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import {
   extensionVersionRef, manifestRefusals,
-  type ActivateExtensionsCommand, type AgentExtensionManifest, type DraftExtensionActivationCommand, type DraftExtensionVersionCommand, type ExtensionSafetyRunView, type ExtensionVersionView, type ExtensionView,
+  type ActivateExtensionsCommand, type AgentExtensionManifest, type DraftExtensionActivationCommand, type DraftExtensionVersionCommand, type EngageExtensionKillSwitchCommand, type ExtensionCallView, type ExtensionSafetyRunView, type ExtensionVersionView, type ExtensionView,
   type ManifestFacts, type RequestSafetyRunCommand, type RetireExtensionVersionCommand, type SuspendExtensionVersionCommand,
 } from './contracts.js';
-import { agentExtensions, configActivationDigestInput, type AgentExtensionSafetyRunRow, type AgentExtensionVersionRow, type CommandContext, type HubConfigVersionRow } from './deps.js';
+import { agentExtensions, agentKillSwitches, configActivationDigestInput, type AgentExtensionCallRow, type AgentExtensionSafetyRunRow, type AgentExtensionVersionRow, type CommandContext, type HubConfigVersionRow } from './deps.js';
 
 interface Cmd { idempotencyKey: string; reason: string }
 const iso = (v: Date | string): string => new Date(v).toISOString();
@@ -37,6 +37,14 @@ function versionView(v: AgentExtensionVersionRow, runs: readonly AgentExtensionS
       safetySuite: shown ? { runId: shown.id, onFakeAdapter: true, passed: shown.state === 'passed', engineVersion: shown.engine_version as string, at: iso(shown.completed_at as Date) } : null,
     }),
     manifest, revision: v.revision, statusReason: v.status_reason, latestRun: latest ? runView(latest) : null,
+  };
+}
+/** What staff see of a call: which extension, how it ended and its digests. Never who asked or what was sent. */
+function callView(c: AgentExtensionCallRow): ExtensionCallView {
+  const digest = (value: string) => ({ algorithm: 'trustwork-digest-1' as const, value });
+  return {
+    id: c.id, extensionId: c.extension_id, versionId: c.version_id, capabilityId: c.capability_id, outcome: c.outcome, refusal: c.refusal, inputDigest: digest(c.input_digest),
+    outputDigest: c.output_digest === null ? null : digest(c.output_digest), startedAt: iso(c.started_at), finishedAt: c.finished_at === null ? null : iso(c.finished_at),
   };
 }
 function activationView(c: HubConfigVersionRow) {
@@ -113,6 +121,14 @@ export class AgentExtensionsService {
     });
   }
 
+  /** The newest calls of the hub, by digest. */
+  calls(state: RequestState, hubId: string): Promise<{ calls: ExtensionCallView[] }> {
+    return this.run(state, async (trx) => {
+      await this.requireReader(trx, hubId);
+      return { calls: (await agentExtensions.calls(trx, hubId, 200)).map(callView) };
+    });
+  }
+
   /* ---------- Commands ---------- */
 
   /**
@@ -162,6 +178,18 @@ export class AgentExtensionsService {
       const v = await this.versionOf(trx, hubId, versionId);
       const row = await agentExtensions.suspend(trx, cmd, v.id, body.expectedRevision);
       return { result: await this.result(trx, cmd, row.id, row.revision), version: versionView(row, await agentExtensions.runs(trx, hubId)) };
+    });
+  }
+
+  /** Every version of one extension stops at once (`admin.agents.kill`); the agent kill-switch release needs a second person. */
+  engageKillSwitch(e: Elevated, hubId: string, extensionId: string, body: EngageExtensionKillSwitchCommand) {
+    const cmd = this.commandContext(e, body);
+    return this.run(e.state, async (trx) => {
+      await this.requireReader(trx, hubId);
+      const extension = (await agentExtensions.list(trx, hubId)).find((x) => x.id === extensionId);
+      if (!extension) throw new ApiError('access.not_found', 'access.not_found');
+      const row = await agentKillSwitches.engage(trx, cmd, hubId, 'agent_extension', { extensionId });
+      return { result: await this.result(trx, cmd, row.id, row.revision), killSwitch: { id: row.id, extensionId, state: row.state, revision: row.revision } };
     });
   }
 

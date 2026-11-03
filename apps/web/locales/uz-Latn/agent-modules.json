@@ -129,6 +129,39 @@
           "external_agent_api": "Ulangan yordamchilar"
         }
       }
+    },
+    "extensions": {
+      "capabilityLabel": "Hub kengaytmasi",
+      "reasons": {
+        "manifest_invalid": "Manifest toʻliq emas yoki ziddiyatli.",
+        "guard_rail": "Manifestda ruxsat etilmagan kalit bor. Hech bir kengaytma himoya qoidasini oʻchira olmaydi.",
+        "action_without_mandate_kind": "Har bir amal mandat turini koʻrsatishi kerak.",
+        "action_kind_refused": "Kengaytma amali qoralama yoki majburiyatdir; oʻqish va boshqarish unga kirmaydi.",
+        "confirmation_below_built_in": "Tasdiqlash xuddi shu mandat turidagi ichki amalnikidan kuchsizroq.",
+        "capability_invalid": "Amal agentning barcha imkoniyatlariga tegishli qoidani buzadi.",
+        "restricted_endpoint": "Manzillardan biri cheklangan joyda joylashgan.",
+        "endpoint_undeclared": "Amal manifestda koʻrsatilmagan manzildan foydalanadi.",
+        "key_reserved": "Bu kalit ichki modulga tegishli.",
+        "charge_without_budget": "Pullik amal byudjet sarflaydigan mandat turini talab qiladi.",
+        "invalid_transition": "Bu versiya u holatga oʻta olmaydi.",
+        "revision_conflict": "Versiya oʻzgardi. Qayta yuklab, yana urinib koʻring.",
+        "suite_required": "Faollashtirish uchun soxta adapterda oʻtgan xavfsizlik toʻplami kerak.",
+        "suite_stale": "Xavfsizlik toʻplami dvigatelning boshqa versiyasida oʻtgan. Uni qayta ishga tushiring.",
+        "suite_pending": "Bu versiyaning xavfsizlik toʻplami allaqachon navbatda turibdi.",
+        "version_not_ready": "Faqat sinovdan oʻtgan versiyani faollashtirish mumkin.",
+        "route_missing": "Kengaytmaning oʻz faol model yoʻnalishi yoʻq.",
+        "egress_denied": "Yoʻnalish chiqish qoidalari ruxsat bermagan maʼlumot sinfini yuboradi.",
+        "price_version_unavailable": "Pullik amalni hali faollashtirib boʻlmaydi: billing uning narx versiyasini tasdiqlay olmaydi.",
+        "drafter_cannot_approve": "Manifestni yozgan shaxs ikkinchi shaxs boʻla olmaydi.",
+        "one_version_per_extension": "Kengaytmada bir vaqtda bitta faol versiya boʻladi.",
+        "extension_inactive": "Bu kengaytma hozir bu hubda mavjud emas.",
+        "extension_killed": "Hub bu kengaytmani toʻxtatib qoʻydi.",
+        "version_changed": "Siz bu amalni tasdiqlaganingizdan keyin kengaytma oʻzgardi. Hech narsa yuborilmadi.",
+        "input_invalid": "Chaqiruv bu amal koʻrsatgan kiritmalarga mos emas.",
+        "amount_below_cost": "Summa bu amalning narxini qoplamaydi.",
+        "output_refused": "Kengaytma javobi shartnomasiga mos kelmadi va bekor qilindi.",
+        "adapter_unavailable": "Bu kengaytma adapteri ushbu ulanish uchun oʻrnatilmagan."
+      }
     }
   }
 }

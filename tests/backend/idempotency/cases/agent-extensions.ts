@@ -17,7 +17,7 @@ const count = async (h: Harness, query: string, params: unknown[] = []): Promise
 /** Test role definitions over the console vocabulary (version 41, unused elsewhere), held at the node. */
 const PERMISSIONS = [
   'admin.hub.read', 'admin.config.edit', 'admin.agents.read', 'admin.agents.extensions.edit', 'admin.agents.extensions.activate', 'admin.agents.extensions.suspend', 'admin.providers.read',
-  'admin.providers.connection.edit', 'admin.providers.test', 'admin.providers.toggle', 'admin.providers.egress.edit', 'admin.models.route.edit', 'admin.models.route.activate',
+  'admin.agents.kill', 'admin.providers.connection.edit', 'admin.providers.test', 'admin.providers.toggle', 'admin.providers.egress.edit', 'admin.models.route.edit', 'admin.models.route.activate',
 ];
 const VERSION = 41;
 
@@ -114,6 +114,11 @@ export default {
       action: 'agent_extensions.activation_activate', client: clients.drafter, url: `${base}/activations/${proposed.configVersionId}/activate`,
       body: cmd('agent_extensions.activation_activate', { expectedRevision: proposed.revision, approvalId: null }),
       effects: () => count(h, "SELECT 1 FROM trustwork.second_person_approval WHERE hub_id = $1 AND action = 'agents.activate_extension'", [hubId]),
+    });
+
+    await exactlyOnce({
+      action: 'agent_extensions.kill_switch_engage', client: clients.drafter, url: `${base}/${drafted.ref.extensionId}/kill-switch`, body: cmd('agent_extensions.kill_switch_engage'),
+      effects: () => count(h, "SELECT 1 FROM trustwork.kill_switch WHERE hub_id = $1 AND scope_kind = 'agent_extension'", [hubId]),
     });
 
     const current = (await admin.query<{ revision: number }>('SELECT revision FROM trustwork.agent_extension_version WHERE id = $1', [drafted.ref.id])).rows[0]!;

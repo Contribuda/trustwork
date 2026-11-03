@@ -200,7 +200,7 @@ export function extensionCapabilityId(key: string, operation: string): string {
 const CALL_INPUT_REF = { contract: 'agent-extensions', schema: 'ExtensionCallInputSchema', version: AGENT_EXTENSIONS_CONTRACT_VERSION } as const;
 const CALL_OUTPUT_REF = { contract: 'agent-extensions', schema: 'ExtensionCallOutputSchema', version: AGENT_EXTENSIONS_CONTRACT_VERSION } as const;
 /** One locale key for every extension action: administrators' wording is hub data (`title`), not product copy. */
-export const EXTENSION_CAPABILITY_LABEL_KEY = 'agentExtensions.capabilityLabel';
+export const EXTENSION_CAPABILITY_LABEL_KEY = 'agentModules.extensions.capabilityLabel';
 
 /** One action as the AGT-002 capability the shared registry, the mandate policy and the dispatcher all read. */
 export function extensionActionCapability(manifest: Pick<AgentExtensionManifest, 'key'>, action: ExtensionAction, source: { extensionId: string; version: number }): AgentCapability {
@@ -242,7 +242,7 @@ export function extensionModuleManifest(manifest: AgentExtensionManifest, versio
 
 /* ---------- Refusals ---------- */
 
-/** Every reason code the registry and its runtime report (locale keys `agentExtensions.reasons.<code>`). */
+/** Every reason code the registry and its runtime report (locale keys `agentModules.extensions.reasons.<code>`). */
 export const AGENT_EXTENSION_REASONS = [
   // Registration.
   'manifest_invalid', 'guard_rail', 'action_without_mandate_kind', 'action_kind_refused', 'confirmation_below_built_in', 'capability_invalid', 'restricted_endpoint', 'endpoint_undeclared',
@@ -439,6 +439,28 @@ export function extensionCallRefusal(action: Pick<ExtensionAction, 'inputs' | 'c
   return extensionAmountCovers(action, call.amount) ? null : 'amount_below_cost';
 }
 
+/**
+ * What the dispatcher receives for an extension action. `egress` says the call gate decides; the database builds this from
+ * the active manifest, so a model or a transport never supplies it. It is matched to installed adapters by id.
+ */
+export interface ExtensionEffectDeclaration {
+  readonly id: string;
+  readonly moduleKey: string;
+  readonly moduleVersion: string;
+  readonly capabilityId: string;
+  readonly provider: string;
+  readonly operation: string;
+  readonly mandateAction: string;
+  readonly contextKinds: readonly string[];
+  readonly privateDataClasses: readonly string[];
+  readonly egress: 'extension_gate';
+  readonly payloadContract: string;
+  readonly extension: { versionId: string; manifestDigest: string; adapter: AgentExtensionManifest['adapter']; action: ExtensionAction };
+}
+export function isExtensionEffect(declaration: unknown): declaration is ExtensionEffectDeclaration {
+  return (declaration as { egress?: unknown } | null)?.egress === 'extension_gate';
+}
+
 export const EXTENSION_CALL_OUTCOMES = ['started', 'succeeded', 'failed', 'refused', 'unknown'] as const;
 export const ExtensionCallOutcomeSchema = z.enum(EXTENSION_CALL_OUTCOMES);
 
@@ -504,6 +526,9 @@ export const SuspendExtensionVersionCommandSchema = consoleCommand({ expectedRev
 export type SuspendExtensionVersionCommand = z.infer<typeof SuspendExtensionVersionCommandSchema>;
 export const RetireExtensionVersionCommandSchema = consoleCommand({ expectedRevision: RevisionSchema });
 export type RetireExtensionVersionCommand = z.infer<typeof RetireExtensionVersionCommandSchema>;
+/** Engaging is immediate and needs one person; releasing is the agent kill-switch release, with a second person. */
+export const EngageExtensionKillSwitchCommandSchema = consoleCommand({});
+export type EngageExtensionKillSwitchCommand = z.infer<typeof EngageExtensionKillSwitchCommandSchema>;
 
 /** Every schema of this contract, for the JSON schema export and the registry test. */
 export const AGENT_EXTENSIONS_SCHEMAS = {
@@ -511,6 +536,6 @@ export const AGENT_EXTENSIONS_SCHEMAS = {
   ExtensionCallInput: ExtensionCallInputSchema, ExtensionCallOutput: ExtensionCallOutputSchema, ExtensionVersionView: ExtensionVersionViewSchema, ExtensionView: ExtensionViewSchema,
   ExtensionCallView: ExtensionCallViewSchema, DraftExtensionVersionCommand: DraftExtensionVersionCommandSchema, RequestSafetyRunCommand: RequestSafetyRunCommandSchema,
   DraftExtensionActivationCommand: DraftExtensionActivationCommandSchema, ActivateExtensionsCommand: ActivateExtensionsCommandSchema, SuspendExtensionVersionCommand: SuspendExtensionVersionCommandSchema,
-  RetireExtensionVersionCommand: RetireExtensionVersionCommandSchema,
+  RetireExtensionVersionCommand: RetireExtensionVersionCommandSchema, EngageExtensionKillSwitchCommand: EngageExtensionKillSwitchCommandSchema,
 } as const;
 

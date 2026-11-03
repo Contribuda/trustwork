@@ -129,6 +129,39 @@
           "external_agent_api": "Connected assistants"
         }
       }
+    },
+    "extensions": {
+      "capabilityLabel": "Hub extension",
+      "reasons": {
+        "manifest_invalid": "The manifest is incomplete or inconsistent.",
+        "guard_rail": "The manifest has a key that is not allowed. No extension can switch off a guard rail.",
+        "action_without_mandate_kind": "Every action must name a mandate kind.",
+        "action_kind_refused": "An extension action is a draft or a commitment; reading and governing are not extension actions.",
+        "confirmation_below_built_in": "The confirmation is weaker than the built-in action of the same mandate kind.",
+        "capability_invalid": "An action breaks a rule that applies to every agent capability.",
+        "restricted_endpoint": "An endpoint lies in a restricted place.",
+        "endpoint_undeclared": "An action uses an endpoint the manifest does not declare.",
+        "key_reserved": "This key belongs to a built-in module.",
+        "charge_without_budget": "A charged action needs a mandate kind that spends a budget.",
+        "invalid_transition": "This version cannot move to that state.",
+        "revision_conflict": "The version changed. Reload it and try again.",
+        "suite_required": "Activation needs a safety suite that passed on the fake adapter.",
+        "suite_stale": "The safety suite passed on another engine version. Run it again.",
+        "suite_pending": "A safety suite of this version is already waiting to run.",
+        "version_not_ready": "Only a tested version can be activated.",
+        "route_missing": "The extension has no active model route of its own.",
+        "egress_denied": "The route would send a data class that the egress rules do not allow.",
+        "price_version_unavailable": "A charged action cannot be activated yet: billing cannot confirm its price version.",
+        "drafter_cannot_approve": "The person who wrote the manifest cannot be its second person.",
+        "one_version_per_extension": "An extension has one active version at a time.",
+        "extension_inactive": "This extension is not available in this hub right now.",
+        "extension_killed": "The hub paused this extension.",
+        "version_changed": "The extension changed after you approved this action. Nothing was sent.",
+        "input_invalid": "The call does not match the inputs this action declares.",
+        "amount_below_cost": "The amount does not cover what this action costs.",
+        "output_refused": "The extension's answer did not match its contract and was discarded.",
+        "adapter_unavailable": "The adapter of this extension is not installed for this connection."
+      }
     }
   }
 }

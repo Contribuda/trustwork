@@ -406,6 +406,7 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'agent_extensions.activation_activate': IN_TRANSACTION,
   'agent_extensions.version_suspend': IN_TRANSACTION,
   'agent_extensions.version_retire': IN_TRANSACTION,
+  'agent_extensions.kill_switch_engage': IN_TRANSACTION,
   // AGT-001: goals, reports, job subscriptions, envelopes, escalations, the company representative and company mandates
   'agents.goal_create': IN_TRANSACTION,
   'agents.goal_confirm': IN_TRANSACTION,
