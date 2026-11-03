@@ -27,6 +27,7 @@ const HINTS: Record<string, { code: ConstructorParameters<typeof ApiError>[0]; r
   'commerce.project_mismatch': { code: 'validation.schema', reason: 'project_mismatch' },
   'commerce.plan_item_path': { code: 'validation.schema', reason: 'plan_item_path' },
   'commerce.not_found': { code: 'access.not_found', reason: 'not_found' },
+  'sourcing.sealed_round_closed': { code: 'validation.schema', reason: 'sealed_round_closed' },
   'plans.item_path_taken': { code: 'validation.revision_conflict', reason: 'item_path_taken' },
 };
 export function mapDatabaseError(error: unknown): never {

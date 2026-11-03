@@ -27,6 +27,10 @@ The database repeats every rule under FORCE RLS (`trustwork.quote_side`, `trustw
 | `POST /v1/quotes/:id/amendment-requests`, `.../:requestId/withdraw` | Buyer side: structured changes on exact lines of the current sent version (quantity, target unit price, reason) and an optional target total; the answer is a new quote version |
 | `GET /v1/rfqs/:id/comparison?mode=current\|historical` | Buyer side: `current` compares sent versions pinned to the current RFQ version line by line (`matched`, `quantity_differs`, `unit_differs`, `substitution`, `missing`); a total appears only when every line matched in the RFQ currency and the quote is valid, otherwise `notTotalledBecause` says why. Unsolicited lines and the seller's exclusions are listed. Everything else is `historical`, without totals or ranking |
 
+## Sealed RFQs
+
+While an RFQ is sealed ([ADR 027](../../../../../docs/adr/027-sealed-rfqs.md), proposed) the buyer side reads no sent quote version, line or tax determination (`quote_version_read`, replaced by the PRC-004 migration): `GET /v1/quotes/:id` shows the envelope without versions, the comparison is empty, and acceptance and amendment requests do not find the version. The seller reads its own quote as always. After the deadline a version is sent only if it answers an open amendment request (otherwise `409 commercial.quote_not_acceptable`, `details.reason = sealed_deadline_passed`).
+
 ## Staleness
 
 An RFQ amendment flags, in the same transaction (database trigger), every quote version pinned to an earlier RFQ version `stale_reason: rfq_amended` (a flag, never a status) and every quote whose current sent version is; closing flags them `rfq_closed`. Version flags are never cleared; the quote's flag clears when a revalidated version pinned to the current RFQ version is sent. A quote for quantity 10 in v1 is therefore never compared or accepted as quantity 100 in v2 (tested in the API and the database).
