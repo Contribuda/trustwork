@@ -202,7 +202,7 @@ export class HubsService {
   }
 
   /** Activates now (scheduled activation is a follow-up); a sensitive domain without `approvalId` asks a second person. */
-  activate(e: Elevated, hubId: string, versionId: string, body: ActivateConfigVersionCommand) {
+  activate(e: Elevated, hubId: string, versionId: string, body: ActivateConfigVersionCommand, onlyDomain?: HubConfigDomain) {
     if (body.effectiveFrom !== undefined) {
       const at = Date.parse(body.effectiveFrom);
       const now = this.ctx.clock.now().getTime();
@@ -212,6 +212,7 @@ export class HubsService {
     return this.staff(e, body, { hubId, permission: 'admin.config.edit', action: 'hub.config_activated', objectType: 'hub_config_version', objectId: versionId }, async (trx, cmd, p) => {
       const v = await this.versionOf(trx, hubId, versionId);
       const domain = v.domain as HubConfigDomain;
+      if (onlyDomain !== undefined && domain !== onlyDomain) throw new ApiError('access.not_found', 'access.not_found');
       const action = configActivationAction(domain);
       if (action && body.approvalId === null) {
         if (v.status !== 'draft') throw new ApiError('validation.revision_conflict', 'validation.revision_conflict', { reason: 'invalid_transition' });

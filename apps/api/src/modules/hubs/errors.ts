@@ -59,6 +59,28 @@ const HINTS: Readonly<Record<string, ErrorCode>> = {
   // AGT-003: the activation hook of the `agents` domain (a version the agent module registry did not validate, or a stale preview).
   'agents.policy_unvalidated': 'validation.schema',
   'agents.preview_stale': 'validation.revision_conflict',
+  // AGT-023: the registry's commands and the activation hook of the `agent_extensions` domain; `details.reason` is the contract's reason code.
+  'agents.guard_rail': 'validation.schema',
+  'agents.manifest_invalid': 'validation.schema',
+  'agents.action_without_mandate_kind': 'validation.schema',
+  'agents.action_kind_refused': 'validation.schema',
+  'agents.confirmation_below_built_in': 'validation.schema',
+  'agents.restricted_endpoint': 'validation.schema',
+  'agents.endpoint_undeclared': 'validation.schema',
+  'agents.key_reserved': 'validation.schema',
+  'agents.charge_without_budget': 'validation.schema',
+  'agents.suite_required': 'validation.schema',
+  'agents.suite_stale': 'validation.schema',
+  'agents.version_not_ready': 'validation.schema',
+  'agents.route_missing': 'validation.schema',
+  'agents.egress_denied': 'validation.schema',
+  'agents.price_version_unavailable': 'validation.schema',
+  'agents.one_version_per_extension': 'validation.schema',
+  'agents.version_immutable': 'validation.schema',
+  'agents.invalid_transition': 'validation.revision_conflict',
+  'agents.revision_conflict': 'validation.revision_conflict',
+  'agents.suite_pending': 'validation.revision_conflict',
+  'agents.drafter_cannot_approve': 'access.second_approver_required',
 };
 
 interface PgError { code?: string; hint?: string; detail?: string; constraint?: string }

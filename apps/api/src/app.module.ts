@@ -40,6 +40,7 @@ import { ContentModerationTargets } from './modules/content/moderation.js';
 import { ExecutionModule } from './modules/execution/execution.module.js';
 import { TrustModule } from './modules/trust/trust.module.js';
 import { ReputationModule } from './modules/reputation/reputation.module.js';
+import { AgentExtensionsModule } from './modules/agent-extensions/agent-extensions.module.js';
 import { AgentModulesModule, agentModulesAuthority } from './modules/agent-modules/agent-modules.module.js';
 import { agentProtectionLimits, agentRuntimeGate } from './modules/agent-modules/authority.js';
 import { AssistantModule, assistantMandateStore } from './modules/assistant/assistant.module.js';
@@ -109,6 +110,7 @@ export class AppModule {
         ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), capabilities, ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
         ContentModule.forRoot(ctx, identity, { imageStore: files.store }),
         AgentModulesModule.forRoot(ctx, identity, { authority: capabilities }), // AGT-003
+        AgentExtensionsModule.forRoot(ctx, identity), // AGT-023
         AssistantModule.forRoot(ctx, identity, { capabilityGate: agentRuntimeGate(capabilities) }),
         AgentsModule.forRoot(ctx, identity, { capabilities, protectionLimits: agentProtectionLimits(capabilities) }),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
