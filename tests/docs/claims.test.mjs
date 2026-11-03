@@ -26,7 +26,7 @@ const at = (days) => new Date(T0 + days * DAY).toISOString();
 let nextId = 1000;
 const comment = (author, body, days = 0, association = 'NONE') => ({ id: nextId++, author, association, body, createdAt: at(days) });
 const claimBody = (id, human, { scope = null, until = '2026-11-08', agent = 'Codex (gpt-5)', plan = ['Write the schema', 'Add tests'] } = {}) =>
-  [`Agent: ${agent} for ${human}`, `/claim ${id}`, `human: ${human}`, `scope: ${(scope ?? packages.packages.find((p) => p.id === id).paths).join(', ')}`, `until: ${until}`, 'plan:', ...plan.map((s) => `- ${s}`)].join('\n');
+  [`Agent: ${agent} for ${human}`, `/claim ${id}`, `human: ${human}`, `scope: ${(scope ?? packages.packages.find((p) => p.id === id).paths).join(', ')}`, `until: ${until}`, 'plan:', ...plan.map((s) => `- ${s}`), 'restricted: no'].join('\n');
 const issue = (number, id, comments = [], extra = {}) => ({ number, title: `[WP ${id}] ${id}`, labels: ['work-package'], assignees: [], comments, ...extra });
 
 /** Runs reconcile and folds its comments back into the issues as bot comments, as GitHub would after applyActions. */
@@ -260,6 +260,10 @@ Contributors need automation.
 
 Agent: Claude Code (claude-opus-5) for octocat
 ${extra}
+## Restricted places
+
+- [x] I am not located in, ordinarily resident in or acting for a place listed in \`NOTICE\`, and I am not on a United States sanctions list
+
 ## Sign-off
 
 - [x] Every commit carries \`Signed-off-by\` of the accountable human (DCO)
@@ -269,7 +273,7 @@ test('the pull request check accepts a complete description and explains every g
   assert.deepEqual(checkPullRequest({ body: goodBody(), author: 'octocat', packages }), { errors: [], warnings: [] });
   const template = readFileSync(new URL('../../.github/PULL_REQUEST_TEMPLATE.md', import.meta.url), 'utf8');
   const errors = checkPullRequest({ body: template, author: 'octocat', packages }).errors.join('\n');
-  for (const expected of [/"What changed" is empty/, /"Why" is empty/, /tick the `npm run check` box/, /commit SHA/, /paste results/, /exactly one of "No" or "Yes"/, /tick the DCO box/]) assert.match(errors, expected);
+  for (const expected of [/"What changed" is empty/, /"Why" is empty/, /tick the `npm run check` box/, /commit SHA/, /paste results/, /exactly one of "No" or "Yes"/, /tick the DCO box/, /restricted places: tick the box/]) assert.match(errors, expected);
   const noAgent = goodBody().replace('- [x] Yes', '- [ ] Yes').replace('- [ ] No', '- [x] No');
   assert.match(checkPullRequest({ body: noAgent, author: 'octocat', packages }).errors.join('\n'), /"No" is ticked but an Agent line is filled in/);
   assert.deepEqual(checkPullRequest({ body: noAgent.replace(/Agent: .*/, 'Agent: <tool and model> for <human handle>'), author: 'octocat', packages }).errors, []);
@@ -339,4 +343,20 @@ test('compound ADM-UX IDs retain exact issue, claim and PR ownership identity', 
   assert.deepEqual(checkPullRequest({ body: pr, author: 'octocat', packages: fixture, changedFiles: ['apps/admin-shell/index.ts'] }), { errors: [], warnings: [] });
   assert.match(checkPullRequest({ body: pr.replace(id, 'UX-001'), author: 'octocat', packages: fixture, changedFiles: ['apps/admin-shell/index.ts'] }).errors.join('\n'), /ADM-UX-001/);
   assert.match(checkPullRequest({ body: pr.replace(id, 'ADM-UX-999'), author: 'octocat', packages: fixture }).warnings.join('\n'), /ADM-UX-999 is not a work package id/);
+});
+
+test('a claim confirms the person is not in a restricted place; a claim that says otherwise is refused (owner decision 2026-11-03)', () => {
+  const missing = issue(70, 'FFF-001', [comment('octocat', claimBody('FFF-001', 'octocat').replace('\nrestricted: no', ''))]);
+  const declared = issue(71, 'GGG-001', [comment('octocat', claimBody('GGG-001', 'octocat').replace('restricted: no', 'restricted: yes'))]);
+  step([missing, declared], T0 + 60_000);
+  assert.match(lastBot(missing).body, /add `restricted: no`/);
+  assert.match(lastBot(declared).body, /does not accept contributions from people located in/);
+  for (const i of [missing, declared]) assert.match(lastBot(i).body, /Nothing changed/);
+});
+
+test('a pull request confirms the author is not in a restricted place', () => {
+  const unticked = goodBody().replace('- [x] I am not located in', '- [ ] I am not located in');
+  assert.match(checkPullRequest({ body: unticked, author: 'octocat', packages }).errors.join('\n'), /restricted places: tick the box/);
+  const without = goodBody().replace(/## Restricted places[\s\S]*?## Sign-off/, '## Sign-off');
+  assert.match(checkPullRequest({ body: without, author: 'octocat', packages }).errors.join('\n'), /missing section "## Restricted places"/);
 });

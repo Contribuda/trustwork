@@ -28,6 +28,11 @@ Agent: <tool and model> for <human handle>
 
 ## Open questions / follow-ups
 
+## Restricted places
+
+<!-- Required (GOVERNANCE.md, "People in restricted places"). The project does not accept contributions otherwise. -->
+- [ ] I am not located in, ordinarily resident in or acting for a place listed in `NOTICE`, and I am not on a United States sanctions list
+
 ## Sign-off
 
 - [ ] Every commit carries `Signed-off-by` of the accountable human (DCO)

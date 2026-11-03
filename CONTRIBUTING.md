@@ -5,7 +5,7 @@ Thank you for helping build an open engine for the construction industry. Trustw
 ## Before you start
 
 - Read `README.md`, the [engine handbook](docs/engine/README.md) (at least [vision](docs/engine/vision.md), [status](docs/engine/status.md) and [concepts](docs/engine/concepts.md)), `GOVERNANCE.md` and the [ADRs](docs/adr/README.md).
-- Check the sanctions notice in `NOTICE`. Contributions from people in restricted places are not accepted; the policy for contributors in those places is pending counsel (see `GOVERNANCE.md`).
+- Check the sanctions notice in `NOTICE`. Contributions from people located in, ordinarily resident in or acting for the places listed there, or on a United States sanctions list, are not accepted. Every claim confirms this with `restricted: no` and every pull request with the "Restricted places" box (`GOVERNANCE.md`, "People in restricted places").
 - Search existing issues before opening a new one. Country-pack requests use the "Add a country" template.
 
 ## Finding work

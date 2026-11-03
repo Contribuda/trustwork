@@ -126,7 +126,10 @@ scope: <paths, the package's or narrower, comma-separated>
 until: <date YYYY-MM-DD, at most 7 days ahead>
 plan:
 - <three to five steps>
+restricted: no
 ```
+
+`restricted: no` confirms that the accountable person is not located in, ordinarily resident in or acting for a place listed in `NOTICE`, and not on a United States sanctions list (`GOVERNANCE.md`, "People in restricted places"); the pull request template asks the same in its "Restricted places" box.
 
 Post it **from the accountable person's GitHub account** (the agent may draft it; a maintainer may post a claim on someone's behalf). Keys are case-insensitive; the block may sit inside a code fence. Heartbeat with `/heartbeat COM-001 <short progress note>` (optionally a new `until:` line), release with `/release COM-001 <reason>`.
 
@@ -143,6 +146,7 @@ The bot accepts a claim only when every rule holds, and otherwise answers with t
 | `agent:` is present (`none` for no agent) and agrees with the `Agent: … for <handle>` line | the comment |
 | Every `scope:` path is inside the package's `paths` and does not overlap another package's active claim | `work-packages.json`, other issues |
 | `until:` is a real date from today up to 7 days ahead; `plan:` has at least one step; no `<placeholder>` is left | the comment |
+| `restricted: no` is present (any other answer is refused) | the comment |
 | The person holds fewer than 3 active claims (20 for a maintainer claiming for themselves) | all work package issues |
 
 On acceptance it comments a summary, adds the `claimed` label (removing `ready-to-claim`) and assigns the accountable person. A heartbeat or claim keeps the claim alive for **7 days**; heartbeat at least every **3 days**. Heartbeats and releases are accepted from the accountable person, the claim's author or a maintainer. Every 6 hours the bot expires claims without a heartbeat for 7 days, comments, unassigns the person and restores `ready-to-claim`; it also keeps `ready-to-claim` and `waiting` in line with `work-packages.json` after every change to that file.

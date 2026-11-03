@@ -19,7 +19,15 @@
 
 ## People in restricted places
 
-The owner is subject to United States sanctions and export-control law. The project therefore does not accept contributions from, grant collaborator or maintainer rights to, provide support to, or pay for work by persons located in or acting for the places listed in `NOTICE`, or persons on a United States sanctions list. We cannot reliably detect where people are and do not promise to; we act when we know. This is a rule of the project's own conduct, not a restriction in the licence. Counsel's review of the details is pending; this section will reference the written policy once it exists.
+The owner is subject to United States sanctions and export-control law. The project therefore does not accept contributions from, grant collaborator or maintainer rights to, provide support to, or pay for work by persons located in, ordinarily resident in or acting for the places listed in `NOTICE`, or persons on a United States sanctions list. This is the owner's decision of 2026-11-03 and a rule of the project's own conduct, not a restriction in the licence: the code stays published under AGPL-3.0-only for everyone.
+
+How the rule is applied:
+
+- **Every claim and every pull request confirms it.** A `/claim` comment carries `restricted: no`, and the pull request template has a "Restricted places" box to tick. The claims bot refuses a claim without the confirmation or with any other answer, and the "PR description" check fails without the ticked box. The confirmation is the contributor's own statement; the project does not collect identity documents or locations.
+- **When we learn otherwise.** We cannot reliably detect where people are and do not promise to; we act when we know (for example from the person's own statements or their profile). Then a maintainer does not merge their pull requests and closes them, releases their claims, removes any of their contributions that are not yet merged from the project's branches, and grants them no rights or support. Contributions already merged are reviewed case by case.
+- **No paid work, support or hosting** for those persons, from the project or from Contribuddha.
+
+The project takes no money for the engine and offers no consulting. Should that change (paid hubs, grants, bounties or payments to contributors), the rule is reviewed first.
 
 ## Releases
 

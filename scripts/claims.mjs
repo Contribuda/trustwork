@@ -47,7 +47,7 @@ const MARKER = 'trustwork-claims';
 const HANDLE = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
 const PACKAGE_ID = /\b(ADM-UX-\d{3}|[A-Z][A-Z0-9]*-(?:\d{3}|[A-Z]{2,3}))\b/g;
 const LIST_KEYS = new Set(['scope', 'plan']);
-const KEYS = new Set(['human', 'agent', 'scope', 'until', 'plan']);
+const KEYS = new Set(['human', 'agent', 'scope', 'until', 'plan', 'restricted']);
 
 const root = resolve(new URL('..', import.meta.url).pathname);
 const lower = (s) => String(s ?? '').toLowerCase();
@@ -84,7 +84,7 @@ export function parseCommand(body) {
     if (match) commandLine = i;
   }
   if (commandLine < 0) return null;
-  const fields = { human: '', agent: '', scope: [], until: '', plan: [] };
+  const fields = { human: '', agent: '', scope: [], until: '', plan: [], restricted: '' };
   const other = [];
   let listKey = null;
   lines.forEach((line, i) => {
@@ -164,6 +164,10 @@ export function decide({ parsed, issuePackageId, author, association, at, packag
     if (!f.until) reasons.push(`add \`until: YYYY-MM-DD\` (at most ${CLAIM_TTL_DAYS} days ahead)`);
     else { const problem = validateUntil(f.until, at); if (problem) reasons.push(problem); }
     if (!f.plan.length) reasons.push('add `plan:` with three to five steps');
+    // Owner decision 2026-11-03 (GOVERNANCE.md, "People in restricted places"): no contribution from a restricted place.
+    const restricted = lower(f.restricted);
+    if (!restricted) reasons.push('add `restricted: no` to confirm that you are not located in, ordinarily resident in or acting for a place listed in NOTICE, and not on a United States sanctions list');
+    else if (restricted !== 'no') reasons.push('the project does not accept contributions from people located in, ordinarily resident in or acting for a place listed in NOTICE, or on a United States sanctions list (GOVERNANCE.md, "People in restricted places")');
     const placeholders = [f.human, f.agent, f.until, ...f.scope, ...f.plan].filter((v) => /<[^>]*>/.test(v));
     if (placeholders.length) reasons.push(`replace the template placeholders: ${placeholders.map(code).join(', ')}`);
     const mine = [...active.values()].filter((c) => lower(c.human) === lower(human) && c.package !== id);
@@ -455,6 +459,11 @@ export function checkPullRequest({ body, author = '', changedFiles = [], package
     }
     if (no && declared) errors.push('AI agent: "No" is ticked but an Agent line is filled in');
   }
+
+  // Owner decision 2026-11-03 (GOVERNANCE.md, "People in restricted places").
+  const places = section('restricted places');
+  if (places === null) errors.push('missing section "## Restricted places" (use .github/PULL_REQUEST_TEMPLATE.md)');
+  else if (!checkboxes(places).some((b) => b.checked)) errors.push('restricted places: tick the box confirming that the author is not located in, ordinarily resident in or acting for a place listed in NOTICE, and not on a United States sanctions list');
 
   const signoff = section('sign-off');
   if (signoff === null || !checkboxes(signoff).some((b) => b.checked)) errors.push('sign-off: tick the DCO box (every commit carries Signed-off-by of the accountable person; the DCO job checks the commits)');

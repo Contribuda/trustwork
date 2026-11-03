@@ -53,6 +53,6 @@ Trustwork is created and maintained by [Contribuddha](https://contribuddha.com).
 - **Decisions in the open.** Issues, pull requests and ADRs; nothing decided in private channels.
 - **Honesty over hype.** We say what works and what does not. We never fake users, data or results.
 - **Sign-off.** Every commit carries a Developer Certificate of Origin sign-off (`git commit -s`); there is no contributor licence agreement. See `CONTRIBUTING.md`.
-- **Sanctions.** Contributions from people located in restricted places are not accepted while the policy is pending counsel (see `GOVERNANCE.md`).
+- **Sanctions.** Contributions from people located in, ordinarily resident in or acting for the places listed in `NOTICE`, or on a United States sanctions list, are not accepted; every claim and pull request confirms it (see `GOVERNANCE.md`).
 
 Thank you. Every fixed translation, every sourced fact, every honest story from a site makes construction a little better somewhere.
