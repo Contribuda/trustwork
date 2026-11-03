@@ -32,6 +32,27 @@ export const ClaimSettingsCommandSchema = consoleCommand({ waitingDays: z.int().
 
 export const RecheckVerificationCommandSchema = consoleCommand({ recipeId: Id });
 
+/* The company's records. The status and the source of a record never come from its author. */
+const Jurisdiction = z.string().regex(/^[A-Z]{2}(?:-[A-Z0-9]{1,3})?$/);
+const IdentifierKind = z.string().regex(/^(?:[A-Z]{2}(?:-[A-Z0-9]{2,8}){1,3}|other)$/);
+const RecordStatus = z.enum(['active', 'inactive', 'unknown']);
+const IdentifierRecord = z.strictObject({ kind: z.literal('identifier'), identifierKind: IdentifierKind, jurisdiction: Jurisdiction.nullable(), value: z.string().trim().min(1).max(64) });
+const RegistrationRecord = z.strictObject({
+  kind: z.literal('registration'), jurisdiction: Jurisdiction, registrationKind: z.enum(['formation', 'foreign_qualification', 'dba', 'branch']), registeredName: z.string().trim().min(1).max(300),
+  number: z.string().trim().min(1).max(64).nullable(), status: RecordStatus, observedAt: z.iso.datetime().nullable(),
+});
+const TaxRecord = z.strictObject({ kind: z.literal('tax_registration'), jurisdiction: Jurisdiction, taxKind: IdentifierKind, number: z.string().trim().min(1).max(64), status: RecordStatus, validUntil: z.iso.date().nullable() });
+const BranchRecord = z.strictObject({ kind: z.literal('branch'), hubId: Id, name: z.string().trim().min(1).max(200), address: z.record(z.string().max(40), z.string().max(200)), regionCode: Jurisdiction.nullable(), public: z.boolean() });
+export const RECORD_KINDS = ['identifier', 'registration', 'tax_registration', 'branch'] as const;
+export const AddRecordCommandSchema = z.discriminatedUnion('kind', [IdentifierRecord, RegistrationRecord, TaxRecord, BranchRecord]);
+export const RetireRecordCommandSchema = z.strictObject({});
+export const SetProfileCommandSchema = z.strictObject({
+  legalForm: z.string().regex(/^[A-Z]{2}-[A-Z0-9-]{2,20}$/).nullable(), websiteUrl: z.url().max(300).nullable(), regionCode: Jurisdiction.nullable(), categories: z.array(z.string().trim().min(1).max(60)).max(20),
+  publicFields: z.array(z.enum(['legal_form', 'website_url', 'region_code', 'categories'])).max(4), description: z.string().trim().max(2000).nullable().optional(),
+});
+export const SourceRecordCommandSchema = consoleCommand({ record: z.discriminatedUnion('kind', [IdentifierRecord, RegistrationRecord]), sourceRef: z.string().trim().min(1).max(200) });
+export const VerifyIdentifierCommandSchema = consoleCommand({ expectedRevision: Revision, checkId: Id });
+
 export const ClaimListQuerySchema = z.strictObject({ state: z.enum(CLAIM_STATES).optional() });
 export const HandoverListQuerySchema = z.strictObject({ companyId: Id.optional() });
 export const VerificationListQuerySchema = z.strictObject({ companyId: Id.optional(), dueDays: z.coerce.number().int().min(0).max(366).optional() });

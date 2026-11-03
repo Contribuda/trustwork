@@ -1,6 +1,6 @@
 import { sql, type RawBuilder } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { ClaimDisputeRow, ClaimLevel, ClaimState, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow, CompanyVerificationRow } from '../schema/claims.js';
+import type { ClaimDisputeRow, ClaimLevel, ClaimState, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow, CompanyIdentifierRow, CompanyProfileRow, CompanyVerificationRow } from '../schema/claims.js';
 import type { CommandContext } from './admin.js';
 import type { PlannedDelivery } from './communications.js';
 import '../schema/claims.js';
@@ -24,6 +24,7 @@ async function one<T>(query: RawBuilder<T>, trx: Transaction, what: string): Pro
 }
 
 export type ClaimTie = { kind: 'invitation_link' | 'own_domain_mailbox'; email: string } | null;
+export type RecordKind = 'identifier' | 'registration' | 'tax_registration' | 'branch';
 /** What a hub shows about a company: categories and dates, never a document. */
 export interface PublicBadge { level: ClaimLevel; categories: string[]; decided_at: Date; valid_until: Date }
 export interface ClaimRecipe { id: string; level: ClaimLevel; key: string; version: number; steps: unknown; badge_categories: string[]; recheck_months: number }
@@ -62,6 +63,36 @@ export const claims = {
   async evidence(trx: Transaction, claimId: string): Promise<string[]> {
     return (await trx.selectFrom('company_claim_evidence').select('check_id').where('claim_id', '=', claimId).orderBy('bound_at').orderBy('check_id').execute()).map((r) => r.check_id);
   },
+  /** A company administrator states a record; the payload's own fields never set a status or a source. */
+  async addRecord(trx: Transaction, companyId: string, kind: RecordKind, payload: unknown): Promise<string> {
+    return (await one(sql<{ id: string }>`SELECT trustwork.claims_record_add(${companyId}::uuid, ${kind}::text, ${JSON.stringify(payload)}::jsonb) AS id`, trx, 'claims_record_add')).id;
+  },
+  async retireRecord(trx: Transaction, companyId: string, kind: RecordKind, recordId: string): Promise<void> {
+    await sql`SELECT trustwork.claims_record_retire(${companyId}::uuid, ${kind}::text, ${recordId}::uuid)`.execute(trx);
+  },
+  setProfile(trx: Transaction, companyId: string, payload: unknown): Promise<CompanyProfileRow> {
+    return one(sql<CompanyProfileRow>`SELECT * FROM trustwork.claims_set_profile(${companyId}::uuid, ${JSON.stringify(payload)}::jsonb)`, trx, 'claims_set_profile');
+  },
+  async sourceRecord(trx: Transaction, ctx: CommandContext, hubId: string, companyId: string, kind: RecordKind, payload: unknown, sourceRef: string): Promise<string> {
+    return (await one(sql<{ id: string }>`SELECT trustwork.claims_staff_record_add(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${companyId}::uuid, ${kind}::text, ${JSON.stringify(payload)}::jsonb, ${sourceRef}::text) AS id`,
+      trx, 'claims_staff_record_add')).id;
+  },
+  verifyIdentifier(trx: Transaction, ctx: CommandContext, hubId: string, identifierId: string, expectedRevision: number, checkId: string): Promise<CompanyIdentifierRow> {
+    return one(sql<CompanyIdentifierRow>`SELECT * FROM trustwork.claims_verify_identifier(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${identifierId}::uuid, ${expectedRevision}::int, ${checkId}::uuid)`, trx, 'claims_verify_identifier');
+  },
+  /** Needs no principal. */
+  async publicRecords(trx: Transaction, companyId: string): Promise<unknown> {
+    return (await one(sql<{ records: unknown }>`SELECT trustwork.claims_public_records(${companyId}::uuid) AS records`, trx, 'claims_public_records')).records;
+  },
+  /** The company's own people; tax registrations only for its administrators. */
+  async companyRecords(trx: Transaction, companyId: string): Promise<unknown> {
+    return (await one(sql<{ records: unknown }>`SELECT trustwork.claims_company_records(${companyId}::uuid) AS records`, trx, 'claims_company_records')).records;
+  },
+  /** Staff of the hub; never tax registrations. */
+  async staffRecords(trx: Transaction, hubId: string, companyId: string): Promise<unknown> {
+    return (await one(sql<{ records: unknown }>`SELECT trustwork.claims_staff_records(${hubId}::uuid, ${companyId}::uuid) AS records`, trx, 'claims_staff_records')).records;
+  },
+
   /** A re-check under an active recipe of the level: a new row with a new date, or a refusal that changes nothing. */
   recheck(trx: Transaction, ctx: CommandContext, verificationId: string, recipeId: string): Promise<CompanyVerificationRow> {
     return one(sql<CompanyVerificationRow>`SELECT * FROM trustwork.claims_recheck(${ctxJson(ctx)}::jsonb, ${verificationId}::uuid, ${recipeId}::uuid)`, trx, 'claims_recheck');

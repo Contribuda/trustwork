@@ -8,9 +8,13 @@ import type { CommunicationsService } from '../../communications/communications.
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { staffHubFromEnv } from '../../identity/staff-roles.js';
-import type { BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
-import { adminAudit, claims, type ClaimState, type CommandContext, type StaffRole } from './deps.js';
+import type {
+  AddRecordCommandSchema, BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RevokeHandoverCommandSchema, SetProfileCommandSchema,
+  SourceRecordCommandSchema, SubmitClaimCommandSchema, VerifyIdentifierCommandSchema,
+} from './commands.js';
+import { adminAudit, claims, type ClaimState, type CommandContext, type RecordKind, type StaffRole } from './deps.js';
 import { claimsRefusal, isAuthorityRefusal } from './errors.js';
+import { IdentifierKinds } from './identifier-kinds.js';
 import { toBadge, toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toOwnVerification, toRecipe, toSettings, toVerification } from './views.js';
 
 type Body<S extends z.ZodType> = z.infer<S>;
@@ -27,7 +31,7 @@ interface Attempt { hubId: string; permission: ConsolePermission; action: string
  * Refusals of authority leave a `denied` audit row in a transaction of their own.
  */
 export class ClaimsService {
-  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly notices: Pick<CommunicationsService, 'deliverPlanned'>, private readonly env: NodeJS.ProcessEnv = process.env) {}
+  constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly notices: Pick<CommunicationsService, 'deliverPlanned'>, private readonly env: NodeJS.ProcessEnv = process.env, private readonly kinds: IdentifierKinds = new IdentifierKinds()) {}
 
   private commandContext(e: Elevated, body: Cmd): CommandContext {
     if (e.idempotencyKey !== undefined && body.idempotencyKey !== e.idempotencyKey) throw new ApiError('validation.schema', 'idempotencyKey must equal the Idempotency-Key header', { reason: 'idempotency_key_mismatch' });
@@ -86,6 +90,42 @@ export class ClaimsService {
   async badges(companyId: string, hubId: string | null = staffHubFromEnv(this.env)) {
     if (!hubId) return { items: [] };
     return { items: (await withoutPrincipal(this.ctx.pool, (trx) => claims.publicBadges(trx, hubId, companyId))).map(toBadge) };
+  }
+
+  /** What anyone may read about a company: identifiers, registrations, public branches and the fields it chose to show. */
+  publicRecords(companyId: string) {
+    return withoutPrincipal(this.ctx.pool, (trx) => claims.publicRecords(trx, companyId));
+  }
+
+  /* ---------- The company ---------- */
+
+  private checkIdentifier(record: { kind: string; identifierKind?: string; value?: string }): void {
+    if (record.kind === 'identifier' && !this.kinds.accepts(record.identifierKind as string, record.value as string)) {
+      throw new ApiError('validation.schema', 'the value does not fit the identifier kind of the country pack', { reason: 'identifier_invalid' });
+    }
+  }
+
+  companyRecords(state: RequestState, companyId: string) {
+    return this.read(state, (trx) => claims.companyRecords(trx, companyId));
+  }
+
+  addRecord(state: RequestState, companyId: string, body: Body<typeof AddRecordCommandSchema>) {
+    this.checkIdentifier(body);
+    return this.read(state, async (trx) => ({ record: { kind: body.kind, id: await claims.addRecord(trx, companyId, body.kind, body) } }));
+  }
+
+  retireRecord(state: RequestState, companyId: string, kind: RecordKind, recordId: string) {
+    return this.read(state, async (trx) => {
+      await claims.retireRecord(trx, companyId, kind, recordId);
+      return { record: { kind, id: recordId, retired: true } };
+    });
+  }
+
+  setProfile(state: RequestState, companyId: string, body: Body<typeof SetProfileCommandSchema>) {
+    return this.read(state, async (trx) => {
+      const row = await claims.setProfile(trx, companyId, body);
+      return { profile: { legalForm: row.legal_form, websiteUrl: row.website_url, regionCode: row.region_code, categories: row.categories, publicFields: row.public_fields, revision: row.revision } };
+    });
   }
 
   /* ---------- The claimant ---------- */
@@ -159,6 +199,10 @@ export class ClaimsService {
     });
   }
 
+  staffRecords(state: RequestState, hubId: string, companyId: string) {
+    return this.read(state, (trx) => claims.staffRecords(trx, hubId, companyId));
+  }
+
   /* ---------- Staff commands ---------- */
 
   decide(e: Elevated, hubId: string, claimId: string, body: Body<typeof DecideClaimCommandSchema>) {
@@ -201,6 +245,20 @@ export class ClaimsService {
     return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.rechecked', objectType: 'company_verification', objectId: verificationId }, async (trx, cmd) => {
       ClaimsService.ofHub(await claims.verification(trx, verificationId), hubId);
       return { verification: toVerification(await claims.recheck(trx, cmd, verificationId, body.recipeId)) };
+    });
+  }
+
+  sourceRecord(e: Elevated, hubId: string, companyId: string, body: Body<typeof SourceRecordCommandSchema>) {
+    this.checkIdentifier(body.record);
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.record_sourced', objectType: 'company', objectId: companyId },
+      async (trx, cmd) => ({ record: { kind: body.record.kind, id: await claims.sourceRecord(trx, cmd, hubId, companyId, body.record.kind, body.record, body.sourceRef) } }));
+  }
+
+  /** The label on the identifier is all that changes: a badge comes only from a claim decision. */
+  verifyIdentifier(e: Elevated, hubId: string, identifierId: string, body: Body<typeof VerifyIdentifierCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.identifier_verified', objectType: 'company_identifier', objectId: identifierId }, async (trx, cmd) => {
+      const row = await claims.verifyIdentifier(trx, cmd, hubId, identifierId, body.expectedRevision, body.checkId);
+      return { identifier: { id: row.id, kind: row.kind, value: row.value, status: row.status, revision: row.revision } };
     });
   }
 

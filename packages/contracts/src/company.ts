@@ -10,7 +10,7 @@ export type CompanyPermission = z.infer<typeof CompanyPermissionSchema>;
 
 /** sourced -> claimed -> verified are distinct labels; a legal identifier is not verification. */
 export const CompanyStatusSchema = z.enum(['sourced', 'claimed', 'verified']);
-export const LegalIdentifierSchema = z.strictObject({ kind: z.string().regex(/^(?:[A-Z]{2}-[A-Z]{2,8}|other)$/), value: z.string().min(1).max(64), status: z.enum(['sourced', 'claimed', 'verified']) });
+export const LegalIdentifierSchema = z.strictObject({ kind: z.string().regex(/^(?:[A-Z]{2}(?:-[A-Z0-9]{2,8}){1,3}|other)$/), value: z.string().min(1).max(64), status: z.enum(['sourced', 'claimed', 'verified']) });
 
 export const CompanySchema = z.strictObject({
   id: IdSchema,

@@ -100,8 +100,85 @@ export interface CompanyVerificationTable {
 }
 export type CompanyVerificationRow = Selectable<CompanyVerificationTable>;
 
+/** No runtime grant on these five: readers go through `claims_public_records`, `claims_company_records` and `claims_staff_records`. */
+export interface CompanyProfileTable {
+  company_id: string;
+  legal_form: string | null;
+  website_url: string | null;
+  region_code: string | null;
+  categories: Generated<string[]>;
+  public_fields: Generated<string[]>;
+  revision: Generated<number>;
+  updated_by: string;
+  updated_at: Generated<Date>;
+}
+export type CompanyProfileRow = Selectable<CompanyProfileTable>;
+
+export interface CompanyIdentifierTable {
+  id: Generated<string>;
+  company_id: string;
+  kind: string;
+  jurisdiction: string | null;
+  value: string;
+  value_normalized: string;
+  status: 'sourced' | 'claimed' | 'verified';
+  source_ref: string | null;
+  verification_check_id: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  retired_at: Date | null;
+  revision: Generated<number>;
+}
+export type CompanyIdentifierRow = Selectable<CompanyIdentifierTable>;
+
+export interface CompanyRegistrationTable {
+  id: Generated<string>;
+  company_id: string;
+  jurisdiction: string;
+  kind: 'formation' | 'foreign_qualification' | 'dba' | 'branch';
+  registered_name: string;
+  number: string | null;
+  status: Generated<'active' | 'inactive' | 'unknown'>;
+  observed_at: Date | null;
+  source_ref: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  retired_at: Date | null;
+}
+
+export interface TaxRegistrationTable {
+  id: Generated<string>;
+  company_id: string;
+  jurisdiction: string;
+  kind: string;
+  number: string;
+  status: Generated<'active' | 'inactive' | 'unknown'>;
+  valid_until: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  retired_at: Date | null;
+}
+
+export interface CompanyBranchTable {
+  id: Generated<string>;
+  company_id: string;
+  hub_id: string;
+  name: string;
+  address: Generated<unknown>;
+  region_code: string | null;
+  public: Generated<boolean>;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  retired_at: Date | null;
+}
+
 export interface ClaimsDatabase {
   company_claim_evidence: CompanyClaimEvidenceTable;
+  company_profile: CompanyProfileTable;
+  company_identifier: CompanyIdentifierTable;
+  company_registration: CompanyRegistrationTable;
+  tax_registration: TaxRegistrationTable;
+  company_branch: CompanyBranchTable;
   company_verification: CompanyVerificationTable;
   claims_settings: ClaimsSettingsTable;
   claim_dispute: ClaimDisputeTable;
@@ -117,6 +194,13 @@ declare module './index.js' {
 const columns = columnsOf<ClaimsDatabase>();
 export const TABLE_COLUMNS: TableColumns<ClaimsDatabase> = {
   company_claim_evidence: columns('company_claim_evidence', ['claim_id', 'check_id', 'bound_by', 'bound_at']),
+  company_profile: columns('company_profile', ['company_id', 'legal_form', 'website_url', 'region_code', 'categories', 'public_fields', 'revision', 'updated_by', 'updated_at']),
+  company_identifier: columns('company_identifier', [
+    'id', 'company_id', 'kind', 'jurisdiction', 'value', 'value_normalized', 'status', 'source_ref', 'verification_check_id', 'created_by', 'created_at', 'retired_at', 'revision',
+  ]),
+  company_registration: columns('company_registration', ['id', 'company_id', 'jurisdiction', 'kind', 'registered_name', 'number', 'status', 'observed_at', 'source_ref', 'created_by', 'created_at', 'retired_at']),
+  tax_registration: columns('tax_registration', ['id', 'company_id', 'jurisdiction', 'kind', 'number', 'status', 'valid_until', 'created_by', 'created_at', 'retired_at']),
+  company_branch: columns('company_branch', ['id', 'company_id', 'hub_id', 'name', 'address', 'region_code', 'public', 'created_by', 'created_at', 'retired_at']),
   company_verification: columns('company_verification', [
     'id', 'hub_id', 'company_id', 'handover_id', 'level', 'recipe_id', 'categories', 'state', 'decided_by', 'decided_at', 'valid_until', 'renewed_from', 'revoked_at', 'revoked_by', 'revocation_reason_code',
   ]),

@@ -5,7 +5,7 @@ import { ApiError } from '../../../common/errors.js';
  * Refusals of the CLM-001 commands (SQLSTATE plus a hint) as contract error codes. The hint travels in `details.reason`;
  * existence never leaks (`admin.not_found` and `access.not_found` are one answer).
  */
-const FORBIDDEN = new Set(['admin.forbidden', 'admin.elevation_required', 'access.no_principal', 'claims.own_claim', 'claims.verified_login_required']);
+const FORBIDDEN = new Set(['admin.forbidden', 'admin.elevation_required', 'access.no_principal', 'claims.own_claim', 'claims.verified_login_required', 'claims.administrator_required']);
 const CONFLICT = new Set(['claims.revision_conflict', 'claims.invalid_transition', 'claims.already_claiming', 'claims.already_managing', 'claims.dispute_open']);
 const SECOND_PERSON: ErrorCode = 'access.second_approver_required';
 interface PgError { code?: string; hint?: string; constraint?: string }
