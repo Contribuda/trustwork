@@ -13,10 +13,11 @@ import { toDefs, toFacts, type Elevated, type PlatformAdminService } from '../pl
 import type { PlainCommandSchema } from '../schemas.js';
 import { scopeOf, toAssignment } from '../views.js';
 import {
-  staffLifecycle, type DecideActivationCommandSchema, type EffectiveAccess, type GrantEligibleRoleCommandSchema, type InviteStaffCommandSchema, type MyStaffInvitation,
-  type MyStaffInvitationRow, type RequestActivationCommandSchema, type RoleChangeApplyCommandSchema, type RoleChangePreview, type RoleChangePreviewRequestSchema,
-  type StaffActivationJoinedRow, type StaffActivationView, type StaffDirectory, type StaffDirectoryRow, type StaffEligibleRoleRow, type StaffEligibleRoleView,
-  type StaffInvitationRow, type StaffInvitationView,
+  staffLifecycle, type AccessReviewCampaign, type AccessReviewItem, type DecideAccessReviewItemCommandSchema, type DecideActivationCommandSchema, type EffectiveAccess,
+  type GrantEligibleRoleCommandSchema, type InviteStaffCommandSchema, type MyStaffInvitation, type MyStaffInvitationRow, type OpenAccessReviewCommandSchema,
+  type RequestActivationCommandSchema, type RoleChangeApplyCommandSchema, type RoleChangePreview, type RoleChangePreviewRequestSchema, type StaffAccessReviewCampaignRow,
+  type StaffAccessReviewItemRow, type StaffActivationJoinedRow, type StaffActivationView, type StaffDirectory, type StaffDirectoryRow, type StaffEligibleRoleRow,
+  type StaffEligibleRoleView, type StaffInvitationRow, type StaffInvitationView,
 } from './deps.js';
 import { previewRoleChange, RoleChangeError } from './role-change.js';
 
@@ -62,6 +63,22 @@ export function activationState(r: StaffActivationJoinedRow, now: Date): StaffAc
   }
   return r.assignment_revoked_at !== null || ended(r.assignment_valid_until ?? r.active_until, now) ? 'ended' : 'active';
 }
+/** An item's state now: decided, or pending until the campaign's deadline, escalated to the scope's owner role after it. */
+export const toReviewItem = (r: StaffAccessReviewItemRow, dueAt: Date | string, now: Date): AccessReviewItem => ({
+  id: r.id, campaignId: r.campaign_id, assignmentId: r.assignment_id, holderPersonId: r.holder_person_id, role: r.role as HubStaffRole, scope: scopeOf(r) as StaffScope,
+  state: r.verdict !== null ? 'decided' : ended(dueAt, now) ? 'escalated' : 'pending', verdict: r.verdict, effect: r.effect, decidedBy: r.decided_by, decidedAt: isoOf(r.decided_at),
+  reason: r.decision_reason, revision: r.revision,
+});
+export const toReviewCampaign = (r: StaffAccessReviewCampaignRow, items: StaffAccessReviewItemRow[], now: Date): AccessReviewCampaign => {
+  const own = items.filter((i) => i.campaign_id === r.id);
+  const pending = own.filter((i) => i.verdict === null).length;
+  return {
+    id: r.id, scope: scopeOf(r) as StaffScope, title: r.title, roles: r.roles as HubStaffRole[] | null, dueAt: isoOf(r.due_at)!, openedBy: r.opened_by, reason: r.reason, status: r.status,
+    closedAt: isoOf(r.closed_at), closedBy: r.closed_by,
+    items: { total: own.length, kept: own.filter((i) => i.verdict === 'keep').length, removed: own.filter((i) => i.verdict === 'remove').length, pending, escalated: r.status === 'open' && ended(r.due_at, now) ? pending : 0 },
+    revision: r.revision,
+  };
+};
 export const toActivation = (r: StaffActivationJoinedRow, now: Date): StaffActivationView => ({
   id: r.id, eligibleRoleId: r.eligible_role_id, personId: r.person_id, role: r.role as HubStaffRole, scope: scopeOf(r) as StaffScope, windowSeconds: Number(r.window_seconds),
   sensitive: r.sensitive, reason: r.reason, state: activationState(r, now), approvalId: r.approval_id, approvedBy: r.approved_by, decidedBy: r.decided_by, assignmentId: r.assignment_id,
@@ -191,6 +208,53 @@ export class StaffLifecycleService {
     return this.admin.staffCommand(e, body, null, async (trx, _p, cmd) => {
       const row = await staffLifecycle.endActivation(trx, cmd, activationId);
       return { activation: await this.activationView(trx, row.id) };
+    });
+  }
+
+  /* ---------- Part 4: access reviews ---------- */
+
+  accessReviews(state: RequestState, hubId: string): Promise<{ campaigns: AccessReviewCampaign[] }> {
+    return this.read(state, async (trx) => {
+      const rows = await staffLifecycle.accessReviews(trx, hubId);
+      const items = await staffLifecycle.accessReviewItems(trx, rows.map((r) => r.id));
+      return { campaigns: rows.map((r) => toReviewCampaign(r, items, this.ctx.clock.now())) };
+    });
+  }
+
+  private async accessReviewView(trx: Transaction, campaignId: string): Promise<{ campaign: AccessReviewCampaign; items: AccessReviewItem[] }> {
+    const row = await staffLifecycle.accessReview(trx, campaignId);
+    if (!row) throw new ApiError('access.not_found', 'access review not found');
+    const items = await staffLifecycle.accessReviewItems(trx, [row.id]);
+    const now = this.ctx.clock.now();
+    return { campaign: toReviewCampaign(row, items, now), items: items.map((i) => toReviewItem(i, row.due_at, now)) };
+  }
+
+  /** One campaign with its items; the holder of an item is named, nothing about what they did is. */
+  accessReview(state: RequestState, campaignId: string) {
+    return this.read(state, (trx) => this.accessReviewView(trx, campaignId));
+  }
+
+  openAccessReview(e: Elevated, body: z.infer<typeof OpenAccessReviewCommandSchema>) {
+    const attempt = { target: body.scope, permission: 'admin.staff.revoke' as const, action: 'staff.access_review_opened', objectType: 'staff_access_review_campaign', objectId: body.scope.kind === 'hub' ? body.scope.hubId : body.scope.kind === 'node' ? body.scope.nodeId : '00000000-0000-0000-0000-000000000000' };
+    return this.admin.staffCommand(e, body, attempt, async (trx, _p, cmd) => {
+      const row = await staffLifecycle.openAccessReview(trx, cmd, { scope: body.scope, title: body.title, roles: body.roles, dueInSeconds: body.dueInSeconds });
+      return this.accessReviewView(trx, row.id);
+    });
+  }
+
+  decideAccessReviewItem(e: Elevated, itemId: string, body: z.infer<typeof DecideAccessReviewItemCommandSchema>) {
+    return this.admin.staffCommand(e, body, null, async (trx, _p, cmd) => {
+      const row = await staffLifecycle.decideAccessReviewItem(trx, cmd, itemId, body.verdict);
+      const campaign = await staffLifecycle.accessReview(trx, row.campaign_id);
+      if (!campaign) throw new ApiError('access.not_found', 'access review not found');
+      return { item: toReviewItem(row, campaign.due_at, this.ctx.clock.now()), campaign: toReviewCampaign(campaign, await staffLifecycle.accessReviewItems(trx, [campaign.id]), this.ctx.clock.now()) };
+    });
+  }
+
+  withdrawAccessReview(e: Elevated, campaignId: string, body: z.infer<typeof PlainCommandSchema>) {
+    return this.admin.staffCommand(e, body, null, async (trx, _p, cmd) => {
+      const row = await staffLifecycle.withdrawAccessReview(trx, cmd, campaignId);
+      return { campaign: toReviewCampaign(row, await staffLifecycle.accessReviewItems(trx, [row.id]), this.ctx.clock.now()) };
     });
   }
 

@@ -2,7 +2,9 @@ import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type { CommandContext, StaffTarget } from './admin.js';
 import type { StaffRoleAssignmentRow } from '../schema/admin.js';
-import type { MyStaffInvitationRow, StaffActivationJoinedRow, StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow } from '../schema/staff-lifecycle.js';
+import type {
+  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffActivationJoinedRow, StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow,
+} from '../schema/staff-lifecycle.js';
 import '../schema/staff-lifecycle.js';
 
 /**
@@ -108,6 +110,38 @@ export const staffLifecycle = {
     if (personId) query = query.where('a.person_id', '=', personId);
     return query.orderBy('a.created_at', 'desc').limit(500).execute() as Promise<StaffActivationJoinedRow[]>;
   },
+  /* ---------- Part 4: access reviews ---------- */
+
+  async openAccessReview(trx: Transaction, ctx: CommandContext, input: { scope: StaffTarget; title: string; roles: string[] | null; dueInSeconds: number }): Promise<StaffAccessReviewCampaignRow> {
+    const s = scopeArgs(input.scope);
+    const { rows } = await sql<StaffAccessReviewCampaignRow>`SELECT * FROM trustwork.staff_access_review_open(${ctxJson(ctx)}::jsonb, ${s.kind}::text, ${s.node}::uuid, ${s.hub}::uuid,
+      ${input.title}::text, ${input.roles}::text[], ${input.dueInSeconds}::bigint)`.execute(trx);
+    return rows[0] as StaffAccessReviewCampaignRow;
+  },
+  async decideAccessReviewItem(trx: Transaction, ctx: CommandContext, itemId: string, verdict: 'keep' | 'remove'): Promise<StaffAccessReviewItemRow> {
+    const { rows } = await sql<StaffAccessReviewItemRow>`SELECT * FROM trustwork.staff_access_review_decide(${ctxJson(ctx)}::jsonb, ${itemId}::uuid, ${verdict}::text)`.execute(trx);
+    return rows[0] as StaffAccessReviewItemRow;
+  },
+  async withdrawAccessReview(trx: Transaction, ctx: CommandContext, campaignId: string): Promise<StaffAccessReviewCampaignRow> {
+    const { rows } = await sql<StaffAccessReviewCampaignRow>`SELECT * FROM trustwork.staff_access_review_withdraw(${ctxJson(ctx)}::jsonb, ${campaignId}::uuid)`.execute(trx);
+    return rows[0] as StaffAccessReviewCampaignRow;
+  },
+  /** Campaigns covering a hub (hub, node and platform) the reader may see (`admin.staff.read` at the scope), newest first. */
+  async accessReviews(trx: Transaction, hubId: string): Promise<StaffAccessReviewCampaignRow[]> {
+    return trx.selectFrom('staff_access_review_campaign').selectAll().where((eb) => eb.or([eb('hub_id', '=', hubId), eb('scope_kind', 'in', ['node', 'platform'])]))
+      .orderBy('created_at', 'desc').limit(200).execute();
+  },
+  async accessReview(trx: Transaction, campaignId: string): Promise<StaffAccessReviewCampaignRow | undefined> {
+    return trx.selectFrom('staff_access_review_campaign').selectAll().where('id', '=', campaignId).executeTakeFirst();
+  },
+  async accessReviewItems(trx: Transaction, campaignIds: string[]): Promise<StaffAccessReviewItemRow[]> {
+    if (!campaignIds.length) return [];
+    return trx.selectFrom('staff_access_review_item').selectAll().where('campaign_id', 'in', campaignIds).orderBy('role').orderBy('created_at').execute();
+  },
+  async accessReviewItem(trx: Transaction, itemId: string): Promise<StaffAccessReviewItemRow | undefined> {
+    return trx.selectFrom('staff_access_review_item').selectAll().where('id', '=', itemId).executeTakeFirst();
+  },
+
   async activation(trx: Transaction, activationId: string): Promise<StaffActivationJoinedRow | undefined> {
     const rows = await trx.selectFrom('staff_activation as a')
       .leftJoin('staff_role_assignment as s', 's.id', 'a.assignment_id')

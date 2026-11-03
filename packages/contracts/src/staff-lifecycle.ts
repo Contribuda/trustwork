@@ -251,3 +251,61 @@ export const RoleChangePreviewSchema = z.strictObject({
   previewDigest: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type RoleChangePreview = z.infer<typeof RoleChangePreviewSchema>;
+
+/* ---------- Part 4: access reviews ---------- */
+
+/** A review is due between one and ninety days after it opens. */
+export const ACCESS_REVIEW_MIN_SECONDS = 86_400;
+export const ACCESS_REVIEW_MAX_SECONDS = 90 * 86_400;
+
+/**
+ * `POST /v1/admin/staff/access-reviews`: open a campaign over the standing assignments held exactly at a scope (all
+ * roles, or the listed ones) with a deadline; needs `admin.staff.revoke` there.
+ */
+export const OpenAccessReviewCommandSchema = consoleCommand({
+  reasonCode: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).optional(),
+  scope: InvitationScopeSchema,
+  title: z.string().trim().min(1).max(200),
+  roles: z.array(HubStaffRoleSchema).min(1).max(16).nullable(),
+  dueInSeconds: z.int().min(ACCESS_REVIEW_MIN_SECONDS).max(ACCESS_REVIEW_MAX_SECONDS),
+});
+/** `POST /v1/admin/staff/access-reviews/items/:id/decide`: keep or remove, by a reviewer who is not the holder, with the command's reason. */
+export const DecideAccessReviewItemCommandSchema = consoleCommand({
+  reasonCode: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).optional(),
+  verdict: z.enum(['keep', 'remove']),
+});
+
+export const AccessReviewCampaignStatusSchema = z.enum(['open', 'closed', 'withdrawn']);
+/** One assignment under review. `state` is computed: `escalated` once the deadline passed without a verdict. */
+export const AccessReviewItemSchema = z.strictObject({
+  id: IdSchema,
+  campaignId: IdSchema,
+  assignmentId: IdSchema,
+  holderPersonId: IdSchema,
+  role: HubStaffRoleSchema,
+  scope: StaffScopeSchema,
+  state: z.enum(['pending', 'escalated', 'decided']),
+  verdict: z.enum(['keep', 'remove']).nullable(),
+  effect: z.enum(['kept', 'revoked', 'already_ended']).nullable(),
+  decidedBy: IdSchema.nullable(),
+  decidedAt: TimestampSchema.nullable(),
+  reason: z.string().nullable(),
+  revision: z.int().min(1),
+});
+export type AccessReviewItem = z.infer<typeof AccessReviewItemSchema>;
+/** A campaign with its tallies (how many assignments were kept, removed or are still open; never anything about a person). */
+export const AccessReviewCampaignSchema = z.strictObject({
+  id: IdSchema,
+  scope: StaffScopeSchema,
+  title: z.string(),
+  roles: z.array(HubStaffRoleSchema).nullable(),
+  dueAt: TimestampSchema,
+  openedBy: IdSchema,
+  reason: z.string(),
+  status: AccessReviewCampaignStatusSchema,
+  closedAt: TimestampSchema.nullable(),
+  closedBy: IdSchema.nullable(),
+  items: z.strictObject({ total: z.int().min(0), kept: z.int().min(0), removed: z.int().min(0), pending: z.int().min(0), escalated: z.int().min(0) }),
+  revision: z.int().min(1),
+});
+export type AccessReviewCampaign = z.infer<typeof AccessReviewCampaignSchema>;
