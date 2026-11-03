@@ -23,7 +23,8 @@ export function publicPricingProjection(input: unknown): PublicPricing {
     if (price.disclosure && (price.kind === 'plan') !== (price.disclosure.plan !== null)) throw new Error('Invalid plan disclosure');
     const section = price.kind === 'plan' ? 'plans' : price.kind === 'model' ? 'models' : price.kind === 'capability' ? 'capabilities' : price.kind === 'credit_pack' ? 'credit_packs' : 'services';
     if (result.coverage && result.coverage.sections[section] !== 'available') throw new Error('Unavailable price reader published rows');
-    if (price.kind === 'credit_pack' && !price.validity?.trim()) throw new Error('Credit validity is unavailable');
+    if (price.kind === 'credit_pack' && (!price.validity?.trim() || !price.disclosure?.creditPack)) throw new Error('Credit validity is unavailable');
+    if ((price.kind === 'model' || price.kind === 'capability') && !price.disclosure?.sale) throw new Error('Sale unit is unavailable');
   }
   for (const referral of result.referrals ?? []) {
     if (referral.hubId !== result.hubId) throw new Error('Pricing referral has another serving hub');

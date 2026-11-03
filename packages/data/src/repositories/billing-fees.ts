@@ -2,7 +2,7 @@ import '../schema/billing-fees.js';
 import { sql } from 'kysely';
 import type { DataPool, Transaction } from '../pool.js';
 import type { CommandContext } from './admin.js';
-import { FeeDisclosureSchema, type FeeDisclosure, PublicFeeSchema, PublicReferralSchema, StaffReferralSchema, type FeeTerms, type PublicFee, type PublicReferral, type ReferralTerms, type StaffReferral } from '../../../contracts/src/billing-fees.js';
+import { FeeDisclosureSchema, type FeeDisclosure, PublicFeeSchema, PublicPriceSchema, PublicReferralSchema, SalePriceVersionSchema, StaffFeeSchema, StaffReferralSchema, StaffSalePriceSchema, type FeeTerms, type PublicFee, type PublicPrice, type PublicReferral, type ReferralTerms, type SalePriceTerms, type SalePriceVersion, type StaffFee, type StaffReferral, type StaffSalePrice } from '../../../contracts/src/billing-fees.js';
 
 export const billingFees = {
   async draft(trx: Transaction, ctx: CommandContext, hubId: string, terms: FeeTerms): Promise<PublicFee> {
@@ -16,6 +16,30 @@ export const billingFees = {
   async publicList(pool: DataPool, hubId: string): Promise<PublicFee[]> {
     const r = await pool.query<{ value: unknown }>('SELECT trustwork.billing_fee_list($1::uuid) AS value', [hubId]);
     return PublicFeeSchema.array().parse(r.rows[0]?.value);
+  },
+  async staffList(trx: Transaction, ctx: CommandContext, hubId: string): Promise<StaffFee[]> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_fee_staff_list(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid) AS value`.execute(trx);
+    return StaffFeeSchema.array().parse(r.rows[0]?.value);
+  },
+};
+
+/** Model, capability and credit-pack sale versions. A sale price is the operator's setting, never derived from a cost record. */
+export const billingSalePrices = {
+  async draft(trx: Transaction, ctx: CommandContext, hubId: string, terms: SalePriceTerms): Promise<SalePriceVersion> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_sale_price_draft(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${JSON.stringify(terms)}::jsonb) AS value`.execute(trx);
+    return SalePriceVersionSchema.parse(r.rows[0]?.value);
+  },
+  async activate(trx: Transaction, ctx: CommandContext, hubId: string, id: string, digest: string, approvalId: string, supersedePrevious = false): Promise<SalePriceVersion> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_sale_price_activate(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${id}::uuid, ${digest}, ${approvalId}::uuid, ${supersedePrevious}) AS value`.execute(trx);
+    return SalePriceVersionSchema.parse(r.rows[0]?.value);
+  },
+  async publicList(pool: DataPool, hubId: string, kind: 'model' | 'capability' | 'credit_pack'): Promise<PublicPrice[]> {
+    const r = await pool.query<{ value: unknown }>('SELECT trustwork.billing_sale_price_list($1::uuid, $2) AS value', [hubId, kind]);
+    return PublicPriceSchema.array().parse(r.rows[0]?.value);
+  },
+  async staffList(trx: Transaction, ctx: CommandContext, hubId: string): Promise<StaffSalePrice[]> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_sale_price_staff_list(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid) AS value`.execute(trx);
+    return StaffSalePriceSchema.array().parse(r.rows[0]?.value);
   },
 };
 

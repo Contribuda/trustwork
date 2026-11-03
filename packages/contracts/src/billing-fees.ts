@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MarketplaceFeeKindSchema } from './hub.js';
+import { MeterSchema } from './agent-catalog.js';
 
 const Id = z.uuid();
 const Digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -38,9 +39,42 @@ export const PublicPriceSchema = z.strictObject({
       includedQuota: z.array(z.strictObject({ moduleKey: z.string(), meter: z.string(), units: Minor, window: z.string() })),
       connections: z.int().nonnegative(), channels: z.int().nonnegative(), representativeIncluded: z.boolean(),
     }).nullable(),
+    digest: Digest.optional(),
+    sale: z.strictObject({ modelId: z.string().min(1).nullable(), capabilityId: z.string().min(1).nullable(), meter: MeterSchema, perUnits: Minor }).nullable().optional(),
+    creditPack: z.strictObject({ creditMinor: Minor, validityDays: z.int().positive().nullable(), expiryNoticeDays: z.int().positive().nullable(), refundPolicyVersion: z.string().min(1) }).nullable().optional(),
   }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;
+const PositiveMinor = Minor.refine((v) => BigInt(v) > 0n, 'must be positive');
+const SaleBase = {
+  code: z.string().regex(/^[a-z][a-z0-9_]{1,59}$/), name: z.string().trim().min(1).max(200), currency: z.string().regex(/^[A-Z]{3}$/), amountMinor: Minor,
+  effectiveFrom: Timestamp, effectiveTo: Timestamp.nullable(), acceptanceTextVersion: z.string().min(1).max(40),
+};
+const CapabilityId = z.string().max(100).regex(/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/);
+/**
+ * Participant sale prices (ADR 010 decision 25) and credit packs (ADR 012 decision 33). A sale price is never a provider
+ * cost, and these strict objects are the payment-neutrality boundary: no key can reach ranking, matching, recommendations
+ * or reputation, and none names a participant. `validityDays: null` means the credits do not expire; any expiry needs
+ * advance notice shorter than the validity, so credits never expire silently.
+ */
+export const SalePriceTermsSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('model'), ...SaleBase, modelId: z.string().min(1).max(200), meter: MeterSchema, perUnits: PositiveMinor }),
+  z.strictObject({ kind: z.literal('capability'), ...SaleBase, capabilityId: CapabilityId, meter: MeterSchema, perUnits: PositiveMinor }),
+  z.strictObject({ kind: z.literal('credit_pack'), ...SaleBase, creditMinor: PositiveMinor, validityDays: z.int().min(1).max(3650).nullable(), expiryNoticeDays: z.int().min(1).max(365).nullable(), refundPolicyVersion: z.string().min(1).max(40) }),
+]).refine((v) => v.effectiveTo === null || Date.parse(v.effectiveTo) > Date.parse(v.effectiveFrom), 'the interval must be positive')
+  .refine((v) => v.kind !== 'credit_pack' || ((v.validityDays === null) === (v.expiryNoticeDays === null) && (v.validityDays === null || v.expiryNoticeDays! < v.validityDays)), 'an expiry needs advance notice shorter than the validity');
+export type SalePriceTerms = z.infer<typeof SalePriceTermsSchema>;
+export const DraftSalePriceSchema = z.strictObject({ reason: z.string().min(1).max(500), terms: SalePriceTermsSchema });
+/** `supersedePrevious` end-dates an earlier active version of the offer at this version's start, under the same approval. */
+export const ActivateSalePriceSchema = z.strictObject({ reason: z.string().min(1).max(500), digest: Digest, approvalId: Id, supersedePrevious: z.boolean().default(false) });
+export const SalePriceVersionSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: SalePriceTermsSchema });
+export type SalePriceVersion = z.infer<typeof SalePriceVersionSchema>;
+const StaffLifecycle = { status: z.enum(['draft', 'active', 'superseded', 'cancelled']), draftedBy: Id, activatedBy: Id.nullable(), activatedAt: Timestamp.nullable() };
+/** Staff projections for the console. They name staff, so they are served only under the matching `admin.*` permissions. */
+export const StaffSalePriceSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: SalePriceTermsSchema, ...StaffLifecycle });
+export type StaffSalePrice = z.infer<typeof StaffSalePriceSchema>;
+export const StaffFeeSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: FeeTermsSchema, ...StaffLifecycle });
+export type StaffFee = z.infer<typeof StaffFeeSchema>;
 const Locale = z.string().regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/);
 /**
  * Referral programme terms (ADR 018, ADR 025 decision 21). The strict object is the payment-neutrality boundary: it has no

@@ -201,6 +201,22 @@
         "noLimit": "Sin límite de recompensas para quien recomienda",
         "termsLanguage": "Estas condiciones no están publicadas en este idioma. Se muestran en un idioma publicado por el hub.",
         "none": "Este hub no tiene ningún programa de referidos."
+      },
+      "perUnits": "Por {units} × {meter}",
+      "creditValue": "Créditos incluidos: {amount}",
+      "creditValidDays": "Los créditos son válidos durante {count} días desde la compra",
+      "creditNoExpiry": "Estos créditos no caducan",
+      "creditExpiryNotice": "La caducidad se anuncia con {count} días de antelación",
+      "creditRefund": "Versión de la política de reembolso: {version}",
+      "meter": {
+        "model_tokens": "Tokens de modelos",
+        "agent_actions": "Acciones de agentes",
+        "checks": "Verificaciones",
+        "document_pages": "Páginas de documentos",
+        "deliverables": "Entregables",
+        "translation_characters": "Caracteres traducidos",
+        "retrieval_queries": "Consultas de búsqueda",
+        "external_calls": "Llamadas externas"
       }
     },
     "sections": {

@@ -6,7 +6,7 @@ import type { RequestState } from '../../../common/request.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { hubsRefusal } from '../../hubs/errors.js';
-import { billingFees, billingReferrals, feePricingReaders, SubscriptionPlanVersionSchema, PublicPriceSchema, PublicPricingSchema, type ActivateFeeSchema, type ActivateReferralSchema, type CommandContext, type DraftFeeSchema, type DraftReferralSchema, type PublicPricing, type WithdrawReferralSchema } from './deps.js';
+import { billingFees, billingReferrals, billingSalePrices, feePricingReaders, SubscriptionPlanVersionSchema, PublicPriceSchema, PublicPricingSchema, type ActivateFeeSchema, type ActivateReferralSchema, type ActivateSalePriceSchema, type CommandContext, type DraftFeeSchema, type DraftReferralSchema, type DraftSalePriceSchema, type PublicPricing, type WithdrawReferralSchema } from './deps.js';
 
 /** Governed public prices only. Missing modules are unavailable; they are never quoted as free. */
 export class FeesService {
@@ -32,6 +32,22 @@ export class FeesService {
   activate(state: RequestState, elevationId: string, id: string, body: z.infer<typeof ActivateFeeSchema>) {
     const hub = this.hub();
     return this.principals.runAs(state, (trx) => billingFees.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId)).catch((e: unknown) => this.refusal(e));
+  }
+  staffFees(state: RequestState, elevationId: string) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingFees.staffList(trx, this.command(state, elevationId, 'Read fee versions'), hub)).catch((e: unknown) => this.refusal(e));
+  }
+  draftSalePrice(state: RequestState, elevationId: string, body: z.infer<typeof DraftSalePriceSchema>) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingSalePrices.draft(trx, this.command(state, elevationId, body.reason), hub, body.terms)).catch((e: unknown) => this.refusal(e));
+  }
+  activateSalePrice(state: RequestState, elevationId: string, id: string, body: z.infer<typeof ActivateSalePriceSchema>) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingSalePrices.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId, body.supersedePrevious)).catch((e: unknown) => this.refusal(e));
+  }
+  staffSalePrices(state: RequestState, elevationId: string) {
+    const hub = this.hub();
+    return this.principals.runAs(state, (trx) => billingSalePrices.staffList(trx, this.command(state, elevationId, 'Read sale price versions'), hub)).catch((e: unknown) => this.refusal(e));
   }
   draftReferral(state: RequestState, elevationId: string, body: z.infer<typeof DraftReferralSchema>) {
     const hub = this.hub();
@@ -112,6 +128,12 @@ export class FeesService {
           });
         });
         prices.push(...projected); sections[section] = 'available';
+      } catch { sections[section] = 'error'; }
+    }
+    for (const [section, kind] of [['models', 'model'], ['capabilities', 'capability'], ['credit_packs', 'credit_pack']] as const) {
+      try {
+        prices.push(...(await billingSalePrices.publicList(this.ctx.pool, hubId, kind)).filter(p => p.effectiveTo === null || Date.parse(p.effectiveTo) > at.getTime()));
+        sections[section] = 'available';
       } catch { sections[section] = 'error'; }
     }
     // A hub closed during the reads must not leave a published sibling section behind.

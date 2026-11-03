@@ -8,7 +8,7 @@ import { Elevation, ElevationGuard } from '../../identity/second-factor/elevatio
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import { SecondFactorService } from '../../identity/second-factor/second-factor.service.js';
 import { staffHubFromEnv } from '../../identity/staff-roles.js';
-import { ActivateFeeSchema, ActivateReferralSchema, DraftFeeSchema, DraftReferralSchema, WithdrawReferralSchema } from './deps.js';
+import { ActivateFeeSchema, ActivateReferralSchema, ActivateSalePriceSchema, DraftFeeSchema, DraftReferralSchema, DraftSalePriceSchema, WithdrawReferralSchema } from './deps.js';
 import { FeesService } from './fees.service.js';
 
 @Controller('v1/pricing')
@@ -31,6 +31,10 @@ export class TaskFeeDisclosureController {
 @UseGuards(ElevationGuard)
 export class FeeCommandsController {
   constructor(@Inject(FeesService) private readonly fees: FeesService) {}
+  @Get()
+  list(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow) {
+    return this.fees.staffFees(state, e.id);
+  }
   @Post() @HttpCode(201) @Idempotent('billing.fee_draft')
   draft(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Body(DraftFeeSchema) body: z.infer<typeof DraftFeeSchema>) {
     return this.fees.draft(state, e.id, body);
@@ -63,10 +67,28 @@ export class ReferralCommandsController {
     return this.fees.withdrawReferral(state, e.id, p.id, body);
   }
 }
+@Controller('v1/admin/billing/sale-prices')
+@Authenticated()
+@UseGuards(ElevationGuard)
+export class SalePriceCommandsController {
+  constructor(@Inject(FeesService) private readonly fees: FeesService) {}
+  @Get()
+  list(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow) {
+    return this.fees.staffSalePrices(state, e.id);
+  }
+  @Post() @HttpCode(201) @Idempotent('billing.sale_price_draft')
+  draft(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Body(DraftSalePriceSchema) body: z.infer<typeof DraftSalePriceSchema>) {
+    return this.fees.draftSalePrice(state, e.id, body);
+  }
+  @Post(':id/activate') @HttpCode(200) @Idempotent('billing.sale_price_activate')
+  activate(@ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Params(IdParams) p: { id: string }, @Body(ActivateSalePriceSchema) body: z.infer<typeof ActivateSalePriceSchema>) {
+    return this.fees.activateSalePrice(state, e.id, p.id, body);
+  }
+}
 @Module({})
 export class FeesModule {
   static forRoot(ctx: AppContext, identity: IdentityServices, env: NodeJS.ProcessEnv = process.env): DynamicModule {
-    return { module: FeesModule, controllers: [PublicPricingController, FeeCommandsController, ReferralCommandsController, TaskFeeDisclosureController], providers: [
+    return { module: FeesModule, controllers: [PublicPricingController, FeeCommandsController, ReferralCommandsController, SalePriceCommandsController, TaskFeeDisclosureController], providers: [
       { provide: FeesService, useValue: new FeesService(ctx, identity.principals, staffHubFromEnv(env)) },
       { provide: SecondFactorService, useValue: identity.secondFactors }, ElevationGuard,
     ] };

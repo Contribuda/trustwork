@@ -201,6 +201,22 @@
         "noLimit": "No limit on rewards for a person who refers",
         "termsLanguage": "These terms are not published in this language. They are shown in a language the hub published.",
         "none": "This hub runs no referral programme."
+      },
+      "perUnits": "Per {units} × {meter}",
+      "creditValue": "Credits included: {amount}",
+      "creditValidDays": "Credits are valid for {count} days from purchase",
+      "creditNoExpiry": "These credits do not expire",
+      "creditExpiryNotice": "Expiry is announced {count} days in advance",
+      "creditRefund": "Refund policy version: {version}",
+      "meter": {
+        "model_tokens": "Model tokens",
+        "agent_actions": "Agent actions",
+        "checks": "Checks",
+        "document_pages": "Document pages",
+        "deliverables": "Deliverables",
+        "translation_characters": "Translation characters",
+        "retrieval_queries": "Retrieval queries",
+        "external_calls": "External calls"
       }
     },
     "sections": {

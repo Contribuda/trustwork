@@ -201,6 +201,22 @@
         "noLimit": "Tövsiyə edən üçün mükafat sayı məhdud deyil",
         "termsLanguage": "Bu şərtlər bu dildə dərc edilməyib. Hub tərəfindən dərc edilmiş dildə göstərilir.",
         "none": "Bu hubda tövsiyə proqramı yoxdur."
+      },
+      "perUnits": "{units} × {meter} üçün",
+      "creditValue": "Daxil olan kreditlər: {amount}",
+      "creditValidDays": "Kreditlər alındığı gündən {count} gün qüvvədədir",
+      "creditNoExpiry": "Bu kreditlərin müddəti bitmir",
+      "creditExpiryNotice": "Müddətin bitməsi {count} gün əvvəl elan edilir",
+      "creditRefund": "Geri ödəmə siyasətinin versiyası: {version}",
+      "meter": {
+        "model_tokens": "Model tokenləri",
+        "agent_actions": "Agent əməliyyatları",
+        "checks": "Yoxlamalar",
+        "document_pages": "Sənəd səhifələri",
+        "deliverables": "Materiallar",
+        "translation_characters": "Tərcümə simvolları",
+        "retrieval_queries": "Axtarış sorğuları",
+        "external_calls": "Xarici çağırışlar"
       }
     },
     "sections": {
