@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { LegalHoldRow, PrivacyCountryPolicyTable, PrivacyExportRow, PrivacyPreferenceRow, PrivacyRequestRow } from '../schema/privacy.js';
+import type { LegalHoldRow, PrivacyCountryPolicyTable, PrivacyExportRow, PrivacyPreferenceRow, PrivacyRequestRow, PrivacyResponseDraftRow } from '../schema/privacy.js';
 import type { CommandContext } from './admin.js';
 
 /**
@@ -110,7 +110,18 @@ export const privacyPolicies = {
   },
 };
 
+/** The API-level delegation marker of a principal acting through an assistant; the database never sees a mandate otherwise. */
+export interface PrivacyDelegation { mandateId: string; mandateRevision: number; principalPersonId: string }
+
 export const privacy = {
+  /** Preparation only: a Draft package for a privacy request. The caller may be an assistant acting for a staff member. */
+  async prepareResponseDraft(trx: Transaction, requestId: string, coverage: unknown, delegation: PrivacyDelegation | null): Promise<PrivacyResponseDraftRow> {
+    return (await sql<PrivacyResponseDraftRow>`SELECT * FROM trustwork.privacy_response_draft_prepare(${requestId}::uuid, ${JSON.stringify(coverage)}::jsonb,
+      ${delegation ? JSON.stringify({ mandateId: delegation.mandateId, mandateRevision: delegation.mandateRevision }) : null}::jsonb)`.execute(trx)).rows[0]!;
+  },
+  async responseDrafts(trx: Transaction, requestId: string): Promise<PrivacyResponseDraftRow[]> {
+    return (await sql<PrivacyResponseDraftRow>`SELECT * FROM trustwork.privacy_response_drafts(${requestId}::uuid)`.execute(trx)).rows;
+  },
   async proposeSourcePlan(trx: Transaction, ctx: CommandContext, requestId: string, grantId: string): Promise<{ id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> }> {
     return (await sql<{ result: { id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> } }>`SELECT trustwork.privacy_source_plan_propose(${JSON.stringify(ctx)}::jsonb,${requestId}::uuid,${grantId}::uuid) AS result`.execute(trx)).rows[0]!.result;
   },

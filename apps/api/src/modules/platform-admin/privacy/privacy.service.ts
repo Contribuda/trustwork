@@ -61,8 +61,20 @@ export class PrivacyService {
     return { accepted: true };
   }
   private run<T>(state: RequestState, fn: (trx: Transaction, principal: Principal) => Promise<T>, options?: { snapshot: true }): Promise<T> {
-    if (state.principal?.delegation) throw new ApiError('access.forbidden', 'privacy governance requires the person');
+    // Refused before any transaction opens; a rejected promise keeps one asynchronous contract for every caller.
+    if (state.principal?.delegation) return Promise.reject(new ApiError('access.forbidden', 'privacy governance requires the person'));
     return this.identity.principals.runAs(state, fn, options).catch(refusal);
+  }
+  /**
+   * Prepares a Draft response package; it decides nothing. Like every privacy route it refuses a delegated principal:
+   * a participant's mandate is not an operator grant, and operator agents (AGT-030, ADR 010 decision 26) do not exist
+   * yet. When they do, their grant check belongs here; the database refuses a delegated row until then.
+   */
+  prepareResponseDraft(state: RequestState, requestId: string) {
+    return this.run(state, (trx) => privacy.prepareResponseDraft(trx, requestId, this.exports.coverage, null));
+  }
+  responseDrafts(state: RequestState, requestId: string) {
+    return this.run(state, async (trx) => ({ drafts: await privacy.responseDrafts(trx, requestId) }));
   }
   request(state: RequestState, input: PrivacyRequestCommand) { return this.run(state, (trx) => privacy.request(trx, input)); }
   requests(state: RequestState) { return this.run(state, async (trx) => ({ requests: await privacy.requests(trx) })); }
