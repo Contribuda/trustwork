@@ -112,8 +112,9 @@
 .lsw-lang,
 .cg__lang {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
+  gap: 2px 5px;
   min-height: 28px;
   padding: 0 10px;
   border: 1px solid var(--color-border);
@@ -131,6 +132,17 @@
   border-color: var(--color-navy);
   background: var(--color-navy);
   color: #fff;
+}
+
+/* The review status of a language (INTL-007): smaller than its name, never hidden, and legible on the active pill. */
+.lsw-lang__review {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+}
+
+.is-active > .lsw-lang__review {
+  color: inherit;
 }
 
 .lsw-lang__dot {
@@ -412,4 +424,37 @@
 .cg__chosen {
   margin: -4px 0 0;
   font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- Public note about translations */
+.tr-note h2 {
+  margin-block: 28px 12px;
+}
+
+.tr-labels {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.tr-labels dt {
+  font-weight: 700;
+}
+
+.tr-labels dd {
+  margin: 0;
+  color: var(--color-text-subtle);
+}
+
+.tr-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tr-table th,
+.tr-table td {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: top;
 }

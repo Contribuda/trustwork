@@ -34,7 +34,7 @@ test('the header switcher changes the language both ways', async ({ page }) => {
   await hydrated(page.locator('.lsw'));
   for (const [name, tag] of [['ქართული', 'ka'], ['English', 'en'], ['Русский', 'ru']] as const) {
     await page.locator('.lsw').first().click();
-    await page.getByRole('dialog').getByRole('button', { name, exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: new RegExp(`^${name}`) }).click();
     await expect.poll(() => htmlLang(page)).toBe(tag);
   }
   await page.reload();

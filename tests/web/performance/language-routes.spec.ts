@@ -121,14 +121,14 @@ test.describe('the language cookie', () => {
     await expect(page).toHaveURL(new RegExp(`/ru${STORY}$`));
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
     await (await hydrated(page.locator('.lsw').first())).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'English', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^English/ }).click();
     await expect(page).toHaveURL(new RegExp(`127\\.0\\.0\\.1:${port}${STORY}$`));
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     expect((await context.cookies()).find((c) => c.name === 'trustwork.locale')?.value).toBe('en');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await (await hydrated(page.locator('.lsw').first())).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'ქართული', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^ქართული/ }).click();
     await expect(page).toHaveURL(new RegExp(`/ka${STORY}$`));
     await expect(page.locator('html')).toHaveAttribute('lang', 'ka');
   });

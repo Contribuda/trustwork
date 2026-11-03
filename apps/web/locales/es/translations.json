@@ -1,0 +1,37 @@
+{
+  "translations": {
+    "link": "Cómo se revisan las traducciones",
+    "kicker": "Idiomas",
+    "title": "Traducciones",
+    "lede": "El texto de la interfaz se escribe en inglés y luego se traduce. Cada idioma indica hasta qué punto lo han revisado personas; ningún idioma se oculta por ser un borrador.",
+    "scope": "Estas etiquetas se refieren a la interfaz. Los artículos y las noticias tienen su propio idioma y sus notas de traducción.",
+    "labelsHeading": "Qué significan las etiquetas",
+    "languagesHeading": "Idiomas de este hub",
+    "columnLanguage": "Idioma",
+    "columnStatus": "Estado",
+    "columnReview": "Revisión",
+    "noReview": "No consta ninguna revisión",
+    "reviewed": "Revisado por {reviewers} el {date}. Abarca: {namespaces}",
+    "reviewLink": "Registro de la revisión",
+    "helpHeading": "Ayúdanos a revisar tu idioma",
+    "help": "Si conoces bien alguno de estos idiomas, dinos qué suena mal. El estado de un idioma solo sube cuando una persona identificada ha revisado de verdad el texto y acepta aparecer en la lista.",
+    "status": {
+      "reference": {
+        "label": "Referencia",
+        "description": "El texto original de la interfaz; todos los demás idiomas se traducen de él."
+      },
+      "machine_draft": {
+        "label": "Borrador automático",
+        "description": "Redactado con ayuda de una máquina. No consta la revisión de ninguna persona, así que puede contener errores."
+      },
+      "community_reviewed": {
+        "label": "Revisado por la comunidad",
+        "description": "Lo han revisado miembros de la comunidad que usan este idioma."
+      },
+      "native_reviewed": {
+        "label": "Revisado por nativos",
+        "description": "Lo ha revisado una persona nativa de este idioma."
+      }
+    }
+  }
+}
