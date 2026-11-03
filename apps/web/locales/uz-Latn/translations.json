@@ -1,0 +1,37 @@
+{
+  "translations": {
+    "link": "Tarjimalar qanday tekshiriladi",
+    "kicker": "Tillar",
+    "title": "Tarjimalar",
+    "lede": "Interfeys matni ingliz tilida yoziladi, soʻng tarjima qilinadi. Har bir til odamlar uni qay darajada tekshirganini koʻrsatadi; hech bir til qoralama boʻlgani uchun yashirilmaydi.",
+    "scope": "Bu belgilar interfeysga tegishli. Maqola va yangiliklarning oʻz tili va tarjima izohlari bor.",
+    "labelsHeading": "Belgilar nimani anglatadi",
+    "languagesHeading": "Ushbu xab tillari",
+    "columnLanguage": "Til",
+    "columnStatus": "Holat",
+    "columnReview": "Tekshiruv",
+    "noReview": "Tekshiruv qayd etilmagan",
+    "reviewed": "{reviewers} tekshirgan, {date}. Qamrovi: {namespaces}",
+    "reviewLink": "Tekshiruv yozuvi",
+    "helpHeading": "Tilingizni tekshirishga yordam bering",
+    "help": "Agar shu tillardan birini yaxshi bilsangiz, nima notoʻgʻri eshitilishini bizga ayting. Til holati faqat nomi koʻrsatilgan tekshiruvchi matnni haqiqatan tekshirgan va roʻyxatga kiritilishiga rozi boʻlgandagina koʻtariladi.",
+    "status": {
+      "reference": {
+        "label": "Asosiy",
+        "description": "Interfeysning asl matni; boshqa barcha tillar undan tarjima qilinadi."
+      },
+      "machine_draft": {
+        "label": "Mashina qoralamasi",
+        "description": "Mashina yordamida tuzilgan. Inson tekshiruvi qayd etilmagan, shuning uchun xatolar boʻlishi mumkin."
+      },
+      "community_reviewed": {
+        "label": "Hamjamiyat tekshirgan",
+        "description": "Bu tildan foydalanadigan hamjamiyat aʼzolari tekshirgan."
+      },
+      "native_reviewed": {
+        "label": "Ona tili egasi tekshirgan",
+        "description": "Bu til ona tili boʻlgan kishi tekshirgan."
+      }
+    }
+  }
+}

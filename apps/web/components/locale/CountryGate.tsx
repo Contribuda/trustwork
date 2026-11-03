@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, Modal, ModalOverlay } from 'react-aria-components';
 import { publicPathIn, writeLocaleCookies } from './locale-cookies';
-import { CountrySelect, localeName, type SwitcherCountry, type SwitcherLanguage } from './LocaleSwitcher';
+import { CountrySelect, LanguageReview, type SwitcherCountry, type SwitcherLanguage } from './LocaleSwitcher';
 import { t } from '@/app/_lib/i18n';
 
 /**
@@ -61,8 +61,9 @@ export function CountryGate({ countries, languages, suggested, suggestedLocale }
           <p className="cg__section">{t('locale.language')}</p>
           <div className="cg__langs" role="radiogroup" aria-label={t('locale.language')}>
             {languages.map((l) => (
-              <button key={l.tag} type="button" role="radio" aria-checked={l.tag === locale} className={`cg__lang${l.tag === locale ? ' is-active' : ''}`} onClick={() => setLocale(l.tag)}>
-                {localeName(l.tag)}
+              <button key={l.tag} type="button" role="radio" aria-checked={l.tag === locale} className={`cg__lang${l.tag === locale ? ' is-active' : ''}`} onClick={() => setLocale(l.tag)} aria-describedby={`cg-review-${l.tag}`}>
+                {l.name}
+                <LanguageReview language={l} id={`cg-review-${l.tag}`} />
                 {l.partial ? <span className="cg__partial">{t('locale.partialShort')}</span> : null}
               </button>
             ))}

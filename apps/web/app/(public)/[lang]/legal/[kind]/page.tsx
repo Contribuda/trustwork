@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { LegalDocumentKind, PublicLegalDocument } from '@trustwork/contracts/client';
-import { FileText, TriangleAlert } from 'lucide-react';
 import { data } from '@/app/_lib/data';
 import { currentLocale, longDate, t } from '@/app/_lib/i18n';
 import { primePublicLocale } from '@/app/_lib/locale';
@@ -22,6 +21,23 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!page) return { title: t('error.notFoundTitle') };
   return { title: t(`legal.${page}.title`), alternates: languageAlternates(`/legal/${page}`, lang) };
 }
+
+/**
+ * The Lucide outlines of `file-text` and `triangle-alert`, drawn here: importing them from `lucide-react` gives this
+ * server page a client chunk of its own with a private copy of the icon runtime, about 1 KB gzip (INTL-007 offset).
+ */
+const OUTLINE = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
+const FileText = () => (
+  <svg {...OUTLINE} width={14} height={14}>
+    <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+    <path d="M14 2v5a1 1 0 0 0 1 1h5M10 9H8M16 13H8M16 17H8" />
+  </svg>
+);
+const TriangleAlert = () => (
+  <svg {...OUTLINE} width={18} height={18}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3M12 9v4M12 17h.01" />
+  </svg>
+);
 
 function Body({ document }: { document: PublicLegalDocument }) {
   // Plain text as the hub's staff wrote it: paragraphs on blank lines, line breaks kept, nothing interpreted as markup.
@@ -56,7 +72,7 @@ export default async function LegalPage({ params }: Params) {
       <div className="pub-wrap srch">
         <article className="legal-page" aria-labelledby="legal-title">
           <p className="pub-kicker">
-            <FileText size={14} strokeWidth={2} aria-hidden="true" /> {t('legal.kicker')}
+            <FileText /> {t('legal.kicker')}
           </p>
           <h1 className="pub-h1" id="legal-title">
             {t(`legal.${page}.title`)}
@@ -73,7 +89,7 @@ export default async function LegalPage({ params }: Params) {
           ) : (
             <section className="legal-draft" role="note" aria-labelledby="legal-draft-title">
               <h2 className="pub-h2" id="legal-draft-title">
-                <TriangleAlert size={18} strokeWidth={2} aria-hidden="true" /> {t('legal.draftTitle')}
+                <TriangleAlert /> {t('legal.draftTitle')}
               </h2>
               <p>{t(`legal.${page}.draftBody`)}</p>
               <p>{t('legal.draftNoAgreement')}</p>

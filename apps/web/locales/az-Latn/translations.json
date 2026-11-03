@@ -1,0 +1,37 @@
+{
+  "translations": {
+    "link": "Tərcümələr necə yoxlanılır",
+    "kicker": "Dillər",
+    "title": "Tərcümələr",
+    "lede": "İnterfeys mətni ingiliscə yazılır, sonra tərcümə olunur. Hər dil insanların onu nə dərəcədə yoxladığını göstərir; heç bir dil qaralama olduğu üçün gizlədilmir.",
+    "scope": "Bu nişanlar interfeysə aiddir. Məqalə və xəbərlərin öz dili və tərcümə qeydləri var.",
+    "labelsHeading": "Nişanlar nə deməkdir",
+    "languagesHeading": "Bu habın dilləri",
+    "columnLanguage": "Dil",
+    "columnStatus": "Status",
+    "columnReview": "Yoxlama",
+    "noReview": "Yoxlama qeydə alınmayıb",
+    "reviewed": "{reviewers} yoxlayıb, {date}. Əhatə edir: {namespaces}",
+    "reviewLink": "Yoxlama qeydi",
+    "helpHeading": "Dilinizi yoxlamağa kömək edin",
+    "help": "Bu dillərdən birini yaxşı bilirsinizsə, nəyin səhv səsləndiyini bizə deyin. Status yalnız adı göstərilən yoxlayıcı mətni həqiqətən yoxladıqda və siyahıda olmağa razı olduqda yüksəlir.",
+    "status": {
+      "reference": {
+        "label": "İstinad",
+        "description": "İnterfeysin orijinal mətni; bütün digər dillər ondan tərcümə olunur."
+      },
+      "machine_draft": {
+        "label": "Maşın qaralaması",
+        "description": "Maşının köməyi ilə hazırlanıb. İnsan yoxlaması qeydə alınmayıb, ona görə səhvlər ola bilər."
+      },
+      "community_reviewed": {
+        "label": "İcma yoxlayıb",
+        "description": "Bu dildən istifadə edən icma üzvləri yoxlayıb."
+      },
+      "native_reviewed": {
+        "label": "Ana dilli yoxlayıb",
+        "description": "Bu dilin ana dilli daşıyıcısı yoxlayıb."
+      }
+    }
+  }
+}

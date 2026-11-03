@@ -9,6 +9,7 @@
       "react-server": "./src/server.ts",
       "default": "./src/client.ts"
     },
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./review-status": "./src/review-status.ts"
   }
 }

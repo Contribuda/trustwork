@@ -1,0 +1,9 @@
+{
+  "status": "machine_draft",
+  "reviewers": [],
+  "reviewedOn": null,
+  "namespaces": [],
+  "reviewLink": null,
+  "package": "INTL-002",
+  "note": "Original product language, not maintained (ADR 009 decision 11); no review is recorded, so none is claimed. Optional secondary language, never a default; the only interface that shows the Russian-language name and wordmark"
+}

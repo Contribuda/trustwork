@@ -6645,7 +6645,7 @@
       "id": "INTL-007",
       "title": "Locale review status: per-locale metadata shown in the language picker and the docs",
       "area": "international",
-      "status": "open",
+      "status": "in_review",
       "dependsOn": [
         "CFG-001",
         "INTL-004"

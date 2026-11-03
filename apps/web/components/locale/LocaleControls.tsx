@@ -2,17 +2,20 @@ import { cache } from 'react';
 import { COUNTRIES, countryName, enabledPacks, getPack, pick, type CountryPack } from '@trustwork/country-packs';
 import { isCountryOffered } from '@trustwork/config';
 import { currentDeployment } from '@trustwork/config/server';
-import { coverage } from '@/app/_lib/locale-data';
-import { localesFor, type ActiveLocale } from '@/app/_lib/locale';
+import { t } from '@/app/_lib/i18n';
+import type { ActiveLocale } from '@/app/_lib/locale';
 import { defaultLanguageFor } from '@/app/_lib/locale-negotiation';
+import { localHref } from '@/app/_lib/localize';
 import { CountryGate } from './CountryGate';
-import { LocaleSwitcher, type SwitcherCountry, type SwitcherLanguage } from './LocaleSwitcher';
+import { switcherLanguages } from './languages';
+import { LocaleSwitcher, type SwitcherCountry } from './LocaleSwitcher';
 
 /**
  * Server side: every country this deployment offers as a switcher row in the active language (its featured
- * packs first: `countries.featured` in the deployment configuration, else every enabled pack), and the
- * offered languages with their translation coverage. Any offered country may be combined with any offered
- * language (owner decision 2026-10-29); restricted places are never offered.
+ * packs first: `countries.featured` in the deployment configuration, else every enabled pack). Any offered country
+ * may be combined with any offered language (owner decision 2026-10-29); restricted places are never offered.
+ * Computed once per request and locale (React `cache`), like `switcherLanguages`: the header switcher and the
+ * first-visit window then hand the same arrays to the browser, and the page payload carries them once.
  */
 export const switcherCountries = cache(function switcherCountries(active: ActiveLocale): SwitcherCountry[] {
   const deployment = currentDeployment();
@@ -28,20 +31,10 @@ export const switcherCountries = cache(function switcherCountries(active: Active
   return [...featured, ...others];
 });
 
-/**
- * Both lists are computed once per request and locale (React `cache`): the header switcher and the first-visit window
- * then hand the same arrays to the browser, and the page payload carries them once instead of twice.
- */
-export const switcherLanguages = cache(function switcherLanguages(active: ActiveLocale): SwitcherLanguage[] {
-  return localesFor(active.pack).map((tag) => {
-    const c = coverage(tag);
-    return { tag, partial: c.translated < c.total };
-  });
-});
-
 /** `active` is the locale the page renders in (public pages: the URL language and the visitor's country). */
 export function HeaderLocaleSwitcher({ active, tone = 'light' }: { active: ActiveLocale; tone?: 'light' | 'dark' }) {
-  return <LocaleSwitcher countries={switcherCountries(active)} languages={switcherLanguages(active)} country={active.country} locale={active.locale} tone={tone} />;
+  const translations = <a href={localHref('/translations', active.locale)}>{t('translations.link')}</a>;
+  return <LocaleSwitcher countries={switcherCountries(active)} languages={switcherLanguages(active)} country={active.country} locale={active.locale} translations={translations} tone={tone} />;
 }
 
 /** Shown until a country cookie exists; with no default country configured, nothing is preselected (ADR 012 decision 11). */

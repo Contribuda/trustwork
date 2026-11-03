@@ -1,0 +1,9 @@
+{
+  "status": "reference",
+  "reviewers": [],
+  "reviewedOn": null,
+  "namespaces": [],
+  "reviewLink": null,
+  "package": "INTL-002",
+  "note": "Reference key set and engine fallback; formats per country (`en-US`, `en-GB`, `en-IN` …)"
+}

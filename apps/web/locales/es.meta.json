@@ -1,0 +1,9 @@
+{
+  "status": "machine_draft",
+  "reviewers": [],
+  "reviewedOn": null,
+  "namespaces": [],
+  "reviewLink": null,
+  "package": "LANG-ES",
+  "note": "Drafted by an AI agent. Neutral Latin American Spanish with US construction terms; formats per country (`es-US`, `es-MX`, `es-ES` …); native review requested on the LANG-ES pull request"
+}
