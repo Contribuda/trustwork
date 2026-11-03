@@ -10,7 +10,7 @@
 --     staff can ask for a run and never state a result;
 --   * `active` comes only from a hub configuration version of domain `agent_extensions`, which HUB-001 activates under the
 --     `agents.activate_extension` second-person approval; this hook also refuses an approver who drafted the manifest, a
---     stale suite, a route the egress matrix denies and a price version that is not active;
+--     stale suite, a route the egress matrix denies and any charged action (see agent_extensions_check_prices);
 --   * a suite that fails after an engine update suspends the version in the same transaction, and any suspension fences
 --     executing actions to reconciliation through the hub's authorization epoch.
 --
@@ -370,17 +370,17 @@ BEGIN
   END IF;
 END $$;
 
--- A charged action names a metered price version that is active in this hub for its meter (AGT-004).
-CREATE FUNCTION trustwork.agent_extensions_check_prices(p_hub uuid, p_manifest jsonb) RETURNS void
-LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
+-- Whether a price version is active is billing's to answer: payment neutrality keeps its tables to billing, and AGT-004 owns
+-- metered prices. Until AGT-004 supplies that answer, a charged action does not activate. Refusing is the only reply that
+-- cannot charge a participant under a price nobody checked; a free action is unaffected.
+CREATE FUNCTION trustwork.agent_extensions_check_prices(p_manifest jsonb) RETURNS void
+LANGUAGE plpgsql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
 DECLARE
   v_action jsonb;
 BEGIN
   FOR v_action IN SELECT value FROM jsonb_array_elements(p_manifest -> 'actions') LOOP
-    IF (v_action #>> '{cost,kind}') = 'per_call' AND (v_action #>> '{cost,amount,minorUnits}')::numeric > 0 AND NOT EXISTS (
-      SELECT 1 FROM trustwork.meter_rate_version r WHERE r.id = (v_action #>> '{cost,priceVersionId}')::uuid AND r.hub_id = p_hub AND r.status = 'active' AND r.meter = v_action #>> '{cost,meter}'
-        AND r.currency = v_action #>> '{cost,amount,currency}') THEN
-      RAISE EXCEPTION 'a charged action names an active price version of this hub' USING ERRCODE = 'check_violation', HINT = 'agents.price_version_unavailable', DETAIL = v_action ->> 'operation';
+    IF (v_action #>> '{cost,kind}') = 'per_call' AND (v_action #>> '{cost,amount,minorUnits}')::numeric > 0 THEN
+      RAISE EXCEPTION 'a charged action activates once billing can confirm its price version' USING ERRCODE = 'check_violation', HINT = 'agents.price_version_unavailable', DETAIL = v_action ->> 'operation';
     END IF;
   END LOOP;
 END $$;
@@ -424,7 +424,7 @@ BEGIN
       -- The world may have changed since the draft (restricted list, hub-added places, engine manifests).
       PERFORM trustwork.agent_extensions_check_manifest(p_hub, v.manifest);
       PERFORM trustwork.agent_extensions_check_route(p_hub, v.extension_id, v.manifest);
-      PERFORM trustwork.agent_extensions_check_prices(p_hub, v.manifest);
+      PERFORM trustwork.agent_extensions_check_prices(v.manifest);
     END IF;
   END LOOP;
 END $$;

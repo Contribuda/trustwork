@@ -17,7 +17,7 @@ Status: **registry implemented, runtime pending.** Staff can draft, test, activa
 | `active` is a hub configuration version | Domain `agent_extensions`, activated by HUB-001 under `agents.activate_extension`. The hook `agent_extensions_on_activation` checks every listed version again |
 | Activation by the drafter alone fails | The configuration drafter never activates (HUB-001), the activator never approves their own request, and the approver is never the manifest's drafter (`drafter_cannot_approve`) |
 | The egress matrix decides | The hook needs an active route scoped to this extension and a dry run of the call gate for every data class sent; a refusal is `egress_denied` with the gate's reason |
-| A charge has a price | A charged action needs a mandate kind that spends a budget and an active `meter_rate_version` of this hub for its meter and currency |
+| A charge has a price | A charged action needs a mandate kind that spends a budget and names a metered price version. It does not activate yet: only billing may read its tables (payment neutrality), and AGT-004 owns the check that the version is active. Until then the hook refuses it (`price_version_unavailable`) |
 | An engine update re-tests | `agents.extension_engine_tick` asks a run for every tested or active version whose passing suite is from another engine; a failure suspends it in the same transaction and fences executing actions |
 | Staff never manage one participant's agent | No route names a participant; an audit shows digests and outcomes only |
 

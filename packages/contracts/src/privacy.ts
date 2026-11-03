@@ -70,7 +70,7 @@ export type PrivacyPropagation = z.infer<typeof PrivacyPropagationSchema>;
 
 /** Every implemented API module must participate in export coverage and subject planning. */
 export const PRIVACY_MODULE_INVENTORY = [
-  'agent-modules', 'approval-routes', 'assistant', 'assistant-goals', 'billing', 'catalogue', 'communications', 'connections', 'consultations',
+  'agent-extensions', 'agent-modules', 'approval-routes', 'assistant', 'assistant-goals', 'billing', 'catalogue', 'communications', 'connections', 'consultations',
   'content', 'datasets', 'directory', 'execution', 'files', 'hubs', 'identity', 'jurisdiction', 'models', 'payments', 'pipelines', 'plans', 'platform-admin',
   'procurement', 'profiles', 'projects', 'providers', 'registers', 'reputation', 'sales', 'screening', 'screening-gates', 'sources',
   'supplier-base', 'support', 'tasks', 'transactions', 'trust', 'verification',
