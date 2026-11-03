@@ -90,6 +90,11 @@ test('BILL-003 fee authority on real PostgreSQL', { skip: db ? false : SKIP_REAS
     const columns = (await db.admin.query("SELECT column_name FROM information_schema.columns WHERE table_schema='trustwork' AND table_name='marketplace_fee_version'")).rows.map((r) => r.column_name as string);
     assert.ok(!columns.some((c) => /rank|match|recommend|reputation|boost|participant/.test(c)));
   });
+  await t.test('the largest fixed fee the contract allows drafts and activates: audit digests take amounts as text', async () => {
+    const big = await draft(syntheticTerms({ categoryKey: 'synthetic_max', basisPoints: null, fixedMinor: '9223372036854775807' }));
+    await activate(big, await approve(big));
+    assert.equal((await billingFees.publicList(runtime, hubA)).find((x) => x.id === big.id)?.terms.fixedMinor, '9223372036854775807');
+  });
   await t.test('successful commands have real scoped audit and consumed approvals', async () => {
     const rows = (await db.admin.query("SELECT actor_person_id, hub_id, second_approver_person_id FROM trustwork.admin_audit_event WHERE action='billing.fee_activated' AND object_id=$1", [f.id])).rows;
     assert.deepEqual(rows, [{ actor_person_id: p.officer, hub_id: hubA, second_approver_person_id: p.owner }]);
