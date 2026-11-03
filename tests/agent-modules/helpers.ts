@@ -44,11 +44,12 @@ export interface AgentWorld {
 }
 
 /** Staff world, the US demo hub (its id becomes TRUSTWORK_HUB_ID, read at every authority check) and elevated staff clients. */
-export async function buildAgentWorld(h: Harness): Promise<AgentWorld> {
+export async function buildAgentWorld(h: Harness, extraPermissions: readonly ConsolePermission[] = []): Promise<AgentWorld> {
   await syncKernel(h.db.admin);
   const w = await withMaintenance(h.db.admin, async (trx) => {
     for (const def of DEFINITIONS) {
-      await staffRoleDefinitions.release(trx, { version: 1, role: def.role, scopes: def.scopes, permissions: def.permissions, caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+      const permissions = def.permissions === AGENTS ? [...AGENTS, ...extraPermissions] : def.permissions;
+      await staffRoleDefinitions.release(trx, { version: 1, role: def.role, scopes: def.scopes, permissions, caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     }
     const { id: nodeId } = await adminSetup.createNode(trx, 'Synthetic agent modules node');
     const people = {} as Record<Key, string>;

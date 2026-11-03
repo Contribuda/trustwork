@@ -399,6 +399,13 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'agent_modules.kill_switch_release': IN_TRANSACTION,
   'agent_modules.job_turn_on': IN_TRANSACTION,
   'agent_modules.job_run_now': IN_TRANSACTION,
+  // AGT-023: extension drafts, safety-run requests, activation proposals and HUB-001's activation, suspension and retirement. One runAs transaction each.
+  'agent_extensions.version_draft': IN_TRANSACTION,
+  'agent_extensions.safety_run_request': IN_TRANSACTION,
+  'agent_extensions.activation_draft': IN_TRANSACTION,
+  'agent_extensions.activation_activate': IN_TRANSACTION,
+  'agent_extensions.version_suspend': IN_TRANSACTION,
+  'agent_extensions.version_retire': IN_TRANSACTION,
   // AGT-001: goals, reports, job subscriptions, envelopes, escalations, the company representative and company mandates
   'agents.goal_create': IN_TRANSACTION,
   'agents.goal_confirm': IN_TRANSACTION,
