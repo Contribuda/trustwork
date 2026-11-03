@@ -5,7 +5,7 @@ import type pg from 'pg';
 import type { Client, Harness, Response } from '../backend/helpers/app.js';
 import { codeNow } from '../backend/second-factor/helpers.js';
 import { actors, buildAdminWorld } from '../data/admin/helpers.js';
-import { addLogins, enrolNow, signIn } from './helpers.js';
+import { addLogins, enrolNow, PASSWORD, signIn } from './helpers.js';
 import { supportCases } from '../../packages/data/src/repositories/admin.js';
 
 interface Route { action: string; client: Client; url: string; body?: unknown; effects: () => Promise<number> }
@@ -80,6 +80,34 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   await run('admin.staff.invitation_apply', c.owner, `/v1/admin/staff/invitations/${invited.invitation.id}/apply`, {}, invitations('applied'));
   const toCancel = (await plain(c.owner, '/v1/admin/staff/invitations', { email: 'crash-admin-outsider@example.invalid', role: 'moderator', scope: hub, definitionVersion: 1, validForSeconds: null })).invitation as { id: string };
   await run('admin.staff.invitation_withdraw', c.admin, `/v1/admin/staff/invitations/${toCancel.id}/withdraw`, {}, invitations('withdrawn'));
+
+  // ADM-004 eligible roles: granted, activated with a fresh second factor (a non-sensitive role at once, a sensitive one
+  // after a second person decides), ended early, revoked; and a previewed role change applied.
+  const freshen = async (key: 'lead' | 'moderator') => {
+    h.clock.advance(30_000);
+    assert.equal((await c[key].post('/v1/auth/step-up', { password: PASSWORD }, { idempotencyKey: null })).status, 200);
+    const r = await c[key].post('/v1/admin/session/elevate', { proof: { method: 'totp', code: codeNow(h, secrets[key] as Buffer) } }, { idempotencyKey: null });
+    assert.equal(r.status, 200, `re-elevate ${key}: ${JSON.stringify(r.body)}`);
+  };
+  const eligible = (await run('admin.staff.eligible_grant', c.owner, '/v1/admin/staff/eligible-roles', { personId: p.lead, role: 'moderator', scope: hub, definitionVersion: 1, maxActivationSeconds: 14_400, validForSeconds: null },
+    () => count(admin, 'SELECT 1 FROM trustwork.staff_eligible_role'))).body as { eligibleRole: { id: string } };
+  await freshen('lead');
+  const activated = (await run('admin.staff.activation_request', c.lead, '/v1/admin/staff/activations', { eligibleRoleId: eligible.eligibleRole.id, windowSeconds: 3600 },
+    () => count(admin, "SELECT 1 FROM trustwork.staff_activation WHERE status = 'active'"))).body as { activation: { id: string } };
+  await run('admin.staff.activation_end', c.lead, `/v1/admin/staff/activations/${activated.activation.id}/end`, {},
+    () => count(admin, 'SELECT 1 FROM trustwork.staff_activation a JOIN trustwork.staff_role_assignment s ON s.id = a.assignment_id WHERE s.revoked_at IS NOT NULL'));
+  const sensitive = (await plain(c.owner, '/v1/admin/staff/eligible-roles', { personId: p.moderator, role: 'hub-owner', scope: hub, definitionVersion: 1, maxActivationSeconds: 7200, validForSeconds: null })).eligibleRole as { id: string };
+  await freshen('moderator');
+  const pending = (await plain(c.moderator, '/v1/admin/staff/activations', { eligibleRoleId: sensitive.id, windowSeconds: 3600 })).activation as { id: string };
+  await run('admin.staff.activation_decide', c.admin, `/v1/admin/staff/activations/${pending.id}/decide`, { decision: 'approve' },
+    () => count(admin, "SELECT 1 FROM trustwork.staff_activation WHERE status = 'active' AND sensitive"));
+  await run('admin.staff.eligible_revoke', c.admin, `/v1/admin/staff/eligible-roles/${sensitive.id}/revoke`, {},
+    () => count(admin, 'SELECT 1 FROM trustwork.staff_eligible_role WHERE revoked_at IS NOT NULL'));
+  const roleChange = { personId: p.agent, scope: hub, add: [{ role: 'auditor', definitionVersion: 1, validForSeconds: null }], remove: [] };
+  const previewed = await c.hubOwner.post('/v1/admin/staff/role-changes/preview', roleChange, { idempotencyKey: null });
+  assert.equal(previewed.status, 200, JSON.stringify(previewed.body));
+  await run('admin.staff.role_change_apply', c.hubOwner, '/v1/admin/staff/role-changes/apply', { ...roleChange, previewDigest: (previewed.body as { preview: { previewDigest: string } }).preview.previewDigest, approvals: [] },
+    () => count(admin, "SELECT 1 FROM trustwork.staff_role_assignment WHERE person_id = $1 AND role = 'auditor'", [p.agent]));
 
   // Approvals: request, approve, decline, withdraw; break-glass consumes one.
   const subject = { action: 'staff.grant_breakglass', personId: p.lead2, role: 'moderator', scope: hub, definitionVersion: 1, incidentId: incident.incident.id, validForSeconds: 3600 };
