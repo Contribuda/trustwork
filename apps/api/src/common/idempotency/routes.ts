@@ -24,6 +24,8 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'billing.referral_activate': IN_TRANSACTION,
   'billing.referral_draft': IN_TRANSACTION,
   'billing.referral_withdraw': IN_TRANSACTION,
+  'billing.sale_price_activate': IN_TRANSACTION,
+  'billing.sale_price_draft': IN_TRANSACTION,
   'billing.task_fee_disclose': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,

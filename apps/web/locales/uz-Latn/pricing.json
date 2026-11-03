@@ -201,6 +201,22 @@
         "noLimit": "Tavsiya qilgan kishiga mukofotlar soni cheklanmagan",
         "termsLanguage": "Bu shartlar ushbu tilda e’lon qilinmagan. Ular xab e’lon qilgan tilda ko‘rsatilgan.",
         "none": "Bu xabda tavsiya dasturi yo‘q."
+      },
+      "perUnits": "{units} × {meter} uchun",
+      "creditValue": "Kiritilgan kreditlar: {amount}",
+      "creditValidDays": "Kreditlar xarid qilingan kundan boshlab {count} kun amal qiladi",
+      "creditNoExpiry": "Bu kreditlarning muddati tugamaydi",
+      "creditExpiryNotice": "Muddat tugashi {count} kun oldin e’lon qilinadi",
+      "creditRefund": "Qaytarish siyosati versiyasi: {version}",
+      "meter": {
+        "model_tokens": "Model tokenlari",
+        "agent_actions": "Agent amallari",
+        "checks": "Tekshiruvlar",
+        "document_pages": "Hujjat sahifalari",
+        "deliverables": "Materiallar",
+        "translation_characters": "Tarjima belgilari",
+        "retrieval_queries": "Qidiruv soʻrovlari",
+        "external_calls": "Tashqi chaqiruvlar"
       }
     },
     "sections": {

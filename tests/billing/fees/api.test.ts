@@ -21,9 +21,9 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.equal(r.status, 200);
     const p = PublicPricingSchema.parse(r.body);
     assert.deepEqual(p.fees, []); assert.deepEqual(p.prices, []);
-    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'unavailable',capabilities:'unavailable',credit_packs:'unavailable',referrals:'available'});
+    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'available',capabilities:'available',credit_packs:'available',referrals:'available'});
     assert.deepEqual(p.referrals, []);
-    assert.deepEqual(new Set(p.unavailable), new Set(['models', 'capabilities', 'credit_packs']));
+    assert.deepEqual(p.unavailable, []);
   });
   await t.test('anonymous and un-elevated staff cannot draft', async () => {
     assert.equal((await w.anonymous.post(url, body)).status, 401);
@@ -66,7 +66,7 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.deepEqual(p.fees, [f]); assert.equal(p.hubId, w.hubA);
     for (const privateValue of [w.p.owner, w.p.officer, approvalId, 'drafted_by', 'approval_id']) assert.ok(!JSON.stringify(p).includes(privateValue));
   });
-  await t.test('public catalogue projects actual active plan and service versions, hides draft, other hub and unimplemented credit validity',async()=>{
+  await t.test('public catalogue projects actual active plan and service versions, hides draft and other hub',async()=>{
     const versions=await withMaintenance(h.db.admin,async(trx)=>{
       const create=async(code:string,kind:'plan'|'deliverable'|'credit_pack',hubId=w.hubA,active=true)=>{
         const offer=await catalogue.createOffer(trx,{hubId,code,name:'Synthetic '+code,kind,createdBy:w.p.owner,status:'active'});
@@ -83,7 +83,6 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
       await catalogue.activatePlanVersion(trx,planId,w.p.officer);
       const service=await create('synthetic_service','deliverable');
       await create('synthetic_draft','deliverable',w.hubA,false);await create('synthetic_other_hub','deliverable',w.hubB);
-      await create('synthetic_credit_without_validity','credit_pack');
       return {plan,planId,service};
     });
     const view=PublicPricingSchema.parse((await w.anonymous.get('/v1/pricing')).body);
@@ -92,7 +91,6 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.equal(view.prices[0]?.id,versions.plan.price.id);
     assert.equal(view.prices[1]?.id,versions.service.price.id);
     assert.equal(view.prices[0]?.effectiveTo,versions.plan.price.effective_to?.toISOString());
-    assert.ok(view.unavailable.includes('credit_packs'));assert.ok(view.unavailable.includes('models'));assert.ok(view.unavailable.includes('capabilities'));
     assert.ok(!view.unavailable.includes('plans'));
     assert.ok(!JSON.stringify(view).includes(w.p.owner));
     assert.equal(view.prices[0]?.disclosure?.name,'Synthetic synthetic_plan');
