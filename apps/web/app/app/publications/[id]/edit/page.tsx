@@ -1,3 +1,4 @@
+import { t } from '@/app/_lib/i18n';
 import { primeLocale } from '@/app/_lib/locale';
 import { requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { ProvenanceEditor } from '@/components/workspace/ProvenanceEditor';
@@ -6,5 +7,5 @@ export default async function PublicationEditorPage({ params, searchParams }: { 
   await primeLocale();
   const { id } = await params;
   await requirePrincipal(searchParams, `/app/publications/${id}/edit`);
-  return <ProvenanceEditor publicationId={id} />;
+  return <><p>{t('publicationProvenance.creditRequired')}</p><ProvenanceEditor publicationId={id} /></>;
 }

@@ -29,7 +29,7 @@ test('legacy stored content cannot bypass real bundle and scheduled-release guar
   await refused(w.act.as(p.chief,trx=>digests.release(trx,chief,digest.id,digest.revision)),'23514','content.provenance_required');
   const scheduled=await create();
   await withMaintenance(db.admin,trx=>trx.updateTable('publication').set({status:'scheduled',scheduled_for:new Date(Date.now()-1000)}).where('id','=',scheduled.id).execute());
-  await refused(withMaintenance(db.admin,trx=>contentWorker.publishDue(trx)),'23514','content.provenance_required');
+  assert.equal(await withMaintenance(db.admin,trx=>contentWorker.publishDue(trx)),0);
   assert.equal((await w.act.as(p.writer,trx=>publications.get(trx,scheduled.id)))!.status,'scheduled');
   assert.equal((await w.act.as(p.writer,trx=>publications.versions(trx,legacy.id)))[0]!.content_digest,version.content_digest);
 });

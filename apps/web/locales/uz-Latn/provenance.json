@@ -68,6 +68,8 @@
     "currentOriginal": "Joriy asl nusxa",
     "refresh": "Yangilash",
     "submit": "Tahririyat tekshiruviga yuborish",
-    "unsavedDraft": "Ushbu versiyani deklaratsiya qilish, tekshirish yoki nashr etishdan oldin qoralamani saqlang."
+    "unsavedDraft": "Ushbu versiyani deklaratsiya qilish, tekshirish yoki nashr etishdan oldin qoralamani saqlang.",
+    "machineUnreviewed": "Mashina tarjimasi, tekshirilmagan",
+    "creditRequired": "Sunʼiy intellekt yordamida tayyorlangan ish masʼul shaxs nomi bilan eʼlon qilinadi. Eʼlon qilishdan oldin veb-sahifalarda ismingiz koʻrsatilishiga rozilik bering."
   }
 }

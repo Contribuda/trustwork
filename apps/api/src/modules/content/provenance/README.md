@@ -1,6 +1,6 @@
 # Publication provenance (PROV-001)
 
-Status: actual CNT integration, not package acceptance; nothing is deployed. CNT-003 PR #473 merged before this continuation. PROV-001 #97, CNT-001 #5 and CNT-003 #69 own the declaration, publication, reader and PDF boundaries below. The conductor authorizes the minimal WEB-004/006, INTL/LANG, BE-005 and REL-001 integration seams. E3 and autonomous publication remain OFF. A technical guard is not permission to publish autonomously.
+Status: integrated with CNT-001 and CNT-003; nothing is deployed. The acceptance matrix below says what holds. E3 and autonomous publication stay off (ADR 025 decision 24). A technical guard is not permission to publish autonomously.
 
 ## Authority and storage
 
@@ -34,11 +34,19 @@ The editor saves actual drafts, declares responsibility, requests a separate rev
 
 The common CNT blocker and release function require exact provenance on every real publication path, including legacy commands, scheduling and the scheduled worker. Source authority is checked through current SRC linkage and intersected rights ceilings; a matching URL or old snapshot never creates permission. Corrections must first prepare their exact draft, declare it and obtain any required separate translation review. The release command compares every prepared field before freezing the version. Issue, correction-edition and digest release triggers validate every pinned publication. A legacy edition review boolean cannot replace a provenance review.
 
+A disclosed piece (`ai_assisted`, `generated`, `machine_translation`) is released only under a named responsible person: the version being released needs that person's current consent to a public credit on web pages (`content.provenance_credit_required`). This is what makes the reader label name a human. It applies to a version being released, never to one already published, so consent stays free to withdraw: a withdrawal removes the name, keeps the label and blocks nothing later. A piece declared `none` needs no credit and shows no provenance notice.
+
+A credit never names a tool. `publication_authorship` refuses the literal names in `MACHINE_CREDIT` (`content.credit_names_a_tool`) and the readers drop them; this is a defensive rule for literal names, not proof that any other credit is a person. The author of an automated piece is the editorial office (`kind: editorial`); source-import drafts already use it, and no automated publication exists.
+
+The scheduled worker entry point `content_publish_due` handles each due piece on its own. A piece that no longer passes stays scheduled and is recorded once per reason (`publication.schedule_blocked`); the others in the run still go out, and blocked pieces do not use up the run's limit. Only rule refusals are caught; anything else aborts the run.
+
 Machine translations require a distinct reviewer with current authority at review time. Draft edits invalidate the binding and review, including edits keeping the same version number. Publication rechecks the current original. After publication, an original correction leaves the immutable original digest and review intact and marks the translation stale; an unavailable original withholds its dependent translation. Recursive dependency checks are bounded and deny cycles. The standard editorial second-editor rule remains independently applicable.
 
 ## Public delivery and consent
 
 Additive public schemas expose exact version bindings, declared functional roles, honest declaration evidence, original-language/version/digest and stale status. Detail, pinned versions, issues, walls, digests, readers, all nine feeds, inert JSON-LD and PDF use current owner projections. Readers and feeds link to the exact original version. Existing headline-only body suppression and no-store behavior remain. Unrecorded legacy provenance is labelled unavailable, never invented or retroactively certified.
+
+Every reader gets its label from the same two sources: `PROVENANCE_LABEL_KEYS`, exhaustive over the kinds, and `publicationView`. List cards are labelled from the record as well as the older draft flag, so a piece declared `ai_assisted` with the flag off is still labelled in every list. `tests/web/content/labels.probe.tsx` runs every disclosed kind in every maintained language through the card field, the page, JSON-LD, the feed text, the issue reader and the printed page.
 
 Consent binds one provenance record, one role (`responsible_editor` or `translation_reviewer`), the person's exact current display name and selected `web`, `feed` and `pdf` channels. `provenance.credit.v1` requires explicit informed acknowledgement. Profile or mention consent and staff access are never editorial credit consent. Only the responsible person or actual reviewer can grant it; a new record needs new consent. Withdrawal works after publication authority is lost. Delivery checks current consent and current credit text; absent or withdrawn consent leaves functional labels without a name.
 
@@ -52,7 +60,13 @@ The fake always has `c2paValid=false` and `test_only_unsigned`; its checksums do
 
 ## Verification and acceptance
 
-Focused PG/API tests cover absent, withdrawn, stale, cross-person, cross-hub and wrong-role authority; immutable content; scheduling; separate translation review; concurrency; crash rollback/takeover/replay; and captured PDF invalidation. Browser and PDF evidence, exact-head commands, failures and counts are recorded in the conductor's `tools/PROV001-integration-result.md`. Historical tests are not current-head CI. Full CI is unchecked until observed passing; worker completion is not maintainer or conductor acceptance. The PR remains draft.
+Focused PG/API tests cover absent, withdrawn, stale, cross-person, cross-hub and wrong-role authority; immutable content; scheduling; separate translation review; concurrency; crash rollback/takeover/replay; and captured PDF invalidation. Passing checks are not acceptance; maintainers accept.
+
+| Acceptance item | State |
+| --- | --- |
+| No AI-assisted content renders without a label (tested) | Holds on every reader; see `tests/web/content/labels.test.ts` and `tests/provenance/integration.test.ts` |
+| A machine translation stays a draft until a named reviewer approves it | Holds: `provenance_version_blocker`, on publish, schedule, the worker, corrections and bundles; the reviewer is a distinct person with current authority |
+| Machine translations under a standing policy carry "Machine translation, not reviewed" | The policy does not exist: E3 is off (ADR 025 decision 24) and `PublicProvenanceSchema` admits only `reviewed: true`. The string `machineUnreviewed` is ready in every maintained language for EDIT-002 |
 
 ## Integration order
 

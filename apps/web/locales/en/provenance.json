@@ -68,6 +68,8 @@
     "currentOriginal": "Current original",
     "refresh": "Refresh",
     "submit": "Submit for editorial review",
-    "unsavedDraft": "Save the draft before declaring, reviewing or publishing this version."
+    "unsavedDraft": "Save the draft before declaring, reviewing or publishing this version.",
+    "machineUnreviewed": "Machine translation, not reviewed",
+    "creditRequired": "AI-assisted work is published under a named responsible person. Consent to your credit on web pages before publishing."
   }
 }

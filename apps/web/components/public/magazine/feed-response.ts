@@ -2,7 +2,7 @@ import { data } from '@/app/_lib/data';
 import { currentLocale, t } from '@/app/_lib/i18n';
 import { localPath } from '@/app/_lib/localize';
 import { absoluteUrl } from '@/app/_lib/site';
-import { serializeFeed, type FeedEntry } from './feeds';
+import { publicationFeedText, serializeFeed, type FeedEntry } from './feeds';
 
 export async function contentFeedResponse(section: 'news' | 'articles' | 'magazine', format: 'rss' | 'atom' | 'json'): Promise<Response> {
   const link = (path: string) => absoluteUrl(localPath(path));
@@ -16,11 +16,9 @@ export async function contentFeedResponse(section: 'news' | 'articles' | 'magazi
     for (const card of cards.slice(0, 50)) {
       const item = await data.getPublication(card.slug, section === 'news' ? 'news' : 'article', 'feed');
       if (!item) continue;
-      const original=item.content?.provenance?.availability==='recorded'?item.content.provenance.translation:undefined;
       entries.push({ id: link(item.href), url: link(item.href), title: item.title, published: item.publishedAt,
         authors: item.authorLabel ? [item.authorLabel] : [], modified: item.content?.modifiedAt ?? item.correctedAt ?? item.publishedAt, language: item.content?.language ?? currentLocale(),
-        text: [original ? `${t('publicationProvenance.originalLink')}: ${link(`/${original.originalFormat==='news'?'news':'articles'}/${original.originalPublicationId}?version=${original.originalVersion}`)}` : '',item.correction ? `${t('common.corrected')}: ${item.correction.note}` : '', ...(item.content?.notices ?? []), item.body,
-          ...(item.content?.sources.map(s => `${s.name}${s.url ? ` (${s.url})` : ''}${s.licence ? ` · ${s.licence}` : ''}`) ?? [])].filter(Boolean).join('\n\n') });
+        text: publicationFeedText(item, link) });
     }
   }
   const filename = format === 'rss' ? 'feed.xml' : format === 'atom' ? 'atom.xml' : 'feed.json';

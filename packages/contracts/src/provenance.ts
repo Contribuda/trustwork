@@ -36,6 +36,22 @@ export const ProvenanceKindSchema = z.enum([
   "machine_translation",
   "generated",
 ]);
+export type ProvenanceKind = z.infer<typeof ProvenanceKindSchema>;
+/** One reader label per disclosed kind. Exhaustive: a new kind cannot ship without a label on web, feed and PDF. */
+export const PROVENANCE_LABEL_KEYS = {
+  ai_assisted: "aiAssisted",
+  generated: "generated",
+  machine_translation: "machineReviewed",
+} as const satisfies Record<Exclude<ProvenanceKind, "none">, string>;
+/**
+ * Names that are a tool, never an author. The database refuses them as credits and the readers drop them; this is a
+ * defensive rule for literal names, not proof that any other credit is a person. Keep in step with
+ * `trustwork.provenance_machine_credit`.
+ */
+export const MACHINE_CREDIT =
+  /^(?:ai|a\.i\.|artificial intelligence|chatgpt|gpt|claude|codex|gemini|copilot|\u0438\u0438)$/iu;
+export const isMachineCredit = (credit: string) =>
+  MACHINE_CREDIT.test(credit.trim());
 export const ProvenanceDeclarationSchema = z
   .strictObject({
     binding: ProvenanceBindingSchema,

@@ -37,14 +37,14 @@ All mutations: session, `X-Trustwork-Request`, `Idempotency-Key` (completed in t
 | `GET /v1/magazine/issues` (`?year`), `/v1/magazine/issues/:number` (`?edition`), `/v1/magazine/digests/:id` | anyone | Archive, released editions (frozen `Issue` contract plus reader fields), released digests |
 | `GET /v1/admin/content/publications` (`?status`), `GET/POST /v1/admin/content/issues`, `POST .../issues/:id/curate`, `/status`, `/release`, `/corrections`, `/renders`, `POST /v1/admin/content/renders/:id/result`, `GET/POST /v1/admin/content/digests`, `POST .../digests/:id/release` | staff behind `ElevationGuard`; console commands (contract version, idempotency key equal to the header, reason) | Editorial board, issue desk, render records, digests |
 
-Scheduled publications are released by the worker entry point `content_publish_due(limit)` (granted to `trustwork_worker` only; wiring it into `apps/worker` is a follow-up). Outbox events carry identifiers only (`publication.*`, `issue.released`, `issue.corrected`, `issue.render_requested`, `digest.released`).
+Scheduled publications are released by the worker entry point `content_publish_due(limit)` (granted to `trustwork_worker` only; the worker task `content.publish_due` runs it every minute). Outbox events carry identifiers only (`publication.*`, `issue.released`, `issue.corrected`, `issue.render_requested`, `digest.released`).
 
 ## Deviations and follow-ups
 
 - Editing rights live in `publication_editor` instead of `object_participation` rows (see above); an integrator may migrate them once the foundation access functions know publications.
 - Topics are exposed as taxonomy codes in the contract's `topicIds`.
 - Agents cannot write publications yet (`403 access.mandate_scope`): no mandate kind covers publishing; drafting assistance is labelled through `assistantAssisted`.
-- Not wired yet: the worker loop for `content_publish_due`, hub configuration for review formats and comments (HUB-001), sanctions enforcement for posting bans, the capability registry entries.
+- Not wired yet: hub configuration for review formats and comments (HUB-001), sanctions enforcement for posting bans, the capability registry entries.
 
 ## CNT-003 reader and PDF delivery
 

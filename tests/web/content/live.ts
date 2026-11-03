@@ -245,7 +245,10 @@ try {
   await trCommand(labels.grantConsent,'/v1/provenance/consents');
   await trPage.evaluate(()=>window.scrollTo(0,0));
   await trPage.screenshot({path:`${evidence}/ru-translation-reviewer-375.png`,fullPage:true});
-  await usePerson('writer');await editor();await trCommand(labels.publish,`/v1/publications/${translated.id}/publish`);
+  await usePerson('writer');await editor();
+  await trPage.getByLabel(labels.web,{exact:true}).check();await trPage.getByLabel(labels.affirmConsent,{exact:true}).check();
+  await trCommand(labels.grantConsent,'/v1/provenance/consents');
+  await trCommand(labels.publish,`/v1/publications/${translated.id}/publish`);
   const trVersion=(await w.act.as(p.writer,trx=>publications.versions(trx,translated.id)))[0]!;
   let trIssue=await w.act.as(p.editorA,trx=>issues.create(trx,ctxA,{hubId:w.hubId,number:15,date:'2026-11-01',theme:'Synthetic reviewed translation',coverAssetId:null,editorLetterId:null}));
   trIssue=await w.act.as(p.editorA,trx=>issues.curate(trx,ctxA,trIssue.id,trIssue.revision,{items:[{position:1,section:'practice',publicationId:translated.id,publicationVersionId:trVersion.id}],theme:null,coverAssetId:null,editorLetterId:null}));
