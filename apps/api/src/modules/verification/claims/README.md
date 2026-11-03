@@ -54,11 +54,10 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /handovers/:handoverId/revoke` | `admin.claims.revoke` | `{ revocationReason }` |
 | `GET /verifications?companyId=&dueDays=` | any claims permission | Verifications of the hub, one company, or those lapsing within `dueDays` |
 | `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
-| `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
-
 | `GET /companies/:companyId/records` | any claims permission | The company's records, without tax registrations |
 | `POST /companies/:companyId/records` | `admin.claims.decide` | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
 | `POST /identifiers/:identifierId/verify` | `admin.claims.decide` | `{ expectedRevision, checkId }`: ties the identifier to a passing check; moves no badge |
+| `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 
 The company's page, `/v1/companies/:companyId`:
 
