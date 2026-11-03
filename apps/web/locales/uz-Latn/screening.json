@@ -222,6 +222,27 @@
           "approved": "Tasdiqlangan",
           "rejected": "Rad etilgan"
         }
+      },
+      "reports": {
+        "title": "Hisobot qoralamalari",
+        "help": "Tasdiqlangan moslikdan keyin operatorning o‘z hisoboti uchun tayyorlanadi. Topshirish operator zimmasida; bu yerdan hech narsa yuborilmaydi.",
+        "none": "Hisobot qoralamalari yo‘q.",
+        "programs": "Dasturlar",
+        "prepared": "Tayyorlangan",
+        "due": "Muddat"
+      },
+      "routing": {
+        "title": "Shikoyatni yo‘naltirish",
+        "reviewer": "Ko‘rib chiquvchi",
+        "submit": "Yo‘naltirish",
+        "assignToMe": "Menga biriktirish",
+        "leaveUnassigned": "Biriktirmasdan qoldirish",
+        "states": {
+          "assigned": "Mos ko‘rib chiquvchiga biriktirilgan",
+          "unassigned": "Ko‘rib chiquvchi biriktirilmagan",
+          "unavailable": "Biriktirilgan ko‘rib chiquvchi endi bu shikoyatni ko‘ra olmaydi",
+          "closed": "Bu shikoyat yopilgan"
+        }
       }
     }
   }

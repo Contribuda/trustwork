@@ -222,6 +222,27 @@
           "approved": "Approved",
           "rejected": "Rejected"
         }
+      },
+      "reports": {
+        "title": "Report drafts",
+        "help": "Prepared after a confirmed match, for the operator's own report. Filing stays with the operator; nothing here sends a report.",
+        "none": "No report drafts.",
+        "programs": "Programmes",
+        "prepared": "Prepared",
+        "due": "Due"
+      },
+      "routing": {
+        "title": "Appeal routing",
+        "reviewer": "Reviewer",
+        "submit": "Route the appeal",
+        "assignToMe": "Assign to me",
+        "leaveUnassigned": "Leave unassigned",
+        "states": {
+          "assigned": "Assigned to an eligible reviewer",
+          "unassigned": "No reviewer assigned",
+          "unavailable": "The assigned reviewer can no longer take this appeal",
+          "closed": "This appeal is closed"
+        }
       }
     }
   }

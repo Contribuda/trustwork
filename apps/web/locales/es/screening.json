@@ -222,6 +222,27 @@
           "approved": "Aprobada",
           "rejected": "Rechazada"
         }
+      },
+      "reports": {
+        "title": "Borradores de informe",
+        "help": "Se preparan tras una coincidencia confirmada, para el informe propio del operador. La presentación corresponde al operador; aquí no se envía ningún informe.",
+        "none": "No hay borradores de informe.",
+        "programs": "Programas",
+        "prepared": "Preparado",
+        "due": "Vencimiento"
+      },
+      "routing": {
+        "title": "Asignación de la apelación",
+        "reviewer": "Revisor",
+        "submit": "Asignar la apelación",
+        "assignToMe": "Asignármela",
+        "leaveUnassigned": "Dejar sin asignar",
+        "states": {
+          "assigned": "Asignada a un revisor elegible",
+          "unassigned": "Sin revisor asignado",
+          "unavailable": "El revisor asignado ya no puede atender esta apelación",
+          "closed": "Esta apelación está cerrada"
+        }
       }
     }
   }

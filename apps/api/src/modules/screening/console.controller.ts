@@ -23,9 +23,12 @@ const Hub = z.strictObject({ hubId: z.uuid() });
 @UseGuards(ElevationGuard)
 export class ScreeningConsoleController {
   constructor(@Inject(PrincipalService) private readonly principals: PrincipalService) {}
-  private read<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>) {
-    return this.principals.runAs(state, async (trx) => {
+  private read<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>, card = false) {
+    return this.principals.runAs(state, async (trx, principal) => {
       if (!await jurisdictionStaff.canRead(trx)) throw new ApiError('access.not_found');
+      // The participant card's compliance panel is the compliance officer's (console design, section 4.1): an auditor
+      // reads the cases, not a named person's card, and gets the same answer as any other staff member.
+      if (card && !principal.staff.includes('compliance-officer')) throw new ApiError('access.not_found');
       return fn(trx);
     });
   }
@@ -47,7 +50,7 @@ export class ScreeningConsoleController {
       return ScreeningSubjectPanelSchema.parse({ subjectStateId: row.id, subject: params, moneyHeld: row.money_held,
         suspended: row.suspended, lastOutcome: row.last_outcome, lastScreenedAt: row.last_screened_at?.toISOString() ?? null,
         matches: await screeningStaff.matchesOf(trx, params) });
-    });
+    }, true);
   }
   @Get('metrics')
   metrics(@Query(Hub) query: z.infer<typeof Hub>, @ReqState() state: RequestState) {

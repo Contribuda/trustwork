@@ -6,7 +6,7 @@ import type { Copy } from './model';
 
 /** Each submitted payload retains its key after an ambiguous outcome. A changed command gets a new key. */
 export function ActionForm({ path, label, copy, evidence, fixed = {}, numbers = {}, choices = {}, disabled = false }: {
-  path: `/v1/${string}`; label: string; copy: Copy; evidence?: Record<string, string>; fixed?: Record<string, string>; numbers?: Record<string, {label: string; value: number; min: number; max: number}>; choices?: Record<string, {label: string; options: Record<string, string>}>; disabled?: boolean;
+  path: `/v1/${string}`; label: string; copy: Copy; evidence?: Record<string, string>; fixed?: Record<string, string | number>; numbers?: Record<string, {label: string; value: number; min: number; max: number}>; choices?: Record<string, {label: string; options: Record<string, string>}>; disabled?: boolean;
 }) {
   const router = useRouter();
   const pending = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
@@ -22,7 +22,7 @@ export function ActionForm({ path, label, copy, evidence, fixed = {}, numbers = 
       const data = new FormData(form);
       const reason = String(data.get('reason') ?? '').trim();
       if (!reason) { setMessage(copy.reasonRequired); return; }
-      pending.current = { key: newIdempotencyKey(), payload: { ...fixed, ...Object.fromEntries(Object.keys(numbers).map((name) => [name, Number(data.get(name))])), ...Object.fromEntries(Object.keys(choices).map((name) => [name, String(data.get(name))])), reason, ...(evidence ? { evidence: data.get('evidence') } : {}) } };
+      pending.current = { key: newIdempotencyKey(), payload: { ...fixed, ...Object.fromEntries(Object.keys(numbers).map((name) => [name, Number(data.get(name))])), ...Object.fromEntries(Object.keys(choices).map((name) => [name, String(data.get(name)) || null])), reason, ...(evidence ? { evidence: data.get('evidence') } : {}) } };
     }
     setBusy(true);
     const result = await postJson(path, pending.current.payload, { idempotencyKey: pending.current.key });

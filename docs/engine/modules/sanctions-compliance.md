@@ -78,8 +78,8 @@ A confirmed match suspends the subject: a person's sessions end and every mandat
 | Sign-in refusal for a held account | the sign-in page, error `auth.jurisdiction_hold` | Live (SANC-001) |
 | Own compliance status and appeal | `/app/settings/account/compliance` | Implemented with generic text, for the person and for a company administrator, in review (SANC-007); status words wait for counsel |
 | Refusal notices on payouts, sales and commitments | inline on the affected forms (`error.screening.review_pending`, `error.screening.unavailable`, `error.commercial.counterparty_unavailable`) | Live on the commerce forms (SANC-004); payouts and sales with PAY-001, BILL-002 and EVT-001 |
-| Console: Trust → Screening (lists, matches queue, holds, re-screen runs, geolocation table, metrics) | `/admin/hubs/[hub]/trust/screening` (HC-74) | Partial API implementation (SANC-006; see validation notes above) |
-| Console: compliance panel on person and company pages | `/admin/hubs/[hub]/participants/people/[id]`, `/companies/[id]` | Partial API implementation (SANC-006; see validation notes above) |
+| Console: Trust → Screening (lists, matches queue, holds, report drafts, appeal routing, re-screen runs, geolocation table, metrics) | `/admin/hubs/[hub]/trust/screening` (HC-74) | Implemented on the API, in review; hub cohort metrics unavailable (SANC-006; see validation notes above) |
+| Console: compliance panel on person and company pages | `/admin/hubs/[hub]/participants/people/[id]`, `/companies/[id]` | Implemented on the API for compliance officers, in review (SANC-006; see validation notes above) |
 | Setup wizard: deployment location step | `/admin/setup` (SW-4) | Live, not deployed (SANC-009, HUB-004) |
 
 ## Hub console settings

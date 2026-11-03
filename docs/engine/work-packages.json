@@ -2796,7 +2796,7 @@
       "id": "SANC-006",
       "title": "Console: screening section, holds and matches queue, compliance panel on people and companies",
       "area": "hubs-web",
-      "status": "in_progress",
+      "status": "in_review",
       "dependsOn": [
         "SANC-003",
         "SANC-005",

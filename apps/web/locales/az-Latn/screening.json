@@ -222,6 +222,27 @@
           "approved": "Təsdiqlənib",
           "rejected": "Rədd edilib"
         }
+      },
+      "reports": {
+        "title": "Hesabat layihələri",
+        "help": "Təsdiqlənmiş uyğunluqdan sonra operatorun öz hesabatı üçün hazırlanır. Təqdimetmə operatorun işidir; buradan heç nə göndərilmir.",
+        "none": "Hesabat layihəsi yoxdur.",
+        "programs": "Proqramlar",
+        "prepared": "Hazırlanıb",
+        "due": "Son tarix"
+      },
+      "routing": {
+        "title": "Şikayətin yönləndirilməsi",
+        "reviewer": "Rəyçi",
+        "submit": "Şikayəti yönləndir",
+        "assignToMe": "Mənə təyin et",
+        "leaveUnassigned": "Təyinatsız saxla",
+        "states": {
+          "assigned": "Uyğun rəyçiyə təyin edilib",
+          "unassigned": "Rəyçi təyin edilməyib",
+          "unavailable": "Təyin edilmiş rəyçi artıq bu şikayətə baxa bilmir",
+          "closed": "Bu şikayət bağlanıb"
+        }
       }
     }
   }

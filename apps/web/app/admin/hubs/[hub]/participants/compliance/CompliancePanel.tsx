@@ -15,7 +15,7 @@ export function CompliancePanel({ subject, details, access, mayAct, c, hub, fmtD
       <p>{c.lastScreened}: {fmtDate(subject.lastScreenedAt)}</p>
       <p>{subject.moneyHeld ? c.moneyHeld : c.moneyClear}</p>
       <a href={withBase(`/admin/hubs/${encodeURIComponent(hub)}/participants/${subject.subject.kind === 'person' ? 'people' : 'companies'}/${subject.subject.id}`)}>{c.openParticipant}</a>
-      {details.map(({ match, decisions }) => {
+      {details.map(({ match, decisions, assignment }) => {
         const proposal = match.pendingApproval;
         const own = proposal?.requestedBy === access.personId;
         const expired = !!proposal && Date.parse(proposal.requestExpiresAt) <= Date.now();
@@ -34,6 +34,12 @@ export function CompliancePanel({ subject, details, access, mayAct, c, hub, fmtD
               <ActionForm path={`/v1/admin/screening/matches/${match.id}/appeal-decision`} label={c.reverse} copy={c} evidence={c.evidenceTypes} fixed={{ decision: 'propose_reversal' }} disabled={!mayAct || original === access.personId} />
             </> : null}
           </div>
+          {assignment ? <section aria-label={c.routing.title} data-testid="appeal-routing">
+            <h4>{c.routing.title}</h4><p>{c.routing.states[assignment.status]}</p>
+            {assignment.reviewerId ? <p>{c.routing.reviewer}: <code>{assignment.reviewerId}</code></p> : null}
+            {assignment.status !== 'closed' ? <ActionForm path={`/v1/admin/screening/matches/${match.id}/appeal-assignment`} label={c.routing.submit} copy={c} fixed={{ expectedVersion: assignment.version }}
+              choices={{ reviewerId: { label: c.routing.reviewer, options: { [access.personId]: c.routing.assignToMe, '': c.routing.leaveUnassigned } } }} disabled={!mayAct || original === access.personId} /> : null}
+          </section> : null}
           {proposal ? <section aria-label={c.approvals}>
             <h4>{c.pending}</h4><p>{c.proposalNote}</p>
             <dl><dt>{c.requestedBy}</dt><dd><code>{proposal.requestedBy}</code></dd><dt>{c.digest}</dt><dd><code>{proposal.actionDigest}</code></dd><dt>{c.expiry}</dt><dd>{fmtDate(proposal.requestExpiresAt)}</dd></dl>

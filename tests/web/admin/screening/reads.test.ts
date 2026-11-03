@@ -108,16 +108,17 @@ test('SANC-006 authorized reads, repository freshness, exact subject lookup and 
   });
 });
 
-test('node auditor can read new projections but cannot mutate', { timeout: 240_000 }, async (t) => {
+test('node auditor can read the cases and projections, not the participant card, and cannot mutate', { timeout: 240_000 }, async (t) => {
   const w = await screeningWorld('sanc006_auditor', 'https://trustwork.test', { auditorSecond: true }); t.after(() => w.close());
-  const routes = ['/v1/admin/screening/lists', '/v1/admin/jurisdiction/geolocation', `/v1/admin/screening/metrics?hubId=${w.hubId}`,
-    `/v1/admin/screening/subjects/lookup/person/${w.seed.people.petr}`, `/v1/admin/screening/subjects/lookup/company/${w.seed.companies.unrelated}`, `/v1/admin/screening/list-authority?hubId=${w.hubId}`];
+  const routes = ['/v1/admin/screening/lists', '/v1/admin/jurisdiction/geolocation', `/v1/admin/screening/metrics?hubId=${w.hubId}`, '/v1/admin/screening/report-drafts', `/v1/admin/screening/list-authority?hubId=${w.hubId}`];
   const foreign = w.h.client(); for (const [name, value] of foreignSession) foreign.jar.set(name, value);
   for (const route of routes) {
     assert.equal((await w.second.get(route)).status, 200, route);
     expectError(await foreign.get(route), 401, 'auth.session_invalid');
   }
-  expectError(await w.second.get(`/v1/admin/screening/subjects/lookup/person/${foreignPerson}`), 404, 'access.not_found');
+  // The card's compliance panel is the compliance officer's alone: the auditor's answer never depends on the subject.
+  for (const id of [w.seed.people.petr, foreignPerson]) expectError(await w.second.get(`/v1/admin/screening/subjects/lookup/person/${id}`), 404, 'access.not_found');
+  expectError(await w.second.get(`/v1/admin/screening/subjects/lookup/company/${w.seed.companies.unrelated}`), 404, 'access.not_found');
   expectError(await w.second.post('/v1/admin/screening/list-proposals', {hubId:w.hubId,sourceId:randomUUID(),cadenceSeconds:86400,warnAfterSeconds:259200,staleAfterSeconds:604800,reason:'Synthetic auditor write refused',evidence:'source_review'}),403,'access.forbidden');
   expectError(await w.second.post('/v1/admin/screening/rescreen-runs', { reason: 'Synthetic auditor cannot write' }), 403, 'access.forbidden');
 });
