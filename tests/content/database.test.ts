@@ -393,6 +393,7 @@ test('content persistence under the restricted runtime role', { skip: db ? false
     await as(p.writer, trx => publications.grantEditor(trx,es.id,p.coauthor,'publish'));
     await refused(as(p.coauthor, trx => publications.reviewEdition(trx,null,link.id)), '23514', 'content.provenance_review_required');
     await as(p.coauthor, trx => provenance.review(trx,ctx('coauthor'),{provenanceId:record.id,binding,original,reason:'Synthetic separate review'}));
+    await as(p.writer, trx => provenance.consent(trx,ctx('writer'),{provenanceId:record.id,role:'responsible_editor',credit:'Synthetic Writer',channels:['web'],noticeVersion:'provenance.credit.v1',informedConsent:true}));
     await as(p.writer, trx => publications.publish(trx,null,es.id,es.revision,null));
     await refused(as(p.writer, trx => publications.reviewEdition(trx,null,link.id)), '42501', 'content.self_review');
     let pub = await publicOf(post.id) as Pub & { editions: { machineAssisted: boolean; reviewed: boolean; language: string }[] };
