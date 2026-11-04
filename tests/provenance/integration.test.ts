@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { withMaintenance } from '@trustwork/data';
 import { contentWorker } from '../../packages/data/src/repositories/content.js';
 import test from 'node:test';
@@ -121,6 +122,58 @@ test('PROV actual CNT commands and channel-scoped public delivery', {skip:h?fals
     assert.equal(pinned.contentDigest,translationView.record!.original!.digest.value);
     const p=PublicPublicationSchema.parse(ok(await anonymous.get(`/v1/publications/${translation.id}`))).current.provenance;
     assert.equal(p?.availability,'recorded');if(p?.availability==='recorded'){assert.equal(p.translation?.stale,true);assert.equal(p.translation?.originalDigest,pinned.contentDigest);}
+  });
+  await t.test('a correction keeps the disclosure of the version it corrects',async()=>{
+    // No author row carries the flag, so only the record of version 1 knows about the assistance.
+    const piece=ok<{publication:{id:string;revision:number}}>(await c.writer.post('/v1/publications',{owner:{kind:'person'},format:'article',articleFormat:'practice',originalLanguage:'en',licence:'cc_by',draft:draft({language:'en',assistantAssisted:true}),
+      authorship:[{kind:'person',id:w.people.writer,credit:'Synthetic Writer',assistantAssisted:false}]}),201).publication;
+    const first=await declare(piece.id);ok(await credit(first.record!.id),201);
+    ok(await c.writer.post(`/v1/publications/${piece.id}/publish`,{expectedRevision:piece.revision,scheduledFor:null}));
+    const corrected=draft({body:'Synthetic body with the flag cleared.',assistantAssisted:false});
+    ok(await c.writer.post(`/v1/provenance/publications/${piece.id}/correction-draft`,{expectedRevision:(await workspace(piece.id)).publicationRevision,draft:corrected,note:'Synthetic correction'}));
+    let view=await workspace(piece.id);
+    const removal={declaration:{binding:view.binding,expectedRevision:0,kind:'none',roles:[],evidence:'human_declaration',original:null,reason:'Synthetic removal attempt'}};
+    expectRefusal(await c.writer.post('/v1/provenance/declarations',removal),422,'validation.schema','disclosure_required');
+    // The release is the rule, not the declaration: a record that reached the draft some other way is refused there too.
+    await withMaintenance(h.db.admin,trx=>sql`INSERT INTO trustwork.provenance_record(publication_id,version_id,version_digest,version_revision,revision,responsible_person_id,kind,roles,evidence,reason)
+      SELECT v.publication_id,v.id,trustwork.content_version_digest(v),v.revision,1,${w.people.writer}::uuid,'none','{}','human_declaration','Synthetic record the command refuses'
+      FROM trustwork.publication_version v WHERE v.publication_id=${piece.id}::uuid AND v.status='draft'`.execute(trx));
+    view=await workspace(piece.id);
+    const release={expectedRevision:view.publicationRevision,draft:corrected,note:'Synthetic correction',reason:'Synthetic correction'};
+    expectRefusal(await c.writer.post(`/v1/publications/${piece.id}/corrections`,release),422,'validation.schema','provenance_disclosure_required');
+    // Keeping the disclosure also brings back the named responsible person the kind `none` would have dropped.
+    ok(await c.writer.post('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:1,kind:'ai_assisted',roles:['editorial_writer'],evidence:'human_declaration',original:null,reason:'Synthetic kept disclosure'}}),201);
+    view=await workspace(piece.id);
+    expectRefusal(await c.writer.post(`/v1/publications/${piece.id}/corrections`,{...release,expectedRevision:view.publicationRevision}),422,'validation.schema','provenance_credit_required');
+    ok(await credit(view.record!.id),201);
+    view=await workspace(piece.id);
+    ok(await c.writer.post(`/v1/publications/${piece.id}/corrections`,{...release,expectedRevision:view.publicationRevision}),201);
+    const current=PublicPublicationSchema.parse(ok(await anonymous.get(`/v1/publications/${piece.id}`))).current;
+    assert.equal(current.assistantAssisted,false);
+    assert.equal(current.provenance?.machineAssisted,true);
+    if(current.provenance?.availability!=='recorded')assert.fail('the corrected version keeps its record');
+    assert.equal(current.provenance.kind,'ai_assisted');
+    assert.deepEqual(current.provenance.credits,{responsible_editor:'Synthetic Writer'});
+  });
+  await t.test('a version published before records existed still passes on its assistance flag',async()=>{
+    const legacy=ok<{publication:{id:string;revision:number}}>(await c.writer.post('/v1/publications',{owner:{kind:'person'},format:'article',articleFormat:'practice',originalLanguage:'en',licence:'cc_by',draft:draft({language:'en',assistantAssisted:true}),
+      authorship:[{kind:'person',id:w.people.writer,credit:'Synthetic Writer',assistantAssisted:false}]}),201).publication;
+    // Test-only simulation of data published before the provenance migrations; runtime roles cannot perform these writes.
+    await withMaintenance(h.db.admin,async trx=>{
+      const version=(await sql<{id:string}>`UPDATE trustwork.publication_version v SET status='published',published_at=now(),published_by=${w.people.writer}::uuid,content_digest=trustwork.content_version_digest(v) WHERE publication_id=${legacy.id}::uuid RETURNING id`.execute(trx)).rows[0]!;
+      await trx.updateTable('publication').set({status:'published',current_version:1,current_version_id:version.id,first_published_at:new Date()}).where('id','=',legacy.id).execute();
+    });
+    ok(await c.writer.post(`/v1/provenance/publications/${legacy.id}/correction-draft`,{expectedRevision:(await workspace(legacy.id)).publicationRevision,draft:draft({body:'Synthetic corrected legacy body.',assistantAssisted:false}),note:'Synthetic correction'}));
+    const view=await workspace(legacy.id);
+    expectRefusal(await c.writer.post('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:0,kind:'none',roles:[],evidence:'human_declaration',original:null,reason:'Synthetic removal attempt'}}),422,'validation.schema','disclosure_required');
+  });
+  await t.test('what counts as keeping a disclosure, over every pair of kinds',async()=>{
+    const kinds=['none','ai_assisted','machine_translation','generated'];
+    const kept:Record<string,string[]>={none:kinds,ai_assisted:['ai_assisted','machine_translation','generated'],machine_translation:['machine_translation'],generated:['generated']};
+    for(const prior of kinds)for(const next of kinds){
+      const answer:{rows:{kept:boolean}[]}=await h.db.admin.query('SELECT trustwork.provenance_disclosure_kept($1,$2) AS kept',[prior,next]);
+      assert.equal(answer.rows[0]!.kept,kept[prior]!.includes(next),`${prior} -> ${next}`);
+    }
   });
   await t.test('a blocked scheduled piece stays unpublished, is recorded once and holds nothing else back',async()=>{
     await withMaintenance(h.db.admin,trx=>trx.updateTable('publication').set({scheduled_for:new Date(Date.now()-1000)}).where('id','in',[scheduled.id,unaffected.id]).execute());

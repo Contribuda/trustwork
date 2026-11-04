@@ -28,7 +28,10 @@ export function withProvenanceFixtures(w: ContentWorld) {
     const refs=v.source_refs as Array<{uri:string;sourceTime?:string;observedAt:string;license?:string}>;
     const digest=computeDigest({title:v.title,body:v.body,language:v.language,sourceRefs:refs.map(r=>({uri:r.uri,sourceTime:r.sourceTime??null,observedAt:r.observedAt,license:r.license??null})),eventTime:v.event_time?new Date(v.event_time).toISOString():null,correctionOf:v.correction_of,correctionNote:v.correction_note});
     if(previous?.version_digest===digest.value && (v.status==='published'||previous.version_revision===v.revision))return;
-    const assisted=v.assistant_assisted || (await publications.authorship(trx,id)).some(a=>a.assistant_assisted);
+    // A correction keeps the disclosure of the version it corrects, whatever the draft's own flag says.
+    const corrected=v.correction_of===null?undefined:(await publications.versions(trx,id)).find(c=>c.version===v.correction_of);
+    const disclosed=corrected!==undefined&&(await provenance.history(trx,id)).filter(r=>r.version_id===corrected.id).at(-1)?.kind==='ai_assisted';
+    const assisted=disclosed || v.assistant_assisted || (await publications.authorship(trx,id)).some(a=>a.assistant_assisted);
     await provenance.declare(trx,await context(trx,staff),{binding:{publicationId:id,version:v.version,digest},expectedRevision:previous?.revision??0,kind:assisted?'ai_assisted':'none',roles:assisted?['editorial_writer']:[],evidence:'human_declaration',original:null,reason:'Synthetic legacy fixture declaration'});
     if(assisted)await credit(trx,staff,id,v.id);
   }
