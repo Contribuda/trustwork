@@ -93,7 +93,7 @@ export default {
 
       // Peering records: the Austin peer of the protocol fixtures is admitted and asks twice; one request is declined, the other accepted and then lowered, suspended, lifted and ended.
       const peerManifest = fixtureManifest({ node: CITY }) as NodeManifest;
-      await federationPeers.record(h.pool, { peerNode: CITY, manifest: peerManifest, manifestDigest: computeDigest(peerManifest).value, manifestIssuedAt: new Date(peerManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(peerManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'handshake' });
+      await federationPeers.record(h.pool, { peerNode: CITY, manifest: peerManifest, manifestDigest: computeDigest(peerManifest).value, manifestIssuedAt: new Date(peerManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(peerManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'handshake', fetched: true });
       const terms = { licences: defaultDataLicences(), tombstoneHours: 72, agentEnvelopesPerHour: 60 };
       const incoming = (peerHubId: string) => peeringRecords.handshakeReceived(h.pool, { peerNode: CITY, peerHubId, localHubId: hub.hub_id, level: 'trust_verifications', manifestDigest: computeDigest(peerManifest).value, keyId: 'a1', ...terms });
       const declined = await incoming('us-tx-austin');

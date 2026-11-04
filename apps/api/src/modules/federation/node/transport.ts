@@ -46,35 +46,84 @@ export const MAX_PEER_BODY = 256 * 1024;
 export const PEER_DEADLINE_MS = 20_000;
 
 /**
- * A publicly routable unicast address: private, loopback, link-local, unspecified, multicast, carrier-grade NAT and
- * their IPv4-mapped forms are never connected to (a peer's name resolving there is a misconfiguration or an attack).
+ * A publicly routable unicast address: private, loopback, link-local, unspecified, multicast, carrier-grade NAT,
+ * documentation, discard-only and tunnelling prefixes are never connected to (a peer's name resolving there is a
+ * misconfiguration or an attack). An IPv6 literal is parsed to its sixteen bytes first, so every form that embeds an
+ * IPv4 address (compatible `::a.b.c.d`, mapped `::ffff:a.b.c.d` in dotted or hexadecimal form, SIIT `::ffff:0:a.b.c.d`,
+ * NAT64 `64:ff9b::a.b.c.d`, 6to4 `2002:XXXX:XXXX::`) is judged by the IPv4 address it carries.
  */
 export function isPublicAddress(address: string): boolean {
   const family = isIP(address);
-  if (family === 4) return publicV4(address);
+  if (family === 4) {
+    const v4 = ipv4Bytes(address);
+    return v4 !== null && publicV4(v4);
+  }
   if (family !== 6) return false;
-  const lower = address.toLowerCase();
-  const mapped = /^(?:0*:)*:?ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(lower);
-  if (mapped) return publicV4(mapped[1]!);
-  if (lower === '::' || lower === '::1') return false;
-  const first = parseInt(lower.split(':')[0] || '0', 16);
-  if ((first & 0xfe00) === 0xfc00) return false; // fc00::/7 unique local
-  if ((first & 0xffc0) === 0xfe80) return false; // fe80::/10 link local
-  if ((first & 0xff00) === 0xff00) return false; // ff00::/8 multicast
-  if (first === 0x2001 && lower.startsWith('2001:db8')) return false; // documentation
+  const b = ipv6Bytes(address);
+  if (!b) return false;
+  const zero = (from: number, to: number) => b.slice(from, to).every((x) => x === 0);
+  if (zero(0, 12)) return publicV4(b.slice(12)); // ::/96 IPv4-compatible (and :: and ::1, which carry 0.0.0.0 and 0.0.0.1)
+  if (zero(0, 10) && b[10] === 0xff && b[11] === 0xff) return publicV4(b.slice(12)); // ::ffff:0:0/96 IPv4-mapped
+  if (zero(0, 8) && b[8] === 0xff && b[9] === 0xff && b[10] === 0 && b[11] === 0) return publicV4(b.slice(12)); // ::ffff:0:0:0/96 SIIT
+  if (b[0] === 0x00 && b[1] === 0x64 && b[2] === 0xff && b[3] === 0x9b) {
+    if (zero(4, 12)) return publicV4(b.slice(12)); // 64:ff9b::/96 NAT64 well-known prefix
+    return false; // 64:ff9b:1::/48 local-use NAT64
+  }
+  if (b[0] === 0x20 && b[1] === 0x02) return publicV4(b.slice(2, 6)); // 2002::/16 6to4
+  if ((b[0]! & 0xfe) === 0xfc) return false; // fc00::/7 unique local
+  if (b[0] === 0xfe && (b[1]! & 0xc0) === 0x80) return false; // fe80::/10 link local
+  if (b[0] === 0xff) return false; // ff00::/8 multicast
+  if (b[0] === 0x01 && b[1] === 0x00 && zero(2, 8)) return false; // 100::/64 discard-only
+  if (b[0] === 0x20 && b[1] === 0x01 && b[2] === 0x0d && b[3] === 0xb8) return false; // 2001:db8::/32 documentation
+  if (b[0] === 0x20 && b[1] === 0x01 && b[2] === 0x00 && b[3] === 0x00) return false; // 2001::/32 Teredo
   return true;
 }
-function publicV4(address: string): boolean {
-  const octets = address.split('.').map(Number);
-  if (octets.length !== 4 || octets.some((o) => !Number.isInteger(o) || o < 0 || o > 255)) return false;
-  const [a, b] = octets as [number, number, number, number];
-  if (a === 0 || a === 10 || a === 127) return false;
-  if (a === 100 && b >= 64 && b <= 127) return false;
-  if (a === 169 && b === 254) return false;
-  if (a === 172 && b >= 16 && b <= 31) return false;
-  if (a === 192 && b === 168) return false;
-  if (a >= 224) return false;
+function ipv4Bytes(address: string): Uint8Array | null {
+  const parts = address.split('.');
+  if (parts.length !== 4 || parts.some((p) => !/^\d{1,3}$/.test(p) || Number(p) > 255)) return null;
+  return Uint8Array.from(parts.map(Number));
+}
+function publicV4(b: Uint8Array): boolean {
+  const [a, c] = [b[0]!, b[1]!];
+  if (a === 0 || a === 10 || a === 127) return false; // this network, private, loopback
+  if (a === 100 && c >= 64 && c <= 127) return false; // carrier-grade NAT
+  if (a === 169 && c === 254) return false; // link local
+  if (a === 172 && c >= 16 && c <= 31) return false; // private
+  if (a === 192 && c === 168) return false; // private
+  if (a === 192 && c === 0 && b[2] === 0) return false; // IETF protocol assignments
+  if (a >= 224) return false; // multicast, reserved, broadcast
   return true;
+}
+/** The sixteen bytes of an IPv6 literal `node:net` accepts (one `::`, an embedded dotted IPv4 at the end), or null. */
+function ipv6Bytes(address: string): Uint8Array | null {
+  let text = address.toLowerCase();
+  let tail: number[] = [];
+  const dotted = /(?:^|:)(\d{1,3}(?:\.\d{1,3}){3})$/.exec(text);
+  if (dotted) {
+    const v4 = ipv4Bytes(dotted[1]!);
+    if (!v4) return null;
+    tail = [(v4[0]! << 8) | v4[1]!, (v4[2]! << 8) | v4[3]!];
+    text = text.slice(0, text.length - dotted[1]!.length);
+    if (text.endsWith(':') && !text.endsWith('::')) text = text.slice(0, -1);
+  }
+  const parts = text.split('::');
+  if (parts.length > 2) return null;
+  const groupsOf = (part: string) => (part === '' ? [] : part.split(':').map((g) => (/^[0-9a-f]{1,4}$/.test(g) ? parseInt(g, 16) : NaN)));
+  const head = groupsOf(parts[0]!);
+  const rest = parts.length === 2 ? groupsOf(parts[1]!) : null;
+  if ([...head, ...(rest ?? [])].some(Number.isNaN)) return null;
+  const known = head.length + (rest?.length ?? 0) + tail.length;
+  let groups: number[];
+  if (rest === null) {
+    if (known !== 8) return null;
+    groups = [...head, ...tail];
+  } else {
+    if (known > 7) return null;
+    groups = [...head, ...new Array<number>(8 - known).fill(0), ...rest, ...tail];
+  }
+  const bytes = new Uint8Array(16);
+  groups.forEach((g, i) => { bytes[2 * i] = g >> 8; bytes[2 * i + 1] = g & 0xff; });
+  return bytes;
 }
 
 /** The production transport over `node:https`, pinned to the resolved address; refuses anything that is not a DNS name. */

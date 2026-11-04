@@ -33,7 +33,7 @@ test('federation node persistence', { skip: db ? false : SKIP_REASON }, async (t
   const terms: PeeringTerms = { licences: defaultDataLicences(), tombstoneHours: 72, agentEnvelopesPerHour: 60 };
   const admitPeer = () => federationPeers.record(runtime, {
     peerNode: CITY, manifest: peerManifest, manifestDigest: computeDigest(peerManifest).value, manifestIssuedAt: new Date(peerManifest.issuedAt), currentKeyId: 'a1',
-    attestationExpiresAt: new Date(peerManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'handshake',
+    attestationExpiresAt: new Date(peerManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'handshake', fetched: true,
   });
   const count = async (query: string, params: unknown[] = []): Promise<number> => (await db.admin.query<{ n: number }>(`SELECT count(*)::int AS n FROM (${query}) q`, params)).rows[0]?.n ?? 0;
   const revisionOf = async (id: string) => (await db.admin.query<{ revision: number }>('SELECT revision FROM trustwork.peering_record WHERE id = $1', [id])).rows[0]!.revision;
@@ -205,6 +205,32 @@ test('federation node persistence', { skip: db ? false : SKIP_REASON }, async (t
     assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE peer_hub_id = 'us-tx-austin-stale'"), 0);
   });
 
+  await t.test('only a fetch from the origin lifts a refusal or moves the refresh: a re-admission without a fetch keeps a refusal and moves nothing; a first row needs a fetch', async () => {
+    const base = { peerNode: CITY, manifest: peerManifest, manifestDigest: computeDigest(peerManifest).value, manifestIssuedAt: new Date(peerManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(peerManifest.deploymentAttestation.expiresAt), judged: ['declared', 'attested', 'observed'] };
+    const state = async () => (await db.admin.query<{ admission_state: string; due: Date; revision: number }>('SELECT admission_state, refresh_due_at AS due, revision FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!;
+    await admitPeer();
+    const admitted = await state();
+    // A refusal without a fetch (the address the gate refused) suspends the flows and moves no refresh.
+    const refused = await federationPeers.record(runtime, { ...base, admitted: false, judged: [], trigger: 'refresh', suspensionReason: 'admission_refused', fetched: false });
+    assert.equal(refused.admission_state, 'refused');
+    assert.equal((await state()).due.getTime(), admitted.due.getTime(), 'no fetch, no refresh moved');
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'federation.peer_restricted');
+    // An admission without a fetch (a handshake from a clean address, a deal, a changed statement) changes nothing: the row comes back as it is.
+    const kept = await federationPeers.record(runtime, { ...base, admitted: true, trigger: 'handshake', fetched: false });
+    assert.equal(kept.admission_state, 'refused');
+    assert.equal(kept.revision, refused.revision, 'nothing written');
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'federation.peer_restricted');
+    // A fetch from the origin that passes lifts the refusal and moves the refresh.
+    const lifted = await federationPeers.record(runtime, { ...base, admitted: true, trigger: 'refresh', fetched: true });
+    assert.equal(lifted.admission_state, 'admitted');
+    assert.ok(lifted.refresh_due_at.getTime() > admitted.due.getTime(), 'the fetch moved the refresh');
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'ok');
+    // A peer's first row comes from a fetch of its origin, never from a request.
+    const stranger = { ...peerManifest, node: 'elpaso.example.org' } as NodeManifest;
+    await rejects(federationPeers.record(runtime, { ...base, peerNode: 'elpaso.example.org', manifest: stranger, manifestDigest: computeDigest(stranger).value, admitted: true, trigger: 'handshake', fetched: false }), '22023', 'federation.fetch_required');
+    assert.equal(await count("SELECT 1 FROM trustwork.federation_peer WHERE peer_node = 'elpaso.example.org'"), 0);
+  });
+
   await t.test('replay nonces: concurrent notes of one nonce accept exactly once; expired nonces are purged', async () => {
     const nonce = randomBytes(24).toString('base64url');
     const results = await Promise.all(Array.from({ length: 6 }, () => federationPeers.noteNonce(runtime, { peerNode: CITY, keyId: 'a1', nonce, expiresAt: new Date(Date.now() + 300_000) })));
@@ -220,7 +246,7 @@ test('federation node persistence', { skip: db ? false : SKIP_REASON }, async (t
     await rejects(withMaintenance(db.admin, (trx) => trx.insertInto('peering_event').values({ peering_record_id: record.id, event: 'peering.note', details: sql`${JSON.stringify({ seenFrom: RESTRICTED_ADDRESS })}::jsonb` }).execute()), '23514');
     await rejects(withMaintenance(db.admin, (trx) => trx.insertInto('peering_event').values({ peering_record_id: record.id, event: 'peering.note', reason: RESTRICTED_ADDRESS }).execute()), '23514');
     await rejects(withMaintenance(db.admin, (trx) => trx.insertInto('admission_refusal').values({ node_id: w.nodeId, service: 'federation_handshake', subject: 'ok.example.org', decided_at: new Date(), findings: sql`${JSON.stringify([{ place: '2001:db8::5' }])}::jsonb`, geolocation: null }).execute()), '23514');
-    await rejects(federationPeers.record(runtime, { peerNode: '192.0.2.44', manifest: peerManifest, manifestDigest: computeDigest(peerManifest).value, manifestIssuedAt: new Date(), currentKeyId: 'a1', attestationExpiresAt: new Date(Date.now() + 86_400_000), admitted: true, judged: [], trigger: 'manual' }), '22023', 'federation.host_invalid');
+    await rejects(federationPeers.record(runtime, { peerNode: '192.0.2.44', manifest: peerManifest, manifestDigest: computeDigest(peerManifest).value, manifestIssuedAt: new Date(), currentKeyId: 'a1', attestationExpiresAt: new Date(Date.now() + 86_400_000), admitted: true, judged: [], trigger: 'manual', fetched: true }), '22023', 'federation.host_invalid');
     const { rows } = await db.admin.query<{ ok: boolean }>("SELECT trustwork.federation_is_address(x) AS ok FROM unnest(ARRAY['192.0.2.44', '[2001:db8::5]:443', '::ffff:192.0.2.9', '2001:db8::', 'austin.example.org', 'US-TX:austin', '2026-11-01T00:00:00.000Z', '0.1.0']) x");
     assert.deepEqual(rows.map((r) => r.ok), [true, true, true, true, false, false, false, false]);
   });

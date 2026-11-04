@@ -133,14 +133,18 @@ export interface PeerRecordInput {
   trigger: AdmissionTrigger;
   /** Why flows pause when not admitted. */
   suspensionReason?: SuspensionReason | null;
-  /** False for a re-admission without a fetch from the origin (an inbound handshake, a deal): the refresh stays due. */
-  fetched?: boolean;
+  /**
+   * True only for a manifest fetched from the peer's origin now: that alone moves the refresh and lifts a refusal. False
+   * for a re-admission without a fetch (an inbound handshake, a deal, a changed statement, a suspension from the address
+   * judgement): the refresh stays due and a refusal is kept. Every caller says which (no default, in SQL either).
+   */
+  fetched: boolean;
 }
 export const federationPeers = {
   /** Stores a validated manifest with the admission outcome; refusals suspend the peer's active records, admissions lift admission-caused suspensions. */
   record(runner: Runner, input: PeerRecordInput): Promise<FederationPeerRow> {
     return one(runner, sql<FederationPeerRow>`SELECT * FROM trustwork.federation_peer_record(${input.peerNode}::text, ${json(input.manifest)}::jsonb, ${input.manifestDigest}::text, ${input.manifestIssuedAt}::timestamptz,
-      ${input.currentKeyId}::text, ${input.attestationExpiresAt}::timestamptz, ${input.admitted}::boolean, ${input.judged}::text[], ${input.trigger}::text, ${input.suspensionReason ?? null}::text, ${input.fetched ?? true}::boolean)`, 'federation_peer_record');
+      ${input.currentKeyId}::text, ${input.attestationExpiresAt}::timestamptz, ${input.admitted}::boolean, ${input.judged}::text[], ${input.trigger}::text, ${input.suspensionReason ?? null}::text, ${input.fetched}::boolean)`, 'federation_peer_record');
   },
   equivocation(runner: Runner, peerNode: string): Promise<FederationPeerRow> {
     return one(runner, sql<FederationPeerRow>`SELECT * FROM trustwork.federation_peer_equivocation(${peerNode}::text)`, 'federation_peer_equivocation');
