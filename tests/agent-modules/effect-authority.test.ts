@@ -81,7 +81,7 @@ test('code-owned effect callback, current revokers and exact original-operation 
     assert.equal(provider.submissions.length, 0);
     assert.equal((await p.read()).state, 'failed');
   });
-  const cases = ['serving', 'kill switch', 'session', 'mandate', 'run', 'resource authority', 'budget'] as const;
+  const cases = ['serving', 'kill switch', 'session', 'mandate', 'run', 'resource authority', 'budget', 'jurisdiction hold'] as const;
   for (const kind of cases) for (const order of ['dispatch first', 'revoker first'] as const) {
     await t.test(`${kind}: ${order} at the actual handler callback`, async () => {
       const p = await prepare();
@@ -101,6 +101,8 @@ test('code-owned effect callback, current revokers and exact original-operation 
           // Real participation mutation runs the owning epoch trigger; no session identity is fabricated.
           case 'resource authority': await withMaintenance(h.db.admin, trx => sql`UPDATE trustwork.object_participation SET revoked_at=clock_timestamp(),revoked_reason='Synthetic withdrawal' WHERE resource_kind='project' AND resource_id=${p.project.id}::uuid AND party_person_id=${seed.people.petr}::uuid`.execute(trx)); break;
           case 'budget': await as(h, seed.people.petr, trx => budgets.close(trx, p.budget)); break;
+          // A hold bumps no epoch and revokes no session: only the recheck itself can see it.
+          case 'jurisdiction hold': await withMaintenance(h.db.admin, trx => trx.insertInto('jurisdiction_hold').values({ person_id: seed.people.petr, place: 'ZZ', source: 'staff_report', dataset: 'synthetic' }).execute()); break;
         }
       };
       let dispatch: Promise<void> | undefined; let revoker: Promise<void> | undefined;
@@ -131,6 +133,7 @@ test('code-owned effect callback, current revokers and exact original-operation 
         finish.resolve(); await dispatch; await revoker;
         if (switchId) await release(world, switchId);
         if (kind === 'serving') await withMaintenance(h.db.admin, trx => sql`UPDATE trustwork.agent_serving_hub SET active=true WHERE hub_id=${world.hubId}::uuid`.execute(trx));
+        if (kind === 'jurisdiction hold') await withMaintenance(h.db.admin, trx => trx.updateTable('jurisdiction_hold').set({ cleared_at: new Date(), cleared_by: seed.people.boris, clear_reason: 'Synthetic clearance', clear_evidence: 'other' }).where('person_id', '=', seed.people.petr).where('cleared_at', 'is', null).execute());
       }
     });
   }

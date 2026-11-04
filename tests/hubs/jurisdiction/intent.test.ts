@@ -14,6 +14,9 @@ import { jurisdictionEvidence, jurisdictionAuthority, jurisdictionWorker } from 
 import { hubConfig } from '../../../packages/data/src/repositories/hubs.js';
 import { prepareJurisdictionIntent, recordJurisdictionIntent, requireCurrentJurisdiction } from '../../../apps/api/src/modules/hubs/jurisdiction/intent-adapter.js';
 import { inTransaction } from '../../../apps/worker/src/db.js';
+import { silentLogger } from '@trustwork/worker';
+import { defineEffectImplementation, dispatchHandler, FakeEffectProvider } from '../../../apps/worker/src/assistant/index.js';
+import type { EffectImplementationDeclaration } from '../../../packages/contracts/src/agent-modules.js';
 import { provisionTestDatabase } from '../../data/helpers/postgres.js';
 import { authorityFixture, createQuote, sourceDocument } from './authority-fixture.js';
 import { rejects } from '../helpers.js';
@@ -76,6 +79,49 @@ test('jurisdiction adapter composes actual mandate, intent, approval and worker 
    assert.equal(result.status,'dispatch'); // No provider is called by this test.
    original={intentId:intent.intentId!,attemptId:String(result.attemptId),correlationKey:String(result.correlationKey),jobId:job.id,fence:String(job.fencing_token)};
    await inTransaction(worker,trx=>assistantWorker.recordOutcome(trx,original.attemptId,{kind:'unknown',reason:'crash'}));
+ });
+ const attempts=async(id:string)=>(await db.admin.query('SELECT count(*)::int n FROM trustwork.action_attempt WHERE action_intent_id=$1',[id])).rows[0].n as number;
+ const stateOf=async(id:string)=>(await db.admin.query('SELECT state FROM trustwork.action_intent WHERE id=$1',[id])).rows[0].state as string;
+ /** The real dispatch handler, under the worker login, with a code-owned fake effect. */
+ const dispatch=async(intentId:string,leased?:Awaited<ReturnType<typeof lease>>)=>{
+   const job=(leased??await lease()).find(j=>(j.payload as {intentId:string}).intentId===intentId)!;assert.ok(job);
+   const provider=new FakeEffectProvider('synthetic');
+   const handler=dispatchHandler({pool:worker,providers:[provider],implementations:[defineEffectImplementation(implementation as EffectImplementationDeclaration,provider,input=>structuredClone(input))],hubId:null,log:silentLogger});
+   await handler.run({job,payload:{intentId},attemptId:randomUUID(),effectKey:`job:${job.id}`,signal:new AbortController().signal});
+   return provider;
+ };
+ await t.test('the dispatch handler enters through jurisdiction: a bound quote intent reaches its effect',async()=>{
+   const intent=await queue();
+   assert.equal((await dispatch(intent.intentId!)).submissions.length,1);
+   assert.equal(await stateOf(intent.intentId!),'succeeded');
+ });
+ await t.test('the dispatch handler refuses a quote intent that carries no binding, and calls nothing',async()=>{
+   const unbound=await a.as(p.moderator,async trx=>{
+     const run=await runs.start(trx,{principal_person_id:p.moderator,kind:'conversation',mandate_id:snapshot.id});
+     await sql`SELECT trustwork.agent_modules_bind_run(${run.id}::uuid,${bindings.serving}::uuid,${bindings.session}::uuid)`.execute(trx);
+     const prepared=await prepareJurisdictionIntent(trx,{...request,amount:{minorUnits:'1',currency:'USD'}},settings);if(prepared.effect==='deny')throw new Error('synthetic intent refused');
+     const mandate=prepared.mandate.outcome;if(mandate.effect==='deny')throw new Error('synthetic mandate refused');
+     const effect={provider:'synthetic',operation:'quote',payload:{synthetic:true}};
+     return actionIntents.record(trx,{runId:run.id,mandateId:mandate.mandate.id,mandateRevision:mandate.mandate.revision,capabilityId:'deal_desk.send_quote',moduleKey:mandate.moduleKey,action:'send_quote',context:mandate.context,
+       resolvedFromSelector:mandate.resolvedFromSelector,amount:{minorUnits:'1',currency:'USD'},digest:computeDigest({synthetic:'unbound quote intent',at:run.id}).value,effect,decision:prepared.effect,askReasons:prepared.reasons});
+   });
+   await a.as(p.moderator,trx=>actionIntents.queue(trx,unbound.intentId!,300,null));
+   assert.equal((await dispatch(unbound.intentId!)).submissions.length,0);
+   assert.equal(await stateOf(unbound.intentId!),'revoked');assert.equal(await attempts(unbound.intentId!),0);
+ });
+ const hold=(person:string)=>withMaintenance(db.admin,trx=>trx.insertInto('jurisdiction_hold').values({person_id:person,place:'ZZ',source:'staff_report',dataset:'synthetic'}).execute());
+ const clear=(person:string)=>withMaintenance(db.admin,trx=>trx.updateTable('jurisdiction_hold').set({cleared_at:new Date(),cleared_by:p.officer,clear_reason:'Synthetic clearance',clear_evidence:'other'}).where('person_id','=',person).where('cleared_at','is',null).execute());
+ for(const [label,party] of [['the principal',p.moderator],['the other side of the quote',p.outsider]] as const)await t.test(`a hold on ${label} placed after queueing stops the attempt`,async()=>{
+   const direct=await queue(),handled=await queue();
+   const leased=await lease();const job=leased.find(j=>(j.payload as {intentId:string}).intentId===direct.intentId)!;
+   await hold(party);
+   try{
+     assert.deepEqual(await inTransaction(worker,trx=>jurisdictionWorker.beginAttempt(trx,direct.intentId!,job.id,String(job.fencing_token))),{status:'refused',reason:'party_held'});
+     assert.equal((await dispatch(handled.intentId!,leased)).submissions.length,0);
+     for(const id of [direct.intentId!,handled.intentId!]){assert.equal(await stateOf(id),'revoked');assert.equal(await attempts(id),0);}
+   }finally{await clear(party);}
+   const after=await queue();
+   assert.equal((await dispatch(after.intentId!)).submissions.length,1,'a cleared hold stops nothing');
  });
  await t.test('an immutable foreign serving origin cannot be replaced by jurisdiction or process hub',async()=>{
    const intent=await record('1',bindings.foreign);await a.as(p.moderator,trx=>actionIntents.queue(trx,intent.intentId!,300,null));
