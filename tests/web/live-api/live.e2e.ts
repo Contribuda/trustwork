@@ -461,6 +461,30 @@ async function announcerSettled(page: Page): Promise<void> {
   await expect(page.locator('[data-live-announcer] [role="img"]')).toHaveCount(0, { timeout: 10_000 });
 }
 
+test('a date written in the browser stays in the language of the page, whatever language the browser has', async ({ browser }) => {
+  // Chromium has no Georgian or Armenian data and a stub for Azerbaijani and Uzbek: `Intl` answers in the browser's own
+  // language (here Russian) or with "2026 M11 3", and nothing fails. The panel reads its dates after the page has loaded.
+  for (const language of ['ka', 'hy', 'az-Latn', 'uz-Latn'] as const) {
+    const context = await browser.newContext({ locale: 'ru-RU', timezoneId: 'Asia/Tashkent' });
+    await context.addCookies([{ name: 'trustwork.country', value: COUNTRY_OF[language], url: WEB_ORIGIN }, { name: 'trustwork.locale', value: language, url: WEB_ORIGIN }]);
+    const page = await context.newPage();
+    const failures: string[] = [];
+    page.on('pageerror', (error) => failures.push(error.message));
+    await verifiedAccount(context.request, `Dated ${language}`);
+    expect((await context.request.post('/v1/auth/step-up', { headers: SAME_ORIGIN, data: { password: PASSWORD } })).status()).toBe(200);
+    const started = await context.request.post('/v1/me/second-factor/totp', { headers: SAME_ORIGIN });
+    const { factorId, secret } = (await started.json()) as { factorId: string; secret: string };
+    expect((await context.request.post('/v1/me/second-factor/totp/confirm', { headers: SAME_ORIGIN, data: { factorId, code: totpAt(secret, Date.now()) } })).status()).toBe(200);
+    await page.goto(`${WEB_ORIGIN}/app/settings`);
+    await expect(page.locator('html')).toHaveAttribute('lang', language);
+    expect(await page.evaluate((tag) => new Intl.DateTimeFormat(tag, { month: 'long' }).format(new Date(Date.UTC(2026, 10, 3))) === new Intl.DateTimeFormat('ru', { month: 'long' }).format(new Date(Date.UTC(2026, 10, 3))) || !Intl.DateTimeFormat.supportedLocalesOf(tag).length || /M11|^11$/.test(new Intl.DateTimeFormat(tag, { month: 'long' }).format(new Date(Date.UTC(2026, 10, 3)))), language), `${language}: this browser has to lack the language for this test to mean anything`).toBe(true);
+    const date = new Intl.DateTimeFormat(language, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Tashkent' }).format(new Date());
+    await expect(page.getByText(msg('settings.secondFactor.addedAt', language, { date }))).toBeVisible();
+    expect(failures, language).toEqual([]);
+    await context.close();
+  }
+});
+
 test('two-step verification: set-up in the settings, recovery codes shown once, sign-in with the app and a recovery code', async ({ page, browser }) => {
   const { email } = await verifiedAccount(page.request, 'Factor Farida');
   await page.goto('/app/settings');

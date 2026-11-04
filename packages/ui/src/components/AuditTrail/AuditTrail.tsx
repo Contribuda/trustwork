@@ -1,4 +1,4 @@
-import { intlTag } from "../../i18n";
+import { formatDateShape } from "../../i18n";
 import type { ReactNode } from "react";
 import s from "../DataTable/console.module.css";
 export function ConsoleTime({
@@ -10,11 +10,7 @@ export function ConsoleTime({
 }) {
   return (
     <time dateTime={value}>
-      {new Intl.DateTimeFormat(intlTag(), {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone,
-      }).format(new Date(value))}{" "}
+      {formatDateShape(new Date(value), "dateTime", timeZone)}{" "}
       ({timeZone})
     </time>
   );

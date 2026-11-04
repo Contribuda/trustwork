@@ -1,5 +1,5 @@
 import { createContext, createElement, use, useMemo, type ReactNode } from 'react';
-import { EMPTY_STORE, type LocaleStore, type Messages } from './types.js';
+import { EMPTY_STORE, type LocaleFormats, type LocaleStore, type Messages } from './types.js';
 
 /**
  * Client-component build (browser bundle and the server-side rendering pass of client components).
@@ -41,14 +41,14 @@ export function setLocaleStore(next: LocaleStore): void {
   Object.assign(store, next);
 }
 
-export type LocaleScopeProps = { locale: string; country: string; layers: Messages[]; children?: ReactNode };
+export type LocaleScopeProps = { locale: string; country: string; layers: Messages[]; formats?: LocaleFormats | null | undefined; children?: ReactNode };
 
 /**
- * Makes `{ locale, country, layers }` the active locale for every client component below it. Render it
+ * Makes `{ locale, country, layers, formats }` the active locale for every client component below it. Render it
  * once at the top of the client tree with the layers the server resolved for this request.
  */
-export function LocaleScope({ locale, country, layers, children }: LocaleScopeProps): ReactNode {
-  const value = useMemo<LocaleStore>(() => ({ locale, country, layers }), [locale, country, layers]);
+export function LocaleScope({ locale, country, layers, formats = null, children }: LocaleScopeProps): ReactNode {
+  const value = useMemo<LocaleStore>(() => ({ locale, country, layers, formats }), [locale, country, layers, formats]);
   if (IN_BROWSER) setLocaleStore(value);
   else serverScopeSeen = true;
   return createElement(LocaleContext.Provider, { value }, children);
