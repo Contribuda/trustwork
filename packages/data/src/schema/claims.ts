@@ -81,8 +81,6 @@ export interface CompanyClaimEvidenceTable {
   bound_at: Generated<Date>;
 }
 
-export interface ClaimsDatabase {
-  company_claim_evidence: CompanyClaimEvidenceTable;
 export interface CompanyVerificationTable {
   id: Generated<string>;
   hub_id: string;
@@ -103,6 +101,7 @@ export interface CompanyVerificationTable {
 export type CompanyVerificationRow = Selectable<CompanyVerificationTable>;
 
 export interface ClaimsDatabase {
+  company_claim_evidence: CompanyClaimEvidenceTable;
   company_verification: CompanyVerificationTable;
   claims_settings: ClaimsSettingsTable;
   claim_dispute: ClaimDisputeTable;

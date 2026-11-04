@@ -115,6 +115,7 @@ export default {
     await activateBaseline(admin);
     const renewed = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Renewed Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id);
     await screen(admin, { kind: 'company', id: renewed });
+    await screen(admin, { kind: 'person', id: people.c2 });
     const provider = body<{ provider: { id: string } }>(await a.post(`${base}/verification/providers`, cmd('claims.provider', { checkType: 'register_match', adapter: 'synthetic_crash_claims_register', mode: 'fake',
       retentionDays: 365, legalBasis: 'statutory_public_register', costMinor: null }), { idempotencyKey: 'crash-claims.provider' }));
     body(await a.post(`${base}/verification/checks`, cmd('claims.check', { subject: { kind: 'company', id: renewed }, recipeId: claimedRecipe, providerId: provider.provider.id, result: 'pass', evidenceRef: 'register:SYN-CRASH-CLAIM' }),
