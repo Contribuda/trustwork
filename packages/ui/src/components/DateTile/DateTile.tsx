@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link as AriaLink } from 'react-aria-components';
 import { cx } from '../../utils/cx';
-import { formatDate, intlTag } from '../../i18n';
+import { formatDate, formatDateShape } from '../../i18n';
 import { Meta } from '../Typography/Typography';
 import { VisuallyHidden } from '../VisuallyHidden/VisuallyHidden';
 import styles from './DateTile.module.css';
@@ -18,9 +18,9 @@ const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
 
 function parts(value: string): { day: string; month: string; iso: string; label: string } {
   const date = new Date(dateOnly.test(value) ? `${value}T00:00:00Z` : value);
-  const zone = dateOnly.test(value) ? { timeZone: 'UTC' as const } : {};
-  const day = new Intl.DateTimeFormat(intlTag(), { day: 'numeric', ...zone }).format(date);
-  const month = new Intl.DateTimeFormat(intlTag(), { month: 'short', ...zone }).format(date).replace(/\.$/, '');
+  const zone = dateOnly.test(value) ? 'UTC' : undefined;
+  const day = formatDateShape(date, 'day', zone);
+  const month = formatDateShape(date, 'monthShort', zone).replace(/\.$/, '');
   return { day, month, iso: value, label: formatDate(value) };
 }
 

@@ -1,8 +1,10 @@
 import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 import { getLocaleStore, runWithLocaleScope, setLocaleStore } from '@trustwork/i18n-runtime';
-import type { Messages } from '@trustwork/i18n-runtime/types';
+import type { LocaleFormats, Messages } from '@trustwork/i18n-runtime/types';
+import { intlTag } from '@trustwork/ui/i18n';
 import { uiLayers } from '@trustwork/ui/i18n/dictionaries';
+import { localeFormats } from '@trustwork/ui/i18n/formats';
 import { BUILT_IN_PACKS, getCountryPack, toClientPack, type ClientPack } from '@trustwork/country-packs';
 import { appLayers, brandLayers, brandWordmark } from './locale-data';
 import { currentDeployment } from '@trustwork/config/server';
@@ -92,8 +94,8 @@ function packForBrowser(): ClientPack | null {
 }
 
 /** The document's client locale (`components/RootDocument.tsx`): brand overlay (messages and this language's wordmark), the visitor's pack when the bundle lacks it, the root namespaces and the design system's dictionary. */
-export function rootClientLocale(tag: string): { brand: Messages[]; wordmark: ReturnType<typeof brandWordmark>; pack: ClientPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[] } {
-  return { brand: brandLayers(tag), wordmark: brandWordmark(tag), pack: packForBrowser(), ...clientLayers(tag, 'root'), ui: uiLayers(tag) };
+export function rootClientLocale(tag: string): { brand: Messages[]; wordmark: ReturnType<typeof brandWordmark>; pack: ClientPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; formats: LocaleFormats } {
+  return { brand: brandLayers(tag), wordmark: brandWordmark(tag), pack: packForBrowser(), ...clientLayers(tag, 'root'), ui: uiLayers(tag), formats: localeFormats(intlTag(tag)) };
 }
 
 /**

@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { test } from 'node:test';
 import { setLocaleStore } from '@trustwork/i18n-runtime';
-import { intlTagFor } from '@trustwork/ui/i18n';
+import { DATE_SHAPES, formatDateShape, formatNumber, formatUnit, intlTagFor, UNIT_SHAPES, writeDate, writeNumber, writeUnit, type DateShape, type UnitShape } from '@trustwork/ui/i18n';
+import { localeFormats } from '@trustwork/ui/i18n/formats';
 import { formatMoney, longDate, shortDate, t } from '../../../apps/web/app/_lib/i18n.js';
-import { layersFor } from './helpers.js';
+import { layersFor, REPO } from './helpers.js';
 
 /** INTL-003: CLDR plural categories from `Intl.PluralRules` in every language, and formats chosen by language plus country. */
 function use(locale: string, country: string): void {
@@ -67,4 +70,63 @@ test('a US visitor sees month-day dates and dollar amounts in US style; other co
   use('ru', 'KZ');
   assert.equal(longDate('2026-10-27'), '27 октября 2026', 'Russian long dates drop « г.» in every country');
   use('en', 'US');
+});
+
+/**
+ * A browser has no data for Georgian or Armenian and a stub for Azerbaijani and Uzbek; `Intl` then answers in the
+ * browser's own language without an error. So the page carries what the server's `Intl` writes, and what is written from
+ * it has to be exactly what `Intl` writes, in every language, shape and date.
+ */
+const SERVED_TAGS = ['en', 'en-US', 'en-001', 'es', 'es-US', 'ka', 'ka-GE', 'hy', 'hy-AM', 'az-Latn', 'az-Latn-AZ', 'uz-Latn', 'uz-Latn-UZ', 'ru'];
+const INSTANTS = [
+  ...Array.from({ length: 12 }, (_, month) => new Date(Date.UTC(2026, month, 1 + month * 2, month * 2, month * 5))),
+  new Date('2026-11-04T00:00:00Z'), new Date('2026-12-31T23:59:59Z'), new Date('2024-02-29T12:00:00Z'), new Date('2026-01-01T12:05:00Z'),
+];
+
+test('what the server sends writes every shape exactly as Intl does, in every language', () => {
+  for (const tag of SERVED_TAGS) {
+    const formats = localeFormats(tag);
+    for (const shape of Object.keys(DATE_SHAPES) as DateShape[]) {
+      for (const timeZone of ['UTC', 'Asia/Tbilisi', 'America/Los_Angeles']) {
+        const native = new Intl.DateTimeFormat(tag, { ...DATE_SHAPES[shape], timeZone });
+        for (const at of INSTANTS) assert.equal(writeDate(formats.dates[shape]!, at, timeZone), native.format(at), `${tag} ${shape} ${timeZone} ${at.toISOString()}`);
+      }
+    }
+  }
+});
+
+test('what the server sends writes numbers exactly as Intl does, in every language', () => {
+  for (const tag of SERVED_TAGS) {
+    const native = new Intl.NumberFormat(tag);
+    for (const value of [0, 7, 999, 1000, 1234, 9999, 10000, 12345, 1234567, 1234.5, -1234, -12345.25]) assert.equal(writeNumber(localeFormats(tag), value), native.format(value), `${tag} ${value}`);
+  }
+});
+
+test('what the server sends writes file sizes exactly as Intl does, in every language', () => {
+  for (const tag of SERVED_TAGS) {
+    for (const unit of Object.keys(UNIT_SHAPES) as UnitShape[]) {
+      const native = new Intl.NumberFormat(tag, UNIT_SHAPES[unit]);
+      for (const value of [1, 5.2, 9.96, 10, 120, 1023.4]) assert.equal(writeUnit(localeFormats(tag), value, unit), native.format(value), `${tag} ${unit} ${value}`);
+    }
+  }
+});
+
+test('a runtime that writes the sample otherwise uses what the page brought; one that agrees keeps its own Intl', () => {
+  const instant = new Date('2026-11-03T10:00:00Z');
+  const formats = localeFormats('ka');
+  const marked = { ...formats.dates.long!, months: formats.dates.long!.months!.map((month) => `page-${month}`) };
+  setLocaleStore({ locale: 'ka', country: 'GE', layers: layersFor('ka'), formats: { ...formats, dates: { ...formats.dates, long: marked } } });
+  assert.doesNotMatch(longDate(instant), /page-/, 'this runtime has Georgian, so nothing changes');
+  setLocaleStore({ locale: 'ka', country: 'GE', layers: layersFor('ka'), formats: { ...formats, sample: 'a browser without Georgian', dates: { ...formats.dates, long: marked }, group: '|' } });
+  assert.match(longDate(instant), /^3 page-ნოემბერი, 2026$/);
+  assert.match(longDate('2026-11-03'), /^3 page-ნოემბერი, 2026$/, 'a calendar date stays that date in any time zone');
+  assert.equal(formatDateShape(new Date('2026-11-03T22:30:00Z'), 'day', 'Asia/Tbilisi'), '4', 'an instant is written in the zone asked for');
+  assert.equal(formatNumber(1234567), '1|234|567');
+  assert.equal(formatUnit(5.2, 'megabyte'), '5,2 მეგაბაიტი', 'a browser with no Georgian writes the page\'s unit, not its own');
+  setLocaleStore({ locale: 'en', country: 'US', layers: layersFor('en') });
+});
+
+test('no client component formats a date or a language name with Intl directly', () => {
+  const sources = ['packages/ui/src/components/DateTile/DateTile.tsx', 'packages/ui/src/components/AuditTrail/AuditTrail.tsx', 'packages/ui/src/components/CalendarAgenda/CalendarAgenda.tsx', 'apps/web/components/workspace/ProjectRow.tsx', 'apps/web/components/workspace/ProvenanceEditor.tsx', 'apps/web/app/app/settings/_components/SecondFactorPanel.tsx', 'apps/web/components/public/agent/PublicAssistant.tsx'];
+  for (const path of sources) assert.doesNotMatch(readFileSync(resolve(REPO, path), 'utf8'), /new Intl\.(?:DateTimeFormat\(intlTag|NumberFormat\(intlTag|DisplayNames\()/, path);
 });

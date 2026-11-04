@@ -6,12 +6,12 @@ import { projectCover } from '@/app/_lib/media';
 import type { WorkspaceProjectRow } from '@/app/_lib/data';
 import { shortDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
-import { intlTag } from '@trustwork/ui/i18n';
+import { formatDateShape } from '@trustwork/ui/i18n';
 
 /** Calendar tile for a due date: day on top, short month below. */
 export function DateTile({ date, tone = 'default' }: { date: string; tone?: 'default' | 'warn' }) {
   const d = new Date(date);
-  const month = new Intl.DateTimeFormat(intlTag(), { month: 'short', timeZone: 'UTC' }).format(d).replace('.', '');
+  const month = formatDateShape(d, 'monthShort', 'UTC').replace('.', '');
   return (
     <time dateTime={date} className={`ws-date${tone === 'warn' ? ' ws-date--warn' : ''}`}>
       <strong>{d.getUTCDate()}</strong>

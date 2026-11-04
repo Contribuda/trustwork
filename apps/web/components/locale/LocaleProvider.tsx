@@ -2,7 +2,7 @@
 
 import { createContext, use, useEffect, useMemo, type ReactNode } from 'react';
 import { LocaleScope } from '@trustwork/i18n-runtime';
-import type { Messages } from '@trustwork/i18n-runtime/types';
+import type { LocaleFormats, Messages } from '@trustwork/i18n-runtime/types';
 import { brandOverlay, registerBrandOverlay, type BrandOverlay } from '@trustwork/ui/brand';
 import { installClientPacks, type ClientPack } from '@trustwork/country-packs/client';
 import { setDefaultLanguage } from '@/app/_lib/localize';
@@ -26,7 +26,7 @@ function registerWordmark(locale: string, wordmark: WordmarkLines | null | undef
  * the brand overlay first, then the application layers of each provider (keyed by its namespaces; the
  * namespaces of different providers never share a key), then the design system's dictionary.
  */
-type Received = { locale: string; country: string; brand: Messages[]; app: Map<string, Messages[]>; ui: Messages[] };
+type Received = { locale: string; country: string; brand: Messages[]; app: Map<string, Messages[]>; ui: Messages[]; formats: LocaleFormats };
 
 const ReceivedContext = createContext<Received | null>(null);
 ReceivedContext.displayName = 'LocaleNamespaces';
@@ -60,7 +60,7 @@ function Scope({ received, children }: { received: Received; children: ReactNode
   const layers = layersOf(merged);
   return (
     <ReceivedContext.Provider value={received}>
-      <LocaleScope locale={merged.locale} country={merged.country} layers={layers}>
+      <LocaleScope locale={merged.locale} country={merged.country} layers={layers} formats={merged.formats}>
         {children}
       </LocaleScope>
     </ReceivedContext.Provider>
@@ -86,7 +86,7 @@ function registerPack(pack: ClientPack | null | undefined): void {
   installClientPacks([...receivedPacks.values()]);
 }
 
-export function LocaleProvider({ locale, country, defaultLanguage, brand, wordmark, pack, namespaces, layers, ui, children }: { locale: string; country: string; defaultLanguage: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: ClientPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; children: ReactNode }) {
+export function LocaleProvider({ locale, country, defaultLanguage, brand, wordmark, pack, namespaces, layers, ui, formats, children }: { locale: string; country: string; defaultLanguage: string; brand: Messages[]; wordmark?: WordmarkLines | null; pack?: ClientPack | null; namespaces: string[]; layers: Messages[]; ui: Messages[]; formats: LocaleFormats; children: ReactNode }) {
   // The unprefixed language of public URLs (decision 27): one value per deployment, so concurrent renders agree.
   setDefaultLanguage(defaultLanguage);
   registerWordmark(locale, wordmark);
@@ -94,7 +94,7 @@ export function LocaleProvider({ locale, country, defaultLanguage, brand, wordma
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
-  const received = useMemo<Received>(() => ({ locale, country, brand, app: new Map([[namespaces.join(','), layers]]), ui }), [locale, country, brand, namespaces, layers, ui]);
+  const received = useMemo<Received>(() => ({ locale, country, brand, app: new Map([[namespaces.join(','), layers]]), ui, formats }), [locale, country, brand, namespaces, layers, ui, formats]);
   return <Scope received={received}>{children}</Scope>;
 }
 

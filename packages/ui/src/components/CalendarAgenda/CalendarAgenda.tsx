@@ -1,4 +1,4 @@
-import { formatDate, formatNumber, intlTag } from "../../i18n";
+import { formatDate, formatDateShape, formatNumber } from "../../i18n";
 import { Button } from "../Button/Button";
 import { ConsoleTime } from "../AuditTrail/AuditTrail";
 import s from "../DataTable/console.module.css";
@@ -43,20 +43,13 @@ export function CalendarAgenda({
     <section className={s.stack} aria-label={label}>
       <h2>{label}</h2>
       <p>
-        {new Intl.DateTimeFormat(intlTag(), {
-          month: "long",
-          year: "numeric",
-          timeZone: "UTC",
-        }).format(new Date(`${month}-01T00:00:00Z`))}{" "}
+        {formatDateShape(new Date(`${month}-01T00:00:00Z`), "monthYear", "UTC")}{" "}
         · {timeZone}
       </p>
       <div className={s.calendar} aria-hidden="true">
         {Array.from({ length: 7 }, (_, day) => (
           <strong key={`weekday-${day}`}>
-            {new Intl.DateTimeFormat(intlTag(), {
-              weekday: "short",
-              timeZone: "UTC",
-            }).format(new Date(Date.UTC(2026, 10, day + 2)))}
+            {formatDateShape(new Date(Date.UTC(2026, 10, day + 2)), "weekdayShort", "UTC")}
           </strong>
         ))}
         {days.map((day, i) => (

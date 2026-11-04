@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { Dialog } from '@trustwork/ui';
 import { ArrowRight, ArrowUpRight, Check, Copy, FileText, Paperclip, RotateCcw, SendHorizonal, Sparkles, X } from 'lucide-react';
-import { intlTag } from '@trustwork/ui/i18n';
+import { formatUnit } from '@trustwork/ui/i18n';
 import { t } from '@/app/_lib/i18n';
 import { openEventOf, type AgentAttachment, type AgentKind, type AgentMessage, type AgentProfile, type BaseBrief } from './types';
 import { localHref } from '@/app/_lib/localize';
@@ -11,10 +11,7 @@ import { localHref } from '@/app/_lib/localize';
 const ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,application/pdf,image/*';
 const MAX_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 3;
-const fmtSize = (n: number) =>
-  n >= 1024 * 1024
-    ? new Intl.NumberFormat(intlTag(), { style: 'unit', unit: 'megabyte', maximumFractionDigits: 1 }).format(n / 1024 / 1024)
-    : new Intl.NumberFormat(intlTag(), { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 0 }).format(Math.max(1, n / 1024));
+const fmtSize = (n: number) => (n >= 1024 * 1024 ? formatUnit(n / 1024 / 1024, 'megabyte') : formatUnit(Math.max(1, n / 1024), 'kilobyte'));
 
 /** Button that opens the agent dialog of `kind` (optionally with a prefilled question); usable from server markup. */
 export function AgentTrigger({ kind, question, className, children }: { kind: AgentKind; question?: string | undefined; className?: string | undefined; children: ReactNode }) {
