@@ -56,6 +56,8 @@ export interface ProtocolReply { status: number; body: Record<string, unknown>; 
 export type FlowCheck = { ok: true } | { ok: false; code: FederationErrorCode };
 
 const NODE_OBJECT = '00000000-0000-4000-8000-000000000000';
+/** The advisory lock one API instance holds while it refreshes the due peers. */
+export const REFRESH_LOCK = 'trustwork.federation_refresh';
 /** Key validity instants are whole seconds: RFC 9421 `created` is an integer, so a key never postdates a signature made in its first second. */
 const wholeSecond = (d: Date): Date => new Date(Math.floor(d.getTime() / 1000) * 1000);
 const RESTRICTED_CACHE_MS = 60_000;
@@ -369,6 +371,23 @@ export class FederationNodeService {
     const decision = await this.admit(manifest, observed);
     await this.recordPeer(manifest, held.manifest_digest, decision, trigger);
     return decision;
+  }
+  /**
+   * The timer's tick: one API instance at a time refreshes the due peers (a PostgreSQL advisory lock held for the run;
+   * another instance that finds it taken skips and tries again next tick). A peer that fails is logged and left due.
+   */
+  async refreshDueLocked(now: Date = this.ctx.clock.now(), limit = 100): Promise<{ skipped: 'locked' } | { refreshed: { host: string; outcome: 'admitted' | 'refused' | 'failed' }[] }> {
+    const client = await this.ctx.pool.connect();
+    let locked = false;
+    try {
+      const { rows } = await client.query<{ ok: boolean }>('SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok', [REFRESH_LOCK]);
+      locked = rows[0]?.ok === true;
+      if (!locked) return { skipped: 'locked' };
+      return { refreshed: await this.refreshDue(now, limit) };
+    } finally {
+      if (locked) await client.query('SELECT pg_advisory_unlock(hashtextextended($1, 0))', [REFRESH_LOCK]).catch(() => undefined);
+      client.release();
+    }
   }
   /** Every peer whose manifest is due (at least daily); failures are logged and retried on the next run. */
   async refreshDue(now: Date = this.ctx.clock.now(), limit = 100): Promise<{ host: string; outcome: 'admitted' | 'refused' | 'failed' }[]> {

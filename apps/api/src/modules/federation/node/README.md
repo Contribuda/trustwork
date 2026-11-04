@@ -22,6 +22,10 @@ Node identity, the Ed25519 key chain, the signed manifest, RFC 9421 request and 
 - A record becomes `active` only with both acceptances and the admission reference, and above `trust_verifications` only with a consumed second-person approval (`federation.raise_peering_level`) of exactly that hub pair and level. Key rotation is the second-person action `ops.rotate_node_key`.
 - Defederation ends the record and never rewrites history; suspension pauses flows without changing the protocol state. The admission check runs again on every manifest or attestation change, before the first delivery of every new deal, and at least daily; a refusal or an expired attestation suspends every flow with the peer, a renewed admission lifts what it caused.
 
+## The daily refresh
+
+`FederationRefreshTimer` runs `FederationNodeService.refreshDueLocked()` every 6 hours from the API process whenever the node reaches peers (the HTTPS transport: production or `TRUSTWORK_FEDERATION_TRANSPORT=https`; offline stays off, no extra flag). One instance refreshes at a time under the PostgreSQL advisory lock `trustwork.federation_refresh`; the timer is cleared on shutdown; a peer that fails is logged and left due. Independently of any timer, `federation_peer_current` makes a peer past its refresh by more than a day, or with an expired attestation, count as not admitted at every point of use (flows, handshakes, requests, acceptances, lifting a suspension) until a fresh admission. The proper home of the refresh is the worker; that move needs worker grants on the `federation_*` functions, the admission code shared outside the API module and the transport, KEK and geolocation configuration in the worker process.
+
 ## Ports for later packages
 
 `FederationNodeService.verifyPeerMessage` (FED-002, FED-004: verify a peer's signed request, refreshing its manifest once on an unknown key), `flowAllowed` (the level a feed pull, badge or delivery needs), `admitDealDelivery` (the re-run before a deal's first delivery), `refreshDue` (the worker's daily refresh) and the `ReverificationPort` the replica and deal stores register for published revocations.
