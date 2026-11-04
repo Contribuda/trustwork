@@ -45,6 +45,10 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
     assert.deepEqual(vocab?.views, JSON.parse(JSON.stringify(CONSOLE_VIEW_VOCABULARY)), 'the same filters, values and columns per surface');
     assert.deepEqual(vocab?.surfaces, [...CONSOLE_VIEW_SURFACES]);
     assert.deepEqual(vocab?.categories, [...CONSOLE_NOTIFICATION_CATEGORIES]);
+    // The reads never select a column of free text, or what a person's id could reach an audit row through.
+    const { rows: reads } = await h.db.admin.query<{ proname: string; prosrc: string }>("SELECT p.proname, p.prosrc FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'trustwork' AND p.proname IN ('console_search', 'console_work_items')");
+    assert.equal(reads.length, 2);
+    for (const read of reads) assert.doesNotMatch(read.prosrc, /\.(payload|summary|title|reason|purpose|decline_reason|decision_reason|reason_text|detail|object_id|display_name)\b/, read.proname);
     // A stored value the contract cannot name would fail a whole list, so everything a hit or a row carries is in the contract.
     const { rows: [stored] } = await h.db.admin.query<{ actions: string[]; roles: string[]; domains: string[] }>('SELECT trustwork.admin_second_person_actions() AS actions, trustwork.admin_staff_roles() AS roles, trustwork.hubs_config_domains() AS domains');
     assert.deepEqual((stored?.actions ?? []).filter((a) => !ConsoleActionCodeSchema.safeParse(a).success), []);
