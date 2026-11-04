@@ -422,6 +422,7 @@ Amendments to HC-40 … HC-49 and the new editorial screens HC-170 … HC-191 (i
 - **Purpose**: consultation and task categories.
 - **Data**: category rules, commission fee versions per category, open requests and engagements (counts), disputes, refunds, providers paused for expired licences.
 - **Actions**: edit rule (version), draft a commission fee version (activation by another person, `billing.activate_fee_version`), decide refund, open dispute grant.
+- **Live**: commission fee versions are drafted and activated on HC-91 Prices; the rest of this screen still needs its backend.
 - **Locale**: `admin.modules.marketplace.*`
 
 ### HC-63 Shared knowledge — `/modules/knowledge-sharing`
@@ -555,6 +556,14 @@ Implementation status: **In review** (SANC-006; hub cohort metrics stay unavaila
 
 ### HC-91 Prices — `/billing/prices`
 - **Data**: price versions and metered price versions (per module, capability or catalogue model; flat or markup materialized into a fixed sale price) with cost price, sale price, margin, effective dates, acceptance text versions, acceptance counts, notice status for existing payers. **Actions**: draft, preview the effect, request activation (second person), cancel draft; a cost change offers a draft new version, never an automatic price change. **States**: overlap or back-dating refused; activated versions read-only ("A published version cannot be changed; create a new one"). **Locale**: `admin.billing.prices.*`
+
+**Live** (built on the API, HUBC-007; demo mode keeps the fixture screen). The billing routes act for the hub the deployment serves (`TRUSTWORK_HUB_ID`) and take no hub in their path. The console asks `GET /v1/pricing` which hub that is: on any other hub the screen says so, shows nothing and sends nothing, because a draft would land on the served hub. Three lists, each read under its own permission and said to be hidden when the viewer may not read it:
+
+- **Commission fees** (BILL-003, `admin.billing.fees.*`). They live here, not on HC-62, until that screen has a backend. A percentage with up to two decimals, a fixed amount, or both.
+- **Model and capability sale prices** (BILL-003, `admin.commerce.price.*`). A draft that may replace an active version offers one activation per choice, because the approval's digest binds which version it replaces. Credit packs are listed here and drafted on HC-94 when that screen goes live.
+- **Usage prices** (AGT-004). Cost beside sale and margin; a cost record comes first, a markup is computed once by the engine, and a newer cost is reported beside the unchanged price. Acceptance counts below ten are not shown.
+
+Every activation takes two people: the drafter never activates, and only the person who asked can use the approval. So someone other than the drafter presses "Ask a second person", another staff member approves in Approvals (the drafter may), and the person who asked presses "Activate this version". The screen shows which of the three stages a draft is in for the viewer. Only usage drafts can be cancelled; the fee and sale routes have no cancel.
 
 ### HC-92 Invoices — `/billing/invoices`
 - **Data**: invoice runs, states, totals by offer; e-invoicing status. **Actions**: retry failed issuance. **Locale**: `admin.billing.invoices.*`

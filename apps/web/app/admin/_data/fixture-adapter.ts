@@ -124,6 +124,8 @@ export const fixtureConsolePort: ConsoleDataPort = {
   async product(hubId) {
     return productFor(hubId);
   },
+  // The demo prices screen reads `product`; only live mode uses this read.
+  prices: async () => null,
   async setup(token) {
     if (!token) return null;
     const hash = sha256(token);

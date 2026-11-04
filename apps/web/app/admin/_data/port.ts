@@ -17,6 +17,7 @@ import type {
 import type { Overview, Residency } from './read-models.js';
 import type { SectionDef } from './section-types.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
+import type { PricesView } from './live-prices.js';
 
 /**
  * The console's data boundary (ADM-002, docs/engine/hub-console/README.md "Data"). Pages and server actions use only
@@ -77,6 +78,11 @@ export interface ConsoleDataPort {
   brandChecks(hubId: string): Promise<Array<{ locale: string; ratio: string; passes: boolean }>>;
   /** The agent product, product modules, billing and communications of a hub (HUBC-005), or null. */
   product(hubId: string): Promise<HubProduct | null>;
+  /**
+   * HC-91 on the API: commission fees, sale versions and agent usage prices as the viewer may read them, for the hub this
+   * deployment serves. Only the live adapter answers; the demo screen reads `product`, so the fixture adapter answers null.
+   */
+  prices(hubId: string): Promise<PricesView | null>;
   /** The setup run a one-time token opens, or null (unknown, expired, or setup already finished). */
   setup(token: string): Promise<SetupRun | null>;
   command(request: ConsoleRequest, input: CommandInput): Promise<CommandOutcome>;

@@ -34,6 +34,10 @@ The page shows free participation, coverage, stable section order, current and u
 - **Credits never expire silently:** `validityDays: null` means no expiry; any expiry needs advance notice shorter than the validity, in the contract and in a database check.
 - **Limits:** publishing a version charges nobody. AGT-004 owns metering, markup prices and consuming these versions; BILL-004 owns purchase, renewal and refund flows. An offer's name is inside every version's digest, so a later version cannot rename an offer.
 
+## Console
+
+HC-91 Prices (`/admin/hubs/[hub]/billing/prices`, HUBC-007) drafts and activates fees and model and capability sale versions on these routes. Credit packs and referral terms have no live screen yet.
+
 ## Referral programme terms
 
 `referral_terms_version` holds the terms of a referral programme, versioned and disclosed like a fee (ADR 018; ADR 025 decision 21). Nothing here issues a reward: GROW-001 owns execution, and no programme, value or text ships with the engine.

@@ -117,6 +117,14 @@ const control = createServer((req, res) => {
       });
       return send(res, 200, { version });
     }
+    if (req.method === 'POST' && url.pathname === '/serving-hub') {
+      // HUBC-007: the billing routes act for the hub the deployment serves, and this shared stack serves none, so a journey
+      // that configures prices restarts the API for its own hub and restores it afterwards (a null hub).
+      const body = await readJson(req);
+      if (typeof body.hubId !== 'string' && body.hubId !== null) return send(res, 400, { error: 'bad request' });
+      await startApi(body.hubId);
+      return send(res, 200, { hubId: body.hubId });
+    }
     if (req.method === 'POST' && url.pathname === '/screen') {
       // SANC-004: the money and commitment gates refuse unscreened parties; the worker is not part of this stack, so the
       // control server activates synthetic baseline lists and screens every person and company through the worker's code.
@@ -145,6 +153,33 @@ if (!db) {
 }
 let pool: ReturnType<typeof createPool> | null = null;
 let created: Awaited<ReturnType<typeof createApp>> | null = null;
+
+/** Starts the API on its port, serving `hubId` (`TRUSTWORK_HUB_ID`) when one is named. A running API stops first; the sessions live in the database. */
+async function startApi(hubId: string | null): Promise<void> {
+  await created?.close();
+  created = await createApp({
+    env: {
+      API_HOST: '127.0.0.1',
+      API_PORT: String(API_PORT),
+      // The browser loads the web origin; the API proves same-origin mutations against it.
+      PUBLIC_ORIGIN: WEB_ORIGIN,
+      AUTH_PROVIDER_MODE: 'disabled',
+      // Every browser request reaches the API through the web server's rewrite (one peer address).
+      API_TRUSTED_PROXY_HOPS: '1',
+      AUTH_RATE_LIMIT_PER_MINUTE: '10000',
+      AUTH_LOCKOUT_THRESHOLD: '50',
+      API_LOG_LEVEL: 'error',
+      MAIL_SECRET_KEY: mailKeyHex,
+      ...(hubId ? { TRUSTWORK_HUB_ID: hubId } : {}),
+    },
+    pool: pool!,
+    clock,
+    logSink: (line) => {
+      if (line.includes('"level":"error"')) console.error('[api]', line);
+    },
+  });
+  await created.app.listen(API_PORT, '127.0.0.1');
+}
 let closing = false;
 async function shutdown(code = 0): Promise<void> {
   if (closing) return;
@@ -171,27 +206,7 @@ try {
   await db.createAppLogin();
   pool = db.teardown.watch(createPool({ ...db.appConfig, max: 8 }));
   mailbox = new CommittedMailbox(db.admin, Buffer.from(mailKeyHex, 'hex'));
-  created = await createApp({
-    env: {
-      API_HOST: '127.0.0.1',
-      API_PORT: String(API_PORT),
-      // The browser loads the web origin; the API proves same-origin mutations against it.
-      PUBLIC_ORIGIN: WEB_ORIGIN,
-      AUTH_PROVIDER_MODE: 'disabled',
-      // Every browser request reaches the API through the web server's rewrite (one peer address).
-      API_TRUSTED_PROXY_HOPS: '1',
-      AUTH_RATE_LIMIT_PER_MINUTE: '10000',
-      AUTH_LOCKOUT_THRESHOLD: '50',
-      API_LOG_LEVEL: 'error',
-      MAIL_SECRET_KEY: mailKeyHex,
-    },
-    pool,
-    clock,
-    logSink: (line) => {
-      if (line.includes('"level":"error"')) console.error('[api]', line);
-    },
-  });
-  await created.app.listen(API_PORT, '127.0.0.1');
+  await startApi(null);
 } catch (error) {
   console.error('[live-api] start failed', error);
   await shutdown(1);

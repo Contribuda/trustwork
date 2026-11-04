@@ -16,6 +16,8 @@ import { isRestricted } from '@trustwork/country-packs';
 import { ResidencyConfigPayloadSchema } from '../../../../../packages/contracts/src/hub-core.js';
 import { EffectiveAccessSchema, StaffDirectorySchema, StaffInvitationViewSchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import { evaluateCommand, invitationSeconds, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
+import { priceCommand, readPrices } from './live-prices.js';
+import { isPriceCommand, PRICE_COMMANDS } from '../hubs/[hub]/billing/prices/_commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
 import { OverviewSchema, QUEUE_IDS, ResidencySchema, type Overview, type QueueId, type Residency } from './read-models.js';
@@ -379,6 +381,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
+    ...PRICE_COMMANDS,
     'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request',
     'launch.mark_passed', 'residency.request_change', 'legal.draft',
   ]);
@@ -465,6 +468,10 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       const answer = await send(`/v1/admin/staff/invitations/${encodeURIComponent(f.invitationId ?? '')}/apply`, {});
       if (answer.status < 200 || answer.status >= 300) return invitationRefusal(answer);
       return InvitationApplySchema.safeParse(answer.body).data?.result.outcome === 'pending_second_person' ? { status: 'pending_second_person', secondPerson: 'staff.assign_sensitive_role' } : { status: 'applied' };
+    }
+    if (isPriceCommand(input.command)) {
+      const post = (path: `/v1/${string}`, rest: Record<string, unknown>) => api.post!(path, { reason: input.reason.trim(), ...rest }, newKey());
+      return priceCommand(input.command, f, { post, send, read: () => readPrices(api, orNothing, hub.hub.id, v.person.id, now()), form: { currency: hub.hub.currency, now: now() }, viewerId: v.person.id, hubId: hub.hub.id });
     }
     if (input.command === 'staff.invitation_withdraw') {
       const answer = await send(`/v1/admin/staff/invitations/${encodeURIComponent(f.invitationId ?? '')}/withdraw`, {});
@@ -601,6 +608,11 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     taxonomy: async () => [],
     brandChecks: async () => [],
     product: async () => null,
+    // HC-91: fees, sale prices and usage prices of the hub this deployment serves (`live-prices.ts`).
+    async prices(hubId) {
+      const me = MeSchema.safeParse(await orNothing(api.get('/v1/me'))).data?.person.id ?? null;
+      return readPrices(api, orNothing, hubId, me, now());
+    },
     // The live setup wizard reads `/v1/setup` itself (HUB-004, setup/_live); the console port has no setup run.
     setup: async () => null,
     // Commands are wired one by one with their backend routes (LIVE_COMMANDS); the others are not found in live mode.

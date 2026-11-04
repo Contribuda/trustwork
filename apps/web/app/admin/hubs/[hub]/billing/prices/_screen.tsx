@@ -9,6 +9,7 @@ import { longDate } from '../../../../_components/format';
 import { ConsoleHeader, Panel } from '../../../../_components/shell';
 import { ActivationRequest, Cohort, Empty, GuardRails, loadProduct, MarginText, moduleName, moneyMinor, PendingRequests, StatePill } from '../../modules/_kit/parts';
 import type { PriceRow } from '../../modules/_kit/schemas';
+import { LivePrices } from './_live';
 
 const subjectId = (r: PriceRow) => `${r.subject.kind}:${r.subject.key}${r.subject.kind === 'model' ? `:${r.subject.direction}` : ''}`;
 
@@ -156,4 +157,4 @@ async function Prices(ctx: HubContext) {
 }
 
 /** HC-91 Prices: per module, capability or model; cost beside sale and margin; flat or markup fixed at drafting; activation by a second person. */
-export const screen: Screen = { group: 'billing', id: 'prices', title: () => t('admin.billing.prices.title'), render: Prices };
+export const screen: Screen = { group: 'billing', id: 'prices', title: () => t('admin.billing.prices.title'), render: (ctx) => (ctx.port.source === 'api' ? LivePrices(ctx) : Prices(ctx)) };
