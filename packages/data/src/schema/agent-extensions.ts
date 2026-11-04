@@ -85,6 +85,16 @@ export interface AgentExtensionCallTable {
   finished_at: Date | null;
 }
 
+export interface AgentExtensionMandateScopeTable {
+  mandate_id: string;
+  mandate_revision: number;
+  hub_id: string;
+  extension_id: string;
+  version_id: string;
+  authority_digest: string;
+  created_at: Generated<Date>;
+}
+
 export type AgentExtensionRow = Selectable<AgentExtensionTable>;
 export type AgentExtensionCallRow = Selectable<AgentExtensionCallTable>;
 export type AgentExtensionVersionRow = Selectable<AgentExtensionVersionTable>;
@@ -98,6 +108,7 @@ export interface AgentExtensionsDatabase {
   agent_extension_safety_run: AgentExtensionSafetyRunTable;
   agent_extension_transition: AgentExtensionTransitionTable;
   agent_extension_call: AgentExtensionCallTable;
+  agent_extension_mandate_scope: AgentExtensionMandateScopeTable;
 }
 
 declare module './index.js' {
@@ -117,6 +128,7 @@ export const TABLE_COLUMNS: TableColumns<AgentExtensionsDatabase> = {
     'id', 'hub_id', 'version_id', 'manifest_digest', 'trigger', 'requested_by', 'state', 'engine_version', 'report', 'report_digest', 'scenario_count', 'failed_count', 'requested_at', 'completed_at',
   ]),
   agent_extension_transition: columns('agent_extension_transition', ['id', 'hub_id', 'version_id', 'from_status', 'to_status', 'reason', 'actor_person_id', 'at']),
+  agent_extension_mandate_scope: columns('agent_extension_mandate_scope', ['mandate_id', 'mandate_revision', 'hub_id', 'extension_id', 'version_id', 'authority_digest', 'created_at']),
   agent_extension_call: columns('agent_extension_call', [
     'id', 'hub_id', 'extension_id', 'version_id', 'capability_id', 'attempt_id', 'input_digest', 'output_digest', 'outcome', 'refusal', 'provider_decision_id', 'connection_id', 'model_id', 'connection_mode',
     'started_at', 'finished_at',

@@ -39,6 +39,11 @@ export const agentExtensions = {
     const { rows } = await sql<{ e: ExtensionActionBinding<A> | null }>`SELECT trustwork.agent_extensions_action(${hubId}::uuid, ${capabilityId}) AS e`.execute(trx);
     return rows[0]?.e ?? null;
   },
+  /** Whether the person confirmed this mandate, in this hub, for the authority of the active version. */
+  async mandateCovers(trx: Transaction, mandateId: string, hubId: string, capabilityId: string): Promise<boolean> {
+    const { rows } = await sql<{ ok: boolean }>`SELECT trustwork.agent_extensions_mandate_covers(${mandateId}::uuid, ${hubId}::uuid, ${capabilityId}) AS ok`.execute(trx);
+    return rows[0]?.ok === true;
+  },
   /** The audit of calls, newest first, by digest; `action_intent` stays out of reach (row-level security) and out of the view. */
   calls(trx: Transaction, hubId: string, limit: number): Promise<AgentExtensionCallRow[]> {
     return trx.selectFrom('agent_extension_call').selectAll().where('hub_id', '=', hubId).orderBy('started_at', 'desc').limit(limit).execute();

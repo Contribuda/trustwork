@@ -4,7 +4,8 @@
 --
 --   * an extension capability exists only while its version is `active` AND the hub's active agent policy lists that
 --     version and enables its module key: activating an extension offers nothing on its own;
---   * its key is its own module key, so a mandate covers it only when the person confirmed that key;
+--   * its key is its own module key, and a key alone is not enough: at each first-party confirmation the mandate records the
+--     authority of the version active in that hub, so a wider version, or the same key in another hub, needs a new one;
 --   * the call gate of KEYS-001 decides egress for every call, after every other check, in the dispatch transaction;
 --   * every call that reaches the gate leaves one row of digests. No payload, no output, no person.
 
@@ -52,7 +53,45 @@ CREATE POLICY agent_extension_call_maintenance ON trustwork.agent_extension_call
 CREATE POLICY agent_extension_call_read ON trustwork.agent_extension_call FOR SELECT TO trustwork_app USING (trustwork.agent_extensions_staff_reader(hub_id));
 GRANT SELECT ON trustwork.agent_extension_call TO trustwork_app;
 
--- 2. What a capability id means in this hub ---------------------------------------------------------------------------------
+-- 2. What a person confirmed -----------------------------------------------------------------------------------------------------
+-- What a version may do: its manifest without the titles. A new wording keeps a mandate; a new endpoint, data class, action,
+-- cost, adapter or route does not.
+CREATE FUNCTION trustwork.agent_extensions_authority_digest(p_manifest jsonb) RETURNS text
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT trustwork.admin_digest((p_manifest - 'title') || jsonb_build_object('actions',
+    (SELECT jsonb_agg(a - 'title' ORDER BY ord) FROM jsonb_array_elements(p_manifest -> 'actions') WITH ORDINALITY x(a, ord))))
+$$;
+
+-- One row per extension a confirmation covers, in the hub it was confirmed in. Written only at the person's first-party
+-- confirmation (`agent_mandate_provenance` records exactly those), never by a later revision or a system narrowing, so
+-- nothing can move a mandate onto a wider version without the person.
+CREATE TABLE trustwork.agent_extension_mandate_scope (
+  mandate_id uuid NOT NULL REFERENCES trustwork.mandate (id),
+  mandate_revision integer NOT NULL CHECK (mandate_revision > 0),
+  hub_id uuid NOT NULL REFERENCES trustwork.hub (id),
+  extension_id uuid NOT NULL REFERENCES trustwork.agent_extension (id),
+  version_id uuid NOT NULL REFERENCES trustwork.agent_extension_version (id),
+  authority_digest text NOT NULL CHECK (authority_digest ~ '^[a-f0-9]{64}$'),
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  PRIMARY KEY (mandate_id, mandate_revision, hub_id, extension_id)
+);
+CREATE TRIGGER agent_extension_mandate_scope_append_only BEFORE UPDATE OR DELETE ON trustwork.agent_extension_mandate_scope FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
+ALTER TABLE trustwork.agent_extension_mandate_scope ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trustwork.agent_extension_mandate_scope FORCE ROW LEVEL SECURITY;
+CREATE POLICY agent_extension_mandate_scope_maintenance ON trustwork.agent_extension_mandate_scope TO trustwork_owner USING (trustwork.maintenance_on()) WITH CHECK (trustwork.maintenance_on());
+
+CREATE FUNCTION trustwork.agent_extensions_on_mandate_provenance() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+BEGIN
+  INSERT INTO trustwork.agent_extension_mandate_scope (mandate_id, mandate_revision, hub_id, extension_id, version_id, authority_digest)
+  SELECT NEW.mandate_id, NEW.mandate_revision, NEW.hub_id, v.extension_id, v.id, trustwork.agent_extensions_authority_digest(v.manifest)
+  FROM trustwork.agent_extension_version v JOIN trustwork.mandate m ON m.id = NEW.mandate_id
+  WHERE v.hub_id = NEW.hub_id AND v.status = 'active' AND v.manifest ->> 'key' = ANY (m.module_keys);
+  RETURN NULL;
+END $$;
+CREATE TRIGGER agent_extension_mandate_binding AFTER INSERT ON trustwork.agent_mandate_provenance FOR EACH ROW EXECUTE FUNCTION trustwork.agent_extensions_on_mandate_provenance();
+
+-- 3. What a capability id means in this hub ---------------------------------------------------------------------------------
 -- The action of an extension version the hub both activated and enabled in its agent policy. NULL means it does not exist
 -- here: no fallback, no default policy. Runs as the caller; an active manifest is readable by everyone in the hub.
 CREATE FUNCTION trustwork.agent_extensions_action(p_hub uuid, p_capability text) RETURNS jsonb
@@ -177,7 +216,63 @@ BEGIN
   RETURN v_result || jsonb_build_object('implementation',d);
 END $$;
 
--- 3. Kill switches ------------------------------------------------------------------------------------------------------------
+-- Whether this mandate, at its current revision, was confirmed in this hub for the authority of the active version.
+CREATE FUNCTION trustwork.agent_extensions_mandate_covers(p_mandate uuid, p_hub uuid, p_capability text) RETURNS boolean
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+DECLARE
+  m trustwork.mandate%ROWTYPE;
+  e jsonb := trustwork.agent_extensions_action(p_hub, p_capability);
+BEGIN
+  SELECT * INTO m FROM trustwork.mandate WHERE id = p_mandate;
+  -- Not an oracle over another person's mandates.
+  IF m.id IS NULL OR e IS NULL OR (pg_has_role(session_user, 'trustwork_app', 'member') AND m.principal_person_id IS DISTINCT FROM trustwork.current_person_id()) THEN
+    RETURN false;
+  END IF;
+  RETURN EXISTS (SELECT 1 FROM trustwork.agent_extension_mandate_scope s JOIN trustwork.agent_extension_version v ON v.id = (e ->> 'versionId')::uuid
+    WHERE s.mandate_id = m.id AND s.mandate_revision = m.revision AND s.hub_id = p_hub AND s.extension_id = (e ->> 'extensionId')::uuid
+      AND s.authority_digest = trustwork.agent_extensions_authority_digest(v.manifest));
+END $$;
+
+-- The route check of activation, with the endpoints: a private class stays inside the hub's residency, wherever the model
+-- connection runs. Names the first host outside it, or NULL.
+CREATE FUNCTION trustwork.agent_extensions_endpoint_outside_residency(p_hub uuid, p_action jsonb, p_endpoints jsonb) RETURNS text
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT e ->> 'host' FROM jsonb_array_elements(p_endpoints) e
+  WHERE (p_action -> 'endpointHosts') ? (e ->> 'host')
+    AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(p_action -> 'dataClassesSent') c WHERE c <> 'public')
+    AND NOT trustwork.providers_in_residency(p_hub, e ->> 'country', NULL)
+  ORDER BY e ->> 'host' LIMIT 1
+$$;
+
+CREATE OR REPLACE FUNCTION trustwork.agent_extensions_check_route(p_hub uuid, p_extension uuid, p_manifest jsonb) RETURNS void
+LANGUAGE plpgsql VOLATILE SET search_path = trustwork, pg_temp AS $$
+DECLARE
+  v_job text := p_manifest #>> '{route,job}';
+  v_classes jsonb;
+  v_decision jsonb;
+  v_action jsonb;
+  v_host text;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM trustwork.model_route r WHERE r.hub_id = p_hub AND r.job = v_job AND r.scope_kind = 'extension' AND r.extension_id = p_extension AND r.status = 'active') THEN
+    RAISE EXCEPTION 'the extension has no active route of its own' USING ERRCODE = 'check_violation', HINT = 'agents.route_missing', DETAIL = v_job;
+  END IF;
+  SELECT coalesce(jsonb_agg(DISTINCT c), '["public"]'::jsonb) INTO v_classes
+    FROM jsonb_array_elements(p_manifest -> 'actions') a CROSS JOIN LATERAL jsonb_array_elements_text(a -> 'dataClassesSent') c;
+  v_decision := trustwork.providers_authorize_call(jsonb_build_object('hubId', p_hub, 'job', v_job, 'moduleKey', p_manifest ->> 'key', 'extensionId', p_extension, 'pipelineId', NULL, 'dataClasses', v_classes,
+    'estimatedCost', jsonb_build_object('minorUnits', '0', 'currency', (SELECT currency FROM trustwork.hub_profile WHERE hub_id = p_hub)), 'requestRef', 'extension-activation'), true);
+  IF NOT (v_decision ->> 'allowed')::boolean THEN
+    RAISE EXCEPTION 'the route refuses a data class this extension sends' USING ERRCODE = 'check_violation', HINT = 'agents.egress_denied',
+      DETAIL = concat_ws(':', v_decision ->> 'reason', v_decision ->> 'detail');
+  END IF;
+  FOR v_action IN SELECT value FROM jsonb_array_elements(p_manifest -> 'actions') LOOP
+    v_host := trustwork.agent_extensions_endpoint_outside_residency(p_hub, v_action, p_manifest -> 'endpoints');
+    IF v_host IS NOT NULL THEN
+      RAISE EXCEPTION 'a private class stays inside the hub residency' USING ERRCODE = 'check_violation', HINT = 'agents.egress_denied', DETAIL = 'residency:' || v_host;
+    END IF;
+  END LOOP;
+END $$;
+
+-- 4. Kill switches ------------------------------------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION trustwork.agent_modules_dispatch_refusal_internal(p_hub uuid, p_module_key text, p_capability_id text, p_action text, p_person uuid, p_connection uuid, p_representative_of uuid)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
   SELECT r FROM (
@@ -231,7 +326,7 @@ BEGIN
   RETURN NULL;
 END $$;
 
--- 4. The call gate, for the worker --------------------------------------------------------------------------------------------
+-- 5. The call gate, for the worker --------------------------------------------------------------------------------------------
 -- The first endpoint of a manifest that is restricted today, or NULL: a place can be restricted after activation.
 CREATE FUNCTION trustwork.agent_extensions_restricted_endpoint(p_hub uuid, p_endpoints jsonb) RETURNS text
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
@@ -286,8 +381,15 @@ BEGIN
     v_refusal := 'version_changed';
   ELSIF EXISTS (SELECT 1 FROM trustwork.kill_switch k WHERE k.state = 'engaged' AND k.scope_kind = 'agent_extension' AND k.extension_id = v.extension_id) THEN
     v_refusal := 'extension_killed';
+  ELSIF NOT trustwork.agent_extensions_mandate_covers(i.mandate_id, p.hub_id, i.capability_id) THEN
+    v_refusal := 'extension_not_confirmed';
   ELSIF trustwork.agent_extensions_restricted_endpoint(p.hub_id, e -> 'endpoints') IS NOT NULL THEN
     v_refusal := 'restricted_endpoint';
+  ELSIF trustwork.agent_extensions_endpoint_outside_residency(p.hub_id, e -> 'action', e -> 'endpoints') IS NOT NULL THEN
+    v_refusal := 'egress_denied:residency';
+  -- The gate would fall through to a module or job route: a disabled route of this extension stops it instead.
+  ELSIF NOT EXISTS (SELECT 1 FROM trustwork.model_route r WHERE r.hub_id = p.hub_id AND r.job = e #>> '{route,job}' AND r.scope_kind = 'extension' AND r.extension_id = v.extension_id AND r.status = 'active') THEN
+    v_refusal := 'route_missing';
   ELSE
     v_classes := CASE WHEN jsonb_array_length(e #> '{action,dataClassesSent}') > 0 THEN e #> '{action,dataClassesSent}' ELSE '["public"]'::jsonb END;
     v_cost := CASE WHEN e #>> '{action,cost,kind}' = 'per_call' THEN e #> '{action,cost,amount}'
@@ -353,9 +455,9 @@ BEGIN
   VALUES (v.hub_id, v.extension_id, v.id, i.capability_id, p_attempt, trustwork.admin_digest(i.effect -> 'payload'), p_output_digest, p_outcome, now());
 END $$;
 
--- 5. Grants ---------------------------------------------------------------------------------------------------------------------
+-- 6. Grants ---------------------------------------------------------------------------------------------------------------------
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION trustwork.agent_extensions_action(uuid, text), trustwork.agent_extensions_capability(uuid, text) TO trustwork_app;
+GRANT EXECUTE ON FUNCTION trustwork.agent_extensions_action(uuid, text), trustwork.agent_extensions_capability(uuid, text), trustwork.agent_extensions_mandate_covers(uuid, uuid, text) TO trustwork_app;
 GRANT EXECUTE ON FUNCTION
   trustwork.agent_extensions_lock_gate(),
   trustwork.agent_extensions_begin_call(uuid, uuid, bigint, text),

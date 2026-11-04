@@ -11,7 +11,7 @@ import { ENGINE_EXTENSION_ADAPTERS, registerExtensionSafetyRuns, type ExtensionR
 import { silentLogger } from '../../apps/worker/src/log.js';
 import { workerLogin } from '../assistant/helpers.js';
 import { buildAgentWorld, command, ok, type AgentWorld } from '../agent-modules/helpers.js';
-import { activateResidency, SELF_US } from '../providers/helpers.js';
+import { activateResidency, SELF_US, US_HUB } from '../providers/helpers.js';
 import type { Client, Harness, Response } from '../backend/helpers/app.js';
 
 /**
@@ -41,9 +41,9 @@ export interface ExtensionWorld extends AgentWorld {
   close(): Promise<void>;
 }
 
-export async function buildExtensionWorld(h: Harness): Promise<ExtensionWorld> {
-  const world = await buildAgentWorld(h, PERMISSIONS);
-  const { a, w, hubId } = world;
+/** Residency, one fake connection and the public egress cell of a hub. */
+async function installConnection(world: AgentWorld, hubId: string): Promise<string> {
+  const { a, w } = world;
   await activateResidency(a, w.people.owner, w.people.officer, hubId, ['US']);
   const connection = await a.cmd(w.people.owner, (trx, ctx) => providerConnections.create(trx, ctx, hubId, {
     adapterId: 'fake', mode: 'fake', label: 'Synthetic extension connection', capabilities: ['llm'], endpoint: null, hosting: SELF_US, storageCountry: null, region: null, credentialRefId: null,
@@ -52,6 +52,22 @@ export async function buildExtensionWorld(h: Harness): Promise<ExtensionWorld> {
   await a.cmd(w.people.owner, (trx, ctx) => providerConnections.recordTest(trx, ctx, connection.id, { configDigest: material.config_digest, outcome: 'ok', latencyMs: 1, modelsListed: 1, cost: null, probeDigest: 'a'.repeat(64), secretRefId: null }));
   await a.cmd(w.people.owner, async (trx, ctx) => providerConnections.enable(trx, ctx, connection.id, (await providerConnections.get(trx, connection.id))!.revision, null));
   await a.cmd(w.people.owner, (trx, ctx) => egressRules.set(trx, ctx, { connectionId: connection.id, dataClass: 'public', decision: 'allow', requireInResidency: false, requireZeroRetention: false, approvalId: null }));
+  return connection.id;
+}
+
+/** Another hub run by the same staff: the same helpers work on the world this returns. */
+export async function addHub(x: ExtensionWorld): Promise<ExtensionWorld> {
+  const { a, w } = x;
+  const hubId = (await a.createHub(`synthetic-extensions-${randomUUID().slice(0, 6)}`, { ...US_HUB, timeZone: 'America/New_York' })).hub_id;
+  await a.assignSensitive({ personId: w.people.owner, role: 'hub-owner', scope: { kind: 'hub', hubId } });
+  await a.assignSensitive({ personId: w.people.officer, role: 'compliance-officer', scope: { kind: 'hub', hubId } });
+  return { ...x, hubId, base: `/v1/admin/agent-extensions/${hubId}`, connectionId: await installConnection(x, hubId) };
+}
+
+export async function buildExtensionWorld(h: Harness): Promise<ExtensionWorld> {
+  const world = await buildAgentWorld(h, PERMISSIONS);
+  const { hubId } = world;
+  const connectionId = await installConnection(world, hubId);
 
   const login = await workerLogin(h);
   const pool: DataPool = login.pool(3);
@@ -61,7 +77,7 @@ export async function buildExtensionWorld(h: Harness): Promise<ExtensionWorld> {
   const config = workerConfigFromEnv({ WORKER_DATABASE_URL: 'postgresql://unused', WORKER_ID: 'synthetic-extensions', WORKER_CONCURRENCY: '1' }).config;
   const runner = new JobRunner({ pool, registry, config, metrics: new Metrics(), log: silentLogger });
   return {
-    ...world, admin: h.db.admin, base: `/v1/admin/agent-extensions/${hubId}`, connectionId: connection.id, runtime,
+    ...world, admin: h.db.admin, base: `/v1/admin/agent-extensions/${hubId}`, connectionId, runtime,
     installAdapters(adapters) { runtime.adapters = adapters; },
     async drain() { for (let i = 0; i < 20 && await runner.tick(); i++) await runner.idle(); },
     close: () => login.close(),

@@ -160,7 +160,11 @@
         "input_invalid": "La llamada no coincide con las entradas que declara esta acción.",
         "amount_below_cost": "El importe no cubre el coste de esta acción.",
         "output_refused": "La respuesta de la extensión no cumplía su contrato y se descartó.",
-        "adapter_unavailable": "El adaptador de esta extensión no está instalado para esta conexión."
+        "adapter_unavailable": "El adaptador de esta extensión no está instalado para esta conexión.",
+        "side_effect_needs_mandate_kind": "Un efecto declarado necesita otro tipo de mandato.",
+        "data_classes_undeclared": "Una llamada externa debe declarar las clases de datos que envía.",
+        "private_class_not_sent": "Una clase de datos privada no figura entre las clases enviadas.",
+        "extension_not_confirmed": "Este mandato no se confirmó para lo que esta extensión puede hacer en este hub. Confirma uno nuevo."
       }
     }
   }

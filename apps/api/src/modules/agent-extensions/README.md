@@ -14,7 +14,7 @@ Status: **implemented for fake connections, API and worker.** No live adapter sh
 | A declared side effect fixes the mandate kind | `SIDE_EFFECT_MANDATE_KINDS`: `outbound_message` needs `communicate`, so the action meets that kind's floor and the `outbound_messages` kill switch; a mismatch is `side_effect_needs_mandate_kind` |
 | What leaves is declared | `external_call` needs a non-empty `dataClassesSent` (`data_classes_undeclared`), and each private class needs an egress class that carries it (`PRIVATE_CLASS_EGRESS`, `private_class_not_sent`) |
 | No endpoint in a restricted place | The stated country and region and the country-code domain, at draft and again at activation, through `hubs_place_restricted` (which also reads places the hub added) |
-| An extension's key is its own module key | A mandate covers it only when the person confirmed that key, so no existing mandate is widened; a built-in key is refused (`key_reserved`) |
+| A mandate binds what the person confirmed | The key is its own module key (a built-in key is refused, `key_reserved`), and each first-party confirmation records, per hub, the digest of the active version's authority: the manifest without its titles. A wider version, or the same key in another hub, needs a new confirmation (`extension_not_confirmed`); a new wording does not |
 | `tested` is the engine's word | Staff ask for a run (`agents.extension_safety_run`); only the worker role records it, under a live job lease, on the fake adapter, for this manifest digest |
 | `active` is a hub configuration version | Domain `agent_extensions`, activated by HUB-001 under `agents.activate_extension`. The hook `agent_extensions_on_activation` checks every listed version again |
 | Activation by the drafter alone fails | The configuration drafter never activates (HUB-001), the activator never approves their own request, and the approver is never the manifest's drafter (`drafter_cannot_approve`) |
@@ -36,17 +36,18 @@ There is no second path. `20261210100100_agent_extensions_runtime.sql` adds an e
 | Check | Where it comes from |
 |---|---|
 | Mandate: status, expiry, grantee, module, verb, context, ceilings, window | `evaluateMandateV2`, unchanged. The module is the extension's own key |
+| What the person confirmed | `agent_extensions_mandate_covers`, at proposal and again at dispatch: this hub, this authority digest |
 | Hub policy and capability switches | `agent_modules_policy_refusal`; an extension has no engine default, so the hub policy must list the active version and enable its module |
 | Approval bound to a digest | `action_intent`, unchanged. The effect pins `extensionVersion` (id and manifest digest), and the digest covers it: an approval never carries over to another version (`version_changed`) |
 | Budget | The mandate kind's reservation, unchanged. A proposed amount below a declared cost is refused (`amount_below_cost`, for when charged actions can activate) |
 | Kill switches and stops | `agent_modules_dispatch_refusal_internal` gains the `agent_extension` scope; engaging fences executing actions like any agent switch |
 | Declared inputs | `extensionCallRefusal` at proposal, again in the worker |
-| Egress, caps, routes | `providers_authorize_call` for every call, inside `agent_extensions_begin_call`, with the rule of that moment |
+| Egress, caps, routes | `providers_authorize_call` for every call, inside `agent_extensions_begin_call`, with the rule of that moment. The extension's own route must be active: a disabled one stops the call and never falls through to a module or job route (`route_missing`). A private class also stays inside the hub's residency by endpoint country, at activation and at every call |
 | Restricted places | Again at every call, in case a place became restricted after activation |
 
 A call that reaches the gate leaves one `agent_extension_call` row of digests, refused or not. A crash can roll that row back with its transaction; reconciliation writes it, so no call that may have reached an adapter stays out of the audit.
 
-Adapter output is untrusted. It is parsed against `ExtensionCallOutputSchema`, digested and dropped. An output that fails the contract is recorded as `output_refused`, yet the action counts as succeeded: the adapter did its work and the money stays committed.
+Adapter output is untrusted. It is parsed against `ExtensionCallOutputSchema`, digested and dropped. An output that fails the contract is recorded as `output_refused` and the action fails, so its reservation is released: the participant received nothing usable.
 
 Lock order matters: every writer of a kill switch takes the provider callback lock and then an authorization epoch, so a dispatch takes `agent_extensions_lock_gate` before `agent_modules_enter_effect`. The other order deadlocks with a kill switch engaged during a dispatch (regression test: `tests/agent-extensions/runtime.test.ts`). The lock is held through the adapter call, which is harmless for a fake; a live adapter must move the gate out of that transaction first.
 

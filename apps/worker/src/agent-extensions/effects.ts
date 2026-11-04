@@ -64,10 +64,10 @@ export function extensionEffects(adapters: readonly InstalledExtensionAdapter[] 
           }
           const parsed = ExtensionCallOutputSchema.safeParse(raw);
           const output = digestOf(parsed.success ? parsed.data : { refused: true });
-          // The adapter did its work, so the action succeeded and its money stays committed; the output simply goes nowhere.
+          // The participant received nothing usable: the action failed and its reservation is released.
           if (!parsed.success) {
             await agentExtensionWorker.finishCall(trx, start.callId, 'refused', null, 'output_refused');
-            return { kind: 'final', result: 'succeeded', providerReference: start.callId, evidence: 'extension output refused: it did not match the output contract' };
+            return { kind: 'final', result: 'failed', providerReference: start.callId, evidence: 'extension output refused: it did not match the output contract' };
           }
           await agentExtensionWorker.finishCall(trx, start.callId, 'succeeded', output);
           return { kind: 'final', result: 'succeeded', providerReference: start.callId, evidence: `extension output digest ${output}` };
@@ -90,9 +90,13 @@ export function extensionEffects(adapters: readonly InstalledExtensionAdapter[] 
             return { status: 'not_found' };
           }
           const parsed = ExtensionCallOutputSchema.safeParse(found.output);
-          const output = parsed.success ? digestOf(parsed.data) : null;
+          if (!parsed.success) {
+            await agentExtensionWorker.recordReconciled(trx, attemptId, 'failed', null);
+            return { status: 'final', result: 'failed', providerReference: attemptId, evidence: 'extension output refused: it did not match the output contract' };
+          }
+          const output = digestOf(parsed.data);
           await agentExtensionWorker.recordReconciled(trx, attemptId, 'succeeded', output);
-          return { status: 'final', result: 'succeeded', providerReference: attemptId, evidence: output ? `extension output digest ${output}` : 'extension output refused: it did not match the output contract' };
+          return { status: 'final', result: 'succeeded', providerReference: attemptId, evidence: `extension output digest ${output}` };
         },
       };
     },

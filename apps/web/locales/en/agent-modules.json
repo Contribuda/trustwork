@@ -160,7 +160,11 @@
         "input_invalid": "The call does not match the inputs this action declares.",
         "amount_below_cost": "The amount does not cover what this action costs.",
         "output_refused": "The extension's answer did not match its contract and was discarded.",
-        "adapter_unavailable": "The adapter of this extension is not installed for this connection."
+        "adapter_unavailable": "The adapter of this extension is not installed for this connection.",
+        "side_effect_needs_mandate_kind": "A declared side effect needs a different mandate kind.",
+        "data_classes_undeclared": "An external call must declare the data classes it sends.",
+        "private_class_not_sent": "A private data class is not declared among the classes sent.",
+        "extension_not_confirmed": "This mandate was not confirmed for what this extension can do in this hub. Confirm a new one."
       }
     }
   }

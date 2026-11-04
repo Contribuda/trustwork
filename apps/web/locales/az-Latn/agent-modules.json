@@ -160,7 +160,11 @@
         "input_invalid": "Çağırış bu əməliyyatın bildirdiyi girişlərə uyğun deyil.",
         "amount_below_cost": "Məbləğ bu əməliyyatın dəyərini ödəmir.",
         "output_refused": "Genişləndirmənin cavabı müqaviləsinə uyğun gəlmədi və ləğv edildi.",
-        "adapter_unavailable": "Bu genişləndirmənin adapteri bu bağlantı üçün quraşdırılmayıb."
+        "adapter_unavailable": "Bu genişləndirmənin adapteri bu bağlantı üçün quraşdırılmayıb.",
+        "side_effect_needs_mandate_kind": "Bildirilmiş yan təsir başqa mandat növü tələb edir.",
+        "data_classes_undeclared": "Xarici çağırış göndərdiyi məlumat siniflərini bildirməlidir.",
+        "private_class_not_sent": "Şəxsi məlumat sinfi göndərilən siniflər arasında göstərilməyib.",
+        "extension_not_confirmed": "Bu mandat bu genişləndirmənin bu habdakı imkanları üçün təsdiqlənməyib. Yenisini təsdiqləyin."
       }
     }
   }
