@@ -119,7 +119,6 @@ test('HC-23 Verification through the live adapter', { skip: h ? false : SKIP_REA
   const direct = (key: Who, command: Parameters<typeof verificationCommand>[0], fields: Record<string, string>) => verificationCommand(command, fields, {
     hubId, viewerId: w.people[key],
     send: (path, rest) => staffPost(key, path, rest).then((r) => ({ status: r.status, code: (r.body as { code?: string } | null)?.code ?? null, body: r.body })),
-    saveConfig: async () => ({ status: 'applied' }),
     read: () => portOf('owner').verification(hubId),
   });
   const recipeFields = { key: 'company-verified', subjectKind: 'company', trigger: 'claim_verified', recheckMonths: '12', categories: 'register_record_matches, sanctions_screening_clear', 'step.register_match': 'required', 'step.officer_match': 'any', 'step.signed_authority': 'any' };
@@ -127,10 +126,6 @@ test('HC-23 Verification through the live adapter', { skip: h ? false : SKIP_REA
     const v = await portOf(key).verification(hubId);
     assert.ok(v, 'the section reads');
     return v;
-  };
-  const gate = async () => {
-    const checklist = (await clients.owner.get(`/v1/admin/hubs/${hubId}/launch`)).body as { gates: Array<{ gate: string; engineConfirms: boolean }> };
-    return checklist.gates.find((g) => g.gate === 'verification_recipe_enabled')?.engineConfirms;
   };
 
   // A role at another hub makes nobody staff of this deployment, so that person cannot even elevate here.
@@ -201,23 +196,12 @@ test('HC-23 Verification through the live adapter', { skip: h ? false : SKIP_REA
     assert.equal((await view()).recipes.some((r) => r.id === foreign), false);
   });
 
-  await t.test('the launch checklist: recording the active recipes confirms the gate, and a new active version asks for a new record', async () => {
-    assert.equal(await gate(), false, 'an active recipe alone does not move the gate');
-    assert.equal((await view()).config, null);
-    const denied = await run('moderator', 'verification.config_record');
-    assert.equal(denied.status === 'rejected' && denied.code, 'denied');
-    assert.deepEqual(await run('owner', 'verification.config_record'), { status: 'applied' });
-    assert.equal(await gate(), true);
-    assert.deepEqual((await view()).config, { version: 1, current: true });
+  await t.test('a new version supersedes the active one', async () => {
     assert.deepEqual(await run('owner', 'verification.recipe_draft', { ...recipeFields, recheckMonths: '6' }), { status: 'applied' });
     const next = (await view()).recipes.find((r) => r.status === 'draft')!;
     assert.equal(next.version, 2);
     assert.deepEqual(await run('officer', 'verification.recipe_activate', { recipeId: next.id, revision: String(next.revision) }), { status: 'applied' });
-    const after = await view();
-    assert.deepEqual(after.recipes.map((r) => [r.version, r.status]), [[2, 'active'], [1, 'superseded']]);
-    assert.deepEqual(after.config, { version: 1, current: false });
-    assert.deepEqual(await run('owner', 'verification.config_record'), { status: 'applied' });
-    assert.deepEqual((await view()).config, { version: 2, current: true });
+    assert.deepEqual((await view()).recipes.map((r) => [r.version, r.status]), [[2, 'active'], [1, 'superseded']]);
   });
 
   await t.test('a provider registers fake or manual only; a duplicate and a sanctions provider are refused', async () => {

@@ -449,7 +449,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       return settled(await send(`${hubPath}/config/${encodeURIComponent(version.id)}/activate`, { expectedRevision: version.revision, approvalId: null }));
     };
     if (isVerificationCommand(input.command)) {
-      return verificationCommand(input.command, f, { send, saveConfig: draftAndActivate, read: () => readVerification(api, orNothing, hub.hub.id, v.person.id, now()), viewerId: v.person.id, hubId: hub.hub.id });
+      return verificationCommand(input.command, f, { send, read: () => readVerification(api, orNothing, hub.hub.id, v.person.id, now()), viewerId: v.person.id, hubId: hub.hub.id });
     }
     if (input.command === 'staff.assign') {
       // A hub role from the latest released definition; the API checks the grantor, conflicts and sensitivity again.

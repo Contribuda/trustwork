@@ -25,8 +25,6 @@ const ClaimsOverviewSchema = z.object({ settings: z.object({ waitingDays: z.int(
 const CredentialsSchema = z.object({ items: z.array(z.object({ id: UUID, provider: z.string(), adapter: z.string(), mode: z.string(), status: z.string() })) });
 const ListsSchema = z.object({ items: z.array(z.object({ code: z.string(), baseline: z.boolean(), hubId: UUID.nullable(), mode: z.string(), status: z.string(), freshness: z.object({ ageSeconds: z.number().nullable() }).passthrough() })) });
 const LiveDigestSchema = z.object({ action: z.string(), actionDigest: z.string().regex(/^[a-f0-9]{64}$/), revision: z.int() });
-const ConfigCurrentSchema = z.object({ items: z.array(z.record(z.string(), z.unknown())) });
-const RecordedRecipesSchema = z.object({ activeRecipes: z.array(z.object({ recipeId: UUID })) });
 
 export type VerificationProvider = z.infer<typeof ProviderSchema>;
 export type VerificationRecipe = z.infer<typeof RecipeSchema>;
@@ -43,19 +41,10 @@ export type VerificationView = {
   lists: z.infer<typeof ListsSchema>['items'] | null;
   /** Per provider that may still go live: the options by credential. */
   liveOptions: Readonly<Record<string, readonly LiveOption[]>>;
-  /** The active `verification` configuration version the launch checklist reads, and whether it names exactly the active recipes. */
-  config: { version: number; current: boolean } | null;
 };
 
 export type SectionApi = { get(path: `/v1/${string}`): Promise<unknown> };
 type Read = <T>(read: Promise<T>) => Promise<T | null>;
-
-export const activeRecipes = (recipes: readonly VerificationRecipe[]) => recipes.filter((r) => r.status === 'active');
-
-/** The payload of a `verification` configuration version: which recipe versions the hub runs. */
-export function configPayload(recipes: readonly VerificationRecipe[]) {
-  return { activeRecipes: activeRecipes(recipes).map((r) => ({ recipeId: r.id, key: r.key, version: r.version, subjectKind: r.subjectKind, trigger: r.trigger })) };
-}
 
 async function goLiveOptions(api: SectionApi, orNothing: Read, hub: string, providers: readonly VerificationProvider[], credentials: readonly VerificationCredential[], approvals: readonly LiveApproval[], viewerId: string | null, now: Date) {
   const options: Record<string, LiveOption[]> = {};
@@ -77,25 +66,19 @@ export async function readVerification(api: SectionApi, orNothing: Read, hubId: 
   const overview = await orNothing(api.get(`/v1/admin/hubs/${hub}/verification`));
   if (overview === null) return null;
   const { providers, recipes } = OverviewSchema.parse(overview);
-  const [claims, credentialList, lists, approvals, current] = await Promise.all([
+  const [claims, credentialList, lists, approvals] = await Promise.all([
     orNothing(api.get(`/v1/admin/hubs/${hub}/claims`)),
     orNothing(api.get(`/v1/admin/hubs/${hub}/credentials`)),
     orNothing(api.get('/v1/admin/screening/lists')),
     orNothing(api.get(`/v1/admin/approvals?hubId=${hub}`)),
-    orNothing(api.get(`/v1/admin/hubs/${hub}/config/current`)),
   ]);
   const credentials = CredentialsSchema.safeParse(credentialList).data?.items ?? null;
-  const row = ConfigCurrentSchema.safeParse(current).data?.items.find((i) => i.domain === 'verification');
-  const recorded = RecordedRecipesSchema.safeParse(row?.payload).data?.activeRecipes.map((r) => r.recipeId).sort() ?? null;
-  const version = z.int().min(1).safeParse(row?.version).data;
-  const running = activeRecipes(recipes).map((r) => r.id).sort();
   return {
     hubId, recipes: [...recipes].sort((a, b) => a.key.localeCompare(b.key) || b.version - a.version), providers,
     settings: ClaimsOverviewSchema.safeParse(claims).data?.settings ?? null,
     credentials,
     lists: ListsSchema.safeParse(lists).data?.items.filter((l) => l.hubId === null || l.hubId === hubId) ?? null,
     liveOptions: await goLiveOptions(api, orNothing, hub, providers, credentials ?? [], hubApprovals(approvals, hubId), viewerId, now),
-    config: version === undefined ? null : { version, current: recorded !== null && recorded.length === running.length && recorded.every((id, i) => id === running[i]) },
   };
 }
 
@@ -103,8 +86,6 @@ export type SectionAnswer = { status: number; code: string | null; body?: unknow
 export type VerificationSend = {
   /** A staff command with reason, idempotency key and console contract version. */
   send(path: `/v1/${string}`, rest: Record<string, unknown>): Promise<SectionAnswer>;
-  /** A new configuration version, activated at once: `verification` is not a sensitive domain. */
-  saveConfig(domain: string, payload: Record<string, unknown>): Promise<CommandOutcome>;
   read(): Promise<VerificationView | null>;
   viewerId: string;
   hubId: string;
@@ -149,12 +130,6 @@ export async function verificationCommand(command: VerificationCommandId, f: Rea
     case 'verification.claim_settings': {
       const body = claimSettings(f);
       return invalid(body) ?? done(await io.send(`${base}/claims/settings`, body));
-    }
-    case 'verification.config_record': {
-      const view = await io.read();
-      if (!view) return { status: 'not_found' };
-      if (activeRecipes(view.recipes).length === 0) return as('invalid');
-      return io.saveConfig('verification', configPayload(view.recipes));
     }
     case 'verification.provider_request_live':
     case 'verification.provider_go_live': {

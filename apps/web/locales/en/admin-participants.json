@@ -374,19 +374,6 @@
           "note": "Lists are added and confirmed on the screening screen; baseline lists have no switch.",
           "open": "Open screening",
           "hidden": "Your roles do not show the screening lists."
-        },
-        "launch": {
-          "title": "Launch checklist record",
-          "state": {
-            "missing": "Not recorded",
-            "outdated": "Out of date",
-            "current": "Up to date"
-          },
-          "version": "Configuration version {version} is active.",
-          "none": "No verification configuration is active yet.",
-          "help": "The launch checklist reads the hub's verification configuration, not the recipes themselves. Record the active recipes here after you change them; a new record reopens the gate until someone checks it again.",
-          "noActive": "Activate a recipe first.",
-          "record": "Record the active recipes"
         }
       }
     },

@@ -374,19 +374,6 @@
           "note": "Las listas se añaden y confirman en la pantalla de verificación de sanciones; las listas básicas no tienen interruptor.",
           "open": "Abrir verificación de sanciones",
           "hidden": "Sus roles no muestran las listas de sanciones."
-        },
-        "launch": {
-          "title": "Registro para la lista de lanzamiento",
-          "state": {
-            "missing": "Sin registrar",
-            "outdated": "Desactualizado",
-            "current": "Al día"
-          },
-          "version": "La versión {version} de la configuración está activa.",
-          "none": "Aún no hay ninguna configuración de verificación activa.",
-          "help": "La lista de lanzamiento lee la configuración de verificación del hub, no las recetas. Registre aquí las recetas activas después de cambiarlas; un registro nuevo reabre el control hasta que alguien lo compruebe de nuevo.",
-          "noActive": "Active primero una receta.",
-          "record": "Registrar las recetas activas"
         }
       }
     },

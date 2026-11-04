@@ -26,7 +26,7 @@ export type RecipeStep = { check: VerificationCheckType; required: boolean } | {
 
 export const VERIFICATION_COMMANDS = [
   'verification.recipe_draft', 'verification.recipe_activate', 'verification.provider_register', 'verification.provider_request_live', 'verification.provider_go_live',
-  'verification.claim_settings', 'verification.config_record',
+  'verification.claim_settings',
 ] as const;
 export type VerificationCommandId = (typeof VERIFICATION_COMMANDS)[number];
 export function isVerificationCommand(value: unknown): value is VerificationCommandId {
@@ -44,7 +44,6 @@ export const VERIFICATION_COMMAND_PERMISSIONS: Record<VerificationCommandId, rea
   'verification.provider_request_live': ['admin.providers.toggle'],
   'verification.provider_go_live': ['admin.claims.policy.edit'],
   'verification.claim_settings': ['admin.claims.policy.edit'],
-  'verification.config_record': ['admin.claims.policy.edit', 'admin.config.edit'],
 };
 
 type Fields = Readonly<Record<string, string>>;
@@ -137,7 +136,5 @@ export function verificationFormProblem(command: VerificationCommandId, fields: 
     case 'verification.provider_go_live':
       if (!UUID.test(fields.providerId ?? '')) return { field: 'providerId' };
       return UUID.test(fields.credentialRefId ?? '') ? null : { field: 'credentialRefId' };
-    case 'verification.config_record':
-      return null;
   }
 }

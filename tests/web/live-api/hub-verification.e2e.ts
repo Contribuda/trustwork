@@ -3,14 +3,13 @@ import { control, enrolled, inGeorgian, LANG, liveHub, staffPost, submitIn } fro
 import { expectAccessible, expectNoHorizontalOverflow, msg, shot, verifiedAccount } from './support.js';
 
 /**
- * HC-23 Verification against the live API, in Georgian (demo mode off): a steward drafts and activates a recipe, records
- * it for the launch checklist, registers a provider and sets the claim periods; a provider goes live through a second
+ * HC-23 Verification against the live API, in Georgian (demo mode off): a steward drafts and activates a recipe, registers a provider and sets the claim periods; a provider goes live through a second
  * person; a reader sees everything and can change nothing; a participant finds nothing. Key states pass axe and fit 1280
  * and 375 px. This file sorts after `console.e2e.ts` on purpose: its staff raise the node's staff count, and those journeys
  * approve within one role. Every person and hub is synthetic.
  */
 const SLUG = `synthetic-verification-${Date.now().toString(36)}`;
-const PERMISSIONS = ['admin.hub.read', 'admin.claims.read', 'admin.claims.policy.edit', 'admin.config.edit', 'admin.providers.toggle', 'admin.providers.secret.write'];
+const PERMISSIONS = ['admin.hub.read', 'admin.claims.read', 'admin.claims.policy.edit', 'admin.providers.toggle', 'admin.providers.secret.write'];
 const L = 'adminParticipants.verification.live';
 const PATH = `/admin/hubs/${SLUG}/participants/verification`;
 
@@ -33,8 +32,6 @@ test('a steward configures verification on a live hub; a second person is needed
   await page.goto(PATH);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(msg('adminParticipants.verification.title', LANG));
   await expect(page.locator('#recipes')).toContainText(msg('adminParticipants.verification.noRecipes', LANG));
-  await expect(page.getByTestId('launch-record-state')).toHaveText(msg(`${L}.launch.none`, LANG));
-  await expect(page.locator('#launch-record')).toContainText(msg(`${L}.launch.noActive`, LANG));
 
   // A recipe: drafted in the form, sanctions screening fixed, then activated.
   await page.locator('input[name="f.key"]').fill('company-verified');
@@ -54,17 +51,6 @@ test('a steward configures verification on a live hub; a second person is needed
   await expect(await submitIn(page, '[data-testid="live-recipe-company-verified-1"]', msg(`${L}.recipes.activate`, LANG))).toHaveText(msg('admin.common.applied', LANG));
   await page.reload();
   await expect(card).toContainText(msg(`${L}.states.active`, LANG));
-
-  // The launch checklist reads the hub's verification configuration: recording it moves the gate.
-  const gate = async () => {
-    const body = (await (await aCtx.request.get(`/v1/admin/hubs/${hubId}/launch`)).json()) as { gates: Array<{ gate: string; engineConfirms: boolean }> };
-    return body.gates.find((g) => g.gate === 'verification_recipe_enabled')?.engineConfirms;
-  };
-  expect(await gate()).toBe(false);
-  await expect(await submitIn(page, '#launch-record', msg(`${L}.launch.record`, LANG))).toHaveText(msg('admin.common.applied', LANG));
-  expect(await gate()).toBe(true);
-  await page.reload();
-  await expect(page.locator('#launch-record')).toContainText(msg(`${L}.launch.state.current`, LANG));
 
   // A manual provider and the claim periods.
   await page.locator('select[name="f.checkType"]').selectOption('register_match');

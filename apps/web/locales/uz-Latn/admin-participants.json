@@ -374,19 +374,6 @@
           "note": "Roʻyxatlar sanksiyalar tekshiruvi ekranida qoʻshiladi va tasdiqlanadi; asosiy roʻyxatlarni oʻchirib boʻlmaydi.",
           "open": "Sanksiyalar tekshiruvini ochish",
           "hidden": "Rollaringiz sanksiyalar roʻyxatlarini koʻrsatmaydi."
-        },
-        "launch": {
-          "title": "Ishga tushirish roʻyxati uchun yozuv",
-          "state": {
-            "missing": "Qayd etilmagan",
-            "outdated": "Eskirgan",
-            "current": "Dolzarb"
-          },
-          "version": "Konfiguratsiyaning {version}-versiyasi faol.",
-          "none": "Hali faol tekshiruv konfiguratsiyasi yoʻq.",
-          "help": "Ishga tushirish roʻyxati retseptlarni emas, habning tekshiruv konfiguratsiyasini oʻqiydi. Retseptlarni oʻzgartirgach, faollarini shu yerda qayd eting; yangi yozuv kimdir qayta tekshirmaguncha shartni ochib qoʻyadi.",
-          "noActive": "Avval retseptni faollashtiring.",
-          "record": "Faol retseptlarni qayd etish"
         }
       }
     },

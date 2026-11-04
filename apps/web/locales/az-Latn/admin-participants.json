@@ -374,19 +374,6 @@
           "note": "Siyahılar sanksiya yoxlaması ekranında əlavə olunur və təsdiqlənir; əsas siyahıları söndürmək olmur.",
           "open": "Sanksiya yoxlamasını açmaq",
           "hidden": "Rollarınız sanksiya siyahılarını göstərmir."
-        },
-        "launch": {
-          "title": "Başlanğıc siyahısı üçün qeyd",
-          "state": {
-            "missing": "Qeyd olunmayıb",
-            "outdated": "Köhnəlib",
-            "current": "Aktualdır"
-          },
-          "version": "Konfiqurasiyanın {version} versiyası aktivdir.",
-          "none": "Hələ aktiv yoxlama konfiqurasiyası yoxdur.",
-          "help": "Başlanğıc siyahısı reseptləri deyil, habın yoxlama konfiqurasiyasını oxuyur. Reseptləri dəyişdikdən sonra aktivləri burada qeyd edin; yeni qeyd kimsə yenidən yoxlayana qədər şərti açır.",
-          "noActive": "Əvvəlcə resepti aktivləşdirin.",
-          "record": "Aktiv reseptləri qeyd etmək"
         }
       }
     },

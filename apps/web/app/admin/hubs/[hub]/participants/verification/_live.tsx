@@ -1,6 +1,6 @@
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { submitConsoleCommand } from '../../../../_data/actions';
-import { activeRecipes, type LiveOption, type VerificationCredential, type VerificationProvider, type VerificationRecipe, type VerificationView } from '../../../../_data/live-verification';
+import type { LiveOption, VerificationCredential, VerificationProvider, VerificationRecipe, VerificationView } from '../../../../_data/live-verification';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
 import type { HubContext } from '../../../../_components/context';
 import { FieldGroup, formLabels, readOnlyReason, SelectField, TextInput } from '../../../../_components/forms';
@@ -216,25 +216,6 @@ function Providers({ ctx, view, names }: { ctx: HubContext; view: VerificationVi
   );
 }
 
-function LaunchRecord({ ctx, view }: { ctx: HubContext; view: VerificationView }) {
-  const running = activeRecipes(view.recipes);
-  const state = view.config === null ? 'missing' : view.config.current ? 'current' : 'outdated';
-  const canRecord = ctx.can('admin.claims.policy.edit') || ctx.can('admin.config.edit');
-  return (
-    <Panel id="launch-record" title={t('adminParticipants.verification.live.launch.title')} aside={<Pill tone={state === 'current' ? 'pass' : 'warn'}>{t(`adminParticipants.verification.live.launch.state.${state}`)}</Pill>}>
-      <p className="admin-note" data-testid="launch-record-state">
-        {view.config ? t('adminParticipants.verification.live.launch.version', { version: view.config.version }) : t('adminParticipants.verification.live.launch.none')}
-      </p>
-      <p className="admin-note">{t('adminParticipants.verification.live.launch.help')}</p>
-      {running.length === 0 ? (
-        <p className="admin-empty">{t('adminParticipants.verification.live.launch.noActive')}</p>
-      ) : state === 'current' ? null : (
-        <ConsoleForm action={submitConsoleCommand} hidden={ctx.hidden('verification.config_record')} labels={formLabels({ submit: t('adminParticipants.verification.live.launch.record') })} disabledReason={readOnlyReason(canRecord, ctx.offline)} />
-      )}
-    </Panel>
-  );
-}
-
 function ClaimPeriods({ ctx, settings }: { ctx: HubContext; settings: NonNullable<VerificationView['settings']> }) {
   return (
     <Panel id="claim-periods" title={t('adminParticipants.verification.live.claims.title')}>
@@ -298,7 +279,6 @@ export async function LiveVerification(ctx: HubContext, route: ScreenRoute) {
   return (
     <>
       {header}
-      <LaunchRecord ctx={ctx} view={view} />
       <Panel id="recipes" title={t('adminParticipants.verification.recipes')}>
         {view.recipes.length ? (
           <ul className="admin-cards">

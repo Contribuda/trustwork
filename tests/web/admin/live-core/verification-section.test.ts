@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { approvalStage, hubApprovals } from '../../../../apps/web/app/admin/_data/live-approvals.js';
-import { configPayload, readVerification, verificationRefusal, type VerificationRecipe } from '../../../../apps/web/app/admin/_data/live-verification.js';
+import { readVerification, verificationRefusal } from '../../../../apps/web/app/admin/_data/live-verification.js';
 import { claimSettings, providerDraft, recipeDraft, recipeSteps, verificationFormProblem } from '../../../../apps/web/app/admin/hubs/[hub]/participants/verification/_commands.js';
 
 /** The pure parts of HC-23 on the live API: what the form may ask for, where a digest stands, how a refusal is worded. */
@@ -67,7 +67,6 @@ test('form fields are checked before anything is sent', () => {
   assert.deepEqual(verificationFormProblem('verification.recipe_activate', { recipeId: 'not-a-uuid', revision: '1' }), { field: 'recipeId' });
   assert.deepEqual(verificationFormProblem('verification.recipe_activate', { recipeId: PROVIDER, revision: 'x' }), { field: 'recipeId' });
   assert.deepEqual(verificationFormProblem('verification.provider_go_live', { providerId: PROVIDER, credentialRefId: 'x' }), { field: 'credentialRefId' });
-  assert.equal(verificationFormProblem('verification.config_record', {}), null);
 });
 
 test('a refusal is worded by what the API said, never softened', () => {
@@ -91,7 +90,6 @@ test('the view keeps what staff need: no secret reference, no claim, no list of 
     [`/v1/admin/hubs/${HUB}/credentials`]: { items: [{ id: CREDENTIAL, provider: 'p', adapter: 'a', mode: 'live', status: 'active', secret: { store: 'env', ref: 'env:SECRET_NAME' } }] },
     '/v1/admin/screening/lists': { items: [{ code: 'own', baseline: false, hubId: HUB, mode: 'file', status: 'active', freshness: { ageSeconds: 60 } }, { code: 'theirs', baseline: false, hubId: OTHER_HUB, mode: 'file', status: 'active', freshness: { ageSeconds: 60 } }, { code: 'ofac', baseline: true, hubId: null, mode: 'file', status: 'active', freshness: { ageSeconds: null } }] },
     [`/v1/admin/approvals?hubId=${HUB}`]: { forMe: [], mine: [], decided: [] },
-    [`/v1/admin/hubs/${HUB}/config/current`]: { items: [] },
     [`/v1/admin/hubs/${HUB}/verification/providers/${PROVIDER}/live-digest?credentialRefId=${CREDENTIAL}`]: { action: 'providers.enable_non_fake', actionDigest: DIGEST, revision: 1 },
   };
   const view = await readVerification({ get: async (path) => { assert.ok(path in replies, path); return replies[path]; } }, orNothing, HUB, ME, NOW);
@@ -102,7 +100,6 @@ test('the view keeps what staff need: no secret reference, no claim, no list of 
   assert.ok(!text.includes('extra'));
   assert.deepEqual(view.lists?.map((l) => l.code), ['own', 'ofac']);
   assert.deepEqual(view.liveOptions[PROVIDER], [{ credentialId: CREDENTIAL, digest: DIGEST, stage: { stage: 'none' } }]);
-  assert.equal(view.config, null);
   assert.equal(await readVerification({ get: async () => null }, orNothing, HUB, ME, NOW), null, 'an API that shows nothing is nothing, not an empty section');
 });
 
@@ -115,9 +112,4 @@ test('a credential that is fake, registered or retired is never offered', async 
   };
   const view = await readVerification({ get }, orNothing, HUB, ME, NOW);
   assert.deepEqual(view?.liveOptions[PROVIDER], []);
-});
-
-test('the launch record names the active recipes only', () => {
-  const recipe = (over: Partial<VerificationRecipe>) => ({ id: PROVIDER, key: 'k', version: 1, subjectKind: 'company', trigger: 'claim_verified', status: 'active', ...over }) as VerificationRecipe;
-  assert.deepEqual(configPayload([recipe({}), recipe({ id: CREDENTIAL, status: 'draft' }), recipe({ id: ME, status: 'superseded' })]).activeRecipes.map((r) => r.recipeId), [PROVIDER]);
 });
