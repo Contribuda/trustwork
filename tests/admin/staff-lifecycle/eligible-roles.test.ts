@@ -170,6 +170,19 @@ test('eligible roles and just-in-time activation (ADM-004 part 3)', { skip: db ?
     assert.deepEqual((await audit('staff.activation_approved')).map((a) => [a.actor_person_id, a.permission]), [[p.admin, 'admin.staff.assign']]);
   });
 
+  await t.test('in full separation-of-duties mode the database refuses a second person who acts through the grantor\'s role', async () => {
+    // Six people cover the hub (full mode). The staff administrator grants the eligibility; ops, a staff-admin at the hub
+    // through the same role, may not be the second person; the platform owner, through another role, may.
+    await assignSensitive({ personId: p.ops, role: 'staff-admin', scope: hub });
+    const eligible = await grant(p.admin, { personId: p.lead2, role: 'hub-owner', maxActivationSeconds: HOUR });
+    const { activation } = await request(p.lead2, eligible.id, HOUR);
+    await rejects(decide(p.ops, activation.id, 'approve'), '42501', 'admin.same_role');
+    assert.equal((await owner((trx) => trx.selectFrom('second_person_approval').select('status').where('id', '=', activation.approval_id!).executeTakeFirstOrThrow())).status, 'pending');
+    const decided = await decide(p.owner, activation.id, 'approve');
+    assert.deepEqual([decided.status, (await assignment(decided.assignment_id!)).approved_by], ['active', p.owner]);
+    await end(p.lead2, activation.id);
+  });
+
   await t.test('a declined activation grants nothing; an approval given through the approvals inbox is honoured', async () => {
     const leadEligible = (await grant(p.owner, { personId: p.lead, role: 'hub-owner', maxActivationSeconds: 2 * HOUR })).id;
     const first = await request(p.lead, leadEligible, HOUR);
@@ -202,15 +215,21 @@ test('eligible roles and just-in-time activation (ADM-004 part 3)', { skip: db ?
     const leadModerator = (await grant(p.owner, { personId: p.lead, role: 'moderator', maxActivationSeconds: HOUR })).id;
     const running = await request(p.lead, leadModerator, HOUR);
     assert.equal(running.outcome, 'active');
+    // A platform-scope activation too: the hub owner who revokes the standing role holds no admin.staff.revoke there.
+    const platformAuditor = await as(p.owner, async (trx) => staffLifecycle.grantEligible(trx, await elevate(p.owner), { personId: p.lead, role: 'auditor', scope: { kind: 'platform' }, definitionVersion: 1, maxActivationSeconds: HOUR, validForSeconds: null }));
+    const atPlatform = await request(p.lead, platformAuditor.id, HOUR);
+    assert.equal(atPlatform.outcome, 'active');
     const standing = await owner((trx) => trx.selectFrom('staff_role_assignment').select('id').where('person_id', '=', p.lead).where('role', '=', 'support-lead').executeTakeFirstOrThrow());
     const live = await owner((trx) => trx.selectFrom('session_elevation').select('id').where('person_id', '=', p.lead).where('revoked_at', 'is', null).execute());
     assert.ok(live.length > 0, 'the lead holds live elevations');
-    await as(p.admin, async (trx) => staffAssignments.revoke(trx, await elevate(p.admin), standing.id));
-    const roles = await owner((trx) => trx.selectFrom('staff_role_assignment').select(['role', 'revoked_at', 'revoke_reason']).where('person_id', '=', p.lead).execute());
+    await as(p.hubOwner, async (trx) => staffAssignments.revoke(trx, await elevate(p.hubOwner), standing.id));
+    const roles = await owner((trx) => trx.selectFrom('staff_role_assignment').select(['role', 'scope_kind', 'revoked_at', 'revoked_by', 'revoke_reason']).where('person_id', '=', p.lead).execute());
     assert.ok(roles.every((r) => r.revoked_at !== null), JSON.stringify(roles));
     assert.ok(roles.some((r) => r.revoke_reason === 'Last standing role revoked'));
+    assert.deepEqual(roles.find((r) => r.role === 'moderator')?.revoked_by, p.hubOwner, 'the revoker holds admin.staff.revoke at the hub');
+    assert.deepEqual(roles.find((r) => r.scope_kind === 'platform')?.revoked_by, p.lead, 'without admin.staff.revoke at the platform the activation still ends, as the holder\'s own revocation');
     const eligible = await owner((trx) => trx.selectFrom('staff_eligible_role').select(['revoked_at', 'revoked_by']).where('person_id', '=', p.lead).execute());
-    assert.ok(eligible.length >= 2 && eligible.every((e) => e.revoked_at !== null && e.revoked_by === p.admin));
+    assert.ok(eligible.length >= 3 && eligible.every((e) => e.revoked_at !== null && e.revoked_by === p.hubOwner));
     assert.deepEqual(await owner((trx) => trx.selectFrom('session_elevation').select('id').where('person_id', '=', p.lead).where('revoked_at', 'is', null).execute()), []);
     assert.equal(await isStaffOfHub(p.lead), false);
   });
@@ -222,6 +241,21 @@ test('eligible roles and just-in-time activation (ADM-004 part 3)', { skip: db ?
     assert.deepEqual(await as(p.customer, (trx) => staffLifecycle.activations(trx, w.hubId)), []);
     const all = await as(p.hubOwner, (trx) => staffLifecycle.eligibleRoles(trx, w.hubId));
     assert.ok(all.length >= 3);
+  });
+
+  await t.test('two simultaneous activations of a full-mode conflicting pair: exactly one succeeds', async () => {
+    // The auditor definition runs in full mode and conflicts with ops-engineer. The outsider holds neither and is eligible
+    // for both; each activation alone is fine, together they must not both commit.
+    const auditor = await grant(p.owner, { personId: p.outsider, role: 'auditor', maxActivationSeconds: HOUR });
+    const ops = await grant(p.owner, { personId: p.outsider, role: 'ops-engineer', maxActivationSeconds: HOUR });
+    const [ctxA, ctxB] = [await elevate(p.outsider), await elevate(p.outsider)];
+    const outcomes = await Promise.allSettled([request(p.outsider, auditor.id, HOUR, ctxA), request(p.outsider, ops.id, HOUR, ctxB)]);
+    const succeeded = outcomes.filter((o) => o.status === 'fulfilled');
+    const failed = outcomes.filter((o): o is PromiseRejectedResult => o.status === 'rejected');
+    assert.equal(succeeded.length, 1, JSON.stringify(outcomes.map((o) => (o.status === 'rejected' ? (o.reason as { hint?: string }).hint : 'ok'))));
+    assert.equal((failed[0]!.reason as { hint?: string }).hint, 'admin.sod_conflict');
+    const held = await owner((trx) => trx.selectFrom('staff_role_assignment').select('role').where('person_id', '=', p.outsider).where('revoked_at', 'is', null).execute());
+    assert.equal(held.length, 1, 'one of the pair is held, never both');
   });
 
   await t.test('terms never change and rows are never deleted', async () => {
