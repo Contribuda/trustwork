@@ -233,7 +233,130 @@
       "recordCheck": "Əl ilə yoxlamanı qeyd etmək",
       "step": "Addım",
       "result": "Nəticə",
-      "evidenceCategory": "Sübut kateqoriyası"
+      "evidenceCategory": "Sübut kateqoriyası",
+      "live": {
+        "hidden": "Bu bölmə bu habda sizin üçün əlçatan deyil.",
+        "rule": "İddia şirkətin ölkəsini əhatə edən habda, bu iddia üçün yazılmış yoxlamalarla həll olunur; qərar verən heç vaxt iddiaçı olmur.",
+        "decided": "Həll olunmuş və geri götürülmüş",
+        "own": "Bu sizin öz iddianızdır. Onu başqa rəyçi həll edir.",
+        "disputed": "Rəqabətli iddialar: onları Mübahisələr bölməsində həll edin.",
+        "tie": "Şirkətlə bağlılıq",
+        "noTie": "Yoxdur",
+        "ties": {
+          "own_domain_mailbox": "Şirkət domenində poçt qutusu",
+          "invitation_link": "Dəvət keçidi"
+        },
+        "waitingUntil": "Gözləmə tarixi",
+        "officerMatch": "İddiaçını reyestrdə rəhbər kimi tapdım",
+        "note": "Qeyd",
+        "levels": {
+          "claimed": "İddia edilmiş",
+          "verified": "Təsdiqlənmiş"
+        },
+        "states": {
+          "open": "Açıq",
+          "waiting": "Gözləmə dövrü",
+          "disputed": "Mübahisəli",
+          "approved": "Təsdiqlənib",
+          "rejected": "Rədd edilib",
+          "withdrawn": "Geri götürülüb"
+        },
+        "decisions": {
+          "approved": "Təsdiqləmək",
+          "rejected": "Rədd etmək"
+        },
+        "territory": {
+          "covered": "Bu habın ərazisində",
+          "outside": "Şirkət {country} ölkəsindədir, bu habın ərazilərindən kənarda. Bu hab iddianı həll edə bilməz, hətta rədd də edə bilməz.",
+          "missing": "Şirkətin ölkəsi qeyd olunmayıb və ya ölkəsinin tələb etdiyi region yoxdur. Ölkə düzəldilənə qədər heç bir hab həll edə bilməz.",
+          "noDecision": "Şirkətin ölkəsi göstərildiyi kimi olduqca bu hab iddianı həll edə bilməz."
+        },
+        "correct": {
+          "title": "Şirkətin ölkəsini düzəltmək",
+          "help": "Bunu yalnız köhnə və ya yeni ölkəni əhatə edən habda səlahiyyət icazəsi olan şəxs edir. Ölkəni düzəldən şəxs bu şirkətin iddiasını təsdiqləmir.",
+          "country": "Ölkə",
+          "countryHelp": "İki hərf, məsələn GE.",
+          "region": "Bölgə",
+          "regionHelp": "Yalnız ölkə tələb edəndə.",
+          "submit": "Ölkəni düzəltmək"
+        },
+        "standing": {
+          "passed": "Reseptdən keçib",
+          "pending": "Yoxlamalar çatışmır",
+          "failed": "Yoxlama keçməyib",
+          "hidden": "Rollarınız bu reseptin vəziyyətini göstərmir.",
+          "missing": "Çatışmır: {checks}.",
+          "failedChecks": "Keçməyib: {checks}.",
+          "blocked": "Sanksiya yoxlaması ötürməni bloklayır: subyekt təmiz deyil və ya anbar əlçatan deyil."
+        },
+        "evidence": {
+          "title": "Bu iddianın yoxlamaları",
+          "help": "Yalnız iddiadan sonra yazılmış yoxlamalar sayılır və hər biri bir iddiaya xidmət edir. Qərardan əvvəl bağlayın.",
+          "none": "İddiadan sonra yoxlama yazılmayıb.",
+          "bound": "bu iddiaya bağlanıb",
+          "unbound": "hələ bağlanmayıb",
+          "bind": "Seçilənləri bağlamaq",
+          "provider": "Provayder",
+          "ref": "Sübut istinadı",
+          "refHelp": "İstinad, heç vaxt sənəd deyil. Əl nəticəsinə lazımdır.",
+          "noProvider": "Bu habda yazmaq üçün imitasiya və ya əl provayderi yoxdur.",
+          "screening": "Sanksiya yoxlamasını yazmaq"
+        },
+        "results": {
+          "pass": "Keçib",
+          "fail": "Keçməyib",
+          "inconclusive": "Qeyri-müəyyən",
+          "unavailable": "Əlçatan deyil"
+        },
+        "checks": {
+          "register_match": "Reyestrlə uyğunluq",
+          "officer_match": "Rəhbərlərin uyğunluğu",
+          "tax_status": "Vergi statusu",
+          "licence": "Lisenziya",
+          "qualification": "Peşə ixtisası",
+          "ownership": "Mülkiyyət",
+          "sanctions_screening": "Sanksiya yoxlaması",
+          "domain_confirmed": "Domen təsdiqlənib",
+          "signed_authority": "İmzalanmış səlahiyyət",
+          "callback_confirmed": "Geri zənglə təsdiqlənib"
+        },
+        "dispute": {
+          "title": "Mübahisələr",
+          "help": "Bir səhifəyə rəqabətli iddialar. Bir rəyçi nəticəni təklif edir, başqası təsdiqləyir. Mübahisənin özü heç nə ötürmür.",
+          "proposedWinner": "Təklif: bir iddia qalib gəlir, təklif edib",
+          "proposedNone": "Təklif: heç biri qalib gəlmir, təklif edib",
+          "confirm": "Təklifi təsdiqləmək",
+          "propose": "Nəticə təklif etmək",
+          "winner": "Nəticə",
+          "none": "Heç biri qalib gəlmir",
+          "claim": "İddia {number}",
+          "note": "Əsaslandırma",
+          "noteHelp": "Ən azı on simvol."
+        },
+        "reasons": {
+          "outside_territory": "Bu hab şirkətin ölkəsini əhatə etmir.",
+          "company_country_missing": "Şirkətin ölkəsi və ya ölkəsinin tələb etdiyi region yoxdur. Əvvəlcə düzəldin.",
+          "own_country_correction": "Bu şirkətin ölkəsini siz düzəltmisiniz, ona görə başqa rəyçi həll edir.",
+          "own_claim": "Öz iddianızı həll edə bilməzsiniz.",
+          "second_person_required": "Təklifinizi başqa rəyçi təsdiqləyir.",
+          "standing_not_passed": "Reseptdən keçilməyib: əvvəlcə çatışmayan yoxlamaları bağlayın.",
+          "evidence_required": "Əvvəlcə bu iddianın yoxlamalarını bağlayın.",
+          "evidence_mismatch": "Bu yoxlamalar bu iddiaya aid deyil.",
+          "check_mismatch": "Bu yoxlama şirkətə və ya reseptə uyğun deyil.",
+          "claimant_not_clear": "İddiaçı sanksiya yoxlamasından təmiz keçməyib.",
+          "company_tie_required": "İddia səviyyəsi şirkətlə bağlılıq tələb edir: şirkət poçtu və ya yazılmış rəhbər uyğunluğu.",
+          "waiting_period": "Gözləmə dövrü bitməyib.",
+          "cooling_period": "Soyuma dövrü bitməyib.",
+          "claimant_employed_elsewhere": "İddiaçı başqa şirkətdə işləyir.",
+          "country_changed": "Siz oxuyarkən şirkətin ölkəsi dəyişib. Səhifəni yeniləyin.",
+          "country_unchanged": "Bu artıq şirkətin ölkəsidir.",
+          "country_refused": "Bu ölkəni seçmək olmur.",
+          "country_locked": "Şirkətin ölkəsini bu yolla dəyişmək olmur.",
+          "region_required": "Bu ölkəyə region lazımdır.",
+          "region_refused": "Bu regionu seçmək olmur.",
+          "invalid_winner": "Bu iddia bu mübahisənin hissəsi deyil."
+        }
+      }
     },
     "verification": {
       "title": "Yoxlama",

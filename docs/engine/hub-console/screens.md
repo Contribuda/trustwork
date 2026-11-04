@@ -225,6 +225,10 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **States**: potential sanctions match → cannot approve, review case linked; reviewer conflict → assignment blocked.
 - **Mobile**: queue and decision support; evidence viewer full-screen.
 - **Locale**: `admin.participants.claims.*`
+- **Live** (built on the API, HUBC-007; demo mode keeps the fixture screen). Open claims with the recipe's standing, disputes, and decided claims. Each open claim shows the country rule of CLM-001 before anything else: "In this hub's territory", a company outside the hub's territories, or a company with no country or without the region its country needs. Only the first can be decided, and that covers a rejection too, because the database refuses both. A holder of `admin.claims.authority.decide` corrects the country on the card, restating what they saw; whoever corrects it does not approve a claim on that company.
+  - Only checks recorded after the claim was submitted are shown, and a reviewer binds them to the claim before deciding. A staff member's own claim is shown as theirs, with no decision.
+  - A dispute is proposed by one reviewer and confirmed by another. A refusal keeps its reason in the reviewer's language (`adminParticipants.claims.live.reasons.*`).
+  - Not built yet: hand-overs and their revocation, re-checks, company records, and appeals, which stay on HC-21 and HC-73.
 
 ### HC-23 Verification — `/participants/verification`
 - **Purpose**: recipes, check providers and screening lists.

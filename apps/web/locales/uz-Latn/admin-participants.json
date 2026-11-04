@@ -233,7 +233,130 @@
       "recordCheck": "Qoʻlda tekshiruvni yozish",
       "step": "Qadam",
       "result": "Natija",
-      "evidenceCategory": "Dalil toifasi"
+      "evidenceCategory": "Dalil toifasi",
+      "live": {
+        "hidden": "Bu boʻlim ushbu habda siz uchun mavjud emas.",
+        "rule": "Daʼvo kompaniya mamlakatini qamrab oluvchi habda, shu daʼvo uchun yozilgan tekshiruvlar asosida hal qilinadi; qaror qiluvchi hech qachon daʼvogar boʻlmaydi.",
+        "decided": "Hal qilingan va qaytarib olingan",
+        "own": "Bu sizning daʼvoyingiz. Uni boshqa tekshiruvchi hal qiladi.",
+        "disputed": "Raqobatdosh daʼvolar: ularni Nizolar boʻlimida hal qiling.",
+        "tie": "Kompaniya bilan bogʻliqlik",
+        "noTie": "Yoʻq",
+        "ties": {
+          "own_domain_mailbox": "Kompaniya domenidagi pochta",
+          "invitation_link": "Taklif havolasi"
+        },
+        "waitingUntil": "Kutish muddati",
+        "officerMatch": "Daʼvogarni reyestrda rahbar sifatida topdim",
+        "note": "Izoh",
+        "levels": {
+          "claimed": "Daʼvo qilingan",
+          "verified": "Tasdiqlangan"
+        },
+        "states": {
+          "open": "Ochiq",
+          "waiting": "Kutish davri",
+          "disputed": "Nizoli",
+          "approved": "Maʼqullangan",
+          "rejected": "Rad etilgan",
+          "withdrawn": "Qaytarib olingan"
+        },
+        "decisions": {
+          "approved": "Maʼqullash",
+          "rejected": "Rad etish"
+        },
+        "territory": {
+          "covered": "Bu hab hududida",
+          "outside": "Kompaniya {country} da, bu hab hududlaridan tashqarida. Bu hab daʼvoni hal qila olmaydi, hatto rad eta ham olmaydi.",
+          "missing": "Kompaniyaning mamlakati qayd etilmagan yoki mamlakati talab qiladigan hudud yoʻq. Mamlakat tuzatilmaguncha hech qaysi hab hal qila olmaydi.",
+          "noDecision": "Kompaniya mamlakati koʻrsatilgandek ekan, bu hab daʼvoni hal qila olmaydi."
+        },
+        "correct": {
+          "title": "Kompaniya mamlakatini tuzatish",
+          "help": "Buni faqat eski yoki yangi mamlakatni qamrab oluvchi habda vakolat ruxsatiga ega xodim qiladi. Mamlakatni tuzatgan xodim shu kompaniya daʼvosini maʼqullamaydi.",
+          "country": "Mamlakat",
+          "countryHelp": "Ikki harf, masalan GE.",
+          "region": "Hudud",
+          "regionHelp": "Faqat mamlakat talab qilsa.",
+          "submit": "Mamlakatni tuzatish"
+        },
+        "standing": {
+          "passed": "Retseptdan oʻtdi",
+          "pending": "Tekshiruvlar yetishmaydi",
+          "failed": "Tekshiruv oʻtmadi",
+          "hidden": "Rollaringiz bu retsept holatini koʻrsatmaydi.",
+          "missing": "Yetishmaydi: {checks}.",
+          "failedChecks": "Oʻtmadi: {checks}.",
+          "blocked": "Sanksiyalar tekshiruvi topshirishni toʻsadi: subyekt toza emas yoki ombor mavjud emas."
+        },
+        "evidence": {
+          "title": "Shu daʼvo tekshiruvlari",
+          "help": "Faqat daʼvo berilgandan keyin yozilgan tekshiruvlar hisobga olinadi va har biri bitta daʼvoga xizmat qiladi. Qarordan oldin bogʻlang.",
+          "none": "Daʼvo berilgandan beri tekshiruvlar yoʻq.",
+          "bound": "shu daʼvoga bogʻlangan",
+          "unbound": "hali bogʻlanmagan",
+          "bind": "Tanlanganlarni bogʻlash",
+          "provider": "Provayder",
+          "ref": "Dalil havolasi",
+          "refHelp": "Havola, hech qachon hujjat emas. Qoʻlda natijaga kerak.",
+          "noProvider": "Bu habda yozish uchun taqlid yoki qoʻlda provayder yoʻq.",
+          "screening": "Sanksiyalar tekshiruvini yozish"
+        },
+        "results": {
+          "pass": "Oʻtdi",
+          "fail": "Oʻtmadi",
+          "inconclusive": "Noaniq",
+          "unavailable": "Mavjud emas"
+        },
+        "checks": {
+          "register_match": "Reyestr bilan moslik",
+          "officer_match": "Rahbarlar mosligi",
+          "tax_status": "Soliq holati",
+          "licence": "Litsenziya",
+          "qualification": "Kasbiy malaka",
+          "ownership": "Egalik",
+          "sanctions_screening": "Sanksiyalar tekshiruvi",
+          "domain_confirmed": "Domen tasdiqlangan",
+          "signed_authority": "Imzolangan vakolat",
+          "callback_confirmed": "Qaytarma qoʻngʻiroq tasdiqlangan"
+        },
+        "dispute": {
+          "title": "Nizolar",
+          "help": "Bitta sahifaga raqobatdosh daʼvolar. Bir tekshiruvchi natijani taklif qiladi, boshqasi tasdiqlaydi. Nizoning oʻzi hech narsani topshirmaydi.",
+          "proposedWinner": "Taklif: bitta daʼvo gʻolib, taklif qilgan",
+          "proposedNone": "Taklif: hech biri gʻolib emas, taklif qilgan",
+          "confirm": "Taklifni tasdiqlash",
+          "propose": "Natijani taklif qilish",
+          "winner": "Natija",
+          "none": "Hech biri gʻolib emas",
+          "claim": "{number}-daʼvo",
+          "note": "Asoslash",
+          "noteHelp": "Kamida oʻn belgi."
+        },
+        "reasons": {
+          "outside_territory": "Bu hab kompaniya mamlakatini qamrab olmaydi.",
+          "company_country_missing": "Kompaniyada mamlakat yoki mamlakati talab qiladigan hudud yoʻq. Avval tuzating.",
+          "own_country_correction": "Bu kompaniya mamlakatini siz tuzatgansiz, shuning uchun boshqa tekshiruvchi hal qiladi.",
+          "own_claim": "Oʻz daʼvoyingizni hal qila olmaysiz.",
+          "second_person_required": "Taklifingizni boshqa tekshiruvchi tasdiqlaydi.",
+          "standing_not_passed": "Retseptdan oʻtilmagan: avval yetishmagan tekshiruvlarni bogʻlang.",
+          "evidence_required": "Avval shu daʼvo tekshiruvlarini bogʻlang.",
+          "evidence_mismatch": "Bu tekshiruvlar shu daʼvoga tegishli emas.",
+          "check_mismatch": "Bu tekshiruv kompaniya yoki retseptga mos emas.",
+          "claimant_not_clear": "Daʼvogar sanksiyalar tekshiruvidan toza oʻtmagan.",
+          "company_tie_required": "Daʼvo darajasi kompaniya bilan bogʻliqlikni talab qiladi: kompaniya pochtasi yoki yozilgan rahbar mosligi.",
+          "waiting_period": "Kutish davri tugamagan.",
+          "cooling_period": "Sovish davri tugamagan.",
+          "claimant_employed_elsewhere": "Daʼvogar boshqa kompaniyada ishlaydi.",
+          "country_changed": "Siz oʻqiyotganda kompaniya mamlakati oʻzgardi. Sahifani yangilang.",
+          "country_unchanged": "Bu allaqachon kompaniya mamlakati.",
+          "country_refused": "Bu mamlakatni tanlab boʻlmaydi.",
+          "country_locked": "Kompaniya mamlakatini bu yoʻl bilan oʻzgartirib boʻlmaydi.",
+          "region_required": "Bu mamlakat uchun hudud kerak.",
+          "region_refused": "Bu hududni tanlab boʻlmaydi.",
+          "invalid_winner": "Bu daʼvo shu nizoga kirmaydi."
+        }
+      }
     },
     "verification": {
       "title": "Tekshiruv",

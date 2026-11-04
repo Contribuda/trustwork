@@ -8,6 +8,7 @@ import { ConsoleHeader, KeyValues, Panel, StatusLabel } from '../../../../_compo
 import { submitParticipantsCommand } from '../_actions';
 import { CLAIM_DECISIONS, EVIDENCE_CATEGORIES, participantsOf, type Claim, type StepResult } from '../_fixtures';
 import { fixturesOn, Lang, Pill, SectionForm, StaffName, staffNames, type StaffNames } from '../_kit';
+import { LiveClaims } from './_live';
 
 const tone = (r: StepResult) => (r === 'pass' ? 'pass' : r === 'pending' ? 'warn' : 'fail');
 const REVIEWERS = ['p-trust', 'p-compliance', 'p-hub-owner'] as const;
@@ -111,4 +112,4 @@ async function Claims(ctx: HubContext) {
 }
 
 /** HC-22 Claims: decide claims with the recipe; a potential sanctions match or a declared conflict blocks the decision. */
-export const screen: Screen = { group: 'participants', id: 'claims', title: () => t('adminParticipants.claims.title'), render: Claims };
+export const screen: Screen = { group: 'participants', id: 'claims', title: () => t('adminParticipants.claims.title'), render: (ctx) => (ctx.port.source === 'api' ? LiveClaims(ctx) : Claims(ctx)) };

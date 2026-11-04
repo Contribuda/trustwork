@@ -233,7 +233,130 @@
       "recordCheck": "Registrar una comprobación manual",
       "step": "Paso",
       "result": "Resultado",
-      "evidenceCategory": "Categoría de evidencia"
+      "evidenceCategory": "Categoría de evidencia",
+      "live": {
+        "hidden": "Esta sección no está disponible para usted en este hub.",
+        "rule": "Una reclamación se decide en un hub que cubre el país de la empresa, con comprobaciones registradas para esa reclamación, y quien decide nunca es quien reclama.",
+        "decided": "Decididas y retiradas",
+        "own": "Esta es su propia reclamación. La decide otro revisor.",
+        "disputed": "Reclamaciones en competencia: decídalas en Disputas.",
+        "tie": "Vínculo con la empresa",
+        "noTie": "Ninguno",
+        "ties": {
+          "own_domain_mailbox": "Un buzón en el dominio de la empresa",
+          "invitation_link": "Un enlace de invitación"
+        },
+        "waitingUntil": "Espera hasta",
+        "officerMatch": "He encontrado al reclamante como administrador en un registro",
+        "note": "Nota",
+        "levels": {
+          "claimed": "Reclamada",
+          "verified": "Verificada"
+        },
+        "states": {
+          "open": "Abierta",
+          "waiting": "Periodo de espera",
+          "disputed": "En disputa",
+          "approved": "Aprobada",
+          "rejected": "Rechazada",
+          "withdrawn": "Retirada"
+        },
+        "decisions": {
+          "approved": "Aprobar",
+          "rejected": "Rechazar"
+        },
+        "territory": {
+          "covered": "En el territorio de este hub",
+          "outside": "La empresa está en {country}, fuera de los territorios de este hub. Este hub no puede decidir la reclamación, ni siquiera para rechazarla.",
+          "missing": "La empresa no tiene país registrado o le falta la región que su país exige. Ningún hub puede decidir hasta que se corrija el país.",
+          "noDecision": "Este hub no puede decidir esta reclamación mientras el país de la empresa sea el indicado."
+        },
+        "correct": {
+          "title": "Corregir el país de la empresa",
+          "help": "Solo puede hacerlo quien tenga el permiso de autoridad en un hub que cubra el país anterior o el nuevo. Quien corrige el país no aprueba una reclamación sobre esta empresa.",
+          "country": "País",
+          "countryHelp": "Dos letras, por ejemplo GE.",
+          "region": "Región",
+          "regionHelp": "Solo donde el país la exige.",
+          "submit": "Corregir el país"
+        },
+        "standing": {
+          "passed": "Receta superada",
+          "pending": "Faltan comprobaciones",
+          "failed": "Una comprobación falló",
+          "hidden": "Sus roles no muestran el estado de esta receta.",
+          "missing": "Faltan: {checks}.",
+          "failedChecks": "Fallaron: {checks}.",
+          "blocked": "La verificación de sanciones bloquea el traspaso: el sujeto no está limpio o el almacén no está disponible."
+        },
+        "evidence": {
+          "title": "Comprobaciones de esta reclamación",
+          "help": "Solo cuentan las comprobaciones registradas tras presentar la reclamación, y cada una sirve a una sola. Vincúlelas antes de decidir.",
+          "none": "No hay comprobaciones desde que se presentó la reclamación.",
+          "bound": "vinculada a esta reclamación",
+          "unbound": "sin vincular",
+          "bind": "Vincular las seleccionadas",
+          "provider": "Proveedor",
+          "ref": "Referencia de la evidencia",
+          "refHelp": "Una referencia, nunca un documento. Un resultado manual necesita una.",
+          "noProvider": "Este hub no tiene un proveedor simulado o manual con el que registrar.",
+          "screening": "Registrar la verificación de sanciones"
+        },
+        "results": {
+          "pass": "Superada",
+          "fail": "Fallida",
+          "inconclusive": "No concluyente",
+          "unavailable": "No disponible"
+        },
+        "checks": {
+          "register_match": "Coincidencia en el registro",
+          "officer_match": "Coincidencia de administradores",
+          "tax_status": "Situación fiscal",
+          "licence": "Licencia",
+          "qualification": "Cualificación profesional",
+          "ownership": "Titularidad",
+          "sanctions_screening": "Verificación de sanciones",
+          "domain_confirmed": "Dominio confirmado",
+          "signed_authority": "Autorización firmada",
+          "callback_confirmed": "Llamada de vuelta confirmada"
+        },
+        "dispute": {
+          "title": "Disputas",
+          "help": "Reclamaciones en competencia sobre una página. Un revisor propone el resultado y otro lo confirma. La disputa por sí sola no traspasa nada.",
+          "proposedWinner": "Propuesta: gana una reclamación, propuesto por",
+          "proposedNone": "Propuesta: no gana ninguna, propuesto por",
+          "confirm": "Confirmar la propuesta",
+          "propose": "Proponer un resultado",
+          "winner": "Resultado",
+          "none": "No gana ninguna",
+          "claim": "Reclamación {number}",
+          "note": "Razonamiento",
+          "noteHelp": "Al menos diez caracteres."
+        },
+        "reasons": {
+          "outside_territory": "Este hub no cubre el país de la empresa.",
+          "company_country_missing": "La empresa no tiene país o le falta la región que su país exige. Corríjalo primero.",
+          "own_country_correction": "Usted corrigió el país de esta empresa, así que decide otro revisor.",
+          "own_claim": "No puede decidir su propia reclamación.",
+          "second_person_required": "Otro revisor confirma lo que usted propuso.",
+          "standing_not_passed": "La receta no se ha superado: vincule primero las comprobaciones que faltan.",
+          "evidence_required": "Vincule primero las comprobaciones de esta reclamación.",
+          "evidence_mismatch": "Estas comprobaciones no pertenecen a esta reclamación.",
+          "check_mismatch": "Esta comprobación no corresponde a la empresa o a la receta.",
+          "claimant_not_clear": "El reclamante no está limpio en la verificación de sanciones.",
+          "company_tie_required": "El nivel reclamado necesita un vínculo con la empresa: un buzón de la empresa o una coincidencia registrada de administrador.",
+          "waiting_period": "El periodo de espera no ha terminado.",
+          "cooling_period": "El periodo de enfriamiento no ha terminado.",
+          "claimant_employed_elsewhere": "El reclamante trabaja para otra empresa.",
+          "country_changed": "El país de la empresa cambió mientras leía. Recargue la página.",
+          "country_unchanged": "Ese ya es el país de la empresa.",
+          "country_refused": "Este país no se puede elegir.",
+          "country_locked": "El país de la empresa no se puede cambiar de esta forma.",
+          "region_required": "Este país necesita su región.",
+          "region_refused": "Esta región no se puede elegir.",
+          "invalid_winner": "Esa reclamación no forma parte de esta disputa."
+        }
+      }
     },
     "verification": {
       "title": "Verificación",

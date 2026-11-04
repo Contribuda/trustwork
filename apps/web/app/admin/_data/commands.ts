@@ -23,6 +23,8 @@ import {
   type StaffScopeKind,
 } from '@trustwork/contracts/client';
 import type { StaffDirectory, StaffInvitationView } from '../../../../../packages/contracts/src/staff-lifecycle.js';
+// HC-22 on the live API (HUBC-007): the commands of the claims screen live with it.
+import { CLAIM_COMMAND_PERMISSIONS, CLAIM_COMMANDS, CLAIM_REJECT_CODES, claimFormProblem, isClaimCommand } from '../hubs/[hub]/participants/claims/_commands.js';
 import type { ConsoleAccess, StaffViewer } from './port.js';
 // HUBC-005: commands of the agent product, product modules, billing and communications live with their screens.
 import { evaluateProductCommand, isProductCommand, PRODUCT_COMMAND_PERMISSIONS, PRODUCT_COMMANDS, PRODUCT_REJECT_CODES } from '../hubs/[hub]/modules/_kit/commands.js';
@@ -42,6 +44,7 @@ export const COMMANDS = [
   'identity.save', 'modes.save', 'lifecycle.request', 'modules.toggle', 'legal.draft', 'legal.request_activation', 'residency.request_change',
   'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke',
   'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'killswitch.engage', 'setup.save',
+  ...CLAIM_COMMANDS,
   ...PRODUCT_COMMANDS,
 ] as const;
 export type CommandId = (typeof COMMANDS)[number];
@@ -73,6 +76,7 @@ export const COMMAND_PERMISSIONS: Record<Exclude<CommandId, 'setup.save'>, 'staf
   'staff.invitation_apply': ['admin.staff.assign'],
   'staff.invitation_withdraw': ['admin.staff.assign'],
   'killswitch.engage': ['admin.providers.kill', 'admin.agents.kill'],
+  ...CLAIM_COMMAND_PERMISSIONS,
   ...PRODUCT_COMMAND_PERMISSIONS,
 };
 
@@ -119,6 +123,7 @@ export const REJECT_CODES = [
   'modes_violation', 'module_requires', 'module_required_by', 'counsel_missing', 'language_missing', 'own_request', 'not_own_request', 'request_void',
   'request_expired', 'digest_mismatch', 'setup_blocked', 'second_factor_required', 'self_grant', 'sensitive_role', 'role_held',
   'invitation_open', 'invitation_expired', 'invitation_closed', 'not_inviter', 'second_person_pending',
+  ...CLAIM_REJECT_CODES,
   ...PRODUCT_REJECT_CODES,
 ] as const;
 export type RejectCode = (typeof REJECT_CODES)[number];
@@ -348,6 +353,10 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
   const reason = input.reason.trim();
   if (reason.length === 0 || reason.length > 500) return reject('reason_required', 'reason');
   const f = input.fields;
+  if (isClaimCommand(input.command)) {
+    const problem = claimFormProblem(input.command, f);
+    return problem ? reject('invalid', problem.field) : accepted();
+  }
   const revisioned = ['identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request'].includes(input.command);
   if (revisioned && input.expectedRevision !== hub.hub.revision) return reject('stale');
   if (isProductCommand(input.command)) return evaluateProductCommand(input.command, f, { viewerId: viewer.person.id, hub, product: ctx.product ?? null, now: ctx.now, isRestricted: ctx.isRestricted });

@@ -319,6 +319,7 @@
       "above_maximum": "El valor supera el máximo del hub: {items}.",
       "above_cap": "El importe supera el tope de su rol: {items} unidades menores.",
       "back_dated": "Las versiones no pueden tener fecha retroactiva: elija una fecha posterior a hoy.",
+      "claim_reason": "{items}",
       "overlap": "Esta versión se solaparía con otra versión del mismo elemento.",
       "weaker_than_pack": "Un ajuste del hub puede ser más estricto que el paquete del país, nunca más laxo.",
       "lawful_basis_missing": "No hay una base legal registrada: los anuncios llegan solo a quienes dieron su consentimiento.",

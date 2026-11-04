@@ -14,6 +14,7 @@ import type {
   SetupRun,
   TaxonomyTree,
 } from './schemas.js';
+import type { ClaimsView } from './live-claims.js';
 import type { Overview, Residency } from './read-models.js';
 import type { SectionDef } from './section-types.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
@@ -72,6 +73,8 @@ export interface ConsoleDataPort {
   approvals(hubId: string): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[]; ready?: ReadyApproval[]; waiting?: WaitingActivation[] }>;
   legal(hubId: string): Promise<{ operator: Operator | null; documents: LegalDocument[] }>;
   residency(hubId: string): Promise<Residency | null>;
+  /** HC-22 on the API: the queue, disputes and decided claims. Only the live adapter answers; the demo screen keeps its fixtures. */
+  claims(hubId: string): Promise<ClaimsView | null>;
   localAdditions(hubId: string): Promise<LocalAddition[]>;
   taxonomy(hubId: string): Promise<TaxonomyTree[]>;
   brandChecks(hubId: string): Promise<Array<{ locale: string; ratio: string; passes: boolean }>>;

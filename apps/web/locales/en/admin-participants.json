@@ -233,7 +233,130 @@
       "recordCheck": "Record a manual check",
       "step": "Step",
       "result": "Result",
-      "evidenceCategory": "Evidence category"
+      "evidenceCategory": "Evidence category",
+      "live": {
+        "hidden": "This section is not available to you on this hub.",
+        "rule": "A claim is decided at a hub that covers the company's country, on checks recorded for this claim, and the decider is never the claimant.",
+        "decided": "Decided and withdrawn",
+        "own": "This is your own claim. Another reviewer decides it.",
+        "disputed": "Competing claims: decide them under Disputes.",
+        "tie": "Tie to the company",
+        "noTie": "None",
+        "ties": {
+          "own_domain_mailbox": "A mailbox on the company's domain",
+          "invitation_link": "An invitation link"
+        },
+        "waitingUntil": "Waiting until",
+        "officerMatch": "I found the claimant named as an officer in a register",
+        "note": "Note",
+        "levels": {
+          "claimed": "Claimed",
+          "verified": "Verified"
+        },
+        "states": {
+          "open": "Open",
+          "waiting": "Waiting period",
+          "disputed": "Disputed",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "withdrawn": "Withdrawn"
+        },
+        "decisions": {
+          "approved": "Approve",
+          "rejected": "Reject"
+        },
+        "territory": {
+          "covered": "In this hub's territory",
+          "outside": "The company is in {country}, outside this hub's territories. This hub cannot decide the claim, not even to reject it.",
+          "missing": "The company has no recorded country, or lacks the region its country needs. No hub can decide the claim until the country is corrected.",
+          "noDecision": "This hub cannot decide this claim while the company's country is as shown."
+        },
+        "correct": {
+          "title": "Correct the company's country",
+          "help": "Only a holder of the authority permission at a hub covering the old or the new country can do this. Whoever corrects the country does not approve a claim on this company.",
+          "country": "Country",
+          "countryHelp": "Two letters, for example GE.",
+          "region": "Region",
+          "regionHelp": "Needed only where the country asks for it.",
+          "submit": "Correct the country"
+        },
+        "standing": {
+          "passed": "Recipe passed",
+          "pending": "Checks missing",
+          "failed": "A check failed",
+          "hidden": "Your roles do not show the standing of this recipe.",
+          "missing": "Missing: {checks}.",
+          "failedChecks": "Failed: {checks}.",
+          "blocked": "Screening blocks the hand-over: the subject is not clear, or the screening store is unavailable."
+        },
+        "evidence": {
+          "title": "Checks for this claim",
+          "help": "Only checks recorded after the claim was submitted count, and each serves one claim. Bind them before deciding.",
+          "none": "No checks recorded since the claim was submitted.",
+          "bound": "bound to this claim",
+          "unbound": "not bound yet",
+          "bind": "Bind the selected checks",
+          "provider": "Provider",
+          "ref": "Evidence reference",
+          "refHelp": "A reference, never a document. A manual result needs one.",
+          "noProvider": "This hub has no fake or manual provider to record with.",
+          "screening": "Record the sanctions check"
+        },
+        "results": {
+          "pass": "Pass",
+          "fail": "Fail",
+          "inconclusive": "Inconclusive",
+          "unavailable": "Unavailable"
+        },
+        "checks": {
+          "register_match": "Register match",
+          "officer_match": "Officer match",
+          "tax_status": "Tax status",
+          "licence": "Licence",
+          "qualification": "Professional qualification",
+          "ownership": "Ownership",
+          "sanctions_screening": "Sanctions screening",
+          "domain_confirmed": "Domain confirmed",
+          "signed_authority": "Signed authority",
+          "callback_confirmed": "Call-back confirmed"
+        },
+        "dispute": {
+          "title": "Disputes",
+          "help": "Competing claims on one page. One reviewer proposes the outcome and a different one confirms it. Nothing is handed over by the dispute itself.",
+          "proposedWinner": "Proposed: one claim wins, proposed by",
+          "proposedNone": "Proposed: no claim wins, proposed by",
+          "confirm": "Confirm the proposal",
+          "propose": "Propose an outcome",
+          "winner": "Outcome",
+          "none": "No claim wins",
+          "claim": "Claim {number}",
+          "note": "Reasoning",
+          "noteHelp": "At least ten characters."
+        },
+        "reasons": {
+          "outside_territory": "This hub does not cover the company's country.",
+          "company_country_missing": "The company has no country, or lacks the region its country needs. Correct it first.",
+          "own_country_correction": "You corrected this company's country, so another reviewer decides.",
+          "own_claim": "You cannot decide your own claim.",
+          "second_person_required": "A different reviewer confirms what you proposed.",
+          "standing_not_passed": "The recipe has not passed: bind the missing checks first.",
+          "evidence_required": "Bind the checks of this claim first.",
+          "evidence_mismatch": "These checks do not belong to this claim.",
+          "check_mismatch": "This check does not fit the company or the recipe.",
+          "claimant_not_clear": "The claimant is not screened clear.",
+          "company_tie_required": "The claimed level needs a tie to the company: a company mailbox or a recorded register officer match.",
+          "waiting_period": "The waiting period has not ended.",
+          "cooling_period": "The cooling-off period has not ended.",
+          "claimant_employed_elsewhere": "The claimant works for another company.",
+          "country_changed": "The company's country changed while you were reading. Reload the page.",
+          "country_unchanged": "That is already the company's country.",
+          "country_refused": "This country cannot be chosen.",
+          "country_locked": "The company's country cannot be changed this way.",
+          "region_required": "This country needs its region.",
+          "region_refused": "This region cannot be chosen.",
+          "invalid_winner": "That claim is not part of this dispute."
+        }
+      }
     },
     "verification": {
       "title": "Verification",

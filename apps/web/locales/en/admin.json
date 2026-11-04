@@ -319,6 +319,7 @@
       "above_maximum": "The value is above the hub maximum of {items}.",
       "above_cap": "The amount is above your role's cap of {items} minor units.",
       "back_dated": "Versions cannot be back-dated: choose a date after today.",
+      "claim_reason": "{items}",
       "overlap": "This version would overlap another version of the same item.",
       "weaker_than_pack": "A hub setting may be stricter than the country pack, never weaker.",
       "lawful_basis_missing": "No recorded lawful basis: announcements go only to people who opted in.",

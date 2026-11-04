@@ -115,6 +115,8 @@ export const fixtureConsolePort: ConsoleDataPort = {
   async localAdditions(hubId) {
     return [...(LOCAL_ADDITIONS[hubId] ?? [])];
   },
+  // The demo claims screen reads its own fixtures; only live mode uses this read.
+  claims: async () => null,
   async taxonomy(hubId) {
     return TAXONOMY.filter((t) => t.hubId === hubId);
   },

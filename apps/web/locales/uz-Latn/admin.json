@@ -319,6 +319,7 @@
       "above_maximum": "Qiymat xab maksimumidan yuqori: {items}.",
       "above_cap": "Summa rolingiz chegarasidan yuqori: kichik birliklarda {items}.",
       "back_dated": "Versiyalarni oʻtgan sana bilan belgilab boʻlmaydi: bugundan keyingi sanani tanlang.",
+      "claim_reason": "{items}",
       "overlap": "Bu versiya shu obyektning boshqa versiyasi bilan ustma-ust tushadi.",
       "weaker_than_pack": "Xab sozlamasi mamlakat paketidan qatʼiyroq boʻlishi mumkin, yumshoqroq emas.",
       "lawful_basis_missing": "Qayd etilgan qonuniy asos yoʻq: eʼlonlar faqat rozilik berganlarga boradi.",

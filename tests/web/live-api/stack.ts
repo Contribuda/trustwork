@@ -104,6 +104,13 @@ const control = createServer((req, res) => {
       });
       return send(res, 200, result);
     }
+    if (req.method === 'POST' && url.pathname === '/company') {
+      // HC-22: an unclaimed page of a country (or of none, as an old record is), which only an import or a pack creates.
+      const body = await readJson(req);
+      if (!db || typeof body.name !== 'string' || !(typeof body.country === 'string' || body.country === null)) return send(res, 400, { error: 'bad request' });
+      const id = await withMaintenance(db.admin, async (trx) => (await trx.insertInto('company').values({ display_name: body.name as string, claim_status: 'unclaimed', country_code: body.country as string | null } as never).returning('id').executeTakeFirstOrThrow()).id);
+      return send(res, 200, { id });
+    }
     if (req.method === 'POST' && url.pathname === '/definition') {
       // HC-150: a released role definition the console's role catalogue offers (the next version of the named role).
       const body = await readJson(req);

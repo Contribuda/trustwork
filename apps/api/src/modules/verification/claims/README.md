@@ -2,7 +2,7 @@
 
 Management access to a company page passes only through the hub's verification recipe. Design: [discovery and outreach](../../../../../../docs/engine/discovery-and-outreach.md) section 7, [ADR 026](../../../../../../docs/adr/026-discovery-to-claim-engine-and-professional-pages.md), reference recipes in [hub administration](../../../../../../docs/engine/hub-administration.md). Database: [`migrations/claims`](../../../../../../packages/data/migrations/claims), repository [`claims.ts`](../../../../../../packages/data/src/repositories/claims.ts).
 
-Status: claims, disputes, hand-overs, the cooling period, per-hub badges with expiry and re-checks, company records, their routes and notices are **Live in the API**, without screens yet (HUBC-009 wires the console).
+Status: claims, disputes, hand-overs, the cooling period, per-hub badges with expiry and re-checks, company records, their routes and notices are **Live in the API**; HC-22 Claims decides them on the console (HUBC-007), and hand-overs, re-checks and company records have no screen yet (HUBC-009).
 
 | Rule | Where it holds |
 |---|---|

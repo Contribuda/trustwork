@@ -17,6 +17,8 @@ import { ResidencyConfigPayloadSchema } from '../../../../../packages/contracts/
 import { EffectiveAccessSchema, StaffDirectorySchema, StaffInvitationViewSchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import { evaluateCommand, invitationSeconds, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
+import { claimCommand, readClaims } from './live-claims.js';
+import { CLAIM_COMMANDS, isClaimCommand } from '../hubs/[hub]/participants/claims/_commands.js';
 import type { ConsoleRequest } from './personas.js';
 import { OverviewSchema, QUEUE_IDS, ResidencySchema, type Overview, type QueueId, type Residency } from './read-models.js';
 import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord, type LegalDocument } from './schemas.js';
@@ -379,6 +381,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
+    ...CLAIM_COMMANDS,
     'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request',
     'launch.mark_passed', 'residency.request_change', 'legal.draft',
   ]);
@@ -511,6 +514,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       }
       return settled(await send(`${hubPath}/territories`, { territory: { level: territory!.level, code: territory!.code } }));
     }
+    if (isClaimCommand(input.command)) return claimCommand(input.command, f, { send, hubId: hub.hub.id });
     if (input.command === 'lifecycle.request') {
       return settled(await send(`${hubPath}/lifecycle`, { to: f.to, expectedRevision: hub.hub.revision, approvalId: null }));
     }
@@ -599,6 +603,12 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     residency,
     localAdditions: async () => [],
     taxonomy: async () => [],
+    // HC-22: claims of the hub with the country rule in view (`live-claims.ts`).
+    async claims(hubId) {
+      const list = HubsViewSchema.safeParse(await orNothing(api.get('/v1/admin/hubs')));
+      const hub = list.data?.items.find((i) => i.hub.id === hubId)?.hub;
+      return hub ? readClaims(api, orNothing, { id: hub.id, territories: hub.territories }) : null;
+    },
     brandChecks: async () => [],
     product: async () => null,
     // The live setup wizard reads `/v1/setup` itself (HUB-004, setup/_live); the console port has no setup run.
