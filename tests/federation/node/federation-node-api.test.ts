@@ -141,6 +141,58 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.deepEqual(view.manifests.map((m) => m.version), [1]);
   });
 
+  await t.test('first contact: a handshake from a host this node does not hold is refused without a lookup, a fetch or a row, whatever name it carries; a person\'s peering request is what makes a host known; the mesh route is rate-limited', async () => {
+    const resolves = transport.resolves.length;
+    const fetches = transport.manifestFetches.length;
+    const rows = async () => ({ peers: await count('SELECT 1 FROM trustwork.federation_peer'), refusals: await count('SELECT 1 FROM trustwork.admission_refusal'), nonces: await count('SELECT 1 FROM trustwork.federation_nonce'), records: await count('SELECT 1 FROM trustwork.peering_record') });
+    const before = await rows();
+    // Austin's genuine, well-formed handshake before anyone here asked for Austin: a clean refusal, nothing else.
+    const early = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
+    const refused = await mesh(early.body, early.fields);
+    assert.equal(refused.status, 403, JSON.stringify(refused.body));
+    assert.equal(refused.body.code, 'federation.not_peered');
+    assert.ok(refused.header('signature-input'), 'the refusal is signed');
+    // A flood of invented names, each with its own self-signed manifest under its own key: nothing resolved, fetched or stored, and the cooldown table stays empty.
+    const stranger = { keyId: 'a1', sign: signerFor(RFC8032.test1) };
+    for (let i = 0; i < 25; i++) {
+      const host = `n${i}.attacker.example`;
+      const hs = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), manifest: manifestFor(host, {}, stranger), signer: stranger, bodyOverride: { from: host } });
+      assert.equal((await mesh(hs.body, hs.fields)).body.code, 'federation.not_peered', host);
+    }
+    assert.equal(transport.resolves.length, resolves, 'no stranger is resolved');
+    assert.equal(transport.manifestFetches.length, fetches, 'no stranger is fetched');
+    assert.deepEqual(await rows(), before, 'no row of any kind');
+    assert.equal((service as unknown as { inboundFetches: Map<string, number> }).inboundFetches.size, 0, 'no cooldown entry for a stranger');
+    // The only path that contacts a new host: a person of a hub here requests peering. Austin is resolved, judged, fetched
+    // from its origin and held; the fake peer answers; the record is ended again so Austin's own request below starts clean.
+    const requested = ok(await command('owner', `${ADMIN}/peerings`, { localHubId: w.hubId, peerNode: PEER_HOST, peerHubId: PEER_HUB, level: 'syndicate', approvalId: null }), 201) as unknown as { record: { id: string; state: string } };
+    assert.equal(transport.manifestFetches.length, fetches + 1);
+    assert.deepEqual(transport.connections.slice(-2).map((c) => c.address), [SERVED_ADDRESS, SERVED_ADDRESS], 'the fetch and the handshake went to the judged address');
+    assert.equal(await count("SELECT 1 FROM trustwork.federation_peer WHERE peer_node = $1 AND admission_state = 'admitted'", [CITY]), 1);
+    const row = (await h.db.admin.query<{ state: string; phase: string; revision: number }>('SELECT state, phase, revision FROM trustwork.peering_record WHERE id = $1', [requested.record.id])).rows[0]!;
+    assert.deepEqual([row.state, row.phase], ['pending_approval', 'awaiting_peer'], 'the peer\'s person has not accepted yet');
+    ok(await command('owner', `${ADMIN}/peerings/${requested.record.id}/end`, { expectedRevision: row.revision }));
+    assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: false, code: 'federation.not_peered' });
+    // The mesh route carries the per-address burst limit of the auth routes (here 2 per minute): the third request is answered 429 before anything is read (unsigned probes, so the two that get through write nothing).
+    const limited = await createApp({
+      env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', TRUSTWORK_HUB_ID: w.hubId, MAIL_SECRET_KEY: randomBytes(32).toString('hex'), TRUSTWORK_JURISDICTION_GATE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '2' },
+      pool: h.pool, clock: h.clock, federation: { sealer: fakeNodeKeySealer(), transport }, logSink: () => undefined,
+    });
+    try {
+      const statuses: number[] = [];
+      for (let i = 0; i < 3; i++) {
+        const hs = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
+        const r = await limited.fastify.inject({ method: 'POST', url: HANDSHAKE_URL, headers: { 'content-type': 'application/json', 'user-agent': 'trustwork-peer/1.0' }, payload: Buffer.from(hs.body), remoteAddress: SERVED_ADDRESS });
+        statuses.push(r.statusCode);
+        if (i === 2) assert.equal((JSON.parse(r.body) as { code: string }).code, 'auth.throttled');
+      }
+      assert.deepEqual(statuses, [401, 401, 429]);
+      assert.deepEqual(await rows(), { ...before, peers: before.peers + 1, records: before.records + 1 }, 'only the held peer and the ended record of the request were added; the probes wrote nothing');
+    } finally {
+      await limited.close();
+    }
+  });
+
   await t.test('unlaunched hubs: a draft and a preparing hub are absent from the manifest, and a handshake or request naming them is refused like an unknown hub', async () => {
     const draftId = (await a.createHub('synthetic-sd-draft')).hub_id;
     const preparingId = await insertHub(h.db.admin, { nodeId: w.nodeId, createdBy: w.people.operator, slug: 'synthetic-sd-preparing', lifecycle: 'preparing' });
@@ -156,12 +208,12 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
       answers.push({ status: r.status, code: r.body.code });
     }
     assert.deepEqual(answers, Array.from({ length: 3 }, () => ({ status: 421, code: 'federation.not_addressed' })));
-    assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
+    assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE state <> 'ended'"), 0);
     // A request from the draft or the preparing hub gets the answer an unknown hub gets.
     for (const hubId of [draftId, preparingId, randomUUID()]) {
       expectRefusal(await command('owner', `${ADMIN}/peerings`, { localHubId: hubId, peerNode: PEER_HOST, peerHubId: PEER_HUB, level: 'syndicate', approvalId: null }), 404, 'access.not_found');
     }
-    assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
+    assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE state <> 'ended'"), 0);
   });
 
   await t.test('handshake: unsigned, forged, replayed, expired, tampered and misaddressed requests are refused with the protocol codes; no record is written', async () => {
@@ -213,9 +265,9 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
       assert.equal((await mesh(again.body, again.fields)).body.code, 'federation.key_unknown');
     }
     assert.equal(transport.manifestFetches.length, afterFirst, 'repeated unknown labels fetch nothing more within the cooldown');
-    assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
+    assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE state <> 'ended'"), 0);
     assert.equal(await count('SELECT 1 FROM trustwork.admission_refusal'), refusalsBefore, 'no refusal is written against a peer by an unverified request');
-    // The only peer row came from the peer's own origin (trust on first use), never from a request body.
+    // The only peer row came from the peer's own origin, fetched for the person's request, never from a request body.
     assert.equal((await h.db.admin.query<{ d: string }>('SELECT manifest_digest AS d FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]?.d, computeDigest(fixtureManifest({ node: CITY })).value);
   });
 
@@ -246,7 +298,7 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.ok(refusals[1]!.findings.some((f) => f.reason === 'attestation_expired'));
     assert.ok(refusals[2]!.findings.some((f) => f.source === 'observed_location' && f.dataset === 'fake'));
     assert.ok(!JSON.stringify(refusals).includes(RESTRICTED_ADDRESS) && !JSON.stringify(refusals).includes(SERVED_ADDRESS), 'refusal records hold no address');
-    assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
+    assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE state <> 'ended'"), 0);
     // Compliance readers see the records; hub staff without the permission do not.
     const seen = ok(await clients.officer.get(`${ADMIN}/refusals`)) as unknown as { items: unknown[] };
     assert.ok(seen.items.length >= 3);
@@ -255,9 +307,18 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
 
   let incomingId = '';
   await t.test('handshake: a valid request from the Austin peer is admitted on all three kinds of evidence, answered with a signed pending response, and creates an incoming record a person must accept', async () => {
+    // The observed refusal above left the peer refused; a handshake lifts nothing by itself, but once the cooldown passed it
+    // makes this node fetch the origin again, and that fetch passes.
+    const fetches = transport.manifestFetches.length;
+    const probe = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
+    const stillRefused = await mesh(probe.body, probe.fields);
+    assert.equal(stillRefused.status, 451, 'within the cooldown no fetch, and a handshake lifts nothing');
+    assert.equal(transport.manifestFetches.length, fetches);
+    h.clock.advance(1_500);
     const good = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
     const response = await mesh(good.body, good.fields);
     assert.equal(response.status, 200, JSON.stringify(response.body));
+    assert.equal(transport.manifestFetches.length, fetches + 1, 'the fetch from the origin lifted the refusal');
     const answer = HandshakeResponseSchema.parse(response.body);
     assert.equal(answer.outcome, 'admitted');
     if (answer.outcome !== 'admitted') return;
@@ -279,7 +340,9 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE state <> 'ended'"), 1, 'a repeated handshake is idempotent');
     const peer = (await h.db.admin.query<{ admission_state: string; admission_judged: string[]; admission_trigger: string }>('SELECT admission_state, admission_judged, admission_trigger FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!;
     assert.deepEqual(peer, { admission_state: 'admitted', admission_judged: ['declared', 'attested', 'observed'], admission_trigger: 'handshake' });
-    const records = ok(await clients.owner.get(`${ADMIN}/peerings`)) as unknown as { items: { id: string; direction: string; state: string; phase: string; level: string; peerAcceptedAt: string | null; requestedBy: string | null }[] };
+    const listed = ok(await clients.owner.get(`${ADMIN}/peerings`)) as unknown as { items: { id: string; direction: string; state: string; phase: string; level: string; peerAcceptedAt: string | null; requestedBy: string | null }[] };
+    assert.equal(listed.items.length, 2, 'the ended record of the first request stays in history');
+    const records = { items: listed.items.filter((r) => r.state !== 'ended') };
     assert.equal(records.items.length, 1);
     assert.deepEqual([records.items[0]!.direction, records.items[0]!.state, records.items[0]!.phase, records.items[0]!.level, records.items[0]!.requestedBy], ['incoming', 'pending_approval', 'awaiting_acceptance', 'syndicate', null]);
     assert.ok(records.items[0]!.peerAcceptedAt);
@@ -413,7 +476,12 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
       return mesh(utf8Encode(canonicalize({ ...hs.request, from: DALLAS })), signRequest({ method: 'POST', targetUri: `https://${OUR_HOST}${HANDSHAKE_URL}`, body: utf8Encode(canonicalize({ ...hs.request, from: DALLAS })), signer: dallas.signer, now: now() }));
     };
     h.clock.advance(1_500);
-    // First contact: the fetch from the origin becomes durable once the signature verified.
+    // Before a person here asked for Dallas its handshake is refused and nothing is looked up or fetched; the fetch a request makes holds it.
+    const unknownDallas = await dallasHandshake(dallas.manifest());
+    assert.equal(unknownDallas.status, 403, JSON.stringify(unknownDallas.body));
+    assert.equal(unknownDallas.body.code, 'federation.not_peered');
+    assert.ok(!transport.manifestFetches.includes(DALLAS) && !transport.resolves.includes(DALLAS), 'a stranger is neither resolved nor fetched');
+    await service.refreshPeer(DALLAS, 'request');
     assert.equal((await dallasHandshake(dallas.manifest())).status, 200);
     const firstDue = await due();
     const fetches = transport.manifestFetches.length;
@@ -484,12 +552,49 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     // The peer's name now resolves to a restricted place: refused before any connection, and every flow with the held peer pauses.
     austin.remoteAddress = RESTRICTED_ADDRESS;
     const connections = transport.connections.length;
+    const peerState = async () => (await h.db.admin.query<{ admission_state: string; due: Date }>('SELECT admission_state, refresh_due_at AS due FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!;
+    const suspensionOf = async () => (await h.db.admin.query<{ suspension_reason: string | null }>('SELECT suspension_reason FROM trustwork.peering_record WHERE id = $1', [outgoingId])).rows[0]!.suspension_reason;
+    const dueBefore = (await peerState()).due;
     await assert.rejects(service.refreshPeer(CITY, 'refresh'), (e: Error & { code?: string }) => e.code === 'federation.peer_restricted');
     assert.equal(transport.connections.length, connections, 'never contacted');
-    assert.equal((await h.db.admin.query<{ suspension_reason: string | null }>('SELECT suspension_reason FROM trustwork.peering_record WHERE id = $1', [outgoingId])).rows[0]!.suspension_reason, 'admission_refused');
+    assert.equal(await suspensionOf(), 'admission_refused');
+    assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: false, code: 'federation.peer_restricted' });
+    // The suspension bought the peer nothing: the refresh is due as it was, and a signed handshake from a clean address
+    // carrying the held manifest lifts nothing (the origin's address is judged again and refused; the peer stays refused).
+    assert.deepEqual(await peerState(), { admission_state: 'refused', due: dueBefore }, 'a suspension without a fetch moves no refresh');
+    h.clock.advance(1_500);
+    const clean = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
+    const notLifted = await mesh(clean.body, clean.fields);
+    assert.equal(notLifted.status, 451, JSON.stringify(notLifted.body));
+    assert.equal(transport.connections.length, connections, 'still never contacted');
+    assert.deepEqual(await peerState(), { admission_state: 'refused', due: dueBefore });
+    assert.equal(await suspensionOf(), 'admission_refused');
     assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: false, code: 'federation.peer_restricted' });
     austin.remoteAddress = SERVED_ADDRESS;
+    h.clock.advance(1_500);
     await service.refreshPeer(CITY, 'refresh');
+    assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: true });
+    // A console refresh before the due time that finds the origin refusing (expired attestation), then a handshake from a
+    // clean address carrying that served manifest: the refusal stands. The next fetch that passes lifts it, whoever caused it.
+    setPeerManifest(austin, fixtureManifest({ node: CITY, attestation: EXPIRED_ATTESTATION }));
+    const early = ok(await command('owner', `${ADMIN}/peers/refresh`, { peerNode: PEER_HOST })) as unknown as { peer: { admission: { state: string } } | null };
+    assert.equal(early.peer?.admission.state, 'refused');
+    assert.equal(await suspensionOf(), 'attestation_expired');
+    h.clock.advance(1_500);
+    const afterEarly = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), manifest: fixtureManifest({ node: CITY, attestation: EXPIRED_ATTESTATION }) });
+    const stillRefused = await mesh(afterEarly.body, afterEarly.fields);
+    assert.equal(stillRefused.status, 451, JSON.stringify(stillRefused.body));
+    assert.equal((await peerState()).admission_state, 'refused');
+    assert.equal(await suspensionOf(), 'attestation_expired');
+    setPeerManifest(austin, fixtureManifest({ node: CITY }));
+    h.clock.advance(1_500);
+    const fetchesBeforeLift = transport.manifestFetches.length;
+    const passing = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
+    const liftedByFetch = await mesh(passing.body, passing.fields);
+    assert.equal(liftedByFetch.status, 200, JSON.stringify(liftedByFetch.body));
+    assert.equal(transport.manifestFetches.length, fetchesBeforeLift + 1, 'the handshake found the peer refused and fetched; the origin passed; the fetch lifted');
+    assert.equal((await peerState()).admission_state, 'admitted');
+    assert.equal(await suspensionOf(), null);
     assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: true });
   });
 
@@ -635,7 +740,7 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(app.app.get(FederationRefreshTimer).active, false, 'a fake transport without opt-in starts no timer');
     // One failed peer does not stop the rest: Houston (held and admitted here through a direct record) answers 500, Austin refreshes.
     const houstonManifest = asManifest(transport.peers.get('houston.example.org')!.manifest());
-    await federationPeers.record(h.pool, { peerNode: 'houston.example.org', manifest: houstonManifest, manifestDigest: computeDigest(houstonManifest).value, manifestIssuedAt: new Date(houstonManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(houstonManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'manual' });
+    await federationPeers.record(h.pool, { peerNode: 'houston.example.org', manifest: houstonManifest, manifestDigest: computeDigest(houstonManifest).value, manifestIssuedAt: new Date(houstonManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(houstonManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'manual', fetched: true });
     transport.peers.get('houston.example.org')!.manifestStatus = 500;
     transport.peers.get('houston.example.org')!.remoteAddress = SERVED_ADDRESS;
     await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '2 minutes' WHERE peer_node = 'houston.example.org'");

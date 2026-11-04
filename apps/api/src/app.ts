@@ -195,6 +195,8 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   // (hooks run in registration order); attached after it, the auth burst limit was silently never applied.
   fastify.addHook('onRoute', (route: RouteOptions) => {
     if (route.url.startsWith('/v1/auth/')) route.config = { ...(route.config as object), rateLimit: { max: config.rateLimit.authPerMinute, timeWindow: 60_000 } };
+    // Mesh endpoints (FED-001) are unauthenticated until a signature verifies: the same per-address burst limit as the auth routes.
+    if (route.url.startsWith('/federation/v1/')) route.config = { ...(route.config as object), rateLimit: { max: config.rateLimit.authPerMinute, timeWindow: 60_000 } };
   });
   await fastify.register(fastifyCookie);
   await fastify.register(fastifyRateLimit, {

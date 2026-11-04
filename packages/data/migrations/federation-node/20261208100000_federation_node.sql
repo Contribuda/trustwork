@@ -609,14 +609,17 @@ BEGIN
 END $$;
 
 -- Stores a peer's validated manifest with the outcome of our admission check. A refusal (or an expired attestation)
--- suspends every active record with the peer; a renewed admission lifts the suspensions that admission caused. Only a
--- real fetch from the peer's origin (p_fetched) moves manifest_fetched_at and refresh_due_at: a re-admission on an
--- inbound handshake or a deal keeps the refresh due, so a stolen key cannot keep an archived manifest alive.
+-- suspends every active record with the peer. Only a real fetch from the peer's origin (p_fetched, no default: every
+-- caller says so) moves manifest_fetched_at and refresh_due_at, and only such a fetch that passes the admission lifts a
+-- refusal and the suspensions it caused: a re-admission without a fetch (an inbound handshake, a deal, a changed
+-- statement, a suspension from the address judgement) keeps the refresh due and may refuse, never lift, so a stolen key
+-- or a clean address cannot keep an archived or refused peer alive. A peer's first row comes from a fetch.
 CREATE FUNCTION trustwork.federation_peer_record(p_peer text, p_manifest jsonb, p_digest text, p_issued_at timestamptz, p_current_key text, p_attestation_expires timestamptz,
-  p_admitted boolean, p_judged text[], p_trigger text, p_suspension_reason text DEFAULT NULL, p_fetched boolean DEFAULT true) RETURNS trustwork.federation_peer
+  p_admitted boolean, p_judged text[], p_trigger text, p_suspension_reason text, p_fetched boolean) RETURNS trustwork.federation_peer
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
   v_node uuid := trustwork.federation_node();
+  v_old trustwork.federation_peer%ROWTYPE;
   v_row trustwork.federation_peer%ROWTYPE;
   v_record trustwork.peering_record%ROWTYPE;
 BEGIN
@@ -627,9 +630,17 @@ BEGIN
     RAISE EXCEPTION 'a refusal states why flows pause' USING ERRCODE = 'invalid_parameter_value', HINT = 'federation.context_invalid';
   END IF;
   PERFORM pg_advisory_xact_lock(hashtextextended('trustwork.federation_peer:' || p_peer, 0));
+  SELECT * INTO v_old FROM trustwork.federation_peer f WHERE f.node_id = v_node AND f.peer_node = p_peer;
+  IF NOT FOUND AND NOT p_fetched THEN
+    RAISE EXCEPTION 'a peer is first recorded from a fetch of its origin' USING ERRCODE = 'invalid_parameter_value', HINT = 'federation.fetch_required';
+  END IF;
   -- A manifest older than the one held is never recorded (the process checks the chain's continuity; this is the backstop).
-  IF EXISTS (SELECT 1 FROM trustwork.federation_peer f WHERE f.node_id = v_node AND f.peer_node = p_peer AND f.manifest_issued_at > p_issued_at) THEN
+  IF FOUND AND v_old.manifest_issued_at > p_issued_at THEN
     RAISE EXCEPTION 'the manifest is older than the one held' USING ERRCODE = 'check_violation', HINT = 'federation.manifest_rollback';
+  END IF;
+  -- Nothing lifts a refusal without a fetch from the origin that passes the admission: the row is returned unchanged.
+  IF FOUND AND NOT p_fetched AND p_admitted AND v_old.admission_state <> 'admitted' THEN
+    RETURN v_old;
   END IF;
   INSERT INTO trustwork.federation_peer (node_id, peer_node, manifest, manifest_digest, manifest_issued_at, manifest_fetched_at, refresh_due_at, current_key_id, attestation_expires_at,
     admission_state, admission_decided_at, admission_judged, admission_trigger)

@@ -45,6 +45,7 @@ const HINTS: Readonly<Record<string, ErrorCode>> = {
   'federation.subject_is_address': 'validation.schema',
   'federation.manifest_rollback': 'validation.revision_conflict',
   'federation.signer_only': 'access.forbidden',
+  'federation.fetch_required': 'validation.schema',
   'kernel.restricted_place': 'validation.schema',
 };
 
