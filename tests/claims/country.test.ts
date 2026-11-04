@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
+import { staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
 import { hubs } from '../../packages/data/src/repositories/kernel.js';
+import { screen } from '../screening-gates/helpers.js';
 import { command, expectRefusal } from '../admin/helpers.js';
 import { SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
 import { claimsWorld, ok, type Claim } from './helpers.js';
@@ -60,6 +62,28 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
     assert.equal(decided.state, 'rejected', 'the hub holds one region of the country, and the company has no place finer than the country');
     // A territory of another country still covers nothing here.
     expectRefusal(await submit(person.client, companyId, 'verified'), 422, 'validation.schema', 'company_outside_hub');
+  });
+
+  await t.test('the founding role unsticks a company with no country, and hands nothing over', async () => {
+    // Exactly what the setup wizard releases: on a new node this is the only role that exists.
+    const founding = (await admin.query<{ v: string[] }>('SELECT trustwork.setup_founding_permissions() AS v')).rows[0]!.v;
+    await withMaintenance(admin, (trx) => staffRoleDefinitions.release(trx, { version: 2, role: 'node-operator', scopes: ['node'], permissions: founding as never,
+      caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null }));
+    await w.actors.assignSensitive({ personId: w.people.admin2, role: 'node-operator', scope: { kind: 'node', nodeId: w.world.nodeId }, definitionVersion: 2 });
+    const operator = w.clients.admin2;
+    const companyId = await page('Synthetic Founding Case Builders', null, null);
+    const person = await claimant('Synthetic Founding Case Claimant', 'founding@founding.synthetic.invalid');
+    const claim = ok<{ claim: Claim }>(await submit(person.client, companyId, 'verified')).claim;
+
+    expectRefusal(await correct(w.clients.moderator, hubId, companyId, null, 'US'), 403, 'access.forbidden');
+    ok(await correct(operator, hubId, companyId, null, 'US'));
+    assert.equal(await countryOf(companyId), 'US');
+    assert.deepEqual((await audits('company.country_corrected', companyId)).map((row) => [row.outcome, row.hub_id]), [['denied', hubId], ['applied', hubId]], 'the moderator\'s refusal, then the correction');
+
+    expectRefusal(await decideOnly(operator, claim), 404, 'access.not_found');
+    assert.deepEqual([await statusOf(companyId), await handovers(companyId)], ['unclaimed', 0]);
+    ok(await decide(reviewer, { ...claim, companyId, recipeId: recipes.verified }));
+    assert.equal(await statusOf(companyId), 'verified');
   });
 
   await t.test('a company with no country is refused to every reviewer, whichever way they decide, until a correction', async () => {
@@ -177,5 +201,50 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
     assert.equal(await handovers(companyId), 0);
     ok(await decideOnly(reviewer, claim));
     assert.deepEqual([await statusOf(companyId), await roleOf(person.id, companyId)], ['verified', 'administrator']);
+  });
+
+  await t.test('the corrector takes no decision of any kind on that company', async () => {
+    // `second` holds both roles (the case above). Rejecting a rival is a decision too.
+    const companyId = await page('Synthetic Every Decision Builders', null, 'CA');
+    ok(await correct(second, hubId, companyId, 'CA', 'US'));
+    const first = await claimant('Synthetic Every Decision One', 'one@every.synthetic.invalid');
+    const rival = await claimant('Synthetic Every Decision Two', 'two@every.synthetic.invalid');
+    const own = 'own_country_correction';
+    const single = ok<{ claim: Claim }>(await submit(first.client, companyId, 'verified')).claim;
+    expectRefusal(await decideOnly(second, single, 'rejected'), 403, 'access.forbidden', own);
+    ok(await submit(rival.client, companyId, 'verified'));
+    const listed = ok<{ claims: Claim[]; disputes: Array<{ id: string; companyId: string; revision: number }> }>(await reviewer.get(`${base}/claims?state=disputed`));
+    const dispute = listed.disputes.find((d) => d.companyId === companyId)!;
+    const url = `${base}/claims/disputes/${dispute.id}`;
+    expectRefusal(await command(second, `${url}/propose`, { expectedRevision: dispute.revision, winnerClaimId: single.id, note: 'Synthetic note.' }), 403, 'access.forbidden', own);
+    const proposed = ok<{ dispute: { revision: number } }>(await command(reviewer, `${url}/propose`, { expectedRevision: dispute.revision, winnerClaimId: single.id, note: 'Synthetic note.' })).dispute;
+    expectRefusal(await command(second, `${url}/confirm`, { expectedRevision: proposed.revision }), 403, 'access.forbidden', own);
+    assert.equal(await handovers(companyId), 0);
+  });
+
+  await t.test('a claimant, a member or a conflicted staff member does not correct the company, in either order', async () => {
+    const steward = w.clients.lead;
+    const claimed = await page('Synthetic Own Claim Builders', null, null);
+    await screen(admin, { kind: 'person', id: w.people.lead });
+    const filed = ok<{ claim: Claim }>(await submit(steward, claimed, 'verified')).claim;
+    expectRefusal(await correct(steward, hubId, claimed, null, 'US'), 403, 'access.forbidden');
+    assert.equal(await countryOf(claimed), null);
+    ok(await steward.post(`/v1/claims/${filed.id}/withdraw`, {}));
+    expectRefusal(await correct(steward, hubId, claimed, null, 'US'), 403, 'access.forbidden');
+    ok(await correct(second, hubId, claimed, null, 'US'));
+
+    const member = await page('Synthetic Own Employer Builders', null, null);
+    await withMaintenance(admin, (trx) => trx.insertInto('membership').values({ person_id: w.people.lead, company_id: member, role: 'member', status: 'active', valid_from: new Date() }).execute());
+    expectRefusal(await correct(steward, hubId, member, null, 'US'), 403, 'access.forbidden');
+
+    const declared = await page('Synthetic Declared Conflict Builders', null, null);
+    await admin.query("INSERT INTO trustwork.staff_conflict_declaration (staff_person_id, conflict_company_id, reason) VALUES ($1, $2, 'Synthetic declared conflict')", [w.people.lead, declared]);
+    expectRefusal(await correct(steward, hubId, declared, null, 'US'), 403, 'access.forbidden');
+    assert.equal(await countryOf(declared), null);
+
+    // The other order: the corrector does not file a claim afterwards.
+    const moved = await page('Synthetic Moved Then Claimed Builders', null, null);
+    ok(await correct(steward, hubId, moved, null, 'US'));
+    expectRefusal(await submit(steward, moved, 'verified'), 403, 'access.forbidden', 'own_country_correction');
   });
 });

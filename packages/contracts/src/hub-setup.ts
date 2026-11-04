@@ -212,11 +212,12 @@ export function setupPlaceRefusals(step: SavedSetupStep, answer: unknown, restri
  * The permissions of `node-operator` version 1 as the setup wizard releases it when no definition of that role exists
  * yet (the engine's founding release of the role; the full capability map is the data integrator's). Node scope covers
  * every hub of the node, so the founding administrator can create the hub, draft its configuration, attest the
- * deployment location and invite the second staff member. The database holds the same list
+ * deployment location, invite the second staff member and correct a company's country, the place authority that claim
+ * review stands on (never the claim itself: `admin.claims.decide` is not here). The database holds the same list
  * (`setup_founding_permissions`, tested); every sensitive action still needs a second person.
  */
 export const FOUNDING_NODE_OPERATOR_PERMISSIONS = [
-  'admin.audit.read', 'admin.config.edit', 'admin.hub.country.edit', 'admin.hub.identity.edit', 'admin.hub.jurisdiction.edit', 'admin.hub.launch.check',
+  'admin.audit.read', 'admin.claims.authority.decide', 'admin.config.edit', 'admin.hub.country.edit', 'admin.hub.identity.edit', 'admin.hub.jurisdiction.edit', 'admin.hub.launch.check',
   'admin.hub.legal.edit', 'admin.hub.lifecycle.request', 'admin.hub.modes.edit', 'admin.hub.read', 'admin.hub.residency.edit', 'admin.node.hubs.manage',
   'admin.observability.read', 'admin.providers.connection.edit', 'admin.providers.read', 'admin.session.elevate', 'admin.staff.assign', 'admin.staff.read',
 ] as const satisfies readonly ConsolePermission[];
